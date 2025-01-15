@@ -59,6 +59,7 @@ import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import isEqual from 'lodash.isequal';
 import { PAYLOAD_TYPE } from '../../../../../../../types/src';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -80,11 +81,10 @@ export class ExperimentDesignStepperService {
 
   // Assignment Algorithm:
   currentAssignmentAlgorithm$ = new BehaviorSubject<ASSIGNMENT_ALGORITHM>(ASSIGNMENT_ALGORITHM.RANDOM);
-  defaultPolicyParametersForAlgorithm$ = this.currentAssignmentAlgorithm$.pipe(
-    map((algorithm) => new MOOCLET_POLICY_SCHEMA_MAP[algorithm]())
-  );
   isMoocletExperimentDesign$ = this.currentAssignmentAlgorithm$.pipe(
-    map((algorithm) => Object.keys(MOOCLET_POLICY_SCHEMA_MAP).includes(algorithm))
+    map((algorithm) => {
+      return environment.moocletToggle && Object.keys(MOOCLET_POLICY_SCHEMA_MAP).includes(algorithm)
+    })
   );
 
   // Payload table:
