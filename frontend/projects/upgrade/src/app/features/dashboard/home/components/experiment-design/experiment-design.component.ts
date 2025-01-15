@@ -48,6 +48,7 @@ import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
 import { MOOCLET_POLICY_SCHEMA_MAP, MoocletPolicyParametersDTO, MoocletTSConfigurablePolicyParametersDTO } from '../../../../../../../../../../types/src';
 import { validate, ValidationError } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'home-experiment-design',
@@ -133,7 +134,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$
   defaultPolicyParametersForAlgorithm: MoocletPolicyParametersDTO;
   moocletPolicyParametersErrors$: BehaviorSubject<ValidationError[]> = new BehaviorSubject([]);
-  moocletPolicyParametersDTO: MoocletPolicyParametersDTO;
   editorValue$ = new Subject<any>();
 
   constructor(
@@ -264,9 +264,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.decisionPoints.controls.forEach((_, index) => {
       this.manageSiteAndTargetControls(index);
     });
+    if (environment.moocletToggle) {
+      this.setupMoocletPolicyParameterJsonEditor();
+    }
   }
 
-  ngAfterViewInit() {
+  setupMoocletPolicyParameterJsonEditor() {
     this.defaultPolicyParametersForAlgorithm = new MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm$.value]();
     this.options = new JsonEditorOptions();
     this.options.mode = 'code';
@@ -287,34 +290,20 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     // Set up validation pipeline for feedback while typing
     this.editorValue$.pipe(
       debounceTime(300),
-      switchMap(jsonValue => {
-        try {
-          const ValidatorClass = MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm$.value];
-          const plainDTO = {
-            assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
-            ...jsonValue
-          };
-          const DTOInstance = plainToInstance(ValidatorClass, plainDTO);
-          return from(validate(DTOInstance));
-        } catch (e) {
-          return of([{
-            property: 'JSON Parse Error',
-            constraints: { invalid: (e as Error).message }
-          }]);
-        }
-      })
-    ).subscribe({
-      next: (errors) => {
+      switchMap((jsonValue) => this.validateMoocletPolicyParameters(jsonValue))
+    ).subscribe((errors) => {
         this.moocletPolicyParametersErrors$.next(errors);
-      },
-      error: (error) => {
-        console.error('Validation pipeline error:', error);
-        this.moocletPolicyParametersErrors$.next([{
-          property: 'Validation Error',
-          constraints: { error: 'Unexpected validation error occurred' }
-        }]);
-      }
     });
+  }
+
+  validateMoocletPolicyParameters(jsonValue: any) {
+    const ValidatorClass = MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm$.value];
+    const plainDTO = {
+      assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
+      ...jsonValue
+    };
+    const DTOInstance = plainToInstance(ValidatorClass, plainDTO);
+    return from(validate(DTOInstance));
   }
 
   manageConditionCodeControl(index: number) {
@@ -791,7 +780,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           decisionPoints: experimentDesignFormData.decisionPoints,
           conditions: experimentDesignFormData.conditions,
         });
-      if (this.policyEditor) {
+      if (environment.moocletToggle && this.policyEditor) {
         experimentDesignFormData.moocletPolicyParameters = {
           assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
           ...this.policyEditor.get()
