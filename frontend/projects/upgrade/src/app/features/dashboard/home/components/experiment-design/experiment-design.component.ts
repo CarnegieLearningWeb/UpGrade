@@ -20,7 +20,7 @@ import {
   FormArray,
   FormControl,
 } from '@angular/forms';
-import { BehaviorSubject, combineLatest, from, Observable, of, Subscription } from 'rxjs';
+import { BehaviorSubject, from, Observable, of, Subject, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -131,11 +131,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   // Used for displaying the Mooclet Policy Parameters JSON editor
   currentAssignmentAlgorithm$ = this.experimentDesignStepperService.currentAssignmentAlgorithm$;
   isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$
-  defaultPolicyParametersForAlgorithm$ = this.currentAssignmentAlgorithm$.pipe(
-    map((algorithm) => new MOOCLET_POLICY_SCHEMA_MAP[algorithm]())
-  );
-  moocletPolicyParametersErrors$: Observable<ValidationError[]>;
+  defaultPolicyParametersForAlgorithm: MoocletPolicyParametersDTO;
+  moocletPolicyParametersErrors$: BehaviorSubject<ValidationError[]> = new BehaviorSubject([]);
   moocletPolicyParametersDTO: MoocletPolicyParametersDTO;
+  editorValue$ = new Subject<any>();
 
   constructor(
     private _formBuilder: UntypedFormBuilder,
@@ -265,31 +264,29 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.decisionPoints.controls.forEach((_, index) => {
       this.manageSiteAndTargetControls(index);
     });
+  }
 
+  ngAfterViewInit() {
+    this.defaultPolicyParametersForAlgorithm = new MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm$.value]();
     this.options = new JsonEditorOptions();
     this.options.mode = 'code';
     this.options.statusBar = false;
 
+    // set up value change listener for the editor value
+    // this feels hacky but it ensures that editor value is always getting updated validation
     this.options.onChange = () => {
       try {
-        this.policyEditor.get();
+        const value = this.policyEditor.get();
+        this.editorValue$.next(value);
         this.policyEditorError = false;
       } catch (e) {
         this.policyEditorError = true;
       }
     };
-    this.handleMoocletAlgorithmChange();
-  }
 
-  addMoocletPolicyParametersControl(defaultParams: Omit<MoocletPolicyParametersDTO, "assignmentAlgorithm">) {
-    this.experimentDesignForm.addControl('moocletPolicyParameters', new FormControl(defaultParams));
-    this.registerJsonEditorOnValueChanges();
-  }
-
-  registerJsonEditorOnValueChanges() {
-    const policyParamsFormControl = this.experimentDesignForm.get('moocletPolicyParameters');
-    this.moocletPolicyParametersErrors$ = policyParamsFormControl.valueChanges.pipe(
-      debounceTime(300), // Debounce by 300ms
+    // Set up validation pipeline for feedback while typing
+    this.editorValue$.pipe(
+      debounceTime(300),
       switchMap(jsonValue => {
         try {
           const ValidatorClass = MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm$.value];
@@ -297,30 +294,25 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
             assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
             ...jsonValue
           };
-          // class-validator insists that a plain object be instantiated as a class instance in order for this to work
           const DTOInstance = plainToInstance(ValidatorClass, plainDTO);
-          return from(validate(DTOInstance))
+          return from(validate(DTOInstance));
         } catch (e) {
-          // Handle JSON parse errors
           return of([{
             property: 'JSON Parse Error',
             constraints: { invalid: (e as Error).message }
           }]);
         }
       })
-    );
-    this.moocletPolicyParametersErrors$.subscribe((errors) => console.log(errors));
-  }
-
-  handleMoocletAlgorithmChange() {
-    combineLatest([
-      this.isMoocletExperimentDesign$,
-      this.defaultPolicyParametersForAlgorithm$,
-    ]).subscribe(([isMooclet, defaultParams]) => {
-      if (isMooclet) {
-        this.addMoocletPolicyParametersControl(defaultParams);
-      } else {
-        this.experimentDesignForm.removeControl('moocletPolicyParameters');
+    ).subscribe({
+      next: (errors) => {
+        this.moocletPolicyParametersErrors$.next(errors);
+      },
+      error: (error) => {
+        console.error('Validation pipeline error:', error);
+        this.moocletPolicyParametersErrors$.next([{
+          property: 'Validation Error',
+          constraints: { error: 'Unexpected validation error occurred' }
+        }]);
       }
     });
   }
@@ -714,7 +706,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       (this.experimentDesignForm.valid || !this.isExperimentEditable) &&
       !this.conditionCodeErrors.length &&
       this.decisionPointCountError === null &&
-      this.conditionCountError === null
+      this.conditionCountError === null &&
+      this.moocletPolicyParametersErrors$.value.length === 0
     );
   }
 
@@ -798,8 +791,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           decisionPoints: experimentDesignFormData.decisionPoints,
           conditions: experimentDesignFormData.conditions,
         });
-      if (this.moocletPolicyParametersDTO) {
-        experimentDesignFormData.moocletPolicyParameters = this.moocletPolicyParametersDTO;
+      if (this.policyEditor) {
+        experimentDesignFormData.moocletPolicyParameters = {
+          assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
+          ...this.policyEditor.get()
+        }
       }
       this.emitExperimentDialogEvent.emit({
         type: eventType,
