@@ -135,21 +135,25 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     private dialogService: DialogService,
     private experimentDesignStepperService: ExperimentDesignStepperService
   ) {
-    this.subscriptionHandler = this.translate
-      .get([
-        'home.new-experiment.design.assignment-decision-point-error-1.text',
-        'home.new-experiment.design.assignment-decision-point-error-2.text',
-        'home.new-experiment.design.assignment-decision-point-error-3.text',
-        'home.new-experiment.design.assignment-decision-point-error-4.text',
-      ])
-      .subscribe((translatedMessage) => {
-        this.decisionPointErrorMessages = [
-          translatedMessage['home.new-experiment.design.assignment-decision-point-error-1.text'],
-          translatedMessage['home.new-experiment.design.assignment-decision-point-error-2.text'],
-          translatedMessage['home.new-experiment.design.assignment-decision-point-error-3.text'],
-          translatedMessage['home.new-experiment.design.assignment-decision-point-error-4.text'],
-        ];
-      });
+    this.subscriptionHandler = new Subscription();
+
+    this.subscriptionHandler.add(
+      this.translate
+        .get([
+          'home.new-experiment.design.assignment-decision-point-error-1.text',
+          'home.new-experiment.design.assignment-decision-point-error-2.text',
+          'home.new-experiment.design.assignment-decision-point-error-3.text',
+          'home.new-experiment.design.assignment-decision-point-error-4.text',
+        ])
+        .subscribe((translatedMessage) => {
+          this.decisionPointErrorMessages = [
+            translatedMessage['home.new-experiment.design.assignment-decision-point-error-1.text'],
+            translatedMessage['home.new-experiment.design.assignment-decision-point-error-2.text'],
+            translatedMessage['home.new-experiment.design.assignment-decision-point-error-3.text'],
+            translatedMessage['home.new-experiment.design.assignment-decision-point-error-4.text'],
+          ];
+        })
+    );
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -179,26 +183,37 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
-    this.subscriptionHandler = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
-      this.contextMetaData = contextMetaData;
-    });
-    this.subscriptionHandler = this.experimentService.allDecisionPoints$
-      .pipe(filter((decisionPoints) => !!decisionPoints))
-      .subscribe((decisionPoints: any) => {
-        this.allDecisionPoints = decisionPoints.map((decisionPoint) =>
-          decisionPoint.target ? decisionPoint.site + decisionPoint.target : decisionPoint.site
-        );
-      });
+    this.subscriptionHandler.add(
+      this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
+        this.contextMetaData = contextMetaData;
+      })
+    );
+
+    this.subscriptionHandler.add(
+      this.experimentService.allDecisionPoints$
+        .pipe(filter((decisionPoints) => !!decisionPoints))
+        .subscribe((decisionPoints: any) => {
+          this.allDecisionPoints = decisionPoints.map((decisionPoint) =>
+            decisionPoint.target ? decisionPoint.site + decisionPoint.target : decisionPoint.site
+          );
+        })
+    );
+
     this.experimentDesignForm = this._formBuilder.group({
       conditions: this._formBuilder.array([this.addConditions()]),
       decisionPoints: this._formBuilder.array([this.addDecisionPoints()]),
     });
 
-    this.experimentDesignStepperService.decisionPointsEditModePreviousRowData$.subscribe(
-      this.previousDecisionPointTableRowDataBehaviorSubject$
+    this.subscriptionHandler.add(
+      this.experimentDesignStepperService.decisionPointsEditModePreviousRowData$.subscribe(
+        this.previousDecisionPointTableRowDataBehaviorSubject$
+      )
     );
-    this.experimentDesignStepperService.conditionsEditModePreviousRowData$.subscribe(
-      this.previousConditionTableRowDataBehaviorSubject$
+
+    this.subscriptionHandler.add(
+      this.experimentDesignStepperService.conditionsEditModePreviousRowData$.subscribe(
+        this.previousConditionTableRowDataBehaviorSubject$
+      )
     );
 
     // Remove previously added group of conditions and decision points
@@ -256,9 +271,14 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.decisionPoints.controls.forEach((_, index) => {
       this.manageSiteAndTargetControls(index);
     });
-    if (environment.moocletToggle) {
-      this.setupMoocletPolicyParameterJsonEditor();
-    }
+
+    this.subscriptionHandler.add(
+      this.isMoocletExperimentDesign$.subscribe((isMooclet) => {
+        if (isMooclet) {
+          this.setupMoocletPolicyParameterJsonEditor();
+        }
+      })
+    );
   }
 
   setupMoocletPolicyParameterJsonEditor() {
