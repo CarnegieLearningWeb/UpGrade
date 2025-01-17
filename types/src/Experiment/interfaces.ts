@@ -246,18 +246,6 @@ export interface TsConfigurableParameters {
   outcome_variable_name: string;
 }
 
-export interface EpsilonGreedyParameters {
-  epsilon: number;
-  decay_rate?: number;
-  min_epsilon?: number;
-}
-
-export interface UcbParameters {
-  alpha: number;
-  window_size: number;
-}
-
-
 export interface ScoreObject {
   id: string;
   type: string;

@@ -83,7 +83,7 @@ export class ExperimentDesignStepperService {
   currentAssignmentAlgorithm$ = new BehaviorSubject<ASSIGNMENT_ALGORITHM>(ASSIGNMENT_ALGORITHM.RANDOM);
   isMoocletExperimentDesign$ = this.currentAssignmentAlgorithm$.pipe(
     map((algorithm) => {
-      return environment.moocletToggle && Object.keys(MOOCLET_POLICY_SCHEMA_MAP).includes(algorithm)
+      return environment.moocletToggle && Object.keys(MOOCLET_POLICY_SCHEMA_MAP).includes(algorithm);
     })
   );
 

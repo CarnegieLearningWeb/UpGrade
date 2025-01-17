@@ -52,7 +52,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
   overviewForm: UntypedFormGroup;
   unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
-  public ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
+  ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
+  ASSIGNMENT_ALGORITHM = ASSIGNMENT_ALGORITHM;
 
   groupTypes = [];
   allContexts = [];
@@ -103,10 +104,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       this.unitOfAssignments.push({ value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS });
     }
     if (this.environment.moocletToggle) {
-      const supportedMoocletAlgorithms = Object.keys(MOOCLET_POLICY_SCHEMA_MAP) as ASSIGNMENT_ALGORITHM[]
+      const supportedMoocletAlgorithms = Object.keys(MOOCLET_POLICY_SCHEMA_MAP) as ASSIGNMENT_ALGORITHM[];
       supportedMoocletAlgorithms.forEach((algorithmName) => {
-        this.assignmentAlgorithms.push({ value: algorithmName })
-      })
+        this.assignmentAlgorithms.push({ value: algorithmName });
+      });
     }
   }
 

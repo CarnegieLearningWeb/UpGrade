@@ -5,16 +5,13 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class assignmentAlgorithmPipe implements PipeTransform {
   // Special cases that should remain as-is
-  private readonly specialCases = new Map([
-    ['ts', 'TS'],
-    ['ucb', 'UCB'],
-  ]);
+  private readonly specialCases = new Map([['ts', 'TS']]);
 
   transform(value: string): string {
     if (!value) return value;
 
     // Split the string into words
-    const words = value.toLowerCase().split(' ');
+    const words = value.toLowerCase().split('_');
 
     // Transform each word
     const transformedWords = words.map((word, index) => {
