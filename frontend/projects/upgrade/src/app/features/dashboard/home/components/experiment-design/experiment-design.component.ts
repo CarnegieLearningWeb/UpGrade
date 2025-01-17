@@ -37,7 +37,7 @@ import {
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { SIMPLE_EXP_CONSTANTS } from './experiment-design.constants';
 import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
-import { MOOCLET_POLICY_SCHEMA_MAP, MoocletPolicyParametersDTO } from '../../../../../../../../../../types/src';
+import { MOOCLET_POLICY_SCHEMA_MAP, MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
 import { validate, ValidationError } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { environment } from '../../../../../../environments/environment';
@@ -65,6 +65,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   options = new JsonEditorOptions();
   policyEditorError = false;
+  experimentName: string;
 
   @ViewChild('policyEditor', { static: false }) policyEditor: JsonEditorComponent;
 
@@ -124,7 +125,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   // Used for displaying the Mooclet Policy Parameters JSON editor
   currentAssignmentAlgorithm$ = this.experimentDesignStepperService.currentAssignmentAlgorithm$;
   isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
-  defaultPolicyParametersForAlgorithm: MoocletPolicyParametersDTO;
+  defaultPolicyParametersForAlgorithm: MoocletTSConfigurablePolicyParametersDTO;
   moocletPolicyParametersErrors$: BehaviorSubject<ValidationError[]> = new BehaviorSubject([]);
   editorValue$ = new Subject<any>();
 
@@ -272,17 +273,28 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.manageSiteAndTargetControls(index);
     });
 
+    // Store current experiment name from Overview step for Mooclet configuration
+    this.subscriptionHandler.add(
+      this.experimentDesignStepperService.currentExperimentName$.subscribe((name) => {
+        this.experimentName = name;
+      })
+    );
+
+    // Setup Mooclet policy editor when experiment type is Mooclet
     this.subscriptionHandler.add(
       this.isMoocletExperimentDesign$.subscribe((isMooclet) => {
         if (isMooclet) {
-          this.setupMoocletPolicyParameterJsonEditor();
+          this.setupMoocletPolicyParameterJsonEditor(this.experimentName);
         }
       })
     );
   }
 
-  setupMoocletPolicyParameterJsonEditor() {
+  setupMoocletPolicyParameterJsonEditor(experimentName: string) {
     this.defaultPolicyParametersForAlgorithm = new MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm$.value]();
+    this.defaultPolicyParametersForAlgorithm.outcome_variable_name = `${experimentName
+      .toUpperCase()
+      .replace(/ /g, '_')}_REWARD_VARIABLE`;
     this.options = new JsonEditorOptions();
     this.options.mode = 'code';
     this.options.statusBar = false;
