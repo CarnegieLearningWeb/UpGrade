@@ -11,16 +11,8 @@ import {
   SimpleChanges,
   OnDestroy,
 } from '@angular/core';
-import {
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-  UntypedFormArray,
-  AbstractControl,
-  FormArray,
-  FormControl,
-} from '@angular/forms';
-import { BehaviorSubject, from, Observable, of, Subject, Subscription } from 'rxjs';
+import { UntypedFormBuilder, UntypedFormGroup, Validators, UntypedFormArray, AbstractControl } from '@angular/forms';
+import { BehaviorSubject, from, Observable, Subject, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -45,7 +37,7 @@ import {
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { SIMPLE_EXP_CONSTANTS } from './experiment-design.constants';
 import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
-import { MOOCLET_POLICY_SCHEMA_MAP, MoocletPolicyParametersDTO, MoocletTSConfigurablePolicyParametersDTO } from '../../../../../../../../../../types/src';
+import { MOOCLET_POLICY_SCHEMA_MAP, MoocletPolicyParametersDTO } from '../../../../../../../../../../types/src';
 import { validate, ValidationError } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { environment } from '../../../../../../environments/environment';
@@ -131,7 +123,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   // Used for displaying the Mooclet Policy Parameters JSON editor
   currentAssignmentAlgorithm$ = this.experimentDesignStepperService.currentAssignmentAlgorithm$;
-  isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$
+  isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
   defaultPolicyParametersForAlgorithm: MoocletPolicyParametersDTO;
   moocletPolicyParametersErrors$: BehaviorSubject<ValidationError[]> = new BehaviorSubject([]);
   editorValue$ = new Subject<any>();
@@ -288,19 +280,21 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     };
 
     // Set up validation pipeline for feedback while typing
-    this.editorValue$.pipe(
-      debounceTime(300),
-      switchMap((jsonValue) => this.validateMoocletPolicyParameters(jsonValue))
-    ).subscribe((errors) => {
+    this.editorValue$
+      .pipe(
+        debounceTime(300),
+        switchMap((jsonValue) => this.validateMoocletPolicyParameters(jsonValue))
+      )
+      .subscribe((errors) => {
         this.moocletPolicyParametersErrors$.next(errors);
-    });
+      });
   }
 
   validateMoocletPolicyParameters(jsonValue: any) {
     const ValidatorClass = MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm$.value];
     const plainDTO = {
       assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
-      ...jsonValue
+      ...jsonValue,
     };
     const DTOInstance = plainToInstance(ValidatorClass, plainDTO);
     return from(validate(DTOInstance));
@@ -783,8 +777,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       if (environment.moocletToggle && this.policyEditor) {
         experimentDesignFormData.moocletPolicyParameters = {
           assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
-          ...this.policyEditor.get()
-        }
+          ...this.policyEditor.get(),
+        };
       }
       this.emitExperimentDialogEvent.emit({
         type: eventType,
@@ -794,7 +788,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       if (eventType == NewExperimentDialogEvents.SAVE_DATA) {
         this.experimentDesignStepperService.experimentStepperDataReset();
         this.experimentDesignForm.markAsPristine();
-      }  
+      }
     }
   }
 

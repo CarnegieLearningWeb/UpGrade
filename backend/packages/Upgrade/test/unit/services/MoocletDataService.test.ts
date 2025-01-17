@@ -1,10 +1,22 @@
-import { MoocletBatchResponse, MoocletPolicyParametersRequestBody, MoocletPolicyParametersResponseDetails, MoocletPolicyResponseDetails, MoocletProxyRequestParams, MoocletRequestBody, MoocletResponseDetails, MoocletVariableRequestBody, MoocletVariableResponseDetails, MoocletVersionRequestBody, MoocletVersionResponseDetails } from '../../../src/types/Mooclet';
+import {
+  MoocletBatchResponse,
+  MoocletPolicyParametersRequestBody,
+  MoocletPolicyParametersResponseDetails,
+  MoocletPolicyResponseDetails,
+  MoocletProxyRequestParams,
+  MoocletRequestBody,
+  MoocletResponseDetails,
+  MoocletVariableRequestBody,
+  MoocletVariableResponseDetails,
+  MoocletVersionRequestBody,
+  MoocletVersionResponseDetails,
+} from '../../../src/types/Mooclet';
 import { MoocletDataService } from '../../../src/api/services/MoocletDataService';
 import { Container } from 'typedi';
 import axios from 'axios';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ASSIGNMENT_ALGORITHM } from '../../../../../../types/src';
-import { MoocletTSConfigurablePolicyParametersDTO } from 'types/src';
+import { MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
 
 jest.mock('axios');
 
@@ -21,57 +33,57 @@ describe('#MoocletDataService', () => {
 
   describe('#getMoocletIdByName', () => {
     it('should return the correct Mooclet ID when the policy name matches', async () => {
-        const mockPoliciesList: MoocletBatchResponse<MoocletPolicyResponseDetails> = {
-            count: 2,
-            next: null,
-            previous: null,
-            results: [
-                { id: 1, name: 'Policy1' },
-                { id: 2, name: 'Policy2' },
-            ],
-        };
-    
-        jest.spyOn(moocletDataService, 'getPoliciesList').mockResolvedValue(mockPoliciesList);
-    
-        const moocletId = await moocletDataService.getMoocletIdByName('Policy2');
-        expect(moocletId).toBe(2);
-      });
-
-    it('should return null when the policy name does not match', async () => {
-        const mockPoliciesList: MoocletBatchResponse<MoocletPolicyResponseDetails> = {
+      const mockPoliciesList: MoocletBatchResponse<MoocletPolicyResponseDetails> = {
         count: 2,
         next: null,
         previous: null,
         results: [
-            { id: 1, name: 'Policy1' },
-            { id: 2, name: 'Policy2' },
+          { id: 1, name: 'Policy1' },
+          { id: 2, name: 'Policy2' },
         ],
-        };
+      };
 
-        jest.spyOn(moocletDataService, 'getPoliciesList').mockResolvedValue(mockPoliciesList);
+      jest.spyOn(moocletDataService, 'getPoliciesList').mockResolvedValue(mockPoliciesList);
 
-        const moocletId = await moocletDataService.getMoocletIdByName('Policy3');
-        expect(moocletId).toBeNull();
+      const moocletId = await moocletDataService.getMoocletIdByName('Policy2');
+      expect(moocletId).toBe(2);
+    });
+
+    it('should return null when the policy name does not match', async () => {
+      const mockPoliciesList: MoocletBatchResponse<MoocletPolicyResponseDetails> = {
+        count: 2,
+        next: null,
+        previous: null,
+        results: [
+          { id: 1, name: 'Policy1' },
+          { id: 2, name: 'Policy2' },
+        ],
+      };
+
+      jest.spyOn(moocletDataService, 'getPoliciesList').mockResolvedValue(mockPoliciesList);
+
+      const moocletId = await moocletDataService.getMoocletIdByName('Policy3');
+      expect(moocletId).toBeNull();
     });
 
     it('should return null when the policies list is empty', async () => {
-        const mockPoliciesList: MoocletBatchResponse<MoocletPolicyResponseDetails> = {
+      const mockPoliciesList: MoocletBatchResponse<MoocletPolicyResponseDetails> = {
         count: 0,
         next: null,
         previous: null,
         results: [],
-        };
+      };
 
-        jest.spyOn(moocletDataService, 'getPoliciesList').mockResolvedValue(mockPoliciesList);
+      jest.spyOn(moocletDataService, 'getPoliciesList').mockResolvedValue(mockPoliciesList);
 
-        const moocletId = await moocletDataService.getMoocletIdByName('Policy1');
-        expect(moocletId).toBeNull();
+      const moocletId = await moocletDataService.getMoocletIdByName('Policy1');
+      expect(moocletId).toBeNull();
     });
 
     it('should throw an error when getPoliciesList fails', async () => {
-        jest.spyOn(moocletDataService, 'getPoliciesList').mockRejectedValue(new Error('Failed to fetch policies'));
+      jest.spyOn(moocletDataService, 'getPoliciesList').mockRejectedValue(new Error('Failed to fetch policies'));
 
-        await expect(moocletDataService.getMoocletIdByName('Policy1')).rejects.toThrow('Failed to fetch policies');
+      await expect(moocletDataService.getMoocletIdByName('Policy1')).rejects.toThrow('Failed to fetch policies');
     });
 
     afterAll(() => {
@@ -98,7 +110,9 @@ describe('#MoocletDataService', () => {
     });
 
     it('should throw an error when fetchExternalMoocletsData fails', async () => {
-      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockRejectedValue(new Error('Failed to fetch policies'));
+      jest
+        .spyOn(moocletDataService, 'fetchExternalMoocletsData')
+        .mockRejectedValue(new Error('Failed to fetch policies'));
 
       await expect(moocletDataService.getPoliciesList()).rejects.toThrow('Failed to fetch policies');
     });
@@ -129,7 +143,9 @@ describe('#MoocletDataService', () => {
         policy: 3,
       };
 
-      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockRejectedValue(new Error('Failed to create mooclet'));
+      jest
+        .spyOn(moocletDataService, 'fetchExternalMoocletsData')
+        .mockRejectedValue(new Error('Failed to create mooclet'));
 
       await expect(moocletDataService.postNewMooclet(mockRequestBody)).rejects.toThrow('Failed to create mooclet');
     });
@@ -139,18 +155,20 @@ describe('#MoocletDataService', () => {
     it('should return the response when the delete request is successful', async () => {
       const moocletId = 1;
       const mockResponse = { success: true };
-  
+
       jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockResolvedValue(mockResponse);
-  
+
       const response = await moocletDataService.deleteMooclet(moocletId);
       expect(response).toEqual(mockResponse);
     });
-  
+
     it('should throw an error when the delete request fails', async () => {
       const moocletId = 1;
-  
-      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockRejectedValue(new Error('Failed to delete mooclet'));
-  
+
+      jest
+        .spyOn(moocletDataService, 'fetchExternalMoocletsData')
+        .mockRejectedValue(new Error('Failed to delete mooclet'));
+
       await expect(moocletDataService.deleteMooclet(moocletId)).rejects.toThrow('Failed to delete mooclet');
     });
   });
@@ -161,33 +179,35 @@ describe('#MoocletDataService', () => {
         mooclet: 1,
         name: 'Version 1',
         text: 'This is version 1',
-        version_json: { 'key': 1 },
+        version_json: { key: 1 },
       };
-  
+
       const mockResponseDetails: MoocletVersionResponseDetails = {
         id: 1,
         mooclet: 1,
         name: 'Version 1',
         text: 'This is version 1',
-        version_json: { 'key': 1 },
+        version_json: { key: 1 },
       };
-  
+
       jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockResolvedValue(mockResponseDetails);
-  
+
       const response = await moocletDataService.postNewVersion(mockRequestBody);
       expect(response).toEqual(mockResponseDetails);
     });
-  
+
     it('should throw an error when the request fails', async () => {
       const mockRequestBody: MoocletVersionRequestBody = {
         mooclet: 1,
         name: 'Version 1',
         text: 'This is version 1',
-        version_json: { 'key': 1 },
+        version_json: { key: 1 },
       };
-  
-      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockRejectedValue(new Error('Failed to create version'));
-  
+
+      jest
+        .spyOn(moocletDataService, 'fetchExternalMoocletsData')
+        .mockRejectedValue(new Error('Failed to create version'));
+
       await expect(moocletDataService.postNewVersion(mockRequestBody)).rejects.toThrow('Failed to create version');
     });
   });
@@ -196,18 +216,20 @@ describe('#MoocletDataService', () => {
     it('should return the response when the delete request is successful', async () => {
       const versionId = 1;
       const mockResponse = { success: true };
-  
+
       jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockResolvedValue(mockResponse);
-  
+
       const response = await moocletDataService.deleteVersion(versionId);
       expect(response).toEqual(mockResponse);
     });
-  
+
     it('should throw an error when the delete request fails', async () => {
       const versionId = 1;
-  
-      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockRejectedValue(new Error('Failed to delete version'));
-  
+
+      jest
+        .spyOn(moocletDataService, 'fetchExternalMoocletsData')
+        .mockRejectedValue(new Error('Failed to delete version'));
+
       await expect(moocletDataService.deleteVersion(versionId)).rejects.toThrow('Failed to delete version');
     });
   });
@@ -224,47 +246,51 @@ describe('#MoocletDataService', () => {
       uniform_threshold: 0,
       tspostdiff_thresh: 0,
       outcome_variable_name: 'example_reward_var',
+      assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
     };
     it('should return the new policy parameters details when the request is successful', async () => {
-      
       const mockRequestBody: MoocletPolicyParametersRequestBody = {
         mooclet: 1,
         policy: 2,
-        parameters: { 
+        parameters: {
           ...mockPolicyParameters,
           assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
         },
       };
-  
+
       const mockResponseDetails: MoocletPolicyParametersResponseDetails = {
         id: 1,
         mooclet: 1,
         policy: 2,
-        parameters: { 
+        parameters: {
           ...mockPolicyParameters,
           assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
         },
       };
-  
+
       jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockResolvedValue(mockResponseDetails);
-  
+
       const response = await moocletDataService.postNewPolicyParameters(mockRequestBody);
       expect(response).toEqual(mockResponseDetails);
     });
-  
+
     it('should throw an error when the request fails', async () => {
       const mockRequestBody: MoocletPolicyParametersRequestBody = {
         mooclet: 1,
         policy: 2,
-        parameters: { 
+        parameters: {
           ...mockPolicyParameters,
           assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
         },
       };
-  
-      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockRejectedValue(new Error('Failed to create policy parameters'));
-  
-      await expect(moocletDataService.postNewPolicyParameters(mockRequestBody)).rejects.toThrow('Failed to create policy parameters');
+
+      jest
+        .spyOn(moocletDataService, 'fetchExternalMoocletsData')
+        .mockRejectedValue(new Error('Failed to create policy parameters'));
+
+      await expect(moocletDataService.postNewPolicyParameters(mockRequestBody)).rejects.toThrow(
+        'Failed to create policy parameters'
+      );
     });
   });
 
@@ -272,19 +298,23 @@ describe('#MoocletDataService', () => {
     it('should return the response when the delete request is successful', async () => {
       const policyParametersId = 1;
       const mockResponse = { success: true };
-  
+
       jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockResolvedValue(mockResponse);
-  
+
       const response = await moocletDataService.deletePolicyParameters(policyParametersId);
       expect(response).toEqual(mockResponse);
     });
-  
+
     it('should throw an error when the delete request fails', async () => {
       const policyParametersId = 1;
-  
-      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockRejectedValue(new Error('Failed to delete policy parameters'));
-  
-      await expect(moocletDataService.deletePolicyParameters(policyParametersId)).rejects.toThrow('Failed to delete policy parameters');
+
+      jest
+        .spyOn(moocletDataService, 'fetchExternalMoocletsData')
+        .mockRejectedValue(new Error('Failed to delete policy parameters'));
+
+      await expect(moocletDataService.deletePolicyParameters(policyParametersId)).rejects.toThrow(
+        'Failed to delete policy parameters'
+      );
     });
   });
 
@@ -293,7 +323,7 @@ describe('#MoocletDataService', () => {
       const mockRequestBody: MoocletVariableRequestBody = {
         name: 'New Variable',
       };
-  
+
       const mockResponseDetails: MoocletVariableResponseDetails = {
         id: 1,
         environment: null,
@@ -304,20 +334,22 @@ describe('#MoocletDataService', () => {
         value_type: 'BIN',
         sample_thres: 1,
       };
-  
+
       jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockResolvedValue(mockResponseDetails);
-  
+
       const response = await moocletDataService.postNewVariable(mockRequestBody);
       expect(response).toEqual(mockResponseDetails);
     });
-  
+
     it('should throw an error when the request fails', async () => {
       const mockRequestBody: MoocletVariableRequestBody = {
         name: 'New Variable',
       };
-  
-      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockRejectedValue(new Error('Failed to create variable'));
-  
+
+      jest
+        .spyOn(moocletDataService, 'fetchExternalMoocletsData')
+        .mockRejectedValue(new Error('Failed to create variable'));
+
       await expect(moocletDataService.postNewVariable(mockRequestBody)).rejects.toThrow('Failed to create variable');
     });
   });
@@ -330,18 +362,20 @@ describe('#MoocletDataService', () => {
     it('should return the response when the delete request is successful', async () => {
       const variableId = 1;
       const mockResponse = { success: true };
-  
+
       jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockResolvedValue(mockResponse);
-  
+
       const response = await moocletDataService.deleteVariable(variableId);
       expect(response).toEqual(mockResponse);
     });
-  
+
     it('should throw an error when the delete request fails', async () => {
       const variableId = 1;
-  
-      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockRejectedValue(new Error('Failed to delete variable'));
-  
+
+      jest
+        .spyOn(moocletDataService, 'fetchExternalMoocletsData')
+        .mockRejectedValue(new Error('Failed to delete variable'));
+
       await expect(moocletDataService.deleteVariable(variableId)).rejects.toThrow('Failed to delete variable');
     });
 
@@ -354,13 +388,13 @@ describe('#MoocletDataService', () => {
     const mockRequest: MoocletRequestBody = {
       name: 'New Mooclet',
       policy: 3,
-    }
+    };
     it('should return the response data when the request is successful', async () => {
       const mockRequestParams: MoocletProxyRequestParams = {
         method: 'POST',
         url: 'https://api.example.com/mooclet',
         apiToken: 'test-token',
-        body: { ...mockRequest},
+        body: { ...mockRequest },
       };
 
       const mockResponse = {
@@ -379,7 +413,7 @@ describe('#MoocletDataService', () => {
         method: 'POST',
         url: 'https://api.example.com/mooclet',
         apiToken: 'test-token',
-        body: { ...mockRequest},
+        body: { ...mockRequest },
       };
 
       const mockErrorResponse = {
@@ -398,7 +432,7 @@ describe('#MoocletDataService', () => {
         method: 'POST',
         url: 'https://api.example.com/mooclet',
         apiToken: 'test-token',
-        body: { ...mockRequest},
+        body: { ...mockRequest },
       };
 
       const mockError = new Error('Mock Network Error');

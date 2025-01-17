@@ -53,5 +53,5 @@ export class MoocletTSConfigurablePolicyParametersDTO extends MoocletPolicyParam
 
   @IsNotEmpty()
   @IsString()
-  outcome_variable_name= "";
+  outcome_variable_name = 'example_reward_var';
 }

@@ -11,12 +11,8 @@ describe('assignmentAlgorithmPipe', () => {
     expect(pipe.transform('hello world')).toBe('Hello World');
   });
 
-  it('should preserve TS in ts configurable', () => {
-    expect(pipe.transform('ts configurable')).toBe('TS Configurable');
-  });
-
-  it('should preserve UCB', () => {
-    expect(pipe.transform('ucb')).toBe('UCB');
+  it('should preserve TS in ts_configurable', () => {
+    expect(pipe.transform('ts_configurable')).toBe('TS Configurable');
   });
 
   it('should handle empty string', () => {

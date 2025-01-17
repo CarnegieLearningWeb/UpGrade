@@ -18,9 +18,7 @@ export enum CONDITION_ORDER {
 
 export enum ASSIGNMENT_ALGORITHM {
   RANDOM = 'random',
-  STRATIFIED_RANDOM_SAMPLING = 'stratified random sampling',
-  EPSILON_GREEDY = 'epsilon greedy',
-  UCB = 'ucb',
+  STRATIFIED_RANDOM_SAMPLING = 'stratified_random_sampling',
   MOOCLET_TS_CONFIGURABLE = 'ts_configurable',
 }
 
