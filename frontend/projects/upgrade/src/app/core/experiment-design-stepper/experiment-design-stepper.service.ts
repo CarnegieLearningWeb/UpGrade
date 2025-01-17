@@ -75,6 +75,10 @@ export class ExperimentDesignStepperService {
   );
   factorialExperimentDesignData$ = this.store$.pipe(select(selectFactorialDesignData), distinctUntilChanged(isEqual));
 
+  // Name:
+  private experimentNameSource = new BehaviorSubject<string>('');
+  currentExperimentName$ = this.experimentNameSource.asObservable();
+
   // Unit of Assignment:
   private assignmentUnitSource = new BehaviorSubject<ASSIGNMENT_UNIT>(ASSIGNMENT_UNIT.INDIVIDUAL);
   currentAssignmentUnit$ = this.assignmentUnitSource.asObservable();
@@ -141,6 +145,10 @@ export class ExperimentDesignStepperService {
     this.simpleExperimentPayloadTableData$.subscribe(this.simpleExperimentPayloadTableDataBehaviorSubject$);
     this.factorialFactorTableData$.subscribe(this.factorialFactorTableDataBehaviorSubject$);
     this.factorialLevelsTableData$.subscribe(this.factorialLevelTableDataBehaviorSubject$);
+  }
+
+  changeExperimentName(name: string) {
+    this.experimentNameSource.next(name);
   }
 
   changeAssignmentUnit(unit: ASSIGNMENT_UNIT) {

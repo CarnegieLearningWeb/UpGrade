@@ -146,6 +146,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         tags: [[]],
       });
 
+      this.overviewForm.get('experimentName').valueChanges.subscribe((name) => {
+        this.experimentDesignStepperService.changeExperimentName(name);
+      });
+
       this.overviewForm.get('unitOfAssignment').valueChanges.subscribe((assignmentUnit) => {
         this.experimentDesignStepperService.changeAssignmentUnit(assignmentUnit);
         this.overviewForm.get('consistencyRule').reset();
