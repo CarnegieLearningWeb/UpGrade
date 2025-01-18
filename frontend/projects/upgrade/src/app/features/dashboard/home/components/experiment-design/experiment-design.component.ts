@@ -64,7 +64,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITION_CODE) conditionCode: ElementRef;
 
   options = new JsonEditorOptions();
-  policyEditorError = false;
+
   experimentName: string;
 
   @ViewChild('policyEditor', { static: false }) policyEditor: JsonEditorComponent;
@@ -305,9 +305,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       try {
         const value = this.policyEditor.get();
         this.editorValue$.next(value);
-        this.policyEditorError = false;
-      } catch (e) {
-        this.policyEditorError = true;
+      } catch {
+        // Invalid JSON in editor (The [x] icon will be displayed in the editor)
       }
     };
 
