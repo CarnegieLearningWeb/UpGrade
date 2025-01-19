@@ -11,7 +11,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators, UntypedFormArray, AbstractControl } from '@angular/forms';
-import { BehaviorSubject, from, Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -25,7 +25,7 @@ import {
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
 import { v4 as uuidv4 } from 'uuid';
-import { debounceTime, filter, map, startWith, switchMap } from 'rxjs/operators';
+import { filter, map, startWith } from 'rxjs/operators';
 import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
@@ -39,11 +39,8 @@ import {
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { FACTORIAL_EXP_CONSTANTS } from './factorial-experiment-design.constants';
 import { PAYLOAD_TYPE } from '../../../../../../../../../../types/src';
-import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
-import { MOOCLET_POLICY_SCHEMA_MAP, MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
-import { validate, ValidationError } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
 import { environment } from '../../../../../../environments/environment';
+import { MoocletPolicyEditorComponent } from '../experiment-design/mooclet-policy-editor/mooclet-policy-editor.component';
 
 @Component({
   selector: 'home-factorial-experiment-design',
@@ -64,9 +61,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   @ViewChild('factorTable', { read: ElementRef }) factorTable: ElementRef;
   @ViewChild('levelTable', { read: ElementRef }) levelTable: ElementRef;
 
-  options = new JsonEditorOptions();
   experimentName: string;
-  @ViewChild('policyEditor', { static: false }) policyEditor: JsonEditorComponent;
+  @ViewChild('policyEditor') policyEditor: MoocletPolicyEditorComponent;
 
   subscriptionHandler: Subscription;
 
@@ -133,9 +129,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   // Used for displaying the Mooclet Policy Parameters JSON editor
   currentAssignmentAlgorithm$ = this.experimentDesignStepperService.currentAssignmentAlgorithm$;
   isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
-  defaultPolicyParametersForAlgorithm: MoocletTSConfigurablePolicyParametersDTO;
-  moocletPolicyParametersErrors$: BehaviorSubject<ValidationError[]> = new BehaviorSubject([]);
-  editorValue$ = new Subject<any>();
 
   constructor(
     private _formBuilder: UntypedFormBuilder,
@@ -178,7 +171,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
 
         if (this.experimentInfo.moocletPolicyParameters) {
           this.experimentInfo.moocletPolicyParameters = null;
-          this.setupMoocletPolicyParameterJsonEditor(this.experimentName);
+          if (this.policyEditor) {
+            this.policyEditor.resetPolicyParameters();
+          }
         }
       }
     }
@@ -277,66 +272,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         this.experimentName = name;
       })
     );
-
-    // Setup Mooclet policy editor when experiment type is Mooclet
-    this.subscriptionHandler.add(
-      this.isMoocletExperimentDesign$.subscribe((isMooclet) => {
-        if (isMooclet) {
-          this.setupMoocletPolicyParameterJsonEditor(this.experimentName);
-        }
-      })
-    );
-  }
-
-  setupMoocletPolicyParameterJsonEditor(experimentName: string) {
-    // Only create default parameters if we don't have existing ones
-    if (!this.experimentInfo?.moocletPolicyParameters) {
-      this.defaultPolicyParametersForAlgorithm = new MOOCLET_POLICY_SCHEMA_MAP[
-        this.currentAssignmentAlgorithm$.value
-      ]();
-      this.defaultPolicyParametersForAlgorithm.outcome_variable_name = `${experimentName
-        .toUpperCase()
-        .replace(/ /g, '_')}_REWARD_VARIABLE`;
-    } else {
-      // Use existing Mooclet policy parameters from the backend when editing an experiment
-      this.defaultPolicyParametersForAlgorithm = this.experimentInfo.moocletPolicyParameters;
-    }
-
-    this.options = new JsonEditorOptions();
-    this.options.mode = 'code';
-    this.options.statusBar = false;
-
-    // set up value change listener for the editor value
-    // this feels hacky but it ensures that editor value is always getting updated validation
-    this.options.onChange = () => {
-      try {
-        const value = this.policyEditor.get();
-        this.editorValue$.next(value);
-      } catch {
-        // Invalid JSON in editor (The [x] icon will be displayed in the editor)
-      }
-    };
-
-    // Set up validation pipeline for feedback while typing
-    // TODO: Enforce stricter validation (disallow missing props) and improve errors
-    this.editorValue$
-      .pipe(
-        debounceTime(300),
-        switchMap((jsonValue) => this.validateMoocletPolicyParameters(jsonValue))
-      )
-      .subscribe((errors) => {
-        this.moocletPolicyParametersErrors$.next(errors);
-      });
-  }
-
-  validateMoocletPolicyParameters(jsonValue: any) {
-    const ValidatorClass = MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm$.value];
-    const plainDTO = {
-      assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
-      ...jsonValue,
-    };
-    const DTOInstance = plainToInstance(ValidatorClass, plainDTO);
-    return from(validate(DTOInstance));
   }
 
   manageSiteAndTargetControls(index: number) {
@@ -631,7 +566,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.factorCountError === null &&
       this.levelCountError === null &&
       this.conditionCountError === null &&
-      this.moocletPolicyParametersErrors$.value.length === 0 &&
+      (!this.policyEditor || this.policyEditor.getPolicyEditorErrors().length === 0) &&
       !this.experimentDesignStepperService.checkConditionTableValidity()
     );
   }
@@ -845,7 +780,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
             this.policyEditor && {
               moocletPolicyParameters: {
                 assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
-                ...this.policyEditor.get(),
+                ...this.policyEditor.getPolicyEditorValue(),
               },
             }),
         },
