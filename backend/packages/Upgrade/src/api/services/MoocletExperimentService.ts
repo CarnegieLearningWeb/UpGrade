@@ -506,6 +506,25 @@ export class MoocletExperimentService extends ExperimentService {
     return moocletExperimentRef;
   }
 
+  public async getPolicyParametersByMoocletRef(
+    moocletExperimentRef: MoocletExperimentRef
+  ): Promise<MoocletPolicyParametersResponseDetails | null> {
+    if (!moocletExperimentRef?.policyParametersId) {
+      return null;
+    }
+
+    try {
+      return await this.moocletDataService.getPolicyParameters(moocletExperimentRef.policyParametersId);
+    } catch (error) {
+      logger.error({
+        message: 'Error fetching mooclet policy parameters',
+        error,
+        moocletExperimentRef,
+      });
+      return null;
+    }
+  }
+
   // NOTE: will do mooclet condition assignment changes in follow-up PR
 
   // public async getConditionFromMoocletProxy(moocletExperimentRef: MoocletExperimentRef, userId: string): Promise<ExperimentCondition> {

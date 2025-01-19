@@ -131,6 +131,16 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     return this.environment.metricAnalyticsExperimentDisplayToggle;
   }
 
+  get displayMoocletParameters() {
+    if (!this.experiment?.moocletPolicyParameters) {
+      return null;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { assignmentAlgorithm, ...rest } = this.experiment.moocletPolicyParameters;
+    return rest;
+  }
+
   ngOnInit() {
     this.isLoadingExperimentDetailStats$ = this.experimentService.isLoadingExperimentDetailStats$;
     this.isPollingExperimentDetailStats$ = this.experimentService.isPollingExperimentDetailStats$;

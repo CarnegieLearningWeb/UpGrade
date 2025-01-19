@@ -828,11 +828,46 @@ export class ExperimentController {
    */
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public one(
+  public async one(
     @Params({ validate: true }) { id }: ExperimentIdValidator,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
-    return this.experimentService.getSingleExperiment(id, request.logger);
+    if (!id) {
+      return undefined;
+    }
+
+    let experimentDTO = await this.experimentService.getSingleExperiment(id, request.logger);
+    if (!experimentDTO) {
+      return undefined;
+    }
+
+    // Only attempt to fetch mooclet data if mooclets are enabled
+    if (env.mooclets?.enabled && this.moocletExperimentService) {
+      try {
+        const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(
+          id
+        );
+
+        if (moocletExperimentRef) {
+          const policyParameters = await this.moocletExperimentService.getPolicyParametersByMoocletRef(
+            moocletExperimentRef
+          );
+          if (policyParameters?.parameters) {
+            experimentDTO = {
+              ...experimentDTO,
+              moocletPolicyParameters: policyParameters.parameters
+            };
+          }
+        }
+      } catch (error) {
+        request.logger.error({
+          message: 'Error fetching mooclet policy parameters',
+          error,
+          experimentId: id,
+        });
+      }
+    }
+    return experimentDTO;
   }
 
   /**

@@ -26,6 +26,25 @@ export class MoocletDataService {
    * EXTERNAL DATA FETCHING METHODS
    */
 
+  public async getPolicyParameters(policyParametersId: number): Promise<MoocletPolicyParametersResponseDetails> {
+    if (!policyParametersId) return null;
+    const logger = new UpgradeLogger('MoocletDataService');
+    const endpoint = `/policyparameters/${policyParametersId}`;
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'GET',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+    };
+
+    try {
+      const response = await this.fetchExternalMoocletsData(requestParams);
+      return response;
+    } catch (err) {
+      logger.error({ message: `Failed to fetch policy parameters from Mooclet: ${err}` });
+      return null;
+    }
+  }
+
   public async getMoocletIdByName(policyName: string): Promise<number> {
     const response: MoocletBatchResponse<MoocletPolicyResponseDetails> = await this.getPoliciesList();
     let matchedPolicy: MoocletPolicyResponseDetails = null;
