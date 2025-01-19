@@ -39,6 +39,7 @@ import { FactorialExperimentDesignComponent } from './components/factorial-exper
 import { ConditionsTableComponent } from './components/factorial-experiment-design/conditions-table/conditions-table.component';
 import { NgJsonEditorModule } from 'ang-jsoneditor';
 import { assignmentAlgorithmPipe } from '../../../shared/pipes/assignment-algorithm.pipe';
+import { MoocletPolicyEditorComponent } from './components/experiment-design/mooclet-policy-editor/mooclet-policy-editor.component';
 
 @NgModule({
   declarations: [
@@ -69,6 +70,7 @@ import { assignmentAlgorithmPipe } from '../../../shared/pipes/assignment-algori
     PayloadsTableComponent,
     FactorialExperimentDesignComponent,
     ConditionsTableComponent,
+    MoocletPolicyEditorComponent,
     assignmentAlgorithmPipe,
   ],
   imports: [
