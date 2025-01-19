@@ -64,9 +64,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITION_CODE) conditionCode: ElementRef;
 
   options = new JsonEditorOptions();
-
   experimentName: string;
-
   @ViewChild('policyEditor', { static: false }) policyEditor: JsonEditorComponent;
 
   subscriptionHandler: Subscription;
@@ -177,6 +175,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.experimentInfo.partitions = [];
         this.experimentInfo.conditions = [];
         this.experimentInfo.conditionPayloads = [];
+
+        if (this.experimentInfo.moocletPolicyParameters) {
+          this.experimentInfo.moocletPolicyParameters = null;
+          this.setupMoocletPolicyParameterJsonEditor(this.experimentName);
+        }
       }
     }
 
@@ -291,10 +294,19 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   setupMoocletPolicyParameterJsonEditor(experimentName: string) {
-    this.defaultPolicyParametersForAlgorithm = new MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm$.value]();
-    this.defaultPolicyParametersForAlgorithm.outcome_variable_name = `${experimentName
-      .toUpperCase()
-      .replace(/ /g, '_')}_REWARD_VARIABLE`;
+    // Only create default parameters if we don't have existing ones
+    if (!this.experimentInfo?.moocletPolicyParameters) {
+      this.defaultPolicyParametersForAlgorithm = new MOOCLET_POLICY_SCHEMA_MAP[
+        this.currentAssignmentAlgorithm$.value
+      ]();
+      this.defaultPolicyParametersForAlgorithm.outcome_variable_name = `${experimentName
+        .toUpperCase()
+        .replace(/ /g, '_')}_REWARD_VARIABLE`;
+    } else {
+      // Use existing parameters from backend (When editing)
+      this.defaultPolicyParametersForAlgorithm = this.experimentInfo.moocletPolicyParameters;
+    }
+
     this.options = new JsonEditorOptions();
     this.options.mode = 'code';
     this.options.statusBar = false;

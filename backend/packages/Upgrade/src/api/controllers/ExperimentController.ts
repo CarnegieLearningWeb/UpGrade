@@ -855,7 +855,7 @@ export class ExperimentController {
           if (policyParameters?.parameters) {
             experimentDTO = {
               ...experimentDTO,
-              moocletPolicyParameters: policyParameters.parameters
+              moocletPolicyParameters: policyParameters.parameters,
             };
           }
         }
