@@ -170,7 +170,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         this.experimentInfo.conditionPayloads = [];
 
         if (this.experimentInfo.moocletPolicyParameters) {
-          this.experimentInfo.moocletPolicyParameters = null;
           if (this.policyEditor) {
             this.policyEditor.resetPolicyParameters();
           }
