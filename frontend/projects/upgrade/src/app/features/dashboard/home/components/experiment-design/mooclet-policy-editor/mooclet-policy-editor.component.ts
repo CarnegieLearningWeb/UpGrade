@@ -34,6 +34,7 @@ export class MoocletPolicyEditorComponent implements OnInit {
     if (!this.experimentInfo?.moocletPolicyParameters) {
       this.defaultPolicyParametersForAlgorithm = new MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm]();
       this.defaultPolicyParametersForAlgorithm.outcome_variable_name = `${this.experimentName
+        .trim()
         .toUpperCase()
         .replace(/ /g, '_')}_REWARD_VARIABLE`;
     } else {
@@ -68,6 +69,7 @@ export class MoocletPolicyEditorComponent implements OnInit {
   resetPolicyParameters() {
     this.defaultPolicyParametersForAlgorithm = new MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm]();
     this.defaultPolicyParametersForAlgorithm.outcome_variable_name = `${this.experimentName
+      .trim()
       .toUpperCase()
       .replace(/ /g, '_')}_REWARD_VARIABLE`;
 
