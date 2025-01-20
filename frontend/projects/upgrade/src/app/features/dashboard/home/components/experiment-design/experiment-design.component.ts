@@ -170,7 +170,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.experimentInfo.conditionPayloads = [];
 
         if (this.experimentInfo.moocletPolicyParameters) {
-          this.experimentInfo.moocletPolicyParameters = null;
           if (this.policyEditor) {
             this.policyEditor.resetPolicyParameters();
           }
