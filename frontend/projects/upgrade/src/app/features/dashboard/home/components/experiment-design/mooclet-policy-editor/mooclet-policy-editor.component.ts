@@ -38,14 +38,15 @@ export class MoocletPolicyEditorComponent implements OnInit {
         .toUpperCase()
         .replace(/ /g, '_')}_REWARD_VARIABLE`;
     } else {
-      // Use existing parameters from backend (When editing)
+      // Use existing parameters from backend when editing
       this.defaultPolicyParametersForAlgorithm = this.experimentInfo.moocletPolicyParameters;
     }
 
     this.options.mode = 'code';
     this.options.statusBar = false;
 
-    // set up value change listener for the editor value
+    // Set up value change listener for the editor value
+    // This feels hacky but it ensures that editor value is always getting updated validation
     this.options.onChange = () => {
       try {
         const value = this.policyEditor.get();
@@ -56,6 +57,7 @@ export class MoocletPolicyEditorComponent implements OnInit {
     };
 
     // Set up validation pipeline for feedback while typing
+    // TODO: Enforce stricter validation (disallow missing props) and improve errors
     this.editorValue$
       .pipe(
         debounceTime(300),
