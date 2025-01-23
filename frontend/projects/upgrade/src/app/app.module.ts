@@ -8,7 +8,7 @@ import { CoreModule } from './core/core.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { SimpleNotificationsModule } from 'angular2-notifications';
 import { environment } from '../environments/environment';
 import { ENV, Environment, RuntimeEnvironmentConfig } from '../environments/environment-types';
@@ -41,39 +41,32 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
       });
 };
 
-@NgModule({
-  imports: [
-    // angular
-    BrowserAnimationsModule,
-    BrowserModule,
-    // global configuration for notification
-    SimpleNotificationsModule.forRoot({
-      position: ['bottom', 'center'],
-      timeOut: 4000,
-      showProgressBar: false,
-      pauseOnHover: true,
-      clickToClose: false,
-    }),
-
-    // core & shared
-    CoreModule,
-    SharedModule,
-
-    // app
-    AppRoutingModule,
-    FormsModule,
-    HttpClientModule,
-  ],
-  providers: [
-    { provide: ENV, useValue: environment },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: getEnvironmentConfig,
-      multi: true,
-      deps: [HttpClient, ENV],
-    },
-  ],
-  declarations: [AppComponent],
-  bootstrap: [AppComponent],
-})
+@NgModule({ declarations: [AppComponent],
+    bootstrap: [AppComponent], imports: [
+        // angular
+        BrowserAnimationsModule,
+        BrowserModule,
+        // global configuration for notification
+        SimpleNotificationsModule.forRoot({
+            position: ['bottom', 'center'],
+            timeOut: 4000,
+            showProgressBar: false,
+            pauseOnHover: true,
+            clickToClose: false,
+        }),
+        // core & shared
+        CoreModule,
+        SharedModule,
+        // app
+        AppRoutingModule,
+        FormsModule], providers: [
+        { provide: ENV, useValue: environment },
+        {
+            provide: APP_INITIALIZER,
+            useFactory: getEnvironmentConfig,
+            multi: true,
+            deps: [HttpClient, ENV],
+        },
+        provideHttpClient(withInterceptorsFromDi()),
+    ] })
 export class AppModule {}

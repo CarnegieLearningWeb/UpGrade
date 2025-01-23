@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule, Optional, SkipSelf, ErrorHandler } from '@angular/core';
-import { HttpClientModule, HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpClient, HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { StoreRouterConnectingModule, RouterStateSerializer } from '@ngrx/router-store';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
@@ -39,57 +39,49 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
   return new TranslateHttpLoader(http, `${environment.baseHrefPrefix}/assets/i18n/`, '.json');
 }
 
-@NgModule({
-  imports: [
-    // angular
-    CommonModule,
-    HttpClientModule,
-
-    // Store Modules
-    AuthModule,
-    SettingsModule,
-    ExperimentsModule,
-    ExperimentDesignStepperModule,
-    LogsModule,
-    ExperimentUsersModule,
-    PreviewUsersModule,
-    StratificationFactorsModule,
-    UsersModule,
-    FeatureFlagsModule,
-    SegmentsModule,
-    AnalysisModule,
-
-    // ngrx
-    StoreModule.forRoot(reducers, { metaReducers }),
-    StoreRouterConnectingModule.forRoot(),
-    EffectsModule.forRoot([]),
-    environment.production
-      ? []
-      : StoreDevtoolsModule.instrument({
-          name: 'AB Testing Starter',
-        }),
-
-    // 3rd party
-    TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: HttpLoaderFactory,
-        deps: [HttpClient, ENV],
-      },
-    }),
-  ],
-  declarations: [],
-  providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: BaseUrlInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: HttpCancelInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: CloseModalInterceptor, multi: true },
-    { provide: ErrorHandler, useClass: AppErrorHandler },
-    { provide: RouterStateSerializer, useClass: CustomSerializer },
-  ],
-  exports: [TranslateModule],
-})
+@NgModule({ declarations: [],
+    exports: [TranslateModule], imports: [
+        // angular
+        CommonModule,
+        // Store Modules
+        AuthModule,
+        SettingsModule,
+        ExperimentsModule,
+        ExperimentDesignStepperModule,
+        LogsModule,
+        ExperimentUsersModule,
+        PreviewUsersModule,
+        StratificationFactorsModule,
+        UsersModule,
+        FeatureFlagsModule,
+        SegmentsModule,
+        AnalysisModule,
+        // ngrx
+        StoreModule.forRoot(reducers, { metaReducers }),
+        StoreRouterConnectingModule.forRoot(),
+        EffectsModule.forRoot([]),
+        environment.production
+            ? []
+            : StoreDevtoolsModule.instrument({
+                name: 'AB Testing Starter',
+            }),
+        // 3rd party
+        TranslateModule.forRoot({
+            loader: {
+                provide: TranslateLoader,
+                useFactory: HttpLoaderFactory,
+                deps: [HttpClient, ENV],
+            },
+        })], providers: [
+        { provide: HTTP_INTERCEPTORS, useClass: BaseUrlInterceptor, multi: true },
+        { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
+        { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptor, multi: true },
+        { provide: HTTP_INTERCEPTORS, useClass: HttpCancelInterceptor, multi: true },
+        { provide: HTTP_INTERCEPTORS, useClass: CloseModalInterceptor, multi: true },
+        { provide: ErrorHandler, useClass: AppErrorHandler },
+        { provide: RouterStateSerializer, useClass: CustomSerializer },
+        provideHttpClient(withInterceptorsFromDi()),
+    ] })
 export class CoreModule {
   constructor(
     @Optional()
