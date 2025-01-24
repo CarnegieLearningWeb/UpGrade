@@ -756,6 +756,12 @@
               </mat-table>
             </ng-container>
           </div>
+
+          <!-- Mooclet Policy Parameters JSON Viewer -->
+          <div class="json-viewer-container" *ngIf="experiment.moocletPolicyParameters">
+            <span class="ft-24-700">{{ 'home.view-experiment.experiment-mooclet-policy-parameters-title.text' | translate }}</span>
+            <pre class="ft-12-600">{{ displayMoocletParameters | json }}</pre>
+          </div>
         </div>
       </mat-tab>
 

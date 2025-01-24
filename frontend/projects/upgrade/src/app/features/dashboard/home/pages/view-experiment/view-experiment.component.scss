@@ -254,7 +254,7 @@ $font-size-small: 15px;
     padding: 0px !important;
   }
 
-  .table-container {
+  .table-container, .json-viewer-container {
     padding: 24px 34px;
 
     &-partition {
@@ -367,6 +367,13 @@ $font-size-small: 15px;
       mat-header-cell {
         color: var(--grey-2);
       }
+    }
+
+    pre {
+      padding: 16px 8px 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      -webkit-font-smoothing: antialiased;
     }
   }
 

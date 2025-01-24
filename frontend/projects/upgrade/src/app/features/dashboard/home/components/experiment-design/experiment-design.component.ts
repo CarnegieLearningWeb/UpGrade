@@ -311,6 +311,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     };
 
     // Set up validation pipeline for feedback while typing
+    // TODO: Enforce stricter validation (disallow missing props) and improve errors
     this.editorValue$
       .pipe(
         debounceTime(300),
