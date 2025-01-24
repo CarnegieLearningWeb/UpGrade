@@ -59,8 +59,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.DECISION_POINTS, { read: ElementRef }) decisionPointTable: ElementRef;
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITIONS, { read: ElementRef }) conditionTable: ElementRef;
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITION_CODE) conditionCode: ElementRef;
-
-  experimentName: string;
   @ViewChild('policyEditor') policyEditor: MoocletPolicyEditorComponent;
 
   subscriptionHandler: Subscription;
@@ -105,6 +103,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   equalWeightFlag = true;
   isExperimentEditable = true;
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
+
+  // Experiment name
+  currentExperimentName$ = this.experimentDesignStepperService.currentExperimentName$;
 
   // Decision Point table store references
   previousDecisionPointTableRowDataBehaviorSubject$ = new BehaviorSubject<DecisionPointsTableRowData>(null);
@@ -269,13 +270,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.decisionPoints.controls.forEach((_, index) => {
       this.manageSiteAndTargetControls(index);
     });
-
-    // Store current experiment name from Overview step for Mooclet configuration
-    this.subscriptionHandler.add(
-      this.experimentDesignStepperService.currentExperimentName$.subscribe((name) => {
-        this.experimentName = name;
-      })
-    );
   }
 
   manageConditionCodeControl(index: number) {

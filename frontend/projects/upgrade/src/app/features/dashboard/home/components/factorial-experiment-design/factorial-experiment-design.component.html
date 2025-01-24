@@ -772,7 +772,7 @@
               <app-mooclet-policy-editor
                 *ngIf="isMoocletExperimentDesign$ | async"
                 [experimentInfo]="experimentInfo"
-                [experimentName]="experimentName"
+                [experimentName]="currentExperimentName$ | async"
                 [currentAssignmentAlgorithm]="currentAssignmentAlgorithm$.value"
                 #policyEditor
               ></app-mooclet-policy-editor>

@@ -60,8 +60,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   @ViewChild('decisionPointTable', { read: ElementRef }) decisionPointTable: ElementRef;
   @ViewChild('factorTable', { read: ElementRef }) factorTable: ElementRef;
   @ViewChild('levelTable', { read: ElementRef }) levelTable: ElementRef;
-
-  experimentName: string;
   @ViewChild('policyEditor') policyEditor: MoocletPolicyEditorComponent;
 
   subscriptionHandler: Subscription;
@@ -104,6 +102,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   isExperimentEditable = true;
   // common lock variable for all tables:
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
+
+  // Experiment name
+  currentExperimentName$ = this.experimentDesignStepperService.currentExperimentName$;
 
   // Decision Point table store references
   previousDecisionPointTableRowDataBehaviorSubject$ = new BehaviorSubject<DecisionPointsTableRowData>(null);
@@ -264,13 +265,6 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
     this.factorialExperimentDesignForm.get('factors').valueChanges.subscribe(() => {
       this.conditionTableDataUpToDate = false;
     });
-
-    // Store current experiment name from Overview step for Mooclet configuration
-    this.subscriptionHandler.add(
-      this.experimentDesignStepperService.currentExperimentName$.subscribe((name) => {
-        this.experimentName = name;
-      })
-    );
   }
 
   manageSiteAndTargetControls(index: number) {
