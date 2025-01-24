@@ -11,7 +11,7 @@ export class stratificationFactorFeature1696498128121 implements MigrationInterf
       `CREATE TABLE "user_stratification_factor" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "stratificationFactorValue" character varying NOT NULL, "userId" character varying NOT NULL, "factorName" character varying NOT NULL, CONSTRAINT "PK_17c5f1a852052b6800e15febbd6" PRIMARY KEY ("userId", "factorName"))`
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."experiment_assignmentalgorithm_enum" AS ENUM('random', 'stratified_random_sampling')`
+      `CREATE TYPE "public"."experiment_assignmentalgorithm_enum" AS ENUM('random', 'stratified random sampling')`
     );
     await queryRunner.query(
       `ALTER TABLE "public"."experiment" ADD "assignmentAlgorithm" "public"."experiment_assignmentalgorithm_enum" NOT NULL DEFAULT 'random'`
