@@ -284,6 +284,13 @@
         color: var(--light-blue);
       }
     }
+
+    .json-editor-container {
+      display: flex;
+      flex-direction: column;
+      row-gap: 8px;
+      margin-bottom: 32px;
+    }
   }
 
   .level-container {
