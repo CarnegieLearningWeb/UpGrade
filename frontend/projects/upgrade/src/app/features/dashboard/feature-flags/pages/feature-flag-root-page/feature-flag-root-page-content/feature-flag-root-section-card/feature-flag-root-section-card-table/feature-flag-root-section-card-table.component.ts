@@ -18,21 +18,20 @@ import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types';
 
 @Component({
-  selector: 'app-feature-flag-root-section-card-table',
-  standalone: true,
-  imports: [
-    MatTableModule,
-    AsyncPipe,
-    NgIf,
-    NgFor,
-    SharedModule,
-    UpperCasePipe,
-    RouterModule,
-    CommonStatusIndicatorChipComponent,
-  ],
-  templateUrl: './feature-flag-root-section-card-table.component.html',
-  styleUrl: './feature-flag-root-section-card-table.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-feature-flag-root-section-card-table',
+    imports: [
+        MatTableModule,
+        AsyncPipe,
+        NgIf,
+        NgFor,
+        SharedModule,
+        UpperCasePipe,
+        RouterModule,
+        CommonStatusIndicatorChipComponent,
+    ],
+    templateUrl: './feature-flag-root-section-card-table.component.html',
+    styleUrl: './feature-flag-root-section-card-table.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   @Input() dataSource$: MatTableDataSource<FeatureFlag>;

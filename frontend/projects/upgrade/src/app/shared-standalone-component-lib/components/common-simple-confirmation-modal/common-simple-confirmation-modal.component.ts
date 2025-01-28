@@ -49,12 +49,11 @@ import { CommonModalConfig, SimpleConfirmationModalParams } from '../common-moda
  *
  */
 @Component({
-  selector: 'common-simple-confirmation-modal',
-  standalone: true,
-  imports: [CommonModalComponent, MatDialogTitle, MatDialogContent, MatDialogClose, TranslateModule, CommonModule],
-  templateUrl: './common-simple-confirmation-modal.component.html',
-  styleUrl: './common-simple-confirmation-modal.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'common-simple-confirmation-modal',
+    imports: [CommonModalComponent, MatDialogTitle, MatDialogContent, MatDialogClose, TranslateModule, CommonModule],
+    templateUrl: './common-simple-confirmation-modal.component.html',
+    styleUrl: './common-simple-confirmation-modal.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CommonSimpleConfirmationModalComponent {
   constructor(

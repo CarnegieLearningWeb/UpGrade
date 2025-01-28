@@ -25,9 +25,10 @@ enum ExperimentFilterType {
 const INDIVIDUAL = 'individual';
 
 @Component({
-  selector: 'home-enrollment-over-time',
-  templateUrl: './enrollment-over-time.component.html',
-  styleUrls: ['./enrollment-over-time.component.scss'],
+    selector: 'home-enrollment-over-time',
+    templateUrl: './enrollment-over-time.component.html',
+    styleUrls: ['./enrollment-over-time.component.scss'],
+    standalone: false
 })
 export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy {
   @Input() experiment: ExperimentVM;

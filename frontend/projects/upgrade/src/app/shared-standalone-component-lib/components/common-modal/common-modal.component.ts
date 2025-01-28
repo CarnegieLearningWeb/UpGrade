@@ -9,24 +9,23 @@ import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
-  selector: 'app-common-dialog',
-  standalone: true,
-  imports: [
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    FormsModule,
-    MatButtonModule,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
-    MatDialogClose,
-    CommonModule,
-    NgTemplateOutlet,
-    MatIcon,
-  ],
-  templateUrl: './common-modal.component.html',
-  styleUrl: './common-modal.component.scss',
+    selector: 'app-common-dialog',
+    imports: [
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        FormsModule,
+        MatButtonModule,
+        MatDialogTitle,
+        MatDialogContent,
+        MatDialogActions,
+        MatDialogClose,
+        CommonModule,
+        NgTemplateOutlet,
+        MatIcon,
+    ],
+    templateUrl: './common-modal.component.html',
+    styleUrl: './common-modal.component.scss'
 })
 export class CommonModalComponent {
   @Input() title = '';

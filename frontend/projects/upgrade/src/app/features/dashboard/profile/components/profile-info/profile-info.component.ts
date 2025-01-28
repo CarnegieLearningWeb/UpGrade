@@ -15,9 +15,10 @@ import { NewUserComponent } from '../modals/new-user/new-user.component';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 
 @Component({
-  selector: 'profile-info',
-  templateUrl: './profile-info.component.html',
-  styleUrls: ['./profile-info.component.scss'],
+    selector: 'profile-info',
+    templateUrl: './profile-info.component.html',
+    styleUrls: ['./profile-info.component.scss'],
+    standalone: false
 })
 export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('profileInfoContainer') profileInfoContainer: ElementRef;

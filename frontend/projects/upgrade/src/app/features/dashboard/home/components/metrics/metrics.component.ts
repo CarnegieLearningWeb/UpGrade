@@ -24,10 +24,11 @@ import { TranslateService } from '@ngx-translate/core';
 import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
-  selector: 'home-monitored-metrics',
-  templateUrl: './metrics.component.html',
-  styleUrls: ['./metrics.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'home-monitored-metrics',
+    templateUrl: './metrics.component.html',
+    styleUrls: ['./metrics.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

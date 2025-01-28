@@ -26,10 +26,11 @@ import {
 } from '../../../../../core/segments/store/segments.model';
 
 @Component({
-  selector: 'segment-members',
-  templateUrl: './segment-members.component.html',
-  styleUrls: ['./segment-members.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'segment-members',
+    templateUrl: './segment-members.component.html',
+    styleUrls: ['./segment-members.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SegmentMembersComponent implements OnInit, OnChanges {
   @Input() segmentInfo: Segment;

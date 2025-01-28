@@ -17,12 +17,11 @@ import { RouterModule } from '@angular/router';
  * ```
  */
 @Component({
-  selector: 'app-common-details-page-header',
-  standalone: true,
-  imports: [CommonModule, TranslateModule, MatButton, RouterModule],
-  templateUrl: './common-details-page-header.component.html',
-  styleUrl: './common-details-page-header.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-common-details-page-header',
+    imports: [CommonModule, TranslateModule, MatButton, RouterModule],
+    templateUrl: './common-details-page-header.component.html',
+    styleUrl: './common-details-page-header.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CommonDetailsPageHeaderComponent {
   @Input() rootName!: string;

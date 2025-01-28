@@ -5,10 +5,11 @@ import {
 } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-delete-stratification',
-  templateUrl: './delete-stratification.component.html',
-  styleUrls: ['./delete-stratification.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-delete-stratification',
+    templateUrl: './delete-stratification.component.html',
+    styleUrls: ['./delete-stratification.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class DeleteStratificationComponent {
   message: boolean;

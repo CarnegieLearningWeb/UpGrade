@@ -9,10 +9,11 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'experiment-export',
-  templateUrl: './export-experiment.component.html',
-  styleUrls: ['./export-experiment.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'experiment-export',
+    templateUrl: './export-experiment.component.html',
+    styleUrls: ['./export-experiment.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ExportModalComponent implements OnInit {
   exportMethod = [];

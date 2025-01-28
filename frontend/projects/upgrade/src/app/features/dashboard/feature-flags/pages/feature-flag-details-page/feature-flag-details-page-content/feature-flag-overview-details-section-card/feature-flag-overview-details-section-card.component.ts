@@ -23,20 +23,19 @@ import { Router } from '@angular/router';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 @Component({
-  selector: 'app-feature-flag-overview-details-section-card',
-  standalone: true,
-  imports: [
-    CommonModule,
-    CommonSectionCardComponent,
-    CommonSectionCardTitleHeaderComponent,
-    CommonSectionCardActionButtonsComponent,
-    CommonSectionCardOverviewDetailsComponent,
-    FeatureFlagOverviewDetailsFooterComponent,
-    TranslateModule,
-  ],
-  templateUrl: './feature-flag-overview-details-section-card.component.html',
-  styleUrl: './feature-flag-overview-details-section-card.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-feature-flag-overview-details-section-card',
+    imports: [
+        CommonModule,
+        CommonSectionCardComponent,
+        CommonSectionCardTitleHeaderComponent,
+        CommonSectionCardActionButtonsComponent,
+        CommonSectionCardOverviewDetailsComponent,
+        FeatureFlagOverviewDetailsFooterComponent,
+        TranslateModule,
+    ],
+    templateUrl: './feature-flag-overview-details-section-card.component.html',
+    styleUrl: './feature-flag-overview-details-section-card.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, OnDestroy {
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();

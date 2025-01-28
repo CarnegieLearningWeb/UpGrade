@@ -41,10 +41,11 @@ import { FACTORIAL_EXP_CONSTANTS } from './factorial-experiment-design.constants
 import { PAYLOAD_TYPE } from '../../../../../../../../../../types/src';
 
 @Component({
-  selector: 'home-factorial-experiment-design',
-  templateUrl: './factorial-experiment-design.component.html',
-  styleUrls: ['./factorial-experiment-design.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'home-factorial-experiment-design',
+    templateUrl: './factorial-experiment-design.component.html',
+    styleUrls: ['./factorial-experiment-design.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class FactorialExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

@@ -6,10 +6,11 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ExperimentStatusComponent } from '../experiment-status/experiment-status.component';
 
 @Component({
-  selector: 'home-post-experiment-rule',
-  templateUrl: './post-experiment-rule.component.html',
-  styleUrls: ['./post-experiment-rule.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'home-post-experiment-rule',
+    templateUrl: './post-experiment-rule.component.html',
+    styleUrls: ['./post-experiment-rule.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class PostExperimentRuleComponent implements OnInit {
   experimentInfo: ExperimentVM;

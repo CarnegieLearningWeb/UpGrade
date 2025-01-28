@@ -40,10 +40,11 @@ import { StratificationFactorsService } from '../../../../../core/stratification
 import { ENV, Environment } from '../../../../../../environments/environment-types';
 
 @Component({
-  selector: 'home-experiment-overview',
-  templateUrl: './experiment-overview.component.html',
-  styleUrls: ['./experiment-overview.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'home-experiment-overview',
+    templateUrl: './experiment-overview.component.html',
+    styleUrls: ['./experiment-overview.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

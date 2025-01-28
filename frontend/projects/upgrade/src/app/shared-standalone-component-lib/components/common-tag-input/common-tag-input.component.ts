@@ -36,26 +36,25 @@ import { BehaviorSubject, from, mergeMap, Observable, reduce } from 'rxjs';
 // ></app-common-tags-input>
 
 @Component({
-  selector: 'app-common-tags-input',
-  templateUrl: './common-tag-input.component.html',
-  styleUrls: ['./common-tag-input.component.scss'],
-  standalone: true,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => CommonTagsInputComponent),
-      multi: true,
-    },
-  ],
-  imports: [
-    CommonModule,
-    MatChipsModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    TranslateModule,
-    CommonImportContainerComponent,
-  ],
+    selector: 'app-common-tags-input',
+    templateUrl: './common-tag-input.component.html',
+    styleUrls: ['./common-tag-input.component.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => CommonTagsInputComponent),
+            multi: true,
+        },
+    ],
+    imports: [
+        CommonModule,
+        MatChipsModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        TranslateModule,
+        CommonImportContainerComponent,
+    ]
 })
 export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
   @Input() inputType: CommonTagInputType = CommonTagInputType.TAGS;

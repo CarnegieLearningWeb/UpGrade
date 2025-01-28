@@ -8,7 +8,8 @@ export enum ExperimentStatePipeType {
 }
 
 @Pipe({
-  name: 'experimentState',
+    name: 'experimentState',
+    standalone: false
 })
 export class ExperimentStatePipe implements PipeTransform {
   transform(

@@ -5,10 +5,11 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
 import { ExperimentStatePipeType } from '../../../../../../shared/pipes/experiment-state.pipe';
 import { EXPERIMENT_STATE } from '../../../../../../core/experiments/store/experiments.model';
 @Component({
-  selector: 'app-segment-experiment-list',
-  templateUrl: './segment-experiment-list.component.html',
-  styleUrls: ['./segment-experiment-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-segment-experiment-list',
+    templateUrl: './segment-experiment-list.component.html',
+    styleUrls: ['./segment-experiment-list.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SegmentExperimentListComponent implements OnInit {
   segmentExperimentListDisplayedColumns = ['experimentName', 'type', 'experimentState', 'usedList'];

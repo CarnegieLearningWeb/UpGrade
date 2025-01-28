@@ -9,9 +9,10 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { UserRole } from 'upgrade_types';
 
 @Component({
-  selector: 'users-preview-user',
-  templateUrl: './preview-user.component.html',
-  styleUrls: ['./preview-user.component.scss'],
+    selector: 'users-preview-user',
+    templateUrl: './preview-user.component.html',
+    styleUrls: ['./preview-user.component.scss'],
+    standalone: false
 })
 export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions: UserPermission;

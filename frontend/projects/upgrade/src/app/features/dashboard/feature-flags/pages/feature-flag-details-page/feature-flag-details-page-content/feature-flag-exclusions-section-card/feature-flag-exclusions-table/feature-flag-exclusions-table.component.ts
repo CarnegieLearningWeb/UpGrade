@@ -7,12 +7,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 
 @Component({
-  selector: 'app-feature-flag-exclusions-table',
-  standalone: true,
-  templateUrl: './feature-flag-exclusions-table.component.html',
-  styleUrl: './feature-flag-exclusions-table.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonDetailsParticipantListTableComponent, CommonModule, TranslateModule],
+    selector: 'app-feature-flag-exclusions-table',
+    templateUrl: './feature-flag-exclusions-table.component.html',
+    styleUrl: './feature-flag-exclusions-table.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [CommonDetailsParticipantListTableComponent, CommonModule, TranslateModule]
 })
 export class FeatureFlagExclusionsTableComponent {
   @Input() actionsDisabled?: boolean = false;

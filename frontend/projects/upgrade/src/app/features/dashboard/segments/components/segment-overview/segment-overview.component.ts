@@ -13,10 +13,11 @@ import { SEGMENT_TYPE } from 'upgrade_types';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 
 @Component({
-  selector: 'segment-overview',
-  templateUrl: './segment-overview.component.html',
-  styleUrls: ['./segment-overview.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'segment-overview',
+    templateUrl: './segment-overview.component.html',
+    styleUrls: ['./segment-overview.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SegmentOverviewComponent implements OnInit, OnDestroy {
   @Input() segmentInfo: Segment;

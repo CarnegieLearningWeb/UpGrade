@@ -19,12 +19,15 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/upgrade",
+            "outputPath": {
+              "base": "dist/upgrade"
+            },
             "index": "projects/upgrade/src/index.html",
-            "main": "projects/upgrade/src/main.ts",
-            "polyfills": "projects/upgrade/src/polyfills.ts",
+            "polyfills": [
+              "projects/upgrade/src/polyfills.ts"
+            ],
             "tsConfig": "projects/upgrade/tsconfig.app.json",
             "assets": [
               "projects/upgrade/src/favicon.ico",
@@ -32,11 +35,11 @@
             ],
             "styles": ["projects/upgrade/src/styles.scss"],
             "scripts": [],
-            "vendorChunk": true,
             "extractLicenses": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true
+            "namedChunks": true,
+            "browser": "projects/upgrade/src/main.ts"
           },
           "configurations": {
             "beanstalk": {
@@ -51,7 +54,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",
@@ -92,7 +94,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",
@@ -133,7 +134,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",
@@ -174,7 +174,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",
@@ -215,7 +214,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",
@@ -256,7 +254,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",
@@ -297,7 +294,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",

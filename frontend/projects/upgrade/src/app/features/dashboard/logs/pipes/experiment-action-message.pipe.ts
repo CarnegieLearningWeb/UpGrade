@@ -2,7 +2,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { LOG_TYPE } from 'upgrade_types';
 
 @Pipe({
-  name: 'experimentActionMessage',
+    name: 'experimentActionMessage',
+    standalone: false
 })
 export class ExperimentActionMessage implements PipeTransform {
   transform(actionType: LOG_TYPE): string {

@@ -19,22 +19,21 @@ import { CommonModule } from '@angular/common';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 
 @Component({
-  selector: 'app-add-feature-flag-modal',
-  standalone: true,
-  imports: [
-    CommonModalComponent,
-    MatInputModule,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
-    MatDialogClose,
-    FormsModule,
-    TranslateModule,
-    CommonModule,
-  ],
-  templateUrl: './delete-feature-flag-modal.component.html',
-  styleUrl: './delete-feature-flag-modal.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-add-feature-flag-modal',
+    imports: [
+        CommonModalComponent,
+        MatInputModule,
+        MatDialogTitle,
+        MatDialogContent,
+        MatDialogActions,
+        MatDialogClose,
+        FormsModule,
+        TranslateModule,
+        CommonModule,
+    ],
+    templateUrl: './delete-feature-flag-modal.component.html',
+    styleUrl: './delete-feature-flag-modal.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DeleteFeatureFlagModalComponent {
   selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;

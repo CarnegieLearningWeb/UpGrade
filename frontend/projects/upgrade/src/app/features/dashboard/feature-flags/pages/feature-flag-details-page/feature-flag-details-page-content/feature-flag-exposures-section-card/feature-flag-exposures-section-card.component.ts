@@ -10,19 +10,18 @@ import { FeatureFlagExposuresDataComponent } from './feature-flag-exposures-data
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-feature-flag-exposures-section-card',
-  standalone: true,
-  imports: [
-    CommonSectionCardComponent,
-    CommonSectionCardTitleHeaderComponent,
-    CommonSectionCardActionButtonsComponent,
-    CommonModule,
-    TranslateModule,
-    FeatureFlagExposuresDataComponent,
-  ],
-  templateUrl: './feature-flag-exposures-section-card.component.html',
-  styleUrl: './feature-flag-exposures-section-card.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-feature-flag-exposures-section-card',
+    imports: [
+        CommonSectionCardComponent,
+        CommonSectionCardTitleHeaderComponent,
+        CommonSectionCardActionButtonsComponent,
+        CommonModule,
+        TranslateModule,
+        FeatureFlagExposuresDataComponent,
+    ],
+    templateUrl: './feature-flag-exposures-section-card.component.html',
+    styleUrl: './feature-flag-exposures-section-card.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FeatureFlagExposuresSectionCardComponent {
   @Input() data: FeatureFlag;

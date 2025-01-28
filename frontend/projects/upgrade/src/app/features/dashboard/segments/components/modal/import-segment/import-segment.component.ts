@@ -9,9 +9,10 @@ import { NotificationService } from '../../../../../../core/notifications/notifi
 import { firstValueFrom } from 'rxjs';
 
 @Component({
-  selector: 'app-import-segment',
-  templateUrl: './import-segment.component.html',
-  styleUrls: ['./import-segment.component.scss'],
+    selector: 'app-import-segment',
+    templateUrl: './import-segment.component.html',
+    styleUrls: ['./import-segment.component.scss'],
+    standalone: false
 })
 export class ImportSegmentComponent {
   file: any;

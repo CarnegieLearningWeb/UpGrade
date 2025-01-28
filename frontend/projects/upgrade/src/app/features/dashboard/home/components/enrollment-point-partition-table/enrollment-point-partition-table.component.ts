@@ -2,10 +2,11 @@ import { Component, ChangeDetectionStrategy, OnChanges, Input } from '@angular/c
 import { ExperimentVM, ASSIGNMENT_UNIT } from '../../../../../core/experiments/store/experiments.model';
 
 @Component({
-  selector: 'home-enrollment-point-partition-table',
-  templateUrl: './enrollment-point-partition-table.component.html',
-  styleUrls: ['./enrollment-point-partition-table.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'home-enrollment-point-partition-table',
+    templateUrl: './enrollment-point-partition-table.component.html',
+    styleUrls: ['./enrollment-point-partition-table.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class EnrollmentPointPartitionTableComponent implements OnChanges {
   @Input() partitionData: any[];

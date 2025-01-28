@@ -36,22 +36,21 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
 import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
-  selector: 'upsert-private-segment-list-modal',
-  standalone: true,
-  imports: [
-    CommonModalComponent,
-    MatSelectModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatAutocompleteModule,
-    CommonTagsInputComponent,
-    CommonModule,
-    ReactiveFormsModule,
-    TranslateModule,
-    SegmentsModule,
-  ],
-  templateUrl: './upsert-private-segment-list-modal.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'upsert-private-segment-list-modal',
+    imports: [
+        CommonModalComponent,
+        MatSelectModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatAutocompleteModule,
+        CommonTagsInputComponent,
+        CommonModule,
+        ReactiveFormsModule,
+        TranslateModule,
+        SegmentsModule,
+    ],
+    templateUrl: './upsert-private-segment-list-modal.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UpsertPrivateSegmentListModalComponent {
   @ViewChild('typeSelectRef') typeSelectRef: MatSelect;

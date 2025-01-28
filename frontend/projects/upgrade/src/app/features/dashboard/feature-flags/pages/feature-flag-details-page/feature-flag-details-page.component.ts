@@ -4,10 +4,9 @@ import { FeatureFlagDetailsPageHeaderComponent } from './feature-flag-details-pa
 import { FeatureFlagDetailsPageContentComponent } from './feature-flag-details-page-content/feature-flag-details-page-content.component';
 
 @Component({
-  selector: 'app-feature-flag-details-page',
-  standalone: true,
-  templateUrl: './feature-flag-details-page.component.html',
-  styleUrl: './feature-flag-details-page.component.scss',
-  imports: [CommonPageComponent, FeatureFlagDetailsPageHeaderComponent, FeatureFlagDetailsPageContentComponent],
+    selector: 'app-feature-flag-details-page',
+    templateUrl: './feature-flag-details-page.component.html',
+    styleUrl: './feature-flag-details-page.component.scss',
+    imports: [CommonPageComponent, FeatureFlagDetailsPageHeaderComponent, FeatureFlagDetailsPageContentComponent]
 })
 export class FeatureFlagDetailsPageComponent {}

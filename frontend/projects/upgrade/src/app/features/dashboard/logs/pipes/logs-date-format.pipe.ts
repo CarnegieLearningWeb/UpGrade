@@ -2,7 +2,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { LogDateFormatType } from '../../../../core/logs/store/logs.model';
 
 @Pipe({
-  name: 'logDateFormatPipe',
+    name: 'logDateFormatPipe',
+    standalone: false
 })
 export class LogDateFormatPipe implements PipeTransform {
   transform(date: string, type?: any): any {

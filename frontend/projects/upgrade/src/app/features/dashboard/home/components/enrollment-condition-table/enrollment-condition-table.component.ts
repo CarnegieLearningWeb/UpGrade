@@ -8,9 +8,10 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'home-enrollment-condition-table',
-  templateUrl: './enrollment-condition-table.component.html',
-  styleUrls: ['./enrollment-condition-table.component.scss'],
+    selector: 'home-enrollment-condition-table',
+    templateUrl: './enrollment-condition-table.component.html',
+    styleUrls: ['./enrollment-condition-table.component.scss'],
+    standalone: false
 })
 export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
   @Input() experiment: ExperimentVM;

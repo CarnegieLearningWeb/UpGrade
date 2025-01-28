@@ -32,12 +32,11 @@ import { IMenuButtonItem } from 'upgrade_types';
  * ```
  */
 @Component({
-  selector: 'app-common-section-card-action-buttons',
-  standalone: true,
-  imports: [CommonModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatMenuModule, TranslateModule],
-  templateUrl: './common-section-card-action-buttons.component.html',
-  styleUrl: './common-section-card-action-buttons.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-common-section-card-action-buttons',
+    imports: [CommonModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatMenuModule, TranslateModule],
+    templateUrl: './common-section-card-action-buttons.component.html',
+    styleUrl: './common-section-card-action-buttons.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CommonSectionCardActionButtonsComponent {
   @Input() showSlideToggle?: boolean = false;

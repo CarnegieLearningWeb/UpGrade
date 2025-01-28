@@ -29,19 +29,18 @@ import { UserPermission } from '../../../../../../../core/auth/store/auth.models
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
-  selector: 'app-feature-flag-inclusions-section-card',
-  standalone: true,
-  imports: [
-    CommonSectionCardComponent,
-    CommonSectionCardTitleHeaderComponent,
-    CommonSectionCardActionButtonsComponent,
-    CommonModule,
-    FeatureFlagInclusionsTableComponent,
-    TranslateModule,
-  ],
-  templateUrl: './feature-flag-inclusions-section-card.component.html',
-  styleUrl: './feature-flag-inclusions-section-card.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-feature-flag-inclusions-section-card',
+    imports: [
+        CommonSectionCardComponent,
+        CommonSectionCardTitleHeaderComponent,
+        CommonSectionCardActionButtonsComponent,
+        CommonModule,
+        FeatureFlagInclusionsTableComponent,
+        TranslateModule,
+    ],
+    templateUrl: './feature-flag-inclusions-section-card.component.html',
+    styleUrl: './feature-flag-inclusions-section-card.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FeatureFlagInclusionsSectionCardComponent {
   @Input() isSectionCardExpanded;

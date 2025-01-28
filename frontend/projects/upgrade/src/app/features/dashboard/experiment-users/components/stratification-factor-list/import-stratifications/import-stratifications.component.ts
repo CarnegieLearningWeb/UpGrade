@@ -5,10 +5,11 @@ import { CsvDataItem } from '../../../../../../core/stratification-factors/store
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-import-stratifications',
-  templateUrl: './import-stratifications.component.html',
-  styleUrls: ['./import-stratifications.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-import-stratifications',
+    templateUrl: './import-stratifications.component.html',
+    styleUrls: ['./import-stratifications.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ImportStratificationsComponent {
   file: File;

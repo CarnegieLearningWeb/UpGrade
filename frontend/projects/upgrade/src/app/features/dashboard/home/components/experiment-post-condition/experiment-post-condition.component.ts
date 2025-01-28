@@ -23,10 +23,11 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
-  selector: 'home-experiment-post-condition',
-  templateUrl: './experiment-post-condition.component.html',
-  styleUrls: ['./experiment-post-condition.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'home-experiment-post-condition',
+    templateUrl: './experiment-post-condition.component.html',
+    styleUrls: ['./experiment-post-condition.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   @Input() experimentInfo: ExperimentVM;

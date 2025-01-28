@@ -27,10 +27,11 @@ import { DialogService } from '../../../../../shared/services/common-dialog.serv
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 
 @Component({
-  selector: 'home-experiment-participants',
-  templateUrl: './experiment-participants.component.html',
-  styleUrls: ['./experiment-participants.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'home-experiment-participants',
+    templateUrl: './experiment-participants.component.html',
+    styleUrls: ['./experiment-participants.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ExperimentParticipantsComponent implements OnInit {
   @Input() experimentInfo: ExperimentVM;

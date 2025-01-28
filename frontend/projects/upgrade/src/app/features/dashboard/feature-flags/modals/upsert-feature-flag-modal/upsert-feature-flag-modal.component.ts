@@ -41,29 +41,28 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'upsert-add-feature-flag-modal',
-  standalone: true,
-  imports: [
-    CommonModalComponent,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
-    MatDialogClose,
-    MatSelectModule,
-    CommonModule,
-    NgTemplateOutlet,
-    MatIcon,
-    ReactiveFormsModule,
-    TranslateModule,
-    CommonTagsInputComponent,
-  ],
-  templateUrl: './upsert-feature-flag-modal.component.html',
-  styleUrl: './upsert-feature-flag-modal.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'upsert-add-feature-flag-modal',
+    imports: [
+        CommonModalComponent,
+        MatCardModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+        MatDialogTitle,
+        MatDialogContent,
+        MatDialogActions,
+        MatDialogClose,
+        MatSelectModule,
+        CommonModule,
+        NgTemplateOutlet,
+        MatIcon,
+        ReactiveFormsModule,
+        TranslateModule,
+        CommonTagsInputComponent,
+    ],
+    templateUrl: './upsert-feature-flag-modal.component.html',
+    styleUrl: './upsert-feature-flag-modal.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UpsertFeatureFlagModalComponent {
   isLoadingUpsertFeatureFlag$ = this.featureFlagsService.isLoadingUpsertFeatureFlag$;

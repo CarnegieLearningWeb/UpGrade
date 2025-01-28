@@ -18,18 +18,17 @@ import { NotificationService } from '../../../../../core/notifications/notificat
 import { IFeatureFlagFile } from 'upgrade_types';
 
 @Component({
-  selector: 'app-import-feature-flag-modal',
-  standalone: true,
-  imports: [
-    CommonModalComponent,
-    CommonModule,
-    SharedModule,
-    CommonImportContainerComponent,
-    CommonStatusIndicatorChipComponent,
-  ],
-  templateUrl: './import-feature-flag-modal.component.html',
-  styleUrls: ['./import-feature-flag-modal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-import-feature-flag-modal',
+    imports: [
+        CommonModalComponent,
+        CommonModule,
+        SharedModule,
+        CommonImportContainerComponent,
+        CommonStatusIndicatorChipComponent,
+    ],
+    templateUrl: './import-feature-flag-modal.component.html',
+    styleUrls: ['./import-feature-flag-modal.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ImportFeatureFlagModalComponent {
   isDescriptionExpanded = false;

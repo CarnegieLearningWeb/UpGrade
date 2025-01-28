@@ -19,9 +19,10 @@ import { ExportModalComponent } from '../modal/export-experiment/export-experime
 import { FormControl } from '@angular/forms';
 
 @Component({
-  selector: 'home-experiment-list',
-  templateUrl: './experiment-list.component.html',
-  styleUrls: ['./experiment-list.component.scss'],
+    selector: 'home-experiment-list',
+    templateUrl: './experiment-list.component.html',
+    styleUrls: ['./experiment-list.component.scss'],
+    standalone: false
 })
 export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions$: Observable<UserPermission>;

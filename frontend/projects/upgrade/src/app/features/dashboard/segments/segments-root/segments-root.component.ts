@@ -7,10 +7,11 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
-  selector: 'app-segments-root',
-  templateUrl: './segments-root.component.html',
-  styleUrls: ['./segments-root.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-segments-root',
+    templateUrl: './segments-root.component.html',
+    styleUrls: ['./segments-root.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SegmentsRootComponent implements OnInit {
   permissions$: Observable<UserPermission>;
