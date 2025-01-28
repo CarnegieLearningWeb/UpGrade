@@ -199,21 +199,19 @@ export class MoocletDataService {
     return response;
   }
 
-  /* not yet implemented */
+  public async getVersionForNewLearner(moocletId: number, userId: string) {
+    const endpoint = `/mooclet/${moocletId}/run?learner=${userId}`;
 
-  // public async getVersionForNewLearner(moocletId: number, userId: string) {
-  //   const endpoint = `/mooclet/${moocletId}/run?learner=${userId}`;
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'GET',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+    };
 
-  //   const requestParams: MoocletProxyRequestParams = {
-  //     method: 'GET',
-  //     url: this.apiUrl + endpoint,
-  //     apiToken: this.apiToken,
-  //   };
+    const response = await this.fetchExternalMoocletsData(requestParams);
 
-  //   const response = await this.fetchExternalMoocletsData(requestParams);
-
-  //   return response;
-  // }
+    return response;
+  }
 
   /**
    * Generic Requests to Mooclets API
