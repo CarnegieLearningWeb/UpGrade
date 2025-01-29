@@ -199,7 +199,7 @@ export class MoocletDataService {
     return response;
   }
 
-  public async getVersionForNewLearner(moocletId: number, userId: string) {
+  public async getVersionForNewLearner(moocletId: number, userId: string): Promise<MoocletVersionResponseDetails> {
     const endpoint = `/mooclet/${moocletId}/run?learner=${userId}`;
 
     const requestParams: MoocletProxyRequestParams = {

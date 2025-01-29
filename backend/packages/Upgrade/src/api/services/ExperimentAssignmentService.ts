@@ -1590,16 +1590,14 @@ export class ExperimentAssignmentService {
   private async getConditionFromMoocletProxy(experiment: Experiment, user: ExperimentUser) {
     const userId = user.id;
 
-    const condition = await this.moocletExperimentService.getConditionFromMoocletProxy(experiment, userId);
-
-    return condition;
+    return await this.moocletExperimentService.getConditionFromMoocletProxy(experiment, userId);
   }
 
   private assignRandom(
     experiment: Experiment,
     user: ExperimentUser,
     enrollmentCount?: { conditionId: string; userCount: number }[]
-  ) {
+  ): ExperimentCondition {
     const randomSeed =
       experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
       experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
