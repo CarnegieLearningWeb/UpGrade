@@ -76,3 +76,8 @@ export {
   FeatureFlagStateChangedData,
   FeatureFlagDeletedData,
 } from './Experiment/interfaces';
+export {
+  MoocletPolicyParametersDTO,
+  MoocletTSConfigurablePolicyParametersDTO,
+  MOOCLET_POLICY_SCHEMA_MAP,
+} from './Mooclet';

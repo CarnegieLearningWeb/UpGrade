@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
+  IsDefined,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -35,6 +36,8 @@ import {
   REPEATED_MEASURE,
   EXPERIMENT_TYPE,
   ASSIGNMENT_ALGORITHM,
+  MoocletTSConfigurablePolicyParametersDTO,
+  MoocletPolicyParametersDTO,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 
@@ -467,6 +470,29 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
   @ValidateNested({ each: true })
   @Type(() => ConditionPayloadValidator)
   public conditionPayloads?: ConditionPayloadValidator[];
+
+  // This should be validated when assignmentAlgorithm is not RANDOM or STRATIFIED_RANDOM_SAMPLING
+  @ValidateIf(
+    (experiment) =>
+      experiment.assignmentAlgorithm &&
+      !(
+        experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.RANDOM ||
+        experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING
+      )
+  )
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => MoocletPolicyParametersDTO, {
+    discriminator: {
+      property: 'assignmentAlgorithm',
+      subTypes: [
+        { value: MoocletTSConfigurablePolicyParametersDTO, name: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE },
+        // Other policy types can be added here
+      ],
+    },
+    keepDiscriminatorProperty: true,
+  })
+  public moocletPolicyParameters?: MoocletPolicyParametersDTO;
 }
 
 export class OldExperimentDTO extends BaseExperimentWithoutPayload {
