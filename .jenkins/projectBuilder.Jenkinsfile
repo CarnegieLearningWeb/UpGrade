@@ -55,6 +55,7 @@ projectBuilderV5 (
             artifactDir: 'dist/upgrade',
             versioning: 'branch',
             oneArtifactPerEnvironment: true,
+            dependencies: ["types"],
             buildScripts: [
                 [
                     script: 'npm ci --no-audit',
