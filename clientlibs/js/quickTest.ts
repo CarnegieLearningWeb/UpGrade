@@ -14,9 +14,9 @@ const userId = 'quicktest_user_' + Date.now().toString();
 const group = 'test_class_group';
 const alias = 'alias' + userId;
 const hostUrl = URL.LOCAL;
-const context = 'assign-prog';
-const site = 'SelectSection';
-const target = 'absolute_value_plot_equality';
+const context = 'mathstream';
+const site = 'lesson-stream';
+const target = 'question-hint';
 const condition: string | null = null;
 const status = MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED;
 const featureFlagKey = 'TEST_FEATURE_FLAG';
@@ -26,12 +26,7 @@ const logRequest = [
     timestamp: '2022-03-03T19:49:00.496',
     metrics: {
       attributes: {
-        totalTimeSeconds: 41834,
-        totalMasteryWorkspacesCompleted: 15,
-        totalConceptBuildersCompleted: 17,
-        totalMasteryWorkspacesGraduated: 15,
-        totalSessions: 50,
-        totalProblemsCompleted: 249,
+        SADFSADFASDF_REWARD: "SUCCESS",
       },
       groupedMetrics: [
         {
@@ -58,13 +53,13 @@ quickTest();
 async function quickTest() {
   const client = new UpgradeClient(userId, hostUrl, context);
   await doInit(client);
-  await doGroupMembership(client);
-  await doWorkingGroupMembership(client);
-  await doAliases(client);
+  // await doGroupMembership(client);
+  // await doWorkingGroupMembership(client);
+  // await doAliases(client);
   await doAssign(client);
-  await doGetDecisionPointAssignment(client);
-  await doFeatureFlags(client);
-  await doHasFeatureFlag(client);
+  // await doGetDecisionPointAssignment(client);
+  // await doFeatureFlags(client);
+  // await doHasFeatureFlag(client);
   await doMark(client);
   await doLog(client);
 }
