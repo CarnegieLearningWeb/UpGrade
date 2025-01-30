@@ -1,0 +1,146 @@
+# Mooclet
+# To be used with the Rest Client extension for Visual Studio Code
+# https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+# This is not an exhaustive list, but running down the list emulates the process of 
+# of creating and running mooclet policies like UpGrade does
+
+# Other CRUD operations like GET / DELETE / PUT will work as expected
+# https://docs.google.com/spreadsheets/d/1eL3z5zJfpraqEONYMVhiWgGYj6PSm8T8KFKFyeOMnHU/edit?gid=0#gid=0
+
+### Creating a Mooclet
+# 1. Get policy id by assignment algorithm name
+# 2. Create mooclet
+# 3. Create policyparameters
+# 4. Create version 1
+# 5. Create version 2
+# 6. Create outcome variable
+
+#### Assigning and sending rewards
+# 7. Create a learner (optional)
+# 8. Get a new assignment
+# 9. Check the policy parameters (optional to view changes to policy parameters)
+# 10. Send reward
+# 11. Repeat steps 8-10 as needed
+
+############ env variables 
+@host = http://localhost:8000
+
+# Replace with your token, i.e.
+# @token = Token 7439dc95718b525e8ae267604178575da15820e9
+@token =
+
+@apiEndpoint = /engine/api/v1
+
+############ request variables (change as needed)
+@moocletId = 5
+@moocletName = newmooc4
+@policyId = 17
+@policyParametersId = 2
+@version1Name = control
+@version1Id = 5
+@version2Name = variant
+@version2Id = 6
+
+@outcomeVariableName = mooc_4_variable
+@learnerName = dave
+
+########### Get policy id by assignment algorithm name
+GET {{host}}{{apiEndpoint}}/policy HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+########### create mooclet
+POST {{host}}{{apiEndpoint}}/mooclet HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+{
+  "name": "{{moocletName}}",
+  "policy": {{policyId}}
+}
+
+########### create policyparameters
+POST {{host}}{{apiEndpoint}}/policyparameters HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+{
+  "mooclet": {{moocletId}},
+  "policy": {{policyId}},
+  "parameters": {
+    "prior": {
+      "failure": 1,
+      "success": 1
+    },
+    "batch_size": 1,
+    "max_rating": 1,
+    "min_rating": 0,
+    "uniform_threshold": 0,
+    "tspostdiff_thresh": 0,
+    "outcome_variable_name": "{{outcomeVariableName}}"
+  }
+}
+
+########### create version 1
+POST {{host}}{{apiEndpoint}}/version HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+{
+  "mooclet": {{moocletId}},
+  "name": "{{version1Name}}"
+}
+
+########### create version 2
+POST {{host}}{{apiEndpoint}}/version HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+{
+  "mooclet": {{moocletId}},
+  "name": "{{version2Name}}"
+}
+
+########### create outcome variable
+POST {{host}}{{apiEndpoint}}/variable HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+{
+  "name": "{{outcomeVariableName}}",
+  "value": 0
+}
+
+########### create a learner?
+POST {{host}}{{apiEndpoint}}/learner HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+{
+  "name": "{{ learnerName }}"
+}
+
+########### get a new assignment
+GET {{host}}{{apiEndpoint}}/mooclet/{{moocletId}}/run HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+########### check the policy parameters
+GET {{host}}{{apiEndpoint}}/policyparameters/{{policyParametersId}} HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+########### send reward
+POST {{host}}{{apiEndpoint}}/value HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+{
+  "variable": "{{outcomeVariableName}}",
+  "value": 0,
+  "mooclet": {{moocletId}},
+  "version": {{version1Id}},
+  "policy": {{policyId}}
+}
+
