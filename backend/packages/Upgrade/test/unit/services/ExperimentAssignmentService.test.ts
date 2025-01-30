@@ -33,6 +33,7 @@ import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
+import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 
 describe('Experiment Assignment Service Test', () => {
   let sandbox;
@@ -58,8 +59,9 @@ describe('Experiment Assignment Service Test', () => {
   const segmentServiceMock = sinon.createStubInstance(SegmentService);
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
   const cacheServiceMock = sinon.createStubInstance(CacheService);
-  experimentServiceMock.formattingConditionPayload.restore();
-  experimentServiceMock.formattingPayload.restore();
+  const moocletExperimentService = sinon.createStubInstance(MoocletExperimentService);
+  experimentServiceMock.formatingConditionPayload.restore();
+  experimentServiceMock.formatingPayload.restore();
 
   beforeAll(() => {
     configureLogger();
@@ -89,7 +91,8 @@ describe('Experiment Assignment Service Test', () => {
       settingServiceMock,
       segmentServiceMock,
       experimentServiceMock,
-      cacheServiceMock
+      cacheServiceMock,
+      moocletExperimentService
     );
     testedModule.cacheService.wrap.resolves([]);
     testedModule.segmentService.getSegmentByIds.withArgs(['77777777-7777-7777-7777-777777777777']).resolves([

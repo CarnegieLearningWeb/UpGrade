@@ -68,6 +68,8 @@ import { UserStratificationFactorRepository } from '../repositories/UserStratifi
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { In } from 'typeorm';
+import { env } from '../../env';
+import { MoocletExperimentService } from './MoocletExperimentService';
 
 export interface FactorialConditionResult {
   factorialCondition: Omit<ExperimentCondition, 'levelCombinationElements' | 'conditionPayloads'>;
@@ -118,7 +120,8 @@ export class ExperimentAssignmentService {
     public settingService: SettingService,
     public segmentService: SegmentService,
     public experimentService: ExperimentService,
-    public cacheService: CacheService
+    public cacheService: CacheService,
+    public moocletExperimentService: MoocletExperimentService
   ) { }
   public async markExperimentPoint(
     userDoc: RequestedExperimentUser,
@@ -653,7 +656,7 @@ export class ExperimentAssignmentService {
           if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
             enrollmentCountPerCondition = await this.getEnrollmentCountPerCondition(experiment, userId);
           }
-          return this.assignExperiment(
+          return await this.assignExperiment(
             experimentUser,
             experiment,
             individualEnrollment,
@@ -1536,7 +1539,7 @@ export class ExperimentAssignmentService {
         };
         await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
       } else {
-        const conditionAssigned = this.assignExperiment(
+        const conditionAssigned = await this.assignExperiment(
           user,
           experiment,
           individualEnrollment,
@@ -1560,15 +1563,16 @@ export class ExperimentAssignmentService {
     }
   }
 
-  private assignExperiment(
+  private async assignExperiment(
     user: ExperimentUser,
     experiment: Experiment,
     individualEnrollment: IndividualEnrollment | undefined,
     groupEnrollment: GroupEnrollment | undefined,
     individualExclusion: IndividualExclusion | undefined,
     groupExclusion: GroupExclusion | undefined,
-    enrollmentCount?: { conditionId: string; userCount: number }[]
-  ): ExperimentCondition | void {
+    enrollmentCount?: { conditionId: string; userCount: number }[],
+    logger: UpgradeLogger = new UpgradeLogger('ExperimentAssignmentService: assignExperiment')
+  ): Promise<ExperimentCondition | void> {
     const userId = user.id;
     const individualEnrollmentCondition = experiment.conditions.find(
       (condition) => condition.id === individualEnrollment?.condition?.id
@@ -1620,7 +1624,7 @@ export class ExperimentAssignmentService {
               ? undefined
               : groupEnrollmentCondition
                 ? groupEnrollmentCondition
-                : this.assignRandom(experiment, user);
+                : this.getNewExperimentConditionAssignment(experiment, user, logger);
       } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
         return groupExclusion
           ? undefined
@@ -1630,7 +1634,7 @@ export class ExperimentAssignmentService {
               ? undefined
               : individualEnrollmentCondition
                 ? individualEnrollmentCondition
-                : this.assignRandom(experiment, user);
+                : this.getNewExperimentConditionAssignment(experiment, user, logger);
       } else {
         return (
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
@@ -1640,6 +1644,36 @@ export class ExperimentAssignmentService {
       }
     }
     return;
+  }
+
+  private async getNewExperimentConditionAssignment(
+    experiment: Experiment,
+    user: ExperimentUser,
+    logger: UpgradeLogger,
+    enrollmentCount?: { conditionId: string; userCount: number }[]
+  ): Promise<ExperimentCondition> {
+    const isMoocletExperiment = this.moocletExperimentService.isMoocletExperiment(experiment.assignmentAlgorithm);
+
+    if (isMoocletExperiment && !env.mooclets.enabled) {
+      logger.error({
+        message: 'Mooclet experiment algorithm is indicated but mooclets are not enabled',
+        experiment,
+        user,
+      });
+      return undefined;
+    }
+
+    if (isMoocletExperiment && env.mooclets.enabled) {
+      return this.getConditionFromMoocletProxy(experiment, user);
+    } else {
+      return this.assignRandom(experiment, user, enrollmentCount);
+    }
+  }
+
+  private async getConditionFromMoocletProxy(experiment: Experiment, user: ExperimentUser) {
+    const userId = user.id;
+
+    return await this.moocletExperimentService.getConditionFromMoocletProxy(experiment, userId);
   }
 
   private assignRandom(
