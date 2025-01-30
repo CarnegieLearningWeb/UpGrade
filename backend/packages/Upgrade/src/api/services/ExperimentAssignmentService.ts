@@ -52,7 +52,7 @@ import { ILogInput, ENROLLMENT_CODE } from 'upgrade_types';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SegmentService } from './SegmentService';
-import { MonitoredDecisionPointLogRepository } from '../repositories/MonitoredDecisionPointLogRepository';
+import { MonitoredDecisionPointLogDataCount, MonitoredDecisionPointLogRepository } from '../repositories/MonitoredDecisionPointLogRepository';
 import seedrandom from 'seedrandom';
 import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
 import { GroupEnrollment } from '../models/GroupEnrollment';
@@ -68,6 +68,14 @@ import { UserStratificationFactorRepository } from '../repositories/UserStratifi
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { In } from 'typeorm';
+
+export interface FactorialConditionResult {
+  factorialCondition: Omit<ExperimentCondition, 'levelCombinationElements' | 'conditionPayloads'>;
+  payloads: string[];
+  assignedFactor: Record<string, { level: string; payload: { type: string; value: any } }>;
+  conditionPayload: any | null;
+}
+
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -111,7 +119,7 @@ export class ExperimentAssignmentService {
     public segmentService: SegmentService,
     public experimentService: ExperimentService,
     public cacheService: CacheService
-  ) {}
+  ) { }
   public async markExperimentPoint(
     userDoc: RequestedExperimentUser,
     site: string,
@@ -185,15 +193,14 @@ export class ExperimentAssignmentService {
     }
 
     // ============= check if user or group is excluded
-    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc);
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc);
 
-    if (userExcluded || groupExcluded.length > 0) {
+    if (isUserExcluded || isGroupExcluded) {
       // no experiments if the user or group is excluded from the experiment
       experiments = [];
     }
 
-    const globalFilteredExperiments: Experiment[] = [...experiments];
-    const experimentIds = globalFilteredExperiments.map((experiment) => experiment.id);
+    const experimentIds = experiments.map((experiment) => experiment.id);
 
     // no experiment
     if (experimentIds.length === 0) {
@@ -201,7 +208,7 @@ export class ExperimentAssignmentService {
     }
 
     // experiment level inclusion and exclusion
-    const [, exclusionReason] = await this.experimentLevelExclusionInclusion(globalFilteredExperiments, userDoc);
+    const [, exclusionReason] = await this.experimentLevelExclusionInclusion(experiments, userDoc);
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
       where: {
         site: site,
@@ -272,7 +279,7 @@ export class ExperimentAssignmentService {
               this.groupEnrollmentRepository.findOne({
                 where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
               })) ||
-              Promise.resolve(undefined),
+            Promise.resolve(undefined),
             // query group exclusion
             (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
               workingGroup &&
@@ -280,7 +287,7 @@ export class ExperimentAssignmentService {
               this.groupExclusionRepository.findOne({
                 where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
               })) ||
-              Promise.resolve(undefined),
+            Promise.resolve(undefined),
           ]);
         } catch (error) {
           const err: any = error;
@@ -298,8 +305,8 @@ export class ExperimentAssignmentService {
             groupExclusion: groupExclusions,
           },
           {
-            user: userExcluded,
-            group: groupExcluded,
+            isUserExcluded: isUserExcluded,
+            isGroupExcluded: isGroupExcluded,
           },
           exclusionReason,
           status,
@@ -341,7 +348,7 @@ export class ExperimentAssignmentService {
       ? await this.experimentRepository.getValidExperimentsWithPreview(context)
       : await this.experimentService.getCachedValidExperiments(context);
     // adding conditionPayloads at the root level instead of inside conditions
-    return experiments.map((exp) => this.experimentService.formatingConditionPayload(exp));
+    return experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
   }
 
   private async filterAndProcessGroupExperiments(
@@ -351,7 +358,7 @@ export class ExperimentAssignmentService {
   ): Promise<Experiment[]> {
     // Filter Experiments that has assignment type as GROUP:
     const groupExperiments = experiments.filter(({ assignmentUnit }) => assignmentUnit === ASSIGNMENT_UNIT.GROUP);
-  
+
     if (groupExperiments.length > 0) {
       // get invalid group/workingGroup experiments which dont have any enrolments yet:
       const invalidGroupExperiments = await this.getInvalidGroupNotEnrolledExperiments(groupExperiments, experimentUser, logger);
@@ -377,7 +384,7 @@ export class ExperimentAssignmentService {
     const invalidExperiments = isGroupWorkingGroupMissing
       ? groupExperiments
       : this.experimentsWithInvalidGroupAndWorkingGroup(experimentUser, groupExperiments);
-    
+
     // return invalid group experiments which are not enrolled yet
     return this.groupExperimentWithoutEnrollments(invalidExperiments, experimentUser, logger);
   }
@@ -402,41 +409,40 @@ export class ExperimentAssignmentService {
   }
 
   private processExperimentPools(
-    filteredExperiments: Experiment[],
-    mergedIndividualAssignment: IndividualEnrollment[],
+    experiments: Experiment[],
+    individualEnrollments: IndividualEnrollment[],
     groupEnrollments: GroupEnrollment[],
-    experimentUser: ExperimentUser,
-    userId: string
+    experimentUser: ExperimentUser
   ): Experiment[] {
     // Create experiment pool
-    const experimentPools = this.createExperimentPool(filteredExperiments);
-  
+    const experimentPools = this.createExperimentPool(experiments);
+
     // Filter pools which are not assigned
     const unassignedPools = experimentPools.filter((pool) => {
       return !pool.some((experiment) => {
-        const individualEnrollment = mergedIndividualAssignment.find((enrollment) => {
+        const hasIndividualEnrollment = individualEnrollments.some((enrollment) => {
           return enrollment.experiment.id === experiment.id;
         });
-        const groupEnrollment = groupEnrollments.find((enrollment) => {
+        const hasGroupEnrollment = groupEnrollments.some((enrollment) => {
           return (
             enrollment.experiment.id === experiment.id &&
             enrollment.groupId === experimentUser.workingGroup[experiment.group]
           );
         });
-        return !!(individualEnrollment || groupEnrollment);
+        return !!(hasIndividualEnrollment || hasGroupEnrollment);
       });
     });
-  
-    // Assign experiments inside the pools
-    const random = seedrandom(userId)();
-    const newlyAssignedExperiments = unassignedPools.map((pool) => {
+
+    // Select experiments inside the pools
+    const random = seedrandom(experimentUser.id)();
+    const newSelectedExperiments = unassignedPools.map((pool) => {
       return pool[Math.floor(random * pool.length)];
     });
-  
+
     // Create new filtered experiment list
-    const alreadyAssignedExperiments = experimentPools.map((pool) => {
+    const priorSelectedExperiments = experimentPools.map((pool) => {
       return pool.filter((experiment) => {
-        const individualEnrollment = mergedIndividualAssignment.find((enrollment) => {
+        const individualEnrollment = individualEnrollments.find((enrollment) => {
           return enrollment.experiment.id === experiment.id;
         });
         const groupEnrollment = groupEnrollments.find((enrollment) => {
@@ -448,28 +454,22 @@ export class ExperimentAssignmentService {
         return !!(individualEnrollment || groupEnrollment);
       });
     });
-  
-    const finalFilteredExperiments = alreadyAssignedExperiments.flat().concat(newlyAssignedExperiments);
-  
-    return finalFilteredExperiments;
+
+    return priorSelectedExperiments.flat().concat(newSelectedExperiments);
   }
 
   private mapDecisionPoints(
     experiment: Experiment,
-    assignment: ExperimentCondition | undefined,
-    state: EXPERIMENT_STATE,
-    name: string,
+    conditionAssigned: ExperimentCondition | undefined,
     userId: string,
     conditionPayloads: ConditionPayloadDTO[],
     type: EXPERIMENT_TYPE,
-    experimentId: string,
     factors: FactorDTO[],
     monitoredLogCounts: { site: string; target: string; count: number }[],
     logger: UpgradeLogger
   ): IExperimentAssignmentv5[] {
     return experiment.partitions.map((decisionPoint) => {
       const { target, site } = decisionPoint;
-      const conditionAssigned = assignment;
 
       // Determine payload and factorial object
       const { payloadFound, factorialObject } = this.getPayloadAndFactorialObject(
@@ -481,11 +481,10 @@ export class ExperimentAssignmentService {
       );
 
       // Log preview state information
-      if (state === EXPERIMENT_STATE.PREVIEW) {
+      if (experiment.state === EXPERIMENT_STATE.PREVIEW) {
         logger.info({
-          message: `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
-            conditionAssigned ? conditionAssigned.conditionCode : null
-          }`,
+          message: `getAllExperimentConditions: experiment: ${experiment.name}, user: ${userId}, condition: ${conditionAssigned ? conditionAssigned.conditionCode : null
+            }`,
         });
       }
 
@@ -501,6 +500,7 @@ export class ExperimentAssignmentService {
         const count = monitoredLogCounts.find((log) => log.site === site && log.target === target)?.count || 0;
         return withInSubjectType(experiment, conditionPayloads, site, target, factors, userId, count);
       } else {
+        const experimentId = experiment.id;
         return {
           target,
           site,
@@ -527,7 +527,7 @@ export class ExperimentAssignmentService {
   ): { payloadFound: ConditionPayloadDTO | undefined; factorialObject: any } {
     let payloadFound: ConditionPayloadDTO | undefined;
     let factorialObject: any;
-  
+
     if (conditionAssigned) {
       if (type === EXPERIMENT_TYPE.FACTORIAL) {
         payloadFound = conditionPayloads.find((x) => x.parentCondition.id === conditionAssigned.id);
@@ -541,17 +541,17 @@ export class ExperimentAssignmentService {
         );
       }
     }
-  
+
     return { payloadFound, factorialObject };
-  }  
+  }
 
   public async getAllExperimentConditions(
     experimentUserDoc: RequestedExperimentUser,
     context: string,
     logger: UpgradeLogger
   ): Promise<IExperimentAssignmentv5[]> {
-    logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc?.requestedUserId}` });
-    const userId = experimentUserDoc?.id;
+    logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
+    const userId = experimentUserDoc.id;
     const previewUser = await this.previewUserService.findOne(userId, logger);
 
     /** Below are the detailed steps for the assignment process:
@@ -563,15 +563,17 @@ export class ExperimentAssignmentService {
       * 6. Assign condition from the remaining experiment
     */
 
-    // 1. Fetch experiments based on user type & moving conditionPayloads at the root leve
+    // 1. Fetch experiments based on user type & moving conditionPayloads at the root level
     const experiments: Experiment[] = await this.getExperimentsForUser(previewUser, context);
 
     // 2. Check if user or group is globally excluded
-    const experimentUser: ExperimentUser = experimentUserDoc as ExperimentUser;
-    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
+    const experimentUser: ExperimentUser = experimentUserDoc;
 
     // return empty assignments if the user or group is excluded from the experiment
-    if (userExcluded || groupExcluded.length > 0) {
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
+
+    // return empty assignments if the user or group is excluded from the experiment
+    if (isUserExcluded || isGroupExcluded) {
       return [];
     }
 
@@ -585,14 +587,7 @@ export class ExperimentAssignmentService {
         return [];
       }
 
-      const globalFilteredExperiments: Experiment[] = [...validExperiments];
-      const experimentIds = globalFilteredExperiments.map((experiment) => experiment.id);
-
-      // return empty assignments if no experiments 
-      // TODO: check if this is needed
-      if (experimentIds.length === 0) {
-        return [];
-      }
+      const experimentIds = validExperiments.map((experiment) => experiment.id);
 
       // Query assignments and exclusions for the user
       const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] = await this.getAssignmentsAndExclusionsForUser(experimentUser, experimentIds);
@@ -612,7 +607,7 @@ export class ExperimentAssignmentService {
 
       // Check for experiment level inclusion and exclusion and return valid inclusion experiments
       let [filteredExperiments] = await this.experimentLevelExclusionInclusion(
-        globalFilteredExperiments,
+        validExperiments,
         experimentUser
       );
 
@@ -621,8 +616,7 @@ export class ExperimentAssignmentService {
         filteredExperiments,
         mergedIndividualAssignment,
         groupEnrollments,
-        experimentUser,
-        userId
+        experimentUser
       );
 
       // return empty if no experiments
@@ -670,7 +664,7 @@ export class ExperimentAssignmentService {
           );
         })
       );
-      let monitoredLogCounts = [];
+      let monitoredLogCounts: MonitoredDecisionPointLogDataCount[] = [];
       if (filteredExperiments.some((e) => e.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS)) {
         const allWithinSubjectsSites = [];
         const allWithinSubjectsTargets = [];
@@ -690,19 +684,16 @@ export class ExperimentAssignmentService {
 
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
-        const { state, name, conditionPayloads, type, id, factors } =
-          this.experimentService.formatingPayload(experiment);
+        const { conditionPayloads, type, factors } =
+          this.experimentService.formattingPayload(experiment);
 
         if (assignment) {
           const decisionPoints = this.mapDecisionPoints(
             experiment,
             assignment,
-            state,
-            name,
             userId,
             conditionPayloads,
             type,
-            id,
             factors,
             monitoredLogCounts,
             logger
@@ -767,7 +758,7 @@ export class ExperimentAssignmentService {
     return pool;
   }
 
-  public async checkUserOrGroupIsGloballyExcluded(experimentUser: ExperimentUser): Promise<[string, string[]]> {
+  public async checkUserOrGroupIsGloballyExcluded(experimentUser: ExperimentUser): Promise<[boolean, boolean]> {
     let userGroup = [];
     userGroup = Object.keys(experimentUser.workingGroup || {}).map((type: string) => {
       return `${type}_${experimentUser.workingGroup[type]}`;
@@ -802,7 +793,7 @@ export class ExperimentAssignmentService {
     const userExcluded = excludedUsers.find((userId) => userId === experimentUser.id);
     const groupExcluded = userGroup.length > 0 ? excludedGroups.filter((group) => userGroup.includes(group)) : [];
 
-    return [userExcluded, groupExcluded];
+    return [userExcluded !== undefined, groupExcluded.length > 0];
   }
 
   // When browser will be sending the blob data
@@ -894,9 +885,9 @@ export class ExperimentAssignmentService {
     // fetch individual assignment for group experiments
     const individualEnrollments = await (experiments.length > 0
       ? this.individualEnrollmentRepository.findEnrollments(
-          experimentUser.id,
-          experiments.map(({ id }) => id)
-        )
+        experimentUser.id,
+        experiments.map(({ id }) => id)
+      )
       : Promise.resolve([]));
 
     // check assignments for group experiment
@@ -930,7 +921,7 @@ export class ExperimentAssignmentService {
       `,
       });
     });
-    
+
     // log error if there are group experiments which are not previosly assigned and they are
     // to be excluded from assignment due to working group and group data is not properly set
     if (experimentToExclude.length > 0) {
@@ -1325,7 +1316,7 @@ export class ExperimentAssignmentService {
       groupEnrollment: GroupEnrollment;
       groupExclusion: GroupExclusion;
     },
-    globallyExcluded: { user: string; group: string[] },
+    globallyExcluded: { isUserExcluded: boolean; isGroupExcluded: boolean },
     experimentLevelExcluded: { experiment: Experiment; reason: string; matchedGroup: boolean }[],
     status: MARKED_DECISION_POINT_STATUS,
     condition: string
@@ -1355,11 +1346,11 @@ export class ExperimentAssignmentService {
       experiment,
       exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
     };
-    if (globallyExcluded.user || globallyExcluded.group.length) {
+    if (globallyExcluded.isUserExcluded || globallyExcluded.isGroupExcluded) {
       // store Individual exclusion document for the Group Exclusion as well:
       const promiseArray = [];
       promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
-      if (globallyExcluded.group.length) {
+      if (globallyExcluded.isGroupExcluded) {
         // store Group exclusion document:
         const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
           groupId: user?.workingGroup?.[experiment.group],
@@ -1503,15 +1494,15 @@ export class ExperimentAssignmentService {
 
         if (!individualEnrollment && !individualExclusion && conditionAssigned && !invalidGroup && !noGroupSpecified) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
-            {
-              id: uuid(),
-              experiment,
-              partition: decisionPoint as DecisionPoint,
-              user,
-              condition: conditionAssigned,
-              groupId: user?.workingGroup?.[experiment.group],
-              enrollmentCode: groupEnrollment ? ENROLLMENT_CODE.GROUP_LOGIC : ENROLLMENT_CODE.ALGORITHMIC,
-            };
+          {
+            id: uuid(),
+            experiment,
+            partition: decisionPoint as DecisionPoint,
+            user,
+            condition: conditionAssigned,
+            groupId: user?.workingGroup?.[experiment.group],
+            enrollmentCode: groupEnrollment ? ENROLLMENT_CODE.GROUP_LOGIC : ENROLLMENT_CODE.ALGORITHMIC,
+          };
           promiseArray.push(this.individualEnrollmentRepository.save(individualEnrollmentDocument));
         }
 
@@ -1555,14 +1546,14 @@ export class ExperimentAssignmentService {
         );
         if (!individualEnrollment && !individualExclusion && conditionAssigned) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
-            {
-              id: uuid(),
-              experiment,
-              partition: decisionPoint as DecisionPoint,
-              user,
-              condition: conditionAssigned,
-              enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
-            };
+          {
+            id: uuid(),
+            experiment,
+            partition: decisionPoint as DecisionPoint,
+            user,
+            condition: conditionAssigned,
+            enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+          };
           await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
         }
       }
@@ -1591,18 +1582,18 @@ export class ExperimentAssignmentService {
           return individualExclusion
             ? undefined
             : individualEnrollmentCondition
-            ? individualEnrollmentCondition
-            : groupExclusion
-            ? undefined
-            : groupEnrollmentCondition;
+              ? individualEnrollmentCondition
+              : groupExclusion
+                ? undefined
+                : groupEnrollmentCondition;
         } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
           return groupExclusion
             ? undefined
             : groupEnrollmentCondition
-            ? groupEnrollmentCondition
-            : individualExclusion
-            ? undefined
-            : individualEnrollmentCondition;
+              ? groupEnrollmentCondition
+              : individualExclusion
+                ? undefined
+                : individualEnrollmentCondition;
         } else {
           return experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
             ? individualEnrollmentCondition
@@ -1624,22 +1615,22 @@ export class ExperimentAssignmentService {
         return individualExclusion
           ? undefined
           : individualEnrollmentCondition
-          ? individualEnrollmentCondition
-          : groupExclusion
-          ? undefined
-          : groupEnrollmentCondition
-          ? groupEnrollmentCondition
-          : this.assignRandom(experiment, user);
+            ? individualEnrollmentCondition
+            : groupExclusion
+              ? undefined
+              : groupEnrollmentCondition
+                ? groupEnrollmentCondition
+                : this.assignRandom(experiment, user);
       } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
         return groupExclusion
           ? undefined
           : groupEnrollmentCondition
-          ? groupEnrollmentCondition
-          : individualExclusion
-          ? undefined
-          : individualEnrollmentCondition
-          ? individualEnrollmentCondition
-          : this.assignRandom(experiment, user);
+            ? groupEnrollmentCondition
+            : individualExclusion
+              ? undefined
+              : individualEnrollmentCondition
+                ? individualEnrollmentCondition
+                : this.assignRandom(experiment, user);
       } else {
         return (
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
@@ -1658,7 +1649,7 @@ export class ExperimentAssignmentService {
   ): ExperimentCondition {
     const randomSeed =
       experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
-      experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+        experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
         ? `${experiment.id}_${user.id}`
         : `${experiment.id}_${user.workingGroup?.[experiment.group]}`;
 
@@ -1984,7 +1975,7 @@ export class ExperimentAssignmentService {
     conditionAssigned: ExperimentCondition,
     conditionPayloads: ConditionPayloadDTO,
     factors: FactorDTO[]
-  ): object {
+  ): FactorialConditionResult {
     const levelsForCondition: string[] = [];
     const payloads: string[] = [];
     let factorialCondition;
@@ -2040,7 +2031,12 @@ export class ExperimentAssignmentService {
     delete factorialCondition.levelCombinationElements;
     delete factorialCondition.conditionPayloads;
 
-    const objectToReturn = {};
+    const objectToReturn: FactorialConditionResult = {
+      factorialCondition,
+      payloads,
+      assignedFactor,
+      conditionPayload: factorialConditionPayload,
+    };
     objectToReturn['factorialCondition'] = factorialCondition;
     objectToReturn['payloads'] = payloads;
     objectToReturn['assignedFactor'] = assignedFactor;

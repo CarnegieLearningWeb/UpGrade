@@ -58,8 +58,8 @@ describe('Experiment Assignment Service Test', () => {
   const segmentServiceMock = sinon.createStubInstance(SegmentService);
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
   const cacheServiceMock = sinon.createStubInstance(CacheService);
-  experimentServiceMock.formatingConditionPayload.restore();
-  experimentServiceMock.formatingPayload.restore();
+  experimentServiceMock.formattingConditionPayload.restore();
+  experimentServiceMock.formattingPayload.restore();
 
   beforeAll(() => {
     configureLogger();
