@@ -149,7 +149,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *         type: string
  *       assignmentAlgorithm:
  *         type: string
- *         enum: [random, stratified_random_sampling]
+ *         enum: [random, stratified random sampling]
  *       filterMode:
  *         type: string
  *         enum: [includeAll, excludeAll]

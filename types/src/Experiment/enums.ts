@@ -18,9 +18,15 @@ export enum CONDITION_ORDER {
 
 export enum ASSIGNMENT_ALGORITHM {
   RANDOM = 'random',
-  STRATIFIED_RANDOM_SAMPLING = 'stratified_random_sampling',
+  STRATIFIED_RANDOM_SAMPLING = 'stratified random sampling',
   MOOCLET_TS_CONFIGURABLE = 'ts_configurable',
 }
+
+export const ASSIGNMENT_ALGORITHM_DISPLAY_MAP = {
+  [ASSIGNMENT_ALGORITHM.RANDOM]: 'Random',
+  [ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING]: 'Stratified Random Sampling',
+  [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: 'TS Configurable',
+};
 
 export enum POST_EXPERIMENT_RULE {
   CONTINUE = 'continue',

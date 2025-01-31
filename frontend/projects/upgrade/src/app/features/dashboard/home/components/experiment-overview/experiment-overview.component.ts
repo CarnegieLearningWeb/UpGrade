@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import {
   ASSIGNMENT_ALGORITHM,
+  ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
   ASSIGNMENT_UNIT,
   CONDITION_ORDER,
   CONSISTENCY_RULE,
@@ -54,6 +55,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
   ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
   ASSIGNMENT_ALGORITHM = ASSIGNMENT_ALGORITHM;
+  ASSIGNMENT_ALGORITHM_DISPLAY_MAP = ASSIGNMENT_ALGORITHM_DISPLAY_MAP;
 
   groupTypes = [];
   allContexts = [];
