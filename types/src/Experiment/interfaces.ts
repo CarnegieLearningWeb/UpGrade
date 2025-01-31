@@ -12,7 +12,6 @@ import {
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
   FEATURE_FLAG_LIST_FILTER_MODE,
-  ASSIGNMENT_ALGORITHM,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
