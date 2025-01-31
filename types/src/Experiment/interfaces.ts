@@ -232,20 +232,6 @@ export interface IPayload {
   value: string;
 }
 
-export interface TsConfigurableParameters {
-  prior: {
-    success: number;
-    failure: number;
-  };
-  posteriors: undefined;
-  batch_size: number;
-  max_rating: number;
-  min_rating: number;
-  uniform_threshold: number;
-  tspostdiff_thresh: number;
-  outcome_variable_name: string;
-}
-
 export interface ScoreObject {
   id: string;
   type: string;
