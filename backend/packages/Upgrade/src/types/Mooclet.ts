@@ -66,11 +66,11 @@ export interface MoocletVariableResponseDetails {
 
 export interface MoocletValueRequestBody {
   variable: string;
-  learner?: number;
   value: number;
   mooclet: number;
   version: number;
-  policy: number;
+  learner?: number;
+  policy?: number;
 }
 
 export interface MoocletValueResponseDetails {

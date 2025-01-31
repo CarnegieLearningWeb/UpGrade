@@ -29,8 +29,7 @@
             *ngIf="
               permissions?.experiments.update &&
               experiment.state !== ExperimentState.CANCELLED &&
-              experiment.state !== ExperimentState.ARCHIVED &&
-              !experiment.moocletPolicyParameters
+              experiment.state !== ExperimentState.ARCHIVED
             "
           >
             {{ 'home.view-experiment.edit-button.text' | translate }}

@@ -142,6 +142,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.loadMetrics();
     this.isLoadingExperimentDetailStats$ = this.experimentService.isLoadingExperimentDetailStats$;
     this.isPollingExperimentDetailStats$ = this.experimentService.isPollingExperimentDetailStats$;
 

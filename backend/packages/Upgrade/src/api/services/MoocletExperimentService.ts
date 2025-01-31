@@ -5,6 +5,7 @@ import {
   MoocletPolicyParametersResponseDetails,
   MoocletRequestBody,
   MoocletResponseDetails,
+  MoocletValueRequestBody,
   MoocletVariableRequestBody,
   MoocletVariableResponseDetails,
   MoocletVersionRequestBody,
@@ -47,8 +48,12 @@ import { ConditionValidator, ExperimentDTO } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
 import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { ASSIGNMENT_ALGORITHM, MOOCLET_POLICY_SCHEMA_MAP, MoocletPolicyParametersDTO } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, ILogInput, IMetricMetaData, MOOCLET_POLICY_SCHEMA_MAP, MoocletPolicyParametersDTO, MoocletTSConfigurablePolicyParametersDTO, REPEATED_MEASURE } from 'upgrade_types';
 import { ExperimentCondition } from '../models/ExperimentCondition';
+import { MetricService } from './MetricService';
+import { Metric } from '../models/Metric';
+import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
+import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
 
 export interface SyncCreateParams {
   experimentDTO: ExperimentDTO;
@@ -90,13 +95,16 @@ export class MoocletExperimentService extends ExperimentService {
     @InjectRepository() stratificationRepository: StratificationFactorRepository,
     @InjectRepository()
     private readonly moocletExperimentRefRepository: MoocletExperimentRefRepository,
+    @InjectRepository()
+    private readonly individualEnrollmentRepository: IndividualEnrollmentRepository,
     @InjectDataSource() dataSource: DataSource,
     previewUserService: PreviewUserService,
     segmentService: SegmentService,
     scheduledJobService: ScheduledJobService,
     errorService: ErrorService,
     cacheService: CacheService,
-    queryService: QueryService
+    queryService: QueryService,
+    metricService: MetricService
   ) {
     super(
       experimentRepository,
@@ -124,7 +132,8 @@ export class MoocletExperimentService extends ExperimentService {
       scheduledJobService,
       errorService,
       cacheService,
-      queryService
+      queryService,
+      metricService,
     );
   }
 
@@ -141,6 +150,11 @@ export class MoocletExperimentService extends ExperimentService {
     params: SyncCreateParams
   ): Promise<ExperimentDTO> {
     const moocletPolicyParameters = params.experimentDTO.moocletPolicyParameters;
+    const queries = params.experimentDTO.queries;
+
+    const { rewardMetricKey, rewardMetricQuery } = await this.doCreateMoocletRewardMetric(params.experimentDTO.name, params.experimentDTO.context[0], logger);
+
+    queries.push(rewardMetricQuery);
 
     // create Upgrade Experiment. If this fails, then mooclet resources will not be created, and the UpGrade experiment transaction will abort
     const experimentResponse = await this.createExperiment(manager, params);
@@ -150,6 +164,8 @@ export class MoocletExperimentService extends ExperimentService {
       experimentResponse,
       moocletPolicyParameters
     );
+
+    moocletExperimentRefResponse.rewardMetricKey = rewardMetricKey;
 
     logger.info({
       message: 'Mooclet experiment created successfully:',
@@ -299,9 +315,8 @@ export class MoocletExperimentService extends ExperimentService {
       });
 
       const moocletVariableResponse = await this.createVariableIfNeeded(
-        moocletPolicyParametersResponse,
+        moocletPolicyParameters,
         upgradeExperiment.assignmentAlgorithm,
-        moocletResponse
       );
       logger.debug({
         message: `[Mooclet Creation] 5. Variable created (if needed):`,
@@ -309,6 +324,8 @@ export class MoocletExperimentService extends ExperimentService {
       });
 
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
+      moocletExperimentRef.outcomeVariableName = moocletVariableResponse?.name;
+
     } catch (err) {
       await this.orchestrateDeleteMoocletResources(moocletExperimentRef);
       throw err;
@@ -317,6 +334,79 @@ export class MoocletExperimentService extends ExperimentService {
     moocletExperimentRef.id = uuid();
 
     return moocletExperimentRef;
+  }
+
+  private async doCreateMoocletRewardMetric(experimentName: string, context: string, logger: UpgradeLogger): Promise<{ rewardMetricKey: string, rewardMetricQuery: any }> {
+    const rewardMetricKey = experimentName.toLocaleUpperCase() + '_REWARD';
+    await this.createMoocletRewardMetric(rewardMetricKey, context, logger);
+    const rewardMetricQuery = {
+        id: uuid(),
+        name: "Success Rate",
+        query: {
+            operationType: "percentage",
+            compareFn: "=",
+            compareValue: "SUCCESS"
+        },
+        metric: {
+            key: rewardMetricKey
+        },
+        repeatedMeasure: REPEATED_MEASURE.mostRecent
+    }
+
+    return { rewardMetricKey, rewardMetricQuery };
+  }
+
+  public async createMoocletRewardMetric(rewardMetricName: string, context: string, logger: UpgradeLogger): Promise<Metric[]> {
+    const metric = {
+      id: uuid(),
+      metric: rewardMetricName,
+      datatype: IMetricMetaData.CATEGORICAL,
+      allowedValues: [ "SUCCESS", "FAILURE" ]
+    };
+
+    return this.metricService.saveAllMetrics([metric], [context], logger);
+  }
+
+  public async checkForNewRewards(user: RequestedExperimentUser, logs: ILogInput[]): Promise<void> {
+    // get list of reward keys
+    const moocletExperimentRefs = await this.moocletExperimentRefRepository.find({
+      relations: {
+          versionConditionMaps: true
+      }
+  });
+
+    logs.forEach(async (log) => {
+      const metricKeys = log.metrics.attributes;
+
+      for(const key in metricKeys) {
+        const moocletExperimentRef = moocletExperimentRefs.find(moocletExperimentRef => moocletExperimentRef.rewardMetricKey === key);
+        if (moocletExperimentRef) {
+          const individualEnrollments = await this.individualEnrollmentRepository.findEnrollments(user.id, [moocletExperimentRef.experimentId]);
+          
+          if (individualEnrollments.length === 1) {
+            const { condition } = individualEnrollments[0];
+            console.log('>>>>', condition);
+            console.log('>>>>', moocletExperimentRef.versionConditionMaps);
+            const map = moocletExperimentRef.versionConditionMaps.find(map => condition.id === map.experimentConditionId);
+            const versionId = map.moocletVersionId;
+
+            if (versionId) {
+              const moocletId = moocletExperimentRef.moocletId;
+              const outcomeVariableName = moocletExperimentRef.outcomeVariableName;
+
+              const request: MoocletValueRequestBody = {
+                variable: outcomeVariableName,
+                value: log.metrics.attributes[key] === "SUCCESS" ? 1 : 0,
+                mooclet: moocletId,
+                version: versionId
+              }
+              // we don't need to wait
+              this.moocletDataService.postNewReward(request);
+            }
+          }
+        }
+      }
+    });
   }
 
   private createMoocletVersionConditionMaps(
@@ -473,16 +563,15 @@ export class MoocletExperimentService extends ExperimentService {
   }
 
   private async createVariableIfNeeded(
-    moocletPolicyParametersResponse: MoocletPolicyParametersResponseDetails,
+    moocletPolicyParameters: MoocletPolicyParametersDTO,
     assignmentAlgorithm: string,
-    moocletResponse: MoocletResponseDetails
   ): Promise<MoocletVariableResponseDetails> {
-    if (!moocletPolicyParametersResponse || assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
+    if (!moocletPolicyParameters || assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
       return null;
     }
 
     const variableRequest: MoocletVariableRequestBody = {
-      name: this.createOutcomeVariableName(moocletResponse.name),
+      name: (moocletPolicyParameters as MoocletTSConfigurablePolicyParametersDTO)?.outcome_variable_name
     };
 
     try {
@@ -491,10 +580,6 @@ export class MoocletExperimentService extends ExperimentService {
       logger.error({ message: 'Failed to create Mooclet variable' });
       throw new Error(`Failed to create variable: ${err}`);
     }
-  }
-
-  private createOutcomeVariableName(moocletName: string): string {
-    return 'TS_CONFIG_' + moocletName;
   }
 
   public async getMoocletExperimentRefByUpgradeExperimentId(

@@ -767,6 +767,10 @@ export class ExperimentAssignmentService {
     logger.info({ message: `Add data log userId ${userId}`, details: jsonLog });
     const keyUniqueArray: { key: string; uniquifier: string }[] = [];
 
+    if (env.mooclets.enabled) {
+      this.moocletExperimentService.checkForNewRewards(userDoc, jsonLog)
+    }
+
     // extract the array value
     const promise = jsonLog.map(async (individualMetrics) => {
       return this.createLog(individualMetrics, keyUniqueArray, userDoc, logger);
