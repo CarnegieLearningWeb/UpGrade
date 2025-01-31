@@ -11,14 +11,7 @@ import {
   SimpleChanges,
   OnDestroy,
 } from '@angular/core';
-import {
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-  UntypedFormArray,
-  AbstractControl,
-  FormArray,
-} from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators, UntypedFormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
@@ -43,6 +36,8 @@ import {
   SimpleExperimentFormData,
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { SIMPLE_EXP_CONSTANTS } from './experiment-design.constants';
+import { environment } from '../../../../../../environments/environment';
+import { MoocletPolicyEditorComponent } from './mooclet-policy-editor/mooclet-policy-editor.component';
 
 @Component({
     selector: 'home-experiment-design',
@@ -65,6 +60,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.DECISION_POINTS, { read: ElementRef }) decisionPointTable: ElementRef;
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITIONS, { read: ElementRef }) conditionTable: ElementRef;
   @ViewChild(SIMPLE_EXP_CONSTANTS.VIEW_CHILD.CONDITION_CODE) conditionCode: ElementRef;
+  @ViewChild('policyEditor') policyEditor: MoocletPolicyEditorComponent;
 
   subscriptionHandler: Subscription;
 
@@ -109,6 +105,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   isExperimentEditable = true;
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
+  // Experiment name
+  currentExperimentName$ = this.experimentDesignStepperService.currentExperimentName$;
+
   // Decision Point table store references
   previousDecisionPointTableRowDataBehaviorSubject$ = new BehaviorSubject<DecisionPointsTableRowData>(null);
   isDecisionPointsTableEditMode$ = this.experimentDesignStepperService.isDecisionPointsTableEditMode$;
@@ -119,6 +118,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   isConditionsTableEditMode$ = this.experimentDesignStepperService.isConditionsTableEditMode$;
   conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
 
+  // Used for displaying the Mooclet Policy Parameters JSON editor
+  currentAssignmentAlgorithm$ = this.experimentDesignStepperService.currentAssignmentAlgorithm$;
+  isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
+
   constructor(
     private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
@@ -126,21 +129,25 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     private dialogService: DialogService,
     private experimentDesignStepperService: ExperimentDesignStepperService
   ) {
-    this.subscriptionHandler = this.translate
-      .get([
-        'home.new-experiment.design.assignment-decision-point-error-1.text',
-        'home.new-experiment.design.assignment-decision-point-error-2.text',
-        'home.new-experiment.design.assignment-decision-point-error-3.text',
-        'home.new-experiment.design.assignment-decision-point-error-4.text',
-      ])
-      .subscribe((translatedMessage) => {
-        this.decisionPointErrorMessages = [
-          translatedMessage['home.new-experiment.design.assignment-decision-point-error-1.text'],
-          translatedMessage['home.new-experiment.design.assignment-decision-point-error-2.text'],
-          translatedMessage['home.new-experiment.design.assignment-decision-point-error-3.text'],
-          translatedMessage['home.new-experiment.design.assignment-decision-point-error-4.text'],
-        ];
-      });
+    this.subscriptionHandler = new Subscription();
+
+    this.subscriptionHandler.add(
+      this.translate
+        .get([
+          'home.new-experiment.design.assignment-decision-point-error-1.text',
+          'home.new-experiment.design.assignment-decision-point-error-2.text',
+          'home.new-experiment.design.assignment-decision-point-error-3.text',
+          'home.new-experiment.design.assignment-decision-point-error-4.text',
+        ])
+        .subscribe((translatedMessage) => {
+          this.decisionPointErrorMessages = [
+            translatedMessage['home.new-experiment.design.assignment-decision-point-error-1.text'],
+            translatedMessage['home.new-experiment.design.assignment-decision-point-error-2.text'],
+            translatedMessage['home.new-experiment.design.assignment-decision-point-error-3.text'],
+            translatedMessage['home.new-experiment.design.assignment-decision-point-error-4.text'],
+          ];
+        })
+    );
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -163,6 +170,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.experimentInfo.partitions = [];
         this.experimentInfo.conditions = [];
         this.experimentInfo.conditionPayloads = [];
+
+        if (this.experimentInfo.moocletPolicyParameters) {
+          if (this.policyEditor) {
+            this.policyEditor.resetPolicyParameters();
+          }
+        }
       }
     }
 
@@ -170,26 +183,37 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
-    this.subscriptionHandler = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
-      this.contextMetaData = contextMetaData;
-    });
-    this.subscriptionHandler = this.experimentService.allDecisionPoints$
-      .pipe(filter((decisionPoints) => !!decisionPoints))
-      .subscribe((decisionPoints: any) => {
-        this.allDecisionPoints = decisionPoints.map((decisionPoint) =>
-          decisionPoint.target ? decisionPoint.site + decisionPoint.target : decisionPoint.site
-        );
-      });
+    this.subscriptionHandler.add(
+      this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
+        this.contextMetaData = contextMetaData;
+      })
+    );
+
+    this.subscriptionHandler.add(
+      this.experimentService.allDecisionPoints$
+        .pipe(filter((decisionPoints) => !!decisionPoints))
+        .subscribe((decisionPoints: any) => {
+          this.allDecisionPoints = decisionPoints.map((decisionPoint) =>
+            decisionPoint.target ? decisionPoint.site + decisionPoint.target : decisionPoint.site
+          );
+        })
+    );
+
     this.experimentDesignForm = this._formBuilder.group({
       conditions: this._formBuilder.array([this.addConditions()]),
       decisionPoints: this._formBuilder.array([this.addDecisionPoints()]),
     });
 
-    this.experimentDesignStepperService.decisionPointsEditModePreviousRowData$.subscribe(
-      this.previousDecisionPointTableRowDataBehaviorSubject$
+    this.subscriptionHandler.add(
+      this.experimentDesignStepperService.decisionPointsEditModePreviousRowData$.subscribe(
+        this.previousDecisionPointTableRowDataBehaviorSubject$
+      )
     );
-    this.experimentDesignStepperService.conditionsEditModePreviousRowData$.subscribe(
-      this.previousConditionTableRowDataBehaviorSubject$
+
+    this.subscriptionHandler.add(
+      this.experimentDesignStepperService.conditionsEditModePreviousRowData$.subscribe(
+        this.previousConditionTableRowDataBehaviorSubject$
+      )
     );
 
     // Remove previously added group of conditions and decision points
@@ -638,7 +662,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       (this.experimentDesignForm.valid || !this.isExperimentEditable) &&
       !this.conditionCodeErrors.length &&
       this.decisionPointCountError === null &&
-      this.conditionCountError === null
+      this.conditionCountError === null &&
+      (!this.policyEditor || this.policyEditor.getPolicyEditorErrors().length === 0)
     );
   }
 
@@ -722,6 +747,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           decisionPoints: experimentDesignFormData.decisionPoints,
           conditions: experimentDesignFormData.conditions,
         });
+      if (environment.moocletToggle && this.policyEditor) {
+        experimentDesignFormData.moocletPolicyParameters = {
+          assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
+          ...this.policyEditor.getPolicyEditorValue(),
+        };
+      }
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: this.renameDecisionPointsAsPartitionsTEMPORARY(experimentDesignFormData),

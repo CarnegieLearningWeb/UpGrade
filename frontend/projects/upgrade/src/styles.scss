@@ -36,7 +36,6 @@
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
 @import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
-@import './app/features/dashboard/profile/components/modals/add-metrics/add-metrics.theme.scss';
 @import './app/features/dashboard/home/components/experiment-query-result/experiment-query-result.theme.scss';
 @import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
@@ -72,7 +71,6 @@
   @include queries-modal-component-theme($theme);
   @include query-result-component-theme($theme);
   @include metrics-component-theme($theme);
-  @include add-metrics-component-theme($theme);
   @include experiment-query-result-component-theme($theme);
   @include experiment-ending-criteria-component-theme($theme);
   @include import-experiment-component-theme($theme);
@@ -512,6 +510,38 @@ button[mat-icon-button] {
 
     .mat-mdc-option:hover {
       background-color: rgba(0, 0, 0, 0.04) !important;
+    }
+  }
+}
+
+.json-editor-container {
+  .jsoneditor {
+    border: 0;
+    height: 300px;
+  }
+
+  .jsoneditor-menu {
+    display: none;
+  }
+
+  .ace-jsoneditor {
+    .ace_scroller {
+      background-color: mat.get-color-from-palette($background, background);
+    }
+
+    .ace_gutter {
+      background-color: mat.get-color-from-palette($background, background);
+      color: mat.get-color-from-palette($foreground, text);
+      border-right: 1px solid var(--blue);
+    }
+
+    .ace_text-layer, .ace_variable, .ace_string {
+      color: mat.get-color-from-palette($foreground, text);
+    }
+
+    .ace_gutter-active-line, .ace_marker-layer .ace_active-line {
+      color: mat.get-color-from-palette($foreground, text);
+      background-color: transparent;
     }
   }
 }

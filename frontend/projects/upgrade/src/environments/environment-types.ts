@@ -75,6 +75,7 @@ export interface Environment {
   errorLogsToggle: boolean;
   withinSubjectExperimentSupportToggle: boolean;
   metricAnalyticsExperimentDisplayToggle: boolean;
+  moocletToggle: boolean;
 }
 
 export interface RuntimeEnvironmentConfig {

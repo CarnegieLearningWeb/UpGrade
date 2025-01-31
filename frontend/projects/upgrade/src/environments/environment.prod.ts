@@ -15,6 +15,7 @@ export const environment = {
   withinSubjectExperimentSupportToggle: false,
   errorLogsToggle: false,
   metricAnalyticsExperimentDisplayToggle: false,
+  moocletToggle: false,
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',

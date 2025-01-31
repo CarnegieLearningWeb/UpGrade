@@ -1,4 +1,4 @@
-import { IsNumber, IsString, ValidateNested, IsOptional, IsObject, IsDefined } from 'class-validator';
+import { IsNumber, IsString, ValidateNested, IsOptional, IsObject, IsDefined, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 import { MoocletPolicyParametersDTO } from './MoocletPolicyParametersDTO';
 
@@ -51,7 +51,7 @@ export class MoocletTSConfigurablePolicyParametersDTO extends MoocletPolicyParam
   @IsNumber()
   tspostdiff_thresh = 0;
 
-  @IsDefined()
+  @IsNotEmpty()
   @IsString()
-  outcome_variable_name: string | undefined = undefined;
+  outcome_variable_name = '';
 }
