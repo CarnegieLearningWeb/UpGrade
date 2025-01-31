@@ -1597,7 +1597,7 @@ export class ExperimentAssignmentService {
     experiment: Experiment,
     user: ExperimentUser,
     enrollmentCount?: { conditionId: string; userCount: number }[]
-  ) {
+  ): ExperimentCondition {
     const randomSeed =
       experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
       experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
