@@ -22,6 +22,12 @@ export enum ASSIGNMENT_ALGORITHM {
   MOOCLET_TS_CONFIGURABLE = 'ts_configurable',
 }
 
+export const ASSIGNMENT_ALGORITHM_DISPLAY_MAP = {
+  [ASSIGNMENT_ALGORITHM.RANDOM]: 'Random',
+  [ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING]: 'Stratified Random Sampling',
+  [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: 'TS Configurable',
+};
+
 export enum POST_EXPERIMENT_RULE {
   CONTINUE = 'continue',
   // TO DO : Remove revert when frontend and backend integrated with assign

@@ -24,7 +24,14 @@ import { ExperimentEndCriteriaComponent } from '../../components/modal/experimen
 import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/state-time-logs.component';
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
-import { EXPERIMENT_TYPE, IMetricMetaData, OPERATION_TYPES, PAYLOAD_TYPE } from 'upgrade_types';
+import {
+  EXPERIMENT_TYPE,
+  IMetricMetaData,
+  OPERATION_TYPES,
+  PAYLOAD_TYPE,
+  ASSIGNMENT_ALGORITHM,
+  ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
+} from 'upgrade_types';
 import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
@@ -63,6 +70,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   factorsDataSource: Factors[];
   conditionDatasource: FactorialConditionTableDataFromConditionPayload[];
   expandedId: number = null;
+  ASSIGNMENT_ALGORITHM = ASSIGNMENT_ALGORITHM;
+  ASSIGNMENT_ALGORITHM_DISPLAY_MAP = ASSIGNMENT_ALGORITHM_DISPLAY_MAP;
 
   displayedConditionColumns: string[] = ['conditionCode', 'assignmentWeight', 'description'];
   displayedConditionColumnsFactorial: string[] = ['conditionCode', 'payload', 'assignmentWeight'];
@@ -128,6 +137,16 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   get showMetricAnalysisDisplay() {
     return this.environment.metricAnalyticsExperimentDisplayToggle;
+  }
+
+  get displayMoocletParameters() {
+    if (!this.experiment?.moocletPolicyParameters) {
+      return null;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { assignmentAlgorithm, ...rest } = this.experiment.moocletPolicyParameters;
+    return rest;
   }
 
   ngOnInit() {

@@ -12,11 +12,13 @@ import {
 } from '@angular/core';
 import {
   ASSIGNMENT_ALGORITHM,
+  ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
   ASSIGNMENT_UNIT,
   CONDITION_ORDER,
   CONSISTENCY_RULE,
   EXPERIMENT_STATE,
   EXPERIMENT_TYPE,
+  MOOCLET_POLICY_SCHEMA_MAP,
 } from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
@@ -51,7 +53,9 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
   overviewForm: UntypedFormGroup;
   unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
-  public ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
+  ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
+  ASSIGNMENT_ALGORITHM = ASSIGNMENT_ALGORITHM;
+  ASSIGNMENT_ALGORITHM_DISPLAY_MAP = ASSIGNMENT_ALGORITHM_DISPLAY_MAP;
 
   groupTypes = [];
   allContexts = [];
@@ -101,6 +105,12 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     if (this.environment.withinSubjectExperimentSupportToggle) {
       this.unitOfAssignments.push({ value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS });
     }
+    if (this.environment.moocletToggle) {
+      const supportedMoocletAlgorithms = Object.keys(MOOCLET_POLICY_SCHEMA_MAP) as ASSIGNMENT_ALGORITHM[];
+      supportedMoocletAlgorithms.forEach((algorithmName) => {
+        this.assignmentAlgorithms.push({ value: algorithmName });
+      });
+    }
   }
 
   ngOnInit() {
@@ -136,6 +146,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         stratificationFactor: [null],
         context: [null, Validators.required],
         tags: [[]],
+      });
+
+      this.overviewForm.get('experimentName').valueChanges.subscribe((name) => {
+        this.experimentDesignStepperService.changeExperimentName(name);
       });
 
       this.overviewForm.get('unitOfAssignment').valueChanges.subscribe((assignmentUnit) => {
@@ -195,6 +209,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       this.overviewForm.get('assignmentAlgorithm').valueChanges.subscribe((algo) => {
         this.isStratificationFactorSelected =
           ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING !== algo ? true : this.isStratificationFactorSelected;
+        this.experimentDesignStepperService.changeAssignmentAlgorithm(algo);
       });
 
       // populate values in form to update experiment if experiment data is available

@@ -1,5 +1,5 @@
 .payloads-table-component {
-  height: 515px;
+  padding-bottom: 56px;
 
   .payloads-header-container {
     display: flex;
@@ -22,7 +22,6 @@
   }
 
   .payload-table-design-stepper {
-    height: 475px;
     overflow: auto;
 
     mat-header-row {

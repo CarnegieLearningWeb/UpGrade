@@ -440,6 +440,13 @@
 
           <div *ngIf="decisionPoints.length && conditions.length">
             <app-payloads-table [experimentInfo]="experimentInfo"> </app-payloads-table>
+            <app-mooclet-policy-editor
+              *ngIf="isMoocletExperimentDesign$ | async"
+              [experimentInfo]="experimentInfo"
+              [experimentName]="currentExperimentName$ | async"
+              [currentAssignmentAlgorithm]="currentAssignmentAlgorithm$.value"
+              #policyEditor
+            ></app-mooclet-policy-editor>
           </div>
         </section>
       </form>
