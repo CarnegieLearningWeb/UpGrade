@@ -43,10 +43,7 @@
       </button>
     </div>
     <div>
-      <mat-form-field
-        class="dense-2 filter-options"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field class="dense-2 filter-options" subscriptSizing="dynamic">
         <mat-select
           class="ft-14-400"
           [(ngModel)]="selectedUserFilterOption"
@@ -57,10 +54,7 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field
-        class="dense-2 input"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field class="dense-2 input" subscriptSizing="dynamic">
         <input
           class="ft-14-400 input"
           #searchInput
@@ -90,11 +84,7 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
               <div *ngIf="editMode === index; else firstNameReadOnly">
-                <mat-form-field
-                  class="dense-2 input"
-                  appearance="outline"
-                  subscriptSizing="dynamic"
-                >
+                <mat-form-field class="dense-2 input" appearance="outline" subscriptSizing="dynamic">
                   <input
                     class="ft-14-400"
                     matInput
@@ -118,11 +108,7 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
               <div *ngIf="editMode === index; else lastNameReadOnly">
-                <mat-form-field
-                  class="dense-2 input"
-                  appearance="outline"
-                  subscriptSizing="dynamic"
-                >
+                <mat-form-field class="dense-2 input" appearance="outline" subscriptSizing="dynamic">
                   <input
                     class="ft-14-400"
                     matInput
@@ -158,11 +144,7 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
               <div *ngIf="editMode === index; else roleReadOnly">
-                <mat-form-field
-                  class="dense-2 input"
-                  appearance="outline"
-                  subscriptSizing="dynamic"
-                >
+                <mat-form-field class="dense-2 input" appearance="outline" subscriptSizing="dynamic">
                   <mat-select
                     class="ft-14-400 input"
                     formControlName="role"

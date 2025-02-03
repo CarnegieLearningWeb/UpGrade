@@ -11,10 +11,10 @@ import { UserPermission } from '../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 
 @Component({
-    selector: 'app-queries-modal',
-    templateUrl: './queries-modal.component.html',
-    styleUrls: ['./queries-modal.component.scss'],
-    standalone: false
+  selector: 'app-queries-modal',
+  templateUrl: './queries-modal.component.html',
+  styleUrls: ['./queries-modal.component.scss'],
+  standalone: false,
 })
 export class QueriesModalComponent implements OnInit, OnDestroy {
   permissions: UserPermission;

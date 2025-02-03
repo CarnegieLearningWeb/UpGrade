@@ -5,11 +5,11 @@ import { ExperimentVM, EndExperimentCondition } from '../../../../../../core/exp
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 
 @Component({
-    selector: 'app-experiment-end-criteria',
-    templateUrl: './experiment-end-criteria.component.html',
-    styleUrls: ['./experiment-end-criteria.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-experiment-end-criteria',
+  templateUrl: './experiment-end-criteria.component.html',
+  styleUrls: ['./experiment-end-criteria.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExperimentEndCriteriaComponent implements OnInit {
   experiment: ExperimentVM;

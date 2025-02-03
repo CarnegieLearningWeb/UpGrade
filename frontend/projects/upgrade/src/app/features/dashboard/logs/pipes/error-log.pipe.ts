@@ -2,8 +2,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { SERVER_ERROR } from 'upgrade_types';
 
 @Pipe({
-    name: 'errorLog',
-    standalone: false
+  name: 'errorLog',
+  standalone: false,
 })
 export class ErrorLogPipe implements PipeTransform {
   transform(errorType: SERVER_ERROR, type: string): any {

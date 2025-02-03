@@ -29,11 +29,11 @@ import { FILE_TYPE } from 'upgrade_types';
  * ```
  */
 @Component({
-    selector: 'app-common-import-container',
-    imports: [CommonModalComponent, CommonModule, SharedModule],
-    templateUrl: './common-import-container.component.html',
-    styleUrls: ['./common-import-container.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-common-import-container',
+  imports: [CommonModalComponent, CommonModule, SharedModule],
+  templateUrl: './common-import-container.component.html',
+  styleUrls: ['./common-import-container.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonImportContainerComponent {
   @Input() fileType!: FILE_TYPE;

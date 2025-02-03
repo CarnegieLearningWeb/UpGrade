@@ -31,10 +31,10 @@ interface RowData {
 }
 
 @Component({
-    selector: 'home-experiment-query-result',
-    templateUrl: './experiment-query-result.component.html',
-    styleUrls: ['./experiment-query-result.component.scss'],
-    standalone: false
+  selector: 'home-experiment-query-result',
+  templateUrl: './experiment-query-result.component.html',
+  styleUrls: ['./experiment-query-result.component.scss'],
+  standalone: false,
 })
 export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   @Input() experiment: ExperimentVM;

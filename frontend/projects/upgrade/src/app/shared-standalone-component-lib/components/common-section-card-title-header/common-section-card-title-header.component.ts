@@ -27,11 +27,11 @@ import { SharedModule } from '../../../shared/shared.module';
  */
 
 @Component({
-    selector: 'app-common-section-card-title-header',
-    templateUrl: './common-section-card-title-header.component.html',
-    styleUrls: ['./common-section-card-title-header.component.scss'],
-    imports: [CommonModule, TranslateModule, CommonStatusIndicatorChipComponent, SharedModule],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-common-section-card-title-header',
+  templateUrl: './common-section-card-title-header.component.html',
+  styleUrls: ['./common-section-card-title-header.component.scss'],
+  imports: [CommonModule, TranslateModule, CommonStatusIndicatorChipComponent, SharedModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonSectionCardTitleHeaderComponent {
   @Input() title!: string;

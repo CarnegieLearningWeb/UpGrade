@@ -11,11 +11,11 @@ import {
 import { DialogService } from '../../../../../shared/services/common-dialog.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 @Component({
-    selector: 'home-experiment-schedule',
-    templateUrl: './experiment-schedule.component.html',
-    styleUrls: ['./experiment-schedule.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'home-experiment-schedule',
+  templateUrl: './experiment-schedule.component.html',
+  styleUrls: ['./experiment-schedule.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExperimentScheduleComponent implements OnInit {
   @Input() groupType: string;

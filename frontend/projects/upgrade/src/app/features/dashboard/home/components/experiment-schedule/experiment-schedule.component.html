@@ -22,11 +22,7 @@
         >
           {{ 'home.new-experiment.schedule.start-on.text' | translate }}
         </mat-label>
-        <mat-form-field
-          class="dense-2"
-          appearance="outline"
-          subscriptSizing="dynamic"
-        >
+        <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
           <input
             class="ft-14-400 input"
             matInput
@@ -62,11 +58,7 @@
               {{ 'home.new-experiment.schedule.end-on.text' | translate }}
             </span>
           </mat-radio-button>
-          <mat-form-field
-            class="dense-2"
-            appearance="outline"
-            subscriptSizing="dynamic"
-          >
+          <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
             <input
               class="ft-14-400 input"
               matInput
@@ -92,11 +84,7 @@
             </span>
           </mat-radio-button>
           <div class="end-criteria" *ngIf="groupType">
-            <mat-form-field
-              class="dense-2 group-type-control"
-              appearance="outline"
-              subscriptSizing="dynamic"
-            >
+            <mat-form-field class="dense-2 group-type-control" appearance="outline" subscriptSizing="dynamic">
               <input
                 class="ft-14-400 input"
                 type="number"
@@ -104,7 +92,7 @@
                 [placeholder]="
                   ('home.new-experiment.schedule.group-count.placeholder.text' | translate) +
                   ' ' +
-                  ('global.group-type-plural.text' | translate: { groupType: groupType })
+                  ('global.group-type-plural.text' | translate : { groupType: groupType })
                 "
                 formControlName="groupCount"
               />
@@ -112,7 +100,7 @@
             <span
               class="ft-14-400 group-type"
               [innerHTML]="
-                ('global.group-type-plural.text' | translate: { groupType: groupType }) +
+                ('global.group-type-plural.text' | translate : { groupType: groupType }) +
                 ' ' +
                 ('home.new-experiment.schedule.group-count.text' | translate)
               "
@@ -120,11 +108,7 @@
             ></span>
           </div>
           <div class="end-criteria">
-            <mat-form-field
-              class="dense-2"
-              appearance="outline"
-              subscriptSizing="dynamic"
-            >
+            <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
               <input
                 class="ft-14-400 input"
                 type="number"
@@ -138,7 +122,7 @@
               [innerHTML]="
                 !!experimentScheduleForm.get('groupCount').value && groupType
                   ? ('home.new-experiment.schedule.user-count-per-group.title.text'
-                    | translate: { groupType: groupType })
+                    | translate : { groupType: groupType })
                   : ('home.new-experiment.schedule.user-count.title.text' | translate)
               "
               [ngClass]="{ 'group-type--disable': !groupTypeValue }"

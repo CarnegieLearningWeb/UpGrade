@@ -13,11 +13,11 @@ import { PreviewUsersService } from '../../../../core/preview-users/preview-user
 import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flags.service';
 
 @Component({
-    selector: 'app-home',
-    templateUrl: './home.component.html',
-    styleUrls: ['./home.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class HomeComponent implements OnInit {
   permissions$: Observable<UserPermission>;

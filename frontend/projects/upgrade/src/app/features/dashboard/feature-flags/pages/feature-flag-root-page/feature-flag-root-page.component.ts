@@ -4,9 +4,9 @@ import { FeatureFlagRootPageHeaderComponent } from './feature-flag-root-page-hea
 import { FeatureFlagRootPageContentComponent } from './feature-flag-root-page-content/feature-flag-root-page-content.component';
 
 @Component({
-    selector: 'app-feature-flag-root-page',
-    templateUrl: './feature-flag-root-page.component.html',
-    styleUrl: './feature-flag-root-page.component.scss',
-    imports: [CommonPageComponent, FeatureFlagRootPageHeaderComponent, FeatureFlagRootPageContentComponent]
+  selector: 'app-feature-flag-root-page',
+  templateUrl: './feature-flag-root-page.component.html',
+  styleUrl: './feature-flag-root-page.component.scss',
+  imports: [CommonPageComponent, FeatureFlagRootPageHeaderComponent, FeatureFlagRootPageContentComponent],
 })
 export class FeatureFlagRootPageComponent {}

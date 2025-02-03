@@ -271,7 +271,6 @@ button[mat-icon-button] {
   text-decoration: underline;
 }
 
-
 .mat-mdc-checkbox {
   .mdc-checkbox {
     transform: scale(0.889); // transform 18px to 16px
@@ -343,7 +342,7 @@ button[mat-icon-button] {
 
     &.mdc-switch--unselected {
       .mdc-switch__track {
-        opacity: 1.0 !important;
+        opacity: 1 !important;
         &::before {
           background: var(--mdc-switch-unselected-track-color) !important;
         }
@@ -354,13 +353,13 @@ button[mat-icon-button] {
       }
 
       .mdc-switch__icons {
-        opacity: 1.0 !important;
+        opacity: 1 !important;
       }
     }
 
     &.mdc-switch--selected {
       .mdc-switch__track {
-        opacity: 1.0 !important;
+        opacity: 1 !important;
         &::after {
           background: var(--mdc-switch-selected-track-color) !important;
         }
@@ -371,7 +370,7 @@ button[mat-icon-button] {
       }
 
       .mdc-switch__icons {
-        opacity: 1.0 !important;
+        opacity: 1 !important;
       }
     }
   }
@@ -535,11 +534,14 @@ button[mat-icon-button] {
       border-right: 1px solid var(--blue);
     }
 
-    .ace_text-layer, .ace_variable, .ace_string {
+    .ace_text-layer,
+    .ace_variable,
+    .ace_string {
       color: mat.m2-get-color-from-palette($foreground, text);
     }
 
-    .ace_gutter-active-line, .ace_marker-layer .ace_active-line {
+    .ace_gutter-active-line,
+    .ace_marker-layer .ace_active-line {
       color: mat.m2-get-color-from-palette($foreground, text);
       background-color: transparent;
     }

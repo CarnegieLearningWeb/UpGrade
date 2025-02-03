@@ -4,11 +4,11 @@ import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 @Component({
-    selector: 'app-table-row',
-    templateUrl: './table-row.component.html',
-    styleUrls: ['./table-row.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-table-row',
+  templateUrl: './table-row.component.html',
+  styleUrls: ['./table-row.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TableRowComponent implements OnDestroy {
   @Input() dataSource: any;

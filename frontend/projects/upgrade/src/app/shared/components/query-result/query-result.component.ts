@@ -5,10 +5,10 @@ import { ExperimentVM } from '../../../core/experiments/store/experiments.model'
 import { Observable } from 'rxjs';
 
 @Component({
-    selector: 'app-query-result',
-    templateUrl: './query-result.component.html',
-    styleUrls: ['./query-result.component.scss'],
-    standalone: false
+  selector: 'app-query-result',
+  templateUrl: './query-result.component.html',
+  styleUrls: ['./query-result.component.scss'],
+  standalone: false,
 })
 export class QueryResultComponent implements OnInit {
   experiment: ExperimentVM;

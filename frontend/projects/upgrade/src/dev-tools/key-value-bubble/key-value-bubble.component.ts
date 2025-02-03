@@ -4,11 +4,11 @@ import { IKeyValueBubbleStyles } from './key-value-bubble.model';
 import { KeyValueBubbleService } from './key-value-bubble.service';
 
 @Component({
-    selector: 'app-key-value-bubble',
-    templateUrl: './key-value-bubble.component.html',
-    styleUrls: ['./key-value-bubble.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-key-value-bubble',
+  templateUrl: './key-value-bubble.component.html',
+  styleUrls: ['./key-value-bubble.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class KeyValueBubbleComponent implements OnInit {
   @Input() value: any;

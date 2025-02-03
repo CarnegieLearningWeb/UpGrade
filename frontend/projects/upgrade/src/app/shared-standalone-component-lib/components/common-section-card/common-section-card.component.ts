@@ -22,10 +22,10 @@ import { TranslateModule } from '@ngx-translate/core';
  * ```
  */
 @Component({
-    selector: 'app-common-section-card',
-    imports: [CommonModule, TranslateModule],
-    templateUrl: './common-section-card.component.html',
-    styleUrl: './common-section-card.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-common-section-card',
+  imports: [CommonModule, TranslateModule],
+  templateUrl: './common-section-card.component.html',
+  styleUrl: './common-section-card.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonSectionCardComponent {}

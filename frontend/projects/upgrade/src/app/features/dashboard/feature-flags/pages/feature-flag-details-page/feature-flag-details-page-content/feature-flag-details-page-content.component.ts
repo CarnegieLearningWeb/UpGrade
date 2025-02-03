@@ -12,19 +12,19 @@ import { ActivatedRoute } from '@angular/router';
 import { SharedModule } from '../../../../../../shared/shared.module';
 
 @Component({
-    selector: 'app-feature-flag-details-page-content',
-    imports: [
-        CommonModule,
-        CommonSectionCardListComponent,
-        FeatureFlagInclusionsSectionCardComponent,
-        FeatureFlagExclusionsSectionCardComponent,
-        FeatureFlagExposuresSectionCardComponent,
-        FeatureFlagOverviewDetailsSectionCardComponent,
-        SharedModule,
-    ],
-    templateUrl: './feature-flag-details-page-content.component.html',
-    styleUrl: './feature-flag-details-page-content.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-feature-flag-details-page-content',
+  imports: [
+    CommonModule,
+    CommonSectionCardListComponent,
+    FeatureFlagInclusionsSectionCardComponent,
+    FeatureFlagExclusionsSectionCardComponent,
+    FeatureFlagExposuresSectionCardComponent,
+    FeatureFlagOverviewDetailsSectionCardComponent,
+    SharedModule,
+  ],
+  templateUrl: './feature-flag-details-page-content.component.html',
+  styleUrl: './feature-flag-details-page-content.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy {
   isSectionCardExpanded = true;

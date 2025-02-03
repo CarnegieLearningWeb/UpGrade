@@ -10,11 +10,11 @@ import { TranslateService } from '@ngx-translate/core';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 
 @Component({
-    selector: 'app-conditions-table',
-    templateUrl: './conditions-table.component.html',
-    styleUrls: ['./conditions-table.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-conditions-table',
+  templateUrl: './conditions-table.component.html',
+  styleUrls: ['./conditions-table.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ConditionsTableComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

@@ -10,11 +10,11 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
 
 @Component({
-    selector: 'app-new-segment',
-    templateUrl: './new-segment.component.html',
-    styleUrls: ['./new-segment.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-new-segment',
+  templateUrl: './new-segment.component.html',
+  styleUrls: ['./new-segment.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class NewSegmentComponent implements OnInit {
   @ViewChild('stepper', { static: false }) stepper: any;

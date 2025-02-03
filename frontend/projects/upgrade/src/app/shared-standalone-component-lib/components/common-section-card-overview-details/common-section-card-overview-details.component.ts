@@ -7,11 +7,11 @@ export interface KeyValueFormat {
 }
 
 @Component({
-    selector: 'app-common-section-card-overview-details',
-    imports: [SharedModule],
-    templateUrl: './common-section-card-overview-details.component.html',
-    styleUrl: './common-section-card-overview-details.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-common-section-card-overview-details',
+  imports: [SharedModule],
+  templateUrl: './common-section-card-overview-details.component.html',
+  styleUrl: './common-section-card-overview-details.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 // This component processes the provided data and splits it into two arrays: 'keys' and 'values'.

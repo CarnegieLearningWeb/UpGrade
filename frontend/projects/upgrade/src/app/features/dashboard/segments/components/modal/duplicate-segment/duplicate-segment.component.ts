@@ -5,11 +5,11 @@ import { Segment } from '../../../../../../core/segments/store/segments.model';
 import { Subscription } from 'rxjs';
 
 @Component({
-    selector: 'app-duplicate-segment',
-    templateUrl: './duplicate-segment.component.html',
-    styleUrls: ['./duplicate-segment.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-duplicate-segment',
+  templateUrl: './duplicate-segment.component.html',
+  styleUrls: ['./duplicate-segment.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class DuplicateSegmentComponent {
   segmentName: string;

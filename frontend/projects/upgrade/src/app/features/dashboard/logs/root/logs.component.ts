@@ -4,10 +4,10 @@ import { LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 import { ENV, Environment } from '../../../../../environments/environment-types';
 
 @Component({
-    selector: 'app-logs',
-    templateUrl: './logs.component.html',
-    styleUrls: ['./logs.component.scss'],
-    standalone: false
+  selector: 'app-logs',
+  templateUrl: './logs.component.html',
+  styleUrls: ['./logs.component.scss'],
+  standalone: false,
 })
 export class LogsComponent implements OnInit, OnDestroy {
   // Audit log tab filter options

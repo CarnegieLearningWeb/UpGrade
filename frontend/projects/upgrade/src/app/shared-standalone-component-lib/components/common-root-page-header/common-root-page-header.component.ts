@@ -13,11 +13,11 @@ import { TranslateModule } from '@ngx-translate/core';
  * ```
  */
 @Component({
-    selector: 'app-common-root-page-header',
-    imports: [CommonModule, TranslateModule, MatButton],
-    templateUrl: './common-root-page-header.component.html',
-    styleUrl: './common-root-page-header.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-common-root-page-header',
+  imports: [CommonModule, TranslateModule, MatButton],
+  templateUrl: './common-root-page-header.component.html',
+  styleUrl: './common-root-page-header.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonRootPageHeaderComponent {
   @Input() title!: string;

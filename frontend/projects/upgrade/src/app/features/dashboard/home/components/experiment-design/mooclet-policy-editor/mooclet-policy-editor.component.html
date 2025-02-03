@@ -1,10 +1,6 @@
 <div class="json-editor-container">
   <span class="title">{{ 'home.new-experiment.design.mooclet-policy-parameters.header.text' | translate }}</span>
-  <json-editor
-    #policyEditor
-    [options]="options"
-    [data]="defaultPolicyParametersForAlgorithm"
-  ></json-editor>
+  <json-editor #policyEditor [options]="options" [data]="defaultPolicyParametersForAlgorithm"></json-editor>
   <span
     class="ft-14-600 validation-message"
     *ngIf="moocletPolicyParametersErrors$ | async as errors"

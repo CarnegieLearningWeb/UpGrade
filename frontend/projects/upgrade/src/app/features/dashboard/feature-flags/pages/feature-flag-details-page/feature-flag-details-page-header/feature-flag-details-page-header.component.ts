@@ -4,11 +4,11 @@ import { FeatureFlagsService } from '../../../../../../core/feature-flags/featur
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-feature-flag-details-page-header',
-    imports: [CommonDetailsPageHeaderComponent, CommonModule],
-    templateUrl: './feature-flag-details-page-header.component.html',
-    styleUrl: './feature-flag-details-page-header.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-feature-flag-details-page-header',
+  imports: [CommonDetailsPageHeaderComponent, CommonModule],
+  templateUrl: './feature-flag-details-page-header.component.html',
+  styleUrl: './feature-flag-details-page-header.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagDetailsPageHeaderComponent {
   selectedFeatureFlag$ = this.featureFlagService.selectedFeatureFlag$;

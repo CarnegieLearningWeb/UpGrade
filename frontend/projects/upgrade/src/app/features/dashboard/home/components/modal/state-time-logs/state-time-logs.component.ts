@@ -3,11 +3,11 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ExperimentVM, EXPERIMENT_STATE } from '../../../../../../core/experiments/store/experiments.model';
 
 @Component({
-    selector: 'app-state-time-logs',
-    templateUrl: './state-time-logs.component.html',
-    styleUrls: ['./state-time-logs.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-state-time-logs',
+  templateUrl: './state-time-logs.component.html',
+  styleUrls: ['./state-time-logs.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class StateTimeLogsComponent implements OnInit {
   timeLogDisplayedColumns = ['timeLogNumber', 'startTime', 'endTime'];

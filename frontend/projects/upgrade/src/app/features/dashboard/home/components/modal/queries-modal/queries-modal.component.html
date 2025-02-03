@@ -6,11 +6,11 @@
       matTooltipPosition="above"
       *ngIf="experimentInfo.name.length > 38; else monitoredTitleTemplate"
     >
-      {{ 'monitor.title.text' | translate: { expName: experimentInfo.name } | truncate: 60 }}
+      {{ 'monitor.title.text' | translate : { expName: experimentInfo.name } | truncate : 60 }}
     </span>
   </ng-container>
   <ng-template #monitoredTitleTemplate>
-    <span class="ft-24-700 title">{{ 'monitor.title.text' | translate: { expName: experimentInfo.name } }}</span>
+    <span class="ft-24-700 title">{{ 'monitor.title.text' | translate : { expName: experimentInfo.name } }}</span>
   </ng-template>
   <ng-template #monitorMetricTitle>
     <span class="ft-24-700 title">{{ 'monitor.metric-creation.text' | translate }}</span>

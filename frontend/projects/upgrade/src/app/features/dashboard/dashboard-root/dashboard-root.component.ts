@@ -4,10 +4,10 @@ import { VersionService } from '../../../core/version/version.service';
 import { ENV, Environment } from '../../../../environments/environment-types';
 
 @Component({
-    selector: 'app-dashboard-root',
-    templateUrl: './dashboard-root.component.html',
-    styleUrls: ['./dashboard-root.component.scss'],
-    standalone: false
+  selector: 'app-dashboard-root',
+  templateUrl: './dashboard-root.component.html',
+  styleUrls: ['./dashboard-root.component.scss'],
+  standalone: false,
 })
 export class DashboardRootComponent implements OnInit {
   isLoggedIn$ = this.authService.isLoggedIn$;

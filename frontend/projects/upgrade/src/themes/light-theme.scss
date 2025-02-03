@@ -94,7 +94,7 @@ $background: map_merge(
   (
     background: $background-color,
     shadow-color: $shadow-color,
-    table-shading: $table-shading
+    table-shading: $table-shading,
   )
 );
 $foreground: map_merge(

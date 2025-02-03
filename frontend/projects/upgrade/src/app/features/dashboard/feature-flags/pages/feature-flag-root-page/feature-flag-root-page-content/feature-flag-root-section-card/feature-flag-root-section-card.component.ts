@@ -24,22 +24,22 @@ import { UserPermission } from '../../../../../../../core/auth/store/auth.models
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
-    selector: 'app-feature-flag-root-section-card',
-    imports: [
-        CommonSectionCardComponent,
-        CommonSectionCardSearchHeaderComponent,
-        CommonSectionCardActionButtonsComponent,
-        FeatureFlagRootSectionCardTableComponent,
-        AsyncPipe,
-        JsonPipe,
-        NgIf,
-        MatProgressSpinnerModule,
-        RouterModule,
-        TranslateModule,
-    ],
-    templateUrl: './feature-flag-root-section-card.component.html',
-    styleUrl: './feature-flag-root-section-card.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-feature-flag-root-section-card',
+  imports: [
+    CommonSectionCardComponent,
+    CommonSectionCardSearchHeaderComponent,
+    CommonSectionCardActionButtonsComponent,
+    FeatureFlagRootSectionCardTableComponent,
+    AsyncPipe,
+    JsonPipe,
+    NgIf,
+    MatProgressSpinnerModule,
+    RouterModule,
+    TranslateModule,
+  ],
+  templateUrl: './feature-flag-root-section-card.component.html',
+  styleUrl: './feature-flag-root-section-card.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagRootSectionCardComponent {
   permissions$: Observable<UserPermission>;

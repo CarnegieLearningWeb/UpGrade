@@ -33,24 +33,24 @@ import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
  */
 
 @Component({
-    selector: 'app-common-details-participant-list-table',
-    imports: [
-        MatTableModule,
-        CommonModule,
-        MatTooltipModule,
-        TranslateModule,
-        UpperCasePipe,
-        MatChipsModule,
-        RouterModule,
-        DatePipe,
-        MatSlideToggleModule,
-        MatIconModule,
-        MatButtonModule,
-        CommonStatusIndicatorChipComponent,
-    ],
-    templateUrl: './common-details-participant-list-table.component.html',
-    styleUrl: './common-details-participant-list-table.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-common-details-participant-list-table',
+  imports: [
+    MatTableModule,
+    CommonModule,
+    MatTooltipModule,
+    TranslateModule,
+    UpperCasePipe,
+    MatChipsModule,
+    RouterModule,
+    DatePipe,
+    MatSlideToggleModule,
+    MatIconModule,
+    MatButtonModule,
+    CommonStatusIndicatorChipComponent,
+  ],
+  templateUrl: './common-details-participant-list-table.component.html',
+  styleUrl: './common-details-participant-list-table.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonDetailsParticipantListTableComponent {
   @Input() tableType: FEATURE_FLAG_LIST_FILTER_MODE;

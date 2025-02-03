@@ -43,11 +43,11 @@ import { environment } from '../../../../../../environments/environment';
 import { MoocletPolicyEditorComponent } from '../experiment-design/mooclet-policy-editor/mooclet-policy-editor.component';
 
 @Component({
-    selector: 'home-factorial-experiment-design',
-    templateUrl: './factorial-experiment-design.component.html',
-    styleUrls: ['./factorial-experiment-design.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'home-factorial-experiment-design',
+  templateUrl: './factorial-experiment-design.component.html',
+  styleUrls: ['./factorial-experiment-design.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class FactorialExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

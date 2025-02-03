@@ -1,5 +1,5 @@
 <div class="content-section dense-2">
-  <div *ngFor="let item of data | keyvalue: noSort">
+  <div *ngFor="let item of data | keyvalue : noSort">
     <div class="item-key-value">
       <span class="ft-14-600">{{ item.key }}:</span>
       <span *ngIf="item.key !== 'Tags'" class="ft-14-400 item-value">{{ item.value }}</span>

@@ -7,8 +7,8 @@ export enum SegmentStatusPipeType {
 }
 
 @Pipe({
-    name: 'segmentStatus',
-    standalone: false
+  name: 'segmentStatus',
+  standalone: false,
 })
 export class SegmentStatusPipe implements PipeTransform {
   transform(segmentStatus: SEGMENT_STATUS, type: SegmentStatusPipeType = SegmentStatusPipeType.TEXT): any {

@@ -14,10 +14,10 @@ import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } fr
 import { startWith, map } from 'rxjs/operators';
 
 @Component({
-    selector: 'app-create-query',
-    templateUrl: './create-query.component.html',
-    styleUrls: ['./create-query.component.scss'],
-    standalone: false
+  selector: 'app-create-query',
+  templateUrl: './create-query.component.html',
+  styleUrls: ['./create-query.component.scss'],
+  standalone: false,
 })
 export class CreateQueryComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

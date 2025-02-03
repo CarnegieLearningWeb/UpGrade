@@ -30,19 +30,19 @@ export interface CommonSearchWidgetSearchParams<SearchKeyType> {
 }
 
 @Component({
-    selector: 'app-common-section-card-search-header',
-    templateUrl: './common-section-card-search-header.component.html',
-    styleUrls: ['./common-section-card-search-header.component.scss'],
-    imports: [
-        CommonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatIconModule,
-        FormsModule,
-        TranslateModule,
-    ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-common-section-card-search-header',
+  templateUrl: './common-section-card-search-header.component.html',
+  styleUrls: ['./common-section-card-search-header.component.scss'],
+  imports: [
+    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatIconModule,
+    FormsModule,
+    TranslateModule,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonSectionCardSearchHeaderComponent {
   @Input() filterOptions: string[];

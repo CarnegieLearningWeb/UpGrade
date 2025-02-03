@@ -2,8 +2,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { OPERATION_TYPES } from 'upgrade_types';
 
 @Pipe({
-    name: 'operationType',
-    standalone: false
+  name: 'operationType',
+  standalone: false,
 })
 export class OperationPipe implements PipeTransform {
   transform(operationType: OPERATION_TYPES | string): string {

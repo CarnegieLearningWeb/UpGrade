@@ -3,11 +3,11 @@ import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../../
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
 
 @Component({
-    selector: 'app-feature-flag-overview-details-footer',
-    imports: [CommonTabbedSectionCardFooterComponent],
-    templateUrl: './feature-flag-overview-details-footer.component.html',
-    styleUrl: './feature-flag-overview-details-footer.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-feature-flag-overview-details-footer',
+  imports: [CommonTabbedSectionCardFooterComponent],
+  templateUrl: './feature-flag-overview-details-footer.component.html',
+  styleUrl: './feature-flag-overview-details-footer.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagOverviewDetailsFooterComponent implements OnInit {
   tabLabels = ['Participants', 'Data'];

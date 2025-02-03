@@ -4,10 +4,10 @@ import { PreviewUsersService } from '../../../../core/preview-users/preview-user
 import { StratificationFactorsService } from '../../../../core/stratification-factors/stratification-factors.service';
 
 @Component({
-    selector: 'app-user-root',
-    templateUrl: './experiment-users-root.component.html',
-    styleUrls: ['./experiment-users-root.component.scss'],
-    standalone: false
+  selector: 'app-user-root',
+  templateUrl: './experiment-users-root.component.html',
+  styleUrls: ['./experiment-users-root.component.scss'],
+  standalone: false,
 })
 export class ExperimentUsersRootComponent {
   constructor(

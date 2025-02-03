@@ -11,10 +11,10 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 
 @Component({
-    selector: 'home-new-experiment',
-    templateUrl: './new-experiment.component.html',
-    styleUrls: ['./new-experiment.component.scss'],
-    standalone: false
+  selector: 'home-new-experiment',
+  templateUrl: './new-experiment.component.html',
+  styleUrls: ['./new-experiment.component.scss'],
+  standalone: false,
 })
 export class NewExperimentComponent implements OnInit {
   @ViewChild('stepper') stepper: any;

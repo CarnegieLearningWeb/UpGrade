@@ -26,11 +26,11 @@ import { SEGMENT_SEARCH_KEY } from '../../../../../../../../../../types/src/Expe
 import { CustomMatTableSource } from './CustomMatTableSource';
 
 @Component({
-    selector: 'segments-list',
-    templateUrl: './segments-list.component.html',
-    styleUrls: ['./segments-list.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'segments-list',
+  templateUrl: './segments-list.component.html',
+  styleUrls: ['./segments-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('tableContainer', { static: false }) segmentsTableContainer: ElementRef;

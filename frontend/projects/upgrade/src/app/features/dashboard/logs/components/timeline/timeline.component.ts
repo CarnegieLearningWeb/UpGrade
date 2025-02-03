@@ -5,11 +5,11 @@ import { FEATURE_FLAG_LIST_OPERATION, LOG_TYPE, SERVER_ERROR } from 'upgrade_typ
 import Convert from 'ansi-to-html';
 
 @Component({
-    selector: 'logs-timeline',
-    templateUrl: './timeline.component.html',
-    styleUrls: ['./timeline.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'logs-timeline',
+  templateUrl: './timeline.component.html',
+  styleUrls: ['./timeline.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TimelineComponent {
   @Input() logData;

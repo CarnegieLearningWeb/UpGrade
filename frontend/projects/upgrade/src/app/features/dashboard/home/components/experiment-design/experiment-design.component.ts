@@ -40,11 +40,11 @@ import { environment } from '../../../../../../environments/environment';
 import { MoocletPolicyEditorComponent } from './mooclet-policy-editor/mooclet-policy-editor.component';
 
 @Component({
-    selector: 'home-experiment-design',
-    templateUrl: './experiment-design.component.html',
-    styleUrls: ['./experiment-design.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'home-experiment-design',
+  templateUrl: './experiment-design.component.html',
+  styleUrls: ['./experiment-design.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   // bind constants so they can be referenced in html template

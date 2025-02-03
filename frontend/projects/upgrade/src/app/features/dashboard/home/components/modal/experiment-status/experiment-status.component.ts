@@ -7,10 +7,10 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 import { ExperimentFormValidators } from '../../../validators/experiment-form.validators';
 
 @Component({
-    selector: 'home-experiment-status',
-    templateUrl: './experiment-status.component.html',
-    styleUrls: ['./experiment-status.component.scss'],
-    standalone: false
+  selector: 'home-experiment-status',
+  templateUrl: './experiment-status.component.html',
+  styleUrls: ['./experiment-status.component.scss'],
+  standalone: false,
 })
 export class ExperimentStatusComponent implements OnInit {
   experimentInfo: ExperimentVM;

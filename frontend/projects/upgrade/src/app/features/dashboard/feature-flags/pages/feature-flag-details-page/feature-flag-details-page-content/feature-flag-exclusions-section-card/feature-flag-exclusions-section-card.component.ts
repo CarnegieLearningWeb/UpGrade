@@ -26,18 +26,18 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
-    selector: 'app-feature-flag-exclusions-section-card',
-    imports: [
-        CommonSectionCardComponent,
-        CommonSectionCardTitleHeaderComponent,
-        CommonSectionCardActionButtonsComponent,
-        CommonModule,
-        FeatureFlagExclusionsTableComponent,
-        TranslateModule,
-    ],
-    templateUrl: './feature-flag-exclusions-section-card.component.html',
-    styleUrl: './feature-flag-exclusions-section-card.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-feature-flag-exclusions-section-card',
+  imports: [
+    CommonSectionCardComponent,
+    CommonSectionCardTitleHeaderComponent,
+    CommonSectionCardActionButtonsComponent,
+    CommonModule,
+    FeatureFlagExclusionsTableComponent,
+    TranslateModule,
+  ],
+  templateUrl: './feature-flag-exclusions-section-card.component.html',
+  styleUrl: './feature-flag-exclusions-section-card.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagExclusionsSectionCardComponent {
   @Input() isSectionCardExpanded;

@@ -1,15 +1,12 @@
 import { Component, ChangeDetectionStrategy, Inject } from '@angular/core';
-import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
-    selector: 'app-delete-stratification',
-    templateUrl: './delete-stratification.component.html',
-    styleUrls: ['./delete-stratification.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-delete-stratification',
+  templateUrl: './delete-stratification.component.html',
+  styleUrls: ['./delete-stratification.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class DeleteStratificationComponent {
   message: boolean;

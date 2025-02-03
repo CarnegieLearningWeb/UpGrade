@@ -5,11 +5,11 @@ import { UserRole } from 'upgrade_types';
 import { UsersService } from '../../../../../../core/users/users.service';
 
 @Component({
-    selector: 'app-new-user',
-    templateUrl: './new-user.component.html',
-    styleUrls: ['./new-user.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-new-user',
+  templateUrl: './new-user.component.html',
+  styleUrls: ['./new-user.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class NewUserComponent implements OnInit {
   newUserForm: UntypedFormGroup;

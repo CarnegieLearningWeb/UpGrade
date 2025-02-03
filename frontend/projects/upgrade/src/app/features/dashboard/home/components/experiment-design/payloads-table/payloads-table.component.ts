@@ -8,11 +8,11 @@ import {
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 @Component({
-    selector: 'app-payloads-table',
-    templateUrl: './payloads-table.component.html',
-    styleUrls: ['./payloads-table.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+  selector: 'app-payloads-table',
+  templateUrl: './payloads-table.component.html',
+  styleUrls: ['./payloads-table.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PayloadsTableComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
