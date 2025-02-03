@@ -81,4 +81,5 @@ export {
   MoocletPolicyParametersDTO,
   MoocletTSConfigurablePolicyParametersDTO,
   MOOCLET_POLICY_SCHEMA_MAP,
+  SUPPORTED_MOOCLET_ALGORITHMS,
 } from './Mooclet';

@@ -128,6 +128,19 @@ export class MoocletDataService {
     return response;
   }
 
+  public async getPolicyParameters(policyParametersId: number): Promise<MoocletPolicyParametersResponseDetails> {
+    const endpoint = `/policyparameters/${policyParametersId}`;
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'GET',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+    };
+
+    const response = this.fetchExternalMoocletsData(requestParams);
+
+    return response;
+  }
+
   public async deletePolicyParameters(policyParametersId: number): Promise<any> {
     const endpoint = `/policyparameters/${policyParametersId}`;
     const requestParams: MoocletProxyRequestParams = {
