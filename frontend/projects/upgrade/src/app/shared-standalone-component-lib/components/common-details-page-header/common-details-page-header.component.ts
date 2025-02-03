@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MatButton } from '@angular/material/button';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
 /**
@@ -18,7 +17,7 @@ import { RouterModule } from '@angular/router';
  */
 @Component({
   selector: 'app-common-details-page-header',
-  imports: [CommonModule, TranslateModule, MatButton, RouterModule],
+  imports: [CommonModule, TranslateModule, RouterModule],
   templateUrl: './common-details-page-header.component.html',
   styleUrl: './common-details-page-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

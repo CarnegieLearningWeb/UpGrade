@@ -1,4 +1,4 @@
-import { CommonModule, UpperCasePipe, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -8,7 +8,6 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { CommonStatusIndicatorChipComponent } from '../common-status-indicator-chip/common-status-indicator-chip.component';
 import {
   PARTICIPANT_LIST_ROW_ACTION,
   ParticipantListRowActionEvent,
@@ -39,14 +38,11 @@ import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
     CommonModule,
     MatTooltipModule,
     TranslateModule,
-    UpperCasePipe,
     MatChipsModule,
     RouterModule,
-    DatePipe,
     MatSlideToggleModule,
     MatIconModule,
     MatButtonModule,
-    CommonStatusIndicatorChipComponent,
   ],
   templateUrl: './common-details-participant-list-table.component.html',
   styleUrl: './common-details-participant-list-table.component.scss',

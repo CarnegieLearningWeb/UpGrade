@@ -1,14 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogActions,
-  MatDialogClose,
-  MatDialogContent,
-  MatDialogRef,
-  MatDialogTitle,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
@@ -20,17 +12,7 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
 
 @Component({
   selector: 'app-add-feature-flag-modal',
-  imports: [
-    CommonModalComponent,
-    MatInputModule,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
-    MatDialogClose,
-    FormsModule,
-    TranslateModule,
-    CommonModule,
-  ],
+  imports: [CommonModalComponent, MatInputModule, FormsModule, TranslateModule, CommonModule],
   templateUrl: './delete-feature-flag-modal.component.html',
   styleUrl: './delete-feature-flag-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
