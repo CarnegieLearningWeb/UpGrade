@@ -216,7 +216,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       if (this.experimentInfo) {
         if (
           this.experimentInfo.state == this.ExperimentState.ENROLLING ||
-          this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE
+          this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE ||
+          this.experimentInfo.assignmentAlgorithm in MOOCLET_POLICY_SCHEMA_MAP
         ) {
           this.overviewForm.disable();
           this.isExperimentEditable = false;
@@ -335,7 +336,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     if (
       this.experimentInfo &&
       (this.experimentInfo.state == this.ExperimentState.ENROLLING ||
-        this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)
+        this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE ||
+        this.experimentInfo.assignmentAlgorithm in MOOCLET_POLICY_SCHEMA_MAP)
     ) {
       this.emitExperimentDialogEvent.emit({
         type: eventType,

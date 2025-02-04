@@ -11,6 +11,7 @@ import {
   SimpleChanges,
   OnDestroy,
 } from '@angular/core';
+import { EXPERIMENT_STATE, MOOCLET_POLICY_SCHEMA_MAP } from 'upgrade_types';
 import { UntypedFormBuilder, UntypedFormGroup, Validators, UntypedFormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import {
@@ -21,7 +22,6 @@ import {
   ExperimentCondition,
   ExperimentDecisionPoint,
   IContextMetaData,
-  EXPERIMENT_STATE,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -252,7 +252,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
       this.isExperimentEditable =
         this.experimentInfo.state !== this.ExperimentState.ENROLLING &&
-        this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE;
+        this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE &&
+        !(this.experimentInfo.assignmentAlgorithm in MOOCLET_POLICY_SCHEMA_MAP);
 
       // disable control on edit:
       if (!this.isExperimentEditable) {

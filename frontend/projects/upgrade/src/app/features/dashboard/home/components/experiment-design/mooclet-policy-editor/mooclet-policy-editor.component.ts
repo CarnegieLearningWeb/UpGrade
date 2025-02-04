@@ -17,6 +17,7 @@ export class MoocletPolicyEditorComponent implements OnInit {
   @Input() experimentInfo: ExperimentVM;
   @Input() experimentName: string;
   @Input() currentAssignmentAlgorithm: string;
+  @Input() isEditable = true;
 
   @ViewChild('policyEditor', { static: false }) policyEditor: JsonEditorComponent;
 
@@ -42,7 +43,7 @@ export class MoocletPolicyEditorComponent implements OnInit {
       this.defaultPolicyParametersForAlgorithm = this.experimentInfo.moocletPolicyParameters;
     }
 
-    this.options.mode = 'code';
+    this.options.mode = this.isEditable ? 'code' : 'view';
     this.options.statusBar = false;
 
     // Set up value change listener for the editor value
