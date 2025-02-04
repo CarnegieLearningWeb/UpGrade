@@ -19,6 +19,7 @@ import {
   PAYLOAD_TYPE,
   CONDITION_ORDER,
   ASSIGNMENT_ALGORITHM,
+  MoocletTSConfigurablePolicyParametersDTO,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -256,6 +257,7 @@ export interface Experiment {
   experimentSegmentExclusion: SegmentNew;
   groupSatisfied?: number;
   backendVersion: string;
+  moocletPolicyParameters?: MoocletTSConfigurablePolicyParametersDTO;
 }
 
 export interface ParticipantsMember {

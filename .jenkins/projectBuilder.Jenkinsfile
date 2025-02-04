@@ -7,7 +7,7 @@ projectBuilderV5 (
 
     projects: [
         "types": [
-            artifactType: "none",
+            artifactType: "codeartifact",
             projectDir: "types",
             runInProjectDir: true,
             skipArtifactUpload: true,
@@ -20,9 +20,6 @@ projectBuilderV5 (
                     githubCheck: 'types npm ci --no-audit',
                     log: 'types-npm-ci.log'
                 ]
-            ],
-            s3Context: [
-                glob: "types/**/*"
             ]
         ],
         "upgrade-service":[
@@ -55,6 +52,7 @@ projectBuilderV5 (
             artifactDir: 'dist/upgrade',
             versioning: 'branch',
             oneArtifactPerEnvironment: true,
+            dependencies: ["types"],
             buildScripts: [
                 [
                     script: 'npm ci --no-audit',

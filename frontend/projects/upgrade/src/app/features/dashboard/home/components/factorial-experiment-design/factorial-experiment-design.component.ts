@@ -39,6 +39,8 @@ import {
 } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { FACTORIAL_EXP_CONSTANTS } from './factorial-experiment-design.constants';
 import { PAYLOAD_TYPE } from '../../../../../../../../../../types/src';
+import { environment } from '../../../../../../environments/environment';
+import { MoocletPolicyEditorComponent } from '../experiment-design/mooclet-policy-editor/mooclet-policy-editor.component';
 
 @Component({
   selector: 'home-factorial-experiment-design',
@@ -58,6 +60,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   @ViewChild('decisionPointTable', { read: ElementRef }) decisionPointTable: ElementRef;
   @ViewChild('factorTable', { read: ElementRef }) factorTable: ElementRef;
   @ViewChild('levelTable', { read: ElementRef }) levelTable: ElementRef;
+  @ViewChild('policyEditor') policyEditor: MoocletPolicyEditorComponent;
 
   subscriptionHandler: Subscription;
 
@@ -100,6 +103,9 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   // common lock variable for all tables:
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
+  // Experiment name
+  currentExperimentName$ = this.experimentDesignStepperService.currentExperimentName$;
+
   // Decision Point table store references
   previousDecisionPointTableRowDataBehaviorSubject$ = new BehaviorSubject<DecisionPointsTableRowData>(null);
   isDecisionPointsTableEditMode$ = this.experimentDesignStepperService.isDecisionPointsTableEditMode$;
@@ -120,6 +126,10 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
   designData$ = new BehaviorSubject<[ExperimentDecisionPoint[], ExperimentCondition[]]>([[], []]);
   factorialConditionsTableData: FactorialConditionTableRowData[] = [];
   factorialConditions: FactorialConditionRequestObject[] = [];
+
+  // Used for displaying the Mooclet Policy Parameters JSON editor
+  currentAssignmentAlgorithm$ = this.experimentDesignStepperService.currentAssignmentAlgorithm$;
+  isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
 
   constructor(
     private _formBuilder: UntypedFormBuilder,
@@ -159,6 +169,12 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
         this.experimentInfo.conditions = [];
         this.experimentInfo.factors = [];
         this.experimentInfo.conditionPayloads = [];
+
+        if (this.experimentInfo.moocletPolicyParameters) {
+          if (this.policyEditor) {
+            this.policyEditor.resetPolicyParameters();
+          }
+        }
       }
     }
   }
@@ -543,6 +559,7 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.factorCountError === null &&
       this.levelCountError === null &&
       this.conditionCountError === null &&
+      (!this.policyEditor || this.policyEditor.getPolicyEditorErrors().length === 0) &&
       !this.experimentDesignStepperService.checkConditionTableValidity()
     );
   }
@@ -752,6 +769,13 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
           partitions: factorialExperimentDesignFormData.decisionPoints,
           factors: factorialExperimentDesignFormData.factors,
           conditionPayloads: factorialConditionPayloads,
+          ...(environment.moocletToggle &&
+            this.policyEditor && {
+              moocletPolicyParameters: {
+                assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
+                ...this.policyEditor.getPolicyEditorValue(),
+              },
+            }),
         },
         path: NewExperimentPaths.EXPERIMENT_DESIGN,
       });
