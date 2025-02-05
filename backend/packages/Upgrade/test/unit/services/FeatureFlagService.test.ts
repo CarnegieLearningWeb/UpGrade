@@ -32,6 +32,7 @@ import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/reposito
 import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
 import { User } from '../../../src/api/models/User';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
+import { CacheService } from '../../../src/api/services/CacheService';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
@@ -154,6 +155,14 @@ describe('Feature Flag Service Testing', () => {
       providers: [
         DataSource,
         FeatureFlagService,
+        {
+          provide: CacheService,
+          useValue: {
+            delCache: jest.fn().mockResolvedValue(undefined),
+            resetPrefixCache: jest.fn().mockResolvedValue(undefined),
+            wrap: jest.fn().mockImplementation((key, cb) => cb()),
+          }
+        },
         {
           provide: getDataSourceToken('default'),
           useValue: dataSource,
@@ -390,11 +399,13 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should update the filter mode', async () => {
+    flagRepo.updateFilterMode = jest.fn().mockResolvedValue(mockFlag1);
     const results = await service.updateFilterMode(mockFlag1.id, FILTER_MODE.EXCLUDE_ALL, mockUser1);
     expect(results).toBeTruthy();
   });
 
   it('should delete the flag', async () => {
+    flagRepo.updateFilterMode = jest.fn().mockResolvedValue(mockFlag1);
     const results = await service.delete(mockFlag1.id, mockUser1, logger);
     expect(results).toEqual(mockFlag1.id);
   });
@@ -419,7 +430,8 @@ describe('Feature Flag Service Testing', () => {
     const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
     const context = 'context1';
 
-    flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue([mockFlag1]);
+    flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue([]);
+    service.cacheService.wrap = jest.fn().mockResolvedValue([mockFlag1]);
     const result = await service.getKeys(userDoc, context, logger);
 
     expect(result.length).toEqual(1);
@@ -486,5 +498,25 @@ describe('Feature Flag Service Testing', () => {
         error: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
       },
     ]);
+  });
+
+  it('should return cached flags from context', async () => {
+    const context = 'test-context';
+    const mockFlags: FeatureFlag[] = [mockFlag1];
+
+    flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue(mockFlags);
+    service.cacheService.wrap = jest.fn().mockImplementation((key, fn) => fn());
+
+    const result = await service.getCachedFlagsFromContext(context);
+
+    expect(result).toEqual(mockFlags);
+    expect(flagRepo.getFlagsFromContext).toHaveBeenCalledWith(context);
+    expect(service.cacheService.wrap).toHaveBeenCalled();
+  });
+
+  it('should call the cache service to delete the cache', async () => {
+    await service.clearCachedFlagsForContext('test');
+
+    expect(service.cacheService.delCache).toHaveBeenCalled();
   });
 });
