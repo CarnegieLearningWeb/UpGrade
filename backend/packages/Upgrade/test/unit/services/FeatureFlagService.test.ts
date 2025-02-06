@@ -161,7 +161,7 @@ describe('Feature Flag Service Testing', () => {
             delCache: jest.fn().mockResolvedValue(undefined),
             resetPrefixCache: jest.fn().mockResolvedValue(undefined),
             wrap: jest.fn().mockImplementation((key, cb) => cb()),
-          }
+          },
         },
         {
           provide: getDataSourceToken('default'),

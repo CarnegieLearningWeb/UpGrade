@@ -139,7 +139,7 @@ export class FeatureFlagService {
 
   public async clearCachedFlagsForContext(context: string): Promise<void> {
     const cacheKey = CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + context;
-    this.cacheService.delCache(cacheKey);
+    return this.cacheService.delCache(cacheKey);
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<FeatureFlag | undefined> {
@@ -251,7 +251,7 @@ export class FeatureFlagService {
       const featureFlag = await this.findOne(featureFlagId, logger);
 
       if (featureFlag) {
-        this.clearCachedFlagsForContext(featureFlag.context[0]);
+        await this.clearCachedFlagsForContext(featureFlag.context[0]);
         const deletedFlag = await this.featureFlagRepository.deleteById(featureFlagId, transactionalEntityManager);
 
         featureFlag.featureFlagSegmentInclusion.forEach(async (segmentInclusion) => {
@@ -293,7 +293,7 @@ export class FeatureFlagService {
 
   public async updateState(flagId: string, status: FEATURE_FLAG_STATUS, currentUser: User): Promise<FeatureFlag> {
     const oldFeatureFlag = await this.findOne(flagId);
-    this.clearCachedFlagsForContext(oldFeatureFlag.context[0]);
+    await this.clearCachedFlagsForContext(oldFeatureFlag.context[0]);
     let updatedState: FeatureFlag;
     try {
       updatedState = await this.featureFlagRepository.updateState(flagId, status);
@@ -320,7 +320,7 @@ export class FeatureFlagService {
 
     try {
       updatedFilterMode = await this.featureFlagRepository.updateFilterMode(flagId, filterMode);
-      this.clearCachedFlagsForContext(updatedFilterMode?.context[0]);
+      await this.clearCachedFlagsForContext(updatedFilterMode?.context[0]);
     } catch (err) {
       const error = new Error(`Error in updating feature flag filter mode ${err}`);
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
@@ -378,7 +378,7 @@ export class FeatureFlagService {
     flag.id = uuid();
     // saving feature flag doc
 
-    this.clearCachedFlagsForContext(flag.context[0]);
+    await this.clearCachedFlagsForContext(flag.context[0]);
     const executeTransaction = async (manager: EntityManager): Promise<FeatureFlag> => {
       let featureFlagDoc;
       try {
@@ -410,7 +410,7 @@ export class FeatureFlagService {
   }
 
   private async updateFeatureFlagInDB(flag: FeatureFlag, user: User, logger: UpgradeLogger): Promise<FeatureFlag> {
-    this.clearCachedFlagsForContext(flag.context[0]);
+    await this.clearCachedFlagsForContext(flag.context[0]);
     const {
       featureFlagSegmentExclusion,
       featureFlagSegmentInclusion,
@@ -511,7 +511,7 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<Segment> {
     await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
-    this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return this.segmentService.deleteSegment(segmentId, logger);
   }
 
@@ -578,7 +578,7 @@ export class FeatureFlagService {
   ): Promise<(FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[]> {
     logger.info({ message: `Add ${filterType} list to feature flag` });
 
-    this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
 
     const executeTransaction = async (manager: EntityManager) => {
       // Create a new private segment
@@ -676,7 +676,7 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
     logger.info({ message: `Update ${filterType} list for feature flag` });
-    this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
       // Find the existing record
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
