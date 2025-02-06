@@ -5,7 +5,6 @@ import { authorizationChecker } from '../../auth/authorizationChecker';
 import { currentUserChecker } from '../../auth/currentUserChecker';
 
 const expressApp: Application = createExpressServer({
-  cors: true,
   classTransformer: true,
   validation: { validationError: { target: false, value: false } },
   // validation: { whitelist: true, forbidNonWhitelisted: true, validationError: { target: false, value: false } },
