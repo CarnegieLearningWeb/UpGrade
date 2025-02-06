@@ -1,12 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
-import {
-  ASSIGNMENT_ALGORITHM,
-  ASSIGNMENT_UNIT,
-  MOOCLET_POLICY_SCHEMA_MAP,
-  SUPPORTED_MOOCLET_ALGORITHMS,
-} from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 import {
   ExperimentDecisionPoint,
   ExperimentCondition,

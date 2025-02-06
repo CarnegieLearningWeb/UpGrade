@@ -136,7 +136,7 @@ export class MoocletDataService {
       apiToken: this.apiToken,
     };
 
-    const response = this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams);
 
     return response;
   }
