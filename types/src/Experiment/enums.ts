@@ -269,6 +269,7 @@ export enum CACHE_PREFIX {
   EXPERIMENT_KEY_PREFIX = 'validExperiments-',
   SEGMENT_KEY_PREFIX = 'segments-',
   MARK_KEY_PREFIX = 'markExperiments-',
+  FEATURE_FLAG_KEY_PREFIX = 'featureFlags-',
 }
 
 export enum STATUS_INDICATOR_CHIP_TYPE {
