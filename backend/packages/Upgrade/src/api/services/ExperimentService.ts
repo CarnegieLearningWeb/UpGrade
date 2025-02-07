@@ -509,6 +509,16 @@ export class ExperimentService {
     user: UserDTO,
     logger: UpgradeLogger
   ): Promise<ValidatedExperimentError[]> {
+    const { experiments, validatedExperiments } = await this.verifyExperiments(experimentFiles, logger);
+
+    await this.addBulkExperiments(experiments, user, logger);
+    return validatedExperiments;
+  }
+
+  protected async verifyExperiments(
+    experimentFiles: ExperimentFile[],
+    logger: UpgradeLogger
+  ): Promise<{ experiments: ExperimentDTO[]; validatedExperiments: ValidatedExperimentError[] }> {
     const validatedExperiments = await this.validateExperiments(experimentFiles, logger);
 
     const nonErrorExperiments = experimentFiles.filter((file) => {
@@ -568,8 +578,7 @@ export class ExperimentService {
       // Always set the imported experiment to "inactive".
       experiment.state = EXPERIMENT_STATE.INACTIVE;
     }
-    await this.addBulkExperiments(experiments, user, logger);
-    return validatedExperiments;
+    return { experiments, validatedExperiments };
   }
 
   public async exportExperiment(user: UserDTO, logger: UpgradeLogger, experimentIds?: string[]): Promise<Experiment[]> {

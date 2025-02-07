@@ -1270,7 +1270,7 @@ export class ExperimentController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ValidatedExperimentError[]> {
-    return this.experimentService.importExperiment(experiments, currentUser, request.logger);
+    return this.moocletExperimentService.syncImportExperiment(experiments, currentUser, request.logger);
   }
 
   /**

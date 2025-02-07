@@ -43,12 +43,14 @@ import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletVersionConditionMap } from '../models/MoocletVersionConditionMap';
 import { v4 as uuid } from 'uuid';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
-import { ConditionValidator, ExperimentDTO } from '../DTO/ExperimentDTO';
+import { ConditionValidator, ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
 import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { ASSIGNMENT_ALGORITHM, MOOCLET_POLICY_SCHEMA_MAP, MoocletPolicyParametersDTO } from 'upgrade_types';
 import { ExperimentCondition } from '../models/ExperimentCondition';
+import { env } from '../../env';
+import { BadRequestError } from 'routing-controllers';
 
 export interface SyncCreateParams {
   experimentDTO: ExperimentDTO;
@@ -134,6 +136,51 @@ export class MoocletExperimentService extends ExperimentService {
 
   public async syncDelete(params: SyncDeleteParams): Promise<Experiment> {
     return this.dataSource.transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
+  }
+
+  public async syncImportExperiment(
+    experimentFiles: ExperimentFile[],
+    user: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<ValidatedExperimentError[]> {
+    const { experiments, validatedExperiments } = await this.verifyExperiments(experimentFiles, logger);
+
+    await this.syncAddBulkExperiments(experiments, user, logger);
+    return validatedExperiments;
+  }
+
+  private async syncAddBulkExperiments(
+    experiments: ExperimentDTO[],
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<Experiment[]> {
+    const createdExperiments = [];
+    for (const experiment of experiments) {
+      try {
+        if ('moocletPolicyParameters' in experiment) {
+          if (!env.mooclets?.enabled) {
+            throw new BadRequestError(
+              'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
+            );
+          } else {
+            const result = this.syncCreate({
+              experimentDTO: experiment,
+              currentUser,
+            });
+            createdExperiments.push(result);
+          }
+        } else {
+          const result = await this.create(experiment, currentUser, logger);
+          createdExperiments.push(result);
+        }
+      } catch (err) {
+        const error = err as Error;
+        error.message = `Error in creating experiment document "syncAddBulkExperiments"`;
+        logger.error(error);
+        throw error;
+      }
+    }
+    return createdExperiments;
   }
 
   private async handleCreateMoocletTransaction(
