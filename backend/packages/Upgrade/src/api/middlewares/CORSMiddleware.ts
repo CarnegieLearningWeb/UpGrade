@@ -6,7 +6,7 @@ import { env } from '../../env';
 const ourCors = {
   origin: function (origin, callback) {
     // Allow requests with no origin (non-browser requests)
-    if (origin === undefined) {
+    if (!origin) {
       callback(null, true);
       return;
     }
