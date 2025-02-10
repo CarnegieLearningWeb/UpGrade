@@ -158,17 +158,11 @@ export class MoocletExperimentService extends ExperimentService {
     for (const experiment of experiments) {
       try {
         if ('moocletPolicyParameters' in experiment) {
-          if (!env.mooclets?.enabled) {
-            throw new BadRequestError(
-              'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
-            );
-          } else {
-            const result = this.syncCreate({
-              experimentDTO: experiment,
-              currentUser,
-            });
-            createdExperiments.push(result);
-          }
+          const result = await this.syncCreate({
+            experimentDTO: experiment,
+            currentUser,
+          });
+          createdExperiments.push(result);
         } else {
           const result = await this.create(experiment, currentUser, logger);
           createdExperiments.push(result);

@@ -504,17 +504,6 @@ export class ExperimentService {
     };
   }
 
-  public async importExperiment(
-    experimentFiles: ExperimentFile[],
-    user: UserDTO,
-    logger: UpgradeLogger
-  ): Promise<ValidatedExperimentError[]> {
-    const { experiments, validatedExperiments } = await this.verifyExperiments(experimentFiles, logger);
-
-    await this.addBulkExperiments(experiments, user, logger);
-    return validatedExperiments;
-  }
-
   protected async verifyExperiments(
     experimentFiles: ExperimentFile[],
     logger: UpgradeLogger
@@ -1588,6 +1577,14 @@ export class ExperimentService {
         }
         const experimentJSONValidationError = await this.validateExperimentJSON(newExperiment);
         const fileName = experimentFile.fileName;
+
+        if ('moocletPolicyParameters' in newExperiment && !env.mooclets?.enabled) {
+          return {
+            fileName,
+            error: 'moocletPolicyParameters was provided but mooclets are not enabled on backend.',
+          };
+        }
+
         try {
           experiment = this.autoFillSomeMissingProperties(experiment);
           experiment = this.deduceExperimentDetails(experiment);
