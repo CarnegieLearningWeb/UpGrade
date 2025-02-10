@@ -103,6 +103,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
+  displayRewardMetrics: Metrics[] = [];
   simpleExperimentPayloadTableData: SimpleExperimentPayloadTableRowData[] = [];
 
   constructor(
@@ -178,6 +179,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
+        this.loadRewardMetrics();
 
         if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
           this.loadPayloadTable(experiment);
@@ -309,6 +311,20 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         });
       });
     }
+  }
+
+  loadRewardMetrics() {
+    if (!this.experiment?.moocletPolicyParameters || !this.experiment?.name) {
+      return;
+    }
+
+    this.displayRewardMetrics = [
+      {
+        metric_Key: [`${this.experiment.name.trim().toUpperCase().replace(/ /g, '_')}_REWARD`],
+        metric_Operation: ['Percentage (Success)'],
+        metric_Name: 'Success Rate',
+      },
+    ];
   }
 
   openDialog(dialogType: DialogType) {

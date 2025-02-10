@@ -63,6 +63,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   controlTitles = ['Type', 'Key', 'Metric']; // Used to show different titles in grouped metrics
 
   metricsDataSource = new BehaviorSubject<AbstractControl[]>([]);
+  rewardMetricDataSource = new BehaviorSubject<AbstractControl[]>([]);
 
   metricsDisplayedColumns = ['keys', 'operationType', 'queryName', 'removeMetric'];
   queryIndex = 0;
@@ -75,6 +76,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   queryMetricDropDownError = [];
 
   currentAssignmentUnit: ASSIGNMENT_UNIT;
+  currentExperimentName$ = this.experimentDesignStepperService.currentExperimentName$;
+  isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
+  private experimentNameSubscription: Subscription;
 
   constructor(
     private analysisService: AnalysisService,
@@ -117,6 +121,18 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           repeatedMeasure: [null, Validators.required],
         }),
       ]),
+    });
+
+    // Subscribe to experiment name changes for reward metric
+    this.experimentNameSubscription = this.currentExperimentName$.subscribe((name) => {
+      if (name) {
+        const rewardMetricForm = this._formBuilder.group({
+          keys: `${name.trim().toUpperCase().replace(/ /g, '_')}_REWARD`,
+          operationType: 'Percentage (Success)',
+          queryName: 'Success Rate',
+        });
+        this.rewardMetricDataSource.next([rewardMetricForm.getRawValue()]);
+      }
     });
 
     // Bind predefined values of metrics from backend env file for auto complete:
@@ -722,5 +738,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy() {
     this.allMetricsSub.unsubscribe();
+
+    if (this.experimentNameSubscription) {
+      this.experimentNameSubscription.unsubscribe();
+    }
   }
 }

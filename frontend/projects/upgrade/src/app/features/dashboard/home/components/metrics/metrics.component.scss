@@ -1,7 +1,7 @@
 .metric-design {
-  .metric-table {
+  .metric-table, .reward-metric-table {
     margin-top: 5px;
-    max-height: 400px;
+    max-height: 256px;
     overflow: auto;
 
     mat-header-row {
@@ -117,5 +117,31 @@
   .title {
     font-size: 18px;
     font-weight: bold;
+  }
+
+  .validation-messages-container {
+    height: 64px;
+  }
+
+  .reward-metric-container {
+    padding-top: 8px;
+
+    .reward-metric-table {
+      mat-cell {
+        align-items: center;
+      }
+
+      .cdk-column-queryName {
+        &.mat-mdc-cell {
+          padding-top: 0;
+        }
+      }
+    }
+
+    .form-hint {
+      text-indent: 24px;
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
   }
 }
