@@ -1,21 +1,20 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, Inject, signal } from '@angular/core';
 import {
   CommonModalComponent,
   CommonStatusIndicatorChipComponent,
 } from '../../../../../shared-standalone-component-lib/components';
-import { BehaviorSubject, Observable, combineLatest, firstValueFrom, map } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../../shared/shared.module';
 import { CommonImportContainerComponent } from '../../../../../shared-standalone-component-lib/components/common-import-container/common-import-container.component';
-import { FeatureFlagsDataService } from '../../../../../core/feature-flags/feature-flags.data.service';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
-import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { ValidateFeatureFlagError } from '../../../../../core/feature-flags/store/feature-flags.model';
-import { importError, ImportListParams } from '../../../../../core/segments/store/segments.model';
+import { importError, ImportListParams, MODEL_TYPE } from '../../../../../core/segments/store/segments.model';
 import { NotificationService } from '../../../../../core/notifications/notification.service';
 import { IFeatureFlagFile } from 'upgrade_types';
+import { FeatureFlagsStore } from './feature-flag.signal.store';
 
 @Component({
   selector: 'app-import-feature-flag-modal',
@@ -29,6 +28,7 @@ import { IFeatureFlagFile } from 'upgrade_types';
   ],
   templateUrl: './import-feature-flag-modal.component.html',
   styleUrls: ['./import-feature-flag-modal.component.scss'],
+  providers: [FeatureFlagsStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImportFeatureFlagModalComponent {
@@ -39,28 +39,40 @@ export class ImportFeatureFlagModalComponent {
   fileValidationErrorDataSource = new MatTableDataSource<ValidateFeatureFlagError>();
   fileValidationErrors: ValidateFeatureFlagError[] = [];
   fileData: IFeatureFlagFile[] = [];
-  uploadedFileCount = new BehaviorSubject<number>(0);
-  isLoadingImportFeatureFlag$ = this.featureFlagsService.isLoadingImportFeatureFlag$;
-  isImportActionBtnDisabled$: Observable<boolean> = combineLatest([
-    this.uploadedFileCount,
-    this.isLoadingImportFeatureFlag$,
-  ]).pipe(map(([uploadedCount, isLoading]) => isLoading || uploadedCount === 0));
+  uploadedFileCount = signal(0);
+  isLoadingImportFeatureFlag$ = this.featureFlagStore.isLoadingImportFeatureFlag;
+  isImportActionBtnDisabled$ = computed(() => {
+    const uploadedCount = this.uploadedFileCount();
+    const isLoading = this.isLoadingImportFeatureFlag$();
+    return isLoading || uploadedCount === 0;
+  });
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: CommonModalConfig<ImportListParams>,
-    public featureFlagsService: FeatureFlagsService,
-    public featureFlagsDataService: FeatureFlagsDataService,
     public dialogRef: MatDialogRef<ImportFeatureFlagModalComponent>,
-    private notificationService: NotificationService
-  ) {}
+    private notificationService: NotificationService,
+    private featureFlagStore: FeatureFlagsStore
+  ) {
+    effect(
+      () => {
+        if (this.featureFlagStore.importResults().length > 0) {
+          this.showNotification(this.featureFlagStore.importResults());
+        }
+        if (this.featureFlagStore.validationErrors().length > 0) {
+          this.checkValidation(this.featureFlagStore.validationErrors());
+        }
+      },
+      { allowSignalWrites: true }
+    );
+  }
 
   async handleFilesSelected(event) {
     if (event.length > 0) {
       this.isImportActionBtnDisabled.next(false);
-      this.featureFlagsService.setIsLoadingImportFeatureFlag(true);
+      this.featureFlagStore.setLoadingImportFeatureFlag(true);
     }
 
-    this.uploadedFileCount.next(event.length);
+    this.uploadedFileCount.set(event.length);
     this.fileValidationErrors = [];
     this.fileData = [];
 
@@ -81,30 +93,22 @@ export class ImportFeatureFlagModalComponent {
       })
     );
 
-    await this.checkValidation(this.fileData);
+    if (this.data.params.modelType === MODEL_TYPE.FEATURE_FLAG) {
+      this.featureFlagStore.validateFeatureFlags(this.fileData);
+    } else if (this.data.params.modelType === MODEL_TYPE.LIST) {
+      this.featureFlagStore.validateFeatureFlagList({
+        fileData: this.fileData,
+        flagId: this.data.params.flagId,
+        listType: this.data.params.listType,
+      });
+    }
   }
 
-  async checkValidation(files: IFeatureFlagFile[]) {
+  async checkValidation(validationErrors: ValidateFeatureFlagError[]) {
     try {
-      let validationErrors: ValidateFeatureFlagError[];
-
-      if (this.data.title === 'Import Feature Flag') {
-        validationErrors = (await firstValueFrom(
-          this.featureFlagsDataService.validateFeatureFlag({ files: files })
-        )) as ValidateFeatureFlagError[];
-      } else if (this.data.title === 'Import List') {
-        validationErrors = (await firstValueFrom(
-          this.featureFlagsDataService.validateFeatureFlagList(
-            files,
-            this.data.params.flagId,
-            this.data.params.listType
-          )
-        )) as ValidateFeatureFlagError[];
-      }
-
       this.fileValidationErrors = validationErrors.filter((data) => data.compatibilityType != null) || [];
       this.fileValidationErrorDataSource.data = this.fileValidationErrors;
-      this.featureFlagsService.setIsLoadingImportFeatureFlag(false);
+      this.featureFlagStore.setLoadingImportFeatureFlag(false);
 
       if (this.fileValidationErrors.length > 0) {
         this.fileValidationErrors.forEach((error) => {
@@ -115,8 +119,9 @@ export class ImportFeatureFlagModalComponent {
       }
     } catch (error) {
       console.error('Error during validation:', error);
-      this.featureFlagsService.setIsLoadingImportFeatureFlag(false);
+      this.featureFlagStore.setLoadingImportFeatureFlag(false);
     }
+    this.featureFlagStore.setValidationErrors([]);
   }
 
   toggleExpand() {
@@ -126,25 +131,18 @@ export class ImportFeatureFlagModalComponent {
   async importFiles() {
     try {
       this.isImportActionBtnDisabled.next(true);
-      let importResult: importError[];
 
-      if (this.data.title === 'Import Feature Flag') {
-        importResult = (await firstValueFrom(
-          this.featureFlagsDataService.importFeatureFlag({ files: this.fileData })
-        )) as importError[];
-      } else if (this.data.title === 'Import List') {
-        importResult = (await firstValueFrom(
-          this.featureFlagsDataService.importFeatureFlagList(
-            this.fileData,
-            this.data.params.flagId,
-            this.data.params.listType
-          )
-        )) as importError[];
+      if (this.data.params.modelType === MODEL_TYPE.FEATURE_FLAG) {
+        this.featureFlagStore.importFeatureFlags({ files: this.fileData });
+      } else if (this.data.params.modelType === MODEL_TYPE.LIST) {
+        this.featureFlagStore.importFeatureFlagList({
+          fileData: this.fileData,
+          flagId: this.data.params.flagId,
+          listType: this.data.params.listType,
+        });
       }
 
-      this.showNotification(importResult);
       this.isImportActionBtnDisabled.next(false);
-      this.uploadedFileCount.next(0);
       this.fileData = [];
     } catch (error) {
       console.error('Error during import:', error);
@@ -159,7 +157,6 @@ export class ImportFeatureFlagModalComponent {
     if (importSuccessFiles.length > 0) {
       importSuccessMsg = `Successfully imported ${importSuccessFiles.length} file/s: ${importSuccessFiles.join(', ')}`;
       this.closeModal();
-      this.featureFlagsService.fetchFeatureFlags(true);
     }
 
     this.notificationService.showSuccess(importSuccessMsg);
@@ -168,6 +165,8 @@ export class ImportFeatureFlagModalComponent {
     importFailedFiles.forEach((data) => {
       this.notificationService.showError(`Failed to import ${data.fileName}: ${data.error}`);
     });
+
+    this.featureFlagStore.setImportResults([]);
   }
 
   closeModal() {

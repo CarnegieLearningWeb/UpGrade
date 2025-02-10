@@ -175,11 +175,17 @@ export interface UpsertPrivateSegmentListParams {
 export interface ImportListParams {
   listType: FEATURE_FLAG_LIST_FILTER_MODE;
   flagId: string;
+  modelType?: MODEL_TYPE;
 }
 
 export enum LIST_OPTION_TYPE {
   INDIVIDUAL = 'Individual',
   SEGMENT = 'Segment',
+}
+
+export enum MODEL_TYPE {
+  LIST = 'List',
+  FEATURE_FLAG = 'Feature Flag',
 }
 
 export const PRIVATE_SEGMENT_LIST_FORM_FIELDS = {

@@ -62,7 +62,6 @@ export class LocalStorageService {
       ids: [],
       entities: {},
       isLoadingUpsertFeatureFlag: false,
-      isLoadingImportFeatureFlag: false,
       isLoadingSelectedFeatureFlag: false,
       isLoadingFeatureFlags: false,
       isLoadingUpdateFeatureFlagStatus: false,
