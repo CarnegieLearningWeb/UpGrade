@@ -49,8 +49,6 @@ import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { ASSIGNMENT_ALGORITHM, MOOCLET_POLICY_SCHEMA_MAP, MoocletPolicyParametersDTO } from 'upgrade_types';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import { env } from '../../env';
-import { BadRequestError } from 'routing-controllers';
 
 export interface SyncCreateParams {
   experimentDTO: ExperimentDTO;
