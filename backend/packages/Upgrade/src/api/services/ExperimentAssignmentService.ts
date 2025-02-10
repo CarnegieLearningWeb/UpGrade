@@ -767,7 +767,7 @@ export class ExperimentAssignmentService {
     return pool;
   }
 
-  private async checkUserOrGroupIsGloballyExcluded(experimentUser: ExperimentUser): Promise<[boolean, boolean]> {
+  public async checkUserOrGroupIsGloballyExcluded(experimentUser: ExperimentUser): Promise<[boolean, boolean]> {
     let userGroup = [];
     userGroup = Object.keys(experimentUser.workingGroup || {}).map((type: string) => {
       return `${type}_${experimentUser.workingGroup[type]}`;
