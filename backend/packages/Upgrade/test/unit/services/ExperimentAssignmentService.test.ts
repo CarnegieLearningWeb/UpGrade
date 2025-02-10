@@ -94,6 +94,7 @@ describe('Experiment Assignment Service Test', () => {
       cacheServiceMock,
       moocletExperimentService
     );
+
     testedModule.cacheService.wrap.resolves([]);
     testedModule.segmentService.getSegmentByIds.withArgs(['77777777-7777-7777-7777-777777777777']).resolves([
       {
@@ -143,7 +144,6 @@ describe('Experiment Assignment Service Test', () => {
 
   it('should return an empty array if there are no experiments', async () => {
     const loggerMock = { info: sandbox.stub() };
-    //const requestContext = { logger: loggerMock, userDoc: { id: 'user123', group: 'group', workingGroup: {} } };
     const userDoc = { id: 'user123', group: 'group', workingGroup: {}, requestedUserId: '12345' };
     const userId = '12345';
     const context = 'context';
@@ -169,21 +169,25 @@ describe('Experiment Assignment Service Test', () => {
     ]);
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
-
     expect(result).toEqual([]);
     sinon.assert.calledWith(loggerMock.info, { message: `getAllExperimentConditions: User: ${userId}` });
+
+    const experimentResult = await testedModule.experimentService.getExperimentsForUser(userDoc, context);
+    expect(experimentResult).toEqual([]);
   });
 
   it('should return the assigned condition for a simple individual experiment', async () => {
     const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
     const userId = 'user123';
     const context = 'context';
-    // const requestContext = {
-    //   logger: loggerMock,
-    //   userDoc: { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} },
-    // };
     const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exclusionStatus = [false, false];
+    const mergedIndividualAssignment = [];
+    const decisionPointsMock = [{}];
+    const payloadMock = { payloadFound: {}, factorialObject: {} };
     const exp = simpleIndividualAssignmentExperiment;
+    const experimentIds = [exp.id];
+
     const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
     const previewUserServiceMock = { findOne: sandbox.stub().resolves(undefined) };
     const individualEnrollmentRepositoryMock = {
@@ -211,8 +215,43 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
     testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+    const experimentResult = await testedModule.experimentService.getExperimentsForUser(userDoc, context);
+    expect(experimentResult).toEqual([exp]);
 
+    const exclusionResult = await testedModule.experimentService.checkUserOrGroupIsGloballyExcluded(userDoc);
+    expect(exclusionResult).toEqual(exclusionStatus);
+    expect(testedModule.experimentService.checkUserOrGroupIsGloballyExcluded.calledOnce).toBe(true);
+    expect(testedModule.experimentService.checkUserOrGroupIsGloballyExcluded.calledWith(userDoc)).toBe(true);
+
+    const filteredExpResult = await testedModule.experimentService.filterAndProcessGroupExperiments(exp, userDoc, loggerMock);
+    expect(filteredExpResult).toEqual([exp]);
+    expect(testedModule.experimentService.filterAndProcessGroupExperiments.calledOnce).toBe(true);
+    expect(testedModule.experimentService.filterAndProcessGroupExperiments.calledWith(exp, userDoc, loggerMock)).toBe(true);
+
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] = await testedModule.experimentService.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
+    expect(individualEnrollments).toEqual(individualEnrollmentRepositoryMock);
+    expect(groupEnrollments).toEqual([]);
+    expect(individualExclusions).toEqual(individualExclusionRepositoryMock);
+    expect(groupExclusions).toEqual([]);
+    expect(testedModule.experimentService.getAssignmentsAndExclusionsForUser.calledOnce).toBe(true);
+    expect(testedModule.experimentService.getAssignmentsAndExclusionsForUser.calledWith(userDoc, experimentIds)).toBe(true);
+
+    const expPoolsResult = await testedModule.experimentService.processExperimentPools(exp, mergedIndividualAssignment, groupEnrollments, userDoc);
+    expect(expPoolsResult).toEqual([exp]);
+    expect(testedModule.experimentService.processExperimentPools.calledOnce).toBe(true);
+    expect(testedModule.experimentService.processExperimentPools.calledWith(exp, mergedIndividualAssignment, groupEnrollments, userDoc)).toBe(true);
+
+    const decisionPointsResult = await testedModule.experimentService.mapDecisionPoints(decisionPointsMock);
+    expect(decisionPointsResult).toMatchObject(decisionPointsMock);
+    expect(decisionPointsResult).toHaveProperty('find');
+    expect(testedModule.experimentService.mapDecisionPoints.calledOnce).toBe(true);
+    expect(testedModule.experimentService.mapDecisionPoints.calledWith(decisionPointsMock)).toBe(true);
+
+    const payloadFactorResult = await testedModule.experimentService.getPayloadAndFactorialObject();
+    expect(payloadFactorResult).toMatchObject([payloadMock]);
+    expect(testedModule.experimentService.getPayloadAndFactorialObject.calledOnce).toBe(true);
+
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
     const cond = { ...exp.conditions[0], experimentId: exp.id, payload: undefined };
     expect(result.length).toEqual(1);
     expect(result[0].site).toEqual(exp.partitions[0].site);
@@ -225,12 +264,14 @@ describe('Experiment Assignment Service Test', () => {
     const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
     const userId = 'user123';
     const context = 'context';
-    // const requestContext = {
-    //   logger: loggerMock,
-    //   userDoc: { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} },
-    // };
     const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
     const exp = factorialIndividualAssignmentExperiment;
+    const exclusionStatus = [false, false];
+    const mergedIndividualAssignment = [];
+    const decisionPointsMock = [{}];
+    const payloadMock = { payloadFound: {}, factorialObject: {} };
+    const experimentIds = [exp.id];
+
     const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
     const previewUserServiceMock = { findOne: sandbox.stub().resolves(undefined) };
     const individualEnrollmentRepositoryMock = {
@@ -281,18 +322,56 @@ describe('Experiment Assignment Service Test', () => {
     expect(result[0].target).toEqual(exp.partitions[0].target);
     expect(result[0].assignedFactor[0]).toEqual(factor);
     expect(result[0].assignedCondition[0]).toMatchObject({ conditionCode: 'Color=Blue; Shape=Rectangle' });
+
+    const experimentResult = await testedModule.experimentService.getExperimentsForUser(userDoc, context);
+    expect(experimentResult).toEqual([exp]);
+
+    const exclusionResult = await testedModule.experimentService.checkUserOrGroupIsGloballyExcluded(userDoc);
+    expect(exclusionResult).toEqual(exclusionStatus);
+    expect(testedModule.experimentService.checkUserOrGroupIsGloballyExcluded.calledOnce).toBe(true);
+    expect(testedModule.experimentService.checkUserOrGroupIsGloballyExcluded.calledWith(userDoc)).toBe(true);
+
+    const filteredExpResult = await testedModule.experimentService.filterAndProcessGroupExperiments(exp, userDoc, loggerMock);
+    expect(filteredExpResult).toEqual([exp]);
+    expect(testedModule.experimentService.filterAndProcessGroupExperiments.calledOnce).toBe(true);
+    expect(testedModule.experimentService.filterAndProcessGroupExperiments.calledWith(exp, userDoc, loggerMock)).toBe(true);
+
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] = await testedModule.experimentService.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
+    expect(individualEnrollments).toEqual(individualEnrollmentRepositoryMock);
+    expect(groupEnrollments).toEqual([]);
+    expect(individualExclusions).toEqual(individualExclusionRepositoryMock);
+    expect(groupExclusions).toEqual([]);
+    expect(testedModule.experimentService.getAssignmentsAndExclusionsForUser.calledOnce).toBe(true);
+    expect(testedModule.experimentService.getAssignmentsAndExclusionsForUser.calledWith(userDoc, experimentIds)).toBe(true);
+
+    const expPoolsResult = await testedModule.experimentService.processExperimentPools(exp, mergedIndividualAssignment, groupEnrollments, userDoc);
+    expect(expPoolsResult).toEqual([exp]);
+    expect(testedModule.experimentService.processExperimentPools.calledOnce).toBe(true);
+    expect(testedModule.experimentService.processExperimentPools.calledWith(exp, mergedIndividualAssignment, groupEnrollments, userDoc)).toBe(true);
+
+    const decisionPointsResult = await testedModule.experimentService.mapDecisionPoints(exp, result[0].assignedCondition[0], userId, exp.conditions[0].conditionPayloads, exp.type, factor, [], loggerMock);
+    expect(decisionPointsResult).toMatchObject(decisionPointsMock);
+    expect(decisionPointsResult).toHaveProperty('find');
+    expect(testedModule.experimentService.mapDecisionPoints.calledOnce).toBe(true);
+    expect(testedModule.experimentService.mapDecisionPoints.calledWith(exp, result[0].assignedCondition[0], userId, exp.conditions[0].conditionPayloads, exp.type, factor, [], loggerMock)).toBe(true);
+
+    const payloadFactorResult = await testedModule.experimentService.getPayloadAndFactorialObject();
+    expect(payloadFactorResult).toMatchObject([payloadMock]);
+    expect(testedModule.experimentService.getPayloadAndFactorialObject.calledOnce).toBe(true);
   });
 
   it('should return the assigned condition for a simple within-subject ordered round-robin experiment', async () => {
     const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
     const userId = 'user123';
     const context = 'context';
-    // const requestContext = {
-    //   logger: loggerMock,
-    //   userDoc: { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} },
-    // };
     const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exclusionStatus = [false, false];
+    const mergedIndividualAssignment = [];
+    const decisionPointsMock = [{}];
+    const payloadMock = { payloadFound: {}, factorialObject: {} };
     const exp = simpleWithinSubjectOrderedRoundRobinExperiment;
+    const experimentIds = [exp.id];
+
     const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
     const previewUserServiceMock = { findOne: sandbox.stub().resolves(undefined) };
     const individualEnrollmentRepositoryMock = {
@@ -325,6 +404,42 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
     testedModule.monitoredDecisionPointLogRepository = monitoredDecisionPointLogRepositoryMock;
 
+    const experimentResult = await testedModule.experimentService.getExperimentsForUser(userDoc, context);
+    expect(experimentResult).toEqual([exp]);
+
+    const exclusionResult = await testedModule.experimentService.checkUserOrGroupIsGloballyExcluded(userDoc);
+    expect(exclusionResult).toEqual(exclusionStatus);
+    expect(testedModule.experimentService.checkUserOrGroupIsGloballyExcluded.calledOnce).toBe(true);
+    expect(testedModule.experimentService.checkUserOrGroupIsGloballyExcluded.calledWith(userDoc)).toBe(true);
+
+    const filteredExpResult = await testedModule.experimentService.filterAndProcessGroupExperiments(exp, userDoc, loggerMock);
+    expect(filteredExpResult).toEqual([exp]);
+    expect(testedModule.experimentService.filterAndProcessGroupExperiments.calledOnce).toBe(true);
+    expect(testedModule.experimentService.filterAndProcessGroupExperiments.calledWith(exp, userDoc, loggerMock)).toBe(true);
+
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] = await testedModule.experimentService.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
+    expect(individualEnrollments).toEqual(individualEnrollmentRepositoryMock);
+    expect(groupEnrollments).toEqual([]);
+    expect(individualExclusions).toEqual(individualExclusionRepositoryMock);
+    expect(groupExclusions).toEqual([]);
+    expect(testedModule.experimentService.getAssignmentsAndExclusionsForUser.calledOnce).toBe(true);
+    expect(testedModule.experimentService.getAssignmentsAndExclusionsForUser.calledWith(userDoc, experimentIds)).toBe(true);
+
+    const expPoolsResult = await testedModule.experimentService.processExperimentPools(exp, mergedIndividualAssignment, groupEnrollments, userDoc);
+    expect(expPoolsResult).toEqual([exp]);
+    expect(testedModule.experimentService.processExperimentPools.calledOnce).toBe(true);
+    expect(testedModule.experimentService.processExperimentPools.calledWith(exp, mergedIndividualAssignment, groupEnrollments, userDoc)).toBe(true);
+
+    const decisionPointsResult = await testedModule.experimentService.mapDecisionPoints(decisionPointsMock);
+    expect(decisionPointsResult).toMatchObject(decisionPointsMock);
+    expect(decisionPointsResult).toHaveProperty('find');
+    expect(testedModule.experimentService.mapDecisionPoints.calledOnce).toBe(true);
+    expect(testedModule.experimentService.mapDecisionPoints.calledWith(decisionPointsMock)).toBe(true);
+
+    const payloadFactorResult = await testedModule.experimentService.getPayloadAndFactorialObject();
+    expect(payloadFactorResult).toMatchObject([payloadMock]);
+    expect(testedModule.experimentService.getPayloadAndFactorialObject.calledOnce).toBe(true);
+
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
     const cond = [
       {
@@ -351,16 +466,18 @@ describe('Experiment Assignment Service Test', () => {
     const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
     const userId = 'user123';
     const context = 'context';
-    // const requestContext = {
-    //   logger: loggerMock,
-    //   userDoc: { id: userId, group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } },
-    // };
     const userDoc = { id: userId, group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } };
     const exp = simpleGroupAssignmentExperiment;
     const groupEnrollment = new GroupEnrollment();
     groupEnrollment.experiment = exp;
     groupEnrollment.condition = exp.conditions[0];
     groupEnrollment.groupId = 'add-group1';
+    const exclusionStatus = [false, false];
+    const mergedIndividualAssignment = [];
+    const decisionPointsMock = [{}];
+    const payloadMock = { payloadFound: {}, factorialObject: {} };
+    const experimentIds = [exp.id];
+
     const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
     const previewUserServiceMock = { findOne: sandbox.stub().resolves(undefined) };
     const individualEnrollmentRepositoryMock = {
@@ -394,6 +511,42 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
     testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
     testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
+
+    const experimentResult = await testedModule.experimentService.getExperimentsForUser(userDoc, context);
+    expect(experimentResult).toEqual([exp]);
+
+    const exclusionResult = await testedModule.experimentService.checkUserOrGroupIsGloballyExcluded(userDoc);
+    expect(exclusionResult).toEqual(exclusionStatus);
+    expect(testedModule.experimentService.checkUserOrGroupIsGloballyExcluded.calledOnce).toBe(true);
+    expect(testedModule.experimentService.checkUserOrGroupIsGloballyExcluded.calledWith(userDoc)).toBe(true);
+
+    const filteredExpResult = await testedModule.experimentService.filterAndProcessGroupExperiments(exp, userDoc, loggerMock);
+    expect(filteredExpResult).toEqual([exp]);
+    expect(testedModule.experimentService.filterAndProcessGroupExperiments.calledOnce).toBe(true);
+    expect(testedModule.experimentService.filterAndProcessGroupExperiments.calledWith(exp, userDoc, loggerMock)).toBe(true);
+
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] = await testedModule.experimentService.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
+    expect(individualEnrollments).toEqual(individualEnrollmentRepositoryMock);
+    expect(groupEnrollments).toEqual(groupEnrollmentRepositoryMock);
+    expect(individualExclusions).toEqual(individualExclusionRepositoryMock);
+    expect(groupExclusions).toEqual(groupExclusionRepositoryMock);
+    expect(testedModule.experimentService.getAssignmentsAndExclusionsForUser.calledOnce).toBe(true);
+    expect(testedModule.experimentService.getAssignmentsAndExclusionsForUser.calledWith(userDoc, experimentIds)).toBe(true);
+
+    const expPoolsResult = await testedModule.experimentService.processExperimentPools(exp, mergedIndividualAssignment, groupEnrollments, userDoc);
+    expect(expPoolsResult).toEqual([exp]);
+    expect(testedModule.experimentService.processExperimentPools.calledOnce).toBe(true);
+    expect(testedModule.experimentService.processExperimentPools.calledWith(exp, mergedIndividualAssignment, groupEnrollments, userDoc)).toBe(true);
+
+    const decisionPointsResult = await testedModule.experimentService.mapDecisionPoints(decisionPointsMock);
+    expect(decisionPointsResult).toMatchObject(decisionPointsMock);
+    expect(decisionPointsResult).toHaveProperty('find');
+    expect(testedModule.experimentService.mapDecisionPoints.calledOnce).toBe(true);
+    expect(testedModule.experimentService.mapDecisionPoints.calledWith(decisionPointsMock)).toBe(true);
+
+    const payloadFactorResult = await testedModule.experimentService.getPayloadAndFactorialObject();
+    expect(payloadFactorResult).toMatchObject([payloadMock]);
+    expect(testedModule.experimentService.getPayloadAndFactorialObject.calledOnce).toBe(true);
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
 
@@ -409,12 +562,19 @@ describe('Experiment Assignment Service Test', () => {
     const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
     const userId = 'user123';
     const context = 'context';
-    // const requestContext = {
-    //   logger: loggerMock,
-    //   userDoc: { id: userId, group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } },
-    // };
     const userDoc = { id: userId, group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } };
     const exp = factorialGroupAssignmentExperiment;
+    const exclusionStatus = [false, false];
+    const mergedIndividualAssignment = [];
+    const decisionPointsMock = [{}];
+    const payloadMock = { payloadFound: {}, factorialObject: {} };
+    const experimentIds = [exp.id];
+    const groupEnrollment = new GroupEnrollment();
+    groupEnrollment.experiment = exp;
+    groupEnrollment.condition = exp.conditions[0];
+    groupEnrollment.groupId = 'add-group1';
+    groupEnrollment.partition = exp.partitions[0];
+
     const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
     const previewUserServiceMock = { findOne: sandbox.stub().resolves(undefined) };
     const individualEnrollmentRepositoryMock = {
@@ -422,11 +582,6 @@ describe('Experiment Assignment Service Test', () => {
       find: sandbox.stub().resolves([]),
     };
     const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
-    const groupEnrollment = new GroupEnrollment();
-    groupEnrollment.experiment = exp;
-    groupEnrollment.condition = exp.conditions[0];
-    groupEnrollment.groupId = 'add-group1';
-    groupEnrollment.partition = exp.partitions[0];
     const groupEnrollmentRepositoryMock = {
       findEnrollments: sandbox.stub().resolves([groupEnrollment]),
       delete: sandbox.stub().resolves(),
@@ -453,6 +608,42 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
     testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
     testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
+
+    const experimentResult = await testedModule.experimentService.getExperimentsForUser(userDoc, context);
+    expect(experimentResult).toEqual([exp]);
+
+    const exclusionResult = await testedModule.experimentService.checkUserOrGroupIsGloballyExcluded(userDoc);
+    expect(exclusionResult).toEqual(exclusionStatus);
+    expect(testedModule.experimentService.checkUserOrGroupIsGloballyExcluded.calledOnce).toBe(true);
+    expect(testedModule.experimentService.checkUserOrGroupIsGloballyExcluded.calledWith(userDoc)).toBe(true);
+
+    const filteredExpResult = await testedModule.experimentService.filterAndProcessGroupExperiments(exp, userDoc, loggerMock);
+    expect(filteredExpResult).toEqual([exp]);
+    expect(testedModule.experimentService.filterAndProcessGroupExperiments.calledOnce).toBe(true);
+    expect(testedModule.experimentService.filterAndProcessGroupExperiments.calledWith(exp, userDoc, loggerMock)).toBe(true);
+
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] = await testedModule.experimentService.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
+    expect(individualEnrollments).toEqual(individualEnrollmentRepositoryMock);
+    expect(groupEnrollments).toEqual(groupEnrollmentRepositoryMock);
+    expect(individualExclusions).toEqual(individualExclusionRepositoryMock);
+    expect(groupExclusions).toEqual(groupExclusionRepositoryMock);
+    expect(testedModule.experimentService.getAssignmentsAndExclusionsForUser.calledOnce).toBe(true);
+    expect(testedModule.experimentService.getAssignmentsAndExclusionsForUser.calledWith(userDoc, experimentIds)).toBe(true);
+
+    const expPoolsResult = await testedModule.experimentService.processExperimentPools(exp, mergedIndividualAssignment, groupEnrollments, userDoc);
+    expect(expPoolsResult).toEqual([exp]);
+    expect(testedModule.experimentService.processExperimentPools.calledOnce).toBe(true);
+    expect(testedModule.experimentService.processExperimentPools.calledWith(exp, mergedIndividualAssignment, groupEnrollments, userDoc)).toBe(true);
+
+    const decisionPointsResult = await testedModule.experimentService.mapDecisionPoints(decisionPointsMock);
+    expect(decisionPointsResult).toMatchObject(decisionPointsMock);
+    expect(decisionPointsResult).toHaveProperty('find');
+    expect(testedModule.experimentService.mapDecisionPoints.calledOnce).toBe(true);
+    expect(testedModule.experimentService.mapDecisionPoints.calledWith(decisionPointsMock)).toBe(true);
+
+    const payloadFactorResult = await testedModule.experimentService.getPayloadAndFactorialObject();
+    expect(payloadFactorResult).toMatchObject([payloadMock]);
+    expect(testedModule.experimentService.getPayloadAndFactorialObject.calledOnce).toBe(true);
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
 
@@ -485,6 +676,7 @@ describe('Experiment Assignment Service Test', () => {
     const target = undefined;
     const condition = 'testCondition';
     const clientError = 'clientError';
+
     const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
     const decisionPointRepositoryMock = { find: sandbox.stub().resolves([]) };
     const individualEnrollmentRepositoryMock = {
