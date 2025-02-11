@@ -236,6 +236,11 @@ describe('#MoocletExperimentService', () => {
       deletePolicyParameters: jest.fn(),
       deleteVariable: jest.fn(),
     } as unknown as MoocletDataService;
+
+    metricService = {
+      saveAllMetrics: jest.fn(),
+      delete: jest.fn(),
+    } as unknown as MetricService;
     // Create service with mocked dependencies
     moocletExperimentService = new MoocletExperimentService(
       moocletDataService,

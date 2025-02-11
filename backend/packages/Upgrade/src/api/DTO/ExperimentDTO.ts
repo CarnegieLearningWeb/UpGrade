@@ -493,7 +493,7 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
 
   @ValidateIf(isMoocletAssigmentAlgorithm)
   @IsDefined()
-  public rewardMetricKey: string;
+  public rewardMetricKey?: string;
 }
 
 export class OldExperimentDTO extends BaseExperimentWithoutPayload {
