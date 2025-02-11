@@ -153,25 +153,27 @@ export class MoocletExperimentService extends ExperimentService {
     logger: UpgradeLogger
   ): Promise<Experiment[]> {
     const createdExperiments = [];
-    for (const experiment of experiments) {
-      try {
-        if ('moocletPolicyParameters' in experiment) {
-          const result = await this.syncCreate({
-            experimentDTO: experiment,
-            currentUser,
-          });
-          createdExperiments.push(result);
-        } else {
-          const result = await this.create(experiment, currentUser, logger);
-          createdExperiments.push(result);
+    await Promise.all(
+      experiments.map(async (experiment) => {
+        try {
+          if ('moocletPolicyParameters' in experiment) {
+            const result = await this.syncCreate({
+              experimentDTO: experiment,
+              currentUser,
+            });
+            createdExperiments.push(result);
+          } else {
+            const result = await this.create(experiment, currentUser, logger);
+            createdExperiments.push(result);
+          }
+        } catch (err) {
+          const error = err as Error;
+          error.message = `Error in creating experiment document "syncAddBulkExperiments"`;
+          logger.error(error);
+          throw error;
         }
-      } catch (err) {
-        const error = err as Error;
-        error.message = `Error in creating experiment document "syncAddBulkExperiments"`;
-        logger.error(error);
-        throw error;
-      }
-    }
+      })
+    );
     return createdExperiments;
   }
 
