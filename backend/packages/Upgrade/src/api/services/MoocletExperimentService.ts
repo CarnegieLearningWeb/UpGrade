@@ -47,7 +47,7 @@ import { ConditionValidator, ExperimentDTO } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
 import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { ASSIGNMENT_ALGORITHM, MOOCLET_POLICY_SCHEMA_MAP, MoocletPolicyParametersDTO } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, MoocletPolicyParametersDTO, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 
 export interface SyncCreateParams {
@@ -409,6 +409,17 @@ export class MoocletExperimentService extends ExperimentService {
     }
   }
 
+  public async getPolicyParametersByExperimentId(
+    experimentId: string
+  ): Promise<MoocletPolicyParametersResponseDetails> {
+    try {
+      const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
+      return await this.moocletDataService.getPolicyParameters(moocletExperimentRef.policyParametersId);
+    } catch (err) {
+      throw new Error(`Failed to get Mooclet policy parameters: ${err}`);
+    }
+  }
+
   private async createMooclet(newMoocletRequest: MoocletRequestBody): Promise<MoocletResponseDetails> {
     try {
       return await this.moocletDataService.postNewMooclet(newMoocletRequest);
@@ -551,6 +562,6 @@ export class MoocletExperimentService extends ExperimentService {
   }
 
   public isMoocletExperiment(assignmentAlgorithm: ASSIGNMENT_ALGORITHM): boolean {
-    return Object.keys(MOOCLET_POLICY_SCHEMA_MAP).includes(assignmentAlgorithm);
+    return SUPPORTED_MOOCLET_ALGORITHMS.includes(assignmentAlgorithm);
   }
 }

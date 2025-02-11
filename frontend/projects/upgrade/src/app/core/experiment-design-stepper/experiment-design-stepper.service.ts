@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
-import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, MOOCLET_POLICY_SCHEMA_MAP } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 import {
   ExperimentDecisionPoint,
   ExperimentCondition,
@@ -87,7 +87,7 @@ export class ExperimentDesignStepperService {
   currentAssignmentAlgorithm$ = new BehaviorSubject<ASSIGNMENT_ALGORITHM>(ASSIGNMENT_ALGORITHM.RANDOM);
   isMoocletExperimentDesign$ = this.currentAssignmentAlgorithm$.pipe(
     map((algorithm) => {
-      return environment.moocletToggle && Object.keys(MOOCLET_POLICY_SCHEMA_MAP).includes(algorithm);
+      return environment.moocletToggle && SUPPORTED_MOOCLET_ALGORITHMS.includes(algorithm);
     })
   );
 
