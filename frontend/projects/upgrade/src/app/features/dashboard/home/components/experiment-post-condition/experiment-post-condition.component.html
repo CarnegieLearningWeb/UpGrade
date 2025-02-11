@@ -1,34 +1,22 @@
 <div class="shared-modal--step-container">
   <section class="shared-modal--form-container">
     <form [formGroup]="postExperimentRuleForm" class="post-experiment-rule-form dense-3">
-      <mat-form-field
-        appearance="outline"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label class="ft-14-400">
           {{ 'home-global.post-experiment-rule.text' | translate }}
         </mat-label>
-        <mat-select
-          class="ft-14-400"
-          formControlName="postExperimentRule"
-        >
+        <mat-select class="ft-14-400" formControlName="postExperimentRule">
           <mat-option class="ft-14-400" *ngFor="let rule of postExperimentRules" [value]="rule.value">
             {{ rule.value | titlecase }}
           </mat-option>
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field
-        appearance="outline"
-        subscriptSizing="dynamic"
-      >
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label class="ft-14-400">
           {{ 'home.new-experiment.design.condition.placeholder.text' | translate }}
         </mat-label>
-        <mat-select
-          class="ft-14-400"
-          formControlName="revertTo"
-        >
+        <mat-select class="ft-14-400" formControlName="revertTo">
           <mat-option class="ft-14-400" *ngFor="let condition of experimentConditions" [value]="condition.id">
             {{ condition.value }}
           </mat-option>

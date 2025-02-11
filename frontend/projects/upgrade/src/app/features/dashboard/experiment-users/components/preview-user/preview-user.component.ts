@@ -12,6 +12,7 @@ import { UserRole } from 'upgrade_types';
   selector: 'users-preview-user',
   templateUrl: './preview-user.component.html',
   styleUrls: ['./preview-user.component.scss'],
+  standalone: false,
 })
 export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions: UserPermission;

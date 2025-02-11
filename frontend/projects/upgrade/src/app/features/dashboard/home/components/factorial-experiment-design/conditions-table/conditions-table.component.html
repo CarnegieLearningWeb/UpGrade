@@ -37,7 +37,7 @@
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
           <ng-container *ngIf="(tableEditIndex$ | async) !== rowIndex">
             <span [matTooltip]="rowData.payload" matTooltipPosition="above">
-              {{ rowData.payload | truncate: 25 }}
+              {{ rowData.payload | truncate : 25 }}
             </span>
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">

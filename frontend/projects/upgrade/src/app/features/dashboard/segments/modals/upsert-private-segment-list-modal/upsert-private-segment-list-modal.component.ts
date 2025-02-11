@@ -37,7 +37,6 @@ import { CommonTagInputType } from '../../../../../core/feature-flags/store/feat
 
 @Component({
   selector: 'upsert-private-segment-list-modal',
-  standalone: true,
   imports: [
     CommonModalComponent,
     MatSelectModule,

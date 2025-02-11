@@ -80,11 +80,11 @@ $chart-border: #ddd;
 $icon-color: #646e7b;
 $text-color: #222b45;
 
-$primary: mat.define-palette(mat.$blue-palette);
-$accent: mat.define-palette(mat.$light-blue-palette);
-$warn: mat.define-palette(mat.$red-palette);
+$primary: mat.m2-define-palette(mat.$blue-palette);
+$accent: mat.m2-define-palette(mat.$m2-light-blue-palette);
+$warn: mat.m2-define-palette(mat.$red-palette);
 
-$light-theme: mat.define-light-theme($primary, $accent, $warn);
+$light-theme: mat.m2-define-light-theme($primary, $accent, $warn);
 
 // Insert and bind custom background and foreground colors
 $background: map-get($light-theme, background);
@@ -94,7 +94,7 @@ $background: map_merge(
   (
     background: $background-color,
     shadow-color: $shadow-color,
-    table-shading: $table-shading
+    table-shading: $table-shading,
   )
 );
 $foreground: map_merge(

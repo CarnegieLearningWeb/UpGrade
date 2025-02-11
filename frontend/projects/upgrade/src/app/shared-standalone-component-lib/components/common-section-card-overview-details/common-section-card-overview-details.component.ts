@@ -8,7 +8,6 @@ export interface KeyValueFormat {
 
 @Component({
   selector: 'app-common-section-card-overview-details',
-  standalone: true,
   imports: [SharedModule],
   templateUrl: './common-section-card-overview-details.component.html',
   styleUrl: './common-section-card-overview-details.component.scss',

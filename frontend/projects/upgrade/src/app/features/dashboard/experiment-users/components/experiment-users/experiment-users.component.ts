@@ -16,6 +16,7 @@ import { MatTableDataSource } from '@angular/material/table';
   selector: 'users-experiment-users',
   templateUrl: './experiment-users.component.html',
   styleUrls: ['./experiment-users.component.scss'],
+  standalone: false,
 })
 export class ExperimentUsersComponent implements OnInit, OnDestroy {
   permissions$: Observable<UserPermission>;

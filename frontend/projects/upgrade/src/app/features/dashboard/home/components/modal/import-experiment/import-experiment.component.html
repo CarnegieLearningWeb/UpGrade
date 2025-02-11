@@ -44,8 +44,7 @@
       mat-raised-button
       class="shared-modal--modal-btn default-button"
       [ngClass]="{
-        'default-button--disabled':
-          uploadedFileCount === 0 || nonErrorExperiments === 0 || this.isLoadingExperiments$
+        'default-button--disabled': uploadedFileCount === 0 || nonErrorExperiments === 0 || this.isLoadingExperiments$
       }"
       [disabled]="uploadedFileCount === 0 || nonErrorExperiments === 0 || this.isLoadingExperiments$"
       (click)="importExperiment()"

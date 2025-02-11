@@ -3,6 +3,7 @@ import { SERVER_ERROR } from 'upgrade_types';
 
 @Pipe({
   name: 'errorLog',
+  standalone: false,
 })
 export class ErrorLogPipe implements PipeTransform {
   transform(errorType: SERVER_ERROR, type: string): any {

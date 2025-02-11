@@ -7,6 +7,7 @@ import { ENV, Environment } from '../../../../environments/environment-types';
   selector: 'app-dashboard-root',
   templateUrl: './dashboard-root.component.html',
   styleUrls: ['./dashboard-root.component.scss'],
+  standalone: false,
 })
 export class DashboardRootComponent implements OnInit {
   isLoggedIn$ = this.authService.isLoggedIn$;

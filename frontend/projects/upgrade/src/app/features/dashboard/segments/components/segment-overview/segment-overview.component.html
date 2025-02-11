@@ -1,41 +1,20 @@
 <form class="segment-overview" [formGroup]="overviewForm">
   <section class="fields-container">
-    <mat-form-field
-      class="dense-2 name"
-      appearance="outline"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="dense-2 name" appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400">
         {{ 'segments.global-name.text' | translate }}
       </mat-label>
-      <input
-        class="ft-14-400"
-        matInput
-        formControlName="name"
-        cdkFocusInitial
-      />
+      <input class="ft-14-400" matInput formControlName="name" cdkFocusInitial />
     </mat-form-field>
 
-    <mat-form-field
-      class="dense-2 description"
-      appearance="outline"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="dense-2 description" appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400">
         {{ 'segments.overview.segment-description.text' | translate }}
       </mat-label>
-      <input
-        class="ft-14-400"
-        matInput
-        formControlName="description"
-      />
+      <input class="ft-14-400" matInput formControlName="description" />
     </mat-form-field>
 
-    <mat-form-field
-      class="dense-2 chips"
-      appearance="outline"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="dense-2 chips" appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400">
         {{ 'segments.overview.segment-app-context.text' | translate }}
       </mat-label>

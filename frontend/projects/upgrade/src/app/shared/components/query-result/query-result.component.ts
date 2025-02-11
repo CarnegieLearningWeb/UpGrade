@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
   selector: 'app-query-result',
   templateUrl: './query-result.component.html',
   styleUrls: ['./query-result.component.scss'],
+  standalone: false,
 })
 export class QueryResultComponent implements OnInit {
   experiment: ExperimentVM;

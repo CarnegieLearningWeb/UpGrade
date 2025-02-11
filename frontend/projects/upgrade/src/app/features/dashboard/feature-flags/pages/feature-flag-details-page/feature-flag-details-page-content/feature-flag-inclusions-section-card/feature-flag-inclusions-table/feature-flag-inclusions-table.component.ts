@@ -8,7 +8,6 @@ import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-feature-flag-inclusions-table',
-  standalone: true,
   templateUrl: './feature-flag-inclusions-table.component.html',
   styleUrl: './feature-flag-inclusions-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

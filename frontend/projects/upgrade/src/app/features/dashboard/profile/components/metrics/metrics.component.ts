@@ -27,6 +27,7 @@ import { LazyLoadingMetric } from './metrics.model';
   templateUrl: './metrics.component.html',
   styleUrls: ['./metrics.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('metricsTable') metricsTable: ElementRef;

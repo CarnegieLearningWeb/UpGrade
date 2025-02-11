@@ -14,6 +14,7 @@ import { ExperimentDesignStepperService } from '../../../../../../core/experimen
   selector: 'home-new-experiment',
   templateUrl: './new-experiment.component.html',
   styleUrls: ['./new-experiment.component.scss'],
+  standalone: false,
 })
 export class NewExperimentComponent implements OnInit {
   @ViewChild('stepper') stepper: any;

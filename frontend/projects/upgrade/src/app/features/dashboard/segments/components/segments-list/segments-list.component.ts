@@ -30,6 +30,7 @@ import { CustomMatTableSource } from './CustomMatTableSource';
   templateUrl: './segments-list.component.html',
   styleUrls: ['./segments-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('tableContainer', { static: false }) segmentsTableContainer: ElementRef;

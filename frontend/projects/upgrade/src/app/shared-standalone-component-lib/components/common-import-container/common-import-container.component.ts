@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../shared/shared.module';
-import { CommonModalComponent } from '../common-modal/common-modal.component';
 import { BehaviorSubject } from 'rxjs';
 import { FILE_TYPE } from 'upgrade_types';
 
@@ -30,8 +29,7 @@ import { FILE_TYPE } from 'upgrade_types';
  */
 @Component({
   selector: 'app-common-import-container',
-  standalone: true,
-  imports: [CommonModalComponent, CommonModule, SharedModule],
+  imports: [CommonModule, SharedModule],
   templateUrl: './common-import-container.component.html',
   styleUrls: ['./common-import-container.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

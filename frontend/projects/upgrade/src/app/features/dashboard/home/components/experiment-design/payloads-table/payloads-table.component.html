@@ -11,7 +11,7 @@
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.site" matTooltipPosition="above">
-          {{ rowData.site | truncate: 15 }}
+          {{ rowData.site | truncate : 15 }}
         </span>
       </mat-cell>
     </ng-container>
@@ -23,7 +23,7 @@
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.target" matTooltipPosition="above">
-          {{ rowData.target | truncate: 15 }}
+          {{ rowData.target | truncate : 15 }}
         </span>
       </mat-cell>
     </ng-container>
@@ -35,7 +35,7 @@
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.condition" matTooltipPosition="above">
-          {{ rowData.condition | truncate: 15 }}
+          {{ rowData.condition | truncate : 15 }}
         </span>
       </mat-cell>
     </ng-container>
@@ -48,15 +48,11 @@
       <mat-cell *matCellDef="let rowData; let rowIndex = index">
         <ng-container *ngIf="(simpleExperimentPayloadTableEditIndex$ | async) !== rowIndex">
           <span [matTooltip]="rowData.payload" matTooltipPosition="above">
-            {{ rowData.payload | truncate: 15 }}
+            {{ rowData.payload | truncate : 15 }}
           </span>
         </ng-container>
         <ng-container *ngIf="(simpleExperimentPayloadTableEditIndex$ | async) === rowIndex">
-          <mat-form-field
-            class="dense-2"
-            appearance="outline"
-            subscriptSizing="dynamic"
-          >
+          <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
             <input
               class="ft-14-400"
               [type]="text"
@@ -84,10 +80,7 @@
     <!-- Actions Column -->
     <ng-container matColumnDef="actions">
       <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
-      <mat-cell
-        *matCellDef="let rowData; let rowIndex = index"
-        class="actions-cell"
-      >
+      <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell">
         <button
           type="button"
           class="row-action-btn"

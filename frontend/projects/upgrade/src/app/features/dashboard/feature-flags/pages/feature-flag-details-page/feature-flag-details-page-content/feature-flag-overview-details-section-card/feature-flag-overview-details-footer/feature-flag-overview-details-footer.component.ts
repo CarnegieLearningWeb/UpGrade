@@ -4,7 +4,6 @@ import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/
 
 @Component({
   selector: 'app-feature-flag-overview-details-footer',
-  standalone: true,
   imports: [CommonTabbedSectionCardFooterComponent],
   templateUrl: './feature-flag-overview-details-footer.component.html',
   styleUrl: './feature-flag-overview-details-footer.component.scss',

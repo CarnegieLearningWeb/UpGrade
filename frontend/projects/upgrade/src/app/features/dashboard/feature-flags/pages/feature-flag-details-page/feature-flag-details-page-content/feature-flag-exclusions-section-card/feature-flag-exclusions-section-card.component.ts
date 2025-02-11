@@ -27,7 +27,6 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-feature-flag-exclusions-section-card',
-  standalone: true,
   imports: [
     CommonSectionCardComponent,
     CommonSectionCardTitleHeaderComponent,

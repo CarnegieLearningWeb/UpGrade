@@ -27,7 +27,6 @@ import { SharedModule } from '../../../shared/shared.module';
  */
 
 @Component({
-  standalone: true,
   selector: 'app-common-section-card-title-header',
   templateUrl: './common-section-card-title-header.component.html',
   styleUrls: ['./common-section-card-title-header.component.scss'],
