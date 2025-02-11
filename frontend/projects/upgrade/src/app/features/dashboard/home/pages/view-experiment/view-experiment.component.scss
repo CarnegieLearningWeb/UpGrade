@@ -254,7 +254,8 @@ $font-size-small: 15px;
     padding: 0px !important;
   }
 
-  .table-container, .json-viewer-container {
+  .table-container,
+  .json-viewer-container {
     padding: 24px 34px;
 
     &-partition {

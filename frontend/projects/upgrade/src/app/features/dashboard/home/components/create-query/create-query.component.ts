@@ -17,6 +17,7 @@ import { startWith, map } from 'rxjs/operators';
   selector: 'app-create-query',
   templateUrl: './create-query.component.html',
   styleUrls: ['./create-query.component.scss'],
+  standalone: false,
 })
 export class CreateQueryComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

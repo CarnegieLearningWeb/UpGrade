@@ -15,6 +15,7 @@ import { ExperimentDesignStepperService } from '../../../../../core/experiment-d
   templateUrl: './experiment-schedule.component.html',
   styleUrls: ['./experiment-schedule.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExperimentScheduleComponent implements OnInit {
   @Input() groupType: string;

@@ -47,6 +47,7 @@ import { MoocletPolicyEditorComponent } from '../experiment-design/mooclet-polic
   templateUrl: './factorial-experiment-design.component.html',
   styleUrls: ['./factorial-experiment-design.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class FactorialExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ImportStratificationsComponent } from './import-stratifications/import-stratifications.component';
 import { MatDialog } from '@angular/material/dialog';
-import * as clonedeep from 'lodash.clonedeep';
+import { cloneDeep } from 'lodash';
 import { DeleteStratificationComponent } from './delete-stratification/delete-stratification.component';
 import { StratificationFactor } from '../../../../../core/stratification-factors/store/stratification-factors.model';
 import { Observable, Subscription } from 'rxjs';
@@ -24,6 +24,7 @@ interface StratificationFactorsTableRow {
   templateUrl: './stratification-factor-list.component.html',
   styleUrls: ['./stratification-factor-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class StratificationComponent implements OnInit {
   permissions$: Observable<UserPermission>;
@@ -110,7 +111,7 @@ export class StratificationComponent implements OnInit {
   handleDelete(rowData) {
     const dialogRef = this.dialog.open(DeleteStratificationComponent, {
       panelClass: 'import-stratification-modal',
-      data: { factor: clonedeep(rowData.factor) },
+      data: { factor: cloneDeep(rowData.factor) },
     });
 
     dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {

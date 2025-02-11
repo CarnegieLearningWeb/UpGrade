@@ -20,6 +20,7 @@ export interface ExperimentFile {
   selector: 'app-import-experiment',
   templateUrl: './import-experiment.component.html',
   styleUrls: ['./import-experiment.component.scss'],
+  standalone: false,
 })
 export class ImportExperimentComponent implements OnInit {
   experimentInfo: Experiment;

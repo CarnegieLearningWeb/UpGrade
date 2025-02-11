@@ -10,6 +10,7 @@ import { ExperimentFormValidators } from '../../../validators/experiment-form.va
   selector: 'home-experiment-status',
   templateUrl: './experiment-status.component.html',
   styleUrls: ['./experiment-status.component.scss'],
+  standalone: false,
 })
 export class ExperimentStatusComponent implements OnInit {
   experimentInfo: ExperimentVM;

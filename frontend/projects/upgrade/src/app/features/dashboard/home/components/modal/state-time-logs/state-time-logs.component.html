@@ -25,7 +25,7 @@
               {{ 'home.view-experiment.enrollment-start-time.title.text' | translate | uppercase }}
             </mat-header-cell>
             <mat-cell class="ft-12-600" *matCellDef="let element">
-              {{ element.startTimeLog | date: 'medium' }}
+              {{ element.startTimeLog | date : 'medium' }}
             </mat-cell>
           </ng-container>
 
@@ -35,7 +35,7 @@
               {{ 'home.view-experiment.enrollment-end-time.title.text' | translate | uppercase }}
             </mat-header-cell>
             <mat-cell class="ft-12-600" *matCellDef="let element">
-              {{ element.endTimeLog | date: 'medium' }}
+              {{ element.endTimeLog | date : 'medium' }}
             </mat-cell>
           </ng-container>
 

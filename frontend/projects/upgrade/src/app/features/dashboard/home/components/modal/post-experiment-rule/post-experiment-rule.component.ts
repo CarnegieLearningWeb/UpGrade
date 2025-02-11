@@ -10,6 +10,7 @@ import { ExperimentStatusComponent } from '../experiment-status/experiment-statu
   templateUrl: './post-experiment-rule.component.html',
   styleUrls: ['./post-experiment-rule.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PostExperimentRuleComponent implements OnInit {
   experimentInfo: ExperimentVM;

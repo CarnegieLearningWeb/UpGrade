@@ -28,6 +28,7 @@ import { ExperimentDesignStepperService } from '../../../../../core/experiment-d
   templateUrl: './metrics.component.html',
   styleUrls: ['./metrics.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

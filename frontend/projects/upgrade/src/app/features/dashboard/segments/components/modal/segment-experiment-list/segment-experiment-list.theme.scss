@@ -6,12 +6,12 @@
 
   .segment-experiment-list-modal {
     .title {
-      box-shadow: 0 0 8px 0 mat.get-color-from-palette($background, shadow-color);
+      box-shadow: 0 0 8px 0 mat.m2-get-color-from-palette($background, shadow-color);
     }
 
     .segment-experiment-list-modal {
       .icon {
-        color: mat.get-color-from-palette($foreground, icon);
+        color: mat.m2-get-color-from-palette($foreground, icon);
       }
     }
   }

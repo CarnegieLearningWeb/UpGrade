@@ -22,6 +22,7 @@ import { FormControl } from '@angular/forms';
   selector: 'home-experiment-list',
   templateUrl: './experiment-list.component.html',
   styleUrls: ['./experiment-list.component.scss'],
+  standalone: false,
 })
 export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions$: Observable<UserPermission>;

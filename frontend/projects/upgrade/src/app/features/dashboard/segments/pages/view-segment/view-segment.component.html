@@ -56,11 +56,11 @@
         </div>
       </div>
       <span class="ft-14-700 segment-create-date">
-        {{ ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | formatDate: 'medium date') }}
+        {{ ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | formatDate : 'medium date') }}
       </span>
       <span class="ft-14-700 segment-update-date">
         {{
-          ('home.view-experiment.last-updated-on.text' | translate) + (segment.updatedAt | formatDate: 'medium date')
+          ('home.view-experiment.last-updated-on.text' | translate) + (segment.updatedAt | formatDate : 'medium date')
         }}
       </span>
     </div>
@@ -72,7 +72,7 @@
         <div class="segment-status-container">
           <span
             class="status-circle"
-            [ngStyle]="{ 'background-color': segment.status | segmentStatus: SegmentStatusPipeTypes.COLOR }"
+            [ngStyle]="{ 'background-color': segment.status | segmentStatus : SegmentStatusPipeTypes.COLOR }"
           ></span>
           <span class="ft-18-700 section-data-value section-data-value--editable" (click)="openExperimentSegmentList()">
             {{ segment.status | segmentStatus }}
@@ -131,7 +131,7 @@
             </span>
             <ng-template #conditionCode>
               <span [matTooltip]="data.name" matTooltipPosition="above">
-                {{ data.id | truncate: 50 }}
+                {{ data.id | truncate : 50 }}
               </span>
             </ng-template>
           </mat-cell>

@@ -7,6 +7,7 @@ import { StratificationFactorsService } from '../../../../core/stratification-fa
   selector: 'app-user-root',
   templateUrl: './experiment-users-root.component.html',
   styleUrls: ['./experiment-users-root.component.scss'],
+  standalone: false,
 })
 export class ExperimentUsersRootComponent {
   constructor(

@@ -30,6 +30,7 @@ import {
   templateUrl: './segment-members.component.html',
   styleUrls: ['./segment-members.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SegmentMembersComponent implements OnInit, OnChanges {
   @Input() segmentInfo: Segment;

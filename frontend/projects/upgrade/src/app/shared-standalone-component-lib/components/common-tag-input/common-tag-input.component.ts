@@ -39,7 +39,6 @@ import { BehaviorSubject, from, mergeMap, Observable, reduce } from 'rxjs';
   selector: 'app-common-tags-input',
   templateUrl: './common-tag-input.component.html',
   styleUrls: ['./common-tag-input.component.scss'],
-  standalone: true,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
