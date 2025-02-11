@@ -620,10 +620,10 @@ export class ExperimentAssignmentService {
     // Create new filtered experiment list
     const priorSelectedExperiments = experimentPools.map((pool) => {
       return pool.filter((experiment) => {
-        const individualEnrollment = individualEnrollments.find((enrollment) => {
+        const individualEnrollment = individualEnrollments.some((enrollment) => {
           return enrollment.experiment.id === experiment.id;
         });
-        const groupEnrollment = groupEnrollments.find((enrollment) => {
+        const groupEnrollment = groupEnrollments.some((enrollment) => {
           return (
             enrollment.experiment.id === experiment.id &&
             enrollment.groupId === experimentUser.workingGroup[experiment.group]
