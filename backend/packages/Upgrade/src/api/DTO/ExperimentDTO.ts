@@ -38,6 +38,7 @@ import {
   ASSIGNMENT_ALGORITHM,
   MoocletTSConfigurablePolicyParametersDTO,
   MoocletPolicyParametersDTO,
+  SUPPORTED_MOOCLET_ALGORITHMS,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 
@@ -464,6 +465,9 @@ abstract class BaseExperimentWithoutPayload {
   public type: EXPERIMENT_TYPE;
 }
 
+const isMoocletAssigmentAlgorithm = (experiment: ExperimentDTO) =>
+  experiment.assignmentAlgorithm && SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment.assignmentAlgorithm);
+
 export class ExperimentDTO extends BaseExperimentWithoutPayload {
   @IsOptional()
   @IsArray()
@@ -472,14 +476,7 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
   public conditionPayloads?: ConditionPayloadValidator[];
 
   // This should be validated when assignmentAlgorithm is not RANDOM or STRATIFIED_RANDOM_SAMPLING
-  @ValidateIf(
-    (experiment) =>
-      experiment.assignmentAlgorithm &&
-      !(
-        experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.RANDOM ||
-        experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING
-      )
-  )
+  @ValidateIf(isMoocletAssigmentAlgorithm)
   @IsDefined()
   @ValidateNested()
   @Type(() => MoocletPolicyParametersDTO, {
@@ -493,6 +490,10 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
     keepDiscriminatorProperty: true,
   })
   public moocletPolicyParameters?: MoocletPolicyParametersDTO;
+
+  @ValidateIf(isMoocletAssigmentAlgorithm)
+  @IsDefined()
+  public rewardMetricKey: string;
 }
 
 export class OldExperimentDTO extends BaseExperimentWithoutPayload {

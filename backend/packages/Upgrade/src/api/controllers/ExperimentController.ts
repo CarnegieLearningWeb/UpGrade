@@ -843,6 +843,7 @@ export class ExperimentController {
       } else {
         const policyParametersResponse = await this.moocletExperimentService.getPolicyParametersByExperimentId(id);
         experiment.moocletPolicyParameters = policyParametersResponse.parameters;
+        experiment.rewardMetricKey = await this.moocletExperimentService.getRewardMetricKeyByExperimentId(id);
       }
     }
 

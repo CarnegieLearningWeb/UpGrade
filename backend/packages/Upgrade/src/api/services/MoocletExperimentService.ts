@@ -146,20 +146,38 @@ export class MoocletExperimentService extends ExperimentService {
     return this.dataSource.transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
   }
 
+  /**
+   * handleCreateMoocletTransaction
+   *
+   * 1. Create and save an experiment-specific reward metric for the experiment
+   * 2. Attach a percent-success reward metric query to the experimentDTO before saving
+   * 3. Save the upgrade experiment
+   * 4. Create and save the Mooclet experiment resources (outputs MoocletExperimentRef)
+   * 5. Assign the rewardMetricKey to the MoocletExperimentRef
+   * 6. Save the MoocletExperimentRef and VersionConditionMaps
+   *
+   * On any error, rollback the Mooclet resources and abort the transaction
+   */
+
   private async handleCreateMoocletTransaction(
     manager: EntityManager,
     params: SyncCreateParams
   ): Promise<ExperimentDTO> {
-    const moocletPolicyParameters = params.experimentDTO.moocletPolicyParameters;
-    const queries = params.experimentDTO.queries;
+    const { moocletPolicyParameters, queries, rewardMetricKey, context } = params.experimentDTO;
 
-    const { rewardMetricKey, rewardMetricQuery } = await this.createMoocletRewardMetricAndQuery(
-      params.experimentDTO.name,
-      params.experimentDTO.context[0],
-      logger
-    );
+    // create reward metric
+    try {
+      await this.createAndSaveRewardMetric(rewardMetricKey, context[0]);
+    } catch (error) {
+      logger.error({
+        message: 'Failed to create reward metric',
+        error,
+        rewardMetricKey,
+      });
+      throw error;
+    }
 
-    queries.push(rewardMetricQuery);
+    this.attachRewardMetricQuery(rewardMetricKey, queries);
 
     // create Upgrade Experiment. If this fails, then mooclet resources will not be created, and the UpGrade experiment transaction will abort
     const experimentResponse = await this.createExperiment(manager, params);
@@ -345,14 +363,8 @@ export class MoocletExperimentService extends ExperimentService {
     return moocletExperimentRef;
   }
 
-  private async createMoocletRewardMetricAndQuery(
-    experimentName: string,
-    context: string,
-    logger: UpgradeLogger
-  ): Promise<{ rewardMetricKey: string; rewardMetricQuery: any }> {
-    const rewardMetricKey = experimentName.toLocaleUpperCase() + '_REWARD';
-    await this.createMoocletRewardMetric(rewardMetricKey, context, logger);
-    const rewardMetricQuery = {
+  private attachRewardMetricQuery(rewardMetricKey: string, queries: any[]) {
+    queries.push({
       id: uuid(),
       name: 'Success Rate',
       query: {
@@ -364,19 +376,13 @@ export class MoocletExperimentService extends ExperimentService {
         key: rewardMetricKey,
       },
       repeatedMeasure: REPEATED_MEASURE.mostRecent,
-    };
-
-    return { rewardMetricKey, rewardMetricQuery };
+    });
   }
 
-  public async createMoocletRewardMetric(
-    rewardMetricName: string,
-    context: string,
-    logger: UpgradeLogger
-  ): Promise<Metric[]> {
+  public async createAndSaveRewardMetric(rewardMetricKey: string, context: string): Promise<Metric[]> {
     const metric = {
       id: uuid(),
-      metric: rewardMetricName,
+      metric: rewardMetricKey,
       datatype: IMetricMetaData.CATEGORICAL,
       allowedValues: ['SUCCESS', 'FAILURE'],
     };
@@ -482,6 +488,18 @@ export class MoocletExperimentService extends ExperimentService {
       return await this.moocletDataService.getPolicyParameters(moocletExperimentRef.policyParametersId);
     } catch (err) {
       throw new Error(`Failed to get Mooclet policy parameters: ${err}`);
+    }
+  }
+
+  public async getRewardMetricKeyByExperimentId(experimentId: string): Promise<string> {
+    try {
+      const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
+      if (!moocletExperimentRef) {
+        throw new Error(`MoocletExperimentRef not found for experiment: ${experimentId}`);
+      }
+      return moocletExperimentRef.rewardMetricKey;
+    } catch (err) {
+      throw new Error(`Failed to get reward metric key: ${err}`);
     }
   }
 
