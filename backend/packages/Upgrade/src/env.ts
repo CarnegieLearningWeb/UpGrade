@@ -31,6 +31,7 @@ export const env = {
     routePrefix: getOsEnv('APP_ROUTE_PREFIX'),
     port: normalizePort(process.env.PORT || getOsEnv('APP_PORT')),
     banner: toBool(getOsEnv('APP_BANNER')),
+    corsWhitelist: getOsEnvArray('CORS_WHITELIST'),
     dirs: {
       migrations: getOsPaths('TYPEORM_MIGRATIONS'),
       migrationsDir: getOsPath('TYPEORM_MIGRATIONS_DIR'),
