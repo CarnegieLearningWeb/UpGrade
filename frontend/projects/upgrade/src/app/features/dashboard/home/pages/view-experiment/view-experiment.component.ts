@@ -314,13 +314,13 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   }
 
   loadRewardMetrics() {
-    if (!this.experiment?.moocletPolicyParameters || !this.experiment?.name) {
+    if (!this.experiment?.rewardMetricKey) {
       return;
     }
 
     this.displayRewardMetrics = [
       {
-        metric_Key: [`${this.experiment.name.trim().toUpperCase().replace(/ /g, '_')}_REWARD`],
+        metric_Key: [this.experiment.rewardMetricKey],
         metric_Operation: ['Percentage (Success)'],
         metric_Name: 'Success Rate',
       },

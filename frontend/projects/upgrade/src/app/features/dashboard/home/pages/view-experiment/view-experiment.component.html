@@ -758,7 +758,7 @@
           </div>
 
           <!-- Mooclet Policy Parameters JSON Viewer -->
-          <div class="json-viewer-container" *ngIf="experiment.moocletPolicyParameters">
+          <div class="json-viewer-container" *ngIf="experiment?.moocletPolicyParameters">
             <span class="ft-24-700">{{ 'home.view-experiment.experiment-mooclet-policy-parameters-title.text' | translate }}</span>
             <pre class="ft-12-600">{{ displayMoocletParameters | json }}</pre>
           </div>
@@ -922,7 +922,7 @@
           </div>
 
           <!-- Experiment reward metric table -->
-          <div class="table-container table-container-metrics">
+          <div class="table-container table-container-metrics" *ngIf="experiment?.rewardMetricKey">
             <span class="ft-24-700">{{ 'home.new-experiment.metrics.reward-metric.text' | translate }}</span>
             <mat-table [dataSource]="displayRewardMetrics" class="table">
               <!-- Metrics Column -->
