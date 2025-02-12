@@ -4,25 +4,20 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
-import { CommonModule, NgTemplateOutlet } from '@angular/common';
+import { MatDialogClose } from '@angular/material/dialog';
+import { CommonModule } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-common-dialog',
-  standalone: true,
   imports: [
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
     MatButtonModule,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
     MatDialogClose,
     CommonModule,
-    NgTemplateOutlet,
     MatIcon,
   ],
   templateUrl: './common-modal.component.html',

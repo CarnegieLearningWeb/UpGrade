@@ -23,7 +23,6 @@ import { TranslateModule } from '@ngx-translate/core';
  */
 @Component({
   selector: 'app-common-section-card',
-  standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './common-section-card.component.html',
   styleUrl: './common-section-card.component.scss',

@@ -9,6 +9,7 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
   templateUrl: './experiment-end-criteria.component.html',
   styleUrls: ['./experiment-end-criteria.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExperimentEndCriteriaComponent implements OnInit {
   experiment: ExperimentVM;

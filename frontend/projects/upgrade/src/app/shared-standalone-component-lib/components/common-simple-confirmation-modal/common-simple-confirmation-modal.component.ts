@@ -1,11 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogClose,
-  MatDialogContent,
-  MatDialogRef,
-  MatDialogTitle,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { CommonModalComponent } from '../common-modal/common-modal.component';
@@ -50,8 +44,7 @@ import { CommonModalConfig, SimpleConfirmationModalParams } from '../common-moda
  */
 @Component({
   selector: 'common-simple-confirmation-modal',
-  standalone: true,
-  imports: [CommonModalComponent, MatDialogTitle, MatDialogContent, MatDialogClose, TranslateModule, CommonModule],
+  imports: [CommonModalComponent, TranslateModule, CommonModule],
   templateUrl: './common-simple-confirmation-modal.component.html',
   styleUrl: './common-simple-confirmation-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

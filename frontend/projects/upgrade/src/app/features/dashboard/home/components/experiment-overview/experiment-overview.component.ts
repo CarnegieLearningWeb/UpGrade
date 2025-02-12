@@ -47,6 +47,7 @@ import { ENV, Environment } from '../../../../../../environments/environment-typ
   templateUrl: './experiment-overview.component.html',
   styleUrls: ['./experiment-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

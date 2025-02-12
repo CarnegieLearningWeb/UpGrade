@@ -10,6 +10,7 @@ import { IContextMetaData } from '../../../../../../core/experiments/store/exper
   selector: 'app-add-metrics',
   templateUrl: './add-metrics.component.html',
   styleUrls: ['./add-metrics.component.scss'],
+  standalone: false,
 })
 export class AddMetricsComponent implements OnInit, OnDestroy {
   options = new JsonEditorOptions();

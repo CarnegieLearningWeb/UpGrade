@@ -12,6 +12,7 @@ import { ExperimentVM } from '../../../../../../core/experiments/store/experimen
   templateUrl: './mooclet-policy-editor.component.html',
   styleUrls: ['./mooclet-policy-editor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MoocletPolicyEditorComponent implements OnInit {
   @Input() experimentInfo: ExperimentVM;

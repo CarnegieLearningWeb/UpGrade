@@ -12,6 +12,7 @@ import { ExperimentVM } from '../../../../../../core/experiments/store/experimen
   templateUrl: './payloads-table.component.html',
   styleUrls: ['./payloads-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PayloadsTableComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

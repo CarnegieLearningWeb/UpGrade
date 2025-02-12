@@ -9,6 +9,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './duplicate-segment.component.html',
   styleUrls: ['./duplicate-segment.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class DuplicateSegmentComponent {
   segmentName: string;

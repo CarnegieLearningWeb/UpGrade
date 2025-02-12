@@ -5,30 +5,30 @@
   $foreground: map-get($theme, foreground);
 
   .segment-container {
-    background-color: mat.get-color-from-palette($background, background);
+    background-color: mat.m2-get-color-from-palette($background, background);
 
     .segment-link {
-      color: mat.get-color-from-palette($foreground, text);
+      color: mat.m2-get-color-from-palette($foreground, text);
     }
 
     .segment {
-      box-shadow: 0 0 8px 0 mat.get-color-from-palette($background, shadow-color);
+      box-shadow: 0 0 8px 0 mat.m2-get-color-from-palette($background, shadow-color);
 
       &-info {
-        box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
+        box-shadow: 0 8px 8px -8px mat.m2-get-color-from-palette($background, shadow-color);
 
         .action-buttons {
           .button {
-            background-color: mat.get-color-from-palette($background, background);
+            background-color: mat.m2-get-color-from-palette($background, background);
           }
           .button-long {
-            background-color: mat.get-color-from-palette($background, background);
+            background-color: mat.m2-get-color-from-palette($background, background);
           }
         }
       }
 
       &-secondary-info {
-        box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
+        box-shadow: 0 8px 8px -8px mat.m2-get-color-from-palette($background, shadow-color);
       }
     }
   }

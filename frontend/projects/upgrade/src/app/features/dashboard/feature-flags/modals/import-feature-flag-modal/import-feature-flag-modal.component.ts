@@ -19,7 +19,6 @@ import { IFeatureFlagFile } from 'upgrade_types';
 
 @Component({
   selector: 'app-import-feature-flag-modal',
-  standalone: true,
   imports: [
     CommonModalComponent,
     CommonModule,

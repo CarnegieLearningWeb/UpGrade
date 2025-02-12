@@ -6,7 +6,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { filter } from 'rxjs/operators';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { NewSegmentComponent } from '../../components/modal/new-segment/new-segment.component';
-import * as clonedeep from 'lodash.clonedeep';
+import { cloneDeep } from 'lodash';
 import { DuplicateSegmentComponent } from '../../components/modal/duplicate-segment/duplicate-segment.component';
 import { MemberTypes, Segment } from '../../../../../core/segments/store/segments.model';
 import { SEGMENT_TYPE } from 'upgrade_types';
@@ -21,6 +21,7 @@ import { SEGMENT_SEARCH_KEY } from '../../../../../../../../../../types/src/Expe
   selector: 'view-segment',
   templateUrl: './view-segment.component.html',
   styleUrls: ['./view-segment.component.scss'],
+  standalone: false,
 })
 export class ViewSegmentComponent implements OnInit, OnDestroy {
   permissions: UserPermission;
@@ -86,7 +87,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   openEditSegmentDialog() {
     this.dialog.open(NewSegmentComponent as any, {
       panelClass: 'new-segment-modal',
-      data: { segmentInfo: clonedeep(this.segment) },
+      data: { segmentInfo: cloneDeep(this.segment) },
     });
   }
 
@@ -132,7 +133,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   exportSegment() {
     this.dialog.open(ExportSegmentComponent, {
       panelClass: 'export-modal',
-      data: { segment: [clonedeep(this.segment)] },
+      data: { segment: [cloneDeep(this.segment)] },
     });
   }
 

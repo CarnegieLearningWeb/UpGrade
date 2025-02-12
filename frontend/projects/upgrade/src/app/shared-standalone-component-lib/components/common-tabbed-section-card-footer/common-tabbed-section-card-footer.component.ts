@@ -17,7 +17,6 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
  */
 @Component({
   selector: 'app-common-tabbed-section-card-footer',
-  standalone: true,
   imports: [MatTabsModule, CommonModule],
   templateUrl: './common-tabbed-section-card-footer.component.html',
   styleUrl: './common-tabbed-section-card-footer.component.scss',

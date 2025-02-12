@@ -17,6 +17,7 @@ import { SegmentsService } from '../../../../../core/segments/segments.service';
   templateUrl: './segment-overview.component.html',
   styleUrls: ['./segment-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SegmentOverviewComponent implements OnInit, OnDestroy {
   @Input() segmentInfo: Segment;

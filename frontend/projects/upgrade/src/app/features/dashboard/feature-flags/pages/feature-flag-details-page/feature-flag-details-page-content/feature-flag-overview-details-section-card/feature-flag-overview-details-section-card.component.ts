@@ -24,7 +24,6 @@ import { UserPermission } from '../../../../../../../core/auth/store/auth.models
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
-  standalone: true,
   imports: [
     CommonModule,
     CommonSectionCardComponent,

@@ -17,6 +17,7 @@ import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flag
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class HomeComponent implements OnInit {
   permissions$: Observable<UserPermission>;

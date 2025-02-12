@@ -250,7 +250,9 @@
                 <span class="ft-16-600 section-data-title">
                   {{ 'home-global.assignment-algorithm.text' | translate | uppercase }}
                 </span>
-                <span class="ft-18-700 section-data-value">{{ ASSIGNMENT_ALGORITHM_DISPLAY_MAP[experiment.assignmentAlgorithm] }}</span>
+                <span class="ft-18-700 section-data-value">{{
+                  ASSIGNMENT_ALGORITHM_DISPLAY_MAP[experiment.assignmentAlgorithm]
+                }}</span>
               </div>
             </div>
 
@@ -401,7 +403,10 @@
               </div>
 
               <!-- Stratification Factor-->
-              <div class="section-data" *ngIf="experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING">
+              <div
+                class="section-data"
+                *ngIf="experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING"
+              >
                 <span class="ft-16-600 section-data-title">
                   {{ 'home-global.stratification-factor.text' | translate | uppercase }}
                 </span>
@@ -759,7 +764,9 @@
 
           <!-- Mooclet Policy Parameters JSON Viewer -->
           <div class="json-viewer-container" *ngIf="experiment?.moocletPolicyParameters">
-            <span class="ft-24-700">{{ 'home.view-experiment.experiment-mooclet-policy-parameters-title.text' | translate }}</span>
+            <span class="ft-24-700">{{
+              'home.view-experiment.experiment-mooclet-policy-parameters-title.text' | translate
+            }}</span>
             <pre class="ft-12-600">{{ displayMoocletParameters | json }}</pre>
           </div>
         </div>

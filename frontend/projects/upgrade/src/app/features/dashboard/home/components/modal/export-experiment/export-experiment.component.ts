@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './export-experiment.component.html',
   styleUrls: ['./export-experiment.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExportModalComponent implements OnInit {
   exportMethod = [];
