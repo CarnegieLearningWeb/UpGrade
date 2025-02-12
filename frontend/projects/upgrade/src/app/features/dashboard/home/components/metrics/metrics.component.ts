@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ViewChild, ElementRef, OnChanges } from '@angular/core';
 import { ASSIGNMENT_UNIT } from 'upgrade_types';
 import { AbstractControl } from '@angular/forms';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -78,7 +78,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   currentAssignmentUnit: ASSIGNMENT_UNIT;
   currentExperimentName$ = this.experimentDesignStepperService.currentExperimentName$;
   isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
-  private experimentNameSubscription: Subscription;
+  private rewardMetricSubscription: Subscription;
 
   constructor(
     private analysisService: AnalysisService,
@@ -124,14 +124,21 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     });
 
     // Subscribe to experiment name changes for reward metric
-    this.experimentNameSubscription = this.currentExperimentName$.subscribe((name) => {
-      if (name) {
+    this.rewardMetricSubscription = combineLatest([
+      this.isMoocletExperimentDesign$,
+      this.currentExperimentName$,
+    ]).subscribe(([isMooclet, experimentName]) => {
+      // If mooclet and name is non-empty, set the reward metric
+      if (isMooclet && experimentName) {
         const rewardMetricData = {
-          keys: `${name.trim().toUpperCase().replace(/ /g, '_')}_REWARD`,
+          keys: `${experimentName.trim().toUpperCase().replace(/ /g, '_')}_REWARD`,
           operationType: 'Percentage (Success)',
           queryName: 'Success Rate',
         };
         this.rewardMetricDataSource.next([rewardMetricData]);
+      } else {
+        // If not mooclet or no name, clear out the reward metric
+        this.rewardMetricDataSource.next([]);
       }
     });
 
@@ -714,6 +721,13 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.queryMetricDropDownError.length === 0 &&
       this.queryNameError.length === 0
     ) {
+      const rewardMetricData = this.rewardMetricDataSource.getValue();
+
+      // If rewardMetricDataSource has data, include the rewardMetricKey
+      if (rewardMetricData.length > 0) {
+        monitoredMetricsFormData.rewardMetricKey = rewardMetricData[0].keys;
+      }
+
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: monitoredMetricsFormData,
@@ -739,8 +753,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy() {
     this.allMetricsSub.unsubscribe();
 
-    if (this.experimentNameSubscription) {
-      this.experimentNameSubscription.unsubscribe();
+    if (this.rewardMetricSubscription) {
+      this.rewardMetricSubscription.unsubscribe();
     }
   }
 }

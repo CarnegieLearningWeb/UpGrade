@@ -747,7 +747,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           decisionPoints: experimentDesignFormData.decisionPoints,
           conditions: experimentDesignFormData.conditions,
         });
-      if (environment.moocletToggle && this.policyEditor) {
+      if (this.policyEditor) {
         experimentDesignFormData.moocletPolicyParameters = {
           assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
           ...this.policyEditor.getPolicyEditorValue(),
