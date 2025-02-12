@@ -1874,26 +1874,6 @@ export class ExperimentService {
     return searchStringConcatenated;
   }
 
-  // private async addBulkExperiments(
-  //   experiments: ExperimentDTO[],
-  //   currentUser: UserDTO,
-  //   logger: UpgradeLogger
-  // ): Promise<Experiment[]> {
-  //   const createdExperiments = [];
-  //   for (const exp of experiments) {
-  //     try {
-  //       const result = await this.create(exp, currentUser, logger);
-  //       createdExperiments.push(result);
-  //     } catch (err) {
-  //       const error = err as Error;
-  //       error.message = `Error in creating experiment document "addBulkExperiments"`;
-  //       logger.error(error);
-  //       throw error;
-  //     }
-  //   }
-  //   return createdExperiments;
-  // }
-
   public formatingConditionPayload(experiment: Experiment): Experiment {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
       const conditionPayload: ConditionPayload[] = [];
