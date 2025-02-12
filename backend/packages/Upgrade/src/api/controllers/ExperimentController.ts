@@ -1264,13 +1264,24 @@ export class ExperimentController {
    *            description: Internal Server Error
    */
   @Post('/import')
-  public importExperiment(
+  public async importExperiment(
     @Body({ validate: true })
     experiments: ExperimentFile[],
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ValidatedExperimentError[]> {
-    return this.moocletExperimentService.syncImportExperiment(experiments, currentUser, request.logger);
+    const { experiments: experimentList, validatedExperiments } = await this.experimentService.verifyExperiments(
+      experiments,
+      request.logger
+    );
+
+    if (env.mooclets.enabled) {
+      await this.moocletExperimentService.syncAddBulkExperiments(experimentList, currentUser, request.logger);
+    } else {
+      await this.experimentService.addBulkExperiments(experimentList, currentUser, request.logger);
+    }
+    // return this.moocletExperimentService.syncImportExperiment(experiments, currentUser, request.logger);
+    return validatedExperiments;
   }
 
   /**

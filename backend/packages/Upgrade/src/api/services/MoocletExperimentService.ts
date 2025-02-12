@@ -43,7 +43,7 @@ import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletVersionConditionMap } from '../models/MoocletVersionConditionMap';
 import { v4 as uuid } from 'uuid';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
-import { ConditionValidator, ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
+import { ConditionValidator, ExperimentDTO } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
 import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
@@ -136,45 +136,37 @@ export class MoocletExperimentService extends ExperimentService {
     return this.dataSource.transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
   }
 
-  public async syncImportExperiment(
-    experimentFiles: ExperimentFile[],
-    user: UserDTO,
-    logger: UpgradeLogger
-  ): Promise<ValidatedExperimentError[]> {
-    const { experiments, validatedExperiments } = await this.verifyExperiments(experimentFiles, logger);
-
-    await this.syncAddBulkExperiments(experiments, user, logger);
-    return validatedExperiments;
-  }
-
-  private async syncAddBulkExperiments(
+  public async syncAddBulkExperiments(
     experiments: ExperimentDTO[],
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Experiment[]> {
-    const createdExperiments = [];
+    const upgradeExperiments: ExperimentDTO[] = [];
+
     await Promise.all(
       experiments.map(async (experiment) => {
-        try {
-          if ('moocletPolicyParameters' in experiment) {
-            const result = await this.syncCreate({
+        if (this.isMoocletExperiment(experiment.assignmentAlgorithm)) {
+          try {
+            await this.syncCreate({
               experimentDTO: experiment,
               currentUser,
             });
-            createdExperiments.push(result);
-          } else {
-            const result = await this.create(experiment, currentUser, logger);
-            createdExperiments.push(result);
+          } catch (error) {
+            logger.error({
+              message: 'Failed to create Mooclet experiment during import',
+              error: error,
+              experiment: experiment,
+              user: currentUser,
+            });
+            throw error;
           }
-        } catch (err) {
-          const error = err as Error;
-          error.message = `Error in creating experiment document "syncAddBulkExperiments"`;
-          logger.error(error);
-          throw error;
+        } else {
+          upgradeExperiments.push(experiment);
         }
       })
     );
-    return createdExperiments;
+
+    return super.addBulkExperiments(upgradeExperiments, currentUser, logger);
   }
 
   private async handleCreateMoocletTransaction(

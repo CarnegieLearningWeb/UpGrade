@@ -504,7 +504,7 @@ export class ExperimentService {
     };
   }
 
-  protected async verifyExperiments(
+  public async verifyExperiments(
     experimentFiles: ExperimentFile[],
     logger: UpgradeLogger
   ): Promise<{ experiments: ExperimentDTO[]; validatedExperiments: ValidatedExperimentError[] }> {
@@ -1623,6 +1623,28 @@ export class ExperimentService {
       .filter((error) => error !== null);
   }
 
+  public async addBulkExperiments(
+    experiments: ExperimentDTO[],
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<Experiment[]> {
+    const createdExperiments = [];
+    await Promise.all(
+      experiments.map(async (experiment) => {
+        try {
+          const result = await this.create(experiment, currentUser, logger);
+          createdExperiments.push(result);
+        } catch (err) {
+          const error = err as Error;
+          error.message = `Error in creating experiment document "syncAddBulkExperiments"`;
+          logger.error(error);
+          throw error;
+        }
+      })
+    );
+    return createdExperiments;
+  }
+
   private experimentPayloadConverter(experiment: OldExperimentDTO): ExperimentDTO {
     const updatedExperimentPayload = experiment.conditionPayloads.map((conditionPayload) => {
       return {
@@ -1852,25 +1874,25 @@ export class ExperimentService {
     return searchStringConcatenated;
   }
 
-  private async addBulkExperiments(
-    experiments: ExperimentDTO[],
-    currentUser: UserDTO,
-    logger: UpgradeLogger
-  ): Promise<Experiment[]> {
-    const createdExperiments = [];
-    for (const exp of experiments) {
-      try {
-        const result = await this.create(exp, currentUser, logger);
-        createdExperiments.push(result);
-      } catch (err) {
-        const error = err as Error;
-        error.message = `Error in creating experiment document "addBulkExperiments"`;
-        logger.error(error);
-        throw error;
-      }
-    }
-    return createdExperiments;
-  }
+  // private async addBulkExperiments(
+  //   experiments: ExperimentDTO[],
+  //   currentUser: UserDTO,
+  //   logger: UpgradeLogger
+  // ): Promise<Experiment[]> {
+  //   const createdExperiments = [];
+  //   for (const exp of experiments) {
+  //     try {
+  //       const result = await this.create(exp, currentUser, logger);
+  //       createdExperiments.push(result);
+  //     } catch (err) {
+  //       const error = err as Error;
+  //       error.message = `Error in creating experiment document "addBulkExperiments"`;
+  //       logger.error(error);
+  //       throw error;
+  //     }
+  //   }
+  //   return createdExperiments;
+  // }
 
   public formatingConditionPayload(experiment: Experiment): Experiment {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
