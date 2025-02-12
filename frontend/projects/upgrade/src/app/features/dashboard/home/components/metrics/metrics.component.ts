@@ -22,7 +22,9 @@ import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } fr
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { DialogService } from '../../../../../shared/services/common-dialog.service';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
+
 @Component({
   selector: 'home-monitored-metrics',
   templateUrl: './metrics.component.html',
@@ -86,6 +88,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     private _formBuilder: UntypedFormBuilder,
     private translate: TranslateService,
     private dialogService: DialogService,
+    private experimentService: ExperimentService,
     private experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
 
@@ -131,12 +134,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     ]).subscribe(([isMooclet, experimentName]) => {
       // If mooclet and name is non-empty, set the reward metric
       if (isMooclet && experimentName) {
-        const rewardMetricData = {
-          keys: `${experimentName.trim().toUpperCase().replace(/ /g, '_')}_REWARD`,
-          operationType: 'Percentage (Success)',
-          queryName: 'Success Rate',
-        };
-        this.rewardMetricDataSource.next([rewardMetricData]);
+        const rewardMetricKey = this.experimentService.getRewardMetricKey(experimentName);
+        this.rewardMetricDataSource.next([this.experimentService.getRewardMetricData(rewardMetricKey)]);
       } else {
         // If not mooclet or no name, clear out the reward metric
         this.rewardMetricDataSource.next([]);

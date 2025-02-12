@@ -276,7 +276,7 @@
               {{ 'query.metric.text' | translate }}
             </mat-header-cell>
             <mat-cell *matCellDef="let row">
-              {{ row.keys }}
+              {{ row.metric_Key }}
             </mat-cell>
           </ng-container>
 
@@ -286,7 +286,7 @@
               {{ 'monitor.statistic.text' | translate }}
             </mat-header-cell>
             <mat-cell *matCellDef="let row">
-              {{ row.operationType }}
+              {{ row.metric_Operation }}
             </mat-cell>
           </ng-container>
 
@@ -296,7 +296,7 @@
               {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
             </mat-header-cell>
             <mat-cell *matCellDef="let row">
-              {{ row.queryName }}
+              {{ row.metric_Name }}
             </mat-cell>
           </ng-container>
 

@@ -319,13 +319,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.displayRewardMetrics = [
-      {
-        metric_Key: [this.experiment.rewardMetricKey],
-        metric_Operation: ['Percentage (Success)'],
-        metric_Name: 'Success Rate',
-      },
-    ];
+    this.displayRewardMetrics = [this.experimentService.getRewardMetricData(this.experiment.rewardMetricKey)];
   }
 
   openDialog(dialogType: DialogType) {
