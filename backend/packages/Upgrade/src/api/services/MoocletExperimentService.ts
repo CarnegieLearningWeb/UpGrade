@@ -140,9 +140,9 @@ export class MoocletExperimentService extends ExperimentService {
     experiments: ExperimentDTO[],
     currentUser: UserDTO,
     logger: UpgradeLogger
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     const upgradeExperiments: ExperimentDTO[] = [];
-
+    const moocletExperiments: ExperimentDTO[] = [];
     await Promise.all(
       experiments.map(async (experiment) => {
         if (this.isMoocletExperiment(experiment.assignmentAlgorithm)) {
@@ -160,13 +160,14 @@ export class MoocletExperimentService extends ExperimentService {
             });
             throw error;
           }
+          moocletExperiments.push(experiment);
         } else {
           upgradeExperiments.push(experiment);
         }
       })
     );
 
-    return super.addBulkExperiments(upgradeExperiments, currentUser, logger);
+    return [...(await super.addBulkExperiments(upgradeExperiments, currentUser, logger)), ...moocletExperiments];
   }
 
   private async handleCreateMoocletTransaction(

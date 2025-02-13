@@ -1010,7 +1010,7 @@ export class ExperimentController {
     @Body({ validate: true, type: ExperimentDTO }) experiment: ExperimentDTO[],
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     request.logger.child({ user: currentUser });
     return this.experimentService.createMultipleExperiments(experiment, currentUser, request.logger);
   }
@@ -1280,7 +1280,6 @@ export class ExperimentController {
     } else {
       await this.experimentService.addBulkExperiments(experimentList, currentUser, request.logger);
     }
-    // return this.moocletExperimentService.syncImportExperiment(experiments, currentUser, request.logger);
     return validatedExperiments;
   }
 

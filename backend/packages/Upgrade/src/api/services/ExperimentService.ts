@@ -309,7 +309,7 @@ export class ExperimentService {
     experiments: ExperimentDTO[],
     user: UserDTO,
     logger: UpgradeLogger
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     logger.info({ message: `Generating test experiments`, details: experiments });
     return this.addBulkExperiments(experiments, user, logger);
   }
@@ -1627,8 +1627,8 @@ export class ExperimentService {
     experiments: ExperimentDTO[],
     currentUser: UserDTO,
     logger: UpgradeLogger
-  ): Promise<Experiment[]> {
-    const createdExperiments = [];
+  ): Promise<ExperimentDTO[]> {
+    const createdExperiments: ExperimentDTO[] = [];
     await Promise.all(
       experiments.map(async (experiment) => {
         try {
