@@ -282,15 +282,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     if (this.experiment) {
       this.displayMetrics = [];
       this.experiment.queries?.forEach((query) => {
-        // hides the reward query since it is already shown it's own box
-        // TODO make this not gross
-        if (
-          query.metric.key === this.experiment?.rewardMetricKey &&
-          query.query.operationType === OPERATION_TYPES.PERCENTAGE &&
-          query.query.compareValue === 'SUCCESS'
-        ) {
-          return;
-        }
         let key;
         if (query.metric.key) {
           key = query.metric.key;

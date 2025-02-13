@@ -617,15 +617,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   updateView(type?: string) {
-    // hides the reward query since it is already shown it's own box
-    // TODO make this not gross
-    const queriesControlsMinusRewardQuery = [...this.queries.controls].filter((query) => {
-      query.value.keys[0].metricKey === this.experimentInfo?.rewardMetricKey &&
-        query.value.query.operationType === OPERATION_TYPES.PERCENTAGE &&
-        query.value.query.compareValue === 'SUCCESS';
-    });
-
-    this.metricsDataSource.next(queriesControlsMinusRewardQuery);
+    this.metricsDataSource.next(this.queries.controls);
     if (type) {
       this[type].nativeElement.scroll({
         top: this[type].nativeElement.scrollHeight - 96,
