@@ -266,12 +266,11 @@
       </ng-template>
 
       <!-- Reward Metric Section -->
-      <div class="reward-metric-container" *ngIf="(isMoocletExperimentDesign$ | async)">
+      <div class="reward-metric-container" *ngIf="isMoocletExperimentDesign$ | async">
         <span class="title">{{ 'home.new-experiment.metrics.reward-metric.text' | translate }}</span>
         <mat-table class="reward-metric-table" [dataSource]="rewardMetricDataSource">
-
           <!-- Metric Column -->
-          <ng-container matColumnDef="keys">
+          <ng-container matColumnDef="metricsKey">
             <mat-header-cell class="ft-14-700" *matHeaderCellDef>
               {{ 'query.metric.text' | translate }}
             </mat-header-cell>
@@ -281,7 +280,7 @@
           </ng-container>
 
           <!-- Statistic Column -->
-          <ng-container matColumnDef="operationType">
+          <ng-container matColumnDef="metricsOperation">
             <mat-header-cell class="ft-14-700" *matHeaderCellDef>
               {{ 'monitor.statistic.text' | translate }}
             </mat-header-cell>
@@ -291,7 +290,7 @@
           </ng-container>
 
           <!-- Description Column -->
-          <ng-container matColumnDef="queryName">
+          <ng-container matColumnDef="metricsName">
             <mat-header-cell class="ft-14-700" *matHeaderCellDef>
               {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
             </mat-header-cell>
@@ -300,14 +299,8 @@
             </mat-cell>
           </ng-container>
 
-          <ng-container matColumnDef="removeMetric">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-            <mat-cell *matCellDef="let row">
-            </mat-cell>
-          </ng-container>
-
-          <mat-header-row *matHeaderRowDef="metricsDisplayedColumns; sticky: true"></mat-header-row>
-          <mat-row *matRowDef="let row; columns: metricsDisplayedColumns"></mat-row>
+          <mat-header-row *matHeaderRowDef="rewardMetricDisplayedColumns; sticky: true"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: rewardMetricDisplayedColumns"></mat-row>
         </mat-table>
 
         <p class="form-hint ft-12-400">

@@ -6,6 +6,7 @@ import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
   NewExperimentPaths,
+  RewardMetricData,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Component, OnInit, OnDestroy, Input, EventEmitter, Output } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
@@ -66,9 +67,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   controlTitles = ['Type', 'Key', 'Metric']; // Used to show different titles in grouped metrics
 
   metricsDataSource = new BehaviorSubject<AbstractControl[]>([]);
-  rewardMetricDataSource = new BehaviorSubject<any[]>([]);
+  rewardMetricDataSource = new BehaviorSubject<RewardMetricData[]>([]);
 
   metricsDisplayedColumns = ['keys', 'operationType', 'queryName', 'removeMetric'];
+  rewardMetricDisplayedColumns = ['metricsKey', 'metricsOperation', 'metricsName'];
   queryIndex = 0;
   editMode = false;
 
@@ -156,6 +158,13 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.queries.removeAt(0);
       this.experimentInfo.queries.forEach((query, queryIndex) => {
         const key = query.metric.key ? query.metric.key : query.metric;
+
+        // if (
+        //   key === this.experimentInfo?.rewardMetricKey &&
+        //   query.query.operationType === OPERATION_TYPES.PERCENTAGE &&
+        //   query.query.compareValue === 'SUCCESS'
+        // )
+        //   return;
         // separating keys from metric
         const rootKey = key.split(METRICS_JOIN_TEXT);
         // set selectedNode for first key of simple/repeated metrics
@@ -614,7 +623,15 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   updateView(type?: string) {
-    this.metricsDataSource.next(this.queries.controls);
+    // hides the reward query since it is already shown it's own box
+    // TODO make this not gross
+    const queriesControlsMinusRewardQuery = [...this.queries.controls].filter((query) => {
+      query.value.keys[0].metricKey === this.experimentInfo?.rewardMetricKey &&
+        query.value.query.operationType === OPERATION_TYPES.PERCENTAGE &&
+        query.value.query.compareValue === 'SUCCESS';
+    });
+
+    this.metricsDataSource.next(queriesControlsMinusRewardQuery);
     if (type) {
       this[type].nativeElement.scroll({
         top: this[type].nativeElement.scrollHeight - 96,
@@ -725,7 +742,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
       // If rewardMetricDataSource has data, include the rewardMetricKey
       if (rewardMetricData.length > 0) {
-        monitoredMetricsFormData.rewardMetricKey = rewardMetricData[0].keys;
+        monitoredMetricsFormData.rewardMetricKey = rewardMetricData[0].metric_Key;
       }
 
       this.emitExperimentDialogEvent.emit({

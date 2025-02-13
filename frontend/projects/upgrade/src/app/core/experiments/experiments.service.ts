@@ -263,8 +263,8 @@ export class ExperimentService {
 
   getRewardMetricData(rewardMetricKey: string) {
     return {
-      metric_Key: [rewardMetricKey],
-      metric_Operation: ['Percentage (Success)'],
+      metric_Key: rewardMetricKey,
+      metric_Operation: 'Percentage (Success)',
       metric_Name: 'Success Rate',
     };
   }

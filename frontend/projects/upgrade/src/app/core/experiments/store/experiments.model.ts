@@ -379,3 +379,9 @@ export interface InteractionEffectGraphData {
   series: InteractionEffectLineChartSeriesData[];
   dot: boolean;
 }
+
+export interface RewardMetricData {
+  metric_Key: string;
+  metric_Operation: string;
+  metric_Name: string;
+}

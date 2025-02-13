@@ -932,48 +932,37 @@
           <div class="table-container table-container-metrics" *ngIf="experiment?.rewardMetricKey">
             <span class="ft-24-700">{{ 'home.new-experiment.metrics.reward-metric.text' | translate }}</span>
             <mat-table [dataSource]="displayRewardMetrics" class="table">
-              <!-- Metrics Column -->
+              <!-- Metric Column -->
               <ng-container matColumnDef="metricsKey">
                 <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                   {{ 'query.metric.text' | translate }}
                 </mat-header-cell>
-                <mat-cell class="ft-12-600" *matCellDef="let data">
-                  <div *ngFor="let key of data.metric_Key">
-                    <div class="metric-key">
-                      {{ key }}
-                    </div>
+                <mat-cell class="ft-12-600" *matCellDef="let row">
+                  <div class="metric-key">
+                    {{ row.metric_Key }}
                   </div>
                 </mat-cell>
               </ng-container>
 
               <!-- Statistic Column -->
               <ng-container matColumnDef="metricsOperation">
-                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                <mat-header-cell class="ft-12-600" *matHeaderCellDef>
                   {{ 'monitor.statistic.text' | translate }}
                 </mat-header-cell>
-                <mat-cell class="ft-12-600" *matCellDef="let data">
-                  <div *ngFor="let statisticOperation of data.metric_Operation">
-                    <div class="metric-Operation">
-                      {{ statisticOperation | titlecase }}
-                    </div>
+                <mat-cell class="ft-12-600" *matCellDef="let row">
+                  <div class="metric-Operation">
+                    {{ row.metric_Operation }}
                   </div>
                 </mat-cell>
               </ng-container>
 
-              <!-- Display Name Column -->
+              <!-- Description Column -->
               <ng-container matColumnDef="metricsName">
-                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                <mat-header-cell class="ft-12-600" *matHeaderCellDef>
                   {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
                 </mat-header-cell>
-                <mat-cell class="ft-12-600" *matCellDef="let data">
-                  <span *ngIf="data.metric_Name?.length < 50; else displayName">
-                    {{ data.metric_Name }}
-                  </span>
-                  <ng-template #displayName>
-                    <span [matTooltip]="data.metric_Name" matTooltipPosition="above">
-                      {{ data.metric_Name | truncate : 50 }}
-                    </span>
-                  </ng-template>
+                <mat-cell class="ft-12-600" *matCellDef="let row">
+                  {{ row.metric_Name }}
                 </mat-cell>
               </ng-container>
 
