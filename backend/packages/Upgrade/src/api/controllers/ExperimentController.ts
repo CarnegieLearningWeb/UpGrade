@@ -833,7 +833,7 @@ export class ExperimentController {
     @Params({ validate: true }) { id }: ExperimentIdValidator,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
-    const experiment = await this.experimentService.getSingleExperiment(id, request.logger);
+    let experiment = await this.experimentService.getSingleExperiment(id, request.logger);
 
     if (SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment.assignmentAlgorithm)) {
       if (!env.mooclets?.enabled) {
@@ -841,9 +841,7 @@ export class ExperimentController {
           'MoocletPolicyParameters are present in the experiment but Mooclet is not enabled in the environment'
         );
       } else {
-        const policyParametersResponse = await this.moocletExperimentService.getPolicyParametersByExperimentId(id);
-        experiment.moocletPolicyParameters = policyParametersResponse.parameters;
-        experiment.rewardMetricKey = await this.moocletExperimentService.getRewardMetricKeyByExperimentId(id);
+        experiment = await this.moocletExperimentService.attachRewardKeyAndPolicyParamsToExperimentDTO(experiment);
       }
     }
 

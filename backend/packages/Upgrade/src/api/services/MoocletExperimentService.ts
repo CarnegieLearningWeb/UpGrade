@@ -480,26 +480,18 @@ export class MoocletExperimentService extends ExperimentService {
     }
   }
 
-  public async getPolicyParametersByExperimentId(
-    experimentId: string
-  ): Promise<MoocletPolicyParametersResponseDetails> {
+  public async attachRewardKeyAndPolicyParamsToExperimentDTO(experiment: ExperimentDTO): Promise<ExperimentDTO> {
     try {
-      const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
-      return await this.moocletDataService.getPolicyParameters(moocletExperimentRef.policyParametersId);
+      const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experiment.id);
+      const policyParamters = await this.moocletDataService.getPolicyParameters(
+        moocletExperimentRef.policyParametersId
+      );
+      experiment.rewardMetricKey = moocletExperimentRef.rewardMetricKey;
+      experiment.moocletPolicyParameters = policyParamters.parameters;
+
+      return experiment;
     } catch (err) {
       throw new Error(`Failed to get Mooclet policy parameters: ${err}`);
-    }
-  }
-
-  public async getRewardMetricKeyByExperimentId(experimentId: string): Promise<string> {
-    try {
-      const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
-      if (!moocletExperimentRef) {
-        throw new Error(`MoocletExperimentRef not found for experiment: ${experimentId}`);
-      }
-      return moocletExperimentRef.rewardMetricKey;
-    } catch (err) {
-      throw new Error(`Failed to get reward metric key: ${err}`);
     }
   }
 
