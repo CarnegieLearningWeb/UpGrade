@@ -252,7 +252,7 @@ export class MoocletExperimentService extends ExperimentService {
     moocletPolicyParameters: MoocletPolicyParametersDTO
   ): Promise<MoocletExperimentRef | undefined> {
     const newMoocletRequest: MoocletRequestBody = {
-      name: upgradeExperiment.name,
+      name: upgradeExperiment.name + '-' + upgradeExperiment.id.slice(0, 8), //using part of exp uuid so this will make sure mooclet name is unique
       policy: null,
     };
     const moocletExperimentRef = new MoocletExperimentRef();
