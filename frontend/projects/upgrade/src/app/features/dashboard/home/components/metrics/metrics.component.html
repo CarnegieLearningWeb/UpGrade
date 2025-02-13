@@ -299,6 +299,12 @@
             </mat-cell>
           </ng-container>
 
+          <ng-container matColumnDef="removeMetric">
+            <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+            <mat-cell *matCellDef="let row">
+            </mat-cell>
+          </ng-container>
+
           <mat-header-row *matHeaderRowDef="rewardMetricDisplayedColumns; sticky: true"></mat-header-row>
           <mat-row *matRowDef="let row; columns: rewardMetricDisplayedColumns"></mat-row>
         </mat-table>

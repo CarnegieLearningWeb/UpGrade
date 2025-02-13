@@ -60,18 +60,18 @@
       width: 60px;
     }
 
-    .cdk-column-keys {
+    .cdk-column-keys, .cdk-column-metricsKey {
       flex: 0 0 250px;
       width: 250px;
     }
 
-    .cdk-column-operationType {
+    .cdk-column-operationType, .cdk-column-metricsOperation {
       margin-left: 30px;
       flex: 0 0 160px;
       width: 160px;
     }
 
-    .cdk-column-queryName {
+    .cdk-column-queryName, .cdk-column-metricsName {
       width: 100%;
       max-width: 350px;
       &.mat-mdc-cell {
