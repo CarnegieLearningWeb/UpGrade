@@ -136,6 +136,40 @@ export class MoocletExperimentService extends ExperimentService {
     return this.dataSource.transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
   }
 
+  public async syncAddBulkExperiments(
+    experiments: ExperimentDTO[],
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<ExperimentDTO[]> {
+    const upgradeExperiments: ExperimentDTO[] = [];
+    const moocletExperiments: ExperimentDTO[] = [];
+    await Promise.all(
+      experiments.map(async (experiment) => {
+        if (this.isMoocletExperiment(experiment.assignmentAlgorithm)) {
+          try {
+            await this.syncCreate({
+              experimentDTO: experiment,
+              currentUser,
+            });
+          } catch (error) {
+            logger.error({
+              message: 'Failed to create Mooclet experiment during import',
+              error: error,
+              experiment: experiment,
+              user: currentUser,
+            });
+            throw error;
+          }
+          moocletExperiments.push(experiment);
+        } else {
+          upgradeExperiments.push(experiment);
+        }
+      })
+    );
+
+    return [...(await super.addBulkExperiments(upgradeExperiments, currentUser, logger)), ...moocletExperiments];
+  }
+
   private async handleCreateMoocletTransaction(
     manager: EntityManager,
     params: SyncCreateParams

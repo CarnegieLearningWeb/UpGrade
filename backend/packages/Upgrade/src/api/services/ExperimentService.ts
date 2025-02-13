@@ -309,7 +309,7 @@ export class ExperimentService {
     experiments: ExperimentDTO[],
     user: UserDTO,
     logger: UpgradeLogger
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     logger.info({ message: `Generating test experiments`, details: experiments });
     return this.addBulkExperiments(experiments, user, logger);
   }
@@ -504,11 +504,10 @@ export class ExperimentService {
     };
   }
 
-  public async importExperiment(
+  public async verifyExperiments(
     experimentFiles: ExperimentFile[],
-    user: UserDTO,
     logger: UpgradeLogger
-  ): Promise<ValidatedExperimentError[]> {
+  ): Promise<{ experiments: ExperimentDTO[]; validatedExperiments: ValidatedExperimentError[] }> {
     const validatedExperiments = await this.validateExperiments(experimentFiles, logger);
 
     const nonErrorExperiments = experimentFiles.filter((file) => {
@@ -568,8 +567,7 @@ export class ExperimentService {
       // Always set the imported experiment to "inactive".
       experiment.state = EXPERIMENT_STATE.INACTIVE;
     }
-    await this.addBulkExperiments(experiments, user, logger);
-    return validatedExperiments;
+    return { experiments, validatedExperiments };
   }
 
   public async exportExperiment(user: UserDTO, logger: UpgradeLogger, experimentIds?: string[]): Promise<Experiment[]> {
@@ -1579,6 +1577,14 @@ export class ExperimentService {
         }
         const experimentJSONValidationError = await this.validateExperimentJSON(newExperiment);
         const fileName = experimentFile.fileName;
+
+        if ('moocletPolicyParameters' in newExperiment && !env.mooclets?.enabled) {
+          return {
+            fileName,
+            error: 'moocletPolicyParameters was provided but mooclets are not enabled on backend.',
+          };
+        }
+
         try {
           experiment = this.autoFillSomeMissingProperties(experiment);
           experiment = this.deduceExperimentDetails(experiment);
@@ -1615,6 +1621,28 @@ export class ExperimentService {
         }
       })
       .filter((error) => error !== null);
+  }
+
+  public async addBulkExperiments(
+    experiments: ExperimentDTO[],
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<ExperimentDTO[]> {
+    const createdExperiments: ExperimentDTO[] = [];
+    await Promise.all(
+      experiments.map(async (experiment) => {
+        try {
+          const result = await this.create(experiment, currentUser, logger);
+          createdExperiments.push(result);
+        } catch (err) {
+          const error = err as Error;
+          error.message = `Error in creating experiment document "syncAddBulkExperiments"`;
+          logger.error(error);
+          throw error;
+        }
+      })
+    );
+    return createdExperiments;
   }
 
   private experimentPayloadConverter(experiment: OldExperimentDTO): ExperimentDTO {
@@ -1844,26 +1872,6 @@ export class ExperimentService {
     const stringConcat = searchString.join(',');
     const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
     return searchStringConcatenated;
-  }
-
-  private async addBulkExperiments(
-    experiments: ExperimentDTO[],
-    currentUser: UserDTO,
-    logger: UpgradeLogger
-  ): Promise<Experiment[]> {
-    const createdExperiments = [];
-    for (const exp of experiments) {
-      try {
-        const result = await this.create(exp, currentUser, logger);
-        createdExperiments.push(result);
-      } catch (err) {
-        const error = err as Error;
-        error.message = `Error in creating experiment document "addBulkExperiments"`;
-        logger.error(error);
-        throw error;
-      }
-    }
-    return createdExperiments;
   }
 
   public formatingConditionPayload(experiment: Experiment): Experiment {

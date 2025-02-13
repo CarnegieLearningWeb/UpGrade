@@ -1024,7 +1024,7 @@ export class ExperimentController {
     @Body({ validate: true, type: ExperimentDTO }) experiment: ExperimentDTO[],
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     request.logger.child({ user: currentUser });
     return this.experimentService.createMultipleExperiments(experiment, currentUser, request.logger);
   }
@@ -1278,13 +1278,23 @@ export class ExperimentController {
    *            description: Internal Server Error
    */
   @Post('/import')
-  public importExperiment(
+  public async importExperiment(
     @Body({ validate: true })
     experiments: ExperimentFile[],
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ValidatedExperimentError[]> {
-    return this.experimentService.importExperiment(experiments, currentUser, request.logger);
+    const { experiments: experimentList, validatedExperiments } = await this.experimentService.verifyExperiments(
+      experiments,
+      request.logger
+    );
+
+    if (env.mooclets.enabled) {
+      await this.moocletExperimentService.syncAddBulkExperiments(experimentList, currentUser, request.logger);
+    } else {
+      await this.experimentService.addBulkExperiments(experimentList, currentUser, request.logger);
+    }
+    return validatedExperiments;
   }
 
   /**
