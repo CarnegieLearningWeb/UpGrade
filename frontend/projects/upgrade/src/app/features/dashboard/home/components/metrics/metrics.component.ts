@@ -159,12 +159,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.experimentInfo.queries.forEach((query, queryIndex) => {
         const key = query.metric.key ? query.metric.key : query.metric;
 
-        // if (
-        //   key === this.experimentInfo?.rewardMetricKey &&
-        //   query.query.operationType === OPERATION_TYPES.PERCENTAGE &&
-        //   query.query.compareValue === 'SUCCESS'
-        // )
-        //   return;
         // separating keys from metric
         const rootKey = key.split(METRICS_JOIN_TEXT);
         // set selectedNode for first key of simple/repeated metrics
