@@ -841,7 +841,10 @@ export class ExperimentController {
           'MoocletPolicyParameters are present in the experiment but Mooclet is not enabled in the environment'
         );
       } else {
-        const policyParametersResponse = await this.moocletExperimentService.getPolicyParametersByExperimentId(id);
+        const policyParametersResponse = await this.moocletExperimentService.getPolicyParametersByExperimentId(
+          id,
+          request.logger
+        );
         experiment.moocletPolicyParameters = policyParametersResponse.parameters;
       }
     }
@@ -981,6 +984,7 @@ export class ExperimentController {
         return this.moocletExperimentService.syncCreate({
           experimentDTO: experiment,
           currentUser,
+          logger: request.logger,
         });
       }
     }
