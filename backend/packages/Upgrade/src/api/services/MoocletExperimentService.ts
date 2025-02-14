@@ -38,7 +38,6 @@ import { PreviewUserService } from './PreviewUserService';
 import { QueryService } from './QueryService';
 import { ScheduledJobService } from './ScheduledJobService';
 import { SegmentService } from './SegmentService';
-import { UnprocessableEntityException } from '@nestjs/common';
 import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletVersionConditionMap } from '../models/MoocletVersionConditionMap';
 import { v4 as uuid } from 'uuid';
@@ -47,8 +46,17 @@ import { ConditionValidator, ExperimentDTO } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
 import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { ASSIGNMENT_ALGORITHM, MoocletPolicyParametersDTO, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
+import {
+  ASSIGNMENT_ALGORITHM,
+  IMetricMetaData,
+  MoocletPolicyParametersDTO,
+  MoocletTSConfigurablePolicyParametersDTO,
+  REPEATED_MEASURE,
+  SUPPORTED_MOOCLET_ALGORITHMS,
+} from 'upgrade_types';
 import { ExperimentCondition } from '../models/ExperimentCondition';
+import { MetricService } from './MetricService';
+import { Metric } from '../models/Metric';
 
 export interface SyncCreateParams {
   experimentDTO: ExperimentDTO;
@@ -95,7 +103,8 @@ export class MoocletExperimentService extends ExperimentService {
     scheduledJobService: ScheduledJobService,
     errorService: ErrorService,
     cacheService: CacheService,
-    queryService: QueryService
+    queryService: QueryService,
+    metricService: MetricService
   ) {
     super(
       experimentRepository,
@@ -123,7 +132,8 @@ export class MoocletExperimentService extends ExperimentService {
       scheduledJobService,
       errorService,
       cacheService,
-      queryService
+      queryService,
+      metricService
     );
   }
 
@@ -135,12 +145,39 @@ export class MoocletExperimentService extends ExperimentService {
     return this.dataSource.transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
   }
 
+  /**
+   * handleCreateMoocletTransaction
+   *
+   * 1. Create and save an experiment-specific reward metric for the experiment
+   * 2. Attach a percent-success reward metric query to the experimentDTO before saving
+   * 3. Save the upgrade experiment
+   * 4. Create and save the Mooclet experiment resources (outputs MoocletExperimentRef)
+   * 5. Assign the rewardMetricKey to the MoocletExperimentRef
+   * 6. Save the MoocletExperimentRef and VersionConditionMaps
+   *
+   * On any error, rollback the Mooclet resources and abort the transaction
+   */
+
   private async handleCreateMoocletTransaction(
     manager: EntityManager,
     params: SyncCreateParams
   ): Promise<ExperimentDTO> {
     const logger = params.logger;
-    const moocletPolicyParameters = params.experimentDTO.moocletPolicyParameters;
+    const { moocletPolicyParameters, queries, rewardMetricKey, context } = params.experimentDTO;
+
+    // create reward metric
+    try {
+      await this.createAndSaveRewardMetric(rewardMetricKey, context[0]);
+    } catch (error) {
+      logger.error({
+        message: 'Failed to create reward metric',
+        error,
+        rewardMetricKey,
+      });
+      throw error;
+    }
+
+    this.attachRewardMetricQuery(rewardMetricKey, queries);
 
     // create Upgrade Experiment. If this fails, then mooclet resources will not be created, and the UpGrade experiment transaction will abort
     const experimentResponse = await this.createExperiment(manager, params);
@@ -151,6 +188,8 @@ export class MoocletExperimentService extends ExperimentService {
       moocletPolicyParameters,
       logger
     );
+
+    moocletExperimentRefResponse.rewardMetricKey = rewardMetricKey;
 
     logger.info({
       message: 'Mooclet experiment created successfully:',
@@ -217,6 +256,11 @@ export class MoocletExperimentService extends ExperimentService {
       deleteResponse = await super.delete(params.experimentId, currentUser, {
         existingEntityManager: manager,
       });
+
+      if (moocletExperimentRef.rewardMetricKey) {
+        await manager.getRepository(Metric).delete(moocletExperimentRef.rewardMetricKey);
+      }
+
       // delete the mooclet resources. If this fails, the transaction will abort and the upgrade experiment will not be deleted,
       // but the Mooclet resources may not be deleted either
       await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
@@ -234,7 +278,7 @@ export class MoocletExperimentService extends ExperimentService {
         experimentId: params.experimentId,
         user: currentUser,
       });
-      throw new UnprocessableEntityException('Failed to delete experiment with Mooclet');
+      throw error;
     }
   }
 
@@ -314,6 +358,7 @@ export class MoocletExperimentService extends ExperimentService {
       });
 
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
+      moocletExperimentRef.outcomeVariableName = moocletVariableResponse?.name;
     } catch (err) {
       await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
       throw err;
@@ -322,6 +367,37 @@ export class MoocletExperimentService extends ExperimentService {
     moocletExperimentRef.id = uuid();
 
     return moocletExperimentRef;
+  }
+
+  private attachRewardMetricQuery(rewardMetricKey: string, queries: any[]) {
+    queries.push({
+      id: uuid(),
+      name: 'Success Rate',
+      query: {
+        operationType: 'percentage',
+        compareFn: '=',
+        compareValue: 'SUCCESS',
+      },
+      metric: {
+        key: rewardMetricKey,
+      },
+      repeatedMeasure: REPEATED_MEASURE.mostRecent,
+    });
+  }
+
+  public async createAndSaveRewardMetric(
+    rewardMetricKey: string,
+    context: string,
+    logger: UpgradeLogger
+  ): Promise<Metric[]> {
+    const metric = {
+      id: uuid(),
+      metric: rewardMetricKey,
+      datatype: IMetricMetaData.CATEGORICAL,
+      allowedValues: ['SUCCESS', 'FAILURE'],
+    };
+
+    return this.metricService.saveAllMetrics([metric], [context], logger);
   }
 
   private createMoocletVersionConditionMaps(
@@ -419,13 +495,20 @@ export class MoocletExperimentService extends ExperimentService {
     }
   }
 
-  public async getPolicyParametersByExperimentId(
-    experimentId: string,
+  public async attachRewardKeyAndPolicyParamsToExperimentDTO(
+    experiment: ExperimentDTO,
     logger: UpgradeLogger
-  ): Promise<MoocletPolicyParametersResponseDetails> {
+  ): Promise<ExperimentDTO> {
     try {
-      const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
-      return await this.moocletDataService.getPolicyParameters(moocletExperimentRef.policyParametersId, logger);
+      const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experiment.id);
+      const policyParamters = await this.moocletDataService.getPolicyParameters(
+        moocletExperimentRef.policyParametersId,
+        logger
+      );
+      experiment.rewardMetricKey = moocletExperimentRef.rewardMetricKey;
+      experiment.moocletPolicyParameters = policyParamters.parameters;
+
+      return experiment;
     } catch (err) {
       throw new Error(`Failed to get Mooclet policy parameters: ${err}`);
     }
@@ -503,7 +586,7 @@ export class MoocletExperimentService extends ExperimentService {
   }
 
   private async createVariableIfNeeded(
-    moocletPolicyParametersResponse: MoocletPolicyParametersResponseDetails,
+    moocletPolicyParametersResponse: MoocletPolicyParametersDTO,
     assignmentAlgorithm: string,
     moocletResponse: MoocletResponseDetails,
     logger: UpgradeLogger
@@ -513,7 +596,7 @@ export class MoocletExperimentService extends ExperimentService {
     }
 
     const variableRequest: MoocletVariableRequestBody = {
-      name: this.createOutcomeVariableName(moocletResponse.name),
+      name: (moocletPolicyParametersResponse as MoocletTSConfigurablePolicyParametersDTO)?.outcome_variable_name,
     };
 
     try {
@@ -522,10 +605,6 @@ export class MoocletExperimentService extends ExperimentService {
       logger.error({ message: 'Failed to create Mooclet variable' });
       throw new Error(`Failed to create variable: ${err}`);
     }
-  }
-
-  private createOutcomeVariableName(moocletName: string): string {
-    return 'TS_CONFIG_' + moocletName;
   }
 
   public async getMoocletExperimentRefByUpgradeExperimentId(

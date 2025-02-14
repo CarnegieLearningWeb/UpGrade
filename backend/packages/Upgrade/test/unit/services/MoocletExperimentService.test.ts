@@ -43,6 +43,7 @@ import {
   SEGMENT_TYPE,
 } from 'upgrade_types';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { MetricService } from '../../../src/api/services/MetricService';
 
 const mockDataSource = {
   initialize: jest.fn(),
@@ -92,6 +93,7 @@ jest.mock('../../../src/api/services/ScheduledJobService');
 jest.mock('../../../src/api/services/ErrorService');
 jest.mock('../../../src/api/services/CacheService');
 jest.mock('../../../src/api/services/QueryService');
+jest.mock('../../../src/api/services/MetricService');
 
 const mockTSConfigMoocletPolicyParameters = {
   assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
@@ -227,6 +229,7 @@ describe('#MoocletExperimentService', () => {
   let errorService: ErrorService;
   let cacheService: CacheService;
   let queryService: QueryService;
+  let metricService: MetricService;
 
   beforeEach(() => {
     moocletDataService = {
@@ -234,6 +237,11 @@ describe('#MoocletExperimentService', () => {
       deletePolicyParameters: jest.fn(),
       deleteVariable: jest.fn(),
     } as unknown as MoocletDataService;
+
+    metricService = {
+      saveAllMetrics: jest.fn(),
+      delete: jest.fn(),
+    } as unknown as MetricService;
     // Create service with mocked dependencies
     moocletExperimentService = new MoocletExperimentService(
       moocletDataService,
@@ -263,7 +271,8 @@ describe('#MoocletExperimentService', () => {
       scheduledJobService,
       errorService,
       cacheService,
-      queryService
+      queryService,
+      metricService
     );
   });
 

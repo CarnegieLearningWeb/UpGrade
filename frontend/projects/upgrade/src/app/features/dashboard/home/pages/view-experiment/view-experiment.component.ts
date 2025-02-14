@@ -10,6 +10,7 @@ import {
   EXPERIMENT_SEARCH_KEY,
   ExperimentLevel,
   ExperimentConditionPayload,
+  RewardMetricData,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Observable, Subscription } from 'rxjs';
 import { filter, withLatestFrom } from 'rxjs/operators';
@@ -104,6 +105,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
+  displayRewardMetrics: RewardMetricData[] = [];
   simpleExperimentPayloadTableData: SimpleExperimentPayloadTableRowData[] = [];
 
   constructor(
@@ -179,6 +181,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
+        this.loadRewardMetrics();
 
         if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
           this.loadPayloadTable(experiment);
@@ -310,6 +313,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         });
       });
     }
+  }
+
+  loadRewardMetrics() {
+    if (!this.experiment?.rewardMetricKey) {
+      return;
+    }
+
+    this.displayRewardMetrics = [this.experimentService.getRewardMetricData(this.experiment.rewardMetricKey)];
   }
 
   openDialog(dialogType: DialogType) {

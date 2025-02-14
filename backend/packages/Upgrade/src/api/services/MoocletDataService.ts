@@ -14,6 +14,8 @@ import {
   MoocletPolicyParametersResponseDetails,
   MoocletVariableRequestBody,
   MoocletVariableResponseDetails,
+  MoocletValueRequestBody,
+  MoocletValueResponseDetails,
 } from '../../types/Mooclet';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
@@ -162,35 +164,20 @@ export class MoocletDataService {
     return response;
   }
 
-  /* not yet implemented */
+  public async postNewReward(requestBody: MoocletValueRequestBody): Promise<MoocletValueResponseDetails> {
+    const endpoint = '/value';
 
-  // public async postNewValue(requestBody: any): Promise<any> {
-  //   const endpoint = '/value';
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'POST',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+      body: requestBody,
+    };
 
-  //   const requestParams: MoocletProxyRequestParams = {
-  //     method: 'POST',
-  //     url: this.apiUrl + endpoint,
-  //     apiToken: this.apiToken,
-  //     body: requestBody,
-  //   };
+    const response = await this.fetchExternalMoocletsData(requestParams);
 
-  //   const response = await this.fetchExternalMoocletsData(requestParams);
-
-  //   return response;
-  // }
-
-  // public async deleteValue(valueId: number): Promise<any> {
-  //   const endpoint = `/value/${valueId}`;
-  //   const requestParams: MoocletProxyRequestParams = {
-  //     method: 'DELETE',
-  //     url: this.apiUrl + endpoint,
-  //     apiToken: this.apiToken,
-  //   };
-
-  //   const response = await this.fetchExternalMoocletsData(requestParams);
-
-  //   return response;
-  // }
+    return response;
+  }
 
   public async postNewVariable(
     requestBody: MoocletVariableRequestBody,
