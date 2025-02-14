@@ -258,6 +258,7 @@ export interface Experiment {
   groupSatisfied?: number;
   backendVersion: string;
   moocletPolicyParameters?: MoocletTSConfigurablePolicyParametersDTO;
+  rewardMetricKey?: string;
 }
 
 export interface ParticipantsMember {
@@ -377,4 +378,10 @@ export interface InteractionEffectGraphData {
   name: string;
   series: InteractionEffectLineChartSeriesData[];
   dot: boolean;
+}
+
+export interface RewardMetricData {
+  metric_Key: string;
+  metric_Operation: string;
+  metric_Name: string;
 }
