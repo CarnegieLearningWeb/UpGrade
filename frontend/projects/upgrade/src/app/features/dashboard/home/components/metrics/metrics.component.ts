@@ -660,23 +660,22 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     this.queryComparisonStatisticError = [];
     this.queryMetricDropDownError = [];
     this.queryNameError = [];
+    this.queryForm.markAllAsTouched();
     const monitoredMetricsFormData = this.queryForm.getRawValue();
     monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map((query, index) => {
       let { keys } = query;
       const { operationType, queryName, compareFn, compareValue, repeatedMeasure } = query;
 
       if (keys) {
-        // check for metric key required except default row:
-        if (keys[0].metricKey || operationType || queryName || compareFn || compareValue) {
-          this.checkMetricKeyRequiredError(keys);
-        }
+        this.checkMetricKeyRequiredError(keys);
+        this.checkQueryNameRequiredError(queryName);
+        this.checkStatisticRequiredError(operationType);
+
         const metrics = [...keys];
         keys = keys
           .filter((key) => key.metricKey !== null)
           .map((key) => (key.metricKey.key ? key.metricKey.key : key.metricKey));
         if (keys.length) {
-          this.checkQueryNameRequiredError(queryName);
-          this.checkStatisticRequiredError(operationType);
           this.checkMetricFromDropDownError(metrics[keys.length - 1].metricKey['metadata']);
 
           if (metrics[keys.length - 1].metricKey['metadata']) {
