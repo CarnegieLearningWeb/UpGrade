@@ -167,7 +167,7 @@ export class MoocletExperimentService extends ExperimentService {
 
       return experimentResponse;
     } catch (error) {
-      await this.orchestrateDeleteMoocletResources(moocletExperimentRefResponse);
+      await this.orchestrateDeleteMoocletResources(moocletExperimentRefResponse, logger);
       throw error;
     }
   }
@@ -219,7 +219,7 @@ export class MoocletExperimentService extends ExperimentService {
       });
       // delete the mooclet resources. If this fails, the transaction will abort and the upgrade experiment will not be deleted,
       // but the Mooclet resources may not be deleted either
-      await this.orchestrateDeleteMoocletResources(moocletExperimentRef);
+      await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
 
       logger.debug({
         message: 'Upgrade and Mooclet experiment resources deleted successfully',
@@ -315,7 +315,7 @@ export class MoocletExperimentService extends ExperimentService {
 
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
     } catch (err) {
-      await this.orchestrateDeleteMoocletResources(moocletExperimentRef);
+      await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
       throw err;
     }
 
@@ -340,8 +340,10 @@ export class MoocletExperimentService extends ExperimentService {
     return versionConditionMaps;
   }
 
-  public async orchestrateDeleteMoocletResources(moocletExperimentRef: MoocletExperimentRef): Promise<void> {
-    const logger = new UpgradeLogger('MoocletExperimentService');
+  public async orchestrateDeleteMoocletResources(
+    moocletExperimentRef: MoocletExperimentRef,
+    logger: UpgradeLogger
+  ): Promise<void> {
     try {
       if (!moocletExperimentRef) {
         throw new Error(`MoocletExperimentRef not defined`);

@@ -318,7 +318,8 @@ describe('#MoocletExperimentService', () => {
 
       expect(moocletExperimentService['orchestrateMoocletCreation']).toHaveBeenCalledWith(
         mockExperimentResponse,
-        params.experimentDTO.moocletPolicyParameters
+        params.experimentDTO.moocletPolicyParameters,
+        logger
       );
 
       expect(moocletExperimentService['saveMoocletExperimentRef']).toHaveBeenCalledWith(
@@ -328,7 +329,8 @@ describe('#MoocletExperimentService', () => {
 
       expect(moocletExperimentService['createAndSaveVersionConditionMaps']).toHaveBeenCalledWith(
         manager,
-        mockMoocletExperimentRefResponse
+        mockMoocletExperimentRefResponse,
+        logger
       );
 
       // Verify the result
@@ -372,7 +374,8 @@ describe('#MoocletExperimentService', () => {
 
       // Verify cleanup was called
       expect(moocletExperimentService['orchestrateDeleteMoocletResources']).toHaveBeenCalledWith(
-        mockMoocletExperimentRefResponse
+        mockMoocletExperimentRefResponse,
+        logger
       );
     });
 
@@ -384,7 +387,8 @@ describe('#MoocletExperimentService', () => {
 
       // Verify cleanup was called
       expect(moocletExperimentService['orchestrateDeleteMoocletResources']).toHaveBeenCalledWith(
-        mockMoocletExperimentRefResponse
+        mockMoocletExperimentRefResponse,
+        logger
       );
     });
   });
@@ -463,13 +467,14 @@ describe('#MoocletExperimentService', () => {
       jest.spyOn(moocletDataService, 'deletePolicyParameters').mockResolvedValue(undefined);
       jest.spyOn(moocletDataService, 'deleteVariable').mockResolvedValue(undefined);
 
-      await moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef);
+      await moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef, logger);
 
-      expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId);
+      expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId, logger);
       expect(moocletDataService.deletePolicyParameters).toHaveBeenCalledWith(
-        mockMoocletExperimentRef.policyParametersId
+        mockMoocletExperimentRef.policyParametersId,
+        logger
       );
-      expect(moocletDataService.deleteVariable).toHaveBeenCalledWith(mockMoocletExperimentRef.variableId);
+      expect(moocletDataService.deleteVariable).toHaveBeenCalledWith(mockMoocletExperimentRef.variableId, logger);
     });
     it('should handle errors and log them', async () => {
       const mockError = new Error('Test Error');
@@ -479,10 +484,10 @@ describe('#MoocletExperimentService', () => {
       jest.spyOn(moocletDataService, 'deleteVariable').mockResolvedValue(undefined);
 
       await expect(
-        moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef)
+        moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef, logger)
       ).rejects.toThrow(mockError);
 
-      expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId);
+      expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId, logger);
       expect(moocletDataService.deletePolicyParameters).not.toHaveBeenCalled();
       expect(moocletDataService.deleteVariable).not.toHaveBeenCalled();
     });
