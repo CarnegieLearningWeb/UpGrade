@@ -344,17 +344,6 @@ $font-size-small: 15px;
       }
     }
 
-    &-metrics {
-      mat-row {
-        align-items: flex-start;
-        height: auto !important;
-      }
-      mat-cell {
-        align-items: flex-start;
-        flex-direction: column !important;
-      }
-    }
-
     .table {
       mat-cell,
       mat-header-cell {
@@ -376,11 +365,6 @@ $font-size-small: 15px;
       word-wrap: break-word;
       -webkit-font-smoothing: antialiased;
     }
-  }
-
-  .metric-key,
-  .metric-Operation {
-    padding-bottom: 5px;
   }
 
   .box-shadow {
