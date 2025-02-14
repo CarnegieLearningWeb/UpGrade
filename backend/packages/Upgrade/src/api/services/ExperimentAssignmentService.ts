@@ -1581,16 +1581,16 @@ export class ExperimentAssignmentService {
     }
 
     if (isMoocletExperiment && env.mooclets.enabled) {
-      return this.getConditionFromMoocletProxy(experiment, user);
+      return this.getConditionFromMoocletProxy(experiment, user, logger);
     } else {
       return this.assignRandom(experiment, user, enrollmentCount);
     }
   }
 
-  private async getConditionFromMoocletProxy(experiment: Experiment, user: ExperimentUser) {
+  private async getConditionFromMoocletProxy(experiment: Experiment, user: ExperimentUser, logger: UpgradeLogger) {
     const userId = user.id;
 
-    return await this.moocletExperimentService.getConditionFromMoocletProxy(experiment, userId);
+    return await this.moocletExperimentService.getConditionFromMoocletProxy(experiment, userId, logger);
   }
 
   private assignRandom(
