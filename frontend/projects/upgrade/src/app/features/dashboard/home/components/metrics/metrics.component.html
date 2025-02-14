@@ -193,15 +193,17 @@
                 {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let queryIndex = index" [formGroupName]="queryIndex">
-                <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
-                  <input
-                    class="ft-14-400"
-                    matInput
-                    [placeholder]="'home.new-experiment.metrics.description.placeholder.text' | translate"
-                    formControlName="queryName"
-                    autocomplete="off"
-                  />
-                </mat-form-field>
+                <div class="tertiary-form">
+                  <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
+                    <input
+                      class="ft-14-400"
+                      matInput
+                      [placeholder]="'home.new-experiment.metrics.description.placeholder.text' | translate"
+                      formControlName="queryName"
+                      autocomplete="off"
+                    />
+                  </mat-form-field>
+                </div>
               </mat-cell>
             </ng-container>
 
@@ -296,12 +298,6 @@
             </mat-header-cell>
             <mat-cell *matCellDef="let row">
               {{ row.metric_Name }}
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="removeMetric">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-            <mat-cell *matCellDef="let row">
             </mat-cell>
           </ng-container>
 

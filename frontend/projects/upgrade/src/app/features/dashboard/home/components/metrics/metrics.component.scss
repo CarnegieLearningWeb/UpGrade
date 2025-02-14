@@ -1,7 +1,10 @@
 .metric-design {
+  height: 515px;
+  overflow-y: auto;
+
   .metric-table, .reward-metric-table {
     margin-top: 5px;
-    max-height: 256px;
+    max-height: 207px;
     overflow: auto;
 
     mat-header-row {
@@ -55,6 +58,10 @@
       }
     }
 
+    .tertiary-form {
+      padding-top: 7px;
+    }
+
     .cdk-column-removeMetric {
       flex: 0 0 60px;
       width: 60px;
@@ -74,8 +81,9 @@
     .cdk-column-queryName, .cdk-column-metricsName {
       width: 100%;
       max-width: 350px;
-      &.mat-mdc-cell {
-        padding-top: 7px;
+
+      &.mat-mdc-header-cell, &.mat-mdc-cell {
+        padding-left: 0;
       }
     }
 
@@ -120,11 +128,12 @@
   }
 
   .validation-messages-container {
+    padding-top: 8px;
     height: 64px;
   }
 
   .reward-metric-container {
-    padding-top: 8px;
+    padding-top: 32px;
 
     .reward-metric-table {
       mat-cell {

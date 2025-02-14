@@ -885,9 +885,7 @@
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let data">
                   <div *ngFor="let key of data.metric_Key">
-                    <div class="metric-key">
-                      {{ key }}
-                    </div>
+                    {{ key }}
                   </div>
                 </mat-cell>
               </ng-container>
@@ -899,9 +897,7 @@
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let data">
                   <div *ngFor="let statisticOperation of data.metric_Operation">
-                    <div class="metric-Operation">
-                      {{ statisticOperation | titlecase }}
-                    </div>
+                    {{ statisticOperation | titlecase }}
                   </div>
                 </mat-cell>
               </ng-container>
@@ -938,27 +934,23 @@
                   {{ 'query.metric.text' | translate }}
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let row">
-                  <div class="metric-key">
-                    {{ row.metric_Key }}
-                  </div>
+                  {{ row.metric_Key }}
                 </mat-cell>
               </ng-container>
 
               <!-- Statistic Column -->
               <ng-container matColumnDef="metricsOperation">
-                <mat-header-cell class="ft-12-600" *matHeaderCellDef>
+                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                   {{ 'monitor.statistic.text' | translate }}
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let row">
-                  <div class="metric-Operation">
-                    {{ row.metric_Operation }}
-                  </div>
+                  {{ row.metric_Operation }}
                 </mat-cell>
               </ng-container>
 
               <!-- Description Column -->
               <ng-container matColumnDef="metricsName">
-                <mat-header-cell class="ft-12-600" *matHeaderCellDef>
+                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                   {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let row">
