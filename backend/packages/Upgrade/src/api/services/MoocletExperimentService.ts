@@ -167,7 +167,7 @@ export class MoocletExperimentService extends ExperimentService {
 
     // create reward metric
     try {
-      await this.createAndSaveRewardMetric(rewardMetricKey, context[0]);
+      await this.createAndSaveRewardMetric(rewardMetricKey, context[0], logger);
     } catch (error) {
       logger.error({
         message: 'Failed to create reward metric',
@@ -347,7 +347,7 @@ export class MoocletExperimentService extends ExperimentService {
       });
 
       const moocletVariableResponse = await this.createVariableIfNeeded(
-        moocletPolicyParametersResponse,
+        moocletPolicyParameters,
         upgradeExperiment.assignmentAlgorithm,
         moocletResponse,
         logger

@@ -845,7 +845,6 @@ export class ExperimentController {
           experiment,
           request.logger
         );
-
       }
     }
     return experiment;
