@@ -56,7 +56,6 @@ import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
-import { User } from '../models/User';
 
 @Service()
 export class FeatureFlagService {
@@ -408,7 +407,7 @@ export class FeatureFlagService {
     }
   }
 
-  private async updateFeatureFlagInDB(flag: FeatureFlag, user: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+  private async updateFeatureFlagInDB(flag: FeatureFlag, user: UserDTO, logger: UpgradeLogger): Promise<FeatureFlag> {
     await this.clearCachedFlagsForContext(flag.context[0]);
     const {
       featureFlagSegmentExclusion,
