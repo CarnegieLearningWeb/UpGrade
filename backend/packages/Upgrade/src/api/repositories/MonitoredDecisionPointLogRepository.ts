@@ -4,6 +4,13 @@ import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 
+export interface MonitoredDecisionPointLogDataCount {
+  userId: string;
+  site: string;
+  target: string;
+  count: number;
+}
+
 @EntityRepository(MonitoredDecisionPointLog)
 export class MonitoredDecisionPointLogRepository extends Repository<MonitoredDecisionPointLog> {
   public async getAllMonitoredDecisionPointLog(
@@ -11,7 +18,7 @@ export class MonitoredDecisionPointLogRepository extends Repository<MonitoredDec
     site: string[],
     target: string[],
     logger: UpgradeLogger
-  ): Promise<any> {
+  ): Promise<MonitoredDecisionPointLogDataCount[]> {
     const result = await this.createQueryBuilder('mdpLog')
       .select(['mdp.userId as userId', 'mdp.site as site', 'mdp.target as target'])
       .addSelect('COUNT(*) as count')
@@ -24,7 +31,7 @@ export class MonitoredDecisionPointLogRepository extends Repository<MonitoredDec
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'monitoredDecisionPointLogRepository',
-          'getAllmonitoredDecisionPointLog',
+          'getAllMonitoredDecisionPointLog',
           {},
           errorMsg
         );
