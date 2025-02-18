@@ -12,7 +12,17 @@ import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentService
 import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import MoocletExperimentServiceMock from './mocks/MoocletExperimentServiceMock';
 import { env } from './../../../src/env';
-import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, EXPERIMENT_TYPE, FILTER_MODE, MoocletTSConfigurablePolicyParametersDTO, POST_EXPERIMENT_RULE, SEGMENT_TYPE } from 'upgrade_types';
+import {
+  ASSIGNMENT_ALGORITHM,
+  ASSIGNMENT_UNIT,
+  CONSISTENCY_RULE,
+  EXPERIMENT_STATE,
+  EXPERIMENT_TYPE,
+  FILTER_MODE,
+  MoocletTSConfigurablePolicyParametersDTO,
+  POST_EXPERIMENT_RULE,
+  SEGMENT_TYPE,
+} from 'upgrade_types';
 import { ExperimentDTO } from './../../../src/api/DTO/ExperimentDTO';
 
 describe('Experiment Controller Testing', () => {
@@ -99,6 +109,7 @@ describe('Experiment Controller Testing', () => {
     ...experimentData,
     id: uuid(),
     moocletPolicyParameters: tsConfigurablePolicyParameters,
+    rewardMetricKey: 'TEST_REWARD',
     assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
   };
 
@@ -127,19 +138,12 @@ describe('Experiment Controller Testing', () => {
 
   test('Post request for /api/experiments with moocletPolicyParameters and mooclets enabled', () => {
     env.mooclets.enabled = true;
-    return request(app)
-      .post('/api/experiments')
-      .send(moocletExperimentData)
-      .expect('Content-Type', /json/)
-      .expect(200)
+    return request(app).post('/api/experiments').send(moocletExperimentData).expect('Content-Type', /json/).expect(200);
   });
 
   test('Post request for /api/experiments with moocletPolicyParameters and mooclets disabled', () => {
     env.mooclets.enabled = false;
-    return request(app)
-      .post('/api/experiments')
-      .send(moocletExperimentData)
-      .expect(500)
+    return request(app).post('/api/experiments').send(moocletExperimentData).expect(500);
   });
 
   test('Get request for /api/experiments/names', () => {

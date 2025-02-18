@@ -164,7 +164,10 @@ export class MoocletDataService {
     return response;
   }
 
-  public async postNewReward(requestBody: MoocletValueRequestBody): Promise<MoocletValueResponseDetails> {
+  public async postNewReward(
+    requestBody: MoocletValueRequestBody,
+    logger: UpgradeLogger
+  ): Promise<MoocletValueResponseDetails> {
     const endpoint = '/value';
 
     const requestParams: MoocletProxyRequestParams = {
@@ -174,7 +177,7 @@ export class MoocletDataService {
       body: requestBody,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
