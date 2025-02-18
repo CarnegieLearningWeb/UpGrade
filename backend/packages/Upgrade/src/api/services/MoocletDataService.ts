@@ -28,8 +28,8 @@ export class MoocletDataService {
    * EXTERNAL DATA FETCHING METHODS
    */
 
-  public async getMoocletIdByName(policyName: string): Promise<number> {
-    const response: MoocletBatchResponse<MoocletPolicyResponseDetails> = await this.getPoliciesList();
+  public async getMoocletIdByName(policyName: string, logger: UpgradeLogger): Promise<number> {
+    const response: MoocletBatchResponse<MoocletPolicyResponseDetails> = await this.getPoliciesList(logger);
     let matchedPolicy: MoocletPolicyResponseDetails = null;
 
     if (response?.results.length) {
@@ -43,7 +43,7 @@ export class MoocletDataService {
     return null;
   }
 
-  public async getPoliciesList(): Promise<MoocletBatchResponse<MoocletPolicyResponseDetails>> {
+  public async getPoliciesList(logger: UpgradeLogger): Promise<MoocletBatchResponse<MoocletPolicyResponseDetails>> {
     const endpoint = '/policy';
     const requestParams: MoocletProxyRequestParams = {
       method: 'GET',
@@ -52,13 +52,14 @@ export class MoocletDataService {
     };
 
     const response: MoocletBatchResponse<MoocletPolicyResponseDetails> = await this.fetchExternalMoocletsData(
-      requestParams
+      requestParams,
+      logger
     );
 
     return response;
   }
 
-  public async postNewMooclet(requestBody: MoocletRequestBody): Promise<MoocletResponseDetails> {
+  public async postNewMooclet(requestBody: MoocletRequestBody, logger: UpgradeLogger): Promise<MoocletResponseDetails> {
     const endpoint = '/mooclet';
     const requestParams: MoocletProxyRequestParams = {
       method: 'POST',
@@ -67,12 +68,12 @@ export class MoocletDataService {
       body: requestBody,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
 
-  public async deleteMooclet(moocletId: number): Promise<any> {
+  public async deleteMooclet(moocletId: number, logger: UpgradeLogger): Promise<any> {
     const endpoint = `/mooclet/${moocletId}`;
     const requestParams: MoocletProxyRequestParams = {
       method: 'DELETE',
@@ -80,12 +81,15 @@ export class MoocletDataService {
       apiToken: this.apiToken,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
 
-  public async postNewVersion(requestBody: MoocletVersionRequestBody): Promise<MoocletVersionResponseDetails> {
+  public async postNewVersion(
+    requestBody: MoocletVersionRequestBody,
+    logger: UpgradeLogger
+  ): Promise<MoocletVersionResponseDetails> {
     const endpoint = '/version';
 
     const requestParams: MoocletProxyRequestParams = {
@@ -95,12 +99,12 @@ export class MoocletDataService {
       body: requestBody,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
 
-  public async deleteVersion(versionId: number): Promise<any> {
+  public async deleteVersion(versionId: number, logger: UpgradeLogger): Promise<any> {
     const endpoint = `/version/${versionId}`;
     const requestParams: MoocletProxyRequestParams = {
       method: 'DELETE',
@@ -108,13 +112,14 @@ export class MoocletDataService {
       apiToken: this.apiToken,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
 
   public async postNewPolicyParameters(
-    requestBody: MoocletPolicyParametersRequestBody
+    requestBody: MoocletPolicyParametersRequestBody,
+    logger: UpgradeLogger
   ): Promise<MoocletPolicyParametersResponseDetails> {
     const endpoint = '/policyparameters';
 
@@ -125,12 +130,15 @@ export class MoocletDataService {
       body: requestBody,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
 
-  public async getPolicyParameters(policyParametersId: number): Promise<MoocletPolicyParametersResponseDetails> {
+  public async getPolicyParameters(
+    policyParametersId: number,
+    logger: UpgradeLogger
+  ): Promise<MoocletPolicyParametersResponseDetails> {
     const endpoint = `/policyparameters/${policyParametersId}`;
     const requestParams: MoocletProxyRequestParams = {
       method: 'GET',
@@ -138,12 +146,12 @@ export class MoocletDataService {
       apiToken: this.apiToken,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
 
-  public async deletePolicyParameters(policyParametersId: number): Promise<any> {
+  public async deletePolicyParameters(policyParametersId: number, logger: UpgradeLogger): Promise<any> {
     const endpoint = `/policyparameters/${policyParametersId}`;
     const requestParams: MoocletProxyRequestParams = {
       method: 'DELETE',
@@ -151,12 +159,15 @@ export class MoocletDataService {
       apiToken: this.apiToken,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
 
-  public async postNewReward(requestBody: MoocletValueRequestBody): Promise<MoocletValueResponseDetails> {
+  public async postNewReward(
+    requestBody: MoocletValueRequestBody,
+    logger: UpgradeLogger
+  ): Promise<MoocletValueResponseDetails> {
     const endpoint = '/value';
 
     const requestParams: MoocletProxyRequestParams = {
@@ -166,12 +177,15 @@ export class MoocletDataService {
       body: requestBody,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
 
-  public async postNewVariable(requestBody: MoocletVariableRequestBody): Promise<MoocletVariableResponseDetails> {
+  public async postNewVariable(
+    requestBody: MoocletVariableRequestBody,
+    logger: UpgradeLogger
+  ): Promise<MoocletVariableResponseDetails> {
     const endpoint = '/variable';
 
     const requestParams: MoocletProxyRequestParams = {
@@ -181,12 +195,12 @@ export class MoocletDataService {
       body: requestBody,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
 
-  public async deleteVariable(variableId: number): Promise<any> {
+  public async deleteVariable(variableId: number, logger: UpgradeLogger): Promise<any> {
     const endpoint = `/variable/${variableId}`;
     const requestParams: MoocletProxyRequestParams = {
       method: 'DELETE',
@@ -194,12 +208,16 @@ export class MoocletDataService {
       apiToken: this.apiToken,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
 
-  public async getVersionForNewLearner(moocletId: number, userId: string): Promise<MoocletVersionResponseDetails> {
+  public async getVersionForNewLearner(
+    moocletId: number,
+    userId: string,
+    logger: UpgradeLogger
+  ): Promise<MoocletVersionResponseDetails> {
     const endpoint = `/mooclet/${moocletId}/run?learner=${userId}`;
 
     const requestParams: MoocletProxyRequestParams = {
@@ -208,7 +226,7 @@ export class MoocletDataService {
       apiToken: this.apiToken,
     };
 
-    const response = await this.fetchExternalMoocletsData(requestParams);
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
 
     return response;
   }
@@ -217,8 +235,10 @@ export class MoocletDataService {
    * Generic Requests to Mooclets API
    */
 
-  public async fetchExternalMoocletsData(requestParams: MoocletProxyRequestParams): Promise<any> {
-    const logger = new UpgradeLogger('MoocletDataService');
+  public async fetchExternalMoocletsData(
+    requestParams: MoocletProxyRequestParams,
+    logger: UpgradeLogger
+  ): Promise<any> {
     const { method, url, body } = requestParams;
     let jsonResponse = '';
 
