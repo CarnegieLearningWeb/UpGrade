@@ -12,6 +12,9 @@ services:
     volumes:
       - ./frontend:/usr/src/app/frontend
       - ./backend:/usr/src/app/backend
+      - /usr/src/app/frontend/node_modules
+    tmpfs:
+      - /usr/src/app/frontend/node_modules/@rollup # Exclude @rollup from host mount
     networks:
       - localdev
     ports:
