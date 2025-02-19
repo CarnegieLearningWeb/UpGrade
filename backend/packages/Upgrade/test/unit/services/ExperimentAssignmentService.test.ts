@@ -34,6 +34,7 @@ import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
 import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
+import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsService';
 
 describe('Experiment Assignment Service Test', () => {
   let sandbox;
@@ -60,6 +61,7 @@ describe('Experiment Assignment Service Test', () => {
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
   const cacheServiceMock = sinon.createStubInstance(CacheService);
   const moocletExperimentService = sinon.createStubInstance(MoocletExperimentService);
+  const moocletRewardsService = sinon.createStubInstance(MoocletRewardsService);
   experimentServiceMock.formatingConditionPayload.restore();
   experimentServiceMock.formatingPayload.restore();
 
@@ -92,7 +94,8 @@ describe('Experiment Assignment Service Test', () => {
       segmentServiceMock,
       experimentServiceMock,
       cacheServiceMock,
-      moocletExperimentService
+      moocletExperimentService,
+      moocletRewardsService
     );
     testedModule.cacheService.wrap.resolves([]);
     testedModule.segmentService.getSegmentByIds.withArgs(['77777777-7777-7777-7777-777777777777']).resolves([
