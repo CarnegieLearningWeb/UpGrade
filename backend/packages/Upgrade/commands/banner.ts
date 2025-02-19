@@ -5,8 +5,7 @@ figlet.text(process.argv[2], (error: any, data: any) => {
     return process.exit(1);
   }
   import('chalk').then((chalk) => {
-    chalk.default.blue(data);
-    console.log('');
+    console.log(chalk.default.blue(data));
     return process.exit(0);
   });
 });
