@@ -90,7 +90,7 @@
               class="segment-name"
               matTooltipPosition="above"
             >
-              {{ segment.name | truncate: 30 }}
+              {{ segment.name | truncate : 30 }}
             </a>
           </ng-template>
           <br />
@@ -108,7 +108,7 @@
           <div class="segment-status">
             <span
               class="segment-status-circle"
-              [ngStyle]="{ backgroundColor: segment.status | segmentStatus: SegmentStatusPipeTypes.COLOR }"
+              [ngStyle]="{ backgroundColor: segment.status | segmentStatus : SegmentStatusPipeTypes.COLOR }"
             ></span>
             <span>
               {{ segment.status | segmentStatus }}
@@ -124,7 +124,7 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <span> {{ segment.updatedAt | date: 'MMM d, y h:mm a' }} </span>
+          <span> {{ segment.updatedAt | date : 'MMM d, y h:mm a' }} </span>
         </td>
       </ng-container>
 

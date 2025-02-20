@@ -8,7 +8,6 @@ import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 
 @Component({
   selector: 'app-feature-flag-exclusions-table',
-  standalone: true,
   templateUrl: './feature-flag-exclusions-table.component.html',
   styleUrl: './feature-flag-exclusions-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

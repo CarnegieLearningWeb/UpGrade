@@ -8,6 +8,7 @@ import { KeyValueBubbleService } from './key-value-bubble.service';
   templateUrl: './key-value-bubble.component.html',
   styleUrls: ['./key-value-bubble.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class KeyValueBubbleComponent implements OnInit {
   @Input() value: any;

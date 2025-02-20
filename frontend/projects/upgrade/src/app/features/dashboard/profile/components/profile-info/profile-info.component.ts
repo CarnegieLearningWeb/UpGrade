@@ -18,6 +18,7 @@ import { DeleteComponent } from '../../../../../shared/components/delete/delete.
   selector: 'profile-info',
   templateUrl: './profile-info.component.html',
   styleUrls: ['./profile-info.component.scss'],
+  standalone: false,
 })
 export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('profileInfoContainer') profileInfoContainer: ElementRef;

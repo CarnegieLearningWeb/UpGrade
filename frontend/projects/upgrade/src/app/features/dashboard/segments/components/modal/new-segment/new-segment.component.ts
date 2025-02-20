@@ -14,6 +14,7 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
   templateUrl: './new-segment.component.html',
   styleUrls: ['./new-segment.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class NewSegmentComponent implements OnInit {
   @ViewChild('stepper', { static: false }) stepper: any;

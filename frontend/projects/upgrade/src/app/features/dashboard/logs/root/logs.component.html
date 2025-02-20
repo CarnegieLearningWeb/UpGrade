@@ -38,7 +38,7 @@
           <span *ngIf="option.viewValue.length <= 35; else tooltipText">{{ option.viewValue }}</span>
           <ng-template #tooltipText>
             <span [matTooltip]="option.viewValue" matTooltipPosition="above">
-              {{ option.viewValue | truncate: 35 }}
+              {{ option.viewValue | truncate : 35 }}
             </span>
           </ng-template>
         </mat-option>

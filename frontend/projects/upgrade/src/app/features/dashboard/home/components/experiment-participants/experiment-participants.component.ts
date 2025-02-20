@@ -31,6 +31,7 @@ import { ExperimentDesignStepperService } from '../../../../../core/experiment-d
   templateUrl: './experiment-participants.component.html',
   styleUrls: ['./experiment-participants.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExperimentParticipantsComponent implements OnInit {
   @Input() experimentInfo: ExperimentVM;

@@ -5,6 +5,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class LoginComponent implements AfterViewInit {
   @ViewChild('googleSignInButtonRef') googleSignInButtonRef: ElementRef;

@@ -20,7 +20,6 @@ import { STATUS_INDICATOR_CHIP_TYPE } from 'upgrade_types';
  */
 
 @Component({
-  standalone: true,
   selector: 'app-common-status-indicator-chip',
   templateUrl: './common-status-indicator-chip.component.html',
   styleUrls: ['./common-status-indicator-chip.component.scss'],

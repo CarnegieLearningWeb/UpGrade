@@ -250,7 +250,9 @@
                 <span class="ft-16-600 section-data-title">
                   {{ 'home-global.assignment-algorithm.text' | translate | uppercase }}
                 </span>
-                <span class="ft-18-700 section-data-value">{{ ASSIGNMENT_ALGORITHM_DISPLAY_MAP[experiment.assignmentAlgorithm] }}</span>
+                <span class="ft-18-700 section-data-value">{{
+                  ASSIGNMENT_ALGORITHM_DISPLAY_MAP[experiment.assignmentAlgorithm]
+                }}</span>
               </div>
             </div>
 
@@ -401,7 +403,10 @@
               </div>
 
               <!-- Stratification Factor-->
-              <div class="section-data" *ngIf="experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING">
+              <div
+                class="section-data"
+                *ngIf="experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING"
+              >
                 <span class="ft-16-600 section-data-title">
                   {{ 'home-global.stratification-factor.text' | translate | uppercase }}
                 </span>
@@ -758,8 +763,10 @@
           </div>
 
           <!-- Mooclet Policy Parameters JSON Viewer -->
-          <div class="json-viewer-container" *ngIf="experiment.moocletPolicyParameters">
-            <span class="ft-24-700">{{ 'home.view-experiment.experiment-mooclet-policy-parameters-title.text' | translate }}</span>
+          <div class="json-viewer-container" *ngIf="experiment?.moocletPolicyParameters">
+            <span class="ft-24-700">{{
+              'home.view-experiment.experiment-mooclet-policy-parameters-title.text' | translate
+            }}</span>
             <pre class="ft-12-600">{{ displayMoocletParameters | json }}</pre>
           </div>
         </div>
@@ -878,9 +885,7 @@
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let data">
                   <div *ngFor="let key of data.metric_Key">
-                    <div class="metric-key">
-                      {{ key }}
-                    </div>
+                    {{ key }}
                   </div>
                 </mat-cell>
               </ng-container>
@@ -892,9 +897,7 @@
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let data">
                   <div *ngFor="let statisticOperation of data.metric_Operation">
-                    <div class="metric-Operation">
-                      {{ statisticOperation | titlecase }}
-                    </div>
+                    {{ statisticOperation | titlecase }}
                   </div>
                 </mat-cell>
               </ng-container>
@@ -913,6 +916,45 @@
                       {{ data.metric_Name | truncate : 50 }}
                     </span>
                   </ng-template>
+                </mat-cell>
+              </ng-container>
+
+              <mat-header-row *matHeaderRowDef="displayedMetricsColumns"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: displayedMetricsColumns"></mat-row>
+            </mat-table>
+          </div>
+
+          <!-- Experiment reward metric table -->
+          <div class="table-container table-container-metrics" *ngIf="experiment?.rewardMetricKey">
+            <span class="ft-24-700">{{ 'home.new-experiment.metrics.reward-metric.text' | translate }}</span>
+            <mat-table [dataSource]="displayRewardMetrics" class="table">
+              <!-- Metric Column -->
+              <ng-container matColumnDef="metricsKey">
+                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                  {{ 'query.metric.text' | translate }}
+                </mat-header-cell>
+                <mat-cell class="ft-12-600" *matCellDef="let row">
+                  {{ row.metric_Key }}
+                </mat-cell>
+              </ng-container>
+
+              <!-- Statistic Column -->
+              <ng-container matColumnDef="metricsOperation">
+                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                  {{ 'monitor.statistic.text' | translate }}
+                </mat-header-cell>
+                <mat-cell class="ft-12-600" *matCellDef="let row">
+                  {{ row.metric_Operation }}
+                </mat-cell>
+              </ng-container>
+
+              <!-- Description Column -->
+              <ng-container matColumnDef="metricsName">
+                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+                  {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
+                </mat-header-cell>
+                <mat-cell class="ft-12-600" *matCellDef="let row">
+                  {{ row.metric_Name }}
                 </mat-cell>
               </ng-container>
 

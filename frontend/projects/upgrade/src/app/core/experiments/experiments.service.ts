@@ -248,4 +248,24 @@ export class ExperimentService {
   endDetailStatsPolling() {
     this.store$.dispatch(experimentAction.actionEndExperimentDetailStatsPolling());
   }
+
+  formatExperimentName(experimentName: string) {
+    return experimentName.trim().toUpperCase().replace(/ /g, '_');
+  }
+
+  getOutcomeVariableName(experimentName: string) {
+    return `${this.formatExperimentName(experimentName)}_REWARD_VARIABLE`;
+  }
+
+  getRewardMetricKey(experimentName: string) {
+    return `${this.formatExperimentName(experimentName)}_REWARD`;
+  }
+
+  getRewardMetricData(rewardMetricKey: string) {
+    return {
+      metric_Key: rewardMetricKey,
+      metric_Operation: 'Percentage (Success)',
+      metric_Name: 'Success Rate',
+    };
+  }
 }

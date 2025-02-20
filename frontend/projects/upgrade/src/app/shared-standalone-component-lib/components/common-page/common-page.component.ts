@@ -19,7 +19,6 @@ import { TranslateModule } from '@ngx-translate/core';
  */
 @Component({
   selector: 'app-common-page',
-  standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './common-page.component.html',
   styleUrl: './common-page.component.scss',

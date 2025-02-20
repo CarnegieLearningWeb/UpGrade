@@ -14,6 +14,7 @@ import { ExperimentVM } from '../../../../../../core/experiments/store/experimen
   templateUrl: './conditions-table.component.html',
   styleUrls: ['./conditions-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ConditionsTableComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;

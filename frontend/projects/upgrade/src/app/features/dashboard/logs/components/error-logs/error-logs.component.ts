@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, Inject } from '@angular/core';
 import { LogType, ErrorLogs, LogDateFormatType } from '../../../../../core/logs/store/logs.model';
 import { LogsService } from '../../../../../core/logs/logs.service';
-import * as groupBy from 'lodash.groupby';
+import groupBy from 'lodash/groupBy';
 import { KeyValue } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { SettingsService } from '../../../../../core/settings/settings.service';
@@ -11,6 +11,7 @@ import { ENV, Environment } from '../../../../../../environments/environment-typ
   selector: 'error-logs',
   templateUrl: './error-logs.component.html',
   styleUrls: ['./error-logs.component.scss'],
+  standalone: false,
 })
 export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('ErrorLogContainer') errorLogContainer: ElementRef;

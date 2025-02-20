@@ -12,6 +12,7 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
   templateUrl: './export-segment.component.html',
   styleUrls: ['./export-segment.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExportSegmentComponent implements OnInit {
   exportMethod = [{ value: EXPORT_SEGMENT_METHOD.JSON }, { value: EXPORT_SEGMENT_METHOD.CSV }];

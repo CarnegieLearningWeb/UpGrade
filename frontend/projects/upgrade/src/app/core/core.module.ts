@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule, Optional, SkipSelf, ErrorHandler } from '@angular/core';
-import { HttpClientModule, HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpClient, HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { StoreRouterConnectingModule, RouterStateSerializer } from '@ngrx/router-store';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
@@ -16,7 +16,6 @@ import { HttpErrorInterceptor } from './http-interceptors/http-error.interceptor
 import { NotificationService } from './notifications/notification.service';
 import { ExperimentsModule } from './experiments/experiments.module';
 import { SettingsModule } from './settings/settings.module';
-import { AuthModule } from './auth/auth.module';
 import { LogsModule } from './logs/logs.module';
 import { ExperimentUsersModule } from './experiment-users/experiment-users.module';
 import { PreviewUsersModule } from './preview-users/preview-users.module';
@@ -40,13 +39,12 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
 }
 
 @NgModule({
+  declarations: [],
+  exports: [TranslateModule],
   imports: [
     // angular
     CommonModule,
-    HttpClientModule,
-
     // Store Modules
-    AuthModule,
     SettingsModule,
     ExperimentsModule,
     ExperimentDesignStepperModule,
@@ -58,7 +56,6 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
     FeatureFlagsModule,
     SegmentsModule,
     AnalysisModule,
-
     // ngrx
     StoreModule.forRoot(reducers, { metaReducers }),
     StoreRouterConnectingModule.forRoot(),
@@ -68,7 +65,6 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
       : StoreDevtoolsModule.instrument({
           name: 'AB Testing Starter',
         }),
-
     // 3rd party
     TranslateModule.forRoot({
       loader: {
@@ -78,7 +74,6 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
       },
     }),
   ],
-  declarations: [],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: BaseUrlInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
@@ -87,8 +82,8 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
     { provide: HTTP_INTERCEPTORS, useClass: CloseModalInterceptor, multi: true },
     { provide: ErrorHandler, useClass: AppErrorHandler },
     { provide: RouterStateSerializer, useClass: CustomSerializer },
+    provideHttpClient(withInterceptorsFromDi()),
   ],
-  exports: [TranslateModule],
 })
 export class CoreModule {
   constructor(

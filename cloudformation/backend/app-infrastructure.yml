@@ -124,6 +124,8 @@ Resources:
               Value: '{{resolve:ssm:UPGRADE_CACHING_TTL}}'
             - Name: CONTROLLERS
               Value: '{{resolve:ssm:UPGRADE_CONTROLLERS}}'
+            - Name: CORS_WHITELIST
+              Value: '{{resolve:ssm:UPGRADE_CORS_WHITELIST}}'
             - Name: DOMAIN_NAME
               Value: '{{resolve:ssm:UPGRADE_DOMAIN_NAME}}'
             - Name: EMAIL_BUCKET

@@ -30,7 +30,6 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-feature-flag-inclusions-section-card',
-  standalone: true,
   imports: [
     CommonSectionCardComponent,
     CommonSectionCardTitleHeaderComponent,

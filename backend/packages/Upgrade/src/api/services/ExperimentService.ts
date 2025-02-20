@@ -87,6 +87,7 @@ import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
 import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
 import { compare } from 'compare-versions';
+import { MetricService } from './MetricService';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -126,7 +127,8 @@ export class ExperimentService {
     protected scheduledJobService: ScheduledJobService,
     protected errorService: ErrorService,
     protected cacheService: CacheService,
-    protected queryService: QueryService
+    protected queryService: QueryService,
+    protected metricService: MetricService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
