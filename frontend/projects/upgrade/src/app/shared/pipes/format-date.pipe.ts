@@ -3,6 +3,7 @@ import { DateType } from '../../core/experiments/store/experiments.model';
 
 @Pipe({
   name: 'formatDate',
+  standalone: false,
 })
 export class FormatDatePipe implements PipeTransform {
   transform(date: string, type?: DateType): any {

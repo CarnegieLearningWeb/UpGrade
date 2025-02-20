@@ -5,7 +5,7 @@
 
   .segment-stepper {
     .mat-horizontal-stepper-header-container {
-      box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
+      box-shadow: 0 8px 8px -8px mat.m2-get-color-from-palette($background, shadow-color);
     }
   }
 }

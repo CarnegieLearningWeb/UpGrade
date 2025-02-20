@@ -31,7 +31,19 @@ import { QueryService } from '../../../src/api/services/QueryService';
 import { ScheduledJobService } from '../../../src/api/services/ScheduledJobService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { DataSource, EntityManager } from 'typeorm';
-import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, EXPERIMENT_TYPE, FILTER_MODE, PAYLOAD_TYPE, POST_EXPERIMENT_RULE, SEGMENT_TYPE } from 'upgrade_types';
+import {
+  ASSIGNMENT_ALGORITHM,
+  ASSIGNMENT_UNIT,
+  CONSISTENCY_RULE,
+  EXPERIMENT_STATE,
+  EXPERIMENT_TYPE,
+  FILTER_MODE,
+  PAYLOAD_TYPE,
+  POST_EXPERIMENT_RULE,
+  SEGMENT_TYPE,
+} from 'upgrade_types';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { MetricService } from '../../../src/api/services/MetricService';
 
 const mockDataSource = {
   initialize: jest.fn(),
@@ -81,112 +93,112 @@ jest.mock('../../../src/api/services/ScheduledJobService');
 jest.mock('../../../src/api/services/ErrorService');
 jest.mock('../../../src/api/services/CacheService');
 jest.mock('../../../src/api/services/QueryService');
+jest.mock('../../../src/api/services/MetricService');
 
 const mockTSConfigMoocletPolicyParameters = {
   assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
   prior: {
     success: 1,
-    failure: 1
+    failure: 1,
   },
   batch_size: 1,
   max_rating: 1,
   min_rating: 0,
   uniform_threshold: 0,
   tspostdiff_thresh: 0,
-  outcome_variable_name: "TS_CONFIG_TEST"
+  outcome_variable_name: 'TS_CONFIG_TEST',
 };
 
 const moocletExperimentDataTSConfigurable = {
-    id: 'test-exp-123',
-    name: "test",
-    description: "",
-    consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
-    assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
-    type: EXPERIMENT_TYPE.SIMPLE,
-    context: ["mathstream"],
-    assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
-    stratificationFactor: null,
-    tags: [],
-    conditions: [
-      {
-        id: "A",
-        conditionCode: "question-hint-default",
-        assignmentWeight: 50,
-        description: null,
-        order: 1,
-        name: ""
-      },
-      {
-        id: "B",
-        conditionCode: "question-hint-tutorbot",
-        assignmentWeight: 50,
-        description: null,
-        order: 2,
-        name: ""
-      }
-    ],
-    conditionPayloads: [
-      {
-        id: "E",
-        payload: {
-          type: PAYLOAD_TYPE.STRING,
-          value: "question-hint-default"
-        },
-        parentCondition: "A",
-        decisionPoint: "C"
-      },
-      {
-        id: "F",
-        payload: {
-          type: PAYLOAD_TYPE.STRING,
-          value: "question-hint-tutorbot"
-        },
-        parentCondition: "B",
-        decisionPoint: "C"
-      }
-    ],
-    partitions: [
-      {
-        id: "C",
-        site: "lesson-stream",
-        target: "question-hint",
-        description: "",
-        order: 1,
-        excludeIfReached: false
-      }
-    ],
-    experimentSegmentInclusion: {
-      segment: {
-        individualForSegment: [],
-        groupForSegment: [
-          {
-            type: "All",
-            groupId: "All"
-          }
-        ],
-        subSegments: [],
-        type: SEGMENT_TYPE.PRIVATE
-      }
+  id: 'test-exp-123',
+  name: 'test',
+  description: '',
+  consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
+  assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
+  type: EXPERIMENT_TYPE.SIMPLE,
+  context: ['mathstream'],
+  assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+  stratificationFactor: null,
+  tags: [],
+  conditions: [
+    {
+      id: 'A',
+      conditionCode: 'question-hint-default',
+      assignmentWeight: 50,
+      description: null,
+      order: 1,
+      name: '',
     },
-    experimentSegmentExclusion: {
-      segment: {
-        individualForSegment: [],
-        groupForSegment: [],
-        subSegments: [],
-        type: SEGMENT_TYPE.PRIVATE
-      }
+    {
+      id: 'B',
+      conditionCode: 'question-hint-tutorbot',
+      assignmentWeight: 50,
+      description: null,
+      order: 2,
+      name: '',
     },
-    filterMode: FILTER_MODE.EXCLUDE_ALL,
-    queries: [],
-    endOn: null,
-    enrollmentCompleteCondition: null,
-    startOn: null,
-    state: EXPERIMENT_STATE.ENROLLING,
-    postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
-    revertTo: null,
-    moocletPolicyParameters: mockTSConfigMoocletPolicyParameters
-  };
-
+  ],
+  conditionPayloads: [
+    {
+      id: 'E',
+      payload: {
+        type: PAYLOAD_TYPE.STRING,
+        value: 'question-hint-default',
+      },
+      parentCondition: 'A',
+      decisionPoint: 'C',
+    },
+    {
+      id: 'F',
+      payload: {
+        type: PAYLOAD_TYPE.STRING,
+        value: 'question-hint-tutorbot',
+      },
+      parentCondition: 'B',
+      decisionPoint: 'C',
+    },
+  ],
+  partitions: [
+    {
+      id: 'C',
+      site: 'lesson-stream',
+      target: 'question-hint',
+      description: '',
+      order: 1,
+      excludeIfReached: false,
+    },
+  ],
+  experimentSegmentInclusion: {
+    segment: {
+      individualForSegment: [],
+      groupForSegment: [
+        {
+          type: 'All',
+          groupId: 'All',
+        },
+      ],
+      subSegments: [],
+      type: SEGMENT_TYPE.PRIVATE,
+    },
+  },
+  experimentSegmentExclusion: {
+    segment: {
+      individualForSegment: [],
+      groupForSegment: [],
+      subSegments: [],
+      type: SEGMENT_TYPE.PRIVATE,
+    },
+  },
+  filterMode: FILTER_MODE.EXCLUDE_ALL,
+  queries: [],
+  endOn: null,
+  enrollmentCompleteCondition: null,
+  startOn: null,
+  state: EXPERIMENT_STATE.ENROLLING,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  revertTo: null,
+  moocletPolicyParameters: mockTSConfigMoocletPolicyParameters,
+};
 
 describe('#MoocletExperimentService', () => {
   let moocletExperimentService: MoocletExperimentService;
@@ -217,6 +229,7 @@ describe('#MoocletExperimentService', () => {
   let errorService: ErrorService;
   let cacheService: CacheService;
   let queryService: QueryService;
+  let metricService: MetricService;
 
   beforeEach(() => {
     moocletDataService = {
@@ -224,6 +237,11 @@ describe('#MoocletExperimentService', () => {
       deletePolicyParameters: jest.fn(),
       deleteVariable: jest.fn(),
     } as unknown as MoocletDataService;
+
+    metricService = {
+      saveAllMetrics: jest.fn(),
+      delete: jest.fn(),
+    } as unknown as MetricService;
     // Create service with mocked dependencies
     moocletExperimentService = new MoocletExperimentService(
       moocletDataService,
@@ -253,21 +271,29 @@ describe('#MoocletExperimentService', () => {
       scheduledJobService,
       errorService,
       cacheService,
-      queryService
+      queryService,
+      metricService
     );
   });
+
+  const logger = {
+    error: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+  } as unknown as UpgradeLogger;
 
   describe('#handleCreateMoocletTransaction', () => {
     let manager: EntityManager;
     let params: SyncCreateParams;
     let mockExperimentResponse: ExperimentDTO;
     let mockMoocletExperimentRefResponse: MoocletExperimentRef;
-  
+
     beforeEach(() => {
       mockExperimentResponse = {
         id: 'exp-123',
       } as ExperimentDTO;
-  
+
       mockMoocletExperimentRefResponse = {
         id: 'moocletRef-123',
       } as MoocletExperimentRef;
@@ -275,116 +301,108 @@ describe('#MoocletExperimentService', () => {
       manager = mockDataSource.manager as EntityManager;
       params = {
         experimentDTO: moocletExperimentDataTSConfigurable,
-        currentUser: {} as UserDTO
+        currentUser: {} as UserDTO,
+        logger,
       };
-  
+
       // Spy on class methods
       jest.spyOn(moocletExperimentService as any, 'createExperiment').mockResolvedValue(mockExperimentResponse);
-      jest.spyOn(moocletExperimentService as any, 'orchestrateMoocletCreation').mockResolvedValue(mockMoocletExperimentRefResponse);
+      jest
+        .spyOn(moocletExperimentService as any, 'orchestrateMoocletCreation')
+        .mockResolvedValue(mockMoocletExperimentRefResponse);
       jest.spyOn(moocletExperimentService as any, 'saveMoocletExperimentRef').mockResolvedValue(undefined);
       jest.spyOn(moocletExperimentService as any, 'createAndSaveVersionConditionMaps').mockResolvedValue(undefined);
       jest.spyOn(moocletExperimentService as any, 'orchestrateDeleteMoocletResources').mockResolvedValue(undefined);
     });
-  
+
     afterEach(() => {
       jest.clearAllMocks();
     });
-  
+
     it('should successfully create a mooclet experiment with all required resources', async () => {
-      const result = await moocletExperimentService['handleCreateMoocletTransaction'](
-        manager,
-        params
-      );
-  
+      const result = await moocletExperimentService['handleCreateMoocletTransaction'](manager, params);
+
       // Verify all methods were called with correct parameters
-      expect(moocletExperimentService['createExperiment']).toHaveBeenCalledWith(
-        manager,
-        params
-      );
-  
+      expect(moocletExperimentService['createExperiment']).toHaveBeenCalledWith(manager, params);
+
       expect(moocletExperimentService['orchestrateMoocletCreation']).toHaveBeenCalledWith(
         mockExperimentResponse,
-        params.experimentDTO.moocletPolicyParameters
+        params.experimentDTO.moocletPolicyParameters,
+        logger
       );
-  
+
       expect(moocletExperimentService['saveMoocletExperimentRef']).toHaveBeenCalledWith(
         manager,
         mockMoocletExperimentRefResponse
       );
-  
+
       expect(moocletExperimentService['createAndSaveVersionConditionMaps']).toHaveBeenCalledWith(
         manager,
-        mockMoocletExperimentRefResponse
+        mockMoocletExperimentRefResponse,
+        logger
       );
-  
+
       // Verify the result
       expect(result).toEqual({
         ...mockExperimentResponse,
-        moocletPolicyParameters: params.experimentDTO.moocletPolicyParameters
+        moocletPolicyParameters: params.experimentDTO.moocletPolicyParameters,
       });
-  
+
       // Verify orchestrateDeleteMoocletResources was not called
       expect(moocletExperimentService['orchestrateDeleteMoocletResources']).not.toHaveBeenCalled();
     });
-  
+
     it('should handle failure during createExperiment and throw error', async () => {
       const error = new Error('Failed to create experiment');
       jest.spyOn(moocletExperimentService as any, 'createExperiment').mockRejectedValue(error);
-  
-      await expect(
-        moocletExperimentService['handleCreateMoocletTransaction'](manager, params)
-      ).rejects.toThrow(error);
-  
+
+      await expect(moocletExperimentService['handleCreateMoocletTransaction'](manager, params)).rejects.toThrow(error);
+
       // Verify subsequent methods were not called
       expect(moocletExperimentService['orchestrateMoocletCreation']).not.toHaveBeenCalled();
       expect(moocletExperimentService['saveMoocletExperimentRef']).not.toHaveBeenCalled();
       expect(moocletExperimentService['createAndSaveVersionConditionMaps']).not.toHaveBeenCalled();
     });
-  
+
     it('should handle failure during orchestrateMoocletCreation and throw error', async () => {
       const error = new Error('Failed to create mooclet resources');
       jest.spyOn(moocletExperimentService as any, 'orchestrateMoocletCreation').mockRejectedValue(error);
-  
-      await expect(
-        moocletExperimentService['handleCreateMoocletTransaction'](manager, params)
-      ).rejects.toThrow(error);
-  
+
+      await expect(moocletExperimentService['handleCreateMoocletTransaction'](manager, params)).rejects.toThrow(error);
+
       // Verify subsequent methods were not called
       expect(moocletExperimentService['saveMoocletExperimentRef']).not.toHaveBeenCalled();
       expect(moocletExperimentService['createAndSaveVersionConditionMaps']).not.toHaveBeenCalled();
     });
-  
+
     it('should handle failure during saveMoocletExperimentRef and cleanup resources', async () => {
       const error = new Error('Failed to save mooclet ref');
       jest.spyOn(moocletExperimentService as any, 'saveMoocletExperimentRef').mockRejectedValue(error);
-  
-      await expect(
-        moocletExperimentService['handleCreateMoocletTransaction'](manager, params)
-      ).rejects.toThrow(error);
-  
+
+      await expect(moocletExperimentService['handleCreateMoocletTransaction'](manager, params)).rejects.toThrow(error);
+
       // Verify cleanup was called
       expect(moocletExperimentService['orchestrateDeleteMoocletResources']).toHaveBeenCalledWith(
-        mockMoocletExperimentRefResponse
+        mockMoocletExperimentRefResponse,
+        logger
       );
     });
-  
+
     it('should handle failure during createAndSaveVersionConditionMaps and cleanup resources', async () => {
       const error = new Error('Failed to save version condition maps');
       jest.spyOn(moocletExperimentService as any, 'createAndSaveVersionConditionMaps').mockRejectedValue(error);
-  
-      await expect(
-        moocletExperimentService['handleCreateMoocletTransaction'](manager, params)
-      ).rejects.toThrow(error);
-  
+
+      await expect(moocletExperimentService['handleCreateMoocletTransaction'](manager, params)).rejects.toThrow(error);
+
       // Verify cleanup was called
       expect(moocletExperimentService['orchestrateDeleteMoocletResources']).toHaveBeenCalledWith(
-        mockMoocletExperimentRefResponse
+        mockMoocletExperimentRefResponse,
+        logger
       );
     });
   });
 
-  describe("#orchestrateMoocletCreation", ()=> {
-
+  describe('#orchestrateMoocletCreation', () => {
     afterEach(() => {
       jest.clearAllMocks();
     });
@@ -398,13 +416,23 @@ describe('#MoocletExperimentService', () => {
 
       jest.spyOn(moocletExperimentService as any, 'getMoocletPolicy').mockResolvedValue(mockMoocletPolicy);
       jest.spyOn(moocletExperimentService as any, 'createMooclet').mockResolvedValue(mockMoocletResponse);
-      jest.spyOn(moocletExperimentService as any, 'createMoocletVersions').mockResolvedValue(mockMoocletVersionsResponse);
+      jest
+        .spyOn(moocletExperimentService as any, 'createMoocletVersions')
+        .mockResolvedValue(mockMoocletVersionsResponse);
       jest.spyOn(moocletExperimentService as any, 'createMoocletVersionConditionMaps').mockReturnValue([]);
-      jest.spyOn(moocletExperimentService as any, 'createPolicyParameters').mockResolvedValue(mockMoocletPolicyParametersResponse);
-      jest.spyOn(moocletExperimentService as any, 'createVariableIfNeeded').mockResolvedValue(mockMoocletVariableResponse);
+      jest
+        .spyOn(moocletExperimentService as any, 'createPolicyParameters')
+        .mockResolvedValue(mockMoocletPolicyParametersResponse);
+      jest
+        .spyOn(moocletExperimentService as any, 'createVariableIfNeeded')
+        .mockResolvedValue(mockMoocletVariableResponse);
       jest.spyOn(moocletExperimentService as any, 'orchestrateDeleteMoocletResources').mockResolvedValue(undefined);
 
-      const result = await moocletExperimentService.orchestrateMoocletCreation(moocletExperimentDataTSConfigurable, mockTSConfigMoocletPolicyParameters);
+      const result = await moocletExperimentService.orchestrateMoocletCreation(
+        moocletExperimentDataTSConfigurable,
+        mockTSConfigMoocletPolicyParameters,
+        logger
+      );
 
       expect(result).toBeDefined();
       expect(result?.experimentId).toBe(moocletExperimentDataTSConfigurable.id);
@@ -420,19 +448,25 @@ describe('#MoocletExperimentService', () => {
       jest.spyOn(moocletExperimentService as any, 'getMoocletPolicy').mockRejectedValue(mockError);
       jest.spyOn(moocletExperimentService as any, 'orchestrateDeleteMoocletResources').mockRejectedValue(mockError);
 
-      await expect(moocletExperimentService.orchestrateMoocletCreation(moocletExperimentDataTSConfigurable, mockTSConfigMoocletPolicyParameters)).rejects.toThrow(mockError);
+      await expect(
+        moocletExperimentService.orchestrateMoocletCreation(
+          moocletExperimentDataTSConfigurable,
+          mockTSConfigMoocletPolicyParameters,
+          logger
+        )
+      ).rejects.toThrow(mockError);
       expect(moocletExperimentService.orchestrateDeleteMoocletResources).toHaveBeenCalled();
     });
   });
 
-  describe("#orchestrateDeleteMoocletResources", ()=> {
+  describe('#orchestrateDeleteMoocletResources', () => {
     const mockMoocletExperimentRef = new MoocletExperimentRef();
     mockMoocletExperimentRef.moocletId = 1;
     mockMoocletExperimentRef.policyParametersId = 2;
     mockMoocletExperimentRef.variableId = 3;
     mockMoocletExperimentRef.id = 'mockMoocletExperimentRef123';
     mockMoocletExperimentRef.versionConditionMaps = [];
-      
+
     afterEach(() => {
       jest.clearAllMocks();
     });
@@ -441,12 +475,15 @@ describe('#MoocletExperimentService', () => {
       jest.spyOn(moocletDataService, 'deleteMooclet').mockResolvedValue(undefined);
       jest.spyOn(moocletDataService, 'deletePolicyParameters').mockResolvedValue(undefined);
       jest.spyOn(moocletDataService, 'deleteVariable').mockResolvedValue(undefined);
-  
-      await moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef);
-  
-      expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId);
-      expect(moocletDataService.deletePolicyParameters).toHaveBeenCalledWith(mockMoocletExperimentRef.policyParametersId);
-      expect(moocletDataService.deleteVariable).toHaveBeenCalledWith(mockMoocletExperimentRef.variableId);
+
+      await moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef, logger);
+
+      expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId, logger);
+      expect(moocletDataService.deletePolicyParameters).toHaveBeenCalledWith(
+        mockMoocletExperimentRef.policyParametersId,
+        logger
+      );
+      expect(moocletDataService.deleteVariable).toHaveBeenCalledWith(mockMoocletExperimentRef.variableId, logger);
     });
     it('should handle errors and log them', async () => {
       const mockError = new Error('Test Error');
@@ -454,10 +491,12 @@ describe('#MoocletExperimentService', () => {
       jest.spyOn(moocletExperimentService as any, 'deleteMoocletVersions').mockResolvedValue(undefined);
       jest.spyOn(moocletDataService, 'deletePolicyParameters').mockResolvedValue(undefined);
       jest.spyOn(moocletDataService, 'deleteVariable').mockResolvedValue(undefined);
-  
-      await expect(moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef)).rejects.toThrow(mockError);
-  
-      expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId);
+
+      await expect(
+        moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef, logger)
+      ).rejects.toThrow(mockError);
+
+      expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId, logger);
       expect(moocletDataService.deletePolicyParameters).not.toHaveBeenCalled();
       expect(moocletDataService.deleteVariable).not.toHaveBeenCalled();
     });

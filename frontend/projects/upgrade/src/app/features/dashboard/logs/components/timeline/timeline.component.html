@@ -20,8 +20,8 @@
 
       <ng-template #errorLogIconTemplate>
         <app-shared-icons
-          class="{{ 'icon icon--' + (log.value | errorLog: 'class') }}"
-          [iconType]="log.type | errorLog: 'icon'"
+          class="{{ 'icon icon--' + (log.value | errorLog : 'class') }}"
+          [iconType]="log.type | errorLog : 'icon'"
         ></app-shared-icons>
       </ng-template>
 
@@ -33,7 +33,7 @@
             </span>
             <ng-template #userNameEllipsis>
               <span [matTooltip]="log['user']['firstName'] + ' ' + log['user']['lastName']" matTooltipPosition="above">
-                {{ log['user']['firstName'] + ' ' + log['user']['lastName'] | truncate: 30 }}
+                {{ log['user']['firstName'] + ' ' + log['user']['lastName'] | truncate : 30 }}
               </span>
             </ng-template>
           </ng-container>
@@ -44,21 +44,21 @@
             <span class="ft-16-600 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
             </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DATA_EXPORTED" class="log-text">
             <span class="ft-16-600 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
             </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DESIGN_EXPORTED" class="log-text">
             <span class="ft-16-600 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
             </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div
@@ -85,7 +85,7 @@
                 >{{ log.data.experimentName }}</a
               >
             </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div class="log-text" *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED">
@@ -104,7 +104,7 @@
                     </span>
                     <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
-                  <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
                 </mat-expansion-panel-header>
 
                 <pre><div class="ft-14-400 diff-container" [id]="log.id">{{ getHtmlFormedLogData(log.id, log.data.diff) }}</div></pre>
@@ -116,21 +116,21 @@
             <span class="ft-16-600 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
             </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_DATA_EXPORTED" class="log-text">
             <span class="ft-16-600 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
             </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_DESIGN_EXPORTED" class="log-text">
             <span class="ft-16-600 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
             </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div
@@ -156,7 +156,7 @@
                 >{{ log.data.flagName }}</a
               >
             </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div class="full-width" *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_UPDATED">
@@ -193,7 +193,7 @@
                             }
                     }}
                   </span>
-                  <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
                 </div>
 
                 <!-- Case for UPDATED -->
@@ -227,7 +227,7 @@
                             [innerHTML]="'logs-global.log-view-diff.text' | translate"
                           ></span>
                         </mat-panel-title>
-                        <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                        <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
                       </mat-expansion-panel-header>
 
                       <pre><div
@@ -262,7 +262,7 @@
                           [innerHTML]="'logs-global.log-view-diff.text' | translate"
                         ></span>
                       </mat-panel-title>
-                      <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                      <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
                     </mat-expansion-panel-header>
 
                     <pre><div
@@ -287,10 +287,10 @@
                     -
                     {{
                       'logs.audit-log-feature-flag-updated-filterMode-changed.text'
-                        | translate: { status: log.data.filterMode === 'includeAll' ? 'enabled' : 'disabled' }
+                        | translate : { status: log.data.filterMode === 'includeAll' ? 'enabled' : 'disabled' }
                     }}
                   </span>
-                  <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
                 </div>
               </ng-template>
             </ng-template>
@@ -321,7 +321,7 @@
                     >
                       {{
                         'logs.error-logs-message.text'
-                          | translate: { errorName: log.name, endPoint: endPoint + log.endPoint }
+                          | translate : { errorName: log.name, endPoint: endPoint + log.endPoint }
                       }}
                     </span>
                     <ng-template #errorFromClient>
@@ -331,7 +331,7 @@
                     </ng-template>
                     <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
-                  <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
                 </mat-expansion-panel-header>
 
                 <pre class="ft-14-400">{{ log.message }}</pre>

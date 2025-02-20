@@ -3,6 +3,7 @@ import { FEATURE_FLAG_LIST_OPERATION } from 'upgrade_types';
 
 @Pipe({
   name: 'featureFlagListOperationsMessage',
+  standalone: false,
 })
 export class FeatureFlagListOperationsMessage implements PipeTransform {
   transform(actionType: FEATURE_FLAG_LIST_OPERATION): string {

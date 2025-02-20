@@ -11,6 +11,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
   templateUrl: './segments-root.component.html',
   styleUrls: ['./segments-root.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class SegmentsRootComponent implements OnInit {
   permissions$: Observable<UserPermission>;

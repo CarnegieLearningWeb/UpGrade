@@ -4,6 +4,6 @@
   $background: map-get($theme, background);
 
   .payload-table-design-stepper .mat-mdc-row.odd {
-    background-color: mat.get-color-from-palette($background, table-shading);
+    background-color: mat.m2-get-color-from-palette($background, table-shading);
   }
 }

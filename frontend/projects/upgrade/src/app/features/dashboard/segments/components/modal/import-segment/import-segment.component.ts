@@ -12,6 +12,7 @@ import { firstValueFrom } from 'rxjs';
   selector: 'app-import-segment',
   templateUrl: './import-segment.component.html',
   styleUrls: ['./import-segment.component.scss'],
+  standalone: false,
 })
 export class ImportSegmentComponent {
   file: any;
@@ -40,7 +41,9 @@ export class ImportSegmentComponent {
   async importSegments() {
     try {
       this.onCancelClick();
-      const importResult = await firstValueFrom(this.segmentDataService.importSegments(this.fileData)) as importError[];
+      const importResult = (await firstValueFrom(
+        this.segmentDataService.importSegments(this.fileData)
+      )) as importError[];
       this.showNotification(importResult);
       this.segmentsService.fetchSegments(true);
     } catch (error) {

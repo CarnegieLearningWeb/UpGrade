@@ -13,7 +13,6 @@ import { SharedModule } from '../../../../../../shared/shared.module';
 
 @Component({
   selector: 'app-feature-flag-details-page-content',
-  standalone: true,
   imports: [
     CommonModule,
     CommonSectionCardListComponent,
