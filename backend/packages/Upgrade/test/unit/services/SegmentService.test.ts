@@ -409,14 +409,15 @@ describe('Segment Service Testing', () => {
 
     segmentWithIdsToCleanUp.groups = [
       { groupId: 'group1\n', type: 'skool' },
-      { groupId: 'group2\r ', type: 'skool' },
+      { groupId: '\rgroup2 ', type: 'skool' },
       { groupId: ' group3 ', type: 'skool' },
       { groupId: 'group4', type: 'skool' },
+      { groupId: ' group5 \t', type: 'skool' },
     ];
-    segmentWithIdsToCleanUp.userIds = ['user1\n', 'user2\r', ' user3 ', 'user4'];
+    segmentWithIdsToCleanUp.userIds = ['user1\n', 'user2\r', ' user3 ', 'user4 \r', '\tuser5'];
 
-    const expectedCleanedUpUserIds = ['user1', 'user2', 'user3', 'user4'];
-    const expectedCleanedUpGroupIds = ['group1', 'group2', 'group3', 'group4'];
+    const expectedCleanedUpUserIds = ['user1', 'user2', 'user3', 'user4', 'user5'];
+    const expectedCleanedUpGroupIds = ['group1', 'group2', 'group3', 'group4', 'group5'];
 
     const indivRepo = module.get<IndividualForSegmentRepository>(getRepositoryToken(IndividualForSegmentRepository));
     indivRepo.insertIndividualForSegment = jest.fn();
@@ -432,6 +433,7 @@ describe('Segment Service Testing', () => {
         { userId: expectedCleanedUpUserIds[1], segment: expect.any(Object) },
         { userId: expectedCleanedUpUserIds[2], segment: expect.any(Object) },
         { userId: expectedCleanedUpUserIds[3], segment: expect.any(Object) },
+        { userId: expectedCleanedUpUserIds[4], segment: expect.any(Object) },
       ],
       expect.any(Object),
       expect.any(Object)
@@ -443,6 +445,7 @@ describe('Segment Service Testing', () => {
         { groupId: expectedCleanedUpGroupIds[1], segment: expect.any(Object), type: 'skool' },
         { groupId: expectedCleanedUpGroupIds[2], segment: expect.any(Object), type: 'skool' },
         { groupId: expectedCleanedUpGroupIds[3], segment: expect.any(Object), type: 'skool' },
+        { groupId: expectedCleanedUpGroupIds[4], segment: expect.any(Object), type: 'skool' },
       ],
       expect.any(Object),
       expect.any(Object)

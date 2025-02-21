@@ -626,6 +626,6 @@ export class SegmentService {
   }
 
   private trimAndRemoveHiddenChars(value: string): string {
-    return value.trim().replace(/[\r\n]/g, '');
+    return value.replace(/[\r\n\t]/g, '').trim();
   }
 }
