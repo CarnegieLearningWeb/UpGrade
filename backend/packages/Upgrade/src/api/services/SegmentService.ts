@@ -580,13 +580,21 @@ export class SegmentService {
       throw error;
     }
 
-    const individualForSegmentDocsToSave = segment.userIds.map((userId) => ({
-      userId,
-      segment: segmentDoc,
-    }));
+    const individualForSegmentDocsToSave = segment.userIds.map((userId) => {
+      const trimmedId = this.trimAndRemoveHiddenChars(userId);
+      return {
+        userId: trimmedId,
+        segment: segmentDoc,
+      };
+    });
 
     const groupForSegmentDocsToSave = segment.groups.map((group) => {
-      return { ...group, segment: segmentDoc };
+      group.groupId = this.trimAndRemoveHiddenChars(group.groupId);
+
+      return {
+        ...group,
+        segment: segmentDoc,
+      };
     });
 
     try {
@@ -615,5 +623,9 @@ export class SegmentService {
     return transactionalEntityManager
       .getRepository(Segment)
       .findOne({ where: { id: segmentDoc.id }, relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+  }
+
+  private trimAndRemoveHiddenChars(value: string): string {
+    return value.replace(/[\r\n\t]/g, '').trim();
   }
 }

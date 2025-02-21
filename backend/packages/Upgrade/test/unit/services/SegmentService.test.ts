@@ -403,6 +403,55 @@ describe('Segment Service Testing', () => {
     expect(segments).toEqual(seg1);
   });
 
+  it('should upsert a segment with trimmed whitespace and removed newline or carriage return', async () => {
+    const segmentWithIdsToCleanUp = new SegmentInputValidator();
+    segmentWithIdsToCleanUp.subSegmentIds = [];
+
+    segmentWithIdsToCleanUp.groups = [
+      { groupId: 'group1\n', type: 'skool' },
+      { groupId: '\rgroup2 ', type: 'skool' },
+      { groupId: ' group3 ', type: 'skool' },
+      { groupId: 'group4', type: 'skool' },
+      { groupId: ' group5 \t', type: 'skool' },
+    ];
+    segmentWithIdsToCleanUp.userIds = ['user1\n', 'user2\r', ' user3 ', 'user4 \r', '\tuser5'];
+
+    const expectedCleanedUpUserIds = ['user1', 'user2', 'user3', 'user4', 'user5'];
+    const expectedCleanedUpGroupIds = ['group1', 'group2', 'group3', 'group4', 'group5'];
+
+    const indivRepo = module.get<IndividualForSegmentRepository>(getRepositoryToken(IndividualForSegmentRepository));
+    indivRepo.insertIndividualForSegment = jest.fn();
+
+    const groupRepo = module.get<GroupForSegmentRepository>(getRepositoryToken(GroupForSegmentRepository));
+    groupRepo.insertGroupForSegment = jest.fn();
+
+    await service.upsertSegment(segmentWithIdsToCleanUp, logger);
+
+    expect(indivRepo.insertIndividualForSegment).toHaveBeenCalledWith(
+      [
+        { userId: expectedCleanedUpUserIds[0], segment: expect.any(Object) },
+        { userId: expectedCleanedUpUserIds[1], segment: expect.any(Object) },
+        { userId: expectedCleanedUpUserIds[2], segment: expect.any(Object) },
+        { userId: expectedCleanedUpUserIds[3], segment: expect.any(Object) },
+        { userId: expectedCleanedUpUserIds[4], segment: expect.any(Object) },
+      ],
+      expect.any(Object),
+      expect.any(Object)
+    );
+
+    expect(groupRepo.insertGroupForSegment).toHaveBeenCalledWith(
+      [
+        { groupId: expectedCleanedUpGroupIds[0], segment: expect.any(Object), type: 'skool' },
+        { groupId: expectedCleanedUpGroupIds[1], segment: expect.any(Object), type: 'skool' },
+        { groupId: expectedCleanedUpGroupIds[2], segment: expect.any(Object), type: 'skool' },
+        { groupId: expectedCleanedUpGroupIds[3], segment: expect.any(Object), type: 'skool' },
+        { groupId: expectedCleanedUpGroupIds[4], segment: expect.any(Object), type: 'skool' },
+      ],
+      expect.any(Object),
+      expect.any(Object)
+    );
+  });
+
   it('should upsert a segment with no id', async () => {
     const err = new Error('error');
     const segment = new SegmentInputValidator();
