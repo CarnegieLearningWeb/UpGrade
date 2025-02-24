@@ -30,6 +30,7 @@ import { env } from '../../env';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
 import { SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
+import { ImportExportService } from '../services/ImportExportService';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
@@ -575,7 +576,8 @@ export class ExperimentController {
   constructor(
     public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService,
-    public moocletExperimentService: MoocletExperimentService
+    public moocletExperimentService: MoocletExperimentService,
+    public importExportService: ImportExportService
   ) {}
 
   /**
@@ -1028,7 +1030,7 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<ExperimentDTO[]> {
     request.logger.child({ user: currentUser });
-    return this.experimentService.createMultipleExperiments(experiment, currentUser, request.logger);
+    return this.importExportService.createMultipleExperiments(experiment, currentUser, request.logger);
   }
 
   /**
@@ -1286,16 +1288,12 @@ export class ExperimentController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ValidatedExperimentError[]> {
-    const { experiments: experimentList, validatedExperiments } = await this.experimentService.verifyExperiments(
+    const validatedExperiments = await this.importExportService.importExperiments(
       experiments,
+      currentUser,
       request.logger
     );
 
-    if (env.mooclets.enabled) {
-      await this.moocletExperimentService.syncAddBulkExperiments(experimentList, currentUser, request.logger);
-    } else {
-      await this.experimentService.addBulkExperiments(experimentList, currentUser, request.logger);
-    }
     return validatedExperiments;
   }
 
@@ -1345,9 +1343,9 @@ export class ExperimentController {
     params: ExperimentIds,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<Experiment[]> {
+  ): Promise<ExperimentDTO[]> {
     const experimentIds = params.ids;
-    return this.experimentService.exportExperiment(currentUser, request.logger, experimentIds);
+    return this.importExportService.exportExperiment(currentUser, request.logger, experimentIds);
   }
 
   /**
@@ -1377,8 +1375,11 @@ export class ExperimentController {
    *            description: Internal Server Error
    */
   @Get('/export/all')
-  public exportAllExperiment(@CurrentUser() currentUser: UserDTO, @Req() request: AppRequest): Promise<Experiment[]> {
-    return this.experimentService.exportExperiment(currentUser, request.logger);
+  public exportAllExperiment(
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<ExperimentDTO[]> {
+    return this.importExportService.exportExperiment(currentUser, request.logger);
   }
 
   /**
