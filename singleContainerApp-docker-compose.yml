@@ -12,9 +12,7 @@ services:
     volumes:
       - ./frontend:/usr/src/app/frontend
       - ./backend:/usr/src/app/backend
-      - /usr/src/app/frontend/node_modules
-    tmpfs:
-      - /usr/src/app/frontend/node_modules/@rollup # Exclude @rollup from host mount
+      - frontend-node_modules:/usr/src/app/frontend/node_modules
     networks:
       - localdev
     ports:
@@ -38,6 +36,7 @@ services:
   
 volumes:
   upgradedbdata:
+  frontend-node_modules:
 
 networks:
   localdev:
