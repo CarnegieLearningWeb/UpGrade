@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
+import * as analysisActions from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
 import {
   map,
@@ -162,6 +163,7 @@ export class ExperimentEffects {
                   experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
                   experimentAction.actionFetchAllDecisionPoints(),
+                  analysisActions.actionFetchMetrics(),
                 ];
               })
             )
