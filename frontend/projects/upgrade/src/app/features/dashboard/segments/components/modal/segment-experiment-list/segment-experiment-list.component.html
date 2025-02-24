@@ -1,7 +1,7 @@
 <div class="segment-experiment-list-modal">
   <ng-container>
     <span class="ft-24-700 title">
-      {{ 'segments.segment-experiment-list-title.text' | translate: { numberOfUses: segmentsExperimentList?.length } }}
+      {{ 'segments.segment-experiment-list-title.text' | translate : { numberOfUses: segmentsExperimentList?.length } }}
     </span>
   </ng-container>
 
@@ -50,7 +50,7 @@
                   <span
                     class="experiment-state-circle"
                     [ngStyle]="{
-                      backgroundColor: element.experimentState | experimentState: ExperimentStatePipeTypes.COLOR
+                      backgroundColor: element.experimentState | experimentState : ExperimentStatePipeTypes.COLOR
                     }"
                   ></span>
                 </ng-template>
@@ -65,7 +65,7 @@
                 </span>
               </div>
               <span class="experiment-schedule ft-10-400" *ngIf="element.experimentState === ExperimentState.SCHEDULED">
-                {{ '(' + (experiment.startOn | date: 'MMM d, y h:mm a') + ')' }}
+                {{ '(' + (experiment.startOn | date : 'MMM d, y h:mm a') + ')' }}
               </span>
             </mat-cell>
           </ng-container>

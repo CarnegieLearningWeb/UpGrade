@@ -9,15 +9,12 @@
   >
     <div class="delete-container">
       <div class="ft-16-400">
-        <span>{{ 'feature-flags.delete-modal.warning-message.text' | translate }} "{{flag.name}}"?</span>
+        <span>{{ 'feature-flags.delete-modal.warning-message.text' | translate }} "{{ flag.name }}"?</span>
       </div>
       <div class="ft-16-600">
         {{ 'global.delete-confirmation.message.text' | translate }}
       </div>
-      <mat-form-field
-        class="dense-2"
-        appearance="outline"
-      >
+      <mat-form-field class="dense-2" appearance="outline">
         <input
           class="ft-14-400"
           matInput

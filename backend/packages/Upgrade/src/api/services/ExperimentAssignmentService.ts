@@ -1464,7 +1464,7 @@ export class ExperimentAssignmentService {
           if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
             conditionAssigned = experiment.conditions.find((expCondition) => expCondition.conditionCode === condition);
           } else {
-            conditionAssigned = this.assignExperiment(
+            conditionAssigned = await this.assignExperiment(
               user,
               experiment,
               individualEnrollment,
@@ -1645,7 +1645,8 @@ export class ExperimentAssignmentService {
         return (
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
             ? individualEnrollmentCondition
-            : groupEnrollmentCondition) || this.assignRandom(experiment, user, enrollmentCount)
+            : groupEnrollmentCondition) ||
+          this.getNewExperimentConditionAssignment(experiment, user, logger, enrollmentCount)
         );
       }
     }
@@ -1670,16 +1671,16 @@ export class ExperimentAssignmentService {
     }
 
     if (isMoocletExperiment && env.mooclets.enabled) {
-      return this.getConditionFromMoocletProxy(experiment, user);
+      return this.getConditionFromMoocletProxy(experiment, user, logger);
     } else {
       return this.assignRandom(experiment, user, enrollmentCount);
     }
   }
 
-  private async getConditionFromMoocletProxy(experiment: Experiment, user: ExperimentUser) {
+  private async getConditionFromMoocletProxy(experiment: Experiment, user: ExperimentUser, logger: UpgradeLogger) {
     const userId = user.id;
 
-    return await this.moocletExperimentService.getConditionFromMoocletProxy(experiment, userId);
+    return await this.moocletExperimentService.getConditionFromMoocletProxy(experiment, userId, logger);
   }
 
   private assignRandom(

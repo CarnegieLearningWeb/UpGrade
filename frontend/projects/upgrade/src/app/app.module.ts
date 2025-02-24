@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { NgModule, inject, provideAppInitializer } from '@angular/core';
 
 import { SharedModule } from './shared/shared.module';
 import { CoreModule } from './core/core.module';
@@ -8,10 +8,11 @@ import { CoreModule } from './core/core.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { SimpleNotificationsModule } from 'angular2-notifications';
 import { environment } from '../environments/environment';
 import { ENV, Environment, RuntimeEnvironmentConfig } from '../environments/environment-types';
+import { AuthModule } from './core/auth/auth.module';
 
 export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
   // in non-prod build, all env vars can be provided on .environment.ts,
@@ -42,6 +43,8 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
 };
 
 @NgModule({
+  declarations: [AppComponent],
+  bootstrap: [AppComponent],
   imports: [
     // angular
     BrowserAnimationsModule,
@@ -54,26 +57,21 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
       pauseOnHover: true,
       clickToClose: false,
     }),
-
     // core & shared
     CoreModule,
     SharedModule,
-
     // app
     AppRoutingModule,
     FormsModule,
-    HttpClientModule,
+    AuthModule,
   ],
   providers: [
     { provide: ENV, useValue: environment },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: getEnvironmentConfig,
-      multi: true,
-      deps: [HttpClient, ENV],
-    },
+    provideAppInitializer(() => {
+      const initializerFn = getEnvironmentConfig(inject(HttpClient), inject(ENV));
+      return initializerFn();
+    }),
+    provideHttpClient(withInterceptorsFromDi()),
   ],
-  declarations: [AppComponent],
-  bootstrap: [AppComponent],
 })
 export class AppModule {}

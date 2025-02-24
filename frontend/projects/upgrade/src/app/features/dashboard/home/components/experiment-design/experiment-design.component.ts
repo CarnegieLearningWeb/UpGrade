@@ -44,6 +44,7 @@ import { MoocletPolicyEditorComponent } from './mooclet-policy-editor/mooclet-po
   templateUrl: './experiment-design.component.html',
   styleUrls: ['./experiment-design.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   // bind constants so they can be referenced in html template
@@ -747,7 +748,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           decisionPoints: experimentDesignFormData.decisionPoints,
           conditions: experimentDesignFormData.conditions,
         });
-      if (environment.moocletToggle && this.policyEditor) {
+      if (this.policyEditor) {
         experimentDesignFormData.moocletPolicyParameters = {
           assignmentAlgorithm: this.currentAssignmentAlgorithm$.value,
           ...this.policyEditor.getPolicyEditorValue(),

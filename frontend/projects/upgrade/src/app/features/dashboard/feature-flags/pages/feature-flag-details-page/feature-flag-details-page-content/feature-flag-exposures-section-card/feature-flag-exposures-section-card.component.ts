@@ -11,7 +11,6 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-feature-flag-exposures-section-card',
-  standalone: true,
   imports: [
     CommonSectionCardComponent,
     CommonSectionCardTitleHeaderComponent,

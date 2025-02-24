@@ -6,12 +6,14 @@ import { validate, ValidationError } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { MOOCLET_POLICY_SCHEMA_MAP, MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
+import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 
 @Component({
   selector: 'app-mooclet-policy-editor',
   templateUrl: './mooclet-policy-editor.component.html',
   styleUrls: ['./mooclet-policy-editor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MoocletPolicyEditorComponent implements OnInit {
   @Input() experimentInfo: ExperimentVM;
@@ -26,6 +28,8 @@ export class MoocletPolicyEditorComponent implements OnInit {
   moocletPolicyParametersErrors$ = new BehaviorSubject<ValidationError[]>([]);
   editorValue$ = new Subject<any>();
 
+  constructor(private experimentService: ExperimentService) {}
+
   ngOnInit() {
     this.setupEditor();
   }
@@ -34,10 +38,9 @@ export class MoocletPolicyEditorComponent implements OnInit {
     // Only create default parameters if we don't have existing ones
     if (!this.experimentInfo?.moocletPolicyParameters) {
       this.defaultPolicyParametersForAlgorithm = new MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm]();
-      this.defaultPolicyParametersForAlgorithm.outcome_variable_name = `${this.experimentName
-        .trim()
-        .toUpperCase()
-        .replace(/ /g, '_')}_REWARD_VARIABLE`;
+      this.defaultPolicyParametersForAlgorithm.outcome_variable_name = this.experimentService.getOutcomeVariableName(
+        this.experimentName
+      );
     } else {
       // Use existing parameters from backend when editing
       this.defaultPolicyParametersForAlgorithm = this.experimentInfo.moocletPolicyParameters;
@@ -71,10 +74,9 @@ export class MoocletPolicyEditorComponent implements OnInit {
 
   resetPolicyParameters() {
     this.defaultPolicyParametersForAlgorithm = new MOOCLET_POLICY_SCHEMA_MAP[this.currentAssignmentAlgorithm]();
-    this.defaultPolicyParametersForAlgorithm.outcome_variable_name = `${this.experimentName
-      .trim()
-      .toUpperCase()
-      .replace(/ /g, '_')}_REWARD_VARIABLE`;
+    this.defaultPolicyParametersForAlgorithm.outcome_variable_name = this.experimentService.getOutcomeVariableName(
+      this.experimentName
+    );
 
     // Force editor to update with new default values
     if (this.policyEditor) {

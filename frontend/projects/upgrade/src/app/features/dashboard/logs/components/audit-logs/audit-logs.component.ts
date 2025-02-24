@@ -3,13 +3,14 @@ import { LogType, LogDateFormatType, AuditLogs } from '../../../../../core/logs/
 import { KeyValue } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { LogsService } from '../../../../../core/logs/logs.service';
-import * as groupBy from 'lodash.groupby';
+import groupBy from 'lodash/groupBy';
 import { SettingsService } from '../../../../../core/settings/settings.service';
 
 @Component({
   selector: 'audit-logs',
   templateUrl: './audit-logs.component.html',
   styleUrls: ['./audit-logs.component.scss'],
+  standalone: false,
 })
 export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('auditLogContainer') auditLogContainer: ElementRef;

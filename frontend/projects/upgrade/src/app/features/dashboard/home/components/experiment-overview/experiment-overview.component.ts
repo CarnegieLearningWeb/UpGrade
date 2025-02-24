@@ -19,6 +19,7 @@ import {
   EXPERIMENT_STATE,
   EXPERIMENT_TYPE,
   MOOCLET_POLICY_SCHEMA_MAP,
+  SUPPORTED_MOOCLET_ALGORITHMS,
 } from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
@@ -46,6 +47,7 @@ import { ENV, Environment } from '../../../../../../environments/environment-typ
   templateUrl: './experiment-overview.component.html',
   styleUrls: ['./experiment-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
@@ -106,7 +108,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       this.unitOfAssignments.push({ value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS });
     }
     if (this.environment.moocletToggle) {
-      const supportedMoocletAlgorithms = Object.keys(MOOCLET_POLICY_SCHEMA_MAP) as ASSIGNMENT_ALGORITHM[];
+      const supportedMoocletAlgorithms = SUPPORTED_MOOCLET_ALGORITHMS as ASSIGNMENT_ALGORITHM[];
       supportedMoocletAlgorithms.forEach((algorithmName) => {
         this.assignmentAlgorithms.push({ value: algorithmName });
       });

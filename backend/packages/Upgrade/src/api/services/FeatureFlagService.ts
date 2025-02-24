@@ -34,6 +34,7 @@ import {
   FEATURE_FLAG_LIST_FILTER_MODE,
   FEATURE_FLAG_LIST_OPERATION,
   ListOperationsData,
+  CACHE_PREFIX,
 } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
@@ -54,6 +55,7 @@ import { diffString } from 'json-diff';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { NotFoundException } from '@nestjs/common/exceptions';
+import { CacheService } from './CacheService';
 
 @Service()
 export class FeatureFlagService {
@@ -65,7 +67,8 @@ export class FeatureFlagService {
     @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
     @InjectDataSource() private dataSource: DataSource,
     public experimentAssignmentService: ExperimentAssignmentService,
-    public segmentService: SegmentService
+    public segmentService: SegmentService,
+    public cacheService: CacheService
   ) {}
 
   public find(logger: UpgradeLogger): Promise<FeatureFlag[]> {
@@ -79,7 +82,7 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<string[]> {
     logger.info({ message: `getKeys: User: ${experimentUserDoc?.requestedUserId}` });
-    const filteredFeatureFlags = await this.featureFlagRepository.getFlagsFromContext(context);
+    const filteredFeatureFlags = await this.getCachedFlagsFromContext(context);
 
     const [isUserExcluded, isGroupExcluded] = await this.experimentAssignmentService.checkUserOrGroupIsGloballyExcluded(
       experimentUserDoc
@@ -100,7 +103,8 @@ export class FeatureFlagService {
           experimentUser: experimentUserDoc,
         }));
         if (exposuresToSave.length > 0) {
-          await exposureRepo.save(exposuresToSave);
+          // fire and forget, we don't need to wait on this, return flag asap to user
+          exposureRepo.save(exposuresToSave);
         }
       });
     } catch (err) {
@@ -110,6 +114,22 @@ export class FeatureFlagService {
     }
 
     return includedFeatureFlags.map((flags) => flags.key);
+  }
+
+  public async getCachedFlagsFromContext(context: string): Promise<FeatureFlag[]> {
+    const cacheKey = CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + context;
+
+    const flags = await this.cacheService.wrap(
+      cacheKey,
+      this.featureFlagRepository.getFlagsFromContext.bind(this.featureFlagRepository, context)
+    );
+
+    return JSON.parse(JSON.stringify(flags));
+  }
+
+  public async clearCachedFlagsForContext(context: string): Promise<void> {
+    const cacheKey = CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + context;
+    return this.cacheService.delCache(cacheKey);
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<FeatureFlag | undefined> {
@@ -225,6 +245,7 @@ export class FeatureFlagService {
       const featureFlag = await this.findOne(featureFlagId, logger);
 
       if (featureFlag) {
+        await this.clearCachedFlagsForContext(featureFlag.context[0]);
         const deletedFlag = await this.featureFlagRepository.deleteById(featureFlagId, transactionalEntityManager);
 
         featureFlag.featureFlagSegmentInclusion.forEach(async (segmentInclusion) => {
@@ -266,6 +287,7 @@ export class FeatureFlagService {
 
   public async updateState(flagId: string, status: FEATURE_FLAG_STATUS, currentUser: UserDTO): Promise<FeatureFlag> {
     const oldFeatureFlag = await this.findOne(flagId);
+    await this.clearCachedFlagsForContext(oldFeatureFlag.context[0]);
     let updatedState: FeatureFlag;
     try {
       updatedState = await this.featureFlagRepository.updateState(flagId, status);
@@ -289,8 +311,10 @@ export class FeatureFlagService {
 
   public async updateFilterMode(flagId: string, filterMode: FILTER_MODE, currentUser: UserDTO): Promise<FeatureFlag> {
     let updatedFilterMode: FeatureFlag;
+
     try {
       updatedFilterMode = await this.featureFlagRepository.updateFilterMode(flagId, filterMode);
+      await this.clearCachedFlagsForContext(updatedFilterMode?.context[0]);
     } catch (err) {
       const error = new Error(`Error in updating feature flag filter mode ${err}`);
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
@@ -352,6 +376,7 @@ export class FeatureFlagService {
     flag.id = uuid();
     // saving feature flag doc
 
+    await this.clearCachedFlagsForContext(flag.context[0]);
     const executeTransaction = async (manager: EntityManager): Promise<FeatureFlag> => {
       let featureFlagDoc;
       try {
@@ -383,6 +408,7 @@ export class FeatureFlagService {
   }
 
   private async updateFeatureFlagInDB(flag: FeatureFlag, user: UserDTO, logger: UpgradeLogger): Promise<FeatureFlag> {
+    await this.clearCachedFlagsForContext(flag.context[0]);
     const {
       featureFlagSegmentExclusion,
       featureFlagSegmentInclusion,
@@ -483,6 +509,7 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<Segment> {
     await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return this.segmentService.deleteSegment(segmentId, logger);
   }
 
@@ -548,6 +575,8 @@ export class FeatureFlagService {
     transactionalEntityManager?: EntityManager
   ): Promise<(FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[]> {
     logger.info({ message: `Add ${filterType} list to feature flag` });
+
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
 
     const executeTransaction = async (manager: EntityManager) => {
       // Create a new private segment
@@ -645,6 +674,7 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
     logger.info({ message: `Update ${filterType} list for feature flag` });
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
       // Find the existing record
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;

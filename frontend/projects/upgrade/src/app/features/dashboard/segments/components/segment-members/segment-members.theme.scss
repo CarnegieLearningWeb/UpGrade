@@ -6,7 +6,7 @@
   .segment-member {
     .member-table {
       .remove-icon {
-        color: mat.get-color-from-palette($foreground, icon);
+        color: mat.m2-get-color-from-palette($foreground, icon);
       }
     }
   }

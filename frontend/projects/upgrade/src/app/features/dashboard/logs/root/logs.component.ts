@@ -7,6 +7,7 @@ import { ENV, Environment } from '../../../../../environments/environment-types'
   selector: 'app-logs',
   templateUrl: './logs.component.html',
   styleUrls: ['./logs.component.scss'],
+  standalone: false,
 })
 export class LogsComponent implements OnInit, OnDestroy {
   // Audit log tab filter options

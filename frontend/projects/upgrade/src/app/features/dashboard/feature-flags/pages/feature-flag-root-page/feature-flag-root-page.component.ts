@@ -5,7 +5,6 @@ import { FeatureFlagRootPageContentComponent } from './feature-flag-root-page-co
 
 @Component({
   selector: 'app-feature-flag-root-page',
-  standalone: true,
   templateUrl: './feature-flag-root-page.component.html',
   styleUrl: './feature-flag-root-page.component.scss',
   imports: [CommonPageComponent, FeatureFlagRootPageHeaderComponent, FeatureFlagRootPageContentComponent],

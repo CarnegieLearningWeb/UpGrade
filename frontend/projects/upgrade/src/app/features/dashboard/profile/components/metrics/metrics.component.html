@@ -78,7 +78,8 @@
                       *ngIf="permissions.metrics.delete && keyEditMode"
                       class="delete-icon"
                       (click)="deleteNode(node, index)"
-                    >delete_outline</mat-icon>
+                      >delete_outline</mat-icon
+                    >
                   </div>
                   <div *ngIf="nestedTreeControl.isExpanded(node)" role="group">
                     <ng-container matTreeNodeOutlet></ng-container>

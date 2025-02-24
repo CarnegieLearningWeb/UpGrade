@@ -10,13 +10,14 @@ import {
   EXPERIMENT_SEARCH_KEY,
   ExperimentLevel,
   ExperimentConditionPayload,
+  RewardMetricData,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Observable, Subscription } from 'rxjs';
 import { filter, withLatestFrom } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import * as clonedeep from 'lodash.clonedeep';
+import { cloneDeep } from 'lodash';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 import { QueriesModalComponent } from '../../components/modal/queries-modal/queries-modal.component';
@@ -58,6 +59,7 @@ type Metrics = { metric_Key: string[]; metric_Operation: string[]; metric_Name: 
   templateUrl: './view-experiment.component.html',
   styleUrls: ['./view-experiment.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class ViewExperimentComponent implements OnInit, OnDestroy {
   permissions: UserPermission;
@@ -103,6 +105,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
+  displayRewardMetrics: RewardMetricData[] = [];
   simpleExperimentPayloadTableData: SimpleExperimentPayloadTableRowData[] = [];
 
   constructor(
@@ -178,6 +181,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.onExperimentChange(experiment, isPolling);
         this.loadParticipants();
         this.loadMetrics();
+        this.loadRewardMetrics();
 
         if (experiment.type === EXPERIMENT_TYPE.SIMPLE) {
           this.loadPayloadTable(experiment);
@@ -311,6 +315,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     }
   }
 
+  loadRewardMetrics() {
+    if (!this.experiment?.rewardMetricKey) {
+      return;
+    }
+
+    this.displayRewardMetrics = [this.experimentService.getRewardMetricData(this.experiment.rewardMetricKey)];
+  }
+
   openDialog(dialogType: DialogType) {
     const dialogComponent =
       dialogType === DialogType.CHANGE_STATUS
@@ -327,7 +339,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
           : dialogType === DialogType.EDIT_EXPERIMENT
           ? 'new-experiment-modal'
           : 'experiment-general-modal',
-      data: { experiment: clonedeep(this.experiment) },
+      data: { experiment: cloneDeep(this.experiment) },
       disableClose: dialogType === DialogType.EDIT_EXPERIMENT,
     });
   }
@@ -354,28 +366,28 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   openQueriesModal() {
     this.dialog.open(QueriesModalComponent, {
       panelClass: 'queries-modal',
-      data: { experiment: clonedeep(this.experiment) },
+      data: { experiment: cloneDeep(this.experiment) },
     });
   }
 
   openExportModal() {
     this.dialog.open(ExportModalComponent, {
       panelClass: 'export-modal',
-      data: { experiment: [clonedeep(this.experiment)], exportAll: false },
+      data: { experiment: [cloneDeep(this.experiment)], exportAll: false },
     });
   }
 
   updateEndingCriteria() {
     this.dialog.open(ExperimentEndCriteriaComponent, {
       panelClass: 'experiment-ending-criteria',
-      data: { experiment: clonedeep(this.experiment) },
+      data: { experiment: cloneDeep(this.experiment) },
     });
   }
 
   viewParticipantsData() {
     this.dialog.open(EnrollmentOverTimeComponent, {
       panelClass: 'enrollment-over-time',
-      data: { experiment: clonedeep(this.experiment) },
+      data: { experiment: cloneDeep(this.experiment) },
     });
   }
 
