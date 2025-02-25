@@ -125,7 +125,7 @@ export class ExperimentAssignmentService {
     public experimentService: ExperimentService,
     public cacheService: CacheService,
     public moocletExperimentService: MoocletExperimentService
-  ) { }
+  ) {}
   public async markExperimentPoint(
     userDoc: RequestedExperimentUser,
     site: string,
@@ -285,7 +285,7 @@ export class ExperimentAssignmentService {
               this.groupEnrollmentRepository.findOne({
                 where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
               })) ||
-            Promise.resolve(undefined),
+              Promise.resolve(undefined),
             // query group exclusion
             (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
               workingGroup &&
@@ -293,7 +293,7 @@ export class ExperimentAssignmentService {
               this.groupExclusionRepository.findOne({
                 where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
               })) ||
-            Promise.resolve(undefined),
+              Promise.resolve(undefined),
           ]);
         } catch (error) {
           const err: any = error;
@@ -468,7 +468,9 @@ export class ExperimentAssignmentService {
       );
       let monitoredLogCounts: MonitoredDecisionPointLogDataCount[] = [];
       if (filteredExperiments.some((experiment) => experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS)) {
-        const filteredWithinSubjectExperiments = filteredExperiments.filter((experiment) => experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS);
+        const filteredWithinSubjectExperiments = filteredExperiments.filter(
+          (experiment) => experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+        );
         const allWithinSubjectsSites = [];
         const allWithinSubjectsTargets = [];
         filteredWithinSubjectExperiments.forEach((exp) => {
@@ -620,10 +622,10 @@ export class ExperimentAssignmentService {
     // Create new filtered experiment list
     const priorSelectedExperiments = experimentPools.map((pool) => {
       return pool.filter((experiment) => {
-        const individualEnrollment = individualEnrollments.find((enrollment) => {
+        const individualEnrollment = individualEnrollments.some((enrollment) => {
           return enrollment.experiment.id === experiment.id;
         });
-        const groupEnrollment = groupEnrollments.find((enrollment) => {
+        const groupEnrollment = groupEnrollments.some((enrollment) => {
           return (
             enrollment.experiment.id === experiment.id &&
             enrollment.groupId === experimentUser.workingGroup[experiment.group]
@@ -661,8 +663,9 @@ export class ExperimentAssignmentService {
       // Log preview state information
       if (experiment.state === EXPERIMENT_STATE.PREVIEW) {
         logger.info({
-          message: `getAllExperimentConditions: experiment: ${experiment.name}, user: ${userId}, condition: ${conditionAssigned ? conditionAssigned.conditionCode : null
-            }`,
+          message: `getAllExperimentConditions: experiment: ${experiment.name}, user: ${userId}, condition: ${
+            conditionAssigned ? conditionAssigned.conditionCode : null
+          }`,
         });
       }
 
@@ -670,8 +673,8 @@ export class ExperimentAssignmentService {
       const factorialCondition = factorialObject?.factorialCondition || null;
       const assignedConditionToReturn = factorialCondition ||
         conditionAssigned || {
-        conditionCode: null,
-      };
+          conditionCode: null,
+        };
 
       if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
         const count = monitoredLogCounts.find((log) => log.site === site && log.target === target)?.count || 0;
@@ -894,9 +897,9 @@ export class ExperimentAssignmentService {
     // fetch individual assignment for group experiments
     const individualEnrollments = await (experiments.length > 0
       ? this.individualEnrollmentRepository.findEnrollments(
-        experimentUser.id,
-        experiments.map(({ id }) => id)
-      )
+          experimentUser.id,
+          experiments.map(({ id }) => id)
+        )
       : Promise.resolve([]));
 
     // check assignments for group experiment
@@ -1503,15 +1506,15 @@ export class ExperimentAssignmentService {
 
         if (!individualEnrollment && !individualExclusion && conditionAssigned && !invalidGroup && !noGroupSpecified) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
-          {
-            id: uuid(),
-            experiment,
-            partition: decisionPoint as DecisionPoint,
-            user,
-            condition: conditionAssigned,
-            groupId: user?.workingGroup?.[experiment.group],
-            enrollmentCode: groupEnrollment ? ENROLLMENT_CODE.GROUP_LOGIC : ENROLLMENT_CODE.ALGORITHMIC,
-          };
+            {
+              id: uuid(),
+              experiment,
+              partition: decisionPoint as DecisionPoint,
+              user,
+              condition: conditionAssigned,
+              groupId: user?.workingGroup?.[experiment.group],
+              enrollmentCode: groupEnrollment ? ENROLLMENT_CODE.GROUP_LOGIC : ENROLLMENT_CODE.ALGORITHMIC,
+            };
           promiseArray.push(this.individualEnrollmentRepository.save(individualEnrollmentDocument));
         }
 
@@ -1555,14 +1558,14 @@ export class ExperimentAssignmentService {
         );
         if (!individualEnrollment && !individualExclusion && conditionAssigned) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
-          {
-            id: uuid(),
-            experiment,
-            partition: decisionPoint as DecisionPoint,
-            user,
-            condition: conditionAssigned,
-            enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
-          };
+            {
+              id: uuid(),
+              experiment,
+              partition: decisionPoint as DecisionPoint,
+              user,
+              condition: conditionAssigned,
+              enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+            };
           await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
         }
       }
@@ -1592,18 +1595,18 @@ export class ExperimentAssignmentService {
           return individualExclusion
             ? undefined
             : individualEnrollmentCondition
-              ? individualEnrollmentCondition
-              : groupExclusion
-                ? undefined
-                : groupEnrollmentCondition;
+            ? individualEnrollmentCondition
+            : groupExclusion
+            ? undefined
+            : groupEnrollmentCondition;
         } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
           return groupExclusion
             ? undefined
             : groupEnrollmentCondition
-              ? groupEnrollmentCondition
-              : individualExclusion
-                ? undefined
-                : individualEnrollmentCondition;
+            ? groupEnrollmentCondition
+            : individualExclusion
+            ? undefined
+            : individualEnrollmentCondition;
         } else {
           return experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
             ? individualEnrollmentCondition
@@ -1625,22 +1628,22 @@ export class ExperimentAssignmentService {
         return individualExclusion
           ? undefined
           : individualEnrollmentCondition
-            ? individualEnrollmentCondition
-            : groupExclusion
-              ? undefined
-              : groupEnrollmentCondition
-                ? groupEnrollmentCondition
-                : this.getNewExperimentConditionAssignment(experiment, user, logger);
+          ? individualEnrollmentCondition
+          : groupExclusion
+          ? undefined
+          : groupEnrollmentCondition
+          ? groupEnrollmentCondition
+          : this.getNewExperimentConditionAssignment(experiment, user, logger);
       } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
         return groupExclusion
           ? undefined
           : groupEnrollmentCondition
-            ? groupEnrollmentCondition
-            : individualExclusion
-              ? undefined
-              : individualEnrollmentCondition
-                ? individualEnrollmentCondition
-                : this.getNewExperimentConditionAssignment(experiment, user, logger);
+          ? groupEnrollmentCondition
+          : individualExclusion
+          ? undefined
+          : individualEnrollmentCondition
+          ? individualEnrollmentCondition
+          : this.getNewExperimentConditionAssignment(experiment, user, logger);
       } else {
         return (
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
@@ -1690,7 +1693,7 @@ export class ExperimentAssignmentService {
   ): ExperimentCondition {
     const randomSeed =
       experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
-        experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+      experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
         ? `${experiment.id}_${user.id}`
         : `${experiment.id}_${user.workingGroup?.[experiment.group]}`;
 
