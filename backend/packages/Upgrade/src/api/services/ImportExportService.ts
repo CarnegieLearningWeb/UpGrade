@@ -7,7 +7,7 @@ import { MoocletExperimentService } from './MoocletExperimentService';
 import { UserDTO } from '../DTO/UserDTO';
 import { LOG_TYPE, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 import { In } from 'typeorm';
-import { InjectRepository } from 'src/typeorm-typedi-extensions';
+import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 

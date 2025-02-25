@@ -11,6 +11,8 @@ import { ExperimentAssignmentService } from '../../../src/api/services/Experimen
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
 import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import MoocletExperimentServiceMock from './mocks/MoocletExperimentServiceMock';
+import { ImportExportService } from '../../../src/api/services/ImportExportService';
+import ImportExportServiceMock from './mocks/ImportExportServiceMock';
 import { env } from './../../../src/env';
 import {
   ASSIGNMENT_ALGORITHM,
@@ -35,6 +37,7 @@ describe('Experiment Controller Testing', () => {
     Container.set(ExperimentService, new ExperimentServiceMock());
     Container.set(ExperimentAssignmentService, new ExperimentAssignmentServiceMock());
     Container.set(MoocletExperimentService, new MoocletExperimentServiceMock());
+    Container.set(ImportExportService, new ImportExportServiceMock());
   });
 
   afterAll(() => {
