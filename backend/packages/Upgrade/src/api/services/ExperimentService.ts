@@ -563,49 +563,6 @@ export class ExperimentService {
     return { experiments, validatedExperiments };
   }
 
-  // public async exportExperiment(user: UserDTO, logger: UpgradeLogger, experimentIds?: string[]): Promise<Experiment[]> {
-  //   logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
-  //   const experimentDetails = await this.experimentRepository.find({
-  //     where: experimentIds ? { id: In(experimentIds) } : undefined,
-  //     relations: [
-  //       'partitions',
-  //       'conditions',
-  //       'stateTimeLogs',
-  //       'queries',
-  //       'queries.metric',
-  //       'experimentSegmentInclusion',
-  //       'experimentSegmentInclusion.segment',
-  //       'experimentSegmentInclusion.segment.individualForSegment',
-  //       'experimentSegmentInclusion.segment.groupForSegment',
-  //       'experimentSegmentInclusion.segment.subSegments',
-  //       'experimentSegmentExclusion',
-  //       'experimentSegmentExclusion.segment',
-  //       'experimentSegmentExclusion.segment.individualForSegment',
-  //       'experimentSegmentExclusion.segment.groupForSegment',
-  //       'experimentSegmentExclusion.segment.subSegments',
-  //       'partitions.conditionPayloads',
-  //       'partitions.conditionPayloads.parentCondition',
-  //       'factors',
-  //       'factors.levels',
-  //       'conditions.conditionPayloads',
-  //       'conditions.levelCombinationElements',
-  //       'conditions.levelCombinationElements.level',
-  //       'stratificationFactor',
-  //     ],
-  //   });
-  //   const formattedExperiments = experimentDetails.map((experiment) => {
-  //     experiment.backendVersion = env.app.version;
-  //     this.experimentAuditLogRepository.saveRawJson(
-  //       LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
-  //       { experimentName: experiment.name },
-  //       user
-  //     );
-  //     return this.reducedConditionPayload(this.formatingPayload(this.formatingConditionPayload(experiment)));
-  //   });
-
-  //   return formattedExperiments;
-  // }
-
   private async updateExperimentSchedules(
     experimentId: string,
     logger: UpgradeLogger,
