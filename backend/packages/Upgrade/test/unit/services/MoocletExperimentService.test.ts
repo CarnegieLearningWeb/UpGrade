@@ -248,7 +248,7 @@ describe('#MoocletExperimentService', () => {
 
     moocletRewardsService = {
       createAndSaveRewardMetric: jest.fn(),
-      attachRewardMetricQuery: jest.fn(),
+      getRewardMetricQuery: jest.fn(),
     } as unknown as MoocletRewardsService;
 
     // Create service with mocked dependencies

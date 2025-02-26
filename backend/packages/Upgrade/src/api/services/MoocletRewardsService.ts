@@ -9,7 +9,6 @@ import { MoocletDataService } from './MoocletDataService';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 import { IndividualEnrollment } from '../models/IndividualEnrollment';
 import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
-import { MoocletValueRequestBody } from '../../../src/types/Mooclet';
 import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import {
@@ -19,7 +18,7 @@ import {
 } from '../../../../../../types/src/Mooclet';
 import { QueryValidator } from '../DTO/ExperimentDTO';
 
-interface ValidRewardMetricType {
+export interface ValidRewardMetricType {
   key: string;
   value: BinaryRewardMetricAllowedValue;
 }
@@ -248,11 +247,5 @@ export class MoocletRewardsService {
       return null;
     }
     return map.moocletVersionId;
-  }
-
-  private sendRewards(rewards: MoocletValueRequestBody[], logger: UpgradeLogger): void {
-    rewards.forEach((reward) => {
-      this.moocletDataService.postNewReward(reward, logger);
-    });
   }
 }
