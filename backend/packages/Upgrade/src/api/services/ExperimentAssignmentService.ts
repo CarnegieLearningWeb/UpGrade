@@ -770,7 +770,7 @@ export class ExperimentAssignmentService {
     const keyUniqueArray: { key: string; uniquifier: string }[] = [];
 
     if (env.mooclets.enabled) {
-      this.moocletRewardsService.parseLogsForActiveRewardMetricKey(userDoc, jsonLog, logger);
+      this.moocletRewardsService.parseLogsAndSendPotentialRewards(userDoc, jsonLog, logger);
     }
 
     // extract the array value

@@ -12,18 +12,16 @@ import { IndividualEnrollmentRepository } from '../repositories/IndividualEnroll
 import { MoocletValueRequestBody } from '../../../src/types/Mooclet';
 import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
-import { BinaryRewardMetricAllowedValue, BinaryRewardMetricValueMap } from '../../../../../../types/src/Mooclet';
+import {
+  BinaryRewardMetricAllowedValue,
+  BinaryRewardMetricAllowedValueType,
+  BinaryRewardMetricValueMap,
+} from '../../../../../../types/src/Mooclet';
+import { QueryValidator } from '../DTO/ExperimentDTO';
 
-interface FindRewardParams {
-  user: RequestedExperimentUser;
-  moocletExperimentRefs: MoocletExperimentRef[];
-  logger: UpgradeLogger;
-}
-
-interface SyncRewardParams {
-  moocletExperimentRef: MoocletExperimentRef;
-  metricValue: string | number;
-  logger: UpgradeLogger;
+interface ValidRewardMetricType {
+  key: string;
+  value: BinaryRewardMetricAllowedValue;
 }
 
 @Service()
@@ -37,8 +35,8 @@ export class MoocletRewardsService {
     private moocletDataService: MoocletDataService
   ) {}
 
-  public attachRewardMetricQuery(rewardMetricKey: string, queries: any[]) {
-    queries.push({
+  public getRewardMetricQuery(rewardMetricKey: string): QueryValidator {
+    return {
       id: uuid(),
       name: 'Success Rate',
       query: {
@@ -50,7 +48,7 @@ export class MoocletRewardsService {
         key: rewardMetricKey,
       },
       repeatedMeasure: REPEATED_MEASURE.mostRecent,
-    });
+    };
   }
 
   public async createAndSaveRewardMetric(
@@ -68,77 +66,143 @@ export class MoocletRewardsService {
     return this.metricService.saveAllMetrics([metric], [context], logger);
   }
 
-  public async parseLogsForActiveRewardMetricKey(
+  public async parseLogsAndSendPotentialRewards(
     user: RequestedExperimentUser,
     logs: ILogInput[],
     logger: UpgradeLogger
   ): Promise<void> {
+    // First see if any simple metrics have valid reward values
+    const validSimpleMetricAttributes = this.gatherValidRewardMetrics(logs);
+
+    if (!validSimpleMetricAttributes.length) {
+      // no need to log anything here, just quit early as this is the most common case
+      return;
+    }
+
     try {
-      const moocletExperimentRefs = await this.moocletExperimentRefRepository.getRefsForActivelyEnrollingExperiments();
+      // If we have valid metric rewards, only then check for active mooclet experiment refs
+      const moocletExperimentRefs = await this.getAllActiveMoocletExperimentRefs(logger);
 
       if (!moocletExperimentRefs.length) {
-        logger.info({
-          message: 'No active mooclet experiment refs found',
+        logger.warn({
+          message: 'Reward metrics were logged, but no active mooclet experiment refs found.',
           user,
         });
         return;
       }
 
-      const searchParams: FindRewardParams = { user, moocletExperimentRefs, logger };
+      // Find each experiment match by reward metric key
+      const experimentsMatchingLoggedRewardKey = this.findExperimentByRewardMetricKey(
+        moocletExperimentRefs,
+        validSimpleMetricAttributes
+      );
 
-      this.searchLogAttributes(logs, searchParams);
+      if (!experimentsMatchingLoggedRewardKey.length) {
+        logger.warn({
+          message: 'Reward metrics were logged, but no active experiments matched the rewardMetricKeys',
+          moocletExperimentRefs,
+          validSimpleMetricAttributes,
+        });
+        return;
+      }
+
+      // For each match, find the user's condition, map to version id, and create reward object
+      experimentsMatchingLoggedRewardKey.forEach(async (experimentRewardPair) => {
+        const { moocletExperimentRef, rewardMetricValue } = experimentRewardPair;
+        const enrollment = await this.findEnrolledCondition(user.id, moocletExperimentRef.experimentId, logger);
+
+        // not sure if this even possible in reality, but should be handled
+        if (!enrollment) {
+          logger.error({
+            message: 'Could not find user enrollment for experiment.',
+            user,
+            moocletExperimentRef,
+          });
+          return;
+        }
+
+        const versionId = this.getVersionIdByConditionId(enrollment, moocletExperimentRef, logger);
+
+        if (!versionId) {
+          logger.error({
+            message: 'Could not find version id for user enrollment.',
+            enrollment,
+            moocletExperimentRef,
+          });
+          return;
+        }
+
+        if (versionId) {
+          const reward = {
+            variable: moocletExperimentRef.outcomeVariableName,
+            value: BinaryRewardMetricValueMap[rewardMetricValue],
+            mooclet: moocletExperimentRef.moocletId,
+            version: versionId,
+          };
+          logger.info({
+            message: 'Sending reward to mooclet',
+            reward,
+            user,
+          });
+          this.moocletDataService.postNewReward(reward, logger);
+        }
+      });
     } catch (error) {
-      logger.error({ message: 'Failed to fetch active mooclet refs ', error });
+      logger.error({
+        message: 'Failure processing and sending rewards',
+        error,
+        logs,
+      });
     }
   }
 
-  private searchLogAttributes(logs: ILogInput[], params: FindRewardParams): void {
-    logs.forEach((log) => {
-      const {
-        metrics: { attributes },
-      } = log;
+  private async getAllActiveMoocletExperimentRefs(logger: UpgradeLogger): Promise<MoocletExperimentRef[]> {
+    // cache this? would be complex to invalidate, and our TTL is usually in the order of seconds...
+    try {
+      return this.moocletExperimentRefRepository.getRefsForActivelyEnrollingExperiments();
+    } catch (error) {
+      logger.error({ message: 'Failed to fetch active mooclet refs ', error });
+      return Promise.resolve([]);
+    }
+  }
 
-      const attributesKeys = Object.keys(attributes);
-      for (const key of attributesKeys) {
-        this.findExperimentByRewardMetricKey(key, attributes[key], params);
+  private gatherValidRewardMetrics(logs: ILogInput[]): ValidRewardMetricType[] {
+    return logs.reduce((acc, log) => {
+      const simpleMetrics = log.metrics.attributes;
+
+      for (const key in simpleMetrics) {
+        if (this.isBinaryRewardMetricAllowedValue(simpleMetrics[key])) {
+          acc.push({ key, value: simpleMetrics[key] });
+        }
       }
-    });
+
+      return acc;
+    }, [] as ValidRewardMetricType[]);
   }
 
-  private findExperimentByRewardMetricKey(key: string, value: string | number, searchParams: FindRewardParams): void {
-    const { moocletExperimentRefs, user, logger } = searchParams;
-
-    const moocletExperimentRef = moocletExperimentRefs.find((ref) => ref.rewardMetricKey === key);
-    if (!moocletExperimentRef) return;
-
-    logger.info({
-      message: 'Reward metric key matched in experiment, will send reward if condition determined',
-      key,
-      value,
-      moocletExperimentRef,
-    });
-
-    const syncRewardParams: SyncRewardParams = {
-      moocletExperimentRef,
-      metricValue: value,
-      logger,
-    };
-
-    this.determineVersionForReward(user.id, syncRewardParams);
+  // type guard to allow for type checking of binary reward metric value
+  private isBinaryRewardMetricAllowedValue(value: any): value is BinaryRewardMetricAllowedValueType {
+    return Object.values(BinaryRewardMetricAllowedValue).includes(value);
   }
 
-  private async determineVersionForReward(userId: string, params: SyncRewardParams): Promise<void> {
-    const enrollment = await this.findEnrolledCondition(
-      userId,
-      params.moocletExperimentRef.experimentId,
-      params.logger
-    );
-    if (!enrollment) return;
+  private findExperimentByRewardMetricKey(
+    moocletExperimentRefs: MoocletExperimentRef[],
+    rewardMetricKeys: ValidRewardMetricType[]
+  ): { moocletExperimentRef: MoocletExperimentRef; rewardMetricValue: BinaryRewardMetricAllowedValueType }[] {
+    const moocletExperimentRefMatches = [];
 
-    const versionId = this.getVersionIdByConditionId(enrollment, params.moocletExperimentRef, params.logger);
-    if (!versionId) return;
+    for (const rewardMetric of rewardMetricKeys) {
+      const matchedMoocletRef = moocletExperimentRefs.find((ref) => ref.rewardMetricKey === rewardMetric.key);
 
-    this.sendReward(versionId, params);
+      if (matchedMoocletRef) {
+        moocletExperimentRefMatches.push({
+          moocletExperimentRef: matchedMoocletRef,
+          rewardMetricValue: rewardMetric.value,
+        });
+      }
+    }
+
+    return moocletExperimentRefMatches;
   }
 
   private async findEnrolledCondition(
@@ -186,22 +250,9 @@ export class MoocletRewardsService {
     return map.moocletVersionId;
   }
 
-  private sendReward(versionId: number, params: SyncRewardParams): void {
-    const request: MoocletValueRequestBody = {
-      variable: params.moocletExperimentRef.outcomeVariableName,
-      value: BinaryRewardMetricValueMap[params.metricValue],
-      mooclet: params.moocletExperimentRef.moocletId,
-      version: versionId,
-    };
-
-    // Fire and forget the reward posting
-    try {
-      this.moocletDataService.postNewReward(request, params.logger);
-    } catch (error) {
-      params.logger.error({
-        message: 'Failed to send reward to mooclet',
-        error,
-      });
-    }
+  private sendRewards(rewards: MoocletValueRequestBody[], logger: UpgradeLogger): void {
+    rewards.forEach((reward) => {
+      this.moocletDataService.postNewReward(reward, logger);
+    });
   }
 }

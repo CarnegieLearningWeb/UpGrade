@@ -179,7 +179,10 @@ export class MoocletExperimentService extends ExperimentService {
       throw error;
     }
 
-    this.moocletRewardsService.attachRewardMetricQuery(rewardMetricKey, queries);
+    // append default reward metric query to existing experimentDTO queries before saving
+    const defaultRewardMetricQuery = this.moocletRewardsService.getRewardMetricQuery(rewardMetricKey);
+
+    queries.push(defaultRewardMetricQuery);
 
     // create Upgrade Experiment. If this fails, then mooclet resources will not be created, and the UpGrade experiment transaction will abort
     const experimentResponse = await this.createExperiment(manager, params);

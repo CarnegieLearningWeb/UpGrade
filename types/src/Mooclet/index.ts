@@ -18,6 +18,9 @@ enum BinaryRewardMetricAllowedValue {
   FAILURE = 'FAILURE',
 }
 
+export type BinaryRewardMetricAllowedValueType =
+  (typeof BinaryRewardMetricAllowedValue)[keyof typeof BinaryRewardMetricAllowedValue];
+
 const BinaryRewardMetricValueMap = {
   [BinaryRewardMetricAllowedValue.SUCCESS]: 1,
   [BinaryRewardMetricAllowedValue.FAILURE]: 0,
