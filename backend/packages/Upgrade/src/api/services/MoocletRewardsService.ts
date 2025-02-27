@@ -11,12 +11,13 @@ import { IndividualEnrollment } from '../models/IndividualEnrollment';
 import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
 import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
+
+import { QueryValidator } from '../DTO/ExperimentDTO';
 import {
   BinaryRewardMetricAllowedValue,
   BinaryRewardMetricAllowedValueType,
   BinaryRewardMetricValueMap,
-} from '../../../../../../types/src/Mooclet';
-import { QueryValidator } from '../DTO/ExperimentDTO';
+} from 'types/src/Mooclet';
 
 export interface ValidRewardMetricType {
   key: string;
