@@ -48,7 +48,8 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 1
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  const experimentId = experiments[0].id;
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[0].id,
@@ -62,7 +63,7 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[1].id,
@@ -72,7 +73,6 @@ export default async function testCase(): Promise<void> {
   );
 
   // change experiment status to Enrolling
-  const experimentId = experiments[0].id;
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
@@ -101,7 +101,7 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[0].id,
@@ -115,7 +115,7 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   //   mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[1].id,
@@ -161,7 +161,7 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 3
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[2].id,
@@ -179,7 +179,7 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 4
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[3].id,

@@ -104,6 +104,7 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
     experimentName,
     experimentPoint,
     payloadCondition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);

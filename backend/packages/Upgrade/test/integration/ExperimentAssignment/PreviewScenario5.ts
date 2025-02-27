@@ -56,6 +56,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
@@ -88,6 +89,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
@@ -102,6 +104,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
@@ -116,6 +119,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
@@ -147,6 +151,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
@@ -161,6 +166,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
@@ -175,6 +181,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);

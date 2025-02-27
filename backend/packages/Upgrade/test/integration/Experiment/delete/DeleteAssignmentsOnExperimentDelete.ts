@@ -48,17 +48,18 @@ export default async function UpdateExperimentState(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
+  const experimentId = experiments[0].id;
   let markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to Enrolling
-  const experimentId = experiments[0].id;
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
@@ -84,6 +85,7 @@ export default async function UpdateExperimentState(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);

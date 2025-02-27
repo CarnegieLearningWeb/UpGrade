@@ -64,7 +64,7 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 3
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[2].id,
@@ -109,7 +109,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[4].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[4].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[4].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[4].id,
@@ -141,7 +141,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[6].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[6].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[6].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[6].id,
@@ -168,7 +168,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[7].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[7].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[7].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[7].id,
@@ -195,7 +195,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[8].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[8].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[8].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[8].id,
@@ -222,7 +222,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[9].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[9].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[9].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[9].id,
@@ -251,7 +251,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[10].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[10].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[10].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[10].id,
@@ -278,7 +278,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[11].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[11].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[11].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[11].id,

@@ -63,7 +63,7 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 3
-  const markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  const markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[2].id,

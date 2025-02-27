@@ -126,28 +126,8 @@ export class ExperimentAssignmentService {
     public cacheService: CacheService,
     public moocletExperimentService: MoocletExperimentService
   ) {}
-  public async markExperimentPoint(
-    userDoc: RequestedExperimentUser,
-    site: string,
-    status: MARKED_DECISION_POINT_STATUS | undefined,
-    condition: string | null,
-    logger: UpgradeLogger,
-    target?: string,
-    experimentId?: string,
-    uniquifier?: string,
-    clientError?: string
-  ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
-    // check error from client side
-    if (clientError) {
-      const error = new Error(clientError);
-      (error as any).type = SERVER_ERROR.REPORTED_ERROR;
-      logger.error(error);
-    }
 
-    const userId = userDoc.id;
-    const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
-
-    // search decision points in experiments cache
+  private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
     const cacheKey = CACHE_PREFIX.MARK_KEY_PREFIX + '-' + site + '-' + target;
     const dpExperiments = await this.cacheService.wrap(cacheKey, () =>
       this.decisionPointRepository.find({
@@ -170,51 +150,84 @@ export class ExperimentAssignmentService {
       })
     );
 
-    let experiments = dpExperiments.map((dp) => dp.experiment);
+    return [dpExperiments, dpExperiments.map((dp) => dp.experiment)];
+  }
+
+  public async markExperimentPoint(
+    userDoc: RequestedExperimentUser,
+    site: string,
+    status: MARKED_DECISION_POINT_STATUS | undefined,
+    condition: string | null,
+    logger: UpgradeLogger,
+    experimentId: string,
+    target?: string,
+    uniquifier?: string,
+    clientError?: string
+  ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
+
+    /** Below are the detailed steps for the assignment process:
+     * 1. Search decision points in experiments cache and return relevant experiments and decisionPoints data
+     * 2. Check if user or group is globally excluded
+     * 3. Check for experiment level inclusion and exclusion
+     * 4. Store indirect group exclusion documents
+     * 5. Storing relevant enrollment/exclusion documents and check for enrollment ending criteria
+     * 6. Storing new/updated monitored decision point document and store each monitored log document
+     */
+
+    // check error from client side
+    if (clientError) {
+      const error = new Error(clientError);
+      (error as any).type = SERVER_ERROR.REPORTED_ERROR;
+      logger.error(error);
+    }
+
+    const userId = userDoc.id;
+    const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
     const { workingGroup } = userDoc;
+
+    // 1. Search decision points in experiments cache and return relevant experiments and decisionPoints data
+    let [dpExperiments, experiments] = await this.getCachedExperiments(site, target);
 
     logger.info({
       message: `markExperimentPoint: Site: ${site}, Target: ${target}, Condition: ${condition}, Status: "${status}" for User: ${userId}`,
     });
 
     if (experiments.length) {
-      if (experimentId) {
-        const dpExpExists = experiments.filter((exp) => exp.id === experimentId);
+      const dpExpExists = experiments.filter((exp) => exp.id === experimentId);
 
-        if (!dpExpExists.length) {
-          const error = new Error(
-            `Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`
-          );
-          (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
-          (error as any).httpCode = 404;
-          logger.error(error);
-          throw error;
-        }
-        experiments = dpExpExists;
-      } else {
-        const random = seedrandom(userId)();
-        experiments = [experiments[Math.floor(random * experiments.length)]];
-        experimentId = experiments[0]?.id;
+      if (!dpExpExists.length) {
+        const error = new Error(
+          `Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`
+        );
+        (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
+        (error as any).httpCode = 404;
+        logger.error(error);
+        throw error;
       }
+      experiments = dpExpExists;
     }
 
-    // ============= check if user or group is excluded
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc);
+    // 2. Check if user or group is globally excluded
+    const experimentUser: ExperimentUser = userDoc;
 
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
+
+    // empty assignments if the user or group is excluded from the experiment
     if (isUserExcluded || isGroupExcluded) {
-      // no experiments if the user or group is excluded from the experiment
       experiments = [];
     }
 
     const experimentIds = experiments.map((experiment) => experiment.id);
 
-    // no experiment
+    // no experiments
     if (experimentIds.length === 0) {
       experiments = [];
     }
 
-    // experiment level inclusion and exclusion
+    // 3. Check for experiment level inclusion and exclusion
     const [, exclusionReason] = await this.experimentLevelExclusionInclusion(experiments, userDoc);
+    
+    // find monitored document
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
       where: {
         site: site,
@@ -223,23 +236,10 @@ export class ExperimentAssignmentService {
       },
     });
 
-    // INDIRECT GROUP EXCLUSION
-    // if exclusion has consistency-group, exclude direct group of user belongs
-    if (exclusionReason.length && exclusionReason[0].reason === 'group' && !exclusionReason[0].matchedGroup) {
-      const userGroups = Object.values(userDoc.workingGroup);
-      // group exclusion doc
-      const groupExclusionDocs: Array<Omit<GroupExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>> =
-        userGroups.map((groupId) => {
-          return {
-            experiment: exclusionReason[0].experiment,
-            groupId,
-            exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
-          };
-        });
-      await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
-    }
+    // 4. Store indirect group exclusion documents
+    await this.saveGroupExclusionDoc(exclusionReason, userDoc);
 
-    if (experimentId && experiments.length) {
+    if (experiments.length) {
       const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
       const experiment = experiments[0];
       const { conditions } = experiment;
@@ -254,77 +254,16 @@ export class ExperimentAssignmentService {
         throw error;
       }
 
+      // 5. Storing relevant enrollment/exclusion documents and check for enrollment ending criteria
       if (
         (experiment.state === EXPERIMENT_STATE.ENROLLING ||
-          experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) &&
-        !previewUser
+          experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) && !previewUser
       ) {
-        const decisionPointId = selectedExperimentDP.id;
-        let individualEnrollments: IndividualEnrollment;
-        let individualExclusions: IndividualExclusion;
-        let groupEnrollments: GroupEnrollment | undefined;
-        let groupExclusions: GroupExclusion | undefined;
-        try {
-          [individualEnrollments, individualExclusions, groupEnrollments, groupExclusions] = await Promise.all([
-            // query individual assignment for user
-            this.individualEnrollmentRepository.findOne({
-              where: {
-                user: { id: userDoc.id },
-                experiment: { id: experiment.id },
-                partition: { id: decisionPointId },
-              },
-            }),
-            // query individual exclusion for user
-            this.individualExclusionRepository.findOne({
-              where: { user: { id: userDoc.id }, experiment: { id: experiment.id } },
-            }),
-            // query group assignment
-            (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-              workingGroup &&
-              workingGroup[experiment.group] &&
-              this.groupEnrollmentRepository.findOne({
-                where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
-              })) ||
-              Promise.resolve(undefined),
-            // query group exclusion
-            (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-              workingGroup &&
-              workingGroup[experiment.group] &&
-              this.groupExclusionRepository.findOne({
-                where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
-              })) ||
-              Promise.resolve(undefined),
-          ]);
-        } catch (error) {
-          const err: any = error;
-          logger.error(err);
-          throw err;
-        }
-        await this.updateEnrollmentExclusion(
-          userDoc,
-          experiment,
-          selectedExperimentDP,
-          {
-            individualEnrollment: individualEnrollments,
-            individualExclusion: individualExclusions,
-            groupEnrollment: groupEnrollments,
-            groupExclusion: groupExclusions,
-          },
-          {
-            isUserExcluded: isUserExcluded,
-            isGroupExcluded: isGroupExcluded,
-          },
-          exclusionReason,
-          status,
-          condition
-        );
-        if (experiment.enrollmentCompleteCondition) {
-          await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
-        }
+        this.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria(selectedExperimentDP, userDoc, experiment, workingGroup, isUserExcluded, isGroupExcluded, exclusionReason, status, condition, logger);
       }
     }
-    // adding in monitored experiment point table
-
+    
+    // 6. Storing new/updated monitored decision point document and store each monitored log document
     const assignmentUnit = experiments
       ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
       : null;
@@ -337,16 +276,32 @@ export class ExperimentAssignmentService {
       target: target,
     });
 
-    // save monitored log document
     const logDocument = await this.monitoredDecisionPointLogRepository.save({
       monitoredDecisionPoint: monitoredDocument,
       condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? condition : null,
       uniquifier: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? uniquifier : null,
     });
+    
     return {
       ...monitoredDocument,
       condition: monitoredDocument.condition || logDocument.condition,
     };
+  }
+  private async saveGroupExclusionDoc(exclusionReason: { experiment: Experiment; reason: string; matchedGroup: boolean; }[], userDoc: RequestedExperimentUser) {
+    // if exclusion has consistency-group, exclude direct group of user belongs
+    if (exclusionReason.length && exclusionReason[0].reason === 'group' && !exclusionReason[0].matchedGroup) {
+      const userGroups = Object.values(userDoc.workingGroup);
+      // group exclusion doc
+      const groupExclusionDocs: Array<Omit<GroupExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>> =
+        userGroups.map((groupId) => {
+          return {
+            experiment: exclusionReason[0].experiment,
+            groupId,
+            exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
+          };
+        });
+      await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
+    }
   }
 
   public async getAllExperimentConditions(
@@ -373,7 +328,6 @@ export class ExperimentAssignmentService {
     // 2. Check if user or group is globally excluded
     const experimentUser: ExperimentUser = experimentUserDoc;
 
-    // return empty assignments if the user or group is excluded from the experiment
     const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
 
     // return empty assignments if the user or group is excluded from the experiment
@@ -513,6 +467,81 @@ export class ExperimentAssignmentService {
       error.type = SERVER_ERROR.ASSIGNMENT_ERROR;
       logger.error(error);
       throw error;
+    }
+  }
+
+  public async updateEnrollmentExclusionDocumentsAndCheckEndingCriteria(
+    selectedExperimentDP: DecisionPoint,
+    userDoc: RequestedExperimentUser,
+    experiment: Experiment, 
+    workingGroup: Record<string, string>,
+    isUserExcluded: boolean,
+    isGroupExcluded: boolean,
+    exclusionReason: { experiment: Experiment; reason: string; matchedGroup: boolean; }[],
+    status: MARKED_DECISION_POINT_STATUS | undefined,
+    condition: string,
+    logger: UpgradeLogger) {
+    const decisionPointId = selectedExperimentDP.id;
+    let individualEnrollments: IndividualEnrollment;
+    let individualExclusions: IndividualExclusion;
+    let groupEnrollments: GroupEnrollment | undefined;
+    let groupExclusions: GroupExclusion | undefined;
+    try {
+      [individualEnrollments, individualExclusions, groupEnrollments, groupExclusions] = await Promise.all([
+        // query individual assignment for user
+        this.individualEnrollmentRepository.findOne({
+          where: {
+            user: { id: userDoc.id },
+            experiment: { id: experiment.id },
+            partition: { id: decisionPointId },
+          },
+        }),
+        // query individual exclusion for user
+        this.individualExclusionRepository.findOne({
+          where: { user: { id: userDoc.id }, experiment: { id: experiment.id } },
+        }),
+        // query group assignment
+        (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
+          workingGroup &&
+          workingGroup[experiment.group] &&
+          this.groupEnrollmentRepository.findOne({
+            where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
+          })) ||
+        Promise.resolve(undefined),
+        // query group exclusion
+        (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
+          workingGroup &&
+          workingGroup[experiment.group] &&
+          this.groupExclusionRepository.findOne({
+            where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
+          })) ||
+        Promise.resolve(undefined),
+      ]);
+    } catch (error) {
+      const err: any = error;
+      logger.error(err);
+      throw err;
+    }
+    await this.updateEnrollmentExclusion(
+      userDoc,
+      experiment,
+      selectedExperimentDP,
+      {
+        individualEnrollment: individualEnrollments,
+        individualExclusion: individualExclusions,
+        groupEnrollment: groupEnrollments,
+        groupExclusion: groupExclusions,
+      },
+      {
+        isUserExcluded: isUserExcluded,
+        isGroupExcluded: isGroupExcluded,
+      },
+      exclusionReason,
+      status,
+      condition
+    );
+    if (experiment.enrollmentCompleteCondition) {
+      await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
     }
   }
 

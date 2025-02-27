@@ -64,7 +64,7 @@ export default async function IndividualExclusionSegmentIndividualConsistency():
   expect(experimentConditionAssignments).toHaveLength(3);
 
   // mark experiment point for user 1
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[0].id,
@@ -139,7 +139,7 @@ export default async function IndividualExclusionSegmentIndividualConsistency():
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[0].id,

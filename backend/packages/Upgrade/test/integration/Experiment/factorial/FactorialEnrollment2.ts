@@ -106,8 +106,8 @@ export default async function FactorialExperimentEnrollment2(): Promise<void> {
     partitions[0].target,
     partitions[0].site,
     'Question Type=Concrete; Motivation=Mindset',
+    experimentID,
     new UpgradeLogger(),
-    experimentID
   );
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
@@ -160,8 +160,8 @@ export default async function FactorialExperimentEnrollment2(): Promise<void> {
     partitions[0].target,
     partitions[0].site,
     'Question Type=Abstract; Motivation=No support',
+    experimentID,
     new UpgradeLogger(),
-    experimentID
   );
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
