@@ -4,11 +4,11 @@ import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
-import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
+import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments-legacy/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
-  UPSERT_PRIVATE_SEGMENT_LIST_ACTION,
-  UpsertPrivateSegmentListParams,
-} from '../../core/segments/store/segments.model';
+  UPSERT_PRIVATE_SEGMENT_LIST_ACTION_LEGACY,
+  UpsertPrivateSegmentListParams_LEGACY,
+} from '../../core/segments_LEGACY/store/segments.model._LEGACY';
 import {
   FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
   FeatureFlag,
@@ -163,7 +163,7 @@ export class DialogService {
   }
 
   openAddIncludeListModal(appContext: string, flagId: string) {
-    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams_LEGACY> = {
       title: 'Add Include List',
       nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
       valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
@@ -174,7 +174,7 @@ export class DialogService {
       params: {
         sourceList: null,
         sourceAppContext: appContext,
-        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION_LEGACY.ADD_FLAG_INCLUDE_LIST,
         flagId: flagId,
       },
     };
@@ -182,7 +182,7 @@ export class DialogService {
   }
 
   openEditIncludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
-    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams_LEGACY> = {
       title: 'Edit Include List',
       nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
       valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
@@ -193,7 +193,7 @@ export class DialogService {
       params: {
         sourceList,
         sourceAppContext: appContext,
-        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION_LEGACY.EDIT_FLAG_INCLUDE_LIST,
         flagId: flagId,
       },
     };
@@ -201,7 +201,7 @@ export class DialogService {
   }
 
   openAddExcludeListModal(appContext: string, flagId: string) {
-    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams_LEGACY> = {
       title: 'Add Exclude List',
       nameHint: 'feature-flags.upsert-exclude-list-modal.name-hint.text',
       valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
@@ -212,7 +212,7 @@ export class DialogService {
       params: {
         sourceList: null,
         sourceAppContext: appContext,
-        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION_LEGACY.ADD_FLAG_EXCLUDE_LIST,
         flagId: flagId,
       },
     };
@@ -220,7 +220,7 @@ export class DialogService {
   }
 
   openEditExcludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
-    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams_LEGACY> = {
       title: 'Edit Exclude List',
       nameHint: 'feature-flags.upsert-exclude-list-modal.name-hint.text',
       valuesLabel: 'feature-flags.upsert-list-modal.values-label.text',
@@ -231,7 +231,7 @@ export class DialogService {
       params: {
         sourceList,
         sourceAppContext: appContext,
-        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION_LEGACY.EDIT_FLAG_EXCLUDE_LIST,
         flagId: flagId,
       },
     };

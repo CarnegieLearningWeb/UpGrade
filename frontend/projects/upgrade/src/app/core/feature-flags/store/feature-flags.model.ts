@@ -1,7 +1,7 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { MemberTypes, Segment } from '../../segments/store/segments.model';
+import { MemberTypes_LEGACY, Segment_LEGACY } from '../../segments_LEGACY/store/segments.model._LEGACY';
 
 // This obviously is a more global type, but for now we're not about to refactor all of the things, so I'm just putting it here so I can create some more dev-friendly types to catch the small differences between some of these formats
 export interface GeneralCRUDResponseFields {
@@ -46,10 +46,10 @@ export interface UpdateFeatureFlagRequest extends AddFeatureFlagRequest {
 }
 
 export interface FeatureFlagSegmentListDetails {
-  segment: Segment;
+  segment: Segment_LEGACY;
   featureFlag: FeatureFlag;
   enabled: boolean;
-  listType: MemberTypes | string;
+  listType: MemberTypes_LEGACY | string;
 }
 
 export enum UPSERT_FEATURE_FLAG_ACTION {
@@ -112,8 +112,8 @@ interface IFeatureFlagsSortParams {
 }
 
 export interface ParticipantListTableRow {
-  listType: MemberTypes | string;
-  segment: Segment;
+  listType: MemberTypes_LEGACY | string;
+  segment: Segment_LEGACY;
   enabled?: boolean;
 }
 
@@ -138,8 +138,8 @@ export enum CommonTagInputType {
 // there is no difference in that request and that which will be used for segment lists in the future
 export interface UpsertFeatureFlagPrivateSegmentListResponse {
   featureFlag: FeatureFlag;
-  segment: Segment;
-  listType: MemberTypes | string;
+  segment: Segment_LEGACY;
+  listType: MemberTypes_LEGACY | string;
   enabled: boolean;
 }
 

@@ -8,7 +8,7 @@ import {
   FeatureFlagSegmentListDetails,
 } from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
-import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../../segments/store/segments.model';
+import { AddPrivateSegmentListRequest_LEGACY, EditPrivateSegmentListRequest_LEGACY } from '../../segments_LEGACY/store/segments.model._LEGACY';
 
 export const actionFetchFeatureFlags = createAction(
   '[Feature Flags] Fetch Feature Flags Paginated',
@@ -175,7 +175,7 @@ export const actionUpdateFilterModeFailure = createAction('[Feature Flags] Updat
 
 export const actionAddFeatureFlagInclusionList = createAction(
   '[Feature Flags] Add Feature Flag Inclusion List',
-  props<{ list: AddPrivateSegmentListRequest }>()
+  props<{ list: AddPrivateSegmentListRequest_LEGACY }>()
 );
 
 export const actionAddFeatureFlagInclusionListSuccess = createAction(
@@ -190,7 +190,7 @@ export const actionAddFeatureFlagInclusionListFailure = createAction(
 
 export const actionUpdateFeatureFlagInclusionList = createAction(
   '[Feature Flags] Update Feature Flag Inclusion List',
-  props<{ list: EditPrivateSegmentListRequest }>()
+  props<{ list: EditPrivateSegmentListRequest_LEGACY }>()
 );
 
 export const actionUpdateFeatureFlagInclusionListSuccess = createAction(
@@ -220,7 +220,7 @@ export const actionDeleteFeatureFlagInclusionListFailure = createAction(
 
 export const actionAddFeatureFlagExclusionList = createAction(
   '[Feature Flags] Add Feature Flag Exclusion List',
-  props<{ list: AddPrivateSegmentListRequest }>()
+  props<{ list: AddPrivateSegmentListRequest_LEGACY }>()
 );
 
 export const actionAddFeatureFlagExclusionListSuccess = createAction(
@@ -235,7 +235,7 @@ export const actionAddFeatureFlagExclusionListFailure = createAction(
 
 export const actionUpdateFeatureFlagExclusionList = createAction(
   '[Feature Flags] Update Feature Flag Exclusion List',
-  props<{ list: EditPrivateSegmentListRequest }>()
+  props<{ list: EditPrivateSegmentListRequest_LEGACY }>()
 );
 
 export const actionUpdateFeatureFlagExclusionListSuccess = createAction(

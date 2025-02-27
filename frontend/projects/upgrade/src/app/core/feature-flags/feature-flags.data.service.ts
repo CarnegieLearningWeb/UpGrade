@@ -12,7 +12,7 @@ import {
   UpdateFilterModeRequest,
 } from './store/feature-flags.model';
 import { Observable, delay, of } from 'rxjs';
-import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
+import { AddPrivateSegmentListRequest_LEGACY, EditPrivateSegmentListRequest_LEGACY } from '../segments_LEGACY/store/segments.model._LEGACY';
 import { FEATURE_FLAG_LIST_FILTER_MODE, IFeatureFlagFile } from 'upgrade_types';
 
 @Injectable()
@@ -104,12 +104,12 @@ export class FeatureFlagsDataService {
     return this.http.delete(url);
   }
 
-  addInclusionList(list: AddPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+  addInclusionList(list: AddPrivateSegmentListRequest_LEGACY): Observable<FeatureFlagSegmentListDetails> {
     const url = this.environment.api.addFlagInclusionList;
     return this.http.post<FeatureFlagSegmentListDetails>(url, list);
   }
 
-  updateInclusionList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+  updateInclusionList(list: EditPrivateSegmentListRequest_LEGACY): Observable<FeatureFlagSegmentListDetails> {
     const url = `${this.environment.api.addFlagInclusionList}/${list.segment.id}`;
     return this.http.put<FeatureFlagSegmentListDetails>(url, list);
   }
@@ -119,12 +119,12 @@ export class FeatureFlagsDataService {
     return this.http.delete(url);
   }
 
-  addExclusionList(list: AddPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+  addExclusionList(list: AddPrivateSegmentListRequest_LEGACY): Observable<FeatureFlagSegmentListDetails> {
     const url = this.environment.api.addFlagExclusionList;
     return this.http.post<FeatureFlagSegmentListDetails>(url, list);
   }
 
-  updateExclusionList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+  updateExclusionList(list: EditPrivateSegmentListRequest_LEGACY): Observable<FeatureFlagSegmentListDetails> {
     const url = `${this.environment.api.addFlagExclusionList}/${list.segment.id}`;
     return this.http.put<FeatureFlagSegmentListDetails>(url, list);
   }

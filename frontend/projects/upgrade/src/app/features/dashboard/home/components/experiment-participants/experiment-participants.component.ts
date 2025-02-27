@@ -19,8 +19,8 @@ import {
   ParticipantsMember,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { Segment, MemberTypes } from '../../../../../core/segments/store/segments.model';
-import { SegmentsService } from '../../../../../core/segments/segments.service';
+import { Segment_LEGACY, MemberTypes_LEGACY } from '../../../../../core/segments_LEGACY/store/segments.model._LEGACY';
+import { SegmentsService_LEGACY } from '../../../../../core/segments_LEGACY/segments.service._LEGACY';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
 import { DialogService } from '../../../../../shared/services/common-dialog.service';
@@ -53,7 +53,7 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
-  allSegments: Segment[];
+  allSegments: Segment_LEGACY[];
   allSegmentsSub: Subscription;
   filteredSegmentIds$: Observable<string[]>[] = [];
   filteredSegmentIds2$: Observable<string[]>[] = [];
@@ -72,7 +72,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   constructor(
     private _formBuilder: UntypedFormBuilder,
     private _formBuilder2: UntypedFormBuilder,
-    private segmentsService: SegmentsService,
+    private segmentsService: SegmentsService_LEGACY,
     private experimentService: ExperimentService,
     private dialogService: DialogService,
     private experimentDesignStepperService: ExperimentDesignStepperService
@@ -132,42 +132,42 @@ export class ExperimentParticipantsComponent implements OnInit {
       if (this.experimentInfo.filterMode === FILTER_MODE.EXCLUDE_ALL) {
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
         this.experimentInfo.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
-          this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
+          this.members1.push(this.addMembers1(MemberTypes_LEGACY.INDIVIDUAL, id.userId));
         });
         this.experimentInfo.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
           this.members1.push(this.addMembers1(group.type, group.groupId));
         });
         this.experimentInfo.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
-          this.members1.push(this.addMembers1(MemberTypes.SEGMENT, id.name));
+          this.members1.push(this.addMembers1(MemberTypes_LEGACY.SEGMENT, id.name));
         });
         this.experimentInfo.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
-          this.members2.push(this.addMembers2(MemberTypes.INDIVIDUAL, id.userId));
+          this.members2.push(this.addMembers2(MemberTypes_LEGACY.INDIVIDUAL, id.userId));
         });
         this.experimentInfo.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
           this.members2.push(this.addMembers2(group.type, group.groupId));
         });
         this.experimentInfo.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
-          this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
+          this.members2.push(this.addMembers2(MemberTypes_LEGACY.SEGMENT, id.name));
         });
       } else {
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
         this.experimentInfo.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
-          this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
+          this.members1.push(this.addMembers1(MemberTypes_LEGACY.INDIVIDUAL, id.userId));
         });
         this.experimentInfo.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
           this.members1.push(this.addMembers1(group.type, group.groupId));
         });
         this.experimentInfo.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
-          this.members1.push(this.addMembers1(MemberTypes.SEGMENT, id.name));
+          this.members1.push(this.addMembers1(MemberTypes_LEGACY.SEGMENT, id.name));
         });
         this.experimentInfo.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
-          this.members2.push(this.addMembers2(MemberTypes.INDIVIDUAL, id.userId));
+          this.members2.push(this.addMembers2(MemberTypes_LEGACY.INDIVIDUAL, id.userId));
         });
         this.experimentInfo.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
           this.members2.push(this.addMembers2(group.type, group.groupId));
         });
         this.experimentInfo.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
-          this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
+          this.members2.push(this.addMembers2(MemberTypes_LEGACY.SEGMENT, id.name));
         });
       }
     }
@@ -341,8 +341,8 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   setMemberTypes() {
     this.subSegmentTypes = [];
-    this.subSegmentTypes.push({ name: MemberTypes.INDIVIDUAL, value: MemberTypes.INDIVIDUAL });
-    this.subSegmentTypes.push({ name: MemberTypes.SEGMENT, value: MemberTypes.SEGMENT });
+    this.subSegmentTypes.push({ name: MemberTypes_LEGACY.INDIVIDUAL, value: MemberTypes_LEGACY.INDIVIDUAL });
+    this.subSegmentTypes.push({ name: MemberTypes_LEGACY.SEGMENT, value: MemberTypes_LEGACY.SEGMENT });
     if (this.contextMetaData.contextMetadata && this.contextMetaData.contextMetadata[this.currentContext]) {
       this.contextMetaData.contextMetadata[this.currentContext].GROUP_TYPES.forEach((type) => {
         this.subSegmentTypes.push({ name: type + this.groupString, value: type });
@@ -369,9 +369,9 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.groupsToSend = [];
     const memberFiltered = members.filter((member) => member.type);
     memberFiltered.forEach((member) => {
-      if (member.type === MemberTypes.INDIVIDUAL) {
+      if (member.type === MemberTypes_LEGACY.INDIVIDUAL) {
         this.userIdsToSend.push({ userId: member.id });
-      } else if (member.type === MemberTypes.SEGMENT) {
+      } else if (member.type === MemberTypes_LEGACY.SEGMENT) {
         this.subSegmentIdsToSend.push({ id: this.segmentNameId.get(member.id) });
       } else {
         this.groupsToSend.push({ type: member.type, groupId: member.id });
@@ -383,7 +383,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.segmentNotValid = false;
     this.segmentNotValid2 = false;
     members.forEach((member) => {
-      if (member.type === MemberTypes.SEGMENT) {
+      if (member.type === MemberTypes_LEGACY.SEGMENT) {
         if (!this.subSegmentIds.find((segment) => segment === member.id) && member.id) {
           if (table == 1) {
             this.segmentNotValid = true;

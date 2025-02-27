@@ -38,7 +38,7 @@ import { Environment } from '../../../environments/environment-types';
 import { environment } from '../../../environments/environment';
 import { ASSIGNMENT_ALGORITHM, CONDITION_ORDER, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { SegmentNew } from './store/experiments.model';
-import { Segment } from '../segments/store/segments.model';
+import { Segment_LEGACY } from '../segments_LEGACY/store/segments.model._LEGACY';
 
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
@@ -59,7 +59,7 @@ describe('ExperimentService', () => {
     { id: 'third', createdAt: '04/24/17 04:34:22 +0000' },
   ];
 
-  const segmentData: Segment = {
+  const segmentData: Segment_LEGACY = {
     id: 'segment-id',
     name: 'segment-name',
     description: 'segment-description',

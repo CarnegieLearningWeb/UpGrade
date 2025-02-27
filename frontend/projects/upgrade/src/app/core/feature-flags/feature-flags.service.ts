@@ -41,7 +41,7 @@ import {
 import { filter, map, pairwise } from 'rxjs';
 import isEqual from 'lodash.isequal';
 import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
-import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
+import { AddPrivateSegmentListRequest_LEGACY, EditPrivateSegmentListRequest_LEGACY } from '../segments_LEGACY/store/segments.model._LEGACY';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable()
@@ -196,11 +196,11 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionSetActiveDetailsTabIndex({ activeDetailsTabIndex }));
   }
 
-  addFeatureFlagInclusionPrivateSegmentList(list: AddPrivateSegmentListRequest) {
+  addFeatureFlagInclusionPrivateSegmentList(list: AddPrivateSegmentListRequest_LEGACY) {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlagInclusionList({ list }));
   }
 
-  updateFeatureFlagInclusionPrivateSegmentList(list: EditPrivateSegmentListRequest) {
+  updateFeatureFlagInclusionPrivateSegmentList(list: EditPrivateSegmentListRequest_LEGACY) {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagInclusionList({ list }));
   }
 
@@ -208,11 +208,11 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList({ segmentId }));
   }
 
-  addFeatureFlagExclusionPrivateSegmentList(list: AddPrivateSegmentListRequest) {
+  addFeatureFlagExclusionPrivateSegmentList(list: AddPrivateSegmentListRequest_LEGACY) {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlagExclusionList({ list }));
   }
 
-  updateFeatureFlagExclusionPrivateSegmentList(list: EditPrivateSegmentListRequest) {
+  updateFeatureFlagExclusionPrivateSegmentList(list: EditPrivateSegmentListRequest_LEGACY) {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagExclusionList({ list }));
   }
 

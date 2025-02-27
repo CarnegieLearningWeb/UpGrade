@@ -18,9 +18,9 @@ import {
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import {
   EditPrivateSegmentListDetails,
-  EditPrivateSegmentListRequest,
-  Segment,
-} from '../../../../../../../core/segments/store/segments.model';
+  EditPrivateSegmentListRequest_LEGACY,
+  Segment_LEGACY,
+} from '../../../../../../../core/segments_LEGACY/store/segments.model._LEGACY';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
@@ -110,7 +110,7 @@ export class FeatureFlagExclusionsSectionCardComponent {
     this.dialogService.openEditExcludeListModal(rowData, rowData.segment.context, flagId);
   }
 
-  createEditPrivateSegmentListDetails(segment: Segment): EditPrivateSegmentListDetails {
+  createEditPrivateSegmentListDetails(segment: Segment_LEGACY): EditPrivateSegmentListDetails {
     const editPrivateSegmentListDetails: EditPrivateSegmentListDetails = {
       id: segment.id,
       name: segment.name,
@@ -125,11 +125,11 @@ export class FeatureFlagExclusionsSectionCardComponent {
     return editPrivateSegmentListDetails;
   }
 
-  sendUpdateFeatureFlagExclusionRequest(request: EditPrivateSegmentListRequest): void {
+  sendUpdateFeatureFlagExclusionRequest(request: EditPrivateSegmentListRequest_LEGACY): void {
     this.featureFlagService.updateFeatureFlagExclusionPrivateSegmentList(request);
   }
 
-  onDeleteExcludeList(segment: Segment): void {
+  onDeleteExcludeList(segment: Segment_LEGACY): void {
     this.dialogService
       .openDeleteExcludeListModal(segment.name)
       .afterClosed()

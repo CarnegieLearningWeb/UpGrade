@@ -33,7 +33,7 @@ import {
   ASSIGNMENT_ALGORITHM,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
 } from 'upgrade_types';
-import { MemberTypes } from '../../../../../core/segments/store/segments.model';
+import { MemberTypes_LEGACY } from '../../../../../core/segments_LEGACY/store/segments.model._LEGACY';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
@@ -258,22 +258,22 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       this.includeParticipants = [];
       this.excludeParticipants = [];
       this.experiment.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
-        this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
+        this.includeParticipants.push({ participant_Type: MemberTypes_LEGACY.INDIVIDUAL, participant_id: id.userId });
       });
       this.experiment.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
         this.includeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
       });
       this.experiment.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
-        this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
+        this.includeParticipants.push({ participant_Type: MemberTypes_LEGACY.SEGMENT, participant_id: id.name });
       });
       this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
-        this.excludeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
+        this.excludeParticipants.push({ participant_Type: MemberTypes_LEGACY.INDIVIDUAL, participant_id: id.userId });
       });
       this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
         this.excludeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
       });
       this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
-        this.excludeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
+        this.excludeParticipants.push({ participant_Type: MemberTypes_LEGACY.SEGMENT, participant_id: id.name });
       });
     }
   }

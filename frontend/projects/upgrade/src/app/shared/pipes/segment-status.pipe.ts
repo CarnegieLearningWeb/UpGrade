@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { SEGMENT_STATUS } from '../../core/segments/store/segments.model';
+import { SEGMENT_STATUS } from '../../core/segments_LEGACY/store/segments.model._LEGACY';
 
 export enum SegmentStatusPipeType {
   TEXT = 'text',

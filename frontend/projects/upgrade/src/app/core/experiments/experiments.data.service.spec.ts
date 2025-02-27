@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 import { ASSIGNMENT_ALGORITHM, CONDITION_ORDER, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { environment } from '../../../environments/environment';
 import { Environment } from '../../../environments/environment-types';
-import { Segment } from '../segments/store/segments.model';
+import { Segment_LEGACY } from '../segments_LEGACY/store/segments.model._LEGACY';
 import { ExperimentDataService } from './experiments.data.service';
 import {
   ASSIGNMENT_UNIT,
@@ -45,7 +45,7 @@ describe('ExperimentDataService', () => {
     };
     mockExperimentId = 'abc123';
     mockExperimentIds = ['abc123', 'qwerty99'];
-    const segmentData: Segment = {
+    const segmentData: Segment_LEGACY = {
       id: 'segment-id',
       name: 'segment-name',
       description: 'segment-description',

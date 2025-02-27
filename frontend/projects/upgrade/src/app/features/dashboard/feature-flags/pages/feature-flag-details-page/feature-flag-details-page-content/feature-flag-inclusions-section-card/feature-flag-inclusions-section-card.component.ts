@@ -22,9 +22,9 @@ import {
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import {
   EditPrivateSegmentListDetails,
-  EditPrivateSegmentListRequest,
-  Segment,
-} from '../../../../../../../core/segments/store/segments.model';
+  EditPrivateSegmentListRequest_LEGACY,
+  Segment_LEGACY,
+} from '../../../../../../../core/segments_LEGACY/store/segments.model._LEGACY';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
@@ -196,10 +196,10 @@ export class FeatureFlagInclusionsSectionCardComponent {
     this.dialogService.openEditIncludeListModal(rowData, rowData.segment.context, flagId);
   }
 
-  sendUpdateIncludeListRequest(flagId: string, enabled: boolean, listType: string, segment: Segment): void {
+  sendUpdateIncludeListRequest(flagId: string, enabled: boolean, listType: string, segment: Segment_LEGACY): void {
     const list: EditPrivateSegmentListDetails = this.createEditPrivateSegmentListDetails(segment);
 
-    const listRequest: EditPrivateSegmentListRequest = {
+    const listRequest: EditPrivateSegmentListRequest_LEGACY = {
       flagId,
       enabled,
       listType,
@@ -209,7 +209,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
     this.sendUpdateFeatureFlagInclusionRequest(listRequest);
   }
 
-  createEditPrivateSegmentListDetails(segment: Segment): EditPrivateSegmentListDetails {
+  createEditPrivateSegmentListDetails(segment: Segment_LEGACY): EditPrivateSegmentListDetails {
     const editPrivateSegmentListDetails: EditPrivateSegmentListDetails = {
       id: segment.id,
       name: segment.name,
@@ -224,11 +224,11 @@ export class FeatureFlagInclusionsSectionCardComponent {
     return editPrivateSegmentListDetails;
   }
 
-  sendUpdateFeatureFlagInclusionRequest(request: EditPrivateSegmentListRequest): void {
+  sendUpdateFeatureFlagInclusionRequest(request: EditPrivateSegmentListRequest_LEGACY): void {
     this.featureFlagService.updateFeatureFlagInclusionPrivateSegmentList(request);
   }
 
-  onDeleteIncludeList(segment: Segment): void {
+  onDeleteIncludeList(segment: Segment_LEGACY): void {
     this.dialogService
       .openDeleteIncludeListModal(segment.name)
       .afterClosed()

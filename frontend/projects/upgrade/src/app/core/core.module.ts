@@ -23,7 +23,7 @@ import { UsersModule } from './users/users.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { HttpAuthInterceptor } from './http-interceptors/http-auth.interceptor';
 import { AnalysisModule } from './analysis/analysis.module';
-import { SegmentsModule } from './segments/segments.module';
+import { SegmentsModule_LEGACY } from './segments_LEGACY/segments.module._LEGACY';
 import { HttpCancelInterceptor } from './http-interceptors/http-cancel.interceptor';
 import { BaseUrlInterceptor } from './http-interceptors/http-base-url-interceptor';
 import { ENV, Environment } from '../../environments/environment-types';
@@ -54,7 +54,7 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
     StratificationFactorsModule,
     UsersModule,
     FeatureFlagsModule,
-    SegmentsModule,
+    SegmentsModule_LEGACY,
     AnalysisModule,
     // ngrx
     StoreModule.forRoot(reducers, { metaReducers }),

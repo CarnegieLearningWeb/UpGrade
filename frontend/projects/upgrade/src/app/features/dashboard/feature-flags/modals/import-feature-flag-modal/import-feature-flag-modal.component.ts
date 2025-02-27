@@ -13,7 +13,7 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { ValidateFeatureFlagError } from '../../../../../core/feature-flags/store/feature-flags.model';
-import { importError, ImportListParams } from '../../../../../core/segments/store/segments.model';
+import { importError_LEGACY, ImportListParams_LEGACY } from '../../../../../core/segments_LEGACY/store/segments.model._LEGACY';
 import { NotificationService } from '../../../../../core/notifications/notification.service';
 import { IFeatureFlagFile } from 'upgrade_types';
 
@@ -46,7 +46,7 @@ export class ImportFeatureFlagModalComponent {
   ]).pipe(map(([uploadedCount, isLoading]) => isLoading || uploadedCount === 0));
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: CommonModalConfig<ImportListParams>,
+    @Inject(MAT_DIALOG_DATA) public data: CommonModalConfig<ImportListParams_LEGACY>,
     public featureFlagsService: FeatureFlagsService,
     public featureFlagsDataService: FeatureFlagsDataService,
     public dialogRef: MatDialogRef<ImportFeatureFlagModalComponent>,
@@ -125,12 +125,12 @@ export class ImportFeatureFlagModalComponent {
   async importFiles() {
     try {
       this.isImportActionBtnDisabled.next(true);
-      let importResult: importError[];
+      let importResult: importError_LEGACY[];
 
       if (this.data.title === 'Import Feature Flag') {
         importResult = (await firstValueFrom(
           this.featureFlagsDataService.importFeatureFlag({ files: this.fileData })
-        )) as importError[];
+        )) as importError_LEGACY[];
       } else if (this.data.title === 'Import List') {
         importResult = (await firstValueFrom(
           this.featureFlagsDataService.importFeatureFlagList(
@@ -138,7 +138,7 @@ export class ImportFeatureFlagModalComponent {
             this.data.params.flagId,
             this.data.params.listType
           )
-        )) as importError[];
+        )) as importError_LEGACY[];
       }
 
       this.showNotification(importResult);
@@ -151,7 +151,7 @@ export class ImportFeatureFlagModalComponent {
     }
   }
 
-  showNotification(importResult: importError[]) {
+  showNotification(importResult: importError_LEGACY[]) {
     const importSuccessFiles = importResult.filter((data) => data.error == null).map((data) => data.fileName);
 
     let importSuccessMsg = '';

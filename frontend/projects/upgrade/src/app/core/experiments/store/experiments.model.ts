@@ -21,7 +21,7 @@ import {
   ASSIGNMENT_ALGORITHM,
   MoocletTSConfigurablePolicyParametersDTO,
 } from 'upgrade_types';
-import { Segment } from '../../segments/store/segments.model';
+import { Segment_LEGACY } from '../../segments_LEGACY/store/segments.model._LEGACY';
 
 export {
   CONSISTENCY_RULE,
@@ -221,7 +221,7 @@ export interface SegmentNew {
   updatedAt: string;
   createdAt: string;
   versionNumber: number;
-  segment: Segment;
+  segment: Segment_LEGACY;
 }
 
 export interface Experiment {

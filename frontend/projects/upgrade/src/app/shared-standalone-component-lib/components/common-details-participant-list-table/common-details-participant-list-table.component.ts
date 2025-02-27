@@ -13,7 +13,7 @@ import {
   ParticipantListRowActionEvent,
   ParticipantListTableRow,
 } from '../../../core/feature-flags/store/feature-flags.model';
-import { MemberTypes } from '../../../core/segments/store/segments.model';
+import { MemberTypes_LEGACY } from '../../../core/segments_LEGACY/store/segments.model._LEGACY';
 import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 
 /**
@@ -58,7 +58,7 @@ export class CommonDetailsParticipantListTableComponent {
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
 
   displayedColumns: string[];
-  memberTypes = MemberTypes;
+  memberTypes = MemberTypes_LEGACY;
 
   PARTICIPANT_LIST_COLUMN_NAMES = {
     TYPE: 'type',

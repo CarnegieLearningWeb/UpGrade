@@ -5,7 +5,7 @@ import {
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
 } from '../experiments/store/experiments.model';
-import { SegmentLocalStorageKeys, SegmentState } from '../segments/store/segments.model';
+import { SegmentLocalStorageKeys_LEGACY, SegmentState_LEGACY } from '../segments_LEGACY/store/segments.model._LEGACY';
 import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY, FLAG_SEARCH_KEY, FLAG_SORT_KEY } from 'upgrade_types';
 import { FeatureFlagLocalStorageKeys, FeatureFlagState } from '../feature-flags/store/feature-flags.model';
 
@@ -26,10 +26,10 @@ export class LocalStorageService {
     const featureFlagSearchKey = this.getItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SEARCH_KEY);
     const featureFlagSearchString = this.getItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SEARCH_STRING);
 
-    const segmentSortKey = this.getItem(SegmentLocalStorageKeys.SEGMENT_SORT_KEY);
-    const segmentSortType = this.getItem(SegmentLocalStorageKeys.SEGMENT_SORT_TYPE);
-    const segmentSearchKey = this.getItem(SegmentLocalStorageKeys.SEGMENT_SEARCH_KEY);
-    const segmentSearchString = this.getItem(SegmentLocalStorageKeys.SEGMENT_SEARCH_STRING);
+    const segmentSortKey = this.getItem(SegmentLocalStorageKeys_LEGACY.SEGMENT_SORT_KEY);
+    const segmentSortType = this.getItem(SegmentLocalStorageKeys_LEGACY.SEGMENT_SORT_TYPE);
+    const segmentSearchKey = this.getItem(SegmentLocalStorageKeys_LEGACY.SEGMENT_SEARCH_KEY);
+    const segmentSearchString = this.getItem(SegmentLocalStorageKeys_LEGACY.SEGMENT_SEARCH_STRING);
 
     // 1. Populate experiment state
     const experimentState: ExperimentState = {
@@ -79,7 +79,7 @@ export class LocalStorageService {
       sortAs: (featureFlagSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
     };
 
-    const segmentState: SegmentState = {
+    const segmentState: SegmentState_LEGACY = {
       ids: [],
       entities: {},
       isLoadingSegments: false,

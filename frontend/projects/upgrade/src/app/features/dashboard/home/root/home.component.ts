@@ -7,7 +7,7 @@ import { NewExperimentComponent } from '../components/modal/new-experiment/new-e
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../core/auth/store/auth.models';
 import { ImportExperimentComponent } from '../components/modal/import-experiment/import-experiment.component';
-import { SegmentsService } from '../../../../core/segments/segments.service';
+import { SegmentsService_LEGACY } from '../../../../core/segments_LEGACY/segments.service._LEGACY';
 import { StratificationFactorsService } from '../../../../core/stratification-factors/stratification-factors.service';
 import { PreviewUsersService } from '../../../../core/preview-users/preview-users.service';
 import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flags.service';
@@ -27,7 +27,7 @@ export class HomeComponent implements OnInit {
   constructor(
     private experimentService: ExperimentService,
     public dialog: MatDialog,
-    private segmentsService: SegmentsService,
+    private segmentsService: SegmentsService_LEGACY,
     private stratificationFactorsService: StratificationFactorsService,
     private authService: AuthService,
     private previewUsersService: PreviewUsersService,
