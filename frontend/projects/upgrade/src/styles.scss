@@ -28,11 +28,11 @@
 @import './app/features/dashboard/logs/common/logs-view.theme.scss';
 @import './app/features/dashboard/common/tabs-view.theme.scss';
 @import './app/features/auth/login/login.theme.scss';
-@import './app/features/dashboard/segments/segments-root/segments-root.theme.scss';
-@import './app/features/dashboard/segments/components/segments-list/segments-list.theme.scss';
-@import './app/features/dashboard/segments/components/modal/new-segment/new-segment.theme.scss';
-@import './app/features/dashboard/segments/components/segment-members/segment-members.theme.scss';
-@import './app/features/dashboard/segments/pages/view-segment/view-segment.theme.scss';
+@import './app/features/dashboard/segments-legacy/segments-root/segments-root.theme.scss';
+@import './app/features/dashboard/segments-legacy/components/segments-list/segments-list.theme.scss';
+@import './app/features/dashboard/segments-legacy/components/modal/new-segment/new-segment.theme.scss';
+@import './app/features/dashboard/segments-legacy/components/segment-members/segment-members.theme.scss';
+@import './app/features/dashboard/segments-legacy/pages/view-segment/view-segment.theme.scss';
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
 @import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
@@ -40,10 +40,10 @@
 @import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
 @import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
-@import './app/features/dashboard/segments/components/modal/import-segment/import-segment.theme.scss';
+@import './app/features/dashboard/segments-legacy/components/modal/import-segment/import-segment.theme.scss';
 @import './app/features/dashboard/experiment-users/components/stratification-factor-list/import-stratifications/import-stratifications.theme.scss';
 @import './app/features/dashboard/experiment-users/components/stratification-factor-list/delete-stratification/delete-stratification.theme.scss';
-@import './app/features/dashboard/segments/components/modal/segment-experiment-list/segment-experiment-list.theme.scss';
+@import './app/features/dashboard/segments-legacy/components/modal/segment-experiment-list/segment-experiment-list.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);

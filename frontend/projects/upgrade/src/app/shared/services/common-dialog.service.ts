@@ -4,7 +4,7 @@ import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
 import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
-import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
+import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments-legacy/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
   UPSERT_PRIVATE_SEGMENT_LIST_ACTION,
   UpsertPrivateSegmentListParams,
