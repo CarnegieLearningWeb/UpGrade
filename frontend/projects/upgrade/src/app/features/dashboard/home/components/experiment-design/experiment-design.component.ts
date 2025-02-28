@@ -118,7 +118,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   isConditionsTableEditMode$ = this.experimentDesignStepperService.isConditionsTableEditMode$;
   conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
 
-  // Used for displaying the Mooclet Policy Parameters JSON editor
+  // Used for displaying the Mooclet Policy Parameters JSON editor and for hiding the Weight Equally checkbox
   currentAssignmentAlgorithm$ = this.experimentDesignStepperService.currentAssignmentAlgorithm$;
   isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
 
