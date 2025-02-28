@@ -1186,6 +1186,22 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
     request.logger.child({ user: currentUser });
+
+    // TODO: there is a story to refactor these duplicate warnings, adding here same way as others for now
+    if ('moocletPolicyParameters' in experiment) {
+      if (!env.mooclets?.enabled) {
+        throw new BadRequestError(
+          'Failed to edit Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
+        );
+      } else {
+        return this.moocletExperimentService.syncUpdate({
+          experimentDTO: { ...experiment, id },
+          currentUser,
+          logger: request.logger,
+        });
+      }
+    }
+
     return this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
   }
 

@@ -253,8 +253,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
       this.isExperimentEditable =
         this.experimentInfo.state !== this.ExperimentState.ENROLLING &&
-        this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE &&
-        !(this.experimentInfo.assignmentAlgorithm in MOOCLET_POLICY_SCHEMA_MAP);
+        this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE;
 
       // disable control on edit:
       if (!this.isExperimentEditable) {

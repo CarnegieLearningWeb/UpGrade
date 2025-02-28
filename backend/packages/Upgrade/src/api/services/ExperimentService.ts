@@ -369,11 +369,18 @@ export class ExperimentService {
     });
   }
 
-  public async update(experiment: ExperimentDTO, currentUser: UserDTO, logger: UpgradeLogger): Promise<ExperimentDTO> {
+  public async update(
+    experiment: ExperimentDTO,
+    currentUser: UserDTO,
+    logger: UpgradeLogger,
+    entityManager?: EntityManager
+  ): Promise<ExperimentDTO> {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
-    return this.reducedConditionPayload(await this.updateExperimentInDB(experiment, currentUser, logger));
+    return this.reducedConditionPayload(
+      await this.updateExperimentInDB(experiment, currentUser, logger, entityManager)
+    );
   }
 
   public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {
@@ -694,8 +701,11 @@ export class ExperimentService {
   private async updateExperimentInDB(
     experiment: ExperimentDTO,
     user: UserDTO,
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    existingEntityManager?: EntityManager
   ): Promise<Experiment> {
+    const entityManager = existingEntityManager || this.dataSource.manager;
+
     await this.clearExperimentCacheDetail(
       experiment.context[0],
       experiment.partitions.map((partition) => {
@@ -715,7 +725,7 @@ export class ExperimentService {
       this.scheduledJobService.updateExperimentSchedules(experiment as any, logger);
     }
 
-    return this.dataSource
+    return entityManager
       .transaction(async (transactionalEntityManager) => {
         experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
         let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);

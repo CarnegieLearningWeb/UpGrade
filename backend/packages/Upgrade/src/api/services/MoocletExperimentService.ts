@@ -48,6 +48,7 @@ import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import {
   ASSIGNMENT_ALGORITHM,
+  EXPERIMENT_STATE,
   IMetricMetaData,
   MoocletPolicyParametersDTO,
   MoocletTSConfigurablePolicyParametersDTO,
@@ -59,6 +60,13 @@ import { MetricService } from './MetricService';
 import { Metric } from '../models/Metric';
 
 export interface SyncCreateParams {
+  experimentDTO: ExperimentDTO;
+  currentUser: UserDTO;
+  createType?: string;
+  logger: UpgradeLogger;
+}
+
+export interface SyncEditParams {
   experimentDTO: ExperimentDTO;
   currentUser: UserDTO;
   createType?: string;
@@ -141,6 +149,10 @@ export class MoocletExperimentService extends ExperimentService {
     return this.dataSource.transaction((manager) => this.handleCreateMoocletTransaction(manager, params));
   }
 
+  public async syncUpdate(params: SyncCreateParams): Promise<ExperimentDTO> {
+    return this.dataSource.transaction((manager) => this.handleEditMoocletTransaction(manager, params));
+  }
+
   public async syncDelete(params: SyncDeleteParams): Promise<Experiment> {
     return this.dataSource.transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
   }
@@ -200,7 +212,12 @@ export class MoocletExperimentService extends ExperimentService {
     // If either of THESE fail, we will need to rollback the mooclet resources here also before aborting the UpGrade experiment transaction
     try {
       await this.saveMoocletExperimentRef(manager, moocletExperimentRefResponse);
-      await this.createAndSaveVersionConditionMaps(manager, moocletExperimentRefResponse, logger);
+      await this.createAndSaveVersionConditionMaps(
+        manager,
+        moocletExperimentRefResponse.id,
+        moocletExperimentRefResponse.versionConditionMaps,
+        logger
+      );
 
       experimentResponse.moocletPolicyParameters = moocletPolicyParameters;
 
@@ -228,22 +245,206 @@ export class MoocletExperimentService extends ExperimentService {
 
   private async createAndSaveVersionConditionMaps(
     manager: EntityManager,
-    moocletExperimentRefResponse: MoocletExperimentRef,
+    moocletExperimentRefId: string,
+    versionConditionMaps: MoocletVersionConditionMap[],
     logger: UpgradeLogger
   ): Promise<void> {
-    if (moocletExperimentRefResponse.versionConditionMaps) {
-      for (const versionConditionMap of moocletExperimentRefResponse.versionConditionMaps) {
-        const versionConditionMapEntity = manager.create(MoocletVersionConditionMap, {
-          ...versionConditionMap,
-          moocletExperimentRefId: moocletExperimentRefResponse.id,
-          experimentConditionId: versionConditionMap.experimentConditionId,
-        });
-        const map = await manager.save(MoocletVersionConditionMap, versionConditionMapEntity);
-        logger.info({
-          message: 'MoocletVersionConditionMap created successfully:',
-          versionConditionMap: JSON.stringify(map),
-        });
+    for (const versionConditionMap of versionConditionMaps) {
+      const versionConditionMapEntity = manager.create(MoocletVersionConditionMap, {
+        ...versionConditionMap,
+        moocletExperimentRefId,
+        experimentConditionId: versionConditionMap.experimentConditionId,
+      });
+      const map = await manager.save(MoocletVersionConditionMap, versionConditionMapEntity);
+      logger.info({
+        message: 'MoocletVersionConditionMap created successfully:',
+        versionConditionMap: JSON.stringify(map),
+      });
+    }
+  }
+
+  private async detectNewOutcomeVariableName(
+    incomingExperimentDTO: ExperimentDTO,
+    currentMoocletExperimentRef: MoocletExperimentRef,
+    logger: UpgradeLogger
+  ): Promise<string> {
+    const newName = incomingExperimentDTO.moocletPolicyParameters['outcome_variable_name'];
+    const currentVariable = await this.moocletDataService.getVariable(currentMoocletExperimentRef.variableId, logger);
+    const currentName = currentVariable?.name;
+
+    return newName !== currentName ? newName : null;
+  }
+
+  private detectNewConditions(
+    incomingExperimentDTO: ExperimentDTO,
+    currentMoocletExperimentRef: MoocletExperimentRef
+  ): ConditionValidator[] {
+    const newConditions = incomingExperimentDTO.conditions.filter(
+      (condition) =>
+        !currentMoocletExperimentRef.versionConditionMaps.find((map) => map.experimentCondition.id === condition.id)
+    );
+
+    return newConditions.length ? newConditions : null;
+  }
+
+  private detectRemovedConditions(
+    incomingExperimentDTO: ExperimentDTO,
+    currentMoocletExperimentRef: MoocletExperimentRef
+  ): MoocletVersionConditionMap[] {
+    const mapsForRemovedConditions = currentMoocletExperimentRef.versionConditionMaps.filter(
+      (map) => !incomingExperimentDTO.conditions.find((condition) => condition.id === map.experimentCondition.id)
+    );
+
+    return mapsForRemovedConditions.length ? mapsForRemovedConditions : null;
+  }
+
+  private getVersionMapsWithConditionCodeChanges(
+    incomingExperimentDTO: ExperimentDTO,
+    currentMoocletExperimentRef: MoocletExperimentRef
+  ): MoocletVersionConditionMap[] {
+    const versionsToUpdate = currentMoocletExperimentRef.versionConditionMaps.filter((map) => {
+      const condition = incomingExperimentDTO.conditions.find(
+        (condition) => condition.id === map.experimentCondition.id
+      );
+
+      if (!condition) {
+        return false;
       }
+
+      return condition || condition.conditionCode !== map.experimentCondition.conditionCode;
+    });
+
+    return versionsToUpdate.length ? versionsToUpdate : null;
+  }
+
+  private async handleEditMoocletTransaction(manager: EntityManager, params: SyncEditParams): Promise<ExperimentDTO> {
+    const { experimentDTO: incomingExperiment, currentUser, logger } = params;
+
+    try {
+      // 1. detect the changes we might care about
+      const currentMoocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(
+        incomingExperiment.id
+      );
+
+      const newOutcomeVariableName = await this.detectNewOutcomeVariableName(
+        incomingExperiment,
+        currentMoocletExperimentRef,
+        logger
+      );
+      const addedConditions = this.detectNewConditions(incomingExperiment, currentMoocletExperimentRef);
+      const removedConditions = this.detectRemovedConditions(incomingExperiment, currentMoocletExperimentRef);
+      const versionMapsToUpdate = this.getVersionMapsWithConditionCodeChanges(
+        incomingExperiment,
+        currentMoocletExperimentRef
+      );
+      const conditionsHaveChanged = addedConditions || removedConditions || versionMapsToUpdate;
+
+      logger.info({
+        message: 'Detected changes',
+        newOutcomeVariableName,
+        addedConditions,
+        removedConditions,
+        versionMapsToUpdate,
+      });
+
+      // note that policy parameters other than outcomeVariableName are going to typically be okay to change
+      const changesAllowedInInactiveStateOnly = newOutcomeVariableName || conditionsHaveChanged;
+
+      if (incomingExperiment.state !== EXPERIMENT_STATE.INACTIVE && changesAllowedInInactiveStateOnly) {
+        const error = {
+          message: 'Ineligible changes detected for an active Mooclet experiment',
+          addedConditions,
+          removedConditions,
+          versionMapsToUpdate,
+          newOutcomeVariableName,
+        };
+        logger.error(error);
+        throw new Error(JSON.stringify(error));
+      }
+
+      // 2. if the changes are allowed, go ahead and update the upgrade experiment first so we can abort early if there are any issues
+      const updatedExperiment = await super.update(incomingExperiment, currentUser, logger, manager);
+
+      // recreate the variable if the outcome variable name has changed
+      if (newOutcomeVariableName && currentMoocletExperimentRef.variableId) {
+        await this.moocletDataService.updateVariable(
+          currentMoocletExperimentRef.variableId,
+          {
+            name: newOutcomeVariableName,
+          },
+          logger
+        );
+      }
+
+      // update the policy parameters regardless of if they changed
+      await this.moocletDataService.updatePolicyParameters(
+        currentMoocletExperimentRef.policyParametersId,
+        {
+          mooclet: currentMoocletExperimentRef.moocletId,
+          policy: currentMoocletExperimentRef.policyId,
+          parameters: incomingExperiment.moocletPolicyParameters,
+        },
+        logger
+      );
+
+      // when upgrade experiment is updated, the versionmaps are automatically updated for removed conditions
+      // we still need to manually delete from mooclet
+      if (removedConditions) {
+        await Promise.all(
+          removedConditions.map(async (map) => {
+            await this.moocletDataService.deleteVersion(map.moocletVersionId, logger);
+          })
+        );
+      }
+
+      // update any existing versions
+      if (versionMapsToUpdate) {
+        await Promise.all(
+          versionMapsToUpdate.map(async (map) => {
+            const version = await this.moocletDataService.getVersion(map.moocletVersionId, logger);
+            const condition = incomingExperiment.conditions.find(
+              (changedCondition) => changedCondition.id === map.experimentConditionId
+            );
+
+            if (version && condition && version.name !== condition.conditionCode) {
+              version.name = condition.conditionCode;
+              version.text = condition.conditionCode; // this could be mapped to payload
+              await this.moocletDataService.updateVersion(map.moocletVersionId, version, logger);
+            }
+          })
+        );
+      }
+
+      // if we have new conditions, we will need to manually create the new versions and versionmaps
+      if (addedConditions) {
+        const newVersions: MoocletVersionResponseDetails[] = [];
+
+        await Promise.all(
+          addedConditions.map(async (condition) => {
+            const newVersionRequest: MoocletVersionRequestBody = {
+              mooclet: currentMoocletExperimentRef.moocletId,
+              name: condition.conditionCode,
+              text: condition.conditionCode,
+            };
+
+            const version = await this.moocletDataService.postNewVersion(newVersionRequest, logger);
+            newVersions.push(version);
+          })
+        );
+
+        const updatedVersionConditionMaps = this.createMoocletVersionConditionMaps(newVersions, addedConditions);
+        await this.createAndSaveVersionConditionMaps(
+          manager,
+          currentMoocletExperimentRef.id,
+          updatedVersionConditionMaps,
+          logger
+        );
+      }
+
+      return updatedExperiment;
+    } catch (error) {
+      console.error('Error updating experiment', error);
+      throw error;
     }
   }
 
@@ -328,7 +529,7 @@ export class MoocletExperimentService extends ExperimentService {
       const moocletVersionsResponse = await this.createMoocletVersions(upgradeExperiment, moocletResponse, logger);
       moocletExperimentRef.versionConditionMaps = this.createMoocletVersionConditionMaps(
         moocletVersionsResponse,
-        upgradeExperiment
+        upgradeExperiment.conditions
       );
       logger.debug({
         message: `[Mooclet Creation] 3. Mooclet versions created:`,
@@ -349,7 +550,6 @@ export class MoocletExperimentService extends ExperimentService {
       const moocletVariableResponse = await this.createVariableIfNeeded(
         moocletPolicyParameters,
         upgradeExperiment.assignmentAlgorithm,
-        moocletResponse,
         logger
       );
       logger.debug({
@@ -358,7 +558,7 @@ export class MoocletExperimentService extends ExperimentService {
       });
 
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
-      moocletExperimentRef.outcomeVariableName = moocletVariableResponse?.name;
+      moocletExperimentRef.policyId = newMoocletRequest.policy;
     } catch (err) {
       await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
       throw err;
@@ -401,14 +601,12 @@ export class MoocletExperimentService extends ExperimentService {
   }
 
   private createMoocletVersionConditionMaps(
-    moocletVersionsResponse: MoocletVersionResponseDetails[],
-    upgradeExperiment: ExperimentDTO
+    versions: MoocletVersionResponseDetails[],
+    conditions: ConditionValidator[]
   ): MoocletVersionConditionMap[] {
-    const versionConditionMaps: MoocletVersionConditionMap[] = upgradeExperiment.conditions.map((condition) => {
+    const versionConditionMaps: MoocletVersionConditionMap[] = conditions.map((condition) => {
       const versionConditionMap = new MoocletVersionConditionMap();
-      versionConditionMap.moocletVersionId = moocletVersionsResponse.find(
-        (version) => version.name === condition.conditionCode
-      )?.id;
+      versionConditionMap.moocletVersionId = versions.find((version) => version.name === condition.conditionCode)?.id;
       versionConditionMap.experimentConditionId = condition.id;
 
       return versionConditionMap;
@@ -553,9 +751,6 @@ export class MoocletExperimentService extends ExperimentService {
       mooclet: mooclet.id,
       name: upgradeCondition.conditionCode,
       text: upgradeCondition.conditionCode,
-      version_json: {
-        [`${mooclet.name}_VERSION_CONTROL_FLAG`]: index,
-      },
     };
 
     try {
@@ -588,7 +783,6 @@ export class MoocletExperimentService extends ExperimentService {
   private async createVariableIfNeeded(
     moocletPolicyParametersResponse: MoocletPolicyParametersDTO,
     assignmentAlgorithm: string,
-    moocletResponse: MoocletResponseDetails,
     logger: UpgradeLogger
   ): Promise<MoocletVariableResponseDetails> {
     if (!moocletPolicyParametersResponse || assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {

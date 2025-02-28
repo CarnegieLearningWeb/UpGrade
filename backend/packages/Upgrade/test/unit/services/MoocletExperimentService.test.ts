@@ -296,6 +296,7 @@ describe('#MoocletExperimentService', () => {
 
       mockMoocletExperimentRefResponse = {
         id: 'moocletRef-123',
+        versionConditionMaps: [],
       } as MoocletExperimentRef;
 
       manager = mockDataSource.manager as EntityManager;
@@ -338,7 +339,8 @@ describe('#MoocletExperimentService', () => {
 
       expect(moocletExperimentService['createAndSaveVersionConditionMaps']).toHaveBeenCalledWith(
         manager,
-        mockMoocletExperimentRefResponse,
+        mockMoocletExperimentRefResponse.id,
+        mockMoocletExperimentRefResponse.versionConditionMaps,
         logger
       );
 
