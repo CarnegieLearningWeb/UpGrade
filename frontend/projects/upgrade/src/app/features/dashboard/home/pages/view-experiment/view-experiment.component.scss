@@ -258,7 +258,8 @@ $font-size-small: 15px;
   .json-viewer-container {
     padding: 24px 34px;
 
-    &-partition, &-condition {
+    &-partitions,
+    &-conditions {
       margin-bottom: 24px;
 
       .table {
