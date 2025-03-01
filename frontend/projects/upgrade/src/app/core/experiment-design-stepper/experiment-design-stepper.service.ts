@@ -670,10 +670,6 @@ export class ExperimentDesignStepperService {
     );
   }
 
-  clearAssignmentAlgorithm(): void {
-    this.currentAssignmentAlgorithm$.next(ASSIGNMENT_ALGORITHM.RANDOM);
-  }
-
   clearDecisionPointTableEditModeDetails(): void {
     this.store$.dispatch(experimentDesignStepperAction.actionClearDecisionPointTableEditDetails());
   }
@@ -696,11 +692,9 @@ export class ExperimentDesignStepperService {
 
   clearFactorialDesignStepperData(): void {
     this.store$.dispatch(experimentDesignStepperAction.clearFactorialDesignStepperData());
-    this.clearAssignmentAlgorithm();
   }
 
   clearSimpleExperimentDesignStepperData(): void {
     this.store$.dispatch(experimentDesignStepperAction.clearSimpleExperimentDesignStepperData());
-    this.clearAssignmentAlgorithm();
   }
 }
