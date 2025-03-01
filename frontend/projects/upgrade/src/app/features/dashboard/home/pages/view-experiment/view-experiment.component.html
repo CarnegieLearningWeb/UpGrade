@@ -596,7 +596,7 @@
           </div>
 
           <!-- Experiment Conditions Table -->
-          <div class="table-container table-container-partition">
+          <div class="table-container table-container-condition">
             <span class="ft-24-700">{{ 'home.view-experiment.experiment-conditions-title.text' | translate }}</span>
             <div *ngIf="experiment.type === 'Simple'">
               <mat-table [dataSource]="experiment.conditions" class="table">
@@ -622,7 +622,14 @@
                   <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                     {{ 'home-global.assignment-weight.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell class="ft-12-600" *matCellDef="let data"> {{ data.assignmentWeight }} </mat-cell>
+                  <mat-cell class="ft-12-600" *matCellDef="let data">
+                    <ng-container *ngIf="experiment?.moocletPolicyParameters; else showWeight">
+                      <span>N/A</span>
+                    </ng-container>
+                    <ng-template #showWeight>
+                      {{ data.assignmentWeight }}
+                    </ng-template>
+                  </mat-cell>
                 </ng-container>
 
                 <!-- Description Column -->
@@ -690,11 +697,16 @@
 
                 <!-- Weight Column -->
                 <ng-container matColumnDef="assignmentWeight">
-                  <mat-header-cell style="justify-content: left" class="ft-12-700" *matHeaderCellDef>
+                  <mat-header-cell class="ft-12-700" *matHeaderCellDef>
                     {{ 'home-global.assignment-weight.text' | translate }}
                   </mat-header-cell>
-                  <mat-cell style="justify-content: left; padding-left: 10px" class="ft-12-600" *matCellDef="let data">
-                    {{ data.assignmentWeight }}
+                  <mat-cell class="ft-12-600" *matCellDef="let data">
+                    <ng-container *ngIf="experiment?.moocletPolicyParameters; else showFactorialWeight">
+                      <span>N/A</span>
+                    </ng-container>
+                    <ng-template #showFactorialWeight>
+                      {{ data.assignmentWeight }}
+                    </ng-template>
                   </mat-cell>
                 </ng-container>
 

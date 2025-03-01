@@ -258,12 +258,36 @@ $font-size-small: 15px;
   .json-viewer-container {
     padding: 24px 34px;
 
-    &-partition {
+    &-partition, &-condition {
       margin-bottom: 24px;
 
       .table {
         mat-row {
           max-height: 50px;
+        }
+
+        .cdk-column-partitionPoint {
+          max-width: 35%;
+        }
+
+        .cdk-column-excludeIfReached {
+          justify-content: center;
+          max-width: 150px;
+          margin-right: 32px;
+        }
+
+        .cdk-column-conditionCode {
+          max-width: 35%;
+        }
+
+        .cdk-column-assignmentWeight {
+          justify-content: flex-end;
+          max-width: 96px;
+          margin-right: 64px;
+        }
+
+        .cdk-column-description {
+          margin-right: 32px;
         }
       }
 
@@ -322,14 +346,6 @@ $font-size-small: 15px;
     &-participants,
     &-metrics {
       margin-bottom: 24px;
-
-      .table {
-        mat-cell,
-        mat-header-cell {
-          justify-content: flex-start !important;
-          padding-left: 10.5% !important;
-        }
-      }
     }
 
     &-payloads .payload-table-overview {
@@ -348,7 +364,7 @@ $font-size-small: 15px;
       mat-cell,
       mat-header-cell {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         padding: 10px;
         margin-left: 25px;
         word-break: break-word;
