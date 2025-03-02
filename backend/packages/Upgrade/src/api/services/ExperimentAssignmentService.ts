@@ -533,7 +533,7 @@ export class ExperimentAssignmentService {
     const groupExperiments = experiments.filter(({ assignmentUnit }) => assignmentUnit === ASSIGNMENT_UNIT.GROUP);
 
     if (groupExperiments.length > 0) {
-      // get invalid group/workingGroup experiments which dont have any enrolments yet:
+      // get invalid group/workingGroup experiments which don't have any enrollments yet:
       const invalidGroupExperiments = await this.getInvalidGroupNotEnrolledExperiments(
         groupExperiments,
         experimentUser,
