@@ -709,7 +709,7 @@ describe('Experiment Assignment Service Test', () => {
     expect(result[0].assignedCondition[0]).toMatchObject({ conditionCode: 'Color=Red; Shape=Circle' });
   });
 
-  it('check checkUserOrGroupIsGloballyExcluded() function', async () => {
+  it('[checkUserOrGroupIsGloballyExcluded] should return false for user and group exclusions', async () => {
     const userId = 'user123';
     const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
     const exclusionStatus = [false, false];
@@ -720,7 +720,7 @@ describe('Experiment Assignment Service Test', () => {
     expect(exclusionResult).toEqual(exclusionStatus);
   });
 
-  it('check getAssignmentsAndExclusionsForUser() function', async () => {
+  it('[getAssignmentsAndExclusionsForUser] should return empty enrollment/exclusion user and group documents', async () => {
     const userId = 'user123';
     const experimentUser = {
       id: userId,
@@ -747,12 +747,6 @@ describe('Experiment Assignment Service Test', () => {
     // Call function
     const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
       await testedModule.experimentService.getAssignmentsAndExclusionsForUser(experimentUser, experimentIds);
-
-    // Debug logs
-    console.log('Returned individualEnrollments:', individualEnrollments);
-    console.log('Returned groupEnrollments:', groupEnrollments);
-    console.log('Returned individualExclusions:', individualExclusions);
-    console.log('Returned groupExclusions:', groupExclusions);
 
     // Assertions: Ensure the function returns the expected values
     expect(individualEnrollments).toEqual(individualEnrollmentRepositoryMock);
@@ -785,52 +779,80 @@ describe('Experiment Assignment Service Test', () => {
     expect(expResult).toEqual([]);
   });
 
-  // it('check experimentLevelExclusionInclusion() function', async () => {
-  //   const userId = 'user123';
-  //   const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
-  //   const exp = factorialGroupExperiment;
+  it('[experimentLevelExclusionInclusion] should return an empty exclusion reason if [checkUserOrGroupIsGloballyExcluded] returns false', async () => {
+    const userId = 'user123';
+    const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exclusionStatus = [false, false];
+    const exp = simpleIndividualAssignmentExperiment;
+    const individualEnrollmentRepositoryMock = {
+      findEnrollments: sandbox.stub().resolves([]),
+      find: sandbox.stub().resolves([]),
+    };
 
-  //   testedModule.experimentService = experimentServiceMock;
-  //   testedModule.experimentService.experimentLevelExclusionInclusion = { find: sandbox.stub().resolves([]) };
+    testedModule.experimentService = experimentServiceMock;
+    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
 
-  //   const expResult = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
-  //   expect(expResult).toEqual([exp]);
-  // });
+    const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc);
+    expect(exclusionResult).toEqual(exclusionStatus);
 
-  // it('check processExperimentPools() function', async () => {
-  //   const userId = 'user123';
-  //   const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
-  //   const exp = simpleIndividualAssignmentExperiment;
-  //   const experimentIds = [exp.id];
+    const [includedExpement, excludedExperiment] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
+    expect(excludedExperiment).toEqual([]);
+    expect(includedExpement).toEqual([exp]);
+  });
 
-  //   testedModule.experimentService = experimentServiceMock;
-  //   const [individualEnrollments, groupEnrollments, _, __] = await testedModule.getAssignmentsAndExclusionsForUser(
-  //     userDoc,
-  //     experimentIds
-  //   );
-  //   const expResult = await testedModule.processExperimentPools(
-  //     [exp],
-  //     individualEnrollments,
-  //     groupEnrollments,
-  //     userDoc
-  //   );
-  //   expect(expResult).toEqual([exp]);
-  // });
+  it('[processExperimentPools] should return filteredExperiment', async () => {
+    const userId = 'user123';
+    const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exp = simpleIndividualAssignmentExperiment;
+    const experimentIds = [exp.id];
 
-  // it('check processExperimentPools() function', async () => {
-  //   const userId = 'user123';
-  //   const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
-  //   const exp = factorialGroupExperiment;
-  //   const experimentIds = exp.id;
+    const individualEnrollmentRepositoryMock = {
+      findEnrollments: sandbox.stub().resolves([]),
+      find: sandbox.stub().resolves([]),
+    };
+    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
+    testedModule.experimentService.getAssignmentsAndExclusionsForUser = sandbox
+      .stub()
+      .resolves([individualEnrollmentRepositoryMock, [], individualExclusionRepositoryMock, []]);
 
-  //   testedModule.experimentService = experimentServiceMock;
-  //   const [individualEnrollments, groupEnrollments, _, __] = await testedModule.getAssignmentsAndExclusionsForUser(
-  //     userDoc,
-  //     experimentIds
-  //   );
-  //   const expResult = await testedModule.processExperimentPools(exp, individualEnrollments, groupEnrollments, userDoc);
-  //   expect(expResult).toEqual([exp]);
-  // });
+    testedModule.createExperimentPool = sandbox.stub().returns([[exp]]);
+    // Assign these mocks to the tested module
+    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
+    testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
+    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
+    testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
+
+    testedModule.experimentService = experimentServiceMock;
+    const [individualEnrollments, groupEnrollments, _, __] = await testedModule.getAssignmentsAndExclusionsForUser(
+      userDoc,
+      experimentIds
+    );
+
+    testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([exp]);
+
+    const expResult = await testedModule.processExperimentPools(
+      [exp],
+      individualEnrollments,
+      groupEnrollments,
+      userDoc
+    );
+    expect(expResult).toEqual([exp]);
+  });
+
+  it('[createExperimentPool] should return Pooled Experiment', async () => {
+    const exp = simpleIndividualAssignmentExperiment;
+    testedModule.experimentService = experimentServiceMock;
+    const expResult = await testedModule.createExperimentPool([exp]);
+    expect(expResult).toEqual([[exp]]);
+  });
+
+  it('[createPools] should return Pooled Experiment', async () => {
+    const exp = simpleIndividualAssignmentExperiment;
+    testedModule.experimentService = experimentServiceMock;
+    const expResult = await testedModule.createExperimentPool([exp]);
+    expect(expResult).toEqual([[exp]]);
+  });
 
   it('should log an error when clientError is provided', async () => {
     const userId = 'testUser';

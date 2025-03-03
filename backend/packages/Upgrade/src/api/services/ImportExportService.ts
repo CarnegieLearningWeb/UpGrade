@@ -108,7 +108,7 @@ export class ImportExportService {
         experiment.backendVersion = env.app.version;
 
         let experimentRecord = this.experimentService.reducedConditionPayload(
-          this.experimentService.formatingPayload(this.experimentService.formatingConditionPayload(experiment))
+          this.experimentService.formattingPayload(this.experimentService.formattingConditionPayload(experiment))
         );
 
         // If it's a mooclet experiment, attach reward key and policy parameters
