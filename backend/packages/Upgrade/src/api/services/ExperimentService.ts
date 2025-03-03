@@ -307,15 +307,6 @@ export class ExperimentService {
     return this.addExperimentInDB(experiment, currentUser, logger, existingEntityManager);
   }
 
-  public createMultipleExperiments(
-    experiments: ExperimentDTO[],
-    user: UserDTO,
-    logger: UpgradeLogger
-  ): Promise<Experiment[]> {
-    logger.info({ message: `Generating test experiments`, details: experiments });
-    return this.addBulkExperiments(experiments, user, logger);
-  }
-
   public async delete(
     experimentId: string,
     currentUser: UserDTO,
@@ -506,11 +497,10 @@ export class ExperimentService {
     };
   }
 
-  public async importExperiment(
+  public async verifyExperiments(
     experimentFiles: ExperimentFile[],
-    user: UserDTO,
     logger: UpgradeLogger
-  ): Promise<ValidatedExperimentError[]> {
+  ): Promise<{ experiments: ExperimentDTO[]; validatedExperiments: ValidatedExperimentError[] }> {
     const validatedExperiments = await this.validateExperiments(experimentFiles, logger);
 
     const nonErrorExperiments = experimentFiles.filter((file) => {
@@ -570,51 +560,7 @@ export class ExperimentService {
       // Always set the imported experiment to "inactive".
       experiment.state = EXPERIMENT_STATE.INACTIVE;
     }
-    await this.addBulkExperiments(experiments, user, logger);
-    return validatedExperiments;
-  }
-
-  public async exportExperiment(user: UserDTO, logger: UpgradeLogger, experimentIds?: string[]): Promise<Experiment[]> {
-    logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
-    const experimentDetails = await this.experimentRepository.find({
-      where: experimentIds ? { id: In(experimentIds) } : undefined,
-      relations: [
-        'partitions',
-        'conditions',
-        'stateTimeLogs',
-        'queries',
-        'queries.metric',
-        'experimentSegmentInclusion',
-        'experimentSegmentInclusion.segment',
-        'experimentSegmentInclusion.segment.individualForSegment',
-        'experimentSegmentInclusion.segment.groupForSegment',
-        'experimentSegmentInclusion.segment.subSegments',
-        'experimentSegmentExclusion',
-        'experimentSegmentExclusion.segment',
-        'experimentSegmentExclusion.segment.individualForSegment',
-        'experimentSegmentExclusion.segment.groupForSegment',
-        'experimentSegmentExclusion.segment.subSegments',
-        'partitions.conditionPayloads',
-        'partitions.conditionPayloads.parentCondition',
-        'factors',
-        'factors.levels',
-        'conditions.conditionPayloads',
-        'conditions.levelCombinationElements',
-        'conditions.levelCombinationElements.level',
-        'stratificationFactor',
-      ],
-    });
-    const formattedExperiments = experimentDetails.map((experiment) => {
-      experiment.backendVersion = env.app.version;
-      this.experimentAuditLogRepository.saveRawJson(
-        LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
-        { experimentName: experiment.name },
-        user
-      );
-      return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
-    });
-
-    return formattedExperiments;
+    return { experiments, validatedExperiments };
   }
 
   private async updateExperimentSchedules(
@@ -1581,6 +1527,14 @@ export class ExperimentService {
         }
         const experimentJSONValidationError = await this.validateExperimentJSON(newExperiment);
         const fileName = experimentFile.fileName;
+
+        if ('moocletPolicyParameters' in newExperiment && !env.mooclets?.enabled) {
+          return {
+            fileName,
+            error: 'moocletPolicyParameters was provided but mooclets are not enabled on backend.',
+          };
+        }
+
         try {
           experiment = this.autoFillSomeMissingProperties(experiment);
           experiment = this.deduceExperimentDetails(experiment);
@@ -1846,26 +1800,6 @@ export class ExperimentService {
     const stringConcat = searchString.join(',');
     const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
     return searchStringConcatenated;
-  }
-
-  private async addBulkExperiments(
-    experiments: ExperimentDTO[],
-    currentUser: UserDTO,
-    logger: UpgradeLogger
-  ): Promise<Experiment[]> {
-    const createdExperiments = [];
-    for (const exp of experiments) {
-      try {
-        const result = await this.create(exp, currentUser, logger);
-        createdExperiments.push(result);
-      } catch (err) {
-        const error = err as Error;
-        error.message = `Error in creating experiment document "addBulkExperiments"`;
-        logger.error(error);
-        throw error;
-      }
-    }
-    return createdExperiments;
   }
 
   public formattingConditionPayload(experiment: Experiment): Experiment {
