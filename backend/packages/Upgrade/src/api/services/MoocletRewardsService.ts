@@ -144,6 +144,7 @@ export class MoocletRewardsService {
             reward,
             user,
           });
+          // NOTE: in the future we may want to batch these, the mooclet API technically supports it by adding "/create_many" to an endpoint but it's not documented
           await this.moocletDataService.postNewReward(reward, logger);
         })
       );
