@@ -59,13 +59,13 @@ Resources:
           MemoryReservation: 64
           ReadonlyRootFilesystem: true
           Environment:
-            - Name: HEC_HOST
-              Value: '{{resolve:ssm:HEC_HOST}}'
             - Name: SPLUNK_INDEX
               Value: '{{resolve:ssm:SPLUNK_INDEX}}'
             - Name: VERSION
               Value: !Ref version
           Secrets:
+            - Name: HEC_HOST
+              ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/HEC_HOST
             - Name: HEC_TOKEN
               ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/HEC_TOKEN
           FirelensConfiguration:
