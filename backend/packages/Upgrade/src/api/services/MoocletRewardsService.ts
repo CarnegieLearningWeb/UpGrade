@@ -13,11 +13,7 @@ import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 
 import { QueryValidator } from '../DTO/ExperimentDTO';
-import {
-  BinaryRewardMetricAllowedValue,
-  BinaryRewardMetricAllowedValueType,
-  BinaryRewardMetricValueMap,
-} from 'types/src/Mooclet';
+import { BinaryRewardMetricAllowedValue, BinaryRewardMetricValueMap } from 'upgrade_types';
 
 export interface ValidRewardMetricType {
   key: string;
@@ -85,7 +81,7 @@ export class MoocletRewardsService {
 
       if (!moocletExperimentRefs.length) {
         logger.warn({
-          message: 'Reward metrics were logged, but no active mooclet experiment refs found.',
+          message: 'No active mooclet experiment refs found',
           user,
         });
         return;
@@ -106,33 +102,37 @@ export class MoocletRewardsService {
         return;
       }
 
+      const experimentIds = experimentsMatchingLoggedRewardKey.map((pair) => pair.moocletExperimentRef.experimentId);
+      const enrollments = await this.individualEnrollmentRepository.findEnrollments(user.id, experimentIds);
+
       // For each match, find the user's condition, map to version id, and create reward object
-      experimentsMatchingLoggedRewardKey.forEach(async (experimentRewardPair) => {
-        const { moocletExperimentRef, rewardMetricValue } = experimentRewardPair;
-        const enrollment = await this.findEnrolledCondition(user.id, moocletExperimentRef.experimentId, logger);
+      await Promise.all(
+        experimentsMatchingLoggedRewardKey.map(async ({ moocletExperimentRef, rewardMetricValue }) => {
+          const enrollment = enrollments.find(
+            (enrollment) => enrollment.experiment.id === moocletExperimentRef.experimentId
+          );
 
-        // not sure if this even possible in reality, but should be handled
-        if (!enrollment) {
-          logger.error({
-            message: 'Could not find user enrollment for experiment.',
-            user,
-            moocletExperimentRef,
-          });
-          return;
-        }
+          // not sure if this even possible in reality, but should be handled
+          if (!enrollment) {
+            logger.error({
+              message: 'Could not find user enrollment for experiment.',
+              user,
+              moocletExperimentRef,
+            });
+            return;
+          }
 
-        const versionId = this.getVersionIdByConditionId(enrollment, moocletExperimentRef, logger);
+          const versionId = this.getVersionIdByConditionId(enrollment, moocletExperimentRef, logger);
 
-        if (!versionId) {
-          logger.error({
-            message: 'Could not find version id for user enrollment.',
-            enrollment,
-            moocletExperimentRef,
-          });
-          return;
-        }
+          if (!versionId) {
+            logger.error({
+              message: 'Could not find version id for user enrollment.',
+              enrollment,
+              moocletExperimentRef,
+            });
+            return;
+          }
 
-        if (versionId) {
           const reward = {
             variable: moocletExperimentRef.outcomeVariableName,
             value: BinaryRewardMetricValueMap[rewardMetricValue],
@@ -144,9 +144,9 @@ export class MoocletRewardsService {
             reward,
             user,
           });
-          this.moocletDataService.postNewReward(reward, logger);
-        }
-      });
+          await this.moocletDataService.postNewReward(reward, logger);
+        })
+      );
     } catch (error) {
       logger.error({
         message: 'Failure processing and sending rewards',
@@ -181,14 +181,14 @@ export class MoocletRewardsService {
   }
 
   // type guard to allow for type checking of binary reward metric value
-  private isBinaryRewardMetricAllowedValue(value: any): value is BinaryRewardMetricAllowedValueType {
+  private isBinaryRewardMetricAllowedValue(value: any): value is BinaryRewardMetricAllowedValue {
     return Object.values(BinaryRewardMetricAllowedValue).includes(value);
   }
 
   private findExperimentByRewardMetricKey(
     moocletExperimentRefs: MoocletExperimentRef[],
     rewardMetricKeys: ValidRewardMetricType[]
-  ): { moocletExperimentRef: MoocletExperimentRef; rewardMetricValue: BinaryRewardMetricAllowedValueType }[] {
+  ): { moocletExperimentRef: MoocletExperimentRef; rewardMetricValue: BinaryRewardMetricAllowedValue }[] {
     const moocletExperimentRefMatches = [];
 
     for (const rewardMetric of rewardMetricKeys) {
@@ -203,33 +203,6 @@ export class MoocletRewardsService {
     }
 
     return moocletExperimentRefMatches;
-  }
-
-  private async findEnrolledCondition(
-    userId: string,
-    experimentId: string,
-    logger: UpgradeLogger
-  ): Promise<IndividualEnrollment | null> {
-    try {
-      const enrollments = await this.individualEnrollmentRepository.findEnrollments(userId, [experimentId]);
-
-      if (enrollments.length > 1) {
-        logger.error({
-          message: 'Found multiple enrollments for experiment, reward cannot be determined.',
-          enrollments,
-        });
-        return null;
-      }
-      return enrollments[0];
-    } catch (error) {
-      logger.error({
-        message: 'Failed to find user enrollments for experiment.',
-        error,
-        userId,
-        experimentId,
-      });
-      return null;
-    }
   }
 
   private getVersionIdByConditionId(

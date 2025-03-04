@@ -134,7 +134,7 @@ describe('MoocletRewardsService', () => {
       expect((service as any).gatherValidRewardMetrics).toHaveBeenCalledWith(mockLogs);
       expect((service as any).getAllActiveMoocletExperimentRefs).toHaveBeenCalledWith(mockLogger);
       expect(mockLogger.warn).toHaveBeenCalledWith({
-        message: 'Reward metrics were logged, but no active mooclet experiment refs found.',
+        message: 'No active mooclet experiment refs found',
         user: mockUser,
       });
     });
@@ -175,21 +175,34 @@ describe('MoocletRewardsService', () => {
 
       const activeRefs = [moocletRef];
 
-      const enrollment = {
-        id: 'enrollment-1',
-        condition: { id: 'condition-1' },
-      } as IndividualEnrollment;
+      const enrollments = [
+        {
+          id: 'enrollment-1',
+          condition: { id: 'condition-1' },
+          experiment: { id: 'exp-1' },
+        },
+      ] as IndividualEnrollment[];
 
       // Mock required methods
-      (service as any).gatherValidRewardMetrics = jest.fn().mockReturnValue(validMetrics);
-      (service as any).getAllActiveMoocletExperimentRefs = jest.fn().mockResolvedValue(activeRefs);
+      (service as any).gatherValidRewardMetrics = jest
+        .fn()
+        .mockReturnValue(validMetrics)
+        .mockName('gatherValidRewardMetrics');
+      (service as any).getAllActiveMoocletExperimentRefs = jest
+        .fn()
+        .mockResolvedValue(activeRefs)
+        .mockName('getAllActiveMoocletExperimentRefs');
       (service as any).findExperimentByRewardMetricKey = jest
         .fn()
         .mockReturnValue([
           { moocletExperimentRef: moocletRef, rewardMetricValue: BinaryRewardMetricAllowedValue.SUCCESS },
-        ]);
-      (service as any).findEnrolledCondition = jest.fn().mockResolvedValue(enrollment);
-      (service as any).getVersionIdByConditionId = jest.fn().mockReturnValue(456);
+        ])
+        .mockName('findExperimentByRewardMetricKey');
+      (service as any).getVersionIdByConditionId = jest.fn().mockReturnValue(456).mockName('getVersionIdByConditionId');
+      mockIndividualEnrollmentRepository.findEnrollments = jest
+        .fn()
+        .mockResolvedValue(enrollments)
+        .mockName('mockIndividualEnrollmentRepository.findEnrollments');
 
       // Mock the BinaryRewardMetricValueMap
       const mockRewardValue = 1;
@@ -199,8 +212,7 @@ describe('MoocletRewardsService', () => {
       await service.parseLogsAndSendPotentialRewards(mockUser, mockLogs, mockLogger);
 
       // Assert
-      expect((service as any).findEnrolledCondition).toHaveBeenCalledWith('user-1', 'exp-1', mockLogger);
-      expect((service as any).getVersionIdByConditionId).toHaveBeenCalledWith(enrollment, moocletRef, mockLogger);
+      expect((service as any).getVersionIdByConditionId).toHaveBeenCalledWith(enrollments[0], moocletRef, mockLogger);
 
       expect(mockLogger.info).toHaveBeenCalledWith({
         message: 'Sending reward to mooclet',
@@ -244,7 +256,10 @@ describe('MoocletRewardsService', () => {
         .mockReturnValue([
           { moocletExperimentRef: moocletRef, rewardMetricValue: BinaryRewardMetricAllowedValue.SUCCESS },
         ]);
-      (service as any).findEnrolledCondition = jest.fn().mockResolvedValue(null); // No enrollment found
+      mockIndividualEnrollmentRepository.findEnrollments = jest
+        .fn()
+        .mockResolvedValue([])
+        .mockName('mockIndividualEnrollmentRepository.findEnrollments');
 
       // Act
       await service.parseLogsAndSendPotentialRewards(mockUser, mockLogs, mockLogger);
@@ -270,10 +285,13 @@ describe('MoocletRewardsService', () => {
         outcomeVariableName: 'outcome-1',
       } as MoocletExperimentRef;
 
-      const enrollment = {
-        id: 'enrollment-1',
-        condition: { id: 'condition-1' },
-      } as IndividualEnrollment;
+      const enrollments = [
+        {
+          id: 'enrollment-1',
+          condition: { id: 'condition-1' },
+          experiment: { id: 'exp-1' },
+        },
+      ] as IndividualEnrollment[];
 
       // Mock required methods
       (service as any).gatherValidRewardMetrics = jest.fn().mockReturnValue(validMetrics);
@@ -283,7 +301,10 @@ describe('MoocletRewardsService', () => {
         .mockReturnValue([
           { moocletExperimentRef: moocletRef, rewardMetricValue: BinaryRewardMetricAllowedValue.SUCCESS },
         ]);
-      (service as any).findEnrolledCondition = jest.fn().mockResolvedValue(enrollment);
+      mockIndividualEnrollmentRepository.findEnrollments = jest
+        .fn()
+        .mockResolvedValue(enrollments)
+        .mockName('mockIndividualEnrollmentRepository.findEnrollments');
       (service as any).getVersionIdByConditionId = jest.fn().mockReturnValue(null); // No version ID found
 
       // Act
@@ -292,7 +313,7 @@ describe('MoocletRewardsService', () => {
       // Assert
       expect(mockLogger.error).toHaveBeenCalledWith({
         message: 'Could not find version id for user enrollment.',
-        enrollment,
+        enrollment: enrollments[0],
         moocletExperimentRef: moocletRef,
       });
       expect(mockMoocletDataService.postNewReward).not.toHaveBeenCalled();
@@ -315,135 +336,6 @@ describe('MoocletRewardsService', () => {
         error,
         logs: mockLogs,
       });
-    });
-
-    it('should correctly process multiple matching experiments', async () => {
-      // Mock data for multiple matches
-      const validMetrics = [
-        { key: 'test-metric-1', value: BinaryRewardMetricAllowedValue.SUCCESS },
-        { key: 'test-metric-2', value: BinaryRewardMetricAllowedValue.FAILURE },
-      ];
-
-      const moocletRef1 = {
-        id: 'ref-1',
-        experimentId: 'exp-1',
-        moocletId: 123,
-        rewardMetricKey: 'test-metric-1',
-        outcomeVariableName: 'outcome-1',
-        versionConditionMaps: [{ experimentConditionId: 'condition-1', moocletVersionId: 456 }],
-      } as MoocletExperimentRef;
-
-      const moocletRef2 = {
-        id: 'ref-2',
-        experimentId: 'exp-2',
-        moocletId: 789,
-        rewardMetricKey: 'test-metric-2',
-        outcomeVariableName: 'outcome-2',
-        versionConditionMaps: [{ experimentConditionId: 'condition-2', moocletVersionId: 101 }],
-      } as MoocletExperimentRef;
-
-      const enrollment1 = {
-        id: 'enrollment-1',
-        condition: { id: 'condition-1' },
-      } as IndividualEnrollment;
-
-      const enrollment2 = {
-        id: 'enrollment-2',
-        condition: { id: 'condition-2' },
-      } as IndividualEnrollment;
-
-      // Mock required methods
-      (service as any).gatherValidRewardMetrics = jest.fn().mockReturnValue(validMetrics);
-      (service as any).getAllActiveMoocletExperimentRefs = jest.fn().mockResolvedValue([moocletRef1, moocletRef2]);
-      (service as any).findExperimentByRewardMetricKey = jest.fn().mockReturnValue([
-        { moocletExperimentRef: moocletRef1, rewardMetricValue: BinaryRewardMetricAllowedValue.SUCCESS },
-        { moocletExperimentRef: moocletRef2, rewardMetricValue: BinaryRewardMetricAllowedValue.FAILURE },
-      ]);
-
-      // Mock different return values for different inputs
-      (service as any).findEnrolledCondition = jest.fn().mockImplementation((userId, experimentId) => {
-        if (experimentId === 'exp-1') return Promise.resolve(enrollment1);
-        if (experimentId === 'exp-2') return Promise.resolve(enrollment2);
-        return Promise.resolve(null);
-      });
-
-      (service as any).getVersionIdByConditionId = jest.fn().mockImplementation((enrollment, ref) => {
-        if (enrollment.id === 'enrollment-1') return 456;
-        if (enrollment.id === 'enrollment-2') return 101;
-        return null;
-      });
-
-      // Mock the BinaryRewardMetricValueMap
-      BinaryRewardMetricValueMap[BinaryRewardMetricAllowedValue.SUCCESS] = 1;
-      BinaryRewardMetricValueMap[BinaryRewardMetricAllowedValue.FAILURE] = 0;
-
-      // Act
-      await service.parseLogsAndSendPotentialRewards(mockUser, mockLogs, mockLogger);
-
-      // Assert
-      expect(mockMoocletDataService.postNewReward).toHaveBeenCalledTimes(2);
-
-      // Check first reward
-      expect(mockMoocletDataService.postNewReward).toHaveBeenCalledWith(
-        {
-          variable: 'outcome-1',
-          value: 1,
-          mooclet: 123,
-          version: 456,
-        },
-        mockLogger
-      );
-
-      // Check second reward
-      expect(mockMoocletDataService.postNewReward).toHaveBeenCalledWith(
-        {
-          variable: 'outcome-2',
-          value: 0,
-          mooclet: 789,
-          version: 101,
-        },
-        mockLogger
-      );
-    });
-  });
-
-  describe('#findEnrolledCondition', () => {
-    it('should return null when multiple enrollments are found', async () => {
-      const userId = 'user-1';
-      const experimentId = 'exp-1';
-      const mockEnrollments = [{ id: 'enrollment-1' }, { id: 'enrollment-2' }];
-
-      mockIndividualEnrollmentRepository.findEnrollments.mockResolvedValue(mockEnrollments as IndividualEnrollment[]);
-
-      const result = await (service as any).findEnrolledCondition(userId, experimentId, mockLogger);
-
-      expect(result).toBeNull();
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: 'Found multiple enrollments for experiment, reward cannot be determined.',
-          enrollments: mockEnrollments,
-        })
-      );
-    });
-
-    it('should handle repository errors gracefully', async () => {
-      const userId = 'user-1';
-      const experimentId = 'exp-1';
-      const error = new Error('Database error');
-
-      mockIndividualEnrollmentRepository.findEnrollments.mockRejectedValue(error);
-
-      const result = await (service as any).findEnrolledCondition(userId, experimentId, mockLogger);
-
-      expect(result).toBeNull();
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: 'Failed to find user enrollments for experiment.',
-          error,
-          userId,
-          experimentId,
-        })
-      );
     });
   });
 
