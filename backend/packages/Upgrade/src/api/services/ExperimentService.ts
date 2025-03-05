@@ -88,6 +88,8 @@ import { StratificationFactorRepository } from '../repositories/StratificationFa
 import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
 import { compare } from 'compare-versions';
 import { MetricService } from './MetricService';
+import { MoocletRewardsService } from './MoocletRewardsService';
+import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -121,6 +123,7 @@ export class ExperimentService {
     @InjectRepository() protected levelCombinationElementsRepository: LevelCombinationElementRepository,
     @InjectRepository() protected archivedStatsRepository: ArchivedStatsRepository,
     @InjectRepository() protected stratificationRepository: StratificationFactorRepository,
+    @InjectRepository() protected moocletExperimentRefRepository: MoocletExperimentRefRepository,
     @InjectDataSource() protected dataSource: DataSource,
     protected previewUserService: PreviewUserService,
     protected segmentService: SegmentService,
@@ -128,7 +131,8 @@ export class ExperimentService {
     protected errorService: ErrorService,
     protected cacheService: CacheService,
     protected queryService: QueryService,
-    protected metricService: MetricService
+    protected metricService: MetricService,
+    protected moocletRewardsService: MoocletRewardsService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
