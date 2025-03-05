@@ -57,7 +57,7 @@ const routes: Routes = [
       },
       {
         path: 'segments',
-        loadChildren: () => import('./segments/segments.module').then((m) => m.SegmentsModule),
+        loadChildren: () => import('./segments-legacy/segments.module').then((m) => m.SegmentsModule),
         data: {
           title: 'app-header.title.segments',
         },
