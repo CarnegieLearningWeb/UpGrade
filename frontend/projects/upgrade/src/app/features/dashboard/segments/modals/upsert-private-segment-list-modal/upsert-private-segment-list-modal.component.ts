@@ -28,7 +28,7 @@ import {
 } from '../../../../../core/segments/store/segments.model';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscription, timer } from 'rxjs';
-import { SegmentsModule } from '../../segments.module';
+import { SegmentsModule } from '../../../segments-legacy/segments.module';
 import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
