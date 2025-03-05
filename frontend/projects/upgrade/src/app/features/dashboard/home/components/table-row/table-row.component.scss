@@ -21,6 +21,12 @@ div {
       color: var(--grey-2);
     }
 
+    .weight-column {
+      justify-content: flex-end !important;
+      max-width: 96px;
+      margin-right: 64px;
+    }
+
     .mat-column-expandIcon {
       flex: 0 0 60px;
       width: 30px;

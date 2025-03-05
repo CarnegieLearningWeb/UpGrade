@@ -118,7 +118,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   isConditionsTableEditMode$ = this.experimentDesignStepperService.isConditionsTableEditMode$;
   conditionsTableEditIndex$ = this.experimentDesignStepperService.conditionsTableEditIndex$;
 
-  // Used for displaying the Mooclet Policy Parameters JSON editor
+  // Used for displaying the Mooclet Policy Parameters JSON editor and for hiding the Weight Equally checkbox
   currentAssignmentAlgorithm$ = this.experimentDesignStepperService.currentAssignmentAlgorithm$;
   isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
 
@@ -786,9 +786,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         });
       } else {
         this.conditions.controls.forEach((control, index) => {
-          const assignmentWeightFormControl = control.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT);
-          assignmentWeightFormControl.setValue(control.value.assignmentWeight ? control.value.assignmentWeight : 0);
           if (this.isExperimentEditable) {
+            const assignmentWeightFormControl = control.get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT);
             assignmentWeightFormControl.enable();
           }
         });
