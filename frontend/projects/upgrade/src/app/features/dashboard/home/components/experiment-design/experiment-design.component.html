@@ -217,10 +217,12 @@
           <!-- Condition table -->
           <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
           <!-- apply equal condition weights -->
-          <div class="conditions-header-container">
+          <div
+            *ngIf="isExperimentEditable && !(isMoocletExperimentDesign$ | async)"
+            class="conditions-header-container"
+          >
             <mat-checkbox
               color="primary"
-              [disabled]="!isExperimentEditable"
               [checked]="equalWeightFlag"
               (change)="changeEqualWeightFlag($event)"
             >
@@ -296,25 +298,33 @@
                   [formGroupName]="groupIndex"
                   style="justify-content: center"
                 >
-                  <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== groupIndex">
-                    <div class="assignment-weight-readonly align-right">
-                      {{
-                        conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT).value
-                          | truncate : 35
-                      }}
-                    </div>
+                  <!-- When isMoocletExperimentDesign$ is false, show the existing logic -->
+                  <ng-container *ngIf="!(isMoocletExperimentDesign$ | async)">
+                    <ng-container *ngIf="(conditionsTableEditIndex$ | async) !== groupIndex">
+                      <div class="assignment-weight-readonly align-right">
+                        {{
+                          conditions.at(groupIndex).get(SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT).value
+                            | truncate : 35
+                        }}
+                      </div>
+                    </ng-container>
+                    <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
+                      <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
+                        <input
+                          class="ft-14-400 align-right"
+                          type="number"
+                          matInput
+                          [placeholder]="'home.new-experiment.design.assignment-weight.placeholder.text' | translate"
+                          [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT"
+                          autocomplete="off"
+                        />
+                      </mat-form-field>
+                    </ng-container>
                   </ng-container>
-                  <ng-container *ngIf="(conditionsTableEditIndex$ | async) === groupIndex">
-                    <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
-                      <input
-                        class="ft-14-400 align-right"
-                        type="number"
-                        matInput
-                        [placeholder]="'home.new-experiment.design.assignment-weight.placeholder.text' | translate"
-                        [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.ASSIGNMENT_WEIGHT"
-                        autocomplete="off"
-                      />
-                    </mat-form-field>
+
+                  <!-- When isMoocletExperimentDesign$ is true, show N/A regardless of edit mode -->
+                  <ng-container *ngIf="isMoocletExperimentDesign$ | async">
+                    <div class="assignment-weight-readonly align-right">N/A</div>
                   </ng-container>
                 </mat-cell>
               </ng-container>

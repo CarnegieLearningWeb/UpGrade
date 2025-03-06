@@ -202,7 +202,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       });
 
       this.overviewForm.get('designType').valueChanges.subscribe((type) => {
-        if (this.initialDesignType !== type) {
+        if (this.isOverviewFormCompleted && this.initialDesignType !== type) {
           this.warningStatus = OverviewFormWarningStatus.DESIGN_TYPE_CHANGED;
         }
         this.initialDesignType = type;
@@ -240,6 +240,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           context: this.currentContext,
           tags: this.experimentInfo.tags,
         });
+        this.warningStatus = OverviewFormWarningStatus.NO_WARNING;
         this.checkExperiment();
         this.isOverviewFormCompleted = true;
       }
