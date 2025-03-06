@@ -696,11 +696,9 @@ export class ExperimentDesignStepperService {
 
   clearFactorialDesignStepperData(): void {
     this.store$.dispatch(experimentDesignStepperAction.clearFactorialDesignStepperData());
-    this.clearAssignmentAlgorithm();
   }
 
   clearSimpleExperimentDesignStepperData(): void {
     this.store$.dispatch(experimentDesignStepperAction.clearSimpleExperimentDesignStepperData());
-    this.clearAssignmentAlgorithm();
   }
 }

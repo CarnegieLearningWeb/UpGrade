@@ -48,15 +48,14 @@ import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import {
   ASSIGNMENT_ALGORITHM,
-  IMetricMetaData,
   MoocletPolicyParametersDTO,
   MoocletTSConfigurablePolicyParametersDTO,
-  REPEATED_MEASURE,
   SUPPORTED_MOOCLET_ALGORITHMS,
 } from 'upgrade_types';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { MetricService } from './MetricService';
 import { Metric } from '../models/Metric';
+import { MoocletRewardsService } from './MoocletRewardsService';
 
 export interface SyncCreateParams {
   experimentDTO: ExperimentDTO;
@@ -96,7 +95,7 @@ export class MoocletExperimentService extends ExperimentService {
     @InjectRepository() archivedStatsRepository: ArchivedStatsRepository,
     @InjectRepository() stratificationRepository: StratificationFactorRepository,
     @InjectRepository()
-    private readonly moocletExperimentRefRepository: MoocletExperimentRefRepository,
+    moocletExperimentRefRepository: MoocletExperimentRefRepository,
     @InjectDataSource() dataSource: DataSource,
     previewUserService: PreviewUserService,
     segmentService: SegmentService,
@@ -104,7 +103,8 @@ export class MoocletExperimentService extends ExperimentService {
     errorService: ErrorService,
     cacheService: CacheService,
     queryService: QueryService,
-    metricService: MetricService
+    metricService: MetricService,
+    moocletRewardsService: MoocletRewardsService
   ) {
     super(
       experimentRepository,
@@ -126,6 +126,7 @@ export class MoocletExperimentService extends ExperimentService {
       levelCombinationElementsRepository,
       archivedStatsRepository,
       stratificationRepository,
+      moocletExperimentRefRepository,
       dataSource,
       previewUserService,
       segmentService,
@@ -133,7 +134,8 @@ export class MoocletExperimentService extends ExperimentService {
       errorService,
       cacheService,
       queryService,
-      metricService
+      metricService,
+      moocletRewardsService
     );
   }
 
@@ -167,7 +169,7 @@ export class MoocletExperimentService extends ExperimentService {
 
     // create reward metric
     try {
-      await this.createAndSaveRewardMetric(rewardMetricKey, context[0], logger);
+      await this.moocletRewardsService.createAndSaveRewardMetric(rewardMetricKey, context[0], logger);
     } catch (error) {
       logger.error({
         message: 'Failed to create reward metric',
@@ -177,7 +179,10 @@ export class MoocletExperimentService extends ExperimentService {
       throw error;
     }
 
-    this.attachRewardMetricQuery(rewardMetricKey, queries);
+    // append default reward metric query to existing experimentDTO queries before saving
+    const defaultRewardMetricQuery = this.moocletRewardsService.getRewardMetricQuery(rewardMetricKey);
+
+    queries.push(defaultRewardMetricQuery);
 
     // create Upgrade Experiment. If this fails, then mooclet resources will not be created, and the UpGrade experiment transaction will abort
     const experimentResponse = await this.createExperiment(manager, params);
@@ -367,37 +372,6 @@ export class MoocletExperimentService extends ExperimentService {
     moocletExperimentRef.id = uuid();
 
     return moocletExperimentRef;
-  }
-
-  private attachRewardMetricQuery(rewardMetricKey: string, queries: any[]) {
-    queries.push({
-      id: uuid(),
-      name: 'Success Rate',
-      query: {
-        operationType: 'percentage',
-        compareFn: '=',
-        compareValue: 'SUCCESS',
-      },
-      metric: {
-        key: rewardMetricKey,
-      },
-      repeatedMeasure: REPEATED_MEASURE.mostRecent,
-    });
-  }
-
-  public async createAndSaveRewardMetric(
-    rewardMetricKey: string,
-    context: string,
-    logger: UpgradeLogger
-  ): Promise<Metric[]> {
-    const metric = {
-      id: uuid(),
-      metric: rewardMetricKey,
-      datatype: IMetricMetaData.CATEGORICAL,
-      allowedValues: ['SUCCESS', 'FAILURE'],
-    };
-
-    return this.metricService.saveAllMetrics([metric], [context], logger);
   }
 
   private createMoocletVersionConditionMaps(

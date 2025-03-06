@@ -38,6 +38,9 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   conditionWeightSumError: string = null;
   conditionNegativeWeightError: string = null;
 
+  // Used for hiding the Weight Equally checkbox
+  isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
+
   constructor(
     private experimentDesignStepperService: ExperimentDesignStepperService,
     private _formBuilder: UntypedFormBuilder,

@@ -223,7 +223,7 @@ class MetricValidator {
   public key: string;
 }
 
-class QueryValidator {
+export class QueryValidator {
   @IsString()
   @IsOptional()
   public id: string;

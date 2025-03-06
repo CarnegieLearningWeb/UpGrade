@@ -12,6 +12,7 @@ export const environment = {
   pollingInterval: 10 * 1000,
   pollingLimit: 600,
   featureFlagNavToggle: false,
+  segmentsRefreshToggle: false,
   withinSubjectExperimentSupportToggle: false,
   errorLogsToggle: false,
   metricAnalyticsExperimentDisplayToggle: false,

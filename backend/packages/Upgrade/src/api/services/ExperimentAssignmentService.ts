@@ -73,6 +73,7 @@ import { RequestedExperimentUser } from '../controllers/validators/ExperimentUse
 import { In } from 'typeorm';
 import { env } from '../../env';
 import { MoocletExperimentService } from './MoocletExperimentService';
+import { MoocletRewardsService } from './MoocletRewardsService';
 
 export interface FactorialConditionResult {
   factorialCondition: Omit<ExperimentCondition, 'levelCombinationElements' | 'conditionPayloads'>;
@@ -124,7 +125,8 @@ export class ExperimentAssignmentService {
     public segmentService: SegmentService,
     public experimentService: ExperimentService,
     public cacheService: CacheService,
-    public moocletExperimentService: MoocletExperimentService
+    public moocletExperimentService: MoocletExperimentService,
+    public moocletRewardsService: MoocletRewardsService
   ) {}
 
   private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
@@ -902,6 +904,10 @@ export class ExperimentAssignmentService {
     const userId = userDoc.id;
     logger.info({ message: `Add data log userId ${userId}`, details: jsonLog });
     const keyUniqueArray: { key: string; uniquifier: string }[] = [];
+
+    if (env.mooclets.enabled) {
+      this.moocletRewardsService.parseLogsAndSendPotentialRewards(userDoc, jsonLog, logger);
+    }
 
     // extract the array value
     const promise = jsonLog.map(async (individualMetrics) => {
