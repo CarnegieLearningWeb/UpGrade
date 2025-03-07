@@ -30,7 +30,7 @@ import {
   withinSubjectDPExperiment,
 } from '../mockdata';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
-import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { ENROLLMENT_CODE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
@@ -45,7 +45,6 @@ describe('Experiment Assignment Service Test', () => {
   let sandbox;
   let testedModule;
   let loggerMock = sinon.createStubInstance(UpgradeLogger);
-
   let decisionPointRepositoryMock = sinon.createStubInstance(DecisionPointRepository);
   let individualExclusionRepositoryMock = sinon.createStubInstance(IndividualExclusionRepository);
   let groupExclusionRepositoryMock = sinon.createStubInstance(GroupExclusionRepository);
@@ -335,6 +334,22 @@ describe('Experiment Assignment Service Test', () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } };
     const exp = factorialGroupAssignmentExperiment;
+    const factor = {
+      Color: {
+        level: 'Red',
+        payload: {
+          type: 'string',
+          value: null,
+        },
+      },
+      Shape: {
+        level: 'Circle',
+        payload: {
+          type: 'string',
+          value: null,
+        },
+      },
+    };
     const groupEnrollment = new GroupEnrollment();
     groupEnrollment.experiment = exp;
     groupEnrollment.condition = exp.conditions[0];
@@ -368,23 +383,6 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.experimentUserService = experimentUserServiceMock;
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
-
-    const factor = {
-      Color: {
-        level: 'Red',
-        payload: {
-          type: 'string',
-          value: null,
-        },
-      },
-      Shape: {
-        level: 'Circle',
-        payload: {
-          type: 'string',
-          value: null,
-        },
-      },
-    };
     expect(result.length).toEqual(1);
     expect(result[0].site).toEqual(exp.partitions[0].site);
     expect(result[0].target).toEqual(exp.partitions[0].target);
@@ -393,11 +391,30 @@ describe('Experiment Assignment Service Test', () => {
   });
 
   it('[checkUserOrGroupIsGloballyExcluded] should return false for user and group exclusions', async () => {
-    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
-    const exclusionStatus = [false, false];
+    const userDoc = { id: 'user3', group: { schoolId: ['school1'] }, workingGroup: {} };
 
-    const exclusionResult = await testedModule.experimentService.checkUserOrGroupIsGloballyExcluded(userDoc);
-    expect(exclusionResult).toEqual(exclusionStatus);
+    const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc);
+    expect(exclusionResult).toEqual([false, false]);
+  });
+
+  it('[checkUserOrGroupIsGloballyExcluded] should return true for user/group exclusions set', async () => {
+    const userDoc = { id: 'user5', group: { schoolId: ['school1'] }, workingGroup: {} };
+    // stub the global exclusion segment with user `user5` in individualForSegment and empty groupForSegment
+    testedModule.segmentService.getSegmentByIds.withArgs(['77777777-7777-7777-7777-777777777777']).resolves([
+      {
+        id: '77777777-7777-7777-7777-777777777777',
+        name: 'Global Exclude',
+        description: 'Globally excluded Users, Groups and Segments',
+        context: 'ALL',
+        type: 'global_exclude',
+        individualForSegment: [{ userId: 'user5' }],
+        groupForSegment: [],
+        subSegments: [],
+      },
+    ]);
+
+    const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc);
+    expect(exclusionResult).toEqual([true, false]);
   });
 
   it('[getAssignmentsAndExclusionsForUser] should return empty enrollment/exclusion user and group documents', async () => {
@@ -408,12 +425,39 @@ describe('Experiment Assignment Service Test', () => {
     };
     const experimentIds = ['be3ae74f-370a-4015-93f3-7761d16f8b17'];
 
-    // Call function
     const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
       await testedModule.getAssignmentsAndExclusionsForUser(experimentUser, experimentIds);
 
-    // Assertions: Ensure the function returns the expected values
     expect(individualEnrollments).toEqual([]);
+    expect(groupEnrollments).toEqual([]);
+    expect(individualExclusions).toEqual([]);
+    expect(groupExclusions).toEqual([]);
+  });
+
+  it('[getAssignmentsAndExclusionsForUser] should return enrollment/exclusion user and group documents', async () => {
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: {},
+    };
+    const experimentIds = ['be3ae74f-370a-4015-93f3-7761d16f8b17'];
+    const individualEnrollmentDoc = [
+      {
+        id: 'be3ae74f-370a-4015-93f3-7761d16f8b13',
+        simpleIndividualAssignmentExperiment,
+        partition: simpleIndividualAssignmentExperiment.partitions,
+        experimentUser,
+        condition: 'ConditionA',
+        groupId: experimentUser?.workingGroup[simpleIndividualAssignmentExperiment.group],
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+      },
+    ];
+    // stub individual enrollment:
+    testedModule.individualEnrollmentRepository.findEnrollments = sandbox.stub().resolves([individualEnrollmentDoc]);
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
+      await testedModule.getAssignmentsAndExclusionsForUser(experimentUser, experimentIds);
+
+    expect(individualEnrollments).toEqual([individualEnrollmentDoc]);
     expect(groupEnrollments).toEqual([]);
     expect(individualExclusions).toEqual([]);
     expect(groupExclusions).toEqual([]);
@@ -446,7 +490,7 @@ describe('Experiment Assignment Service Test', () => {
     const exp = simpleIndividualAssignmentExperiment;
     // stub the exclusion segment with empty individualForSegment and groupForSegment
     testedModule.segmentService.getSegmentByIds.resolves([
-          { id: 'd958bf52-7066-4594-ad8a-baf2e75324cf', subSegments: [], individualForSegment: [], groupForSegment: [] },
+      { id: 'd958bf52-7066-4594-ad8a-baf2e75324cf', subSegments: [], individualForSegment: [], groupForSegment: [] },
     ]);
     const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc);
     expect(exclusionResult).toEqual([false, false]);
@@ -495,28 +539,22 @@ describe('Experiment Assignment Service Test', () => {
     expect(expResult).toEqual([[exp1, exp2]]);
   });
 
-    it('[processExperimentPools] should return not return a pool for no active experiment', async () => {
+  it('[processExperimentPools] should return empty pool for no active experiment', async () => {
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
-    const exp = simpleIndividualAssignmentExperiment;
-    const experimentIds = [exp.id];
+    const experimentIds = [];
 
-    testedModule.createExperimentPool = sandbox.stub().returns([[exp]]);
+    testedModule.createExperimentPool = sandbox.stub().returns([[]]);
 
     const [individualEnrollments, groupEnrollments, _, __] = await testedModule.getAssignmentsAndExclusionsForUser(
       userDoc,
       experimentIds
     );
 
-    testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([exp]);
-    testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([exp]);
+    testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([]);
+    testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([]);
 
-    const expResult = await testedModule.processExperimentPools(
-      [exp],
-      individualEnrollments,
-      groupEnrollments,
-      userDoc
-    );
-    expect(expResult).toEqual([exp]);
+    const expResult = await testedModule.processExperimentPools([], individualEnrollments, groupEnrollments, userDoc);
+    expect(expResult).toEqual([]);
   });
 
   it('[processExperimentPools] should return a selected seed random experiment from the pool of experiments', async () => {
