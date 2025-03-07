@@ -155,7 +155,7 @@ describe('Experiment Assignment Service Test', () => {
           context: 'add',
           type: 'private',
           individualForSegment: [],
-          groupForSegment: [],
+          groupForSegment: [{ groupId: 'teacher1', type: 'teacher' }],
           subSegments: [],
         },
       ]);
@@ -500,30 +500,14 @@ describe('Experiment Assignment Service Test', () => {
     expect(includedExpement).toEqual([exp]);
   });
 
-  it('[experimentLevelExclusionInclusion] should return an exclusion reason if a user or userGroup is globally excluded', async () => {
-    const userDoc = { id: 'user2', group: { schoolId: ['school1'] }, workingGroup: {} };
+  it('[experimentLevelExclusionInclusion] should return an exclusion reason if a user or userGroup is on exclusion list', async () => {
+    const userDoc = { id: 'user2', group: { teacher: ['teacher1'] }, workingGroup: {} };
     const exp = simpleIndividualAssignmentExperiment;
-
-    // stub the global exclusion segment with user `user2` in individualForSegment and empty groupForSegment
-    testedModule.segmentService.getSegmentByIds.withArgs(['77777777-7777-7777-7777-777777777777']).resolves([
-      {
-        id: '77777777-7777-7777-7777-777777777777',
-        name: 'Global Exclude',
-        description: 'Globally excluded Users, Groups and Segments',
-        context: 'ALL',
-        type: 'global_exclude',
-        individualForSegment: [{ userId: 'user2' }],
-        groupForSegment: [],
-        subSegments: [],
-      },
-    ]);
-
-    const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc);
-    expect(exclusionResult).toEqual([true, false]);
-
     const [includedExpement, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
-    expect(exclusionReason).toEqual([]);
-    expect(includedExpement).toEqual([exp]);
+    expect(exclusionReason.length).toEqual(1);
+    expect(exclusionReason[0].matchedGroup).toEqual(true);
+    expect(exclusionReason[0].reason).toEqual('group');
+    expect(includedExpement).toEqual([]);
   });
 
   it('[createExperimentPool] should return empty pool of experiments for no active experiments', async () => {
