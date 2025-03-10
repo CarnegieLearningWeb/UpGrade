@@ -84,11 +84,11 @@ export class FeatureFlagService {
     logger.info({ message: `getKeys: User: ${experimentUserDoc?.requestedUserId}` });
     const filteredFeatureFlags = await this.getCachedFlagsFromContext(context);
 
-    const [userExcluded, groupExcluded] = await this.experimentAssignmentService.checkUserOrGroupIsGloballyExcluded(
+    const [isUserExcluded, isGroupExcluded] = await this.experimentAssignmentService.checkUserOrGroupIsGloballyExcluded(
       experimentUserDoc
     );
 
-    if (userExcluded || groupExcluded.length > 0) {
+    if (isUserExcluded || isGroupExcluded) {
       return [];
     }
 
