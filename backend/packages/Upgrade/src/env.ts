@@ -93,7 +93,14 @@ export const env = {
     region: getOsEnv('AWS_REGION'),
   },
   initialization: {
-    contextMetadata: JSON.parse(getOsEnv('CONTEXT_METADATA')),
+    contextMetadata: JSON.parse(getOsEnv('CONTEXT_METADATA')) as {
+      [key: string]: {
+        EXP_POINTS: string[];
+        EXP_IDS: string[];
+        GROUP_TYPES: string[];
+        CONDITIONS: string[];
+      };
+    },
     adminUsers: parseAdminUsers(getOsEnv('ADMIN_USERS')),
     metrics: getOsEnvOptional('METRICS'),
   },

@@ -3,28 +3,86 @@ import { SegmentService } from '../../../src/api/services/SegmentService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import Container from 'typedi';
 import { SEGMENT_TYPE } from 'upgrade_types';
+import { env } from '../../env';
+import { Segment } from '../../api/models/Segment';
 
-export const globalExcludeSegment: SegmentInputValidator = {
+const globalExcludeSegment: Partial<SegmentInputValidator> = {
   name: 'Global Exclude',
-  id: '77777777-7777-7777-7777-777777777777',
   description: 'Globally excluded Users, Groups and Segments',
-  context: 'ALL',
   type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
   userIds: [],
   groups: [],
   subSegmentIds: [],
-};
+} as const;
 
+/**
+ * Creates global exclude segments for contexts that do not have one.
+ *
+ * This function retrieves all global exclude segments and checks if there are any contexts
+ * that do not have a global exclude segment. If all contexts already have a global exclude segment,
+ * the function exits early. Otherwise, it creates global exclude segments for the missing contexts
+ * by copying the segment for the 'ALL' context if it exists, or using the existing global exclude segments.
+ *
+ * @param logger - The logger instance to use for logging.
+ * @returns A promise that resolves when the segments have been upserted, or undefined if no segments needed to be upserted.
+ */
 export async function createGlobalExcludeSegment(logger: UpgradeLogger): Promise<any> {
   const segmentService = Container.get<SegmentService>(SegmentService);
-  if (!(await segmentService.getSegmentById(globalExcludeSegment.id, new UpgradeLogger()))) {
-    try {
-      return segmentService.upsertSegment(globalExcludeSegment, logger);
-    } catch (err) {
-      const error = new Error('Error while creating Global Exclude Segment');
-      logger.error(error);
-      throw error;
-    }
+
+  // Get the global exclude segment
+  const globalExcludedSegment = await segmentService.getAllGlobalExcludeSegments(logger);
+
+  const contexts = Object.keys(env.initialization.contextMetadata);
+
+  // Filter context for which global exclude segment is not present
+  const contextWithNoGlobalExclude = contexts.filter(
+    (con) => !globalExcludedSegment.some(({ context }) => context === con)
+  );
+
+  // Exit the function if all context has global exclude segment
+  if (contextWithNoGlobalExclude.length === 0) {
+    return;
   }
-  return Promise.resolve();
+
+  const globalExcludeSegmentForAllContext = globalExcludedSegment.find(({ context }) => context === 'ALL');
+
+  // Global segment for the context
+  const segmentToCopy = globalExcludeSegmentForAllContext
+    ? convertSegmentToSegmentInputValidator(globalExcludeSegmentForAllContext)
+    : globalExcludeSegment;
+
+  const globalExcludeSegmentDocs: SegmentInputValidator[] = contextWithNoGlobalExclude.map(
+    (context) =>
+      ({
+        ...segmentToCopy,
+        context,
+      } as SegmentInputValidator)
+  );
+
+  // Create global exclude segment for the context
+  await segmentService.upsertSegments(globalExcludeSegmentDocs, logger);
+
+  // Delete the global exclude segment for the 'ALL' context if it exists
+  if (globalExcludeSegmentForAllContext) {
+    return segmentService.deleteSegment(globalExcludeSegmentForAllContext.id, logger);
+  }
+}
+
+/**
+ * Converts a Segment object to a SegmentInputValidator object.
+ *
+ * @param segment - The segment object to convert.
+ * @returns The converted SegmentInputValidator object.
+ */
+function convertSegmentToSegmentInputValidator(segment: Segment): SegmentInputValidator {
+  // Don't add the id to create a new segment
+  return {
+    name: segment.name,
+    description: segment.description,
+    context: segment.context,
+    type: segment.type,
+    userIds: segment.individualForSegment.map((individual) => individual.userId),
+    groups: segment.groupForSegment.map((group) => ({ groupId: group.groupId, type: group.type })),
+    subSegmentIds: segment.subSegments.map((subSegment) => subSegment.id),
+  };
 }
