@@ -187,7 +187,9 @@ export class ExperimentAssignmentService {
     const { workingGroup } = userDoc;
 
     // 1. Search decision points in experiments cache and return relevant experiments and decisionPoints data
-    let [dpExperiments, experiments] = await this.getCachedExperiments(site, target);
+    const experimentsResult = await this.getCachedExperiments(site, target);
+    const dpExperiments = experimentsResult[0];
+    let experiments = experimentsResult[1];
 
     logger.info({
       message: `markExperimentPoint: Site: ${site}, Target: ${target}, Condition: ${condition}, Status: "${status}" for User: ${userId}`,
@@ -237,8 +239,10 @@ export class ExperimentAssignmentService {
       },
     });
 
-    // 4. Store indirect group exclusion documents
-    await this.saveGroupExclusionDoc(exclusionReason, userDoc);
+    // 4. Store indirect group exclusion documents (if exclusion has consistency-group, exclude direct group of user belongs)
+    if (exclusionReason.length && exclusionReason[0].reason === 'group' && !exclusionReason[0].matchedGroup) {
+      await this.saveGroupExclusionDoc(exclusionReason, userDoc);
+    }
 
     if (experiments.length) {
       const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
@@ -300,24 +304,22 @@ export class ExperimentAssignmentService {
       condition: monitoredDocument.condition || logDocument.condition,
     };
   }
+
   private async saveGroupExclusionDoc(
     exclusionReason: { experiment: Experiment; reason: string; matchedGroup: boolean }[],
     userDoc: RequestedExperimentUser
   ) {
-    // if exclusion has consistency-group, exclude direct group of user belongs
-    if (exclusionReason.length && exclusionReason[0].reason === 'group' && !exclusionReason[0].matchedGroup) {
-      const userGroups = Object.values(userDoc.workingGroup);
-      // group exclusion doc
-      const groupExclusionDocs: Array<Omit<GroupExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>> =
-        userGroups.map((groupId) => {
-          return {
-            experiment: exclusionReason[0].experiment,
-            groupId,
-            exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
-          };
-        });
-      await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
-    }
+    const userGroups = Object.values(userDoc.workingGroup);
+    // group exclusion doc
+    const groupExclusionDocs: Array<Omit<GroupExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>> =
+      userGroups.map((groupId) => {
+        return {
+          experiment: exclusionReason[0].experiment,
+          groupId,
+          exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
+        };
+      });
+    await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
   }
 
   public async getAllExperimentConditions(

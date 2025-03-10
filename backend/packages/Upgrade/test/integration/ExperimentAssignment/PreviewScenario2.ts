@@ -50,18 +50,18 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
+  const experimentId = experiments[0].id;
   let markedExperimentPoint = await markExperimentPoint(
     previewUsers[0].id,
     experimentName,
     experimentPoint,
     condition,
-experimentId,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to Preview
-  const experimentId = experiments[0].id;
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.PREVIEW, user, new UpgradeLogger());
 
   // fetch experiment
