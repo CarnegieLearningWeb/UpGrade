@@ -57,7 +57,20 @@ const routes: Routes = [
       },
       {
         path: 'segments',
-        loadChildren: () => import('./segments-legacy/segments.module').then((m) => m.SegmentsModule),
+        loadComponent: () =>
+          import('./segments/pages/segment-root-page/segment-root-page.component').then(
+            (c) => c.SegmentRootPageComponent
+          ),
+        data: {
+          title: 'app-header.title.segments',
+        },
+      },
+      {
+        path: 'segments/detail/:segmentId',
+        loadComponent: () =>
+          import('./segments/pages/segment-details-page/segment-details-page.component').then(
+            (c) => c.SegmentDetailsPageComponent
+          ),
         data: {
           title: 'app-header.title.segments',
         },
