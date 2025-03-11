@@ -78,11 +78,11 @@ export interface SyncDeleteParams {
   logger: UpgradeLogger;
 }
 
-export interface ExperimentDesignChanges {
-  newOutcomeVariableName: string;
-  addedConditions: ConditionValidator[];
-  removedConditions: MoocletVersionConditionMap[];
-  versionMapsToUpdate: MoocletVersionConditionMap[];
+export interface InactiveStatusEligibleDesignChanges {
+  hasNewOutcomeVariableName: string | false;
+  hasAddedConditions: ConditionValidator[] | false;
+  hasRemovedConditions: MoocletVersionConditionMap[] | false;
+  hasModifiedConditions: MoocletVersionConditionMap[] | false;
 }
 
 @Service()
@@ -295,57 +295,70 @@ export class MoocletExperimentService extends ExperimentService {
       const currentMoocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(
         incomingExperiment.id
       );
-      const inactiveStateAllowedDesignChanges = await this.detectExperimentDesignChanges(
+      const hasEligibleInactiveStateDesignChanges = await this.detectExperimentDesignChanges(
         incomingExperiment,
         currentMoocletExperimentRef,
         logger
       );
 
-      if (incomingExperiment.state !== EXPERIMENT_STATE.INACTIVE && inactiveStateAllowedDesignChanges) {
+      if (incomingExperiment.state !== EXPERIMENT_STATE.INACTIVE && hasEligibleInactiveStateDesignChanges) {
         const error = {
           message: 'Ineligible changes detected for an active Mooclet experiment',
-          changes: inactiveStateAllowedDesignChanges,
+          changes: hasEligibleInactiveStateDesignChanges,
         };
-        logger.error(error);
+        logger.error({ error: JSON.stringify(error) });
         throw new Error(JSON.stringify(error));
       }
 
       logger.debug({
         message: 'Mooclet experiment changes detected',
-        changes: inactiveStateAllowedDesignChanges,
+        changes: hasEligibleInactiveStateDesignChanges,
       });
 
       // 2. if the changes are allowed, go ahead and update the upgrade experiment first so we can abort early if there are any issues
       const updatedExperiment = await super.update(incomingExperiment, currentUser, logger, manager);
 
-      //------ update each individual change to sync up Mooclet resources
-      const { newOutcomeVariableName, addedConditions, removedConditions, versionMapsToUpdate } =
-        inactiveStateAllowedDesignChanges;
+      // 3. go ahead and PUT policy parameters whenever in enrolling or inactive
+      if (
+        incomingExperiment.state === EXPERIMENT_STATE.INACTIVE ||
+        incomingExperiment.state === EXPERIMENT_STATE.ENROLLING
+      ) {
+        const policyParametersResponse = await this.handleUpdatedPolicyParameters(
+          incomingExperiment.moocletPolicyParameters,
+          currentMoocletExperimentRef,
+          logger
+        );
 
-      // 3. tell Mooclet about a new outcomeVariableName
-      if (newOutcomeVariableName) {
-        await this.handleUpdatedOutcomeVariableName(newOutcomeVariableName, currentMoocletExperimentRef, logger);
+        updatedExperiment.moocletPolicyParameters = policyParametersResponse.parameters;
       }
 
-      // 4. tell mooclet about policy parameter updates (even when actively enrolling)
-      // TODO check how this will update with currentPosteriors attached to the policy parameters, does it ignore?
-      const policyParametersResponse = await this.handleUpdatedPolicyParameters(
-        incomingExperiment.moocletPolicyParameters,
-        currentMoocletExperimentRef,
-        logger
-      );
+      // handle inactive state eligible changes
+      // update each individual change to sync up Mooclet resources
 
-      updatedExperiment.moocletPolicyParameters = policyParametersResponse.parameters;
+      if (!hasEligibleInactiveStateDesignChanges) {
+        logger.info({
+          message: 'No Mooclet experiment design changes detected',
+        });
+        return updatedExperiment;
+      }
+
+      const { hasNewOutcomeVariableName, hasAddedConditions, hasRemovedConditions, hasModifiedConditions } =
+        hasEligibleInactiveStateDesignChanges;
+
+      // 3. tell Mooclet about a new outcomeVariableName
+      if (hasNewOutcomeVariableName) {
+        await this.handleUpdatedOutcomeVariableName(hasNewOutcomeVariableName, currentMoocletExperimentRef, logger);
+      }
 
       // 5. tell Mooclet about removed conditions
-      if (removedConditions) {
-        await this.handleRemovedConditions(removedConditions, logger);
+      if (hasRemovedConditions) {
+        await this.handleRemovedConditions(hasRemovedConditions, logger);
       }
 
       // 6. tell Mooclet about condition code changes
-      if (versionMapsToUpdate) {
-        const updatedVersionConditionMaps = await this.handleConditionCodesChanged(
-          versionMapsToUpdate,
+      if (hasModifiedConditions) {
+        const modifiedVersionConditionMaps = await this.handleConditionCodesChanged(
+          hasModifiedConditions,
           incomingExperiment,
           logger
         );
@@ -353,14 +366,24 @@ export class MoocletExperimentService extends ExperimentService {
         await this.createAndSaveVersionConditionMaps(
           manager,
           currentMoocletExperimentRef.id,
-          updatedVersionConditionMaps,
+          modifiedVersionConditionMaps,
           logger
         );
       }
 
       // 7. if we have new conditions, we will need to manually create the new versions and versionmaps
-      if (addedConditions) {
-        this.handleAddedConditions(addedConditions, currentMoocletExperimentRef, logger);
+      if (hasAddedConditions) {
+        const addedVersionConditionMap = await this.handleAddedConditions(
+          hasAddedConditions,
+          currentMoocletExperimentRef,
+          logger
+        );
+        await this.createAndSaveVersionConditionMaps(
+          manager,
+          currentMoocletExperimentRef.id,
+          addedVersionConditionMap,
+          logger
+        );
       }
 
       return updatedExperiment;
@@ -374,41 +397,41 @@ export class MoocletExperimentService extends ExperimentService {
     incomingExperimentDTO: ExperimentDTO,
     currentMoocletExperimentRef: MoocletExperimentRef,
     logger: UpgradeLogger
-  ): Promise<string> {
+  ): Promise<string | false> {
     const newName = incomingExperimentDTO.moocletPolicyParameters['outcome_variable_name'];
     const currentVariable = await this.moocletDataService.getVariable(currentMoocletExperimentRef.variableId, logger);
     const currentName = currentVariable?.name;
 
-    return newName !== currentName ? newName : null;
+    return newName !== currentName ? newName : false;
   }
 
   private detectNewConditions(
     incomingExperimentDTO: ExperimentDTO,
     currentMoocletExperimentRef: MoocletExperimentRef
-  ): ConditionValidator[] {
+  ): ConditionValidator[] | false {
     const newConditions = incomingExperimentDTO.conditions.filter(
       (condition) =>
         !currentMoocletExperimentRef.versionConditionMaps.find((map) => map.experimentCondition.id === condition.id)
     );
 
-    return newConditions.length ? newConditions : null;
+    return newConditions.length ? newConditions : false;
   }
 
   private detectRemovedConditions(
     incomingExperimentDTO: ExperimentDTO,
     currentMoocletExperimentRef: MoocletExperimentRef
-  ): MoocletVersionConditionMap[] {
+  ): MoocletVersionConditionMap[] | false {
     const mapsForRemovedConditions = currentMoocletExperimentRef.versionConditionMaps.filter(
       (map) => !incomingExperimentDTO.conditions.find((condition) => condition.id === map.experimentCondition.id)
     );
 
-    return mapsForRemovedConditions.length ? mapsForRemovedConditions : null;
+    return mapsForRemovedConditions.length ? mapsForRemovedConditions : false;
   }
 
-  private getVersionMapsWithConditionCodeChanges(
+  private detectVersionMapsWithConditionCodeChanges(
     incomingExperimentDTO: ExperimentDTO,
     currentMoocletExperimentRef: MoocletExperimentRef
-  ): MoocletVersionConditionMap[] {
+  ): MoocletVersionConditionMap[] | false {
     const versionsToUpdate = currentMoocletExperimentRef.versionConditionMaps.filter((map) => {
       const condition = incomingExperimentDTO.conditions.find(
         (condition) => condition.id === map.experimentCondition.id
@@ -418,26 +441,26 @@ export class MoocletExperimentService extends ExperimentService {
         return false;
       }
 
-      return condition || condition.conditionCode !== map.experimentCondition.conditionCode;
+      return condition && condition.conditionCode !== map.experimentCondition.conditionCode;
     });
 
-    return versionsToUpdate.length ? versionsToUpdate : null;
+    return versionsToUpdate.length ? versionsToUpdate : false;
   }
 
   private async detectExperimentDesignChanges(
     incomingExperimentDTO: ExperimentDTO,
     currentMoocletExperimentRef: MoocletExperimentRef,
     logger: UpgradeLogger
-  ): Promise<ExperimentDesignChanges> {
+  ): Promise<InactiveStatusEligibleDesignChanges | false> {
     const changes = {
-      newOutcomeVariableName: await this.detectNewOutcomeVariableName(
+      hasNewOutcomeVariableName: await this.detectNewOutcomeVariableName(
         incomingExperimentDTO,
         currentMoocletExperimentRef,
         logger
       ),
-      addedConditions: this.detectNewConditions(incomingExperimentDTO, currentMoocletExperimentRef),
-      removedConditions: this.detectRemovedConditions(incomingExperimentDTO, currentMoocletExperimentRef),
-      versionMapsToUpdate: this.getVersionMapsWithConditionCodeChanges(
+      hasAddedConditions: this.detectNewConditions(incomingExperimentDTO, currentMoocletExperimentRef),
+      hasRemovedConditions: this.detectRemovedConditions(incomingExperimentDTO, currentMoocletExperimentRef),
+      hasModifiedConditions: this.detectVersionMapsWithConditionCodeChanges(
         incomingExperimentDTO,
         currentMoocletExperimentRef
       ),
@@ -445,7 +468,7 @@ export class MoocletExperimentService extends ExperimentService {
 
     const hasChanges = Object.values(changes).some((change) => !!change);
 
-    return hasChanges ? changes : null;
+    return hasChanges ? changes : false;
   }
 
   private async handleUpdatedOutcomeVariableName(

@@ -221,11 +221,7 @@
             *ngIf="isExperimentEditable && !(isMoocletExperimentDesign$ | async)"
             class="conditions-header-container"
           >
-            <mat-checkbox
-              color="primary"
-              [checked]="equalWeightFlag"
-              (change)="changeEqualWeightFlag($event)"
-            >
+            <mat-checkbox color="primary" [checked]="equalWeightFlag" (change)="changeEqualWeightFlag($event)">
               <span class="ft-13-700 checkbox-label">
                 {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
               </span>
@@ -455,7 +451,7 @@
               [experimentInfo]="experimentInfo"
               [experimentName]="currentExperimentName$ | async"
               [currentAssignmentAlgorithm]="currentAssignmentAlgorithm$.value"
-              [isEditable]="isExperimentEditable"
+              [isEditable]="isPolicyEditorEditable"
               #policyEditor
             ></app-mooclet-policy-editor>
           </div>

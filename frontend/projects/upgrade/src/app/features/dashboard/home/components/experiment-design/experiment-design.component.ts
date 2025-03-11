@@ -103,6 +103,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   conditionCodeErrors: string[] = [];
   equalWeightFlag = true;
   isExperimentEditable = true;
+  isPolicyEditorEditable = true;
   isFormLockedForEdit$ = this.experimentDesignStepperService.isFormLockedForEdit$;
 
   // Experiment name
@@ -254,6 +255,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.isExperimentEditable =
         this.experimentInfo.state !== this.ExperimentState.ENROLLING &&
         this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE;
+
+      this.isPolicyEditorEditable =
+        this.experimentInfo.state === this.ExperimentState.ENROLLING ||
+        this.experimentInfo.state === this.ExperimentState.INACTIVE;
 
       // disable control on edit:
       if (!this.isExperimentEditable) {
