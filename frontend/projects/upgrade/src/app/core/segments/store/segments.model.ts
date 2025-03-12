@@ -107,7 +107,7 @@ export interface Segment {
   groupForSegment: GroupForSegment[];
   subSegments: Segment[];
   type: SEGMENT_TYPE;
-  status: string;
+  status: SEGMENT_STATUS;
 }
 
 export interface SegmentInput {
@@ -123,6 +123,50 @@ export interface SegmentInput {
   subSegmentIds: string[];
   type: SEGMENT_TYPE;
 }
+
+interface ISegmentsSearchParams {
+  key: SEGMENT_SEARCH_KEY;
+  string: string;
+}
+
+interface ISegmentsSortParams {
+  key: SEGMENT_SORT_KEY;
+  sortAs: SORT_AS_DIRECTION;
+}
+
+export interface SegmentsPaginationParams {
+  skip: number;
+  take: number;
+  searchParams?: ISegmentsSearchParams;
+  sortParams?: ISegmentsSortParams;
+}
+
+export enum SEGMENT_DETAILS_PAGE_ACTIONS {
+  EDIT = 'Edit Segment',
+  DUPLICATE = 'Duplicate Segment',
+  DELETE = 'Delete Segment',
+  EXPORT = 'Export Segment',
+}
+
+export const SEGMENT_ROOT_COLUMN_NAMES = {
+  NAME: 'name',
+  STATUS: 'status',
+  UPDATED_AT: 'updatedAt',
+  APP_CONTEXT: 'appContext',
+  TAGS: 'tags',
+  LISTS: 'lists',
+};
+
+export const SEGMENT_TRANSLATION_KEYS = {
+  NAME: 'segments.global-name.text',
+  STATUS: 'segments.global-status.text',
+  UPDATED_AT: 'segments.global-updated-at.text',
+  APP_CONTEXT: 'segments.global-context.text',
+  TAGS: 'segments.global-tags.text',
+  LISTS: 'segments.global-lists.text',
+};
+
+export const SEGMENT_ROOT_DISPLAYED_COLUMNS = Object.values(SEGMENT_ROOT_COLUMN_NAMES);
 
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;
