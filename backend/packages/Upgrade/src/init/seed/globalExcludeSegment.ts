@@ -30,13 +30,13 @@ export async function createGlobalExcludeSegment(logger: UpgradeLogger): Promise
   const segmentService = Container.get<SegmentService>(SegmentService);
 
   // Get the global exclude segment
-  const globalExcludedSegment = await segmentService.getAllGlobalExcludeSegments(logger);
+  const globalExcludeSegments = await segmentService.getAllGlobalExcludeSegments(logger);
 
   const contexts = Object.keys(env.initialization.contextMetadata);
 
   // Filter context for which global exclude segment is not present
   const contextWithNoGlobalExclude = contexts.filter(
-    (con) => !globalExcludedSegment.some(({ context }) => context === con)
+    (con) => !globalExcludeSegments.some(({ context }) => context === con)
   );
 
   // Exit the function if all context has global exclude segment
@@ -44,20 +44,23 @@ export async function createGlobalExcludeSegment(logger: UpgradeLogger): Promise
     return;
   }
 
-  const globalExcludeSegmentForAllContext = globalExcludedSegment.find(({ context }) => context === 'ALL');
+  const globalExcludeSegmentForAllContext = globalExcludeSegments.find(({ context }) => context === 'ALL');
 
-  // Global segment for the context
-  const segmentToCopy = globalExcludeSegmentForAllContext
-    ? convertSegmentToSegmentInputValidator(globalExcludeSegmentForAllContext)
-    : globalExcludeSegment;
+  const globalExcludeSegmentDocs: SegmentInputValidator[] = contextWithNoGlobalExclude.map((context) => {
+    // Global segment for the context
+    const segmentToCopy = globalExcludeSegmentForAllContext
+      ? convertSegmentToSegmentInputValidator(
+          globalExcludeSegmentForAllContext,
+          context,
+          env.initialization.contextMetadata[context]
+        )
+      : globalExcludeSegment;
 
-  const globalExcludeSegmentDocs: SegmentInputValidator[] = contextWithNoGlobalExclude.map(
-    (context) =>
-      ({
-        ...segmentToCopy,
-        context,
-      } as SegmentInputValidator)
-  );
+    return {
+      ...segmentToCopy,
+      context,
+    } as SegmentInputValidator;
+  });
 
   // Create global exclude segment for the context
   await segmentService.upsertSegments(globalExcludeSegmentDocs, logger);
@@ -74,7 +77,11 @@ export async function createGlobalExcludeSegment(logger: UpgradeLogger): Promise
  * @param segment - The segment object to convert.
  * @returns The converted SegmentInputValidator object.
  */
-function convertSegmentToSegmentInputValidator(segment: Segment): SegmentInputValidator {
+function convertSegmentToSegmentInputValidator(
+  segment: Segment,
+  context: string,
+  contextData: (typeof env.initialization.contextMetadata)[number]
+): SegmentInputValidator {
   // Don't add the id to create a new segment
   return {
     name: segment.name,
@@ -82,7 +89,13 @@ function convertSegmentToSegmentInputValidator(segment: Segment): SegmentInputVa
     context: segment.context,
     type: segment.type,
     userIds: segment.individualForSegment.map((individual) => individual.userId),
-    groups: segment.groupForSegment.map((group) => ({ groupId: group.groupId, type: group.type })),
-    subSegmentIds: segment.subSegments.map((subSegment) => subSegment.id),
+    groups: segment.groupForSegment
+      .filter(({ type }) => {
+        return contextData.GROUP_TYPES.includes(type);
+      })
+      .map((group) => ({ groupId: group.groupId, type: group.type })),
+    subSegmentIds: segment.subSegments
+      .filter(({ context: cont }) => cont === context)
+      .map((subSegment) => subSegment.id),
   };
 }

@@ -315,20 +315,9 @@ export class SegmentService {
     return this.addSegmentDataInDB(segment, logger);
   }
 
-  public async upsertSegments(segment: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
-    // Convert the segmentInputValidator to Segment
-    const segments: DeepPartial<Segment>[] = segment.map(({ userIds, groups, subSegmentIds, ...rest }) => {
-      return {
-        ...rest,
-        id: rest.id || uuid(),
-        individualForSegment: userIds.map((userId) => ({ userId })),
-        groupForSegment: groups,
-        subSegments: subSegmentIds.map((id) => ({ id })),
-      };
-    });
-
+  public async upsertSegments(segmentsInput: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
     try {
-      return await this.segmentRepository.save(segments);
+      return Promise.all(segmentsInput.map((segmentInput) => this.upsertSegment(segmentInput, logger)));
     } catch (error) {
       logger.error({ message: 'Error in upserting segments', error });
       throw error;
