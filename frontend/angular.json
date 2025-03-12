@@ -212,8 +212,8 @@
             "local": {
               "fileReplacements": [
                 {
-                  "replace": "projects/upgrade/src/environments/environment.local.ts",
-                  "with": "projects/upgrade/src/environments/environment.ts"
+                  "replace": "projects/upgrade/src/environments/environment.ts",
+                  "with": "projects/upgrade/src/environments/environment.local.ts"
                 }
               ],
               "optimization": true,
