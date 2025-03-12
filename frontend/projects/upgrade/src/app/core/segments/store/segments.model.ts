@@ -172,7 +172,7 @@ export const SEGMENT_TRANSLATION_KEYS = {
   NAME: 'segments.global-name.text',
   STATUS: 'segments.global-status.text',
   UPDATED_AT: 'segments.global-updated-at.text',
-  APP_CONTEXT: 'segments.global-context.text',
+  APP_CONTEXT: 'segments.global-app-context.text',
   TAGS: 'segments.global-tags.text',
   LISTS: 'segments.global-lists.text',
 };

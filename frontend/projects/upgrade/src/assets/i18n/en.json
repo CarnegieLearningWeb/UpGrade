@@ -447,6 +447,7 @@
   "segments.global-last-update.text": "Last Update",
   "segments.global-updated-at.text": "Updated at",
   "segments.global-context.text": "Context",
+  "segments.global-app-context.text": "App Context",
   "segments.global-tags.text": "Tags",
   "segments.global-lists.text": "Lists",
   "segments.global-description.text": "Description",
