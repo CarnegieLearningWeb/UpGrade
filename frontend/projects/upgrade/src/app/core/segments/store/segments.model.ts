@@ -125,6 +125,16 @@ export interface SegmentInput {
   type: SEGMENT_TYPE;
 }
 
+export interface SegmentsPaginationInfo {
+  nodes: Segment[];
+  total: number;
+  skip: number;
+  take: number;
+}
+
+// TODO: This should be probably be a part of env config
+export const NUMBER_OF_SEGMENTS = 20;
+
 interface ISegmentsSearchParams {
   key: SEGMENT_SEARCH_KEY;
   string: string;

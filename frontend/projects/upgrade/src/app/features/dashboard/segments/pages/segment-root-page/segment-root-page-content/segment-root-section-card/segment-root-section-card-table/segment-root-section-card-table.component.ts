@@ -9,7 +9,7 @@ import { MatSort } from '@angular/material/sort';
 import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
 import { SegmentsService } from '../../../../../../../../core/segments/segments.service';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
-import { SEGMENT_SEARCH_KEY, SEGMENT_SORT_KEY } from 'upgrade_types';
+import { SEGMENT_SEARCH_KEY } from 'upgrade_types';
 import {
   Segment,
   SEGMENT_ROOT_COLUMN_NAMES,
