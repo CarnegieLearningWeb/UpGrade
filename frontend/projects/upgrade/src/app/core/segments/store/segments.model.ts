@@ -124,6 +124,33 @@ export interface SegmentInput {
   type: SEGMENT_TYPE;
 }
 
+export interface SegmentsPaginationInfo {
+  nodes: Segment[];
+  total: number;
+  skip: number;
+  take: number;
+}
+
+// TODO: This should be probably be a part of env config
+export const NUMBER_OF_SEGMENTS = 20;
+
+interface ISegmentsSearchParams {
+  key: SEGMENT_SEARCH_KEY;
+  string: string;
+}
+
+interface ISegmentsSortParams {
+  key: SEGMENT_SORT_KEY;
+  sortAs: SORT_AS_DIRECTION;
+}
+
+export interface SegmentsPaginationParams {
+  skip: number;
+  take: number;
+  searchParams?: ISegmentsSearchParams;
+  sortParams?: ISegmentsSortParams;
+}
+
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;
   // TODO: remove any
