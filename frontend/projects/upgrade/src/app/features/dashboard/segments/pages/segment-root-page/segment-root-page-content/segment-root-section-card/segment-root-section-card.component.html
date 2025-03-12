@@ -11,11 +11,14 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
+    [showSlideToggle]="true"
+    [slideToggleText]="'segments.show-global-excludes.text' | translate"
     [showPrimaryButton]="(permissions$ | async)?.segments.create"
     [primaryButtonText]="'segments.add-segments.text' | translate | titlecase"
     [menuButtonItems]="menuButtonItems"
     [showMenuButton]="(permissions$ | async)?.segments.create"
     [isSectionCardExpanded]="isSectionCardExpanded"
+    (slideToggleChange)="onSlideToggleChange($event)"
     (primaryButtonClick)="onAddSegmentButtonClick()"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"

@@ -438,6 +438,7 @@
   "segments.no-segments.text": "Welcome! <br> Let's start by creating a new segment!",
   "segments.no-segments-in-table.text": "No segments defined. Create a new segment.",
   "segments.no-matching-segments.text": "No matching segments found.",
+  "segments.show-global-excludes.text": "Show Global Excludes",
   "segments.add-segments.text": "ADD SEGMENT",
   "segments.import-segments.text": "IMPORT SEGMENT(S)",
   "segments.export-all-segments.text": "EXPORT ALL",
