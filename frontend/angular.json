@@ -169,11 +169,11 @@
                 }
               ]
             },
-            "develop": {
+            "dev": {
               "fileReplacements": [
                 {
                   "replace": "projects/upgrade/src/environments/environment.ts",
-                  "with": "projects/upgrade/src/environments/environment.ts"
+                  "with": "projects/upgrade/src/environments/environment.local.ts"
                 }
               ],
               "optimization": true,
@@ -349,6 +349,9 @@
             },
             "beanstalk": {
               "buildTarget": "upgrade:build:beanstalk"
+            },
+            "dev": {
+              "buildTarget": "upgrade:build:dev"
             }
           }
         },
