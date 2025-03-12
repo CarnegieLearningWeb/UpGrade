@@ -38,7 +38,7 @@ yarn.lock
 npm-debug.log
 testem.log
 /typings
-/upgrade/src/environments/environment.ts
+/projects/upgrade/src/environments/environment.ts
 
 # e2e
 /e2e/src/*.js
