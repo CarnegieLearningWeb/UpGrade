@@ -6,6 +6,7 @@ import {
   selectIsLoadingSegments,
   selectAllSegments,
   selectSelectedSegment,
+  selectRootTableState,
   selectExperimentSegmentsInclusion,
   selectExperimentSegmentsExclusion,
   selectFeatureFlagSegmentsInclusion,
@@ -43,6 +44,7 @@ export class SegmentsService {
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
+  selectRootTableState$ = this.store$.select(selectRootTableState);
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
   selectSegmentSortKey$ = this.store$.pipe(select(selectSortKey));

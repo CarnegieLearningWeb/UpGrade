@@ -102,6 +102,7 @@ export interface Segment {
   id: string;
   name: string;
   context: string;
+  tags: string[];
   description: string;
   individualForSegment: IndividualForSegment[];
   groupForSegment: GroupForSegment[];

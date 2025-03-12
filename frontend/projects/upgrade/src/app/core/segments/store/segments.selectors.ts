@@ -5,6 +5,7 @@ import { selectRouterState } from '../../core.state';
 import { CommonTextHelpersService } from '../../../shared/services/common-text-helpers.service';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
 import { selectSelectedFeatureFlag } from '../../feature-flags/store/feature-flags.selectors';
+import { SEGMENT_SEARCH_KEY } from 'upgrade_types';
 
 export const selectSegmentsState = createFeatureSelector<SegmentState>('segments');
 
@@ -53,6 +54,27 @@ export const selectSelectedSegment = createSelector(
 export const selectSearchKey = createSelector(selectSegmentsState, (state) => state.searchKey);
 
 export const selectSearchString = createSelector(selectSegmentsState, (state) => state.searchString);
+
+export const selectSearchSegmentParams = createSelector(
+  selectSearchKey,
+  selectSearchString,
+  (searchKey, searchString) => {
+    if (!!searchKey && (!!searchString || searchString === '')) {
+      return { searchKey, searchString };
+    }
+    return null;
+  }
+);
+
+export const selectRootTableState = createSelector(
+  selectAllSegments,
+  selectSearchSegmentParams,
+  (tableData, searchParams) => ({
+    tableData,
+    searchParams,
+    allSearchableProperties: Object.values(SEGMENT_SEARCH_KEY),
+  })
+);
 
 export const selectSortKey = createSelector(selectSegmentsState, (state) => state.sortKey);
 

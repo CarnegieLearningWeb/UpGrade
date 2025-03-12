@@ -45,13 +45,11 @@ import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 export class SegmentRootSectionCardComponent {
   permissions$: Observable<UserPermission>;
   dataSource$: Observable<MatTableDataSource<Segment>>;
-  isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
-  isInitialLoading$ = this.segmentsService.isInitialSegmentsLoading();
-  isAllSegmentsFetched$; // TODO: Implement if needed for pagination
-  searchString$ = this.segmentsService.selectSearchString$;
-  searchKey$ = this.segmentsService.selectSearchKey$;
-  searchParams$ = this.segmentsService.selectSearchSegmentParams();
-  selectRootTableState$; // TODO: Implement if needed
+  isLoadingSegments$ = this.segmentService.isLoadingSegments$;
+  isInitialLoading$ = this.segmentService.isInitialSegmentsLoading();
+  searchString$ = this.segmentService.selectSearchString$;
+  searchKey$ = this.segmentService.selectSearchKey$;
+  selectRootTableState$ = this.segmentService.selectRootTableState$;
   isSearchActive$: Observable<boolean> = this.searchString$.pipe(map((searchString) => !!searchString));
 
   segmentFilterOptions = [
@@ -75,7 +73,7 @@ export class SegmentRootSectionCardComponent {
   ];
 
   constructor(
-    private segmentsService: SegmentsService,
+    private segmentService: SegmentsService,
     private translateService: TranslateService,
     private dialogService: DialogService,
     private tableHelpersService: CommonTableHelpersService,
@@ -84,72 +82,20 @@ export class SegmentRootSectionCardComponent {
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.segmentsService.fetchSegments(true);
+    this.segmentService.fetchSegments(true);
   }
 
   ngAfterViewInit() {
-    // Initialize dataSource$ with segments data
-    this.dataSource$ = this.segmentsService.allSegments$.pipe(
-      map((segments: Segment[]) => {
-        const dataSource = new MatTableDataSource<Segment>(segments);
-        this.setFilterPredicateForSegments(dataSource);
-        this.applyFilter(dataSource);
-        return dataSource;
+    this.dataSource$ = this.selectRootTableState$.pipe(
+      map((tableState: TableState<Segment>) => {
+        return this.tableHelpersService.mapTableStateToDataSource<Segment>(tableState);
       })
     );
   }
 
-  setFilterPredicateForSegments(dataSource: MatTableDataSource<Segment>) {
-    dataSource.filterPredicate = (data: Segment, filter: string) => {
-      const searchKey = this.segmentsService.selectSearchKey$;
-      let searchKeyValue: SEGMENT_SEARCH_KEY;
-
-      // Get the current search key value
-      searchKey
-        .subscribe((value) => {
-          searchKeyValue = value;
-        })
-        .unsubscribe();
-
-      filter = filter.toLowerCase();
-
-      switch (searchKeyValue) {
-        case SEGMENT_SEARCH_KEY.ALL:
-          return (
-            data.name.toLowerCase().includes(filter) ||
-            data.status.toLowerCase().includes(filter) ||
-            data.context.toLowerCase().includes(filter)
-          );
-        case SEGMENT_SEARCH_KEY.NAME:
-          return data.name.toLowerCase().includes(filter);
-        case SEGMENT_SEARCH_KEY.STATUS:
-          return data.status.toLowerCase().includes(filter);
-        case SEGMENT_SEARCH_KEY.CONTEXT:
-          return data.context.toLowerCase().includes(filter);
-        default:
-          return data.name.toLowerCase().includes(filter);
-      }
-    };
-  }
-
-  applyFilter(dataSource: MatTableDataSource<Segment>) {
-    let searchString: string;
-
-    // Get the current search string value
-    this.searchString$
-      .subscribe((value) => {
-        searchString = value;
-      })
-      .unsubscribe();
-
-    if (searchString) {
-      dataSource.filter = searchString.trim().toLowerCase();
-    }
-  }
-
   onSearch(params: CommonSearchWidgetSearchParams<SEGMENT_SEARCH_KEY>) {
-    this.segmentsService.setSearchString(params.searchString);
-    this.segmentsService.setSearchKey(params.searchKey as SEGMENT_SEARCH_KEY);
+    this.segmentService.setSearchString(params.searchString);
+    this.segmentService.setSearchKey(params.searchKey as SEGMENT_SEARCH_KEY);
   }
 
   onSlideToggleChange(event: MatSlideToggleChange): void {
@@ -164,8 +110,6 @@ export class SegmentRootSectionCardComponent {
   onMenuButtonItemClick(menuButtonItemName: string) {
     if (menuButtonItemName === 'Import Segment') {
       // this.dialogService.openImportSegmentsModal();
-    } else if (menuButtonItemName === 'Export All Segments') {
-      // this.dialogService.openExportAllSegmentModal();
     }
   }
 
