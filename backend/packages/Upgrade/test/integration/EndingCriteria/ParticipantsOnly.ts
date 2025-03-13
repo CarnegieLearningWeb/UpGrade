@@ -54,6 +54,7 @@ export default async function ParticipantsOnly() {
     experimentName1,
     experimentPoint1,
     condition,
+    experimentObject.id,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
@@ -87,6 +88,7 @@ export default async function ParticipantsOnly() {
     experimentName1,
     experimentPoint1,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName1, experimentPoint1);
@@ -111,6 +113,7 @@ export default async function ParticipantsOnly() {
     experimentName2,
     experimentPoint2,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName2, experimentPoint2);
@@ -140,6 +143,7 @@ export default async function ParticipantsOnly() {
     experimentName1,
     experimentPoint1,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName1, experimentPoint1);
@@ -163,6 +167,7 @@ export default async function ParticipantsOnly() {
     experimentName2,
     experimentPoint2,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName2, experimentPoint2);

@@ -15,7 +15,7 @@ import {
   checkExperimentAssignedIsNotDefault,
   checkMarkExperimentPointForUser,
   getAllExperimentCondition,
-  markExperimentPoint
+  markExperimentPoint,
 } from '../../utils';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
@@ -98,6 +98,7 @@ export default async function testCase(): Promise<void> {
     experimentName2,
     experimentPoint2,
     condition,
+    experiment2.id,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName2, experimentPoint2);

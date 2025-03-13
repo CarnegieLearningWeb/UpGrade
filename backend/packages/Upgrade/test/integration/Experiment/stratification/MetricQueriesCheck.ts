@@ -437,8 +437,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
     experimentTarget,
     experimentPoint,
     condition,
-    new UpgradeLogger(),
     experimentId,
+    new UpgradeLogger(),
     '1'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
@@ -476,8 +476,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
     experimentTarget,
     experimentPoint,
     condition,
-    new UpgradeLogger(),
     experimentId,
+    new UpgradeLogger(),
     '2'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
@@ -514,8 +514,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
     experimentTarget,
     experimentPoint,
     condition,
-    new UpgradeLogger(),
     experimentId,
+    new UpgradeLogger(),
     '3'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
@@ -553,8 +553,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
     experimentTarget,
     experimentPoint,
     condition2,
-    new UpgradeLogger(),
     experimentId,
+    new UpgradeLogger(),
     '4'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
@@ -592,8 +592,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
     experimentTarget,
     experimentPoint,
     condition2,
-    new UpgradeLogger(),
     experimentId,
+    new UpgradeLogger(),
     '5'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
@@ -630,8 +630,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
     experimentTarget,
     experimentPoint,
     condition,
-    new UpgradeLogger(),
     experimentId,
+    new UpgradeLogger(),
     '6'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentTarget, experimentPoint);
@@ -669,8 +669,8 @@ export default async function MetricQueriesCheck(): Promise<void> {
     experimentTarget,
     experimentPoint,
     condition2,
-    new UpgradeLogger(),
     experimentId,
+    new UpgradeLogger(),
     '7'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentTarget, experimentPoint);

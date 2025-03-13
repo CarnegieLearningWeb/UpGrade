@@ -121,6 +121,7 @@ export default async function CompetingExperiment(): Promise<void> {
     target,
     site,
     condition,
+    experimentObject3.id,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, target, site, 1);
