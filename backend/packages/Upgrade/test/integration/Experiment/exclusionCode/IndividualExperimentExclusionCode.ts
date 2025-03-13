@@ -82,7 +82,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experiments[0].id + "_" + experimentUsers[0].id,
-        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR 
+        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR
       })
     ])
   );

@@ -114,7 +114,7 @@ export default async function ExcludeGroupsA(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
-experimentId,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);

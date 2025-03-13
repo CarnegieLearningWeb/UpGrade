@@ -100,7 +100,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experiments[0].id + "_" + experimentUsers[0].id,
-        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR 
+        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR
       })
     ])
   );
@@ -109,7 +109,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experiments[0].id + "_" + experimentUsers[1].id,
-        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR 
+        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR
       })
     ])
   );
@@ -138,7 +138,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[2].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -183,7 +183,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experiments[0].id + "_" + experimentUsers[3].id,
-        exclusionCode: EXCLUSION_CODE.REACHED_AFTER 
+        exclusionCode: EXCLUSION_CODE.REACHED_AFTER
       })
     ])
   );
@@ -212,7 +212,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[2].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -258,7 +258,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experiments[0].id + "_" + experimentUsers[3].id,
-        exclusionCode: EXCLUSION_CODE.REACHED_AFTER 
+        exclusionCode: EXCLUSION_CODE.REACHED_AFTER
       })
     ])
   );
@@ -287,7 +287,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experiments[0].id + "_" + experimentUsers[1].id,
-        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR 
+        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR
       })
     ])
   );
@@ -316,7 +316,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[2].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );

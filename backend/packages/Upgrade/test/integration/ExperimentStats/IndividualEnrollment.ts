@@ -117,7 +117,7 @@ export default async function testCase(): Promise<void> {
   );
 
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
-  
+
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(
     experimentUsers[1].id,
@@ -163,7 +163,7 @@ export default async function testCase(): Promise<void> {
       }),
     ])
   );
-  
+
   // when preview user is assigned an experiment condition
   experimentConditionAssignments = await getAllExperimentCondition(previewUser.id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);

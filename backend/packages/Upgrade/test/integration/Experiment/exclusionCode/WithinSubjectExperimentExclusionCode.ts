@@ -58,7 +58,7 @@ export default async function testCase(): Promise<void> {
       }),
     ])
   );
-  
+
   // get all experiment condition for user 3
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
@@ -90,14 +90,14 @@ export default async function testCase(): Promise<void> {
   experimentObject.state = EXPERIMENT_STATE.ENROLLING;
   experimentObject.experimentSegmentExclusion = {
     "segment": {
-        "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
-        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-        "context": "home",
-        "type": "private",
-        "individualForSegment": [],
-        "groupForSegment": [],
-        "subSegments": []
+      "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
+      "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
+      "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
+      "context": "home",
+      "type": "private",
+      "individualForSegment": [],
+      "groupForSegment": [],
+      "subSegments": []
     }
   };
 
@@ -130,7 +130,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -159,7 +159,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -186,7 +186,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -213,7 +213,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -240,7 +240,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -269,7 +269,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -296,7 +296,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );

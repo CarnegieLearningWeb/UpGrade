@@ -88,7 +88,7 @@ export default async function GroupExclusionSegmentIndividualConsistency(): Prom
         user: expect.objectContaining({
           id: experimentUsers[0].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );

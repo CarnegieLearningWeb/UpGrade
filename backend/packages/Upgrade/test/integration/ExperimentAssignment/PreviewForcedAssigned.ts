@@ -113,7 +113,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
-experimentId,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
@@ -128,7 +128,7 @@ experimentId,
     experimentName,
     experimentPoint,
     condition,
-experimentId,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
@@ -167,7 +167,7 @@ experimentId,
     experimentName,
     experimentPoint,
     condition,
-experimentId,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
@@ -198,7 +198,7 @@ experimentId,
     experimentName,
     experimentPoint,
     condition,
-experimentId,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
@@ -230,7 +230,7 @@ experimentId,
     experimentName,
     experimentPoint,
     condition,
-experimentId,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
@@ -250,7 +250,7 @@ experimentId,
     experimentName,
     experimentPoint,
     condition,
-experimentId,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);

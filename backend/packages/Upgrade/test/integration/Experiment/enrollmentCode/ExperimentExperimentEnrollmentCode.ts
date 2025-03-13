@@ -134,7 +134,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[0].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -145,7 +145,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[1].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -198,7 +198,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[3].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.GROUP_LOGIC 
+        enrollmentCode: ENROLLMENT_CODE.GROUP_LOGIC
       })
     ])
   );

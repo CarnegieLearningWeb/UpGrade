@@ -81,7 +81,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experiments[0].id + "_" + experimentUsers[0].id,
-        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR 
+        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR
       })
     ])
   );
@@ -113,7 +113,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experiments[0].id + "_" + experimentUsers[1].id,
-        exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC 
+        exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC
       })
     ])
   );
@@ -144,7 +144,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[2].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -168,7 +168,6 @@ export default async function testCase(): Promise<void> {
 
   individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(2);
-  
 
   // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
@@ -193,7 +192,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[2].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -228,21 +227,21 @@ export default async function testCase(): Promise<void> {
     1
   );
 
-    // the user 4 should be enrolled with 'ALGORITHMIC' enrollment code & create a group enrollment document:
-    individualAssignments = await checkService.getAllIndividualAssignment();
-    expect(individualAssignments.length).toEqual(2);
-  
-    groupAssignments = await checkService.getAllGroupAssignments();
-    expect(groupAssignments.length).toEqual(1);
-  
-    expect(individualAssignments).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          user: expect.objectContaining({
-            id: experimentUsers[3].id
-          }),
-          enrollmentCode: ENROLLMENT_CODE.GROUP_LOGIC 
-        })
-      ])
-    );
+  // the user 4 should be enrolled with 'ALGORITHMIC' enrollment code & create a group enrollment document:
+  individualAssignments = await checkService.getAllIndividualAssignment();
+  expect(individualAssignments.length).toEqual(2);
+
+  groupAssignments = await checkService.getAllGroupAssignments();
+  expect(groupAssignments.length).toEqual(1);
+
+  expect(individualAssignments).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        user: expect.objectContaining({
+          id: experimentUsers[3].id
+        }),
+        enrollmentCode: ENROLLMENT_CODE.GROUP_LOGIC
+      })
+    ])
+  );
 }

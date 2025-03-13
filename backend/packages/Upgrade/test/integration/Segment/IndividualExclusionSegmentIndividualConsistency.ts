@@ -88,7 +88,7 @@ export default async function IndividualExclusionSegmentIndividualConsistency():
         user: expect.objectContaining({
           id: experimentUsers[0].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
