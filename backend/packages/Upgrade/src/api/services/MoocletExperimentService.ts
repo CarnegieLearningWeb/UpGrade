@@ -562,11 +562,11 @@ export class MoocletExperimentService extends ExperimentService {
    * @param currentOutcomeVariableName - The current outcome variable name stored in Mooclet
    * @returns Object with all detected changes if any exist, or false if no changes were detected
    */
-  private async detectExperimentDesignChanges(
+  private detectExperimentDesignChanges(
     incomingExperimentDTO: ExperimentDTO,
     currentMoocletExperimentRef: MoocletExperimentRef,
     currentOutcomeVariableName: string
-  ): Promise<AllowedInactiveStateChanges | null> {
+  ): AllowedInactiveStateChanges | null {
     const changes = {
       newOutcomeVariableName: this.detectNewOutcomeVariableName(incomingExperimentDTO, currentOutcomeVariableName),
       addedConditions: this.detectNewConditions(incomingExperimentDTO, currentMoocletExperimentRef),
@@ -583,7 +583,7 @@ export class MoocletExperimentService extends ExperimentService {
    * Updates policy parameters for a Mooclet experiment.
    *
    * This method updates the policy parameters of a Mooclet experiment in response to
-   * experiment design changes. It logs the operation and forwards the request to the
+   * experiment design changes. It forwards the request to the
    * Mooclet data service.
    *
    * @param newPolicyParameters - The updated policy parameters to apply
@@ -596,7 +596,7 @@ export class MoocletExperimentService extends ExperimentService {
     currentMoocletExperimentRef: MoocletExperimentRef,
     logger: UpgradeLogger
   ): Promise<MoocletPolicyParametersResponseDetails> {
-    return await this.moocletDataService.updatePolicyParameters(
+    return this.moocletDataService.updatePolicyParameters(
       currentMoocletExperimentRef.policyParametersId,
       {
         mooclet: currentMoocletExperimentRef.moocletId,
@@ -611,7 +611,7 @@ export class MoocletExperimentService extends ExperimentService {
    * Updates the outcome variable name for a Mooclet experiment.
    *
    * This method updates the name of the outcome variable in Mooclet when it has been
-   * changed in the experiment design. It logs the operation and forwards the request
+   * changed in the experiment design. It forwards the request
    * to the Mooclet data service.
    *
    * @param newOutcomeVariableName - The new name for the outcome variable
@@ -623,8 +623,8 @@ export class MoocletExperimentService extends ExperimentService {
     newOutcomeVariableName: string,
     currentMoocletExperimentRef: MoocletExperimentRef,
     logger: UpgradeLogger
-  ) {
-    await this.moocletDataService.updateVariable(
+  ): Promise<MoocletVariableResponseDetails> {
+    return this.moocletDataService.updateVariable(
       currentMoocletExperimentRef.variableId,
       {
         name: newOutcomeVariableName,
@@ -637,7 +637,7 @@ export class MoocletExperimentService extends ExperimentService {
    * Removes conditions from a Mooclet experiment.
    *
    * This method deletes versions from Mooclet that correspond to experiment conditions
-   * that have been removed from the experiment design. It logs the operation and
+   * that have been removed from the experiment design. It
    * processes each removal in parallel.
    *
    * @param removedConditions - Array of version-condition maps for conditions to remove
@@ -694,7 +694,7 @@ export class MoocletExperimentService extends ExperimentService {
    * Adds new conditions to a Mooclet experiment.
    *
    * This method creates new versions in Mooclet for conditions that have been added to
-   * the experiment design. It logs the operation, creates each version in parallel, and
+   * the experiment design. It creates each version in parallel, and
    * then creates mappings between the new versions and their corresponding conditions.
    *
    * @param addedConditions - Array of conditions to add to the Mooclet experiment
