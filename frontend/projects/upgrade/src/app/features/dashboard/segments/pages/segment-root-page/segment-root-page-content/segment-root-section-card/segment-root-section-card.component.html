@@ -1,0 +1,43 @@
+<app-common-section-card>
+  <!-- header-left -->
+  <app-common-section-card-search-header
+    header-left
+    [filterOptions]="segmentFilterOptions"
+    [searchKey]="searchKey$ | async"
+    [searchString]="searchString$ | async"
+    (search)="onSearch($event)"
+  ></app-common-section-card-search-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="(permissions$ | async)?.segments.create"
+    [primaryButtonText]="'segments.add-segments.text' | translate | titlecase"
+    [menuButtonItems]="menuButtonItems"
+    [showMenuButton]="(permissions$ | async)?.segments.create"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (primaryButtonClick)="onAddSegmentButtonClick()"
+    (menuButtonItemClick)="onMenuButtonItemClick($event)"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  ></app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <ng-container content *ngIf="isSectionCardExpanded">
+    <ng-container *ngIf="!(isInitialLoading$ | async); else table">
+      <div class="mat-spinner-container">
+        <mat-spinner diameter="60"></mat-spinner>
+      </div>
+    </ng-container>
+
+    <ng-template #table>
+      <div class="table-container">
+        <app-segment-root-section-card-table
+          [dataSource$]="dataSource$ | async"
+          [isLoading$]="isLoadingSegments$"
+          [isSearchActive$]="isSearchActive$"
+        >
+        </app-segment-root-section-card-table>
+      </div>
+    </ng-template>
+  </ng-container>
+</app-common-section-card>

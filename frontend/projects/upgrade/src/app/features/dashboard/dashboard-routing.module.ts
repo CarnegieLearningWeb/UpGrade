@@ -1,6 +1,41 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { DashboardRootComponent } from './dashboard-root/dashboard-root.component';
+import { environment } from '../../../environments/environment';
+
+// Conditionally define segments routes based on the toggle
+const segmentsRoutes = environment.segmentsRefreshToggle
+  ? [
+      {
+        path: 'segments',
+        loadComponent: () =>
+          import('./segments/pages/segment-root-page/segment-root-page.component').then(
+            (c) => c.SegmentRootPageComponent
+          ),
+        data: {
+          title: 'app-header.title.segments',
+        },
+      },
+      {
+        path: 'segments/detail/:segmentId',
+        loadComponent: () =>
+          import('./segments/pages/segment-details-page/segment-details-page.component').then(
+            (c) => c.SegmentDetailsPageComponent
+          ),
+        data: {
+          title: 'app-header.title.segments',
+        },
+      },
+    ]
+  : [
+      {
+        path: 'segments',
+        loadChildren: () => import('./segments-legacy/segments.module').then((m) => m.SegmentsModule),
+        data: {
+          title: 'app-header.title.segments',
+        },
+      },
+    ];
 
 const routes: Routes = [
   {
@@ -55,13 +90,8 @@ const routes: Routes = [
           title: 'app-header.title.feature-flag',
         },
       },
-      {
-        path: 'segments',
-        loadChildren: () => import('./segments-legacy/segments.module').then((m) => m.SegmentsModule),
-        data: {
-          title: 'app-header.title.segments',
-        },
-      },
+      // Spread the conditionally selected segments routes
+      ...segmentsRoutes,
       {
         path: 'profile',
         loadChildren: () => import('./profile/profile.module').then((m) => m.ProfileModule),
