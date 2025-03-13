@@ -211,9 +211,7 @@ export class ExperimentAssignmentService {
     }
 
     // 2. Check if user or group is globally excluded
-    const experimentUser: ExperimentUser = userDoc;
-
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc);
 
     // empty assignments if the user or group is excluded from the experiment
     if (isUserExcluded || isGroupExcluded) {
@@ -344,9 +342,7 @@ export class ExperimentAssignmentService {
     const experiments: Experiment[] = await this.getExperimentsForUser(previewUser, context);
 
     // 2. Check if user or group is globally excluded
-    const experimentUser: ExperimentUser = experimentUserDoc;
-
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUserDoc);
 
     // return empty assignments if the user or group is excluded from the experiment
     if (isUserExcluded || isGroupExcluded) {
@@ -354,7 +350,7 @@ export class ExperimentAssignmentService {
     }
 
     // 3. Filter out valid group experiments that doesn't have invalid group/workingGroup which are not enrolled yet
-    const validExperiments = await this.filterAndProcessGroupExperiments(experiments, experimentUser, logger);
+    const validExperiments = await this.filterAndProcessGroupExperiments(experiments, experimentUserDoc, logger);
 
     // 4. Process assignments and exclusions
     try {
@@ -367,14 +363,14 @@ export class ExperimentAssignmentService {
 
       // Query assignments and exclusions for the user
       const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
-        await this.getAssignmentsAndExclusionsForUser(experimentUser, experimentIds);
+        await this.getAssignmentsAndExclusionsForUser(experimentUserDoc, experimentIds);
 
       let mergedIndividualAssignment = individualEnrollments;
       // add assignments for individual assignments if preview user
       if (previewUser && previewUser.assignments) {
         const previewAssignment: IndividualEnrollment[] = previewUser.assignments.map((assignment) => {
           return {
-            user: experimentUser,
+            user: experimentUserDoc,
             condition: assignment.experimentCondition,
             ...assignment,
           } as any; // any is used because we don't have decisionPoint in the preview assignment
@@ -383,14 +379,14 @@ export class ExperimentAssignmentService {
       }
 
       // Check for experiment level inclusion and exclusion and return valid inclusion experiments
-      let [filteredExperiments] = await this.experimentLevelExclusionInclusion(validExperiments, experimentUser);
+      let [filteredExperiments] = await this.experimentLevelExclusionInclusion(validExperiments, experimentUserDoc);
 
       // 5. Process experiment pools on filtered experiments
       filteredExperiments = this.processExperimentPools(
         filteredExperiments,
         mergedIndividualAssignment,
         groupEnrollments,
-        experimentUser
+        experimentUserDoc
       );
 
       // return empty if no experiments
@@ -408,7 +404,7 @@ export class ExperimentAssignmentService {
           const groupEnrollment = groupEnrollments.find((assignment) => {
             return (
               assignment.experiment.id === experiment.id &&
-              assignment.groupId === experimentUser.workingGroup[experiment.group]
+              assignment.groupId === experimentUserDoc.workingGroup[experiment.group]
             );
           });
 
@@ -419,7 +415,7 @@ export class ExperimentAssignmentService {
           const groupExclusion = groupExclusions.find((exclusion) => {
             return (
               exclusion.experiment.id === experiment.id &&
-              exclusion.groupId === experimentUser.workingGroup[experiment.group]
+              exclusion.groupId === experimentUserDoc.workingGroup[experiment.group]
             );
           });
 
@@ -428,7 +424,7 @@ export class ExperimentAssignmentService {
             enrollmentCountPerCondition = await this.getEnrollmentCountPerCondition(experiment, userId);
           }
           return await this.assignExperiment(
-            experimentUser,
+            experimentUserDoc,
             experiment,
             individualEnrollment,
             groupEnrollment,
@@ -818,7 +814,9 @@ export class ExperimentAssignmentService {
     return pool;
   }
 
-  public async checkUserOrGroupIsGloballyExcluded(experimentUser: ExperimentUser): Promise<[boolean, boolean]> {
+  public async checkUserOrGroupIsGloballyExcluded(
+    experimentUser: RequestedExperimentUser
+  ): Promise<[boolean, boolean]> {
     let userGroup = [];
     userGroup = Object.keys(experimentUser.workingGroup || {}).map((type: string) => {
       return `${type}_${experimentUser.workingGroup[type]}`;

@@ -495,19 +495,19 @@ describe('Experiment Assignment Service Test', () => {
     const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc);
     expect(exclusionResult).toEqual([false, false]);
 
-    const [includedExpement, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
+    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
     expect(exclusionReason).toEqual([]);
-    expect(includedExpement).toEqual([exp]);
+    expect(includedExperiment).toEqual([exp]);
   });
 
   it('[experimentLevelExclusionInclusion] should return an exclusion reason if a user or userGroup is on exclusion list', async () => {
     const userDoc = { id: 'user2', group: { teacher: ['teacher1'] }, workingGroup: {} };
     const exp = simpleIndividualAssignmentExperiment;
-    const [includedExpement, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
+    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
     expect(exclusionReason.length).toEqual(1);
     expect(exclusionReason[0].matchedGroup).toEqual(true);
     expect(exclusionReason[0].reason).toEqual('group');
-    expect(includedExpement).toEqual([]);
+    expect(includedExperiment).toEqual([]);
   });
 
   it('[createExperimentPool] should return empty pool of experiments for no active experiments', async () => {
@@ -981,9 +981,12 @@ describe('Experiment Assignment Service Test', () => {
       findOne: sandbox.stub().resolves(monitoredDocument),
     };
 
-    const [includedExpement, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([simpleIndividualAssignmentExperiment], userDoc);
+    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion(
+      [simpleIndividualAssignmentExperiment],
+      userDoc
+    );
     expect(exclusionReason).toEqual([]);
-    expect(includedExpement).toEqual([simpleIndividualAssignmentExperiment]);
+    expect(includedExperiment).toEqual([simpleIndividualAssignmentExperiment]);
     // we are asserting that saveGroupExclusionDoc is called once, so its stub is needed
     testedModule.saveGroupExclusionDoc = sandbox.stub().resolves([]);
 
@@ -1017,7 +1020,9 @@ describe('Experiment Assignment Service Test', () => {
         id: userId,
       },
     };
-    testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([[], [{ matchedGroup: false, reason: 'group' }]]);
+    testedModule.experimentLevelExclusionInclusion = sandbox
+      .stub()
+      .resolves([[], [{ matchedGroup: false, reason: 'group' }]]);
 
     const decisionPointRepositoryMock = { find: sandbox.stub().resolves([simpleIndividualAssignmentExperiment]) };
     const monitoredDecisionPointRepositoryMock = {
@@ -1053,16 +1058,16 @@ describe('Experiment Assignment Service Test', () => {
     const condition = 'Shape=Circle; Color=Red';
     factorialIndividualExperiment.state = 'inactive';
 
-    const modifiedPartitions = factorialIndividualExperiment.partitions.map(partition => ({
+    const modifiedPartitions = factorialIndividualExperiment.partitions.map((partition) => ({
       ...partition,
-      experiment: factorialIndividualExperiment  // Adding experiment key
+      experiment: factorialIndividualExperiment, // Adding experiment key
     }));
 
     testedModule.cacheService.wrap = sandbox.stub().resolves([factorialIndividualExperiment]);
     testedModule.getCachedExperiments = sandbox.stub().resolves([modifiedPartitions, [factorialIndividualExperiment]]);
 
     testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria = sandbox.stub().resolves([]);
-    
+
     const monitoredDocument = {
       site: site,
       target: target,
@@ -1071,7 +1076,7 @@ describe('Experiment Assignment Service Test', () => {
         id: userId,
       },
     };
-    
+
     previewUserServiceMock = { findOne: sandbox.stub().resolves([]) };
     const monitoredDecisionPointRepositoryMock = {
       saveRawJson: sandbox.stub().callsFake((args) => {
@@ -1095,9 +1100,7 @@ describe('Experiment Assignment Service Test', () => {
       undefined
     );
     expect(markResult).toMatchObject(monitoredDocument);
-    if ((factorialIndividualExperiment.state !== 'enrolling' && factorialIndividualExperiment.state !== 'enrollmentComplete') || previewUserServiceMock.findOne) {
-      sinon.assert.notCalled(testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria);
-    }
+    sinon.assert.notCalled(testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria);
   });
 
   it('[updateEnrollmentExclusionDocumentsAndCheckEndingCriteria] should be called once if experiment state is enrolling/enrolmentComplete', async () => {
@@ -1105,16 +1108,17 @@ describe('Experiment Assignment Service Test', () => {
     const site = 'geometry';
     const target = 'color_shape';
     const condition = 'Shape=Circle; Color=Red';
-    const modifiedPartitions = factorialIndividualExperiment.partitions.map(partition => ({
+    factorialIndividualExperiment.state = 'enrolling';
+    const modifiedPartitions = factorialIndividualExperiment.partitions.map((partition) => ({
       ...partition,
-      experiment: factorialIndividualExperiment  // Adding experiment key
+      experiment: factorialIndividualExperiment, // Adding experiment key
     }));
 
     testedModule.cacheService.wrap = sandbox.stub().resolves([factorialIndividualExperiment]);
     testedModule.getCachedExperiments = sandbox.stub().resolves([modifiedPartitions, [factorialIndividualExperiment]]);
 
     testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria = sandbox.stub().resolves([]);
-    
+
     const monitoredDocument = {
       site: site,
       target: target,
@@ -1144,8 +1148,6 @@ describe('Experiment Assignment Service Test', () => {
       undefined
     );
     expect(markResult).toMatchObject(monitoredDocument);
-    if (factorialIndividualExperiment.state === 'enrolling' || factorialIndividualExperiment.state === 'enrollmentComplete') {
-      sinon.assert.calledOnce(testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria);
-    }
+    sinon.assert.calledOnce(testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria);
   });
 });
