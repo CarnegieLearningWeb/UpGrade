@@ -196,18 +196,24 @@ export class ExperimentAssignmentService {
     });
 
     if (experiments.length) {
-      const dpExpExists = experiments.filter((exp) => exp.id === experimentId);
+      if (experimentId) {
+        const dpExpExists = experiments.filter((exp) => exp.id === experimentId);
 
-      if (!dpExpExists.length) {
-        const error = new Error(
-          `Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`
-        );
-        (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
-        (error as any).httpCode = 404;
-        logger.error(error);
-        throw error;
+        if (!dpExpExists.length) {
+          const error = new Error(
+            `Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`
+          );
+          (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
+          (error as any).httpCode = 404;
+          logger.error(error);
+          throw error;
+        }
+        experiments = dpExpExists;
+      } else {
+        const random = seedrandom(userId)();
+        experiments = [experiments[Math.floor(random * experiments.length)]];
+        experimentId = experiments[0]?.id;
       }
-      experiments = dpExpExists;
     }
 
     // 2. Check if user or group is globally excluded
