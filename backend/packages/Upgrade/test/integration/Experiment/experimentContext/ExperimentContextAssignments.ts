@@ -112,6 +112,7 @@ export default async function testCase(): Promise<void> {
     experimentName1,
     experimentPoint1,
     condition1,
+    experiment1.id,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName1, experimentPoint1);
@@ -133,6 +134,7 @@ export default async function testCase(): Promise<void> {
     experimentName2,
     experimentPoint2,
     condition2,
+    experiment2.id,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName2, experimentPoint2);

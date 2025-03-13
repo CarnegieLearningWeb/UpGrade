@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --open",
+    "start": "ng serve --open --configuration=local",
     "docker:local": "ng serve --open --host 0.0.0.0",
     "cl:build": "npm run build:prod && npm run cl:copy-package-json",
     "cl:copy-package-json": "cp projects/upgrade/package.json dist/upgrade/",

@@ -50,17 +50,18 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
+  const experimentId = experiments[0].id;
   let markedExperimentPoint = await markExperimentPoint(
     previewUsers[0].id,
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to Preview
-  const experimentId = experiments[0].id;
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.PREVIEW, user, new UpgradeLogger());
 
   // fetch experiment
@@ -87,6 +88,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
@@ -101,6 +103,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
@@ -115,6 +118,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
@@ -146,6 +150,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
@@ -160,6 +165,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
@@ -174,6 +180,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
