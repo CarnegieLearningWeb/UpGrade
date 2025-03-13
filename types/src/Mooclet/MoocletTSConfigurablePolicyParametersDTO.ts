@@ -1,39 +1,78 @@
-import { IsNumber, IsString, ValidateNested, IsOptional, IsObject, IsDefined, IsNotEmpty } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsNumber,
+  IsString,
+  ValidateNested,
+  IsOptional,
+  registerDecorator,
+  IsDefined,
+  IsNotEmpty,
+  ValidationOptions,
+  validate as CVValidate,
+  validateSync as CVValidateSync,
+} from 'class-validator';
+import { plainToClass, Type } from 'class-transformer';
 import { MoocletPolicyParametersDTO } from './MoocletPolicyParametersDTO';
 
 export class Prior {
   @IsDefined()
   @IsNumber()
-  @Type(() => Number)
-  failure = 1;
+  failure: number;
 
   @IsDefined()
   @IsNumber()
-  @Type(() => Number)
-  success = 1;
+  success: number;
 }
 
 export class CurrentPosteriors {
+  @IsDefined()
   @IsNumber()
-  @Type(() => Number)
   failures: number;
 
+  @IsDefined()
   @IsNumber()
-  @Type(() => Number)
   successes: number;
 }
+
+const IsCurrentPosteriorsRecord = (validationOptions?: ValidationOptions) => {
+  return function (object: unknown, propertyName: string) {
+    registerDecorator({
+      name: 'IsCurrentPosteriorsRecord',
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: {
+        message: ({ value }) => {
+          const errors = Object.values(value).map((val) => {
+            const instance = plainToClass(CurrentPosteriors, val);
+            return CVValidateSync(instance);
+          });
+          // Flat the array of arrays
+          return errors.reduce((acc, val) => acc.concat(val), [])[0].toString();
+        },
+        ...validationOptions,
+      },
+      validator: {
+        async validate(value: unknown) {
+          return Promise.all(
+            Object.values(value).map(async (val) => {
+              const instance = plainToClass(CurrentPosteriors, val);
+              return await CVValidate(instance).then((errors) => errors.length === 0);
+            })
+          ).then((values) => values.every((val) => val));
+        },
+      },
+    });
+  };
+};
 
 export class MoocletTSConfigurablePolicyParametersDTO extends MoocletPolicyParametersDTO {
   @IsDefined()
   @ValidateNested()
   @Type(() => Prior)
-  prior: Prior = new Prior();
+  prior: Prior;
 
   @IsOptional()
-  @IsObject()
-  @ValidateNested({ each: true })
-  @Type(() => CurrentPosteriors)
+  @IsCurrentPosteriorsRecord()
   current_posteriors?: Record<string, CurrentPosteriors>;
 
   @IsNumber()

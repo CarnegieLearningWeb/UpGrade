@@ -570,7 +570,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *   - name: Experiments
  *     description: CRUD operations related to experiments
  */
-@Authorized()
+// @Authorized()
 @JsonController('/experiments')
 export class ExperimentController {
   constructor(
@@ -969,7 +969,7 @@ export class ExperimentController {
 
   @Post()
   public create(
-    @Body({ validate: true }) experiment: ExperimentDTO,
+    @Body({ validate: true, transform: { enableImplicitConversion: true } }) experiment: ExperimentDTO,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
