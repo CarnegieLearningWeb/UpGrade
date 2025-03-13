@@ -322,7 +322,9 @@ describe('#MoocletExperimentService', () => {
         .spyOn(moocletExperimentService as any, 'orchestrateMoocletCreation')
         .mockResolvedValue(mockMoocletExperimentRefResponse);
       jest.spyOn(moocletExperimentService as any, 'saveMoocletExperimentRef').mockResolvedValue(undefined);
-      jest.spyOn(moocletExperimentService as any, 'createAndSaveVersionConditionMaps').mockResolvedValue(undefined);
+      jest
+        .spyOn(moocletExperimentService as any, 'createAndSaveVersionConditionMapEntities')
+        .mockResolvedValue(undefined);
       jest.spyOn(moocletExperimentService as any, 'orchestrateDeleteMoocletResources').mockResolvedValue(undefined);
       jest.spyOn(moocletRewardsService as any, 'createAndSaveRewardMetric').mockResolvedValue(undefined);
     });
@@ -348,7 +350,7 @@ describe('#MoocletExperimentService', () => {
         mockMoocletExperimentRefResponse
       );
 
-      expect(moocletExperimentService['createAndSaveVersionConditionMaps']).toHaveBeenCalledWith(
+      expect(moocletExperimentService['createAndSaveVersionConditionMapEntities']).toHaveBeenCalledWith(
         manager,
         mockMoocletExperimentRefResponse.id,
         mockMoocletExperimentRefResponse.versionConditionMaps,
@@ -377,7 +379,7 @@ describe('#MoocletExperimentService', () => {
       // Verify subsequent methods were not called
       expect(moocletExperimentService['orchestrateMoocletCreation']).not.toHaveBeenCalled();
       expect(moocletExperimentService['saveMoocletExperimentRef']).not.toHaveBeenCalled();
-      expect(moocletExperimentService['createAndSaveVersionConditionMaps']).not.toHaveBeenCalled();
+      expect(moocletExperimentService['createAndSaveVersionConditionMapEntities']).not.toHaveBeenCalled();
     });
 
     it('should handle failure during orchestrateMoocletCreation and throw error', async () => {
@@ -388,7 +390,7 @@ describe('#MoocletExperimentService', () => {
 
       // Verify subsequent methods were not called
       expect(moocletExperimentService['saveMoocletExperimentRef']).not.toHaveBeenCalled();
-      expect(moocletExperimentService['createAndSaveVersionConditionMaps']).not.toHaveBeenCalled();
+      expect(moocletExperimentService['createAndSaveVersionConditionMapEntities']).not.toHaveBeenCalled();
     });
 
     it('should handle failure during saveMoocletExperimentRef and cleanup resources', async () => {
@@ -404,9 +406,9 @@ describe('#MoocletExperimentService', () => {
       );
     });
 
-    it('should handle failure during createAndSaveVersionConditionMaps and cleanup resources', async () => {
+    it('should handle failure during createAndSaveVersionConditionMapEntities and cleanup resources', async () => {
       const error = new Error('Failed to save version condition maps');
-      jest.spyOn(moocletExperimentService as any, 'createAndSaveVersionConditionMaps').mockRejectedValue(error);
+      jest.spyOn(moocletExperimentService as any, 'createAndSaveVersionConditionMapEntities').mockRejectedValue(error);
 
       await expect(moocletExperimentService['handleCreateMoocletTransaction'](manager, params)).rejects.toThrow(error);
 
