@@ -1,1 +1,37 @@
-<p>segment-details-page-content works!</p>
+<div class="content-container">
+  <ng-container *ngIf="segment$ | async as segment; else loading">
+    <app-common-section-card-list class="common-section-card-list">
+      <app-segment-overview-details-section-card
+        [data]="segment"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+        (tabChange)="onTabChange($event)"
+        section-card
+      ></app-segment-overview-details-section-card>
+
+      <!-- Show Lists section when the Lists tab is active (activeTabIndex === 0) -->
+      <app-segment-lists-section-card
+        *ngIf="activeTabIndex === 0"
+        [data]="segment"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      >
+      </app-segment-lists-section-card>
+
+      <!-- Show Used By section when the Used By tab is active (activeTabIndex === 1) -->
+      <app-segment-used-by-section-card
+        *ngIf="activeTabIndex === 1"
+        [data]="segment"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      >
+      </app-segment-used-by-section-card>
+    </app-common-section-card-list>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="mat-spinner-container">
+      <mat-spinner diameter="100"></mat-spinner>
+    </div>
+  </ng-template>
+</div>
