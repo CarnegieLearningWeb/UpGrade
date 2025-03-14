@@ -14,7 +14,7 @@ import {
   ASSIGNMENT_UNIT,
   EXCLUSION_CODE,
 } from 'upgrade_types';
-import { DeepPartial, In } from 'typeorm';
+import { In } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
 import Papa from 'papaparse';
 import { env } from '../../env';
