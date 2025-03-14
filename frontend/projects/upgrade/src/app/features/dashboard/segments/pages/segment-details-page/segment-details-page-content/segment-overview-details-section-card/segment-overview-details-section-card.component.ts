@@ -56,13 +56,13 @@ export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDes
   ngOnInit(): void {
     this.menuButtonItems$ = this.segmentAndPermissions$.pipe(
       map(({ segment, permissions }) => [
-        { name: SEGMENT_DETAILS_PAGE_ACTIONS.EDIT, disabled: !permissions.segments.update },
-        { name: SEGMENT_DETAILS_PAGE_ACTIONS.DUPLICATE, disabled: !permissions.segments.create },
+        { name: SEGMENT_DETAILS_PAGE_ACTIONS.EDIT, disabled: !permissions?.segments?.update },
+        { name: SEGMENT_DETAILS_PAGE_ACTIONS.DUPLICATE, disabled: !permissions?.segments?.create },
         { name: SEGMENT_DETAILS_PAGE_ACTIONS.EXPORT, disabled: false },
         {
           name: SEGMENT_DETAILS_PAGE_ACTIONS.DELETE,
           disabled:
-            !permissions?.segments.delete || [SEGMENT_STATUS.USED, SEGMENT_STATUS.GLOBAL].includes(segment?.status),
+            !permissions?.segments?.delete || [SEGMENT_STATUS.USED, SEGMENT_STATUS.GLOBAL].includes(segment?.status),
         },
       ])
     );
