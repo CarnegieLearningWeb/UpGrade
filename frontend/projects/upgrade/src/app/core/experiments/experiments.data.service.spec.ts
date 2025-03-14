@@ -1,6 +1,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { of } from 'rxjs';
-import { ASSIGNMENT_ALGORITHM, CONDITION_ORDER, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import {
+  ASSIGNMENT_ALGORITHM,
+  CONDITION_ORDER,
+  EXPERIMENT_TYPE,
+  FILTER_MODE,
+  SEGMENT_TYPE,
+  SEGMENT_STATUS,
+} from 'upgrade_types';
 import { environment } from '../../../environments/environment';
 import { Environment } from '../../../environments/environment-types';
 import { Segment } from '../segments/store/segments.model';
@@ -53,11 +60,12 @@ describe('ExperimentDataService', () => {
       updatedAt: '04/23/17 04:34:22 +0000',
       versionNumber: 1,
       context: 'segment-context',
+      tags: [],
       individualForSegment: [],
       groupForSegment: [],
       subSegments: [],
       type: SEGMENT_TYPE.PUBLIC,
-      status: 'segment-status',
+      status: SEGMENT_STATUS.UNUSED,
     };
 
     const dummyInclusionData: SegmentNew = {
