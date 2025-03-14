@@ -570,7 +570,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *   - name: Experiments
  *     description: CRUD operations related to experiments
  */
-// @Authorized()
+@Authorized()
 @JsonController('/experiments')
 export class ExperimentController {
   constructor(
