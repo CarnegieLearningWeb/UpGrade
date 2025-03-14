@@ -1,1 +1,34 @@
-<p>segment-overview-details-section-card works!</p>
+<app-common-section-card class="details-overview-card" *ngIf="segment$ | async as segment">
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="segment.name"
+    [createdAt]="segment.createdAt"
+    [updatedAt]="segment.updatedAt"
+    [chipClass]="segment.status.toLowerCase()"
+  ></app-common-section-card-title-header> <!-- TODO: Update the SEGMENT_STATUS enum to lowercase and remove toLowerCase() once the legacy Segments code is removed -->
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showMenuButton]="true"
+    [menuButtonItems]="menuButtonItems$ | async"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, segment)"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  ></app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <ng-container content>
+    <app-common-section-card-overview-details
+      [data]="segmentOverviewDetails$ | async"
+      (tagItemClick)="filterSegmentsByChips($event)"
+    ></app-common-section-card-overview-details>
+  </ng-container>
+
+  <!-- footer -->
+  <app-segment-overview-details-footer
+    footer
+    (tabChange)="onSelectedTabChange($event)"
+  ></app-segment-overview-details-footer>
+</app-common-section-card>

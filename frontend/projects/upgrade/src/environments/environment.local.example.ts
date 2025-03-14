@@ -1,9 +1,7 @@
 // The file contents for the current environment will overwrite these during build.
-// The build system defaults to the dev environment which uses 'environment.local.ts', but if you do
+// The build system defaults to the dev environment which uses 'environment.ts', but if you do
 // `ng build --env=prod` then `environment.prod.ts` will be used instead.
 // The list of which env maps to which file can be found in `.angular-cli.json`.
-
-// This file is NOT used anymore for any actual builds, so don't bother changing the values here, use 'environment.local.ts'.
 
 export const environment = {
   appName: 'UpGrade',
@@ -13,7 +11,7 @@ export const environment = {
   test: false,
   baseHrefPrefix: '',
   useHashRouting: false,
-  googleClientId: '',
+  googleClientId: 'replace-me-with-same-google-client-id-as-backend-env',
   domainName: '',
   pollingEnabled: false,
   pollingInterval: 10 * 1000,
@@ -23,7 +21,7 @@ export const environment = {
   withinSubjectExperimentSupportToggle: false,
   errorLogsToggle: false,
   metricAnalyticsExperimentDisplayToggle: true,
-  moocletToggle: true,
+  moocletToggle: false,
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',
@@ -73,7 +71,6 @@ export const environment = {
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
     segments: '/segments',
-    getPaginatedSegments: '/segments/paginated',
     validateSegments: '/segments/validation',
     importSegments: '/segments/import',
     exportSegments: '/segments/export/json',

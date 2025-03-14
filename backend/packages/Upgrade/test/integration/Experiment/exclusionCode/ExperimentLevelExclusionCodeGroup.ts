@@ -17,7 +17,7 @@ export default async function testCase(): Promise<void> {
 
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
-  
+
   // group experiment object
   const experimentObject = ExperimentLevelExclusionExperiment2;
 
@@ -57,13 +57,13 @@ export default async function testCase(): Promise<void> {
       }),
     ])
   );
-  
+
   // get all experiment condition for user 3
   const experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 3
-  const markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  const markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[2].id,

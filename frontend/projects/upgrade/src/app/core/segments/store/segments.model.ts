@@ -102,12 +102,13 @@ export interface Segment {
   id: string;
   name: string;
   context: string;
+  tags: string[];
   description: string;
   individualForSegment: IndividualForSegment[];
   groupForSegment: GroupForSegment[];
   subSegments: Segment[];
   type: SEGMENT_TYPE;
-  status: string;
+  status: SEGMENT_STATUS;
 }
 
 export interface SegmentInput {
@@ -149,6 +150,12 @@ export interface SegmentsPaginationParams {
   take: number;
   searchParams?: ISegmentsSearchParams;
   sortParams?: ISegmentsSortParams;
+
+export enum SEGMENT_DETAILS_PAGE_ACTIONS {
+  EDIT = 'Edit Segment',
+  DUPLICATE = 'Duplicate Segment',
+  DELETE = 'Delete Segment',
+  EXPORT = 'Export Segment',
 }
 
 export interface SegmentState extends EntityState<Segment> {
