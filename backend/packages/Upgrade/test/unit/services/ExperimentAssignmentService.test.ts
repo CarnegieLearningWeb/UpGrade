@@ -159,6 +159,16 @@ describe('Experiment Assignment Service Test', () => {
           subSegments: [],
         },
       ]);
+    testedModule.segmentService.getGlobalExcludeSegmentByContext.resolves({
+      id: '77777777-7777-7777-7777-777777777777',
+      name: 'Global Exclude',
+      description: 'Globally excluded Users, Groups and Segments',
+      context: 'ALL',
+      type: 'global_exclude',
+      individualForSegment: [],
+      groupForSegment: [],
+      subSegments: [],
+    });
   });
 
   afterEach(() => {

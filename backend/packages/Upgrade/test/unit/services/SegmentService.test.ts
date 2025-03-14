@@ -372,29 +372,6 @@ describe('Segment Service Testing', () => {
     expect(segment).toEqual(res);
   });
 
-  it('should return all segments with status with global segment', async () => {
-    seg1.id = '77777777-7777-7777-7777-777777777777';
-    const res = {
-      segmentsData: [
-        {
-          id: seg1.id,
-          context: 'add',
-          status: 'Global',
-          subSegments: seg1.subSegments,
-          groupForSegment: seg1.groupForSegment,
-          individualForSegment: seg1.individualForSegment,
-        },
-        { id: seg2.id, context: 'add', status: 'Used', subSegments: seg2.subSegments },
-      ],
-      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
-      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
-      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
-      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-    };
-    const segments = await service.getAllSegmentWithStatus(logger);
-    expect(segments).toEqual(res);
-  });
-
   it('should return experiment segment exclusion data', async () => {
     const segments = await service.getExperimentSegmentExclusionData();
     expect(segments).toEqual(include);

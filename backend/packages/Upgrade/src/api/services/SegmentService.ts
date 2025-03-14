@@ -33,7 +33,6 @@ import { ExperimentSegmentInclusionRepository } from '../repositories/Experiment
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { getSegmentData } from '../controllers/SegmentController';
-import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 import { CacheService } from './CacheService';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
@@ -106,6 +105,26 @@ export class SegmentService {
       .getMany();
 
     return queryBuilder;
+  }
+
+  /**
+   * Retrieves all segments of type `GLOBAL_EXCLUDE`.
+   *
+   * @param logger - The logger instance to log information.
+   * @returns A promise that resolves to an array of segments of type `GLOBAL_EXCLUDE`.
+   */
+  public async getAllGlobalExcludeSegments(logger: UpgradeLogger): Promise<Segment[]> {
+    return this.segmentRepository.getAllSegmentByType(SEGMENT_TYPE.GLOBAL_EXCLUDE, logger);
+  }
+
+  /**
+   * Retrieves a global exclude segment by the given context.
+   *
+   * @param context - The context for which the global exclude segment is to be retrieved.
+   * @returns A promise that resolves to the global exclude segment.
+   */
+  public async getGlobalExcludeSegmentByContext(context: string): Promise<Segment> {
+    return this.segmentRepository.findOneSegmentByContextAndType(context, SEGMENT_TYPE.GLOBAL_EXCLUDE);
   }
 
   public async getAllPublicSegmentsAndSubsegments(logger: UpgradeLogger): Promise<Segment[]> {
@@ -214,8 +233,6 @@ export class SegmentService {
         subSegmentIds.forEach((subSegmentId) => collectSegmentIds(subSegmentId));
       };
 
-      collectSegmentIds(globalExcludeSegment.id);
-
       if (allExperimentSegmentsInclusion) {
         allExperimentSegmentsInclusion.forEach((ele) => {
           collectSegmentIds(ele.segment.id);
@@ -245,7 +262,7 @@ export class SegmentService {
       }
 
       const segmentsDataWithStatus = segmentsData.map((segment) => {
-        if (segment.id === globalExcludeSegment.id) {
+        if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
           return { ...segment, status: SEGMENT_STATUS.GLOBAL };
         } else if (segmentsUsedList.has(segment.id)) {
           return { ...segment, status: SEGMENT_STATUS.USED };
@@ -296,6 +313,15 @@ export class SegmentService {
   public upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
     return this.addSegmentDataInDB(segment, logger);
+  }
+
+  public async upsertSegments(segmentsInput: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
+    try {
+      return Promise.all(segmentsInput.map((segmentInput) => this.upsertSegment(segmentInput, logger)));
+    } catch (error) {
+      logger.error({ message: 'Error in upserting segments', error });
+      throw error;
+    }
   }
 
   public async addList(listInput: ListInputValidator, logger: UpgradeLogger): Promise<Segment> {
