@@ -34,6 +34,7 @@ import { SegmentsService } from '../../../../../../../core/segments/segments.ser
 })
 export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDestroy {
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
+  @Output() tabChange = new EventEmitter<number>();
   permissions$: Observable<UserPermission> = this.authService.userPermissions$;
   segment$ = this.segmentsService.selectedSegment$;
   segmentAndPermissions$: Observable<{ segment: Segment; permissions: UserPermission }> = combineLatest([
@@ -96,6 +97,10 @@ export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDes
     this.segmentsService.setSearchKey(SEGMENT_SEARCH_KEY.TAG);
     this.segmentsService.setSearchString(tagValue);
     this.router.navigate(['/segments']);
+  }
+
+  onSelectedTabChange(tabIndex: number) {
+    this.tabChange.emit(tabIndex);
   }
 
   ngOnDestroy(): void {
