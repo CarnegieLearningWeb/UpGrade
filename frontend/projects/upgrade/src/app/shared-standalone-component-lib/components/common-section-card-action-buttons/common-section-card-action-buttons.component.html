@@ -27,7 +27,7 @@
     </button>
     <mat-menu #menu="matMenu">
       <ng-container *ngFor="let item of menuButtonItems">
-        <button *ngIf="!item.disabled" mat-menu-item (click)="onMenuButtonItemClick(item.name)">
+        <button *ngIf="!item.disabled" mat-menu-item (click)="onMenuButtonItemClick(item.action)">
           <span class="ft-14-400">{{ item.name | translate | titlecase }}</span>
         </button>
       </ng-container>

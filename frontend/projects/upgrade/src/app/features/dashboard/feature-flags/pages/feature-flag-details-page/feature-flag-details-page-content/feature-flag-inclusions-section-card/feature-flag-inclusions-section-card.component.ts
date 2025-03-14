@@ -15,6 +15,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { CommonSimpleConfirmationModalComponent } from '../../../../../../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 import { Observable, Subscription, combineLatest, map } from 'rxjs';
 import {
+  FEATURE_FLAG_BUTTON_ACTION,
   FeatureFlag,
   PARTICIPANT_LIST_ROW_ACTION,
   ParticipantListRowActionEvent,
@@ -50,8 +51,8 @@ export class FeatureFlagInclusionsSectionCardComponent {
 
   subscriptions = new Subscription();
   menuButtonItems: IMenuButtonItem[] = [
-    { name: 'Import Include List', disabled: false },
-    { name: 'Export All Include Lists', disabled: false },
+    { name: 'Import Include List', action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST, disabled: false },
+    { name: 'Export All Include Lists', action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS, disabled: false },
   ];
 
   rowCountWithInclude$: Observable<number> = combineLatest([this.tableRowCount$, this.selectedFlag$]).pipe(

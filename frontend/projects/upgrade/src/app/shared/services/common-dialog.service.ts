@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, InjectionToken } from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
@@ -24,6 +24,25 @@ import {
   SimpleConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
+import {
+  ImportServiceAdapter,
+  ImportType,
+} from '../../shared-standalone-component-lib/components/common-import-modal/common-import.types';
+import {
+  FEATURE_FLAG_IMPORT_SERVICE,
+  LIST_IMPORT_SERVICE,
+  SEGMENT_IMPORT_SERVICE,
+} from '../../shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
+
+export interface ImportModalParams {
+  importType: ImportType;
+  importTypeAdapterToken: InjectionToken<ImportServiceAdapter>; // FIX
+  messageKey?: string; // Translation key for import message
+  warningMessageKey?: string; // Translation key for warning message
+  incompatibleMessageKey?: string; // Translation key for incompatible message
+  listType?: FEATURE_FLAG_LIST_FILTER_MODE; // FIX
+  flagId?: string; // FIX
+}
 
 @Injectable({
   providedIn: 'root',
@@ -352,30 +371,79 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
-  openImportFeatureFlagModal() {
-    return this.openImportModal('Import Feature Flag', null, null);
-  }
-
-  openImportFeatureFlagIncludeListModal(flagId: string) {
-    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, flagId);
-  }
-
-  openImportFeatureFlagExcludeListModal(flagId: string) {
-    return this.openImportModal('Import List', FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, flagId);
-  }
-
-  openImportModal(title: string, listType: FEATURE_FLAG_LIST_FILTER_MODE, flagId: string) {
-    const commonModalConfig: CommonModalConfig = {
-      title: title,
+  openImportSegmentModal() {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'Import Segment',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        listType: listType,
-        flagId: flagId,
+        importType: ImportType.SEGMENT,
+        importTypeAdapterToken: SEGMENT_IMPORT_SERVICE,
+        messageKey: 'segments.import-segment.message.text',
+        warningMessageKey: 'segments.import-segment-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'segments.import-segment-modal.compatibility-description.incompatible.text',
       },
     };
+    return this.openCommonImportModal(commonModalConfig);
+  }
 
+  openImportFeatureFlagModal() {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'Import Feature Flag',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importType: ImportType.FEATURE_FLAG,
+        importTypeAdapterToken: FEATURE_FLAG_IMPORT_SERVICE,
+        messageKey: 'feature-flags.import-feature-flag.message.text',
+        warningMessageKey: 'feature-flags.import-flag-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'feature-flags.import-flag-modal.compatibility-description.incompatible.text',
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportFeatureFlagExcludeListModal(flagId: string) {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'Import Exclusion List',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importType: ImportType.LIST,
+        importTypeAdapterToken: LIST_IMPORT_SERVICE,
+        messageKey: 'feature-flags.import-feature-flag-list.message.text',
+        warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
+        listType: FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+        flagId,
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportFeatureFlagIncludeListModal(flagId: string) {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'Import List',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importType: ImportType.LIST,
+        importTypeAdapterToken: LIST_IMPORT_SERVICE,
+        messageKey: 'feature-flags.import-feature-flag-list.message.text',
+        warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
+        listType: FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+        flagId,
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openCommonImportModal(commonModalConfig: CommonModalConfig<ImportModalParams>) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: ModalSize.STANDARD,

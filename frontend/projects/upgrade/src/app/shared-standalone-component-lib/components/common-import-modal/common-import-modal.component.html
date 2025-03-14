@@ -1,26 +1,24 @@
+<!-- common-import-modal.component.html -->
 <app-common-dialog
-  [title]="data.title"
-  [cancelBtnLabel]="data.cancelBtnLabel"
-  [primaryActionBtnLabel]="data.primaryActionBtnLabel"
-  [primaryActionBtnColor]="data.primaryActionBtnColor"
-  [primaryActionBtnDisabled]="isImportActionBtnDisabled | async"
+  [title]="config.title"
+  [cancelBtnLabel]="config.cancelBtnLabel"
+  [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+  [primaryActionBtnColor]="config.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isImportActionBtnDisabled$ | async"
   (primaryActionBtnClicked)="importFiles()"
 >
   <div class="drag-drop-container">
-    <ng-container *ngIf="!(isLoadingImportFeatureFlag$ | async); else loadingSpinner">
+    <ng-container *ngIf="!(isLoadingImport$ | async); else loadingSpinner">
       <ng-container *ngIf="(uploadedFileCount | async) < 1; else validationTable">
         <app-common-import-container
           fileType=".json"
           buttonLabel="Choose JSON"
-          (filesSelected)="handleFilesSelected($event)"
+          (filesSelected)="handleFilesSelected($event)"e
         >
         </app-common-import-container>
         <p class="ft-12-400 import-message">
-          <span *ngIf="data.title === 'Import Feature Flag'">
-            {{ 'feature-flags.import-feature-flag.message.text' | translate }}
-          </span>
-          <span *ngIf="data.title === 'Import List'">
-            {{ 'feature-flags.import-feature-flag-list.message.text' | translate }}
+          <span *ngIf="config.messageKey">
+            {{ config.messageKey | translate }}
           </span>
           <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer"
             >Learn more</a
@@ -72,24 +70,16 @@
 
             <!-- Expanded Detail Row -->
             <ng-container matColumnDef="expandedDetail">
-              <td mat-cell class="expandable-row" *matCellDef="let element; let fileIndex = dataIndex">
+              <td mat-cell class="expandable-row" *matCellDef="let element">
                 <div class="ft-14-500" *ngIf="isDescriptionExpanded" class="compatibility-details-container">
                   <div *ngIf="element.compatibilityType === 'incompatible'">
-                    <span *ngIf="data.title === 'Import Feature Flag'">
-                      {{ 'feature-flags.import-flag-modal.compatibility-description.incompatible.text' | translate }}
-                    </span>
-                    <span *ngIf="data.title === 'Import List'">
-                      {{
-                        'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text' | translate
-                      }}
+                    <span *ngIf="config.incompatibleMessageKey">
+                      {{ config.incompatibleMessageKey | translate }}
                     </span>
                   </div>
                   <div *ngIf="element.compatibilityType === 'warning'">
-                    <span *ngIf="data.title === 'Import Feature Flag'">
-                      {{ 'feature-flags.import-flag-modal.compatibility-description.warning.text' | translate }}
-                    </span>
-                    <span *ngIf="data.title === 'Import List'">
-                      {{ 'feature-flags.import-flag-list-modal.compatibility-description.warning.text' | translate }}
+                    <span *ngIf="config.warningMessageKey">
+                      {{ config.warningMessageKey | translate }}
                     </span>
                   </div>
                 </div>
@@ -97,9 +87,9 @@
             </ng-container>
 
             <!-- Header and Rows -->
-            <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-            <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-            <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"></mat-row>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            <tr mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"></tr>
           </table>
         </div>
       </ng-template>

@@ -14,7 +14,10 @@ import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { Observable, map } from 'rxjs';
-import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
+import {
+  FEATURE_FLAG_BUTTON_ACTION,
+  FeatureFlag,
+} from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
 import {
   CommonTableHelpersService,
@@ -64,10 +67,12 @@ export class FeatureFlagRootSectionCardComponent {
   menuButtonItems: IMenuButtonItem[] = [
     {
       name: this.translateService.instant('feature-flags.import-feature-flag.text'),
+      action: FEATURE_FLAG_BUTTON_ACTION.IMPORT,
       disabled: false,
     },
     {
       name: this.translateService.instant('feature-flags.export-all-feature-flags.text'),
+      action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL,
       disabled: true,
     },
   ];
@@ -102,8 +107,8 @@ export class FeatureFlagRootSectionCardComponent {
     this.dialogService.openAddFeatureFlagModal();
   }
 
-  onMenuButtonItemClick(menuButtonItemName: string) {
-    if (menuButtonItemName === 'Import Feature Flag') {
+  onMenuButtonItemClick(action: string) {
+    if (action === FEATURE_FLAG_BUTTON_ACTION.IMPORT) {
       this.dialogService.openImportFeatureFlagModal();
     }
   }

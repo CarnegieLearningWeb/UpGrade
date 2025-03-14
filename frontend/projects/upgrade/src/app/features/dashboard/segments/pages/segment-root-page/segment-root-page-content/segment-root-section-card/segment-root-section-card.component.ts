@@ -14,7 +14,7 @@ import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { Observable, map } from 'rxjs';
-import { Segment } from '../../../../../../../core/segments/store/segments.model';
+import { Segment, SEGMENTS_BUTTON_ACTION } from '../../../../../../../core/segments/store/segments.model';
 import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
 import {
   CommonTableHelpersService,
@@ -65,10 +65,12 @@ export class SegmentRootSectionCardComponent {
   menuButtonItems: IMenuButtonItem[] = [
     {
       name: this.translateService.instant('segments.import-segment.text'),
+      action: SEGMENTS_BUTTON_ACTION.IMPORT,
       disabled: false,
     },
     {
       name: this.translateService.instant('segments.export-all-segments.text'),
+      action: SEGMENTS_BUTTON_ACTION.EXPORT_ALL,
       disabled: true,
     },
   ];
@@ -155,10 +157,10 @@ export class SegmentRootSectionCardComponent {
     // this.dialogService.openNewSegmentModal();
   }
 
-  onMenuButtonItemClick(menuButtonItemName: string) {
-    if (menuButtonItemName === 'Import Segment') {
-      // this.dialogService.openImportSegmentsModal();
-    } else if (menuButtonItemName === 'Export All Segments') {
+  onMenuButtonItemClick(action: string) {
+    if (action === SEGMENTS_BUTTON_ACTION.IMPORT) {
+      this.dialogService.openImportSegmentModal();
+    } else if (action === SEGMENTS_BUTTON_ACTION.EXPORT_ALL) {
       // this.dialogService.openExportAllSegmentModal();
     }
   }

@@ -11,6 +11,7 @@ import { FeatureFlagExclusionsTableComponent } from './feature-flag-exclusions-t
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import {
+  FEATURE_FLAG_BUTTON_ACTION,
   FeatureFlag,
   PARTICIPANT_LIST_ROW_ACTION,
   ParticipantListRowActionEvent,
@@ -46,8 +47,8 @@ export class FeatureFlagExclusionsSectionCardComponent {
   selectedFlag$ = this.featureFlagService.selectedFeatureFlag$;
 
   menuButtonItems: IMenuButtonItem[] = [
-    { name: 'Import Exclude List', disabled: false },
-    { name: 'Export All Exclude Lists', disabled: false },
+    { name: 'Import Exclude List', action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_EXCLUDE_LIST, disabled: false },
+    { name: 'Export All Exclude Lists', action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS, disabled: false },
   ];
 
   constructor(

@@ -35,6 +35,11 @@ export enum UpsertSegmentType {
   IMPORT_SEGMENT = 'Import segment',
 }
 
+export enum SEGMENTS_BUTTON_ACTION {
+  IMPORT = 'import segment',
+  EXPORT_ALL = 'export all segments',
+}
+
 export interface NewSegmentDialogData {
   type: NewSegmentDialogEvents;
   formData?: any;

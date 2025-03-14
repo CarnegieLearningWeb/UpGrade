@@ -41,6 +41,7 @@ export class SegmentsService {
   ) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
+  setIsLoadingImportSegment$ = this.store$.pipe(select(selectIsLoadingSegments)); // FIX!
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
@@ -156,6 +157,10 @@ export class SegmentsService {
   setSortingType(sortingType: SORT_AS_DIRECTION) {
     this.localStorageService.setItem(SegmentLocalStorageKeys.SEGMENT_SORT_TYPE, sortingType);
     this.store$.dispatch(SegmentsActions.actionSetSortingType({ sortingType }));
+  }
+
+  setIsLoadingImportSegment(isLoadingSegments: boolean) {
+    this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments })); //fix!
   }
 
   deleteSegment(segmentId: string) {
