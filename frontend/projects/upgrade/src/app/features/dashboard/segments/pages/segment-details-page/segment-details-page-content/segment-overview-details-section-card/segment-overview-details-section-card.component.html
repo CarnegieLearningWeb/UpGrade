@@ -5,8 +5,8 @@
     [title]="segment.name"
     [createdAt]="segment.createdAt"
     [updatedAt]="segment.updatedAt"
-    [chipClass]="segment.status"
-  ></app-common-section-card-title-header>
+    [chipClass]="segment.status.toLowerCase()"
+  ></app-common-section-card-title-header> <!-- TODO: Update the SEGMENT_STATUS enum to lowercase and remove toLowerCase() once the legacy Segments code is removed -->
 
   <!-- header-right -->
   <app-common-section-card-action-buttons
