@@ -1,7 +1,7 @@
 import { segmentsReducer, initialState } from './segments.reducer';
 import * as SegmentsActions from './segments.actions';
 import { Segment } from './segments.model';
-import { SEGMENT_TYPE } from 'upgrade_types';
+import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
 
 describe('SegmentsReducer', () => {
   describe('actions to kick off requests w/ isLoadingSegments ', () => {
@@ -74,12 +74,13 @@ describe('SegmentsReducer', () => {
         id: 'abc123',
         name: 'abc',
         context: 'test',
+        tags: [],
         description: 'test',
         individualForSegment: [],
         groupForSegment: [],
         subSegments: [],
         type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
-        status: 'test',
+        status: SEGMENT_STATUS.UNUSED,
       };
 
       const testAction = SegmentsActions.actionUpsertSegmentSuccess({
@@ -105,12 +106,13 @@ describe('SegmentsReducer', () => {
         id: 'abc123',
         name: 'abc',
         context: 'test',
+        tags: [],
         description: 'test',
         individualForSegment: [],
         groupForSegment: [],
         subSegments: [],
         type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
-        status: 'test',
+        status: SEGMENT_STATUS.UNUSED,
       };
 
       const testAction = SegmentsActions.actionGetSegmentByIdSuccess({
@@ -134,12 +136,13 @@ describe('SegmentsReducer', () => {
         id: 'abc123',
         name: 'abc',
         context: 'test',
+        tags: [],
         description: 'test',
         individualForSegment: [],
         groupForSegment: [],
         subSegments: [],
         type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
-        status: 'test',
+        status: SEGMENT_STATUS.UNUSED,
       };
       previousState.entities = {
         [mockSegment.id]: mockSegment,

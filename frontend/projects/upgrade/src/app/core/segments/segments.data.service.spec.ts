@@ -2,8 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SegmentsDataService } from './segments.data.service';
-import { SegmentFile, SegmentInput } from './store/segments.model';
-import { SEGMENT_TYPE } from 'upgrade_types';
+import { Segment, SegmentFile, SegmentInput } from './store/segments.model';
+import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
 import { Environment } from '../../../environments/environment-types';
 
 class MockHTTPClient {
@@ -40,19 +40,20 @@ describe('SegmentDataService', () => {
       subSegmentIds: [],
       type: SEGMENT_TYPE.PUBLIC,
     };
-    const mockSegment = {
+    const mockSegment: Segment = {
       createdAt: 'test',
       versionNumber: 0,
       updatedAt: 'test',
       id: 'abc123',
       name: 'abc',
       context: 'test',
+      tags: [],
       description: 'test',
       individualForSegment: [],
       groupForSegment: [],
       subSegments: [],
       type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
-      status: 'test',
+      status: SEGMENT_STATUS.UNUSED,
     };
     mockSegmentFile = { fileName: 'test', fileContent: JSON.stringify(mockSegment) };
   });
