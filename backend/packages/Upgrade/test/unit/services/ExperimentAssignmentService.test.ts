@@ -423,7 +423,7 @@ describe('Experiment Assignment Service Test', () => {
       },
     ]);
 
-    const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc);
+    const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc, 'ALL');
     expect(exclusionResult).toEqual([true, false]);
   });
 
