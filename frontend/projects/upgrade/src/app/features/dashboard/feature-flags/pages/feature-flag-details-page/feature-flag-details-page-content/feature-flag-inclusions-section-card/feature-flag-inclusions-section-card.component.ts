@@ -51,8 +51,8 @@ export class FeatureFlagInclusionsSectionCardComponent {
 
   subscriptions = new Subscription();
   menuButtonItems: IMenuButtonItem[] = [
-    { name: 'Import Include List', action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST, disabled: false },
-    { name: 'Export All Include Lists', action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS, disabled: false },
+    { name: "feature-flags.details.inclusions-modal.import-list.menu-item.text", action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST, disabled: false },
+    { name: "feature-flags.details.inclusions-modal.export-lists.menu-item.text", action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS, disabled: false },
   ];
 
   rowCountWithInclude$: Observable<number> = combineLatest([this.tableRowCount$, this.selectedFlag$]).pipe(
@@ -126,13 +126,13 @@ export class FeatureFlagInclusionsSectionCardComponent {
   onMenuButtonItemClick(event, flag: FeatureFlag) {
     const confirmMessage = 'feature-flags.export-all-include-lists-design.confirmation-text.text';
     switch (event) {
-      case 'Import Include List':
+      case FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST:
         this.dialogService
           .openImportFeatureFlagIncludeListModal(flag.id)
           .afterClosed()
           .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
         break;
-      case 'Export All Include Lists':
+      case FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS:
         if (flag.featureFlagSegmentInclusion.length) {
           this.dialogService
             .openExportDesignModal('Export All Include Lists', confirmMessage)
