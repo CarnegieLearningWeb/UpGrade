@@ -33,6 +33,7 @@ import {
   LIST_IMPORT_SERVICE,
   SEGMENT_IMPORT_SERVICE,
 } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
+import { CommonImportModalComponent } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-modal.component';
 
 export interface ImportModalParams {
   importType: ImportType;
@@ -373,7 +374,7 @@ export class DialogService {
 
   openImportSegmentModal() {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'Import Segment',
+      title: 'segments.import-segment-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -390,7 +391,7 @@ export class DialogService {
 
   openImportFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'Import Feature Flag',
+      title: "feature-flags.import-flag-modal.title.text",
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -407,7 +408,7 @@ export class DialogService {
 
   openImportFeatureFlagExcludeListModal(flagId: string) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'Import Exclusion List',
+      title: "feature-flags.import-flag-list-modal.title.text",
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -426,7 +427,7 @@ export class DialogService {
 
   openImportFeatureFlagIncludeListModal(flagId: string) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'Import List',
+      title: "feature-flags.import-flag-list-modal.title.text",
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -450,7 +451,7 @@ export class DialogService {
       autoFocus: 'input',
       disableClose: true,
     };
-    return this.dialog.open(ImportFeatureFlagModalComponent, config);
+    return this.dialog.open(CommonImportModalComponent, config);
   }
 
   openSimpleCommonConfirmationModal(

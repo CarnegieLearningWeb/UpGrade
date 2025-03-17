@@ -1,6 +1,5 @@
-<!-- common-import-modal.component.html -->
 <app-common-dialog
-  [title]="config.title"
+  [title]="config.title | translate"
   [cancelBtnLabel]="config.cancelBtnLabel"
   [primaryActionBtnLabel]="config.primaryActionBtnLabel"
   [primaryActionBtnColor]="config.primaryActionBtnColor"
@@ -13,12 +12,12 @@
         <app-common-import-container
           fileType=".json"
           buttonLabel="Choose JSON"
-          (filesSelected)="handleFilesSelected($event)"e
+          (filesSelected)="handleFilesSelected($event)"
         >
         </app-common-import-container>
         <p class="ft-12-400 import-message">
-          <span *ngIf="config.messageKey">
-            {{ config.messageKey | translate }}
+          <span *ngIf="config.params.messageKey">
+            {{ config.params.messageKey | translate }}
           </span>
           <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer"
             >Learn more</a
@@ -73,13 +72,13 @@
               <td mat-cell class="expandable-row" *matCellDef="let element">
                 <div class="ft-14-500" *ngIf="isDescriptionExpanded" class="compatibility-details-container">
                   <div *ngIf="element.compatibilityType === 'incompatible'">
-                    <span *ngIf="config.incompatibleMessageKey">
-                      {{ config.incompatibleMessageKey | translate }}
+                    <span *ngIf="config.params.incompatibleMessageKey">
+                      {{ config.params.incompatibleMessageKey | translate }}
                     </span>
                   </div>
                   <div *ngIf="element.compatibilityType === 'warning'">
-                    <span *ngIf="config.warningMessageKey">
-                      {{ config.warningMessageKey | translate }}
+                    <span *ngIf="config.params.warningMessageKey">
+                      {{ config.params.warningMessageKey | translate }}
                     </span>
                   </div>
                 </div>
@@ -87,9 +86,9 @@
             </ng-container>
 
             <!-- Header and Rows -->
-            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-            <tr mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"></tr>
+            <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+            <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"></mat-row>
           </table>
         </div>
       </ng-template>

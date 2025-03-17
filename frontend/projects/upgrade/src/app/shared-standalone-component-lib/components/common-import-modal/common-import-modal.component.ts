@@ -1,46 +1,32 @@
 import { BehaviorSubject, combineLatest, firstValueFrom, map, Observable, Subscription } from 'rxjs';
 import {
-  ImportModalConfig,
   ImportResult,
   ImportServiceAdapter,
-  ImportType,
   ValidationResult,
 } from './common-import.types';
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, Inject, Injector } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { TranslateModule } from '@ngx-translate/core';
+import { MatTableDataSource } from '@angular/material/table';
 import { NotificationService } from '../../../core/core.module';
 import { SharedModule } from '../../../shared/shared.module';
 import { CommonImportContainerComponent } from '../common-import-container/common-import-container.component';
 import { CommonModalComponent } from '../common-modal/common-modal.component';
 import { CommonStatusIndicatorChipComponent } from '../common-status-indicator-chip/common-status-indicator-chip.component';
-import { ImportServiceFactory } from './common-import-adapter.factory';
 import { CommonModalConfig } from '../common-modal/common-modal.types';
 import { ImportModalParams } from '../../../shared/services/common-dialog.service';
 
-// common-import-modal.component.ts
 @Component({
   selector: 'app-common-import-modal',
   templateUrl: './common-import-modal.component.html',
-  styleUrls: ['./common-import-modal.component.scss'],
+  styleUrl: './common-import-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     CommonModalComponent,
     CommonModule,
     SharedModule,
     CommonImportContainerComponent,
     CommonStatusIndicatorChipComponent,
-    MatTableModule,
-    MatIconModule,
-    MatButtonModule,
-    MatProgressSpinnerModule,
-    TranslateModule,
   ],
 })
 export class CommonImportModalComponent implements OnInit, OnDestroy {
@@ -56,9 +42,7 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
   uploadedFileCount = new BehaviorSubject<number>(0);
   isLoadingImport$: Observable<boolean>;
   isImportActionBtnDisabled$: Observable<boolean>;
-
-  ImportType = ImportType;
-
+  
   constructor(
     @Inject(MAT_DIALOG_DATA) public config: CommonModalConfig<ImportModalParams>,
     public injector: Injector,
@@ -66,6 +50,7 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
     public dialogRef: MatDialogRef<CommonImportModalComponent>
   ) {
     this.importAdapter = this.injector.get(this.config.params.importTypeAdapterToken);
+    console.log('>>> config', config);
   }
 
   ngOnInit() {
