@@ -91,8 +91,8 @@ export class MoocletPolicyEditorComponent implements OnInit {
       assignmentAlgorithm: this.currentAssignmentAlgorithm,
       ...jsonValue,
     };
-    const DTOInstance = plainToInstance(ValidatorClass, plainDTO);
-    return from(validate(DTOInstance));
+    const DTOInstance = plainToInstance(ValidatorClass, plainDTO, { enableImplicitConversion: true });
+    return from(validate(DTOInstance, { whitelist: true, forbidNonWhitelisted: true, forbidUnknownValues: true }));
   }
 
   // Method to get current editor value for parent components

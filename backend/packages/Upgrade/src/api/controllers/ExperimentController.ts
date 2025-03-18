@@ -969,7 +969,15 @@ export class ExperimentController {
 
   @Post()
   public create(
-    @Body({ validate: true, transform: { enableImplicitConversion: true } }) experiment: ExperimentDTO,
+    @Body({
+      validate: {
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        forbidUnknownValues: true,
+      },
+      transform: { enableImplicitConversion: true },
+    })
+    experiment: ExperimentDTO,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
