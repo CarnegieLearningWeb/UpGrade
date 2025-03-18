@@ -16,6 +16,7 @@ import {
   selectSearchKey,
   selectSortKey,
   selectSortAs,
+  selectSegmentLists,
 } from './store/segments.selectors';
 import {
   LIST_OPTION_TYPE,
@@ -49,6 +50,11 @@ export class SegmentsService {
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
   selectSegmentSortKey$ = this.store$.pipe(select(selectSortKey));
   selectSegmentSortAs$ = this.store$.pipe(select(selectSortAs));
+  selectSegmentLists$ = this.store$.pipe(select(selectSegmentLists));
+  selectSegmentListsLength$ = this.store$.pipe(
+    select(selectSegmentLists),
+    map((lists) => lists.length)
+  );
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
   allFeatureFlagSegmentsExclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsExclusion));

@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { LIST_OPTION_TYPE, SegmentState } from './segments.model';
+import { LIST_OPTION_TYPE, SegmentState, ParticipantListTableRow, Segment } from './segments.model';
 import { selectAll } from './segments.reducer';
 import { selectRouterState } from '../../core.state';
 import { CommonTextHelpersService } from '../../../shared/services/common-text-helpers.service';
@@ -84,5 +84,21 @@ export const selectPrivateSegmentListTypeOptions = createSelector(
     ];
 
     return listOptionTypes;
+  }
+);
+
+export const selectSegmentLists = createSelector(
+  selectSelectedSegment,
+  (segment: Segment): ParticipantListTableRow[] => {
+    if (!segment?.subSegments?.length) {
+      return [];
+    }
+    return segment.subSegments
+      .filter((subSegment) => subSegment)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      .map((subSegment) => ({
+        segment: subSegment,
+        listType: subSegment.listType,
+      }));
   }
 );
