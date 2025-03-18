@@ -8,6 +8,7 @@ import {
   Delete,
   Patch,
   Authorized,
+  Put,
 } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
@@ -277,6 +278,79 @@ export class ExperimentClientController {
 
   /**
    * @swagger
+   * /v6/groupmembership:
+   *    put:
+   *       description: Set group membership for a user
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: experimentUser
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               group:
+   *                 type: object
+   *                 properties:
+   *                   schoolId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: school1
+   *                   classId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: class1
+   *                   instructorId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: instructor1
+   *           description: ExperimentUser
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Set Group Membership
+   *            schema:
+   *              $ref: '#/definitions/v6initResponse'
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
+   *          '500':
+   *            description: Internal Server Error
+   */
+
+  @Put('groupmembership')
+  public async setGroupMemberShipPut(
+    @Req()
+    request: AppRequest,
+    @Body({ validate: true })
+    experimentUser: ExperimentUserValidatorv6
+  ): Promise<IGroupMembership> {
+    request.logger.info({ message: 'Starting the groupmembership call for user' });
+    // getOriginalUserDoc call for alias
+    const experimentUserDoc = request.userDoc;
+    const { id, group } = await this.experimentUserService.updateGroupMembership(
+      experimentUserDoc.requestedUserId,
+      experimentUser.group,
+      {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      }
+    );
+    return { id, group };
+  }
+
+  /**
+   * @swagger
    * /v6/workinggroup:
    *    patch:
    *       description: Set working group for a user
@@ -322,6 +396,72 @@ export class ExperimentClientController {
    */
   @Patch('workinggroup')
   public async setWorkingGroup(
+    @Req()
+    request: AppRequest,
+    @Body({ validate: true })
+    workingGroupParams: UpdateWorkingGroupValidatorv6
+  ): Promise<IWorkingGroup> {
+    request.logger.info({ message: 'Starting the workinggroup call for user' });
+    // getOriginalUserDoc call for alias
+    const experimentUserDoc = request.userDoc;
+    const { id, workingGroup } = await this.experimentUserService.updateWorkingGroup(
+      experimentUserDoc.requestedUserId,
+      workingGroupParams.workingGroup,
+      {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      }
+    );
+    return { id, workingGroup };
+  }
+
+  /**
+   * @swagger
+   * /v6/workinggroup:
+   *    put:
+   *       description: Set working group for a user
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: params
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               workingGroup:
+   *                 type: object
+   *                 properties:
+   *                   schoolId:
+   *                      type: string
+   *                      example: school1
+   *                   classId:
+   *                      type: string
+   *                      example: class1
+   *                   instructorId:
+   *                      type: string
+   *                      example: instructor1
+   *           description: ExperimentUser
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Set Group Membership
+   *            schema:
+   *              $ref: '#/definitions/v6initResponse'
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Put('workinggroup')
+  public async setWorkingGroupPut(
     @Req()
     request: AppRequest,
     @Body({ validate: true })
@@ -758,6 +898,68 @@ export class ExperimentClientController {
    */
   @Patch('useraliases')
   public async setUserAliases(
+    @Req()
+    request: AppRequest,
+    @Body({ validate: true })
+    user: ExperimentUserAliasesValidatorv6
+  ): Promise<IUserAliases> {
+    const experimentUserDoc = request.userDoc;
+    return this.experimentUserService.setAliasesForUser(experimentUserDoc, user.aliases, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /v6/useraliases:
+   *    put:
+   *       description: Set aliases for current user
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *          - in: body
+   *            name: user aliases
+   *            required: true
+   *            schema:
+   *             type: object
+   *             required:
+   *               - aliases
+   *             properties:
+   *              aliases:
+   *                type: array
+   *                items:
+   *                 type: string
+   *                 example: alias123
+   *            description: Set user aliases
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiment User aliases added
+   *            schema:
+   *              type: object
+   *              properties:
+   *                userId:
+   *                  type: string
+   *                  minLength: 1
+   *                aliases:
+   *                  type: array
+   *                  items:
+   *                    type: string
+   *              required:
+   *               - userId
+   *               - userAliases
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Experiment User not defined
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Put('useraliases')
+  public async setUserAliasesPut(
     @Req()
     request: AppRequest,
     @Body({ validate: true })

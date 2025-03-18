@@ -30,15 +30,13 @@ public class Utils
 	public static final String SET_ALT_USER_IDS= apiVersion + "/useraliases";
 	public static final String ADD_MATRIC= apiVersion + "/metric";
 
-	public static final String PATCH = "PATCH";
-
 	public static final int MAX_RETRIES = 1;
 
 
 	public static enum RequestType {
 		GET,
 		POST,
-		PATCH
+		PUT
 	}
 
 	public static enum PayloadType {

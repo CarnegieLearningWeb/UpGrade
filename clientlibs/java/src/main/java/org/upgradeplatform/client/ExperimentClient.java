@@ -8,7 +8,6 @@ import static org.upgradeplatform.utils.Utils.INVALID_STUDENT_ID;
 import static org.upgradeplatform.utils.Utils.LOG_EVENT;
 import static org.upgradeplatform.utils.Utils.MARK_EXPERIMENT_POINT;
 import static org.upgradeplatform.utils.Utils.MAX_RETRIES;
-import static org.upgradeplatform.utils.Utils.PATCH;
 import static org.upgradeplatform.utils.Utils.SET_ALT_USER_IDS;
 import static org.upgradeplatform.utils.Utils.SET_GROUP_MEMBERSHIP;
 import static org.upgradeplatform.utils.Utils.SET_WORKING_GROUP;
@@ -155,8 +154,8 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
 		// Invoke the method
-		invocation.method(PATCH, requestContent,
-				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PATCH,
+		invocation.put(requestContent,
+				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PUT,
 						new InvocationCallback<Response>() {
 
 							@Override
@@ -185,8 +184,8 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
 		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
-		invocation.method(PATCH, requestContent,
-				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PATCH,
+		invocation.put(requestContent,
+				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PUT,
 						new InvocationCallback<Response>() {
 
 							@Override
@@ -533,8 +532,8 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_ALT_USER_IDS);
 		Entity<UserAlias> requestContent = Entity.json(userAlias);
 
-		invocation.method(PATCH, requestContent,
-				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PATCH,
+		invocation.put(requestContent,
+				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.PUT,
 						new InvocationCallback<Response>() {
 
 							@Override
