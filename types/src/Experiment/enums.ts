@@ -307,3 +307,9 @@ export enum FILE_TYPE {
   JSON = '.json',
   CSV = '.csv',
 }
+
+export enum IMPORT_COMPATIBILITY_TYPE {
+  COMPATIBLE = 'compatible',
+  WARNING = 'warning',
+  INCOMPATIBLE = 'incompatible',
+}

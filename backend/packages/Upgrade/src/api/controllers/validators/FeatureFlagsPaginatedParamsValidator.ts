@@ -12,17 +12,6 @@ export interface IFeatureFlagSortParams {
   sortAs: SORT_AS_DIRECTION;
 }
 
-export interface ValidatedFeatureFlagsError {
-  fileName: string;
-  compatibilityType: FF_COMPATIBILITY_TYPE;
-}
-
-export enum FF_COMPATIBILITY_TYPE {
-  COMPATIBLE = 'compatible',
-  WARNING = 'warning',
-  INCOMPATIBLE = 'incompatible',
-}
-
 export enum FLAG_SORT_KEY {
   NAME = 'name',
   KEY = 'key',

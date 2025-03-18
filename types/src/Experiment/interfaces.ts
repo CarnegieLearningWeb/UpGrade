@@ -12,6 +12,7 @@ import {
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
   FEATURE_FLAG_LIST_FILTER_MODE,
+  IMPORT_COMPATIBILITY_TYPE,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -285,4 +286,10 @@ export interface IFeatureFlagFile {
 export interface IImportError {
   fileName: string;
   error: string | null;
+}
+
+export interface ValidatedImportResponse {
+  fileName: string;
+  compatibilityType: IMPORT_COMPATIBILITY_TYPE;
+  error?: string;
 }

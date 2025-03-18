@@ -19,11 +19,10 @@ import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusi
 import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatusUpdateValidator';
 import {
   FeatureFlagPaginatedParamsValidator,
-  ValidatedFeatureFlagsError,
 } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-import { IImportError, FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
+import { IImportError, ValidatedImportResponse, FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
 import {
   FeatureFlagImportValidation,
   FeatureFlagListImportValidation,
@@ -753,7 +752,7 @@ export class FeatureFlagsController {
   public async validateImportFeatureFlags(
     @Body({ validate: true }) featureFlags: FeatureFlagImportValidation,
     @Req() request: AppRequest
-  ): Promise<ValidatedFeatureFlagsError[]> {
+  ): Promise<ValidatedImportResponse[]> {
     return await this.featureFlagService.validateImportFeatureFlags(featureFlags.files, request.logger);
   }
 
@@ -895,7 +894,7 @@ export class FeatureFlagsController {
   public async validateImportFeatureFlagList(
     @Body({ validate: true }) lists: FeatureFlagListImportValidation,
     @Req() request: AppRequest
-  ): Promise<ValidatedFeatureFlagsError[]> {
+  ): Promise<ValidatedImportResponse[]> {
     return await this.featureFlagService.validateImportFeatureFlagLists(lists.files, lists.flagId, request.logger);
   }
 

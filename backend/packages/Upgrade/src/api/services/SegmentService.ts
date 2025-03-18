@@ -46,6 +46,8 @@ import { IndividualExclusion } from '../models/IndividualExclusion';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
+import { ValidatedImportResponse } from '../../../../../../types/src/Experiment/interfaces';
+import { IMPORT_COMPATIBILITY_TYPE } from '../../../../../../types/src/Experiment/enums';
 
 interface IsSegmentValidWithError {
   missingProperty: string;
@@ -363,6 +365,33 @@ export class SegmentService {
     const validatedSegments = await this.checkSegmentsValidity(segments);
     const validationErrors = validatedSegments.importErrors.filter((seg) => seg.error !== null);
     return validationErrors;
+  }
+
+  public async validateSegmentsForCommonImportModal(segments: SegmentFile[], logger: UpgradeLogger): Promise<ValidatedImportResponse[]> {
+    logger.info({ message: `Validating segments` });
+    const validatedSegments = await this.validateSegmentsData(segments.map((seg) => ({ filename: seg.fileName, segment: null })));
+    const validatedImportResponses = validatedSegments.importErrors.map((seg) => {
+      if (!seg.error) {
+        return {
+          fileName: seg.fileName,
+          error: null,
+          compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
+        };
+      } else if (seg.error.includes('Please import subSegment')) {
+        return {
+          fileName: seg.fileName,
+          error: seg.error,
+          compatibilityType: IMPORT_COMPATIBILITY_TYPE.WARNING,
+        };
+      } else {
+        return {
+          fileName: seg.fileName,
+          error: seg.error,
+          compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+        };
+      }
+    });
+    return validatedImportResponses;
   }
 
   public async importSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentImportError[]> {
