@@ -147,7 +147,7 @@ Resources:
             - Name: NEW_RELIC_APP_NAME
               Value: '{{resolve:ssm:UPGRADE_NEW_RELIC_APP_NAME}}'
             - Name: RDS_DB_NAME
-              Value: '{{resolve:ssm:UPGRADE_RDS_DB_NAME}}'  
+              Value: perftest  
             - Name: RDS_HOSTNAME
               Value: '{{resolve:ssm:UPGRADE_RDS_HOSTNAME}}'
             - Name: RDS_HOSTNAME_REPLICAS
