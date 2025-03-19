@@ -1619,8 +1619,11 @@ export class ExperimentService {
     return errorString;
   }
 
-  private deduceExperimentDetails(experiment: ExperimentDTO): ExperimentDTO {
+  private deduceExperimentDetails(experiment: Experiment): Experiment {
     experiment.id = uuid();
+    // set current createdAt date and initialize versionNumber as fresh experiment version to detect updates
+    experiment.createdAt = new Date();
+    experiment.versionNumber = 1;
     this.deduceFactors(experiment);
     this.deduceConditions(experiment);
     this.deducePartition(experiment);

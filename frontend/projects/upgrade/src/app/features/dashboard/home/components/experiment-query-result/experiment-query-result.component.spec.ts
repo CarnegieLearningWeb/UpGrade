@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ExperimentQueryResultComponent } from './experiment-query-result.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
@@ -10,7 +10,7 @@ xdescribe('ExperimentQueryResultComponent', () => {
   let component: ExperimentQueryResultComponent;
   let fixture: ComponentFixture<ExperimentQueryResultComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ExperimentQueryResultComponent],
       imports: [TestingModule, NgxChartsModule],
