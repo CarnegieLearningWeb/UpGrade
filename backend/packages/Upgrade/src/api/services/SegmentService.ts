@@ -367,9 +367,12 @@ export class SegmentService {
     return validationErrors;
   }
 
-  public async validateSegmentsForCommonImportModal(segments: SegmentFile[], logger: UpgradeLogger): Promise<ValidatedImportResponse[]> {
+  public async validateSegmentsForCommonImportModal(
+    segments: SegmentFile[],
+    logger: UpgradeLogger
+  ): Promise<ValidatedImportResponse[]> {
     logger.info({ message: `Validating segments` });
-    const validatedSegments = await this.validateSegmentsData(segments.map((seg) => ({ filename: seg.fileName, segment: null })));
+    const validatedSegments = await this.checkSegmentsValidity(segments);
     const validatedImportResponses = validatedSegments.importErrors.map((seg) => {
       if (!seg.error) {
         return {

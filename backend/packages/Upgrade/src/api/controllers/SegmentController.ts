@@ -14,7 +14,7 @@ import {
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { NotFoundException } from '@nestjs/common/exceptions';
-import { ValidatedImportResponse } from '../../../../../../types/src/Experiment/interfaces';
+import { ValidatedImportResponse } from 'upgrade_types';
 
 export interface getSegmentData {
   segmentsData: SegmentWithStatus[];

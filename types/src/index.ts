@@ -76,7 +76,7 @@ export {
   FeatureFlagUpdatedData,
   FeatureFlagStateChangedData,
   FeatureFlagDeletedData,
-  ValidatedImportResponse
+  ValidatedImportResponse,
 } from './Experiment/interfaces';
 export {
   MoocletPolicyParametersDTO,
