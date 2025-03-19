@@ -19,8 +19,8 @@ export default async function testCase(): Promise<void> {
 
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
-  const context1 = 'login';
-  const context2 = 'about';
+  const context1 = 'sub';
+  const context2 = 'add';
 
   // experiment object
   const experimentObject1 = JSON.parse(JSON.stringify(individualAssignmentExperiment));
@@ -46,7 +46,7 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  const experimentObject2 = secondExperiment;
+  const experimentObject2 = JSON.parse(JSON.stringify(secondExperiment));
   experimentObject2.context = [context2];
 
   const experimentName2 = experimentObject2.partitions[0].target;

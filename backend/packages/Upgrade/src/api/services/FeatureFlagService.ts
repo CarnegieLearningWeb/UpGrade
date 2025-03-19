@@ -85,7 +85,8 @@ export class FeatureFlagService {
     const filteredFeatureFlags = await this.getCachedFlagsFromContext(context);
 
     const [isUserExcluded, isGroupExcluded] = await this.experimentAssignmentService.checkUserOrGroupIsGloballyExcluded(
-      experimentUserDoc
+      experimentUserDoc,
+      context
     );
 
     if (isUserExcluded || isGroupExcluded) {

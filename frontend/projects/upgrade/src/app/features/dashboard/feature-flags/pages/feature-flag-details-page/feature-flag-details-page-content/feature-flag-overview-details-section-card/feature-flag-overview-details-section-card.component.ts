@@ -66,14 +66,14 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
 
     this.menuButtonItems$ = this.flagAndPermissions$.pipe(
       map(({ flag, permissions }) => [
-        { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT, disabled: !permissions.featureFlags.update },
-        { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE, disabled: !permissions.featureFlags.create },
+        { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT, disabled: !permissions?.featureFlags?.update },
+        { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE, disabled: !permissions?.featureFlags?.create },
         { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN, disabled: false },
         { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA, disabled: true },
         { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.ARCHIVE, disabled: true },
         {
           name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE,
-          disabled: !permissions?.featureFlags.delete || flag?.status === 'enabled',
+          disabled: !permissions?.featureFlags?.delete || flag?.status === 'enabled',
         },
       ])
     );

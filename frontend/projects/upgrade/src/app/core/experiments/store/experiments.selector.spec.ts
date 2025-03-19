@@ -1,4 +1,4 @@
-import { ASSIGNMENT_ALGORITHM, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
 import {
   ExperimentState,
   SORT_AS_DIRECTION,
@@ -73,11 +73,12 @@ describe('Experiments Selectors', () => {
             updatedAt: '04/23/17 04:34:22 +0000',
             versionNumber: 1,
             context: 'segment-context',
+            tags: [],
             individualForSegment: [],
             groupForSegment: [],
             subSegments: [],
             type: SEGMENT_TYPE.PUBLIC,
-            status: 'segment-status',
+            status: SEGMENT_STATUS.UNUSED,
           },
         },
         experimentSegmentExclusion: {
@@ -92,11 +93,12 @@ describe('Experiments Selectors', () => {
             updatedAt: '04/23/17 04:34:22 +0000',
             versionNumber: 1,
             context: 'segment-context',
+            tags: [],
             individualForSegment: [],
             groupForSegment: [],
             subSegments: [],
             type: SEGMENT_TYPE.PUBLIC,
-            status: 'segment-status',
+            status: SEGMENT_STATUS.UNUSED,
           },
         },
         conditions: [
