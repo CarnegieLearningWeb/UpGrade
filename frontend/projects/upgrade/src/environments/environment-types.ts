@@ -50,6 +50,7 @@ export interface APIEndpoints {
   contextMetaData: string;
   segments: string;
   validateSegments: string;
+  validateSegmentsImport: string;
   importSegments: string;
   exportSegments: string;
   exportSegmentCSV: string;

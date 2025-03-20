@@ -1,9 +1,5 @@
 import { BehaviorSubject, combineLatest, firstValueFrom, map, Observable, Subscription } from 'rxjs';
-import {
-  ImportResult,
-  ImportServiceAdapter,
-  ValidationResult,
-} from './common-import.types';
+import { ImportResult, ImportServiceAdapter, ValidationResult } from './common-import.types';
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, Inject, Injector } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -42,7 +38,7 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
   uploadedFileCount = new BehaviorSubject<number>(0);
   isLoadingImport$: Observable<boolean>;
   isImportActionBtnDisabled$: Observable<boolean>;
-  
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public config: CommonModalConfig<ImportModalParams>,
     public injector: Injector,
