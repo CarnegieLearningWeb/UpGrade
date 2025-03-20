@@ -34,6 +34,7 @@ import {
   ListOperationsData,
   CACHE_PREFIX,
   ValidatedImportResponse,
+  IMPORT_COMPATIBILITY_TYPE,
 } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
