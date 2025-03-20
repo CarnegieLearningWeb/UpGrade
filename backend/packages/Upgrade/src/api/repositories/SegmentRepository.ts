@@ -3,6 +3,7 @@ import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { Segment } from '../models/Segment';
+import { SEGMENT_TYPE } from 'upgrade_types';
 
 @EntityRepository(Segment)
 export class SegmentRepository extends Repository<Segment> {
@@ -25,6 +26,55 @@ export class SegmentRepository extends Repository<Segment> {
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('segmentRepository', 'getSegmentById', { id }, errorMsg);
         logger.error(errorMsg);
+        throw errorMsgString;
+      });
+  }
+
+  /**
+   * Retrieves all segments of a specified type from the database.
+   *
+   * @param type - The type of segments to retrieve.
+   * @param logger - The logger instance for logging errors.
+   * @returns A promise that resolves to an array of segments.
+   * @throws Will throw an error if there is an issue with the database query.
+   */
+  public async getAllSegmentByType(type: SEGMENT_TYPE, logger: UpgradeLogger): Promise<Segment[]> {
+    return await this.createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegments')
+      .where('segment.type=:type', { type })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('segmentRepository', 'getAllGlobalExcludeSegment', {}, errorMsg);
+        logger.error(errorMsg);
+        throw errorMsgString;
+      });
+  }
+
+  /**
+   * Finds a single segment by its context and type.
+   *
+   * @param context - The context of the segment to find.
+   * @param type - The type of the segment to find.
+   * @returns A promise that resolves to the found segment.
+   * @throws Will throw an error message string if the query fails.
+   */
+  public async findOneSegmentByContextAndType(context: string, type: SEGMENT_TYPE): Promise<Segment> {
+    return await this.createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegments')
+      .where('segment.context=:context', { context })
+      .andWhere('segment.type=:type', { type })
+      .getOne()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'segmentRepository',
+          'findOneSegmentByContextAndType',
+          { context, type },
+          errorMsg
+        );
         throw errorMsgString;
       });
   }

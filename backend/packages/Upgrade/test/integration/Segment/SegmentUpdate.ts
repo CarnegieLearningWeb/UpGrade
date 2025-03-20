@@ -1,31 +1,23 @@
-import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
 import Container from 'typedi';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { segment } from '../mockData/segment';
+import { env } from '../../../src/env';
 
 export default async function SegmentUpdate(): Promise<void> {
   const segmentService = Container.get<SegmentService>(SegmentService);
 
-  // create segment
+  const globalSegmentLength = Object.keys(env.initialization.contextMetadata).length;
 
+  // create segment
   const segmentObject = segment;
 
   await segmentService.upsertSegment(segmentObject, new UpgradeLogger());
   let segments = await segmentService.getAllSegments(new UpgradeLogger());
 
-  expect(segments.length).toEqual(2);
+  expect(segments.length).toEqual(1 + globalSegmentLength);
   expect(segments).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({
-        name: globalExcludeSegment.name,
-        description: globalExcludeSegment.description,
-        context: globalExcludeSegment.context,
-        type: globalExcludeSegment.type,
-        individualForSegment: expect.arrayContaining([]),
-        groupForSegment: expect.arrayContaining([]),
-        subSegments: expect.arrayContaining([]),
-      }),
       expect.objectContaining({
         name: segmentObject.name,
         description: segmentObject.description,
@@ -70,18 +62,9 @@ export default async function SegmentUpdate(): Promise<void> {
   await segmentService.upsertSegment(updatedSegmentObject, new UpgradeLogger());
   segments = await segmentService.getAllSegments(new UpgradeLogger());
 
-  expect(segments.length).toEqual(2);
+  expect(segments.length).toEqual(1 + globalSegmentLength);
   expect(segments).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({
-        name: globalExcludeSegment.name,
-        description: globalExcludeSegment.description,
-        context: globalExcludeSegment.context,
-        type: globalExcludeSegment.type,
-        individualForSegment: expect.arrayContaining([]),
-        groupForSegment: expect.arrayContaining([]),
-        subSegments: expect.arrayContaining([]),
-      }),
       expect.objectContaining({
         id: segmentObject.id,
         name: updatedSegmentObject.name,

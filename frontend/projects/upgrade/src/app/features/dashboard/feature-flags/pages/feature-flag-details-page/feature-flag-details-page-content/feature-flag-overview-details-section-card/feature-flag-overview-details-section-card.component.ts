@@ -66,13 +66,34 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
 
     this.menuButtonItems$ = this.flagAndPermissions$.pipe(
       map(({ flag, permissions }) => [
-        { name: "feature-flags.details.menu-button.edit-flag.text", action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT, disabled: !permissions.featureFlags.update },
-        { name: "feature-flags.details.menu-button.duplicate-flag.text", action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE, disabled: !permissions.featureFlags.create },
-        { name: "feature-flags.details.menu-button.export-flag-design.text", action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN, disabled: false },
-        { name: "feature-flags.details.menu-button.email-data.text", action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA, disabled: true },
-        { name: "feature-flags.details.menu-button.archive.text", action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.ARCHIVE, disabled: true },
         {
-          name: "feature-flags.details.menu-button.delete-flag.text", action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE,
+          name: 'feature-flags.details.menu-button.edit-flag.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT,
+          disabled: !permissions.featureFlags.update,
+        },
+        {
+          name: 'feature-flags.details.menu-button.duplicate-flag.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE,
+          disabled: !permissions.featureFlags.create,
+        },
+        {
+          name: 'feature-flags.details.menu-button.export-flag-design.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
+          disabled: false,
+        },
+        {
+          name: 'feature-flags.details.menu-button.email-data.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
+          disabled: true,
+        },
+        {
+          name: 'feature-flags.details.menu-button.archive.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.ARCHIVE,
+          disabled: true,
+        },
+        {
+          name: 'feature-flags.details.menu-button.delete-flag.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE,
           disabled: !permissions?.featureFlags.delete || flag?.status === 'enabled',
         },
       ])

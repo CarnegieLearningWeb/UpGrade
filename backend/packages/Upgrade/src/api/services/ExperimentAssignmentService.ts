@@ -57,7 +57,6 @@ import {
   MonitoredDecisionPointLogRepository,
 } from '../repositories/MonitoredDecisionPointLogRepository';
 import seedrandom from 'seedrandom';
-import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Segment } from '../models/Segment';
@@ -216,8 +215,11 @@ export class ExperimentAssignmentService {
       }
     }
 
+    // We are sure that either experiment length will not be greater than 1
+    const context: string | null = experiments?.[0]?.context?.[0] ?? null;
+
     // 2. Check if user or group is globally excluded
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc);
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
 
     // empty assignments if the user or group is excluded from the experiment
     if (isUserExcluded || isGroupExcluded) {
@@ -348,7 +350,7 @@ export class ExperimentAssignmentService {
     const experiments: Experiment[] = await this.getExperimentsForUser(previewUser, context);
 
     // 2. Check if user or group is globally excluded
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUserDoc);
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUserDoc, context);
 
     // return empty assignments if the user or group is excluded from the experiment
     if (isUserExcluded || isGroupExcluded) {
@@ -821,7 +823,8 @@ export class ExperimentAssignmentService {
   }
 
   public async checkUserOrGroupIsGloballyExcluded(
-    experimentUser: RequestedExperimentUser
+    experimentUser: RequestedExperimentUser,
+    context?: string
   ): Promise<[boolean, boolean]> {
     let userGroup = [];
     userGroup = Object.keys(experimentUser.workingGroup || {}).map((type: string) => {
@@ -833,6 +836,14 @@ export class ExperimentAssignmentService {
       excludedUsers: string[] = [],
       excludedGroups = [];
 
+    if (!context) {
+      return [false, false];
+    }
+
+    // Fetch the global exclude segment for the context
+    const globalExcludeSegment = await this.segmentService.getGlobalExcludeSegmentByContext(context);
+
+    // Get the global exclude segment for the context
     globalExcludeSegmentObj[globalExcludeSegment.id] = {
       segmentIdsQueue: [globalExcludeSegment.id],
       currentIncludedSegmentIds: [],

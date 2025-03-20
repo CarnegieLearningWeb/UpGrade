@@ -1,7 +1,7 @@
 import { fakeAsync, tick } from '@angular/core/testing';
 import { ActionsSubject } from '@ngrx/store';
 import { BehaviorSubject, of, throwError } from 'rxjs';
-import { SEGMENT_TYPE } from 'upgrade_types';
+import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
 import { SegmentsEffects } from './segments.effects';
 import { Segment, SegmentFile, SegmentInput, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
@@ -20,12 +20,13 @@ describe('SegmentsEffects', () => {
     id: 'abc123',
     name: 'abc',
     context: 'test',
+    tags: [],
     description: 'test',
     individualForSegment: [],
     groupForSegment: [],
     subSegments: [],
     type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
-    status: 'test',
+    status: SEGMENT_STATUS.UNUSED,
   };
   const mockSegmentInput: SegmentInput = {
     createdAt: 'test',
