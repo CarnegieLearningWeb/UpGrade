@@ -56,7 +56,6 @@ import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
-import { IMPORT_COMPATIBILITY_TYPE } from '../../../../../../types/src/Experiment/enums';
 
 @Service()
 export class FeatureFlagService {
