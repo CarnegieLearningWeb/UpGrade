@@ -13,6 +13,8 @@ import {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
   EXCLUSION_CODE,
+  IMPORT_COMPATIBILITY_TYPE,
+  ValidatedImportResponse,
 } from 'upgrade_types';
 import { In } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
@@ -45,8 +47,6 @@ import { IndividualExclusion } from '../models/IndividualExclusion';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
-import { ValidatedImportResponse } from '../../../../../../types/src/Experiment/interfaces';
-import { IMPORT_COMPATIBILITY_TYPE } from '../../../../../../types/src/Experiment/enums';
 
 interface IsSegmentValidWithError {
   missingProperty: string;
