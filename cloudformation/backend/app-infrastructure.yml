@@ -55,6 +55,12 @@ Conditions:
   IsProd: !Equals
     - !Ref environment
     - prod
+  IsStaging: !Equals
+    - !Ref environment
+    - staging
+  IsQA: !Equals
+    - !Ref environment
+    - qa
 Resources:
   ecsTaskDef:
     Type: AWS::ECS::TaskDefinition
@@ -296,8 +302,8 @@ Resources:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     DependsOn: ecsService
     Properties:
-      MaxCapacity: !If [IsProd, 16, 2]
-      MinCapacity: !If [IsProd, 2, 1]
+      MaxCapacity: !If [IsStaging, 50, !If [IsProd, 75, 2]]
+      MinCapacity: !If [IsQA, 1, 2]
       ResourceId: !Join [ '/', [ 'service', Fn::ImportValue: !Sub '${sharedResourcesPrefix}-${environment}-ecsClusterName', !GetAtt 'ecsService.Name' ]]
       RoleARN: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService
       ScalableDimension: ecs:service:DesiredCount
