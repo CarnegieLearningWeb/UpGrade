@@ -50,6 +50,12 @@ export const selectSelectedSegment = createSelector(
   }
 );
 
+export const selectSegmentOverviewDetails = createSelector(selectSelectedSegment, (segment) => ({
+  ['Description']: segment?.description,
+  ['App Context']: segment?.context,
+  ['Tags']: segment?.tags,
+}));
+
 export const selectSearchKey = createSelector(selectSegmentsState, (state) => state.searchKey);
 
 export const selectSearchString = createSelector(selectSegmentsState, (state) => state.searchString);

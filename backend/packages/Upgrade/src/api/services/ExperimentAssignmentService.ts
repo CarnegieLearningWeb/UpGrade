@@ -57,7 +57,6 @@ import {
   MonitoredDecisionPointLogRepository,
 } from '../repositories/MonitoredDecisionPointLogRepository';
 import seedrandom from 'seedrandom';
-import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Segment } from '../models/Segment';
@@ -196,22 +195,31 @@ export class ExperimentAssignmentService {
     });
 
     if (experiments.length) {
-      const dpExpExists = experiments.filter((exp) => exp.id === experimentId);
+      if (experimentId) {
+        const dpExpExists = experiments.filter((exp) => exp.id === experimentId);
 
-      if (!dpExpExists.length) {
-        const error = new Error(
-          `Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`
-        );
-        (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
-        (error as any).httpCode = 404;
-        logger.error(error);
-        throw error;
+        if (!dpExpExists.length) {
+          const error = new Error(
+            `Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`
+          );
+          (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
+          (error as any).httpCode = 404;
+          logger.error(error);
+          throw error;
+        }
+        experiments = dpExpExists;
+      } else {
+        const random = seedrandom(userId)();
+        experiments = [experiments[Math.floor(random * experiments.length)]];
+        experimentId = experiments[0]?.id;
       }
-      experiments = dpExpExists;
     }
 
+    // We are sure that either experiment length will not be greater than 1
+    const context: string | null = experiments?.[0]?.context?.[0] ?? null;
+
     // 2. Check if user or group is globally excluded
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc);
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
 
     // empty assignments if the user or group is excluded from the experiment
     if (isUserExcluded || isGroupExcluded) {
@@ -342,7 +350,7 @@ export class ExperimentAssignmentService {
     const experiments: Experiment[] = await this.getExperimentsForUser(previewUser, context);
 
     // 2. Check if user or group is globally excluded
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUserDoc);
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUserDoc, context);
 
     // return empty assignments if the user or group is excluded from the experiment
     if (isUserExcluded || isGroupExcluded) {
@@ -815,7 +823,8 @@ export class ExperimentAssignmentService {
   }
 
   public async checkUserOrGroupIsGloballyExcluded(
-    experimentUser: RequestedExperimentUser
+    experimentUser: RequestedExperimentUser,
+    context?: string
   ): Promise<[boolean, boolean]> {
     let userGroup = [];
     userGroup = Object.keys(experimentUser.workingGroup || {}).map((type: string) => {
@@ -827,6 +836,14 @@ export class ExperimentAssignmentService {
       excludedUsers: string[] = [],
       excludedGroups = [];
 
+    if (!context) {
+      return [false, false];
+    }
+
+    // Fetch the global exclude segment for the context
+    const globalExcludeSegment = await this.segmentService.getGlobalExcludeSegmentByContext(context);
+
+    // Get the global exclude segment for the context
     globalExcludeSegmentObj[globalExcludeSegment.id] = {
       segmentIdsQueue: [globalExcludeSegment.id],
       currentIncludedSegmentIds: [],
