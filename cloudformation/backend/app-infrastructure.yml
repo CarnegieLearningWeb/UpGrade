@@ -294,8 +294,8 @@ Resources:
       ServiceNamespace: ecs
       TargetTrackingScalingPolicyConfiguration:
         TargetValue: 50.0
-        ScaleInCooldown: 300
-        ScaleOutCooldown: 300
+        ScaleInCooldown: 180
+        ScaleOutCooldown: 5
         PredefinedMetricSpecification:
           PredefinedMetricType: ECSServiceAverageCPUUtilization
   ecsScalingTarget:
