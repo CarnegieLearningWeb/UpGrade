@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SharedIconsComponent } from './shared-icons.component';
 import { TestingModule } from '../../../../testing/testing.module';
@@ -7,7 +7,7 @@ xdescribe('SharedIconsComponent', () => {
   let component: SharedIconsComponent;
   let fixture: ComponentFixture<SharedIconsComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [TestingModule],

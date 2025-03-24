@@ -48,6 +48,7 @@ import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import {
   ASSIGNMENT_ALGORITHM,
+  EXPERIMENT_STATE,
   MoocletPolicyParametersDTO,
   MoocletTSConfigurablePolicyParametersDTO,
   SUPPORTED_MOOCLET_ALGORITHMS,
@@ -64,11 +65,34 @@ export interface SyncCreateParams {
   logger: UpgradeLogger;
 }
 
+export interface SyncEditParams {
+  experimentDTO: ExperimentDTO;
+  currentUser: UserDTO;
+  logger: UpgradeLogger;
+}
+
 export interface SyncDeleteParams {
   moocletExperimentRef: MoocletExperimentRef;
   experimentId: string;
   currentUser: UserDTO;
   logger: UpgradeLogger;
+}
+
+export interface AllowedInactiveStateChanges {
+  newOutcomeVariableName: string | false;
+  addedConditions: ConditionValidator[] | false;
+  removedConditions: MoocletVersionConditionMap[] | false;
+  modifiedConditions: MoocletVersionConditionMap[] | false;
+}
+
+export interface EditRollbackRef {
+  revertPolicyParameters: MoocletPolicyParametersDTO;
+  revertOutcomeVariableName: string;
+  restoreVersions: ExperimentCondition[];
+  revertVersionModifications: MoocletVersionConditionMap[];
+  removeVersions: MoocletVersionConditionMap[];
+  currentMoocletExperimentRef: MoocletExperimentRef;
+  currentExperiment: Experiment;
 }
 
 @Service()
@@ -143,6 +167,10 @@ export class MoocletExperimentService extends ExperimentService {
     return this.dataSource.transaction((manager) => this.handleCreateMoocletTransaction(manager, params));
   }
 
+  public async syncUpdate(params: SyncCreateParams): Promise<ExperimentDTO> {
+    return this.dataSource.transaction((manager) => this.handleEditMoocletTransaction(manager, params));
+  }
+
   public async syncDelete(params: SyncDeleteParams): Promise<Experiment> {
     return this.dataSource.transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
   }
@@ -205,7 +233,12 @@ export class MoocletExperimentService extends ExperimentService {
     // If either of THESE fail, we will need to rollback the mooclet resources here also before aborting the UpGrade experiment transaction
     try {
       await this.saveMoocletExperimentRef(manager, moocletExperimentRefResponse);
-      await this.createAndSaveVersionConditionMaps(manager, moocletExperimentRefResponse, logger);
+      await this.createAndSaveVersionConditionMapEntities(
+        manager,
+        moocletExperimentRefResponse.id,
+        moocletExperimentRefResponse.versionConditionMaps,
+        logger
+      );
 
       experimentResponse.moocletPolicyParameters = moocletPolicyParameters;
 
@@ -231,24 +264,751 @@ export class MoocletExperimentService extends ExperimentService {
     await manager.save(MoocletExperimentRef, moocletExperimentRefResponse);
   }
 
-  private async createAndSaveVersionConditionMaps(
+  private async createAndSaveVersionConditionMapEntities(
     manager: EntityManager,
-    moocletExperimentRefResponse: MoocletExperimentRef,
+    moocletExperimentRefId: string,
+    versionConditionMaps: MoocletVersionConditionMap[],
     logger: UpgradeLogger
   ): Promise<void> {
-    if (moocletExperimentRefResponse.versionConditionMaps) {
-      for (const versionConditionMap of moocletExperimentRefResponse.versionConditionMaps) {
-        const versionConditionMapEntity = manager.create(MoocletVersionConditionMap, {
-          ...versionConditionMap,
-          moocletExperimentRefId: moocletExperimentRefResponse.id,
-          experimentConditionId: versionConditionMap.experimentConditionId,
-        });
-        const map = await manager.save(MoocletVersionConditionMap, versionConditionMapEntity);
-        logger.info({
-          message: 'MoocletVersionConditionMap created successfully:',
-          versionConditionMap: JSON.stringify(map),
-        });
+    for (const versionConditionMap of versionConditionMaps) {
+      const versionConditionMapEntity = manager.create(MoocletVersionConditionMap, {
+        ...versionConditionMap,
+        moocletExperimentRefId,
+        experimentConditionId: versionConditionMap.experimentConditionId,
+      });
+      const map = await manager.save(MoocletVersionConditionMap, versionConditionMapEntity);
+      logger.info({
+        message: 'MoocletVersionConditionMap created successfully:',
+        versionConditionMap: JSON.stringify(map),
+      });
+    }
+  }
+
+  /**
+   * Handles a transaction to edit Mooclet experiment resources with rollback capability.
+   *
+   * The function performs the following sequential operations:
+   * 1. Validates experiment state eligibility (INACTIVE, PREVIEW, SCHEDULED, or ENROLLING)
+   * 2. Fetches current resources for comparison with incoming changes
+   * 3. Detects experiment design changes that affect Mooclet resources and validates if they're allowed in current state
+   * 4. Updates the base experiment via parent class
+   * 5. Updates policy parameters (allowed in all eligible states)
+   * 6. If version or variable edits exist, applies them with rollback capability
+   *
+   * If any step fails, the transaction will abort and we will automatically attempt to roll back any Mooclet resources to previous state
+   *
+   * @param manager - Entity manager passed for transaction handling
+   * @param params - Object containing experimentDTO, currentUser, and logger
+   * @returns Promise resolving to updated ExperimentDTO
+   * @throws Error if experiment state is ineligible or if disallowed changes are detected
+   */
+  private async handleEditMoocletTransaction(manager: EntityManager, params: SyncEditParams): Promise<ExperimentDTO> {
+    const { experimentDTO: incomingExperiment, currentUser, logger } = params;
+    const rollbackRef: EditRollbackRef = {
+      revertPolicyParameters: null,
+      revertOutcomeVariableName: null,
+      restoreVersions: null,
+      revertVersionModifications: null,
+      removeVersions: null,
+      currentMoocletExperimentRef: null,
+      currentExperiment: null,
+    };
+
+    // bail if the experiment is in not in an eligible edit state for mooclet resources
+    if (
+      ![
+        EXPERIMENT_STATE.INACTIVE,
+        EXPERIMENT_STATE.PREVIEW,
+        EXPERIMENT_STATE.SCHEDULED,
+        EXPERIMENT_STATE.ENROLLING,
+      ].includes(incomingExperiment.state)
+    ) {
+      const error = {
+        message: '[Mooclet Edit] Ineligible experiment state for Mooclet edits',
+        state: incomingExperiment.state,
+      };
+      logger.error({ error: JSON.stringify(error) });
+      throw new Error(JSON.stringify(error));
+    }
+
+    // NOTE: Currently allowed states for updating mooclet resources:
+    // conditions (versions): PREVIEW, SCHEDULED, INACTIVE
+    // outcome variable name: PREVIEW, SCHEDULED, INACTIVE
+    // policy parameters: ENROLLING, PREVIEW, SCHEDULED, INACTIVE
+
+    try {
+      // ---------- fetch current resources for comparison to incoming -------------------------------
+      const {
+        currentMoocletExperimentRef,
+        currentOutcomeVariableResponse,
+        currentPolicyParametersResponse,
+        currentExperiment,
+      } = await this.fetchCurrentResources(incomingExperiment, logger);
+
+      const versionOrVariableEdits = this.detectExperimentDesignChanges(
+        incomingExperiment,
+        currentMoocletExperimentRef,
+        currentOutcomeVariableResponse.name
+      );
+
+      // bail if disallowed changes are detected for enrolling experiments
+      if (versionOrVariableEdits && EXPERIMENT_STATE.ENROLLING === incomingExperiment.state) {
+        const error = {
+          message: '[Mooclet Edit] Ineligible version or variable edits detected for an active Mooclet experiment.',
+          changes: versionOrVariableEdits,
+        };
+        logger.error({ error: JSON.stringify(error) });
+        throw new Error(JSON.stringify(error));
       }
+
+      logger.debug({
+        message: '[Mooclet Edit] Experiment changes affect Mooclet resources, begin sync.',
+        changes: versionOrVariableEdits,
+      });
+
+      // ---------- update the experiment first ---------------------------------------
+      const updatedExperiment = await super.update(incomingExperiment, currentUser, logger, manager);
+
+      rollbackRef.currentExperiment = currentExperiment;
+      rollbackRef.currentMoocletExperimentRef = currentMoocletExperimentRef;
+
+      // ---------- update policy parameters ------------------------------------------
+      // NOTE: the rollbackRef is mutated within these methods and will be used to revert changes if any step fails
+
+      // go ahead and PUT policy parameters (these are allowed when enrolling and not really worth checking for changes)
+      const policyParameterResponse = await this.doRevertablePolicyParameterChange({
+        incomingExperiment,
+        currentMoocletExperimentRef,
+        currentPolicyParametersResponse,
+        rollbackRef,
+        logger,
+      });
+
+      updatedExperiment.moocletPolicyParameters = policyParameterResponse.parameters;
+
+      // --------- update outcome variable name and/or versions ----------------------
+
+      if (!versionOrVariableEdits) {
+        return updatedExperiment;
+      }
+
+      await this.doRevertableVersionOrVariableEdits({
+        versionOrVariableEdits,
+        currentMoocletExperimentRef,
+        currentOutcomeVariableResponse,
+        incomingExperiment,
+        rollbackRef,
+        manager,
+        logger,
+      });
+
+      return updatedExperiment;
+    } catch (error) {
+      logger.error({ message: '[Mooclet Edits] Error updating experiment', error });
+      await this.rollbackMoocletEdits(rollbackRef, logger);
+      throw error;
+    }
+  }
+
+  /**
+   * Detects if the outcome variable name has changed between the incoming experiment and current state.
+   *
+   * @param incomingExperimentDTO - The updated experiment data being submitted
+   * @param currentOutcomeVariableName - The current outcome variable name stored in Mooclet
+   * @returns The new outcome variable name if changed, or null if unchanged
+   */
+  private detectNewOutcomeVariableName(
+    incomingExperimentDTO: ExperimentDTO,
+    currentOutcomeVariableName: string
+  ): string | null {
+    const newName = incomingExperimentDTO.moocletPolicyParameters['outcome_variable_name'];
+
+    return newName !== currentOutcomeVariableName ? newName : null;
+  }
+
+  /**
+   * Identifies conditions that exist in the incoming experiment but not in the current Mooclet experiment.
+   *
+   * @param incomingExperimentDTO - The updated experiment data being submitted
+   * @param currentMoocletExperimentRef - The current Mooclet experiment reference
+   * @returns Array of new conditions if any are found, or null if no new conditions
+   */
+  private detectNewConditions(
+    incomingExperimentDTO: ExperimentDTO,
+    currentMoocletExperimentRef: MoocletExperimentRef
+  ): ConditionValidator[] | null {
+    const newConditions = incomingExperimentDTO.conditions.filter(
+      (condition) =>
+        !currentMoocletExperimentRef.versionConditionMaps.find((map) => map.experimentCondition.id === condition.id)
+    );
+
+    return newConditions.length ? newConditions : null;
+  }
+
+  /**
+   * Identifies conditions that exist in the current Mooclet experiment but not in the incoming experiment.
+   *
+   * @param incomingExperimentDTO - The updated experiment data being submitted
+   * @param currentMoocletExperimentRef - The current Mooclet experiment reference
+   * @returns Array of version-condition maps for removed conditions if any are found, or null if no conditions were removed
+   */
+  private detectRemovedConditions(
+    incomingExperimentDTO: ExperimentDTO,
+    currentMoocletExperimentRef: MoocletExperimentRef
+  ): MoocletVersionConditionMap[] | null {
+    const mapsForRemovedConditions = currentMoocletExperimentRef.versionConditionMaps.filter(
+      (map) => !incomingExperimentDTO.conditions.find((condition) => condition.id === map.experimentCondition.id)
+    );
+
+    return mapsForRemovedConditions.length ? mapsForRemovedConditions : null;
+  }
+
+  /**
+   * Identifies conditions whose code has been modified between the incoming experiment and the current Mooclet experiment.
+   *
+   * @param incomingExperimentDTO - The updated experiment data being submitted
+   * @param currentMoocletExperimentRef - The current Mooclet experiment reference
+   * @returns Array of version-condition maps for modified conditions if any are found, or null if no conditions were modified
+   */
+  private detectModifiedConditions(
+    incomingExperimentDTO: ExperimentDTO,
+    currentMoocletExperimentRef: MoocletExperimentRef
+  ): MoocletVersionConditionMap[] | null {
+    const versionsToUpdate = currentMoocletExperimentRef.versionConditionMaps.filter((map) => {
+      const condition = incomingExperimentDTO.conditions.find(
+        (condition) => condition.id === map.experimentCondition.id
+      );
+
+      if (!condition) {
+        return null;
+      }
+
+      return condition && condition.conditionCode !== map.experimentCondition.conditionCode;
+    });
+
+    return versionsToUpdate.length ? versionsToUpdate : null;
+  }
+
+  /**
+   * Aggregates all experiment design changes by calling individual detection methods.
+   *
+   * Checks for changes in outcome variable name, added conditions, removed conditions,
+   * and modified conditions. Returns an object containing all detected changes, or false
+   * if no changes were detected.
+   *
+   * @param incomingExperimentDTO - The updated experiment data being submitted
+   * @param currentMoocletExperimentRef - The current Mooclet experiment reference
+   * @param currentOutcomeVariableName - The current outcome variable name stored in Mooclet
+   * @returns Object with all detected changes if any exist, or false if no changes were detected
+   */
+  private detectExperimentDesignChanges(
+    incomingExperimentDTO: ExperimentDTO,
+    currentMoocletExperimentRef: MoocletExperimentRef,
+    currentOutcomeVariableName: string
+  ): AllowedInactiveStateChanges | null {
+    const changes = {
+      newOutcomeVariableName: this.detectNewOutcomeVariableName(incomingExperimentDTO, currentOutcomeVariableName),
+      addedConditions: this.detectNewConditions(incomingExperimentDTO, currentMoocletExperimentRef),
+      removedConditions: this.detectRemovedConditions(incomingExperimentDTO, currentMoocletExperimentRef),
+      modifiedConditions: this.detectModifiedConditions(incomingExperimentDTO, currentMoocletExperimentRef),
+    };
+
+    const hasChanges = Object.values(changes).some((change) => !!change);
+
+    return hasChanges ? changes : null;
+  }
+
+  /**
+   * Updates policy parameters for a Mooclet experiment.
+   *
+   * This method updates the policy parameters of a Mooclet experiment in response to
+   * experiment design changes. It forwards the request to the
+   * Mooclet data service.
+   *
+   * @param newPolicyParameters - The updated policy parameters to apply
+   * @param currentMoocletExperimentRef - Reference to the current Mooclet experiment
+   * @param logger - Logger instance for recording operation details
+   * @returns Promise resolving to the updated policy parameters response from Mooclet
+   */
+  private async handleUpdatePolicyParameters(
+    newPolicyParameters: MoocletPolicyParametersDTO,
+    currentMoocletExperimentRef: MoocletExperimentRef,
+    logger: UpgradeLogger
+  ): Promise<MoocletPolicyParametersResponseDetails> {
+    return this.moocletDataService.updatePolicyParameters(
+      currentMoocletExperimentRef.policyParametersId,
+      {
+        mooclet: currentMoocletExperimentRef.moocletId,
+        policy: currentMoocletExperimentRef.policyId,
+        parameters: newPolicyParameters,
+      },
+      logger
+    );
+  }
+
+  /**
+   * Updates the outcome variable name for a Mooclet experiment.
+   *
+   * This method will be used both to update and potentially rollback the outcome variable name
+   *
+   * @param newOutcomeVariableName - The new name for the outcome variable
+   * @param currentMoocletExperimentRef - Reference to the current Mooclet experiment
+   * @param logger - Logger instance for recording operation details
+   * @returns Promise that resolves when the update is complete
+   */
+  private async handleUpdateOutcomeVariableName(
+    newOutcomeVariableName: string,
+    currentMoocletExperimentRef: MoocletExperimentRef,
+    logger: UpgradeLogger
+  ): Promise<MoocletVariableResponseDetails> {
+    return this.moocletDataService.updateVariable(
+      currentMoocletExperimentRef.variableId,
+      {
+        name: newOutcomeVariableName,
+      },
+      logger
+    );
+  }
+
+  /**
+   * Removes conditions from a Mooclet experiment.
+   *
+   * This method deletes versions from Mooclet that correspond to experiment conditions
+   * that have been removed from the experiment design. It
+   * processes each removal in parallel.
+   *
+   * @param removedConditions - Array of version-condition maps for conditions to remove
+   * @param logger - Logger instance for recording operation details
+   * @returns Promise resolving to an array of void results, one for each deleted version
+   */
+  private async handleRemoveConditions(
+    removedConditions: MoocletVersionConditionMap[],
+    logger: UpgradeLogger
+  ): Promise<void[]> {
+    return Promise.all(
+      removedConditions.map(async (map) => {
+        return await this.moocletDataService.deleteVersion(map.moocletVersionId, logger);
+      })
+    );
+  }
+
+  /**
+   * Modifies conditions in a Mooclet experiment.
+   *
+   * This method updates versions in Mooclet to reflect changes to their corresponding
+   * experiment conditions. It retrieves each version, updates its name and text fields
+   * if they differ from the incoming condition, and updates the version in Mooclet.
+   *
+   * @param versionMapsToUpdate - Array of version-condition maps for conditions to modify
+   * @param incomingExperiment - The updated experiment data containing modified conditions
+   * @param logger - Logger instance for recording operation details
+   * @returns Promise resolving to the array of updated version-condition maps
+   */
+  private async handleModifyConditions(
+    versionMapsToUpdate: MoocletVersionConditionMap[],
+    incomingExperiment: ExperimentDTO | Experiment,
+    logger: UpgradeLogger
+  ): Promise<MoocletVersionConditionMap[]> {
+    return Promise.all(
+      versionMapsToUpdate.map(async (versionMap) => {
+        const version = await this.moocletDataService.getVersion(versionMap.moocletVersionId, logger);
+        const condition = incomingExperiment.conditions.find(
+          (changedCondition) => changedCondition.id === versionMap.experimentConditionId
+        );
+
+        if (version && condition && version.name !== condition.conditionCode) {
+          version.name = condition.conditionCode;
+          version.text = condition.conditionCode; // this could be mapped to payload
+          await this.moocletDataService.updateVersion(versionMap.moocletVersionId, version, logger);
+        }
+
+        return versionMap;
+      })
+    );
+  }
+
+  /**
+   * Adds new conditions to a Mooclet experiment.
+   *
+   * This method creates new versions in Mooclet for conditions that have been added to
+   * the experiment design. It creates each version in parallel, and
+   * then creates mappings between the new versions and their corresponding conditions.
+   *
+   * @param addedConditions - Array of conditions to add to the Mooclet experiment
+   * @param currentMoocletExperimentRef - Reference to the current Mooclet experiment
+   * @returns Promise resolving to an array of newly created version-condition maps
+   */
+  private async handleAddConditions(
+    addedConditions: ExperimentCondition[] | ConditionValidator[],
+    currentMoocletExperimentRef: MoocletExperimentRef,
+    logger: UpgradeLogger
+  ): Promise<MoocletVersionConditionMap[]> {
+    const newVersions: MoocletVersionResponseDetails[] = [];
+
+    await Promise.all(
+      addedConditions.map(async (condition) => {
+        const newVersionRequest: MoocletVersionRequestBody = {
+          mooclet: currentMoocletExperimentRef.moocletId,
+          name: condition.conditionCode,
+          text: condition.conditionCode,
+        };
+
+        const version = await this.moocletDataService.postNewVersion(newVersionRequest, logger);
+        newVersions.push(version);
+      })
+    );
+
+    return this.createMoocletVersionConditionMaps(newVersions, addedConditions);
+  }
+
+  /**
+   * Updates an outcome variable name with rollback capability.
+   *
+   * @param options - Object containing:
+   *   @param newOutcomeVariableName - New name for the outcome variable
+   *   @param currentMoocletExperimentRef - Reference to the current Mooclet experiment
+   *   @param currentOutcomeVariableName - Current name of the outcome variable
+   *   @param rollbackRef - Reference object to store rollback information
+   *   @param logger - Logger instance
+   * @returns Promise that resolves when the name change is complete
+   */
+  async doRevertablePolicyParameterChange({
+    incomingExperiment,
+    currentMoocletExperimentRef,
+    currentPolicyParametersResponse,
+    rollbackRef,
+    logger,
+  }) {
+    logger.debug({
+      message: '[Mooclet Edit] Upserting policy parameters due to experiment design change',
+      incomingPolicyParameters: incomingExperiment.moocletPolicyParameters,
+    });
+    const policyParametersResponse = await this.handleUpdatePolicyParameters(
+      incomingExperiment.moocletPolicyParameters,
+      currentMoocletExperimentRef,
+      logger
+    );
+
+    rollbackRef.revertPolicyParameters = currentPolicyParametersResponse.parameters;
+    return policyParametersResponse;
+  }
+
+  /**
+   * Executes revertable edits to versions or variables within a Mooclet experiment.
+   * Handles changes to outcome variable names, condition modifications, additions, and removals
+   * with built-in rollback capability if any step fails.
+   *
+   * @param options - Object containing:
+   *   @param versionOrVariableEdits - Changes to make to versions or variables
+   *   @param currentMoocletExperimentRef - Reference to the current Mooclet experiment
+   *   @param currentOutcomeVariableResponse - Current outcome variable data
+   *   @param incomingExperiment - New experiment configuration
+   *   @param manager - Entity manager for database operations
+   *   @param logger - Logger instance
+   *   @param rollbackRef - Reference object to store rollback information
+   * @returns Promise that resolves when all edits are complete
+   * @throws Will throw the first encountered error if any task fails
+   */
+  async doRevertableVersionOrVariableEdits({
+    versionOrVariableEdits,
+    currentMoocletExperimentRef,
+    currentOutcomeVariableResponse,
+    incomingExperiment,
+    manager,
+    logger,
+    rollbackRef,
+  }) {
+    const { newOutcomeVariableName, addedConditions, removedConditions, modifiedConditions } = versionOrVariableEdits;
+
+    const taskPromises = [];
+
+    if (newOutcomeVariableName) {
+      taskPromises.push(
+        this.doRevertableOutcomeVariableNameChange({
+          newOutcomeVariableName,
+          currentMoocletExperimentRef,
+          currentOutcomeVariableName: currentOutcomeVariableResponse.name,
+          rollbackRef,
+          logger,
+        })
+      );
+    }
+
+    if (removedConditions) {
+      taskPromises.push(this.doRevertableRemovedConditions({ removedConditions, rollbackRef, logger }));
+    }
+
+    if (modifiedConditions) {
+      taskPromises.push(
+        this.doRevertableModifiedConditions({
+          modifiedConditions,
+          incomingExperiment,
+          experimentRefId: currentMoocletExperimentRef.id,
+          manager,
+          rollbackRef,
+          logger,
+        })
+      );
+    }
+
+    if (addedConditions) {
+      taskPromises.push(
+        this.doRevertableAddConditions({ addedConditions, currentMoocletExperimentRef, manager, rollbackRef, logger })
+      );
+    }
+
+    // Use Promise.allSettled to let all tasks complete or fail independently
+    const results = await Promise.allSettled(taskPromises);
+
+    // Check if any tasks failed
+    const failures = results.filter((result) => result.status === 'rejected');
+
+    if (failures.length > 0) {
+      // Log all the errors that occurred
+      failures.forEach((failure, index) => {
+        logger.error({
+          message: `[Mooclet Edit] Task ${index} failed during version or variable edits.`,
+          error: failure.reason,
+        });
+      });
+
+      // Throw the first error to signal failure to the caller
+      // The rollbackRef will already be populated with all successful operations
+      throw failures[0].reason;
+    }
+  }
+
+  /**
+   * Updates an outcome variable name with rollback capability.
+   *
+   * @param options - Object containing:
+   *   @param newOutcomeVariableName - New name for the outcome variable
+   *   @param currentMoocletExperimentRef - Reference to the current Mooclet experiment
+   *   @param currentOutcomeVariableName - Current name of the outcome variable
+   *   @param rollbackRef - Reference object to store rollback information
+   *   @param logger - Logger instance
+   * @returns Promise that resolves when the name change is complete
+   */
+  async doRevertableOutcomeVariableNameChange({
+    newOutcomeVariableName,
+    currentMoocletExperimentRef,
+    currentOutcomeVariableName,
+    rollbackRef,
+    logger,
+  }) {
+    logger.debug({
+      message: '[Mooclet Edit] Updating outcome variable name due to experiment design change.',
+      newOutcomeVariableName,
+    });
+
+    await this.handleUpdateOutcomeVariableName(newOutcomeVariableName, currentMoocletExperimentRef, logger);
+    rollbackRef.revertOutcomeVariableName = currentOutcomeVariableName;
+  }
+
+  /**
+   * Removes conditions from a Mooclet experiment with rollback capability.
+   *
+   * @param options - Object containing:
+   *   @param removedConditions - Conditions to be removed
+   *   @param rollbackRef - Reference object to store rollback information
+   *   @param logger - Logger instance
+   * @returns Promise that resolves when condition removal is complete
+   */
+  async doRevertableRemovedConditions({ removedConditions, rollbackRef, logger }) {
+    logger.debug({
+      message: '[Mooclet Edit] Removing versions from Mooclet due to experiment design change.',
+      removedConditions,
+    });
+
+    await this.handleRemoveConditions(removedConditions, logger);
+    rollbackRef.restoreVersions = removedConditions.map((map: MoocletVersionConditionMap) => map.experimentCondition);
+  }
+
+  /**
+   * Modifies conditions in a Mooclet experiment with rollback capability.
+   *
+   * @param options - Object containing:
+   *   @param modifiedConditions - Conditions to be modified
+   *   @param incomingExperiment - New experiment configuration
+   *   @param experimentRefId - ID of the experiment reference
+   *   @param manager - Entity manager for database operations
+   *   @param rollbackRef - Reference object to store rollback information
+   *   @param logger - Logger instance
+   * @returns Promise that resolves when condition modifications are complete
+   */
+  async doRevertableModifiedConditions({
+    modifiedConditions,
+    incomingExperiment,
+    experimentRefId,
+    manager,
+    rollbackRef,
+    logger,
+  }) {
+    logger.debug({
+      message: '[Mooclet Edit] Modifying versions from Mooclet due to experiment design change.',
+      modifiedConditions,
+    });
+
+    const modifiedVersionConditionMaps = await this.handleModifyConditions(
+      modifiedConditions,
+      incomingExperiment,
+      logger
+    );
+
+    await this.createAndSaveVersionConditionMapEntities(manager, experimentRefId, modifiedVersionConditionMaps, logger);
+
+    rollbackRef.revertVersionModifications = modifiedConditions;
+  }
+
+  /**
+   * Adds conditions to a Mooclet experiment with rollback capability.
+   *
+   * @param options - Object containing:
+   *   @param addedConditions - Conditions to be added
+   *   @param currentMoocletExperimentRef - Reference to the current Mooclet experiment
+   *   @param manager - Entity manager for database operations
+   *   @param rollbackRef - Reference object to store rollback information
+   *   @param logger - Logger instance
+   * @returns Promise that resolves when condition additions are complete
+   */
+  async doRevertableAddConditions({ addedConditions, currentMoocletExperimentRef, manager, rollbackRef, logger }) {
+    logger.debug({
+      message: '[Mooclet Edit] Adding conditions to Mooclet due to experiment design change.',
+      addedConditions,
+    });
+
+    const addedVersionConditionMaps = await this.handleAddConditions(
+      addedConditions,
+      currentMoocletExperimentRef,
+      logger
+    );
+
+    await this.createAndSaveVersionConditionMapEntities(
+      manager,
+      currentMoocletExperimentRef.id,
+      addedVersionConditionMaps,
+      logger
+    );
+
+    rollbackRef.removeVersions = addedVersionConditionMaps;
+  }
+
+  /**
+   * Fetches all current resources related to a Mooclet experiment.
+   *
+   * @param incomingExperiment - The experiment configuration to retrieve resources for
+   * @param logger - Logger instance for operation logging
+   * @returns Promise that resolves to an object containing the current Mooclet experiment reference,
+   *          policy parameters, outcome variable response, and current experiment
+   */
+  async fetchCurrentResources(incomingExperiment: ExperimentDTO, logger: UpgradeLogger) {
+    const currentMoocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(incomingExperiment.id);
+
+    const [currentPolicyParametersResponse, currentOutcomeVariableResponse, currentExperiment] = await Promise.all([
+      this.moocletDataService.getPolicyParameters(currentMoocletExperimentRef.policyParametersId, logger),
+      this.moocletDataService.getVariable(currentMoocletExperimentRef.variableId, logger),
+      this.experimentRepository.findOne({
+        where: { id: incomingExperiment.id },
+        relations: ['conditions'],
+      }),
+    ]);
+
+    return {
+      currentMoocletExperimentRef,
+      currentPolicyParametersResponse,
+      currentOutcomeVariableResponse,
+      currentExperiment,
+    };
+  }
+
+  /**
+   * Rolls back changes made to Mooclet experiment resources in case of transaction failure.
+   *
+   * This method attempts to restore the Mooclet experiment to its previous state when
+   * an error occurs during the edit process. It systematically reverses each type of
+   * change that may have been made:
+   *
+   * 1. Reverts policy parameters to their original values
+   * 2. Restores the original outcome variable name
+   * 3. Recreates versions that were deleted
+   * 4. Reverts modifications to existing versions
+   * 5. Removes versions that were newly added
+   *
+   * If an error occurs during the rollback process itself, a critical error is logged
+   * and thrown, indicating that the experiment resources may be in an inconsistent state.
+   *
+   * @param rollbackRef - Reference object containing all the data needed for rollback operations
+   * @param logger - Logger instance for recording rollback operation details
+   * @returns Promise that resolves when rollback is complete
+   * @throws Error if the rollback itself fails, indicating resources are likely out of sync
+   */
+  private async rollbackMoocletEdits(rollbackRef: EditRollbackRef, logger: UpgradeLogger): Promise<void> {
+    logger.error({
+      message: '[Mooclet Edit] Rolling back Mooclet edits',
+      rollbackRef,
+    });
+
+    const {
+      revertPolicyParameters,
+      revertOutcomeVariableName,
+      restoreVersions,
+      revertVersionModifications,
+      removeVersions,
+      currentMoocletExperimentRef,
+      currentExperiment,
+    } = rollbackRef;
+
+    try {
+      if (revertPolicyParameters) {
+        logger.debug({
+          message: '[Mooclet Edit] Will attempt to reverting policy parameters to previous state',
+          revertPolicyParameters,
+          currentMoocletExperimentRef,
+        });
+        await this.handleUpdatePolicyParameters(revertPolicyParameters, currentMoocletExperimentRef, logger);
+      }
+
+      if (revertOutcomeVariableName) {
+        logger.debug({
+          message: '[Mooclet Edit] Will attempt to revert outcome variable name to previous state',
+          revertOutcomeVariableName,
+          currentMoocletExperimentRef,
+        });
+        await this.handleUpdateOutcomeVariableName(revertOutcomeVariableName, currentMoocletExperimentRef, logger);
+      }
+
+      if (restoreVersions) {
+        logger.debug({
+          message: '[Mooclet Edit] Will attempt to restore deleted versions to previous state',
+          restoreVersions,
+        });
+        await this.handleAddConditions(restoreVersions, currentMoocletExperimentRef, logger);
+      }
+
+      if (revertVersionModifications) {
+        logger.debug({
+          message: '[Mooclet Edit] Will attempt to revert modified versions to previous state',
+          revertVersionModifications,
+        });
+        await this.handleModifyConditions(revertVersionModifications, currentExperiment, logger);
+      }
+
+      if (removeVersions) {
+        logger.debug({
+          message: '[Mooclet Edit] Will attempt to remove added versions to previous state',
+          removeVersions,
+        });
+        await this.handleRemoveConditions(removeVersions, logger);
+      }
+    } catch (rollbackError) {
+      const error = {
+        message:
+          '[Mooclet Edit] Error during rollback, Mooclet resources are likely out of sync for this experiment! Check the resources noted in the rollback ref.',
+        error: rollbackError,
+        rollbackRef,
+      };
+      logger.error(error);
+      throw new Error(JSON.stringify(error));
     }
   }
 
@@ -333,7 +1093,7 @@ export class MoocletExperimentService extends ExperimentService {
       const moocletVersionsResponse = await this.createMoocletVersions(upgradeExperiment, moocletResponse, logger);
       moocletExperimentRef.versionConditionMaps = this.createMoocletVersionConditionMaps(
         moocletVersionsResponse,
-        upgradeExperiment
+        upgradeExperiment.conditions
       );
       logger.debug({
         message: `[Mooclet Creation] 3. Mooclet versions created:`,
@@ -354,7 +1114,6 @@ export class MoocletExperimentService extends ExperimentService {
       const moocletVariableResponse = await this.createVariableIfNeeded(
         moocletPolicyParameters,
         upgradeExperiment.assignmentAlgorithm,
-        moocletResponse,
         logger
       );
       logger.debug({
@@ -363,7 +1122,7 @@ export class MoocletExperimentService extends ExperimentService {
       });
 
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
-      moocletExperimentRef.outcomeVariableName = moocletVariableResponse?.name;
+      moocletExperimentRef.policyId = newMoocletRequest.policy;
     } catch (err) {
       await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
       throw err;
@@ -375,14 +1134,12 @@ export class MoocletExperimentService extends ExperimentService {
   }
 
   private createMoocletVersionConditionMaps(
-    moocletVersionsResponse: MoocletVersionResponseDetails[],
-    upgradeExperiment: ExperimentDTO
+    versions: MoocletVersionResponseDetails[],
+    conditions: ConditionValidator[] | ExperimentCondition[]
   ): MoocletVersionConditionMap[] {
-    const versionConditionMaps: MoocletVersionConditionMap[] = upgradeExperiment.conditions.map((condition) => {
+    const versionConditionMaps: MoocletVersionConditionMap[] = conditions.map((condition) => {
       const versionConditionMap = new MoocletVersionConditionMap();
-      versionConditionMap.moocletVersionId = moocletVersionsResponse.find(
-        (version) => version.name === condition.conditionCode
-      )?.id;
+      versionConditionMap.moocletVersionId = versions.find((version) => version.name === condition.conditionCode)?.id;
       versionConditionMap.experimentConditionId = condition.id;
 
       return versionConditionMap;
@@ -430,13 +1187,20 @@ export class MoocletExperimentService extends ExperimentService {
 
       logger.info({ message: '[Mooclet Deletion]: Completed deletion of Mooclet resources', moocletExperimentRef });
     } catch (err) {
+      const error = {
+        message:
+          '[Mooclet Deletion]: Failed to delete Mooclet resources, please check manually for out of sync resources',
+        error: err,
+        moocletExperimentRef: moocletExperimentRef,
+      };
+
       logger.error({
         message:
           '[Mooclet Deletion]: Failed to delete Mooclet resources, please check manually for out of sync resources',
         error: err,
         moocletExperimentRef: moocletExperimentRef,
       });
-      throw err;
+      throw new Error(JSON.stringify(error));
     }
   }
 
@@ -508,9 +1272,7 @@ export class MoocletExperimentService extends ExperimentService {
 
     try {
       return await Promise.all(
-        experiment.conditions.map(async (condition, index) =>
-          this.createNewVersion(condition, moocletResponse, index, logger)
-        )
+        experiment.conditions.map(async (condition) => this.createNewVersion(condition, moocletResponse.id, logger))
       );
     } catch (err) {
       throw new Error(`Failed to create Mooclet versions: ${err}`);
@@ -518,18 +1280,14 @@ export class MoocletExperimentService extends ExperimentService {
   }
 
   private async createNewVersion(
-    upgradeCondition: ConditionValidator,
-    mooclet: MoocletResponseDetails,
-    index: number,
+    upgradeCondition: ConditionValidator | ExperimentCondition,
+    moocletId: number,
     logger: UpgradeLogger
   ): Promise<MoocletVersionResponseDetails> {
     const newVersionRequest: MoocletVersionRequestBody = {
-      mooclet: mooclet.id,
+      mooclet: moocletId,
       name: upgradeCondition.conditionCode,
       text: upgradeCondition.conditionCode,
-      version_json: {
-        [`${mooclet.name}_VERSION_CONTROL_FLAG`]: index,
-      },
     };
 
     try {
@@ -562,7 +1320,6 @@ export class MoocletExperimentService extends ExperimentService {
   private async createVariableIfNeeded(
     moocletPolicyParametersResponse: MoocletPolicyParametersDTO,
     assignmentAlgorithm: string,
-    moocletResponse: MoocletResponseDetails,
     logger: UpgradeLogger
   ): Promise<MoocletVariableResponseDetails> {
     if (!moocletPolicyParametersResponse || assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {

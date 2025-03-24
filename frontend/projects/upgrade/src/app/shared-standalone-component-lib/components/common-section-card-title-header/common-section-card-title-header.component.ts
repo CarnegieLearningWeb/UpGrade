@@ -39,6 +39,7 @@ export class CommonSectionCardTitleHeaderComponent {
   @Input() subtitle?: string;
   @Input() createdAt?: string;
   @Input() updatedAt?: string;
+  @Input() versionNumber?: number;
   @Input() chipClass?: STATUS_INDICATOR_CHIP_TYPE;
   @Input() showWarning?: boolean;
 }
