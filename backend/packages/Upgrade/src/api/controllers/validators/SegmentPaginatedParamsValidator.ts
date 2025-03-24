@@ -55,10 +55,10 @@ export class SegmentPaginatedParamsValidator {
   @IsOptional()
   @ValidateNested()
   @Type(() => ISegmentSearchParamsValidator)
-  public searchParams: ISegmentSearchParamsValidator;
+  public searchParams?: ISegmentSearchParamsValidator;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => ISegmentSortParamsValidator)
-  public sortParams: ISegmentSortParamsValidator;
+  public sortParams?: ISegmentSortParamsValidator;
 }
