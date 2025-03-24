@@ -124,7 +124,12 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <span> {{ segment.updatedAt | date : 'MMM d, y h:mm a' }} </span>
+          <ng-container *ngIf="segment.versionNumber === 1; else displayUpdatedAt">
+            {{ '-' }}
+          </ng-container>
+          <ng-template #displayUpdatedAt>
+            <span> {{ segment.updatedAt | date : 'MMM d, y h:mm a' }} </span>
+          </ng-template>
         </td>
       </ng-container>
 

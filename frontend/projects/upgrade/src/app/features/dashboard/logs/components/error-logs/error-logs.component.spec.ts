@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ErrorLogsComponent } from './error-logs.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
@@ -13,7 +13,7 @@ xdescribe('ErrorLogsComponent', () => {
   let component: ErrorLogsComponent;
   let fixture: ComponentFixture<ErrorLogsComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ErrorLogsComponent, TimelineComponent, LogDateFormatPipe, ErrorLogPipe, ExperimentActionMessage],
       imports: [TestingModule],

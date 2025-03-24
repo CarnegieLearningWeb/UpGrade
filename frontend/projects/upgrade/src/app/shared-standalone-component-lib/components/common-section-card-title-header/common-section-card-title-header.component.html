@@ -17,11 +17,16 @@
     </ng-container>
     <ng-container *ngIf="createdAt && updatedAt">
       <span class="ft-14-400">
-        {{ ('feature-flags.details-created-on.text' | translate) + (createdAt | formatDate : 'medium date') + ' | ' }}
+        {{ ('feature-flags.details-created-on.text' | translate) + (createdAt | formatDate : 'short date') + ' | ' }}
       </span>
-      <span class="ft-14-400">
-        {{ ('feature-flags.details-updated-at.text' | translate) + (updatedAt | formatDate : 'short date') + '.' }}
+      <span class="ft-14-400" *ngIf="versionNumber === 1; else displayUpdatedAt">
+        {{ ('feature-flags.details-updated-at.text' | translate) + ' -' }}
       </span>
+      <ng-template #displayUpdatedAt>
+        <span class="ft-14-400">
+          {{ ('feature-flags.details-updated-at.text' | translate) + (updatedAt | formatDate : 'short date') + '.' }}
+        </span>
+      </ng-template>
     </ng-container>
   </p>
 </div>

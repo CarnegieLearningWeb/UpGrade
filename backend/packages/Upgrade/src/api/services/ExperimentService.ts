@@ -1619,8 +1619,11 @@ export class ExperimentService {
     return errorString;
   }
 
-  private deduceExperimentDetails(experiment: ExperimentDTO): ExperimentDTO {
+  private deduceExperimentDetails(experiment: Experiment): Experiment {
     experiment.id = uuid();
+    // delete createdAt date to let typeorm handle it and initialize versionNumber as fresh experiment version to detect updates
+    delete experiment.createdAt;
+    delete experiment.versionNumber;
     this.deduceFactors(experiment);
     this.deduceConditions(experiment);
     this.deducePartition(experiment);
