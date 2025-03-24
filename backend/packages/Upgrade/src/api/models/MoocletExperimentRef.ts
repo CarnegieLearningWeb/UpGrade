@@ -24,6 +24,9 @@ export class MoocletExperimentRef {
   versionConditionMaps: MoocletVersionConditionMap[];
 
   @Column({ nullable: true })
+  policyId?: number;
+
+  @Column({ nullable: true })
   policyParametersId?: number;
 
   @Column({ nullable: true })
