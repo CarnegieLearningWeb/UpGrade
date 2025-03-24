@@ -45,12 +45,7 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   segmentSortKey$: Observable<string>;
   segmentSortAs$: Observable<string>;
   isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
-  segmentFilterOptions = [
-    SEGMENT_SEARCH_KEY.ALL,
-    SEGMENT_SEARCH_KEY.NAME,
-    SEGMENT_SEARCH_KEY.STATUS,
-    SEGMENT_SEARCH_KEY.CONTEXT,
-  ];
+  segmentFilterOptions = [SEGMENT_SEARCH_KEY.ALL, SEGMENT_SEARCH_KEY.NAME, SEGMENT_SEARCH_KEY.CONTEXT];
   statusFilterOptions = Object.values(SEGMENT_STATUS);
   selectedSegmentFilterOption = SEGMENT_SEARCH_KEY.ALL;
   searchValue: string;
@@ -97,8 +92,6 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
           );
         case SEGMENT_SEARCH_KEY.NAME:
           return data.name.toLocaleLowerCase().includes(filter);
-        case SEGMENT_SEARCH_KEY.STATUS:
-          return data.status.toLocaleLowerCase().includes(filter);
         case SEGMENT_SEARCH_KEY.CONTEXT:
           return data.context.toLocaleLowerCase().includes(filter);
       }

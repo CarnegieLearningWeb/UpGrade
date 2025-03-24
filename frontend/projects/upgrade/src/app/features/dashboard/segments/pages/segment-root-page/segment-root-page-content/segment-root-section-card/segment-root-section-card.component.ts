@@ -56,7 +56,6 @@ export class SegmentRootSectionCardComponent {
   segmentFilterOptions = [
     SEGMENT_SEARCH_KEY.ALL,
     SEGMENT_SEARCH_KEY.NAME,
-    SEGMENT_SEARCH_KEY.STATUS,
     SEGMENT_SEARCH_KEY.CONTEXT,
     SEGMENT_SEARCH_KEY.TAG,
   ];
@@ -121,8 +120,6 @@ export class SegmentRootSectionCardComponent {
           );
         case SEGMENT_SEARCH_KEY.NAME:
           return data.name.toLowerCase().includes(filter);
-        case SEGMENT_SEARCH_KEY.STATUS:
-          return data.status.toLowerCase().includes(filter);
         case SEGMENT_SEARCH_KEY.CONTEXT:
           return data.context.toLowerCase().includes(filter);
         default:

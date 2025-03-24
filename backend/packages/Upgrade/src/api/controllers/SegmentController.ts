@@ -1,7 +1,8 @@
 import { JsonController, Get, Delete, Authorized, Post, Req, Body, QueryParams, Params } from 'routing-controllers';
 import { SegmentService, SegmentWithStatus } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
-import { AppRequest } from '../../types';
+import { AppRequest, PaginationResponse } from '../../types';
+import { SEGMENT_STATUS } from 'upgrade_types';
 import {
   IdValidator,
   ListInputValidator,
@@ -11,6 +12,7 @@ import {
   SegmentImportError,
   SegmentInputValidator,
 } from './validators/SegmentInputValidator';
+import { SegmentPaginatedParamsValidator } from './validators/SegmentPaginatedParamsValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { NotFoundException } from '@nestjs/common/exceptions';
@@ -21,6 +23,9 @@ export interface getSegmentData {
   experimentSegmentExclusionData: Partial<ExperimentSegmentExclusion>[];
 }
 
+interface SegmentPaginationInfo extends PaginationResponse {
+  nodes: getSegmentData;
+}
 /**
  * @swagger
  * definitions:
@@ -232,6 +237,118 @@ export class SegmentController {
   @Get()
   public async getAllSegments(@Req() request: AppRequest): Promise<getSegmentData> {
     return this.segmentService.getAllSegmentWithStatus(request.logger);
+  }
+
+  /**
+   * @swagger
+   * /segments/global:
+   *    get:
+   *       description: Get all global segments
+   *       tags:
+   *         - Segment
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get all global segments
+   *            schema:
+   *              type: array
+   *              items:
+   *                $ref: '#/definitions/segmentResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   */
+  @Get('/global')
+  public async getAllGlobalSegments(@Req() request: AppRequest): Promise<SegmentWithStatus[]> {
+    const globalExcludeSegments = await this.segmentService.getAllGlobalExcludeSegments(request.logger);
+    return globalExcludeSegments.map((segment) => {
+      return {
+        ...segment,
+        status: SEGMENT_STATUS.GLOBAL,
+      };
+    });
+  }
+
+  /**
+   * @swagger
+   * /segments/paginated:
+   *    post:
+   *       description: Get Paginated Segments
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: params
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - skip
+   *               - take
+   *             properties:
+   *               skip:
+   *                type: integer
+   *               take:
+   *                type: integer
+   *               searchParams:
+   *                type: object
+   *                properties:
+   *                  key:
+   *                    type: string
+   *                    enum: [all, name, tag, context]
+   *                  string:
+   *                    type: string
+   *               sortParams:
+   *                  type: object
+   *                  properties:
+   *                    key:
+   *                     type: string
+   *                     enum: [name, updatatedAt]
+   *                    sortAs:
+   *                     type: string
+   *                     enum: [ASC, DESC]
+   *       tags:
+   *         - Segment
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get Paginated Segments
+   *            schema:
+   *              type: object
+   *              properties:
+   *                total:
+   *                  type: number
+   *                nodes:
+   *                  type: array
+   *                  items:
+   *                    $ref: '#/definitions/SegmentResponse'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Insert Error in database
+   */
+  @Post('/paginated')
+  public async getAllSegmentsPaginated(
+    @Body({ validate: true })
+    paginatedParams: SegmentPaginatedParamsValidator,
+    @Req() request: AppRequest
+  ): Promise<SegmentPaginationInfo> {
+    const [segmentsWithStatus, count] = await Promise.all([
+      this.segmentService.findPaginated(
+        paginatedParams.skip,
+        paginatedParams.take,
+        request.logger,
+        paginatedParams.searchParams,
+        paginatedParams.sortParams
+      ),
+      this.segmentService.getTotalPublicSegmentCount(),
+    ]);
+    return {
+      total: count,
+      nodes: segmentsWithStatus,
+      ...paginatedParams,
+    };
   }
 
   /**

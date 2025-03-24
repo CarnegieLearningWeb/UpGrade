@@ -13,6 +13,7 @@ import {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
   EXCLUSION_CODE,
+  SEGMENT_SEARCH_KEY,
 } from 'upgrade_types';
 import { In } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
@@ -45,6 +46,7 @@ import { IndividualExclusion } from '../models/IndividualExclusion';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
+import { ISegmentSearchParams, ISegmentSortParams } from '../controllers/validators/SegmentPaginatedParamsValidator';
 
 interface IsSegmentValidWithError {
   missingProperty: string;
@@ -194,6 +196,65 @@ export class SegmentService {
     } else {
       return null;
     }
+  }
+
+  public async findPaginated(
+    skip: number,
+    take: number,
+    logger: UpgradeLogger,
+    searchParams?: ISegmentSearchParams,
+    sortParams?: ISegmentSortParams
+  ): Promise<getSegmentData> {
+    logger.info({ message: `Find paginated segments` });
+    let queryBuilder = this.segmentRepository
+      .createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .where('segment.type = :public', { public: SEGMENT_TYPE.PUBLIC });
+
+    if (searchParams) {
+      const customSearchString = searchParams.string.split(' ').join(`:*&`);
+      // add search query
+      const postgresSearchString = this.postgresSearchString(searchParams.key);
+      queryBuilder = queryBuilder
+        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
+        .addOrderBy('rank', 'DESC')
+        .setParameter('query', `${customSearchString}:*`);
+    }
+    if (sortParams) {
+      queryBuilder = queryBuilder.addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs);
+    }
+
+    const segmentsData = await queryBuilder.offset(skip).limit(take).getMany();
+    return this.getSegmentStatus(segmentsData);
+  }
+
+  public getTotalPublicSegmentCount(): Promise<number> {
+    return this.segmentRepository.countBy({ type: SEGMENT_TYPE.PUBLIC });
+  }
+
+  private postgresSearchString(type: SEGMENT_SEARCH_KEY): string {
+    const searchString: string[] = [];
+    switch (type) {
+      case SEGMENT_SEARCH_KEY.NAME:
+        searchString.push("coalesce(segment.name::TEXT,'')");
+        break;
+      case SEGMENT_SEARCH_KEY.CONTEXT:
+        searchString.push("coalesce(segment.context::TEXT,'')");
+        break;
+      case SEGMENT_SEARCH_KEY.TAG:
+        searchString.push("coalesce(segment.tags::TEXT,'')");
+        break;
+      default:
+        searchString.push("coalesce(segment.name::TEXT,'')");
+        searchString.push("coalesce(segment.context::TEXT,'')");
+        searchString.push("coalesce(segment.tags::TEXT,'')");
+        break;
+    }
+    const stringConcat = searchString.join(',');
+    const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
+    return searchStringConcatenated;
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
