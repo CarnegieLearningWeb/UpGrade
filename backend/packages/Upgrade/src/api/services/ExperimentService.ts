@@ -1623,7 +1623,7 @@ export class ExperimentService {
     experiment.id = uuid();
     // delete createdAt date to let typeorm handle it and initialize versionNumber as fresh experiment version to detect updates
     delete experiment.createdAt;
-    experiment.versionNumber = 1;
+    delete experiment.versionNumber;
     this.deduceFactors(experiment);
     this.deduceConditions(experiment);
     this.deducePartition(experiment);
