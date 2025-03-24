@@ -21,7 +21,13 @@ import { IndividualForSegment } from '../../../src/api/models/IndividualForSegme
 import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
-import { SEGMENT_TYPE, SERVER_ERROR, EXPERIMENT_STATE, FEATURE_FLAG_STATUS } from 'upgrade_types';
+import {
+  SEGMENT_TYPE,
+  SERVER_ERROR,
+  EXPERIMENT_STATE,
+  FEATURE_FLAG_STATUS,
+  IMPORT_COMPATIBILITY_TYPE,
+} from 'upgrade_types';
 import { configureLogger } from '../../utils/logger';
 import { ExperimentSegmentExclusion } from '../../../src/api/models/ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
@@ -444,6 +450,7 @@ describe('Segment Service Testing', () => {
       {
         fileName: 'seg1',
         error: null,
+        compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
       },
     ];
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2]);
@@ -460,6 +467,7 @@ describe('Segment Service Testing', () => {
         error:
           'Invalid Segment data: ' +
           'SubSegment: seg2 not found. Please import subSegment with same context and link in segment. ',
+        compatibilityType: IMPORT_COMPATIBILITY_TYPE.WARNING,
       },
     ];
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1]);

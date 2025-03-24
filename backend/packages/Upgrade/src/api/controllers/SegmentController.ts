@@ -470,16 +470,18 @@ export class SegmentController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: params
+   *           name: segments
    *           description: Segment file
    *           required: true
    *           schema:
-   *            type: object
-   *            properties:
-   *              fileName:
-   *                type: string
-   *              fileContent:
-   *                type: string
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
    *       tags:
    *         - Segment
    *       produces:
@@ -507,16 +509,18 @@ export class SegmentController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: params
+   *           name: segments
    *           description: Segment file
    *           required: true
    *           schema:
-   *            type: object
-   *            properties:
-   *              fileName:
-   *                type: string
-   *              fileContent:
-   *                type: string
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
    *       tags:
    *         - Segment
    *       produces:

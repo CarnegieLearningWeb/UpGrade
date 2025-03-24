@@ -399,28 +399,8 @@ export class SegmentService {
   ): Promise<ValidatedImportResponse[]> {
     logger.info({ message: `Validating segments` });
     const validatedSegments = await this.checkSegmentsValidity(segments);
-    const validatedImportResponses = validatedSegments.importErrors.map((seg) => {
-      if (!seg.error) {
-        return {
-          fileName: seg.fileName,
-          error: null,
-          compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
-        };
-      } else if (seg.error.includes('Please import subSegment')) {
-        return {
-          fileName: seg.fileName,
-          error: seg.error,
-          compatibilityType: IMPORT_COMPATIBILITY_TYPE.WARNING,
-        };
-      } else {
-        return {
-          fileName: seg.fileName,
-          error: seg.error,
-          compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
-        };
-      }
-    });
-    return validatedImportResponses;
+
+    return validatedSegments.importErrors as ValidatedImportResponse[];
   }
 
   public async importSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentImportError[]> {
@@ -432,7 +412,7 @@ export class SegmentService {
       logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
       await this.addSegmentDataInDB(segment, logger);
     }
-    return validatedSegments.importErrors;
+    return validatedSegments.importErrors; // HERE!
   }
 
   public async checkSegmentsValidity(fileData: SegmentFile[]): Promise<SegmentValidationObj> {
@@ -445,7 +425,11 @@ export class SegmentService {
         try {
           segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
         } catch (err) {
-          importFileErrors.push({ fileName: segment.fileName, error: (err as Error).message });
+          importFileErrors.push({
+            fileName: segment.fileName,
+            error: (err as Error).message,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          });
           return null;
         }
         segmentForValidation = plainToClass(SegmentInputValidator, segmentForValidation);
@@ -454,7 +438,11 @@ export class SegmentService {
         if (segmentJSONValidation.isSegmentValid) {
           return { filename: fileName, segment: segmentForValidation };
         } else {
-          importFileErrors.push({ fileName, error: segmentJSONValidation.missingProperty });
+          importFileErrors.push({
+            fileName,
+            error: segmentJSONValidation.missingProperty,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          });
           return null;
         }
       })
@@ -580,19 +568,25 @@ export class SegmentService {
           ' not found. Please import subSegment with same context and link in segment. '
         : errorMessage;
 
-      if (errorMessage.length > 0) {
-        importFileErrors.push({
-          fileName: segmentFile.filename,
-          error: 'Invalid Segment data: ' + errorMessage,
-        });
-        continue;
-      }
-
       allValidatedSegments.push(segment);
-      importFileErrors.push({
+
+      // attach assign error and compatibilityType to response. this will be ignored by the 'old' segments modal
+      const validationResponse: SegmentImportError = {
         fileName: segmentFile.filename,
         error: null,
-      });
+        compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
+      };
+
+      if (errorMessage.length > 0) {
+        validationResponse.error = 'Invalid Segment data: ' + errorMessage;
+        if (invalidSubSegments) {
+          validationResponse.compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
+        } else {
+          validationResponse.compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        }
+      }
+
+      importFileErrors.push(validationResponse);
     }
     return { segments: allValidatedSegments, importErrors: importFileErrors };
   }

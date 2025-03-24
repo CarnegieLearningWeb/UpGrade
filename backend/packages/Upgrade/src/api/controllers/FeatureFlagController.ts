@@ -17,9 +17,7 @@ import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatusUpdateValidator';
-import {
-  FeatureFlagPaginatedParamsValidator,
-} from './validators/FeatureFlagsPaginatedParamsValidator';
+import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { IImportError, ValidatedImportResponse, FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
