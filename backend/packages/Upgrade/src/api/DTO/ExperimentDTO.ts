@@ -465,7 +465,7 @@ abstract class BaseExperimentWithoutPayload {
   public type: EXPERIMENT_TYPE;
 }
 
-const isMoocletAssigmentAlgorithm = (experiment: ExperimentDTO) =>
+const isMoocletAssignmentAlgorithm = (experiment: ExperimentDTO) =>
   experiment.assignmentAlgorithm && SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment.assignmentAlgorithm);
 
 export class ExperimentDTO extends BaseExperimentWithoutPayload {
@@ -476,7 +476,7 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
   public conditionPayloads?: ConditionPayloadValidator[];
 
   // This should be validated when assignmentAlgorithm is not RANDOM or STRATIFIED_RANDOM_SAMPLING
-  @ValidateIf(isMoocletAssigmentAlgorithm)
+  @ValidateIf(isMoocletAssignmentAlgorithm)
   @IsDefined()
   @ValidateNested()
   @Type(() => MoocletPolicyParametersDTO, {
@@ -491,7 +491,7 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
   })
   public moocletPolicyParameters?: MoocletPolicyParametersDTO;
 
-  @ValidateIf(isMoocletAssigmentAlgorithm)
+  @ValidateIf(isMoocletAssignmentAlgorithm)
   @IsDefined()
   public rewardMetricKey?: string;
 }

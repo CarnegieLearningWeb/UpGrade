@@ -37,6 +37,9 @@ export class Segment extends BaseModel {
   })
   public type: SEGMENT_TYPE;
 
+  @Column('text', { array: true, nullable: true })
+  public tags?: string[];
+
   @OneToMany(() => IndividualForSegment, (individualForSegment) => individualForSegment.segment)
   @Type(() => IndividualForSegment)
   public individualForSegment: IndividualForSegment[];

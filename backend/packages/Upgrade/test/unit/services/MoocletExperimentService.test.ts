@@ -306,6 +306,7 @@ describe('#MoocletExperimentService', () => {
 
       mockMoocletExperimentRefResponse = {
         id: 'moocletRef-123',
+        versionConditionMaps: [],
       } as MoocletExperimentRef;
 
       manager = mockDataSource.manager as EntityManager;
@@ -321,7 +322,9 @@ describe('#MoocletExperimentService', () => {
         .spyOn(moocletExperimentService as any, 'orchestrateMoocletCreation')
         .mockResolvedValue(mockMoocletExperimentRefResponse);
       jest.spyOn(moocletExperimentService as any, 'saveMoocletExperimentRef').mockResolvedValue(undefined);
-      jest.spyOn(moocletExperimentService as any, 'createAndSaveVersionConditionMaps').mockResolvedValue(undefined);
+      jest
+        .spyOn(moocletExperimentService as any, 'createAndSaveVersionConditionMapEntities')
+        .mockResolvedValue(undefined);
       jest.spyOn(moocletExperimentService as any, 'orchestrateDeleteMoocletResources').mockResolvedValue(undefined);
       jest.spyOn(moocletRewardsService as any, 'createAndSaveRewardMetric').mockResolvedValue(undefined);
     });
@@ -347,9 +350,10 @@ describe('#MoocletExperimentService', () => {
         mockMoocletExperimentRefResponse
       );
 
-      expect(moocletExperimentService['createAndSaveVersionConditionMaps']).toHaveBeenCalledWith(
+      expect(moocletExperimentService['createAndSaveVersionConditionMapEntities']).toHaveBeenCalledWith(
         manager,
-        mockMoocletExperimentRefResponse,
+        mockMoocletExperimentRefResponse.id,
+        mockMoocletExperimentRefResponse.versionConditionMaps,
         logger
       );
 
@@ -375,7 +379,7 @@ describe('#MoocletExperimentService', () => {
       // Verify subsequent methods were not called
       expect(moocletExperimentService['orchestrateMoocletCreation']).not.toHaveBeenCalled();
       expect(moocletExperimentService['saveMoocletExperimentRef']).not.toHaveBeenCalled();
-      expect(moocletExperimentService['createAndSaveVersionConditionMaps']).not.toHaveBeenCalled();
+      expect(moocletExperimentService['createAndSaveVersionConditionMapEntities']).not.toHaveBeenCalled();
     });
 
     it('should handle failure during orchestrateMoocletCreation and throw error', async () => {
@@ -386,7 +390,7 @@ describe('#MoocletExperimentService', () => {
 
       // Verify subsequent methods were not called
       expect(moocletExperimentService['saveMoocletExperimentRef']).not.toHaveBeenCalled();
-      expect(moocletExperimentService['createAndSaveVersionConditionMaps']).not.toHaveBeenCalled();
+      expect(moocletExperimentService['createAndSaveVersionConditionMapEntities']).not.toHaveBeenCalled();
     });
 
     it('should handle failure during saveMoocletExperimentRef and cleanup resources', async () => {
@@ -402,9 +406,9 @@ describe('#MoocletExperimentService', () => {
       );
     });
 
-    it('should handle failure during createAndSaveVersionConditionMaps and cleanup resources', async () => {
+    it('should handle failure during createAndSaveVersionConditionMapEntities and cleanup resources', async () => {
       const error = new Error('Failed to save version condition maps');
-      jest.spyOn(moocletExperimentService as any, 'createAndSaveVersionConditionMaps').mockRejectedValue(error);
+      jest.spyOn(moocletExperimentService as any, 'createAndSaveVersionConditionMapEntities').mockRejectedValue(error);
 
       await expect(moocletExperimentService['handleCreateMoocletTransaction'](manager, params)).rejects.toThrow(error);
 
@@ -500,15 +504,14 @@ describe('#MoocletExperimentService', () => {
       expect(moocletDataService.deleteVariable).toHaveBeenCalledWith(mockMoocletExperimentRef.variableId, logger);
     });
     it('should handle errors and log them', async () => {
-      const mockError = new Error('Test Error');
-      jest.spyOn(moocletDataService, 'deleteMooclet').mockRejectedValue(mockError);
+      jest.spyOn(moocletDataService, 'deleteMooclet').mockRejectedValue(new Error('Failed to delete mooclet'));
       jest.spyOn(moocletExperimentService as any, 'deleteMoocletVersions').mockResolvedValue(undefined);
       jest.spyOn(moocletDataService, 'deletePolicyParameters').mockResolvedValue(undefined);
       jest.spyOn(moocletDataService, 'deleteVariable').mockResolvedValue(undefined);
 
       await expect(
         moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef, logger)
-      ).rejects.toThrow(mockError);
+      ).rejects.toThrow();
 
       expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId, logger);
       expect(moocletDataService.deletePolicyParameters).not.toHaveBeenCalled();

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { SegmentsListComponent } from './segments-list.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
@@ -8,7 +8,7 @@ xdescribe('SegmentsListComponent', () => {
   let component: SegmentsListComponent;
   let fixture: ComponentFixture<SegmentsListComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [SegmentsListComponent],
       imports: [TestingModule],

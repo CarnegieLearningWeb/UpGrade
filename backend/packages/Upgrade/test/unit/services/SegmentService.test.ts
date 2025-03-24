@@ -17,11 +17,15 @@ import {
   SegmentFile,
   SegmentInputValidator,
 } from '../../../src/api/controllers/validators/SegmentInputValidator';
+import {
+  SEGMENT_SEARCH_KEY,
+  SEGMENT_SORT_KEY,
+} from '../../../src/api/controllers/validators/SegmentPaginatedParamsValidator';
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
-import { SEGMENT_TYPE, SERVER_ERROR, EXPERIMENT_STATE, FEATURE_FLAG_STATUS } from 'upgrade_types';
+import { SEGMENT_TYPE, SERVER_ERROR, EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SORT_AS_DIRECTION } from 'upgrade_types';
 import { configureLogger } from '../../utils/logger';
 import { ExperimentSegmentExclusion } from '../../../src/api/models/ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
@@ -172,6 +176,7 @@ describe('Segment Service Testing', () => {
             save: jest.fn().mockResolvedValue(seg1),
             find: jest.fn().mockResolvedValue(segmentArr),
             delete: jest.fn(),
+            countBy: jest.fn().mockResolvedValue(segmentArr.length),
             getAllSegments: jest.fn().mockResolvedValue(segmentArr),
             deleteSegment: jest.fn().mockImplementation((seg) => {
               return seg;
@@ -184,6 +189,11 @@ describe('Segment Service Testing', () => {
               leftJoinAndSelect: jest.fn().mockReturnThis(),
               where: jest.fn().mockReturnThis(),
               andWhere: jest.fn().mockReturnThis(),
+              addSelect: jest.fn().mockReturnThis(),
+              addOrderBy: jest.fn().mockReturnThis(),
+              setParameter: jest.fn().mockReturnThis(),
+              offset: jest.fn().mockReturnThis(),
+              limit: jest.fn().mockReturnThis(),
               getMany: jest.fn().mockResolvedValue(segmentArr),
               getOne: jest.fn().mockResolvedValue(seg1),
             })),
@@ -484,5 +494,128 @@ describe('Segment Service Testing', () => {
     service.upsertSegmentInPipeline = jest.fn().mockResolvedValue(segValSegment);
     const segment = await service.addList(listVal, logger);
     expect(segment).toEqual(segValSegment);
+  });
+
+  it('should return a count of public segment', async () => {
+    const results = await service.getTotalPublicSegmentCount();
+    expect(results).toEqual(segmentArr.length);
+  });
+
+  it('should find all paginated segments with search string all', async () => {
+    const res = {
+      segmentsData: segmentArr.map((segment) => {
+        return { ...segment, status: 'Used' };
+      }),
+      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+    };
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: SEGMENT_SEARCH_KEY.ALL,
+        string: '',
+      },
+      {
+        key: SEGMENT_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(res);
+  });
+
+  it('should find all paginated segments with search string tag', async () => {
+    const res = {
+      segmentsData: segmentArr.map((segment) => {
+        return { ...segment, status: 'Used' };
+      }),
+      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+    };
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: SEGMENT_SEARCH_KEY.TAG,
+        string: '',
+      },
+      {
+        key: SEGMENT_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(res);
+  });
+
+  it('should find all paginated segmentss with search string name', async () => {
+    const res = {
+      segmentsData: segmentArr.map((segment) => {
+        return { ...segment, status: 'Used' };
+      }),
+      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+    };
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: SEGMENT_SEARCH_KEY.NAME,
+        string: '',
+      },
+      {
+        key: SEGMENT_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(res);
+  });
+
+  it('should find all paginated segments with search string context', async () => {
+    const res = {
+      segmentsData: segmentArr.map((segment) => {
+        return { ...segment, status: 'Used' };
+      }),
+      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+    };
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: SEGMENT_SEARCH_KEY.CONTEXT,
+        string: '',
+      },
+      {
+        key: SEGMENT_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(res);
+  });
+
+  it('should find all paginated segments without search params', async () => {
+    const res = {
+      segmentsData: segmentArr.map((segment) => {
+        return { ...segment, status: 'Used' };
+      }),
+      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+    };
+    const results = await service.findPaginated(1, 2, logger);
+    expect(results).toEqual(res);
   });
 });

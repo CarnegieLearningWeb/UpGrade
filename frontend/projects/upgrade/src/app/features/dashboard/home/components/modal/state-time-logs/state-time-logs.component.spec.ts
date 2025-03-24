@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TestingModule } from '../../../../../../../testing/testing.module';
 
@@ -8,7 +8,7 @@ xdescribe('StateTimeLogsComponent', () => {
   let component: StateTimeLogsComponent;
   let fixture: ComponentFixture<StateTimeLogsComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [StateTimeLogsComponent],
       imports: [TestingModule],
