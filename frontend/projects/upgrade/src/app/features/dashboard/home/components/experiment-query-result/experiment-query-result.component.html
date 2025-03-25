@@ -171,14 +171,14 @@
         <mat-row *matRowDef="let row; columns: dataColumns"></mat-row>
       </mat-table>
     </div>
-    <ng-template #noResultTemplate>
-      <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
-    </ng-template>
-    <ng-template #spinnerTemplate>
-      <div class="loading-container">
-        <mat-spinner diameter="60"></mat-spinner>
-      </div>
-    </ng-template>
     <br />
   </div>
+  <ng-template #noResultTemplate>
+    <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
+  </ng-template>
+  <ng-template #spinnerTemplate>
+    <div class="loading-container">
+      <mat-spinner diameter="60"></mat-spinner>
+    </div>
+  </ng-template>
 </div>
