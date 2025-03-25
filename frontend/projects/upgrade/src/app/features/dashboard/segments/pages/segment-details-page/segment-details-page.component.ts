@@ -23,7 +23,6 @@ import { CommonModule } from '@angular/common';
     SegmentDetailsPageContentComponent,
     SegmentsModule,
   ],
-  standalone: true,
 })
 export class SegmentDetailsPageComponent implements OnInit, OnDestroy {
   segment$: Observable<Segment>;
@@ -40,7 +39,7 @@ export class SegmentDetailsPageComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.segment$ = this.segmentsService.selectedSegment$.pipe(filter((segment) => !!segment));
+    this.segment$ = this.segmentsService.selectedSegment$;
 
     // Determine if we should use the legacy view based on segment structure
     this.shouldUseLegacyView$ = this.segment$.pipe(map((segment) => this.shouldUseLegacyUI(segment)));

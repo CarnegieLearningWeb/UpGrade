@@ -17,7 +17,6 @@ import { ParticipantListRowActionEvent } from '../../../../../../../core/feature
 
 @Component({
   selector: 'app-segment-lists-section-card',
-  standalone: true,
   imports: [
     CommonModule,
     CommonSectionCardComponent,
