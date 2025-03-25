@@ -40,26 +40,7 @@ export class SegmentDetailsPageComponent implements OnInit, OnDestroy {
     });
 
     this.segment$ = this.segmentsService.selectedSegment$;
-
-    // Determine if we should use the legacy view based on segment structure
-    this.shouldUseLegacyView$ = this.segment$.pipe(map((segment) => this.shouldUseLegacyUI(segment)));
-  }
-
-  // Logic to determine if we should use the legacy UI
-  private shouldUseLegacyUI(segment: Segment): boolean {
-    if (segment.type === SEGMENT_TYPE.PUBLIC) {
-      // Check if the segment has individuals, groups, or non-private subsegments
-      const hasIndividuals = segment.individualForSegment?.length > 0;
-      const hasGroups = segment.groupForSegment?.length > 0;
-
-      // Filter for non-private subsegments
-      const hasNonPrivateSubsegments = segment.subSegments?.some(
-        (subsegment) => subsegment.type !== SEGMENT_TYPE.PRIVATE
-      );
-
-      return hasIndividuals || hasGroups || hasNonPrivateSubsegments;
-    }
-    return false;
+    this.shouldUseLegacyView$ = this.segmentsService.shouldUseLegacyView$;
   }
 
   ngOnDestroy() {
