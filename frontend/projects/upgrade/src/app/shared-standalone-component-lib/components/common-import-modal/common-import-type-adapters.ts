@@ -2,10 +2,18 @@ import { Injectable, InjectionToken, Provider } from '@angular/core';
 import { Observable } from 'rxjs';
 import { FeatureFlagsDataService } from '../../../core/feature-flags/feature-flags.data.service';
 import { FeatureFlagsService } from '../../../core/feature-flags/feature-flags.service';
-import { ImportServiceAdapter, ValidationResult, ImportResult } from './common-import.types';
 import { SegmentsService } from '../../../core/segments/segments.service';
 import { SegmentsDataService } from '../../../core/segments/segments.data.service';
 import { SegmentFile } from '../../../core/segments/store/segments.model';
+import { IFeatureFlagFile, ValidatedImportResponse } from 'upgrade_types';
+
+export interface ImportServiceAdapter {
+  validateFiles(files: any[], params?: any): Observable<ValidatedImportResponse[]>;
+  importFiles(files: any[], params?: any): Observable<ValidatedImportResponse[]>;
+  getLoadingState(): Observable<boolean>;
+  setLoadingState(isLoading: boolean): void;
+  fetchData(reload?: boolean): void;
+}
 
 @Injectable({ providedIn: 'root' })
 export class FeatureFlagImportAdapter implements ImportServiceAdapter {
@@ -14,12 +22,12 @@ export class FeatureFlagImportAdapter implements ImportServiceAdapter {
     private featureFlagsService: FeatureFlagsService
   ) {}
 
-  validateFiles(files: any[]): Observable<ValidationResult[]> {
-    return this.featureFlagsDataService.validateFeatureFlag({ files }) as Observable<ValidationResult[]>;
+  validateFiles(files: IFeatureFlagFile[]): Observable<ValidatedImportResponse[]> {
+    return this.featureFlagsDataService.validateFeatureFlag({ files }) as Observable<ValidatedImportResponse[]>;
   }
 
-  importFiles(files: any[]): Observable<ImportResult[]> {
-    return this.featureFlagsDataService.importFeatureFlag({ files }) as Observable<ImportResult[]>;
+  importFiles(files: IFeatureFlagFile[]): Observable<ValidatedImportResponse[]> {
+    return this.featureFlagsDataService.importFeatureFlag({ files }) as Observable<ValidatedImportResponse[]>;
   }
 
   getLoadingState(): Observable<boolean> {
@@ -30,8 +38,8 @@ export class FeatureFlagImportAdapter implements ImportServiceAdapter {
     this.featureFlagsService.setIsLoadingImportFeatureFlag(isLoading);
   }
 
-  fetchData(reload = true): void {
-    this.featureFlagsService.fetchFeatureFlags(reload);
+  fetchData(): void {
+    this.featureFlagsService.fetchFeatureFlags(true);
   }
 }
 
@@ -39,12 +47,12 @@ export class FeatureFlagImportAdapter implements ImportServiceAdapter {
 export class SegmentImportAdapter implements ImportServiceAdapter {
   constructor(private segmentDataService: SegmentsDataService, private segmentService: SegmentsService) {}
 
-  validateFiles(files: SegmentFile[]): Observable<ValidationResult[]> {
-    return this.segmentDataService.validateSegmentsImport(files) as Observable<ValidationResult[]>;
+  validateFiles(files: SegmentFile[]): Observable<ValidatedImportResponse[]> {
+    return this.segmentDataService.validateSegmentsImport(files) as Observable<ValidatedImportResponse[]>;
   }
 
-  importFiles(files: SegmentFile[]): Observable<ImportResult[]> {
-    return this.segmentDataService.importSegments(files) as Observable<ImportResult[]>;
+  importFiles(files: SegmentFile[]): Observable<ValidatedImportResponse[]> {
+    return this.segmentDataService.importSegments(files) as Observable<ValidatedImportResponse[]>;
   }
 
   getLoadingState(): Observable<boolean> {
@@ -55,8 +63,8 @@ export class SegmentImportAdapter implements ImportServiceAdapter {
     this.segmentService.setIsLoadingImportSegment(isLoading);
   }
 
-  fetchData(reload = true): void {
-    this.segmentService.fetchSegments(reload);
+  fetchData(): void {
+    this.segmentService.fetchSegments(true);
   }
 }
 
@@ -67,15 +75,15 @@ export class ListImportAdapter implements ImportServiceAdapter {
     private featureFlagsService: FeatureFlagsService
   ) {}
 
-  validateFiles(files: any[], params?: any): Observable<ValidationResult[]> {
+  validateFiles(files: any[], params?: any): Observable<ValidatedImportResponse[]> {
     return this.featureFlagsDataService.validateFeatureFlagList(files, params.flagId, params.listType) as Observable<
-      ValidationResult[]
+      ValidatedImportResponse[]
     >;
   }
 
-  importFiles(files: any[], params?: any): Observable<ImportResult[]> {
+  importFiles(files: any[], params?: any): Observable<ValidatedImportResponse[]> {
     return this.featureFlagsDataService.importFeatureFlagList(files, params.flagId, params.listType) as Observable<
-      ImportResult[]
+      ValidatedImportResponse[]
     >;
   }
 
@@ -87,8 +95,8 @@ export class ListImportAdapter implements ImportServiceAdapter {
     this.featureFlagsService.setIsLoadingImportFeatureFlag(isLoading);
   }
 
-  fetchData(reload = true): void {
-    this.featureFlagsService.fetchFeatureFlags(reload);
+  fetchData(): void {
+    this.featureFlagsService.fetchFeatureFlags(true);
   }
 }
 

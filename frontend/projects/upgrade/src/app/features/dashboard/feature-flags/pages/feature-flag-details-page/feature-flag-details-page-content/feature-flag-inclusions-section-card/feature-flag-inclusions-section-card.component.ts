@@ -51,8 +51,16 @@ export class FeatureFlagInclusionsSectionCardComponent {
 
   subscriptions = new Subscription();
   menuButtonItems: IMenuButtonItem[] = [
-    { name: "feature-flags.details.inclusions-modal.import-list.menu-item.text", action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST, disabled: false },
-    { name: "feature-flags.details.inclusions-modal.export-lists.menu-item.text", action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS, disabled: false },
+    {
+      label: 'feature-flags.details.inclusions-modal.import-list.menu-item.text',
+      action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST,
+      disabled: false,
+    },
+    {
+      label: 'feature-flags.details.inclusions-modal.export-lists.menu-item.text',
+      action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS,
+      disabled: false,
+    },
   ];
 
   rowCountWithInclude$: Observable<number> = combineLatest([this.tableRowCount$, this.selectedFlag$]).pipe(

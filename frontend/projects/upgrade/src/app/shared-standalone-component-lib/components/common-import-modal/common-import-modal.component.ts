@@ -1,5 +1,4 @@
-import { BehaviorSubject, combineLatest, firstValueFrom, map, Observable, Subscription } from 'rxjs';
-import { ImportResult, ImportServiceAdapter, ValidationResult } from './common-import.types';
+import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, Inject, Injector } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -10,6 +9,8 @@ import { CommonImportContainerComponent } from '../common-import-container/commo
 import { CommonModalComponent } from '../common-modal/common-modal.component';
 import { CommonStatusIndicatorChipComponent } from '../common-status-indicator-chip/common-status-indicator-chip.component';
 import { CommonModalConfig } from '../common-modal/common-modal.types';
+import { IMPORT_COMPATIBILITY_TYPE, ValidatedImportResponse } from 'upgrade_types';
+import { ImportServiceAdapter } from './common-import-type-adapters';
 import { ImportModalParams } from '../../../shared/services/common-dialog.service';
 
 @Component({
@@ -27,17 +28,16 @@ import { ImportModalParams } from '../../../shared/services/common-dialog.servic
 })
 export class CommonImportModalComponent implements OnInit, OnDestroy {
   private importAdapter: ImportServiceAdapter;
-  private subscriptions = new Subscription();
+  subscriptions = new Subscription();
 
-  isDescriptionExpanded = false;
+  expandedRows = new Set<number>();
   displayedColumns: string[] = ['actions', 'fileName', 'compatibilityType'];
-  isImportActionBtnDisabled = new BehaviorSubject<boolean>(true);
-  fileValidationErrorDataSource = new MatTableDataSource<ValidationResult>();
-  fileValidationErrors: ValidationResult[] = [];
-  fileData: any[] = [];
+  fileValidationErrorDataSource: MatTableDataSource<ValidatedImportResponse>;
+  fileData: { fileName: string; fileContent: string | ArrayBuffer }[] = [];
   uploadedFileCount = new BehaviorSubject<number>(0);
   isLoadingImport$: Observable<boolean>;
   isImportActionBtnDisabled$: Observable<boolean>;
+  validationResponse$ = new BehaviorSubject<ValidatedImportResponse[]>([]);
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public config: CommonModalConfig<ImportModalParams>,
@@ -46,30 +46,28 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
     public dialogRef: MatDialogRef<CommonImportModalComponent>
   ) {
     this.importAdapter = this.injector.get(this.config.params.importTypeAdapterToken);
-    console.log('>>> config', config);
   }
 
   ngOnInit() {
     this.isLoadingImport$ = this.importAdapter.getLoadingState();
 
-    this.isImportActionBtnDisabled$ = combineLatest([this.uploadedFileCount, this.isLoadingImport$]).pipe(
-      map(([uploadedCount, isLoading]) => isLoading || uploadedCount === 0)
+    this.isImportActionBtnDisabled$ = combineLatest([this.validationResponse$, this.isLoadingImport$]).pipe(
+      map(([validationResponse, isLoading]) => {
+        return (
+          isLoading ||
+          validationResponse.length === 0 ||
+          validationResponse.some((data) => data.compatibilityType === IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE)
+        );
+      })
     );
-
-    this.subscriptions.add(this.isImportActionBtnDisabled$.subscribe());
   }
 
-  async handleFilesSelected(event: File[]) {
-    if (event.length > 0) {
-      this.isImportActionBtnDisabled.next(false);
-      this.importAdapter.setLoadingState(true);
-    }
-
-    this.uploadedFileCount.next(event.length);
-    this.fileValidationErrors = [];
-    this.fileData = [];
-
+  async handleFilesSelected(event: []) {
     if (event.length === 0) return;
+
+    this.importAdapter.setLoadingState(true);
+    this.uploadedFileCount.next(event.length);
+    this.validationResponse$.next([]);
 
     const filesArray = Array.from(event) as File[];
     await Promise.all(
@@ -86,56 +84,45 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
       })
     );
 
-    await this.checkValidation(this.fileData);
+    this.checkValidation(this.fileData); // this should be an action
   }
 
-  async checkValidation(files: any[]) {
-    try {
-      const validationErrors = await firstValueFrom(this.importAdapter.validateFiles(files, this.config.params));
+  checkValidation(files: any[]) {
+    const validatedFilesSubscription = this.importAdapter
+      .validateFiles(files, this.config.params)
+      .subscribe((validationResponse) => {
+        this.importAdapter.setLoadingState(false);
+        this.validationResponse$.next(validationResponse);
+        this.fileValidationErrorDataSource = new MatTableDataSource(validationResponse);
+      });
 
-      this.fileValidationErrors = validationErrors.filter((data) => data.compatibilityType != null) || [];
-      this.fileValidationErrorDataSource.data = this.fileValidationErrors;
-      this.importAdapter.setLoadingState(false);
+    this.subscriptions.add(validatedFilesSubscription);
+  }
 
-      if (this.fileValidationErrors.length > 0) {
-        this.fileValidationErrors.forEach((error) => {
-          if (error.compatibilityType === 'incompatible') {
-            this.isImportActionBtnDisabled.next(true);
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Error during validation:', error);
-      this.importAdapter.setLoadingState(false);
+  importFiles() {
+    const importSubscription = this.importAdapter
+      .importFiles(this.fileData, this.config.params)
+      .subscribe((importResult) => {
+        this.showNotification(importResult);
+      });
+
+    this.subscriptions.add(importSubscription);
+  }
+
+  toggleExpand(rowIndex: number) {
+    if (this.expandedRows.has(rowIndex)) {
+      this.expandedRows.delete(rowIndex);
+    } else {
+      this.expandedRows.add(rowIndex);
     }
   }
 
-  toggleExpand() {
-    this.isDescriptionExpanded = !this.isDescriptionExpanded;
-  }
-
-  async importFiles() {
-    try {
-      this.isImportActionBtnDisabled.next(true);
-      const importResult = await firstValueFrom(this.importAdapter.importFiles(this.fileData, this.config.params));
-
-      this.showNotification(importResult);
-      this.isImportActionBtnDisabled.next(false);
-      this.uploadedFileCount.next(0);
-      this.fileData = [];
-    } catch (error) {
-      console.error('Error during import:', error);
-      this.isImportActionBtnDisabled.next(false);
-    }
-  }
-
-  showNotification(importResult: ImportResult[]) {
+  showNotification(importResult: ValidatedImportResponse[]) {
     const importSuccessFiles = importResult.filter((data) => data.error == null).map((data) => data.fileName);
 
     let importSuccessMsg = '';
     if (importSuccessFiles.length > 0) {
       importSuccessMsg = `Successfully imported ${importSuccessFiles.length} file/s: ${importSuccessFiles.join(', ')}`;
-      this.closeModal();
       if (this.importAdapter.fetchData) {
         this.importAdapter.fetchData(true);
       }
@@ -147,6 +134,8 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
     importFailedFiles.forEach((data) => {
       this.notificationService.showError(`Failed to import ${data.fileName}: ${data.error}`);
     });
+
+    this.closeModal();
   }
 
   closeModal() {

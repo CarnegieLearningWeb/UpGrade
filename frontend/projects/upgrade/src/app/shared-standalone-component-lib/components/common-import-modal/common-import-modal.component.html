@@ -35,12 +35,12 @@
             <!-- Actions Column -->
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell class="ft-14-500 dense-2" *matCellDef="let element">
+              <td mat-cell class="ft-14-500 dense-2" *matCellDef="let element; let rowIndex = dataIndex">
                 <button
                   mat-icon-button
                   [ngClass]="{ 'expand-button--disabled': element.compatibilityType === 'compatible' }"
                   [disabled]="element.compatibilityType === 'compatible'"
-                  (click)="toggleExpand()"
+                  (click)="toggleExpand(rowIndex)"
                 >
                   <mat-icon>{{
                     element.compatibilityType === 'compatible' || !isDescriptionExpanded
@@ -69,8 +69,8 @@
 
             <!-- Expanded Detail Row -->
             <ng-container matColumnDef="expandedDetail">
-              <td mat-cell class="expandable-row" *matCellDef="let element">
-                <div class="ft-14-500" *ngIf="isDescriptionExpanded" class="compatibility-details-container">
+              <td mat-cell class="expandable-row" *matCellDef="let element; let rowIndex = dataIndex">
+                <div class="ft-14-500" *ngIf="expandedRows.has(rowIndex)" class="compatibility-details-container">
                   <div *ngIf="element.compatibilityType === 'incompatible'">
                     <span *ngIf="config.params.incompatibleMessageKey">
                       {{ config.params.incompatibleMessageKey | translate }}

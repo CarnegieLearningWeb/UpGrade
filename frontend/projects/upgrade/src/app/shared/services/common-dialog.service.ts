@@ -2,7 +2,6 @@ import { Injectable, InjectionToken } from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
-import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
@@ -25,24 +24,20 @@ import {
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 import {
-  ImportServiceAdapter,
-  ImportType,
-} from '../../shared-standalone-component-lib/components/common-import-modal/common-import.types';
-import {
   FEATURE_FLAG_IMPORT_SERVICE,
+  ImportServiceAdapter,
   LIST_IMPORT_SERVICE,
   SEGMENT_IMPORT_SERVICE,
 } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
 import { CommonImportModalComponent } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-modal.component';
 
 export interface ImportModalParams {
-  importType: ImportType;
-  importTypeAdapterToken: InjectionToken<ImportServiceAdapter>; // FIX
-  messageKey?: string; // Translation key for import message
-  warningMessageKey?: string; // Translation key for warning message
-  incompatibleMessageKey?: string; // Translation key for incompatible message
-  listType?: FEATURE_FLAG_LIST_FILTER_MODE; // FIX
-  flagId?: string; // FIX
+  importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
+  messageKey: string; // Translation key for import message
+  warningMessageKey: string; // Translation key for warning message
+  incompatibleMessageKey: string; // Translation key for incompatible message
+  flagId?: string; // for feature flag list import
+  listType?: FEATURE_FLAG_LIST_FILTER_MODE; // for feature flag list import
 }
 
 @Injectable({
@@ -379,7 +374,6 @@ export class DialogService {
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        importType: ImportType.SEGMENT,
         importTypeAdapterToken: SEGMENT_IMPORT_SERVICE,
         messageKey: 'segments.import-segment.message.text',
         warningMessageKey: 'segments.import-segment-modal.compatibility-description.warning.text',
@@ -391,12 +385,11 @@ export class DialogService {
 
   openImportFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: "feature-flags.import-flag-modal.title.text",
+      title: 'feature-flags.import-flag-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        importType: ImportType.FEATURE_FLAG,
         importTypeAdapterToken: FEATURE_FLAG_IMPORT_SERVICE,
         messageKey: 'feature-flags.import-feature-flag.message.text',
         warningMessageKey: 'feature-flags.import-flag-modal.compatibility-description.warning.text',
@@ -408,12 +401,11 @@ export class DialogService {
 
   openImportFeatureFlagExcludeListModal(flagId: string) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: "feature-flags.import-flag-list-modal.title.text",
+      title: 'feature-flags.import-flag-list-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        importType: ImportType.LIST,
         importTypeAdapterToken: LIST_IMPORT_SERVICE,
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
@@ -427,12 +419,11 @@ export class DialogService {
 
   openImportFeatureFlagIncludeListModal(flagId: string) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: "feature-flags.import-flag-list-modal.title.text",
+      title: 'feature-flags.import-flag-list-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        importType: ImportType.LIST,
         importTypeAdapterToken: LIST_IMPORT_SERVICE,
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',

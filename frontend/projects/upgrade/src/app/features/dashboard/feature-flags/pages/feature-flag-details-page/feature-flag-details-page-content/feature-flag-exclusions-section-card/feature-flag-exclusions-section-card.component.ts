@@ -47,8 +47,16 @@ export class FeatureFlagExclusionsSectionCardComponent {
   selectedFlag$ = this.featureFlagService.selectedFeatureFlag$;
 
   menuButtonItems: IMenuButtonItem[] = [
-    { name: "feature-flags.details.exclusions-modal.import-list.menu-item.text", action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_EXCLUDE_LIST, disabled: false },
-    { name: "feature-flags.details.exclusions-modal.export-lists.menu-item.text", action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS, disabled: false },
+    {
+      label: 'feature-flags.details.exclusions-modal.import-list.menu-item.text',
+      action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_EXCLUDE_LIST,
+      disabled: false,
+    },
+    {
+      label: 'feature-flags.details.exclusions-modal.export-lists.menu-item.text',
+      action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS,
+      disabled: false,
+    },
   ];
 
   constructor(

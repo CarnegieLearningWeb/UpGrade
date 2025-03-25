@@ -66,12 +66,12 @@ export class FeatureFlagRootSectionCardComponent {
 
   menuButtonItems: IMenuButtonItem[] = [
     {
-      name: this.translateService.instant('feature-flags.import-feature-flag.text'),
+      label: 'feature-flags.import-feature-flag.text',
       action: FEATURE_FLAG_BUTTON_ACTION.IMPORT,
       disabled: false,
     },
     {
-      name: this.translateService.instant('feature-flags.export-all-feature-flags.text'),
+      label: 'feature-flags.export-all-feature-flags.text',
       action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL,
       disabled: true,
     },

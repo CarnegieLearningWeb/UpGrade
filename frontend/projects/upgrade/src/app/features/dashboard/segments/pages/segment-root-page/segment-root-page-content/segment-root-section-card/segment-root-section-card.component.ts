@@ -8,7 +8,7 @@ import { SegmentsService } from '../../../../../../../core/segments/segments.ser
 import { AsyncPipe, NgIf, TitleCasePipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SegmentRootSectionCardTableComponent } from './segment-root-section-card-table/segment-root-section-card-table.component';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { SEGMENT_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
@@ -63,12 +63,12 @@ export class SegmentRootSectionCardComponent {
 
   menuButtonItems: IMenuButtonItem[] = [
     {
-      name: this.translateService.instant('segments.import-segment.text'),
+      label: 'segments.import-segment.text',
       action: SEGMENTS_BUTTON_ACTION.IMPORT,
       disabled: false,
     },
     {
-      name: this.translateService.instant('segments.export-all-segments.text'),
+      label: 'segments.export-all-segments.text',
       action: SEGMENTS_BUTTON_ACTION.EXPORT_ALL,
       disabled: true,
     },
@@ -76,7 +76,6 @@ export class SegmentRootSectionCardComponent {
 
   constructor(
     private segmentsService: SegmentsService,
-    private translateService: TranslateService,
     private dialogService: DialogService,
     private tableHelpersService: CommonTableHelpersService,
     private authService: AuthService
