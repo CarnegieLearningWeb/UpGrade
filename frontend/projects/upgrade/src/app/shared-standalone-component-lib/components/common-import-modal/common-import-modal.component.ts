@@ -13,6 +13,69 @@ import { IMPORT_COMPATIBILITY_TYPE, ValidatedImportResponse } from 'upgrade_type
 import { ImportServiceAdapter } from './common-import-type-adapters';
 import { ImportModalParams } from '../../../shared/services/common-dialog.service';
 
+/**
+ * CommonImportModalComponent
+ *
+ * A reusable modal component for handling file imports of various types.
+ * This component is composed with CommonModalComponent to provide a UI for uploading,
+ * validating, and importing files.
+ *
+ * @description
+ * This component is designed to be type-agnostic for imports by using an adapter pattern.
+ * It requires an implementation of ImportServiceAdapter to be provided via dependency injection.
+ * This allows the component to work with different import types without changing its core logic.
+ *
+ * The component handles:
+ * - File selection and upload
+ * - File validation
+ * - Displaying validation results
+ * - Importing validated files
+ * - Displaying success/error notifications
+ *
+ * @usage
+ * This component is launched through CommonDialogService with ImportModalParams.
+ * The service injects the appropriate ImportServiceAdapter based on the import type.
+ *
+ * Example:
+ * ```typescript
+ * this.dialogService.openImportModal({
+ *   importTypeAdapterToken: SOME_IMPORT_ADAPTER_TOKEN,
+ *   messageKey: 'import.message',
+ *   warningMessageKey: 'import.warning',
+ *   incompatibleMessageKey: 'import.incompatible'
+ * });
+ * ```
+ *
+ * @interface ImportServiceAdapter
+ * The adapter interface that must be implemented by services:
+ * ```typescript
+ * export interface ImportServiceAdapter {
+ *   validateFiles(files: any[], params?: any): Observable<ValidatedImportResponse[]>;
+ *   importFiles(files: any[], params?: any): Observable<ValidatedImportResponse[]>;
+ *   getLoadingState(): Observable<boolean>;
+ *   setLoadingState(isLoading: boolean): void;
+ *   fetchData(): void;
+ * }
+ * ```
+ *
+ * @interface ImportModalParams
+ * The parameters needed to configure the import modal:
+ * ```typescript
+ * interface ImportModalParams {
+ *   importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
+ *   messageKey: string;              // Translation key for import message
+ *   warningMessageKey: string;       // Translation key for warning message
+ *   incompatibleMessageKey: string;  // Translation key for incompatible message
+ *   flagId?: string;                 // Optional: for feature flag list import
+ *   listType?: FEATURE_FLAG_LIST_FILTER_MODE; // Optional: for feature flag list import
+ * }
+ * ```
+ *
+ * @see CommonModalComponent
+ * @see ImportServiceAdapter
+ * @see CommonDialogService
+ */
+
 @Component({
   selector: 'app-common-import-modal',
   templateUrl: './common-import-modal.component.html',
@@ -84,7 +147,7 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
       })
     );
 
-    this.checkValidation(this.fileData); // this should be an action
+    this.checkValidation(this.fileData);
   }
 
   checkValidation(files: any[]) {
