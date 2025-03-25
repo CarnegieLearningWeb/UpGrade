@@ -39,6 +39,7 @@ export {
   FEATURE_FLAG_PARTICIPANT_LIST_KEY,
   STATUS_INDICATOR_CHIP_TYPE,
   FILE_TYPE,
+  IMPORT_COMPATIBILITY_TYPE,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
@@ -76,6 +77,7 @@ export {
   FeatureFlagUpdatedData,
   FeatureFlagStateChangedData,
   FeatureFlagDeletedData,
+  ValidatedImportResponse,
 } from './Experiment/interfaces';
 export {
   MoocletPolicyParametersDTO,

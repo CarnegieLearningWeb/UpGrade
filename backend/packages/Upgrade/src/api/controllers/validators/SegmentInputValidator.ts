@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
-import { SEGMENT_TYPE } from 'upgrade_types';
+import { SEGMENT_TYPE, IMPORT_COMPATIBILITY_TYPE } from 'upgrade_types';
 
 export class Group {
   @IsNotEmpty()
@@ -81,6 +81,10 @@ export class SegmentImportError {
 
   @IsString()
   error: string;
+
+  @IsOptional()
+  @IsEnum(IMPORT_COMPATIBILITY_TYPE)
+  compatibilityType?: IMPORT_COMPATIBILITY_TYPE;
 }
 
 export class SegmentFile {
