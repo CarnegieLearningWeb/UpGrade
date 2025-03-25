@@ -15,8 +15,6 @@ import {
   IFeatureFlagSearchParams,
   IFeatureFlagSortParams,
   FLAG_SEARCH_KEY,
-  ValidatedFeatureFlagsError,
-  FF_COMPATIBILITY_TYPE,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import {
@@ -35,6 +33,8 @@ import {
   FEATURE_FLAG_LIST_OPERATION,
   ListOperationsData,
   CACHE_PREFIX,
+  ValidatedImportResponse,
+  IMPORT_COMPATIBILITY_TYPE,
 } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
@@ -874,21 +874,21 @@ export class FeatureFlagService {
 
     const fileStatusArray = featureFlagFiles.map((file) => {
       const validation = validatedFlags.find((error) => error.fileName === file.fileName);
-      const isCompatible = validation && validation.compatibilityType !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      const isCompatible = validation && validation.compatibilityType !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
 
       return {
         fileName: file.fileName,
-        error: isCompatible ? validation.compatibilityType : FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+        error: isCompatible ? validation.compatibilityType : IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
       };
     });
 
     const validFiles: FeatureFlagImportDataValidation[] = await Promise.all(
       fileStatusArray
-        .filter((fileStatus) => fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE)
+        .filter((fileStatus) => fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE)
         .map(async (fileStatus) => {
           const featureFlagFile = featureFlagFiles.find((file) => file.fileName === fileStatus.fileName);
 
-          if (fileStatus.error === FF_COMPATIBILITY_TYPE.WARNING) {
+          if (fileStatus.error === IMPORT_COMPATIBILITY_TYPE.WARNING) {
             const flag = JSON.parse(featureFlagFile.fileContent as string);
             const segmentIdsSet = new Set([
               ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
@@ -1011,7 +1011,7 @@ export class FeatureFlagService {
     logger.info({ message: 'Imported feature flags', details: createdFlags });
 
     fileStatusArray.forEach((fileStatus) => {
-      if (fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE) {
+      if (fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE) {
         fileStatus.error = null;
       }
     });
@@ -1021,7 +1021,7 @@ export class FeatureFlagService {
   public async validateImportFeatureFlags(
     featureFlagFiles: IFeatureFlagFile[],
     logger: UpgradeLogger
-  ): Promise<ValidatedFeatureFlagsError[]> {
+  ): Promise<ValidatedImportResponse[]> {
     logger.info({ message: 'Validate feature flags' });
 
     const parsedFeatureFlags = featureFlagFiles.map((featureFlagFile) => {
@@ -1051,7 +1051,7 @@ export class FeatureFlagService {
         if (!parsedFile.content) {
           return {
             fileName: parsedFile.fileName,
-            compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
 
@@ -1059,7 +1059,7 @@ export class FeatureFlagService {
         if (seenKeys.includes(featureFlag.key)) {
           return {
             fileName: parsedFile.fileName,
-            compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
         seenKeys.push(featureFlag.key);
@@ -1087,25 +1087,25 @@ export class FeatureFlagService {
     flag: FeatureFlagImportDataValidation,
     existingFeatureFlags: FeatureFlag[]
   ) {
-    let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
+    let compatibilityType = IMPORT_COMPATIBILITY_TYPE.COMPATIBLE;
 
     flag = plainToClass(FeatureFlagImportDataValidation, flag);
     await validate(flag, { forbidUnknownValues: true, stopAtFirstError: true }).then((errors) => {
       if (errors.length > 0) {
-        compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
       }
     });
     if (!(flag instanceof FeatureFlagImportDataValidation)) {
-      compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
     }
 
-    if (compatibilityType === FF_COMPATIBILITY_TYPE.COMPATIBLE) {
+    if (compatibilityType === IMPORT_COMPATIBILITY_TYPE.COMPATIBLE) {
       const keyExists = existingFeatureFlags?.find(
         (existingFlag) => existingFlag.key === flag.key && existingFlag.context[0] === flag.context[0]
       );
 
       if (keyExists) {
-        compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
       } else {
         const segmentIdsSet = new Set([
           ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
@@ -1120,12 +1120,12 @@ export class FeatureFlagService {
         const segments = await this.segmentService.getSegmentByIds(segmentIds);
 
         if (segmentIds.length !== segments.length) {
-          compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
+          compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
         }
 
         segments.forEach((segment) => {
           if (segment == undefined || segment.context !== flag.context[0]) {
-            compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
+            compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
           }
         });
       }
@@ -1149,16 +1149,16 @@ export class FeatureFlagService {
 
     const fileStatusArray = featureFlagListFiles.map((file) => {
       const validation = validatedFlags.find((error) => error.fileName === file.fileName);
-      const isCompatible = validation && validation.compatibilityType !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      const isCompatible = validation && validation.compatibilityType !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
 
       return {
         fileName: file.fileName,
-        error: isCompatible ? validation.compatibilityType : FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+        error: isCompatible ? validation.compatibilityType : IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
       };
     });
 
     const validFiles: ImportFeatureFlagListValidator[] = fileStatusArray
-      .filter((fileStatus) => fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE)
+      .filter((fileStatus) => fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE)
       .map((fileStatus) => {
         const featureFlagListFile = featureFlagListFiles.find((file) => file.fileName === fileStatus.fileName);
         return JSON.parse(featureFlagListFile.fileContent as string);
@@ -1184,7 +1184,7 @@ export class FeatureFlagService {
     logger.info({ message: 'Imported feature flags', details: createdLists });
 
     fileStatusArray.forEach((fileStatus) => {
-      if (fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE) {
+      if (fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE) {
         fileStatus.error = null;
       }
     });
@@ -1195,7 +1195,7 @@ export class FeatureFlagService {
     featureFlagFiles: IFeatureFlagFile[],
     featureFlagId: string,
     logger: UpgradeLogger
-  ): Promise<ValidatedFeatureFlagsError[]> {
+  ): Promise<ValidatedImportResponse[]> {
     logger.info({ message: 'Validate feature flag lists' });
 
     const parsedFeatureFlagLists = featureFlagFiles.map((featureFlagFile) => {
@@ -1220,7 +1220,7 @@ export class FeatureFlagService {
         if (!featureFlag || !parsedFile.content) {
           return {
             fileName: parsedFile.fileName,
-            compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
 
@@ -1246,46 +1246,46 @@ export class FeatureFlagService {
     flag: FeatureFlag,
     list: ImportFeatureFlagListValidator
   ) {
-    let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
+    let compatibilityType = IMPORT_COMPATIBILITY_TYPE.COMPATIBLE;
 
     list = plainToClass(ImportFeatureFlagListValidator, list);
     await validate(list, { forbidUnknownValues: true, stopAtFirstError: true }).then((errors) => {
       if (errors.length > 0) {
-        compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
       }
     });
 
     if (!(list instanceof ImportFeatureFlagListValidator)) {
-      compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
     }
 
     if (list?.segment?.context !== flag.context[0]) {
-      compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
     }
 
-    if (compatibilityType === FF_COMPATIBILITY_TYPE.COMPATIBLE) {
+    if (compatibilityType === IMPORT_COMPATIBILITY_TYPE.COMPATIBLE) {
       if (list.listType === 'Segment') {
         const segments = await this.segmentService.getSegmentByIds(list.segment.subSegmentIds);
 
         if (!segments.length) {
-          compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+          compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
         }
 
         segments?.forEach((segment) => {
           if (!segment || segment.context !== flag.context[0]) {
-            compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+            compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
           }
         });
       } else if (list.listType !== 'Individual' && list.segment.groups.length) {
         const contextMetaData = env.initialization.contextMetadata;
         const groupTypes = contextMetaData[flag.context[0]].GROUP_TYPES;
         if (!groupTypes.includes(list.listType)) {
-          compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+          compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
         }
 
         list.segment.groups.forEach((group) => {
           if (group.type !== list.listType) {
-            compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+            compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
           }
         });
       }

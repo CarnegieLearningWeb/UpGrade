@@ -13,12 +13,12 @@ import { Container } from '../../../src/typeorm-typedi-extensions';
 import {
   FLAG_SEARCH_KEY,
   FLAG_SORT_KEY,
-  FF_COMPATIBILITY_TYPE,
 } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import {
   FEATURE_FLAG_LIST_FILTER_MODE,
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
+  IMPORT_COMPATIBILITY_TYPE,
   SEGMENT_TYPE,
   SORT_AS_DIRECTION,
 } from 'upgrade_types';
@@ -480,7 +480,7 @@ describe('Feature Flag Service Testing', () => {
     expect(result).toEqual([
       {
         fileName: 'import.json',
-        error: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+        error: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
       },
     ]);
   });
@@ -495,7 +495,7 @@ describe('Feature Flag Service Testing', () => {
     expect(result).toEqual([
       {
         fileName: 'import.json',
-        error: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+        error: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
       },
     ]);
   });

@@ -16,6 +16,7 @@ import { SegmentPaginatedParamsValidator } from './validators/SegmentPaginatedPa
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { NotFoundException } from '@nestjs/common/exceptions';
+import { ValidatedImportResponse } from 'upgrade_types';
 
 export interface getSegmentData {
   segmentsData: SegmentWithStatus[];
@@ -586,16 +587,18 @@ export class SegmentController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: params
+   *           name: segments
    *           description: Segment file
    *           required: true
    *           schema:
-   *            type: object
-   *            properties:
-   *              fileName:
-   *                type: string
-   *              fileContent:
-   *                type: string
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
    *       tags:
    *         - Segment
    *       produces:
@@ -612,6 +615,45 @@ export class SegmentController {
     @Req() request: AppRequest
   ): Promise<SegmentImportError[]> {
     return this.segmentService.validateSegments(segments, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /segments/import/validation:
+   *    post:
+   *       description: Validating Segments with response for Common Import Modal
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: segments
+   *           description: Segment file
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
+   *       tags:
+   *         - Segment
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: An array of ValidatedImportResponse
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+  @Post('/import/validation')
+  public validateImportedSegments(
+    @Body({ validate: true }) segments: SegmentFile[],
+    @Req() request: AppRequest
+  ): Promise<ValidatedImportResponse[]> {
+    return this.segmentService.validateSegmentsForCommonImportModal(segments, request.logger);
   }
 
   /**
