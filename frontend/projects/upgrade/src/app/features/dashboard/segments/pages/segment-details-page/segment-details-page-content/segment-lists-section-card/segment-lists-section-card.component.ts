@@ -14,6 +14,7 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { ParticipantListRowActionEvent } from '../../../../../../../core/feature-flags/store/feature-flags.model';
+import { SegmentListsTableComponent } from './segment-lists-table/segment-lists-table.component';
 
 @Component({
   selector: 'app-segment-lists-section-card',
@@ -22,6 +23,7 @@ import { ParticipantListRowActionEvent } from '../../../../../../../core/feature
     CommonSectionCardComponent,
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
+    SegmentListsTableComponent,
     TranslateModule,
   ],
   templateUrl: './segment-lists-section-card.component.html',
