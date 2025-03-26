@@ -477,6 +477,7 @@
   "segments.details.lists.card.title.text": "Lists",
   "segments.details.lists.card.subtitle.text": "Define lists for this segment.",
   "segments.details.add-list.button.text": "Add List",
+  "segments.details.lists.card.no-data-row.text": "No lists defined for this segment. Add a new list.",
   "segments.details.used-by.card.title.text": "Used By",
   "segments.details.used-by.card.subtitle.text": "View the list of experiments and feature flags that currently use this segment.",
   "segments.segment-experiment-list-title.text": "Used by ({{ numberOfUses }}) ",
