@@ -8,7 +8,6 @@ import {
   SEGMENT_SORT_KEY,
   FEATURE_FLAG_LIST_FILTER_MODE,
 } from 'upgrade_types';
-import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
 export { SEGMENT_STATUS };
 
 export enum NewSegmentDialogEvents {
@@ -107,6 +106,7 @@ export interface Segment {
   individualForSegment: IndividualForSegment[];
   groupForSegment: GroupForSegment[];
   subSegments: Segment[];
+  listType?: MemberTypes | string;
   type: SEGMENT_TYPE;
   status: SEGMENT_STATUS;
 }
@@ -123,6 +123,12 @@ export interface SegmentInput {
   groups: Group[];
   subSegmentIds: string[];
   type: SEGMENT_TYPE;
+}
+
+export interface ParticipantListTableRow {
+  listType: MemberTypes | string;
+  segment: Segment;
+  enabled?: boolean;
 }
 
 export enum SEGMENT_DETAILS_PAGE_ACTIONS {

@@ -1,10 +1,11 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { LIST_OPTION_TYPE, SegmentState } from './segments.model';
+import { LIST_OPTION_TYPE, SegmentState, ParticipantListTableRow, Segment } from './segments.model';
 import { selectAll } from './segments.reducer';
 import { selectRouterState } from '../../core.state';
 import { CommonTextHelpersService } from '../../../shared/services/common-text-helpers.service';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
 import { selectSelectedFeatureFlag } from '../../feature-flags/store/feature-flags.selectors';
+import { SEGMENT_TYPE } from 'upgrade_types';
 
 export const selectSegmentsState = createFeatureSelector<SegmentState>('segments');
 
@@ -86,3 +87,35 @@ export const selectPrivateSegmentListTypeOptions = createSelector(
     return listOptionTypes;
   }
 );
+
+export const selectSegmentLists = createSelector(
+  selectSelectedSegment,
+  (segment: Segment): ParticipantListTableRow[] => {
+    if (!segment?.subSegments?.length) {
+      return [];
+    }
+    return segment.subSegments
+      .filter((subSegment) => subSegment)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      .map((subSegment) => ({
+        segment: subSegment,
+        listType: subSegment.listType,
+      }));
+  }
+);
+
+export const selectShouldUseLegacyUI = createSelector(selectSelectedSegment, (segment: Segment): boolean => {
+  if (segment?.type === SEGMENT_TYPE.PUBLIC) {
+    // Check if the segment has individuals, groups, or non-private subsegments
+    const hasIndividuals = segment.individualForSegment?.length > 0;
+    const hasGroups = segment.groupForSegment?.length > 0;
+
+    // Filter for non-private subsegments
+    const hasNonPrivateSubsegments = segment.subSegments?.some(
+      (subsegment) => subsegment.type !== SEGMENT_TYPE.PRIVATE
+    );
+
+    return hasIndividuals || hasGroups || hasNonPrivateSubsegments;
+  }
+  return false;
+});

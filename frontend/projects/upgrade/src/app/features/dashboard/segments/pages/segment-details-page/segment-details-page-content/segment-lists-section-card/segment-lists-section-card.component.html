@@ -1,1 +1,31 @@
-<p>segment-lists-section-card works!</p>
+<app-common-section-card *ngIf="selectedSegment$ | async as segment">
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'segments.details.lists.card.title.text' | translate"
+    [subtitle]="'segments.details.lists.card.subtitle.text' | translate"
+    [tableRowCount]="tableRowCount$ | async"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="(permissions$ | async)?.segments.update"
+    [primaryButtonText]="'segments.details.add-list.button.text' | translate"
+    [showMenuButton]="(permissions$ | async)?.segments.update"
+    [menuButtonItems]="menuButtonItems"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (primaryButtonClick)="onAddListClick(segment.context, segment.id)"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, segment)"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-segment-lists-table
+    content
+    *ngIf="isSectionCardExpanded"
+    [actionsDisabled]="!(permissions$ | async)?.segments.update"
+    (rowAction)="onRowAction($event, segment.id)"
+  ></app-segment-lists-table>
+</app-common-section-card>
