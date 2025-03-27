@@ -1,1 +1,14 @@
-<p>segment-details-page works!</p>
+<ng-container *ngIf="segment$ | async as segment">
+  <ng-container *ngIf="shouldUseLegacyView$ | async; else newView">
+    <!-- Legacy View -->
+    <view-segment></view-segment>
+  </ng-container>
+
+  <ng-template #newView>
+    <!-- New View -->
+    <app-common-page>
+      <app-segment-details-page-header header></app-segment-details-page-header>
+      <app-segment-details-page-content content></app-segment-details-page-content>
+    </app-common-page>
+  </ng-template>
+</ng-container>

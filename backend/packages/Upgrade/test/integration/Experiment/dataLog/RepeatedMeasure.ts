@@ -84,6 +84,7 @@ export default async function RepeatedMeasure(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
@@ -98,6 +99,7 @@ export default async function RepeatedMeasure(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
@@ -112,6 +114,7 @@ export default async function RepeatedMeasure(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
@@ -126,6 +129,7 @@ export default async function RepeatedMeasure(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);

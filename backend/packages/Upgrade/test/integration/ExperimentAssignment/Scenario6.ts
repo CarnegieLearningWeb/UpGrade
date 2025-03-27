@@ -2,7 +2,12 @@ import { Container } from 'typedi';
 import { groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'upgrade_types';
-import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment, updateExcludeIfReachedFlag } from '../utils';
+import {
+  getAllExperimentCondition,
+  markExperimentPoint,
+  checkDeletedExperiment,
+  updateExcludeIfReachedFlag,
+} from '../utils';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
@@ -10,7 +15,7 @@ import { experimentUsers } from '../mockData/experimentUsers/index';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsNull
+  checkExperimentAssignedIsNull,
 } from '../utils/index';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
@@ -95,6 +100,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentObject.id,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
@@ -166,6 +172,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
@@ -196,6 +203,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
@@ -210,6 +218,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
@@ -224,6 +233,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
@@ -255,6 +265,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
@@ -269,6 +280,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
@@ -283,6 +295,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
@@ -297,6 +310,7 @@ export default async function testCase(): Promise<void> {
     experimentName,
     experimentPoint,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);

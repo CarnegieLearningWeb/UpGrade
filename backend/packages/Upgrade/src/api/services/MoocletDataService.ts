@@ -104,6 +104,37 @@ export class MoocletDataService {
     return response;
   }
 
+  public async getVersion(versionId: number, logger: UpgradeLogger): Promise<MoocletVersionResponseDetails> {
+    const endpoint = `/version/${versionId}`;
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'GET',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
+
+    return response;
+  }
+
+  public async updateVersion(
+    versionId: number,
+    requestBody: MoocletVersionRequestBody,
+    logger: UpgradeLogger
+  ): Promise<MoocletVersionResponseDetails> {
+    const endpoint = `/version/${versionId}`;
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'PUT',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+      body: requestBody,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
+
+    return response;
+  }
+
   public async deleteVersion(versionId: number, logger: UpgradeLogger): Promise<any> {
     const endpoint = `/version/${versionId}`;
     const requestParams: MoocletProxyRequestParams = {
@@ -151,6 +182,24 @@ export class MoocletDataService {
     return response;
   }
 
+  public async updatePolicyParameters(
+    policyParametersId: number,
+    policyParameters: MoocletPolicyParametersRequestBody,
+    logger: UpgradeLogger
+  ): Promise<MoocletPolicyParametersResponseDetails> {
+    const endpoint = `/policyparameters/${policyParametersId}`;
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'PUT',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+      body: policyParameters,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
+
+    return response;
+  }
+
   public async deletePolicyParameters(policyParametersId: number, logger: UpgradeLogger): Promise<any> {
     const endpoint = `/policyparameters/${policyParametersId}`;
     const requestParams: MoocletProxyRequestParams = {
@@ -190,6 +239,37 @@ export class MoocletDataService {
 
     const requestParams: MoocletProxyRequestParams = {
       method: 'POST',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+      body: requestBody,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
+
+    return response;
+  }
+
+  public async getVariable(variableId: number, logger: UpgradeLogger): Promise<MoocletVariableResponseDetails> {
+    const endpoint = `/variable/${variableId}`;
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'GET',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
+
+    return response;
+  }
+
+  public async updateVariable(
+    variableId: number,
+    requestBody: MoocletVariableRequestBody,
+    logger: UpgradeLogger
+  ): Promise<MoocletVariableResponseDetails> {
+    const endpoint = `/variable/${variableId}`;
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'PUT',
       url: this.apiUrl + endpoint,
       apiToken: this.apiToken,
       body: requestBody,

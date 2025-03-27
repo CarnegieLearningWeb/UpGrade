@@ -13,6 +13,9 @@ import {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
   EXCLUSION_CODE,
+  IMPORT_COMPATIBILITY_TYPE,
+  ValidatedImportResponse,
+  SEGMENT_SEARCH_KEY,
 } from 'upgrade_types';
 import { In } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
@@ -33,7 +36,6 @@ import { ExperimentSegmentInclusionRepository } from '../repositories/Experiment
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { getSegmentData } from '../controllers/SegmentController';
-import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 import { CacheService } from './CacheService';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
@@ -46,6 +48,7 @@ import { IndividualExclusion } from '../models/IndividualExclusion';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
+import { ISegmentSearchParams, ISegmentSortParams } from '../controllers/validators/SegmentPaginatedParamsValidator';
 
 interface IsSegmentValidWithError {
   missingProperty: string;
@@ -106,6 +109,26 @@ export class SegmentService {
       .getMany();
 
     return queryBuilder;
+  }
+
+  /**
+   * Retrieves all segments of type `GLOBAL_EXCLUDE`.
+   *
+   * @param logger - The logger instance to log information.
+   * @returns A promise that resolves to an array of segments of type `GLOBAL_EXCLUDE`.
+   */
+  public async getAllGlobalExcludeSegments(logger: UpgradeLogger): Promise<Segment[]> {
+    return this.segmentRepository.getAllSegmentByType(SEGMENT_TYPE.GLOBAL_EXCLUDE, logger);
+  }
+
+  /**
+   * Retrieves a global exclude segment by the given context.
+   *
+   * @param context - The context for which the global exclude segment is to be retrieved.
+   * @returns A promise that resolves to the global exclude segment.
+   */
+  public async getGlobalExcludeSegmentByContext(context: string): Promise<Segment> {
+    return this.segmentRepository.findOneSegmentByContextAndType(context, SEGMENT_TYPE.GLOBAL_EXCLUDE);
   }
 
   public async getAllPublicSegmentsAndSubsegments(logger: UpgradeLogger): Promise<Segment[]> {
@@ -177,6 +200,65 @@ export class SegmentService {
     }
   }
 
+  public async findPaginated(
+    skip: number,
+    take: number,
+    logger: UpgradeLogger,
+    searchParams?: ISegmentSearchParams,
+    sortParams?: ISegmentSortParams
+  ): Promise<getSegmentData> {
+    logger.info({ message: `Find paginated segments` });
+    let queryBuilder = this.segmentRepository
+      .createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .where('segment.type = :public', { public: SEGMENT_TYPE.PUBLIC });
+
+    if (searchParams) {
+      const customSearchString = searchParams.string.split(' ').join(`:*&`);
+      // add search query
+      const postgresSearchString = this.postgresSearchString(searchParams.key);
+      queryBuilder = queryBuilder
+        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
+        .addOrderBy('rank', 'DESC')
+        .setParameter('query', `${customSearchString}:*`);
+    }
+    if (sortParams) {
+      queryBuilder = queryBuilder.addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs);
+    }
+
+    const segmentsData = await queryBuilder.offset(skip).limit(take).getMany();
+    return this.getSegmentStatus(segmentsData);
+  }
+
+  public getTotalPublicSegmentCount(): Promise<number> {
+    return this.segmentRepository.countBy({ type: SEGMENT_TYPE.PUBLIC });
+  }
+
+  private postgresSearchString(type: SEGMENT_SEARCH_KEY): string {
+    const searchString: string[] = [];
+    switch (type) {
+      case SEGMENT_SEARCH_KEY.NAME:
+        searchString.push("coalesce(segment.name::TEXT,'')");
+        break;
+      case SEGMENT_SEARCH_KEY.CONTEXT:
+        searchString.push("coalesce(segment.context::TEXT,'')");
+        break;
+      case SEGMENT_SEARCH_KEY.TAG:
+        searchString.push("coalesce(segment.tags::TEXT,'')");
+        break;
+      default:
+        searchString.push("coalesce(segment.name::TEXT,'')");
+        searchString.push("coalesce(segment.context::TEXT,'')");
+        searchString.push("coalesce(segment.tags::TEXT,'')");
+        break;
+    }
+    const stringConcat = searchString.join(',');
+    const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
+    return searchStringConcatenated;
+  }
+
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
     const segmentsData = await this.getAllPublicSegmentsAndSubsegments(logger);
     return this.getSegmentStatus(segmentsData);
@@ -214,8 +296,6 @@ export class SegmentService {
         subSegmentIds.forEach((subSegmentId) => collectSegmentIds(subSegmentId));
       };
 
-      collectSegmentIds(globalExcludeSegment.id);
-
       if (allExperimentSegmentsInclusion) {
         allExperimentSegmentsInclusion.forEach((ele) => {
           collectSegmentIds(ele.segment.id);
@@ -245,7 +325,7 @@ export class SegmentService {
       }
 
       const segmentsDataWithStatus = segmentsData.map((segment) => {
-        if (segment.id === globalExcludeSegment.id) {
+        if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
           return { ...segment, status: SEGMENT_STATUS.GLOBAL };
         } else if (segmentsUsedList.has(segment.id)) {
           return { ...segment, status: SEGMENT_STATUS.USED };
@@ -296,6 +376,15 @@ export class SegmentService {
   public upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
     return this.addSegmentDataInDB(segment, logger);
+  }
+
+  public async upsertSegments(segmentsInput: SegmentInputValidator[], logger: UpgradeLogger): Promise<Segment[]> {
+    try {
+      return Promise.all(segmentsInput.map((segmentInput) => this.upsertSegment(segmentInput, logger)));
+    } catch (error) {
+      logger.error({ message: 'Error in upserting segments', error });
+      throw error;
+    }
   }
 
   public async addList(listInput: ListInputValidator, logger: UpgradeLogger): Promise<Segment> {
@@ -365,6 +454,16 @@ export class SegmentService {
     return validationErrors;
   }
 
+  public async validateSegmentsForCommonImportModal(
+    segments: SegmentFile[],
+    logger: UpgradeLogger
+  ): Promise<ValidatedImportResponse[]> {
+    logger.info({ message: `Validating segments` });
+    const validatedSegments = await this.checkSegmentsValidity(segments);
+
+    return validatedSegments.importErrors as ValidatedImportResponse[];
+  }
+
   public async importSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentImportError[]> {
     const validatedSegments = await this.checkSegmentsValidity(segments);
     for (const segment of validatedSegments.segments) {
@@ -374,7 +473,7 @@ export class SegmentService {
       logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
       await this.addSegmentDataInDB(segment, logger);
     }
-    return validatedSegments.importErrors;
+    return validatedSegments.importErrors; // HERE!
   }
 
   public async checkSegmentsValidity(fileData: SegmentFile[]): Promise<SegmentValidationObj> {
@@ -387,7 +486,11 @@ export class SegmentService {
         try {
           segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
         } catch (err) {
-          importFileErrors.push({ fileName: segment.fileName, error: (err as Error).message });
+          importFileErrors.push({
+            fileName: segment.fileName,
+            error: (err as Error).message,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          });
           return null;
         }
         segmentForValidation = plainToClass(SegmentInputValidator, segmentForValidation);
@@ -396,7 +499,11 @@ export class SegmentService {
         if (segmentJSONValidation.isSegmentValid) {
           return { filename: fileName, segment: segmentForValidation };
         } else {
-          importFileErrors.push({ fileName, error: segmentJSONValidation.missingProperty });
+          importFileErrors.push({
+            fileName,
+            error: segmentJSONValidation.missingProperty,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          });
           return null;
         }
       })
@@ -522,19 +629,25 @@ export class SegmentService {
           ' not found. Please import subSegment with same context and link in segment. '
         : errorMessage;
 
-      if (errorMessage.length > 0) {
-        importFileErrors.push({
-          fileName: segmentFile.filename,
-          error: 'Invalid Segment data: ' + errorMessage,
-        });
-        continue;
-      }
-
       allValidatedSegments.push(segment);
-      importFileErrors.push({
+
+      // attach assign error and compatibilityType to response. this will be ignored by the 'old' segments modal
+      const validationResponse: SegmentImportError = {
         fileName: segmentFile.filename,
         error: null,
-      });
+        compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
+      };
+
+      if (errorMessage.length > 0) {
+        validationResponse.error = 'Invalid Segment data: ' + errorMessage;
+        if (invalidSubSegments) {
+          validationResponse.compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
+        } else {
+          validationResponse.compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        }
+      }
+
+      importFileErrors.push(validationResponse);
     }
     return { segments: allValidatedSegments, importErrors: importFileErrors };
   }

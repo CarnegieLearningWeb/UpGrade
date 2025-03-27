@@ -212,14 +212,12 @@ export enum SEGMENT_STATUS {
 export enum SEGMENT_SEARCH_KEY {
   ALL = 'all',
   NAME = 'name',
-  STATUS = 'status',
   TAG = 'tag',
   CONTEXT = 'context',
 }
 
 export enum SEGMENT_SORT_KEY {
   NAME = 'name',
-  STATUS = 'state',
   UPDATED_AT = 'updatedAt',
 }
 
@@ -306,4 +304,10 @@ export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
 export enum FILE_TYPE {
   JSON = '.json',
   CSV = '.csv',
+}
+
+export enum IMPORT_COMPATIBILITY_TYPE {
+  COMPATIBLE = 'compatible',
+  WARNING = 'warning',
+  INCOMPATIBLE = 'incompatible',
 }

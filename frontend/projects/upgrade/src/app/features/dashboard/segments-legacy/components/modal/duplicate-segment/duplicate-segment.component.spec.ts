@@ -1,11 +1,11 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { DuplicateSegmentComponent } from './duplicate-segment.component';
 
 xdescribe('DuplicateSegmentComponent', () => {
   let component: DuplicateSegmentComponent;
   let fixture: ComponentFixture<DuplicateSegmentComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [DuplicateSegmentComponent],
     }).compileComponents();

@@ -64,7 +64,7 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
   expect(experimentConditionAssignments).toHaveLength(3);
 
   // mark experiment point for user 1
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[0].id,
@@ -88,7 +88,7 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
         user: expect.objectContaining({
           id: experimentUsers[0].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -138,7 +138,7 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[0].id,
@@ -164,7 +164,7 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[1].id,

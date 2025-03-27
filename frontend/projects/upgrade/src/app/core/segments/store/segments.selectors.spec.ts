@@ -1,4 +1,4 @@
-import { SEGMENT_TYPE } from 'upgrade_types';
+import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
 import { Segment } from './segments.model';
 import { initialState } from './segments.reducer';
 import * as SegmentSelectors from './segments.selectors';
@@ -92,12 +92,13 @@ describe('SegmentSelectors', () => {
         id: 'abc123',
         name: 'abc',
         context: 'test',
+        tags: [],
         description: 'test',
         individualForSegment: [],
         groupForSegment: [],
         subSegments: [],
         type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
-        status: 'test',
+        status: SEGMENT_STATUS.UNUSED,
       };
       previousState.entities = {
         abc123: mockSegment,

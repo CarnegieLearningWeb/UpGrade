@@ -8,7 +8,6 @@ import {
   SEGMENT_SORT_KEY,
   FEATURE_FLAG_LIST_FILTER_MODE,
 } from 'upgrade_types';
-import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
 export { SEGMENT_STATUS };
 
 export enum NewSegmentDialogEvents {
@@ -107,6 +106,7 @@ export interface Segment {
   individualForSegment: IndividualForSegment[];
   groupForSegment: GroupForSegment[];
   subSegments: Segment[];
+  listType?: MemberTypes | string;
   type: SEGMENT_TYPE;
   status: SEGMENT_STATUS;
 }
@@ -144,6 +144,19 @@ export const SEGMENT_TRANSLATION_KEYS = {
 };
 
 export const SEGMENT_ROOT_DISPLAYED_COLUMNS = Object.values(SEGMENT_ROOT_COLUMN_NAMES);
+
+export interface ParticipantListTableRow {
+  listType: MemberTypes | string;
+  segment: Segment;
+  enabled?: boolean;
+}
+
+export enum SEGMENT_DETAILS_PAGE_ACTIONS {
+  EDIT = 'Edit Segment',
+  DUPLICATE = 'Duplicate Segment',
+  DELETE = 'Delete Segment',
+  EXPORT = 'Export Segment',
+}
 
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;

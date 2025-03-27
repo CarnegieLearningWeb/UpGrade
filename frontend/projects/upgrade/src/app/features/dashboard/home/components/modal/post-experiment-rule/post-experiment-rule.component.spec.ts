@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PostExperimentRuleComponent } from './post-experiment-rule.component';
 import { TestingModule } from '../../../../../../../testing/testing.module';
@@ -13,7 +13,7 @@ xdescribe('PostExperimentRuleComponent', () => {
   const modalData = {
     experiment: TestMockData.getExperiment()[0],
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [PostExperimentRuleComponent],
       imports: [TestingModule],

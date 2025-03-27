@@ -1,31 +1,23 @@
-import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
 import Container from 'typedi';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { segment, segmentSecond, segmentList, segmentWithList } from '../mockData/segment';
+import { env } from '../../../src/env';
 
 export default async function SegmentDelete(): Promise<void> {
   const segmentService = Container.get<SegmentService>(SegmentService);
 
-  // create segment
+  const globalSegmentLength = Object.keys(env.initialization.contextMetadata).length;
 
+  // create segment
   const segmentObject = segment;
 
   await segmentService.upsertSegment(segmentObject, new UpgradeLogger());
   let segments = await segmentService.getAllSegments(new UpgradeLogger());
 
-  expect(segments.length).toEqual(2);
+  expect(segments.length).toEqual(1 + globalSegmentLength);
   expect(segments).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({
-        name: globalExcludeSegment.name,
-        description: globalExcludeSegment.description,
-        context: globalExcludeSegment.context,
-        type: globalExcludeSegment.type,
-        individualForSegment: expect.arrayContaining([]),
-        groupForSegment: expect.arrayContaining([]),
-        subSegments: expect.arrayContaining([]),
-      }),
       expect.objectContaining({
         name: segmentObject.name,
         description: segmentObject.description,
@@ -60,18 +52,9 @@ export default async function SegmentDelete(): Promise<void> {
 
   await segmentService.upsertSegment(segmentObject2, new UpgradeLogger());
   segments = await segmentService.getAllSegments(new UpgradeLogger());
-  expect(segments.length).toEqual(3);
+  expect(segments.length).toEqual(2 + globalSegmentLength);
   expect(segments).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({
-        name: globalExcludeSegment.name,
-        description: globalExcludeSegment.description,
-        context: globalExcludeSegment.context,
-        type: globalExcludeSegment.type,
-        individualForSegment: expect.arrayContaining([]),
-        groupForSegment: expect.arrayContaining([]),
-        subSegments: expect.arrayContaining([]),
-      }),
       expect.objectContaining({
         name: segmentObject.name,
         description: segmentObject.description,
@@ -135,18 +118,9 @@ export default async function SegmentDelete(): Promise<void> {
 
   segments = await segmentService.getAllSegments(new UpgradeLogger());
 
-  expect(segments.length).toEqual(2);
+  expect(segments.length).toEqual(1 + globalSegmentLength);
   expect(segments).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({
-        name: globalExcludeSegment.name,
-        description: globalExcludeSegment.description,
-        context: globalExcludeSegment.context,
-        type: globalExcludeSegment.type,
-        individualForSegment: expect.arrayContaining([]),
-        groupForSegment: expect.arrayContaining([]),
-        subSegments: expect.arrayContaining([]),
-      }),
       expect.objectContaining({
         name: segmentObject2.name,
         description: segmentObject2.description,
@@ -183,8 +157,8 @@ export default async function SegmentDelete(): Promise<void> {
   // adds a private segment
   await segmentService.addList(privateSegmentObject, new UpgradeLogger());
   segments = await segmentService.getAllSegments(new UpgradeLogger());
-  expect(segments.length).toEqual(3);
+  expect(segments.length).toEqual(2 + globalSegmentLength);
   await segmentService.deleteSegment(segmentWithListObject.id, new UpgradeLogger());
   segments = await segmentService.getAllSegments(new UpgradeLogger());
-  expect(segments.length).toEqual(2);
+  expect(segments.length).toEqual(1 + globalSegmentLength);
 }

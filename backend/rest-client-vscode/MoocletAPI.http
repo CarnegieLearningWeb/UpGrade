@@ -27,8 +27,8 @@
 @host = http://localhost:8000
 
 # Replace with your token, i.e.
-# @token = Token 7439dc95718b525e8ae267604178575da15820e9
-@token =
+@token = Token 7439dc95718b525e8ae267604178575da15820e9
+# @token =
 
 @apiEndpoint = /engine/api/v1
 
@@ -37,8 +37,8 @@
 @moocletName = newmooc4
 @policyId = 17
 @policyParametersId = 2
-@version1Name = control
-@version1Id = 5
+@version1Name = controlz
+@version1Id = 
 @version2Name = variant
 @version2Id = 6
 
@@ -142,5 +142,58 @@ Content-type: application/json
   "mooclet": {{moocletId}},
   "version": {{version1Id}},
   "policy": {{policyId}}
+}
+
+##### EDITS:
+
+########### create policyparameters
+PUT {{host}}{{apiEndpoint}}/policyparameters/{{policyParametersId}} HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+{
+  "mooclet": {{moocletId}},
+  "policy": {{policyId}},
+  "parameters": {
+    "prior": {
+      "failure": 1,
+      "success": 1
+    },
+    "batch_size": 1,
+    "max_rating": 1,
+    "min_rating": 0,
+    "uniform_threshold": 0,
+    "tspostdiff_thresh": 0,
+    "outcome_variable_name": "{{outcomeVariableName}}"
+  }
+}
+
+########### update version 1
+PUT {{host}}{{apiEndpoint}}/version/{{version1Id}} HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+{
+  "mooclet": {{moocletId}},
+  "name": "qwerty"
+}
+
+########### update version 1
+GET {{host}}{{apiEndpoint}}/version/{{version1Id}} HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+{
+  "mooclet": {{moocletId}},
+  "name": "qwerty"
+}
+
+########### create outcome variable
+PUT {{host}}{{apiEndpoint}}/variable HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+{
+  "name": "{{outcomeVariableName}}",
 }
 

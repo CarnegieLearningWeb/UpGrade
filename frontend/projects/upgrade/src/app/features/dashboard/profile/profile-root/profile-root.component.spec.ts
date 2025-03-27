@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProfileRootComponent } from './profile-root.component';
 import { TestingModule } from '../../../../../testing/testing.module';
@@ -13,7 +13,7 @@ xdescribe('ProfileRootComponent', () => {
   let component: ProfileRootComponent;
   let fixture: ComponentFixture<ProfileRootComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ProfileRootComponent, ProfileInfoComponent, MetricsComponent],
       imports: [TestingModule],

@@ -38,6 +38,10 @@ export default class ExcludeServiceMock {
     return Promise.resolve([]);
   }
 
+  public validateSegmentsForCommonImportModal(): Promise<[]> {
+    return Promise.resolve([]);
+  }
+
   public exportSegments(id: string): Promise<[]> {
     return Promise.resolve([]);
   }

@@ -99,8 +99,8 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
     experimentTarget,
     experimentSite,
     experimentConditionPayload.payload.value,
-    new UpgradeLogger(),
-    experimentID
+    experimentID,
+    new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentSite);
 
@@ -138,8 +138,8 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
     experimentTarget,
     experimentSite,
     experimentConditionPayload.payload.value,
-    new UpgradeLogger(),
-    experimentID
+    experimentID,
+    new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentSite);
 }

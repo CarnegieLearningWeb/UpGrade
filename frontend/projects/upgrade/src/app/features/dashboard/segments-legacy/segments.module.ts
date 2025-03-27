@@ -26,5 +26,6 @@ import { ExportSegmentComponent } from './components/modal/export-segment/export
     ExportSegmentComponent,
   ],
   imports: [CommonModule, SegmentsRoutingModule, SharedModule],
+  exports: [ViewSegmentComponent],
 })
 export class SegmentsModule {}

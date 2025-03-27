@@ -55,6 +55,12 @@ Conditions:
   IsProd: !Equals
     - !Ref environment
     - prod
+  IsStaging: !Equals
+    - !Ref environment
+    - staging
+  IsQA: !Equals
+    - !Ref environment
+    - qa
 Resources:
   ecsTaskDef:
     Type: AWS::ECS::TaskDefinition
@@ -227,11 +233,11 @@ Resources:
           ReadonlyRootFilesystem: false
           PortMappings:
             - ContainerPort: !Ref servicePort
-      Cpu: 1024
+      Cpu: 2048
       ExecutionRoleArn:
         Fn::ImportValue: !Sub ${sharedEcsResourcesPrefix}-${environment}-ecsExecutionRoleArn
       Family: !Sub ${appName}-${environment}-${cluster}
-      Memory: 2048
+      Memory: 4096
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
@@ -288,16 +294,16 @@ Resources:
       ServiceNamespace: ecs
       TargetTrackingScalingPolicyConfiguration:
         TargetValue: 50.0
-        ScaleInCooldown: 300
-        ScaleOutCooldown: 300
+        ScaleInCooldown: 180
+        ScaleOutCooldown: 5
         PredefinedMetricSpecification:
           PredefinedMetricType: ECSServiceAverageCPUUtilization
   ecsScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     DependsOn: ecsService
     Properties:
-      MaxCapacity: !If [IsProd, 16, 2]
-      MinCapacity: !If [IsProd, 2, 1]
+      MaxCapacity: !If [IsStaging, 50, !If [IsProd, 75, 2]]
+      MinCapacity: !If [IsQA, 1, 4]
       ResourceId: !Join [ '/', [ 'service', Fn::ImportValue: !Sub '${sharedResourcesPrefix}-${environment}-ecsClusterName', !GetAtt 'ecsService.Name' ]]
       RoleARN: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService
       ScalableDimension: ecs:service:DesiredCount
