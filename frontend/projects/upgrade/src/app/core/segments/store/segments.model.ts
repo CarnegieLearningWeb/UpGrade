@@ -134,6 +134,8 @@ export const SEGMENT_ROOT_COLUMN_NAMES = {
   LISTS: 'lists',
 };
 
+export const SEGMENT_ROOT_DISPLAYED_COLUMNS = Object.values(SEGMENT_ROOT_COLUMN_NAMES);
+
 export const SEGMENT_TRANSLATION_KEYS = {
   NAME: 'segments.global-name.text',
   STATUS: 'segments.global-status.text',
@@ -143,12 +145,37 @@ export const SEGMENT_TRANSLATION_KEYS = {
   LISTS: 'segments.global-lists.text',
 };
 
-export const SEGMENT_ROOT_DISPLAYED_COLUMNS = Object.values(SEGMENT_ROOT_COLUMN_NAMES);
-
 export interface ParticipantListTableRow {
   listType: MemberTypes | string;
   segment: Segment;
   enabled?: boolean;
+}
+
+export interface SegmentsPaginationInfo {
+  nodes: Segment[];
+  total: number;
+  skip: number;
+  take: number;
+}
+
+// TODO: This should be probably be a part of env config
+export const NUMBER_OF_SEGMENTS = 20;
+
+interface ISegmentsSearchParams {
+  key: SEGMENT_SEARCH_KEY;
+  string: string;
+}
+
+interface ISegmentsSortParams {
+  key: SEGMENT_SORT_KEY;
+  sortAs: SORT_AS_DIRECTION;
+}
+
+export interface SegmentsPaginationParams {
+  skip: number;
+  take: number;
+  searchParams?: ISegmentsSearchParams;
+  sortParams?: ISegmentsSortParams;
 }
 
 export enum SEGMENT_DETAILS_PAGE_ACTIONS {
