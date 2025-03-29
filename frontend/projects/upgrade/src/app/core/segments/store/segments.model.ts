@@ -6,6 +6,7 @@ import {
   SEGMENT_SEARCH_KEY,
   SORT_AS_DIRECTION,
   SEGMENT_SORT_KEY,
+  FILTER_MODE,
   FEATURE_FLAG_LIST_FILTER_MODE,
 } from 'upgrade_types';
 export { SEGMENT_STATUS };
@@ -111,6 +112,27 @@ export interface Segment {
   status: SEGMENT_STATUS;
 }
 
+export interface CoreSegmentDetails {
+  id?: string;
+  name: string;
+  context: string;
+  description?: string;
+  tags?: string[];
+  userIds: string[];
+  groups: Group[];
+  subSegmentIds: string[];
+  status?: SEGMENT_STATUS;
+  type: SEGMENT_TYPE;
+}
+
+// Currently there is no difference between these types, but they semantically different and could diverge later
+export type AddSegmentRequest = CoreSegmentDetails;
+
+// so that we can throw an error if we try to update the id
+export interface UpdateSegmentRequest extends AddSegmentRequest {
+  readonly id: string;
+}
+
 export interface SegmentInput {
   createdAt: string;
   updatedAt: string;
@@ -140,6 +162,7 @@ export enum SEGMENT_DETAILS_PAGE_ACTIONS {
 
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;
+  isLoadingUpsertSegment: boolean;
   // TODO: remove any
   allExperimentSegmentsInclusion: any;
   allExperimentSegmentsExclusion: any;
@@ -248,4 +271,27 @@ export interface AddPrivateSegmentListRequest extends PrivateSegmentListRequest 
 
 export interface EditPrivateSegmentListRequest extends PrivateSegmentListRequest {
   segment: EditPrivateSegmentListDetails;
+}
+
+export enum CommonTagInputType {
+  TAGS = 'tags',
+  VALUES = 'values',
+}
+
+export interface SegmentFormData {
+  name: string;
+  description: string;
+  appContext: string;
+  tags: string[];
+}
+
+export enum UPSERT_SEGMENT_ACTION {
+  ADD = 'add',
+  EDIT = 'edit',
+  DUPLICATE = 'duplicate',
+}
+
+export interface UpsertSegmentParams {
+  sourceSegment: Segment;
+  action: UPSERT_SEGMENT_ACTION;
 }

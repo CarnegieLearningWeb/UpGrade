@@ -72,10 +72,10 @@ export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDes
   onMenuButtonItemClick(action: SEGMENT_DETAILS_PAGE_ACTIONS, segment: Segment) {
     switch (action) {
       case SEGMENT_DETAILS_PAGE_ACTIONS.EDIT:
-        // this.dialogService.openEditSegmentModal(segment);
+        this.dialogService.openEditSegmentModal(segment);
         break;
       case SEGMENT_DETAILS_PAGE_ACTIONS.DUPLICATE:
-        // this.dialogService.openDuplicateSegmentModal(segment);
+        this.dialogService.openDuplicateSegmentModal(segment);
         break;
       case SEGMENT_DETAILS_PAGE_ACTIONS.DELETE:
         // this.dialogService.openDeleteSegmentModal(segment);

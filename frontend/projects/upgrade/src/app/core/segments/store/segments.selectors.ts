@@ -18,6 +18,10 @@ export const selectSegmentById = createSelector(
   (state, { segmentId }) => state.entities[segmentId]
 );
 
+export const selectAppContexts = createSelector(selectContextMetaData, (contextMetaData) =>
+  Object.keys(contextMetaData?.contextMetadata ?? [])
+);
+
 export const selectExperimentSegmentsInclusion = createSelector(
   selectSegmentsState,
   (state) => state.allExperimentSegmentsInclusion
@@ -37,6 +41,24 @@ export const selectFeatureFlagSegmentsExclusion = createSelector(
   selectSegmentsState,
   (state) => state.allFeatureFlagSegmentsExclusion
 );
+
+export const selectIsLoadingUpsertSegment = createSelector(
+  selectSegmentsState,
+  (state) => state.isLoadingUpsertSegment
+);
+
+// export const selectSelectedSegment = createSelector(
+//   selectRouterState,
+//   selectSegmentsState,
+//   (routerState, segmentState) => {
+//     // be very defensive here to make sure routerState is correct
+//     const segmentId = routerState?.state?.params?.segmentId;
+//     if (segmentId) {
+//       return segmentState.entities[segmentId];
+//     }
+//     return undefined;
+//   }
+// );
 
 export const selectSelectedSegment = createSelector(
   selectRouterState,

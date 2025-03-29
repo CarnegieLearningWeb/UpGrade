@@ -17,15 +17,19 @@ import {
   selectSortKey,
   selectSortAs,
   selectSegmentLists,
+  selectAppContexts,
+  selectIsLoadingUpsertSegment,
 } from './store/segments.selectors';
 import {
+  AddSegmentRequest,
   LIST_OPTION_TYPE,
   Segment,
   SegmentInput,
   SegmentLocalStorageKeys,
+  UpdateSegmentRequest,
   UpsertSegmentType,
 } from './store/segments.model';
-import { filter, map, tap, withLatestFrom } from 'rxjs/operators';
+import { filter, map, pairwise, tap, withLatestFrom } from 'rxjs/operators';
 import { Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
 import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
@@ -34,6 +38,8 @@ import { selectShouldUseLegacyUI } from './store/segments.selectors';
 import { selectContextMetaData } from '../experiments/store/experiments.selectors';
 import { selectSelectedFeatureFlag } from '../feature-flags/store/feature-flags.selectors';
 import { CommonTextHelpersService } from '../../shared/services/common-text-helpers.service';
+import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
+import isEqual from 'lodash.isequal';
 
 @Injectable({ providedIn: 'root' })
 export class SegmentsService {
@@ -44,6 +50,15 @@ export class SegmentsService {
   ) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
+  isLoadingUpsertSegment$ = this.store$.pipe(select(selectIsLoadingUpsertSegment));
+  isSelectedSegmentUpdated$ = this.store$.pipe(
+    select(selectSelectedSegment),
+    pairwise(),
+    filter(([prev, curr]) => {
+      return prev && curr && !isEqual(prev, curr);
+    }),
+    map(([, curr]) => curr)
+  );
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
   shouldUseLegacyView$ = this.store$.pipe(select(selectShouldUseLegacyUI));
@@ -57,6 +72,7 @@ export class SegmentsService {
     select(selectSegmentLists),
     map((lists) => lists.length)
   );
+  appContexts$ = this.store$.pipe(select(selectAppContexts));
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
   allFeatureFlagSegmentsExclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsExclusion));
@@ -132,6 +148,10 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionGetSegmentById({ segmentId }));
   }
 
+  fetchContextMetaData() {
+    this.store$.dispatch(actionFetchContextMetaData({ isLoadingContextMetaData: true }));
+  }
+
   isInitialSegmentsLoading() {
     return combineLatest(this.store$.pipe(select(selectIsLoadingSegments)), this.allSegments$).pipe(
       map(([isLoading, segments]) => !isLoading || !!segments.length)
@@ -176,6 +196,15 @@ export class SegmentsService {
     this.store$.dispatch(
       SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.UPDATE_SEGMENT })
     );
+  }
+
+  addSegment(addSegmentRequest: AddSegmentRequest) {
+    this.store$.dispatch(SegmentsActions.actionAddSegment({ addSegmentRequest }));
+  }
+
+
+  modifySegment(updateSegmentRequest: UpdateSegmentRequest) {
+    this.store$.dispatch(SegmentsActions.actionUpdateSegment({ updateSegmentRequest }));
   }
 
   exportSegments(segmentIds: string[]) {

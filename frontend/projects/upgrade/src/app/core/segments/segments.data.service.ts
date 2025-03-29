@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { SegmentFile, SegmentInput } from './store/segments.model';
+import { AddSegmentRequest, SegmentFile, SegmentInput } from './store/segments.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 
@@ -17,6 +17,11 @@ export class SegmentsDataService {
     return this.http.post(url, segment);
   }
 
+  addSegment(segment: AddSegmentRequest) {
+    const url = this.environment.api.segments;
+    return this.http.post(url, segment);
+  }
+
   getSegmentById(id: string) {
     const url = `${this.environment.api.segments}/status/${id}`;
     return this.http.get(url);
@@ -28,6 +33,11 @@ export class SegmentsDataService {
   }
 
   updateSegment(segment: SegmentInput) {
+    const url = this.environment.api.segments;
+    return this.http.post(url, segment);
+  }
+
+  modifySegment(segment: AddSegmentRequest) {
     const url = this.environment.api.segments;
     return this.http.post(url, segment);
   }

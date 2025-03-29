@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, filter, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
 import { Segment, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
 import JSZip from 'jszip';
+import { SERVER_ERROR } from 'upgrade_types';
 
 @Injectable()
 export class SegmentsEffects {
@@ -76,6 +77,41 @@ export class SegmentsEffects {
             return SegmentsActions.actionUpsertSegmentSuccess({ segment: data });
           }),
           catchError(() => [SegmentsActions.actionUpsertSegmentFailure()])
+        );
+      })
+    )
+  );
+
+  // actionAddSegment dispatch POST segment
+  addSegment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionAddSegment),
+      switchMap((action) => {
+        return this.segmentsDataService.addSegment(action.addSegmentRequest).pipe(
+          map((response: Segment) => SegmentsActions.actionAddSegmentSuccess({ response })),
+          tap(({ response }) => {
+            this.router.navigate(['/segments', 'detail', response.id]);
+          }),
+          catchError(() => {
+            return [SegmentsActions.actionAddSegmentFailure()];
+          })
+        );
+      })
+    )
+  );
+
+  updateSegment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionUpdateSegment),
+      switchMap((action) => {
+        return this.segmentsDataService.modifySegment(action.updateSegmentRequest).pipe(
+          map((response: Segment) => SegmentsActions.actionUpdateSegmentSuccess({ response })),
+          tap(({ response }) => {
+            this.router.navigate(['/segments', 'detail', response.id]);
+          }),
+          catchError(() => {
+            return [SegmentsActions.actionUpdateSegmentFailure()];
+          })
         );
       })
     )

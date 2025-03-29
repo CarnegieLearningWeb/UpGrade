@@ -213,6 +213,7 @@ export enum SEGMENT_SEARCH_KEY {
   ALL = 'all',
   NAME = 'name',
   TAG = 'tag',
+  STATUS = 'status',
   CONTEXT = 'context',
 }
 

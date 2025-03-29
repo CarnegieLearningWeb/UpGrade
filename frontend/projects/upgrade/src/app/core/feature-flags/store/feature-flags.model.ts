@@ -23,7 +23,7 @@ export interface CoreFeatureFlagDetails {
   key: string;
   description?: string;
   context: string[];
-  tags: string[];
+  tags?: string[];
   status: FEATURE_FLAG_STATUS;
   filterMode: FILTER_MODE;
 }

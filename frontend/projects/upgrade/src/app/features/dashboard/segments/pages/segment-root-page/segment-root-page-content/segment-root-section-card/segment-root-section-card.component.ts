@@ -149,7 +149,7 @@ export class SegmentRootSectionCardComponent {
   }
 
   onAddSegmentButtonClick() {
-    // this.dialogService.openNewSegmentModal();
+    this.dialogService.openAddSegmentModal();
   }
 
   onMenuButtonItemClick(menuButtonItemName: string) {

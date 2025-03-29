@@ -22,6 +22,7 @@ export const initialState: SegmentState = adapter.getInitialState({
   searchString: null,
   sortKey: SEGMENT_SORT_KEY.NAME,
   sortAs: SORT_AS_DIRECTION.ASCENDING,
+  isLoadingUpsertSegment: false,
 });
 
 const reducer = createReducer(

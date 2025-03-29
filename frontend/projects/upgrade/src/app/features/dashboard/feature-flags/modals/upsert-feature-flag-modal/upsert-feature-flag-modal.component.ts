@@ -72,7 +72,6 @@ export class UpsertFeatureFlagModalComponent {
     @Inject(MAT_DIALOG_DATA)
     public config: CommonModalConfig<UpsertFeatureFlagParams>,
     public dialog: MatDialog,
-    private router: Router,
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
     private experimentService: ExperimentService,
@@ -211,7 +210,6 @@ export class UpsertFeatureFlagModalComponent {
 
   sendRequest(action: UPSERT_FEATURE_FLAG_ACTION, sourceFlag?: FeatureFlag): void {
     const formData: FeatureFlagFormData = this.featureFlagForm.value;
-
     if (action === UPSERT_FEATURE_FLAG_ACTION.ADD || action === UPSERT_FEATURE_FLAG_ACTION.DUPLICATE) {
       this.createAddRequest(formData);
     } else if (action === UPSERT_FEATURE_FLAG_ACTION.EDIT && sourceFlag) {
