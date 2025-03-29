@@ -55,9 +55,9 @@ describe('SegmentsEffects', () => {
     service = new SegmentsEffects(store$, actions$, segmentsDataService, router);
   });
 
-  describe('fetchSegments$', () => {
+  describe('fetchSegmentsLegacyGetAll$', () => {
     it('should dispatch actionFetchSegmentsSuccess with segments data on API call success', fakeAsync(() => {
-      segmentsDataService.fetchSegments = jest.fn().mockReturnValue(
+      segmentsDataService.fetchSegmentsLegacyGetAll = jest.fn().mockReturnValue(
         of({
           segmentsData: [{ ...mockSegment }],
           experimentSegmentInclusionData: [],
