@@ -140,12 +140,12 @@ export class SegmentsService {
     );
   }
 
-  fetchSegments(fromStarting?: boolean) {
+  fetchSegmentsPaginated(fromStarting?: boolean) {
     this.store$.dispatch(SegmentsActions.actionFetchSegments({ fromStarting }));
   }
 
-  fetchSegmentsLegacyGetAll(fromStarting?: boolean) {
-    this.store$.dispatch(SegmentsActions.actionFetchSegmentsLegacyGetAll({ fromStarting }));
+  fetchAllSegments(fromStarting?: boolean) {
+    this.store$.dispatch(SegmentsActions.actionfetchAllSegments({ fromStarting }));
   }
 
   createNewSegment(segment: SegmentInput) {

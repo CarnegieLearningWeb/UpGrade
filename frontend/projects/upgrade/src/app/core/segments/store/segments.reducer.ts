@@ -31,7 +31,7 @@ const reducer = createReducer(
   on(
     SegmentsActions.actionUpsertSegment,
     SegmentsActions.actionGetSegmentById,
-    SegmentsActions.actionFetchSegmentsLegacyGetAll,
+    SegmentsActions.actionfetchAllSegments,
     (state) => ({
       ...state,
       isLoadingSegments: true,

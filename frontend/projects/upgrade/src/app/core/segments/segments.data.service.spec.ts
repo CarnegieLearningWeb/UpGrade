@@ -58,11 +58,11 @@ describe('SegmentDataService', () => {
     mockSegmentFile = { fileName: 'test', fileContent: JSON.stringify(mockSegment) };
   });
 
-  describe('#fetchSegments', () => {
-    it('should get the fetchSegments http observable', () => {
+  describe('#fetchSegmentsPaginated', () => {
+    it('should get the fetchSegmentsPaginated http observable', () => {
       const expectedUrl = mockEnvironment.api.segments;
 
-      service.fetchSegmentsLegacyGetAll();
+      service.fetchAllSegments();
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl);
     });

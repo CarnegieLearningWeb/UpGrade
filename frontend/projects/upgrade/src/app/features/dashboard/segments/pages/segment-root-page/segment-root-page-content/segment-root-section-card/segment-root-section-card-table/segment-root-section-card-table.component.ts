@@ -113,7 +113,7 @@ export class SegmentRootSectionCardTableComponent implements OnInit {
   }
 
   fetchSegmentsOnScroll() {
-    this.segmentsService.fetchSegments();
+    this.segmentsService.fetchSegmentsPaginated();
   }
 
   changeSorting(event) {

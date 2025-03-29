@@ -28,7 +28,7 @@ export class SegmentsEffects {
     private router: Router
   ) {}
 
-  fetchSegments$ = createEffect(() =>
+  fetchSegmentsPaginated$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionFetchSegments),
       map((action) => action.fromStarting),
@@ -96,12 +96,12 @@ export class SegmentsEffects {
     )
   );
 
-  fetchSegmentsLegacyGetAll$ = createEffect(() =>
+  fetchAllSegments$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(SegmentsActions.actionFetchSegmentsLegacyGetAll),
+      ofType(SegmentsActions.actionfetchAllSegments),
       withLatestFrom(this.store$.pipe(select(selectAllSegments))),
       switchMap(() =>
-        this.segmentsDataService.fetchSegmentsLegacyGetAll().pipe(
+        this.segmentsDataService.fetchAllSegments().pipe(
           map((data: any) =>
             SegmentsActions.actionFetchSegmentsSuccessLegacyGetAll({
               segments: data.segmentsData,

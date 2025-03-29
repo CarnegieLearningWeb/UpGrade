@@ -81,7 +81,7 @@ export class SegmentRootSectionCardComponent {
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.segmentService.fetchSegments(true);
+    this.segmentService.fetchSegmentsPaginated(true);
   }
 
   ngAfterViewInit() {

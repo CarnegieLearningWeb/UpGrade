@@ -22,7 +22,7 @@ export class SegmentsRootComponent implements OnInit {
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.segmentsService.fetchSegmentsLegacyGetAll(true);
+    this.segmentsService.fetchAllSegments(true);
   }
 
   openNewSegmentDialog() {

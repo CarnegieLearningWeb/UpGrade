@@ -26,7 +26,7 @@ export const actionFetchSegmentsSuccess = createAction(
   }>()
 );
 
-export const actionFetchSegmentsLegacyGetAll = createAction(
+export const actionfetchAllSegments = createAction(
   '[Segments] Segments Legacy GET All',
   props<{ fromStarting?: boolean }>()
 );

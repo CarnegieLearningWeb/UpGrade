@@ -55,9 +55,9 @@ describe('SegmentsEffects', () => {
     service = new SegmentsEffects(store$, actions$, segmentsDataService, router);
   });
 
-  describe('fetchSegmentsLegacyGetAll$', () => {
+  describe('fetchAllSegments$', () => {
     it('should dispatch actionFetchSegmentsSuccess with segments data on API call success', fakeAsync(() => {
-      segmentsDataService.fetchSegmentsLegacyGetAll = jest.fn().mockReturnValue(
+      segmentsDataService.fetchAllSegments = jest.fn().mockReturnValue(
         of({
           segmentsData: [{ ...mockSegment }],
           experimentSegmentInclusionData: [],
@@ -76,26 +76,26 @@ describe('SegmentsEffects', () => {
         featureFlagSegmentExclusion: [],
       });
 
-      service.fetchSegmentsLegacyGetAll$.subscribe((result) => {
+      service.fetchAllSegments$.subscribe((result) => {
         expect(result).toEqual(expectedAction);
       });
 
-      actions$.next(SegmentsActions.actionFetchSegmentsLegacyGetAll({}));
+      actions$.next(SegmentsActions.actionfetchAllSegments({}));
 
       tick(0);
     }));
 
     it('should dispatch actionFetchSegmentsFailure on API call failure', fakeAsync(() => {
-      segmentsDataService.fetchSegmentsLegacyGetAll = jest.fn().mockReturnValue(throwError(() => new Error('test')));
+      segmentsDataService.fetchAllSegments = jest.fn().mockReturnValue(throwError(() => new Error('test')));
       selectAllSegments.setResult([{ ...mockSegment }]);
 
       const expectedAction = SegmentsActions.actionFetchSegmentsFailure();
 
-      service.fetchSegmentsLegacyGetAll$.subscribe((result) => {
+      service.fetchAllSegments$.subscribe((result) => {
         expect(result).toEqual(expectedAction);
       });
 
-      actions$.next(SegmentsActions.actionFetchSegmentsLegacyGetAll({}));
+      actions$.next(SegmentsActions.actionfetchAllSegments({}));
 
       tick(0);
     }));

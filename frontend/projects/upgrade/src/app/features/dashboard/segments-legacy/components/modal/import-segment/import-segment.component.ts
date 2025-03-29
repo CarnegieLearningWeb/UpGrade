@@ -45,7 +45,7 @@ export class ImportSegmentComponent {
         this.segmentDataService.importSegments(this.fileData)
       )) as importError[];
       this.showNotification(importResult);
-      this.segmentsService.fetchSegmentsLegacyGetAll(true);
+      this.segmentsService.fetchAllSegments(true);
     } catch (error) {
       console.error('Error during segment import:', error);
     }
