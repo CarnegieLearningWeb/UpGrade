@@ -192,6 +192,8 @@ export interface SegmentState extends EntityState<Segment> {
   allExperimentSegmentsExclusion: any;
   allFeatureFlagSegmentsInclusion: any;
   allFeatureFlagSegmentsExclusion: any;
+  skipSegments: number;
+  totalSegments: number;
   searchKey: SEGMENT_SEARCH_KEY;
   searchString: string;
   sortKey: SEGMENT_SORT_KEY;

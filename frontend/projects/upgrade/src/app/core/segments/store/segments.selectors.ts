@@ -57,6 +57,16 @@ export const selectSegmentOverviewDetails = createSelector(selectSelectedSegment
   ['Tags']: segment?.tags,
 }));
 
+export const selectSkipSegments = createSelector(selectSegmentsState, (state) => state.skipSegments);
+
+export const selectTotalSegments = createSelector(selectSegmentsState, (state) => state.totalSegments);
+
+export const selectAreAllSegmentsFetched = createSelector(
+  selectSkipSegments,
+  selectTotalSegments,
+  (skipSegments, totalSegments) => skipSegments === totalSegments
+);
+
 export const selectSearchKey = createSelector(selectSegmentsState, (state) => state.searchKey);
 
 export const selectSearchString = createSelector(selectSegmentsState, (state) => state.searchString);

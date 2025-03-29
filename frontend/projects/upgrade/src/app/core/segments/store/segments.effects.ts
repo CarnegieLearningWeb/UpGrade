@@ -2,12 +2,21 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, filter, first, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
-import { Segment, UpsertSegmentType } from './segments.model';
-import { selectAllSegments } from './segments.selectors';
+import { NUMBER_OF_SEGMENTS, Segment, SegmentsPaginationParams, UpsertSegmentType } from './segments.model';
+import {
+  selectAllSegments,
+  selectAreAllSegmentsFetched,
+  selectSearchKey,
+  selectSearchString,
+  selectSkipSegments,
+  selectSortAs,
+  selectSortKey,
+  selectTotalSegments,
+} from './segments.selectors';
 import JSZip from 'jszip';
 
 @Injectable()
@@ -22,11 +31,79 @@ export class SegmentsEffects {
   fetchSegments$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionFetchSegments),
+      map((action) => action.fromStarting),
+      withLatestFrom(
+        this.store$.pipe(select(selectSkipSegments)),
+        this.store$.pipe(select(selectTotalSegments)),
+        this.store$.pipe(select(selectSearchKey)),
+        this.store$.pipe(select(selectSortKey)),
+        this.store$.pipe(select(selectSortAs)),
+        this.store$.pipe(select(selectAreAllSegmentsFetched))
+      ),
+      filter(([fromStarting, skip, total, areAllFetched]) => {
+        return !areAllFetched || skip < total || total === null || fromStarting;
+      }),
+      tap(() => {
+        this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments: true }));
+      }),
+      switchMap(([fromStarting, skip, _, searchKey, sortKey, sortAs]) => {
+        let searchString = null;
+        // As withLatestFrom does not support more than 5 arguments
+        // TODO: Find alternative
+        this.getSearchString$().subscribe((searchInput) => {
+          searchString = searchInput;
+        });
+        let params: SegmentsPaginationParams = {
+          skip: fromStarting ? 0 : skip,
+          take: NUMBER_OF_SEGMENTS,
+        };
+        if (sortKey) {
+          params = {
+            ...params,
+            sortParams: {
+              key: sortKey,
+              sortAs,
+            },
+          };
+        }
+        if (searchString) {
+          params = {
+            ...params,
+            searchParams: {
+              key: searchKey,
+              string: searchString,
+            },
+          };
+        }
+        return this.segmentsDataService.fetchSegmentsPaginated(params).pipe(
+          switchMap((data: any) => {
+            const actions = fromStarting ? [SegmentsActions.actionSetSkipSegments({ skipSegments: 0 })] : [];
+            return [
+              ...actions,
+              SegmentsActions.actionFetchSegmentsSuccess({
+                segments: data.nodes.segmentsData,
+                totalSegments: data.total,
+                experimentSegmentInclusion: data.nodes.experimentSegmentInclusionData,
+                experimentSegmentExclusion: data.nodes.experimentSegmentExclusionData,
+                featureFlagSegmentInclusion: data.nodes.featureFlagSegmentInclusionData,
+                featureFlagSegmentExclusion: data.nodes.featureFlagSegmentExclusionData,
+              }),
+            ];
+          }),
+          catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
+        );
+      })
+    )
+  );
+
+  fetchSegmentsLegacyGetAll$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionFetchSegmentsLegacyGetAll),
       withLatestFrom(this.store$.pipe(select(selectAllSegments))),
       switchMap(() =>
-        this.segmentsDataService.fetchSegments().pipe(
+        this.segmentsDataService.fetchSegmentsLegacyGetAll().pipe(
           map((data: any) =>
-            SegmentsActions.actionFetchSegmentsSuccess({
+            SegmentsActions.actionFetchSegmentsSuccessLegacyGetAll({
               segments: data.segmentsData,
               experimentSegmentInclusion: data.experimentSegmentInclusionData,
               experimentSegmentExclusion: data.experimentSegmentExclusionData,
@@ -125,6 +202,9 @@ export class SegmentsEffects {
     )
   );
 
+  private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
+
+  // TODO: this should be replaced with the common download() method in common-export-helpers service in new experience
   private download(filename, text, isZip: boolean) {
     const element = document.createElement('a');
     isZip

@@ -62,7 +62,7 @@ describe('SegmentDataService', () => {
     it('should get the fetchSegments http observable', () => {
       const expectedUrl = mockEnvironment.api.segments;
 
-      service.fetchSegments();
+      service.fetchSegmentsLegacyGetAll();
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl);
     });

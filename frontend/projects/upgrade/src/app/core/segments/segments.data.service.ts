@@ -8,7 +8,7 @@ import { ENV, Environment } from '../../../environments/environment-types';
 export class SegmentsDataService {
   constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
-  fetchSegments() {
+  fetchSegmentsLegacyGetAll() {
     const url = this.environment.api.segments;
     return this.http.get(url);
   }
