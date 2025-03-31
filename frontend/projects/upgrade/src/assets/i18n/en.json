@@ -478,6 +478,8 @@
   "segments.details.menu-button.duplicate-segment.text": "Duplicate Segment",
   "segments.details.menu-button.export-segment-design.text": "Export Segment Design",
   "segments.details.menu-button.delete-segment.text": "Delete Segment",
+  "segments.details.lists.menu-button.import-list.text": "Import List",
+  "segments.details.lists.menu-button.export-lists.text": "Export All Lists",
   "segments.members-add-members.text": "Add Member",
   "segments.members-placeholder-type.text": "Type",
   "segments.members-placeholder-id/name.text": "ID/Name",

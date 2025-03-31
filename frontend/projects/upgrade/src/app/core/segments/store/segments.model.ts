@@ -190,6 +190,11 @@ export enum SEGMENT_DETAILS_PAGE_ACTIONS {
   EXPORT = 'Export Segment',
 }
 
+export enum SEGMENT_LIST_ACTIONS {
+  IMPORT = 'Import List',
+  EXPORT_ALL = 'Export All Lists',
+}
+
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;
   // TODO: remove any

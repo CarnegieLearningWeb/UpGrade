@@ -64,7 +64,7 @@ export class SegmentImportAdapter implements ImportServiceAdapter {
   }
 
   fetchData(): void {
-    this.segmentService.fetchSegments(true);
+    this.segmentService.fetchSegmentsPaginated(true);
   }
 }
 
