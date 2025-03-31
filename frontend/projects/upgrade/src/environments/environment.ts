@@ -73,6 +73,7 @@ export const environment = {
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
     segments: '/segments',
+    getPaginatedSegments: '/segments/paginated',
     validateSegments: '/segments/validation',
     validateSegmentsImport: '/segments/import/validation',
     importSegments: '/segments/import',

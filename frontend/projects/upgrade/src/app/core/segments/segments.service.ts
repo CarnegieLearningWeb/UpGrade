@@ -6,6 +6,7 @@ import {
   selectIsLoadingSegments,
   selectAllSegments,
   selectSelectedSegment,
+  selectRootTableState,
   selectSegmentOverviewDetails,
   selectExperimentSegmentsInclusion,
   selectExperimentSegmentsExclusion,
@@ -16,6 +17,7 @@ import {
   selectSearchKey,
   selectSortKey,
   selectSortAs,
+  selectSegmentLists,
 } from './store/segments.selectors';
 import {
   LIST_OPTION_TYPE,
@@ -29,6 +31,7 @@ import { Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
 import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 import { LocalStorageService } from '../local-storage/local-storage.service';
+import { selectShouldUseLegacyUI } from './store/segments.selectors';
 import { selectContextMetaData } from '../experiments/store/experiments.selectors';
 import { selectSelectedFeatureFlag } from '../feature-flags/store/feature-flags.selectors';
 import { CommonTextHelpersService } from '../../shared/services/common-text-helpers.service';
@@ -45,11 +48,18 @@ export class SegmentsService {
   setIsLoadingImportSegment$ = this.store$.pipe(select(selectIsLoadingSegments)); // FIX!
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
+  selectRootTableState$ = this.store$.pipe(select(selectRootTableState));
+  shouldUseLegacyView$ = this.store$.pipe(select(selectShouldUseLegacyUI));
   selectedSegmentOverviewDetails = this.store$.pipe(select(selectSegmentOverviewDetails));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
   selectSegmentSortKey$ = this.store$.pipe(select(selectSortKey));
   selectSegmentSortAs$ = this.store$.pipe(select(selectSortAs));
+  selectSegmentLists$ = this.store$.pipe(select(selectSegmentLists));
+  selectSegmentListsLength$ = this.store$.pipe(
+    select(selectSegmentLists),
+    map((lists) => lists.length)
+  );
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
   allFeatureFlagSegmentsExclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsExclusion));
@@ -131,8 +141,12 @@ export class SegmentsService {
     );
   }
 
-  fetchSegments(fromStarting?: boolean) {
+  fetchSegmentsPaginated(fromStarting?: boolean) {
     this.store$.dispatch(SegmentsActions.actionFetchSegments({ fromStarting }));
+  }
+
+  fetchAllSegments(fromStarting?: boolean) {
+    this.store$.dispatch(SegmentsActions.actionfetchAllSegments({ fromStarting }));
   }
 
   createNewSegment(segment: SegmentInput) {

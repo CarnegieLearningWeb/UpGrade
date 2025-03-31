@@ -8,7 +8,6 @@ import {
   SEGMENT_SORT_KEY,
   FEATURE_FLAG_LIST_FILTER_MODE,
 } from 'upgrade_types';
-import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
 export { SEGMENT_STATUS };
 
 export enum NewSegmentDialogEvents {
@@ -112,6 +111,7 @@ export interface Segment {
   individualForSegment: IndividualForSegment[];
   groupForSegment: GroupForSegment[];
   subSegments: Segment[];
+  listType?: MemberTypes | string;
   type: SEGMENT_TYPE;
   status: SEGMENT_STATUS;
 }
@@ -130,6 +130,59 @@ export interface SegmentInput {
   type: SEGMENT_TYPE;
 }
 
+export const SEGMENT_ROOT_COLUMN_NAMES = {
+  NAME: 'name',
+  STATUS: 'status',
+  UPDATED_AT: 'updatedAt',
+  APP_CONTEXT: 'appContext',
+  TAGS: 'tags',
+  LISTS: 'lists',
+};
+
+export const SEGMENT_ROOT_DISPLAYED_COLUMNS = Object.values(SEGMENT_ROOT_COLUMN_NAMES);
+
+export const SEGMENT_TRANSLATION_KEYS = {
+  NAME: 'segments.global-name.text',
+  STATUS: 'segments.global-status.text',
+  UPDATED_AT: 'segments.global-updated-at.text',
+  APP_CONTEXT: 'segments.global-app-context.text',
+  TAGS: 'segments.global-tags.text',
+  LISTS: 'segments.global-lists.text',
+};
+
+export interface ParticipantListTableRow {
+  listType: MemberTypes | string;
+  segment: Segment;
+  enabled?: boolean;
+}
+
+export interface SegmentsPaginationInfo {
+  nodes: Segment[];
+  total: number;
+  skip: number;
+  take: number;
+}
+
+// TODO: This should be probably be a part of env config
+export const NUMBER_OF_SEGMENTS = 20;
+
+interface ISegmentsSearchParams {
+  key: SEGMENT_SEARCH_KEY;
+  string: string;
+}
+
+interface ISegmentsSortParams {
+  key: SEGMENT_SORT_KEY;
+  sortAs: SORT_AS_DIRECTION;
+}
+
+export interface SegmentsPaginationParams {
+  skip: number;
+  take: number;
+  searchParams?: ISegmentsSearchParams;
+  sortParams?: ISegmentsSortParams;
+}
+
 export enum SEGMENT_DETAILS_PAGE_ACTIONS {
   EDIT = 'Edit Segment',
   DUPLICATE = 'Duplicate Segment',
@@ -144,6 +197,8 @@ export interface SegmentState extends EntityState<Segment> {
   allExperimentSegmentsExclusion: any;
   allFeatureFlagSegmentsInclusion: any;
   allFeatureFlagSegmentsExclusion: any;
+  skipSegments: number;
+  totalSegments: number;
   searchKey: SEGMENT_SEARCH_KEY;
   searchString: string;
   sortKey: SEGMENT_SORT_KEY;

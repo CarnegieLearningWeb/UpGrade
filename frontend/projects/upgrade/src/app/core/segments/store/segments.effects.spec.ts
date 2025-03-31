@@ -55,9 +55,9 @@ describe('SegmentsEffects', () => {
     service = new SegmentsEffects(store$, actions$, segmentsDataService, router);
   });
 
-  describe('fetchSegments$', () => {
+  describe('fetchAllSegments$', () => {
     it('should dispatch actionFetchSegmentsSuccess with segments data on API call success', fakeAsync(() => {
-      segmentsDataService.fetchSegments = jest.fn().mockReturnValue(
+      segmentsDataService.fetchAllSegments = jest.fn().mockReturnValue(
         of({
           segmentsData: [{ ...mockSegment }],
           experimentSegmentInclusionData: [],
@@ -68,7 +68,7 @@ describe('SegmentsEffects', () => {
       );
       selectAllSegments.setResult([{ ...mockSegment }]);
 
-      const expectedAction = SegmentsActions.actionFetchSegmentsSuccess({
+      const expectedAction = SegmentsActions.actionFetchSegmentsSuccessLegacyGetAll({
         segments: [{ ...mockSegment }],
         experimentSegmentInclusion: [],
         experimentSegmentExclusion: [],
@@ -76,26 +76,26 @@ describe('SegmentsEffects', () => {
         featureFlagSegmentExclusion: [],
       });
 
-      service.fetchSegments$.subscribe((result) => {
+      service.fetchAllSegments$.subscribe((result) => {
         expect(result).toEqual(expectedAction);
       });
 
-      actions$.next(SegmentsActions.actionFetchSegments({}));
+      actions$.next(SegmentsActions.actionfetchAllSegments({}));
 
       tick(0);
     }));
 
     it('should dispatch actionFetchSegmentsFailure on API call failure', fakeAsync(() => {
-      segmentsDataService.fetchSegments = jest.fn().mockReturnValue(throwError(() => new Error('test')));
+      segmentsDataService.fetchAllSegments = jest.fn().mockReturnValue(throwError(() => new Error('test')));
       selectAllSegments.setResult([{ ...mockSegment }]);
 
       const expectedAction = SegmentsActions.actionFetchSegmentsFailure();
 
-      service.fetchSegments$.subscribe((result) => {
+      service.fetchAllSegments$.subscribe((result) => {
         expect(result).toEqual(expectedAction);
       });
 
-      actions$.next(SegmentsActions.actionFetchSegments({}));
+      actions$.next(SegmentsActions.actionfetchAllSegments({}));
 
       tick(0);
     }));

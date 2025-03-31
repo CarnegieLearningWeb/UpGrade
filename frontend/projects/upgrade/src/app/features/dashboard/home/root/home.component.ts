@@ -37,7 +37,7 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
     this.experimentService.loadExperiments(true);
-    this.segmentsService.fetchSegments(true);
+    this.segmentsService.fetchSegmentsPaginated(true);
     this.stratificationFactorsService.fetchStratificationFactors(true);
     this.experimentService.fetchAllExperimentNames();
     this.previewUsersService.fetchPreviewUsers(true);

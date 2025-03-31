@@ -22,6 +22,7 @@ import {
 } from '../../../../../../../shared/services/common-table-helpers.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-segment-root-section-card',
@@ -46,11 +47,9 @@ export class SegmentRootSectionCardComponent {
   dataSource$: Observable<MatTableDataSource<Segment>>;
   isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
   isInitialLoading$ = this.segmentsService.isInitialSegmentsLoading();
-  isAllSegmentsFetched$; // TODO: Implement if needed for pagination
   searchString$ = this.segmentsService.selectSearchString$;
   searchKey$ = this.segmentsService.selectSearchKey$;
-  searchParams$ = this.segmentsService.selectSearchSegmentParams();
-  selectRootTableState$; // TODO: Implement if needed
+  selectRootTableState$ = this.segmentsService.selectRootTableState$;
   isSearchActive$: Observable<boolean> = this.searchString$.pipe(map((searchString) => !!searchString));
 
   segmentFilterOptions = [
@@ -83,70 +82,25 @@ export class SegmentRootSectionCardComponent {
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.segmentsService.fetchSegments(true);
+    this.segmentsService.fetchSegmentsPaginated(true);
   }
 
   ngAfterViewInit() {
-    // Initialize dataSource$ with segments data
-    this.dataSource$ = this.segmentsService.allSegments$.pipe(
-      map((segments: Segment[]) => {
-        const dataSource = new MatTableDataSource<Segment>(segments);
-        this.setFilterPredicateForSegments(dataSource);
-        this.applyFilter(dataSource);
-        return dataSource;
+    this.dataSource$ = this.selectRootTableState$.pipe(
+      map((tableState: TableState<Segment>) => {
+        return this.tableHelpersService.mapTableStateToDataSource<Segment>(tableState);
       })
     );
-  }
-
-  setFilterPredicateForSegments(dataSource: MatTableDataSource<Segment>) {
-    dataSource.filterPredicate = (data: Segment, filter: string) => {
-      const searchKey = this.segmentsService.selectSearchKey$;
-      let searchKeyValue: SEGMENT_SEARCH_KEY;
-
-      // Get the current search key value
-      searchKey
-        .subscribe((value) => {
-          searchKeyValue = value;
-        })
-        .unsubscribe();
-
-      filter = filter.toLowerCase();
-
-      switch (searchKeyValue) {
-        case SEGMENT_SEARCH_KEY.ALL:
-          return (
-            data.name.toLowerCase().includes(filter) ||
-            data.status.toLowerCase().includes(filter) ||
-            data.context.toLowerCase().includes(filter)
-          );
-        case SEGMENT_SEARCH_KEY.NAME:
-          return data.name.toLowerCase().includes(filter);
-        case SEGMENT_SEARCH_KEY.CONTEXT:
-          return data.context.toLowerCase().includes(filter);
-        default:
-          return data.name.toLowerCase().includes(filter);
-      }
-    };
-  }
-
-  applyFilter(dataSource: MatTableDataSource<Segment>) {
-    let searchString: string;
-
-    // Get the current search string value
-    this.searchString$
-      .subscribe((value) => {
-        searchString = value;
-      })
-      .unsubscribe();
-
-    if (searchString) {
-      dataSource.filter = searchString.trim().toLowerCase();
-    }
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<SEGMENT_SEARCH_KEY>) {
     this.segmentsService.setSearchString(params.searchString);
     this.segmentsService.setSearchKey(params.searchKey as SEGMENT_SEARCH_KEY);
+  }
+
+  onSlideToggleChange(event: MatSlideToggleChange): void {
+    const slideToggleEvent = event.source;
+    console.log(`Show Global Excludes: ${slideToggleEvent.checked}`);
   }
 
   onAddSegmentButtonClick() {
