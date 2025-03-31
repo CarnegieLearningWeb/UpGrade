@@ -12,10 +12,27 @@ import {
   SEGMENT_SORT_KEY,
 } from '../../../../../../../../types/src/Experiment/enums';
 
-export const actionFetchSegments = createAction('[Segments] Segment', props<{ fromStarting?: boolean }>());
+export const actionFetchSegments = createAction('[Segments] Segments', props<{ fromStarting?: boolean }>());
 
 export const actionFetchSegmentsSuccess = createAction(
   '[Segments] Fetch Segments Success',
+  props<{
+    segments: Segment[];
+    totalSegments: number;
+    experimentSegmentInclusion: experimentSegmentInclusionExclusionData[];
+    experimentSegmentExclusion: experimentSegmentInclusionExclusionData[];
+    featureFlagSegmentInclusion: featureFlagSegmentInclusionExclusionData[];
+    featureFlagSegmentExclusion: featureFlagSegmentInclusionExclusionData[];
+  }>()
+);
+
+export const actionfetchAllSegments = createAction(
+  '[Segments] Segments Legacy GET All',
+  props<{ fromStarting?: boolean }>()
+);
+
+export const actionFetchSegmentsSuccessLegacyGetAll = createAction(
+  '[Segments] Fetch Segments Success Legacy GET All',
   props<{
     segments: Segment[];
     experimentSegmentInclusion: experimentSegmentInclusionExclusionData[];
@@ -25,7 +42,7 @@ export const actionFetchSegmentsSuccess = createAction(
   }>()
 );
 
-export const actionFetchSegmentsFailure = createAction('[Segments] Fetch Segments Failure');
+export const actionFetchSegmentsFailure = createAction('[Segments] Fetch Segments Failure (Legacy GET all)');
 
 export const actionUpsertSegment = createAction(
   '[Segments] Upsert Segment',
@@ -67,6 +84,8 @@ export const actionExportSegments = createAction('[Segments] Export Segment', pr
 export const actionExportSegmentSuccess = createAction('[Segments] Export Segment Success');
 
 export const actionExportSegmentFailure = createAction('[Segments] Export Segment Failure');
+
+export const actionSetSkipSegments = createAction('[Segments] Set Skip Segments', props<{ skipSegments: number }>());
 
 export const actionSetSearchKey = createAction(
   '[Segments] Set Search key value',

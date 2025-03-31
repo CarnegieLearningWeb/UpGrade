@@ -6,6 +6,7 @@ import {
   selectIsLoadingSegments,
   selectAllSegments,
   selectSelectedSegment,
+  selectRootTableState,
   selectSegmentOverviewDetails,
   selectExperimentSegmentsInclusion,
   selectExperimentSegmentsExclusion,
@@ -46,6 +47,7 @@ export class SegmentsService {
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
+  selectRootTableState$ = this.store$.pipe(select(selectRootTableState));
   shouldUseLegacyView$ = this.store$.pipe(select(selectShouldUseLegacyUI));
   selectedSegmentOverviewDetails = this.store$.pipe(select(selectSegmentOverviewDetails));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
@@ -138,8 +140,12 @@ export class SegmentsService {
     );
   }
 
-  fetchSegments(fromStarting?: boolean) {
+  fetchSegmentsPaginated(fromStarting?: boolean) {
     this.store$.dispatch(SegmentsActions.actionFetchSegments({ fromStarting }));
+  }
+
+  fetchAllSegments(fromStarting?: boolean) {
+    this.store$.dispatch(SegmentsActions.actionfetchAllSegments({ fromStarting }));
   }
 
   createNewSegment(segment: SegmentInput) {
