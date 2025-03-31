@@ -131,6 +131,19 @@ export interface ParticipantListTableRow {
   enabled?: boolean;
 }
 
+export interface UsedByTableRow {
+  name: string;
+  link?: string;
+  type: string;
+  status: string;
+  updatedAt: string;
+}
+
+export enum USED_BY_TYPE {
+  EXPERIMENT = 'Experiment',
+  FEATURE_FLAG = 'Feature Flag',
+}
+
 export enum SEGMENT_DETAILS_PAGE_ACTIONS {
   EDIT = 'Edit Segment',
   DUPLICATE = 'Duplicate Segment',
