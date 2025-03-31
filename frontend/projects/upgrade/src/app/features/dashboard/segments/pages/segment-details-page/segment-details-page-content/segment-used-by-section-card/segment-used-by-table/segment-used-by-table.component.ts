@@ -10,7 +10,6 @@ import { SegmentsService } from '../../../../../../../../core/segments/segments.
 import { Observable, combineLatest, map } from 'rxjs';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { UsedByTableRow, USED_BY_TYPE } from '../../../../../../../../core/segments/store/segments.model';
-import { EXPERIMENT_STATE, FEATURE_FLAG_STATUS } from 'upgrade_types';
 import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
 
 @Component({
@@ -50,14 +49,6 @@ export class SegmentUsedByTableComponent implements OnInit {
   selectedSegment$ = this.segmentsService.selectedSegment$;
 
   constructor(private segmentsService: SegmentsService) {}
-
-  get ExperimentState() {
-    return EXPERIMENT_STATE;
-  }
-
-  get USED_BY_TYPE() {
-    return USED_BY_TYPE;
-  }
 
   ngOnInit() {
     this.dataSource$ = combineLatest([
