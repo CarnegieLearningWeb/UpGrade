@@ -473,7 +473,7 @@ export class SegmentService {
       logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
       await this.addSegmentDataInDB(segment, logger);
     }
-    return validatedSegments.importErrors; // HERE!
+    return validatedSegments.importErrors;
   }
 
   public async checkSegmentsValidity(fileData: SegmentFile[]): Promise<SegmentValidationObj> {
@@ -495,12 +495,12 @@ export class SegmentService {
         }
         segmentForValidation = plainToClass(SegmentInputValidator, segmentForValidation);
         const segmentJSONValidation = await this.checkForMissingProperties(segmentForValidation);
-        const fileName = segment.fileName.slice(0, segment.fileName.lastIndexOf('.'));
+
         if (segmentJSONValidation.isSegmentValid) {
-          return { filename: fileName, segment: segmentForValidation };
+          return { filename: segment.fileName, segment: segmentForValidation };
         } else {
           importFileErrors.push({
-            fileName,
+            fileName: segment.fileName,
             error: segmentJSONValidation.missingProperty,
             compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
           });

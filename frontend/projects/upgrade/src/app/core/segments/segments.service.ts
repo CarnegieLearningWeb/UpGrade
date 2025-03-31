@@ -45,7 +45,7 @@ export class SegmentsService {
   ) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
-  setIsLoadingImportSegment$ = this.store$.pipe(select(selectIsLoadingSegments)); // FIX!
+  setIsLoadingImportSegment$ = this.store$.pipe(select(selectIsLoadingSegments));
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
   selectRootTableState$ = this.store$.pipe(select(selectRootTableState));

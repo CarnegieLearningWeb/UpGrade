@@ -101,6 +101,7 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
   isLoadingImport$: Observable<boolean>;
   isImportActionBtnDisabled$: Observable<boolean>;
   validationResponse$ = new BehaviorSubject<ValidatedImportResponse[]>([]);
+  importableFiles$ = new BehaviorSubject<{ fileName: string; fileContent: string | ArrayBuffer }[]>([]);
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public config: CommonModalConfig<ImportModalParams>,
@@ -114,13 +115,9 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.isLoadingImport$ = this.importAdapter.getLoadingState();
 
-    this.isImportActionBtnDisabled$ = combineLatest([this.validationResponse$, this.isLoadingImport$]).pipe(
-      map(([validationResponse, isLoading]) => {
-        return (
-          isLoading ||
-          validationResponse.length === 0 ||
-          validationResponse.some((data) => data.compatibilityType === IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE)
-        );
+    this.isImportActionBtnDisabled$ = combineLatest([this.isLoadingImport$, this.importableFiles$]).pipe(
+      map(([isLoading, importableFiles]) => {
+        return isLoading || importableFiles.length === 0;
       })
     );
   }
@@ -157,14 +154,23 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
         this.importAdapter.setLoadingState(false);
         this.validationResponse$.next(validationResponse);
         this.fileValidationErrorDataSource = new MatTableDataSource(validationResponse);
+        const importableFiles = this.fileData.filter((file) => {
+          const validationItem = validationResponse.find((item) => {
+            return file.fileName.includes(item.fileName);
+          });
+          return validationItem?.compatibilityType !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        });
+        this.importableFiles$.next(importableFiles);
       });
 
     this.subscriptions.add(validatedFilesSubscription);
   }
 
   importFiles() {
+    const filesToImport = this.importableFiles$.getValue();
+
     const importSubscription = this.importAdapter
-      .importFiles(this.fileData, this.config.params)
+      .importFiles(filesToImport, this.config.params)
       .subscribe((importResult) => {
         this.showNotification(importResult);
       });
