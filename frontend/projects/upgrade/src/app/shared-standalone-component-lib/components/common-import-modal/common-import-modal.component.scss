@@ -1,97 +1,4 @@
 .drag-drop-container {
-    display: flex;
-    flex-direction: column;
-    row-gap: 2px;
-    padding: 40px 32px 24px;
-  
-    .form-hint {
-      text-indent: 16px;
-      margin-bottom: 0;
-    }
-  
-    .spinner {
-      width: 100%;
-      margin: auto;
-    }
-  
-    .file-compatibility-table {
-      ::ng-deep thead {
-        background-color: var(--zircon);
-  
-        tr.mat-mdc-header-row {
-          height: 48px;
-          border: 0;
-  
-          th {
-            padding-left: 0;
-            color: var(--darker-grey);
-  
-            &:first-child {
-              border-top-left-radius: 4px;
-            }
-  
-            &:last-child {
-              border-top-right-radius: 4px;
-            }
-          }
-        }
-      }
-  
-      ::ng-deep tbody {
-        display: block;
-        max-height: 350px;
-        overflow-y: auto;
-  
-        tr.mat-mdc-row {
-          height: 56px;
-  
-          td {
-            min-width: 96px;
-            padding-left: 0;
-            color: var(--black-2);
-          }
-        }
-  
-        tr.mat-mdc-no-data-row {
-          td {
-            height: 48px;
-            text-align: center;
-            border: 1.5px dashed var(--light-grey-2);
-            color: var(--dark-grey);
-          }
-        }
-      }
-  
-      .cdk-column-actions {
-        width: 15%;
-  
-        .expand-button--disabled {
-          opacity: 0.5;
-        }
-      }
-  
-      .cdk-column-fileName {
-        width: 55%;
-      }
-  
-      .cdk-column-compatibilityType {
-        width: 30%;
-      }
-  
-      .expandable-row {
-        padding: 0;
-        width: 100%;
-  
-        .compatibility-details-container {
-          min-height: 48px;
-          padding: 12px 5% 12px 10%;
-          display: flex;
-          align-items: center;
-        }
-      }
-    }
-  }
-  .drag-drop-container {
   display: flex;
   flex-direction: column;
   row-gap: 2px;
@@ -100,6 +7,10 @@
   .form-hint {
     text-indent: 16px;
     margin-bottom: 0;
+  }
+
+  .validation-message-padding {
+    margin-top: 5px;
   }
 
   .spinner {

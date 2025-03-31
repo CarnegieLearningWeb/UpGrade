@@ -27,17 +27,17 @@ describe('Segment Controller Testing', () => {
 
   const segmentData = {
     id: uuid(),
-    name: "segment1",
-    description: "desc",
-    context: "home",
-    type: "public",
-    status: "Unused",
-    userIds: ["user1"],
+    name: 'segment1',
+    description: 'desc',
+    context: 'home',
+    type: 'public',
+    status: 'Unused',
+    userIds: ['user1'],
     groups: {
-      groupId : "group1",
-      type: "school"
+      groupId: 'group1',
+      type: 'school',
     },
-    subSegmentIds: ["seg2"]
+    subSegmentIds: ['seg2'],
   };
 
   test('Get request for /api/segments', () => {
@@ -80,7 +80,7 @@ describe('Segment Controller Testing', () => {
   test('Post request for /api/segments/import', () => {
     return request(app)
       .post('/api/segments/import')
-      .send(segmentData)
+      .send([segmentData])
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -111,5 +111,4 @@ describe('Segment Controller Testing', () => {
       .expect('Content-Type', /json/)
       .expect(200);
   });
-
 });

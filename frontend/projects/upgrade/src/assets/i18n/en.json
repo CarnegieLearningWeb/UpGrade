@@ -557,5 +557,6 @@
   "monitor.metric-earliest.text": "Earliest",
   "monitor.metric-most-recent.text": "Most recent",
   "monitor.metric-repeated-measure.text": "Repeated measure treatment",
-  "monitor.monitored-metrics.text": "Monitored Metrics"
+  "monitor.monitored-metrics.text": "Monitored Metrics",
+  "common-import-modal.incompatible-import-warning.text": "*Incompatible files will not be imported"
 }

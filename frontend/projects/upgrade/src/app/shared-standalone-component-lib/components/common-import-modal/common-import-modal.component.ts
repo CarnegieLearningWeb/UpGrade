@@ -102,6 +102,7 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
   isImportActionBtnDisabled$: Observable<boolean>;
   validationResponse$ = new BehaviorSubject<ValidatedImportResponse[]>([]);
   importableFiles$ = new BehaviorSubject<{ fileName: string; fileContent: string | ArrayBuffer }[]>([]);
+  mixedCompatibilityMessage$: Observable<string>;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public config: CommonModalConfig<ImportModalParams>,
@@ -118,6 +119,22 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
     this.isImportActionBtnDisabled$ = combineLatest([this.isLoadingImport$, this.importableFiles$]).pipe(
       map(([isLoading, importableFiles]) => {
         return isLoading || importableFiles.length === 0;
+      })
+    );
+
+    this.mixedCompatibilityMessage$ = this.validationResponse$.pipe(
+      map((validationResponse) => {
+        const message = 'common-import-modal.incompatible-import-warning.text';
+        const incompatibleFiles = validationResponse.filter(
+          (item) => item.compatibilityType === IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE
+        );
+
+        // if we have more than one file, and some are incompatible, but not all, then show this message
+        if (validationResponse.length > 1 && incompatibleFiles.length !== validationResponse.length) {
+          return message;
+        } else {
+          return '';
+        }
       })
     );
   }
