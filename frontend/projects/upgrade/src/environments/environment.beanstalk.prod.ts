@@ -1,4 +1,6 @@
-export const environment = {
+import { Environment } from './environment-types';
+
+export const environment: Environment = {
   appName: 'UpGrade',
   envName: 'PROD',
   apiBaseUrl: '',
@@ -25,7 +27,6 @@ export const environment = {
     exportExperiment: '/experiments/export',
     exportAllExperiment: '/experiments/export/all',
     updateExperiments: '/experiments',
-    experimentContext: '/experiments/context',
     getExperimentById: '/experiments/single',
     getAllAuditLogs: '/audit',
     getAllErrorLogs: '/error',
@@ -36,7 +37,7 @@ export const environment = {
     deleteExperiment: '/experiments',
     updateExperimentState: '/experiments/state',
     users: '/users',
-    loginUser: '/login/user', // Used to create a new user after login if doesn't exist in DB
+    loginUser: '/login/user',
     getAllUsers: '/users/paginated',
     userDetails: '/users/details',
     previewUsers: '/previewUsers',
@@ -71,7 +72,6 @@ export const environment = {
     validateSegmentsImport: '/segments/import/validation',
     importSegments: '/segments/import',
     exportSegments: '/segments/export/json',
-    exportSegment: '/segments/export',
     exportSegmentCSV: '/segments/export/csv',
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
   },
