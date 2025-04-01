@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { FLAG_SEARCH_KEY } from 'upgrade_types';
 
 export interface TableState<T> {
   tableData: T[];
-  searchParams: { searchString: string; searchKey: FLAG_SEARCH_KEY };
+  searchParams: { searchString: string; searchKey: string };
   allSearchableProperties: string[];
 }
 @Injectable({

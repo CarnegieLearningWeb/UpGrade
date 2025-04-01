@@ -5,7 +5,7 @@ import { selectRouterState } from '../../core.state';
 import { CommonTextHelpersService } from '../../../shared/services/common-text-helpers.service';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
 import { selectSelectedFeatureFlag } from '../../feature-flags/store/feature-flags.selectors';
-import { SEGMENT_TYPE } from 'upgrade_types';
+import { SEGMENT_SEARCH_KEY, SEGMENT_TYPE } from 'upgrade_types';
 
 export const selectSegmentsState = createFeatureSelector<SegmentState>('segments');
 
@@ -79,9 +79,40 @@ export const selectSegmentOverviewDetails = createSelector(selectSelectedSegment
   ['Tags']: segment?.tags,
 }));
 
+export const selectSkipSegments = createSelector(selectSegmentsState, (state) => state.skipSegments);
+
+export const selectTotalSegments = createSelector(selectSegmentsState, (state) => state.totalSegments);
+
+export const selectAreAllSegmentsFetched = createSelector(
+  selectSkipSegments,
+  selectTotalSegments,
+  (skipSegments, totalSegments) => skipSegments === totalSegments
+);
+
 export const selectSearchKey = createSelector(selectSegmentsState, (state) => state.searchKey);
 
 export const selectSearchString = createSelector(selectSegmentsState, (state) => state.searchString);
+
+export const selectSearchSegmentParams = createSelector(
+  selectSearchKey,
+  selectSearchString,
+  (searchKey, searchString) => {
+    if (!!searchKey && (!!searchString || searchString === '')) {
+      return { searchKey, searchString };
+    }
+    return null;
+  }
+);
+
+export const selectRootTableState = createSelector(
+  selectAllSegments,
+  selectSearchSegmentParams,
+  (tableData, searchParams) => ({
+    tableData,
+    searchParams,
+    allSearchableProperties: Object.values(SEGMENT_SEARCH_KEY),
+  })
+);
 
 export const selectSortKey = createSelector(selectSegmentsState, (state) => state.sortKey);
 

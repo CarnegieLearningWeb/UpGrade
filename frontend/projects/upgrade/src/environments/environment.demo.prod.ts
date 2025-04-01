@@ -1,4 +1,6 @@
-export const environment = {
+import { Environment } from './environment-types';
+
+export const environment: Environment = {
   appName: 'UpGrade',
   envName: 'PROD',
   apiBaseUrl: 'https://upgrade-demo.carnegielearning.com/api',
@@ -25,7 +27,6 @@ export const environment = {
     exportExperiment: '/experiments/export',
     exportAllExperiment: '/experiments/export/all',
     updateExperiments: '/experiments',
-    experimentContext: '/experiments/context',
     getExperimentById: '/experiments/single',
     getAllAuditLogs: '/audit',
     getAllErrorLogs: '/error',
@@ -66,7 +67,9 @@ export const environment = {
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
     segments: '/segments',
+    getPaginatedSegments: '/segments/paginated',
     validateSegments: '/segments/validation',
+    validateSegmentsImport: '/segments/import/validation',
     importSegments: '/segments/import',
     exportSegments: '/segments/export/json',
     exportSegmentCSV: '/segments/export/csv',

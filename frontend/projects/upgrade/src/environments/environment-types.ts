@@ -49,7 +49,9 @@ export interface APIEndpoints {
   getVersion: string;
   contextMetaData: string;
   segments: string;
+  getPaginatedSegments: string;
   validateSegments: string;
+  validateSegmentsImport: string;
   importSegments: string;
   exportSegments: string;
   exportSegmentCSV: string;

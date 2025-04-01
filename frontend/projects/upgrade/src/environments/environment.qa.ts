@@ -1,4 +1,6 @@
-export const environment = {
+import { Environment } from './environment-types';
+
+export const environment: Environment = {
   appName: 'UpGrade',
   envName: 'qa',
   apiBaseUrl: '%API_BASE_URL%',
@@ -25,7 +27,6 @@ export const environment = {
     exportExperiment: '/experiments/export',
     exportAllExperiment: '/experiments/export/all',
     updateExperiments: '/experiments',
-    experimentContext: '/experiments/context',
     getExperimentById: '/experiments/single',
     getAllAuditLogs: '/audit',
     getAllErrorLogs: '/error',
@@ -66,10 +67,11 @@ export const environment = {
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
     segments: '/segments',
+    getPaginatedSegments: '/segments/paginated',
     validateSegments: '/segments/validation',
+    validateSegmentsImport: '/segments/import/validation',
     importSegments: '/segments/import',
     exportSegments: '/segments/export/json',
-    exportSegment: '/segments/export',
     exportSegmentCSV: '/segments/export/csv',
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
   },

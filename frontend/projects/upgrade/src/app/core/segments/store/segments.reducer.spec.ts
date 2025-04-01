@@ -28,7 +28,7 @@ describe('SegmentsReducer', () => {
       previousState.allExperimentSegmentsInclusion = null;
       previousState.allExperimentSegmentsExclusion = null;
 
-      const testAction = SegmentsActions.actionFetchSegmentsSuccess({
+      const testAction = SegmentsActions.actionFetchSegmentsSuccessLegacyGetAll({
         segments: [],
         experimentSegmentExclusion: [],
         experimentSegmentInclusion: [],

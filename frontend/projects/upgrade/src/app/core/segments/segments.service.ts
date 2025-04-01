@@ -6,6 +6,7 @@ import {
   selectIsLoadingSegments,
   selectAllSegments,
   selectSelectedSegment,
+  selectRootTableState,
   selectSegmentOverviewDetails,
   selectExperimentSegmentsInclusion,
   selectExperimentSegmentsExclusion,
@@ -50,17 +51,10 @@ export class SegmentsService {
   ) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
-  isLoadingUpsertSegment$ = this.store$.pipe(select(selectIsLoadingUpsertSegment));
-  isSelectedSegmentUpdated$ = this.store$.pipe(
-    select(selectSelectedSegment),
-    pairwise(),
-    filter(([prev, curr]) => {
-      return prev && curr && !isEqual(prev, curr);
-    }),
-    map(([, curr]) => curr)
-  );
+  setIsLoadingImportSegment$ = this.store$.pipe(select(selectIsLoadingSegments));
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
+  selectRootTableState$ = this.store$.pipe(select(selectRootTableState));
   shouldUseLegacyView$ = this.store$.pipe(select(selectShouldUseLegacyUI));
   selectedSegmentOverviewDetails = this.store$.pipe(select(selectSegmentOverviewDetails));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
@@ -158,8 +152,12 @@ export class SegmentsService {
     );
   }
 
-  fetchSegments(fromStarting?: boolean) {
+  fetchSegmentsPaginated(fromStarting?: boolean) {
     this.store$.dispatch(SegmentsActions.actionFetchSegments({ fromStarting }));
+  }
+
+  fetchAllSegments(fromStarting?: boolean) {
+    this.store$.dispatch(SegmentsActions.actionfetchAllSegments({ fromStarting }));
   }
 
   createNewSegment(segment: SegmentInput) {
@@ -188,6 +186,10 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionSetSortingType({ sortingType }));
   }
 
+  setIsLoadingImportSegment(isLoadingSegments: boolean) {
+    this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments })); //fix!
+  }
+
   deleteSegment(segmentId: string) {
     this.store$.dispatch(SegmentsActions.actionDeleteSegment({ segmentId }));
   }
@@ -201,7 +203,6 @@ export class SegmentsService {
   addSegment(addSegmentRequest: AddSegmentRequest) {
     this.store$.dispatch(SegmentsActions.actionAddSegment({ addSegmentRequest }));
   }
-
 
   modifySegment(updateSegmentRequest: UpdateSegmentRequest) {
     this.store$.dispatch(SegmentsActions.actionUpdateSegment({ updateSegmentRequest }));

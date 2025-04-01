@@ -58,6 +58,15 @@ export enum UPSERT_FEATURE_FLAG_ACTION {
   DUPLICATE = 'duplicate',
 }
 
+export enum FEATURE_FLAG_BUTTON_ACTION {
+  IMPORT = 'import feature flag',
+  EXPORT_ALL = 'export all feature flags',
+  IMPORT_INCLUDE_LIST = 'import include list',
+  IMPORT_EXCLUDE_LIST = 'import exclude list',
+  EXPORT_ALL_INCLUDE_LISTS = 'export all include lists',
+  EXPORT_ALL_EXCLUDE_LISTS = 'export all exclude lists',
+}
+
 export interface UpsertFeatureFlagParams {
   sourceFlag: FeatureFlag;
   action: UPSERT_FEATURE_FLAG_ACTION;

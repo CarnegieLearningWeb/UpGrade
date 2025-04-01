@@ -459,7 +459,7 @@ describe('Segment Service Testing', () => {
   it('should import a segment', async () => {
     const returnSegment = [
       {
-        fileName: 'seg1',
+        fileName: 'seg1.json',
         error: null,
         compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
       },
@@ -474,7 +474,7 @@ describe('Segment Service Testing', () => {
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {
     const returnSegment = [
       {
-        fileName: 'seg1',
+        fileName: 'seg1.json',
         error:
           'Invalid Segment data: ' +
           'SubSegment: seg2 not found. Please import subSegment with same context and link in segment. ',

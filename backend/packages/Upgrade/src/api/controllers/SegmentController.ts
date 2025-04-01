@@ -23,7 +23,6 @@ export interface getSegmentData {
   experimentSegmentInclusionData: Partial<ExperimentSegmentInclusion>[];
   experimentSegmentExclusionData: Partial<ExperimentSegmentExclusion>[];
 }
-
 interface SegmentPaginationInfo extends PaginationResponse {
   nodes: getSegmentData;
 }

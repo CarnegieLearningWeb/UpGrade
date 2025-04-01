@@ -3,7 +3,9 @@
 // `ng build --env=prod` then `environment.prod.ts` will be used instead.
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
-export const environment = {
+import { Environment } from './environment-types';
+
+export const environment: Environment = {
   appName: 'UpGrade',
   envName: 'DEV',
   apiBaseUrl: 'http://localhost:3030/api',
@@ -30,7 +32,6 @@ export const environment = {
     exportExperiment: '/experiments/export',
     exportAllExperiment: '/experiments/export/all',
     updateExperiments: '/experiments',
-    experimentContext: '/experiments/context',
     getExperimentById: '/experiments/single',
     getAllAuditLogs: '/audit',
     getAllErrorLogs: '/error',
@@ -71,7 +72,9 @@ export const environment = {
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
     segments: '/segments',
+    getPaginatedSegments: '/segments/paginated',
     validateSegments: '/segments/validation',
+    validateSegmentsImport: '/segments/import/validation',
     importSegments: '/segments/import',
     exportSegments: '/segments/export/json',
     exportSegmentCSV: '/segments/export/csv',

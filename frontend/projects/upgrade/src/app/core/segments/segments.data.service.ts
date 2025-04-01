@@ -1,5 +1,12 @@
 import { Inject, Injectable } from '@angular/core';
-import { AddSegmentRequest, SegmentFile, SegmentInput } from './store/segments.model';
+import {
+  AddSegmentRequest,
+  SegmentFile,
+  SegmentInput,
+  SegmentsPaginationInfo,
+  SegmentsPaginationParams,
+} from './store/segments.model';
+import { Observable } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 
@@ -7,9 +14,14 @@ import { ENV, Environment } from '../../../environments/environment-types';
 export class SegmentsDataService {
   constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
-  fetchSegments() {
+  fetchAllSegments() {
     const url = this.environment.api.segments;
     return this.http.get(url);
+  }
+
+  fetchSegmentsPaginated(params: SegmentsPaginationParams): Observable<SegmentsPaginationInfo> {
+    const url = this.environment.api.getPaginatedSegments;
+    return this.http.post<SegmentsPaginationInfo>(url, params);
   }
 
   createNewSegment(segment: SegmentInput) {
@@ -67,8 +79,15 @@ export class SegmentsDataService {
     return this.http.post(url, segments);
   }
 
+  // "legacy" import method for segment feature import
   validateSegments(segments: SegmentFile[]) {
     const url = this.environment.api.validateSegments;
+    return this.http.post(url, segments);
+  }
+
+  // new import method for common modal
+  validateSegmentsImport(segments: SegmentFile[]) {
+    const url = this.environment.api.validateSegmentsImport;
     return this.http.post(url, segments);
   }
 }
