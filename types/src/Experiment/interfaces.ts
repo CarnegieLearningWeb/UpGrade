@@ -274,7 +274,8 @@ export interface CaliperEnvelope {
 }
 
 export interface IMenuButtonItem {
-  name: string;
+  action: string;
+  label: string; // transalation key
   disabled: boolean;
 }
 

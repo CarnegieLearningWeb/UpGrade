@@ -63,8 +63,15 @@ export class SegmentsDataService {
     return this.http.post(url, segments);
   }
 
+  // "legacy" import method for segment feature import
   validateSegments(segments: SegmentFile[]) {
     const url = this.environment.api.validateSegments;
+    return this.http.post(url, segments);
+  }
+
+  // new import method for common modal
+  validateSegmentsImport(segments: SegmentFile[]) {
+    const url = this.environment.api.validateSegmentsImport;
     return this.http.post(url, segments);
   }
 }

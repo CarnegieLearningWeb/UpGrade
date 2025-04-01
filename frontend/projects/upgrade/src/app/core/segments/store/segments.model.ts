@@ -34,6 +34,11 @@ export enum UpsertSegmentType {
   IMPORT_SEGMENT = 'Import segment',
 }
 
+export enum SEGMENTS_BUTTON_ACTION {
+  IMPORT = 'import segment',
+  EXPORT_ALL = 'export all segments',
+}
+
 export interface NewSegmentDialogData {
   type: NewSegmentDialogEvents;
   formData?: any;
@@ -183,6 +188,11 @@ export enum SEGMENT_DETAILS_PAGE_ACTIONS {
   DUPLICATE = 'Duplicate Segment',
   DELETE = 'Delete Segment',
   EXPORT = 'Export Segment',
+}
+
+export enum SEGMENT_LIST_ACTIONS {
+  IMPORT = 'Import List',
+  EXPORT_ALL = 'Export All Lists',
 }
 
 export interface SegmentState extends EntityState<Segment> {

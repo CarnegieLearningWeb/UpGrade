@@ -1,13 +1,13 @@
 <app-common-dialog
-  [title]="data.title"
-  [cancelBtnLabel]="data.cancelBtnLabel"
-  [primaryActionBtnLabel]="data.primaryActionBtnLabel"
-  [primaryActionBtnColor]="data.primaryActionBtnColor"
-  [primaryActionBtnDisabled]="isImportActionBtnDisabled | async"
+  [title]="config.title | translate"
+  [cancelBtnLabel]="config.cancelBtnLabel"
+  [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+  [primaryActionBtnColor]="config.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isImportActionBtnDisabled$ | async"
   (primaryActionBtnClicked)="importFiles()"
 >
   <div class="drag-drop-container">
-    <ng-container *ngIf="!(isLoadingImportFeatureFlag$ | async); else loadingSpinner">
+    <ng-container *ngIf="!(isLoadingImport$ | async); else loadingSpinner">
       <ng-container *ngIf="(uploadedFileCount | async) < 1; else validationTable">
         <app-common-import-container
           fileType=".json"
@@ -16,11 +16,8 @@
         >
         </app-common-import-container>
         <p class="ft-12-400 import-message">
-          <span *ngIf="data.title === 'Import Feature Flag'">
-            {{ 'feature-flags.import-feature-flag.message.text' | translate }}
-          </span>
-          <span *ngIf="data.title === 'Import List'">
-            {{ 'feature-flags.import-feature-flag-list.message.text' | translate }}
+          <span *ngIf="config.params.messageKey">
+            {{ config.params.messageKey | translate }}
           </span>
           <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer"
             >Learn more</a
@@ -38,12 +35,12 @@
             <!-- Actions Column -->
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell class="ft-14-500 dense-2" *matCellDef="let element">
+              <td mat-cell class="ft-14-500 dense-2" *matCellDef="let element; let rowIndex = dataIndex">
                 <button
                   mat-icon-button
                   [ngClass]="{ 'expand-button--disabled': element.compatibilityType === 'compatible' }"
                   [disabled]="element.compatibilityType === 'compatible'"
-                  (click)="toggleExpand()"
+                  (click)="toggleExpand(rowIndex)"
                 >
                   <mat-icon>{{
                     element.compatibilityType === 'compatible' || !isDescriptionExpanded
@@ -72,24 +69,16 @@
 
             <!-- Expanded Detail Row -->
             <ng-container matColumnDef="expandedDetail">
-              <td mat-cell class="expandable-row" *matCellDef="let element; let fileIndex = dataIndex">
-                <div class="ft-14-500" *ngIf="isDescriptionExpanded" class="compatibility-details-container">
+              <td mat-cell class="expandable-row" *matCellDef="let element; let rowIndex = dataIndex">
+                <div class="ft-14-500" *ngIf="expandedRows.has(rowIndex)" class="compatibility-details-container">
                   <div *ngIf="element.compatibilityType === 'incompatible'">
-                    <span *ngIf="data.title === 'Import Feature Flag'">
-                      {{ 'feature-flags.import-flag-modal.compatibility-description.incompatible.text' | translate }}
-                    </span>
-                    <span *ngIf="data.title === 'Import List'">
-                      {{
-                        'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text' | translate
-                      }}
+                    <span *ngIf="config.params.incompatibleMessageKey">
+                      {{ config.params.incompatibleMessageKey | translate }}
                     </span>
                   </div>
                   <div *ngIf="element.compatibilityType === 'warning'">
-                    <span *ngIf="data.title === 'Import Feature Flag'">
-                      {{ 'feature-flags.import-flag-modal.compatibility-description.warning.text' | translate }}
-                    </span>
-                    <span *ngIf="data.title === 'Import List'">
-                      {{ 'feature-flags.import-flag-list-modal.compatibility-description.warning.text' | translate }}
+                    <span *ngIf="config.params.warningMessageKey">
+                      {{ config.params.warningMessageKey | translate }}
                     </span>
                   </div>
                 </div>
@@ -101,6 +90,9 @@
             <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
             <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"></mat-row>
           </table>
+          <span class="ft-14-400 validation-message validation-message-padding">{{
+            mixedCompatibilityMessage$ | async | translate
+          }}</span>
         </div>
       </ng-template>
     </ng-container>

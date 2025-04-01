@@ -22,7 +22,7 @@ import { IMenuButtonItem } from 'upgrade_types';
  *   [showPrimaryButton]="true"
  *   [primaryButtonText]="'Add Row'"
  *   [showMenuButton]="true"
- *   [menuButtonItems]="[{ name: 'Import', disabled: false }, { name: 'Export', disabled: true }]"
+ *   [menuButtonItems]="[{ label: 'translation key', action: 'Import', disabled: false }]"
  *   [isSectionCardExpanded]="true"
  *   (slideToggleChange)="onSlideToggleChange($event)"
  *   (primaryButtonClick)="onPrimaryButtonClick()"

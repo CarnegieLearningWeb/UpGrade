@@ -9,7 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IMenuButtonItem } from 'upgrade_types';
 import { SegmentsService } from '../../../../../../../core/segments/segments.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import { Segment } from '../../../../../../../core/segments/store/segments.model';
+import { Segment, SEGMENT_LIST_ACTIONS } from '../../../../../../../core/segments/store/segments.model';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
@@ -38,8 +38,16 @@ export class SegmentListsSectionCardComponent {
   selectedSegment$ = this.segmentsService.selectedSegment$;
 
   menuButtonItems: IMenuButtonItem[] = [
-    { name: 'Import List', disabled: false },
-    { name: 'Export All Lists', disabled: false },
+    {
+      label: 'segments.details.lists.menu-button.import-list.text',
+      action: SEGMENT_LIST_ACTIONS.IMPORT,
+      disabled: false,
+    },
+    {
+      label: 'segments.details.lists.menu-button.export-lists.text',
+      action: SEGMENT_LIST_ACTIONS.EXPORT_ALL,
+      disabled: false,
+    },
   ];
 
   constructor(
@@ -58,10 +66,10 @@ export class SegmentListsSectionCardComponent {
 
   onMenuButtonItemClick(event, segment: Segment) {
     switch (event) {
-      case 'Import List':
+      case SEGMENT_LIST_ACTIONS.IMPORT:
         console.log('Import List');
         break;
-      case 'Export All Lists':
+      case SEGMENT_LIST_ACTIONS.EXPORT_ALL:
         console.log('Export All Lists');
         break;
       default:

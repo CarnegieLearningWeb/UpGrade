@@ -68,6 +68,7 @@ export const environment = {
     segments: '/segments',
     getPaginatedSegments: '/segments/paginated',
     validateSegments: '/segments/validation',
+    validateSegmentsImport: '/segments/import/validation',
     importSegments: '/segments/import',
     exportSegments: '/segments/export/json',
     exportSegment: '/segments/export',
