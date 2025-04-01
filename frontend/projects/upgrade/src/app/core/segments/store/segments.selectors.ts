@@ -47,29 +47,15 @@ export const selectIsLoadingUpsertSegment = createSelector(
   (state) => state.isLoadingUpsertSegment
 );
 
-// export const selectSelectedSegment = createSelector(
-//   selectRouterState,
-//   selectSegmentsState,
-//   (routerState, segmentState) => {
-//     // be very defensive here to make sure routerState is correct
-//     const segmentId = routerState?.state?.params?.segmentId;
-//     if (segmentId) {
-//       return segmentState.entities[segmentId];
-//     }
-//     return undefined;
-//   }
-// );
-
 export const selectSelectedSegment = createSelector(
   selectRouterState,
   selectSegmentsState,
   (routerState, segmentState) => {
-    if (routerState?.state && segmentState?.entities) {
-      const {
-        state: { params },
-      } = routerState;
-      return segmentState.entities[params.segmentId] ? segmentState.entities[params.segmentId] : undefined;
+    const segmentId = routerState?.state?.params?.segmentId;
+    if (segmentId) {
+      return segmentState.entities[segmentId];
     }
+    return undefined;
   }
 );
 

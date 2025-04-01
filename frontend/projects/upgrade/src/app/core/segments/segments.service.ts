@@ -51,6 +51,7 @@ export class SegmentsService {
   ) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
+  isLoadingUpsertSegment$ = this.store$.pipe(select(selectIsLoadingUpsertSegment));
   setIsLoadingImportSegment$ = this.store$.pipe(select(selectIsLoadingSegments));
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
@@ -101,6 +102,15 @@ export class SegmentsService {
         return d1 < d2 ? 1 : d1 > d2 ? -1 : 0;
       })
     )
+  );
+
+  isSelectedSegmentUpdated$ = this.store$.pipe(
+    select(selectSelectedSegment),
+    pairwise(),
+    filter(([prev, curr]) => {
+      return prev && curr && !isEqual(prev, curr);
+    }),
+    map(([, curr]) => curr)
   );
 
   selectPrivateSegmentListTypeOptions$ = this.store$.pipe(

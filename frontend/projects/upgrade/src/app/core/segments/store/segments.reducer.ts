@@ -91,6 +91,8 @@ const reducer = createReducer(
     SegmentsActions.actionFetchSegmentsFailure,
     SegmentsActions.actionUpsertSegmentFailure,
     SegmentsActions.actionGetSegmentByIdFailure,
+    SegmentsActions.actionUpdateSegmentSuccess,
+    SegmentsActions.actionAddSegmentSuccess,
     (state) => ({ ...state, isLoadingSegments: false })
   ),
   on(SegmentsActions.actionUpsertSegmentSuccess, (state, { segment }) =>

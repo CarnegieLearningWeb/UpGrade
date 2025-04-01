@@ -65,7 +65,7 @@ export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDes
         {
           label: 'segments.details.menu-button.duplicate-segment.text',
           action: SEGMENT_DETAILS_PAGE_ACTIONS.DUPLICATE,
-          disabled: !permissions?.segments?.create,
+          disabled: true || !permissions?.segments?.create, // TODO: This modal is implemented, but not sure we have refined how it should work for segments
         },
         {
           label: 'segments.details.menu-button.export-segment-design.text',

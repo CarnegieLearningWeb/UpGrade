@@ -63,7 +63,7 @@ export const actionAddSegment = createAction(
   props<{ addSegmentRequest: AddSegmentRequest }>()
 );
 
-export const actionAddSegmentSuccess = createAction('[Segments] Add Segment Success', props<{ response: Segment }>());
+export const actionAddSegmentSuccess = createAction('[Segments] Add Segment Success', props<{ segment: Segment }>());
 
 export const actionAddSegmentFailure = createAction('[Segments] Add Segment Failure');
 
@@ -74,7 +74,7 @@ export const actionUpdateSegment = createAction(
 
 export const actionUpdateSegmentSuccess = createAction(
   '[Segments] Update Segment Success',
-  props<{ response: Segment }>()
+  props<{ segment: Segment }>()
 );
 
 export const actionUpdateSegmentFailure = createAction('[Segments] Update Segment Failure');
