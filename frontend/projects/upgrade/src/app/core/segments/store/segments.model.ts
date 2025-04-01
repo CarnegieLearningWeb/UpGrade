@@ -34,6 +34,11 @@ export enum UpsertSegmentType {
   IMPORT_SEGMENT = 'Import segment',
 }
 
+export enum SEGMENTS_BUTTON_ACTION {
+  IMPORT = 'import segment',
+  EXPORT_ALL = 'export all segments',
+}
+
 export interface NewSegmentDialogData {
   type: NewSegmentDialogEvents;
   formData?: any;
@@ -125,6 +130,26 @@ export interface SegmentInput {
   type: SEGMENT_TYPE;
 }
 
+export const SEGMENT_ROOT_COLUMN_NAMES = {
+  NAME: 'name',
+  STATUS: 'status',
+  UPDATED_AT: 'updatedAt',
+  APP_CONTEXT: 'appContext',
+  TAGS: 'tags',
+  LISTS: 'lists',
+};
+
+export const SEGMENT_ROOT_DISPLAYED_COLUMNS = Object.values(SEGMENT_ROOT_COLUMN_NAMES);
+
+export const SEGMENT_TRANSLATION_KEYS = {
+  NAME: 'segments.global-name.text',
+  STATUS: 'segments.global-status.text',
+  UPDATED_AT: 'segments.global-updated-at.text',
+  APP_CONTEXT: 'segments.global-app-context.text',
+  TAGS: 'segments.global-tags.text',
+  LISTS: 'segments.global-lists.text',
+};
+
 export interface ParticipantListTableRow {
   listType: MemberTypes | string;
   segment: Segment;
@@ -144,11 +169,43 @@ export enum USED_BY_TYPE {
   FEATURE_FLAG = 'Feature Flag',
 }
 
+export interface SegmentsPaginationInfo {
+  nodes: Segment[];
+  total: number;
+  skip: number;
+  take: number;
+}
+
+// TODO: This should be probably be a part of env config
+export const NUMBER_OF_SEGMENTS = 20;
+
+interface ISegmentsSearchParams {
+  key: SEGMENT_SEARCH_KEY;
+  string: string;
+}
+
+interface ISegmentsSortParams {
+  key: SEGMENT_SORT_KEY;
+  sortAs: SORT_AS_DIRECTION;
+}
+
+export interface SegmentsPaginationParams {
+  skip: number;
+  take: number;
+  searchParams?: ISegmentsSearchParams;
+  sortParams?: ISegmentsSortParams;
+}
+
 export enum SEGMENT_DETAILS_PAGE_ACTIONS {
   EDIT = 'Edit Segment',
   DUPLICATE = 'Duplicate Segment',
   DELETE = 'Delete Segment',
   EXPORT = 'Export Segment',
+}
+
+export enum SEGMENT_LIST_ACTIONS {
+  IMPORT = 'Import List',
+  EXPORT_ALL = 'Export All Lists',
 }
 
 export interface SegmentState extends EntityState<Segment> {
@@ -158,6 +215,8 @@ export interface SegmentState extends EntityState<Segment> {
   allExperimentSegmentsExclusion: any;
   allFeatureFlagSegmentsInclusion: any;
   allFeatureFlagSegmentsExclusion: any;
+  skipSegments: number;
+  totalSegments: number;
   searchKey: SEGMENT_SEARCH_KEY;
   searchString: string;
   sortKey: SEGMENT_SORT_KEY;

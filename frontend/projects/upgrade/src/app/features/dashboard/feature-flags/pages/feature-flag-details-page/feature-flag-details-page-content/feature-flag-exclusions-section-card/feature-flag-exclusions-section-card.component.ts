@@ -11,6 +11,7 @@ import { FeatureFlagExclusionsTableComponent } from './feature-flag-exclusions-t
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import {
+  FEATURE_FLAG_BUTTON_ACTION,
   FeatureFlag,
   PARTICIPANT_LIST_ROW_ACTION,
   ParticipantListRowActionEvent,
@@ -46,8 +47,16 @@ export class FeatureFlagExclusionsSectionCardComponent {
   selectedFlag$ = this.featureFlagService.selectedFeatureFlag$;
 
   menuButtonItems: IMenuButtonItem[] = [
-    { name: 'Import Exclude List', disabled: false },
-    { name: 'Export All Exclude Lists', disabled: false },
+    {
+      label: 'feature-flags.details.exclusions-modal.import-list.menu-item.text',
+      action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_EXCLUDE_LIST,
+      disabled: false,
+    },
+    {
+      label: 'feature-flags.details.exclusions-modal.export-lists.menu-item.text',
+      action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS,
+      disabled: false,
+    },
   ];
 
   constructor(
@@ -67,13 +76,13 @@ export class FeatureFlagExclusionsSectionCardComponent {
   onMenuButtonItemClick(event, flag: FeatureFlag) {
     const confirmMessage = 'feature-flags.export-all-exclude-lists-design.confirmation-text.text';
     switch (event) {
-      case 'Import Exclude List':
+      case FEATURE_FLAG_BUTTON_ACTION.IMPORT_EXCLUDE_LIST:
         this.dialogService
           .openImportFeatureFlagExcludeListModal(flag.id)
           .afterClosed()
           .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
         break;
-      case 'Export All Exclude Lists':
+      case FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS:
         if (flag.featureFlagSegmentExclusion.length) {
           this.dialogService
             .openExportDesignModal('Export All Exclude Lists', confirmMessage)

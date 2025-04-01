@@ -13,6 +13,7 @@ import { SimpleNotificationsModule } from 'angular2-notifications';
 import { environment } from '../environments/environment';
 import { ENV, Environment, RuntimeEnvironmentConfig } from '../environments/environment-types';
 import { AuthModule } from './core/auth/auth.module';
+import { provideImportServiceTypeAdapters } from './shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
 
 export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
   // in non-prod build, all env vars can be provided on .environment.ts,
@@ -73,6 +74,7 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
       return initializerFn();
     }),
     provideHttpClient(withInterceptorsFromDi()),
+    ...provideImportServiceTypeAdapters(),
   ],
 })
 export class AppModule {}

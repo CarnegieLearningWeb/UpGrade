@@ -8,13 +8,13 @@ import { SegmentsService } from '../../../../../../../core/segments/segments.ser
 import { AsyncPipe, NgIf, TitleCasePipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SegmentRootSectionCardTableComponent } from './segment-root-section-card-table/segment-root-section-card-table.component';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { SEGMENT_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { Observable, map } from 'rxjs';
-import { Segment } from '../../../../../../../core/segments/store/segments.model';
+import { Segment, SEGMENTS_BUTTON_ACTION } from '../../../../../../../core/segments/store/segments.model';
 import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
 import {
   CommonTableHelpersService,
@@ -22,6 +22,7 @@ import {
 } from '../../../../../../../shared/services/common-table-helpers.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-segment-root-section-card',
@@ -46,11 +47,9 @@ export class SegmentRootSectionCardComponent {
   dataSource$: Observable<MatTableDataSource<Segment>>;
   isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
   isInitialLoading$ = this.segmentsService.isInitialSegmentsLoading();
-  isAllSegmentsFetched$; // TODO: Implement if needed for pagination
   searchString$ = this.segmentsService.selectSearchString$;
   searchKey$ = this.segmentsService.selectSearchKey$;
-  searchParams$ = this.segmentsService.selectSearchSegmentParams();
-  selectRootTableState$; // TODO: Implement if needed
+  selectRootTableState$ = this.segmentsService.selectRootTableState$;
   isSearchActive$: Observable<boolean> = this.searchString$.pipe(map((searchString) => !!searchString));
 
   segmentFilterOptions = [
@@ -63,18 +62,19 @@ export class SegmentRootSectionCardComponent {
 
   menuButtonItems: IMenuButtonItem[] = [
     {
-      name: this.translateService.instant('segments.import-segment.text'),
+      label: 'segments.import-segment.text',
+      action: SEGMENTS_BUTTON_ACTION.IMPORT,
       disabled: false,
     },
     {
-      name: this.translateService.instant('segments.export-all-segments.text'),
+      label: 'segments.export-all-segments.text',
+      action: SEGMENTS_BUTTON_ACTION.EXPORT_ALL,
       disabled: true,
     },
   ];
 
   constructor(
     private segmentsService: SegmentsService,
-    private translateService: TranslateService,
     private dialogService: DialogService,
     private tableHelpersService: CommonTableHelpersService,
     private authService: AuthService
@@ -82,65 +82,15 @@ export class SegmentRootSectionCardComponent {
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.segmentsService.fetchSegments(true);
+    this.segmentsService.fetchSegmentsPaginated(true);
   }
 
   ngAfterViewInit() {
-    // Initialize dataSource$ with segments data
-    this.dataSource$ = this.segmentsService.allSegments$.pipe(
-      map((segments: Segment[]) => {
-        const dataSource = new MatTableDataSource<Segment>(segments);
-        this.setFilterPredicateForSegments(dataSource);
-        this.applyFilter(dataSource);
-        return dataSource;
+    this.dataSource$ = this.selectRootTableState$.pipe(
+      map((tableState: TableState<Segment>) => {
+        return this.tableHelpersService.mapTableStateToDataSource<Segment>(tableState);
       })
     );
-  }
-
-  setFilterPredicateForSegments(dataSource: MatTableDataSource<Segment>) {
-    dataSource.filterPredicate = (data: Segment, filter: string) => {
-      const searchKey = this.segmentsService.selectSearchKey$;
-      let searchKeyValue: SEGMENT_SEARCH_KEY;
-
-      // Get the current search key value
-      searchKey
-        .subscribe((value) => {
-          searchKeyValue = value;
-        })
-        .unsubscribe();
-
-      filter = filter.toLowerCase();
-
-      switch (searchKeyValue) {
-        case SEGMENT_SEARCH_KEY.ALL:
-          return (
-            data.name.toLowerCase().includes(filter) ||
-            data.status.toLowerCase().includes(filter) ||
-            data.context.toLowerCase().includes(filter)
-          );
-        case SEGMENT_SEARCH_KEY.NAME:
-          return data.name.toLowerCase().includes(filter);
-        case SEGMENT_SEARCH_KEY.CONTEXT:
-          return data.context.toLowerCase().includes(filter);
-        default:
-          return data.name.toLowerCase().includes(filter);
-      }
-    };
-  }
-
-  applyFilter(dataSource: MatTableDataSource<Segment>) {
-    let searchString: string;
-
-    // Get the current search string value
-    this.searchString$
-      .subscribe((value) => {
-        searchString = value;
-      })
-      .unsubscribe();
-
-    if (searchString) {
-      dataSource.filter = searchString.trim().toLowerCase();
-    }
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<SEGMENT_SEARCH_KEY>) {
@@ -148,14 +98,19 @@ export class SegmentRootSectionCardComponent {
     this.segmentsService.setSearchKey(params.searchKey as SEGMENT_SEARCH_KEY);
   }
 
+  onSlideToggleChange(event: MatSlideToggleChange): void {
+    const slideToggleEvent = event.source;
+    console.log(`Show Global Excludes: ${slideToggleEvent.checked}`);
+  }
+
   onAddSegmentButtonClick() {
     // this.dialogService.openNewSegmentModal();
   }
 
-  onMenuButtonItemClick(menuButtonItemName: string) {
-    if (menuButtonItemName === 'Import Segment') {
-      // this.dialogService.openImportSegmentsModal();
-    } else if (menuButtonItemName === 'Export All Segments') {
+  onMenuButtonItemClick(action: string) {
+    if (action === SEGMENTS_BUTTON_ACTION.IMPORT) {
+      this.dialogService.openImportSegmentModal();
+    } else if (action === SEGMENTS_BUTTON_ACTION.EXPORT_ALL) {
       // this.dialogService.openExportAllSegmentModal();
     }
   }
