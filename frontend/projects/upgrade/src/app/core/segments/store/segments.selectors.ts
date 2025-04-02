@@ -57,20 +57,24 @@ export const selectFeatureFlagSegmentsExclusion = createSelector(
   (state) => state.allFeatureFlagSegmentsExclusion
 );
 
-export const selectSelectedSegment = createSelector(
-  selectRouterState,
+export const selectAllSegmentEntities = createSelector(
   selectSegmentsState,
   selectGlobalSegmentsState,
-  (routerState, segmentState, globalSegmentState) => {
-    if (routerState?.state && (segmentState?.entities || globalSegmentState?.entities)) {
+  (segmentState, globalSegmentState) => ({
+    ...segmentState.entities,
+    ...globalSegmentState.entities,
+  })
+);
+
+export const selectSelectedSegment = createSelector(
+  selectRouterState,
+  selectAllSegmentEntities,
+  (routerState, allSegmentEntities) => {
+    if (routerState?.state && allSegmentEntities) {
       const {
         state: { params },
       } = routerState;
-      return segmentState.entities[params.segmentId]
-        ? segmentState.entities[params.segmentId]
-        : globalSegmentState.entities[params.segmentId]
-        ? globalSegmentState.entities[params.segmentId]
-        : undefined;
+      return allSegmentEntities[params.segmentId] ? allSegmentEntities[params.segmentId] : undefined;
     }
   }
 );

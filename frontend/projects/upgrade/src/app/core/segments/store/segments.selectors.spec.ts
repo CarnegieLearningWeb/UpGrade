@@ -63,10 +63,6 @@ describe('SegmentSelectors', () => {
 
   describe('#selectSelectedSegment', () => {
     it('should return undefined from allExperimentSegmentsExclusion if segmentId is not an entity key', () => {
-      const previousState = { ...mockState };
-      const previousGLobalState = { ...mockGlobalState };
-      previousState.entities = {};
-
       const result = SegmentSelectors.selectSelectedSegment.projector(
         {
           state: {
@@ -78,8 +74,7 @@ describe('SegmentSelectors', () => {
           },
           navigationId: 0,
         },
-        previousState,
-        previousGLobalState
+        {}
       );
 
       expect(result).toEqual(undefined);
@@ -87,7 +82,6 @@ describe('SegmentSelectors', () => {
 
     it('should return entity from allExperimentSegmentsExclusion by segmentId', () => {
       const previousState = { ...mockState };
-      const previousGLobalState = { ...mockGlobalState };
       const mockSegment: Segment = {
         createdAt: 'test',
         versionNumber: 0,
@@ -118,8 +112,7 @@ describe('SegmentSelectors', () => {
           },
           navigationId: 0,
         },
-        previousState,
-        previousGLobalState
+        previousState.entities
       );
 
       expect(result).toEqual(mockSegment);
