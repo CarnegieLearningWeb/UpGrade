@@ -12,6 +12,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.HttpUrlConnectorProvider;
+import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
+import org.glassfish.jersey.client.ClientConfig;
 
 
 public class APIService implements AutoCloseable{
@@ -39,7 +41,7 @@ public class APIService implements AutoCloseable{
 	}
 
 	public static Client createClient(Map<String,Object> properties) {
-		Client client = ClientBuilder.newClient();
+		Client client = ClientBuilder.newClient(new ClientConfig().connectorProvider(new ApacheConnectorProvider()));
 		client.property(ClientProperties.CONNECT_TIMEOUT, 3000);
 		client.property(ClientProperties.READ_TIMEOUT,    3000);
 		properties.entrySet().stream()

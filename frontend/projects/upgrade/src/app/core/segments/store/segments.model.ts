@@ -52,6 +52,7 @@ export enum MemberTypes {
 }
 
 export interface experimentSegmentInclusionExclusionData {
+  experimentId: string;
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
@@ -67,6 +68,7 @@ export interface experimentSegmentInclusionExclusionData {
 }
 
 export interface featureFlagSegmentInclusionExclusionData {
+  featureFlagId: string;
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
@@ -176,6 +178,19 @@ export interface ParticipantListTableRow {
   listType: MemberTypes | string;
   segment: Segment;
   enabled?: boolean;
+}
+
+export interface UsedByTableRow {
+  name: string;
+  link?: string;
+  type: string;
+  status: string;
+  updatedAt: string;
+}
+
+export enum USED_BY_TYPE {
+  EXPERIMENT = 'Experiment',
+  FEATURE_FLAG = 'Feature Flag',
 }
 
 export interface SegmentsPaginationInfo {

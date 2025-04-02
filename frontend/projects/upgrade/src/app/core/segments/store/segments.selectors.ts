@@ -1,5 +1,14 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { LIST_OPTION_TYPE, SegmentState, ParticipantListTableRow, Segment } from './segments.model';
+import {
+  LIST_OPTION_TYPE,
+  SegmentState,
+  ParticipantListTableRow,
+  Segment,
+  UsedByTableRow,
+  USED_BY_TYPE,
+  experimentSegmentInclusionExclusionData,
+  featureFlagSegmentInclusionExclusionData,
+} from './segments.model';
 import { selectAll } from './segments.reducer';
 import { selectRouterState } from '../../core.state';
 import { CommonTextHelpersService } from '../../../shared/services/common-text-helpers.service';
@@ -158,3 +167,83 @@ export const selectShouldUseLegacyUI = createSelector(selectSelectedSegment, (se
   }
   return false;
 });
+
+export const selectSegmentUsageData = createSelector(
+  selectSelectedSegment,
+  selectExperimentSegmentsInclusion,
+  selectExperimentSegmentsExclusion,
+  selectFeatureFlagSegmentsInclusion,
+  selectFeatureFlagSegmentsExclusion,
+  (segment, expInclusions, expExclusions, flagInclusions, flagExclusions) => {
+    if (!segment) return [];
+
+    // Use Map to prevent duplicates with experimentId or featureFlagId as the key
+    const usedByMap = new Map<string, UsedByTableRow>();
+
+    // Process experiment segments
+    processExperimentSegments(expInclusions, segment.id, usedByMap);
+    processExperimentSegments(expExclusions, segment.id, usedByMap);
+
+    // Process feature flag segments
+    processFeatureFlagSegments(flagInclusions, segment.id, usedByMap);
+    processFeatureFlagSegments(flagExclusions, segment.id, usedByMap);
+
+    // Convert Map values to array and sort by updatedAt (newest first)
+    return Array.from(usedByMap.values()).sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
+  }
+);
+
+// Helper functions for the selector
+function processExperimentSegments(
+  segmentData: experimentSegmentInclusionExclusionData[],
+  segmentId: string,
+  resultMap: Map<string, UsedByTableRow>
+) {
+  if (!segmentData) return;
+
+  segmentData.forEach((item) => {
+    if (item.segment && item.segment.subSegments) {
+      item.segment.subSegments.forEach((subSegment) => {
+        if (subSegment.id === segmentId) {
+          if (!resultMap.has(item.experimentId)) {
+            resultMap.set(item.experimentId, {
+              name: item.experiment.name,
+              type: USED_BY_TYPE.EXPERIMENT,
+              status: item.experiment.state,
+              updatedAt: item.updatedAt,
+              link: `/home/detail/${item.experimentId}`,
+            });
+          }
+        }
+      });
+    }
+  });
+}
+
+function processFeatureFlagSegments(
+  segmentData: featureFlagSegmentInclusionExclusionData[],
+  segmentId: string,
+  resultMap: Map<string, UsedByTableRow>
+) {
+  if (!segmentData) return;
+
+  segmentData.forEach((item) => {
+    if (item.segment && item.segment.subSegments) {
+      item.segment.subSegments.forEach((subSegment) => {
+        if (subSegment.id === segmentId) {
+          if (!resultMap.has(item.featureFlagId)) {
+            resultMap.set(item.featureFlagId, {
+              name: item.featureFlag.name,
+              type: USED_BY_TYPE.FEATURE_FLAG,
+              status: item.featureFlag.status,
+              updatedAt: item.updatedAt,
+              link: `/featureflags/detail/${item.featureFlagId}`,
+            });
+          }
+        }
+      });
+    }
+  });
+}
