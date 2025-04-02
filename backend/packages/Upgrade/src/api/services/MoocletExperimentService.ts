@@ -1123,6 +1123,7 @@ export class MoocletExperimentService extends ExperimentService {
 
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
       moocletExperimentRef.policyId = newMoocletRequest.policy;
+      moocletExperimentRef.outcomeVariableName = moocletPolicyParameters['outcome_variable_name'];
     } catch (err) {
       await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
       throw err;

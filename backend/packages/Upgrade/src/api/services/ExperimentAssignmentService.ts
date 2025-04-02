@@ -1615,14 +1615,27 @@ export class ExperimentAssignmentService {
         };
         await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
       } else {
-        const conditionAssigned = await this.assignExperiment(
-          user,
-          experiment,
-          individualEnrollment,
-          groupEnrollment,
-          individualExclusion,
-          groupExclusion
-        );
+        let conditionAssigned: ExperimentCondition | void;
+        const isMoocletExperiment = this.moocletExperimentService.isMoocletExperiment(experiment.assignmentAlgorithm);
+
+        if (env.mooclets.enabled && isMoocletExperiment) {
+          const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(
+            experiment.id
+          );
+          const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
+            (expCondition) => expCondition.experimentCondition.conditionCode === condition
+          );
+          conditionAssigned = versionConditionMap.experimentCondition;
+        } else {
+          conditionAssigned = await this.assignExperiment(
+            user,
+            experiment,
+            individualEnrollment,
+            groupEnrollment,
+            individualExclusion,
+            groupExclusion
+          );
+        }
         if (!individualEnrollment && !individualExclusion && conditionAssigned) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
             {

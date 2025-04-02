@@ -217,7 +217,7 @@ export class MoocletDataService {
     requestBody: MoocletValueRequestBody,
     logger: UpgradeLogger
   ): Promise<MoocletValueResponseDetails> {
-    const endpoint = '/value';
+    const endpoint = `/value?learner=${requestBody.learner}`;
 
     const requestParams: MoocletProxyRequestParams = {
       method: 'POST',
