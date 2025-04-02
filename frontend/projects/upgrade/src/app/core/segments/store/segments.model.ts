@@ -51,6 +51,7 @@ export enum MemberTypes {
 }
 
 export interface experimentSegmentInclusionExclusionData {
+  experimentId: string;
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
@@ -66,6 +67,7 @@ export interface experimentSegmentInclusionExclusionData {
 }
 
 export interface featureFlagSegmentInclusionExclusionData {
+  featureFlagId: string;
   createdAt: string;
   updatedAt: string;
   versionNumber: number;

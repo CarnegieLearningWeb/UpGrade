@@ -18,6 +18,7 @@ import {
   selectSortKey,
   selectSortAs,
   selectSegmentLists,
+  selectSegmentUsageData,
 } from './store/segments.selectors';
 import {
   LIST_OPTION_TYPE,
@@ -64,6 +65,7 @@ export class SegmentsService {
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
   allFeatureFlagSegmentsExclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsExclusion));
   allFeatureFlagSegmentsInclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsInclusion));
+  segmentUsageData$ = this.store$.pipe(select(selectSegmentUsageData));
 
   selectSearchSegmentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
