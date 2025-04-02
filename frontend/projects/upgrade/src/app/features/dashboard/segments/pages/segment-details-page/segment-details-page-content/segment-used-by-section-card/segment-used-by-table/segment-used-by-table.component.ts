@@ -36,10 +36,10 @@ export class SegmentUsedByTableComponent implements OnInit {
   noDataRowText = 'segments.details.used-by.card.no-data-row.text';
 
   USED_BY_TRANSLATION_KEYS = {
-    NAME: 'Name',
-    TYPE: 'Type',
-    STATUS: 'Status',
-    UPDATED_AT: 'Last Update',
+    NAME: 'segments.global-name.text',
+    TYPE: 'segments.global-type.text',
+    STATUS: 'segments.global-status.text',
+    UPDATED_AT: 'segments.global-updated-at.text',
   };
 
   experimentSegmentsInclusion$ = this.segmentsService.allExperimentSegmentsInclusion$;

@@ -69,11 +69,11 @@ export class CommonDetailsParticipantListTableComponent {
   };
 
   PARTICIPANT_LIST_TRANSLATION_KEYS = {
-    TYPE: 'Type',
-    VALUES: 'Values',
-    NAME: 'Name',
-    ENABLE: 'Enable',
-    ACTIONS: 'Actions',
+    TYPE: 'segments.global-type.text',
+    VALUES: 'segments.global-values.text',
+    NAME: 'segments.global-name.text',
+    ENABLE: 'segments.global-enable.text',
+    ACTIONS: 'segments.global-actions.text',
   };
 
   ngOnInit() {
