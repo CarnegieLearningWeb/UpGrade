@@ -459,6 +459,8 @@
   "segments.global-name.text": "Name",
   "segments.global-enable.text": "Enable",
   "segments.global-actions.text": "Actions",
+  "segments.global-segments.title.text": "Global Excludes",
+  "segments.global-segments.subtitle.text": "View the list of segments to be excluded globally.",
   "segments.global-status.text": "Status",
   "segments.global-last-update.text": "Last Update",
   "segments.global-updated-at.text": "Updated at",

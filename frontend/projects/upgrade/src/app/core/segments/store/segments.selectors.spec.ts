@@ -1,11 +1,11 @@
 import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
 import { Segment } from './segments.model';
-import { initialState } from './segments.reducer';
+import { initialState, initalGlobalState } from './segments.reducer';
 import * as SegmentSelectors from './segments.selectors';
 
 describe('SegmentSelectors', () => {
   const mockState = { ...initialState };
-
+  const mockGlobalState = { ...initalGlobalState };
   describe('#selectIsLoadingSegments', () => {
     it('should return boolean from isLoadingSegments', () => {
       const previousState = { ...mockState };
@@ -64,6 +64,7 @@ describe('SegmentSelectors', () => {
   describe('#selectSelectedSegment', () => {
     it('should return undefined from allExperimentSegmentsExclusion if segmentId is not an entity key', () => {
       const previousState = { ...mockState };
+      const previousGLobalState = { ...mockGlobalState };
       previousState.entities = {};
 
       const result = SegmentSelectors.selectSelectedSegment.projector(
@@ -77,7 +78,8 @@ describe('SegmentSelectors', () => {
           },
           navigationId: 0,
         },
-        previousState
+        previousState,
+        previousGLobalState
       );
 
       expect(result).toEqual(undefined);
@@ -85,6 +87,7 @@ describe('SegmentSelectors', () => {
 
     it('should return entity from allExperimentSegmentsExclusion by segmentId', () => {
       const previousState = { ...mockState };
+      const previousGLobalState = { ...mockGlobalState };
       const mockSegment: Segment = {
         createdAt: 'test',
         versionNumber: 0,
@@ -115,7 +118,8 @@ describe('SegmentSelectors', () => {
           },
           navigationId: 0,
         },
-        previousState
+        previousState,
+        previousGLobalState
       );
 
       expect(result).toEqual(mockSegment);
