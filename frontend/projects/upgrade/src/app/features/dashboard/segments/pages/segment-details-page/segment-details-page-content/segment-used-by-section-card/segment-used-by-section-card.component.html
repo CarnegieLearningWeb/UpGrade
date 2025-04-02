@@ -1,1 +1,22 @@
-<p>segment-used-by-section-card works!</p>
+<app-common-section-card *ngIf="selectedSegment$ | async as segment">
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'segments.details.used-by.card.title.text' | translate"
+    [subtitle]="'segments.details.used-by.card.subtitle.text' | translate"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-segment-used-by-table
+    content
+    *ngIf="isSectionCardExpanded"
+  ></app-segment-used-by-table>
+</app-common-section-card>
