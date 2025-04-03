@@ -123,7 +123,7 @@ async function doAssign(client: UpgradeClient) {
   }
 }
 
-async function doGetDecisionPointAssignment(client: UpgradeClient): Promise<string> {
+async function doGetDecisionPointAssignment(client: UpgradeClient): Promise<string | null> {
   try {
     const response = await client.getDecisionPointAssignment(site, target);
     console.log('\n[Decision Point Assignment response]:', JSON.stringify(response));
@@ -142,6 +142,7 @@ async function doGetDecisionPointAssignment(client: UpgradeClient): Promise<stri
     return condition;
   } catch (error) {
     console.error('\n[Decision Point Assignment error]:', error);
+    return null;
   }
 }
 
@@ -163,7 +164,7 @@ async function doHasFeatureFlag(client: UpgradeClient) {
   }
 }
 
-async function doMark(client: UpgradeClient, condition: string) {
+async function doMark(client: UpgradeClient, condition: string | null) {
   try {
     const response = await client.markDecisionPoint(site, target, condition, status);
     console.log('\n[Mark response]:', JSON.stringify(response));
