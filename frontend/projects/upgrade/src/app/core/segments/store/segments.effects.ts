@@ -10,6 +10,7 @@ import { NUMBER_OF_SEGMENTS, Segment, SegmentsPaginationParams, UpsertSegmentTyp
 import {
   selectAllSegments,
   selectAreAllSegmentsFetched,
+  selectGlobalSegments,
   selectSearchKey,
   selectSearchString,
   selectSkipSegments,
@@ -113,6 +114,23 @@ export class SegmentsEffects {
             })
           ),
           catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
+        )
+      )
+    )
+  );
+
+  fetchGlobalSegments$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionFetchGlobalSegments),
+      withLatestFrom(this.store$.pipe(select(selectGlobalSegments))),
+      switchMap(() =>
+        this.segmentsDataService.fetchGlobalSegments().pipe(
+          map((data: any) =>
+            SegmentsActions.actionFetchGlobalSegmentsSuccess({
+              globalSegments: data,
+            })
+          ),
+          catchError(() => [SegmentsActions.actionFetchGlobalSegmentsFailure()])
         )
       )
     )

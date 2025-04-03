@@ -24,6 +24,11 @@ export class SegmentsDataService {
     return this.http.post<SegmentsPaginationInfo>(url, params);
   }
 
+  fetchGlobalSegments() {
+    const url = this.environment.api.globalSegments;
+    return this.http.get(url);
+  }
+
   createNewSegment(segment: SegmentInput) {
     const url = this.environment.api.segments;
     return this.http.post(url, segment);

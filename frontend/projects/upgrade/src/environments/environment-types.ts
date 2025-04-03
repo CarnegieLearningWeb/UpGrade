@@ -50,6 +50,7 @@ export interface APIEndpoints {
   contextMetaData: string;
   segments: string;
   getPaginatedSegments: string;
+  globalSegments: string;
   validateSegments: string;
   validateSegmentsImport: string;
   importSegments: string;

@@ -40,6 +40,11 @@ export class SegmentInputValidator {
   @IsString({ each: true })
   public userIds: string[];
 
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  public tags?: string[];
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Group)

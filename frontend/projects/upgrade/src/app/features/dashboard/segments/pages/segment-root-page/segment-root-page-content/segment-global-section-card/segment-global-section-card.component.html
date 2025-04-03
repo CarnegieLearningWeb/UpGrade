@@ -1,0 +1,33 @@
+<app-common-section-card>
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'segments.global-segments.title.text' | translate"
+    [subtitle]="'segments.global-segments.subtitle.text' | translate"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  ></app-common-section-card-action-buttons>
+  <!-- content -->
+  <ng-container content *ngIf="isSectionCardExpanded">
+    <ng-container *ngIf="isLoadingGlobalSegments$ | async; else table">
+      <div class="mat-spinner-container">
+        <mat-spinner diameter="60"></mat-spinner>
+      </div>
+    </ng-container>
+
+    <ng-template #table>
+      <div class="table-container">
+        <app-segment-global-section-card-table
+          [dataSource$]="dataSource$ | async"
+          [isLoading$]="isLoadingGlobalSegments$"
+        >
+        </app-segment-global-section-card-table>
+      </div>
+    </ng-template>
+  </ng-container>
+</app-common-section-card>

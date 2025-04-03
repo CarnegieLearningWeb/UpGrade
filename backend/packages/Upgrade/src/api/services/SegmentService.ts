@@ -748,7 +748,7 @@ export class SegmentService {
 
     // create/update segment document
     segment.id = segment.id || uuid();
-    const { id, name, description, context, type, listType } = segment;
+    const { id, name, description, context, type, listType, tags } = segment;
     const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
     const subSegmentData = segment.subSegmentIds
       .filter((subSegmentId) => {
@@ -775,6 +775,7 @@ export class SegmentService {
         context,
         type,
         listType,
+        tags,
         subSegments: subSegmentData,
       });
     } catch (err) {

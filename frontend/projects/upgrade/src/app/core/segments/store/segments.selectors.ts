@@ -8,6 +8,7 @@ import {
   USED_BY_TYPE,
   experimentSegmentInclusionExclusionData,
   featureFlagSegmentInclusionExclusionData,
+  GlobalSegmentState,
 } from './segments.model';
 import { selectAll } from './segments.reducer';
 import { selectRouterState } from '../../core.state';
@@ -20,7 +21,16 @@ export const selectSegmentsState = createFeatureSelector<SegmentState>('segments
 
 export const selectAllSegments = createSelector(selectSegmentsState, selectAll);
 
+export const selectGlobalSegmentsState = createFeatureSelector<GlobalSegmentState>('globalSegments');
+
+export const selectGlobalSegments = createSelector(selectGlobalSegmentsState, selectAll);
+
 export const selectIsLoadingSegments = createSelector(selectSegmentsState, (state) => state.isLoadingSegments);
+
+export const selectIsLoadingGlobalSegments = createSelector(
+  selectGlobalSegmentsState,
+  (state) => state.isLoadingGlobalSegments
+);
 
 export const selectSegmentById = createSelector(
   selectSegmentsState,
@@ -51,18 +61,24 @@ export const selectFeatureFlagSegmentsExclusion = createSelector(
   (state) => state.allFeatureFlagSegmentsExclusion
 );
 
-export const selectIsLoadingUpsertSegment = createSelector(
+export const selectAllSegmentEntities = createSelector(
   selectSegmentsState,
-  (state) => state.isLoadingUpsertSegment
+  selectGlobalSegmentsState,
+  (segmentState, globalSegmentState) => ({
+    ...segmentState.entities,
+    ...globalSegmentState.entities,
+  })
 );
 
 export const selectSelectedSegment = createSelector(
   selectRouterState,
-  selectSegmentsState,
-  (routerState, segmentState) => {
-    const segmentId = routerState?.state?.params?.segmentId;
-    if (segmentId) {
-      return segmentState.entities[segmentId];
+  selectAllSegmentEntities,
+  (routerState, allSegmentEntities) => {
+    if (routerState?.state && allSegmentEntities) {
+      const {
+        state: { params },
+      } = routerState;
+      return allSegmentEntities[params.segmentId] ? allSegmentEntities[params.segmentId] : undefined;
     }
     return undefined;
   }
@@ -109,9 +125,23 @@ export const selectRootTableState = createSelector(
   })
 );
 
+export const selectGlobalTableState = createSelector(
+  selectGlobalSegments,
+  selectSearchSegmentParams,
+  (tableData, searchParams) => ({
+    tableData,
+    searchParams,
+    allSearchableProperties: Object.values(SEGMENT_SEARCH_KEY),
+  })
+);
+
 export const selectSortKey = createSelector(selectSegmentsState, (state) => state.sortKey);
 
 export const selectSortAs = createSelector(selectSegmentsState, (state) => state.sortAs);
+
+export const selectGlobalSortKey = createSelector(selectGlobalSegmentsState, (state) => state.sortKey);
+
+export const selectGlobalSortAs = createSelector(selectGlobalSegmentsState, (state) => state.sortAs);
 
 export const selectPrivateSegmentListTypeOptions = createSelector(
   selectContextMetaData,
