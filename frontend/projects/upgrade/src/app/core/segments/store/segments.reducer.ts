@@ -1,11 +1,12 @@
 import { createReducer, Action, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
-import { SegmentState, Segment } from './segments.model';
+import { SegmentState, Segment, GlobalSegmentState } from './segments.model';
 import * as SegmentsActions from './segments.actions';
 import {
   SEGMENT_SEARCH_KEY,
   SORT_AS_DIRECTION,
   SEGMENT_SORT_KEY,
+  SEGMENT_TYPE,
 } from '../../../../../../../../types/src/Experiment/enums';
 
 export const adapter: EntityAdapter<Segment> = createEntityAdapter<Segment>();
@@ -95,9 +96,12 @@ const reducer = createReducer(
   on(SegmentsActions.actionUpsertSegmentSuccess, (state, { segment }) =>
     adapter.upsertOne(segment, { ...state, isLoadingSegments: false })
   ),
-  on(SegmentsActions.actionGetSegmentByIdSuccess, (state, { segment }) =>
-    adapter.upsertOne(segment, { ...state, isLoadingSegments: false })
-  ),
+  on(SegmentsActions.actionGetSegmentByIdSuccess, (state, { segment }) => {
+    if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+      return adapter.upsertOne(segment, { ...state, isLoadingSegments: false });
+    }
+    return state;
+  }),
   on(SegmentsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
   on(SegmentsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchString })),
   on(SegmentsActions.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
@@ -108,4 +112,35 @@ const reducer = createReducer(
 
 export function segmentsReducer(state: SegmentState | undefined, action: Action) {
   return reducer(state, action);
+}
+
+export const initalGlobalState: GlobalSegmentState = adapter.getInitialState({
+  isLoadingGlobalSegments: false,
+  sortKey: SEGMENT_SORT_KEY.NAME,
+  sortAs: SORT_AS_DIRECTION.ASCENDING,
+});
+
+const globalReducer = createReducer(
+  initalGlobalState,
+  on(SegmentsActions.actionFetchGlobalSegments, (state) => ({
+    ...state,
+    isLoadingGlobalSegments: true,
+  })),
+  on(SegmentsActions.actionFetchGlobalSegmentsSuccess, (state, { globalSegments }) =>
+    adapter.upsertMany(globalSegments, { ...state, isLoadingGlobalSegments: false })
+  ),
+  on(SegmentsActions.actionFetchGlobalSegmentsFailure, (state) => ({
+    ...state,
+    isLoadingGlobalSegments: false,
+  })),
+  on(SegmentsActions.actionGetSegmentByIdSuccess, (state, { segment }) => {
+    if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+      return adapter.upsertOne(segment, { ...state, isLoadingSegments: false });
+    }
+    return state;
+  })
+);
+
+export function globalSegmentsReducer(state: GlobalSegmentState | undefined, action: Action) {
+  return globalReducer(state, action);
 }

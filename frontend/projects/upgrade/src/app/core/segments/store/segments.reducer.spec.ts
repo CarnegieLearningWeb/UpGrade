@@ -111,7 +111,7 @@ describe('SegmentsReducer', () => {
         individualForSegment: [],
         groupForSegment: [],
         subSegments: [],
-        type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
+        type: SEGMENT_TYPE.PUBLIC,
         status: SEGMENT_STATUS.UNUSED,
       };
 

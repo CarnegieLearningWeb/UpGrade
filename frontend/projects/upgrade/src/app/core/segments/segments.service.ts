@@ -19,6 +19,10 @@ import {
   selectSortAs,
   selectSegmentLists,
   selectSegmentUsageData,
+  selectIsLoadingGlobalSegments,
+  selectGlobalTableState,
+  selectGlobalSortKey,
+  selectGlobalSortAs,
 } from './store/segments.selectors';
 import {
   LIST_OPTION_TYPE,
@@ -47,15 +51,19 @@ export class SegmentsService {
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
   setIsLoadingImportSegment$ = this.store$.pipe(select(selectIsLoadingSegments));
+  isLoadingGlobalSegments$ = this.store$.pipe(select(selectIsLoadingGlobalSegments));
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
   selectRootTableState$ = this.store$.pipe(select(selectRootTableState));
+  selectGlobalTableState$ = this.store$.pipe(select(selectGlobalTableState));
   shouldUseLegacyView$ = this.store$.pipe(select(selectShouldUseLegacyUI));
   selectedSegmentOverviewDetails = this.store$.pipe(select(selectSegmentOverviewDetails));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
   selectSegmentSortKey$ = this.store$.pipe(select(selectSortKey));
   selectSegmentSortAs$ = this.store$.pipe(select(selectSortAs));
+  selectGlobalSegmentSortKey$ = this.store$.pipe(select(selectGlobalSortKey));
+  selectGlobalSegmentSortAs$ = this.store$.pipe(select(selectGlobalSortAs));
   selectSegmentLists$ = this.store$.pipe(select(selectSegmentLists));
   selectSegmentListsLength$ = this.store$.pipe(
     select(selectSegmentLists),
@@ -147,6 +155,10 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionFetchSegments({ fromStarting }));
   }
 
+  fetchGlobalSegments(fromStarting?: boolean) {
+    this.store$.dispatch(SegmentsActions.actionFetchGlobalSegments({ fromStarting }));
+  }
+
   fetchAllSegments(fromStarting?: boolean) {
     this.store$.dispatch(SegmentsActions.actionfetchAllSegments({ fromStarting }));
   }
@@ -179,6 +191,16 @@ export class SegmentsService {
 
   setIsLoadingImportSegment(isLoadingSegments: boolean) {
     this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments })); //fix!
+  }
+
+  setGlobalSortKey(sortKey: SEGMENT_SORT_KEY) {
+    this.localStorageService.setItem(SegmentLocalStorageKeys.SEGMENT_SORT_KEY, sortKey);
+    this.store$.dispatch(SegmentsActions.actionSetGlobalSortKey({ sortKey }));
+  }
+
+  setGlobalSortingType(sortingType: SORT_AS_DIRECTION) {
+    this.localStorageService.setItem(SegmentLocalStorageKeys.SEGMENT_SORT_TYPE, sortingType);
+    this.store$.dispatch(SegmentsActions.actionSetGlobalSortingType({ sortingType }));
   }
 
   deleteSegment(segmentId: string) {

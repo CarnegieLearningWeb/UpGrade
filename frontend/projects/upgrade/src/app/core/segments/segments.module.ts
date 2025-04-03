@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { EffectsModule } from '@ngrx/effects';
 import { SegmentsEffects } from './store/segments.effects';
 import { StoreModule } from '@ngrx/store';
-import { segmentsReducer } from './store/segments.reducer';
+import { segmentsReducer, globalSegmentsReducer } from './store/segments.reducer';
 import { SegmentsService } from './segments.service';
 import { SegmentsDataService } from './segments.data.service';
 
@@ -13,6 +13,7 @@ import { SegmentsDataService } from './segments.data.service';
     CommonModule,
     EffectsModule.forFeature([SegmentsEffects]),
     StoreModule.forFeature('segments', segmentsReducer),
+    StoreModule.forFeature('globalSegments', globalSegmentsReducer),
   ],
   providers: [SegmentsService, SegmentsDataService],
 })

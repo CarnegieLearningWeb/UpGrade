@@ -44,6 +44,20 @@ export const actionFetchSegmentsSuccessLegacyGetAll = createAction(
 
 export const actionFetchSegmentsFailure = createAction('[Segments] Fetch Segments Failure (Legacy GET all)');
 
+export const actionFetchGlobalSegments = createAction(
+  '[Global Segments] Fetch Global Segments',
+  props<{ fromStarting?: boolean }>()
+);
+
+export const actionFetchGlobalSegmentsSuccess = createAction(
+  '[Global Segments] Fetch Global Segments Success',
+  props<{
+    globalSegments: Segment[];
+  }>()
+);
+
+export const actionFetchGlobalSegmentsFailure = createAction('[Global Segments] Fetch GLobal Segments Failure');
+
 export const actionUpsertSegment = createAction(
   '[Segments] Upsert Segment',
   props<{ segment: SegmentInput; actionType: UpsertSegmentType }>()
@@ -98,5 +112,15 @@ export const actionSetSortKey = createAction('[Segments] Set Sort key value', pr
 
 export const actionSetSortingType = createAction(
   '[Segments] Set Sorting type',
+  props<{ sortingType: SORT_AS_DIRECTION }>()
+);
+
+export const actionSetGlobalSortKey = createAction(
+  '[Global Segments] Set Sort key value',
+  props<{ sortKey: SEGMENT_SORT_KEY }>()
+);
+
+export const actionSetGlobalSortingType = createAction(
+  '[Global Segments] Set Sorting type',
   props<{ sortingType: SORT_AS_DIRECTION }>()
 );
