@@ -222,10 +222,12 @@ export class UpsertSegmentModalComponent {
 
   sendRequest(action: UPSERT_SEGMENT_ACTION, sourceSegment?: Segment): void {
     const formData: SegmentFormData = this.segmentForm.value;
-    if (action === UPSERT_SEGMENT_ACTION.ADD || action === UPSERT_SEGMENT_ACTION.DUPLICATE) {
+    if (action === UPSERT_SEGMENT_ACTION.ADD) {
       this.createAddRequest(formData);
     } else if (action === UPSERT_SEGMENT_ACTION.EDIT && sourceSegment) {
       this.createEditRequest(formData, sourceSegment);
+    } else if (action === UPSERT_SEGMENT_ACTION.DUPLICATE && sourceSegment) {
+      this.createDuplicateRequest(formData, sourceSegment);
     } else {
       console.error('UpsertSegmentModalComponent: sendRequest: Invalid action or missing sourceSegment');
     }
@@ -266,6 +268,25 @@ export class UpsertSegmentModalComponent {
       tags,
     };
     this.segmentService.modifySegment(segmentRequest);
+  }
+
+  createDuplicateRequest({ name, description, tags }: SegmentFormData, sourceSegment: Segment): void {
+    const userIds = sourceSegment.individualForSegment.map((user) => user.userId);
+    const groups = sourceSegment.groupForSegment;
+    const subSegmentIds = sourceSegment.subSegments.map((subSegment) => subSegment.id);
+
+    const segmentRequest: AddSegmentRequest = {
+      name,
+      description,
+      context: sourceSegment.context,
+      userIds,
+      groups,
+      subSegmentIds,
+      status: SEGMENT_STATUS.UNUSED,
+      type: SEGMENT_TYPE.PUBLIC,
+      tags,
+    };
+    this.segmentService.addSegment(segmentRequest);
   }
 
   get UPSERT_SEGMENT_ACTION() {

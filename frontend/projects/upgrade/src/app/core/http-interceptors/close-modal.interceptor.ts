@@ -15,9 +15,10 @@ export class CloseModalInterceptor implements HttpInterceptor {
         const isPostOrPut = req.method === 'POST' || req.method === 'PUT';
 
         if (event instanceof HttpResponse && isPostOrPut) {
-          const shouldCloseModal = ENDPOINTS_TO_INTERCEPT_FOR_MODAL_CLOSE.some((endpoint) =>
-            event.url.includes(endpoint)
-          );
+          const shouldCloseModal = ENDPOINTS_TO_INTERCEPT_FOR_MODAL_CLOSE.some((endpoint) => {
+            const url = event.url.match(/\/api(.+)/)[1];
+            return url === endpoint;
+          });
           if (shouldCloseModal && event.status === 200) {
             this.dialog.closeAll();
           }
