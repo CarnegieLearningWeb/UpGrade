@@ -12,10 +12,12 @@ export class CloseModalInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
       tap((event) => {
-        if (event instanceof HttpResponse) {
-          const shouldCloseModal = ENDPOINTS_TO_INTERCEPT_FOR_MODAL_CLOSE.some((endpoint) =>
-            event.url.includes(endpoint)
-          );
+        const isPostOrPut = req.method === 'POST' || req.method === 'PUT';
+
+        if (event instanceof HttpResponse && isPostOrPut) {
+          const shouldCloseModal = ENDPOINTS_TO_INTERCEPT_FOR_MODAL_CLOSE.some((endpoint) => {
+            return event.url.match(/\/api\/(.+)/)[1] === endpoint;
+          });
           if (shouldCloseModal && event.status === 200) {
             this.dialog.closeAll();
           }
