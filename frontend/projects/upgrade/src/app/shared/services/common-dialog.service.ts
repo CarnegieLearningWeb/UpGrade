@@ -419,7 +419,7 @@ export class DialogService {
       title: 'Duplicate Segment',
       tagsLabel: 'segments.upsert-segment-modal.tags-label.text',
       tagsPlaceholder: 'segments.upsert-segment-modal.tags-placeholder.text',
-      primaryActionBtnLabel: 'Add',
+      primaryActionBtnLabel: 'Create',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {

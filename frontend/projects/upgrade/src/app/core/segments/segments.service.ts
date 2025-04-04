@@ -12,7 +12,6 @@ import {
   selectExperimentSegmentsExclusion,
   selectFeatureFlagSegmentsInclusion,
   selectFeatureFlagSegmentsExclusion,
-  selectSegmentById,
   selectSearchString,
   selectSearchKey,
   selectSortKey,
@@ -25,6 +24,7 @@ import {
   selectGlobalSortKey,
   selectGlobalSortAs,
   isLoadingUpsertSegment,
+  selectSegmentIdAfterNavigation,
 } from './store/segments.selectors';
 import {
   AddSegmentRequest,
@@ -83,23 +83,12 @@ export class SegmentsService {
   allFeatureFlagSegmentsInclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsInclusion));
   segmentUsageData$ = this.store$.pipe(select(selectSegmentUsageData));
   duplicateSegmentNameError$ = new BehaviorSubject<DuplicateSegmentNameError>(null);
+  selectSegmentIdAfterNavigation$ = this.store$.pipe(select(selectSegmentIdAfterNavigation));
 
   selectSearchSegmentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
       filter(([searchKey, searchString]) => !!searchKey && !!searchString),
       map(([searchKey, searchString]) => ({ searchKey, searchString }))
-    );
-  }
-
-  selectSegmentById(segmentId: string) {
-    return this.store$.pipe(
-      select(selectSegmentById, { segmentId }),
-      tap((segment) => {
-        if (!segment) {
-          this.fetchSegmentById(segmentId);
-        }
-      }),
-      map((segment) => ({ ...segment }))
     );
   }
 

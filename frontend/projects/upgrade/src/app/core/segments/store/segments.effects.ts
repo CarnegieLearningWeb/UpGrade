@@ -186,9 +186,6 @@ export class SegmentsEffects {
       switchMap((action) => {
         return this.segmentsDataService.addSegment(action.addSegmentRequest).pipe(
           map((response: Segment) => SegmentsActions.actionAddSegmentSuccess({ segment: response })),
-          tap(({ segment }) => {
-            this.router.navigate(['/segments', 'detail', segment.id]);
-          }),
           catchError((error) => {
             if (error?.error?.type === SERVER_ERROR.SEGMENT_DUPLICATE_NAME) {
               this.segmentsService.setDuplicateSegmentNameError(error.error);
@@ -198,6 +195,17 @@ export class SegmentsEffects {
         );
       })
     )
+  );
+
+  navigateToSegmentDetail$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(SegmentsActions.actionAddSegmentSuccess),
+        tap(({ segment }) => {
+          this.router.navigate(['/segments', 'detail', segment.id]);
+        })
+      ),
+    { dispatch: false }
   );
 
   updateSegment$ = createEffect(() =>

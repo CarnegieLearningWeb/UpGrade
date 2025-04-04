@@ -114,21 +114,25 @@ export class UpsertSegmentModalComponent {
     this.listenForNameChanges();
   }
 
-  setDuplicateSegmentNameErrorOnNameControl(error: DuplicateSegmentNameError) {
-    if (error) {
-      this.nameControl.setErrors({ duplicateSegmentName: error });
-    } else {
-      this.nameControl.setErrors(null);
+  private updateNameControlErrors(shouldSetDuplicateError: boolean, error?: DuplicateSegmentNameError) {
+    const currentErrors = this.nameControl.errors || {};
+    const { duplicateSegmentName, ...otherErrors } = currentErrors;
+
+    if (shouldSetDuplicateError && error) {
+      this.nameControl.setErrors({ ...otherErrors, duplicateSegmentName: error });
+    } else if (currentErrors.duplicateSegmentName) {
+      this.nameControl.setErrors(Object.keys(otherErrors).length ? otherErrors : null);
     }
+  }
+
+  setDuplicateSegmentNameErrorOnNameControl(error: DuplicateSegmentNameError) {
+    this.updateNameControlErrors(!!error, error);
   }
 
   handleCheckingDuplicateName(error: DuplicateSegmentNameError, nameInput: string) {
     const contextInput = this.appContextControl.value;
-    if (nameInput === error?.duplicateName && contextInput === error?.context) {
-      this.nameControl.setErrors({ duplicateSegmentName: error });
-    } else {
-      this.nameControl.setErrors(null);
-    }
+    const isDuplicate = nameInput === error?.duplicateName && contextInput === error?.context;
+    this.updateNameControlErrors(isDuplicate, error);
   }
 
   get nameControl() {
@@ -139,8 +143,16 @@ export class UpsertSegmentModalComponent {
     return this.segmentForm.get('appContext');
   }
 
-  deriveInitialFormValues(sourceSegment: any, action: string): SegmentFormData {
-    const name = action === UPSERT_SEGMENT_ACTION.EDIT ? sourceSegment?.name : '';
+  deriveInitialFormValues(sourceSegment: Segment, action: UPSERT_SEGMENT_ACTION): SegmentFormData {
+    let name = '';
+    if (action === UPSERT_SEGMENT_ACTION.DUPLICATE) {
+      name = `${sourceSegment?.name} (COPY)`;
+    }
+
+    if (action === UPSERT_SEGMENT_ACTION.EDIT) {
+      name = sourceSegment?.name;
+    }
+
     const description = sourceSegment?.description || '';
     const appContext = sourceSegment?.context || '';
     const tags = sourceSegment?.tags || [];
@@ -150,12 +162,16 @@ export class UpsertSegmentModalComponent {
   listenForPrimaryButtonDisabled() {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertSegment$.pipe(
       combineLatestWith(this.isInitialFormValueChanged$),
-      map(([isLoading, isInitialFormValueChanged]) => isLoading || !isInitialFormValueChanged)
+      map(
+        ([isLoading, isInitialFormValueChanged]) =>
+          isLoading ||
+          this.segmentForm.invalid ||
+          (!isInitialFormValueChanged && this.config.params.action !== UPSERT_SEGMENT_ACTION.DUPLICATE)
+      )
     );
     this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
   }
 
-  // Close the modal once the feature flag list length changes, as that indicates actual success
   listenForSegmentGetUpdated(): void {
     this.subscriptions.add(
       this.isSelectedSegmentUpdated$.subscribe(() => {

@@ -10,11 +10,19 @@
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Name</mat-label>
       <input matInput formControlName="name" placeholder="Enter segment name" class="ft-14-400" />
-      <mat-error *ngIf="duplicateSegmentNameError$ | async as error">
-        A segment with name "{{ error.duplicateName }}" already exists on context "{{ error.context }}".
+      <!-- Required error will show by default when the control is invalid and touched -->
+      <mat-error *ngIf="nameControl?.errors?.['required']"> Name is required </mat-error>
+
+      <!-- Custom duplicate name error -->
+      <mat-error *ngIf="nameControl?.errors?.['duplicateSegmentName'] as errorData">
+        {{
+          'segments.errors.duplicate-name.text'
+            | translate : { name: errorData.duplicateName, context: errorData.context }
+        }}
       </mat-error>
 
-      <mat-hint *ngIf="!(duplicateSegmentNameError$ | async)" class="form-hint ft-12-400">
+      <!-- Only show the hint when there are no errors -->
+      <mat-hint *ngIf="!nameControl?.errors" class="form-hint ft-12-400">
         {{ 'segments.upsert-segment-modal.name-hint.text' | translate }}
       </mat-hint>
     </mat-form-field>

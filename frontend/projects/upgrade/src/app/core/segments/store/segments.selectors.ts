@@ -72,6 +72,26 @@ export const selectAllSegmentEntities = createSelector(
   })
 );
 
+export const selectSegmentIdFromRoute = createSelector(selectRouterState, (routerState) => {
+  if (routerState?.state?.params?.segmentId) {
+    return routerState.state.params.segmentId;
+  }
+  return null;
+});
+
+// Create a selector that only emits after navigation is complete
+export const selectSegmentIdAfterNavigation = createSelector(
+  selectSegmentIdFromRoute,
+  selectRouterState,
+  (segmentId, routerState) => {
+    // Only return the segmentId if we have a completed navigation
+    if (segmentId && routerState?.state?.url) {
+      return segmentId;
+    }
+    return null;
+  }
+);
+
 export const selectSelectedSegment = createSelector(
   selectRouterState,
   selectAllSegmentEntities,
