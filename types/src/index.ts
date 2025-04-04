@@ -78,6 +78,7 @@ export {
   FeatureFlagStateChangedData,
   FeatureFlagDeletedData,
   ValidatedImportResponse,
+  DuplicateSegmentNameError,
 } from './Experiment/interfaces';
 export {
   MoocletPolicyParametersDTO,

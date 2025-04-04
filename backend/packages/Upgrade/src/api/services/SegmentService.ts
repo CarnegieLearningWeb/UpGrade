@@ -16,6 +16,7 @@ import {
   IMPORT_COMPATIBILITY_TYPE,
   ValidatedImportResponse,
   SEGMENT_SEARCH_KEY,
+  DuplicateSegmentNameError,
 } from 'upgrade_types';
 import { In } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
@@ -377,7 +378,9 @@ export class SegmentService {
     return queryBuilder;
   }
 
-  public upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
+  public async upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
+    await this.checkIsDuplicateSegmentName(segment.name, segment.context, logger);
+
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
     return this.addSegmentDataInDB(segment, logger);
   }
@@ -957,6 +960,36 @@ export class SegmentService {
           }
         }
       }
+    }
+  }
+
+  async checkIsDuplicateSegmentName(name: string, context: string, logger: UpgradeLogger): Promise<boolean> {
+    logger.info({ message: `Check for duplicate segment name ${name} in context ${context}` });
+    const sameNameSegment = await this.segmentRepository.find({ where: { name, context } });
+
+    if (sameNameSegment.length) {
+      logger.error({
+        message: `Segment name ${name} already exists in context ${context}`,
+      });
+
+      // const error = new ErrorWithType();
+      // error.type = SERVER_ERROR.SEGMENT_DUPLICATE_NAME;
+      // error.details = `Segment name ${name} already exists in context ${context}`;
+      // (error as any).duplicateName = name;
+      // (error as any).context = context;
+      // (error as any).httpCode = 400;
+
+      const error: DuplicateSegmentNameError = {
+        type: SERVER_ERROR.SEGMENT_DUPLICATE_NAME,
+        message: `Segment name ${name} already exists in context ${context}`,
+        duplicateName: name,
+        context,
+        httpCode: 400,
+      };
+
+      throw error;
+    } else {
+      return false;
     }
   }
 }

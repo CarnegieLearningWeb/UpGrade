@@ -20,6 +20,8 @@ import {
 } from './segments.selectors';
 import JSZip from 'jszip';
 import { of } from 'rxjs';
+import { SERVER_ERROR } from 'upgrade_types';
+import { SegmentsService } from '../segments.service';
 
 @Injectable()
 export class SegmentsEffects {
@@ -27,6 +29,7 @@ export class SegmentsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private segmentsDataService: SegmentsDataService,
+    private segmentsService: SegmentsService,
     private router: Router
   ) {}
 
@@ -186,7 +189,10 @@ export class SegmentsEffects {
           tap(({ segment }) => {
             this.router.navigate(['/segments', 'detail', segment.id]);
           }),
-          catchError(() => {
+          catchError((error) => {
+            if (error?.error?.type === SERVER_ERROR.SEGMENT_DUPLICATE_NAME) {
+              this.segmentsService.setDuplicateSegmentNameError(error.error);
+            }
             return [SegmentsActions.actionAddSegmentFailure()];
           })
         );

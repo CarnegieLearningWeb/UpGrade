@@ -1,4 +1,4 @@
-import { createSelector, createFeatureSelector } from '@ngrx/store';
+import { createSelector, createFeatureSelector, select } from '@ngrx/store';
 import {
   LIST_OPTION_TYPE,
   SegmentState,
@@ -26,6 +26,8 @@ export const selectGlobalSegmentsState = createFeatureSelector<GlobalSegmentStat
 export const selectGlobalSegments = createSelector(selectGlobalSegmentsState, selectAll);
 
 export const selectIsLoadingSegments = createSelector(selectSegmentsState, (state) => state.isLoadingSegments);
+
+export const isLoadingUpsertSegment = createSelector(selectSegmentsState, (state) => state.isLoadingUpsertSegment);
 
 export const selectIsLoadingGlobalSegments = createSelector(
   selectGlobalSegmentsState,

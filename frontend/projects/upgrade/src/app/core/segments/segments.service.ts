@@ -19,12 +19,12 @@ import {
   selectSortAs,
   selectSegmentLists,
   selectAppContexts,
-  selectIsLoadingUpsertSegment,
   selectSegmentUsageData,
   selectIsLoadingGlobalSegments,
   selectGlobalTableState,
   selectGlobalSortKey,
   selectGlobalSortAs,
+  isLoadingUpsertSegment,
 } from './store/segments.selectors';
 import {
   AddSegmentRequest,
@@ -36,9 +36,9 @@ import {
   UpsertSegmentType,
 } from './store/segments.model';
 import { filter, map, pairwise, tap, withLatestFrom } from 'rxjs/operators';
-import { Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
-import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
+import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY, DuplicateSegmentNameError } from 'upgrade_types';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { selectShouldUseLegacyUI } from './store/segments.selectors';
 import { selectContextMetaData } from '../experiments/store/experiments.selectors';
@@ -56,7 +56,7 @@ export class SegmentsService {
   ) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
-  isLoadingUpsertSegment$ = this.store$.pipe(select(selectIsLoadingUpsertSegment));
+  isLoadingUpsertSegment$ = this.store$.pipe(select(isLoadingUpsertSegment));
   setIsLoadingImportSegment$ = this.store$.pipe(select(selectIsLoadingSegments));
   isLoadingGlobalSegments$ = this.store$.pipe(select(selectIsLoadingGlobalSegments));
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
@@ -82,6 +82,7 @@ export class SegmentsService {
   allFeatureFlagSegmentsExclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsExclusion));
   allFeatureFlagSegmentsInclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsInclusion));
   segmentUsageData$ = this.store$.pipe(select(selectSegmentUsageData));
+  duplicateSegmentNameError$ = new BehaviorSubject<DuplicateSegmentNameError>(null);
 
   selectSearchSegmentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
@@ -248,5 +249,9 @@ export class SegmentsService {
 
   exportSegmentCSV(segmentIds: string[]): Observable<any> {
     return this.segmentsDataService.exportSegmentCSV(segmentIds);
+  }
+
+  setDuplicateSegmentNameError(error: DuplicateSegmentNameError) {
+    this.duplicateSegmentNameError$.next(error);
   }
 }

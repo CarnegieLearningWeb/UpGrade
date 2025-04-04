@@ -11,6 +11,7 @@ describe('SegmentsEffects', () => {
   let store$: any;
   let actions$: ActionsSubject;
   let segmentsDataService: any;
+  let segmentService: any;
   let router: any;
   let service: SegmentsEffects;
   const mockSegment: Segment = {
@@ -52,7 +53,7 @@ describe('SegmentsEffects', () => {
       navigate: jest.fn(),
     };
 
-    service = new SegmentsEffects(store$, actions$, segmentsDataService, router);
+    service = new SegmentsEffects(store$, actions$, segmentsDataService, segmentService, router);
   });
 
   describe('fetchAllSegments$', () => {

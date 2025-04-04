@@ -23,11 +23,11 @@ import {
   UpdateSegmentRequest,
 } from '../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
-import { BehaviorSubject, Observable, map, startWith, Subscription, combineLatestWith } from 'rxjs';
+import { BehaviorSubject, Observable, map, startWith, Subscription, combineLatestWith, withLatestFrom } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
+import { DuplicateSegmentNameError, SEGMENT_TYPE } from 'upgrade_types';
 import isEqual from 'lodash.isequal';
 
 @Component({
@@ -60,6 +60,7 @@ export class UpsertSegmentModalComponent {
   isContextChanged = false;
   initialContext = '';
   isInitialFormValueChanged$: Observable<boolean>;
+  duplicateSegmentNameError$ = this.segmentService.duplicateSegmentNameError$;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -91,8 +92,8 @@ export class UpsertSegmentModalComponent {
   }
 
   disableRestrictedFields(): void {
-    this.segmentForm.get('name')?.disable();
-    this.segmentForm.get('appContext')?.disable();
+    this.nameControl?.disable();
+    this.appContextControl?.disable();
   }
 
   createSegmentForm(): void {
@@ -108,6 +109,34 @@ export class UpsertSegmentModalComponent {
     });
 
     this.initialFormValues$.next(this.segmentForm.value);
+
+    this.listenForDuplicateNameError();
+    this.listenForNameChanges();
+  }
+
+  setDuplicateSegmentNameErrorOnNameControl(error: DuplicateSegmentNameError) {
+    if (error) {
+      this.nameControl.setErrors({ duplicateSegmentName: error });
+    } else {
+      this.nameControl.setErrors(null);
+    }
+  }
+
+  handleCheckingDuplicateName(error: DuplicateSegmentNameError, nameInput: string) {
+    const contextInput = this.appContextControl.value;
+    if (nameInput === error?.duplicateName && contextInput === error?.context) {
+      this.nameControl.setErrors({ duplicateSegmentName: error });
+    } else {
+      this.nameControl.setErrors(null);
+    }
+  }
+
+  get nameControl() {
+    return this.segmentForm.get('name');
+  }
+
+  get appContextControl() {
+    return this.segmentForm.get('appContext');
   }
 
   deriveInitialFormValues(sourceSegment: any, action: string): SegmentFormData {
@@ -135,10 +164,25 @@ export class UpsertSegmentModalComponent {
     );
   }
 
+  listenForNameChanges(): void {
+    this.subscriptions.add(
+      this.nameControl.valueChanges
+        .pipe(withLatestFrom(this.duplicateSegmentNameError$))
+        .subscribe(([name, error]) => this.handleCheckingDuplicateName(error, name))
+    );
+  }
+
+  listenForDuplicateNameError(): void {
+    this.subscriptions.add(
+      this.duplicateSegmentNameError$.subscribe((error) => this.setDuplicateSegmentNameErrorOnNameControl(error))
+    );
+  }
+
   listenOnContext(): void {
     this.subscriptions.add(
-      this.segmentForm.get('appContext')?.valueChanges.subscribe((context) => {
+      this.appContextControl?.valueChanges.subscribe((context) => {
         this.isContextChanged = context !== this.initialContext;
+        this.handleCheckingDuplicateName(this.duplicateSegmentNameError$.value, this.nameControl.value);
       })
     );
   }
@@ -153,6 +197,7 @@ export class UpsertSegmentModalComponent {
 
   onPrimaryActionBtnClicked() {
     if (this.segmentForm.valid) {
+      this.segmentService.setDuplicateSegmentNameError(null);
       this.sendRequest(this.config.params.action, this.config.params.sourceSegment);
     } else {
       CommonFormHelpersService.triggerTouchedToDisplayErrors(this.segmentForm);
