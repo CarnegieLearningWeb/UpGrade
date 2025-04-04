@@ -25,6 +25,8 @@ import {
   selectGlobalSortAs,
 } from './store/segments.selectors';
 import {
+  AddPrivateSegmentListRequest,
+  EditPrivateSegmentListRequest,
   LIST_OPTION_TYPE,
   Segment,
   SegmentInput,
@@ -219,5 +221,17 @@ export class SegmentsService {
 
   exportSegmentCSV(segmentIds: string[]): Observable<any> {
     return this.segmentsDataService.exportSegmentCSV(segmentIds);
+  }
+
+  addPrivateSegmentList(list: AddPrivateSegmentListRequest) {
+    this.store$.dispatch(SegmentsActions.actionAddSegmentList({ list }));
+  }
+
+  updatePrivateSegmentList(list: EditPrivateSegmentListRequest) {
+    this.store$.dispatch(SegmentsActions.actionUpdateSegmentList({ list }));
+  }
+
+  deletePrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(SegmentsActions.actionDeleteSegmentList({ segmentId }));
   }
 }

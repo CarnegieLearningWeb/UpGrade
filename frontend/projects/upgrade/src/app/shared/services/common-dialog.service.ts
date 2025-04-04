@@ -190,7 +190,7 @@ export class DialogService {
         sourceList: null,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
-        flagId: flagId,
+        id: flagId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
@@ -209,7 +209,7 @@ export class DialogService {
         sourceList,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
-        flagId: flagId,
+        id: flagId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
@@ -228,7 +228,7 @@ export class DialogService {
         sourceList: null,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
-        flagId: flagId,
+        id: flagId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
@@ -247,7 +247,45 @@ export class DialogService {
         sourceList,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
-        flagId: flagId,
+        id: flagId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openAddListModal(appContext: string, segmentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Add List',
+      nameHint: 'segments.upsert-list-modal.name-hint.text',
+      valuesLabel: 'segments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'segments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList: null,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_SEGMENT_LIST,
+        id: segmentId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openEditListModal(sourceList: ParticipantListTableRow, appContext: string, segmentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Edit List',
+      nameHint: 'segments.upsert-list-modal.name-hint.text',
+      valuesLabel: 'segments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'segments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_SEGMENT_LIST,
+        id: segmentId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);

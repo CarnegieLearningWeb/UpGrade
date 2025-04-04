@@ -1,8 +1,16 @@
 import { Inject, Injectable } from '@angular/core';
-import { SegmentFile, SegmentInput, SegmentsPaginationInfo, SegmentsPaginationParams } from './store/segments.model';
+import {
+  AddPrivateSegmentListRequest,
+  EditPrivateSegmentListRequest,
+  SegmentFile,
+  SegmentInput,
+  SegmentsPaginationInfo,
+  SegmentsPaginationParams,
+} from './store/segments.model';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
+import { FeatureFlagSegmentListDetails } from '../feature-flags/store/feature-flags.model';
 
 @Injectable()
 export class SegmentsDataService {
@@ -78,5 +86,20 @@ export class SegmentsDataService {
   validateSegmentsImport(segments: SegmentFile[]) {
     const url = this.environment.api.validateSegmentsImport;
     return this.http.post(url, segments);
+  }
+
+  addSegmentList(list: AddPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+    const url = this.environment.api.addSegmentList;
+    return this.http.post<FeatureFlagSegmentListDetails>(url, list);
+  }
+
+  updateSegmentList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
+    const url = `${this.environment.api.addSegmentList}/${list.segment.id}`;
+    return this.http.put<FeatureFlagSegmentListDetails>(url, list);
+  }
+
+  deleteSegmentList(segmentId: string) {
+    const url = `${this.environment.api.addSegmentList}/${segmentId}`;
+    return this.http.delete(url);
   }
 }

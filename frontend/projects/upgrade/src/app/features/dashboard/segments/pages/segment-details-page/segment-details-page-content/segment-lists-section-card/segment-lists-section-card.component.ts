@@ -9,11 +9,18 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IMenuButtonItem } from 'upgrade_types';
 import { SegmentsService } from '../../../../../../../core/segments/segments.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import { Segment, SEGMENT_LIST_ACTIONS } from '../../../../../../../core/segments/store/segments.model';
+import {
+  ParticipantListTableRow,
+  Segment,
+  SEGMENT_LIST_ACTIONS,
+} from '../../../../../../../core/segments/store/segments.model';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
-import { ParticipantListRowActionEvent } from '../../../../../../../core/feature-flags/store/feature-flags.model';
+import {
+  PARTICIPANT_LIST_ROW_ACTION,
+  ParticipantListRowActionEvent,
+} from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { SegmentListsTableComponent } from './segment-lists-table/segment-lists-table.component';
 
 @Component({
@@ -61,7 +68,7 @@ export class SegmentListsSectionCardComponent {
   }
 
   onAddListClick(appContext: string, segmentId: string) {
-    // this.dialogService.openAddListModal(appContext, segmentId);
+    this.dialogService.openAddListModal(appContext, segmentId);
   }
 
   onMenuButtonItemClick(event, segment: Segment) {
@@ -82,7 +89,28 @@ export class SegmentListsSectionCardComponent {
   }
 
   onRowAction(event: ParticipantListRowActionEvent, segmentId: string): void {
-    // This will be implemented later when we implement the table component
-    console.log('Row action', event, segmentId);
+    switch (event.action) {
+      case PARTICIPANT_LIST_ROW_ACTION.EDIT:
+        this.onEditList(event.rowData, segmentId);
+        break;
+      case PARTICIPANT_LIST_ROW_ACTION.DELETE:
+        this.onDeleteList(event.rowData.segment);
+        break;
+    }
+  }
+
+  onEditList(rowData: ParticipantListTableRow, flagId: string): void {
+    this.dialogService.openEditListModal(rowData, rowData.segment.context, flagId);
+  }
+
+  onDeleteList(segment: Segment): void {
+    this.dialogService
+      .openDeleteExcludeListModal(segment.name)
+      .afterClosed()
+      .subscribe((confirmClicked) => {
+        if (confirmClicked) {
+          this.segmentsService.deletePrivateSegmentList(segment.id);
+        }
+      });
   }
 }

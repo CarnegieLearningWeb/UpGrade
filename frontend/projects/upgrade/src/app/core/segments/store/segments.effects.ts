@@ -19,6 +19,7 @@ import {
   selectTotalSegments,
 } from './segments.selectors';
 import JSZip from 'jszip';
+import { of } from 'rxjs';
 
 @Injectable()
 export class SegmentsEffects {
@@ -234,4 +235,41 @@ export class SegmentsEffects {
     element.click();
     document.body.removeChild(element);
   }
+
+  addSegmentList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionAddSegmentList),
+      switchMap((action) => {
+        return this.segmentsDataService.addSegmentList(action.list).pipe(
+          map((listResponse) => SegmentsActions.actionAddSegmentListSuccess({ listResponse })),
+          catchError((error) => of(SegmentsActions.actionAddSegmentListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  updateSegmentList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionUpdateSegmentList),
+      switchMap((action) => {
+        return this.segmentsDataService.updateSegmentList(action.list).pipe(
+          map((listResponse) => SegmentsActions.actionUpdateSegmentListSuccess({ listResponse })),
+          catchError((error) => of(SegmentsActions.actionUpdateSegmentListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  deleteSegmentList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionDeleteSegmentList),
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.segmentsDataService.deleteSegmentList(segmentId).pipe(
+          map(() => SegmentsActions.actionDeleteSegmentListSuccess({ segmentId })),
+          catchError((error) => of(SegmentsActions.actionDeleteSegmentListFailure({ error })))
+        );
+      })
+    )
+  );
 }

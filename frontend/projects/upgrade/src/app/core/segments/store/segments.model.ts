@@ -264,12 +264,7 @@ export interface UpsertPrivateSegmentListParams {
   sourceList: ParticipantListTableRow;
   sourceAppContext: string;
   action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION;
-  flagId: string;
-}
-
-export interface ImportListParams {
-  listType: FEATURE_FLAG_LIST_FILTER_MODE;
-  flagId: string;
+  id: string;
 }
 
 export enum LIST_OPTION_TYPE {
@@ -317,7 +312,7 @@ export interface EditPrivateSegmentListDetails extends PrivateSegmentListRequest
 }
 
 export interface PrivateSegmentListRequest {
-  flagId: string;
+  id: string;
   enabled: boolean;
   listType: string;
   segment: AddPrivateSegmentListRequestDetails | EditPrivateSegmentListDetails;

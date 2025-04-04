@@ -92,6 +92,7 @@ export class UpsertPrivateSegmentListModalComponent {
       [
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_SEGMENT_LIST,
       ].includes(this.config.params.action)
     ) {
       // Slight delay before opening the type select dropdown for a smoother UX
@@ -295,7 +296,7 @@ export class UpsertPrivateSegmentListModalComponent {
     list = this.createRequestByListType(formData, listType);
 
     const listRequest: PrivateSegmentListRequest = {
-      flagId: this.config.params.flagId,
+      id: this.config.params.id,
       enabled: this.config.params.sourceList?.enabled || isExcludeList, // Maintain existing status for edits, default to false for new include lists, true for all exclude lists
       listType,
       segment: list,
@@ -322,6 +323,12 @@ export class UpsertPrivateSegmentListModalComponent {
         break;
       case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST:
         this.sendUpdateFeatureFlagExclusionRequest(editRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_SEGMENT_LIST:
+        this.sendAddSegmentListRequest(addListRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_SEGMENT_LIST:
+        this.sendUpdateSegmentListRequest(editRequest);
         break;
     }
   }
@@ -373,6 +380,14 @@ export class UpsertPrivateSegmentListModalComponent {
 
   sendUpdateFeatureFlagExclusionRequest(editListRequest: EditPrivateSegmentListRequest): void {
     this.featureFlagService.updateFeatureFlagExclusionPrivateSegmentList(editListRequest);
+  }
+
+  sendAddSegmentListRequest(addListRequest: AddPrivateSegmentListRequest): void {
+    this.segmentsService.addPrivateSegmentList(addListRequest);
+  }
+
+  sendUpdateSegmentListRequest(editListRequest: EditPrivateSegmentListRequest): void {
+    this.segmentsService.updatePrivateSegmentList(editListRequest);
   }
 
   onDownloadRequested(values: string[]) {
