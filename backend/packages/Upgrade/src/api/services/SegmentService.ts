@@ -413,6 +413,31 @@ export class SegmentService {
     return createdSegment;
   }
 
+  public async deleteList(segmentId: string, parentSegmentId: string, logger: UpgradeLogger): Promise<Segment> {
+    logger.info({ message: `Deleting list => ${segmentId} from segment ${parentSegmentId}` });
+    const manager = this.dataSource;
+    const deletedSegmentResponse = await manager.transaction(async (transactionalEntityManager) => {
+      const parentSegment = await this.getSegmentById(parentSegmentId, logger);
+      if (!parentSegment) {
+        throw new Error('Parent Segment  not found');
+      }
+      if (!parentSegment.subSegments.map((subSegment) => subSegment.id).includes(segmentId)) {
+        throw new Error(`List ${segmentId} not found in parent segment ${parentSegmentId}`);
+      }
+      const deletedSegmentResponse = await this.segmentRepository.deleteSegments(
+        [segmentId],
+        logger,
+        transactionalEntityManager
+      );
+
+      parentSegment.subSegments = parentSegment.subSegments.filter((subSegment) => subSegment.id !== segmentId);
+
+      await transactionalEntityManager.getRepository(Segment).save(parentSegment);
+      return deletedSegmentResponse;
+    });
+    return deletedSegmentResponse[0];
+  }
+
   public upsertSegmentInPipeline(
     segment: SegmentInputValidator,
     logger: UpgradeLogger,

@@ -4,6 +4,7 @@ import { Segment } from '../models/Segment';
 import { AppRequest, PaginationResponse } from '../../types';
 import { SEGMENT_STATUS } from 'upgrade_types';
 import {
+  DeleteListInputValidator,
   IdValidator,
   ListInputValidator,
   SegmentFile,
@@ -540,6 +541,50 @@ export class SegmentController {
     @Req() request: AppRequest
   ): Promise<Segment> {
     return this.segmentService.deleteSegment(segmentId, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /segments/list/{segmentId}:
+   *    delete:
+   *      description: Delete a list from a parent segment
+   *      tags:
+   *      - Segment
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          name: segmentId
+   *          description: List id
+   *          required: true
+   *          schema:
+   *            type: string
+   *            example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
+   *        - in: body
+   *          name: parentSegmentId
+   *          description: Parent segment id
+   *          schema:
+   *            type: string
+   *            example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
+   *          required: true
+   *      responses:
+   *        '200':
+   *          description: Delete a segment list
+   *          schema:
+   *            $ref: '#/definitions/segmentResponse'
+   *        '401':
+   *          description: Authorization Required Error
+   *        '500':
+   *          description: Internal Server Error, SegmentId is not valid
+   */
+  @Delete('/list/:segmentId')
+  public deleteList(
+    @Params({ validate: true }) { segmentId }: SegmentIdValidator,
+    @Body({ validate: true }) { parentSegmentId }: DeleteListInputValidator,
+
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    return this.segmentService.deleteList(segmentId, parentSegmentId, request.logger);
   }
 
   /**
