@@ -191,6 +191,13 @@ export class SegmentService {
     const allSegmentData = await this.getAllPublicSegmentsAndSubsegments(logger);
     const segmentData = await this.getSegmentById(segmentId, logger);
     if (segmentData) {
+      if (segmentData.subSegments.length > 0) {
+        const listData = await this.getSegmentByIds(segmentData.subSegments.map((subSegment) => subSegment.id));
+        // Add full member data to the subsegments (i.e. Lists) if it's a new style segment
+        if (listData.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE)) {
+          segmentData.subSegments = listData;
+        }
+      }
       const segmentWithStatus = (await this.getSegmentStatus(allSegmentData)).segmentsData.find(
         (segment: Segment) => segment.id === segmentId
       );
