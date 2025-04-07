@@ -78,22 +78,6 @@ export class UpsertSegmentModalComponent {
     this.listenForIsInitialFormValueChanged();
     this.listenForPrimaryButtonDisabled();
     this.listenOnContext();
-
-    if (this.isDisabled()) {
-      this.disableRestrictedFields();
-    }
-  }
-
-  isDisabled() {
-    return (
-      this.config.params.action === UPSERT_SEGMENT_ACTION.EDIT &&
-      this.config.params.sourceSegment?.status === SEGMENT_STATUS.USED
-    );
-  }
-
-  disableRestrictedFields(): void {
-    this.nameControl?.disable();
-    this.appContextControl?.disable();
   }
 
   createSegmentForm(): void {
@@ -107,11 +91,26 @@ export class UpsertSegmentModalComponent {
       appContext: [initialValues.appContext, Validators.required],
       tags: [initialValues.tags],
     });
+    this.disableRestrictedFields();
 
     this.initialFormValues$.next(this.segmentForm.value);
 
     this.listenForDuplicateNameError();
     this.listenForNameChanges();
+  }
+
+  disableRestrictedFields(): void {
+    if (
+      this.config.params.action === UPSERT_SEGMENT_ACTION.EDIT &&
+      this.config.params.sourceSegment.status === SEGMENT_STATUS.USED
+    ) {
+      this.appContextControl.disable();
+      this.nameControl.disable();
+    }
+
+    if (this.config.params.action === UPSERT_SEGMENT_ACTION.DUPLICATE) {
+      this.appContextControl.enable();
+    }
   }
 
   private updateNameControlErrors(shouldSetDuplicateError: boolean, error?: DuplicateSegmentNameError) {

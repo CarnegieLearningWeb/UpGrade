@@ -972,13 +972,6 @@ export class SegmentService {
         message: `Segment name ${name} already exists in context ${context}`,
       });
 
-      // const error = new ErrorWithType();
-      // error.type = SERVER_ERROR.SEGMENT_DUPLICATE_NAME;
-      // error.details = `Segment name ${name} already exists in context ${context}`;
-      // (error as any).duplicateName = name;
-      // (error as any).context = context;
-      // (error as any).httpCode = 400;
-
       const error: DuplicateSegmentNameError = {
         type: SERVER_ERROR.SEGMENT_DUPLICATE_NAME,
         message: `Segment name ${name} already exists in context ${context}`,
