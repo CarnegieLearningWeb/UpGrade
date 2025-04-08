@@ -61,6 +61,12 @@ export class ListInputValidator extends SegmentInputValidator {
   public parentSegmentId: string;
 }
 
+export class DeleteListInputValidator {
+  @IsNotEmpty()
+  @IsUUID()
+  public parentSegmentId: string;
+}
+
 export class IdValidator {
   @IsNotEmpty()
   @IsUUID()

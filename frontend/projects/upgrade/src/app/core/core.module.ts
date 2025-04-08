@@ -30,7 +30,6 @@ import { ENV, Environment } from '../../environments/environment-types';
 import { environment } from '../../environments/environment';
 import { ExperimentDesignStepperModule } from './experiment-design-stepper/experiment-design-stepper.module';
 import { StratificationFactorsModule } from './stratification-factors/stratification-factors.module';
-import { CloseModalInterceptor } from './http-interceptors/close-modal.interceptor';
 
 export { TitleService, AppState, LocalStorageService, selectRouterState, NotificationService };
 
@@ -79,7 +78,6 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
     { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: HttpCancelInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: CloseModalInterceptor, multi: true },
     { provide: ErrorHandler, useClass: AppErrorHandler },
     { provide: RouterStateSerializer, useClass: CustomSerializer },
     provideHttpClient(withInterceptorsFromDi()),
