@@ -22,6 +22,7 @@ import JSZip from 'jszip';
 import { of } from 'rxjs';
 import { SERVER_ERROR } from 'upgrade_types';
 import { SegmentsService } from '../segments.service';
+import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
 
 @Injectable()
 export class SegmentsEffects {
@@ -30,7 +31,8 @@ export class SegmentsEffects {
     private actions$: Actions,
     private segmentsDataService: SegmentsDataService,
     private segmentsService: SegmentsService,
-    private router: Router
+    private router: Router,
+    private commonModalEventService: CommonModalEventsService
   ) {}
 
   fetchSegmentsPaginated$ = createEffect(() =>
@@ -185,7 +187,10 @@ export class SegmentsEffects {
       ofType(SegmentsActions.actionAddSegment),
       switchMap((action) => {
         return this.segmentsDataService.addSegment(action.addSegmentRequest).pipe(
-          map((response: Segment) => SegmentsActions.actionAddSegmentSuccess({ segment: response })),
+          map((response: Segment) => {
+            this.commonModalEventService.forceCloseModal();
+            return SegmentsActions.actionAddSegmentSuccess({ segment: response });
+          }),
           catchError((error) => {
             if (error?.error?.type === SERVER_ERROR.SEGMENT_DUPLICATE_NAME) {
               this.segmentsService.setDuplicateSegmentNameError(error.error);
@@ -197,23 +202,13 @@ export class SegmentsEffects {
     )
   );
 
-  navigateToSegmentDetail$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(SegmentsActions.actionAddSegmentSuccess),
-        tap(({ segment }) => {
-          this.router.navigate(['/segments', 'detail', segment.id]);
-        })
-      ),
-    { dispatch: false }
-  );
-
   updateSegment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionUpdateSegment),
       switchMap((action) => {
         return this.segmentsDataService.modifySegment(action.updateSegmentRequest).pipe(
           concatMap((response: Segment) => {
+            this.commonModalEventService.forceCloseModal();
             return [
               SegmentsActions.actionUpdateSegmentSuccess({ segment: response }),
               SegmentsActions.actionGetSegmentById({ segmentId: response.id }),
@@ -242,6 +237,17 @@ export class SegmentsEffects {
         )
       )
     )
+  );
+
+  navigateToSegmentDetail$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(SegmentsActions.actionAddSegmentSuccess),
+        tap(({ segment }) => {
+          this.router.navigate(['/segments', 'detail', segment.id]);
+        })
+      ),
+    { dispatch: false }
   );
 
   exportSegments$ = createEffect(() =>

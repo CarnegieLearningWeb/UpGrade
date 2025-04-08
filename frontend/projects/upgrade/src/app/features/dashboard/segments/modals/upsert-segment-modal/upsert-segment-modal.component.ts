@@ -54,7 +54,6 @@ export class UpsertSegmentModalComponent {
   isPrimaryButtonDisabled$: Observable<boolean>;
   appContexts$ = this.segmentService.appContexts$;
   CommonTagInputType = CommonTagInputType;
-  isSelectedSegmentUpdated$ = this.segmentService.isSelectedSegmentUpdated$;
   initialFormValues$ = new BehaviorSubject<SegmentFormData>(null);
   subscriptions = new Subscription();
   isContextChanged = false;
@@ -74,7 +73,6 @@ export class UpsertSegmentModalComponent {
   ngOnInit(): void {
     this.experimentService.fetchContextMetaData();
     this.createSegmentForm();
-    this.listenForSegmentGetUpdated();
     this.listenForIsInitialFormValueChanged();
     this.listenForPrimaryButtonDisabled();
     this.listenOnContext();
@@ -169,14 +167,6 @@ export class UpsertSegmentModalComponent {
       )
     );
     this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
-  }
-
-  listenForSegmentGetUpdated(): void {
-    this.subscriptions.add(
-      this.isSelectedSegmentUpdated$.subscribe(() => {
-        this.closeModal();
-      })
-    );
   }
 
   listenForNameChanges(): void {

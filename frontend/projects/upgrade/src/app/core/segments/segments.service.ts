@@ -35,7 +35,7 @@ import {
   UpdateSegmentRequest,
   UpsertSegmentType,
 } from './store/segments.model';
-import { filter, map, pairwise, tap, withLatestFrom } from 'rxjs/operators';
+import { filter, map, withLatestFrom } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
 import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY, DuplicateSegmentNameError } from 'upgrade_types';
@@ -45,7 +45,6 @@ import { selectContextMetaData } from '../experiments/store/experiments.selector
 import { selectSelectedFeatureFlag } from '../feature-flags/store/feature-flags.selectors';
 import { CommonTextHelpersService } from '../../shared/services/common-text-helpers.service';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
-import isEqual from 'lodash.isequal';
 
 @Injectable({ providedIn: 'root' })
 export class SegmentsService {
@@ -102,15 +101,6 @@ export class SegmentsService {
         return d1 < d2 ? 1 : d1 > d2 ? -1 : 0;
       })
     )
-  );
-
-  isSelectedSegmentUpdated$ = this.store$.pipe(
-    select(selectSelectedSegment),
-    pairwise(),
-    filter(([prev, curr]) => {
-      return prev && curr && !isEqual(prev, curr);
-    }),
-    map(([, curr]) => curr)
   );
 
   selectPrivateSegmentListTypeOptions$ = this.store$.pipe(

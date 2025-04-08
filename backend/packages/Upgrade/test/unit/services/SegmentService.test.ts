@@ -421,12 +421,14 @@ describe('Segment Service Testing', () => {
     expect(segments).toEqual(ff_include);
   });
 
-  it('should upsert a segment', async () => {
+  it('should upsert a segment with id (edit)', async () => {
+    service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
     const segments = await service.upsertSegment(segVal, logger);
     expect(segments).toEqual(seg1);
   });
 
-  it('should upsert a segment with no id', async () => {
+  it('should upsert a segment with no id (add)', async () => {
+    service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
     const err = new Error('error');
     const segment = new SegmentInputValidator();
     segment.subSegmentIds = ['seg1'];
@@ -437,24 +439,62 @@ describe('Segment Service Testing', () => {
     indivRepo.insertIndividualForSegment = jest.fn().mockImplementation(() => {
       throw err;
     });
+    repo.find = jest.fn().mockResolvedValue([]);
     expect(async () => {
       await service.upsertSegment(segment, logger);
     }).rejects.toThrow(new Error('Error in creating individualDocs, groupDocs in "addSegmentInDB"'));
   });
 
+  it('should throw an error if the segment has a duplicate name', async () => {
+    const dupeError = new Error(
+      JSON.stringify({
+        type: SERVER_ERROR.SEGMENT_DUPLICATE_NAME,
+        message: `Segment name ${segVal.name} already exists in context ${segVal.context}`,
+        duplicateName: segVal.name,
+        context: segVal.context, // Fix: Make sure this is a string, not the segment object
+        httpCode: 400,
+      })
+    );
+
+    const addSegment = { ...segVal, id: undefined };
+
+    // Make sure this mock is on the service instance being tested
+    service.checkIsDuplicateSegmentName = jest.fn().mockImplementation(() => {
+      throw dupeError;
+    });
+
+    // Also verify that addSegmentDataInDB isn't being called
+    service.addSegmentDataInDB = jest.fn();
+
+    expect(async () => {
+      await service.upsertSegment(addSegment, logger);
+    }).rejects.toThrow(dupeError);
+
+    // Verify checkIsDuplicateSegmentName was called with correct parameters
+    expect(service.checkIsDuplicateSegmentName).toHaveBeenCalledWith(segVal.name, segVal.context, logger);
+
+    // Verify addSegmentDataInDB was never called
+    expect(service.addSegmentDataInDB).not.toHaveBeenCalled();
+  });
+
   it('should throw an error when unable to delete segment', async () => {
+    service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
     const err = new Error('error');
     const indivRepo = module.get<IndividualForSegmentRepository>(getRepositoryToken(IndividualForSegmentRepository));
     indivRepo.insertIndividualForSegment = jest.fn().mockImplementation(() => {
       throw err;
     });
+    repo.find = jest.fn().mockResolvedValue([]);
+
     expect(async () => {
       await service.upsertSegment(segVal, logger);
     }).rejects.toThrow(err);
   });
 
   it('should throw an error when unable to save segment', async () => {
+    service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
     const err = new Error('error');
+    repo.find = jest.fn().mockResolvedValue([]);
     repo.save = jest.fn().mockImplementation(() => {
       throw err;
     });

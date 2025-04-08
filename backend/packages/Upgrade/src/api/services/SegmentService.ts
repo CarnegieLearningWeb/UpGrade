@@ -386,7 +386,10 @@ export class SegmentService {
   }
 
   public async upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
-    await this.checkIsDuplicateSegmentName(segment.name, segment.context, logger);
+    // skip dupe check if segment has id, which means it's an update not an add
+    if (!segment.id) {
+      await this.checkIsDuplicateSegmentName(segment.name, segment.context, logger);
+    }
 
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
     return this.addSegmentDataInDB(segment, logger);
