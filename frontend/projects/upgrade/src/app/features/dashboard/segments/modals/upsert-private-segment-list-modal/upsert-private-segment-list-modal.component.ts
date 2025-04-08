@@ -154,6 +154,7 @@ export class UpsertPrivateSegmentListModalComponent {
       ![
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_SEGMENT_LIST,
       ].includes(this.config.params.action)
     ) {
       return;
