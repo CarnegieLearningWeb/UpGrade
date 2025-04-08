@@ -25,6 +25,7 @@ export const initialState: SegmentState = adapter.getInitialState({
   searchString: null,
   sortKey: SEGMENT_SORT_KEY.NAME,
   sortAs: SORT_AS_DIRECTION.ASCENDING,
+  isLoadingUpsertSegment: false,
 });
 
 const reducer = createReducer(
@@ -91,6 +92,8 @@ const reducer = createReducer(
     SegmentsActions.actionFetchSegmentsFailure,
     SegmentsActions.actionUpsertSegmentFailure,
     SegmentsActions.actionGetSegmentByIdFailure,
+    SegmentsActions.actionUpdateSegmentSuccess,
+    SegmentsActions.actionAddSegmentSuccess,
     (state) => ({ ...state, isLoadingSegments: false })
   ),
   on(SegmentsActions.actionUpsertSegmentSuccess, (state, { segment }) =>

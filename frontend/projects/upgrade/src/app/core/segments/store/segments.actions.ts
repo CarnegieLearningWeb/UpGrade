@@ -1,7 +1,9 @@
 import { createAction, props } from '@ngrx/store';
 import {
+  AddSegmentRequest,
   Segment,
   SegmentInput,
+  UpdateSegmentRequest,
   UpsertSegmentType,
   experimentSegmentInclusionExclusionData,
   featureFlagSegmentInclusionExclusionData,
@@ -69,6 +71,27 @@ export const actionUpsertSegmentSuccess = createAction(
 );
 
 export const actionUpsertSegmentFailure = createAction('[Segments] Upsert Segment Failure');
+
+export const actionAddSegment = createAction(
+  '[Segments] Add Segment',
+  props<{ addSegmentRequest: AddSegmentRequest }>()
+);
+
+export const actionAddSegmentSuccess = createAction('[Segments] Add Segment Success', props<{ segment: Segment }>());
+
+export const actionAddSegmentFailure = createAction('[Segments] Add Segment Failure');
+
+export const actionUpdateSegment = createAction(
+  '[Segments] Update Segment',
+  props<{ updateSegmentRequest: UpdateSegmentRequest }>()
+);
+
+export const actionUpdateSegmentSuccess = createAction(
+  '[Segments] Update Segment Success',
+  props<{ segment: Segment }>()
+);
+
+export const actionUpdateSegmentFailure = createAction('[Segments] Update Segment Failure');
 
 export const actionGetSegmentById = createAction('[Segments] Get Segment By Id', props<{ segmentId: string }>());
 

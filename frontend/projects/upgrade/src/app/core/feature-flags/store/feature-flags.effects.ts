@@ -95,7 +95,7 @@ export class FeatureFlagsEffects {
     )
   );
 
-  // actionCreateFeatureFlag dispatch POST feature flag
+  // actionAddFeatureFlag dispatch POST feature flag
   addFeatureFlag$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionAddFeatureFlag),
@@ -334,6 +334,7 @@ export class FeatureFlagsEffects {
       )
     )
   );
+
   exportFeatureFlagsDesign$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionExportFeatureFlagDesign),

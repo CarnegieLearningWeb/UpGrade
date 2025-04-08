@@ -5,8 +5,11 @@ import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/featur
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
+  Segment,
   UPSERT_PRIVATE_SEGMENT_LIST_ACTION,
+  UPSERT_SEGMENT_ACTION,
   UpsertPrivateSegmentListParams,
+  UpsertSegmentParams,
 } from '../../core/segments/store/segments.model';
 import {
   FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
@@ -23,6 +26,7 @@ import {
   SimpleConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
+import { UpsertSegmentModalComponent } from '../../features/dashboard/segments/modals/upsert-segment-modal/upsert-segment-modal.component';
 import {
   FEATURE_FLAG_IMPORT_SERVICE,
   ImportServiceAdapter,
@@ -54,7 +58,7 @@ export class DialogService {
     });
   }
 
-  // Common modal flags ---------------------------------------- //
+  // feature flag modal ---------------------------------------- //
   openAddFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Add Feature Flag',
@@ -365,6 +369,65 @@ export class DialogService {
       },
     };
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  // segment modal ---------------------------------------- //
+  openUpsertSegmentModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: 'input',
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertSegmentModalComponent, config);
+  }
+
+  openAddSegmentModal() {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Add Segment',
+      tagsLabel: 'segments.upsert-segment-modal.tags-label.text',
+      tagsPlaceholder: 'segments.upsert-segment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceSegment: null,
+        action: UPSERT_SEGMENT_ACTION.ADD,
+      },
+    };
+    return this.openUpsertSegmentModal(commonModalConfig);
+  }
+
+  openEditSegmentModal(sourceSegment: Segment) {
+    const commonModalConfig: CommonModalConfig<UpsertSegmentParams> = {
+      title: 'Edit Segment',
+      tagsLabel: 'segments.upsert-segment-modal.tags-label.text',
+      tagsPlaceholder: 'segments.upsert-segment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceSegment: { ...sourceSegment },
+        action: UPSERT_SEGMENT_ACTION.EDIT,
+      },
+    };
+    return this.openUpsertSegmentModal(commonModalConfig);
+  }
+
+  openDuplicateSegmentModal(sourceSegment: Segment) {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Duplicate Segment',
+      tagsLabel: 'segments.upsert-segment-modal.tags-label.text',
+      tagsPlaceholder: 'segments.upsert-segment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceSegment: { ...sourceSegment },
+        action: UPSERT_SEGMENT_ACTION.DUPLICATE,
+      },
+    };
+    return this.openUpsertSegmentModal(commonModalConfig);
   }
 
   openImportSegmentModal() {

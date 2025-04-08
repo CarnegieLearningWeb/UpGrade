@@ -198,7 +198,6 @@ export class UpsertFeatureFlagModalComponent {
 
   sendRequest(action: UPSERT_FEATURE_FLAG_ACTION, sourceFlag?: FeatureFlag): void {
     const formData: FeatureFlagFormData = this.featureFlagForm.value;
-
     if (action === UPSERT_FEATURE_FLAG_ACTION.ADD || action === UPSERT_FEATURE_FLAG_ACTION.DUPLICATE) {
       this.createAddRequest(formData);
     } else if (action === UPSERT_FEATURE_FLAG_ACTION.EDIT && sourceFlag) {

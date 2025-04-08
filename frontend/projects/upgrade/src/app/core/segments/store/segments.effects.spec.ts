@@ -6,12 +6,15 @@ import { SegmentsEffects } from './segments.effects';
 import { Segment, SegmentFile, SegmentInput, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
 import * as SegmentsActions from './segments.actions';
+import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
 
 describe('SegmentsEffects', () => {
   let store$: any;
   let actions$: ActionsSubject;
   let segmentsDataService: any;
+  let segmentService: any;
   let router: any;
+  let commonModalEventService: any;
   let service: SegmentsEffects;
   const mockSegment: Segment = {
     createdAt: 'test',
@@ -48,11 +51,21 @@ describe('SegmentsEffects', () => {
     store$ = new BehaviorSubject({});
     store$.dispatch = jest.fn();
     segmentsDataService = {};
+    commonModalEventService = {
+      forceCloseModal: jest.fn(),
+    };
     router = {
       navigate: jest.fn(),
     };
 
-    service = new SegmentsEffects(store$, actions$, segmentsDataService, router);
+    service = new SegmentsEffects(
+      store$,
+      actions$,
+      segmentsDataService,
+      segmentService,
+      router,
+      commonModalEventService
+    );
   });
 
   describe('fetchAllSegments$', () => {

@@ -12,34 +12,39 @@ import {
   selectExperimentSegmentsExclusion,
   selectFeatureFlagSegmentsInclusion,
   selectFeatureFlagSegmentsExclusion,
-  selectSegmentById,
   selectSearchString,
   selectSearchKey,
   selectSortKey,
   selectSortAs,
   selectSegmentLists,
+  selectAppContexts,
   selectSegmentUsageData,
   selectIsLoadingGlobalSegments,
   selectGlobalTableState,
   selectGlobalSortKey,
   selectGlobalSortAs,
+  isLoadingUpsertSegment,
+  selectSegmentIdAfterNavigation,
 } from './store/segments.selectors';
 import {
+  AddSegmentRequest,
   LIST_OPTION_TYPE,
   Segment,
   SegmentInput,
   SegmentLocalStorageKeys,
+  UpdateSegmentRequest,
   UpsertSegmentType,
 } from './store/segments.model';
-import { filter, map, tap, withLatestFrom } from 'rxjs/operators';
-import { Observable, combineLatest } from 'rxjs';
+import { filter, map, withLatestFrom } from 'rxjs/operators';
+import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
-import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
+import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY, DuplicateSegmentNameError } from 'upgrade_types';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { selectShouldUseLegacyUI } from './store/segments.selectors';
 import { selectContextMetaData } from '../experiments/store/experiments.selectors';
 import { selectSelectedFeatureFlag } from '../feature-flags/store/feature-flags.selectors';
 import { CommonTextHelpersService } from '../../shared/services/common-text-helpers.service';
+import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 
 @Injectable({ providedIn: 'root' })
 export class SegmentsService {
@@ -50,6 +55,7 @@ export class SegmentsService {
   ) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
+  isLoadingUpsertSegment$ = this.store$.pipe(select(isLoadingUpsertSegment));
   setIsLoadingImportSegment$ = this.store$.pipe(select(selectIsLoadingSegments));
   isLoadingGlobalSegments$ = this.store$.pipe(select(selectIsLoadingGlobalSegments));
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
@@ -69,28 +75,19 @@ export class SegmentsService {
     select(selectSegmentLists),
     map((lists) => lists.length)
   );
+  appContexts$ = this.store$.pipe(select(selectAppContexts));
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
   allFeatureFlagSegmentsExclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsExclusion));
   allFeatureFlagSegmentsInclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsInclusion));
   segmentUsageData$ = this.store$.pipe(select(selectSegmentUsageData));
+  duplicateSegmentNameError$ = new BehaviorSubject<DuplicateSegmentNameError>(null);
+  selectSegmentIdAfterNavigation$ = this.store$.pipe(select(selectSegmentIdAfterNavigation));
 
   selectSearchSegmentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
       filter(([searchKey, searchString]) => !!searchKey && !!searchString),
       map(([searchKey, searchString]) => ({ searchKey, searchString }))
-    );
-  }
-
-  selectSegmentById(segmentId: string) {
-    return this.store$.pipe(
-      select(selectSegmentById, { segmentId }),
-      tap((segment) => {
-        if (!segment) {
-          this.fetchSegmentById(segmentId);
-        }
-      }),
-      map((segment) => ({ ...segment }))
     );
   }
 
@@ -143,6 +140,10 @@ export class SegmentsService {
 
   fetchSegmentById(segmentId: string) {
     this.store$.dispatch(SegmentsActions.actionGetSegmentById({ segmentId }));
+  }
+
+  fetchContextMetaData() {
+    this.store$.dispatch(actionFetchContextMetaData({ isLoadingContextMetaData: true }));
   }
 
   isInitialSegmentsLoading() {
@@ -213,11 +214,23 @@ export class SegmentsService {
     );
   }
 
+  addSegment(addSegmentRequest: AddSegmentRequest) {
+    this.store$.dispatch(SegmentsActions.actionAddSegment({ addSegmentRequest }));
+  }
+
+  modifySegment(updateSegmentRequest: UpdateSegmentRequest) {
+    this.store$.dispatch(SegmentsActions.actionUpdateSegment({ updateSegmentRequest }));
+  }
+
   exportSegments(segmentIds: string[]) {
     this.store$.dispatch(SegmentsActions.actionExportSegments({ segmentIds }));
   }
 
   exportSegmentCSV(segmentIds: string[]): Observable<any> {
     return this.segmentsDataService.exportSegmentCSV(segmentIds);
+  }
+
+  setDuplicateSegmentNameError(error: DuplicateSegmentNameError) {
+    this.duplicateSegmentNameError$.next(error);
   }
 }
