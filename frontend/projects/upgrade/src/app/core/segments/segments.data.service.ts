@@ -2,12 +2,13 @@ import { Inject, Injectable } from '@angular/core';
 import {
   AddPrivateSegmentListRequest,
   EditPrivateSegmentListRequest,
+  Segment,
   SegmentFile,
   SegmentInput,
   SegmentsPaginationInfo,
   SegmentsPaginationParams,
 } from './store/segments.model';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { FeatureFlagSegmentListDetails } from '../feature-flags/store/feature-flags.model';
@@ -90,12 +91,60 @@ export class SegmentsDataService {
 
   addSegmentList(list: AddPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
     const url = this.environment.api.addSegmentList;
-    return this.http.post<FeatureFlagSegmentListDetails>(url, list);
+
+    // Transform AddPrivateSegmentListRequest to ListInputValidator format
+    const transformedList = {
+      parentSegmentId: list.id,
+      name: list.segment.name,
+      description: list.segment.description,
+      context: list.segment.context,
+      type: list.segment.type,
+      userIds: list.segment.userIds,
+      groups: list.segment.groups,
+      subSegmentIds: list.segment.subSegmentIds,
+      listType: list.listType,
+    };
+
+    // Return type transformation - adapting Segment to FeatureFlagSegmentListDetails
+    return this.http.post<Segment>(url, transformedList).pipe(
+      map((segment: Segment) => {
+        return {
+          segment: segment,
+          featureFlag: null,
+          enabled: list.enabled,
+          listType: list.listType,
+        } as FeatureFlagSegmentListDetails;
+      })
+    );
   }
 
   updateSegmentList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
-    const url = `${this.environment.api.addSegmentList}/${list.segment.id}`;
-    return this.http.put<FeatureFlagSegmentListDetails>(url, list);
+    const url = this.environment.api.segments;
+
+    // Transform EditPrivateSegmentListRequest to SegmentInputValidator format
+    const transformedList = {
+      id: list.segment.id,
+      name: list.segment.name,
+      description: list.segment.description,
+      context: list.segment.context,
+      type: list.segment.type,
+      userIds: list.segment.userIds,
+      groups: list.segment.groups,
+      subSegmentIds: list.segment.subSegmentIds,
+      listType: list.listType,
+    };
+
+    // Return type transformation - adapting Segment to FeatureFlagSegmentListDetails
+    return this.http.post<Segment>(url, transformedList).pipe(
+      map((segment: Segment) => {
+        return {
+          segment: segment,
+          featureFlag: null,
+          enabled: list.enabled,
+          listType: list.listType,
+        } as FeatureFlagSegmentListDetails;
+      })
+    );
   }
 
   deleteSegmentList(segmentId: string) {
