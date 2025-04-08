@@ -109,7 +109,7 @@ export class SegmentListsSectionCardComponent {
       .afterClosed()
       .subscribe((confirmClicked) => {
         if (confirmClicked) {
-          this.segmentsService.deletePrivateSegmentList(segment.id);
+          this.segmentsService.deletePrivateSegmentList(segment.id, this.data.id);
         }
       });
   }

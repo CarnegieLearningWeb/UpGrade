@@ -155,7 +155,10 @@ export const actionUpdateSegmentListFailure = createAction(
   props<{ error: any }>()
 );
 
-export const actionDeleteSegmentList = createAction('[Segments] Delete Segment List', props<{ segmentId: string }>());
+export const actionDeleteSegmentList = createAction(
+  '[Segments] Delete Segment List',
+  props<{ segmentId: string; parentSegmentId: string }>()
+);
 
 export const actionDeleteSegmentListSuccess = createAction(
   '[Segments] Delete Segment List Success',

@@ -263,9 +263,8 @@ export class SegmentsEffects {
   deleteSegmentList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionDeleteSegmentList),
-      map((action) => action.segmentId),
-      switchMap((segmentId) => {
-        return this.segmentsDataService.deleteSegmentList(segmentId).pipe(
+      switchMap(({ segmentId, parentSegmentId }) => {
+        return this.segmentsDataService.deleteSegmentList(segmentId, parentSegmentId).pipe(
           map(() => SegmentsActions.actionDeleteSegmentListSuccess({ segmentId })),
           catchError((error) => of(SegmentsActions.actionDeleteSegmentListFailure({ error })))
         );

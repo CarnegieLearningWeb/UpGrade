@@ -147,8 +147,8 @@ export class SegmentsDataService {
     );
   }
 
-  deleteSegmentList(segmentId: string) {
+  deleteSegmentList(segmentId: string, parentSegmentId: string) {
     const url = `${this.environment.api.addSegmentList}/${segmentId}`;
-    return this.http.delete(url);
+    return this.http.delete(url, { body: { parentSegmentId } });
   }
 }

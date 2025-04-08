@@ -154,16 +154,15 @@ describe('Segment Controller Testing', () => {
       .expect(200);
   });
 
-  // TODO: Should be uncommented once the backend endpoint is implemented
-  // test('Delete request for /api/segments/list/:segmentId (deleteSegmentList)', () => {
-  //   const segmentId = uuid();
-  //   const parentSegmentId = uuid();
+  test('Delete request for /api/segments/list/:segmentId (deleteSegmentList)', () => {
+    const segmentId = uuid();
+    const parentSegmentId = uuid();
 
-  //   return request(app)
-  //     .delete(`/api/segments/list/${segmentId}`)
-  //     .send({ parentSegmentId })
-  //     .set('Accept', 'application/json')
-  //     .expect('Content-Type', /json/)
-  //     .expect(200);
-  // });
+    return request(app)
+      .delete(`/api/segments/list/${segmentId}`)
+      .send({ parentSegmentId })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
 });

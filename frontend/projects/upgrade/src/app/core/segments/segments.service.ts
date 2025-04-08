@@ -231,7 +231,12 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionUpdateSegmentList({ list }));
   }
 
-  deletePrivateSegmentList(segmentId: string) {
-    this.store$.dispatch(SegmentsActions.actionDeleteSegmentList({ segmentId }));
+  deletePrivateSegmentList(segmentId: string, parentSegmentId: string) {
+    this.store$.dispatch(
+      SegmentsActions.actionDeleteSegmentList({
+        segmentId,
+        parentSegmentId,
+      })
+    );
   }
 }
