@@ -239,6 +239,8 @@ export class UpsertSegmentModalComponent {
 
   createEditRequest({ name, description, appContext, tags }: SegmentFormData, sourceSegment: Segment): void {
     const { id, status } = sourceSegment;
+    const subSegmentIds = sourceSegment.subSegments.map((subSegment) => subSegment.id);
+
     // Not allow editing segment name and context if segment is in used status:
     if (sourceSegment.status === SEGMENT_STATUS.USED) {
       name = sourceSegment.name;
@@ -251,7 +253,7 @@ export class UpsertSegmentModalComponent {
       context: appContext,
       userIds: [],
       groups: [],
-      subSegmentIds: [],
+      subSegmentIds,
       status,
       type: SEGMENT_TYPE.PUBLIC,
       tags,
@@ -260,16 +262,14 @@ export class UpsertSegmentModalComponent {
   }
 
   createDuplicateRequest({ name, description, tags }: SegmentFormData, sourceSegment: Segment): void {
-    const userIds = sourceSegment.individualForSegment.map((user) => user.userId);
-    const groups = sourceSegment.groupForSegment;
     const subSegmentIds = sourceSegment.subSegments.map((subSegment) => subSegment.id);
 
     const segmentRequest: AddSegmentRequest = {
       name,
       description,
       context: sourceSegment.context,
-      userIds,
-      groups,
+      userIds: [],
+      groups: [],
       subSegmentIds,
       status: SEGMENT_STATUS.UNUSED,
       type: SEGMENT_TYPE.PUBLIC,
