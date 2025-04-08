@@ -48,6 +48,8 @@ const exp = new Experiment();
 const ff = new FeatureFlag();
 const seg2 = new Segment();
 const seg1 = new Segment();
+const newSeg = new Segment();
+const newList = new Segment();
 const segValSegment = new Segment();
 const logger = new UpgradeLogger();
 const segmentArr = [seg1, seg2];
@@ -155,7 +157,17 @@ describe('Segment Service Testing', () => {
       type: SEGMENT_TYPE.PUBLIC,
     };
     segValImportFile.fileContent = JSON.stringify(segValImport);
-
+    newSeg.id = 'newsegId';
+    newSeg.context = 'add';
+    newSeg.name = 'newSeg';
+    newSeg.type = SEGMENT_TYPE.PUBLIC;
+    newList.id = 'newListId';
+    newList.subSegments = [];
+    newList.context = 'add';
+    newList.name = 'newList';
+    newSeg.subSegments = [];
+    newSeg.subSegments.push(newList);
+    newList.type = SEGMENT_TYPE.PRIVATE;
     module = await Test.createTestingModule({
       providers: [
         DataSource,
@@ -503,6 +515,20 @@ describe('Segment Service Testing', () => {
     service.upsertSegmentInPipeline = jest.fn().mockResolvedValue(segValSegment);
     const segment = await service.addList(listVal, logger);
     expect(segment).toEqual(segValSegment);
+  });
+
+  it('should delete a list from a segment', async () => {
+    service.getSegmentById = jest.fn().mockResolvedValue(newSeg);
+    const deletedList = await service.deleteList(newList.id, newSeg.id, logger);
+    expect(deletedList).toEqual(newList.id);
+  });
+
+  it('should throw an error on attempting to delete a list not found on the parent segment', async () => {
+    service.getSegmentById = jest.fn().mockResolvedValue(seg1);
+    const err = new Error('List newListId not found in parent segment seg1');
+    expect(async () => {
+      await service.deleteList(newList.id, seg1.id, logger);
+    }).rejects.toThrow(err);
   });
 
   it('should return a count of public segment', async () => {
