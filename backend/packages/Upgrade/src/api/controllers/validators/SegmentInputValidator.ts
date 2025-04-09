@@ -120,3 +120,14 @@ export class SegmentIdValidator {
   @IsUUID()
   public segmentId: string;
 }
+
+export class SegmentListImportValidation {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SegmentFile)
+  public files: SegmentFile[];
+
+  @IsUUID()
+  @IsNotEmpty()
+  public parentSegmentId: string;
+}

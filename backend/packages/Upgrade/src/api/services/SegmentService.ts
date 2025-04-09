@@ -31,6 +31,7 @@ import {
   Group,
   SegmentValidationObj,
   ListInputValidator,
+  SegmentListImportValidation,
 } from '../controllers/validators/SegmentInputValidator';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
@@ -516,6 +517,20 @@ export class SegmentService {
       await this.addSegmentDataInDB(segment, logger);
     }
     return validatedSegments.importErrors;
+  }
+
+  public async importLists(lists: SegmentListImportValidation, logger: UpgradeLogger): Promise<any> {
+    const validatedLists = await this.checkSegmentsValidity(lists.files);
+
+    for (const list of validatedLists.segments) {
+      // Giving new id to avoid segment duplication
+      list.id = uuid();
+      list.type = SEGMENT_TYPE.PRIVATE;
+
+      logger.info({ message: `Import segment list => ${JSON.stringify(list, undefined, 2)}` });
+      await this.addList({ ...list, parentSegmentId: lists.parentSegmentId }, logger);
+    }
+    return validatedLists.importErrors;
   }
 
   public async checkSegmentsValidity(fileData: SegmentFile[]): Promise<SegmentValidationObj> {
