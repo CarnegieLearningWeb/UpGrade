@@ -20,6 +20,11 @@ export class DashboardRootComponent implements OnInit {
       iconType: 'assignment',
     },
     {
+      path: ['/featureflags'],
+      text: 'feature-flags.title.text',
+      iconType: 'toggle_on',
+    },
+    {
       path: ['/participants'],
       text: 'global.experiment-user.title',
       iconType: 'supervisor_account',
@@ -40,11 +45,7 @@ export class DashboardRootComponent implements OnInit {
     @Inject(ENV) private environment: Environment,
     private authService: AuthService,
     private versionService: VersionService
-  ) {
-    if (this.environment.featureFlagNavToggle) {
-      this.addFeatureFlagsLink();
-    }
-  }
+  ) {}
 
   logout() {
     this.authService.setRedirectionUrl('/home');

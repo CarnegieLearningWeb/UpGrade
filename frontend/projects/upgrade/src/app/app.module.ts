@@ -8,41 +8,12 @@ import { CoreModule } from './core/core.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { SimpleNotificationsModule } from 'angular2-notifications';
 import { environment } from '../environments/environment';
-import { ENV, Environment, RuntimeEnvironmentConfig } from '../environments/environment-types';
+import { ENV } from '../environments/environment-types';
 import { AuthModule } from './core/auth/auth.module';
 import { provideImportServiceTypeAdapters } from './shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
-
-export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
-  // in non-prod build, all env vars can be provided on .environment.ts,
-  // so skip fetch
-  if (!environment.production || (environment.apiBaseUrl && environment.googleClientId)) {
-    return () => Promise.resolve();
-  }
-
-  // in a prod build, we currently need to fetch environment.json at runtime
-  // to provide apiBaseUr, googleClientId, featureFlagNavToggle, segmentsRefreshToggle and withinSubjectExperimentSupportToggle
-  return () =>
-    http
-      .get('/environment.json')
-      .toPromise()
-      .then((config: RuntimeEnvironmentConfig) => {
-        env.apiBaseUrl = config.endpointApi || config.apiBaseUrl;
-        env.googleClientId = config.gapiClientId || config.googleClientId;
-        env.featureFlagNavToggle = config.featureFlagNavToggle ?? env.featureFlagNavToggle ?? false;
-        env.segmentsRefreshToggle = config.segmentsRefreshToggle ?? env.segmentsRefreshToggle ?? false;
-        env.withinSubjectExperimentSupportToggle =
-          config.withinSubjectExperimentSupportToggle ?? env.withinSubjectExperimentSupportToggle ?? false;
-        env.errorLogsToggle = config.errorLogsToggle ?? env.errorLogsToggle ?? false;
-        env.metricAnalyticsExperimentDisplayToggle =
-          config.metricAnalyticsExperimentDisplayToggle ?? env.metricAnalyticsExperimentDisplayToggle ?? false;
-      })
-      .catch((error) => {
-        console.log({ error });
-      });
-};
 
 @NgModule({
   declarations: [AppComponent],
@@ -69,10 +40,6 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
   ],
   providers: [
     { provide: ENV, useValue: environment },
-    provideAppInitializer(() => {
-      const initializerFn = getEnvironmentConfig(inject(HttpClient), inject(ENV));
-      return initializerFn();
-    }),
     provideHttpClient(withInterceptorsFromDi()),
     ...provideImportServiceTypeAdapters(),
   ],

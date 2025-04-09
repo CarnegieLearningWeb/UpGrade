@@ -74,7 +74,6 @@ export interface Environment {
   pollingInterval: number;
   pollingLimit: number;
   api: APIEndpoints;
-  featureFlagNavToggle: boolean;
   segmentsRefreshToggle: boolean;
   errorLogsToggle: boolean;
   withinSubjectExperimentSupportToggle: boolean;
@@ -87,7 +86,6 @@ export interface RuntimeEnvironmentConfig {
   googleClientId?: string;
   endpointApi?: string;
   apiBaseUrl?: string;
-  featureFlagNavToggle?: boolean;
   segmentsRefreshToggle?: boolean;
   withinSubjectExperimentSupportToggle?: boolean;
   errorLogsToggle?: boolean;
