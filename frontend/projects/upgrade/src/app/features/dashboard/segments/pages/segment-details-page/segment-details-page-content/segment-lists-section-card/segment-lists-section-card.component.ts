@@ -70,11 +70,23 @@ export class SegmentListsSectionCardComponent {
         console.log('Import List');
         break;
       case SEGMENT_LIST_ACTIONS.EXPORT_ALL:
-        console.log('Export All Lists');
+        this.handleExportAllLists(segment);
         break;
       default:
         console.log('Unknown action');
     }
+  }
+
+  handleExportAllLists(segment: Segment) {
+    this.dialogService
+      .openExportSegmentListsDesignModal()
+      .afterClosed()
+      .subscribe((isExportClicked: boolean) => {
+        if (isExportClicked) {
+          const subsegmentIds = segment.subSegments.map((subSegment) => subSegment.id);
+          this.segmentsService.exportSegments(subsegmentIds);
+        }
+      });
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
