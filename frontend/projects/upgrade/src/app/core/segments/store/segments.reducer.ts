@@ -110,7 +110,104 @@ const reducer = createReducer(
   on(SegmentsActions.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
   on(SegmentsActions.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
   on(SegmentsActions.actionDeleteSegmentSuccess, (state, { segment }) => adapter.removeOne(segment.id, state)),
-  on(SegmentsActions.actionSetIsLoadingSegments, (state, { isLoadingSegments }) => ({ ...state, isLoadingSegments }))
+  on(SegmentsActions.actionSetIsLoadingSegments, (state, { isLoadingSegments }) => ({ ...state, isLoadingSegments })),
+
+  // Segment List Add Actions
+  on(SegmentsActions.actionAddSegmentList, (state) => ({
+    ...state,
+    isLoadingSegments: true,
+  })),
+  on(SegmentsActions.actionAddSegmentListSuccess, (state, { listResponse }) => {
+    const { segment } = listResponse;
+    const parentSegmentId = segment?.id; // This should be the ID of the parent segment
+    const existingSegment = state.entities[parentSegmentId];
+
+    if (existingSegment) {
+      // Create updated subSegments array with the new list/segment
+      const updatedSubSegments = existingSegment.subSegments
+        ? [...existingSegment.subSegments, listResponse.segment]
+        : [listResponse.segment];
+
+      return adapter.updateOne(
+        {
+          id: parentSegmentId,
+          changes: { subSegments: updatedSubSegments },
+        },
+        { ...state, isLoadingSegments: false }
+      );
+    }
+
+    return { ...state, isLoadingSegments: false };
+  }),
+  on(SegmentsActions.actionAddSegmentListFailure, (state) => ({
+    ...state,
+    isLoadingSegments: false,
+  })),
+
+  // Segment List Update Actions
+  on(SegmentsActions.actionUpdateSegmentList, (state) => ({
+    ...state,
+    isLoadingSegments: true,
+  })),
+  on(SegmentsActions.actionUpdateSegmentListSuccess, (state, { listResponse }) => {
+    const { segment } = listResponse;
+    const parentSegmentId = segment?.id; // Parent segment ID
+    const existingSegment = state.entities[parentSegmentId];
+
+    if (existingSegment && existingSegment.subSegments) {
+      // Create updated subSegments array replacing the edited segment
+      const updatedSubSegments = existingSegment.subSegments.map((subSegment) =>
+        subSegment.id === listResponse.segment.id ? listResponse.segment : subSegment
+      );
+
+      return adapter.updateOne(
+        {
+          id: parentSegmentId,
+          changes: { subSegments: updatedSubSegments },
+        },
+        { ...state, isLoadingSegments: false }
+      );
+    }
+
+    return { ...state, isLoadingSegments: false };
+  }),
+  on(SegmentsActions.actionUpdateSegmentListFailure, (state) => ({
+    ...state,
+    isLoadingSegments: false,
+  })),
+
+  // Segment List Delete Actions
+  on(SegmentsActions.actionDeleteSegmentList, (state) => ({
+    ...state,
+    isLoadingSegments: true,
+  })),
+  on(SegmentsActions.actionDeleteSegmentListSuccess, (state, { segmentId }) => {
+    // Find the parent segment that contains this subSegment
+    const parentSegmentId = Object.keys(state.entities).find((id) =>
+      state.entities[id]?.subSegments?.some((subSegment) => subSegment.id === segmentId)
+    );
+
+    if (parentSegmentId) {
+      const parentSegment = state.entities[parentSegmentId];
+
+      // Filter out the deleted subSegment
+      const updatedSubSegments = parentSegment.subSegments.filter((subSegment) => subSegment.id !== segmentId);
+
+      return adapter.updateOne(
+        {
+          id: parentSegmentId,
+          changes: { subSegments: updatedSubSegments },
+        },
+        { ...state, isLoadingSegments: false }
+      );
+    }
+
+    return { ...state, isLoadingSegments: false };
+  }),
+  on(SegmentsActions.actionDeleteSegmentListFailure, (state) => ({
+    ...state,
+    isLoadingSegments: false,
+  }))
 );
 
 export function segmentsReducer(state: SegmentState | undefined, action: Action) {

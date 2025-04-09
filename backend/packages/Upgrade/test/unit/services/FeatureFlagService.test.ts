@@ -86,7 +86,7 @@ describe('Feature Flag Service Testing', () => {
 
   const mockList = new FeatureFlagListValidator();
   mockList.enabled = true;
-  mockList.flagId = mockFlag1.id;
+  mockList.id = mockFlag1.id;
   mockList.listType = 'individual';
   mockList.segment = mockSegment;
 

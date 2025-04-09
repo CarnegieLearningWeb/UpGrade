@@ -209,7 +209,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
     const list: EditPrivateSegmentListDetails = this.createEditPrivateSegmentListDetails(segment);
 
     const listRequest: EditPrivateSegmentListRequest = {
-      flagId,
+      id: flagId,
       enabled,
       listType,
       segment: list,

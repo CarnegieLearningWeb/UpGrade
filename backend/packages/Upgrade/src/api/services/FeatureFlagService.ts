@@ -600,7 +600,7 @@ export class FeatureFlagService {
 
       const featureFlags = await manager
         .getRepository(FeatureFlag)
-        .findByIds(listsInput.map((listInput) => listInput.flagId));
+        .findByIds(listsInput.map((listInput) => listInput.id));
 
       const featureFlagSegmentInclusionOrExclusionArray = listsInput.map((listInput) => {
         const featureFlagSegmentInclusionOrExclusion =
@@ -679,23 +679,23 @@ export class FeatureFlagService {
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
       // Find the existing record
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
-      const featureFlag = await this.findOne(listInput.flagId);
+      const featureFlag = await this.findOne(listInput.id);
 
       if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
-          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.segment.id } },
+          where: { featureFlag: { id: listInput.id }, segment: { id: listInput.segment.id } },
           relations: ['featureFlag', 'segment'],
         });
       } else {
         existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
-          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.segment.id } },
+          where: { featureFlag: { id: listInput.id }, segment: { id: listInput.segment.id } },
           relations: ['featureFlag', 'segment'],
         });
       }
 
       if (!existingRecord) {
         throw new Error(
-          `No existing ${filterType} record found for feature flag ${listInput.flagId} and segment ${listInput.segment.id}`
+          `No existing ${filterType} record found for feature flag ${listInput.id} and segment ${listInput.segment.id}`
         );
       }
 
@@ -961,7 +961,7 @@ export class FeatureFlagService {
           return {
             ...segmentInclusionList,
             enabled: false,
-            flagId: newFlag.id,
+            id: newFlag.id,
             segment: { ...segmentInclusionList.segment, userIds, subSegmentIds, groups },
           };
         });
@@ -981,7 +981,7 @@ export class FeatureFlagService {
 
           return {
             ...segmentExclusionList,
-            flagId: newFlag.id,
+            id: newFlag.id,
             segment: { ...segmentExclusionList.segment, userIds, subSegmentIds, groups },
           };
         });
@@ -1171,7 +1171,7 @@ export class FeatureFlagService {
           const listDoc: FeatureFlagListValidator = {
             ...list,
             enabled: false,
-            flagId: featureFlagId,
+            id: featureFlagId,
             segment: { ...list.segment, id: uuid() },
           };
 
