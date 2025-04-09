@@ -113,6 +113,7 @@ export class SegmentsDataService {
           featureFlag: null,
           enabled: list.enabled,
           listType: list.listType,
+          parentSegmentId: list.id,
         } as FeatureFlagSegmentListDetails;
       })
     );
@@ -142,6 +143,7 @@ export class SegmentsDataService {
           featureFlag: null,
           enabled: list.enabled,
           listType: list.listType,
+          parentSegmentId: list.id,
         } as FeatureFlagSegmentListDetails;
       })
     );

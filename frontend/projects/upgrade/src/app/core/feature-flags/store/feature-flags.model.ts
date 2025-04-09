@@ -50,6 +50,7 @@ export interface FeatureFlagSegmentListDetails {
   featureFlag: FeatureFlag;
   enabled: boolean;
   listType: MemberTypes | string;
+  parentSegmentId?: string;
 }
 
 export enum UPSERT_FEATURE_FLAG_ACTION {
