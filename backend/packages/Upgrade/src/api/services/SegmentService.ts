@@ -788,22 +788,40 @@ export class SegmentService {
     segment.id = segment.id || uuid();
     const { id, name, description, context, type, listType, tags } = segment;
     const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
-    const subSegmentData = segment.subSegmentIds
-      .filter((subSegmentId) => {
-        // check if segment exists:
+    let subSegmentData = segment.subSegmentIds
+      .map((subSegmentId) => {
         const subSegment = allSegments.find((segment) => subSegmentId === segment.id);
         if (subSegment) {
-          return true;
+          return subSegment;
         } else {
           const error = new Error(
             'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
           );
           (error as any).type = SERVER_ERROR.QUERY_FAILED;
           logger.error(error);
-          return false;
+          return null;
         }
       })
-      .map((subSegmentId) => ({ id: subSegmentId }));
+      .filter((subSegment) => subSegment !== null);
+
+    // If there are private subsegments, they are lists - so we need to clone the data
+    const isListData = subSegmentData.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
+
+    if (isListData) {
+      subSegmentData = await Promise.all(
+        subSegmentData.map(async (subSegment) => {
+          // Create a new segment input object for the list
+          const segmentInput = subSegment as unknown as SegmentInputValidator;
+          segmentInput.userIds = subSegment.individualForSegment.map((user) => user.userId);
+          segmentInput.groups = subSegment.groupForSegment.map((group) => {
+            return { type: group.type, groupId: group.groupId };
+          });
+          segmentInput.subSegmentIds = subSegment.subSegments.map((subSegment) => subSegment.id);
+          subSegment.id = undefined;
+          return await this.addSegmentDataWithPipeline(segmentInput, logger, transactionalEntityManager);
+        })
+      );
+    }
 
     try {
       segmentDoc = await transactionalEntityManager.getRepository(Segment).save({
