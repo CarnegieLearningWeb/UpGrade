@@ -297,7 +297,10 @@ export class SegmentsEffects {
       ofType(SegmentsActions.actionAddSegmentList),
       switchMap((action) => {
         return this.segmentsDataService.addSegmentList(action.list).pipe(
-          map((listResponse) => SegmentsActions.actionAddSegmentListSuccess({ listResponse })),
+          map((listResponse) => {
+            this.commonModalEventService.forceCloseModal();
+            return SegmentsActions.actionAddSegmentListSuccess({ listResponse });
+          }),
           catchError((error) => of(SegmentsActions.actionAddSegmentListFailure({ error })))
         );
       })
@@ -309,7 +312,10 @@ export class SegmentsEffects {
       ofType(SegmentsActions.actionUpdateSegmentList),
       switchMap((action) => {
         return this.segmentsDataService.updateSegmentList(action.list).pipe(
-          map((listResponse) => SegmentsActions.actionUpdateSegmentListSuccess({ listResponse })),
+          map((listResponse) => {
+            this.commonModalEventService.forceCloseModal();
+            return SegmentsActions.actionUpdateSegmentListSuccess({ listResponse });
+          }),
           catchError((error) => of(SegmentsActions.actionUpdateSegmentListFailure({ error })))
         );
       })
