@@ -185,11 +185,11 @@ export class UpsertPrivateSegmentListModalComponent {
   determineValues(listType: string, segment: Segment): string[] {
     switch (listType) {
       case LIST_OPTION_TYPE.INDIVIDUAL:
-        return segment.individualForSegment.map((individual) => individual.userId) || [];
+        return segment.individualForSegment.map((individual) => individual.userId);
       case LIST_OPTION_TYPE.SEGMENT:
         return [];
       default:
-        return segment.groupForSegment.map((group) => group.groupId) || [];
+        return segment.groupForSegment.map((group) => group.groupId);
     }
   }
 
