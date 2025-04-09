@@ -127,7 +127,6 @@ export class UpsertPrivateSegmentListModalComponent {
 
   fetchData() {
     this.experimentService.fetchContextMetaData();
-    this.segmentsService.fetchAllSegments();
   }
 
   initializeListeners() {
