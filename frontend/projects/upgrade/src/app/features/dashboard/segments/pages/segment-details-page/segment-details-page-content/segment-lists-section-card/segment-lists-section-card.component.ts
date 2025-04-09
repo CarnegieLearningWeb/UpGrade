@@ -99,8 +99,8 @@ export class SegmentListsSectionCardComponent {
     }
   }
 
-  onEditList(rowData: ParticipantListTableRow, flagId: string): void {
-    this.dialogService.openEditListModal(rowData, rowData.segment.context, flagId);
+  onEditList(rowData: ParticipantListTableRow, segmentId: string): void {
+    this.dialogService.openEditListModal(rowData, rowData.segment.context, segmentId);
   }
 
   onDeleteList(segment: Segment): void {
