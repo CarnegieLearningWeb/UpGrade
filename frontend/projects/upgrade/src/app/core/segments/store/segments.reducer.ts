@@ -118,8 +118,7 @@ const reducer = createReducer(
     isLoadingSegments: true,
   })),
   on(SegmentsActions.actionAddSegmentListSuccess, (state, { listResponse }) => {
-    const { segment } = listResponse;
-    const parentSegmentId = segment?.id; // This should be the ID of the parent segment
+    const parentSegmentId = listResponse.parentSegmentId;
     const existingSegment = state.entities[parentSegmentId];
 
     if (existingSegment) {
@@ -150,8 +149,7 @@ const reducer = createReducer(
     isLoadingSegments: true,
   })),
   on(SegmentsActions.actionUpdateSegmentListSuccess, (state, { listResponse }) => {
-    const { segment } = listResponse;
-    const parentSegmentId = segment?.id; // Parent segment ID
+    const parentSegmentId = listResponse.parentSegmentId;
     const existingSegment = state.entities[parentSegmentId];
 
     if (existingSegment && existingSegment.subSegments) {
