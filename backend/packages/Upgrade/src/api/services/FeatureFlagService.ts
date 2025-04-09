@@ -607,7 +607,7 @@ export class FeatureFlagService {
           filterType === 'inclusion' ? new FeatureFlagSegmentInclusion() : new FeatureFlagSegmentExclusion();
         featureFlagSegmentInclusionOrExclusion.enabled = listInput.enabled;
         featureFlagSegmentInclusionOrExclusion.listType = listInput.listType;
-        featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlags.find((flag) => flag.id === listInput.flagId);
+        featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlags.find((flag) => flag.id === listInput.id);
         featureFlagSegmentInclusionOrExclusion.segment = newSegments.find(
           (segment) => segment.id === listInput.segment.id
         );
