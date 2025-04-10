@@ -49,46 +49,6 @@
             "browser": "projects/upgrade/src/main.ts"
           },
           "configurations": {
-            "beanstalk": {
-              "fileReplacements": [
-                {
-                  "replace": "projects/upgrade/src/environments/environment.ts",
-                  "with": "projects/upgrade/src/environments/environment.beanstalk.prod.ts"
-                }
-              ],
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "budgets": [
-                {
-                  "type": "bundle",
-                  "name": "polyfills",
-                  "baseline": "150kb",
-                  "maximumWarning": "50kb",
-                  "maximumError": "100kb"
-                },
-                {
-                  "type": "bundle",
-                  "name": "styles",
-                  "baseline": "1mb",
-                  "maximumWarning": "2mb",
-                  "maximumError": "100kb"
-                },
-                {
-                  "type": "bundle",
-                  "name": "main",
-                  "baseline": "2mb",
-                  "maximumWarning": "3mb",
-                  "maximumError": "200kb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb"
-                }
-              ]
-            },
             "prod": {
               "fileReplacements": [
                 {
@@ -387,9 +347,6 @@
             "qa": {
               "buildTarget": "upgrade:build:qa"
             },
-            "beanstalk": {
-              "buildTarget": "upgrade:build:beanstalk"
-            },
             "local": {
               "buildTarget": "upgrade:build:local"
             }
@@ -416,9 +373,6 @@
             },
             "qa": {
               "devServerTarget": "upgrade:serve:qa"
-            },
-            "beanstalk": {
-              "devServerTarget": "upgrade:serve:beanstalk"
             }
           }
         }
