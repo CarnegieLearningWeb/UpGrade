@@ -92,7 +92,10 @@ describe('Experiment Assignment Service Test', () => {
       findEnrollments: sandbox.stub().resolves([]),
       delete: sandbox.stub().resolves(),
     };
-    previewUserServiceMock = { findOne: sandbox.stub().resolves(undefined) };
+    previewUserServiceMock = {
+      findOneFromCache: sandbox.stub().resolves(undefined),
+      findOne: sandbox.stub().resolves(undefined),
+    };
     conditionPayloadRepositoryMock = { find: sandbox.stub().resolves([]) };
     factorRepositoryMock = { find: sandbox.stub().resolves([]) };
 
@@ -1087,7 +1090,7 @@ describe('Experiment Assignment Service Test', () => {
       },
     };
 
-    previewUserServiceMock = { findOne: sandbox.stub().resolves([]) };
+    previewUserServiceMock = { findOneFromCache: sandbox.stub().resolves([]), findOne: sandbox.stub().resolves([]) };
     const monitoredDecisionPointRepositoryMock = {
       saveRawJson: sandbox.stub().callsFake((args) => {
         return args;

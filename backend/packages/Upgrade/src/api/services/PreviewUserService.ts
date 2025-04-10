@@ -7,13 +7,40 @@ import { ExplicitIndividualAssignmentRepository } from '../repositories/Explicit
 import { ExplicitIndividualAssignment } from '../models/ExplicitIndividualAssignment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { PreviewUserValidator } from '../controllers/validators/PreviewUserValidator';
+import { CacheService } from './CacheService';
 
+const PREVIEW_CACHE_KEY = 'previewUsers';
 @Service()
 export class PreviewUserService {
   constructor(
     @InjectRepository() private userRepository: PreviewUserRepository,
-    @InjectRepository() private explicitIndividualAssignmentRepository: ExplicitIndividualAssignmentRepository
+    @InjectRepository() private explicitIndividualAssignmentRepository: ExplicitIndividualAssignmentRepository,
+    public cacheService: CacheService
   ) {}
+
+  /**
+   * Retrieves a preview user from the cache by their user ID.
+   * If the cache is empty, it fetches all preview users from the repository
+   * and stores them in the cache.
+   *
+   * @param userId - The ID of the user to retrieve.
+   * @param logger - An instance of the UpgradeLogger for logging purposes.
+   * @returns A promise that resolves to the preview user with the specified ID,
+   *          or `undefined` if no user with the given ID is found.
+   * @throws An error if fetching users from the repository fails.
+   */
+  public async findOneFromCache(userId: string, logger: UpgradeLogger): Promise<PreviewUser | undefined> {
+    let users: PreviewUser[];
+    try {
+      users = await this.cacheService.wrap(PREVIEW_CACHE_KEY, async () => {
+        return await this.userRepository.find();
+      });
+    } catch (err) {
+      logger.info({ message: `Error in findAll preview users => ${err}` });
+      throw err;
+    }
+    return users.find(({ id }) => id === userId);
+  }
 
   public async find(logger: UpgradeLogger): Promise<PreviewUser[]> {
     logger.info({ message: `Find all preview users` });

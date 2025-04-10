@@ -182,7 +182,7 @@ export class ExperimentAssignmentService {
     }
 
     const userId = userDoc.id;
-    const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
+    const previewUser: PreviewUser = await this.previewUserService.findOneFromCache(userId, logger);
     const { workingGroup } = userDoc;
 
     // 1. Search decision points in experiments cache and return relevant experiments and decisionPoints data
@@ -335,7 +335,7 @@ export class ExperimentAssignmentService {
   ): Promise<IExperimentAssignmentv5[]> {
     logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
     const userId = experimentUserDoc.id;
-    const previewUser = await this.previewUserService.findOne(userId, logger);
+    const previewUser = await this.previewUserService.findOneFromCache(userId, logger);
 
     /** Below are the detailed steps for the assignment process:
      * 1. Fetch experiments based on user type & moving conditionPayloads at the root level
@@ -918,6 +918,14 @@ export class ExperimentAssignmentService {
   }
 
   public async dataLog(userDoc: RequestedExperimentUser, jsonLog: ILogInput[], logger: UpgradeLogger): Promise<Log[]> {
+    if (!userDoc) {
+      logger.error({
+        message: `User not found or is a preview user in dataLog, userId => ${userDoc.id}`,
+        details: jsonLog,
+      });
+      throw new Error(`User not defined or this is a preview user in dataLog: ${userDoc.id}`);
+    }
+
     const userId = userDoc.id;
     logger.info({ message: `Add data log userId ${userId}`, details: jsonLog });
     const keyUniqueArray: { key: string; uniquifier: string }[] = [];
