@@ -56,6 +56,7 @@ export interface APIEndpoints {
   importSegments: string;
   exportSegments: string;
   exportSegmentCSV: string;
+  addSegmentList: string;
   getGroupAssignmentStatus: string;
   stratification: string;
 }
