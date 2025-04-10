@@ -54,7 +54,7 @@ describe('LocalStorageService', () => {
       isLoadingExperimentExport: false,
       skipExperiment: 0,
       totalExperiments: null,
-      searchKey: null,
+      searchKey: EXPERIMENT_SEARCH_KEY.ALL,
       searchString: null,
       sortKey: EXPERIMENT_SORT_KEY.NAME,
       sortAs: SORT_AS_DIRECTION.ASCENDING,

@@ -41,7 +41,7 @@ export class LocalStorageService {
       isLoadingExperimentExport: false,
       skipExperiment: 0,
       totalExperiments: null,
-      searchKey: experimentSearchKey as EXPERIMENT_SEARCH_KEY,
+      searchKey: (experimentSearchKey as EXPERIMENT_SEARCH_KEY) || EXPERIMENT_SEARCH_KEY.ALL,
       searchString: experimentSearchString || null,
       sortKey: (experimentSortKey as EXPERIMENT_SORT_KEY) || EXPERIMENT_SORT_KEY.NAME,
       sortAs: (experimentSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
@@ -73,7 +73,7 @@ export class LocalStorageService {
       activeDetailsTabIndex: 0,
       skipFlags: 0,
       totalFlags: null,
-      searchKey: featureFlagSearchKey as FLAG_SEARCH_KEY,
+      searchKey: (featureFlagSearchKey as FLAG_SEARCH_KEY) || FLAG_SEARCH_KEY.ALL,
       searchValue: featureFlagSearchString || null,
       sortKey: (featureFlagSortKey as FLAG_SORT_KEY) || FLAG_SORT_KEY.NAME,
       sortAs: (featureFlagSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
@@ -89,10 +89,11 @@ export class LocalStorageService {
       allFeatureFlagSegmentsExclusion: null,
       skipSegments: 0,
       totalSegments: null,
-      searchKey: segmentSearchKey as SEGMENT_SEARCH_KEY,
+      searchKey: (segmentSearchKey as SEGMENT_SEARCH_KEY) || SEGMENT_SEARCH_KEY.ALL,
       searchString: segmentSearchString || null,
       sortKey: (segmentSortKey as SEGMENT_SORT_KEY) || SEGMENT_SORT_KEY.NAME,
       sortAs: (segmentSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
+      isLoadingUpsertSegment: false,
     };
 
     const state = {

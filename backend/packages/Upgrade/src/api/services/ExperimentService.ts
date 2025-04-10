@@ -450,10 +450,8 @@ export class ExperimentService {
       })
     );
 
-    if (
-      (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) &&
-      oldExperiment.state !== EXPERIMENT_STATE.ENROLLMENT_COMPLETE
-    ) {
+    // Exclude the user only when the experiment is enrolling. For Preview state we don't need to exclude the user. The client need to provide explicit assignment for preview user to work correctly.
+    if (state === EXPERIMENT_STATE.ENROLLING && oldExperiment.state !== EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
       await this.populateExclusionTable(experimentId, state, logger);
     }
 
@@ -623,11 +621,6 @@ export class ExperimentService {
     let monitoredDecisionPoints: MonitoredDecisionPoint[] = [];
     if (state === EXPERIMENT_STATE.ENROLLING) {
       monitoredDecisionPoints = await this.getValidMoniteredDecisionPoints(excludeIfReachedDecisionPoints);
-    } else if (state === EXPERIMENT_STATE.PREVIEW) {
-      const previewUsersIds = previewUsers.map((user) => user.id);
-      if (previewUsersIds.length > 0) {
-        monitoredDecisionPoints = await this.getValidMoniteredDecisionPoints(excludeIfReachedDecisionPoints);
-      }
     }
 
     const uniqueUserIds = new Set(

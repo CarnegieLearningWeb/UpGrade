@@ -40,6 +40,11 @@ export class SegmentInputValidator {
   @IsString({ each: true })
   public userIds: string[];
 
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  public tags?: string[];
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Group)
@@ -51,6 +56,12 @@ export class SegmentInputValidator {
 }
 
 export class ListInputValidator extends SegmentInputValidator {
+  @IsNotEmpty()
+  @IsUUID()
+  public parentSegmentId: string;
+}
+
+export class DeleteListInputValidator {
   @IsNotEmpty()
   @IsUUID()
   public parentSegmentId: string;

@@ -23,7 +23,7 @@ export interface CoreFeatureFlagDetails {
   key: string;
   description?: string;
   context: string[];
-  tags: string[];
+  tags?: string[];
   status: FEATURE_FLAG_STATUS;
   filterMode: FILTER_MODE;
 }
@@ -50,6 +50,7 @@ export interface FeatureFlagSegmentListDetails {
   featureFlag: FeatureFlag;
   enabled: boolean;
   listType: MemberTypes | string;
+  parentSegmentId?: string;
 }
 
 export enum UPSERT_FEATURE_FLAG_ACTION {

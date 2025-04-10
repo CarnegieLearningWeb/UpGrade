@@ -50,11 +50,13 @@ export interface APIEndpoints {
   contextMetaData: string;
   segments: string;
   getPaginatedSegments: string;
+  globalSegments: string;
   validateSegments: string;
   validateSegmentsImport: string;
   importSegments: string;
   exportSegments: string;
   exportSegmentCSV: string;
+  addSegmentList: string;
   getGroupAssignmentStatus: string;
   stratification: string;
 }
@@ -73,7 +75,6 @@ export interface Environment {
   pollingInterval: number;
   pollingLimit: number;
   api: APIEndpoints;
-  featureFlagNavToggle: boolean;
   segmentsRefreshToggle: boolean;
   errorLogsToggle: boolean;
   withinSubjectExperimentSupportToggle: boolean;
@@ -86,7 +87,6 @@ export interface RuntimeEnvironmentConfig {
   googleClientId?: string;
   endpointApi?: string;
   apiBaseUrl?: string;
-  featureFlagNavToggle?: boolean;
   segmentsRefreshToggle?: boolean;
   withinSubjectExperimentSupportToggle?: boolean;
   errorLogsToggle?: boolean;

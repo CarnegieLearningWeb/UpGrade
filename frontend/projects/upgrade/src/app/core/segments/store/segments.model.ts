@@ -6,6 +6,7 @@ import {
   SEGMENT_SEARCH_KEY,
   SORT_AS_DIRECTION,
   SEGMENT_SORT_KEY,
+  FILTER_MODE,
   FEATURE_FLAG_LIST_FILTER_MODE,
 } from 'upgrade_types';
 export { SEGMENT_STATUS };
@@ -51,6 +52,7 @@ export enum MemberTypes {
 }
 
 export interface experimentSegmentInclusionExclusionData {
+  experimentId: string;
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
@@ -66,6 +68,7 @@ export interface experimentSegmentInclusionExclusionData {
 }
 
 export interface featureFlagSegmentInclusionExclusionData {
+  featureFlagId: string;
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
@@ -116,6 +119,27 @@ export interface Segment {
   status: SEGMENT_STATUS;
 }
 
+export interface CoreSegmentDetails {
+  id?: string;
+  name: string;
+  context: string;
+  description?: string;
+  tags?: string[];
+  userIds: string[];
+  groups: Group[];
+  subSegmentIds: string[];
+  status?: SEGMENT_STATUS;
+  type: SEGMENT_TYPE;
+}
+
+// Currently there is no difference between these types, but they semantically different and could diverge later
+export type AddSegmentRequest = CoreSegmentDetails;
+
+// so that we can throw an error if we try to update the id
+export interface UpdateSegmentRequest extends AddSegmentRequest {
+  readonly id: string;
+}
+
 export interface SegmentInput {
   createdAt: string;
   updatedAt: string;
@@ -154,6 +178,19 @@ export interface ParticipantListTableRow {
   listType: MemberTypes | string;
   segment: Segment;
   enabled?: boolean;
+}
+
+export interface UsedByTableRow {
+  name: string;
+  link?: string;
+  type: string;
+  status: string;
+  updatedAt: string;
+}
+
+export enum USED_BY_TYPE {
+  EXPERIMENT = 'Experiment',
+  FEATURE_FLAG = 'Feature Flag',
 }
 
 export interface SegmentsPaginationInfo {
@@ -197,6 +234,7 @@ export enum SEGMENT_LIST_ACTIONS {
 
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;
+  isLoadingUpsertSegment: boolean;
   // TODO: remove any
   allExperimentSegmentsInclusion: any;
   allExperimentSegmentsExclusion: any;
@@ -210,8 +248,15 @@ export interface SegmentState extends EntityState<Segment> {
   sortAs: SORT_AS_DIRECTION;
 }
 
+export interface GlobalSegmentState extends EntityState<Segment> {
+  isLoadingGlobalSegments: boolean;
+  sortKey: SEGMENT_SORT_KEY;
+  sortAs: SORT_AS_DIRECTION;
+}
+
 export interface State extends AppState {
   segments: SegmentState;
+  globalSegments: GlobalSegmentState;
 }
 
 export interface SegmentFile {
@@ -242,12 +287,7 @@ export interface UpsertPrivateSegmentListParams {
   sourceList: ParticipantListTableRow;
   sourceAppContext: string;
   action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION;
-  flagId: string;
-}
-
-export interface ImportListParams {
-  listType: FEATURE_FLAG_LIST_FILTER_MODE;
-  flagId: string;
+  id: string;
 }
 
 export enum LIST_OPTION_TYPE {
@@ -295,7 +335,7 @@ export interface EditPrivateSegmentListDetails extends PrivateSegmentListRequest
 }
 
 export interface PrivateSegmentListRequest {
-  flagId: string;
+  id: string;
   enabled: boolean;
   listType: string;
   segment: AddPrivateSegmentListRequestDetails | EditPrivateSegmentListDetails;
@@ -307,4 +347,27 @@ export interface AddPrivateSegmentListRequest extends PrivateSegmentListRequest 
 
 export interface EditPrivateSegmentListRequest extends PrivateSegmentListRequest {
   segment: EditPrivateSegmentListDetails;
+}
+
+export enum CommonTagInputType {
+  TAGS = 'tags',
+  VALUES = 'values',
+}
+
+export interface SegmentFormData {
+  name: string;
+  description: string;
+  appContext: string;
+  tags: string[];
+}
+
+export enum UPSERT_SEGMENT_ACTION {
+  ADD = 'add',
+  EDIT = 'edit',
+  DUPLICATE = 'duplicate',
+}
+
+export interface UpsertSegmentParams {
+  sourceSegment: Segment;
+  action: UPSERT_SEGMENT_ACTION;
 }

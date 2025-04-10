@@ -9,11 +9,18 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IMenuButtonItem } from 'upgrade_types';
 import { SegmentsService } from '../../../../../../../core/segments/segments.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import { Segment, SEGMENT_LIST_ACTIONS } from '../../../../../../../core/segments/store/segments.model';
-import { Observable } from 'rxjs';
+import {
+  ParticipantListTableRow,
+  Segment,
+  SEGMENT_LIST_ACTIONS,
+} from '../../../../../../../core/segments/store/segments.model';
+import { Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
-import { ParticipantListRowActionEvent } from '../../../../../../../core/feature-flags/store/feature-flags.model';
+import {
+  PARTICIPANT_LIST_ROW_ACTION,
+  ParticipantListRowActionEvent,
+} from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { SegmentListsTableComponent } from './segment-lists-table/segment-lists-table.component';
 
 @Component({
@@ -36,6 +43,7 @@ export class SegmentListsSectionCardComponent {
   permissions$: Observable<UserPermission>;
   tableRowCount$ = this.segmentsService.selectSegmentListsLength$;
   selectedSegment$ = this.segmentsService.selectedSegment$;
+  subscriptions = new Subscription();
 
   menuButtonItems: IMenuButtonItem[] = [
     {
@@ -61,7 +69,7 @@ export class SegmentListsSectionCardComponent {
   }
 
   onAddListClick(appContext: string, segmentId: string) {
-    // this.dialogService.openAddListModal(appContext, segmentId);
+    this.dialogService.openAddListModal(appContext, segmentId);
   }
 
   onMenuButtonItemClick(event, segment: Segment) {
@@ -70,11 +78,25 @@ export class SegmentListsSectionCardComponent {
         console.log('Import List');
         break;
       case SEGMENT_LIST_ACTIONS.EXPORT_ALL:
-        console.log('Export All Lists');
+        this.handleExportAllLists(segment);
         break;
       default:
         console.log('Unknown action');
     }
+  }
+
+  handleExportAllLists(segment: Segment) {
+    this.subscriptions.add(
+      this.dialogService
+        .openExportSegmentListsDesignModal()
+        .afterClosed()
+        .subscribe((isExportClicked: boolean) => {
+          if (isExportClicked) {
+            const subsegmentIds = segment.subSegments.map((subSegment) => subSegment.id);
+            this.segmentsService.exportSegments(subsegmentIds);
+          }
+        })
+    );
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
@@ -82,7 +104,32 @@ export class SegmentListsSectionCardComponent {
   }
 
   onRowAction(event: ParticipantListRowActionEvent, segmentId: string): void {
-    // This will be implemented later when we implement the table component
-    console.log('Row action', event, segmentId);
+    switch (event.action) {
+      case PARTICIPANT_LIST_ROW_ACTION.EDIT:
+        this.onEditList(event.rowData, segmentId);
+        break;
+      case PARTICIPANT_LIST_ROW_ACTION.DELETE:
+        this.onDeleteList(event.rowData.segment);
+        break;
+    }
+  }
+
+  onEditList(rowData: ParticipantListTableRow, segmentId: string): void {
+    this.dialogService.openEditListModal(rowData, rowData.segment.context, segmentId);
+  }
+
+  onDeleteList(segment: Segment): void {
+    this.dialogService
+      .openDeleteExcludeListModal(segment.name)
+      .afterClosed()
+      .subscribe((confirmClicked) => {
+        if (confirmClicked) {
+          this.segmentsService.deletePrivateSegmentList(segment.id, this.data.id);
+        }
+      });
+  }
+
+  onDestroy() {
+    this.subscriptions.unsubscribe();
   }
 }

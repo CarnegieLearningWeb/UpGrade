@@ -16,6 +16,7 @@ import {
   IMPORT_COMPATIBILITY_TYPE,
   ValidatedImportResponse,
   SEGMENT_SEARCH_KEY,
+  DuplicateSegmentNameError,
 } from 'upgrade_types';
 import { In } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
@@ -191,6 +192,13 @@ export class SegmentService {
     const allSegmentData = await this.getAllPublicSegmentsAndSubsegments(logger);
     const segmentData = await this.getSegmentById(segmentId, logger);
     if (segmentData) {
+      if (segmentData.subSegments.length > 0) {
+        const listData = await this.getSegmentByIds(segmentData.subSegments.map((subSegment) => subSegment.id));
+        // Add full member data to the subsegments (i.e. Lists) if it's a new style segment
+        if (listData.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE)) {
+          segmentData.subSegments = listData;
+        }
+      }
       const segmentWithStatus = (await this.getSegmentStatus(allSegmentData)).segmentsData.find(
         (segment: Segment) => segment.id === segmentId
       );
@@ -242,6 +250,9 @@ export class SegmentService {
       case SEGMENT_SEARCH_KEY.NAME:
         searchString.push("coalesce(segment.name::TEXT,'')");
         break;
+      case SEGMENT_SEARCH_KEY.STATUS:
+        searchString.push("coalesce(segment.status::TEXT,'')");
+        break;
       case SEGMENT_SEARCH_KEY.CONTEXT:
         searchString.push("coalesce(segment.context::TEXT,'')");
         break;
@@ -250,6 +261,7 @@ export class SegmentService {
         break;
       default:
         searchString.push("coalesce(segment.name::TEXT,'')");
+        searchString.push("coalesce(feature_flag.status::TEXT,'')");
         searchString.push("coalesce(segment.context::TEXT,'')");
         searchString.push("coalesce(segment.tags::TEXT,'')");
         break;
@@ -373,7 +385,12 @@ export class SegmentService {
     return queryBuilder;
   }
 
-  public upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
+  public async upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
+    // skip dupe check if segment has id, which means it's an update not an add
+    if (!segment.id) {
+      await this.checkIsDuplicateSegmentName(segment.name, segment.context, logger);
+    }
+
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
     return this.addSegmentDataInDB(segment, logger);
   }
@@ -404,6 +421,31 @@ export class SegmentService {
       return createdSegment;
     });
     return createdSegment;
+  }
+
+  public async deleteList(segmentId: string, parentSegmentId: string, logger: UpgradeLogger): Promise<Segment> {
+    logger.info({ message: `Deleting list => ${segmentId} from segment ${parentSegmentId}` });
+    const manager = this.dataSource;
+    const deletedSegmentResponse = await manager.transaction(async (transactionalEntityManager) => {
+      const parentSegment = await this.getSegmentById(parentSegmentId, logger);
+      if (!parentSegment) {
+        throw new Error('Parent Segment  not found');
+      }
+      if (!parentSegment.subSegments.map((subSegment) => subSegment.id).includes(segmentId)) {
+        throw new Error(`List ${segmentId} not found in parent segment ${parentSegmentId}`);
+      }
+      const deletedSegmentResponse = await this.segmentRepository.deleteSegments(
+        [segmentId],
+        logger,
+        transactionalEntityManager
+      );
+
+      parentSegment.subSegments = parentSegment.subSegments.filter((subSegment) => subSegment.id !== segmentId);
+
+      await transactionalEntityManager.getRepository(Segment).save(parentSegment);
+      return deletedSegmentResponse;
+    });
+    return deletedSegmentResponse[0];
   }
 
   public upsertSegmentInPipeline(
@@ -744,24 +786,42 @@ export class SegmentService {
 
     // create/update segment document
     segment.id = segment.id || uuid();
-    const { id, name, description, context, type, listType } = segment;
+    const { id, name, description, context, type, listType, tags } = segment;
     const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
-    const subSegmentData = segment.subSegmentIds
-      .filter((subSegmentId) => {
-        // check if segment exists:
+    let subSegmentData = segment.subSegmentIds
+      .map((subSegmentId) => {
         const subSegment = allSegments.find((segment) => subSegmentId === segment.id);
         if (subSegment) {
-          return true;
+          return subSegment;
         } else {
           const error = new Error(
             'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
           );
           (error as any).type = SERVER_ERROR.QUERY_FAILED;
           logger.error(error);
-          return false;
+          return null;
         }
       })
-      .map((subSegmentId) => ({ id: subSegmentId }));
+      .filter((subSegment) => subSegment !== null);
+
+    // If there are private subsegments, they are lists - so we need to clone the data
+    const isListData = subSegmentData.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
+
+    if (isListData) {
+      subSegmentData = await Promise.all(
+        subSegmentData.map(async (subSegment) => {
+          // Create a new segment input object for the list
+          const segmentInput = subSegment as unknown as SegmentInputValidator;
+          segmentInput.userIds = subSegment.individualForSegment.map((user) => user.userId);
+          segmentInput.groups = subSegment.groupForSegment.map((group) => {
+            return { type: group.type, groupId: group.groupId };
+          });
+          segmentInput.subSegmentIds = subSegment.subSegments.map((subSegment) => subSegment.id);
+          subSegment.id = undefined;
+          return await this.addSegmentDataWithPipeline(segmentInput, logger, transactionalEntityManager);
+        })
+      );
+    }
 
     try {
       segmentDoc = await transactionalEntityManager.getRepository(Segment).save({
@@ -771,6 +831,7 @@ export class SegmentService {
         context,
         type,
         listType,
+        tags,
         subSegments: subSegmentData,
       });
     } catch (err) {
@@ -952,6 +1013,29 @@ export class SegmentService {
           }
         }
       }
+    }
+  }
+
+  async checkIsDuplicateSegmentName(name: string, context: string, logger: UpgradeLogger): Promise<boolean> {
+    logger.info({ message: `Check for duplicate segment name ${name} in context ${context}` });
+    const sameNameSegment = await this.segmentRepository.find({ where: { name, context } });
+
+    if (sameNameSegment.length) {
+      logger.error({
+        message: `Segment name ${name} already exists in context ${context}`,
+      });
+
+      const error: DuplicateSegmentNameError = {
+        type: SERVER_ERROR.SEGMENT_DUPLICATE_NAME,
+        message: `Segment name ${name} already exists in context ${context}`,
+        duplicateName: name,
+        context,
+        httpCode: 400,
+      };
+
+      throw error;
+    } else {
+      return false;
     }
   }
 }

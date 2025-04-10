@@ -22,7 +22,6 @@ import {
 } from '../../../../../../../shared/services/common-table-helpers.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
-import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-segment-root-section-card',
@@ -98,13 +97,8 @@ export class SegmentRootSectionCardComponent {
     this.segmentsService.setSearchKey(params.searchKey as SEGMENT_SEARCH_KEY);
   }
 
-  onSlideToggleChange(event: MatSlideToggleChange): void {
-    const slideToggleEvent = event.source;
-    console.log(`Show Global Excludes: ${slideToggleEvent.checked}`);
-  }
-
   onAddSegmentButtonClick() {
-    // this.dialogService.openNewSegmentModal();
+    this.dialogService.openAddSegmentModal();
   }
 
   onMenuButtonItemClick(action: string) {

@@ -1,6 +1,6 @@
 // to run: npx ts-node clientlibs/js/quickTest.ts
 
-import UpgradeClient, { MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
+import UpgradeClient, { AssignedCondition, MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
 
 const URL = {
   LOCAL: 'http://localhost:3030',
@@ -17,7 +17,6 @@ const hostUrl = URL.LOCAL;
 const context = 'assign-prog';
 const site = 'SelectSection';
 const target = 'absolute_value_plot_equality';
-const condition: string | null = null;
 const status = MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED;
 const featureFlagKey = 'TEST_FEATURE_FLAG';
 const logRequest = [
@@ -62,10 +61,10 @@ async function quickTest() {
   await doWorkingGroupMembership(client);
   await doAliases(client);
   await doAssign(client);
-  await doGetDecisionPointAssignment(client);
+  const condition = await doGetDecisionPointAssignment(client);
   await doFeatureFlags(client);
   await doHasFeatureFlag(client);
-  await doMark(client);
+  await doMark(client, condition);
   await doLog(client);
 }
 
@@ -74,9 +73,9 @@ async function quickTest() {
 async function doInit(client: UpgradeClient) {
   try {
     const response = await client.init();
-    console.log('[Init response]:', JSON.stringify(response));
+    console.log('\n[Init response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('[Init error]:', error);
+    console.error('\n[Init error]:', error);
   }
 }
 
@@ -87,9 +86,9 @@ async function doGroupMembership(client: UpgradeClient) {
 
   try {
     const response = await client.setGroupMembership(groupRequest);
-    console.log('[Group response]:', JSON.stringify(response));
+    console.log('\n[Group response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('[Group error]:', error);
+    console.error('\n[Group error]:', error);
   }
 }
 
@@ -99,9 +98,9 @@ async function doWorkingGroupMembership(client: UpgradeClient) {
   };
   try {
     const response = await client.setWorkingGroup(workingGroupRequest);
-    console.log('[Working Group response]:', JSON.stringify(response));
+    console.log('\n[Working Group response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('[Working Group error]:', error);
+    console.error('\n[Working Group error]:', error);
   }
 }
 
@@ -109,75 +108,76 @@ async function doAliases(client: UpgradeClient) {
   const aliasRequest = [alias];
   try {
     const response = await client.setAltUserIds(aliasRequest);
-    console.log('[Aliases response]:', JSON.stringify(response));
+    console.log('\n[Aliases response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('[Aliases error]:', error);
+    console.error('\n[Aliases error]:', error);
   }
 }
 
 async function doAssign(client: UpgradeClient) {
   try {
     const response = await client.getAllExperimentConditions();
-    console.log('[Assign response]:', JSON.stringify(response));
+    console.log('\n[Assign response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('[Assign error]:', error);
+    console.error('\n[Assign error]:', error);
   }
 }
 
-async function doGetDecisionPointAssignment(client: UpgradeClient) {
+async function doGetDecisionPointAssignment(client: UpgradeClient): Promise<string | null> {
   try {
     const response = await client.getDecisionPointAssignment(site, target);
-    console.log('[Decision Point Assignment response]:', JSON.stringify(response));
+    console.log('\n[Decision Point Assignment response]:', JSON.stringify(response));
 
     const condition = response.getCondition();
-    console.log('[Condition]:', JSON.stringify(condition));
-    
+    console.log('\n[Condition]:', JSON.stringify(condition));
+
     const expType = response.getExperimentType();
-    console.log('[Experiment Type]:', JSON.stringify(expType));
+    console.log('\n[Experiment Type]:', JSON.stringify(expType));
 
     const payload = response.getPayload();
-    console.log('[Payload]:', JSON.stringify(payload));
+    console.log('\n[Payload]:', JSON.stringify(payload));
 
     const payloadValue = payload?.value;
-    console.log('[payloadValue]:', JSON.stringify(payloadValue));
-
+    console.log('\n[payloadValue]:', JSON.stringify(payloadValue));
+    return condition;
   } catch (error) {
-    console.error('[Decision Point Assignment error]:', error);
+    console.error('\n[Decision Point Assignment error]:', error);
+    return null;
   }
 }
 
 async function doFeatureFlags(client: UpgradeClient) {
   try {
     const response = await client.getAllFeatureFlags();
-    console.log('[Feature Flag response]:', JSON.stringify(response));
+    console.log('\n[Feature Flag response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('[Feature Flag error]:', error);
+    console.error('\n[Feature Flag error]:', error);
   }
 }
 
 async function doHasFeatureFlag(client: UpgradeClient) {
   try {
     const response = client.hasFeatureFlag(featureFlagKey);
-    console.log('[Has Feature Flag response]:', JSON.stringify(response));
+    console.log('\n[Has Feature Flag response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('[Has Feature Flag error]:', error);
+    console.error('\n[Has Feature Flag error]:', error);
   }
 }
 
-async function doMark(client: UpgradeClient) {
+async function doMark(client: UpgradeClient, condition: string | null) {
   try {
     const response = await client.markDecisionPoint(site, target, condition, status);
-    console.log('[Mark response]:', JSON.stringify(response));
+    console.log('\n[Mark response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('[Mark error]:', error);
+    console.error('\n[Mark error]:', error);
   }
 }
 
 async function doLog(client: UpgradeClient) {
   try {
     const response = await client.log(logRequest);
-    console.log('[Log response]:', JSON.stringify(response));
+    console.log('\n[Log response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('[Log error]:', error);
+    console.error('\n[Log error]:', error);
   }
 }

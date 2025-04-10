@@ -13,6 +13,7 @@ import {
   FILTER_MODE,
   FEATURE_FLAG_LIST_FILTER_MODE,
   IMPORT_COMPATIBILITY_TYPE,
+  SERVER_ERROR,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -293,4 +294,12 @@ export interface ValidatedImportResponse {
   fileName: string;
   compatibilityType: IMPORT_COMPATIBILITY_TYPE;
   error?: string;
+}
+
+export interface DuplicateSegmentNameError {
+  type: SERVER_ERROR.SEGMENT_DUPLICATE_NAME;
+  message: string;
+  duplicateName: string;
+  context: string;
+  httpCode: 400;
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, filter, first, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { catchError, concatMap, filter, first, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
@@ -10,6 +10,7 @@ import { NUMBER_OF_SEGMENTS, Segment, SegmentsPaginationParams, UpsertSegmentTyp
 import {
   selectAllSegments,
   selectAreAllSegmentsFetched,
+  selectGlobalSegments,
   selectSearchKey,
   selectSearchString,
   selectSkipSegments,
@@ -18,6 +19,10 @@ import {
   selectTotalSegments,
 } from './segments.selectors';
 import JSZip from 'jszip';
+import { of } from 'rxjs';
+import { SERVER_ERROR } from 'upgrade_types';
+import { SegmentsService } from '../segments.service';
+import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
 
 @Injectable()
 export class SegmentsEffects {
@@ -25,7 +30,9 @@ export class SegmentsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private segmentsDataService: SegmentsDataService,
-    private router: Router
+    private segmentsService: SegmentsService,
+    private router: Router,
+    private commonModalEventService: CommonModalEventsService
   ) {}
 
   fetchSegmentsPaginated$ = createEffect(() =>
@@ -117,6 +124,23 @@ export class SegmentsEffects {
     )
   );
 
+  fetchGlobalSegments$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionFetchGlobalSegments),
+      withLatestFrom(this.store$.pipe(select(selectGlobalSegments))),
+      switchMap(() =>
+        this.segmentsDataService.fetchGlobalSegments().pipe(
+          map((data: any) =>
+            SegmentsActions.actionFetchGlobalSegmentsSuccess({
+              globalSegments: data,
+            })
+          ),
+          catchError(() => [SegmentsActions.actionFetchGlobalSegmentsFailure()])
+        )
+      )
+    )
+  );
+
   getSegmentById$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionGetSegmentById),
@@ -158,6 +182,46 @@ export class SegmentsEffects {
     )
   );
 
+  addSegment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionAddSegment),
+      switchMap((action) => {
+        return this.segmentsDataService.addSegment(action.addSegmentRequest).pipe(
+          map((response: Segment) => {
+            this.commonModalEventService.forceCloseModal();
+            return SegmentsActions.actionAddSegmentSuccess({ segment: response });
+          }),
+          catchError((error) => {
+            if (error?.error?.type === SERVER_ERROR.SEGMENT_DUPLICATE_NAME) {
+              this.segmentsService.setDuplicateSegmentNameError(error.error);
+            }
+            return [SegmentsActions.actionAddSegmentFailure()];
+          })
+        );
+      })
+    )
+  );
+
+  updateSegment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionUpdateSegment),
+      switchMap((action) => {
+        return this.segmentsDataService.modifySegment(action.updateSegmentRequest).pipe(
+          concatMap((response: Segment) => {
+            this.commonModalEventService.forceCloseModal();
+            return [
+              SegmentsActions.actionUpdateSegmentSuccess({ segment: response }),
+              SegmentsActions.actionGetSegmentById({ segmentId: response.id }),
+            ];
+          }),
+          catchError(() => {
+            return of(SegmentsActions.actionUpdateSegmentFailure());
+          })
+        );
+      })
+    )
+  );
+
   deleteSegment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionDeleteSegment),
@@ -173,6 +237,17 @@ export class SegmentsEffects {
         )
       )
     )
+  );
+
+  navigateToSegmentDetail$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(SegmentsActions.actionAddSegmentSuccess),
+        tap(({ segment }) => {
+          this.router.navigate(['/segments', 'detail', segment.id]);
+        })
+      ),
+    { dispatch: false }
   );
 
   exportSegments$ = createEffect(() =>
@@ -216,4 +291,46 @@ export class SegmentsEffects {
     element.click();
     document.body.removeChild(element);
   }
+
+  addSegmentList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionAddSegmentList),
+      switchMap((action) => {
+        return this.segmentsDataService.addSegmentList(action.list).pipe(
+          map((listResponse) => {
+            this.commonModalEventService.forceCloseModal();
+            return SegmentsActions.actionAddSegmentListSuccess({ listResponse });
+          }),
+          catchError((error) => of(SegmentsActions.actionAddSegmentListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  updateSegmentList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionUpdateSegmentList),
+      switchMap((action) => {
+        return this.segmentsDataService.updateSegmentList(action.list).pipe(
+          map((listResponse) => {
+            this.commonModalEventService.forceCloseModal();
+            return SegmentsActions.actionUpdateSegmentListSuccess({ listResponse });
+          }),
+          catchError((error) => of(SegmentsActions.actionUpdateSegmentListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  deleteSegmentList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionDeleteSegmentList),
+      switchMap(({ segmentId, parentSegmentId }) => {
+        return this.segmentsDataService.deleteSegmentList(segmentId, parentSegmentId).pipe(
+          map(() => SegmentsActions.actionDeleteSegmentListSuccess({ segmentId })),
+          catchError((error) => of(SegmentsActions.actionDeleteSegmentListFailure({ error })))
+        );
+      })
+    )
+  );
 }

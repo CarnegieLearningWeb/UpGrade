@@ -1,5 +1,15 @@
-import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { LIST_OPTION_TYPE, SegmentState, ParticipantListTableRow, Segment } from './segments.model';
+import { createSelector, createFeatureSelector, select } from '@ngrx/store';
+import {
+  LIST_OPTION_TYPE,
+  SegmentState,
+  ParticipantListTableRow,
+  Segment,
+  UsedByTableRow,
+  USED_BY_TYPE,
+  experimentSegmentInclusionExclusionData,
+  featureFlagSegmentInclusionExclusionData,
+  GlobalSegmentState,
+} from './segments.model';
 import { selectAll } from './segments.reducer';
 import { selectRouterState } from '../../core.state';
 import { CommonTextHelpersService } from '../../../shared/services/common-text-helpers.service';
@@ -11,11 +21,26 @@ export const selectSegmentsState = createFeatureSelector<SegmentState>('segments
 
 export const selectAllSegments = createSelector(selectSegmentsState, selectAll);
 
+export const selectGlobalSegmentsState = createFeatureSelector<GlobalSegmentState>('globalSegments');
+
+export const selectGlobalSegments = createSelector(selectGlobalSegmentsState, selectAll);
+
 export const selectIsLoadingSegments = createSelector(selectSegmentsState, (state) => state.isLoadingSegments);
+
+export const isLoadingUpsertSegment = createSelector(selectSegmentsState, (state) => state.isLoadingUpsertSegment);
+
+export const selectIsLoadingGlobalSegments = createSelector(
+  selectGlobalSegmentsState,
+  (state) => state.isLoadingGlobalSegments
+);
 
 export const selectSegmentById = createSelector(
   selectSegmentsState,
   (state, { segmentId }) => state.entities[segmentId]
+);
+
+export const selectAppContexts = createSelector(selectContextMetaData, (contextMetaData) =>
+  Object.keys(contextMetaData?.contextMetadata ?? [])
 );
 
 export const selectExperimentSegmentsInclusion = createSelector(
@@ -38,16 +63,46 @@ export const selectFeatureFlagSegmentsExclusion = createSelector(
   (state) => state.allFeatureFlagSegmentsExclusion
 );
 
+export const selectAllSegmentEntities = createSelector(
+  selectSegmentsState,
+  selectGlobalSegmentsState,
+  (segmentState, globalSegmentState) => ({
+    ...segmentState.entities,
+    ...globalSegmentState.entities,
+  })
+);
+
+export const selectSegmentIdFromRoute = createSelector(selectRouterState, (routerState) => {
+  if (routerState?.state?.params?.segmentId) {
+    return routerState.state.params.segmentId;
+  }
+  return null;
+});
+
+// Create a selector that only emits after navigation is complete
+export const selectSegmentIdAfterNavigation = createSelector(
+  selectSegmentIdFromRoute,
+  selectRouterState,
+  (segmentId, routerState) => {
+    // Only return the segmentId if we have a completed navigation
+    if (segmentId && routerState?.state?.url) {
+      return segmentId;
+    }
+    return null;
+  }
+);
+
 export const selectSelectedSegment = createSelector(
   selectRouterState,
-  selectSegmentsState,
-  (routerState, segmentState) => {
-    if (routerState?.state && segmentState?.entities) {
+  selectAllSegmentEntities,
+  (routerState, allSegmentEntities) => {
+    if (routerState?.state && allSegmentEntities) {
       const {
         state: { params },
       } = routerState;
-      return segmentState.entities[params.segmentId] ? segmentState.entities[params.segmentId] : undefined;
+      return allSegmentEntities[params.segmentId] ? allSegmentEntities[params.segmentId] : undefined;
     }
+    return undefined;
   }
 );
 
@@ -92,9 +147,23 @@ export const selectRootTableState = createSelector(
   })
 );
 
+export const selectGlobalTableState = createSelector(
+  selectGlobalSegments,
+  selectSearchSegmentParams,
+  (tableData, searchParams) => ({
+    tableData,
+    searchParams,
+    allSearchableProperties: Object.values(SEGMENT_SEARCH_KEY),
+  })
+);
+
 export const selectSortKey = createSelector(selectSegmentsState, (state) => state.sortKey);
 
 export const selectSortAs = createSelector(selectSegmentsState, (state) => state.sortAs);
+
+export const selectGlobalSortKey = createSelector(selectGlobalSegmentsState, (state) => state.sortKey);
+
+export const selectGlobalSortAs = createSelector(selectGlobalSegmentsState, (state) => state.sortAs);
 
 export const selectPrivateSegmentListTypeOptions = createSelector(
   selectContextMetaData,
@@ -150,3 +219,83 @@ export const selectShouldUseLegacyUI = createSelector(selectSelectedSegment, (se
   }
   return false;
 });
+
+export const selectSegmentUsageData = createSelector(
+  selectSelectedSegment,
+  selectExperimentSegmentsInclusion,
+  selectExperimentSegmentsExclusion,
+  selectFeatureFlagSegmentsInclusion,
+  selectFeatureFlagSegmentsExclusion,
+  (segment, expInclusions, expExclusions, flagInclusions, flagExclusions) => {
+    if (!segment) return [];
+
+    // Use Map to prevent duplicates with experimentId or featureFlagId as the key
+    const usedByMap = new Map<string, UsedByTableRow>();
+
+    // Process experiment segments
+    processExperimentSegments(expInclusions, segment.id, usedByMap);
+    processExperimentSegments(expExclusions, segment.id, usedByMap);
+
+    // Process feature flag segments
+    processFeatureFlagSegments(flagInclusions, segment.id, usedByMap);
+    processFeatureFlagSegments(flagExclusions, segment.id, usedByMap);
+
+    // Convert Map values to array and sort by updatedAt (newest first)
+    return Array.from(usedByMap.values()).sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
+  }
+);
+
+// Helper functions for the selector
+function processExperimentSegments(
+  segmentData: experimentSegmentInclusionExclusionData[],
+  segmentId: string,
+  resultMap: Map<string, UsedByTableRow>
+) {
+  if (!segmentData) return;
+
+  segmentData.forEach((item) => {
+    if (item.segment && item.segment.subSegments) {
+      item.segment.subSegments.forEach((subSegment) => {
+        if (subSegment.id === segmentId) {
+          if (!resultMap.has(item.experimentId)) {
+            resultMap.set(item.experimentId, {
+              name: item.experiment.name,
+              type: USED_BY_TYPE.EXPERIMENT,
+              status: item.experiment.state,
+              updatedAt: item.updatedAt,
+              link: `/home/detail/${item.experimentId}`,
+            });
+          }
+        }
+      });
+    }
+  });
+}
+
+function processFeatureFlagSegments(
+  segmentData: featureFlagSegmentInclusionExclusionData[],
+  segmentId: string,
+  resultMap: Map<string, UsedByTableRow>
+) {
+  if (!segmentData) return;
+
+  segmentData.forEach((item) => {
+    if (item.segment && item.segment.subSegments) {
+      item.segment.subSegments.forEach((subSegment) => {
+        if (subSegment.id === segmentId) {
+          if (!resultMap.has(item.featureFlagId)) {
+            resultMap.set(item.featureFlagId, {
+              name: item.featureFlag.name,
+              type: USED_BY_TYPE.FEATURE_FLAG,
+              status: item.featureFlag.status,
+              updatedAt: item.updatedAt,
+              link: `/featureflags/detail/${item.featureFlagId}`,
+            });
+          }
+        }
+      });
+    }
+  });
+}

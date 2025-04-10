@@ -21,7 +21,6 @@ export class DeleteFeatureFlagModalComponent {
   selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   inputValue = '';
   subscriptions = new Subscription();
-  isSelectedFeatureFlagRemoved$ = this.featureFlagsService.isSelectedFeatureFlagRemoved$;
   isLoadingFeatureFlagDelete$ = this.featureFlagsService.isLoadingFeatureFlagDelete$;
   private inputSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
@@ -41,27 +40,12 @@ export class DeleteFeatureFlagModalComponent {
     public dialogRef: MatDialogRef<DeleteFeatureFlagModalComponent>
   ) {}
 
-  ngOnInit(): void {
-    this.listenForSelectedFeatureFlagDeletion();
-  }
-
   onInputChange(value: string): void {
     this.inputSubject.next(value);
   }
 
-  listenForSelectedFeatureFlagDeletion(): void {
-    this.subscriptions = this.isSelectedFeatureFlagRemoved$.subscribe(() => this.closeModal());
-  }
-
   onPrimaryActionBtnClicked(flagId: string) {
     this.featureFlagsService.deleteFeatureFlag(flagId);
-  }
-
-  closeModal() {
     this.dialogRef.close();
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

@@ -13,6 +13,7 @@ import { isUUID } from 'class-validator';
 import { DataSource } from 'typeorm';
 import { Container } from '../../../src/typeorm-typedi-extensions';
 import { configureLogger } from '../../utils/logger';
+import { CacheService } from '../../../src/api/services/CacheService';
 
 const logger = new UpgradeLogger();
 
@@ -67,6 +68,7 @@ describe('Preview User Service Testing', () => {
     Container.setDataSource('default', dataSource);
     module = await Test.createTestingModule({
       providers: [
+        CacheService,
         PreviewUserService,
         ExplicitIndividualAssignmentRepository,
         {

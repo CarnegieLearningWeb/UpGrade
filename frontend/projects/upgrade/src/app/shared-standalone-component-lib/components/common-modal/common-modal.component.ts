@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialogClose } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-common-dialog',
@@ -19,6 +20,7 @@ import { MatIcon } from '@angular/material/icon';
     MatDialogClose,
     CommonModule,
     MatIcon,
+    TranslateModule,
   ],
   templateUrl: './common-modal.component.html',
   styleUrl: './common-modal.component.scss',
