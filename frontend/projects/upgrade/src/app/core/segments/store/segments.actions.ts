@@ -1,6 +1,8 @@
 import { createAction, props } from '@ngrx/store';
 import {
+  AddPrivateSegmentListRequest,
   AddSegmentRequest,
+  EditPrivateSegmentListRequest,
   Segment,
   SegmentInput,
   UpdateSegmentRequest,
@@ -13,6 +15,7 @@ import {
   SORT_AS_DIRECTION,
   SEGMENT_SORT_KEY,
 } from '../../../../../../../../types/src/Experiment/enums';
+import { FeatureFlagSegmentListDetails } from '../../feature-flags/store/feature-flags.model';
 
 export const actionFetchSegments = createAction('[Segments] Segments', props<{ fromStarting?: boolean }>());
 
@@ -146,4 +149,46 @@ export const actionSetGlobalSortKey = createAction(
 export const actionSetGlobalSortingType = createAction(
   '[Global Segments] Set Sorting type',
   props<{ sortingType: SORT_AS_DIRECTION }>()
+);
+
+export const actionAddSegmentList = createAction(
+  '[Segments] Add Segment List',
+  props<{ list: AddPrivateSegmentListRequest }>()
+);
+
+export const actionAddSegmentListSuccess = createAction(
+  '[Segments] Add Segment List Success',
+  props<{ listResponse: FeatureFlagSegmentListDetails }>()
+);
+
+export const actionAddSegmentListFailure = createAction('[Segments] Add Segment List Failure', props<{ error: any }>());
+
+export const actionUpdateSegmentList = createAction(
+  '[Segments] Update Segment List',
+  props<{ list: EditPrivateSegmentListRequest }>()
+);
+
+export const actionUpdateSegmentListSuccess = createAction(
+  '[Segments] Update Segment List Success',
+  props<{ listResponse: FeatureFlagSegmentListDetails }>()
+);
+
+export const actionUpdateSegmentListFailure = createAction(
+  '[Segments] Update Segment List Failure',
+  props<{ error: any }>()
+);
+
+export const actionDeleteSegmentList = createAction(
+  '[Segments] Delete Segment List',
+  props<{ segmentId: string; parentSegmentId: string }>()
+);
+
+export const actionDeleteSegmentListSuccess = createAction(
+  '[Segments] Delete Segment List Success',
+  props<{ segmentId: string }>()
+);
+
+export const actionDeleteSegmentListFailure = createAction(
+  '[Segments] Delete Segment List Failure',
+  props<{ error: any }>()
 );

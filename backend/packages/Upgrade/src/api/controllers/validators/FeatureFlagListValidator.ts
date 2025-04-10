@@ -5,7 +5,7 @@ import { SegmentInputValidator } from './SegmentInputValidator';
 export class FeatureFlagListValidator {
   @IsNotEmpty()
   @IsUUID()
-  public flagId: string;
+  public id: string;
 
   @IsDefined()
   @IsBoolean()
