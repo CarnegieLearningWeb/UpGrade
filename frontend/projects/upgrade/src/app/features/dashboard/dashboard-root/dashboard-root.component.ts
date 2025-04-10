@@ -20,6 +20,11 @@ export class DashboardRootComponent implements OnInit {
       iconType: 'assignment',
     },
     {
+      path: ['/featureflags'],
+      text: 'feature-flags.title.text',
+      iconType: 'toggle_on',
+    },
+    {
       path: ['/participants'],
       text: 'global.experiment-user.title',
       iconType: 'supervisor_account',
@@ -36,15 +41,7 @@ export class DashboardRootComponent implements OnInit {
     },
   ];
 
-  constructor(
-    @Inject(ENV) private environment: Environment,
-    private authService: AuthService,
-    private versionService: VersionService
-  ) {
-    if (this.environment.featureFlagNavToggle) {
-      this.addFeatureFlagsLink();
-    }
-  }
+  constructor(private authService: AuthService, private versionService: VersionService) {}
 
   logout() {
     this.authService.setRedirectionUrl('/home');
@@ -53,13 +50,5 @@ export class DashboardRootComponent implements OnInit {
 
   async ngOnInit() {
     this.serverVersion = 'v' + (await this.versionService.getVersion());
-  }
-
-  addFeatureFlagsLink() {
-    this.routeLinks.splice(1, 0, {
-      path: ['/featureflags'],
-      text: 'feature-flags.title.text',
-      iconType: 'toggle_on',
-    });
   }
 }
