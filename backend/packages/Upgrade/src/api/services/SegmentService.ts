@@ -707,6 +707,13 @@ export class SegmentService {
       if (!segmentDoc) {
         throw new Error(SERVER_ERROR.QUERY_FAILED);
       } else {
+        // get all subsegments
+        const subSegments = await this.getSegmentByIds(segmentDoc.subSegments.map((subSegment) => subSegment.id));
+        const isListData = subSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
+        // If there are private subsegments, they are lists - so we need to clone the data
+        if (isListData) {
+          segmentDoc.subSegments = subSegments;
+        }
         segmentsDoc.push(segmentDoc);
       }
     }
