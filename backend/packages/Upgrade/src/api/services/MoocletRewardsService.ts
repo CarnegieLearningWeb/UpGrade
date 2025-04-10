@@ -138,6 +138,7 @@ export class MoocletRewardsService {
             value: BinaryRewardMetricValueMap[rewardMetricValue],
             mooclet: moocletExperimentRef.moocletId,
             version: versionId,
+            learner: user.id,
           };
           logger.info({
             message: 'Sending reward to mooclet',

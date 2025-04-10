@@ -57,6 +57,7 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 import { MetricService } from './MetricService';
 import { Metric } from '../models/Metric';
 import { MoocletRewardsService } from './MoocletRewardsService';
+import { env } from '../../env';
 
 export interface SyncCreateParams {
   experimentDTO: ExperimentDTO;
@@ -1123,6 +1124,7 @@ export class MoocletExperimentService extends ExperimentService {
 
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
       moocletExperimentRef.policyId = newMoocletRequest.policy;
+      moocletExperimentRef.outcomeVariableName = moocletPolicyParameters['outcome_variable_name'];
     } catch (err) {
       await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
       throw err;
@@ -1401,5 +1403,60 @@ export class MoocletExperimentService extends ExperimentService {
 
   public isMoocletExperiment(assignmentAlgorithm: ASSIGNMENT_ALGORITHM): boolean {
     return SUPPORTED_MOOCLET_ALGORITHMS.includes(assignmentAlgorithm);
+  }
+
+  public async handleEnrollCondition(
+    experimentId: string,
+    condition: string,
+    logger: UpgradeLogger
+  ): Promise<void | ExperimentCondition> {
+    if (!env.mooclets.enabled) {
+      logger.error({
+        message: 'Mooclet experiment algorithm is indicated but mooclets are not enabled',
+      });
+      return undefined;
+    }
+
+    // for mooclet assignments, a user isn't "enrolled" in a version until they have sent in a reward.
+    // only then will /mooclet/policy/run start to return the same version.
+    //
+    // unfortunately this means we can't mark them the same way as a normal experiment
+    // 1. we can't infer condition from userId hash and
+    // 2. we can't call out to mooclet/policy/run to get their assignment because they aren't locked into a version yet
+    //
+    // so we have to use the condition they sent in /mark in order to enroll them.
+    // this will enroll them in upgrade, but NOT yet give them a persistant assignment until they send a reward.
+    // this is ok because after upgrade assignment, we will cache and not reach out again to mooclet, but it's a nuance to know
+
+    try {
+      const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
+
+      if (!moocletExperimentRef) {
+        const error = {
+          message: `[Mooclet Mark Condition] No MoocletExperimentRef found for experiment id ${experimentId}`,
+        };
+        logger.error(error);
+        throw new Error(JSON.stringify(error));
+      }
+      const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
+        (expCondition) => expCondition.experimentCondition.conditionCode === condition
+      );
+
+      if (!versionConditionMap) {
+        const error = {
+          message: `[Mooclet Mark Condition] No version found for condition ${condition}`,
+          moocletExperimentRef,
+        };
+        logger.error(error);
+        throw new Error(JSON.stringify(error));
+      }
+      return versionConditionMap.experimentCondition;
+    } catch (err) {
+      logger.error({
+        message: '[Mooclet Mark Condition] There was an error processing marked condition.',
+        err,
+      });
+      throw err;
+    }
   }
 }
