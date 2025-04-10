@@ -94,11 +94,24 @@ export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDes
         // this.dialogService.openDeleteSegmentModal(segment);
         break;
       case SEGMENT_DETAILS_PAGE_ACTIONS.EXPORT:
-        // this.dialogService.openExportSegmentModal(segment.id);
+        this.onExportDesignConfirm(segment);
         break;
       default:
         console.log('Unknown action');
     }
+  }
+
+  onExportDesignConfirm(segment: Segment) {
+    this.subscriptions.add(
+      this.dialogService
+        .openExportSegmentDesignModal()
+        .afterClosed()
+        .subscribe((isExportClicked: boolean) => {
+          if (isExportClicked) {
+            this.segmentsService.exportSegments([segment.id]);
+          }
+        })
+    );
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {

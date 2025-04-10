@@ -78,14 +78,14 @@ export class SegmentListsSectionCardComponent {
         console.log('Import List');
         break;
       case SEGMENT_LIST_ACTIONS.EXPORT_ALL:
-        this.handleExportAllLists(segment);
+        this.onExportAllLists(segment);
         break;
       default:
         console.log('Unknown action');
     }
   }
 
-  handleExportAllLists(segment: Segment) {
+  onExportAllLists(segment: Segment) {
     this.subscriptions.add(
       this.dialogService
         .openExportSegmentListsDesignModal()
