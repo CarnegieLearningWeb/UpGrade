@@ -10,7 +10,7 @@ import { IMenuButtonItem } from 'upgrade_types';
 import { SegmentsService } from '../../../../../../../core/segments/segments.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { Segment, SEGMENT_LIST_ACTIONS } from '../../../../../../../core/segments/store/segments.model';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { ParticipantListRowActionEvent } from '../../../../../../../core/feature-flags/store/feature-flags.model';
@@ -36,6 +36,7 @@ export class SegmentListsSectionCardComponent {
   permissions$: Observable<UserPermission>;
   tableRowCount$ = this.segmentsService.selectSegmentListsLength$;
   selectedSegment$ = this.segmentsService.selectedSegment$;
+  subscriptions = new Subscription();
 
   menuButtonItems: IMenuButtonItem[] = [
     {
@@ -78,15 +79,17 @@ export class SegmentListsSectionCardComponent {
   }
 
   handleExportAllLists(segment: Segment) {
-    this.dialogService
-      .openExportSegmentListsDesignModal()
-      .afterClosed()
-      .subscribe((isExportClicked: boolean) => {
-        if (isExportClicked) {
-          const subsegmentIds = segment.subSegments.map((subSegment) => subSegment.id);
-          this.segmentsService.exportSegments(subsegmentIds);
-        }
-      });
+    this.subscriptions.add(
+      this.dialogService
+        .openExportSegmentListsDesignModal()
+        .afterClosed()
+        .subscribe((isExportClicked: boolean) => {
+          if (isExportClicked) {
+            const subsegmentIds = segment.subSegments.map((subSegment) => subSegment.id);
+            this.segmentsService.exportSegments(subsegmentIds);
+          }
+        })
+    );
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
@@ -96,5 +99,9 @@ export class SegmentListsSectionCardComponent {
   onRowAction(event: ParticipantListRowActionEvent, segmentId: string): void {
     // This will be implemented later when we implement the table component
     console.log('Row action', event, segmentId);
+  }
+
+  onDestroy() {
+    this.subscriptions.unsubscribe();
   }
 }
