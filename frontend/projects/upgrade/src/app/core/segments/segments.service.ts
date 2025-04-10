@@ -27,7 +27,9 @@ import {
   selectSegmentIdAfterNavigation,
 } from './store/segments.selectors';
 import {
+  AddPrivateSegmentListRequest,
   AddSegmentRequest,
+  EditPrivateSegmentListRequest,
   LIST_OPTION_TYPE,
   Segment,
   SegmentInput,
@@ -232,5 +234,22 @@ export class SegmentsService {
 
   setDuplicateSegmentNameError(error: DuplicateSegmentNameError) {
     this.duplicateSegmentNameError$.next(error);
+  }
+
+  addPrivateSegmentList(list: AddPrivateSegmentListRequest) {
+    this.store$.dispatch(SegmentsActions.actionAddSegmentList({ list }));
+  }
+
+  updatePrivateSegmentList(list: EditPrivateSegmentListRequest) {
+    this.store$.dispatch(SegmentsActions.actionUpdateSegmentList({ list }));
+  }
+
+  deletePrivateSegmentList(segmentId: string, parentSegmentId: string) {
+    this.store$.dispatch(
+      SegmentsActions.actionDeleteSegmentList({
+        segmentId,
+        parentSegmentId,
+      })
+    );
   }
 }
