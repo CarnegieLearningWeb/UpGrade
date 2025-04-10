@@ -19,13 +19,7 @@
     "prettier": "^2.7.1"
   },
   "scripts": {
-    "prepare": "is-ci || husky install",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "version:patch": "nps version.patch",
-    "version:minor": "nps version.minor",
-    "version:major": "nps version.major",
-    "prerelease:next": "node prerelease.js next",
-    "prerelease:complete": "node prerelease.js complete"
+    "prepare": "is-ci || husky install"
   },
   "lint-staged": {
     "./frontend/projects/upgrade/src/**/*.{ts,js,html,json,scss}": [
