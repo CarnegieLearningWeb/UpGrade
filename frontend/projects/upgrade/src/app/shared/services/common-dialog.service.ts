@@ -391,14 +391,27 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
-  openExportSegmentListsDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openExportSegmentDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
-      title: 'segments.export-feature-flag-design.confirmation-title.text',
+      title: 'segments.export-segment-design.confirmation-title.text',
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        message: 'segments.export-feature-flag-design.confirmation-message.text',
+        message: 'segments.export-segment-design.confirmation-message.text',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openExportSegmentListsDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'segments.export-all-segment-lists-design.confirmation-title.text',
+      primaryActionBtnLabel: 'Export',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: 'segments.export-all-segment-lists-design.confirmation-message.text',
       },
     };
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
