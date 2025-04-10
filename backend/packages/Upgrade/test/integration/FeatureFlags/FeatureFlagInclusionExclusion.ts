@@ -23,7 +23,7 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
   const flag = await featureFlagService.create(featureFlagObject, user, new UpgradeLogger());
 
   const featureFlagSegmentInclusion = {
-    flagId: flag.id,
+    id: flag.id,
     listType: 'group',
     enabled: true,
     segment: {
@@ -38,7 +38,7 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
   };
 
   const featureFlagSegmentExclusion = {
-    flagId: flag.id,
+    id: flag.id,
     listType: 'individual',
     enabled: true,
     segment: {
