@@ -501,6 +501,8 @@
   "segments.new-segment-overview-stepper.segment-name-error.text": "Segment name already exists for selected context. Please enter a unique segment name",
   "segments.view-segment.members-subtitle.text": "Member(s)",
   "segments.global-members.segments-count-members-error.text": "Please have at least 1 valid member to move forward",
+  "segments.export-feature-flag-design.confirmation-title.text": "Segment List Export All",
+  "segments.export-feature-flag-design.confirmation-message.text": "Are you sure you want to export all lists (JSON)?",
   "segments.import-segment.text": "IMPORT SEGMENT",
   "segments.import-segment.message.text": "Select the JSON file(s) to import segments:",
   "segments.import-segment-modal.title.text": "Import Segment",

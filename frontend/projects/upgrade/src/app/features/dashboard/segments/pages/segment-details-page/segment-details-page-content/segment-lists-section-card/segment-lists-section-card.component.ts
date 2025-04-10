@@ -14,7 +14,7 @@ import {
   Segment,
   SEGMENT_LIST_ACTIONS,
 } from '../../../../../../../core/segments/store/segments.model';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import {
@@ -43,6 +43,7 @@ export class SegmentListsSectionCardComponent {
   permissions$: Observable<UserPermission>;
   tableRowCount$ = this.segmentsService.selectSegmentListsLength$;
   selectedSegment$ = this.segmentsService.selectedSegment$;
+  subscriptions = new Subscription();
 
   menuButtonItems: IMenuButtonItem[] = [
     {
@@ -77,11 +78,25 @@ export class SegmentListsSectionCardComponent {
         console.log('Import List');
         break;
       case SEGMENT_LIST_ACTIONS.EXPORT_ALL:
-        console.log('Export All Lists');
+        this.handleExportAllLists(segment);
         break;
       default:
         console.log('Unknown action');
     }
+  }
+
+  handleExportAllLists(segment: Segment) {
+    this.subscriptions.add(
+      this.dialogService
+        .openExportSegmentListsDesignModal()
+        .afterClosed()
+        .subscribe((isExportClicked: boolean) => {
+          if (isExportClicked) {
+            const subsegmentIds = segment.subSegments.map((subSegment) => subSegment.id);
+            this.segmentsService.exportSegments(subsegmentIds);
+          }
+        })
+    );
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
@@ -112,5 +127,9 @@ export class SegmentListsSectionCardComponent {
           this.segmentsService.deletePrivateSegmentList(segment.id, this.data.id);
         }
       });
+  }
+
+  onDestroy() {
+    this.subscriptions.unsubscribe();
   }
 }

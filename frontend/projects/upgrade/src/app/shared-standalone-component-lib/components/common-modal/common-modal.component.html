@@ -1,7 +1,7 @@
 <mat-card class="common-modal">
   <!-- top part of the dialog -->
   <header class="header-container dense-2">
-    <h4 class="ft-22-700 header-title">{{ title }}</h4>
+    <h4 class="ft-22-700 header-title">{{ title | translate }}</h4>
     <button mat-icon-button mat-dialog-close class="close-btn">
       <mat-icon>close</mat-icon>
     </button>
@@ -14,7 +14,7 @@
   <!-- bottom part of the dialog -->
   <section *ngIf="!hideFooter" class="footer-container">
     <button mat-flat-button mat-dialog-close class="dialog-action-btn cancel-btn">
-      {{ cancelBtnLabel }}
+      {{ cancelBtnLabel | translate }}
     </button>
     <button
       class="dialog-action-btn"
@@ -23,7 +23,7 @@
       [disabled]="primaryActionBtnDisabled"
       (click)="onPrimaryActionBtnClicked()"
     >
-      {{ primaryActionBtnLabel }}
+      {{ primaryActionBtnLabel | translate }}
     </button>
   </section>
 </mat-card>

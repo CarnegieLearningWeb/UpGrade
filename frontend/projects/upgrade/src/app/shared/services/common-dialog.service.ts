@@ -378,7 +378,7 @@ export class DialogService {
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
   }
 
-  openExportDesignModal(title, warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openExportDesignModal(title: string, warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
       title: title,
       primaryActionBtnLabel: 'Export',
@@ -391,6 +391,18 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
+  openExportSegmentListsDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'segments.export-feature-flag-design.confirmation-title.text',
+      primaryActionBtnLabel: 'Export',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: 'segments.export-feature-flag-design.confirmation-message.text',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
   openEmailFeatureFlagDataModal(
     warning: string,
     subtext: string
