@@ -523,6 +523,21 @@ describe('Segment Service Testing', () => {
     expect(segments).toEqual(returnSegment);
   });
 
+  it('should import a segment list', async () => {
+    const returnSegment = [
+      {
+        fileName: 'seg1.json',
+        error: null,
+        compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
+      },
+    ];
+    service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2]);
+    repo.find = jest.fn().mockResolvedValue([]);
+    service.addList = jest.fn().mockResolvedValue(segValSegment);
+    const segments = await service.importLists({ parentSegmentId: 'seg1', files: [segValImportFile] }, logger);
+    expect(segments).toEqual(returnSegment);
+  });
+
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {
     const returnSegment = [
       {

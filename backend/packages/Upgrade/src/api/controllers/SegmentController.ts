@@ -2,7 +2,7 @@ import { JsonController, Get, Delete, Authorized, Post, Req, Body, QueryParams, 
 import { SegmentService, SegmentWithStatus } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
 import { AppRequest, PaginationResponse } from '../../types';
-import { SEGMENT_STATUS } from 'upgrade_types';
+import { IImportError, SEGMENT_STATUS } from 'upgrade_types';
 import {
   DeleteListInputValidator,
   IdValidator,
@@ -12,6 +12,7 @@ import {
   SegmentIdValidator,
   SegmentImportError,
   SegmentInputValidator,
+  SegmentListImportValidation,
 } from './validators/SegmentInputValidator';
 import { SegmentPaginatedParamsValidator } from './validators/SegmentPaginatedParamsValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
@@ -620,6 +621,41 @@ export class SegmentController {
     @Req() request: AppRequest
   ): Promise<SegmentImportError[]> {
     return this.segmentService.importSegments(segments, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /segments/list/import:
+   *    post:
+   *      description: Import a list to a parent segment
+   *      tags:
+   *        - Segment
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: body
+   *          name: segment
+   *          description: Segment list object
+   *          required: true
+   *          schema:
+   *            type: object
+   *            $ref: '#/definitions/Segment'
+   *      responses:
+   *        '200':
+   *          description:  Import a list to a parent segment
+   *          schema:
+   *            $ref: '#/definitions/segmentResponse'
+   *        '401':
+   *          description: Authorization Required Error
+   *        '500':
+   *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
+   */
+  @Post('/list/import')
+  public importLists(
+    @Body({ validate: true }) lists: SegmentListImportValidation,
+    @Req() request: AppRequest
+  ): Promise<IImportError[]> {
+    return this.segmentService.importLists(lists, request.logger);
   }
 
   /**
