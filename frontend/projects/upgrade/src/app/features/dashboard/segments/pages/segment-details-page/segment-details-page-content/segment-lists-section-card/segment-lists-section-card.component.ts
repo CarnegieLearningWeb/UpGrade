@@ -75,7 +75,7 @@ export class SegmentListsSectionCardComponent {
   onMenuButtonItemClick(event, segment: Segment) {
     switch (event) {
       case SEGMENT_LIST_ACTIONS.IMPORT:
-        console.log('Import List');
+        this.onImportList(segment.id);
         break;
       case SEGMENT_LIST_ACTIONS.EXPORT_ALL:
         this.onExportAllLists(segment);
@@ -83,6 +83,13 @@ export class SegmentListsSectionCardComponent {
       default:
         console.log('Unknown action');
     }
+  }
+
+  onImportList(segmentId: string) {
+    this.dialogService
+      .openImportSegmentListModal(segmentId)
+      .afterClosed()
+      .subscribe(() => this.segmentsService.fetchSegmentById(segmentId));
   }
 
   onExportAllLists(segment: Segment) {

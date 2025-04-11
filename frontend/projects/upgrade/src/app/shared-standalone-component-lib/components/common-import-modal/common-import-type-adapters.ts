@@ -100,14 +100,41 @@ export class ListImportAdapter implements ImportServiceAdapter {
   }
 }
 
+@Injectable({ providedIn: 'root' })
+export class SegmentListImportAdapter implements ImportServiceAdapter {
+  constructor(private segmentDataService: SegmentsDataService, private segmentService: SegmentsService) {}
+
+  validateFiles(files: any[]): Observable<ValidatedImportResponse[]> {
+    return this.segmentDataService.validateSegmentsImport(files) as Observable<ValidatedImportResponse[]>;
+  }
+
+  importFiles(files: any[], params?: any): Observable<ValidatedImportResponse[]> {
+    return this.segmentDataService.importSegmentList(files, params.segmentId) as Observable<ValidatedImportResponse[]>;
+  }
+
+  getLoadingState(): Observable<boolean> {
+    return this.segmentService.isLoadingSegments$;
+  }
+
+  setLoadingState(isLoading: boolean): void {
+    this.segmentService.setIsLoadingImportSegment(isLoading);
+  }
+
+  fetchData(): void {
+    this.segmentService.fetchSegmentsPaginated(true);
+  }
+}
+
 export const FEATURE_FLAG_IMPORT_SERVICE = new InjectionToken<ImportServiceAdapter>('FEATURE_FLAG_IMPORT_SERVICE');
 export const SEGMENT_IMPORT_SERVICE = new InjectionToken<ImportServiceAdapter>('SEGMENT_IMPORT_SERVICE');
 export const LIST_IMPORT_SERVICE = new InjectionToken<ImportServiceAdapter>('LIST_IMPORT_SERVICE');
+export const SEGMENT_LIST_IMPORT_SERVICE = new InjectionToken<ImportServiceAdapter>('SEGMENT_LIST_IMPORT_SERVICE');
 
 export function provideImportServiceTypeAdapters(): Provider[] {
   return [
     { provide: FEATURE_FLAG_IMPORT_SERVICE, useClass: FeatureFlagImportAdapter },
     { provide: SEGMENT_IMPORT_SERVICE, useClass: SegmentImportAdapter },
     { provide: LIST_IMPORT_SERVICE, useClass: ListImportAdapter },
+    { provide: SEGMENT_LIST_IMPORT_SERVICE, useClass: SegmentListImportAdapter },
   ];
 }

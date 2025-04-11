@@ -13,6 +13,7 @@ import { map, Observable } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { FeatureFlagSegmentListDetails } from '../feature-flags/store/feature-flags.model';
+import { FEATURE_FLAG_LIST_FILTER_MODE } from '../../../../../../../types/src';
 
 @Injectable()
 export class SegmentsDataService {
@@ -98,6 +99,12 @@ export class SegmentsDataService {
   validateSegmentsImport(segments: SegmentFile[]) {
     const url = this.environment.api.validateSegmentsImport;
     return this.http.post(url, segments);
+  }
+
+  importSegmentList(files: any[], segmentId: string) {
+    const lists = { files: files, segmentId: segmentId };
+    const url = this.environment.api.importSegmentList;
+    return this.http.post(url, lists);
   }
 
   addSegmentList(list: AddPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {

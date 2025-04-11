@@ -32,6 +32,7 @@ import {
   ImportServiceAdapter,
   LIST_IMPORT_SERVICE,
   SEGMENT_IMPORT_SERVICE,
+  SEGMENT_LIST_IMPORT_SERVICE,
 } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
 import { CommonImportModalComponent } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-modal.component';
 
@@ -41,6 +42,7 @@ export interface ImportModalParams {
   warningMessageKey: string; // Translation key for warning message
   incompatibleMessageKey: string; // Translation key for incompatible message
   flagId?: string; // for feature flag list import
+  segmentId?: string; // for segment list import
   listType?: FEATURE_FLAG_LIST_FILTER_MODE; // for feature flag list import
 }
 
@@ -556,6 +558,23 @@ export class DialogService {
         incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
         listType: FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
         flagId,
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportSegmentListModal(segmentId: string) {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'segments.import-list-modal.title.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: SEGMENT_LIST_IMPORT_SERVICE,
+        messageKey: 'segments.import-list.message.text',
+        warningMessageKey: 'segments.import-list-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'segments.import-list-modal.compatibility-description.incompatible.text',
+        segmentId,
       },
     };
     return this.openCommonImportModal(commonModalConfig);

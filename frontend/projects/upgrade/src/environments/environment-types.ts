@@ -54,6 +54,7 @@ export interface APIEndpoints {
   validateSegments: string;
   validateSegmentsImport: string;
   importSegments: string;
+  importSegmentList: string;
   exportSegments: string;
   exportSegmentCSV: string;
   addSegmentList: string;
