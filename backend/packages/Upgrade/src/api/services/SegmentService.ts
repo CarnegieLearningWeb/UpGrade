@@ -658,18 +658,19 @@ export class SegmentService {
           ? errorMessage + 'Group type: ' + invalidGroups + ' not found. Please enter valid group type in segment. '
           : errorMessage;
       }
-
-      const duplicateName = await this.segmentRepository.find({
-        where: { name: segment.name, context: segment.context },
-      });
-      if (duplicateName.length) {
-        errorMessage =
-          errorMessage +
-          'Invalid Segment Name: ' +
-          segment.name +
-          ' is already used by another segment with same context. ';
+      // Prevent duplicate segment names (but not for private segments)
+      if (segment.type !== SEGMENT_TYPE.PRIVATE) {
+        const duplicateName = await this.segmentRepository.find({
+          where: { name: segment.name, context: segment.context },
+        });
+        if (duplicateName.length) {
+          errorMessage =
+            errorMessage +
+            'Invalid Segment Name: ' +
+            segment.name +
+            ' is already used by another segment with same context. ';
+        }
       }
-
       let invalidSubSegments = '';
       segment.subSegmentIds.forEach((subSegmentId) => {
         const subSegment = allSubSegmentsData
