@@ -534,6 +534,7 @@
   "segments.upsert-segment-modal.app-context-warning.text": "Updating the App Context will clear the existing include and exclude lists.",
   "segments.upsert-segment-modal.tags-label.text": "Tags (optional)",
   "segments.upsert-segment-modal.tags-placeholder.text": "Tags separated by commas",
+  "segments.delete-modal.warning-message.text": "Are you sure you want to delete ",
   "segments.errors.duplicate-name.text": "A segment with name \"{{name}}\" already exists on context \"{{context}}\".",
   "stratifications.global-members-factor.text": "FACTOR",
   "stratifications.global-members-summary.text": "SUMMARY",

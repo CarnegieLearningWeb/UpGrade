@@ -91,7 +91,7 @@ export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDes
         this.dialogService.openDuplicateSegmentModal(segment);
         break;
       case SEGMENT_DETAILS_PAGE_ACTIONS.DELETE:
-        // this.dialogService.openDeleteSegmentModal(segment);
+        this.dialogService.openDeleteSegmentModal();
         break;
       case SEGMENT_DETAILS_PAGE_ACTIONS.EXPORT:
         this.onExportDesignConfirm(segment);

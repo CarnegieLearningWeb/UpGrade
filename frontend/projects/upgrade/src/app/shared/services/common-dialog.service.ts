@@ -34,6 +34,7 @@ import {
   SEGMENT_IMPORT_SERVICE,
 } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
 import { CommonImportModalComponent } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-modal.component';
+import { DeleteSegmentModalComponent } from '../../features/dashboard/segments/modals/delete-segment-modal/delete-segment-modal.component';
 
 export interface ImportModalParams {
   importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
@@ -376,6 +377,22 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
+  }
+
+  openDeleteSegmentModal() {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Delete Segment',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+    };
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.SMALL,
+      autoFocus: 'input',
+      disableClose: true,
+    };
+    return this.dialog.open(DeleteSegmentModalComponent, config);
   }
 
   openExportDesignModal(title: string, warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
