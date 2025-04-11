@@ -71,7 +71,7 @@ export const environment: Environment = {
     validateSegments: '/segments/validation',
     validateSegmentsImport: '/segments/import/validation',
     importSegments: '/segments/import',
-    importSegmentList: '/segments/lists/import',
+    importSegmentList: '/segments/list/import',
     exportSegments: '/segments/export/json',
     exportSegmentCSV: '/segments/export/csv',
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
