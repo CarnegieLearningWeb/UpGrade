@@ -102,7 +102,7 @@ export class SegmentsDataService {
   }
 
   importSegmentList(files: any[], segmentId: string) {
-    const lists = { files: files, segmentId: segmentId };
+    const lists = { files: files, parentSegmentId: segmentId };
     const url = this.environment.api.importSegmentList;
     return this.http.post(url, lists);
   }
