@@ -1,1 +1,28 @@
-<p>delete-segment-modal works!</p>
+<ng-container *ngIf="selectedSegment$ | async as segment">
+  <app-common-dialog
+    [title]="data.title"
+    [cancelBtnLabel]="data.cancelBtnLabel"
+    [primaryActionBtnLabel]="data.primaryActionBtnLabel"
+    [primaryActionBtnColor]="data.primaryActionBtnColor"
+    [primaryActionBtnDisabled]="isDeleteActionBtnDisabled$ | async"
+    (primaryActionBtnClicked)="onPrimaryActionBtnClicked(segment.id)"
+  >
+    <div class="delete-container">
+      <div class="ft-16-400">
+        <span>{{ 'segments.delete-modal.warning-message.text' | translate }} "{{ segment.name }}"?</span>
+      </div>
+      <div class="ft-16-600">
+        {{ 'global.delete-confirmation.message.text' | translate }}
+      </div>
+      <mat-form-field class="dense-2" appearance="outline">
+        <input
+          class="ft-14-400"
+          matInput
+          [placeholder]="'global.delete.input-placeholder.text' | translate"
+          [(ngModel)]="inputValue"
+          (ngModelChange)="onInputChange($event)"
+        />
+      </mat-form-field>
+    </div>
+  </app-common-dialog>
+</ng-container>
