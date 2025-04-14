@@ -49,7 +49,7 @@ projectBuilderV5 (
             artifactType: 'codeartifact',
             projectDir: 'frontend',
             runInProjectDir: true,
-            artifactDir: 'dist/upgrade',
+            artifactDir: 'dist/upgrade/browser',
             versioning: 'branch',
             oneArtifactPerEnvironment: true,
             dependencies: ["types"],
