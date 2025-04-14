@@ -33,7 +33,8 @@ projectBuilderV5 (
             artifactType: 'codeartifact',
             projectDir: 'frontend',
             runInProjectDir: true,
-            artifactDir: 'dist/upgrade',
+            artifactDir: 'dist/upgrade/browser',
+            artifactPrefix: "upgrade",
             versioning: 'branch',
             oneArtifactPerEnvironment: true,
             buildScripts: [
