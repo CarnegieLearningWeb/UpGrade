@@ -51,7 +51,6 @@ projectBuilderV5 (
             runInProjectDir: true,
             artifactDir: 'dist/upgrade/browser',
             artifactPrefix: "upgrade",
-            gitTagPrefix: "upgrade",
             versioning: 'branch',
             oneArtifactPerEnvironment: true,
             dependencies: ["types"],
