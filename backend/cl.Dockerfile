@@ -18,7 +18,7 @@ WORKDIR /usr/src/app/backend/
 RUN npm ci --no-audit
 RUN ["npm", "run", "build:upgrade"]
 
-FROM ${IMAGE_REPO}node:18-alpine3.16
+FROM ${IMAGE_REPO}node:22-alpine3.20
 
 ENV NEW_RELIC_NO_CONFIG_FILE=true
 ENV NR_NATIVE_METRICS_NO_BUILD=true
