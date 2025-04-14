@@ -1,6 +1,6 @@
 ARG IMAGE_REPO
 
-FROM ${IMAGE_REPO}node:18-alpine3.16 AS build
+FROM ${IMAGE_REPO}node:22-alpine3.20 AS build
 WORKDIR /usr/src/app
 COPY . .
 RUN ls
