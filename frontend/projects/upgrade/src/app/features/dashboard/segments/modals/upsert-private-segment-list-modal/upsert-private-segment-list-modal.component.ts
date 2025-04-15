@@ -54,7 +54,7 @@ import { CommonTagInputType } from '../../../../../core/feature-flags/store/feat
 })
 export class UpsertPrivateSegmentListModalComponent {
   @ViewChild('typeSelectRef') typeSelectRef: MatSelect;
-  listOptionTypes$ = this.segmentsService.selectPrivateSegmentListTypeOptions$;
+  listOptionTypes$: Observable<{ value: string; viewValue: string }[]>;
   isLoadingUpsertFeatureFlagList$ = this.featureFlagService.isLoadingUpsertPrivateSegmentList$;
   initialFormValues$ = new BehaviorSubject<PrivateSegmentListFormData>(null);
 
@@ -83,6 +83,12 @@ export class UpsertPrivateSegmentListModalComponent {
   ngOnInit(): void {
     this.fetchData();
     this.createPrivateSegmentListForm();
+
+    // Initialize listOptionTypes$ with the app context
+    this.listOptionTypes$ = this.segmentsService.selectPrivateSegmentListTypeOptions$(
+      this.config.params.sourceAppContext
+    );
+
     this.initializeListeners();
     this.populateFormForEdit();
   }
