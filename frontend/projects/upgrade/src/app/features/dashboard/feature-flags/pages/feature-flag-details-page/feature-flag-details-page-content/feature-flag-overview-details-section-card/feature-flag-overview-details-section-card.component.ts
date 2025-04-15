@@ -69,12 +69,12 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
         {
           label: 'feature-flags.details.menu-button.edit-flag.text',
           action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT,
-          disabled: !permissions.featureFlags.update,
+          disabled: !permissions?.featureFlags.update,
         },
         {
           label: 'feature-flags.details.menu-button.duplicate-flag.text',
           action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE,
-          disabled: !permissions.featureFlags.create,
+          disabled: !permissions?.featureFlags.create,
         },
         {
           label: 'feature-flags.details.menu-button.export-flag-design.text',
