@@ -105,29 +105,21 @@ export class SegmentsService {
     )
   );
 
-  selectPrivateSegmentListTypeOptions$ = this.store$.pipe(
-    select(selectContextMetaData),
-    withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
-    map(([contextMetaData, flag]) => {
-      // TODO: straighten out contextmetadata and it's selectors with a dedicated service to avoid this sweaty effort to get standard information
-      const flagAppContext = flag?.context?.[0];
-      const groupTypes = contextMetaData?.contextMetadata?.[flagAppContext]?.GROUP_TYPES ?? [];
-      const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes as string[]);
-      const listOptionTypes = [
-        {
-          value: LIST_OPTION_TYPE.SEGMENT,
-          viewValue: LIST_OPTION_TYPE.SEGMENT,
-        },
-        {
-          value: LIST_OPTION_TYPE.INDIVIDUAL,
-          viewValue: LIST_OPTION_TYPE.INDIVIDUAL,
-        },
-        ...groupTypeSelectOptions,
-      ];
+  selectPrivateSegmentListTypeOptions$ = (appContext: string): Observable<{ value: string; viewValue: string }[]> => {
+    return this.store$.pipe(
+      select(selectContextMetaData),
+      map((contextMetaData) => {
+        const groupTypes = contextMetaData?.contextMetadata?.[appContext]?.GROUP_TYPES ?? [];
+        const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes as string[]);
 
-      return listOptionTypes;
-    })
-  );
+        return [
+          { value: LIST_OPTION_TYPE.SEGMENT, viewValue: LIST_OPTION_TYPE.SEGMENT },
+          { value: LIST_OPTION_TYPE.INDIVIDUAL, viewValue: LIST_OPTION_TYPE.INDIVIDUAL },
+          ...groupTypeSelectOptions,
+        ];
+      })
+    );
+  };
 
   selectSegmentsByContext(appContext: string): Observable<Segment[]> {
     return this.selectAllSegments$.pipe(

@@ -165,29 +165,6 @@ export const selectGlobalSortKey = createSelector(selectGlobalSegmentsState, (st
 
 export const selectGlobalSortAs = createSelector(selectGlobalSegmentsState, (state) => state.sortAs);
 
-export const selectPrivateSegmentListTypeOptions = createSelector(
-  selectContextMetaData,
-  selectSelectedFeatureFlag,
-  (contextMetaData, flag) => {
-    const flagAppContext = flag?.context?.[0];
-    const groupTypes = contextMetaData?.contextMetadata?.[flagAppContext]?.GROUP_TYPES ?? [];
-    const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes as string[]);
-    const listOptionTypes = [
-      {
-        value: LIST_OPTION_TYPE.SEGMENT,
-        viewValue: LIST_OPTION_TYPE.SEGMENT,
-      },
-      {
-        value: LIST_OPTION_TYPE.INDIVIDUAL,
-        viewValue: LIST_OPTION_TYPE.INDIVIDUAL,
-      },
-      ...groupTypeSelectOptions,
-    ];
-
-    return listOptionTypes;
-  }
-);
-
 export const selectSegmentLists = createSelector(
   selectSelectedSegment,
   (segment: Segment): ParticipantListTableRow[] => {
