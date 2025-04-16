@@ -41,6 +41,7 @@ export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDes
     this.segment$,
     this.permissions$,
   ]).pipe(map(([segment, permissions]) => ({ segment, permissions })));
+  isUserAdmin$ = this.authService.isUserAdmin$;
 
   subscriptions = new Subscription();
   segmentOverviewDetails$ = this.segmentsService.selectedSegmentOverviewDetails;

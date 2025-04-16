@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
+import { Segment } from '../../../../../../../../core/segments/store/segments.model';
+import { SEGMENT_TYPE } from 'upgrade_types';
 
 @Component({
   selector: 'app-segment-overview-details-footer',
@@ -9,10 +11,14 @@ import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../../
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SegmentOverviewDetailsFooterComponent implements OnInit {
+  @Input() segment: Segment;
   tabLabels = ['Lists', 'Used By'];
   @Output() tabChange = new EventEmitter<number>();
 
   ngOnInit(): void {
+    if (this.segment?.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+      this.tabLabels = ['Excluded Lists'];
+    }
     // Initialize to the first tab (Lists)
     this.tabChange.emit(0);
   }
