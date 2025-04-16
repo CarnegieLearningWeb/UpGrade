@@ -10,6 +10,7 @@ import { Observable, Subscription } from 'rxjs';
 import { FeatureFlag } from '../../../../../../core/feature-flags/store/feature-flags.model';
 import { ActivatedRoute } from '@angular/router';
 import { SharedModule } from '../../../../../../shared/shared.module';
+import { SegmentsService } from '../../../../../../core/segments/segments.service';
 
 @Component({
   selector: 'app-feature-flag-details-page-content',
@@ -33,8 +34,16 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
 
   featureFlagIdSub: Subscription;
 
-  constructor(private featureFlagsService: FeatureFlagsService, private _Activatedroute: ActivatedRoute) {}
+  constructor(
+    private featureFlagsService: FeatureFlagsService,
+    private _Activatedroute: ActivatedRoute,
+    private segmentsService: SegmentsService
+  ) {}
   ngOnInit() {
+    // Fetch all segments to ensure they're available for the Add/Edit Include/Exclude List modal
+    // TODO: Consider optimizing by creating a dedicated API endpoint that only fetches segments matching the current feature flag's app context
+    this.segmentsService.fetchAllSegments(true);
+
     this.featureFlagIdSub = this._Activatedroute.paramMap.subscribe((params) => {
       const featureFlagIdFromParams = params.get('flagId');
       this.featureFlagsService.fetchFeatureFlagById(featureFlagIdFromParams);
