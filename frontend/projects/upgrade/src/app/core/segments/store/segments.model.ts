@@ -249,7 +249,7 @@ export interface SegmentState extends EntityState<Segment> {
 }
 
 export interface GlobalSegmentState extends EntityState<Segment> {
-  isLoadingGlobalSegments: boolean;
+  isLoadingSegments: boolean;
   sortKey: SEGMENT_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;
 }

@@ -1,6 +1,5 @@
-import { createSelector, createFeatureSelector, select } from '@ngrx/store';
+import { createSelector, createFeatureSelector } from '@ngrx/store';
 import {
-  LIST_OPTION_TYPE,
   SegmentState,
   ParticipantListTableRow,
   Segment,
@@ -12,9 +11,7 @@ import {
 } from './segments.model';
 import { selectAll } from './segments.reducer';
 import { selectRouterState } from '../../core.state';
-import { CommonTextHelpersService } from '../../../shared/services/common-text-helpers.service';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
-import { selectSelectedFeatureFlag } from '../../feature-flags/store/feature-flags.selectors';
 import { SEGMENT_SEARCH_KEY, SEGMENT_TYPE } from 'upgrade_types';
 
 export const selectSegmentsState = createFeatureSelector<SegmentState>('segments');
@@ -31,7 +28,7 @@ export const isLoadingUpsertSegment = createSelector(selectSegmentsState, (state
 
 export const selectIsLoadingGlobalSegments = createSelector(
   selectGlobalSegmentsState,
-  (state) => state.isLoadingGlobalSegments
+  (state) => state.isLoadingSegments
 );
 
 export const selectSegmentById = createSelector(
