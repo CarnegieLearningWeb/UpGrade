@@ -77,15 +77,31 @@ const reducer = createReducer(
         featureFlagSegmentExclusion,
       }
     ) => {
+      // Preserve detailed segment data for segments that already exist in the store
+      const mergedSegments = segments.map((incomingSegment) => {
+        const existingSegment = state.entities[incomingSegment.id];
+        if (existingSegment) {
+          // Keep detailed fields from existing segment if they exist
+          return {
+            ...incomingSegment,
+            individualForSegment: existingSegment.individualForSegment || incomingSegment.individualForSegment,
+            subSegments: existingSegment.subSegments || incomingSegment.subSegments,
+            groupForSegment: existingSegment.groupForSegment || incomingSegment.groupForSegment
+          };
+        }
+        return incomingSegment;
+      });
+
       const newState = {
         ...state,
-        segments,
-        allExperimentSegmentsInclusion: experimentSegmentInclusion,
-        allExperimentSegmentsExclusion: experimentSegmentExclusion,
-        allFeatureFlagSegmentsInclusion: featureFlagSegmentInclusion,
-        allFeatureFlagSegmentsExclusion: featureFlagSegmentExclusion,
+        segments: mergedSegments,
+        // Preserve existing values if the new ones are null
+        allExperimentSegmentsInclusion: experimentSegmentInclusion || state.allExperimentSegmentsInclusion,
+        allExperimentSegmentsExclusion: experimentSegmentExclusion || state.allExperimentSegmentsExclusion,
+        allFeatureFlagSegmentsInclusion: featureFlagSegmentInclusion || state.allFeatureFlagSegmentsInclusion,
+        allFeatureFlagSegmentsExclusion: featureFlagSegmentExclusion || state.allFeatureFlagSegmentsExclusion,
       };
-      return adapter.upsertMany(segments, { ...newState, isLoadingSegments: false });
+      return adapter.upsertMany(mergedSegments, { ...newState, isLoadingSegments: false });
     }
   ),
   on(

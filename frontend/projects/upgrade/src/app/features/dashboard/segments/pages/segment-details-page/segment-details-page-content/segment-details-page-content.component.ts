@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonSectionCardListComponent } from '../../../../../../shared-standalone-component-lib/components';
 import { CommonModule } from '@angular/common';
 import { SegmentOverviewDetailsSectionCardComponent } from './segment-overview-details-section-card/segment-overview-details-section-card.component';
@@ -24,7 +24,7 @@ import { ActivatedRoute } from '@angular/router';
   styleUrl: './segment-details-page-content.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SegmentDetailsPageContentComponent implements OnInit {
+export class SegmentDetailsPageContentComponent implements OnInit, OnDestroy {
   isSectionCardExpanded = true;
   segment$: Observable<Segment>;
   segmentIdSub: Subscription;
@@ -51,5 +51,11 @@ export class SegmentDetailsPageContentComponent implements OnInit {
 
   onTabChange(tabIndex: number) {
     this.activeTabIndex = tabIndex;
+  }
+
+  ngOnDestroy() {
+    if (this.segmentIdSub) {
+      this.segmentIdSub.unsubscribe();
+    }
   }
 }

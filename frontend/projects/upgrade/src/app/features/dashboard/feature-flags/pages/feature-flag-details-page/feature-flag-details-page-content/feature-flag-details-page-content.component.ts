@@ -31,7 +31,6 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
   isSectionCardExpanded = true;
   activeTabIndex$ = this.featureFlagsService.activeDetailsTabIndex$;
   featureFlag$: Observable<FeatureFlag>;
-
   featureFlagIdSub: Subscription;
 
   constructor(
@@ -57,6 +56,8 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
   }
 
   ngOnDestroy() {
-    this.featureFlagIdSub.unsubscribe();
+    if (this.featureFlagIdSub) {
+      this.featureFlagIdSub.unsubscribe();
+    }
   }
 }

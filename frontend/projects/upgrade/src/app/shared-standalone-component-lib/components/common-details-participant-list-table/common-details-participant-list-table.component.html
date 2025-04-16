@@ -25,10 +25,10 @@
         <ng-container *ngIf="rowData.segment">
           {{
             (rowData.listType?.toLowerCase() === memberTypes.INDIVIDUAL.toLowerCase()
-              ? rowData.segment.individualForSegment?.length
+              ? rowData.segment.individualForSegment?.length || 0
               : rowData.listType?.toLowerCase() === memberTypes.SEGMENT.toLowerCase()
-              ? rowData.segment.subSegments?.length
-              : rowData.segment.groupForSegment?.length) + ' Values'
+              ? rowData.segment.subSegments?.length || 0
+              : rowData.segment.groupForSegment?.length || 0) + ' Values'
           }}
         </ng-container>
       </td>
