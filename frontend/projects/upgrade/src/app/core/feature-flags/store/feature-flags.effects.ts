@@ -44,21 +44,16 @@ export class FeatureFlagsEffects {
         this.store$.pipe(select(selectSearchKey)),
         this.store$.pipe(select(selectSortKey)),
         this.store$.pipe(select(selectSortAs)),
-        this.store$.pipe(select(selectIsAllFlagsFetched))
+        this.store$.pipe(select(selectIsAllFlagsFetched)),
+        this.store$.pipe(select(selectSearchString))
       ),
-      filter(([fromStarting, skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched]) => {
+      filter(([fromStarting, skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched, searchString]) => {
         return !isAllFlagsFetched || skip < total || total === null || fromStarting;
       }),
       tap(() => {
         this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
       }),
-      switchMap(([fromStarting, skip, _, searchKey, sortKey, sortAs]) => {
-        let searchString = null;
-        // As withLatestFrom does not support more than 5 arguments
-        // TODO: Find alternative
-        this.getSearchString$().subscribe((searchInput) => {
-          searchString = searchInput;
-        });
+      switchMap(([fromStarting, skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched, searchString]) => {
         let params: FeatureFlagsPaginationParams = {
           skip: fromStarting ? 0 : skip,
           take: NUMBER_OF_FLAGS,

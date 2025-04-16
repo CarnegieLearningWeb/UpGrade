@@ -45,21 +45,16 @@ export class SegmentsEffects {
         this.store$.pipe(select(selectSearchKey)),
         this.store$.pipe(select(selectSortKey)),
         this.store$.pipe(select(selectSortAs)),
-        this.store$.pipe(select(selectAreAllSegmentsFetched))
+        this.store$.pipe(select(selectAreAllSegmentsFetched)),
+        this.store$.pipe(select(selectSearchString))
       ),
-      filter(([fromStarting, skip, total, areAllFetched]) => {
+      filter(([fromStarting, skip, total, searchKey, sortKey, sortAs, areAllFetched, searchString]) => {
         return !areAllFetched || skip < total || total === null || fromStarting;
       }),
       tap(() => {
         this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments: true }));
       }),
-      switchMap(([fromStarting, skip, _, searchKey, sortKey, sortAs]) => {
-        let searchString = null;
-        // As withLatestFrom does not support more than 5 arguments
-        // TODO: Find alternative
-        this.getSearchString$().subscribe((searchInput) => {
-          searchString = searchInput;
-        });
+      switchMap(([fromStarting, skip, total, searchKey, sortKey, sortAs, areAllFetched, searchString]) => {
         let params: SegmentsPaginationParams = {
           skip: fromStarting ? 0 : skip,
           take: NUMBER_OF_SEGMENTS,
