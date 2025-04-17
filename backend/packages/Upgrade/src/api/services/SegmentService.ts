@@ -140,7 +140,7 @@ export class SegmentService {
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
-      .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
+      .where('segment.type = :public', { public: SEGMENT_TYPE.PUBLIC })
       .getMany();
 
     return queryBuilder;
