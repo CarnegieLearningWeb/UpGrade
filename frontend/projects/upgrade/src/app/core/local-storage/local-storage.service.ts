@@ -94,6 +94,7 @@ export class LocalStorageService {
       sortKey: (segmentSortKey as SEGMENT_SORT_KEY) || SEGMENT_SORT_KEY.NAME,
       sortAs: (segmentSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
       isLoadingUpsertSegment: false,
+      listSegmentOptions: [],
     };
 
     const state = {

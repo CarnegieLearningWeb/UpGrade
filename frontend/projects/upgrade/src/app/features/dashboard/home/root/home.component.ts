@@ -27,7 +27,6 @@ export class HomeComponent implements OnInit {
   constructor(
     private experimentService: ExperimentService,
     public dialog: MatDialog,
-    private segmentsService: SegmentsService,
     private stratificationFactorsService: StratificationFactorsService,
     private authService: AuthService,
     private previewUsersService: PreviewUsersService,
@@ -37,7 +36,6 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
     this.experimentService.loadExperiments(true);
-    this.segmentsService.fetchSegmentsPaginated(true);
     this.stratificationFactorsService.fetchStratificationFactors(true);
     this.experimentService.fetchAllExperimentNames();
     this.previewUsersService.fetchPreviewUsers(true);

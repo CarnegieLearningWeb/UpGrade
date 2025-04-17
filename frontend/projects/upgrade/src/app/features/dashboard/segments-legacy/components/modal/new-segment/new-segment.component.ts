@@ -36,6 +36,7 @@ export class NewSegmentComponent implements OnInit {
 
   ngOnInit() {
     this.experimentService.fetchContextMetaData();
+    this.segmentService.fetchAllSegmentListOptions();
   }
 
   onNoClick(): void {

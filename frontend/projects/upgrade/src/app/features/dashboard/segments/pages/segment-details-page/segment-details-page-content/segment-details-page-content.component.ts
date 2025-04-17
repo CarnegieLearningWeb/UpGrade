@@ -32,6 +32,7 @@ export class SegmentDetailsPageContentComponent implements OnInit {
 
   ngOnInit() {
     this.segment$ = this.segmentsService.selectedSegment$;
+    this.segmentsService.fetchAllSegmentListOptions();
   }
 
   onSectionCardExpandChange(expanded: boolean) {

@@ -10,6 +10,7 @@ import { Observable, Subscription } from 'rxjs';
 import { FeatureFlag } from '../../../../../../core/feature-flags/store/feature-flags.model';
 import { ActivatedRoute } from '@angular/router';
 import { SharedModule } from '../../../../../../shared/shared.module';
+import { SegmentsService } from '../../../../../../core/segments/segments.service';
 
 @Component({
   selector: 'app-feature-flag-details-page-content',
@@ -33,7 +34,11 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
 
   featureFlagIdSub: Subscription;
 
-  constructor(private featureFlagsService: FeatureFlagsService, private _Activatedroute: ActivatedRoute) {}
+  constructor(
+    private featureFlagsService: FeatureFlagsService,
+    private _Activatedroute: ActivatedRoute,
+    private segmentService: SegmentsService
+  ) {}
   ngOnInit() {
     this.featureFlagIdSub = this._Activatedroute.paramMap.subscribe((params) => {
       const featureFlagIdFromParams = params.get('flagId');
@@ -41,6 +46,7 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
     });
 
     this.featureFlag$ = this.featureFlagsService.selectedFeatureFlag$;
+    this.segmentService.fetchAllSegmentListOptions();
   }
 
   onSectionCardExpandChange(expanded: boolean) {

@@ -9,15 +9,9 @@ import * as SegmentsActions from './segments.actions';
 import { NUMBER_OF_SEGMENTS, Segment, SegmentsPaginationParams, UpsertSegmentType } from './segments.model';
 import {
   selectAllSegments,
-  selectAreAllSegmentsFetched,
   selectGlobalSegments,
-  selectSearchKey,
   selectSearchString,
   selectSegmentPaginationParams,
-  selectSkipSegments,
-  selectSortAs,
-  selectSortKey,
-  selectTotalSegments,
 } from './segments.selectors';
 import JSZip from 'jszip';
 import { of } from 'rxjs';
@@ -109,6 +103,27 @@ export class SegmentsEffects {
             })
           ),
           catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
+        )
+      )
+    )
+  );
+
+  fetchListSegmentOptions$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionFetchListSegmentOptions),
+      switchMap(() =>
+        this.segmentsDataService.fetchAllSegments().pipe(
+          map((data: { segmentsData: Segment[] }) => {
+            const listSegmentOptions = data.segmentsData.map(({ name, id, context }) => {
+              return {
+                name,
+                id,
+                context,
+              };
+            });
+            return SegmentsActions.actionFetchListSegmentOptionsSuccess({ listSegmentOptions });
+          }),
+          catchError(() => [SegmentsActions.actionFetchListSegmentOptionsFailure()])
         )
       )
     )

@@ -19,7 +19,7 @@ import {
   ParticipantsMember,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { Segment, MemberTypes } from '../../../../../core/segments/store/segments.model';
+import { Segment, MemberTypes, ListSegmentOption } from '../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
@@ -53,7 +53,7 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
-  allSegments: Segment[];
+  allSegmentListOptions: ListSegmentOption[];
   allSegmentsSub: Subscription;
   filteredSegmentIds$: Observable<string[]>[] = [];
   filteredSegmentIds2$: Observable<string[]>[] = [];
@@ -81,12 +81,10 @@ export class ExperimentParticipantsComponent implements OnInit {
   ngOnChanges() {
     if (this.currentContext) {
       this.subSegmentIds = [];
-      if (this.allSegments) {
-        this.allSegments.forEach((segment) => {
-          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.context === this.currentContext) {
-            this.subSegmentIds.push(segment.name);
-            this.segmentNameId.set(segment.name, segment.id);
-          }
+      if (this.allSegmentListOptions) {
+        this.allSegmentListOptions.forEach((segment) => {
+          this.subSegmentIds.push(segment.name);
+          this.segmentNameId.set(segment.name, segment.id);
         });
       }
       this.setMemberTypes();
@@ -101,6 +99,7 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members2DataSource.next(this.members2.controls);
       // Bind predefined values of experiment participants from backend
       this.bindParticipantsData();
+      this.setSegmentOptions();
     }
   }
 
@@ -109,9 +108,7 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.contextMetaData = contextMetaData;
     });
 
-    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe((allSegments) => {
-      this.allSegments = allSegments;
-    });
+    this.setSegmentOptions();
 
     this.participantsForm = this._formBuilder.group({
       inclusionCriteria: [null],
@@ -194,6 +191,14 @@ export class ExperimentParticipantsComponent implements OnInit {
     }
   }
 
+  setSegmentOptions() {
+    this.allSegmentsSub = this.segmentsService
+      .selectListSegmentOptionsByContext(this.currentContext)
+      .subscribe((allSegments) => {
+        this.allSegmentListOptions = allSegments;
+      });
+  }
+
   bindParticipantsData() {
     const participantsForm1Control = this.participantsForm?.get('members1') as UntypedFormArray;
     participantsForm1Control?.controls.forEach((_, groupindex) => {
@@ -239,11 +244,9 @@ export class ExperimentParticipantsComponent implements OnInit {
 
     if (this.currentContext) {
       const allSegmentIds = [];
-      if (this.allSegments) {
-        this.allSegments.forEach((segment) => {
-          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.context === this.currentContext) {
-            allSegmentIds.push(segment.name);
-          }
+      if (this.allSegmentListOptions) {
+        this.allSegmentListOptions.forEach((segment) => {
+          allSegmentIds.push(segment.name);
         });
       }
       return allSegmentIds.filter((option) => option.toLowerCase().startsWith(filterValue));

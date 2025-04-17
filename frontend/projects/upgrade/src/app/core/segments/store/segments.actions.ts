@@ -3,6 +3,7 @@ import {
   AddPrivateSegmentListRequest,
   AddSegmentRequest,
   EditPrivateSegmentListRequest,
+  ListSegmentOption,
   Segment,
   SegmentInput,
   UpdateSegmentRequest,
@@ -48,6 +49,21 @@ export const actionFetchSegmentsSuccessLegacyGetAll = createAction(
 );
 
 export const actionFetchSegmentsFailure = createAction('[Segments] Fetch Segments Failure (Legacy GET all)');
+
+export const actionFetchListSegmentOptions = createAction(
+  '[Segments] Fetch Segments Legacy GET All for listSegmentOptions'
+);
+
+export const actionFetchListSegmentOptionsSuccess = createAction(
+  '[Segments] Fetch Segments Success Legacy GET All for listSegmentOptions',
+  props<{
+    listSegmentOptions: ListSegmentOption[];
+  }>()
+);
+
+export const actionFetchListSegmentOptionsFailure = createAction(
+  '[Segments] Fetch Segments Failure Legacy GET All for listSegmentOptions'
+);
 
 export const actionFetchGlobalSegments = createAction(
   '[Global Segments] Fetch Global Segments',
