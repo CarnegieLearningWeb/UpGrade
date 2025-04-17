@@ -1,6 +1,5 @@
-import { createSelector, createFeatureSelector, select } from '@ngrx/store';
+import { createSelector, createFeatureSelector } from '@ngrx/store';
 import {
-  LIST_OPTION_TYPE,
   SegmentState,
   ParticipantListTableRow,
   Segment,
@@ -12,9 +11,7 @@ import {
 } from './segments.model';
 import { selectAll } from './segments.reducer';
 import { selectRouterState } from '../../core.state';
-import { CommonTextHelpersService } from '../../../shared/services/common-text-helpers.service';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
-import { selectSelectedFeatureFlag } from '../../feature-flags/store/feature-flags.selectors';
 import { SEGMENT_SEARCH_KEY, SEGMENT_TYPE } from 'upgrade_types';
 
 export const selectSegmentsState = createFeatureSelector<SegmentState>('segments');
@@ -222,6 +219,25 @@ export const selectSegmentUsageData = createSelector(
       (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
   }
+);
+
+export const selectSegmentPaginationParams = createSelector(
+  selectSkipSegments,
+  selectTotalSegments,
+  selectSearchKey,
+  selectSortKey,
+  selectSortAs,
+  selectAreAllSegmentsFetched,
+  selectSearchString,
+  (skip, total, searchKey, sortKey, sortAs, areAllFetched, searchString) => ({
+    skip,
+    total,
+    searchKey,
+    sortKey,
+    sortAs,
+    areAllFetched,
+    searchString,
+  })
 );
 
 // Helper functions for the selector

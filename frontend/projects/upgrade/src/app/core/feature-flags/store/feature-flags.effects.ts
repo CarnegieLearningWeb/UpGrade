@@ -15,6 +15,7 @@ import {
   selectSortAs,
   selectSearchString,
   selectIsAllFlagsFetched,
+  selectFeatureFlagPaginationParams,
 } from './feature-flags.selectors';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
@@ -38,41 +39,38 @@ export class FeatureFlagsEffects {
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionFetchFeatureFlags),
       map((action) => action.fromStarting),
-      withLatestFrom(
-        this.store$.pipe(select(selectSkipFlags)),
-        this.store$.pipe(select(selectTotalFlags)),
-        this.store$.pipe(select(selectSearchKey)),
-        this.store$.pipe(select(selectSortKey)),
-        this.store$.pipe(select(selectSortAs)),
-        this.store$.pipe(select(selectIsAllFlagsFetched)),
-        this.store$.pipe(select(selectSearchString))
-      ),
-      filter(([fromStarting, skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched, searchString]) => {
-        return !isAllFlagsFetched || skip < total || total === null || fromStarting;
+      withLatestFrom(this.store$.pipe(select(selectFeatureFlagPaginationParams))),
+      filter(([fromStarting, pagination]) => {
+        return (
+          !pagination.isAllFlagsFetched ||
+          pagination.skip < pagination.total ||
+          pagination.total === null ||
+          fromStarting
+        );
       }),
       tap(() => {
         this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
       }),
-      switchMap(([fromStarting, skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched, searchString]) => {
+      switchMap(([fromStarting, pagination]) => {
         let params: FeatureFlagsPaginationParams = {
-          skip: fromStarting ? 0 : skip,
+          skip: fromStarting ? 0 : pagination.skip,
           take: NUMBER_OF_FLAGS,
         };
-        if (sortKey) {
+        if (pagination.sortKey) {
           params = {
             ...params,
             sortParams: {
-              key: sortKey,
-              sortAs,
+              key: pagination.sortKey,
+              sortAs: pagination.sortAs,
             },
           };
         }
-        if (searchString) {
+        if (pagination.searchString) {
           params = {
             ...params,
             searchParams: {
-              key: searchKey,
-              string: searchString,
+              key: pagination.searchKey,
+              string: pagination.searchString,
             },
           };
         }
