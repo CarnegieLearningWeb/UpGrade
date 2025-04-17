@@ -521,6 +521,7 @@
   "segments.upsert-list-modal.values-placeholder.text": "Values separated by commas",
   "segments.upsert-list-modal.name-hint.text": "The name for this list.",
   "segments.details.lists.card.title.text": "Lists",
+  "segments.details.lists.card.title.global-excludes.text": "Excluded Lists",
   "segments.details.lists.card.subtitle.text": "Define lists for this segment.",
   "segments.details.add-list.button.text": "Add List",
   "segments.details.lists.card.no-data-row.text": "No lists defined for this segment. Add a new list.",

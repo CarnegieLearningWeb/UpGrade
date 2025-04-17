@@ -6,7 +6,7 @@ import {
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { IMenuButtonItem } from 'upgrade_types';
+import { IMenuButtonItem, SEGMENT_TYPE } from 'upgrade_types';
 import { SegmentsService } from '../../../../../../../core/segments/segments.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import {
@@ -44,6 +44,7 @@ export class SegmentListsSectionCardComponent {
   tableRowCount$ = this.segmentsService.selectSegmentListsLength$;
   selectedSegment$ = this.segmentsService.selectedSegment$;
   subscriptions = new Subscription();
+  title = '';
 
   menuButtonItems: IMenuButtonItem[] = [
     {
@@ -66,6 +67,10 @@ export class SegmentListsSectionCardComponent {
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
+    this.title =
+      this.data.type === SEGMENT_TYPE.GLOBAL_EXCLUDE
+        ? 'segments.details.lists.card.title.global-excludes.text'
+        : 'segments.details.lists.card.title.text';
   }
 
   onAddListClick(appContext: string, segmentId: string) {
