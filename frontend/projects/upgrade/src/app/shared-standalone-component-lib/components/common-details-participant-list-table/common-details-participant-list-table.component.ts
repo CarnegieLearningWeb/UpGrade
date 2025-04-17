@@ -83,6 +83,22 @@ export class CommonDetailsParticipantListTableComponent {
         : ['type', 'values', 'name', 'actions'];
   }
 
+  getValuesCount(rowData: ParticipantListTableRow): number {
+    if (!rowData || !rowData.segment) {
+      return 0;
+    }
+
+    const listType = rowData.listType?.toLowerCase();
+
+    if (listType === this.memberTypes.INDIVIDUAL.toLowerCase()) {
+      return rowData.segment.individualForSegment?.length || 0;
+    } else if (listType === this.memberTypes.SEGMENT.toLowerCase()) {
+      return rowData.segment.subSegments?.length || 0;
+    } else {
+      return rowData.segment.groupForSegment?.length || 0;
+    }
+  }
+
   onSlideToggleChange(event: MatSlideToggleChange, rowData: ParticipantListTableRow): void {
     const slideToggleEvent = event.source;
     const action = slideToggleEvent.checked ? PARTICIPANT_LIST_ROW_ACTION.ENABLE : PARTICIPANT_LIST_ROW_ACTION.DISABLE;

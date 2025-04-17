@@ -23,13 +23,7 @@
       </th>
       <td mat-cell *matCellDef="let rowData" class="values-column ft-14-400">
         <ng-container *ngIf="rowData.segment">
-          {{
-            (rowData.listType?.toLowerCase() === memberTypes.INDIVIDUAL.toLowerCase()
-              ? rowData.segment.individualForSegment?.length || 0
-              : rowData.listType?.toLowerCase() === memberTypes.SEGMENT.toLowerCase()
-              ? rowData.segment.subSegments?.length || 0
-              : rowData.segment.groupForSegment?.length || 0) + ' Values'
-          }}
+          {{ getValuesCount(rowData) }} Values
         </ng-container>
       </td>
     </ng-container>
