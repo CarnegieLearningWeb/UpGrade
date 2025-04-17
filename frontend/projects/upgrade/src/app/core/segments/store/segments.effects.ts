@@ -13,6 +13,7 @@ import {
   selectGlobalSegments,
   selectSearchKey,
   selectSearchString,
+  selectSegmentPaginationParams,
   selectSkipSegments,
   selectSortAs,
   selectSortKey,
@@ -39,46 +40,35 @@ export class SegmentsEffects {
     this.actions$.pipe(
       ofType(SegmentsActions.actionFetchSegments),
       map((action) => action.fromStarting),
-      withLatestFrom(
-        this.store$.pipe(select(selectSkipSegments)),
-        this.store$.pipe(select(selectTotalSegments)),
-        this.store$.pipe(select(selectSearchKey)),
-        this.store$.pipe(select(selectSortKey)),
-        this.store$.pipe(select(selectSortAs)),
-        this.store$.pipe(select(selectAreAllSegmentsFetched))
-      ),
-      filter(([fromStarting, skip, total, areAllFetched]) => {
-        return !areAllFetched || skip < total || total === null || fromStarting;
+      withLatestFrom(this.store$.pipe(select(selectSegmentPaginationParams))),
+      filter(([fromStarting, pagination]) => {
+        return (
+          !pagination.areAllFetched || pagination.skip < pagination.total || pagination.total === null || fromStarting
+        );
       }),
       tap(() => {
         this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments: true }));
       }),
-      switchMap(([fromStarting, skip, _, searchKey, sortKey, sortAs]) => {
-        let searchString = null;
-        // As withLatestFrom does not support more than 5 arguments
-        // TODO: Find alternative
-        this.getSearchString$().subscribe((searchInput) => {
-          searchString = searchInput;
-        });
+      switchMap(([fromStarting, pagination]) => {
         let params: SegmentsPaginationParams = {
-          skip: fromStarting ? 0 : skip,
+          skip: fromStarting ? 0 : pagination.skip,
           take: NUMBER_OF_SEGMENTS,
         };
-        if (sortKey) {
+        if (pagination.sortKey) {
           params = {
             ...params,
             sortParams: {
-              key: sortKey,
-              sortAs,
+              key: pagination.sortKey,
+              sortAs: pagination.sortAs,
             },
           };
         }
-        if (searchString) {
+        if (pagination.searchString) {
           params = {
             ...params,
             searchParams: {
-              key: searchKey,
-              string: searchString,
+              key: pagination.searchKey,
+              string: pagination.searchString,
             },
           };
         }
