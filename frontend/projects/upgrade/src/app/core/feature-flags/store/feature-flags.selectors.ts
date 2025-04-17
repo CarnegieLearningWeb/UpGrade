@@ -171,6 +171,25 @@ export const selectFeatureFlagExclusions = createSelector(
   }
 );
 
+export const selectFeatureFlagPaginationParams = createSelector(
+  selectSkipFlags,
+  selectTotalFlags,
+  selectSearchKey,
+  selectSortKey,
+  selectSortAs,
+  selectIsAllFlagsFetched,
+  selectSearchString,
+  (skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched, searchString) => ({
+    skip,
+    total,
+    searchKey,
+    sortKey,
+    sortAs,
+    isAllFlagsFetched,
+    searchString,
+  })
+);
+
 // Helper function to determine if warning should be shown for a given flag
 const shouldShowWarningForFlag = (flag: FeatureFlag) =>
   flag?.status === FEATURE_FLAG_STATUS.ENABLED &&

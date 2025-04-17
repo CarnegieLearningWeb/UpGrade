@@ -1,5 +1,6 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { State, AuthState } from './auth.models';
+import { AuthState } from './auth.models';
+import { User, UserRole } from '../../users/store/users.model';
 
 export const selectAuthState = createFeatureSelector<AuthState>('auth');
 
@@ -10,6 +11,8 @@ export const selectIsLoggedIn = createSelector(selectAuthState, (state: AuthStat
 export const selectIsAuthenticating = createSelector(selectAuthState, (state: AuthState) => state.isAuthenticating);
 
 export const selectCurrentUser = createSelector(selectAuthState, (state: AuthState) => state.user);
+
+export const selectUserIsAdmin = createSelector(selectCurrentUser, (user: User) => user.role === UserRole.ADMIN);
 
 export const selectCurrentUserEmail = createSelector(selectAuthState, (state) => state.user?.email || '');
 

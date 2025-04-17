@@ -8,6 +8,7 @@ import {
   selectIsAuthenticating,
   selectCurrentUser,
   selectGoogleCredential,
+  selectUserIsAdmin,
 } from './store/auth.selectors';
 import { UserPermission } from './store/auth.models';
 import { BehaviorSubject, filter, take } from 'rxjs';
@@ -21,6 +22,7 @@ import { MatDialog } from '@angular/material/dialog';
 export class AuthService {
   isLoggedIn$ = this.store$.pipe(select(selectIsLoggedIn));
   isAuthenticating$ = this.store$.pipe(select(selectIsAuthenticating));
+  isUserAdmin$ = this.store$.pipe(select(selectUserIsAdmin));
   currentUser$ = this.store$.pipe(select(selectCurrentUser));
   getGoogleCredential$ = this.store$.pipe(select(selectGoogleCredential));
   userPermissions$ = new BehaviorSubject<UserPermission>(null);

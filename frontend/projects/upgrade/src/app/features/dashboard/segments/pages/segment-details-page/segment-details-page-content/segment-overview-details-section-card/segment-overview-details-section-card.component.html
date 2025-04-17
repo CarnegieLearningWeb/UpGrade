@@ -12,7 +12,7 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showMenuButton]="true"
+    [showMenuButton]="(isUserAdmin$ | async)"
     [menuButtonItems]="menuButtonItems$ | async"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (menuButtonItemClick)="onMenuButtonItemClick($event, segment)"
@@ -30,6 +30,7 @@
   <!-- footer -->
   <app-segment-overview-details-footer
     footer
+    [segment]=segment
     (tabChange)="onSelectedTabChange($event)"
   ></app-segment-overview-details-footer>
 </app-common-section-card>
