@@ -45,7 +45,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
   allSegmentOptions: ListSegmentOption[];
-  allSegmentsSub: Subscription;
+  allSegmentsSub = new Subscription();
 
   segmentMemberTypes: any[];
   subSegmentIds: string[] = [];
@@ -99,17 +99,16 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       this.contextMetaData = contextMetaData;
     });
 
-    this.allSegmentsSub = this.segmentsService
-      .selectListSegmentOptionsByContext(this.segmentInfo.context)
-      .subscribe((allSegments) => {
-        this.allSegmentOptions = allSegments;
-      });
-
     this.segmentMembersForm = this._formBuilder.group({
       members: this._formBuilder.array([this.addMembers()]),
     });
 
     if (this.segmentInfo) {
+      this.allSegmentsSub.add(
+        this.segmentsService.selectListSegmentOptionsByContext(this.segmentInfo.context).subscribe((allSegments) => {
+          this.allSegmentOptions = allSegments;
+        })
+      );
       this.members.removeAt(0);
       this.segmentInfo.individualForSegment.forEach((id) => {
         this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, id.userId));
