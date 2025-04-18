@@ -17,6 +17,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import {
+  ListSegmentOption,
   MemberTypes,
   NewSegmentDialogData,
   NewSegmentDialogEvents,
@@ -43,8 +44,8 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   membersDataSource = new BehaviorSubject<AbstractControl[]>([]);
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
-  allSegments: Segment[];
-  allSegmentsSub: Subscription;
+  allSegmentOptions: ListSegmentOption[];
+  allSegmentsSub = new Subscription();
 
   segmentMemberTypes: any[];
   subSegmentIds: string[] = [];
@@ -98,15 +99,16 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       this.contextMetaData = contextMetaData;
     });
 
-    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe((allSegments) => {
-      this.allSegments = allSegments;
-    });
-
     this.segmentMembersForm = this._formBuilder.group({
       members: this._formBuilder.array([this.addMembers()]),
     });
 
     if (this.segmentInfo) {
+      this.allSegmentsSub.add(
+        this.segmentsService.selectListSegmentOptionsByContext(this.segmentInfo.context).subscribe((allSegments) => {
+          this.allSegmentOptions = allSegments;
+        })
+      );
       this.members.removeAt(0);
       this.segmentInfo.individualForSegment.forEach((id) => {
         this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, id.userId));
@@ -155,16 +157,15 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   }
 
   selectSubSegments(): void {
-    if (!this.allSegments) {
+    if (!this.allSegmentOptions) {
       return;
     }
 
     const isContextAll = this.currentContext === 'ALL';
 
-    this.allSegments
+    this.allSegmentOptions
       .filter(
         (segment) =>
-          segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE &&
           (isContextAll || segment.context === this.currentContext) &&
           (!this.segmentInfo || segment.id !== this.segmentInfo.id)
       )

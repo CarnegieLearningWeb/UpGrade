@@ -26,6 +26,7 @@ export const initialState: SegmentState = adapter.getInitialState({
   sortKey: SEGMENT_SORT_KEY.NAME,
   sortAs: SORT_AS_DIRECTION.ASCENDING,
   isLoadingUpsertSegment: false,
+  listSegmentOptions: [],
 });
 
 const reducer = createReducer(
@@ -88,6 +89,12 @@ const reducer = createReducer(
       return adapter.upsertMany(segments, { ...newState, isLoadingSegments: false });
     }
   ),
+  on(SegmentsActions.actionFetchListSegmentOptionsSuccess, (state, { listSegmentOptions }) => {
+    return {
+      ...state,
+      listSegmentOptions,
+    };
+  }),
   on(
     SegmentsActions.actionFetchSegmentsFailure,
     SegmentsActions.actionUpsertSegmentFailure,

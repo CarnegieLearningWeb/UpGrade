@@ -240,6 +240,18 @@ export const selectSegmentPaginationParams = createSelector(
   })
 );
 
+export const selectListSegmentOptionsByContext = (context: string) => {
+  return createSelector(selectSegmentsState, (segmentState: SegmentState) => {
+    if (!segmentState || !segmentState.listSegmentOptions) {
+      return [];
+    }
+    // filter by context and sort alphabetically by name
+    return segmentState.listSegmentOptions
+      .filter((option) => option.context === context)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  });
+};
+
 // Helper functions for the selector
 function processExperimentSegments(
   segmentData: experimentSegmentInclusionExclusionData[],

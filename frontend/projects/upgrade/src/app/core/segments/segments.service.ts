@@ -25,26 +25,25 @@ import {
   selectGlobalSortAs,
   isLoadingUpsertSegment,
   selectSegmentIdAfterNavigation,
+  selectListSegmentOptionsByContext,
 } from './store/segments.selectors';
 import {
   AddPrivateSegmentListRequest,
   AddSegmentRequest,
   EditPrivateSegmentListRequest,
   LIST_OPTION_TYPE,
-  Segment,
   SegmentInput,
   SegmentLocalStorageKeys,
   UpdateSegmentRequest,
   UpsertSegmentType,
 } from './store/segments.model';
-import { filter, map, withLatestFrom } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
 import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY, DuplicateSegmentNameError } from 'upgrade_types';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { selectShouldUseLegacyUI } from './store/segments.selectors';
 import { selectContextMetaData } from '../experiments/store/experiments.selectors';
-import { selectSelectedFeatureFlag } from '../feature-flags/store/feature-flags.selectors';
 import { CommonTextHelpersService } from '../../shared/services/common-text-helpers.service';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 
@@ -121,15 +120,8 @@ export class SegmentsService {
     );
   };
 
-  selectSegmentsByContext(appContext: string): Observable<Segment[]> {
-    return this.selectAllSegments$.pipe(
-      map((segments) => {
-        const filteredSegments = segments.filter((segment) => {
-          return segment.context === appContext;
-        });
-        return filteredSegments;
-      })
-    );
+  selectListSegmentOptionsByContext(context: string) {
+    return this.store$.pipe(select(selectListSegmentOptionsByContext(context)));
   }
 
   fetchSegmentById(segmentId: string) {
@@ -156,6 +148,10 @@ export class SegmentsService {
 
   fetchAllSegments(fromStarting?: boolean) {
     this.store$.dispatch(SegmentsActions.actionfetchAllSegments({ fromStarting }));
+  }
+
+  fetchAllSegmentListOptions() {
+    this.store$.dispatch(SegmentsActions.actionFetchListSegmentOptions());
   }
 
   createNewSegment(segment: SegmentInput) {

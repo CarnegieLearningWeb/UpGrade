@@ -17,6 +17,7 @@ import {
   AddPrivateSegmentListRequest,
   EditPrivateSegmentListRequest,
   LIST_OPTION_TYPE,
+  ListSegmentOption,
   PRIVATE_SEGMENT_LIST_FORM_DEFAULTS,
   PRIVATE_SEGMENT_LIST_FORM_FIELDS,
   PrivateSegmentListFormData,
@@ -59,8 +60,8 @@ export class UpsertPrivateSegmentListModalComponent {
   initialFormValues$ = new BehaviorSubject<PrivateSegmentListFormData>(null);
 
   subscriptions = new Subscription();
-  segmentsOptions$: Observable<Segment[]>;
-  segmentsFilteredByContext$: Observable<Segment[]>;
+  segmentsOptions$: Observable<ListSegmentOption[]>;
+  segmentsFilteredByContext$: Observable<ListSegmentOption[]>;
   isPrimaryButtonDisabled$: Observable<boolean>;
   isInitialFormValueChanged$: Observable<boolean>;
   isSegmentsListTypeDisabled$: Observable<boolean>;
@@ -200,8 +201,17 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   listenForSegments() {
-    this.segmentsFilteredByContext$ = this.segmentsService.selectSegmentsByContext(this.config.params.sourceAppContext);
-    this.isSegmentsListTypeDisabled$ = this.segmentsFilteredByContext$.pipe(map((segments) => segments.length === 0));
+    this.segmentsFilteredByContext$ = this.segmentsService
+      .selectListSegmentOptionsByContext(this.config.params.sourceAppContext)
+      .pipe(
+        // don't include self
+        map((options) => options.filter((option) => option.id !== this.config.params.id))
+      );
+    this.isSegmentsListTypeDisabled$ = this.segmentsFilteredByContext$.pipe(
+      map((segments) => {
+        return segments.length === 0;
+      })
+    );
   }
 
   listenForPrimaryButtonDisabled() {
@@ -222,7 +232,6 @@ export class UpsertPrivateSegmentListModalComponent {
 
   listenForSegmentsFilteredByUserInput(): void {
     this.segmentsOptions$ = this.segmentsFilteredByContext$.pipe(
-      map((segments) => segments.sort((a, b) => a.name.localeCompare(b.name))),
       combineLatestWith(
         this.privateSegmentListForm.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.SEGMENT).valueChanges.pipe(startWith(''))
       ),

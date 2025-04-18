@@ -9,6 +9,7 @@ import {
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
+import { SegmentsService } from '../../../../../../core/segments/segments.service';
 
 @Component({
   selector: 'home-new-experiment',
@@ -31,6 +32,7 @@ export class NewExperimentComponent implements OnInit {
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
     private experimentDesignStepperService: ExperimentDesignStepperService,
+    private segmentService: SegmentsService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     if (this.data) {
@@ -41,6 +43,7 @@ export class NewExperimentComponent implements OnInit {
   ngOnInit() {
     // Used to fetch contextMetaData only once
     this.experimentService.fetchContextMetaData();
+    this.segmentService.fetchAllSegmentListOptions();
   }
 
   ngOnDestroy() {

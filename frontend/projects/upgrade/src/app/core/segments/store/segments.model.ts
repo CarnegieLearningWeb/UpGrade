@@ -246,6 +246,13 @@ export interface SegmentState extends EntityState<Segment> {
   searchString: string;
   sortKey: SEGMENT_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;
+  listSegmentOptions: ListSegmentOption[];
+}
+
+export interface ListSegmentOption {
+  id: string;
+  name: string;
+  context: string;
 }
 
 export interface GlobalSegmentState extends EntityState<Segment> {
