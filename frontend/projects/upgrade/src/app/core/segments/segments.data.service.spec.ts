@@ -270,7 +270,7 @@ describe('SegmentDataService', () => {
 
       // Call the method and subscribe to result
       let result: FeatureFlagSegmentListDetails;
-      service.updateSegmentList(mockEditPrivateSegmentListRequest).subscribe(res => {
+      service.updateSegmentList(mockEditPrivateSegmentListRequest).subscribe((res) => {
         result = res;
       });
 

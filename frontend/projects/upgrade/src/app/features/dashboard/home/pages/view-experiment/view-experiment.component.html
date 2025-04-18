@@ -62,10 +62,11 @@
               ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | formatDate : 'short date')
             }}
           </span>
-          <span class="ft-14-700 experiment-overview-last-update-date" *ngIf="experiment.versionNumber === 1; else displayUpdatedAt">
-            {{
-              ('home.view-experiment.last-updated-on.text' | translate) + ' -'
-            }}
+          <span
+            class="ft-14-700 experiment-overview-last-update-date"
+            *ngIf="experiment.versionNumber === 1; else displayUpdatedAt"
+          >
+            {{ ('home.view-experiment.last-updated-on.text' | translate) + ' -' }}
           </span>
           <ng-template #displayUpdatedAt>
             <span class="ft-14-700 experiment-overview-last-update-date">

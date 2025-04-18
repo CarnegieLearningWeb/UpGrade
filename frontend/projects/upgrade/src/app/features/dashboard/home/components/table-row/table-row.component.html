@@ -3,7 +3,7 @@
     <!-- COLUMNS AND ROWS-->
     <ng-container *ngFor="let key of displayedColumns" [matColumnDef]="key">
       <mat-header-cell
-        [ngClass]="{'weight-column': key === 'weight'}"
+        [ngClass]="{ 'weight-column': key === 'weight' }"
         style="justify-content: left; padding-left: 15px"
         class="ft-12-700"
         *matHeaderCellDef
@@ -12,7 +12,7 @@
       </mat-header-cell>
 
       <mat-cell
-        [ngClass]="{'weight-column': key === 'weight'}"
+        [ngClass]="{ 'weight-column': key === 'weight' }"
         style="justify-content: left"
         class="ft-12-600"
         *matCellDef="let element; let i = dataIndex"

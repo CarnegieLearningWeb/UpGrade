@@ -59,9 +59,7 @@
         {{ ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | formatDate : 'short date') }}
       </span>
       <span class="ft-14-700 segment-update-date" *ngIf="segment.versionNumber === 1; else displayUpdatedAt">
-        {{
-          ('home.view-experiment.last-updated-on.text' | translate) + ' -'
-        }}
+        {{ ('home.view-experiment.last-updated-on.text' | translate) + ' -' }}
       </span>
       <ng-template #displayUpdatedAt>
         <span class="ft-14-700 segment-update-date">

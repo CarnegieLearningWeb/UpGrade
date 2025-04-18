@@ -2,7 +2,8 @@
   height: 515px;
   overflow-y: auto;
 
-  .metric-table, .reward-metric-table {
+  .metric-table,
+  .reward-metric-table {
     margin-top: 5px;
     max-height: 207px;
     overflow: auto;
@@ -67,22 +68,26 @@
       width: 60px;
     }
 
-    .cdk-column-keys, .cdk-column-metricsKey {
+    .cdk-column-keys,
+    .cdk-column-metricsKey {
       flex: 0 0 250px;
       width: 250px;
     }
 
-    .cdk-column-operationType, .cdk-column-metricsOperation {
+    .cdk-column-operationType,
+    .cdk-column-metricsOperation {
       margin-left: 30px;
       flex: 0 0 160px;
       width: 160px;
     }
 
-    .cdk-column-queryName, .cdk-column-metricsName {
+    .cdk-column-queryName,
+    .cdk-column-metricsName {
       width: 100%;
       max-width: 350px;
 
-      &.mat-mdc-header-cell, &.mat-mdc-cell {
+      &.mat-mdc-header-cell,
+      &.mat-mdc-cell {
         padding-left: 0;
       }
     }

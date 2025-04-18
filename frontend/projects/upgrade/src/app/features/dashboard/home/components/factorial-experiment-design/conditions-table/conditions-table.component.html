@@ -3,15 +3,8 @@
     <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
   </div>
 
-  <div
-    *ngIf="isExperimentEditable && !(isMoocletExperimentDesign$ | async)"
-    class="conditions-weight-checkbox"
-  >
-    <mat-checkbox
-      color="primary"
-      [checked]="equalWeightFlag"
-      (change)="handleEqualWeightToggle()"
-    >
+  <div *ngIf="isExperimentEditable && !(isMoocletExperimentDesign$ | async)" class="conditions-weight-checkbox">
+    <mat-checkbox color="primary" [checked]="equalWeightFlag" (change)="handleEqualWeightToggle()">
       <span class="ft-13-700 checkbox-label">
         {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
       </span>
@@ -64,7 +57,6 @@
           {{ 'WEIGHT' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
-
           <!-- When isMoocletExperimentDesign$ is false, show the existing logic -->
           <ng-container *ngIf="!(isMoocletExperimentDesign$ | async)">
             <ng-container *ngIf="equalWeightFlag || (tableEditIndex$ | async) !== rowIndex || !isExperimentEditable">

@@ -7,12 +7,13 @@
     [updatedAt]="segment.updatedAt"
     [versionNumber]="segment.versionNumber"
     [chipClass]="segment.status.toLowerCase()"
-  ></app-common-section-card-title-header> <!-- TODO: Update the SEGMENT_STATUS enum to lowercase and remove toLowerCase() once the legacy Segments code is removed -->
+  ></app-common-section-card-title-header>
+  <!-- TODO: Update the SEGMENT_STATUS enum to lowercase and remove toLowerCase() once the legacy Segments code is removed -->
 
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showMenuButton]="(isUserAdmin$ | async)"
+    [showMenuButton]="isUserAdmin$ | async"
     [menuButtonItems]="menuButtonItems$ | async"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (menuButtonItemClick)="onMenuButtonItemClick($event, segment)"
@@ -30,7 +31,7 @@
   <!-- footer -->
   <app-segment-overview-details-footer
     footer
-    [segment]=segment
+    [segment]="segment"
     (tabChange)="onSelectedTabChange($event)"
   ></app-segment-overview-details-footer>
 </app-common-section-card>
