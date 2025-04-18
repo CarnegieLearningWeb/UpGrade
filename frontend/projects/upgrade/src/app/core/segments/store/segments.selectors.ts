@@ -28,7 +28,7 @@ export const isLoadingUpsertSegment = createSelector(selectSegmentsState, (state
 
 export const selectIsLoadingGlobalSegments = createSelector(
   selectGlobalSegmentsState,
-  (state) => state.isLoadingGlobalSegments
+  (state) => state.isLoadingSegments
 );
 
 export const selectSegmentById = createSelector(

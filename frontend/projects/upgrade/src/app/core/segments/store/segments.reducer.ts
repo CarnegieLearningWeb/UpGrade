@@ -103,7 +103,7 @@ const reducer = createReducer(
     if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
       return adapter.upsertOne(segment, { ...state, isLoadingSegments: false });
     }
-    return state;
+    return { ...state, isLoadingSegments: false };
   }),
   on(SegmentsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
   on(SegmentsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchString })),
@@ -117,27 +117,7 @@ const reducer = createReducer(
     ...state,
     isLoadingSegments: true,
   })),
-  on(SegmentsActions.actionAddSegmentListSuccess, (state, { listResponse }) => {
-    const parentSegmentId = listResponse.parentSegmentId;
-    const existingSegment = state.entities[parentSegmentId];
-
-    if (existingSegment) {
-      // Create updated subSegments array with the new list/segment
-      const updatedSubSegments = existingSegment.subSegments
-        ? [...existingSegment.subSegments, listResponse.segment]
-        : [listResponse.segment];
-
-      return adapter.updateOne(
-        {
-          id: parentSegmentId,
-          changes: { subSegments: updatedSubSegments },
-        },
-        { ...state, isLoadingSegments: false }
-      );
-    }
-
-    return { ...state, isLoadingSegments: false };
-  }),
+  on(SegmentsActions.actionAddSegmentListSuccess, onAddListSuccess),
   on(SegmentsActions.actionAddSegmentListFailure, (state) => ({
     ...state,
     isLoadingSegments: false,
@@ -148,27 +128,7 @@ const reducer = createReducer(
     ...state,
     isLoadingSegments: true,
   })),
-  on(SegmentsActions.actionUpdateSegmentListSuccess, (state, { listResponse }) => {
-    const parentSegmentId = listResponse.parentSegmentId;
-    const existingSegment = state.entities[parentSegmentId];
-
-    if (existingSegment && existingSegment.subSegments) {
-      // Create updated subSegments array replacing the edited segment
-      const updatedSubSegments = existingSegment.subSegments.map((subSegment) =>
-        subSegment.id === listResponse.segment.id ? listResponse.segment : subSegment
-      );
-
-      return adapter.updateOne(
-        {
-          id: parentSegmentId,
-          changes: { subSegments: updatedSubSegments },
-        },
-        { ...state, isLoadingSegments: false }
-      );
-    }
-
-    return { ...state, isLoadingSegments: false };
-  }),
+  on(SegmentsActions.actionUpdateSegmentListSuccess, onUpdateListSuccess),
   on(SegmentsActions.actionUpdateSegmentListFailure, (state) => ({
     ...state,
     isLoadingSegments: false,
@@ -179,29 +139,7 @@ const reducer = createReducer(
     ...state,
     isLoadingSegments: true,
   })),
-  on(SegmentsActions.actionDeleteSegmentListSuccess, (state, { segmentId }) => {
-    // Find the parent segment that contains this subSegment
-    const parentSegmentId = Object.keys(state.entities).find((id) =>
-      state.entities[id]?.subSegments?.some((subSegment) => subSegment.id === segmentId)
-    );
-
-    if (parentSegmentId) {
-      const parentSegment = state.entities[parentSegmentId];
-
-      // Filter out the deleted subSegment
-      const updatedSubSegments = parentSegment.subSegments.filter((subSegment) => subSegment.id !== segmentId);
-
-      return adapter.updateOne(
-        {
-          id: parentSegmentId,
-          changes: { subSegments: updatedSubSegments },
-        },
-        { ...state, isLoadingSegments: false }
-      );
-    }
-
-    return { ...state, isLoadingSegments: false };
-  }),
+  on(SegmentsActions.actionDeleteSegmentListSuccess, onDeleteListSuccess),
   on(SegmentsActions.actionDeleteSegmentListFailure, (state) => ({
     ...state,
     isLoadingSegments: false,
@@ -213,31 +151,108 @@ export function segmentsReducer(state: SegmentState | undefined, action: Action)
 }
 
 export const initalGlobalState: GlobalSegmentState = adapter.getInitialState({
-  isLoadingGlobalSegments: false,
+  isLoadingSegments: false,
   sortKey: SEGMENT_SORT_KEY.NAME,
   sortAs: SORT_AS_DIRECTION.ASCENDING,
 });
 
 const globalReducer = createReducer(
   initalGlobalState,
-  on(SegmentsActions.actionFetchGlobalSegments, (state) => ({
-    ...state,
-    isLoadingGlobalSegments: true,
-  })),
-  on(SegmentsActions.actionFetchGlobalSegmentsSuccess, (state, { globalSegments }) =>
-    adapter.upsertMany(globalSegments, { ...state, isLoadingGlobalSegments: false })
+  on(
+    SegmentsActions.actionFetchGlobalSegments,
+    SegmentsActions.actionAddSegmentList,
+    SegmentsActions.actionUpdateSegmentList,
+    SegmentsActions.actionDeleteSegmentList,
+    (state) => ({
+      ...state,
+      isLoadingSegments: true,
+    })
   ),
+  on(SegmentsActions.actionUpdateSegmentListSuccess, onUpdateListSuccess),
+  on(SegmentsActions.actionAddSegmentListSuccess, onAddListSuccess),
+  on(SegmentsActions.actionDeleteSegmentListSuccess, onDeleteListSuccess),
   on(SegmentsActions.actionFetchGlobalSegmentsFailure, (state) => ({
     ...state,
-    isLoadingGlobalSegments: false,
+    isLoadingSegments: false,
   })),
+  on(SegmentsActions.actionFetchGlobalSegmentsSuccess, (state, { globalSegments }) =>
+    adapter.upsertMany(globalSegments, { ...state, isLoadingSegments: false })
+  ),
   on(SegmentsActions.actionGetSegmentByIdSuccess, (state, { segment }) => {
     if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
       return adapter.upsertOne(segment, { ...state, isLoadingSegments: false });
     }
-    return state;
+    return { ...state, isLoadingSegments: false };
   })
 );
+
+function onAddListSuccess(state, { listResponse }) {
+  const parentSegmentId = listResponse.parentSegmentId;
+  const existingSegment = state.entities[parentSegmentId];
+
+  if (existingSegment) {
+    // Create updated subSegments array with the new list/segment
+    const updatedSubSegments = existingSegment.subSegments
+      ? [...existingSegment.subSegments, listResponse.segment]
+      : [listResponse.segment];
+
+    return adapter.updateOne(
+      {
+        id: parentSegmentId,
+        changes: { subSegments: updatedSubSegments },
+      },
+      { ...state, isLoadingSegments: false }
+    );
+  }
+
+  return { ...state, isLoadingSegments: false };
+}
+
+function onUpdateListSuccess(state, { listResponse }) {
+  const parentSegmentId = listResponse.parentSegmentId;
+  const existingSegment = state.entities[parentSegmentId];
+
+  if (existingSegment && existingSegment.subSegments) {
+    // Create updated subSegments array replacing the edited segment
+    const updatedSubSegments = existingSegment.subSegments.map((subSegment) =>
+      subSegment.id === listResponse.segment.id ? listResponse.segment : subSegment
+    );
+
+    return adapter.updateOne(
+      {
+        id: parentSegmentId,
+        changes: { subSegments: updatedSubSegments },
+      },
+      { ...state, isLoadingSegments: false }
+    );
+  }
+
+  return { ...state, isLoadingSegments: false };
+}
+
+function onDeleteListSuccess(state, { segmentId }) {
+  // Find the parent segment that contains this subSegment
+  const parentSegmentId = Object.keys(state.entities).find((id) =>
+    state.entities[id]?.subSegments?.some((subSegment) => subSegment.id === segmentId)
+  );
+
+  if (parentSegmentId) {
+    const parentSegment = state.entities[parentSegmentId];
+
+    // Filter out the deleted subSegment
+    const updatedSubSegments = parentSegment.subSegments.filter((subSegment) => subSegment.id !== segmentId);
+
+    return adapter.updateOne(
+      {
+        id: parentSegmentId,
+        changes: { subSegments: updatedSubSegments },
+      },
+      { ...state, isLoadingSegments: false }
+    );
+  }
+
+  return { ...state, isLoadingSegments: false };
+}
 
 export function globalSegmentsReducer(state: GlobalSegmentState | undefined, action: Action) {
   return globalReducer(state, action);

@@ -238,7 +238,7 @@ export class UpsertSegmentModalComponent {
   }
 
   createEditRequest({ name, description, appContext, tags }: SegmentFormData, sourceSegment: Segment): void {
-    const { id, status } = sourceSegment;
+    const { id, status, type } = sourceSegment;
     const subSegmentIds = sourceSegment.subSegments.map((subSegment) => subSegment.id);
 
     // Not allow editing segment name and context if segment is in used status:
@@ -246,6 +246,7 @@ export class UpsertSegmentModalComponent {
       name = sourceSegment.name;
       appContext = sourceSegment.context;
     }
+
     const segmentRequest: UpdateSegmentRequest = {
       id,
       name,
@@ -255,7 +256,7 @@ export class UpsertSegmentModalComponent {
       groups: [],
       subSegmentIds,
       status,
-      type: SEGMENT_TYPE.PUBLIC,
+      type,
       tags,
     };
     this.segmentService.modifySegment(segmentRequest);
