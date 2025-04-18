@@ -37,7 +37,7 @@ import { ExperimentSegmentExclusionRepository } from '../repositories/Experiment
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
-import { getSegmentData } from '../controllers/SegmentController';
+import { getSegmentData, getSegmentsData } from '../controllers/SegmentController';
 import { CacheService } from './CacheService';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
@@ -189,8 +189,7 @@ export class SegmentService {
     });
   }
 
-  public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<SegmentWithStatus> {
-    const allSegmentData = await this.getAllPublicSegmentsAndSubsegments(logger);
+  public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<getSegmentData | null> {
     const segmentData = await this.getSegmentById(segmentId, logger);
     if (segmentData) {
       if (segmentData.subSegments.length > 0) {
@@ -200,10 +199,9 @@ export class SegmentService {
           segmentData.subSegments = listData;
         }
       }
-      const segmentWithStatus = (await this.getSegmentStatus(allSegmentData)).segmentsData.find(
-        (segment: Segment) => segment.id === segmentId
-      );
-      return { ...segmentData, status: segmentWithStatus?.status };
+      const segmentsDataWithStatus = await this.getSegmentStatus([segmentData]);
+      const { segmentsData, ...inclusionExclusionData } = segmentsDataWithStatus;
+      return { segment: segmentsData[0], ...inclusionExclusionData };
     } else {
       return null;
     }
@@ -215,7 +213,7 @@ export class SegmentService {
     logger: UpgradeLogger,
     searchParams?: ISegmentSearchParams,
     sortParams?: ISegmentSortParams
-  ): Promise<getSegmentData> {
+  ): Promise<getSegmentsData> {
     logger.info({ message: `Find paginated segments` });
     let queryBuilder = this.segmentRepository
       .createQueryBuilder('segment')
@@ -272,12 +270,12 @@ export class SegmentService {
     return searchStringConcatenated;
   }
 
-  public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
+  public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentsData> {
     const segmentsData = await this.getAllPublicSegmentsAndSubsegments(logger);
     return this.getSegmentStatus(segmentsData);
   }
 
-  public async getSegmentStatus(segmentsData: Segment[]): Promise<getSegmentData> {
+  public async getSegmentStatus(segmentsData: Segment[]): Promise<getSegmentsData> {
     const connection = this.dataSource.manager.connection;
     const segmentsDataWithStatus = await connection.transaction(async () => {
       const [

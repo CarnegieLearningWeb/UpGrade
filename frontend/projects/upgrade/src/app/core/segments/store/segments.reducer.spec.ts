@@ -117,6 +117,10 @@ describe('SegmentsReducer', () => {
 
       const testAction = SegmentsActions.actionGetSegmentByIdSuccess({
         segment: mockSegment,
+        experimentSegmentExclusion: [],
+        experimentSegmentInclusion: [],
+        featureFlagSegmentExclusion: [],
+        featureFlagSegmentInclusion: [],
       });
 
       const newState = segmentsReducer(previousState, testAction);

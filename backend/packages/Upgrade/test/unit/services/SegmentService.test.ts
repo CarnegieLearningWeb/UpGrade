@@ -390,12 +390,18 @@ describe('Segment Service Testing', () => {
 
   it('should return single segments with status', async () => {
     const res = {
-      id: seg1.id,
-      context: 'add',
-      status: 'Used',
-      subSegments: seg1.subSegments,
-      groupForSegment: seg1.groupForSegment,
-      individualForSegment: seg1.individualForSegment,
+      segment: {
+        id: seg1.id,
+        context: 'add',
+        status: 'Used',
+        subSegments: seg1.subSegments,
+        groupForSegment: seg1.groupForSegment,
+        individualForSegment: seg1.individualForSegment,
+      },
+      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
     };
     const segment = await service.getSingleSegmentWithStatus(seg1.id, logger);
     expect(segment).toEqual(res);

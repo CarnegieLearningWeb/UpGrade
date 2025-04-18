@@ -138,8 +138,14 @@ export class SegmentsEffects {
       filter((segmentId) => !!segmentId),
       switchMap((segmentId) =>
         this.segmentsDataService.getSegmentById(segmentId).pipe(
-          map((data: Segment) => {
-            return SegmentsActions.actionGetSegmentByIdSuccess({ segment: data });
+          map((data: any) => {
+            return SegmentsActions.actionGetSegmentByIdSuccess({
+              segment: data.segment,
+              experimentSegmentInclusion: data.experimentSegmentInclusionData,
+              experimentSegmentExclusion: data.experimentSegmentExclusionData,
+              featureFlagSegmentInclusion: data.featureFlagSegmentInclusionData,
+              featureFlagSegmentExclusion: data.featureFlagSegmentExclusionData,
+            });
           }),
           catchError(() => [SegmentsActions.actionGetSegmentByIdFailure()])
         )

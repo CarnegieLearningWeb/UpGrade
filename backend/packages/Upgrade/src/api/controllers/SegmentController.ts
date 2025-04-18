@@ -19,14 +19,21 @@ import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ValidatedImportResponse } from 'upgrade_types';
-
-export interface getSegmentData {
-  segmentsData: SegmentWithStatus[];
+interface inclusionExclusionData {
   experimentSegmentInclusionData: Partial<ExperimentSegmentInclusion>[];
   experimentSegmentExclusionData: Partial<ExperimentSegmentExclusion>[];
+  featureFlagSegmentInclusionData: Partial<ExperimentSegmentInclusion>[];
+  featureFlagSegmentExclusionData: Partial<ExperimentSegmentExclusion>[];
+}
+
+export interface getSegmentsData extends inclusionExclusionData {
+  segmentsData: Segment[];
+}
+export interface getSegmentData extends inclusionExclusionData {
+  segment: Segment;
 }
 interface SegmentPaginationInfo extends PaginationResponse {
-  nodes: getSegmentData;
+  nodes: getSegmentsData;
 }
 /**
  * @swagger
@@ -237,7 +244,7 @@ export class SegmentController {
    *            description: Authorization Required Error
    */
   @Get()
-  public async getAllSegments(@Req() request: AppRequest): Promise<getSegmentData> {
+  public async getAllSegments(@Req() request: AppRequest): Promise<getSegmentsData> {
     return this.segmentService.getAllSegmentWithStatus(request.logger);
   }
 
@@ -431,7 +438,7 @@ export class SegmentController {
   public async getSegmentWithStatusById(
     @Params({ validate: true }) { segmentId }: IdValidator,
     @Req() request: AppRequest
-  ): Promise<Segment> {
+  ): Promise<getSegmentData> {
     const segment = await this.segmentService.getSingleSegmentWithStatus(segmentId, request.logger);
     if (!segment) {
       throw new NotFoundException('Segment not found.');
