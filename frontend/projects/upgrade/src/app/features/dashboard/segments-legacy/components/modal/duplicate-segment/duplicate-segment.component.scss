@@ -1,0 +1,37 @@
+.duplicate-segment-dialog {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+
+  .name {
+    width: 100%;
+    line-height: 18px;
+
+    &-input {
+      line-height: 18px;
+    }
+  }
+
+  .description {
+    width: 100%;
+    line-height: 18px;
+
+    &-input {
+      line-height: 18px;
+    }
+  }
+
+  .validation-message {
+    margin-top: 8px;
+  }
+
+  &-actions {
+    justify-content: flex-end;
+    margin: 0;
+
+    .duplicate-btn {
+      background-color: var(--blue) !important;
+      width: 120px;
+    }
+  }
+}

@@ -1,0 +1,59 @@
+<div class="table-container">
+  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+  <table
+    class="used-by-table"
+    mat-table
+    [dataSource]="dataSource$ | async"
+    [ngClass]="{ 'no-data': !(dataSource$ | async)?.length }"
+  >
+    <!-- Name Column -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef class="name-column ft-14-600">
+        {{ USED_BY_TRANSLATION_KEYS.NAME | translate }}
+      </th>
+      <td mat-cell *matCellDef="let item" class="name-column ft-14-400">
+        <a [routerLink]="item.link" class="item-name">{{ item.name }}</a>
+      </td>
+    </ng-container>
+
+    <!-- Type Column -->
+    <ng-container matColumnDef="type">
+      <th mat-header-cell *matHeaderCellDef class="type-column ft-14-600">
+        {{ USED_BY_TRANSLATION_KEYS.TYPE | translate }}
+      </th>
+      <td mat-cell *matCellDef="let item" class="type-column ft-14-400">
+        {{ item.type }}
+      </td>
+    </ng-container>
+
+    <!-- Status Column -->
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef class="status-column ft-14-600">
+        {{ USED_BY_TRANSLATION_KEYS.STATUS | translate }}
+      </th>
+      <td mat-cell *matCellDef="let item" class="status-column ft-14-400">
+        <app-common-status-indicator-chip [chipClass]="item.status.toLowerCase()"></app-common-status-indicator-chip>
+      </td>
+    </ng-container>
+
+    <!-- Updated At Column -->
+    <ng-container matColumnDef="updatedAt">
+      <th mat-header-cell *matHeaderCellDef class="updated-at-column ft-14-600">
+        {{ USED_BY_TRANSLATION_KEYS.UPDATED_AT | translate }}
+      </th>
+      <td mat-cell *matCellDef="let item" class="updated-at-column ft-14-400">
+        {{ item.updatedAt | date : 'MMM d, y h:mm a' }}
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+    <!-- No Data Row -->
+    <tr *matNoDataRow>
+      <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
+        {{ noDataRowText | translate }}
+      </td>
+    </tr>
+  </table>
+</div>

@@ -1,0 +1,33 @@
+<div mat-dialog-content class="duplicate-segment-dialog">
+  <p class="ft-14-600">
+    {{ 'segments.duplicate-segment.heading.text' | translate : { segmentName: data.segment.name } }}
+  </p>
+  <mat-form-field class="dense-2 name" appearance="outline" subscriptSizing="dynamic">
+    <mat-label class="ft-14-400">
+      {{ 'segments.duplicate-segment.segmentName-input-placeholder.text' | translate }}
+    </mat-label>
+    <input class="ft-14-400 name-input" matInput [(ngModel)]="segmentName" required />
+  </mat-form-field>
+  <br />
+  <mat-form-field class="dense-2 description" appearance="outline" subscriptSizing="dynamic">
+    <mat-label class="ft-14-400">
+      {{ 'segments.duplicate-segment.segmentDescription-input-placeholder.text' | translate }}
+    </mat-label>
+    <input class="ft-14-400 name-input" matInput [(ngModel)]="segmentDescription" [value]="segmentDescription" />
+  </mat-form-field>
+  <span class="ft-14-400 validation-message" *ngIf="!isSegmentNameValid">
+    {{ 'segments.new-segment-overview-stepper.segment-name-error.text' | translate }}
+  </span>
+</div>
+<div mat-dialog-actions class="duplicate-segment-dialog-actions">
+  <button class="shared-modal--modal-btn" mat-flat-button (click)="onCancelClick()">
+    {{ 'global.cancel.text' | translate }}
+  </button>
+  <button
+    class="shared-modal--modal-btn default-button duplicate-btn"
+    mat-flat-button
+    (click)="onDuplicateClick(segmentName, segmentDescription)"
+  >
+    {{ 'segments.duplicate-segment-duplicate.text' | translate | uppercase }}
+  </button>
+</div>

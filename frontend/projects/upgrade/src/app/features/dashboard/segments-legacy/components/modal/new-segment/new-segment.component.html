@@ -1,0 +1,27 @@
+<mat-horizontal-stepper labelPosition="bottom" class="segment-stepper" #stepper>
+  <ng-template matStepperIcon="edit">
+    <mat-icon>{{ 'segments.new-segment-done.text' | translate }}</mat-icon>
+  </ng-template>
+  <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label ft-18-400">
+        {{ 'segments.new-segment-overview-stepper.text' | translate }}
+      </span>
+    </ng-template>
+    <segment-overview [segmentInfo]="segmentInfo" (emitSegmentDialogEvent)="getSegmentData($event)"></segment-overview>
+  </mat-step>
+
+  <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label ft-18-400">
+        {{ 'segments.new-segment-members-stepper.text' | translate }}
+      </span>
+    </ng-template>
+    <segment-members
+      [segmentInfo]="segmentInfo"
+      [currentContext]="currentContext"
+      [isContextChanged]="isContextChanged"
+      (emitSegmentDialogEvent)="getSegmentData($event)"
+    ></segment-members>
+  </mat-step>
+</mat-horizontal-stepper>

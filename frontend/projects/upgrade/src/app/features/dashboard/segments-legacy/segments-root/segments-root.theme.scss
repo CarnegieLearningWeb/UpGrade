@@ -1,0 +1,12 @@
+@use '@angular/material' as mat;
+
+@mixin segments-root-component-theme($theme) {
+  $background: map-get($theme, background);
+
+  .segments-container {
+    .segments-table,
+    .no-segments-container {
+      box-shadow: 0 0 8px 0 mat.m2-get-color-from-palette($background, shadow-color);
+    }
+  }
+}
