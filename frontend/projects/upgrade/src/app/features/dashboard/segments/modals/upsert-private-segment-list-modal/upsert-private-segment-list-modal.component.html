@@ -33,7 +33,7 @@
       <mat-error class="ft-12-400">
         {{ 'feature-flags.upsert-list-modal.segment.error.message.text' | translate }}
       </mat-error>
-      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayAsSegmentName" requireSelection="true">
+      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayAsSegmentName">
         <mat-option *ngFor="let segment of segmentsOptions$ | async" [value]="segment" class="ft-14-400">
           {{ segment.name }}
         </mat-option>

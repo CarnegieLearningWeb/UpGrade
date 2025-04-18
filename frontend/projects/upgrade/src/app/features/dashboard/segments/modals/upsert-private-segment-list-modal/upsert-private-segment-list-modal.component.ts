@@ -5,7 +5,7 @@ import {
 } from '../../../../../shared-standalone-component-lib/components';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
@@ -118,6 +118,22 @@ export class UpsertPrivateSegmentListModalComponent {
 
   get valuesFormControl() {
     return this.privateSegmentListForm?.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.VALUES);
+  }
+
+  private segmentObjectValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+
+      if (!value) {
+        return null;
+      }
+
+      if (typeof value === 'string' || !value.id) {
+        return { invalidSegmentSelection: true };
+      }
+
+      return null;
+    };
   }
 
   // Function to sort the values
@@ -278,7 +294,11 @@ export class UpsertPrivateSegmentListModalComponent {
     ]);
 
     if (listType === this.LIST_TYPES.SEGMENT) {
-      CommonFormHelpersService.setFieldValidators(this.privateSegmentListForm, segmentField, [Validators.required]);
+      // Apply both required and custom segment object validator
+      CommonFormHelpersService.setFieldValidators(this.privateSegmentListForm, segmentField, [
+        Validators.required,
+        this.segmentObjectValidator(),
+      ]);
     } else {
       CommonFormHelpersService.setFieldValidators(this.privateSegmentListForm, valuesField, [Validators.required]);
       CommonFormHelpersService.setFieldValidators(this.privateSegmentListForm, nameField, [Validators.required]);
