@@ -1,6 +1,6 @@
 ARG IMAGE_REPO
 
-FROM ${IMAGE_REPO}node:22.14 AS build
+FROM ${IMAGE_REPO}node:22.14-alpine3.21 AS build
 WORKDIR /usr/src/app
 COPY . .
 RUN ls
@@ -18,7 +18,7 @@ WORKDIR /usr/src/app/backend/
 RUN npm ci --no-audit
 RUN ["npm", "run", "build:upgrade"]
 
-FROM ${IMAGE_REPO}node:22.14
+FROM ${IMAGE_REPO}node:22.14-alpine3.21
 
 ENV NEW_RELIC_NO_CONFIG_FILE=true
 ENV NR_NATIVE_METRICS_NO_BUILD=true
