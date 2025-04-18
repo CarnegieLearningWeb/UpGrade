@@ -9,6 +9,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './import-stratifications.component.html',
   styleUrls: ['./import-stratifications.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ImportStratificationsComponent {
   file: File;

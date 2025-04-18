@@ -9,6 +9,7 @@ import { UsersService } from '../../../../../../core/users/users.service';
   templateUrl: './new-user.component.html',
   styleUrls: ['./new-user.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class NewUserComponent implements OnInit {
   newUserForm: UntypedFormGroup;

@@ -16,7 +16,7 @@ import {
   FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
   FeatureFlag,
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
-import { Observable, Subscription } from 'rxjs';
+import { combineLatest, map, Observable, Subscription } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CommonSimpleConfirmationModalComponent } from '../../../../../../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 import { Router } from '@angular/router';
@@ -24,7 +24,6 @@ import { UserPermission } from '../../../../../../../core/auth/store/auth.models
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 @Component({
   selector: 'app-feature-flag-overview-details-section-card',
-  standalone: true,
   imports: [
     CommonModule,
     CommonSectionCardComponent,
@@ -39,16 +38,21 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, OnDestroy {
-  permissions$: Observable<UserPermission>;
-  isSectionCardExpanded = true;
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
-  emailId = '';
+  permissions$: Observable<UserPermission> = this.authService.userPermissions$;
   featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
+  flagAndPermissions$: Observable<{ flag: FeatureFlag; permissions: UserPermission }> = combineLatest([
+    this.featureFlag$,
+    this.permissions$,
+  ]).pipe(map(([flag, permissions]) => ({ flag, permissions })));
+
+  subscriptions = new Subscription();
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
   shouldShowWarning$ = this.featureFlagService.shouldShowWarningForSelectedFlag$;
-  subscriptions = new Subscription();
   confirmStatusChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
-  menuButtonItems: IMenuButtonItem[];
+  menuButtonItems$: Observable<IMenuButtonItem[]>;
+  isSectionCardExpanded = true;
+  emailId = '';
 
   constructor(
     private dialogService: DialogService,
@@ -58,13 +62,41 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   ) {}
 
   ngOnInit(): void {
-    this.permissions$ = this.authService.userPermissions$;
     this.subscriptions.add(this.featureFlagService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
 
-    this.subscriptions.add(
-      this.permissions$.subscribe((permissions) => {
-        this.updateMenuItems(permissions);
-      })
+    this.menuButtonItems$ = this.flagAndPermissions$.pipe(
+      map(({ flag, permissions }) => [
+        {
+          label: 'feature-flags.details.menu-button.edit-flag.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT,
+          disabled: !permissions?.featureFlags.update,
+        },
+        {
+          label: 'feature-flags.details.menu-button.duplicate-flag.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE,
+          disabled: !permissions?.featureFlags.create,
+        },
+        {
+          label: 'feature-flags.details.menu-button.export-flag-design.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
+          disabled: false,
+        },
+        {
+          label: 'feature-flags.details.menu-button.email-data.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
+          disabled: true,
+        },
+        {
+          label: 'feature-flags.details.menu-button.archive.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.ARCHIVE,
+          disabled: true,
+        },
+        {
+          label: 'feature-flags.details.menu-button.delete-flag.text',
+          action: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE,
+          disabled: !permissions?.featureFlags.delete || flag?.status === 'enabled',
+        },
+      ])
     );
   }
 
@@ -74,17 +106,6 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
 
   get FILTER_MODE() {
     return FILTER_MODE;
-  }
-
-  private updateMenuItems(permissions: UserPermission): void {
-    this.menuButtonItems = [
-      { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT, disabled: !permissions?.featureFlags.update },
-      { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DUPLICATE, disabled: !permissions?.featureFlags.create },
-      { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN, disabled: false },
-      { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA, disabled: true },
-      { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.ARCHIVE, disabled: true },
-      { name: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE, disabled: !permissions?.featureFlags.delete },
-    ];
   }
 
   onSlideToggleChange(event: MatSlideToggleChange, flag: FeatureFlag) {
@@ -156,7 +177,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   openConfirmExportDesignModal(id: string) {
     const confirmMessage = 'feature-flags.export-feature-flag-design.confirmation-text.text';
     this.dialogService
-      .openExportFeatureFlagDesignModal(confirmMessage)
+      .openExportDesignModal(FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN, confirmMessage)
       .afterClosed()
       .subscribe((isExportClicked: boolean) => {
         if (isExportClicked) {

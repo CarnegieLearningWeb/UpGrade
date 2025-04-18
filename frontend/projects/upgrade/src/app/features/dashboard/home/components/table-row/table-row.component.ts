@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './table-row.component.html',
   styleUrls: ['./table-row.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TableRowComponent implements OnDestroy {
   @Input() dataSource: any;

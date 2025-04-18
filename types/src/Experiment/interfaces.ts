@@ -12,6 +12,8 @@ import {
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
   FEATURE_FLAG_LIST_FILTER_MODE,
+  IMPORT_COMPATIBILITY_TYPE,
+  SERVER_ERROR,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -273,7 +275,8 @@ export interface CaliperEnvelope {
 }
 
 export interface IMenuButtonItem {
-  name: string;
+  action: string;
+  label: string; // transalation key
   disabled: boolean;
 }
 
@@ -285,4 +288,18 @@ export interface IFeatureFlagFile {
 export interface IImportError {
   fileName: string;
   error: string | null;
+}
+
+export interface ValidatedImportResponse {
+  fileName: string;
+  compatibilityType: IMPORT_COMPATIBILITY_TYPE;
+  error?: string;
+}
+
+export interface DuplicateSegmentNameError {
+  type: SERVER_ERROR.SEGMENT_DUPLICATE_NAME;
+  message: string;
+  duplicateName: string;
+  context: string;
+  httpCode: 400;
 }

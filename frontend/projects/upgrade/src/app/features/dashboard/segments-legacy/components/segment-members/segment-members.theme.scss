@@ -1,0 +1,13 @@
+@use '@angular/material' as mat;
+
+@mixin segment-members-component-theme($theme) {
+  $foreground: map-get($theme, foreground);
+
+  .segment-member {
+    .member-table {
+      .remove-icon {
+        color: mat.m2-get-color-from-palette($foreground, icon);
+      }
+    }
+  }
+}

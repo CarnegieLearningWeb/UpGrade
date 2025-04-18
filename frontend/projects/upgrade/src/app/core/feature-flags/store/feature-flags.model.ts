@@ -23,7 +23,7 @@ export interface CoreFeatureFlagDetails {
   key: string;
   description?: string;
   context: string[];
-  tags: string[];
+  tags?: string[];
   status: FEATURE_FLAG_STATUS;
   filterMode: FILTER_MODE;
 }
@@ -50,12 +50,22 @@ export interface FeatureFlagSegmentListDetails {
   featureFlag: FeatureFlag;
   enabled: boolean;
   listType: MemberTypes | string;
+  parentSegmentId?: string;
 }
 
 export enum UPSERT_FEATURE_FLAG_ACTION {
   ADD = 'add',
   EDIT = 'edit',
   DUPLICATE = 'duplicate',
+}
+
+export enum FEATURE_FLAG_BUTTON_ACTION {
+  IMPORT = 'import feature flag',
+  EXPORT_ALL = 'export all feature flags',
+  IMPORT_INCLUDE_LIST = 'import include list',
+  IMPORT_EXCLUDE_LIST = 'import exclude list',
+  EXPORT_ALL_INCLUDE_LISTS = 'export all include lists',
+  EXPORT_ALL_EXCLUDE_LISTS = 'export all exclude lists',
 }
 
 export interface UpsertFeatureFlagParams {
@@ -157,11 +167,6 @@ export enum FEATURE_FLAG_DETAILS_PAGE_ACTIONS {
   DELETE = 'Delete Feature Flag',
   EXPORT_DESIGN = 'Export Feature Flag Design',
   EMAIL_DATA = 'Email Feature Flag Data',
-}
-
-export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
-  INCLUDE = 'featureFlagSegmentInclusion',
-  EXCLUDE = 'featureFlagSegmentExclusion',
 }
 
 export const FLAG_ROOT_COLUMN_NAMES = {

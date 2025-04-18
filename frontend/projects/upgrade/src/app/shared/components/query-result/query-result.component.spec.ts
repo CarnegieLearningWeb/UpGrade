@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { QueryResultComponent } from './query-result.component';
 import { TestingModule } from '../../../../testing/testing.module';
@@ -13,7 +13,7 @@ xdescribe('QueryResultComponent', () => {
   const modalData = {
     query: TestMockData.getQuery()[0],
   };
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [TestingModule],

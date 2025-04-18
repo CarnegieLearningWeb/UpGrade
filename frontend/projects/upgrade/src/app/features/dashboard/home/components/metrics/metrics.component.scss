@@ -1,7 +1,11 @@
 .metric-design {
-  .metric-table {
+  height: 515px;
+  overflow-y: auto;
+
+  .metric-table,
+  .reward-metric-table {
     margin-top: 5px;
-    max-height: 400px;
+    max-height: 207px;
     overflow: auto;
 
     mat-header-row {
@@ -55,27 +59,36 @@
       }
     }
 
+    .tertiary-form {
+      padding-top: 7px;
+    }
+
     .cdk-column-removeMetric {
       flex: 0 0 60px;
       width: 60px;
     }
 
-    .cdk-column-keys {
+    .cdk-column-keys,
+    .cdk-column-metricsKey {
       flex: 0 0 250px;
       width: 250px;
     }
 
-    .cdk-column-operationType {
+    .cdk-column-operationType,
+    .cdk-column-metricsOperation {
       margin-left: 30px;
       flex: 0 0 160px;
       width: 160px;
     }
 
-    .cdk-column-queryName {
+    .cdk-column-queryName,
+    .cdk-column-metricsName {
       width: 100%;
       max-width: 350px;
+
+      &.mat-mdc-header-cell,
       &.mat-mdc-cell {
-        padding-top: 7px;
+        padding-left: 0;
       }
     }
 
@@ -117,5 +130,32 @@
   .title {
     font-size: 18px;
     font-weight: bold;
+  }
+
+  .validation-messages-container {
+    padding-top: 8px;
+    height: 64px;
+  }
+
+  .reward-metric-container {
+    padding-top: 32px;
+
+    .reward-metric-table {
+      mat-cell {
+        align-items: center;
+      }
+
+      .cdk-column-queryName {
+        &.mat-mdc-cell {
+          padding-top: 0;
+        }
+      }
+    }
+
+    .form-hint {
+      text-indent: 24px;
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
   }
 }

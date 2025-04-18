@@ -35,29 +35,7 @@ https://github.com/CarnegieLearningWeb/UpGrade/assets/33730817/86d72930-9fab-494
 
 Find detailed documentation for UpGrade at [UpGrade Documentation](https://upgrade-platform.gitbook.io/docs/).
 
-## Quick Start (Using Docker)
-
-#### Get `Upgrade` running with a single command:
-
-The included [docker-compose.yml](https://github.com/CarnegieLearningWeb/UpGrade/blob/upgrade-docker-without-nix/docker-compose.yml) file contains the Upgrade App and a Postgres instance (for storing experiment results and context metadata):
-
-Clone the github repository and run the docker containers for DB and Upgrade App:
-
-```markdown
-git clone https://github.com/CarnegieLearningWeb/UpGrade.git
-cd Upgrade
-docker-compose -f singleContainerApp-docker-compose.yml up -d
-```
-
-Then visit http://localhost:4200 and login using google id to view the Upgrade App.
-
-<b>Dashboard</b>:
-
-[![Upgrade Screenshot](assets/upgradeapp-dashboard.png)](https://www.upgradeplatform.org)
-
-<b>Feature Flagging</b>:
-
-[![Upgrade Screenshot 2](assets/feature-flag.png)](https://www.upgradeplatform.org)
+A 'quick start' guide can be found here: [Quick Start with Docker](https://upgrade-platform.gitbook.io/docs/developer-guide/usage-guide)
 
 ## How to Contribute
 
@@ -88,3 +66,6 @@ For an overview of the UpGrade platform, please visit [UpGrade Platform](https:/
 
 ![Built with Science](http://ForTheBadge.com/images/badges/built-with-science.svg)
 
+## Jenkins Documentation
+
+- [Upgrade Frontend and Backend Documentation](https://carnegielearning.atlassian.net/wiki/spaces/RP/pages/3937402881/Jenkins)

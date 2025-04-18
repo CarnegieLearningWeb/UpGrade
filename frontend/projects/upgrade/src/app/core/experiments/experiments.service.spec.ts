@@ -36,7 +36,14 @@ import {
 } from './store/experiments.actions';
 import { Environment } from '../../../environments/environment-types';
 import { environment } from '../../../environments/environment';
-import { ASSIGNMENT_ALGORITHM, CONDITION_ORDER, EXPERIMENT_TYPE, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import {
+  ASSIGNMENT_ALGORITHM,
+  CONDITION_ORDER,
+  EXPERIMENT_TYPE,
+  FILTER_MODE,
+  SEGMENT_STATUS,
+  SEGMENT_TYPE,
+} from 'upgrade_types';
 import { SegmentNew } from './store/experiments.model';
 import { Segment } from '../segments/store/segments.model';
 
@@ -67,11 +74,12 @@ describe('ExperimentService', () => {
     updatedAt: '04/23/17 04:34:22 +0000',
     versionNumber: 1,
     context: 'segment-context',
+    tags: [],
     individualForSegment: [],
     groupForSegment: [],
     subSegments: [],
     type: SEGMENT_TYPE.PUBLIC,
-    status: 'segment-status',
+    status: SEGMENT_STATUS.UNUSED,
   };
 
   const dummyInclusionData: SegmentNew = {
@@ -110,7 +118,6 @@ describe('ExperimentService', () => {
     revertTo: 'test',
     tags: [],
     group: 'test',
-    logging: true,
     conditions: [],
     partitions: [],
     factors: [],
@@ -581,7 +588,12 @@ describe('ExperimentService', () => {
 
       service.exportExperimentDesign([experimentId]);
 
-      expect(mockStore.dispatch).toHaveBeenCalledWith(actionExportExperimentDesign({ experimentIds: [experimentId] }));
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        actionExportExperimentDesign({
+          experimentIds: [experimentId],
+          exportAll: false,
+        })
+      );
     });
   });
 

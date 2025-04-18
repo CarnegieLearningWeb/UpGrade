@@ -17,12 +17,11 @@ import { ExperimentAssignmentService } from '../../../src/api/services/Experimen
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
-import { ScheduledJobService } from '../../../src/api/services/ScheduledJobService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { SettingService } from '../../../src/api/services/SettingService';
-import { SERVER_ERROR } from 'upgrade_types';
 import {
   simpleIndividualAssignmentExperiment,
+  simpleIndividualAssignmentExperiment2,
   simpleGroupAssignmentExperiment,
   factorialGroupAssignmentExperiment,
   factorialIndividualAssignmentExperiment,
@@ -31,20 +30,30 @@ import {
   withinSubjectDPExperiment,
 } from '../mockdata';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
-import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { ENROLLMENT_CODE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
+import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
+import { factorialGroupExperiment, factorialIndividualExperiment } from '../mockdata/raw';
+import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsService';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
+import { FactorRepository } from '../../../src/api/repositories/FactorRepository';
 
 describe('Experiment Assignment Service Test', () => {
   let sandbox;
   let testedModule;
+  let loggerMock = sinon.createStubInstance(UpgradeLogger);
+  let decisionPointRepositoryMock = sinon.createStubInstance(DecisionPointRepository);
+  let individualExclusionRepositoryMock = sinon.createStubInstance(IndividualExclusionRepository);
+  let groupExclusionRepositoryMock = sinon.createStubInstance(GroupExclusionRepository);
+  let groupEnrollmentRepositoryMock = sinon.createStubInstance(GroupEnrollmentRepository);
+  let individualEnrollmentRepositoryMock = sinon.createStubInstance(IndividualEnrollmentRepository);
+  let previewUserServiceMock = sinon.createStubInstance(PreviewUserService);
+  let conditionPayloadRepositoryMock = sinon.createStubInstance(ConditionPayloadRepository);
+  let factorRepositoryMock = sinon.createStubInstance(FactorRepository);
   const experimentRepositoryMock = sinon.createStubInstance(ExperimentRepository);
-  const decisionPointRepositoryMock = sinon.createStubInstance(DecisionPointRepository);
-  const individualExclusionRepositoryMock = sinon.createStubInstance(IndividualExclusionRepository);
-  const groupExclusionRepositoryMock = sinon.createStubInstance(GroupExclusionRepository);
-  const groupEnrollmentRepositoryMock = sinon.createStubInstance(GroupEnrollmentRepository);
-  const individualEnrollmentRepositoryMock = sinon.createStubInstance(IndividualEnrollmentRepository);
   const monitoredDecisionPointLogRepositoryMock = sinon.createStubInstance(MonitoredDecisionPointLogRepository);
   const monitoredDecisionPointRepositoryMock = sinon.createStubInstance(MonitoredDecisionPointRepository);
   const errorRepositoryMock = sinon.createStubInstance(ErrorRepository);
@@ -52,17 +61,17 @@ describe('Experiment Assignment Service Test', () => {
   const metricRepositoryMock = sinon.createStubInstance(MetricRepository);
   const stateTimeLogsRepositoryMock = sinon.createStubInstance(StateTimeLogsRepository);
   const analyticsRepositoryMock = sinon.createStubInstance(AnalyticsRepository);
-  const userStratificationFactorRepository = sinon.createStubInstance(UserStratificationFactorRepository);
-  const previewUserServiceMock = sinon.createStubInstance(PreviewUserService);
+  const userStratificationFactorRepositoryMock = sinon.createStubInstance(UserStratificationFactorRepository);
   const experimentUserServiceMock = sinon.createStubInstance(ExperimentUserService);
-  const scheduledJobServiceMock = sinon.createStubInstance(ScheduledJobService);
   const errorServiceMock = sinon.createStubInstance(ErrorService);
   const settingServiceMock = sinon.createStubInstance(SettingService);
   const segmentServiceMock = sinon.createStubInstance(SegmentService);
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
   const cacheServiceMock = sinon.createStubInstance(CacheService);
-  experimentServiceMock.formatingConditionPayload.restore();
-  experimentServiceMock.formatingPayload.restore();
+  const moocletExperimentServiceMock = sinon.createStubInstance(MoocletExperimentService);
+  const moocletRewardsServiceMock = sinon.createStubInstance(MoocletRewardsService);
+  experimentServiceMock.formattingConditionPayload.restore();
+  experimentServiceMock.formattingPayload.restore();
 
   beforeAll(() => {
     configureLogger();
@@ -70,6 +79,25 @@ describe('Experiment Assignment Service Test', () => {
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+
+    loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
+    decisionPointRepositoryMock = { find: sandbox.stub().resolves([]) };
+    individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
+    groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
+    individualEnrollmentRepositoryMock = {
+      findEnrollments: sandbox.stub().resolves([]),
+      find: sandbox.stub().resolves([]),
+    };
+    groupEnrollmentRepositoryMock = {
+      findEnrollments: sandbox.stub().resolves([]),
+      delete: sandbox.stub().resolves(),
+    };
+    previewUserServiceMock = {
+      findOneFromCache: sandbox.stub().resolves(undefined),
+      findOne: sandbox.stub().resolves(undefined),
+    };
+    conditionPayloadRepositoryMock = { find: sandbox.stub().resolves([]) };
+    factorRepositoryMock = { find: sandbox.stub().resolves([]) };
 
     testedModule = new ExperimentAssignmentService(
       experimentRepositoryMock,
@@ -85,16 +113,18 @@ describe('Experiment Assignment Service Test', () => {
       metricRepositoryMock,
       stateTimeLogsRepositoryMock,
       analyticsRepositoryMock,
-      userStratificationFactorRepository,
+      userStratificationFactorRepositoryMock,
       previewUserServiceMock,
       experimentUserServiceMock,
-      scheduledJobServiceMock,
       errorServiceMock,
       settingServiceMock,
       segmentServiceMock,
       experimentServiceMock,
-      cacheServiceMock
+      cacheServiceMock,
+      moocletExperimentServiceMock,
+      moocletRewardsServiceMock
     );
+
     testedModule.cacheService.wrap.resolves([]);
     testedModule.segmentService.getSegmentByIds.withArgs(['77777777-7777-7777-7777-777777777777']).resolves([
       {
@@ -128,10 +158,20 @@ describe('Experiment Assignment Service Test', () => {
           context: 'add',
           type: 'private',
           individualForSegment: [],
-          groupForSegment: [],
+          groupForSegment: [{ groupId: 'teacher1', type: 'teacher' }],
           subSegments: [],
         },
       ]);
+    testedModule.segmentService.getGlobalExcludeSegmentByContext.resolves({
+      id: '77777777-7777-7777-7777-777777777777',
+      name: 'Global Exclude',
+      description: 'Globally excluded Users, Groups and Segments',
+      context: 'ALL',
+      type: 'global_exclude',
+      individualForSegment: [],
+      groupForSegment: [],
+      subSegments: [],
+    });
   });
 
   afterEach(() => {
@@ -142,45 +182,15 @@ describe('Experiment Assignment Service Test', () => {
     expect(testedModule).toBeDefined();
   });
 
-  it('should throw an error if user is not defined', async () => {
-    const loggerMock = { error: sandbox.stub(), info: sandbox.stub() };
-    //const requestContext = { logger: loggerMock, userDoc: null };
-    const userId = '12345';
-    const context = 'context';
-
-    const previewUserServiceMock = { findOne: sandbox.stub().resolves([]) };
-    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(null) };
-
-    testedModule.previewUserServiceMock = previewUserServiceMock;
-    testedModule.experimentUserService = experimentUserServiceMock;
-
-    const err = new Error(
-      JSON.stringify({
-        type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-        message: 'User not defined in getAllExperimentConditions',
-      })
-    );
-    (err as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-    (err as any).httpCode = 404;
-
-    expect(async () => {
-      await testedModule.getAllExperimentConditions({ requestedUserId: userId }, context, loggerMock);
-    }).rejects.toThrow(err);
-  });
-
-  it('should return an empty array if there are no experiments', async () => {
-    const loggerMock = { info: sandbox.stub() };
-    //const requestContext = { logger: loggerMock, userDoc: { id: 'user123', group: 'group', workingGroup: {} } };
+  it('should return an empty array if there are no experiments and check [getExperimentsForUser] function', async () => {
     const userDoc = { id: 'user123', group: 'group', workingGroup: {}, requestedUserId: '12345' };
-    const userId = '12345';
     const context = 'context';
     const experimentUserServiceMock = {
-      getOriginalUserDoc: sandbox
-        .stub()
-        .resolves({ id: 'user123', createdAt: new Date(), group: 'group', workingGroup: {} }),
+      getOriginalUserDoc: sandbox.stub().resolves({ id: userDoc.id, group: userDoc.group, workingGroup: {} }),
     };
 
-    testedModule.experimentService = experimentServiceMock;
+    testedModule.cacheService.wrap = sandbox.stub().resolves([]);
+    testedModule.experimentRepository.getValidExperimentsWithPreview = sandbox.stub().resolves([]);
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([]);
     testedModule.experimentUserService = experimentUserServiceMock;
     testedModule.segmentService.getSegmentByIds.resolves([
@@ -188,36 +198,27 @@ describe('Experiment Assignment Service Test', () => {
     ]);
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
-
     expect(result).toEqual([]);
-    sinon.assert.calledWith(loggerMock.info, { message: `getAllExperimentConditions: User: ${userId}` });
+    sinon.assert.calledWith(loggerMock.info, {
+      message: `getAllExperimentConditions: User: ${userDoc.requestedUserId}`,
+    });
+
+    const experimentResult = await testedModule.getExperimentsForUser(userDoc, context);
+    expect(experimentResult).toEqual([]);
   });
 
   it('should return the assigned condition for a simple individual experiment', async () => {
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
-    const userId = 'user123';
     const context = 'context';
-    // const requestContext = {
-    //   logger: loggerMock,
-    //   userDoc: { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} },
-    // };
-    const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
     const exp = simpleIndividualAssignmentExperiment;
+
     const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
-    const previewUserServiceMock = { findOne: sandbox.stub().resolves(undefined) };
-    const individualEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
-
-    testedModule.experimentService = experimentServiceMock;
+    testedModule.cacheService.wrap = sandbox.stub().resolves([exp]);
+    testedModule.experimentRepository.getValidExperimentsWithPreview = sandbox.stub().resolves([]);
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
-
     testedModule.experimentUserService = experimentUserServiceMock;
-    testedModule.previewUserServiceMock = previewUserServiceMock;
-    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
-    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
-
     const cond = { ...exp.conditions[0], experimentId: exp.id, payload: undefined };
     expect(result.length).toEqual(1);
     expect(result[0].site).toEqual(exp.partitions[0].site);
@@ -227,26 +228,13 @@ describe('Experiment Assignment Service Test', () => {
   });
 
   it('should return the assigned condition for a factorial individual experiment', async () => {
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
-    const userId = 'user123';
     const context = 'context';
-    // const requestContext = {
-    //   logger: loggerMock,
-    //   userDoc: { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} },
-    // };
-    const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
     const exp = factorialIndividualAssignmentExperiment;
-    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
-    const previewUserServiceMock = { findOne: sandbox.stub().resolves(undefined) };
-    const individualEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
 
-    testedModule.experimentService = experimentServiceMock;
+    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
     testedModule.experimentUserService = experimentUserServiceMock;
-    testedModule.previewUserServiceMock = previewUserServiceMock;
-    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
-    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
 
@@ -274,30 +262,18 @@ describe('Experiment Assignment Service Test', () => {
   });
 
   it('should return the assigned condition for a simple within-subject ordered round-robin experiment', async () => {
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
-    const userId = 'user123';
     const context = 'context';
-    // const requestContext = {
-    //   logger: loggerMock,
-    //   userDoc: { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} },
-    // };
-    const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
     const exp = simpleWithinSubjectOrderedRoundRobinExperiment;
+
     const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
-    const previewUserServiceMock = { findOne: sandbox.stub().resolves(undefined) };
-    const individualEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
     const monitoredDecisionPointLogRepositoryMock = {
       find: sandbox.stub().resolves(0),
       getAllMonitoredDecisionPointLog: sandbox.stub().resolves([]),
     };
 
-    testedModule.experimentService = experimentServiceMock;
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
     testedModule.experimentUserService = experimentUserServiceMock;
-    testedModule.previewUserServiceMock = previewUserServiceMock;
-    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
-    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
     testedModule.monitoredDecisionPointLogRepository = monitoredDecisionPointLogRepositoryMock;
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
@@ -323,34 +299,39 @@ describe('Experiment Assignment Service Test', () => {
   });
 
   it('should return the assigned condition for a simple group experiment', async () => {
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
-    const userId = 'user123';
     const context = 'context';
-    // const requestContext = {
-    //   logger: loggerMock,
-    //   userDoc: { id: userId, group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } },
-    // };
-    const userDoc = { id: userId, group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } };
+    const userDoc = { id: 'user123', group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } };
     const exp = simpleGroupAssignmentExperiment;
     const groupEnrollment = new GroupEnrollment();
     groupEnrollment.experiment = exp;
     groupEnrollment.condition = exp.conditions[0];
     groupEnrollment.groupId = 'add-group1';
-    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
-    const previewUserServiceMock = { findOne: sandbox.stub().resolves(undefined) };
-    const individualEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
-    const groupEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([groupEnrollment]) };
-    const groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
 
-    testedModule.experimentService = experimentServiceMock;
+    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+    groupEnrollmentRepositoryMock = {
+      findEnrollments: sandbox.stub().resolves([groupEnrollment]),
+      delete: sandbox.stub().resolves(),
+    };
+
+    testedModule.experimentService.getExperimentsForUser = sandbox.stub().resolves([exp]);
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentService.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+    testedModule.experimentService.filterAndProcessGroupExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentService.getInvalidGroupNotEnrolledExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentService.getAssignmentsAndExclusionsForUser = sandbox
+      .stub()
+      .resolves([
+        individualEnrollmentRepositoryMock,
+        groupEnrollmentRepositoryMock,
+        individualExclusionRepositoryMock,
+        groupExclusionRepositoryMock,
+      ]);
+    testedModule.experimentService.processExperimentPools = sandbox.stub().resolves([exp]);
+    testedModule.experimentService.mapDecisionPoints = sandbox.stub().resolves([decisionPointRepositoryMock]);
+    testedModule.experimentService.getPayloadAndFactorialObject = sandbox
+      .stub()
+      .resolves([{ payloadFound: conditionPayloadRepositoryMock, factorialObject: factorRepositoryMock }]);
     testedModule.experimentUserService = experimentUserServiceMock;
-    testedModule.previewUserServiceMock = previewUserServiceMock;
-    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
-    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
-    testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
-    testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
 
@@ -363,39 +344,9 @@ describe('Experiment Assignment Service Test', () => {
   });
 
   it('should return the assigned condition for a factorial group experiment', async () => {
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
-    const userId = 'user123';
     const context = 'context';
-    // const requestContext = {
-    //   logger: loggerMock,
-    //   userDoc: { id: userId, group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } },
-    // };
-    const userDoc = { id: userId, group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } };
+    const userDoc = { id: 'user123', group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } };
     const exp = factorialGroupAssignmentExperiment;
-    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
-    const previewUserServiceMock = { findOne: sandbox.stub().resolves(undefined) };
-    const individualEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
-    const groupEnrollment = new GroupEnrollment();
-    groupEnrollment.experiment = exp;
-    groupEnrollment.condition = exp.conditions[0];
-    groupEnrollment.groupId = 'add-group1';
-    groupEnrollment.partition = exp.partitions[0];
-    const groupEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([groupEnrollment]) };
-    const groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
-
-    testedModule.experimentService = experimentServiceMock;
-    testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
-
-    testedModule.experimentUserService = experimentUserServiceMock;
-    testedModule.previewUserServiceMock = previewUserServiceMock;
-    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
-    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
-    testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
-    testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
-
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
-
     const factor = {
       Color: {
         level: 'Red',
@@ -412,6 +363,39 @@ describe('Experiment Assignment Service Test', () => {
         },
       },
     };
+    const groupEnrollment = new GroupEnrollment();
+    groupEnrollment.experiment = exp;
+    groupEnrollment.condition = exp.conditions[0];
+    groupEnrollment.groupId = 'add-group1';
+    groupEnrollment.partition = exp.partitions[0];
+
+    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+    groupEnrollmentRepositoryMock = {
+      findEnrollments: sandbox.stub().resolves([groupEnrollment]),
+      delete: sandbox.stub().resolves(),
+    };
+
+    testedModule.experimentService.getExperimentsForUser = sandbox.stub().resolves([exp]);
+    testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentService.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+    testedModule.experimentService.filterAndProcessGroupExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentService.getInvalidGroupNotEnrolledExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentService.getAssignmentsAndExclusionsForUser = sandbox
+      .stub()
+      .resolves([
+        individualEnrollmentRepositoryMock,
+        groupEnrollmentRepositoryMock,
+        individualExclusionRepositoryMock,
+        groupExclusionRepositoryMock,
+      ]);
+    testedModule.experimentService.processExperimentPools = sandbox.stub().resolves([exp]);
+    testedModule.experimentService.mapDecisionPoints = sandbox.stub().resolves([decisionPointRepositoryMock]);
+    testedModule.experimentService.getPayloadAndFactorialObject = sandbox
+      .stub()
+      .resolves([{ payloadFound: conditionPayloadRepositoryMock, factorialObject: factorRepositoryMock }]);
+    testedModule.experimentUserService = experimentUserServiceMock;
+
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
     expect(result.length).toEqual(1);
     expect(result[0].site).toEqual(exp.partitions[0].site);
     expect(result[0].target).toEqual(exp.partitions[0].target);
@@ -419,29 +403,182 @@ describe('Experiment Assignment Service Test', () => {
     expect(result[0].assignedCondition[0]).toMatchObject({ conditionCode: 'Color=Red; Shape=Circle' });
   });
 
-  it('should throw an error when user is not defined', async () => {
-    const userId = 'testUser';
-    const site = 'testSite';
-    const clientError = 'Client error message';
-    const err = new Error('User not defined in markExperimentPoint');
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
+  it('[checkUserOrGroupIsGloballyExcluded] should return false for user and group exclusions', async () => {
+    const userDoc = { id: 'user3', group: { schoolId: ['school1'] }, workingGroup: {} };
 
-    try {
-      await testedModule.markExperimentPoint(
-        { requestedUserId: userId },
-        site,
-        undefined,
-        'testCondition',
-        loggerMock,
-        undefined,
-        undefined,
-        clientError
-      );
-      sinon.expect.fail('Expected an error to be thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as any).message).toEqual(err.message);
-    }
+    const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc);
+    expect(exclusionResult).toEqual([false, false]);
+  });
+
+  it('[checkUserOrGroupIsGloballyExcluded] should return true for user/group exclusions set', async () => {
+    const userDoc = { id: 'user5', group: { schoolId: ['school1'] }, workingGroup: {} };
+    // stub the global exclusion segment with user `user5` in individualForSegment and empty groupForSegment
+    testedModule.segmentService.getSegmentByIds.withArgs(['77777777-7777-7777-7777-777777777777']).resolves([
+      {
+        id: '77777777-7777-7777-7777-777777777777',
+        name: 'Global Exclude',
+        description: 'Globally excluded Users, Groups and Segments',
+        context: 'ALL',
+        type: 'global_exclude',
+        individualForSegment: [{ userId: 'user5' }],
+        groupForSegment: [],
+        subSegments: [],
+      },
+    ]);
+
+    const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc, 'ALL');
+    expect(exclusionResult).toEqual([true, false]);
+  });
+
+  it('[getAssignmentsAndExclusionsForUser] should return empty enrollment/exclusion user and group documents', async () => {
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: {},
+    };
+    const experimentIds = ['be3ae74f-370a-4015-93f3-7761d16f8b17'];
+
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
+      await testedModule.getAssignmentsAndExclusionsForUser(experimentUser, experimentIds);
+
+    expect(individualEnrollments).toEqual([]);
+    expect(groupEnrollments).toEqual([]);
+    expect(individualExclusions).toEqual([]);
+    expect(groupExclusions).toEqual([]);
+  });
+
+  it('[getAssignmentsAndExclusionsForUser] should return enrollment/exclusion user and group documents', async () => {
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: {},
+    };
+    const experimentIds = ['be3ae74f-370a-4015-93f3-7761d16f8b17'];
+    const individualEnrollmentDoc = [
+      {
+        id: 'be3ae74f-370a-4015-93f3-7761d16f8b13',
+        simpleIndividualAssignmentExperiment,
+        partition: simpleIndividualAssignmentExperiment.partitions,
+        experimentUser,
+        condition: 'ConditionA',
+        groupId: experimentUser?.workingGroup[simpleIndividualAssignmentExperiment.group],
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+      },
+    ];
+    // stub individual enrollment:
+    testedModule.individualEnrollmentRepository.findEnrollments = sandbox.stub().resolves([individualEnrollmentDoc]);
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
+      await testedModule.getAssignmentsAndExclusionsForUser(experimentUser, experimentIds);
+
+    expect(individualEnrollments).toEqual([individualEnrollmentDoc]);
+    expect(groupEnrollments).toEqual([]);
+    expect(individualExclusions).toEqual([]);
+    expect(groupExclusions).toEqual([]);
+  });
+
+  it('[filterAndProcessGroupExperiments] should return the experiment if it is not a group experiment', async () => {
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} }; // Invalid group
+    const exp = simpleIndividualAssignmentExperiment;
+    testedModule.getInvalidGroupNotEnrolledExperiments = sandbox.stub().resolves([]);
+
+    const expResult = await testedModule.filterAndProcessGroupExperiments([exp], userDoc);
+    expect(expResult).toEqual([exp]);
+
+    // getInvalidGroupNotEnrolledExperiments should not be called
+    sinon.assert.notCalled(testedModule.getInvalidGroupNotEnrolledExperiments);
+  });
+
+  it('[filterAndProcessGroupExperiments] should filter out invalid experiments', async () => {
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exp = factorialGroupExperiment;
+
+    testedModule.getInvalidGroupNotEnrolledExperiments = sandbox.stub().resolves([exp]);
+
+    const expResult = await testedModule.filterAndProcessGroupExperiments([exp], userDoc);
+    expect(expResult).toEqual([]);
+  });
+
+  it('[experimentLevelExclusionInclusion] should return an empty exclusion reason if no user or userGroup is globally excluded', async () => {
+    const userDoc = { id: 'user1', group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exp = simpleIndividualAssignmentExperiment;
+    // stub the exclusion segment with empty individualForSegment and groupForSegment
+    testedModule.segmentService.getSegmentByIds.resolves([
+      { id: 'd958bf52-7066-4594-ad8a-baf2e75324cf', subSegments: [], individualForSegment: [], groupForSegment: [] },
+    ]);
+    const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc);
+    expect(exclusionResult).toEqual([false, false]);
+
+    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
+    expect(exclusionReason).toEqual([]);
+    expect(includedExperiment).toEqual([exp]);
+  });
+
+  it('[experimentLevelExclusionInclusion] should return an exclusion reason if a user or userGroup is on exclusion list', async () => {
+    const userDoc = { id: 'user2', group: { teacher: ['teacher1'] }, workingGroup: {} };
+    const exp = simpleIndividualAssignmentExperiment;
+    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
+    expect(exclusionReason.length).toEqual(1);
+    expect(exclusionReason[0].matchedGroup).toEqual(true);
+    expect(exclusionReason[0].reason).toEqual('group');
+    expect(includedExperiment).toEqual([]);
+  });
+
+  it('[createExperimentPool] should return empty pool of experiments for no active experiments', async () => {
+    const expResult = await testedModule.createExperimentPool([]);
+    expect(expResult).toEqual([]);
+  });
+
+  it('[createExperimentPool] should return pool of experiments with same decision points', async () => {
+    const exp1 = simpleIndividualAssignmentExperiment;
+    const exp2 = simpleIndividualAssignmentExperiment2;
+
+    const expResult = await testedModule.createExperimentPool([exp1, exp2]);
+    expect(expResult).toEqual([[exp1, exp2]]);
+  });
+
+  it('[processExperimentPools] should return empty pool for no active experiment', async () => {
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+    const experimentIds = [];
+
+    testedModule.createExperimentPool = sandbox.stub().returns([[]]);
+
+    const [individualEnrollments, groupEnrollments, _, __] = await testedModule.getAssignmentsAndExclusionsForUser(
+      userDoc,
+      experimentIds
+    );
+
+    testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([]);
+    testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([]);
+
+    const expResult = await testedModule.processExperimentPools([], individualEnrollments, groupEnrollments, userDoc);
+    expect(expResult).toEqual([]);
+  });
+
+  it('[processExperimentPools] should return a selected seed random experiment from the pool of experiments', async () => {
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exp1 = simpleIndividualAssignmentExperiment;
+    const exp2 = simpleIndividualAssignmentExperiment2;
+    const experimentIds = [exp1.id, exp2.id];
+
+    testedModule.createExperimentPool = sandbox.stub().returns([[exp1, exp2]]);
+
+    const [individualEnrollments, groupEnrollments, _, __] = await testedModule.getAssignmentsAndExclusionsForUser(
+      userDoc,
+      experimentIds
+    );
+
+    testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([exp1, exp2]);
+    testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([exp1, exp2]);
+
+    const expResult = await testedModule.processExperimentPools(
+      [exp1, exp2],
+      individualEnrollments,
+      groupEnrollments,
+      userDoc
+    );
+    // based on the seed as userId: `user123`, exp2 is randomly selected from the pool of experiments:
+    expect(expResult).toEqual([exp2]);
+    expect(expResult.length).toEqual(1);
   });
 
   it('should log an error when clientError is provided', async () => {
@@ -450,12 +587,7 @@ describe('Experiment Assignment Service Test', () => {
     const target = undefined;
     const condition = 'testCondition';
     const clientError = 'clientError';
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
-    const decisionPointRepositoryMock = { find: sandbox.stub().resolves([]) };
-    const individualEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
-    const groupEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
+
     const monitoredDocument = {
       site: site,
       target: target,
@@ -472,12 +604,25 @@ describe('Experiment Assignment Service Test', () => {
     };
 
     testedModule.decisionPointRepository = decisionPointRepositoryMock;
-    testedModule.experimentService = experimentServiceMock;
+    testedModule.experimentService.getExperimentsForUser = sandbox.stub().resolves([]);
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([]);
-    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
-    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
-    testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
-    testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
+    testedModule.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+    testedModule.experimentService.filterAndProcessGroupExperiments = sandbox.stub().resolves([]);
+    testedModule.getInvalidGroupNotEnrolledExperiments = sandbox.stub().resolves([]);
+    testedModule.experimentService.getAssignmentsAndExclusionsForUser = sandbox
+      .stub()
+      .resolves([
+        individualEnrollmentRepositoryMock,
+        groupEnrollmentRepositoryMock,
+        individualExclusionRepositoryMock,
+        groupExclusionRepositoryMock,
+      ]);
+
+    testedModule.experimentService.processExperimentPools = sandbox.stub().resolves([]);
+    testedModule.experimentService.mapDecisionPoints = sandbox.stub().resolves([decisionPointRepositoryMock]);
+    testedModule.experimentService.getPayloadAndFactorialObject = sandbox
+      .stub()
+      .resolves([{ payloadFound: conditionPayloadRepositoryMock, factorialObject: factorRepositoryMock }]);
     testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
 
     const result = await testedModule.markExperimentPoint(
@@ -504,12 +649,6 @@ describe('Experiment Assignment Service Test', () => {
     const site = 'testSite';
     const target = 'testTarget';
     const condition = 'testCondition';
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
-    const decisionPointRepositoryMock = { find: sandbox.stub().resolves([]) };
-    const individualEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
-    const groupEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
     const monitoredDocument = {
       site: site,
       target: target,
@@ -525,14 +664,11 @@ describe('Experiment Assignment Service Test', () => {
       findOne: sandbox.stub().resolves(monitoredDocument),
     };
 
-    testedModule.decisionPointRepository = decisionPointRepositoryMock;
-    testedModule.experimentService = experimentServiceMock;
     testedModule.cacheService.wrap = sandbox.stub().resolves([]);
-    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
-    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
-    testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
-    testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
     testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
+    testedModule.experimentService.getPayloadAndFactorialObject = sandbox
+      .stub()
+      .resolves([{ payloadFound: conditionPayloadRepositoryMock, factorialObject: factorRepositoryMock }]);
 
     const result = await testedModule.markExperimentPoint(
       { id: userId },
@@ -540,8 +676,8 @@ describe('Experiment Assignment Service Test', () => {
       MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED,
       condition,
       loggerMock,
-      target,
       undefined,
+      target,
       undefined
     );
     expect(result).toMatchObject({
@@ -556,12 +692,7 @@ describe('Experiment Assignment Service Test', () => {
     const site = 'testSite';
     const target = 'testTarget';
     const condition = 'testCondition';
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
-    const decisionPointRepositoryMock = { find: sandbox.stub().resolves([simpleDPExperiment]) };
-    const individualEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
-    const groupEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
+    decisionPointRepositoryMock = { find: sandbox.stub().resolves([simpleDPExperiment]) };
     const monitoredDocument = {
       site: site,
       target: target,
@@ -576,16 +707,35 @@ describe('Experiment Assignment Service Test', () => {
       }),
       findOne: sandbox.stub().resolves(monitoredDocument),
     };
-
-    testedModule.decisionPointRepository = decisionPointRepositoryMock;
-    testedModule.experimentService = experimentServiceMock;
+    testedModule.experimentService.getExperimentsForUser = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
     testedModule.experimentService.getCachedValidExperiments = sandbox
       .stub()
       .resolves([simpleIndividualAssignmentExperiment]);
-    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
-    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
-    testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
-    testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
+    testedModule.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+    testedModule.experimentService.filterAndProcessGroupExperiments = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.getInvalidGroupNotEnrolledExperiments = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.experimentService.getAssignmentsAndExclusionsForUser = sandbox
+      .stub()
+      .resolves([
+        individualEnrollmentRepositoryMock,
+        groupEnrollmentRepositoryMock,
+        individualExclusionRepositoryMock,
+        groupExclusionRepositoryMock,
+      ]);
+    testedModule.experimentService.processExperimentPools = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.experimentService.mapDecisionPoints = sandbox.stub().resolves([decisionPointRepositoryMock]);
+    testedModule.experimentService.getPayloadAndFactorialObject = sandbox
+      .stub()
+      .resolves([{ payloadFound: conditionPayloadRepositoryMock, factorialObject: factorRepositoryMock }]);
+
     testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
 
     const result = await testedModule.markExperimentPoint(
@@ -594,8 +744,8 @@ describe('Experiment Assignment Service Test', () => {
       MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
       condition,
       loggerMock,
-      target,
       undefined,
+      target,
       undefined
     );
     expect(result).toMatchObject(monitoredDocument);
@@ -606,12 +756,7 @@ describe('Experiment Assignment Service Test', () => {
     const site = 'testSite';
     const target = 'testTarget';
     const condition = 'testCondition';
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
-    const decisionPointRepositoryMock = { find: sandbox.stub().resolves([simpleDPExperiment]) };
-    const individualEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
-    const groupEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
+    decisionPointRepositoryMock = { find: sandbox.stub().resolves([simpleDPExperiment]) };
     const monitoredDocument = {
       site: site,
       target: target,
@@ -627,15 +772,35 @@ describe('Experiment Assignment Service Test', () => {
       findOne: sandbox.stub().resolves(monitoredDocument),
     };
 
-    testedModule.decisionPointRepository = decisionPointRepositoryMock;
-    testedModule.experimentService = experimentServiceMock;
+    testedModule.experimentService.getExperimentsForUser = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
     testedModule.experimentService.getCachedValidExperiments = sandbox
       .stub()
       .resolves([simpleIndividualAssignmentExperiment]);
-    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
-    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
-    testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
-    testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
+    testedModule.experimentService.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+    testedModule.experimentService.filterAndProcessGroupExperiments = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.experimentService.getInvalidGroupNotEnrolledExperiments = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.experimentService.getAssignmentsAndExclusionsForUser = sandbox
+      .stub()
+      .resolves([
+        individualEnrollmentRepositoryMock,
+        groupEnrollmentRepositoryMock,
+        individualExclusionRepositoryMock,
+        groupExclusionRepositoryMock,
+      ]);
+    testedModule.experimentService.processExperimentPools = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.experimentService.mapDecisionPoints = sandbox.stub().resolves([decisionPointRepositoryMock]);
+    testedModule.experimentService.getPayloadAndFactorialObject = sandbox
+      .stub()
+      .resolves([{ payloadFound: conditionPayloadRepositoryMock, factorialObject: factorRepositoryMock }]);
+
     testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
 
     const result = await testedModule.markExperimentPoint(
@@ -644,8 +809,8 @@ describe('Experiment Assignment Service Test', () => {
       MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
       condition,
       loggerMock,
-      target,
       undefined,
+      target,
       undefined
     );
     expect(result).toMatchObject(monitoredDocument);
@@ -656,12 +821,7 @@ describe('Experiment Assignment Service Test', () => {
     const site = 'testSite';
     const target = 'testTarget';
     const condition = 'testCondition';
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
-    const decisionPointRepositoryMock = { find: sandbox.stub().resolves([withinSubjectDPExperiment]) };
-    const individualEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const individualExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
-    const groupEnrollmentRepositoryMock = { findEnrollments: sandbox.stub().resolves([]) };
-    const groupExclusionRepositoryMock = { findExcluded: sandbox.stub().resolves([]) };
+
     const monitoredDocument = {
       site: site,
       target: target,
@@ -677,15 +837,36 @@ describe('Experiment Assignment Service Test', () => {
       findOne: sandbox.stub().resolves(monitoredDocument),
     };
 
-    testedModule.decisionPointRepository = decisionPointRepositoryMock;
-    testedModule.experimentService = experimentServiceMock;
+    decisionPointRepositoryMock = { find: sandbox.stub().resolves([withinSubjectDPExperiment]) };
+    testedModule.experimentService.getExperimentsForUser = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
     testedModule.experimentService.getCachedValidExperiments = sandbox
       .stub()
       .resolves([simpleIndividualAssignmentExperiment]);
-    testedModule.individualEnrollmentRepository = individualEnrollmentRepositoryMock;
-    testedModule.individualExclusionRepository = individualExclusionRepositoryMock;
-    testedModule.groupEnrollmentRepository = groupEnrollmentRepositoryMock;
-    testedModule.groupExclusionRepository = groupExclusionRepositoryMock;
+    testedModule.experimentService.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+    testedModule.experimentService.filterAndProcessGroupExperiments = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.experimentService.getInvalidGroupNotEnrolledExperiments = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.experimentService.getAssignmentsAndExclusionsForUser = sandbox
+      .stub()
+      .resolves([
+        individualEnrollmentRepositoryMock,
+        groupEnrollmentRepositoryMock,
+        individualExclusionRepositoryMock,
+        groupExclusionRepositoryMock,
+      ]);
+    testedModule.experimentService.processExperimentPools = sandbox
+      .stub()
+      .resolves([simpleIndividualAssignmentExperiment]);
+    testedModule.experimentService.mapDecisionPoints = sandbox.stub().resolves([decisionPointRepositoryMock]);
+    testedModule.experimentService.getPayloadAndFactorialObject = sandbox
+      .stub()
+      .resolves([{ payloadFound: conditionPayloadRepositoryMock, factorialObject: factorRepositoryMock }]);
+
     testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
 
     const result = await testedModule.markExperimentPoint(
@@ -694,8 +875,8 @@ describe('Experiment Assignment Service Test', () => {
       MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
       condition,
       loggerMock,
-      target,
       undefined,
+      target,
       undefined
     );
     expect(result).toMatchObject(monitoredDocument);
@@ -704,7 +885,6 @@ describe('Experiment Assignment Service Test', () => {
   it('should handle fetched log data in any order', async () => {
     const userId = 'testUser';
 
-    const loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
     const logRepositoryMock = {
       getMetricUniquifierData: sandbox.stub().resolves([
         {
@@ -772,5 +952,215 @@ describe('Experiment Assignment Service Test', () => {
 
     const result = await testedModule.dataLog({ id: userId }, jsonLog, loggerMock);
     expect(result).toMatchObject(mergedLog);
+  });
+
+  it('[getCachedExperiments] should return empty experiment for particular site-target if no experiment is cached', async () => {
+    const site = 'CurriculumSequence';
+    const target = 'W1';
+
+    const result = await testedModule.getCachedExperiments(site, target);
+    expect(result[0]).toEqual([]);
+  });
+
+  it('[getCachedExperiments] should return cached experiment for particular site-target', async () => {
+    const site = 'CurriculumSequence';
+    const target = 'W1';
+    testedModule.cacheService.wrap = sandbox.stub().resolves([simpleIndividualAssignmentExperiment]);
+
+    const result = await testedModule.getCachedExperiments(site, target);
+    expect(result[0]).toEqual([simpleIndividualAssignmentExperiment]);
+  });
+
+  it('[saveGroupExclusionDoc] should not be called if [experimentLevelExclusionInclusion] call returns empty exclusions', async () => {
+    const userId = 'user123';
+    const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
+    const site = 'CurriculumSequence';
+    const target = 'W1';
+    const condition = 'conditionA';
+    const monitoredDocument = {
+      site: site,
+      target: target,
+      condition: condition,
+      user: {
+        id: userId,
+      },
+    };
+
+    const decisionPointRepositoryMock = { find: sandbox.stub().resolves([simpleIndividualAssignmentExperiment]) };
+    const monitoredDecisionPointRepositoryMock = {
+      saveRawJson: sandbox.stub().callsFake((args) => {
+        return args;
+      }),
+      findOne: sandbox.stub().resolves(monitoredDocument),
+    };
+
+    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion(
+      [simpleIndividualAssignmentExperiment],
+      userDoc
+    );
+    expect(exclusionReason).toEqual([]);
+    expect(includedExperiment).toEqual([simpleIndividualAssignmentExperiment]);
+    // we are asserting that saveGroupExclusionDoc is called once, so its stub is needed
+    testedModule.saveGroupExclusionDoc = sandbox.stub().resolves([]);
+
+    testedModule.decisionPointRepository = decisionPointRepositoryMock;
+    testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
+
+    const markResult = await testedModule.markExperimentPoint(
+      { id: userId },
+      site,
+      MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+      condition,
+      loggerMock,
+      undefined,
+      target,
+      undefined
+    );
+    expect(markResult).toMatchObject(monitoredDocument);
+    sinon.assert.notCalled(testedModule.saveGroupExclusionDoc);
+  });
+
+  it('[saveGroupExclusionDoc] should be called once to save documents on [markExperimentPoint] call for excluded group', async () => {
+    const userId = 'user2';
+    const site = 'CurriculumSequence';
+    const target = 'W1';
+    const condition = 'conditionA';
+    const monitoredDocument = {
+      site: site,
+      target: target,
+      condition: condition,
+      user: {
+        id: userId,
+      },
+    };
+    testedModule.experimentLevelExclusionInclusion = sandbox
+      .stub()
+      .resolves([[], [{ matchedGroup: false, reason: 'group' }]]);
+
+    const decisionPointRepositoryMock = { find: sandbox.stub().resolves([simpleIndividualAssignmentExperiment]) };
+    const monitoredDecisionPointRepositoryMock = {
+      saveRawJson: sandbox.stub().callsFake((args) => {
+        return args;
+      }),
+      findOne: sandbox.stub().resolves(monitoredDocument),
+    };
+    // we are asserting that saveGroupExclusionDoc is called once, so its stub is needed
+    testedModule.saveGroupExclusionDoc = sandbox.stub().resolves([]);
+
+    testedModule.decisionPointRepository = decisionPointRepositoryMock;
+    testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
+
+    const markResult = await testedModule.markExperimentPoint(
+      { id: userId },
+      site,
+      MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+      condition,
+      loggerMock,
+      undefined,
+      target,
+      undefined
+    );
+    expect(markResult).toMatchObject(monitoredDocument);
+    sinon.assert.calledOnce(testedModule.saveGroupExclusionDoc);
+  });
+
+  it('[updateEnrollmentExclusionDocumentsAndCheckEndingCriteria] should not be called if experiment state is not enrolling/enrolmentComplete', async () => {
+    const userId = 'user123';
+    const site = 'geometry';
+    const target = 'color_shape';
+    const condition = 'Shape=Circle; Color=Red';
+    factorialIndividualExperiment.state = 'inactive';
+
+    const modifiedPartitions = factorialIndividualExperiment.partitions.map((partition) => ({
+      ...partition,
+      experiment: factorialIndividualExperiment, // Adding experiment key
+    }));
+
+    testedModule.cacheService.wrap = sandbox.stub().resolves([factorialIndividualExperiment]);
+    testedModule.getCachedExperiments = sandbox.stub().resolves([modifiedPartitions, [factorialIndividualExperiment]]);
+
+    testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria = sandbox.stub().resolves([]);
+
+    const monitoredDocument = {
+      site: site,
+      target: target,
+      condition: condition,
+      user: {
+        id: userId,
+      },
+    };
+
+    previewUserServiceMock = { findOneFromCache: sandbox.stub().resolves([]), findOne: sandbox.stub().resolves([]) };
+    const monitoredDecisionPointRepositoryMock = {
+      saveRawJson: sandbox.stub().callsFake((args) => {
+        return args;
+      }),
+      findOne: sandbox.stub().resolves(monitoredDocument),
+    };
+
+    testedModule.experimentService = experimentServiceMock;
+    testedModule.previewUserService = previewUserServiceMock;
+    testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
+
+    const markResult = await testedModule.markExperimentPoint(
+      { id: userId },
+      site,
+      MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+      condition,
+      loggerMock,
+      factorialIndividualExperiment.id,
+      target,
+      undefined
+    );
+    expect(markResult).toMatchObject(monitoredDocument);
+    sinon.assert.notCalled(testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria);
+  });
+
+  it('[updateEnrollmentExclusionDocumentsAndCheckEndingCriteria] should be called once if experiment state is enrolling/enrolmentComplete', async () => {
+    const userId = 'user123';
+    const site = 'geometry';
+    const target = 'color_shape';
+    const condition = 'Shape=Circle; Color=Red';
+    factorialIndividualExperiment.state = 'enrolling';
+    const modifiedPartitions = factorialIndividualExperiment.partitions.map((partition) => ({
+      ...partition,
+      experiment: factorialIndividualExperiment, // Adding experiment key
+    }));
+
+    testedModule.cacheService.wrap = sandbox.stub().resolves([factorialIndividualExperiment]);
+    testedModule.getCachedExperiments = sandbox.stub().resolves([modifiedPartitions, [factorialIndividualExperiment]]);
+
+    testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria = sandbox.stub().resolves([]);
+
+    const monitoredDocument = {
+      site: site,
+      target: target,
+      condition: condition,
+      user: {
+        id: userId,
+      },
+    };
+    const monitoredDecisionPointRepositoryMock = {
+      saveRawJson: sandbox.stub().callsFake((args) => {
+        return args;
+      }),
+      findOne: sandbox.stub().resolves(monitoredDocument),
+    };
+
+    testedModule.experimentService = experimentServiceMock;
+    testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
+
+    const markResult = await testedModule.markExperimentPoint(
+      { id: userId },
+      site,
+      MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+      condition,
+      loggerMock,
+      factorialIndividualExperiment.id,
+      target,
+      undefined
+    );
+    expect(markResult).toMatchObject(monitoredDocument);
+    sinon.assert.calledOnce(testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria);
   });
 });

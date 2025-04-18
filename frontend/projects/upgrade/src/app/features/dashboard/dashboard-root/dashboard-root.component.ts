@@ -7,6 +7,7 @@ import { ENV, Environment } from '../../../../environments/environment-types';
   selector: 'app-dashboard-root',
   templateUrl: './dashboard-root.component.html',
   styleUrls: ['./dashboard-root.component.scss'],
+  standalone: false,
 })
 export class DashboardRootComponent implements OnInit {
   isLoggedIn$ = this.authService.isLoggedIn$;
@@ -17,6 +18,11 @@ export class DashboardRootComponent implements OnInit {
       path: ['/home'],
       text: 'global.experiment.title',
       iconType: 'assignment',
+    },
+    {
+      path: ['/featureflags'],
+      text: 'feature-flags.title.text',
+      iconType: 'toggle_on',
     },
     {
       path: ['/participants'],
@@ -35,15 +41,7 @@ export class DashboardRootComponent implements OnInit {
     },
   ];
 
-  constructor(
-    @Inject(ENV) private environment: Environment,
-    private authService: AuthService,
-    private versionService: VersionService
-  ) {
-    if (this.environment.featureFlagNavToggle) {
-      this.addFeatureFlagsLink();
-    }
-  }
+  constructor(private authService: AuthService, private versionService: VersionService) {}
 
   logout() {
     this.authService.setRedirectionUrl('/home');
@@ -52,13 +50,5 @@ export class DashboardRootComponent implements OnInit {
 
   async ngOnInit() {
     this.serverVersion = 'v' + (await this.versionService.getVersion());
-  }
-
-  addFeatureFlagsLink() {
-    this.routeLinks.splice(1, 0, {
-      path: ['/featureflags'],
-      text: 'feature-flags.title.text',
-      iconType: 'toggle_on',
-    });
   }
 }

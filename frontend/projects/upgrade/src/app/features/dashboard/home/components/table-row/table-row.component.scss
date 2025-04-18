@@ -2,7 +2,7 @@ div {
   width: 100%;
 
   .inner-table-container {
-    border: 1px solid #D3D3D3;
+    border: 1px solid #d3d3d3;
     border-radius: 5px;
     margin: 10px 5px 10px 23px;
   }
@@ -19,6 +19,12 @@ div {
 
     mat-header-cell {
       color: var(--grey-2);
+    }
+
+    .weight-column {
+      justify-content: flex-end !important;
+      max-width: 96px;
+      margin-right: 64px;
     }
 
     .mat-column-expandIcon {

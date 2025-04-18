@@ -7,12 +7,12 @@
     "declaration": false,
     "moduleResolution": "node",
     "strict": false,
+    "esModuleInterop": true,
     "alwaysStrict": false,
     "strictNullChecks": false,
     "experimentalDecorators": true,
-    "downlevelIteration": true,
+    "emitDecoratorMetadata": true,
     "importHelpers": true,
-    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "module": "es2020",
     "target": "ES2022",
@@ -25,7 +25,8 @@
     ],
     "paths": {
       "upgrade_types": [
-        "../../types"
+        "../../types",
+        "./types"
       ]
     },
     "useDefineForClassFields": false

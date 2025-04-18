@@ -22,7 +22,7 @@
           matTooltipPosition="above"
           class="flag-name"
         >
-          {{ flag.name | truncate: 24 }}
+          {{ flag.name | truncate : 24 }}
         </a>
         <br />
         <span
@@ -30,7 +30,7 @@
           matTooltipPosition="above"
           class="flag-description ft-10-400"
         >
-          {{ flag.description | truncate: 35 }}
+          {{ flag.description | truncate : 35 }}
         </span>
       </td>
     </ng-container>
@@ -54,7 +54,12 @@
         {{ FLAG_TRANSLATION_KEYS.UPDATED_AT | translate }}
       </th>
       <td mat-cell *matCellDef="let flag" class="updated-at-column ft-14-400">
-        {{ flag.updatedAt | date: 'MMM d, y h:mm a' }}
+        <ng-container *ngIf="flag.versionNumber === 1; else displayUpdatedAt">
+          {{ '-' }}
+        </ng-container>
+        <ng-template #displayUpdatedAt>
+          {{ flag.updatedAt | date : 'MMM d, y h:mm a' }}
+        </ng-template>
       </td>
     </ng-container>
 

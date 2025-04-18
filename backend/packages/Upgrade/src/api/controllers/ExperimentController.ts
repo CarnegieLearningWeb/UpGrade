@@ -3,7 +3,6 @@ import {
   Get,
   JsonController,
   OnUndefined,
-  Param,
   Post,
   Put,
   Delete,
@@ -11,24 +10,30 @@ import {
   CurrentUser,
   Req,
   QueryParams,
+  Params,
+  BadRequestError,
 } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
-import { SERVER_ERROR } from 'upgrade_types';
-import { isUUID } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPaginatedParamsValidator } from './validators/ExperimentPaginatedParamsValidator';
-import { User } from '../models/User';
+import { UserDTO } from '../DTO/UserDTO';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
+import { MoocletExperimentService } from '../services/MoocletExperimentService';
+import { env } from '../../env';
+import { NotFoundException } from '@nestjs/common/exceptions';
+import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
+import { SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
+import { ImportExportService } from '../services/ImportExportService';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
-  nodes: ExperimentDTO[];
+  nodes: Experiment[];
 }
 
 /**
@@ -86,7 +91,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - context
  *       - state
  *       - tags
- *       - logging
  *       - filterMode
  *       - consistencyRule
  *       - assignmentUnit
@@ -145,8 +149,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *            type: string
  *       group:
  *         type: string
- *       logging:
- *         type: boolean
  *       assignmentAlgorithm:
  *         type: string
  *         enum: [random, stratified random sampling]
@@ -332,8 +334,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       group:
  *         type: string
  *         minLength: 1
- *       logging:
- *         type: boolean
  *       conditions:
  *         type: array
  *         uniqueItems: true
@@ -558,7 +558,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - postExperimentRule
  *       - tags
  *       - group
- *       - logging
  *       - conditions
  *       - partitions
  *       - queries
@@ -576,7 +575,9 @@ interface ExperimentPaginationInfo extends PaginationResponse {
 export class ExperimentController {
   constructor(
     public experimentService: ExperimentService,
-    public experimentAssignmentService: ExperimentAssignmentService
+    public experimentAssignmentService: ExperimentAssignmentService,
+    public moocletExperimentService: MoocletExperimentService,
+    public importExportService: ImportExportService
   ) {}
 
   /**
@@ -740,14 +741,6 @@ export class ExperimentController {
     @Req()
     request: AppRequest
   ): Promise<ExperimentPaginationInfo> {
-    if (!paginatedParams) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null.' })
-        )
-      );
-    }
-
     const [experiments, count] = await Promise.all([
       this.experimentService.findPaginated(
         paginatedParams.skip,
@@ -827,6 +820,8 @@ export class ExperimentController {
    *            description: Get Experiment By Id
    *            schema:
    *              $ref: '#/definitions/ExperimentResponse'
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -836,15 +831,25 @@ export class ExperimentController {
    */
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public one(@Param('id') id: string, @Req() request: AppRequest): Promise<ExperimentDTO> | undefined {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
+  public async one(
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
+    @Req() request: AppRequest
+  ): Promise<ExperimentDTO> {
+    let experiment = await this.experimentService.getSingleExperiment(id, request.logger);
+
+    if (SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment.assignmentAlgorithm)) {
+      if (!env.mooclets?.enabled) {
+        throw new BadRequestError(
+          'MoocletPolicyParameters are present in the experiment but Mooclet is not enabled in the environment'
+        );
+      } else {
+        experiment = await this.moocletExperimentService.attachRewardKeyAndPolicyParamsToExperimentDTO(
+          experiment,
+          request.logger
+        );
+      }
     }
-    return this.experimentService.getSingleExperiment(id, request.logger);
+    return experiment;
   }
 
   /**
@@ -910,6 +915,8 @@ export class ExperimentController {
    *                  assignmentWeight:
    *                    type: number
    *                  order: {}
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -919,14 +926,10 @@ export class ExperimentController {
    */
   @Get('/conditions/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public getCondition(@Param('id') id: string, @Req() request: AppRequest): Promise<ExperimentCondition[]> {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
+  public async getCondition(
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
+    @Req() request: AppRequest
+  ): Promise<ExperimentCondition[]> {
     return this.experimentService.getExperimentalConditions(id, request.logger);
   }
 
@@ -958,6 +961,8 @@ export class ExperimentController {
    *            description: default as ConditionCode is not allowed
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '422':
+   *            description: Experiment is not valid for current configuration
    *          '500':
    *            description: Insert Error in database
    */
@@ -965,10 +970,25 @@ export class ExperimentController {
   @Post()
   public create(
     @Body({ validate: true }) experiment: ExperimentDTO,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
     request.logger.child({ user: currentUser });
+
+    if ('moocletPolicyParameters' in experiment) {
+      if (!env.mooclets?.enabled) {
+        throw new BadRequestError(
+          'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
+        );
+      } else {
+        return this.moocletExperimentService.syncCreate({
+          experimentDTO: experiment,
+          currentUser,
+          logger: request.logger,
+        });
+      }
+    }
+
     return this.experimentService.create(experiment, currentUser, request.logger);
   }
 
@@ -1006,11 +1026,11 @@ export class ExperimentController {
   @Post('/batch')
   public createMultipleExperiments(
     @Body({ validate: true, type: ExperimentDTO }) experiment: ExperimentDTO[],
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO[]> {
     request.logger.child({ user: currentUser });
-    return this.experimentService.createMultipleExperiments(experiment, currentUser, request.logger);
+    return this.importExportService.createMultipleExperiments(experiment, currentUser, request.logger);
   }
 
   /**
@@ -1034,6 +1054,8 @@ export class ExperimentController {
    *            description: Delete Experiment By Id
    *            schema:
    *              $ref: '#/definitions/ExperimentResponse'
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -1043,20 +1065,33 @@ export class ExperimentController {
    */
 
   @Delete('/:id')
-  public delete(
-    @Param('id') id: string,
-    @CurrentUser() currentUser: User,
+  public async delete(
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Experiment | undefined> {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
     request.logger.child({ user: currentUser });
-    return this.experimentService.delete(id, currentUser, request.logger);
+
+    // Manually check if the experiment has a mooclet ref
+    if (env.mooclets.enabled) {
+      const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(id);
+
+      if (moocletExperimentRef) {
+        return await this.moocletExperimentService.syncDelete({
+          moocletExperimentRef,
+          experimentId: id,
+          currentUser,
+          logger: request.logger,
+        });
+      }
+    }
+
+    const experiment = await this.experimentService.delete(id, currentUser, { logger: request.logger });
+
+    if (!experiment) {
+      throw new NotFoundException('Experiment not found.');
+    }
+    return experiment;
   }
 
   /**
@@ -1095,7 +1130,7 @@ export class ExperimentController {
   public async updateState(
     @Body({ validate: true })
     experiment: AssignmentStateUpdateValidator,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<any> {
     return this.experimentService.updateState(
@@ -1111,7 +1146,7 @@ export class ExperimentController {
    * @swagger
    * /experiments/{id}:
    *    put:
-   *       description: Create New Experiment
+   *       description: Update Experiment
    *       consumes:
    *         - application/json
    *       parameters:
@@ -1144,21 +1179,30 @@ export class ExperimentController {
    */
   @Put('/:id')
   public update(
-    @Param('id') id: string,
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
     @Body({ validate: true })
     experiment: ExperimentDTO,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
     request.logger.child({ user: currentUser });
-    return this.experimentService.update(experiment, currentUser, request.logger);
+
+    // TODO: there is a story to refactor these duplicate warnings, adding here same way as others for now
+    if ('moocletPolicyParameters' in experiment) {
+      if (!env.mooclets?.enabled) {
+        throw new BadRequestError(
+          'Failed to edit Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
+        );
+      } else {
+        return this.moocletExperimentService.syncUpdate({
+          experimentDTO: { ...experiment, id },
+          currentUser,
+          logger: request.logger,
+        });
+      }
+    }
+
+    return this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
   }
 
   /**
@@ -1254,13 +1298,19 @@ export class ExperimentController {
    *            description: Internal Server Error
    */
   @Post('/import')
-  public importExperiment(
+  public async importExperiment(
     @Body({ validate: true })
     experiments: ExperimentFile[],
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ValidatedExperimentError[]> {
-    return this.experimentService.importExperiment(experiments, currentUser, request.logger);
+    const validatedExperiments = await this.importExportService.importExperiments(
+      experiments,
+      currentUser,
+      request.logger
+    );
+
+    return validatedExperiments;
   }
 
   /**
@@ -1307,11 +1357,45 @@ export class ExperimentController {
   public exportExperiment(
     @QueryParams()
     params: ExperimentIds,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO[]> {
     const experimentIds = params.ids;
-    return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
+    return this.importExportService.exportExperiment(currentUser, request.logger, experimentIds);
+  }
+
+  /**
+   * @swagger
+   * /experiments/all:
+   *    get:
+   *       description: Export All Experiment JSON
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiments are exported
+   *            schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 error:
+   *                   type: string
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Get('/export/all')
+  public exportAllExperiment(
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<ExperimentDTO[]> {
+    return this.importExportService.exportExperiment(currentUser, request.logger);
   }
 
   /**
@@ -1337,6 +1421,8 @@ export class ExperimentController {
    *              type: number
    *              items:
    *                $ref: '#/definitions/ExperimentResponse'
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -1347,16 +1433,9 @@ export class ExperimentController {
   @Get('/getGroupAssignmentStatus/:id')
   @OnUndefined(ExperimentNotFoundError)
   public async getGroupAssignmentStatus(
-    @Param('id') id: string,
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
     @Req() request: AppRequest
   ): Promise<number> | undefined {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
     return this.experimentAssignmentService.getGroupAssignmentStatus(id, request.logger);
   }
 }

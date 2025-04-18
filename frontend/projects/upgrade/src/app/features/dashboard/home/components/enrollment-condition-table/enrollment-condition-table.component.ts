@@ -11,6 +11,7 @@ import { Subscription } from 'rxjs';
   selector: 'home-enrollment-condition-table',
   templateUrl: './enrollment-condition-table.component.html',
   styleUrls: ['./enrollment-condition-table.component.scss'],
+  standalone: false,
 })
 export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
   @Input() experiment: ExperimentVM;

@@ -20,7 +20,7 @@ export default async function testCase(): Promise<void> {
 
   // First excluding a group to check "EXCLUDED_DUE_TO_GROUP_LOGIC"
   // within subject experiment object
-  const experimentObject = withinSubjectExclusionExperiment;
+  const experimentObject = JSON.parse(JSON.stringify(withinSubjectExclusionExperiment));
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -58,13 +58,13 @@ export default async function testCase(): Promise<void> {
       }),
     ])
   );
-  
+
   // get all experiment condition for user 3
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 3
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[2].id,
@@ -87,17 +87,17 @@ export default async function testCase(): Promise<void> {
 
   let individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(1);
-  experimentObject.state = 'enrolling';
+  experimentObject.state = EXPERIMENT_STATE.ENROLLING;
   experimentObject.experimentSegmentExclusion = {
     "segment": {
-        "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
-        "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-        "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-        "context": "home",
-        "type": "private",
-        "individualForSegment": [],
-        "groupForSegment": [],
-        "subSegments": []
+      "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
+      "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
+      "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
+      "context": "home",
+      "type": "private",
+      "individualForSegment": [],
+      "groupForSegment": [],
+      "subSegments": []
     }
   };
 
@@ -109,7 +109,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[4].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[4].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[4].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[4].id,
@@ -130,7 +130,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -141,7 +141,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[6].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[6].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[6].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[6].id,
@@ -159,7 +159,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -168,7 +168,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[7].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[7].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[7].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[7].id,
@@ -186,7 +186,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -195,7 +195,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[8].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[8].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[8].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[8].id,
@@ -213,7 +213,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -222,7 +222,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[9].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[9].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[9].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[9].id,
@@ -240,7 +240,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -251,7 +251,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[10].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[10].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[10].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[10].id,
@@ -269,7 +269,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );
@@ -278,7 +278,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[11].id, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[11].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[11].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
   checkMarkExperimentPointForUser(
     markedExperimentPoint,
     experimentUsers[11].id,
@@ -296,7 +296,7 @@ export default async function testCase(): Promise<void> {
         user: expect.objectContaining({
           id: experimentUsers[4].id
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC 
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
       })
     ])
   );

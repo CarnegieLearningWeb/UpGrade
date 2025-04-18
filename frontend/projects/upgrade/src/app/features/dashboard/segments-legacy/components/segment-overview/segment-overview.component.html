@@ -1,0 +1,44 @@
+<form class="segment-overview" [formGroup]="overviewForm">
+  <section class="fields-container">
+    <mat-form-field class="dense-2 name" appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">
+        {{ 'segments.global-name.text' | translate }}
+      </mat-label>
+      <input class="ft-14-400" matInput formControlName="name" cdkFocusInitial />
+    </mat-form-field>
+
+    <mat-form-field class="dense-2 description" appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">
+        {{ 'segments.overview.segment-description.text' | translate }}
+      </mat-label>
+      <input class="ft-14-400" matInput formControlName="description" />
+    </mat-form-field>
+
+    <mat-form-field class="dense-2 chips" appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">
+        {{ 'segments.overview.segment-app-context.text' | translate }}
+      </mat-label>
+      <mat-select class="ft-14-400" formControlName="context">
+        <mat-option class="ft-14-400" *ngFor="let context of allContexts" [value]="context">
+          {{ context }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <span class="ft-14-400 validation-message" *ngIf="!isSegmentNameValid">
+      {{ 'segments.new-segment-overview-stepper.segment-name-error.text' | translate }}
+    </span>
+  </section>
+
+  <div class="button-container">
+    <button class="shared-modal--modal-btn" mat-raised-button (click)="emitEvent(NewSegmentDialogEvents.CLOSE_DIALOG)">
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      mat-raised-button
+      class="shared-modal--modal-btn default-button"
+      (click)="emitEvent(NewSegmentDialogEvents.SEND_FORM_DATA)"
+    >
+      {{ 'global.next.text' | translate }}
+    </button>
+  </div>
+</form>

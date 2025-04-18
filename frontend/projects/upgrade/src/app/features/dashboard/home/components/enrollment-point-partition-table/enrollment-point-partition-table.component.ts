@@ -6,6 +6,7 @@ import { ExperimentVM, ASSIGNMENT_UNIT } from '../../../../../core/experiments/s
   templateUrl: './enrollment-point-partition-table.component.html',
   styleUrls: ['./enrollment-point-partition-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class EnrollmentPointPartitionTableComponent implements OnChanges {
   @Input() partitionData: any[];

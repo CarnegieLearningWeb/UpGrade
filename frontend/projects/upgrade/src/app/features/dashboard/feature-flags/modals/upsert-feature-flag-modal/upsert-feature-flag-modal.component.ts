@@ -3,21 +3,12 @@ import {
   CommonModalComponent,
   CommonTagsInputComponent,
 } from '../../../../../shared-standalone-component-lib/components';
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogActions,
-  MatDialogClose,
-  MatDialogContent,
-  MatDialogRef,
-  MatDialogTitle,
-} from '@angular/material/dialog';
-import { CommonModule, NgTemplateOutlet } from '@angular/common';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
@@ -38,25 +29,17 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
 import isEqual from 'lodash.isequal';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',
-  standalone: true,
   imports: [
     CommonModalComponent,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
-    MatDialogClose,
     MatSelectModule,
     CommonModule,
-    NgTemplateOutlet,
-    MatIcon,
     ReactiveFormsModule,
     TranslateModule,
     CommonTagsInputComponent,
@@ -67,7 +50,6 @@ import { Router } from '@angular/router';
 })
 export class UpsertFeatureFlagModalComponent {
   isLoadingUpsertFeatureFlag$ = this.featureFlagsService.isLoadingUpsertFeatureFlag$;
-  isSelectedFeatureFlagUpdated$ = this.featureFlagsService.isSelectedFeatureFlagUpdated$;
   selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   appContexts$ = this.featureFlagsService.appContexts$;
   isDuplicateKeyFound$ = this.featureFlagsService.isDuplicateKeyFound$;
@@ -88,7 +70,6 @@ export class UpsertFeatureFlagModalComponent {
     @Inject(MAT_DIALOG_DATA)
     public config: CommonModalConfig<UpsertFeatureFlagParams>,
     public dialog: MatDialog,
-    private router: Router,
     private formBuilder: FormBuilder,
     private featureFlagsService: FeatureFlagsService,
     private experimentService: ExperimentService,
@@ -100,12 +81,28 @@ export class UpsertFeatureFlagModalComponent {
     this.experimentService.fetchContextMetaData();
     this.createFeatureFlagForm();
     this.listenOnKeyChangesToRemoveWarning();
-    this.listenForFeatureFlagGetUpdated();
     this.listenOnNameChangesToUpdateKey();
     this.listenForIsInitialFormValueChanged();
     this.listenForPrimaryButtonDisabled();
     this.listenForDuplicateKey();
     this.listenOnContext();
+
+    if (this.isDisabled()) {
+      this.disableRestrictedFields();
+    }
+  }
+
+  isDisabled() {
+    return (
+      this.config.params.action === UPSERT_FEATURE_FLAG_ACTION.EDIT &&
+      this.config.params.sourceFlag?.status === FEATURE_FLAG_STATUS.ENABLED
+    );
+  }
+
+  disableRestrictedFields(): void {
+    this.featureFlagForm.get('name')?.disable();
+    this.featureFlagForm.get('key')?.disable();
+    this.featureFlagForm.get('appContext')?.disable();
   }
 
   createFeatureFlagForm(): void {
@@ -180,15 +177,6 @@ export class UpsertFeatureFlagModalComponent {
     this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
   }
 
-  // Close the modal once the feature flag list length changes, as that indicates actual success
-  listenForFeatureFlagGetUpdated(): void {
-    this.subscriptions.add(
-      this.isSelectedFeatureFlagUpdated$.subscribe(() => {
-        this.closeModal();
-      })
-    );
-  }
-
   listenForDuplicateKey() {
     this.subscriptions.add(
       this.isDuplicateKeyFound$.subscribe((isDuplicate) => {
@@ -210,7 +198,6 @@ export class UpsertFeatureFlagModalComponent {
 
   sendRequest(action: UPSERT_FEATURE_FLAG_ACTION, sourceFlag?: FeatureFlag): void {
     const formData: FeatureFlagFormData = this.featureFlagForm.value;
-
     if (action === UPSERT_FEATURE_FLAG_ACTION.ADD || action === UPSERT_FEATURE_FLAG_ACTION.DUPLICATE) {
       this.createAddRequest(formData);
     } else if (action === UPSERT_FEATURE_FLAG_ACTION.EDIT && sourceFlag) {
@@ -234,10 +221,13 @@ export class UpsertFeatureFlagModalComponent {
     this.featureFlagsService.addFeatureFlag(flagRequest);
   }
 
-  createEditRequest(
-    { name, key, description, appContext, tags }: FeatureFlagFormData,
-    { id, status, filterMode }: FeatureFlag
-  ): void {
+  createEditRequest({ name, key, description, appContext, tags }: FeatureFlagFormData, sourceFlag: FeatureFlag): void {
+    const { id, status, filterMode } = sourceFlag;
+    if (sourceFlag.status === 'enabled') {
+      name = sourceFlag.name;
+      key = sourceFlag.key;
+      appContext = sourceFlag.context[0];
+    }
     const flagRequest: UpdateFeatureFlagRequest = {
       id,
       name,

@@ -3,13 +3,8 @@
     <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
   </div>
 
-  <div class="conditions-weight-checkbox">
-    <mat-checkbox
-      color="primary"
-      [checked]="equalWeightFlag"
-      (change)="handleEqualWeightToggle()"
-      [disabled]="!isExperimentEditable"
-    >
+  <div *ngIf="isExperimentEditable && !(isMoocletExperimentDesign$ | async)" class="conditions-weight-checkbox">
+    <mat-checkbox color="primary" [checked]="equalWeightFlag" (change)="handleEqualWeightToggle()">
       <span class="ft-13-700 checkbox-label">
         {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
       </span>
@@ -37,7 +32,7 @@
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
           <ng-container *ngIf="(tableEditIndex$ | async) !== rowIndex">
             <span [matTooltip]="rowData.payload" matTooltipPosition="above">
-              {{ rowData.payload | truncate: 25 }}
+              {{ rowData.payload | truncate : 25 }}
             </span>
           </ng-container>
           <ng-container *ngIf="(tableEditIndex$ | async) === rowIndex">
@@ -62,15 +57,23 @@
           {{ 'WEIGHT' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let rowData; let rowIndex = index" [formGroupName]="rowIndex">
-          <ng-container *ngIf="equalWeightFlag || (tableEditIndex$ | async) !== rowIndex || !isExperimentEditable">
-            <span [matTooltip]="rowData.weight" matTooltipPosition="above">
-              {{ rowData.weight }}
-            </span>
+          <!-- When isMoocletExperimentDesign$ is false, show the existing logic -->
+          <ng-container *ngIf="!(isMoocletExperimentDesign$ | async)">
+            <ng-container *ngIf="equalWeightFlag || (tableEditIndex$ | async) !== rowIndex || !isExperimentEditable">
+              <span [matTooltip]="rowData.weight" matTooltipPosition="above">
+                {{ rowData.weight }}
+              </span>
+            </ng-container>
+            <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex && isExperimentEditable">
+              <mat-form-field class="dense-2 input-weight" appearance="outline" subscriptSizing="dynamic">
+                <input class="ft-14-400" autocomplete="off" type="text" matInput formControlName="weight" />
+              </mat-form-field>
+            </ng-container>
           </ng-container>
-          <ng-container *ngIf="!equalWeightFlag && (tableEditIndex$ | async) === rowIndex && isExperimentEditable">
-            <mat-form-field class="dense-2 input-weight" appearance="outline" subscriptSizing="dynamic">
-              <input class="ft-14-400" autocomplete="off" type="text" matInput formControlName="weight" />
-            </mat-form-field>
+
+          <!-- When isMoocletExperimentDesign$ is true, show N/A regardless of edit mode -->
+          <ng-container *ngIf="isMoocletExperimentDesign$ | async">
+            <span>N/A</span>
           </ng-container>
         </mat-cell>
       </ng-container>

@@ -19,7 +19,14 @@ export enum CONDITION_ORDER {
 export enum ASSIGNMENT_ALGORITHM {
   RANDOM = 'random',
   STRATIFIED_RANDOM_SAMPLING = 'stratified random sampling',
+  MOOCLET_TS_CONFIGURABLE = 'ts_configurable',
 }
+
+export const ASSIGNMENT_ALGORITHM_DISPLAY_MAP = {
+  [ASSIGNMENT_ALGORITHM.RANDOM]: 'Random',
+  [ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING]: 'Stratified Random Sampling',
+  [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: 'TS Configurable',
+};
 
 export enum POST_EXPERIMENT_RULE {
   CONTINUE = 'continue',
@@ -67,6 +74,7 @@ export enum SERVER_ERROR {
   UNSUPPORTED_CALIPER = 'Caliper profile or event not supported',
   DUPLICATE_KEY = 'Feature Flag with same key already exists for this app-context',
   MISSING_HEADER_USER_ID = 'Missing `User-Id` header',
+  SEGMENT_DUPLICATE_NAME = 'Segment with same name already exists for this app-context, please edit name to be unique.',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {
@@ -205,13 +213,13 @@ export enum SEGMENT_STATUS {
 export enum SEGMENT_SEARCH_KEY {
   ALL = 'all',
   NAME = 'name',
+  TAG = 'tag',
   STATUS = 'status',
   CONTEXT = 'context',
 }
 
 export enum SEGMENT_SORT_KEY {
   NAME = 'name',
-  STATUS = 'state',
   UPDATED_AT = 'updatedAt',
 }
 
@@ -298,4 +306,10 @@ export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
 export enum FILE_TYPE {
   JSON = '.json',
   CSV = '.csv',
+}
+
+export enum IMPORT_COMPATIBILITY_TYPE {
+  COMPATIBLE = 'compatible',
+  WARNING = 'warning',
+  INCOMPATIBLE = 'incompatible',
 }

@@ -5,18 +5,18 @@
   $foreground: map-get($theme, foreground);
 
   mat-drawer {
-    box-shadow: 0 0 8px 0 mat.get-color-from-palette($background, shadow-color);
+    box-shadow: 0 0 8px 0 mat.m2-get-color-from-palette($background, shadow-color);
   }
 
   .drawer-container {
     .logo,
     .user {
-      box-shadow: 0 0 8px 0 mat.get-color-from-palette($background, shadow-color);
+      box-shadow: 0 0 8px 0 mat.m2-get-color-from-palette($background, shadow-color);
     }
 
     .list-item-container {
       .nav-item {
-        color: mat.get-color-from-palette($foreground, text);
+        color: mat.m2-get-color-from-palette($foreground, text);
       }
     }
   }

@@ -22,7 +22,7 @@ import { IMenuButtonItem } from 'upgrade_types';
  *   [showPrimaryButton]="true"
  *   [primaryButtonText]="'Add Row'"
  *   [showMenuButton]="true"
- *   [menuButtonItems]="[{ name: 'Import', disabled: false }, { name: 'Export', disabled: true }]"
+ *   [menuButtonItems]="[{ label: 'translation key', action: 'Import', disabled: false }]"
  *   [isSectionCardExpanded]="true"
  *   (slideToggleChange)="onSlideToggleChange($event)"
  *   (primaryButtonClick)="onPrimaryButtonClick()"
@@ -33,7 +33,6 @@ import { IMenuButtonItem } from 'upgrade_types';
  */
 @Component({
   selector: 'app-common-section-card-action-buttons',
-  standalone: true,
   imports: [CommonModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatMenuModule, TranslateModule],
   templateUrl: './common-section-card-action-buttons.component.html',
   styleUrl: './common-section-card-action-buttons.component.scss',

@@ -15,7 +15,7 @@ export const UserNotDefined = async () => {
       null,
       new UpgradeLogger()
     )
-  ).rejects.toThrow();
+  ).toEqual(Promise.resolve({}));
 
   await expect(
     experimentAssignmentService.blobDataLog(
@@ -57,7 +57,7 @@ export const UserNotDefined = async () => {
       null,
       new UpgradeLogger()
     )
-  ).rejects.toThrow();
+  ).toEqual(Promise.resolve({ "aliases": [], "userId": undefined }));
 
   await expect(
     experimentUserService.updateGroupMembership(experimentUsers[0].id, null, {

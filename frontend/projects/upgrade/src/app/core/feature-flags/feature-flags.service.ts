@@ -38,8 +38,7 @@ import {
   UpdateFeatureFlagStatusRequest,
   FeatureFlagLocalStorageKeys,
 } from './store/feature-flags.model';
-import { filter, map, pairwise } from 'rxjs';
-import isEqual from 'lodash.isequal';
+import { map } from 'rxjs';
 import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
 import { LocalStorageService } from '../local-storage/local-storage.service';
@@ -68,38 +67,6 @@ export class FeatureFlagsService {
   sortAs$ = this.store$.pipe(select(selectSortAs));
   shouldShowWarningForSelectedFlag$ = this.store$.pipe(select(selectShouldShowWarningForSelectedFlag));
   warningStatusForAllFlags$ = this.store$.pipe(select(selectWarningStatusForAllFlags));
-
-  hasFeatureFlagsCountChanged$ = this.allFeatureFlags$.pipe(
-    pairwise(),
-    filter(([prevEntities, currEntities]) => prevEntities.length !== currEntities.length)
-  );
-
-  selectedFeatureFlagStatusChange$ = this.store$.pipe(
-    select(selectSelectedFeatureFlag),
-    pairwise(),
-    filter(([prev, curr]) => prev.status !== curr.status)
-  );
-  selectedFeatureFlagFilterModeChange$ = this.store$.pipe(
-    select(selectSelectedFeatureFlag),
-    pairwise(),
-    filter(([prev, curr]) => prev.filterMode !== curr.filterMode)
-  );
-  // Observable to check if selectedFeatureFlag is removed from the store
-  isSelectedFeatureFlagRemoved$ = this.store$.pipe(
-    select(selectSelectedFeatureFlag),
-    pairwise(),
-    filter(([prev, curr]) => prev && !curr)
-  );
-
-  isSelectedFeatureFlagUpdated$ = this.store$.pipe(
-    select(selectSelectedFeatureFlag),
-    pairwise(),
-    filter(([prev, curr]) => {
-      return prev && curr && !isEqual(prev, curr);
-    }),
-    map(([, curr]) => curr)
-  );
-
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
@@ -162,6 +129,14 @@ export class FeatureFlagsService {
 
   exportFeatureFlagsData(featureFlagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionExportFeatureFlagDesign({ featureFlagId }));
+  }
+
+  exportAllIncludeListsData(featureFlagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionExportAllIncludeListsDesign({ featureFlagId }));
+  }
+
+  exportAllExcludeListsData(featureFlagId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionExportAllExcludeListsDesign({ featureFlagId }));
   }
 
   setSearchKey(searchKey: FLAG_SEARCH_KEY) {

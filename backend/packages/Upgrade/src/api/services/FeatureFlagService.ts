@@ -10,12 +10,11 @@ import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFl
 import { EntityManager, In, DataSource } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { v4 as uuid } from 'uuid';
+import { env } from '../../env';
 import {
   IFeatureFlagSearchParams,
   IFeatureFlagSortParams,
   FLAG_SEARCH_KEY,
-  ValidatedFeatureFlagsError,
-  FF_COMPATIBILITY_TYPE,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
 import {
@@ -34,6 +33,8 @@ import {
   FEATURE_FLAG_LIST_OPERATION,
   ListOperationsData,
   CACHE_PREFIX,
+  ValidatedImportResponse,
+  IMPORT_COMPATIBILITY_TYPE,
 } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
@@ -44,12 +45,16 @@ import { ErrorWithType } from '../errors/ErrorWithType';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { FeatureFlagImportDataValidation } from '../controllers/validators/FeatureFlagImportValidator';
+import {
+  FeatureFlagImportDataValidation,
+  ImportFeatureFlagListValidator,
+} from '../controllers/validators/FeatureFlagImportValidator';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
-import { User } from '../models/User';
+import { UserDTO } from '../DTO/UserDTO';
 import { diffString } from 'json-diff';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
+import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
 
 @Service()
@@ -94,11 +99,12 @@ export class FeatureFlagService {
 
     const filteredFeatureFlags = await this.getCachedFlagsFromContext(context);
 
-    const [userExcluded, groupExcluded] = await this.experimentAssignmentService.checkUserOrGroupIsGloballyExcluded(
-      experimentUserDoc
+    const [isUserExcluded, isGroupExcluded] = await this.experimentAssignmentService.checkUserOrGroupIsGloballyExcluded(
+      experimentUserDoc,
+      context
     );
 
-    if (userExcluded || groupExcluded.length > 0) {
+    if (isUserExcluded || isGroupExcluded) {
       return [];
     }
 
@@ -165,7 +171,11 @@ export class FeatureFlagService {
     return featureFlag;
   }
 
-  public async create(flagDTO: FeatureFlagValidation, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public async create(
+    flagDTO: FeatureFlagValidation,
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<FeatureFlag> {
     logger.info({ message: 'Create a new feature flag', details: flagDTO });
     const result = await this.featureFlagRepository.validateUniqueKey(flagDTO);
 
@@ -243,7 +253,7 @@ export class FeatureFlagService {
 
   public async delete(
     featureFlagId: string,
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<FeatureFlag | undefined> {
     logger.info({ message: `Delete Feature Flag => ${featureFlagId}` });
@@ -291,7 +301,7 @@ export class FeatureFlagService {
     });
   }
 
-  public async updateState(flagId: string, status: FEATURE_FLAG_STATUS, currentUser: User): Promise<FeatureFlag> {
+  public async updateState(flagId: string, status: FEATURE_FLAG_STATUS, currentUser: UserDTO): Promise<FeatureFlag> {
     const oldFeatureFlag = await this.findOne(flagId);
     await this.clearCachedFlagsForContext(oldFeatureFlag.context[0]);
     let updatedState: FeatureFlag;
@@ -315,7 +325,7 @@ export class FeatureFlagService {
     return updatedState;
   }
 
-  public async updateFilterMode(flagId: string, filterMode: FILTER_MODE, currentUser: User): Promise<FeatureFlag> {
+  public async updateFilterMode(flagId: string, filterMode: FILTER_MODE, currentUser: UserDTO): Promise<FeatureFlag> {
     let updatedFilterMode: FeatureFlag;
 
     try {
@@ -338,7 +348,7 @@ export class FeatureFlagService {
     return updatedFilterMode;
   }
 
-  public async exportDesign(id, currentUser, logger): Promise<FeatureFlag | null> {
+  public async exportDesign(id: string, currentUser: UserDTO, logger: UpgradeLogger): Promise<FeatureFlag | null> {
     const featureFlag = await this.findOne(id, logger);
     if (featureFlag) {
       const exportAuditLog: FeatureFlagDeletedData = {
@@ -355,7 +365,11 @@ export class FeatureFlagService {
     return featureFlag;
   }
 
-  public async update(flagDTO: FeatureFlagValidation, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public async update(
+    flagDTO: FeatureFlagValidation,
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<FeatureFlag> {
     logger.info({ message: `Update a Feature Flag => ${flagDTO.toString()}` });
     const result = await this.featureFlagRepository.validateUniqueKey(flagDTO);
 
@@ -371,7 +385,7 @@ export class FeatureFlagService {
 
   private async addFeatureFlagInDB(
     flag: FeatureFlag,
-    user: User,
+    user: UserDTO,
     logger: UpgradeLogger,
     entityManager?: EntityManager
   ): Promise<FeatureFlag> {
@@ -409,7 +423,7 @@ export class FeatureFlagService {
     }
   }
 
-  private async updateFeatureFlagInDB(flag: FeatureFlag, user: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+  private async updateFeatureFlagInDB(flag: FeatureFlag, user: UserDTO, logger: UpgradeLogger): Promise<FeatureFlag> {
     await this.clearCachedFlagsForContext(flag.context[0]);
     const {
       featureFlagSegmentExclusion,
@@ -507,7 +521,7 @@ export class FeatureFlagService {
   public async deleteList(
     segmentId: string,
     filterType: FEATURE_FLAG_LIST_FILTER_MODE,
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Segment> {
     await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
@@ -518,7 +532,7 @@ export class FeatureFlagService {
   async createDeleteListAuditLogs(
     segmentIds: string[],
     filterType: FEATURE_FLAG_LIST_FILTER_MODE,
-    currentUser: User,
+    currentUser: UserDTO,
     entityManager?: EntityManager
   ): Promise<void> {
     const auditLogPromises = [];
@@ -572,7 +586,7 @@ export class FeatureFlagService {
   public async addList(
     listsInput: FeatureFlagListValidator[],
     filterType: FEATURE_FLAG_LIST_FILTER_MODE,
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger,
     transactionalEntityManager?: EntityManager
   ): Promise<(FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[]> {
@@ -601,14 +615,14 @@ export class FeatureFlagService {
 
       const featureFlags = await manager
         .getRepository(FeatureFlag)
-        .findByIds(listsInput.map((listInput) => listInput.flagId));
+        .findByIds(listsInput.map((listInput) => listInput.id));
 
       const featureFlagSegmentInclusionOrExclusionArray = listsInput.map((listInput) => {
         const featureFlagSegmentInclusionOrExclusion =
           filterType === 'inclusion' ? new FeatureFlagSegmentInclusion() : new FeatureFlagSegmentExclusion();
         featureFlagSegmentInclusionOrExclusion.enabled = listInput.enabled;
         featureFlagSegmentInclusionOrExclusion.listType = listInput.listType;
-        featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlags.find((flag) => flag.id === listInput.flagId);
+        featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlags.find((flag) => flag.id === listInput.id);
         featureFlagSegmentInclusionOrExclusion.segment = newSegments.find(
           (segment) => segment.id === listInput.segment.id
         );
@@ -672,7 +686,7 @@ export class FeatureFlagService {
   public async updateList(
     listInput: FeatureFlagListValidator,
     filterType: FEATURE_FLAG_LIST_FILTER_MODE,
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
     logger.info({ message: `Update ${filterType} list for feature flag` });
@@ -680,23 +694,23 @@ export class FeatureFlagService {
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
       // Find the existing record
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
-      const featureFlag = await this.findOne(listInput.flagId);
+      const featureFlag = await this.findOne(listInput.id);
 
       if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
-          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.segment.id } },
+          where: { featureFlag: { id: listInput.id }, segment: { id: listInput.segment.id } },
           relations: ['featureFlag', 'segment'],
         });
       } else {
         existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
-          where: { featureFlag: { id: listInput.flagId }, segment: { id: listInput.segment.id } },
+          where: { featureFlag: { id: listInput.id }, segment: { id: listInput.segment.id } },
           relations: ['featureFlag', 'segment'],
         });
       }
 
       if (!existingRecord) {
         throw new Error(
-          `No existing ${filterType} record found for feature flag ${listInput.flagId} and segment ${listInput.segment.id}`
+          `No existing ${filterType} record found for feature flag ${listInput.id} and segment ${listInput.segment.id}`
         );
       }
 
@@ -867,7 +881,7 @@ export class FeatureFlagService {
 
   public async importFeatureFlags(
     featureFlagFiles: IFeatureFlagFile[],
-    currentUser: User,
+    currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<IImportError[]> {
     logger.info({ message: 'Import feature flags' });
@@ -875,21 +889,21 @@ export class FeatureFlagService {
 
     const fileStatusArray = featureFlagFiles.map((file) => {
       const validation = validatedFlags.find((error) => error.fileName === file.fileName);
-      const isCompatible = validation && validation.compatibilityType !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      const isCompatible = validation && validation.compatibilityType !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
 
       return {
         fileName: file.fileName,
-        error: isCompatible ? validation.compatibilityType : FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+        error: isCompatible ? validation.compatibilityType : IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
       };
     });
 
     const validFiles: FeatureFlagImportDataValidation[] = await Promise.all(
       fileStatusArray
-        .filter((fileStatus) => fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE)
+        .filter((fileStatus) => fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE)
         .map(async (fileStatus) => {
           const featureFlagFile = featureFlagFiles.find((file) => file.fileName === fileStatus.fileName);
 
-          if (fileStatus.error === FF_COMPATIBILITY_TYPE.WARNING) {
+          if (fileStatus.error === IMPORT_COMPATIBILITY_TYPE.WARNING) {
             const flag = JSON.parse(featureFlagFile.fileContent as string);
             const segmentIdsSet = new Set([
               ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
@@ -962,7 +976,7 @@ export class FeatureFlagService {
           return {
             ...segmentInclusionList,
             enabled: false,
-            flagId: newFlag.id,
+            id: newFlag.id,
             segment: { ...segmentInclusionList.segment, userIds, subSegmentIds, groups },
           };
         });
@@ -982,7 +996,7 @@ export class FeatureFlagService {
 
           return {
             ...segmentExclusionList,
-            flagId: newFlag.id,
+            id: newFlag.id,
             segment: { ...segmentExclusionList.segment, userIds, subSegmentIds, groups },
           };
         });
@@ -1012,7 +1026,7 @@ export class FeatureFlagService {
     logger.info({ message: 'Imported feature flags', details: createdFlags });
 
     fileStatusArray.forEach((fileStatus) => {
-      if (fileStatus.error !== FF_COMPATIBILITY_TYPE.INCOMPATIBLE) {
+      if (fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE) {
         fileStatus.error = null;
       }
     });
@@ -1022,7 +1036,7 @@ export class FeatureFlagService {
   public async validateImportFeatureFlags(
     featureFlagFiles: IFeatureFlagFile[],
     logger: UpgradeLogger
-  ): Promise<ValidatedFeatureFlagsError[]> {
+  ): Promise<ValidatedImportResponse[]> {
     logger.info({ message: 'Validate feature flags' });
 
     const parsedFeatureFlags = featureFlagFiles.map((featureFlagFile) => {
@@ -1052,7 +1066,7 @@ export class FeatureFlagService {
         if (!parsedFile.content) {
           return {
             fileName: parsedFile.fileName,
-            compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
 
@@ -1060,7 +1074,7 @@ export class FeatureFlagService {
         if (seenKeys.includes(featureFlag.key)) {
           return {
             fileName: parsedFile.fileName,
-            compatibilityType: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
         seenKeys.push(featureFlag.key);
@@ -1074,7 +1088,7 @@ export class FeatureFlagService {
     return validationErrors
       .map((result) => {
         if (result.status === 'fulfilled') {
-          return result.value;
+          return result.value ? result.value : null;
         } else {
           const { fileName, compatibilityType } = result.reason;
           return { fileName: fileName, compatibilityType: compatibilityType };
@@ -1088,25 +1102,25 @@ export class FeatureFlagService {
     flag: FeatureFlagImportDataValidation,
     existingFeatureFlags: FeatureFlag[]
   ) {
-    let compatibilityType = FF_COMPATIBILITY_TYPE.COMPATIBLE;
+    let compatibilityType = IMPORT_COMPATIBILITY_TYPE.COMPATIBLE;
 
     flag = plainToClass(FeatureFlagImportDataValidation, flag);
     await validate(flag, { forbidUnknownValues: true, stopAtFirstError: true }).then((errors) => {
       if (errors.length > 0) {
-        compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
       }
     });
     if (!(flag instanceof FeatureFlagImportDataValidation)) {
-      compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
     }
 
-    if (compatibilityType === FF_COMPATIBILITY_TYPE.COMPATIBLE) {
+    if (compatibilityType === IMPORT_COMPATIBILITY_TYPE.COMPATIBLE) {
       const keyExists = existingFeatureFlags?.find(
         (existingFlag) => existingFlag.key === flag.key && existingFlag.context[0] === flag.context[0]
       );
 
       if (keyExists) {
-        compatibilityType = FF_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
       } else {
         const segmentIdsSet = new Set([
           ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
@@ -1121,12 +1135,12 @@ export class FeatureFlagService {
         const segments = await this.segmentService.getSegmentByIds(segmentIds);
 
         if (segmentIds.length !== segments.length) {
-          compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
+          compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
         }
 
         segments.forEach((segment) => {
           if (segment == undefined || segment.context !== flag.context[0]) {
-            compatibilityType = FF_COMPATIBILITY_TYPE.WARNING;
+            compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
           }
         });
       }
@@ -1136,5 +1150,208 @@ export class FeatureFlagService {
       fileName: fileName,
       compatibilityType: compatibilityType,
     };
+  }
+
+  public async importFeatureFlagLists(
+    featureFlagListFiles: IFeatureFlagFile[],
+    featureFlagId: string,
+    listType: FEATURE_FLAG_LIST_FILTER_MODE,
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<IImportError[]> {
+    logger.info({ message: 'Import feature flags' });
+    const validatedFlags = await this.validateImportFeatureFlagLists(featureFlagListFiles, featureFlagId, logger);
+
+    const fileStatusArray = featureFlagListFiles.map((file) => {
+      const validation = validatedFlags.find((error) => error.fileName === file.fileName);
+      const isCompatible = validation && validation.compatibilityType !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+
+      return {
+        fileName: file.fileName,
+        error: isCompatible ? validation.compatibilityType : IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+      };
+    });
+
+    const validFiles: ImportFeatureFlagListValidator[] = fileStatusArray
+      .filter((fileStatus) => fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE)
+      .map((fileStatus) => {
+        const featureFlagListFile = featureFlagListFiles.find((file) => file.fileName === fileStatus.fileName);
+        return JSON.parse(featureFlagListFile.fileContent as string);
+      });
+
+    const createdLists: (FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[] =
+      await this.dataSource.transaction(async (transactionalEntityManager) => {
+        const listDocs: FeatureFlagListValidator[] = [];
+        for (const list of validFiles) {
+          const listDoc: FeatureFlagListValidator = {
+            ...list,
+            enabled: false,
+            id: featureFlagId,
+            segment: { ...list.segment, id: uuid() },
+          };
+
+          listDocs.push(listDoc);
+        }
+
+        return await this.addList(listDocs, listType, currentUser, logger, transactionalEntityManager);
+      });
+
+    logger.info({ message: 'Imported feature flags', details: createdLists });
+
+    fileStatusArray.forEach((fileStatus) => {
+      if (fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE) {
+        fileStatus.error = null;
+      }
+    });
+    return fileStatusArray;
+  }
+
+  public async validateImportFeatureFlagLists(
+    featureFlagFiles: IFeatureFlagFile[],
+    featureFlagId: string,
+    logger: UpgradeLogger
+  ): Promise<ValidatedImportResponse[]> {
+    logger.info({ message: 'Validate feature flag lists' });
+
+    const parsedFeatureFlagLists = featureFlagFiles.map((featureFlagFile) => {
+      try {
+        return {
+          fileName: featureFlagFile.fileName,
+          content: JSON.parse(featureFlagFile.fileContent as string),
+        };
+      } catch (parseError) {
+        logger.error({ message: 'Error in parsing feature flag file', details: parseError });
+        return {
+          fileName: featureFlagFile.fileName,
+          content: null,
+        };
+      }
+    });
+
+    const featureFlag = await this.findOne(featureFlagId, logger);
+
+    const validationErrors = await Promise.allSettled(
+      parsedFeatureFlagLists.map(async (parsedFile) => {
+        if (!featureFlag || !parsedFile.content) {
+          return {
+            fileName: parsedFile.fileName,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          };
+        }
+
+        return this.validateImportFeatureFlagList(parsedFile.fileName, featureFlag, parsedFile.content);
+      })
+    );
+
+    // Filter out the files that have no promise rejection errors
+    return validationErrors
+      .map((result) => {
+        if (result.status === 'fulfilled') {
+          return result.value ? result.value : null;
+        } else {
+          const { fileName, compatibilityType } = result.reason;
+          return { fileName: fileName, compatibilityType: compatibilityType };
+        }
+      })
+      .filter((error) => error !== null);
+  }
+
+  public async validateImportFeatureFlagList(
+    fileName: string,
+    flag: FeatureFlag,
+    list: ImportFeatureFlagListValidator
+  ) {
+    let compatibilityType = IMPORT_COMPATIBILITY_TYPE.COMPATIBLE;
+
+    list = plainToClass(ImportFeatureFlagListValidator, list);
+    await validate(list, { forbidUnknownValues: true, stopAtFirstError: true }).then((errors) => {
+      if (errors.length > 0) {
+        compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      }
+    });
+
+    if (!(list instanceof ImportFeatureFlagListValidator)) {
+      compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+    }
+
+    if (list?.segment?.context !== flag.context[0]) {
+      compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+    }
+
+    if (compatibilityType === IMPORT_COMPATIBILITY_TYPE.COMPATIBLE) {
+      if (list.listType === 'Segment') {
+        const segments = await this.segmentService.getSegmentByIds(list.segment.subSegmentIds);
+
+        if (!segments.length) {
+          compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        }
+
+        segments?.forEach((segment) => {
+          if (!segment || segment.context !== flag.context[0]) {
+            compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+          }
+        });
+      } else if (list.listType !== 'Individual' && list.segment.groups.length) {
+        const contextMetaData = env.initialization.contextMetadata;
+        const groupTypes = contextMetaData[flag.context[0]].GROUP_TYPES;
+        if (!groupTypes.includes(list.listType)) {
+          compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        }
+
+        list.segment.groups.forEach((group) => {
+          if (group.type !== list.listType) {
+            compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+          }
+        });
+      }
+    }
+
+    return {
+      fileName: fileName,
+      compatibilityType: compatibilityType,
+    };
+  }
+
+  public async exportAllLists(
+    id: string,
+    listType: FEATURE_FLAG_LIST_FILTER_MODE,
+    logger: UpgradeLogger
+  ): Promise<ImportFeatureFlagListValidator[] | null> {
+    const featureFlag = await this.findOne(id, logger);
+    let listsArray: ImportFeatureFlagListValidator[] = [];
+    if (featureFlag) {
+      let lists: (FeatureFlagSegmentExclusion | FeatureFlagSegmentExclusion)[] = [];
+      if (listType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
+        lists = featureFlag.featureFlagSegmentInclusion;
+      } else if (listType === FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION) {
+        lists = featureFlag.featureFlagSegmentExclusion;
+      } else {
+        return null;
+      }
+
+      if (!lists.length) return [];
+
+      listsArray = lists.map((list) => {
+        const { name, description, context, type } = list.segment;
+
+        const userIds = list.segment.individualForSegment.map((individual) => individual.userId);
+
+        const subSegmentIds = list.segment.subSegments.map((subSegment) => subSegment.id);
+
+        const groups = list.segment.groupForSegment.map((group) => {
+          return { type: group.type, groupId: group.groupId };
+        });
+
+        const listDoc: ImportFeatureFlagListValidator = {
+          listType: list.listType,
+          segment: { name, description, context, type, userIds, subSegmentIds, groups },
+        };
+        return listDoc;
+      });
+    } else {
+      throw new NotFoundException('Experiment not found.');
+    }
+
+    return listsArray;
   }
 }

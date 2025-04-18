@@ -14,6 +14,7 @@ import { ExperimentVM } from '../../../../../../core/experiments/store/experimen
   templateUrl: './conditions-table.component.html',
   styleUrls: ['./conditions-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ConditionsTableComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
@@ -36,6 +37,9 @@ export class ConditionsTableComponent implements OnInit, OnDestroy {
   // Condition Errors
   conditionWeightSumError: string = null;
   conditionNegativeWeightError: string = null;
+
+  // Used for hiding the Weight Equally checkbox
+  isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
 
   constructor(
     private experimentDesignStepperService: ExperimentDesignStepperService,

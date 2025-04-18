@@ -80,7 +80,7 @@
     </div>
   </div>
 
-  <div scroll (scrolled)="fetchExperimentOnScroll()" class="experiment-list-table-container" #tableContainer>
+  <div (scroll)="onScroll()" class="experiment-list-table-container" #tableContainer>
     <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingExperiment$ | async"></mat-progress-bar>
     <table
       class="experiment-list"
@@ -112,7 +112,7 @@
               class="experiment-name"
               matTooltipPosition="above"
             >
-              {{ experiment.name | truncate: 30 }}
+              {{ experiment.name | truncate : 30 }}
             </a>
           </ng-template>
           <br />
@@ -128,7 +128,7 @@
               [matTooltip]="experiment.description"
               matTooltipPosition="above"
             >
-              {{ experiment.description | truncate: 35 }}
+              {{ experiment.description | truncate : 35 }}
             </span>
           </ng-template>
         </td>
@@ -155,7 +155,7 @@
             <ng-template #experimentStateTemplate>
               <span
                 class="experiment-state-circle"
-                [ngStyle]="{ backgroundColor: experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"
+                [ngStyle]="{ backgroundColor: experiment.state | experimentState : ExperimentStatePipeTypes.COLOR }"
               ></span>
             </ng-template>
             <span
@@ -168,7 +168,7 @@
             </span>
           </div>
           <span class="experiment-schedule ft-10-400" *ngIf="experiment.state === ExperimentState.SCHEDULED">
-            {{ '(' + (experiment.startOn | date: 'MMM d, y h:mm a') + ')' }}
+            {{ '(' + (experiment.startOn | date : 'MMM d, y h:mm a') + ')' }}
           </span>
         </td>
       </ng-container>
@@ -300,21 +300,23 @@
             <span
               class="enrollment-info"
               *ngIf="experiment.stat?.users"
-              [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: experiment.stat?.users }"
+              [innerHTML]="
+                'home.experiments-table.students.text' | translate : { noOfStudents: experiment.stat?.users }
+              "
             ></span>
             <span class="enrollment-info" *ngIf="experiment.stat?.groups">
-              {{ 'home.experiments-table.classes.text' | translate: { noOfClasses: experiment.stat?.groups } }}
+              {{ 'home.experiments-table.classes.text' | translate : { noOfClasses: experiment.stat?.groups } }}
               <span *ngIf="experiment.stat?.groups < 2; else groupTypePlural">
-                {{ 'global.group-type-singular.text' | translate: { groupType: experiment.group } }}
+                {{ 'global.group-type-singular.text' | translate : { groupType: experiment.group } }}
               </span>
               <ng-template #groupTypePlural>
-                <span>{{ 'global.group-type-plural.text' | translate: { groupType: experiment.group } }}</span>
+                <span>{{ 'global.group-type-plural.text' | translate : { groupType: experiment.group } }}</span>
               </ng-template>
             </span>
             <span
               class="enrollment-info"
               *ngIf="!experiment.stat?.groups && !experiment.stat?.users"
-              [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: 0 }"
+              [innerHTML]="'home.experiments-table.students.text' | translate : { noOfStudents: 0 }"
             ></span>
           </ng-container>
           <ng-template #skeletonTemplate>

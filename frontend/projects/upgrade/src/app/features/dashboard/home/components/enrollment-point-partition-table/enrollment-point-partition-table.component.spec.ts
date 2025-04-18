@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EnrollmentPointPartitionTableComponent } from './enrollment-point-partition-table.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
@@ -8,7 +8,7 @@ xdescribe('EnrollmentPointPartitionTableComponent', () => {
   let component: EnrollmentPointPartitionTableComponent;
   let fixture: ComponentFixture<EnrollmentPointPartitionTableComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [EnrollmentPointPartitionTableComponent, TableRowComponent],
       imports: [TestingModule],

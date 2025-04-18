@@ -19,67 +19,36 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/upgrade",
+            "allowedCommonJsDependencies": [
+              "validator",
+              "lodash",
+              "reflect-metadata"
+            ],
+            "outputPath": {
+              "base": "dist/upgrade"
+            },
             "index": "projects/upgrade/src/index.html",
-            "main": "projects/upgrade/src/main.ts",
-            "polyfills": "projects/upgrade/src/polyfills.ts",
+            "polyfills": [
+              "projects/upgrade/src/polyfills.ts"
+            ],
             "tsConfig": "projects/upgrade/tsconfig.app.json",
             "assets": [
               "projects/upgrade/src/favicon.ico",
               "projects/upgrade/src/assets"
             ],
-            "styles": ["projects/upgrade/src/styles.scss"],
+            "styles": [
+              "projects/upgrade/src/styles.scss"
+            ],
             "scripts": [],
-            "vendorChunk": true,
             "extractLicenses": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true
+            "namedChunks": true,
+            "browser": "projects/upgrade/src/main.ts"
           },
           "configurations": {
-            "beanstalk": {
-              "fileReplacements": [
-                {
-                  "replace": "projects/upgrade/src/environments/environment.ts",
-                  "with": "projects/upgrade/src/environments/environment.beanstalk.prod.ts"
-                }
-              ],
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "budgets": [
-                {
-                  "type": "bundle",
-                  "name": "polyfills",
-                  "baseline": "150kb",
-                  "maximumWarning": "50kb",
-                  "maximumError": "100kb"
-                },
-                {
-                  "type": "bundle",
-                  "name": "styles",
-                  "baseline": "1mb",
-                  "maximumWarning": "2mb",
-                  "maximumError": "100kb"
-                },
-                {
-                  "type": "bundle",
-                  "name": "main",
-                  "baseline": "2mb",
-                  "maximumWarning": "3mb",
-                  "maximumError": "200kb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb"
-                }
-              ]
-            },
             "prod": {
               "fileReplacements": [
                 {
@@ -92,7 +61,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",
@@ -133,7 +101,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",
@@ -171,10 +138,49 @@
               ],
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
+              "sourceMap": true,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
+              "budgets": [
+                {
+                  "type": "bundle",
+                  "name": "polyfills",
+                  "baseline": "150kb",
+                  "maximumWarning": "50kb",
+                  "maximumError": "100kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "styles",
+                  "baseline": "1mb",
+                  "maximumWarning": "2mb",
+                  "maximumError": "100kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "main",
+                  "baseline": "2mb",
+                  "maximumWarning": "3mb",
+                  "maximumError": "200kb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
+            },
+            "local": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/upgrade/src/environments/environment.ts",
+                  "with": "projects/upgrade/src/environments/environment.local.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": true,
+              "namedChunks": false,
+              "extractLicenses": true,
               "budgets": [
                 {
                   "type": "bundle",
@@ -212,10 +218,9 @@
               ],
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
+              "sourceMap": true,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",
@@ -253,10 +258,9 @@
               ],
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
+              "sourceMap": true,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",
@@ -297,7 +301,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
               "budgets": [
                 {
                   "type": "bundle",
@@ -344,8 +347,8 @@
             "qa": {
               "buildTarget": "upgrade:build:qa"
             },
-            "beanstalk": {
-              "buildTarget": "upgrade:build:beanstalk"
+            "local": {
+              "buildTarget": "upgrade:build:local"
             }
           }
         },
@@ -370,9 +373,6 @@
             },
             "qa": {
               "devServerTarget": "upgrade:serve:qa"
-            },
-            "beanstalk": {
-              "devServerTarget": "upgrade:serve:beanstalk"
             }
           }
         }

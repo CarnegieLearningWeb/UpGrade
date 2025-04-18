@@ -19,6 +19,7 @@ import {
   PAYLOAD_TYPE,
   CONDITION_ORDER,
   ASSIGNMENT_ALGORITHM,
+  MoocletTSConfigurablePolicyParametersDTO,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -245,7 +246,6 @@ export interface Experiment {
   group: string;
   assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
   stratificationFactor?: { stratificationFactorName: string };
-  logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentDecisionPoint[];
   factors: ExperimentFactor[];
@@ -257,6 +257,8 @@ export interface Experiment {
   experimentSegmentExclusion: SegmentNew;
   groupSatisfied?: number;
   backendVersion: string;
+  moocletPolicyParameters?: MoocletTSConfigurablePolicyParametersDTO;
+  rewardMetricKey?: string;
 }
 
 export interface ParticipantsMember {
@@ -309,6 +311,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
   isLoadingExperimentDetailStats: boolean;
   isPollingExperimentDetailStats: boolean;
+  isLoadingExperimentExport: boolean;
   skipExperiment: number;
   totalExperiments: number;
   searchKey: EXPERIMENT_SEARCH_KEY;
@@ -375,4 +378,10 @@ export interface InteractionEffectGraphData {
   name: string;
   series: InteractionEffectLineChartSeriesData[];
   dot: boolean;
+}
+
+export interface RewardMetricData {
+  metric_Key: string;
+  metric_Operation: string;
+  metric_Name: string;
 }

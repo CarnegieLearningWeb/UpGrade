@@ -1,14 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogActions,
-  MatDialogClose,
-  MatDialogContent,
-  MatDialogRef,
-  MatDialogTitle,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
@@ -20,18 +12,7 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
 
 @Component({
   selector: 'app-add-feature-flag-modal',
-  standalone: true,
-  imports: [
-    CommonModalComponent,
-    MatInputModule,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
-    MatDialogClose,
-    FormsModule,
-    TranslateModule,
-    CommonModule,
-  ],
+  imports: [CommonModalComponent, MatInputModule, FormsModule, TranslateModule, CommonModule],
   templateUrl: './delete-feature-flag-modal.component.html',
   styleUrl: './delete-feature-flag-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,7 +21,6 @@ export class DeleteFeatureFlagModalComponent {
   selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   inputValue = '';
   subscriptions = new Subscription();
-  isSelectedFeatureFlagRemoved$ = this.featureFlagsService.isSelectedFeatureFlagRemoved$;
   isLoadingFeatureFlagDelete$ = this.featureFlagsService.isLoadingFeatureFlagDelete$;
   private inputSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
@@ -60,27 +40,12 @@ export class DeleteFeatureFlagModalComponent {
     public dialogRef: MatDialogRef<DeleteFeatureFlagModalComponent>
   ) {}
 
-  ngOnInit(): void {
-    this.listenForSelectedFeatureFlagDeletion();
-  }
-
   onInputChange(value: string): void {
     this.inputSubject.next(value);
   }
 
-  listenForSelectedFeatureFlagDeletion(): void {
-    this.subscriptions = this.isSelectedFeatureFlagRemoved$.subscribe(() => this.closeModal());
-  }
-
   onPrimaryActionBtnClicked(flagId: string) {
     this.featureFlagsService.deleteFeatureFlag(flagId);
-  }
-
-  closeModal() {
     this.dialogRef.close();
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

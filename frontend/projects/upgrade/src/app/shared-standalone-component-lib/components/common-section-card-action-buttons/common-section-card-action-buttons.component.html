@@ -22,31 +22,18 @@
   </div>
 
   <div class="options-container dense-2">
-    <button
-      *ngIf="showMenuButton"
-      mat-icon-button
-      [matMenuTriggerFor]="menu"
-      [disabled]="!menuButtonItems.length"
-    >
+    <button *ngIf="showMenuButton" mat-icon-button [matMenuTriggerFor]="menu" [disabled]="!menuButtonItems?.length">
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
       <ng-container *ngFor="let item of menuButtonItems">
-        <button
-          *ngIf="!item.disabled"
-          mat-menu-item
-          (click)="onMenuButtonItemClick(item.name)"
-        >
-          <span class="ft-14-400">{{ item.name }}</span>
+        <button *ngIf="!item.disabled" mat-menu-item (click)="onMenuButtonItemClick(item.action)">
+          <span class="ft-14-400">{{ item.label | translate | titlecase }}</span>
         </button>
       </ng-container>
     </mat-menu>
 
-    <button
-      mat-icon-button
-      [disabled]="sectionCardExpandBtnDisabled"
-      (click)="onSectionCardExpandChange()"
-    >
+    <button mat-icon-button [disabled]="sectionCardExpandBtnDisabled" (click)="onSectionCardExpandChange()">
       <mat-icon>{{ isSectionCardExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
     </button>
   </div>

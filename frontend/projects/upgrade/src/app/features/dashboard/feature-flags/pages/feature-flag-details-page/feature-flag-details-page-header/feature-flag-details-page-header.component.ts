@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-feature-flag-details-page-header',
-  standalone: true,
   imports: [CommonDetailsPageHeaderComponent, CommonModule],
   templateUrl: './feature-flag-details-page-header.component.html',
   styleUrl: './feature-flag-details-page-header.component.scss',

@@ -1,13 +1,15 @@
-import { Injectable } from '@angular/core';
+import { Injectable, InjectionToken } from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
 import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
-import { ImportFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/import-feature-flag-modal/import-feature-flag-modal.component';
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
+  Segment,
   UPSERT_PRIVATE_SEGMENT_LIST_ACTION,
+  UPSERT_SEGMENT_ACTION,
   UpsertPrivateSegmentListParams,
+  UpsertSegmentParams,
 } from '../../core/segments/store/segments.model';
 import {
   FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
@@ -23,6 +25,27 @@ import {
   ModalSize,
   SimpleConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
+import { UpsertSegmentModalComponent } from '../../features/dashboard/segments/modals/upsert-segment-modal/upsert-segment-modal.component';
+import {
+  FEATURE_FLAG_IMPORT_SERVICE,
+  ImportServiceAdapter,
+  LIST_IMPORT_SERVICE,
+  SEGMENT_IMPORT_SERVICE,
+  SEGMENT_LIST_IMPORT_SERVICE,
+} from '../../shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
+import { CommonImportModalComponent } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-modal.component';
+import { DeleteSegmentModalComponent } from '../../features/dashboard/segments/modals/delete-segment-modal/delete-segment-modal.component';
+
+export interface ImportModalParams {
+  importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
+  messageKey: string; // Translation key for import message
+  warningMessageKey: string; // Translation key for warning message
+  incompatibleMessageKey: string; // Translation key for incompatible message
+  flagId?: string; // for feature flag list import
+  segmentId?: string; // for segment list import
+  listType?: FEATURE_FLAG_LIST_FILTER_MODE; // for feature flag list import
+}
 
 @Injectable({
   providedIn: 'root',
@@ -38,7 +61,7 @@ export class DialogService {
     });
   }
 
-  // Common modal flags ---------------------------------------- //
+  // feature flag modal ---------------------------------------- //
   openAddFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Add Feature Flag',
@@ -155,7 +178,7 @@ export class DialogService {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: ModalSize.STANDARD,
-      autoFocus: 'first-heading',
+      autoFocus: 'input',
       disableClose: true,
     };
     return this.dialog.open(UpsertFeatureFlagModalComponent, config);
@@ -174,7 +197,7 @@ export class DialogService {
         sourceList: null,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
-        flagId: flagId,
+        id: flagId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
@@ -193,7 +216,7 @@ export class DialogService {
         sourceList,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
-        flagId: flagId,
+        id: flagId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
@@ -212,7 +235,7 @@ export class DialogService {
         sourceList: null,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
-        flagId: flagId,
+        id: flagId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
@@ -231,7 +254,45 @@ export class DialogService {
         sourceList,
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
-        flagId: flagId,
+        id: flagId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openAddListModal(appContext: string, segmentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Add List',
+      nameHint: 'segments.upsert-list-modal.name-hint.text',
+      valuesLabel: 'segments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'segments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList: null,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_SEGMENT_LIST,
+        id: segmentId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openEditListModal(sourceList: ParticipantListTableRow, appContext: string, segmentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Edit List',
+      nameHint: 'segments.upsert-list-modal.name-hint.text',
+      valuesLabel: 'segments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'segments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_SEGMENT_LIST,
+        id: segmentId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
@@ -320,9 +381,25 @@ export class DialogService {
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
   }
 
-  openExportFeatureFlagDesignModal(warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openDeleteSegmentModal() {
     const commonModalConfig: CommonModalConfig = {
-      title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
+      title: 'Delete Segment',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+    };
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.SMALL,
+      autoFocus: 'input',
+      disableClose: true,
+    };
+    return this.dialog.open(DeleteSegmentModalComponent, config);
+  }
+
+  openExportDesignModal(title: string, warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig = {
+      title: title,
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -333,6 +410,31 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
+  openExportSegmentDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'segments.export-segment-design.confirmation-title.text',
+      primaryActionBtnLabel: 'Export',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: 'segments.export-segment-design.confirmation-message.text',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openExportSegmentListsDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'segments.export-all-segment-lists-design.confirmation-title.text',
+      primaryActionBtnLabel: 'Export',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: 'segments.export-all-segment-lists-design.confirmation-message.text',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
   openEmailFeatureFlagDataModal(
     warning: string,
     subtext: string
@@ -351,20 +453,158 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
-  openImportFeatureFlagModal() {
-    const commonModalConfig: CommonModalConfig = {
-      title: 'Import Feature Flag',
-      primaryActionBtnLabel: 'Import',
-      primaryActionBtnColor: 'primary',
-      cancelBtnLabel: 'Cancel',
-    };
+  // segment modal ---------------------------------------- //
+  openUpsertSegmentModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: ModalSize.STANDARD,
       autoFocus: 'input',
       disableClose: true,
     };
-    return this.dialog.open(ImportFeatureFlagModalComponent, config);
+    return this.dialog.open(UpsertSegmentModalComponent, config);
+  }
+
+  openAddSegmentModal() {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Add Segment',
+      tagsLabel: 'segments.upsert-segment-modal.tags-label.text',
+      tagsPlaceholder: 'segments.upsert-segment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceSegment: null,
+        action: UPSERT_SEGMENT_ACTION.ADD,
+      },
+    };
+    return this.openUpsertSegmentModal(commonModalConfig);
+  }
+
+  openEditSegmentModal(sourceSegment: Segment) {
+    const commonModalConfig: CommonModalConfig<UpsertSegmentParams> = {
+      title: 'Edit Segment',
+      tagsLabel: 'segments.upsert-segment-modal.tags-label.text',
+      tagsPlaceholder: 'segments.upsert-segment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceSegment: { ...sourceSegment },
+        action: UPSERT_SEGMENT_ACTION.EDIT,
+      },
+    };
+    return this.openUpsertSegmentModal(commonModalConfig);
+  }
+
+  openDuplicateSegmentModal(sourceSegment: Segment) {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Duplicate Segment',
+      tagsLabel: 'segments.upsert-segment-modal.tags-label.text',
+      tagsPlaceholder: 'segments.upsert-segment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceSegment: { ...sourceSegment },
+        action: UPSERT_SEGMENT_ACTION.DUPLICATE,
+      },
+    };
+    return this.openUpsertSegmentModal(commonModalConfig);
+  }
+
+  openImportSegmentModal() {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'segments.import-segment-modal.title.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: SEGMENT_IMPORT_SERVICE,
+        messageKey: 'segments.import-segment.message.text',
+        warningMessageKey: 'segments.import-segment-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'segments.import-segment-modal.compatibility-description.incompatible.text',
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportFeatureFlagModal() {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'feature-flags.import-flag-modal.title.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: FEATURE_FLAG_IMPORT_SERVICE,
+        messageKey: 'feature-flags.import-feature-flag.message.text',
+        warningMessageKey: 'feature-flags.import-flag-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'feature-flags.import-flag-modal.compatibility-description.incompatible.text',
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportFeatureFlagExcludeListModal(flagId: string) {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'feature-flags.import-flag-list-modal.title.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: LIST_IMPORT_SERVICE,
+        messageKey: 'feature-flags.import-feature-flag-list.message.text',
+        warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
+        listType: FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+        flagId,
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportFeatureFlagIncludeListModal(flagId: string) {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'feature-flags.import-flag-list-modal.title.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: LIST_IMPORT_SERVICE,
+        messageKey: 'feature-flags.import-feature-flag-list.message.text',
+        warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
+        listType: FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+        flagId,
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportSegmentListModal(segmentId: string) {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'segments.import-list-modal.title.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: SEGMENT_LIST_IMPORT_SERVICE,
+        messageKey: 'segments.import-list.message.text',
+        warningMessageKey: 'segments.import-list-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'segments.import-list-modal.compatibility-description.incompatible.text',
+        segmentId,
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openCommonImportModal(commonModalConfig: CommonModalConfig<ImportModalParams>) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: 'input',
+      disableClose: true,
+    };
+    return this.dialog.open(CommonImportModalComponent, config);
   }
 
   openSimpleCommonConfirmationModal(

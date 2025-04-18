@@ -193,15 +193,17 @@
                 {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
               </mat-header-cell>
               <mat-cell *matCellDef="let element; let queryIndex = index" [formGroupName]="queryIndex">
-                <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
-                  <input
-                    class="ft-14-400"
-                    matInput
-                    [placeholder]="'home.new-experiment.metrics.description.placeholder.text' | translate"
-                    formControlName="queryName"
-                    autocomplete="off"
-                  />
-                </mat-form-field>
+                <div class="tertiary-form">
+                  <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
+                    <input
+                      class="ft-14-400"
+                      matInput
+                      [placeholder]="'home.new-experiment.metrics.description.placeholder.text' | translate"
+                      formControlName="queryName"
+                      autocomplete="off"
+                    />
+                  </mat-form-field>
+                </div>
               </mat-cell>
             </ng-container>
 
@@ -226,31 +228,33 @@
           </button>
         </ng-container>
         <br />
-        <span
-          class="ft-14-600 validation-message"
-          *ngIf="queryMetricKeyError.length > 0"
-          [innerHTML]="'home.new-experiment.metrics.metrics-key-exist.validation.text' | translate"
-        ></span>
-        <span
-          class="ft-14-600 validation-message"
-          *ngIf="queryStatisticError.length > 0"
-          [innerHTML]="'home.new-experiment.metrics.statistics-exist.validation.text' | translate"
-        ></span>
-        <span
-          class="ft-14-600 validation-message"
-          *ngIf="queryComparisonStatisticError.length > 0"
-          [innerHTML]="'home.new-experiment.metrics.comparison-statistics-exist.validation.text' | translate"
-        ></span>
-        <span
-          class="ft-14-600 validation-message"
-          *ngIf="queryNameError.length > 0"
-          [innerHTML]="'home.new-experiment.metrics.description-exist.validation.text' | translate"
-        ></span>
-        <span
-          class="ft-14-600 validation-message"
-          *ngIf="queryMetricDropDownError.length > 0"
-          [innerHTML]="'home.new-experiment.metrics.metric-name-exist.validation.text' | translate"
-        ></span>
+        <div class="validation-messages-container">
+          <span
+            class="ft-14-600 validation-message"
+            *ngIf="queryMetricKeyError.length > 0"
+            [innerHTML]="'home.new-experiment.metrics.metrics-key-exist.validation.text' | translate"
+          ></span>
+          <span
+            class="ft-14-600 validation-message"
+            *ngIf="queryStatisticError.length > 0"
+            [innerHTML]="'home.new-experiment.metrics.statistics-exist.validation.text' | translate"
+          ></span>
+          <span
+            class="ft-14-600 validation-message"
+            *ngIf="queryComparisonStatisticError.length > 0"
+            [innerHTML]="'home.new-experiment.metrics.comparison-statistics-exist.validation.text' | translate"
+          ></span>
+          <span
+            class="ft-14-600 validation-message"
+            *ngIf="queryNameError.length > 0"
+            [innerHTML]="'home.new-experiment.metrics.description-exist.validation.text' | translate"
+          ></span>
+          <span
+            class="ft-14-600 validation-message"
+            *ngIf="queryMetricDropDownError.length > 0"
+            [innerHTML]="'home.new-experiment.metrics.metric-name-exist.validation.text' | translate"
+          ></span>
+        </div>
       </ng-container>
       <ng-template #noAvailableMetricsMessage>
         <br />
@@ -262,6 +266,52 @@
           ></span>
         </div>
       </ng-template>
+
+      <!-- Reward Metric Section -->
+      <div class="reward-metric-container" *ngIf="isMoocletExperimentDesign$ | async">
+        <span class="title">{{ 'home.new-experiment.metrics.reward-metric.text' | translate }}</span>
+        <mat-table class="reward-metric-table" [dataSource]="rewardMetricDataSource">
+          <!-- Metric Column -->
+          <ng-container matColumnDef="metricsKey">
+            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+              {{ 'query.metric.text' | translate }}
+            </mat-header-cell>
+            <mat-cell *matCellDef="let row">
+              {{ row.metric_Key }}
+            </mat-cell>
+          </ng-container>
+
+          <!-- Statistic Column -->
+          <ng-container matColumnDef="metricsOperation">
+            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+              {{ 'monitor.statistic.text' | translate }}
+            </mat-header-cell>
+            <mat-cell *matCellDef="let row">
+              {{ row.metric_Operation }}
+            </mat-cell>
+          </ng-container>
+
+          <!-- Description Column -->
+          <ng-container matColumnDef="metricsName">
+            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+              {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
+            </mat-header-cell>
+            <mat-cell *matCellDef="let row">
+              {{ row.metric_Name }}
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="rewardMetricDisplayedColumns; sticky: true"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: rewardMetricDisplayedColumns"></mat-row>
+        </mat-table>
+
+        <p class="form-hint ft-12-400">
+          A reward metric is required for adaptive experiments.
+          <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer"
+            >Learn more</a
+          >
+        </p>
+      </div>
     </form>
   </section>
 

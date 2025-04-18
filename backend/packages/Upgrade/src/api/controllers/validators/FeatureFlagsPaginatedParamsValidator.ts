@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsDefined, IsNumber, IsOptional, ValidateNested, IsEnum, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, ValidateNested, IsEnum, IsString } from 'class-validator';
 import { SORT_AS_DIRECTION } from 'upgrade_types';
 
 // TODO: Move to upgrade types
@@ -10,17 +10,6 @@ export interface IFeatureFlagSearchParams {
 export interface IFeatureFlagSortParams {
   key: FLAG_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;
-}
-
-export interface ValidatedFeatureFlagsError {
-  fileName: string;
-  compatibilityType: FF_COMPATIBILITY_TYPE;
-}
-
-export enum FF_COMPATIBILITY_TYPE {
-  COMPATIBLE = 'compatible',
-  WARNING = 'warning',
-  INCOMPATIBLE = 'incompatible',
 }
 
 export enum FLAG_SORT_KEY {
@@ -61,12 +50,10 @@ class IFeatureFlagSearchParamsValidator {
 export class FeatureFlagPaginatedParamsValidator {
   @IsNotEmpty()
   @IsNumber()
-  @IsDefined()
   public skip: number;
 
   @IsNotEmpty()
   @IsNumber()
-  @IsDefined()
   public take: number;
 
   @IsOptional()

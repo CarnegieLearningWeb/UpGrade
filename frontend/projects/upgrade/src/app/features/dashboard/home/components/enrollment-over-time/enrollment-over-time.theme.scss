@@ -6,12 +6,12 @@
   .enrollment-over-time {
     .ngx-charts {
       text {
-        fill: mat.get-color-from-palette($foreground, text);
+        fill: mat.m2-get-color-from-palette($foreground, text);
       }
     }
 
     .ngx-charts .gridline-path {
-      stroke: mat.get-color-from-palette($foreground, chart-border);
+      stroke: mat.m2-get-color-from-palette($foreground, chart-border);
     }
   }
 }

@@ -8,6 +8,7 @@ export interface APIEndpoints {
   validateExperiment: string;
   importExperiment: string;
   exportExperiment: string;
+  exportAllExperiment: string;
   updateExperiments: string;
   getExperimentById: string;
   getAllAuditLogs: string;
@@ -29,11 +30,15 @@ export interface APIEndpoints {
   allExperimentNames: string;
   featureFlag: string;
   validateFeatureFlag: string;
+  validateFeatureFlagList: string;
   importFeatureFlag: string;
+  importFeatureFlagList: string;
   updateFlagStatus: string;
   updateFilterMode: string;
   getPaginatedFlags: string;
   exportFlagsDesign: string;
+  exportFFAllIncludeListsDesign: string;
+  exportFFAllExcludeListsDesign: string;
   emailFlagData: string;
   addFlagInclusionList: string;
   addFlagExclusionList: string;
@@ -44,10 +49,15 @@ export interface APIEndpoints {
   getVersion: string;
   contextMetaData: string;
   segments: string;
+  getPaginatedSegments: string;
+  globalSegments: string;
   validateSegments: string;
+  validateSegmentsImport: string;
   importSegments: string;
+  importSegmentList: string;
   exportSegments: string;
   exportSegmentCSV: string;
+  addSegmentList: string;
   getGroupAssignmentStatus: string;
   stratification: string;
 }
@@ -66,10 +76,11 @@ export interface Environment {
   pollingInterval: number;
   pollingLimit: number;
   api: APIEndpoints;
-  featureFlagNavToggle: boolean;
+  segmentsRefreshToggle: boolean;
   errorLogsToggle: boolean;
   withinSubjectExperimentSupportToggle: boolean;
   metricAnalyticsExperimentDisplayToggle: boolean;
+  moocletToggle: boolean;
 }
 
 export interface RuntimeEnvironmentConfig {
@@ -77,7 +88,7 @@ export interface RuntimeEnvironmentConfig {
   googleClientId?: string;
   endpointApi?: string;
   apiBaseUrl?: string;
-  featureFlagNavToggle?: boolean;
+  segmentsRefreshToggle?: boolean;
   withinSubjectExperimentSupportToggle?: boolean;
   errorLogsToggle?: boolean;
   metricAnalyticsExperimentDisplayToggle?: boolean;

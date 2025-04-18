@@ -78,9 +78,8 @@ export const simpleIndividualExperiment = {
   revertTo: null,
   tags: [],
   group: "teacher",
-  logging: false,
   filterMode: "includeAll",
-  backendVersion: "4.3.0",
+  backendVersion: "6.1.0",
   type: EXPERIMENT_TYPE.SIMPLE,
   conditions: [
     {
@@ -206,9 +205,8 @@ export const simpleGroupExperiment = {
   revertTo: null,
   tags: [],
   group: "add-group1",
-  logging: false,
   filterMode: "includeAll",
-  backendVersion: "4.3.0",
+  backendVersion: "6.1.0",
   type: EXPERIMENT_TYPE.SIMPLE,
   conditions: [
     {
@@ -336,9 +334,8 @@ export const factorialIndividualExperiment = {
   revertTo: null,
   tags: [],
   group: null,
-  logging: false,
   filterMode: "includeAll",
-  backendVersion: "4.3.0",
+  backendVersion: "6.1.0",
   type: EXPERIMENT_TYPE.FACTORIAL,
   conditions: [
     {
@@ -592,9 +589,8 @@ export const factorialGroupExperiment = {
   revertTo: null,
   tags: [],
   group: "add-group1",
-  logging: false,
   filterMode: "includeAll",
-  backendVersion: "4.3.0",
+  backendVersion: "6.1.0",
   type: EXPERIMENT_TYPE.FACTORIAL,
   conditions: [
     {
@@ -860,9 +856,8 @@ const simpleDPExperiment =
       revertTo: null,
       tags: [],
       group: null,
-      logging: false,
       filterMode: "includeAll",
-      backendVersion: "4.3.0",
+      backendVersion: "6.1.0",
       type: "Simple"
     }
   };
@@ -899,9 +894,8 @@ const withinSubjectDPExperiment = {
     tags: [],
     group: null,
     conditionOrder: "random",
-    logging: false,
     filterMode: "includeAll",
-    backendVersion: "4.3.0",
+    backendVersion: "6.1.0",
     type: "Simple"
   }
 }
@@ -937,9 +931,8 @@ const simpleExperimentDecisionPoint = {
     revertTo: null,
     tags: [],
     group: null,
-    logging: false,
     filterMode: "includeAll",
-    backendVersion: "4.3.0",
+    backendVersion: "6.1.0",
     type: "Simple",
     partitions: [
       {

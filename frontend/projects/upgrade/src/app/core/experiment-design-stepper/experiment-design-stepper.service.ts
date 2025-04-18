@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
-import { ASSIGNMENT_UNIT } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 import {
   ExperimentDecisionPoint,
   ExperimentCondition,
@@ -55,10 +55,11 @@ import {
   actionUpdateFactorialConditionTableData,
   actionUpdateSimpleExperimentPayloadTableData,
 } from './store/experiment-design-stepper.actions';
-import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import isEqual from 'lodash.isequal';
 import { PAYLOAD_TYPE } from '../../../../../../../types/src';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -74,9 +75,21 @@ export class ExperimentDesignStepperService {
   );
   factorialExperimentDesignData$ = this.store$.pipe(select(selectFactorialDesignData), distinctUntilChanged(isEqual));
 
+  // Name:
+  private experimentNameSource = new BehaviorSubject<string>('');
+  currentExperimentName$ = this.experimentNameSource.asObservable();
+
   // Unit of Assignment:
   private assignmentUnitSource = new BehaviorSubject<ASSIGNMENT_UNIT>(ASSIGNMENT_UNIT.INDIVIDUAL);
   currentAssignmentUnit$ = this.assignmentUnitSource.asObservable();
+
+  // Assignment Algorithm:
+  currentAssignmentAlgorithm$ = new BehaviorSubject<ASSIGNMENT_ALGORITHM>(ASSIGNMENT_ALGORITHM.RANDOM);
+  isMoocletExperimentDesign$ = this.currentAssignmentAlgorithm$.pipe(
+    map((algorithm) => {
+      return environment.moocletToggle && SUPPORTED_MOOCLET_ALGORITHMS.includes(algorithm);
+    })
+  );
 
   // Payload table:
   simpleExperimentPayloadTableDataBehaviorSubject$ = new BehaviorSubject<SimpleExperimentPayloadTableRowData[]>([]);
@@ -134,8 +147,16 @@ export class ExperimentDesignStepperService {
     this.factorialLevelsTableData$.subscribe(this.factorialLevelTableDataBehaviorSubject$);
   }
 
+  changeExperimentName(name: string) {
+    this.experimentNameSource.next(name);
+  }
+
   changeAssignmentUnit(unit: ASSIGNMENT_UNIT) {
     this.assignmentUnitSource.next(unit);
+  }
+
+  changeAssignmentAlgorithm(algo: ASSIGNMENT_ALGORITHM) {
+    this.currentAssignmentAlgorithm$.next(algo);
   }
 
   getHasExperimentDesignStepperDataChanged() {
@@ -647,6 +668,10 @@ export class ExperimentDesignStepperService {
         factorialLevelsRowData: rowData,
       })
     );
+  }
+
+  clearAssignmentAlgorithm(): void {
+    this.currentAssignmentAlgorithm$.next(ASSIGNMENT_ALGORITHM.RANDOM);
   }
 
   clearDecisionPointTableEditModeDetails(): void {

@@ -3,7 +3,7 @@
   class="input-container"
   subscriptSizing="dynamic"
   appearance="outline"
-  [ngClass]="{'invalid-field': isInvalid()}"
+  [ngClass]="{ 'invalid-field': isInvalid() }"
 >
   <mat-label class="ft-14-400">
     {{ label | translate }}
@@ -58,6 +58,8 @@
   </app-common-import-container>
   <p class="ft-12-400 form-hint">
     {{ 'feature-flags.upsert-list-modal.import-csv.message.text' | translate }}
-    <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">Learn more</a>
+    <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer"
+      >Learn more</a
+    >
   </p>
 </div>

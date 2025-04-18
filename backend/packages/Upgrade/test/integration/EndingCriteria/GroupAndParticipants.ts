@@ -49,17 +49,18 @@ export default async function GroupAndParticipants() {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
+  const experimentId = experiments[0].id;
   let markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName1,
     experimentPoint1,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   // change experiment status to Enrolling
-  const experimentId = experiments[0].id;
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
@@ -87,6 +88,7 @@ export default async function GroupAndParticipants() {
     experimentName1,
     experimentPoint1,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName1, experimentPoint1);
@@ -111,6 +113,7 @@ export default async function GroupAndParticipants() {
     experimentName2,
     experimentPoint2,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName2, experimentPoint2);
@@ -140,6 +143,7 @@ export default async function GroupAndParticipants() {
     experimentName1,
     experimentPoint1,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName1, experimentPoint1);
@@ -163,6 +167,7 @@ export default async function GroupAndParticipants() {
     experimentName2,
     experimentPoint2,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName2, experimentPoint2);
@@ -192,6 +197,7 @@ export default async function GroupAndParticipants() {
     experimentName1,
     experimentPoint1,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[4].id, experimentName1, experimentPoint1);
@@ -215,6 +221,7 @@ export default async function GroupAndParticipants() {
     experimentName2,
     experimentPoint2,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[4].id, experimentName2, experimentPoint2);
@@ -244,6 +251,7 @@ export default async function GroupAndParticipants() {
     experimentName1,
     experimentPoint1,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[5].id, experimentName1, experimentPoint1);
@@ -267,6 +275,7 @@ export default async function GroupAndParticipants() {
     experimentName2,
     experimentPoint2,
     condition,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[4].id, experimentName2, experimentPoint2);

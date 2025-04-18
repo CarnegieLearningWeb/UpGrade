@@ -27,6 +27,7 @@ import { ExperimentDesignStepperService } from '../../../../../core/experiment-d
   templateUrl: './experiment-post-condition.component.html',
   styleUrls: ['./experiment-post-condition.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   @Input() experimentInfo: ExperimentVM;

@@ -6,31 +6,47 @@ import {
   selectIsLoadingSegments,
   selectAllSegments,
   selectSelectedSegment,
+  selectRootTableState,
+  selectSegmentOverviewDetails,
   selectExperimentSegmentsInclusion,
   selectExperimentSegmentsExclusion,
   selectFeatureFlagSegmentsInclusion,
   selectFeatureFlagSegmentsExclusion,
-  selectSegmentById,
   selectSearchString,
   selectSearchKey,
   selectSortKey,
   selectSortAs,
+  selectSegmentLists,
+  selectAppContexts,
+  selectSegmentUsageData,
+  selectIsLoadingGlobalSegments,
+  selectGlobalTableState,
+  selectGlobalSortKey,
+  selectGlobalSortAs,
+  isLoadingUpsertSegment,
+  selectSegmentIdAfterNavigation,
 } from './store/segments.selectors';
 import {
+  AddPrivateSegmentListRequest,
+  AddSegmentRequest,
+  EditPrivateSegmentListRequest,
   LIST_OPTION_TYPE,
   Segment,
   SegmentInput,
   SegmentLocalStorageKeys,
+  UpdateSegmentRequest,
   UpsertSegmentType,
 } from './store/segments.model';
-import { filter, map, tap, withLatestFrom } from 'rxjs/operators';
-import { Observable, combineLatest } from 'rxjs';
+import { filter, map, withLatestFrom } from 'rxjs/operators';
+import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
-import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
+import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY, DuplicateSegmentNameError } from 'upgrade_types';
 import { LocalStorageService } from '../local-storage/local-storage.service';
+import { selectShouldUseLegacyUI } from './store/segments.selectors';
 import { selectContextMetaData } from '../experiments/store/experiments.selectors';
 import { selectSelectedFeatureFlag } from '../feature-flags/store/feature-flags.selectors';
 import { CommonTextHelpersService } from '../../shared/services/common-text-helpers.service';
+import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
 
 @Injectable({ providedIn: 'root' })
 export class SegmentsService {
@@ -41,33 +57,39 @@ export class SegmentsService {
   ) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
+  isLoadingUpsertSegment$ = this.store$.pipe(select(isLoadingUpsertSegment));
+  setIsLoadingImportSegment$ = this.store$.pipe(select(selectIsLoadingSegments));
+  isLoadingGlobalSegments$ = this.store$.pipe(select(selectIsLoadingGlobalSegments));
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
+  selectRootTableState$ = this.store$.pipe(select(selectRootTableState));
+  selectGlobalTableState$ = this.store$.pipe(select(selectGlobalTableState));
+  shouldUseLegacyView$ = this.store$.pipe(select(selectShouldUseLegacyUI));
+  selectedSegmentOverviewDetails = this.store$.pipe(select(selectSegmentOverviewDetails));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
   selectSegmentSortKey$ = this.store$.pipe(select(selectSortKey));
   selectSegmentSortAs$ = this.store$.pipe(select(selectSortAs));
+  selectGlobalSegmentSortKey$ = this.store$.pipe(select(selectGlobalSortKey));
+  selectGlobalSegmentSortAs$ = this.store$.pipe(select(selectGlobalSortAs));
+  selectSegmentLists$ = this.store$.pipe(select(selectSegmentLists));
+  selectSegmentListsLength$ = this.store$.pipe(
+    select(selectSegmentLists),
+    map((lists) => lists.length)
+  );
+  appContexts$ = this.store$.pipe(select(selectAppContexts));
   allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
   allFeatureFlagSegmentsExclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsExclusion));
   allFeatureFlagSegmentsInclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsInclusion));
+  segmentUsageData$ = this.store$.pipe(select(selectSegmentUsageData));
+  duplicateSegmentNameError$ = new BehaviorSubject<DuplicateSegmentNameError>(null);
+  selectSegmentIdAfterNavigation$ = this.store$.pipe(select(selectSegmentIdAfterNavigation));
 
   selectSearchSegmentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
       filter(([searchKey, searchString]) => !!searchKey && !!searchString),
       map(([searchKey, searchString]) => ({ searchKey, searchString }))
-    );
-  }
-
-  selectSegmentById(segmentId: string) {
-    return this.store$.pipe(
-      select(selectSegmentById, { segmentId }),
-      tap((segment) => {
-        if (!segment) {
-          this.fetchSegmentById(segmentId);
-        }
-      }),
-      map((segment) => ({ ...segment }))
     );
   }
 
@@ -83,29 +105,21 @@ export class SegmentsService {
     )
   );
 
-  selectPrivateSegmentListTypeOptions$ = this.store$.pipe(
-    select(selectContextMetaData),
-    withLatestFrom(this.store$.pipe(select(selectSelectedFeatureFlag))),
-    map(([contextMetaData, flag]) => {
-      // TODO: straighten out contextmetadata and it's selectors with a dedicated service to avoid this sweaty effort to get standard information
-      const flagAppContext = flag?.context?.[0];
-      const groupTypes = contextMetaData?.contextMetadata?.[flagAppContext]?.GROUP_TYPES ?? [];
-      const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes as string[]);
-      const listOptionTypes = [
-        {
-          value: LIST_OPTION_TYPE.SEGMENT,
-          viewValue: LIST_OPTION_TYPE.SEGMENT,
-        },
-        {
-          value: LIST_OPTION_TYPE.INDIVIDUAL,
-          viewValue: LIST_OPTION_TYPE.INDIVIDUAL,
-        },
-        ...groupTypeSelectOptions,
-      ];
+  selectPrivateSegmentListTypeOptions$ = (appContext: string): Observable<{ value: string; viewValue: string }[]> => {
+    return this.store$.pipe(
+      select(selectContextMetaData),
+      map((contextMetaData) => {
+        const groupTypes = contextMetaData?.contextMetadata?.[appContext]?.GROUP_TYPES ?? [];
+        const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes as string[]);
 
-      return listOptionTypes;
-    })
-  );
+        return [
+          { value: LIST_OPTION_TYPE.SEGMENT, viewValue: LIST_OPTION_TYPE.SEGMENT },
+          { value: LIST_OPTION_TYPE.INDIVIDUAL, viewValue: LIST_OPTION_TYPE.INDIVIDUAL },
+          ...groupTypeSelectOptions,
+        ];
+      })
+    );
+  };
 
   selectSegmentsByContext(appContext: string): Observable<Segment[]> {
     return this.selectAllSegments$.pipe(
@@ -122,14 +136,26 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionGetSegmentById({ segmentId }));
   }
 
+  fetchContextMetaData() {
+    this.store$.dispatch(actionFetchContextMetaData({ isLoadingContextMetaData: true }));
+  }
+
   isInitialSegmentsLoading() {
     return combineLatest(this.store$.pipe(select(selectIsLoadingSegments)), this.allSegments$).pipe(
       map(([isLoading, segments]) => !isLoading || !!segments.length)
     );
   }
 
-  fetchSegments(fromStarting?: boolean) {
+  fetchSegmentsPaginated(fromStarting?: boolean) {
     this.store$.dispatch(SegmentsActions.actionFetchSegments({ fromStarting }));
+  }
+
+  fetchGlobalSegments(fromStarting?: boolean) {
+    this.store$.dispatch(SegmentsActions.actionFetchGlobalSegments({ fromStarting }));
+  }
+
+  fetchAllSegments(fromStarting?: boolean) {
+    this.store$.dispatch(SegmentsActions.actionfetchAllSegments({ fromStarting }));
   }
 
   createNewSegment(segment: SegmentInput) {
@@ -158,6 +184,20 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionSetSortingType({ sortingType }));
   }
 
+  setIsLoadingImportSegment(isLoadingSegments: boolean) {
+    this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments })); //fix!
+  }
+
+  setGlobalSortKey(sortKey: SEGMENT_SORT_KEY) {
+    this.localStorageService.setItem(SegmentLocalStorageKeys.SEGMENT_SORT_KEY, sortKey);
+    this.store$.dispatch(SegmentsActions.actionSetGlobalSortKey({ sortKey }));
+  }
+
+  setGlobalSortingType(sortingType: SORT_AS_DIRECTION) {
+    this.localStorageService.setItem(SegmentLocalStorageKeys.SEGMENT_SORT_TYPE, sortingType);
+    this.store$.dispatch(SegmentsActions.actionSetGlobalSortingType({ sortingType }));
+  }
+
   deleteSegment(segmentId: string) {
     this.store$.dispatch(SegmentsActions.actionDeleteSegment({ segmentId }));
   }
@@ -168,11 +208,40 @@ export class SegmentsService {
     );
   }
 
+  addSegment(addSegmentRequest: AddSegmentRequest) {
+    this.store$.dispatch(SegmentsActions.actionAddSegment({ addSegmentRequest }));
+  }
+
+  modifySegment(updateSegmentRequest: UpdateSegmentRequest) {
+    this.store$.dispatch(SegmentsActions.actionUpdateSegment({ updateSegmentRequest }));
+  }
+
   exportSegments(segmentIds: string[]) {
     this.store$.dispatch(SegmentsActions.actionExportSegments({ segmentIds }));
   }
 
   exportSegmentCSV(segmentIds: string[]): Observable<any> {
     return this.segmentsDataService.exportSegmentCSV(segmentIds);
+  }
+
+  setDuplicateSegmentNameError(error: DuplicateSegmentNameError) {
+    this.duplicateSegmentNameError$.next(error);
+  }
+
+  addPrivateSegmentList(list: AddPrivateSegmentListRequest) {
+    this.store$.dispatch(SegmentsActions.actionAddSegmentList({ list }));
+  }
+
+  updatePrivateSegmentList(list: EditPrivateSegmentListRequest) {
+    this.store$.dispatch(SegmentsActions.actionUpdateSegmentList({ list }));
+  }
+
+  deletePrivateSegmentList(segmentId: string, parentSegmentId: string) {
+    this.store$.dispatch(
+      SegmentsActions.actionDeleteSegmentList({
+        segmentId,
+        parentSegmentId,
+      })
+    );
   }
 }

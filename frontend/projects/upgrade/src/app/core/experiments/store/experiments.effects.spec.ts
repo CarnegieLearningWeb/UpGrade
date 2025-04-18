@@ -60,7 +60,7 @@ import {
 } from './experiments.model';
 import * as Selectors from './experiments.selectors';
 import { environment } from '../../../../environments/environment';
-import { actionExecuteQuery } from '../../analysis/store/analysis.actions';
+import { actionExecuteQuery, actionFetchMetrics } from '../../analysis/store/analysis.actions';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { UserRole } from '../../users/store/users.model';
 import { Environment } from '../../../../environments/environment-types';
@@ -377,13 +377,14 @@ describe('ExperimentEffects', () => {
         actionUpsertExperimentSuccess({ experiment }),
         actionFetchAllDecisionPoints(),
         actionExecuteQuery({ queryIds: ['queryid1'] }),
+        actionFetchMetrics(),
       ];
 
       Selectors.selectExperimentStats.setResult({ test1: stats });
       experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(experimentStats));
 
       service.UpsertExperiment$.pipe(
-        take(4),
+        take(5),
         scan((acc, val) => {
           acc.unshift(val);
           acc.splice(4);
@@ -410,13 +411,14 @@ describe('ExperimentEffects', () => {
         actionUpsertExperimentSuccess({ experiment }),
         actionFetchAllDecisionPoints(),
         actionExecuteQuery({ queryIds: ['queryid1'] }),
+        actionFetchMetrics(),
       ];
 
       Selectors.selectExperimentStats.setResult({ test1: stats });
       experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(experimentStats));
 
       service.UpsertExperiment$.pipe(
-        take(4),
+        take(5),
         scan((acc, val) => {
           acc.unshift(val);
           acc.splice(4);
@@ -443,13 +445,14 @@ describe('ExperimentEffects', () => {
         actionUpsertExperimentSuccess({ experiment }),
         actionFetchAllDecisionPoints(),
         actionExecuteQuery({ queryIds: ['queryid1'] }),
+        actionFetchMetrics(),
       ];
 
       Selectors.selectExperimentStats.setResult({ test1: stats });
       experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(experimentStats));
 
       service.UpsertExperiment$.pipe(
-        take(4),
+        take(5),
         scan((acc, val) => {
           acc.unshift(val);
           acc.splice(4);
@@ -1352,7 +1355,12 @@ describe('ExperimentEffects', () => {
         expect(resultingAction).toEqual(expectedAction);
       });
 
-      actions$.next(actionExportExperimentDesign({ experimentIds: [experimentId] }));
+      actions$.next(
+        actionExportExperimentDesign({
+          experimentIds: [experimentId],
+          exportAll: false,
+        })
+      );
 
       tick(0);
     }));
@@ -1367,7 +1375,12 @@ describe('ExperimentEffects', () => {
         expect(resultingAction).toEqual(expectedAction);
       });
 
-      actions$.next(actionExportExperimentDesign({ experimentIds: [experimentId] }));
+      actions$.next(
+        actionExportExperimentDesign({
+          experimentIds: [experimentId],
+          exportAll: false,
+        })
+      );
 
       tick(0);
     }));

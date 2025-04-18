@@ -1,0 +1,66 @@
+<app-common-dialog
+  [title]="config.title"
+  [cancelBtnLabel]="config.cancelBtnLabel"
+  [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+  [primaryActionBtnColor]="config.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
+  (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+>
+  <form [formGroup]="segmentForm" class="form-standard dense-3">
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Name</mat-label>
+      <input matInput formControlName="name" placeholder="Enter segment name" class="ft-14-400" />
+      <!-- Required error will show by default when the control is invalid and touched -->
+      <mat-error *ngIf="nameControl?.errors?.['required']"> Name is required </mat-error>
+
+      <!-- Custom duplicate name error -->
+      <mat-error *ngIf="nameControl?.errors?.['duplicateSegmentName'] as errorData">
+        {{
+          'segments.errors.duplicate-name.text'
+            | translate : { name: errorData.duplicateName, context: errorData.context }
+        }}
+      </mat-error>
+
+      <!-- Only show the hint when there are no errors -->
+      <mat-hint *ngIf="!nameControl?.errors" class="form-hint ft-12-400">
+        {{ 'segments.upsert-segment-modal.name-hint.text' | translate }}
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Description (optional)</mat-label>
+      <input matInput formControlName="description" placeholder="Enter description" class="ft-14-400" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">App Context</mat-label>
+      <mat-select formControlName="appContext" class="ft-14-400">
+        <mat-option *ngFor="let context of appContexts$ | async" [value]="context" class="ft-14-400">{{
+          context
+        }}</mat-option>
+      </mat-select>
+      <mat-hint
+        *ngIf="!(config.params.action === UPSERT_SEGMENT_ACTION.EDIT && isContextChanged)"
+        class="form-hint ft-12-400"
+      >
+        {{ 'segments.upsert-segment-modal.app-context-hint.text' | translate }}
+        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+          Learn more
+        </a>
+      </mat-hint>
+      <mat-hint
+        *ngIf="config.params.action === UPSERT_SEGMENT_ACTION.EDIT && isContextChanged"
+        class="form-hint ft-12-400 warning-hint"
+      >
+        {{ 'segments.upsert-segment-modal.app-context-warning.text' | translate }}
+      </mat-hint>
+    </mat-form-field>
+
+    <app-common-tags-input
+      formControlName="tags"
+      [inputType]="CommonTagInputType.TAGS"
+      [label]="config.tagsLabel"
+      [placeholder]="config.tagsPlaceholder"
+    ></app-common-tags-input>
+  </form>
+</app-common-dialog>

@@ -28,23 +28,22 @@
 @import './app/features/dashboard/logs/common/logs-view.theme.scss';
 @import './app/features/dashboard/common/tabs-view.theme.scss';
 @import './app/features/auth/login/login.theme.scss';
-@import './app/features/dashboard/segments/segments-root/segments-root.theme.scss';
-@import './app/features/dashboard/segments/components/segments-list/segments-list.theme.scss';
-@import './app/features/dashboard/segments/components/modal/new-segment/new-segment.theme.scss';
-@import './app/features/dashboard/segments/components/segment-members/segment-members.theme.scss';
-@import './app/features/dashboard/segments/pages/view-segment/view-segment.theme.scss';
+@import './app/features/dashboard/segments-legacy/segments-root/segments-root.theme.scss';
+@import './app/features/dashboard/segments-legacy/components/segments-list/segments-list.theme.scss';
+@import './app/features/dashboard/segments-legacy/components/modal/new-segment/new-segment.theme.scss';
+@import './app/features/dashboard/segments-legacy/components/segment-members/segment-members.theme.scss';
+@import './app/features/dashboard/segments-legacy/pages/view-segment/view-segment.theme.scss';
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
 @import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
-@import './app/features/dashboard/profile/components/modals/add-metrics/add-metrics.theme.scss';
 @import './app/features/dashboard/home/components/experiment-query-result/experiment-query-result.theme.scss';
 @import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
 @import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
-@import './app/features/dashboard/segments/components/modal/import-segment/import-segment.theme.scss';
+@import './app/features/dashboard/segments-legacy/components/modal/import-segment/import-segment.theme.scss';
 @import './app/features/dashboard/experiment-users/components/stratification-factor-list/import-stratifications/import-stratifications.theme.scss';
 @import './app/features/dashboard/experiment-users/components/stratification-factor-list/delete-stratification/delete-stratification.theme.scss';
-@import './app/features/dashboard/segments/components/modal/segment-experiment-list/segment-experiment-list.theme.scss';
+@import './app/features/dashboard/segments-legacy/components/modal/segment-experiment-list/segment-experiment-list.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -72,7 +71,6 @@
   @include queries-modal-component-theme($theme);
   @include query-result-component-theme($theme);
   @include metrics-component-theme($theme);
-  @include add-metrics-component-theme($theme);
   @include experiment-query-result-component-theme($theme);
   @include experiment-ending-criteria-component-theme($theme);
   @include import-experiment-component-theme($theme);
@@ -273,7 +271,6 @@ button[mat-icon-button] {
   text-decoration: underline;
 }
 
-
 .mat-mdc-checkbox {
   .mdc-checkbox {
     transform: scale(0.889); // transform 18px to 16px
@@ -345,7 +342,7 @@ button[mat-icon-button] {
 
     &.mdc-switch--unselected {
       .mdc-switch__track {
-        opacity: 1.0 !important;
+        opacity: 1 !important;
         &::before {
           background: var(--mdc-switch-unselected-track-color) !important;
         }
@@ -356,13 +353,13 @@ button[mat-icon-button] {
       }
 
       .mdc-switch__icons {
-        opacity: 1.0 !important;
+        opacity: 1 !important;
       }
     }
 
     &.mdc-switch--selected {
       .mdc-switch__track {
-        opacity: 1.0 !important;
+        opacity: 1 !important;
         &::after {
           background: var(--mdc-switch-selected-track-color) !important;
         }
@@ -373,7 +370,7 @@ button[mat-icon-button] {
       }
 
       .mdc-switch__icons {
-        opacity: 1.0 !important;
+        opacity: 1 !important;
       }
     }
   }
@@ -512,6 +509,41 @@ button[mat-icon-button] {
 
     .mat-mdc-option:hover {
       background-color: rgba(0, 0, 0, 0.04) !important;
+    }
+  }
+}
+
+.json-editor-container {
+  .jsoneditor {
+    border: 0;
+    height: 300px;
+  }
+
+  .jsoneditor-menu {
+    display: none;
+  }
+
+  .ace-jsoneditor {
+    .ace_scroller {
+      background-color: mat.m2-get-color-from-palette($background, background);
+    }
+
+    .ace_gutter {
+      background-color: mat.m2-get-color-from-palette($background, background);
+      color: mat.m2-get-color-from-palette($foreground, text);
+      border-right: 1px solid var(--blue);
+    }
+
+    .ace_text-layer,
+    .ace_variable,
+    .ace_string {
+      color: mat.m2-get-color-from-palette($foreground, text);
+    }
+
+    .ace_gutter-active-line,
+    .ace_marker-layer .ace_active-line {
+      color: mat.m2-get-color-from-palette($foreground, text);
+      background-color: transparent;
     }
   }
 }

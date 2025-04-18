@@ -12,27 +12,49 @@ import { ExperimentSegmentInclusionRepository } from '../../../src/api/repositor
 import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
-import { SegmentFile, SegmentInputValidator } from '../../../src/api/controllers/validators/SegmentInputValidator';
+import {
+  ListInputValidator,
+  SegmentFile,
+  SegmentInputValidator,
+} from '../../../src/api/controllers/validators/SegmentInputValidator';
+import {
+  SEGMENT_SEARCH_KEY,
+  SEGMENT_SORT_KEY,
+} from '../../../src/api/controllers/validators/SegmentPaginatedParamsValidator';
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
-import { SEGMENT_TYPE, SERVER_ERROR, EXPERIMENT_STATE, FEATURE_FLAG_STATUS } from 'upgrade_types';
+import {
+  SEGMENT_TYPE,
+  SERVER_ERROR,
+  EXPERIMENT_STATE,
+  FEATURE_FLAG_STATUS,
+  IMPORT_COMPATIBILITY_TYPE,
+  SORT_AS_DIRECTION,
+} from 'upgrade_types';
 import { configureLogger } from '../../utils/logger';
 import { ExperimentSegmentExclusion } from '../../../src/api/models/ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from '../../../src/api/models/FeatureFlagSegmentExclusion';
 import { FeatureFlagSegmentInclusion } from '../../../src/api/models/FeatureFlagSegmentInclusion';
+import { IndividualEnrollmentRepository } from '../../../src/api/repositories/IndividualEnrollmentRepository';
+import { GroupEnrollmentRepository } from '../../../src/api/repositories/GroupEnrollmentRepository';
+import { IndividualExclusionRepository } from '../../../src/api/repositories/IndividualExclusionRepository';
+import { GroupExclusionRepository } from '../../../src/api/repositories/GroupExclusionRepository';
 import { Container } from '../../../src/typeorm-typedi-extensions';
 
 const exp = new Experiment();
 const ff = new FeatureFlag();
 const seg2 = new Segment();
 const seg1 = new Segment();
+const newSeg = new Segment();
+const newList = new Segment();
 const segValSegment = new Segment();
 const logger = new UpgradeLogger();
 const segmentArr = [seg1, seg2];
 const segVal = new SegmentInputValidator();
+const listVal = new ListInputValidator();
 const include = [{ segment: seg1, experiment: exp }];
 const ff_include = [{ segment: seg1, featureFlag: ff }];
 const segValImportFile: SegmentFile = {
@@ -135,7 +157,17 @@ describe('Segment Service Testing', () => {
       type: SEGMENT_TYPE.PUBLIC,
     };
     segValImportFile.fileContent = JSON.stringify(segValImport);
-
+    newSeg.id = 'newsegId';
+    newSeg.context = 'add';
+    newSeg.name = 'newSeg';
+    newSeg.type = SEGMENT_TYPE.PUBLIC;
+    newList.id = 'newListId';
+    newList.subSegments = [];
+    newList.context = 'add';
+    newList.name = 'newList';
+    newSeg.subSegments = [];
+    newSeg.subSegments.push(newList);
+    newList.type = SEGMENT_TYPE.PRIVATE;
     module = await Test.createTestingModule({
       providers: [
         DataSource,
@@ -146,6 +178,10 @@ describe('Segment Service Testing', () => {
         ExperimentSegmentInclusionRepository,
         FeatureFlagSegmentExclusionRepository,
         FeatureFlagSegmentInclusionRepository,
+        IndividualEnrollmentRepository,
+        GroupEnrollmentRepository,
+        IndividualExclusionRepository,
+        GroupExclusionRepository,
         CacheService,
         SegmentRepository,
         {
@@ -159,8 +195,12 @@ describe('Segment Service Testing', () => {
             save: jest.fn().mockResolvedValue(seg1),
             find: jest.fn().mockResolvedValue(segmentArr),
             delete: jest.fn(),
+            countBy: jest.fn().mockResolvedValue(segmentArr.length),
             getAllSegments: jest.fn().mockResolvedValue(segmentArr),
             deleteSegment: jest.fn().mockImplementation((seg) => {
+              return seg;
+            }),
+            deleteSegments: jest.fn().mockImplementation((seg) => {
               return seg;
             }),
             createQueryBuilder: jest.fn(() => ({
@@ -168,6 +208,11 @@ describe('Segment Service Testing', () => {
               leftJoinAndSelect: jest.fn().mockReturnThis(),
               where: jest.fn().mockReturnThis(),
               andWhere: jest.fn().mockReturnThis(),
+              addSelect: jest.fn().mockReturnThis(),
+              addOrderBy: jest.fn().mockReturnThis(),
+              setParameter: jest.fn().mockReturnThis(),
+              offset: jest.fn().mockReturnThis(),
+              limit: jest.fn().mockReturnThis(),
               getMany: jest.fn().mockResolvedValue(segmentArr),
               getOne: jest.fn().mockResolvedValue(seg1),
             })),
@@ -271,6 +316,7 @@ describe('Segment Service Testing', () => {
     }).compile();
 
     service = module.get<SegmentService>(SegmentService);
+    service.getExperimentSegmentExclusionDocBySegmentId = jest.fn().mockResolvedValue([]);
     repo = module.get<SegmentRepository>(getRepositoryToken(SegmentRepository));
   });
 
@@ -355,29 +401,6 @@ describe('Segment Service Testing', () => {
     expect(segment).toEqual(res);
   });
 
-  it('should return all segments with status with global segment', async () => {
-    seg1.id = '77777777-7777-7777-7777-777777777777';
-    const res = {
-      segmentsData: [
-        {
-          id: seg1.id,
-          context: 'add',
-          status: 'Global',
-          subSegments: seg1.subSegments,
-          groupForSegment: seg1.groupForSegment,
-          individualForSegment: seg1.individualForSegment,
-        },
-        { id: seg2.id, context: 'add', status: 'Used', subSegments: seg2.subSegments },
-      ],
-      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
-      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
-      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
-      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-    };
-    const segments = await service.getAllSegmentWithStatus(logger);
-    expect(segments).toEqual(res);
-  });
-
   it('should return experiment segment exclusion data', async () => {
     const segments = await service.getExperimentSegmentExclusionData();
     expect(segments).toEqual(include);
@@ -398,12 +421,14 @@ describe('Segment Service Testing', () => {
     expect(segments).toEqual(ff_include);
   });
 
-  it('should upsert a segment', async () => {
+  it('should upsert a segment with id (edit)', async () => {
+    service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
     const segments = await service.upsertSegment(segVal, logger);
     expect(segments).toEqual(seg1);
   });
 
   it('should upsert a segment with trimmed whitespace and removed newline or carriage return', async () => {
+    service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
     const segmentWithIdsToCleanUp = new SegmentInputValidator();
     segmentWithIdsToCleanUp.subSegmentIds = [];
 
@@ -452,7 +477,8 @@ describe('Segment Service Testing', () => {
     );
   });
 
-  it('should upsert a segment with no id', async () => {
+  it('should upsert a segment with no id (add)', async () => {
+    service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
     const err = new Error('error');
     const segment = new SegmentInputValidator();
     segment.subSegmentIds = ['seg1'];
@@ -463,24 +489,62 @@ describe('Segment Service Testing', () => {
     indivRepo.insertIndividualForSegment = jest.fn().mockImplementation(() => {
       throw err;
     });
+    repo.find = jest.fn().mockResolvedValue([]);
     expect(async () => {
       await service.upsertSegment(segment, logger);
     }).rejects.toThrow(new Error('Error in creating individualDocs, groupDocs in "addSegmentInDB"'));
   });
 
+  it('should throw an error if the segment has a duplicate name', async () => {
+    const dupeError = new Error(
+      JSON.stringify({
+        type: SERVER_ERROR.SEGMENT_DUPLICATE_NAME,
+        message: `Segment name ${segVal.name} already exists in context ${segVal.context}`,
+        duplicateName: segVal.name,
+        context: segVal.context, // Fix: Make sure this is a string, not the segment object
+        httpCode: 400,
+      })
+    );
+
+    const addSegment = { ...segVal, id: undefined };
+
+    // Make sure this mock is on the service instance being tested
+    service.checkIsDuplicateSegmentName = jest.fn().mockImplementation(() => {
+      throw dupeError;
+    });
+
+    // Also verify that addSegmentDataInDB isn't being called
+    service.addSegmentDataInDB = jest.fn();
+
+    expect(async () => {
+      await service.upsertSegment(addSegment, logger);
+    }).rejects.toThrow(dupeError);
+
+    // Verify checkIsDuplicateSegmentName was called with correct parameters
+    expect(service.checkIsDuplicateSegmentName).toHaveBeenCalledWith(segVal.name, segVal.context, logger);
+
+    // Verify addSegmentDataInDB was never called
+    expect(service.addSegmentDataInDB).not.toHaveBeenCalled();
+  });
+
   it('should throw an error when unable to delete segment', async () => {
+    service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
     const err = new Error('error');
     const indivRepo = module.get<IndividualForSegmentRepository>(getRepositoryToken(IndividualForSegmentRepository));
     indivRepo.insertIndividualForSegment = jest.fn().mockImplementation(() => {
       throw err;
     });
+    repo.find = jest.fn().mockResolvedValue([]);
+
     expect(async () => {
       await service.upsertSegment(segVal, logger);
     }).rejects.toThrow(err);
   });
 
   it('should throw an error when unable to save segment', async () => {
+    service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
     const err = new Error('error');
+    repo.find = jest.fn().mockResolvedValue([]);
     repo.save = jest.fn().mockImplementation(() => {
       throw err;
     });
@@ -497,8 +561,9 @@ describe('Segment Service Testing', () => {
   it('should import a segment', async () => {
     const returnSegment = [
       {
-        fileName: 'seg1',
+        fileName: 'seg1.json',
         error: null,
+        compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
       },
     ];
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2]);
@@ -508,13 +573,29 @@ describe('Segment Service Testing', () => {
     expect(segments).toEqual(returnSegment);
   });
 
+  it('should import a segment list', async () => {
+    const returnSegment = [
+      {
+        fileName: 'seg1.json',
+        error: null,
+        compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
+      },
+    ];
+    service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2]);
+    repo.find = jest.fn().mockResolvedValue([]);
+    service.addList = jest.fn().mockResolvedValue(segValSegment);
+    const segments = await service.importLists({ parentSegmentId: 'seg1', files: [segValImportFile] }, logger);
+    expect(segments).toEqual(returnSegment);
+  });
+
   it('should throw an error when trying to import a segment that includes an unknown subsegment', async () => {
     const returnSegment = [
       {
-        fileName: 'seg1',
+        fileName: 'seg1.json',
         error:
           'Invalid Segment data: ' +
           'SubSegment: seg2 not found. Please import subSegment with same context and link in segment. ',
+        compatibilityType: IMPORT_COMPATIBILITY_TYPE.WARNING,
       },
     ];
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1]);
@@ -533,5 +614,148 @@ describe('Segment Service Testing', () => {
     expect(async () => {
       await service.exportSegments([seg1.id], logger);
     }).rejects.toThrow(new Error(SERVER_ERROR.QUERY_FAILED));
+  });
+
+  it('should add a list', async () => {
+    service.upsertSegmentInPipeline = jest.fn().mockResolvedValue(segValSegment);
+    const segment = await service.addList(listVal, logger);
+    expect(segment).toEqual(segValSegment);
+  });
+
+  it('should delete a list from a segment', async () => {
+    service.getSegmentById = jest.fn().mockResolvedValue(newSeg);
+    const deletedList = await service.deleteList(newList.id, newSeg.id, logger);
+    expect(deletedList).toEqual(newList.id);
+  });
+
+  it('should throw an error on attempting to delete a list not found on the parent segment', async () => {
+    service.getSegmentById = jest.fn().mockResolvedValue(seg1);
+    const err = new Error('List newListId not found in parent segment seg1');
+    expect(async () => {
+      await service.deleteList(newList.id, seg1.id, logger);
+    }).rejects.toThrow(err);
+  });
+
+  it('should return a count of public segment', async () => {
+    const results = await service.getTotalPublicSegmentCount();
+    expect(results).toEqual(segmentArr.length);
+  });
+
+  it('should find all paginated segments with search string all', async () => {
+    const res = {
+      segmentsData: segmentArr.map((segment) => {
+        return { ...segment, status: 'Used' };
+      }),
+      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+    };
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: SEGMENT_SEARCH_KEY.ALL,
+        string: '',
+      },
+      {
+        key: SEGMENT_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(res);
+  });
+
+  it('should find all paginated segments with search string tag', async () => {
+    const res = {
+      segmentsData: segmentArr.map((segment) => {
+        return { ...segment, status: 'Used' };
+      }),
+      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+    };
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: SEGMENT_SEARCH_KEY.TAG,
+        string: '',
+      },
+      {
+        key: SEGMENT_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(res);
+  });
+
+  it('should find all paginated segmentss with search string name', async () => {
+    const res = {
+      segmentsData: segmentArr.map((segment) => {
+        return { ...segment, status: 'Used' };
+      }),
+      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+    };
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: SEGMENT_SEARCH_KEY.NAME,
+        string: '',
+      },
+      {
+        key: SEGMENT_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(res);
+  });
+
+  it('should find all paginated segments with search string context', async () => {
+    const res = {
+      segmentsData: segmentArr.map((segment) => {
+        return { ...segment, status: 'Used' };
+      }),
+      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+    };
+    const results = await service.findPaginated(
+      1,
+      2,
+      logger,
+      {
+        key: SEGMENT_SEARCH_KEY.CONTEXT,
+        string: '',
+      },
+      {
+        key: SEGMENT_SORT_KEY.NAME,
+        sortAs: SORT_AS_DIRECTION.ASCENDING,
+      }
+    );
+    expect(results).toEqual(res);
+  });
+
+  it('should find all paginated segments without search params', async () => {
+    const res = {
+      segmentsData: segmentArr.map((segment) => {
+        return { ...segment, status: 'Used' };
+      }),
+      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+    };
+    const results = await service.findPaginated(1, 2, logger);
+    expect(results).toEqual(res);
   });
 });

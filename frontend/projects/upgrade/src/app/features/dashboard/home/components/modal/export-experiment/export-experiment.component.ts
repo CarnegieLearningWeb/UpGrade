@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './export-experiment.component.html',
   styleUrls: ['./export-experiment.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExportModalComponent implements OnInit {
   exportMethod = [];
@@ -21,6 +22,8 @@ export class ExportModalComponent implements OnInit {
   private formSubscription: Subscription;
   experiments: ExperimentVM[];
   isExportMethodSelected = false;
+  exportAll: boolean;
+  isExperimentsExportLoading$ = this.experimentService.isExperimentsExportLoading$;
   constructor(
     private _formBuilder: UntypedFormBuilder,
     private experimentService: ExperimentService,
@@ -29,10 +32,13 @@ export class ExportModalComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) private data: any
   ) {
     this.experiments = this.data.experiment;
+    this.exportAll = this.data.exportAll || false;
   }
 
   onCancelClick(): void {
-    this.dialogRef.close();
+    this.isExperimentsExportLoading$.pipe(first((loading) => !loading)).subscribe(() => {
+      this.dialogRef.close();
+    });
   }
 
   ngOnInit() {
@@ -60,12 +66,20 @@ export class ExportModalComponent implements OnInit {
     this.experimentService.exportExperimentDesign(experimentIds);
   }
 
+  exportAllExperimentDesign() {
+    this.experimentService.exportAllExperimentDesign();
+  }
+
   exportExperiment() {
     const { exportMethod } = this.exportForm.value;
     if (exportMethod === EXPORT_METHOD.DATA && this.experiments[0]) {
       this.exportExperimentInfo(this.experiments[0].id, this.experiments[0].name);
     } else if (exportMethod === EXPORT_METHOD.DESIGN) {
-      this.exportExperimentDesign(this.experiments.map((exp) => exp.id));
+      if (this.exportAll) {
+        this.exportAllExperimentDesign();
+      } else {
+        this.exportExperimentDesign(this.experiments.map((exp) => exp.id));
+      }
     }
     this.onCancelClick();
   }

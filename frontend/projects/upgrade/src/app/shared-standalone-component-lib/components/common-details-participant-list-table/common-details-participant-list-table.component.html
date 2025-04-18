@@ -22,11 +22,13 @@
         {{ PARTICIPANT_LIST_TRANSLATION_KEYS.VALUES | translate }}
       </th>
       <td mat-cell *matCellDef="let rowData" class="values-column ft-14-400">
-        <ng-container *ngIf="rowData.listType !== memberTypes.SEGMENT && rowData.segment">
+        <ng-container *ngIf="rowData.segment">
           {{
-            (rowData.listType === memberTypes.INDIVIDUAL
-              ? rowData.segment.individualForSegment.length
-              : rowData.segment.groupForSegment.length) + ' Values'
+            (rowData.listType?.toLowerCase() === memberTypes.INDIVIDUAL.toLowerCase()
+              ? rowData.segment.individualForSegment?.length
+              : rowData.listType?.toLowerCase() === memberTypes.SEGMENT.toLowerCase()
+              ? rowData.segment.subSegments?.length
+              : rowData.segment.groupForSegment?.length) + ' Values'
           }}
         </ng-container>
       </td>
@@ -66,12 +68,22 @@
       </th>
       <td mat-cell *matCellDef="let rowData" class="actions-column ft-14-400 dense-2">
         <div class="button-wrapper">
-          <button mat-icon-button class="action-button" [disabled]="actionsDisabled" (click)="onEditButtonClick(rowData)">
+          <button
+            mat-icon-button
+            class="action-button"
+            [disabled]="actionsDisabled"
+            (click)="onEditButtonClick(rowData)"
+          >
             <mat-icon>edit</mat-icon>
           </button>
         </div>
         <div class="button-wrapper">
-          <button mat-icon-button class="action-button" [disabled]="actionsDisabled" (click)="onDeleteButtonClick(rowData)">
+          <button
+            mat-icon-button
+            class="action-button"
+            [disabled]="actionsDisabled"
+            (click)="onDeleteButtonClick(rowData)"
+          >
             <mat-icon>delete_outline</mat-icon>
           </button>
         </div>

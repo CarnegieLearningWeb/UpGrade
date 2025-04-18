@@ -12,11 +12,14 @@ import {
 } from '@angular/core';
 import {
   ASSIGNMENT_ALGORITHM,
+  ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
   ASSIGNMENT_UNIT,
   CONDITION_ORDER,
   CONSISTENCY_RULE,
   EXPERIMENT_STATE,
   EXPERIMENT_TYPE,
+  MOOCLET_POLICY_SCHEMA_MAP,
+  SUPPORTED_MOOCLET_ALGORITHMS,
 } from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
@@ -44,6 +47,7 @@ import { ENV, Environment } from '../../../../../../environments/environment-typ
   templateUrl: './experiment-overview.component.html',
   styleUrls: ['./experiment-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
@@ -51,7 +55,9 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
   overviewForm: UntypedFormGroup;
   unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
-  public ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
+  ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
+  ASSIGNMENT_ALGORITHM = ASSIGNMENT_ALGORITHM;
+  ASSIGNMENT_ALGORITHM_DISPLAY_MAP = ASSIGNMENT_ALGORITHM_DISPLAY_MAP;
 
   groupTypes = [];
   allContexts = [];
@@ -101,6 +107,12 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     if (this.environment.withinSubjectExperimentSupportToggle) {
       this.unitOfAssignments.push({ value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS });
     }
+    if (this.environment.moocletToggle) {
+      const supportedMoocletAlgorithms = SUPPORTED_MOOCLET_ALGORITHMS as ASSIGNMENT_ALGORITHM[];
+      supportedMoocletAlgorithms.forEach((algorithmName) => {
+        this.assignmentAlgorithms.push({ value: algorithmName });
+      });
+    }
   }
 
   ngOnInit() {
@@ -136,7 +148,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         stratificationFactor: [null],
         context: [null, Validators.required],
         tags: [[]],
-        logging: [false],
+      });
+
+      this.overviewForm.get('experimentName').valueChanges.subscribe((name) => {
+        this.experimentDesignStepperService.changeExperimentName(name);
       });
 
       this.overviewForm.get('unitOfAssignment').valueChanges.subscribe((assignmentUnit) => {
@@ -187,7 +202,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       });
 
       this.overviewForm.get('designType').valueChanges.subscribe((type) => {
-        if (this.initialDesignType !== type) {
+        if (this.isOverviewFormCompleted && this.initialDesignType !== type) {
           this.warningStatus = OverviewFormWarningStatus.DESIGN_TYPE_CHANGED;
         }
         this.initialDesignType = type;
@@ -196,6 +211,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       this.overviewForm.get('assignmentAlgorithm').valueChanges.subscribe((algo) => {
         this.isStratificationFactorSelected =
           ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING !== algo ? true : this.isStratificationFactorSelected;
+        this.experimentDesignStepperService.changeAssignmentAlgorithm(algo);
       });
 
       // populate values in form to update experiment if experiment data is available
@@ -206,6 +222,11 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         ) {
           this.overviewForm.disable();
           this.isExperimentEditable = false;
+        }
+
+        if (this.experimentInfo.assignmentAlgorithm in MOOCLET_POLICY_SCHEMA_MAP) {
+          this.overviewForm.get('experimentName').disable(); // disable due to rewardMetricKey naming convention using the experiment name, a complication we are just going to avoid
+          this.overviewForm.get('assignmentAlgorithm').disable();
         }
         this.currentContext = this.experimentInfo.context[0];
         this.initialDesignType = this.experimentInfo.type;
@@ -222,8 +243,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           stratificationFactor: this.experimentInfo.stratificationFactor?.stratificationFactorName || null,
           context: this.currentContext,
           tags: this.experimentInfo.tags,
-          logging: this.experimentInfo.logging,
         });
+        this.warningStatus = OverviewFormWarningStatus.NO_WARNING;
         this.checkExperiment();
         this.isOverviewFormCompleted = true;
       }
@@ -322,7 +343,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     if (
       this.experimentInfo &&
       (this.experimentInfo.state == this.ExperimentState.ENROLLING ||
-        this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)
+        this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE ||
+        this.experimentInfo.assignmentAlgorithm in MOOCLET_POLICY_SCHEMA_MAP)
     ) {
       this.emitExperimentDialogEvent.emit({
         type: eventType,
@@ -342,7 +364,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         assignmentAlgorithm,
         stratificationFactor,
         tags,
-        logging,
       } = this.overviewForm.value;
       const stratificationFactorValueToSend = this.stratificationFactorValueToSend(
         stratificationFactor,
@@ -363,7 +384,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             ? { stratificationFactorName: stratificationFactorValueToSend }
             : null,
           tags,
-          logging,
         };
         this.emitExperimentDialogEvent.emit({
           type: eventType,

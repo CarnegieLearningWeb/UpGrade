@@ -28,7 +28,7 @@ export default async function testCase(): Promise<void> {
   experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
 
   // create experiment
-  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  await experimentService.create(experimentObject, user, new UpgradeLogger());
   const experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -63,6 +63,7 @@ export default async function testCase(): Promise<void> {
     experimentName1,
     experimentPoint1,
     condition1,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
@@ -78,6 +79,7 @@ export default async function testCase(): Promise<void> {
     experimentName1,
     experimentPoint1,
     condition1,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
@@ -121,6 +123,7 @@ export default async function testCase(): Promise<void> {
     experimentName1,
     experimentPoint1,
     condition1,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
@@ -142,6 +145,7 @@ export default async function testCase(): Promise<void> {
     experimentName1,
     experimentPoint1,
     condition1,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName1, experimentPoint1);
@@ -167,6 +171,7 @@ export default async function testCase(): Promise<void> {
     experimentName2,
     experimentPoint2,
     condition2,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUser.id, experimentName2, experimentPoint2);
@@ -194,6 +199,7 @@ export default async function testCase(): Promise<void> {
     experimentName2,
     experimentPoint2,
     condition2,
+    experimentId,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName2, experimentPoint2);

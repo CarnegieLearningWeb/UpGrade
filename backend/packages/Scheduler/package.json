@@ -1,6 +1,6 @@
 {
   "name": "ppl-upgrade-serverless",
-  "version": "6.0.14",
+  "version": "6.1.0",
   "description": "Serverless webpack example using Typescript",
   "main": "handler.js",
   "scripts": {
@@ -22,13 +22,13 @@
     "@types/aws-lambda": "^8.10.17",
     "@types/jsonwebtoken": "^8.3.9",
     "@types/node": "^10.17.20",
-    "@types/node-fetch": "^2.5.7",
+    "@types/node-fetch": "^2.6.12",
     "eslint": "^8.27.0",
     "fork-ts-checker-webpack-plugin": "^8.0.0",
     "prettier": "^2.7.1",
     "ts-loader": "^9.5.1",
     "typescript": "^3.2.4",
-    "webpack": "^5.88.2",
+    "webpack": "^5.96.1",
     "webpack-cli": "^5.1.4",
     "webpack-node-externals": "^3.0.0"
   },

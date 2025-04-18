@@ -2,20 +2,36 @@
   <mat-table [dataSource]="dataSource" multiTemplateDataRows>
     <!-- COLUMNS AND ROWS-->
     <ng-container *ngFor="let key of displayedColumns" [matColumnDef]="key">
-      <mat-header-cell style="justify-content: left; padding-left: 15px;" class="ft-12-700" *matHeaderCellDef>{{
-        key.includes('Icon') ? '' : columnHeaders[key]
-      }}</mat-header-cell>
+      <mat-header-cell
+        [ngClass]="{ 'weight-column': key === 'weight' }"
+        style="justify-content: left; padding-left: 15px"
+        class="ft-12-700"
+        *matHeaderCellDef
+      >
+        {{ key.includes('Icon') ? '' : columnHeaders[key] }}
+      </mat-header-cell>
 
-      <mat-cell style="justify-content: left;" class="ft-12-600" *matCellDef="let element; let i = dataIndex">
-        <span *ngIf="!key.includes('Icon'); else icon" style="padding-left: -5px;">{{ element.data[key] }}</span>
-        <ng-template #icon>
-          <mat-icon
-            style="margin-left: -17.5px;"
-            *ngIf="element.partitions && key === 'expandIcon'"
-            [class.active]="element.data[referenceId] === expandedId"
-            (click)="toggleExpandableSymbol(element.data[referenceId])"
-            >play_arrow</mat-icon
-          >
+      <mat-cell
+        [ngClass]="{ 'weight-column': key === 'weight' }"
+        style="justify-content: left"
+        class="ft-12-600"
+        *matCellDef="let element; let i = dataIndex"
+      >
+        <!-- Special handling for weight column when experiment has moocletPolicyParameters -->
+        <span *ngIf="key === 'weight' && experiment?.moocletPolicyParameters; else regularCell">N/A</span>
+
+        <ng-template #regularCell>
+          <span *ngIf="!key.includes('Icon'); else icon" style="padding-left: -5px">{{ element.data[key] }}</span>
+          <ng-template #icon>
+            <mat-icon
+              style="margin-left: -17.5px"
+              *ngIf="element.partitions && key === 'expandIcon'"
+              [class.active]="element.data[referenceId] === expandedId"
+              (click)="toggleExpandableSymbol(element.data[referenceId])"
+            >
+              play_arrow
+            </mat-icon>
+          </ng-template>
         </ng-template>
       </mat-cell>
     </ng-container>

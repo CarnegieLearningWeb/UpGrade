@@ -1,4 +1,4 @@
-import { CommonModule, UpperCasePipe, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -8,14 +8,13 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { CommonStatusIndicatorChipComponent } from '../common-status-indicator-chip/common-status-indicator-chip.component';
 import {
-  FEATURE_FLAG_PARTICIPANT_LIST_KEY,
   PARTICIPANT_LIST_ROW_ACTION,
   ParticipantListRowActionEvent,
   ParticipantListTableRow,
 } from '../../../core/feature-flags/store/feature-flags.model';
 import { MemberTypes } from '../../../core/segments/store/segments.model';
+import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 
 /**
  * `CommonDetailsParticipantListTableComponent` is a reusable Angular component that displays a table with common details for participant lists.
@@ -34,27 +33,23 @@ import { MemberTypes } from '../../../core/segments/store/segments.model';
 
 @Component({
   selector: 'app-common-details-participant-list-table',
-  standalone: true,
   imports: [
     MatTableModule,
     CommonModule,
     MatTooltipModule,
     TranslateModule,
-    UpperCasePipe,
     MatChipsModule,
     RouterModule,
-    DatePipe,
     MatSlideToggleModule,
     MatIconModule,
     MatButtonModule,
-    CommonStatusIndicatorChipComponent,
   ],
   templateUrl: './common-details-participant-list-table.component.html',
   styleUrl: './common-details-participant-list-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonDetailsParticipantListTableComponent {
-  @Input() tableType: FEATURE_FLAG_PARTICIPANT_LIST_KEY;
+  @Input() tableType: FEATURE_FLAG_LIST_FILTER_MODE;
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
   @Input() slideToggleDisabled?: boolean = false;
@@ -74,16 +69,16 @@ export class CommonDetailsParticipantListTableComponent {
   };
 
   PARTICIPANT_LIST_TRANSLATION_KEYS = {
-    TYPE: 'Type',
-    VALUES: 'Values',
-    NAME: 'Name',
-    ENABLE: 'Enable',
-    ACTIONS: 'Actions',
+    TYPE: 'segments.global-type.text',
+    VALUES: 'segments.global-values.text',
+    NAME: 'segments.global-name.text',
+    ENABLE: 'segments.global-enable.text',
+    ACTIONS: 'segments.global-actions.text',
   };
 
   ngOnInit() {
     this.displayedColumns =
-      this.tableType === FEATURE_FLAG_PARTICIPANT_LIST_KEY.INCLUDE
+      this.tableType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION
         ? ['type', 'values', 'name', 'enable', 'actions']
         : ['type', 'values', 'name', 'actions'];
   }

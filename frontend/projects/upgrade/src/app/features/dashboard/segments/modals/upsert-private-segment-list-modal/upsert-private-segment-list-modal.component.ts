@@ -28,7 +28,7 @@ import {
 } from '../../../../../core/segments/store/segments.model';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscription, timer } from 'rxjs';
-import { SegmentsModule } from '../../segments.module';
+import { SegmentsModule } from '../../../segments-legacy/segments.module';
 import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
@@ -37,7 +37,6 @@ import { CommonTagInputType } from '../../../../../core/feature-flags/store/feat
 
 @Component({
   selector: 'upsert-private-segment-list-modal',
-  standalone: true,
   imports: [
     CommonModalComponent,
     MatSelectModule,
@@ -55,7 +54,7 @@ import { CommonTagInputType } from '../../../../../core/feature-flags/store/feat
 })
 export class UpsertPrivateSegmentListModalComponent {
   @ViewChild('typeSelectRef') typeSelectRef: MatSelect;
-  listOptionTypes$ = this.segmentsService.selectPrivateSegmentListTypeOptions$;
+  listOptionTypes$: Observable<{ value: string; viewValue: string }[]>;
   isLoadingUpsertFeatureFlagList$ = this.featureFlagService.isLoadingUpsertPrivateSegmentList$;
   initialFormValues$ = new BehaviorSubject<PrivateSegmentListFormData>(null);
 
@@ -84,6 +83,12 @@ export class UpsertPrivateSegmentListModalComponent {
   ngOnInit(): void {
     this.fetchData();
     this.createPrivateSegmentListForm();
+
+    // Initialize listOptionTypes$ with the app context
+    this.listOptionTypes$ = this.segmentsService.selectPrivateSegmentListTypeOptions$(
+      this.config.params.sourceAppContext
+    );
+
     this.initializeListeners();
     this.populateFormForEdit();
   }
@@ -93,6 +98,7 @@ export class UpsertPrivateSegmentListModalComponent {
       [
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_SEGMENT_LIST,
       ].includes(this.config.params.action)
     ) {
       // Slight delay before opening the type select dropdown for a smoother UX
@@ -127,7 +133,6 @@ export class UpsertPrivateSegmentListModalComponent {
 
   fetchData() {
     this.experimentService.fetchContextMetaData();
-    this.segmentsService.fetchSegments();
   }
 
   initializeListeners() {
@@ -154,6 +159,7 @@ export class UpsertPrivateSegmentListModalComponent {
       ![
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_SEGMENT_LIST,
       ].includes(this.config.params.action)
     ) {
       return;
@@ -296,7 +302,7 @@ export class UpsertPrivateSegmentListModalComponent {
     list = this.createRequestByListType(formData, listType);
 
     const listRequest: PrivateSegmentListRequest = {
-      flagId: this.config.params.flagId,
+      id: this.config.params.id,
       enabled: this.config.params.sourceList?.enabled || isExcludeList, // Maintain existing status for edits, default to false for new include lists, true for all exclude lists
       listType,
       segment: list,
@@ -323,6 +329,12 @@ export class UpsertPrivateSegmentListModalComponent {
         break;
       case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST:
         this.sendUpdateFeatureFlagExclusionRequest(editRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_SEGMENT_LIST:
+        this.sendAddSegmentListRequest(addListRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_SEGMENT_LIST:
+        this.sendUpdateSegmentListRequest(editRequest);
         break;
     }
   }
@@ -374,6 +386,14 @@ export class UpsertPrivateSegmentListModalComponent {
 
   sendUpdateFeatureFlagExclusionRequest(editListRequest: EditPrivateSegmentListRequest): void {
     this.featureFlagService.updateFeatureFlagExclusionPrivateSegmentList(editListRequest);
+  }
+
+  sendAddSegmentListRequest(addListRequest: AddPrivateSegmentListRequest): void {
+    this.segmentsService.addPrivateSegmentList(addListRequest);
+  }
+
+  sendUpdateSegmentListRequest(editListRequest: EditPrivateSegmentListRequest): void {
+    this.segmentsService.updatePrivateSegmentList(editListRequest);
   }
 
   onDownloadRequested(values: string[]) {

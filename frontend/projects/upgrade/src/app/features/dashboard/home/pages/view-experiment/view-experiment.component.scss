@@ -233,19 +233,6 @@ $font-size-small: 15px;
           font-size: $font-size-small !important;
         }
       }
-
-      .logging {
-        margin-top: 12px;
-
-        .mat-mdc-checkbox {
-          margin-top: -3px;
-          margin-left: -12px;
-
-          .checkbox-label {
-            color: var(--grey-5);
-          }
-        }
-      }
     }
   }
 
@@ -267,15 +254,41 @@ $font-size-small: 15px;
     padding: 0px !important;
   }
 
-  .table-container {
+  .table-container,
+  .json-viewer-container {
     padding: 24px 34px;
 
-    &-partition {
+    &-partitions,
+    &-conditions {
       margin-bottom: 24px;
 
       .table {
         mat-row {
           max-height: 50px;
+        }
+
+        .cdk-column-partitionPoint {
+          max-width: 35%;
+        }
+
+        .cdk-column-excludeIfReached {
+          justify-content: center;
+          max-width: 150px;
+          margin-right: 32px;
+        }
+
+        .cdk-column-conditionCode {
+          max-width: 35%;
+        }
+
+        .cdk-column-assignmentWeight {
+          justify-content: flex-end;
+          max-width: 96px;
+          margin-right: 64px;
+        }
+
+        .cdk-column-description {
+          margin-right: 32px;
         }
       }
 
@@ -334,14 +347,6 @@ $font-size-small: 15px;
     &-participants,
     &-metrics {
       margin-bottom: 24px;
-
-      .table {
-        mat-cell,
-        mat-header-cell {
-          justify-content: flex-start !important;
-          padding-left: 10.5% !important;
-        }
-      }
     }
 
     &-payloads .payload-table-overview {
@@ -356,22 +361,11 @@ $font-size-small: 15px;
       }
     }
 
-    &-metrics {
-      mat-row {
-        align-items: flex-start;
-        height: auto !important;
-      }
-      mat-cell {
-        align-items: flex-start;
-        flex-direction: column !important;
-      }
-    }
-
     .table {
       mat-cell,
       mat-header-cell {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         padding: 10px;
         margin-left: 25px;
         word-break: break-word;
@@ -381,11 +375,13 @@ $font-size-small: 15px;
         color: var(--grey-2);
       }
     }
-  }
 
-  .metric-key,
-  .metric-Operation {
-    padding-bottom: 5px;
+    pre {
+      padding: 16px 8px 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      -webkit-font-smoothing: antialiased;
+    }
   }
 
   .box-shadow {

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CreateQueryComponent } from './create-query.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
@@ -9,7 +9,7 @@ xdescribe('CreateQueryComponent', () => {
   let component: CreateQueryComponent;
   let fixture: ComponentFixture<CreateQueryComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [CreateQueryComponent],
       imports: [TestingModule],

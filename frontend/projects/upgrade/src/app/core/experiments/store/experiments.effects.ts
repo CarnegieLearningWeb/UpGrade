@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
+import * as analysisActions from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
 import {
   map,
@@ -162,6 +163,7 @@ export class ExperimentEffects {
                   experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
                   experimentAction.actionFetchAllDecisionPoints(),
+                  analysisActions.actionFetchMetrics(),
                 ];
               })
             )
@@ -463,10 +465,13 @@ export class ExperimentEffects {
   exportExperimentDesign$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionExportExperimentDesign),
-      map((action) => ({ experimentIds: action.experimentIds })),
+      map((action) => ({ experimentIds: action.experimentIds, exportAll: action.exportAll })),
       filter(({ experimentIds }) => !!experimentIds),
-      switchMap(({ experimentIds }) =>
-        this.experimentDataService.exportExperimentDesign(experimentIds).pipe(
+      switchMap(({ experimentIds, exportAll: allExport }) => {
+        const apiCall$ = allExport
+          ? this.experimentDataService.exportAllExperimentDesign()
+          : this.experimentDataService.exportExperimentDesign(experimentIds);
+        return apiCall$.pipe(
           tap(() => {
             this.notificationService.showSuccess('Experiment Design JSON downloaded!');
           }),
@@ -485,8 +490,8 @@ export class ExperimentEffects {
             return experimentAction.actionExportExperimentDesignSuccess();
           }),
           catchError(() => [experimentAction.actionExportExperimentDesignFailure()])
-        )
-      )
+        );
+      })
     )
   );
 

@@ -15,11 +15,14 @@ import {
   selectSortAs,
   selectSearchString,
   selectIsAllFlagsFetched,
+  selectFeatureFlagPaginationParams,
 } from './feature-flags.selectors';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
 import { of } from 'rxjs';
 import { SERVER_ERROR } from 'upgrade_types';
+import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
+
 @Injectable()
 export class FeatureFlagsEffects {
   constructor(
@@ -28,53 +31,46 @@ export class FeatureFlagsEffects {
     private featureFlagsDataService: FeatureFlagsDataService,
     private router: Router,
     private notificationService: NotificationService,
-    private commonExportHelpersService: CommonExportHelpersService
+    private commonExportHelpersService: CommonExportHelpersService,
+    private commonModalEvents: CommonModalEventsService
   ) {}
 
   fetchFeatureFlags$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionFetchFeatureFlags),
       map((action) => action.fromStarting),
-      withLatestFrom(
-        this.store$.pipe(select(selectSkipFlags)),
-        this.store$.pipe(select(selectTotalFlags)),
-        this.store$.pipe(select(selectSearchKey)),
-        this.store$.pipe(select(selectSortKey)),
-        this.store$.pipe(select(selectSortAs)),
-        this.store$.pipe(select(selectIsAllFlagsFetched))
-      ),
-      filter(([fromStarting, skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched]) => {
-        return !isAllFlagsFetched || skip < total || total === null || fromStarting;
+      withLatestFrom(this.store$.pipe(select(selectFeatureFlagPaginationParams))),
+      filter(([fromStarting, pagination]) => {
+        return (
+          !pagination.isAllFlagsFetched ||
+          pagination.skip < pagination.total ||
+          pagination.total === null ||
+          fromStarting
+        );
       }),
       tap(() => {
         this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
       }),
-      switchMap(([fromStarting, skip, _, searchKey, sortKey, sortAs]) => {
-        let searchString = null;
-        // As withLatestFrom does not support more than 5 arguments
-        // TODO: Find alternative
-        this.getSearchString$().subscribe((searchInput) => {
-          searchString = searchInput;
-        });
+      switchMap(([fromStarting, pagination]) => {
         let params: FeatureFlagsPaginationParams = {
-          skip: fromStarting ? 0 : skip,
+          skip: fromStarting ? 0 : pagination.skip,
           take: NUMBER_OF_FLAGS,
         };
-        if (sortKey) {
+        if (pagination.sortKey) {
           params = {
             ...params,
             sortParams: {
-              key: sortKey,
-              sortAs,
+              key: pagination.sortKey,
+              sortAs: pagination.sortAs,
             },
           };
         }
-        if (searchString) {
+        if (pagination.searchString) {
           params = {
             ...params,
             searchParams: {
-              key: searchKey,
-              string: searchString,
+              key: pagination.searchKey,
+              string: pagination.searchString,
             },
           };
         }
@@ -92,13 +88,16 @@ export class FeatureFlagsEffects {
     )
   );
 
-  // actionCreateFeatureFlag dispatch POST feature flag
+  // actionAddFeatureFlag dispatch POST feature flag
   addFeatureFlag$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionAddFeatureFlag),
       switchMap((action) => {
         return this.featureFlagsDataService.addFeatureFlag(action.addFeatureFlagRequest).pipe(
-          map((response) => FeatureFlagsActions.actionAddFeatureFlagSuccess({ response })),
+          map((response) => {
+            this.commonModalEvents.forceCloseModal();
+            return FeatureFlagsActions.actionAddFeatureFlagSuccess({ response });
+          }),
           tap(({ response }) => {
             this.router.navigate(['/featureflags', 'detail', response.id]);
           }),
@@ -119,6 +118,7 @@ export class FeatureFlagsEffects {
       switchMap((action) => {
         return this.featureFlagsDataService.updateFeatureFlag(action.flag).pipe(
           map((response) => {
+            this.commonModalEvents.forceCloseModal();
             return FeatureFlagsActions.actionUpdateFeatureFlagSuccess({ response });
           }),
           catchError((res) => {
@@ -138,6 +138,7 @@ export class FeatureFlagsEffects {
       switchMap((action) => {
         return this.featureFlagsDataService.updateFeatureFlagStatus(action.updateFeatureFlagStatusRequest).pipe(
           map((response) => {
+            this.commonModalEvents.forceCloseModal();
             return FeatureFlagsActions.actionUpdateFeatureFlagStatusSuccess({ response });
           }),
           catchError(() => [FeatureFlagsActions.actionUpdateFeatureFlagStatusFailure()])
@@ -168,6 +169,7 @@ export class FeatureFlagsEffects {
       switchMap((id) =>
         this.featureFlagsDataService.deleteFeatureFlag(id).pipe(
           map((data: any) => {
+            this.commonModalEvents.forceCloseModal();
             this.router.navigate(['/featureflags']);
             return FeatureFlagsActions.actionDeleteFeatureFlagSuccess({ flag: data[0] });
           }),
@@ -182,7 +184,10 @@ export class FeatureFlagsEffects {
       ofType(FeatureFlagsActions.actionAddFeatureFlagInclusionList),
       switchMap((action) => {
         return this.featureFlagsDataService.addInclusionList(action.list).pipe(
-          map((listResponse) => FeatureFlagsActions.actionAddFeatureFlagInclusionListSuccess({ listResponse })),
+          map((listResponse) => {
+            this.commonModalEvents.forceCloseModal();
+            return FeatureFlagsActions.actionAddFeatureFlagInclusionListSuccess({ listResponse });
+          }),
           catchError((error) => of(FeatureFlagsActions.actionAddFeatureFlagInclusionListFailure({ error })))
         );
       })
@@ -194,7 +199,10 @@ export class FeatureFlagsEffects {
       ofType(FeatureFlagsActions.actionUpdateFeatureFlagInclusionList),
       switchMap((action) => {
         return this.featureFlagsDataService.updateInclusionList(action.list).pipe(
-          map((listResponse) => FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess({ listResponse })),
+          map((listResponse) => {
+            this.commonModalEvents.forceCloseModal();
+            return FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess({ listResponse });
+          }),
           catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListFailure({ error })))
         );
       })
@@ -219,7 +227,10 @@ export class FeatureFlagsEffects {
       ofType(FeatureFlagsActions.actionAddFeatureFlagExclusionList),
       switchMap((action) => {
         return this.featureFlagsDataService.addExclusionList(action.list).pipe(
-          map((listResponse) => FeatureFlagsActions.actionAddFeatureFlagExclusionListSuccess({ listResponse })),
+          map((listResponse) => {
+            this.commonModalEvents.forceCloseModal();
+            return FeatureFlagsActions.actionAddFeatureFlagExclusionListSuccess({ listResponse });
+          }),
           catchError((error) => of(FeatureFlagsActions.actionAddFeatureFlagExclusionListFailure({ error })))
         );
       })
@@ -231,7 +242,10 @@ export class FeatureFlagsEffects {
       ofType(FeatureFlagsActions.actionUpdateFeatureFlagExclusionList),
       switchMap((action) => {
         return this.featureFlagsDataService.updateExclusionList(action.list).pipe(
-          map((listResponse) => FeatureFlagsActions.actionUpdateFeatureFlagExclusionListSuccess({ listResponse })),
+          map((listResponse) => {
+            this.commonModalEvents.forceCloseModal();
+            return FeatureFlagsActions.actionUpdateFeatureFlagExclusionListSuccess({ listResponse });
+          }),
           catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagExclusionListFailure({ error })))
         );
       })
@@ -313,6 +327,7 @@ export class FeatureFlagsEffects {
       )
     )
   );
+
   exportFeatureFlagsDesign$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionExportFeatureFlagDesign),
@@ -330,6 +345,50 @@ export class FeatureFlagsEffects {
           catchError((error) => {
             this.notificationService.showError('Failed to export Feature Flag Design');
             return of(FeatureFlagsActions.actionExportFeatureFlagDesignFailure());
+          })
+        )
+      )
+    )
+  );
+
+  exportAllIncludeListsDesign$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionExportAllIncludeListsDesign),
+      map((action) => ({ featureFlagId: action.featureFlagId })),
+      switchMap(({ featureFlagId }) =>
+        this.featureFlagsDataService.exportAllIncludeListsDesign(featureFlagId).pipe(
+          map((exportedAllListsDesign: any[]) => {
+            if (exportedAllListsDesign.length) {
+              this.commonExportHelpersService.convertDataToDownload(exportedAllListsDesign, 'Lists');
+              this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
+            }
+            return FeatureFlagsActions.actionExportAllIncludeListsDesignSuccess();
+          }),
+          catchError((error) => {
+            this.notificationService.showError('Failed to export All include lists Design');
+            return of(FeatureFlagsActions.actionExportAllIncludeListsDesignFailure());
+          })
+        )
+      )
+    )
+  );
+
+  exportAllExcludeListsDesign$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionExportAllExcludeListsDesign),
+      map((action) => ({ featureFlagId: action.featureFlagId })),
+      switchMap(({ featureFlagId }) =>
+        this.featureFlagsDataService.exportAllExcludeListsDesign(featureFlagId).pipe(
+          map((exportedAllListsDesign: any[]) => {
+            if (exportedAllListsDesign) {
+              this.commonExportHelpersService.convertDataToDownload(exportedAllListsDesign, 'Lists');
+              this.notificationService.showSuccess('Feature Flag Design JSON downloaded!');
+            }
+            return FeatureFlagsActions.actionExportAllExcludeListsDesignSuccess();
+          }),
+          catchError((error) => {
+            this.notificationService.showError('Failed to export All exclude lists Design');
+            return of(FeatureFlagsActions.actionExportAllExcludeListsDesignFailure());
           })
         )
       )

@@ -1,7 +1,9 @@
 // The file contents for the current environment will overwrite these during build.
-// The build system defaults to the dev environment which uses 'environment.ts', but if you do
+// The build system defaults to the dev environment which uses 'environment.local.ts', but if you do
 // `ng build --env=prod` then `environment.prod.ts` will be used instead.
 // The list of which env maps to which file can be found in `.angular-cli.json`.
+
+// This file is NOT used anymore for any actual builds, so don't bother changing the values here, use 'environment.local.ts'.
 
 export const environment = {
   appName: 'UpGrade',
@@ -11,21 +13,23 @@ export const environment = {
   test: false,
   baseHrefPrefix: '',
   useHashRouting: false,
-  googleClientId: '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
+  googleClientId: '',
   domainName: '',
-  pollingEnabled: true,
+  pollingEnabled: false,
   pollingInterval: 10 * 1000,
   pollingLimit: 600,
-  featureFlagNavToggle: true,
+  segmentsRefreshToggle: false,
   withinSubjectExperimentSupportToggle: false,
   errorLogsToggle: false,
-  metricAnalyticsExperimentDisplayToggle: false,
+  metricAnalyticsExperimentDisplayToggle: true,
+  moocletToggle: true,
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',
     validateExperiment: '/experiments/validation',
     importExperiment: '/experiments/import',
     exportExperiment: '/experiments/export',
+    exportAllExperiment: '/experiments/export/all',
     updateExperiments: '/experiments',
     experimentContext: '/experiments/context',
     getExperimentById: '/experiments/single',
@@ -52,8 +56,12 @@ export const environment = {
     updateFilterMode: '/flags/filterMode',
     getPaginatedFlags: '/flags/paginated',
     validateFeatureFlag: '/flags/import/validation',
+    validateFeatureFlagList: '/flags/lists/import/validation',
     importFeatureFlag: '/flags/import',
+    importFeatureFlagList: '/flags/lists/import',
     exportFlagsDesign: '/flags/export',
+    exportFFAllIncludeListsDesign: '/flags/export/includeLists',
+    exportFFAllExcludeListsDesign: '/flags/export/excludeLists',
     emailFlagData: '/flags/email',
     addFlagInclusionList: '/flags/inclusionList',
     addFlagExclusionList: '/flags/exclusionList',
@@ -64,10 +72,15 @@ export const environment = {
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
     segments: '/segments',
+    globalSegments: '/segments/global',
+    getPaginatedSegments: '/segments/paginated',
     validateSegments: '/segments/validation',
+    validateSegmentsImport: '/segments/import/validation',
     importSegments: '/segments/import',
+    importSegmentList: '/segments/list/import',
     exportSegments: '/segments/export/json',
     exportSegmentCSV: '/segments/export/csv',
+    addSegmentList: '/segments/list',
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
   },
 };

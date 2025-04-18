@@ -140,7 +140,7 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
   expect(experimentDecisionPoint.length).toEqual(updatedExperimentDoc.partitions.length);
 
   // delete the experiment
-  await experimentService.delete(updatedExperimentDoc.id, user, new UpgradeLogger());
+  await experimentService.delete(updatedExperimentDoc.id, user, { logger: new UpgradeLogger() });
   const allExperiments = await experimentService.find(new UpgradeLogger());
   expect(allExperiments.length).toEqual(0);
 

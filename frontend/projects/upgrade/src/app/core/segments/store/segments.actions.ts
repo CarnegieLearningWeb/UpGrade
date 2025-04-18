@@ -1,7 +1,11 @@
 import { createAction, props } from '@ngrx/store';
 import {
+  AddPrivateSegmentListRequest,
+  AddSegmentRequest,
+  EditPrivateSegmentListRequest,
   Segment,
   SegmentInput,
+  UpdateSegmentRequest,
   UpsertSegmentType,
   experimentSegmentInclusionExclusionData,
   featureFlagSegmentInclusionExclusionData,
@@ -11,11 +15,29 @@ import {
   SORT_AS_DIRECTION,
   SEGMENT_SORT_KEY,
 } from '../../../../../../../../types/src/Experiment/enums';
+import { FeatureFlagSegmentListDetails } from '../../feature-flags/store/feature-flags.model';
 
-export const actionFetchSegments = createAction('[Segments] Segment', props<{ fromStarting?: boolean }>());
+export const actionFetchSegments = createAction('[Segments] Segments', props<{ fromStarting?: boolean }>());
 
 export const actionFetchSegmentsSuccess = createAction(
   '[Segments] Fetch Segments Success',
+  props<{
+    segments: Segment[];
+    totalSegments: number;
+    experimentSegmentInclusion: experimentSegmentInclusionExclusionData[];
+    experimentSegmentExclusion: experimentSegmentInclusionExclusionData[];
+    featureFlagSegmentInclusion: featureFlagSegmentInclusionExclusionData[];
+    featureFlagSegmentExclusion: featureFlagSegmentInclusionExclusionData[];
+  }>()
+);
+
+export const actionfetchAllSegments = createAction(
+  '[Segments] Segments Legacy GET All',
+  props<{ fromStarting?: boolean }>()
+);
+
+export const actionFetchSegmentsSuccessLegacyGetAll = createAction(
+  '[Segments] Fetch Segments Success Legacy GET All',
   props<{
     segments: Segment[];
     experimentSegmentInclusion: experimentSegmentInclusionExclusionData[];
@@ -25,7 +47,21 @@ export const actionFetchSegmentsSuccess = createAction(
   }>()
 );
 
-export const actionFetchSegmentsFailure = createAction('[Segments] Fetch Segments Failure');
+export const actionFetchSegmentsFailure = createAction('[Segments] Fetch Segments Failure (Legacy GET all)');
+
+export const actionFetchGlobalSegments = createAction(
+  '[Global Segments] Fetch Global Segments',
+  props<{ fromStarting?: boolean }>()
+);
+
+export const actionFetchGlobalSegmentsSuccess = createAction(
+  '[Global Segments] Fetch Global Segments Success',
+  props<{
+    globalSegments: Segment[];
+  }>()
+);
+
+export const actionFetchGlobalSegmentsFailure = createAction('[Global Segments] Fetch GLobal Segments Failure');
 
 export const actionUpsertSegment = createAction(
   '[Segments] Upsert Segment',
@@ -38,6 +74,27 @@ export const actionUpsertSegmentSuccess = createAction(
 );
 
 export const actionUpsertSegmentFailure = createAction('[Segments] Upsert Segment Failure');
+
+export const actionAddSegment = createAction(
+  '[Segments] Add Segment',
+  props<{ addSegmentRequest: AddSegmentRequest }>()
+);
+
+export const actionAddSegmentSuccess = createAction('[Segments] Add Segment Success', props<{ segment: Segment }>());
+
+export const actionAddSegmentFailure = createAction('[Segments] Add Segment Failure');
+
+export const actionUpdateSegment = createAction(
+  '[Segments] Update Segment',
+  props<{ updateSegmentRequest: UpdateSegmentRequest }>()
+);
+
+export const actionUpdateSegmentSuccess = createAction(
+  '[Segments] Update Segment Success',
+  props<{ segment: Segment }>()
+);
+
+export const actionUpdateSegmentFailure = createAction('[Segments] Update Segment Failure');
 
 export const actionGetSegmentById = createAction('[Segments] Get Segment By Id', props<{ segmentId: string }>());
 
@@ -68,6 +125,8 @@ export const actionExportSegmentSuccess = createAction('[Segments] Export Segmen
 
 export const actionExportSegmentFailure = createAction('[Segments] Export Segment Failure');
 
+export const actionSetSkipSegments = createAction('[Segments] Set Skip Segments', props<{ skipSegments: number }>());
+
 export const actionSetSearchKey = createAction(
   '[Segments] Set Search key value',
   props<{ searchKey: SEGMENT_SEARCH_KEY }>()
@@ -80,4 +139,56 @@ export const actionSetSortKey = createAction('[Segments] Set Sort key value', pr
 export const actionSetSortingType = createAction(
   '[Segments] Set Sorting type',
   props<{ sortingType: SORT_AS_DIRECTION }>()
+);
+
+export const actionSetGlobalSortKey = createAction(
+  '[Global Segments] Set Sort key value',
+  props<{ sortKey: SEGMENT_SORT_KEY }>()
+);
+
+export const actionSetGlobalSortingType = createAction(
+  '[Global Segments] Set Sorting type',
+  props<{ sortingType: SORT_AS_DIRECTION }>()
+);
+
+export const actionAddSegmentList = createAction(
+  '[Segments] Add Segment List',
+  props<{ list: AddPrivateSegmentListRequest }>()
+);
+
+export const actionAddSegmentListSuccess = createAction(
+  '[Segments] Add Segment List Success',
+  props<{ listResponse: FeatureFlagSegmentListDetails }>()
+);
+
+export const actionAddSegmentListFailure = createAction('[Segments] Add Segment List Failure', props<{ error: any }>());
+
+export const actionUpdateSegmentList = createAction(
+  '[Segments] Update Segment List',
+  props<{ list: EditPrivateSegmentListRequest }>()
+);
+
+export const actionUpdateSegmentListSuccess = createAction(
+  '[Segments] Update Segment List Success',
+  props<{ listResponse: FeatureFlagSegmentListDetails }>()
+);
+
+export const actionUpdateSegmentListFailure = createAction(
+  '[Segments] Update Segment List Failure',
+  props<{ error: any }>()
+);
+
+export const actionDeleteSegmentList = createAction(
+  '[Segments] Delete Segment List',
+  props<{ segmentId: string; parentSegmentId: string }>()
+);
+
+export const actionDeleteSegmentListSuccess = createAction(
+  '[Segments] Delete Segment List Success',
+  props<{ segmentId: string }>()
+);
+
+export const actionDeleteSegmentListFailure = createAction(
+  '[Segments] Delete Segment List Failure',
+  props<{ error: any }>()
 );

@@ -6,6 +6,22 @@ projectBuilderV5 (
     ],
 
     projects: [
+        "types": [
+            artifactType: "codeartifact",
+            projectDir: "types",
+            runInProjectDir: true,
+            skipArtifactUpload: true,
+            fileFilter: [
+                include: ["types/.*"]
+            ],
+            buildScripts: [
+                [
+                    script: 'npm ci --no-audit',
+                    githubCheck: 'types npm ci --no-audit',
+                    log: 'types-npm-ci.log'
+                ]
+            ]
+        ],
         "upgrade-service":[
             artifactType: "ecr",
             projectDir: "backend",
@@ -37,6 +53,7 @@ projectBuilderV5 (
             artifactPrefix: "upgrade",
             versioning: 'branch',
             oneArtifactPerEnvironment: true,
+            dependencies: ["types"],
             buildScripts: [
                 [
                     script: 'npm ci --no-audit',

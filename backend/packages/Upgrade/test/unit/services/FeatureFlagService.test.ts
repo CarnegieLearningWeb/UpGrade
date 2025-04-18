@@ -13,12 +13,12 @@ import { Container } from '../../../src/typeorm-typedi-extensions';
 import {
   FLAG_SEARCH_KEY,
   FLAG_SORT_KEY,
-  FF_COMPATIBILITY_TYPE,
 } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import {
   FEATURE_FLAG_LIST_FILTER_MODE,
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
+  IMPORT_COMPATIBILITY_TYPE,
   SEGMENT_TYPE,
   SORT_AS_DIRECTION,
 } from 'upgrade_types';
@@ -86,7 +86,7 @@ describe('Feature Flag Service Testing', () => {
 
   const mockList = new FeatureFlagListValidator();
   mockList.enabled = true;
-  mockList.flagId = mockFlag1.id;
+  mockList.id = mockFlag1.id;
   mockList.listType = 'individual';
   mockList.segment = mockSegment;
 
@@ -171,7 +171,7 @@ describe('Feature Flag Service Testing', () => {
           provide: ExperimentAssignmentService,
           useValue: {
             inclusionExclusionLogic: jest.fn().mockResolvedValue([[mockFlag1.id]]),
-            checkUserOrGroupIsGloballyExcluded: jest.fn().mockResolvedValue([null, []]),
+            checkUserOrGroupIsGloballyExcluded: jest.fn().mockResolvedValue([false, false]),
           },
         },
         {
@@ -480,7 +480,7 @@ describe('Feature Flag Service Testing', () => {
     expect(result).toEqual([
       {
         fileName: 'import.json',
-        error: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+        error: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
       },
     ]);
   });
@@ -495,7 +495,7 @@ describe('Feature Flag Service Testing', () => {
     expect(result).toEqual([
       {
         fileName: 'import.json',
-        error: FF_COMPATIBILITY_TYPE.INCOMPATIBLE,
+        error: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
       },
     ]);
   });

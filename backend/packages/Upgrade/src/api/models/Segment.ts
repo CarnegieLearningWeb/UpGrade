@@ -22,6 +22,11 @@ export class Segment extends BaseModel {
   })
   public description: string;
 
+  @Column({
+    nullable: true,
+  })
+  public listType: string;
+
   @Column()
   public context: string;
 
@@ -31,6 +36,9 @@ export class Segment extends BaseModel {
     default: SEGMENT_TYPE.PUBLIC,
   })
   public type: SEGMENT_TYPE;
+
+  @Column('text', { array: true, nullable: true })
+  public tags?: string[];
 
   @OneToMany(() => IndividualForSegment, (individualForSegment) => individualForSegment.segment)
   @Type(() => IndividualForSegment)

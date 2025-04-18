@@ -1,7 +1,14 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
-import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
-import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
+import {
+  SEGMENT_TYPE,
+  SEGMENT_STATUS,
+  SEGMENT_SEARCH_KEY,
+  SORT_AS_DIRECTION,
+  SEGMENT_SORT_KEY,
+  FILTER_MODE,
+  FEATURE_FLAG_LIST_FILTER_MODE,
+} from 'upgrade_types';
 export { SEGMENT_STATUS };
 
 export enum NewSegmentDialogEvents {
@@ -28,6 +35,11 @@ export enum UpsertSegmentType {
   IMPORT_SEGMENT = 'Import segment',
 }
 
+export enum SEGMENTS_BUTTON_ACTION {
+  IMPORT = 'import segment',
+  EXPORT_ALL = 'export all segments',
+}
+
 export interface NewSegmentDialogData {
   type: NewSegmentDialogEvents;
   formData?: any;
@@ -40,6 +52,7 @@ export enum MemberTypes {
 }
 
 export interface experimentSegmentInclusionExclusionData {
+  experimentId: string;
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
@@ -55,6 +68,7 @@ export interface experimentSegmentInclusionExclusionData {
 }
 
 export interface featureFlagSegmentInclusionExclusionData {
+  featureFlagId: string;
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
@@ -95,12 +109,35 @@ export interface Segment {
   id: string;
   name: string;
   context: string;
+  tags: string[];
   description: string;
   individualForSegment: IndividualForSegment[];
   groupForSegment: GroupForSegment[];
   subSegments: Segment[];
+  listType?: MemberTypes | string;
   type: SEGMENT_TYPE;
-  status: string;
+  status: SEGMENT_STATUS;
+}
+
+export interface CoreSegmentDetails {
+  id?: string;
+  name: string;
+  context: string;
+  description?: string;
+  tags?: string[];
+  userIds: string[];
+  groups: Group[];
+  subSegmentIds: string[];
+  status?: SEGMENT_STATUS;
+  type: SEGMENT_TYPE;
+}
+
+// Currently there is no difference between these types, but they semantically different and could diverge later
+export type AddSegmentRequest = CoreSegmentDetails;
+
+// so that we can throw an error if we try to update the id
+export interface UpdateSegmentRequest extends AddSegmentRequest {
+  readonly id: string;
 }
 
 export interface SegmentInput {
@@ -117,21 +154,109 @@ export interface SegmentInput {
   type: SEGMENT_TYPE;
 }
 
+export const SEGMENT_ROOT_COLUMN_NAMES = {
+  NAME: 'name',
+  STATUS: 'status',
+  UPDATED_AT: 'updatedAt',
+  APP_CONTEXT: 'appContext',
+  TAGS: 'tags',
+  LISTS: 'lists',
+};
+
+export const SEGMENT_ROOT_DISPLAYED_COLUMNS = Object.values(SEGMENT_ROOT_COLUMN_NAMES);
+
+export const SEGMENT_TRANSLATION_KEYS = {
+  NAME: 'segments.global-name.text',
+  STATUS: 'segments.global-status.text',
+  UPDATED_AT: 'segments.global-updated-at.text',
+  APP_CONTEXT: 'segments.global-app-context.text',
+  TAGS: 'segments.global-tags.text',
+  LISTS: 'segments.global-lists.text',
+};
+
+export interface ParticipantListTableRow {
+  listType: MemberTypes | string;
+  segment: Segment;
+  enabled?: boolean;
+}
+
+export interface UsedByTableRow {
+  name: string;
+  link?: string;
+  type: string;
+  status: string;
+  updatedAt: string;
+}
+
+export enum USED_BY_TYPE {
+  EXPERIMENT = 'Experiment',
+  FEATURE_FLAG = 'Feature Flag',
+}
+
+export interface SegmentsPaginationInfo {
+  nodes: Segment[];
+  total: number;
+  skip: number;
+  take: number;
+}
+
+// TODO: This should be probably be a part of env config
+export const NUMBER_OF_SEGMENTS = 20;
+
+interface ISegmentsSearchParams {
+  key: SEGMENT_SEARCH_KEY;
+  string: string;
+}
+
+interface ISegmentsSortParams {
+  key: SEGMENT_SORT_KEY;
+  sortAs: SORT_AS_DIRECTION;
+}
+
+export interface SegmentsPaginationParams {
+  skip: number;
+  take: number;
+  searchParams?: ISegmentsSearchParams;
+  sortParams?: ISegmentsSortParams;
+}
+
+export enum SEGMENT_DETAILS_PAGE_ACTIONS {
+  EDIT = 'Edit Segment',
+  DUPLICATE = 'Duplicate Segment',
+  DELETE = 'Delete Segment',
+  EXPORT = 'Export Segment',
+}
+
+export enum SEGMENT_LIST_ACTIONS {
+  IMPORT = 'Import List',
+  EXPORT_ALL = 'Export All Lists',
+}
+
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;
+  isLoadingUpsertSegment: boolean;
   // TODO: remove any
   allExperimentSegmentsInclusion: any;
   allExperimentSegmentsExclusion: any;
   allFeatureFlagSegmentsInclusion: any;
   allFeatureFlagSegmentsExclusion: any;
+  skipSegments: number;
+  totalSegments: number;
   searchKey: SEGMENT_SEARCH_KEY;
   searchString: string;
   sortKey: SEGMENT_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;
 }
 
+export interface GlobalSegmentState extends EntityState<Segment> {
+  isLoadingGlobalSegments: boolean;
+  sortKey: SEGMENT_SORT_KEY;
+  sortAs: SORT_AS_DIRECTION;
+}
+
 export interface State extends AppState {
   segments: SegmentState;
+  globalSegments: GlobalSegmentState;
 }
 
 export interface SegmentFile {
@@ -162,7 +287,7 @@ export interface UpsertPrivateSegmentListParams {
   sourceList: ParticipantListTableRow;
   sourceAppContext: string;
   action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION;
-  flagId: string;
+  id: string;
 }
 
 export enum LIST_OPTION_TYPE {
@@ -210,7 +335,7 @@ export interface EditPrivateSegmentListDetails extends PrivateSegmentListRequest
 }
 
 export interface PrivateSegmentListRequest {
-  flagId: string;
+  id: string;
   enabled: boolean;
   listType: string;
   segment: AddPrivateSegmentListRequestDetails | EditPrivateSegmentListDetails;
@@ -222,4 +347,27 @@ export interface AddPrivateSegmentListRequest extends PrivateSegmentListRequest 
 
 export interface EditPrivateSegmentListRequest extends PrivateSegmentListRequest {
   segment: EditPrivateSegmentListDetails;
+}
+
+export enum CommonTagInputType {
+  TAGS = 'tags',
+  VALUES = 'values',
+}
+
+export interface SegmentFormData {
+  name: string;
+  description: string;
+  appContext: string;
+  tags: string[];
+}
+
+export enum UPSERT_SEGMENT_ACTION {
+  ADD = 'add',
+  EDIT = 'edit',
+  DUPLICATE = 'duplicate',
+}
+
+export interface UpsertSegmentParams {
+  sourceSegment: Segment;
+  action: UPSERT_SEGMENT_ACTION;
 }

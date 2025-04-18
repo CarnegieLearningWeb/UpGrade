@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EnrollmentOverTimeComponent } from './enrollment-over-time.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
@@ -9,7 +9,7 @@ xdescribe('EnrollmentOverTimeComponent', () => {
   let component: EnrollmentOverTimeComponent;
   let fixture: ComponentFixture<EnrollmentOverTimeComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [EnrollmentOverTimeComponent],
       imports: [TestingModule, NgxChartsModule],

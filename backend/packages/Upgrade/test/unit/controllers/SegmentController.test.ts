@@ -27,17 +27,29 @@ describe('Segment Controller Testing', () => {
 
   const segmentData = {
     id: uuid(),
-    name: "segment1",
-    description: "desc",
-    context: "home",
-    type: "public",
-    status: "Unused",
-    userIds: ["user1"],
+    name: 'segment1',
+    description: 'desc',
+    context: 'home',
+    type: 'public',
+    status: 'Unused',
+    userIds: ['user1'],
     groups: {
-      groupId : "group1",
-      type: "school"
+      groupId: 'group1',
+      type: 'school',
     },
-    subSegmentIds: ["seg2"]
+    subSegmentIds: ['seg2'],
+  };
+
+  const listInputData = {
+    parentSegmentId: uuid(),
+    name: 'list1',
+    description: 'list description',
+    context: 'home',
+    type: 'private',
+    userIds: ['user1', 'user2'],
+    groups: [],
+    subSegmentIds: [],
+    listType: 'Individual',
   };
 
   test('Get request for /api/segments', () => {
@@ -80,7 +92,7 @@ describe('Segment Controller Testing', () => {
   test('Post request for /api/segments/import', () => {
     return request(app)
       .post('/api/segments/import')
-      .send(segmentData)
+      .send([segmentData])
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -112,4 +124,45 @@ describe('Segment Controller Testing', () => {
       .expect(200);
   });
 
+  test('Post request for /api/segments/list (addSegmentList)', () => {
+    return request(app)
+      .post('/api/segments/list')
+      .send(listInputData)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Post request for /api/segments (updateSegmentList)', () => {
+    const updateListData = {
+      id: uuid(),
+      name: 'updated list',
+      description: 'updated description',
+      context: 'home',
+      type: 'private',
+      userIds: ['user1', 'user2', 'user3'],
+      groups: [],
+      subSegmentIds: [],
+      listType: 'Individual',
+    };
+
+    return request(app)
+      .post('/api/segments')
+      .send(updateListData)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Delete request for /api/segments/list/:segmentId (deleteSegmentList)', () => {
+    const segmentId = uuid();
+    const parentSegmentId = uuid();
+
+    return request(app)
+      .delete(`/api/segments/list/${segmentId}`)
+      .send({ parentSegmentId })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
 });

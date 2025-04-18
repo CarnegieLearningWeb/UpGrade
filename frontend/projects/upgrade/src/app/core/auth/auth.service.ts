@@ -8,6 +8,7 @@ import {
   selectIsAuthenticating,
   selectCurrentUser,
   selectGoogleCredential,
+  selectUserIsAdmin,
 } from './store/auth.selectors';
 import { UserPermission } from './store/auth.models';
 import { BehaviorSubject, filter, take } from 'rxjs';
@@ -15,11 +16,13 @@ import { AUTH_CONSTANTS, GoogleAuthJWTPayload, User, UserRole } from '../users/s
 import { ENV, Environment } from '../../../environments/environment-types';
 import jwt_decode from 'jwt-decode';
 import { NavigationEnd, NavigationSkipped, Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 
 @Injectable()
 export class AuthService {
   isLoggedIn$ = this.store$.pipe(select(selectIsLoggedIn));
   isAuthenticating$ = this.store$.pipe(select(selectIsAuthenticating));
+  isUserAdmin$ = this.store$.pipe(select(selectUserIsAdmin));
   currentUser$ = this.store$.pipe(select(selectCurrentUser));
   getGoogleCredential$ = this.store$.pipe(select(selectGoogleCredential));
   userPermissions$ = new BehaviorSubject<UserPermission>(null);
@@ -28,6 +31,7 @@ export class AuthService {
     private store$: Store<AppState>,
     private router: Router,
     private ngZone: NgZone,
+    private dialog: MatDialog,
     private localStorageService: LocalStorageService,
     @Inject(ENV) private environment: Environment,
     @Inject(DOCUMENT) private DOMref: Document
@@ -162,6 +166,7 @@ export class AuthService {
 
   authLogout(): void {
     this.store$.dispatch(AuthActions.actionLogoutStart());
+    this.dialog.closeAll();
   }
 
   setRedirectionUrl(redirectUrl: string): void {

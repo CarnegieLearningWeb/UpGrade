@@ -27,7 +27,6 @@ import { SharedModule } from '../../../shared/shared.module';
  */
 
 @Component({
-  standalone: true,
   selector: 'app-common-section-card-title-header',
   templateUrl: './common-section-card-title-header.component.html',
   styleUrls: ['./common-section-card-title-header.component.scss'],
@@ -40,6 +39,7 @@ export class CommonSectionCardTitleHeaderComponent {
   @Input() subtitle?: string;
   @Input() createdAt?: string;
   @Input() updatedAt?: string;
+  @Input() versionNumber?: number;
   @Input() chipClass?: STATUS_INDICATOR_CHIP_TYPE;
   @Input() showWarning?: boolean;
 }

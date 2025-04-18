@@ -45,7 +45,7 @@ describe('Feature Flag Controller Testing', () => {
     return request(app)
       .post('/api/flags')
       .send({
-        id: 'string',
+        id: uuid(),
         name: 'string',
         key: 'string',
         description: 'string',
@@ -95,7 +95,7 @@ describe('Feature Flag Controller Testing', () => {
     return request(app)
       .put('/api/flags/' + uuid())
       .send({
-        id: 'string',
+        id: uuid(),
         name: 'string',
         key: 'string',
         description: 'string',
@@ -113,7 +113,7 @@ describe('Feature Flag Controller Testing', () => {
     return request(app)
       .post('/api/flags/inclusionList')
       .send({
-        flagId: uuid(),
+        id: uuid(),
         enabled: true,
         listType: 'string',
         list: {
@@ -134,7 +134,7 @@ describe('Feature Flag Controller Testing', () => {
     return request(app)
       .post('/api/flags/exclusionList')
       .send({
-        flagId: uuid(),
+        id: uuid(),
         enabled: true,
         listType: 'string',
         list: {

@@ -17,6 +17,7 @@ export const initialState: ExperimentState = adapter.getInitialState({
   isLoadingExperiment: false,
   isLoadingExperimentDetailStats: false,
   isPollingExperimentDetailStats: false,
+  isLoadingExperimentExport: false,
   skipExperiment: 0,
   totalExperiments: null,
   searchKey: EXPERIMENT_SEARCH_KEY.ALL,
@@ -152,6 +153,14 @@ const reducer = createReducer(
   on(experimentsAction.actionEndExperimentDetailStatsPolling, (state) => ({
     ...state,
     isPollingExperimentDetailStats: false,
+  })),
+  on(experimentsAction.actionExportExperimentDesign, (state) => ({
+    ...state,
+    isLoadingExperimentExport: true,
+  })),
+  on(experimentsAction.actionExportExperimentDesignSuccess, (state) => ({
+    ...state,
+    isLoadingExperimentExport: false,
   }))
 );
 

@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, ViewChild, ElementRef, OnChanges } from '@angular/core';
 import { ASSIGNMENT_UNIT } from 'upgrade_types';
 import { AbstractControl } from '@angular/forms';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
   NewExperimentPaths,
+  RewardMetricData,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Component, OnInit, OnDestroy, Input, EventEmitter, Output } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
@@ -22,12 +23,15 @@ import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormArray } fr
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { DialogService } from '../../../../../shared/services/common-dialog.service';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { ExperimentDesignStepperService } from '../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
+
 @Component({
   selector: 'home-monitored-metrics',
   templateUrl: './metrics.component.html',
   styleUrls: ['./metrics.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
@@ -63,8 +67,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   controlTitles = ['Type', 'Key', 'Metric']; // Used to show different titles in grouped metrics
 
   metricsDataSource = new BehaviorSubject<AbstractControl[]>([]);
+  rewardMetricDataSource = new BehaviorSubject<RewardMetricData[]>([]);
 
   metricsDisplayedColumns = ['keys', 'operationType', 'queryName', 'removeMetric'];
+  rewardMetricDisplayedColumns = ['metricsKey', 'metricsOperation', 'metricsName'];
   queryIndex = 0;
   editMode = false;
 
@@ -75,12 +81,16 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   queryMetricDropDownError = [];
 
   currentAssignmentUnit: ASSIGNMENT_UNIT;
+  currentExperimentName$ = this.experimentDesignStepperService.currentExperimentName$;
+  isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
+  private rewardMetricSubscription: Subscription;
 
   constructor(
     private analysisService: AnalysisService,
     private _formBuilder: UntypedFormBuilder,
     private translate: TranslateService,
     private dialogService: DialogService,
+    private experimentService: ExperimentService,
     private experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
 
@@ -119,6 +129,21 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       ]),
     });
 
+    // Subscribe to experiment name changes for reward metric
+    this.rewardMetricSubscription = combineLatest([
+      this.isMoocletExperimentDesign$,
+      this.currentExperimentName$,
+    ]).subscribe(([isMooclet, experimentName]) => {
+      // If mooclet and name is non-empty, set the reward metric
+      if (isMooclet && experimentName) {
+        const rewardMetricKey = this.experimentService.getRewardMetricKey(experimentName);
+        this.rewardMetricDataSource.next([this.experimentService.getRewardMetricData(rewardMetricKey)]);
+      } else {
+        // If not mooclet or no name, clear out the reward metric
+        this.rewardMetricDataSource.next([]);
+      }
+    });
+
     // Bind predefined values of metrics from backend env file for auto complete:
     const metricsFormControl = this.queries;
     metricsFormControl.controls.forEach((_, keyIndex) => {
@@ -133,6 +158,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.queries.removeAt(0);
       this.experimentInfo.queries.forEach((query, queryIndex) => {
         const key = query.metric.key ? query.metric.key : query.metric;
+
         // separating keys from metric
         const rootKey = key.split(METRICS_JOIN_TEXT);
         // set selectedNode for first key of simple/repeated metrics
@@ -634,23 +660,22 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     this.queryComparisonStatisticError = [];
     this.queryMetricDropDownError = [];
     this.queryNameError = [];
+    this.queryForm.markAllAsTouched();
     const monitoredMetricsFormData = this.queryForm.getRawValue();
     monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map((query, index) => {
       let { keys } = query;
       const { operationType, queryName, compareFn, compareValue, repeatedMeasure } = query;
 
       if (keys) {
-        // check for metric key required except default row:
-        if (keys[0].metricKey || operationType || queryName || compareFn || compareValue) {
-          this.checkMetricKeyRequiredError(keys);
-        }
+        this.checkMetricKeyRequiredError(keys);
+        this.checkQueryNameRequiredError(queryName);
+        this.checkStatisticRequiredError(operationType);
+
         const metrics = [...keys];
         keys = keys
           .filter((key) => key.metricKey !== null)
           .map((key) => (key.metricKey.key ? key.metricKey.key : key.metricKey));
         if (keys.length) {
-          this.checkQueryNameRequiredError(queryName);
-          this.checkStatisticRequiredError(operationType);
           this.checkMetricFromDropDownError(metrics[keys.length - 1].metricKey['metadata']);
 
           if (metrics[keys.length - 1].metricKey['metadata']) {
@@ -698,6 +723,13 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.queryMetricDropDownError.length === 0 &&
       this.queryNameError.length === 0
     ) {
+      const rewardMetricData = this.rewardMetricDataSource.getValue();
+
+      // If rewardMetricDataSource has data, include the rewardMetricKey
+      if (rewardMetricData.length > 0) {
+        monitoredMetricsFormData.rewardMetricKey = rewardMetricData[0].metric_Key;
+      }
+
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: monitoredMetricsFormData,
@@ -722,5 +754,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy() {
     this.allMetricsSub.unsubscribe();
+
+    if (this.rewardMetricSubscription) {
+      this.rewardMetricSubscription.unsubscribe();
+    }
   }
 }

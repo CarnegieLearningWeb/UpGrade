@@ -6,7 +6,7 @@
   .experiments-container {
     .experiment-table,
     .no-experiment-container {
-      box-shadow: 0 0 8px 0 mat.get-color-from-palette($background, shadow-color);
+      box-shadow: 0 0 8px 0 mat.m2-get-color-from-palette($background, shadow-color);
     }
   }
 }

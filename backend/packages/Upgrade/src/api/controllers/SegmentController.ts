@@ -1,19 +1,33 @@
-import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body, QueryParams } from 'routing-controllers';
+import { JsonController, Get, Delete, Authorized, Post, Req, Body, QueryParams, Params } from 'routing-controllers';
 import { SegmentService, SegmentWithStatus } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
-import { SERVER_ERROR } from 'upgrade_types';
-import { isUUID } from 'class-validator';
-import { AppRequest } from '../../types';
-import { SegmentFile, SegmentIds, SegmentImportError, SegmentInputValidator } from './validators/SegmentInputValidator';
+import { AppRequest, PaginationResponse } from '../../types';
+import { IImportError, SEGMENT_STATUS } from 'upgrade_types';
+import {
+  DeleteListInputValidator,
+  IdValidator,
+  ListInputValidator,
+  SegmentFile,
+  SegmentIds,
+  SegmentIdValidator,
+  SegmentImportError,
+  SegmentInputValidator,
+  SegmentListImportValidation,
+} from './validators/SegmentInputValidator';
+import { SegmentPaginatedParamsValidator } from './validators/SegmentPaginatedParamsValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
+import { NotFoundException } from '@nestjs/common/exceptions';
+import { ValidatedImportResponse } from 'upgrade_types';
 
 export interface getSegmentData {
   segmentsData: SegmentWithStatus[];
   experimentSegmentInclusionData: Partial<ExperimentSegmentInclusion>[];
   experimentSegmentExclusionData: Partial<ExperimentSegmentExclusion>[];
 }
-
+interface SegmentPaginationInfo extends PaginationResponse {
+  nodes: getSegmentData;
+}
 /**
  * @swagger
  * definitions:
@@ -54,6 +68,17 @@ export interface getSegmentData {
  *         items:
  *           type: string
  *           example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
+ *   ListInput:
+ *    allOf:
+ *      - $ref: '#/definitions/Segment'
+ *    required:
+ *      - parentSegmentId
+ *      - listType
+ *    properties:
+ *        parentSegmentId:
+ *         type: string
+ *        listType:
+ *         type: string
  *   segmentResponse:
  *     description: ''
  *     type: object
@@ -218,6 +243,118 @@ export class SegmentController {
 
   /**
    * @swagger
+   * /segments/global:
+   *    get:
+   *       description: Get all global segments
+   *       tags:
+   *         - Segment
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get all global segments
+   *            schema:
+   *              type: array
+   *              items:
+   *                $ref: '#/definitions/segmentResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   */
+  @Get('/global')
+  public async getAllGlobalSegments(@Req() request: AppRequest): Promise<SegmentWithStatus[]> {
+    const globalExcludeSegments = await this.segmentService.getAllGlobalExcludeSegments(request.logger);
+    return globalExcludeSegments.map((segment) => {
+      return {
+        ...segment,
+        status: SEGMENT_STATUS.GLOBAL,
+      };
+    });
+  }
+
+  /**
+   * @swagger
+   * /segments/paginated:
+   *    post:
+   *       description: Get Paginated Segments
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: params
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - skip
+   *               - take
+   *             properties:
+   *               skip:
+   *                type: integer
+   *               take:
+   *                type: integer
+   *               searchParams:
+   *                type: object
+   *                properties:
+   *                  key:
+   *                    type: string
+   *                    enum: [all, name, tag, context]
+   *                  string:
+   *                    type: string
+   *               sortParams:
+   *                  type: object
+   *                  properties:
+   *                    key:
+   *                     type: string
+   *                     enum: [name, updatatedAt]
+   *                    sortAs:
+   *                     type: string
+   *                     enum: [ASC, DESC]
+   *       tags:
+   *         - Segment
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get Paginated Segments
+   *            schema:
+   *              type: object
+   *              properties:
+   *                total:
+   *                  type: number
+   *                nodes:
+   *                  type: array
+   *                  items:
+   *                    $ref: '#/definitions/SegmentResponse'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Insert Error in database
+   */
+  @Post('/paginated')
+  public async getAllSegmentsPaginated(
+    @Body({ validate: true })
+    paginatedParams: SegmentPaginatedParamsValidator,
+    @Req() request: AppRequest
+  ): Promise<SegmentPaginationInfo> {
+    const [segmentsWithStatus, count] = await Promise.all([
+      this.segmentService.findPaginated(
+        paginatedParams.skip,
+        paginatedParams.take,
+        request.logger,
+        paginatedParams.searchParams,
+        paginatedParams.sortParams
+      ),
+      this.segmentService.getTotalPublicSegmentCount(),
+    ]);
+    return {
+      total: count,
+      nodes: segmentsWithStatus,
+      ...paginatedParams,
+    };
+  }
+
+  /**
+   * @swagger
    * /segments/{segmentId}:
    *    get:
    *      description: Get segment by id
@@ -238,6 +375,8 @@ export class SegmentController {
    *          description: Get segment by id
    *          schema:
    *            $ref: '#/definitions/segmentResponse'
+   *        '400':
+   *          description: segmentId should be a valid UUID.
    *        '401':
    *          description: Authorization Required Error
    *        '404':
@@ -246,18 +385,16 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/:segmentId')
-  public getSegmentById(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!segmentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
+  public async getSegmentById(
+    @Params({ validate: true }) { segmentId }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    const segment = await this.segmentService.getSegmentById(segmentId, request.logger);
+    if (!segment) {
+      throw new NotFoundException('Segment not found.');
     }
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
-        )
-      );
-    }
-    return this.segmentService.getSegmentById(segmentId, request.logger);
+
+    return segment;
   }
 
   /**
@@ -281,6 +418,8 @@ export class SegmentController {
    *          description: Get segment by id
    *          schema:
    *            $ref: '#/definitions/segmentResponse'
+   *        '400':
+   *          description: segmentId should be a valid UUID.
    *        '401':
    *          description: Authorization Required Error
    *        '404':
@@ -289,18 +428,15 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Get('/status/:segmentId')
-  public getSegmentWithStatusById(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!segmentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
+  public async getSegmentWithStatusById(
+    @Params({ validate: true }) { segmentId }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    const segment = await this.segmentService.getSingleSegmentWithStatus(segmentId, request.logger);
+    if (!segment) {
+      throw new NotFoundException('Segment not found.');
     }
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
-        )
-      );
-    }
-    return this.segmentService.getSingleSegmentWithStatus(segmentId, request.logger);
+    return segment;
   }
 
   /**
@@ -340,6 +476,41 @@ export class SegmentController {
 
   /**
    * @swagger
+   * /list:
+   *    post:
+   *      description: Create a new list
+   *      tags:
+   *        - Segment
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: body
+   *          name: list
+   *          description: List object
+   *          required: true
+   *          schema:
+   *            type: object
+   *            $ref: '#/definitions/ListInput'
+   *      responses:
+   *        '200':
+   *          description: Create a new list
+   *          schema:
+   *            $ref: '#/definitions/segmentResponse'
+   *        '401':
+   *          description: Authorization Required Error
+   *        '500':
+   *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
+   */
+  @Post('/list')
+  public addList(
+    @Body({ validate: true }) listInput: ListInputValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    return this.segmentService.addList(listInput, request.logger);
+  }
+
+  /**
+   * @swagger
    * /segments/{segmentId}:
    *    delete:
    *      description: Delete a segment
@@ -366,18 +537,55 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Delete('/:segmentId')
-  public deleteSegment(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
-    if (!segmentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
-    }
-    if (!isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
-        )
-      );
-    }
+  public deleteSegment(
+    @Params({ validate: true }) { segmentId }: SegmentIdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
     return this.segmentService.deleteSegment(segmentId, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /segments/list/{segmentId}:
+   *    delete:
+   *      description: Delete a list from a parent segment
+   *      tags:
+   *      - Segment
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          name: segmentId
+   *          description: List id
+   *          required: true
+   *          schema:
+   *            type: string
+   *            example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
+   *        - in: body
+   *          name: parentSegmentId
+   *          description: Parent segment id
+   *          schema:
+   *            type: string
+   *            example: '5812a759-1dcf-47a8-b0ba-26c89092863e'
+   *          required: true
+   *      responses:
+   *        '200':
+   *          description: Delete a segment list
+   *          schema:
+   *            $ref: '#/definitions/segmentResponse'
+   *        '401':
+   *          description: Authorization Required Error
+   *        '500':
+   *          description: Internal Server Error, SegmentId is not valid
+   */
+  @Delete('/list/:segmentId')
+  public deleteList(
+    @Params({ validate: true }) { segmentId }: SegmentIdValidator,
+    @Body({ validate: true }) { parentSegmentId }: DeleteListInputValidator,
+
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    return this.segmentService.deleteList(segmentId, parentSegmentId, request.logger);
   }
 
   /**
@@ -417,6 +625,41 @@ export class SegmentController {
 
   /**
    * @swagger
+   * /segments/list/import:
+   *    post:
+   *      description: Import a list to a parent segment
+   *      tags:
+   *        - Segment
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: body
+   *          name: segment
+   *          description: Segment list object
+   *          required: true
+   *          schema:
+   *            type: object
+   *            $ref: '#/definitions/Segment'
+   *      responses:
+   *        '200':
+   *          description:  Import a list to a parent segment
+   *          schema:
+   *            $ref: '#/definitions/segmentResponse'
+   *        '401':
+   *          description: Authorization Required Error
+   *        '500':
+   *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
+   */
+  @Post('/list/import')
+  public importLists(
+    @Body({ validate: true }) lists: SegmentListImportValidation,
+    @Req() request: AppRequest
+  ): Promise<IImportError[]> {
+    return this.segmentService.importLists(lists, request.logger);
+  }
+
+  /**
+   * @swagger
    * /segments/validation:
    *    post:
    *       description: Validating Segments
@@ -424,16 +667,18 @@ export class SegmentController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: params
+   *           name: segments
    *           description: Segment file
    *           required: true
    *           schema:
-   *            type: object
-   *            properties:
-   *              fileName:
-   *                type: string
-   *              fileContent:
-   *                type: string
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
    *       tags:
    *         - Segment
    *       produces:
@@ -450,6 +695,45 @@ export class SegmentController {
     @Req() request: AppRequest
   ): Promise<SegmentImportError[]> {
     return this.segmentService.validateSegments(segments, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /segments/import/validation:
+   *    post:
+   *       description: Validating Segments with response for Common Import Modal
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: segments
+   *           description: Segment file
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
+   *       tags:
+   *         - Segment
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: An array of ValidatedImportResponse
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+  @Post('/import/validation')
+  public validateImportedSegments(
+    @Body({ validate: true }) segments: SegmentFile[],
+    @Req() request: AppRequest
+  ): Promise<ValidatedImportResponse[]> {
+    return this.segmentService.validateSegmentsForCommonImportModal(segments, request.logger);
   }
 
   /**

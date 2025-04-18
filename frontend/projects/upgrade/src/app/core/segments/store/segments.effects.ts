@@ -2,13 +2,28 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, concatMap, filter, first, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
-import { Segment, UpsertSegmentType } from './segments.model';
-import { selectAllSegments } from './segments.selectors';
+import { NUMBER_OF_SEGMENTS, Segment, SegmentsPaginationParams, UpsertSegmentType } from './segments.model';
+import {
+  selectAllSegments,
+  selectAreAllSegmentsFetched,
+  selectGlobalSegments,
+  selectSearchKey,
+  selectSearchString,
+  selectSegmentPaginationParams,
+  selectSkipSegments,
+  selectSortAs,
+  selectSortKey,
+  selectTotalSegments,
+} from './segments.selectors';
 import JSZip from 'jszip';
+import { of } from 'rxjs';
+import { SERVER_ERROR } from 'upgrade_types';
+import { SegmentsService } from '../segments.service';
+import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
 
 @Injectable()
 export class SegmentsEffects {
@@ -16,17 +31,76 @@ export class SegmentsEffects {
     private store$: Store<AppState>,
     private actions$: Actions,
     private segmentsDataService: SegmentsDataService,
-    private router: Router
+    private segmentsService: SegmentsService,
+    private router: Router,
+    private commonModalEventService: CommonModalEventsService
   ) {}
 
-  fetchSegments$ = createEffect(() =>
+  fetchSegmentsPaginated$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionFetchSegments),
+      map((action) => action.fromStarting),
+      withLatestFrom(this.store$.pipe(select(selectSegmentPaginationParams))),
+      filter(([fromStarting, pagination]) => {
+        return (
+          !pagination.areAllFetched || pagination.skip < pagination.total || pagination.total === null || fromStarting
+        );
+      }),
+      tap(() => {
+        this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments: true }));
+      }),
+      switchMap(([fromStarting, pagination]) => {
+        let params: SegmentsPaginationParams = {
+          skip: fromStarting ? 0 : pagination.skip,
+          take: NUMBER_OF_SEGMENTS,
+        };
+        if (pagination.sortKey) {
+          params = {
+            ...params,
+            sortParams: {
+              key: pagination.sortKey,
+              sortAs: pagination.sortAs,
+            },
+          };
+        }
+        if (pagination.searchString) {
+          params = {
+            ...params,
+            searchParams: {
+              key: pagination.searchKey,
+              string: pagination.searchString,
+            },
+          };
+        }
+        return this.segmentsDataService.fetchSegmentsPaginated(params).pipe(
+          switchMap((data: any) => {
+            const actions = fromStarting ? [SegmentsActions.actionSetSkipSegments({ skipSegments: 0 })] : [];
+            return [
+              ...actions,
+              SegmentsActions.actionFetchSegmentsSuccess({
+                segments: data.nodes.segmentsData,
+                totalSegments: data.total,
+                experimentSegmentInclusion: data.nodes.experimentSegmentInclusionData,
+                experimentSegmentExclusion: data.nodes.experimentSegmentExclusionData,
+                featureFlagSegmentInclusion: data.nodes.featureFlagSegmentInclusionData,
+                featureFlagSegmentExclusion: data.nodes.featureFlagSegmentExclusionData,
+              }),
+            ];
+          }),
+          catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
+        );
+      })
+    )
+  );
+
+  fetchAllSegments$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionfetchAllSegments),
       withLatestFrom(this.store$.pipe(select(selectAllSegments))),
       switchMap(() =>
-        this.segmentsDataService.fetchSegments().pipe(
+        this.segmentsDataService.fetchAllSegments().pipe(
           map((data: any) =>
-            SegmentsActions.actionFetchSegmentsSuccess({
+            SegmentsActions.actionFetchSegmentsSuccessLegacyGetAll({
               segments: data.segmentsData,
               experimentSegmentInclusion: data.experimentSegmentInclusionData,
               experimentSegmentExclusion: data.experimentSegmentExclusionData,
@@ -35,6 +109,23 @@ export class SegmentsEffects {
             })
           ),
           catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
+        )
+      )
+    )
+  );
+
+  fetchGlobalSegments$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionFetchGlobalSegments),
+      withLatestFrom(this.store$.pipe(select(selectGlobalSegments))),
+      switchMap(() =>
+        this.segmentsDataService.fetchGlobalSegments().pipe(
+          map((data: any) =>
+            SegmentsActions.actionFetchGlobalSegmentsSuccess({
+              globalSegments: data,
+            })
+          ),
+          catchError(() => [SegmentsActions.actionFetchGlobalSegmentsFailure()])
         )
       )
     )
@@ -81,6 +172,46 @@ export class SegmentsEffects {
     )
   );
 
+  addSegment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionAddSegment),
+      switchMap((action) => {
+        return this.segmentsDataService.addSegment(action.addSegmentRequest).pipe(
+          map((response: Segment) => {
+            this.commonModalEventService.forceCloseModal();
+            return SegmentsActions.actionAddSegmentSuccess({ segment: response });
+          }),
+          catchError((error) => {
+            if (error?.error?.type === SERVER_ERROR.SEGMENT_DUPLICATE_NAME) {
+              this.segmentsService.setDuplicateSegmentNameError(error.error);
+            }
+            return [SegmentsActions.actionAddSegmentFailure()];
+          })
+        );
+      })
+    )
+  );
+
+  updateSegment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionUpdateSegment),
+      switchMap((action) => {
+        return this.segmentsDataService.modifySegment(action.updateSegmentRequest).pipe(
+          concatMap((response: Segment) => {
+            this.commonModalEventService.forceCloseModal();
+            return [
+              SegmentsActions.actionUpdateSegmentSuccess({ segment: response }),
+              SegmentsActions.actionGetSegmentById({ segmentId: response.id }),
+            ];
+          }),
+          catchError(() => {
+            return of(SegmentsActions.actionUpdateSegmentFailure());
+          })
+        );
+      })
+    )
+  );
+
   deleteSegment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionDeleteSegment),
@@ -90,12 +221,23 @@ export class SegmentsEffects {
         this.segmentsDataService.deleteSegment(id).pipe(
           map((data: any) => {
             this.router.navigate(['/segments']);
-            return SegmentsActions.actionDeleteSegmentSuccess({ segment: data[0] });
+            return SegmentsActions.actionDeleteSegmentSuccess({ segment: data });
           }),
           catchError(() => [SegmentsActions.actionDeleteSegmentFailure()])
         )
       )
     )
+  );
+
+  navigateToSegmentDetail$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(SegmentsActions.actionAddSegmentSuccess),
+        tap(({ segment }) => {
+          this.router.navigate(['/segments', 'detail', segment.id]);
+        })
+      ),
+    { dispatch: false }
   );
 
   exportSegments$ = createEffect(() =>
@@ -125,6 +267,9 @@ export class SegmentsEffects {
     )
   );
 
+  private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
+
+  // TODO: this should be replaced with the common download() method in common-export-helpers service in new experience
   private download(filename, text, isZip: boolean) {
     const element = document.createElement('a');
     isZip
@@ -136,4 +281,46 @@ export class SegmentsEffects {
     element.click();
     document.body.removeChild(element);
   }
+
+  addSegmentList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionAddSegmentList),
+      switchMap((action) => {
+        return this.segmentsDataService.addSegmentList(action.list).pipe(
+          map((listResponse) => {
+            this.commonModalEventService.forceCloseModal();
+            return SegmentsActions.actionAddSegmentListSuccess({ listResponse });
+          }),
+          catchError((error) => of(SegmentsActions.actionAddSegmentListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  updateSegmentList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionUpdateSegmentList),
+      switchMap((action) => {
+        return this.segmentsDataService.updateSegmentList(action.list).pipe(
+          map((listResponse) => {
+            this.commonModalEventService.forceCloseModal();
+            return SegmentsActions.actionUpdateSegmentListSuccess({ listResponse });
+          }),
+          catchError((error) => of(SegmentsActions.actionUpdateSegmentListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  deleteSegmentList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionDeleteSegmentList),
+      switchMap(({ segmentId, parentSegmentId }) => {
+        return this.segmentsDataService.deleteSegmentList(segmentId, parentSegmentId).pipe(
+          map(() => SegmentsActions.actionDeleteSegmentListSuccess({ segmentId })),
+          catchError((error) => of(SegmentsActions.actionDeleteSegmentListFailure({ error })))
+        );
+      })
+    )
+  );
 }

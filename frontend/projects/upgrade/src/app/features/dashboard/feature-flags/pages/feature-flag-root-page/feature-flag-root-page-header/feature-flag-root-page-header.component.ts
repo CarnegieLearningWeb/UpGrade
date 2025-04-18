@@ -3,7 +3,6 @@ import { CommonRootPageHeaderComponent } from '../../../../../../shared-standalo
 
 @Component({
   selector: 'app-feature-flag-root-page-header',
-  standalone: true,
   imports: [CommonRootPageHeaderComponent],
   templateUrl: './feature-flag-root-page-header.component.html',
   styleUrl: './feature-flag-root-page-header.component.scss',

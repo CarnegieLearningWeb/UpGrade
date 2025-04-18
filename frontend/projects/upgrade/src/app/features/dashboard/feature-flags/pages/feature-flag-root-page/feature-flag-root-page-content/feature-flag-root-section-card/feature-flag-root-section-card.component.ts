@@ -5,7 +5,7 @@ import {
   CommonSectionCardActionButtonsComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
-import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeatureFlagRootSectionCardTableComponent } from './feature-flag-root-section-card-table/feature-flag-root-section-card-table.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -14,7 +14,10 @@ import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { Observable, map } from 'rxjs';
-import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
+import {
+  FEATURE_FLAG_BUTTON_ACTION,
+  FeatureFlag,
+} from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
 import {
   CommonTableHelpersService,
@@ -25,14 +28,12 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-feature-flag-root-section-card',
-  standalone: true,
   imports: [
     CommonSectionCardComponent,
     CommonSectionCardSearchHeaderComponent,
     CommonSectionCardActionButtonsComponent,
     FeatureFlagRootSectionCardTableComponent,
     AsyncPipe,
-    JsonPipe,
     NgIf,
     MatProgressSpinnerModule,
     RouterModule,
@@ -65,11 +66,13 @@ export class FeatureFlagRootSectionCardComponent {
 
   menuButtonItems: IMenuButtonItem[] = [
     {
-      name: this.translateService.instant('feature-flags.import-feature-flag.text'),
+      label: 'feature-flags.import-feature-flag.text',
+      action: FEATURE_FLAG_BUTTON_ACTION.IMPORT,
       disabled: false,
     },
     {
-      name: this.translateService.instant('feature-flags.export-all-feature-flags.text'),
+      label: 'feature-flags.export-all-feature-flags.text',
+      action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL,
       disabled: true,
     },
   ];
@@ -104,8 +107,8 @@ export class FeatureFlagRootSectionCardComponent {
     this.dialogService.openAddFeatureFlagModal();
   }
 
-  onMenuButtonItemClick(menuButtonItemName: string) {
-    if (menuButtonItemName === 'Import Feature Flag') {
+  onMenuButtonItemClick(action: string) {
+    if (action === FEATURE_FLAG_BUTTON_ACTION.IMPORT) {
       this.dialogService.openImportFeatureFlagModal();
     }
   }

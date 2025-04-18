@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 
 @Service()
-export default class ExcludeServiceMock {
+export default class SegmentServiceMock {
   public getAllSegments(): Promise<[]> {
     return Promise.resolve([]);
   }
@@ -9,7 +9,7 @@ export default class ExcludeServiceMock {
   public getAllSegmentWithStatus(): Promise<[]> {
     return Promise.resolve([]);
   }
-  
+
   public getSegmentById(id: string): Promise<[]> {
     return Promise.resolve([]);
   }
@@ -38,6 +38,10 @@ export default class ExcludeServiceMock {
     return Promise.resolve([]);
   }
 
+  public validateSegmentsForCommonImportModal(): Promise<[]> {
+    return Promise.resolve([]);
+  }
+
   public exportSegments(id: string): Promise<[]> {
     return Promise.resolve([]);
   }
@@ -47,6 +51,14 @@ export default class ExcludeServiceMock {
   }
 
   public exportSegmentCSV(id: string): Promise<[]> {
+    return Promise.resolve([]);
+  }
+
+  public addList(): Promise<[]> {
+    return Promise.resolve([]);
+  }
+
+  public deleteList(): Promise<[]> {
     return Promise.resolve([]);
   }
 }

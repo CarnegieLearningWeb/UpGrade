@@ -5,6 +5,7 @@
     [title]="flag.name"
     [createdAt]="flag.createdAt"
     [updatedAt]="flag.updatedAt"
+    [versionNumber]="flag.versionNumber"
     [chipClass]="flag.status"
     [showWarning]="shouldShowWarning$ | async"
   ></app-common-section-card-title-header>
@@ -16,7 +17,7 @@
     [slideToggleChecked]="flag.status === FEATURE_FLAG_STATUS.ENABLED"
     [slideToggleText]="'feature-flags.enable.text' | translate"
     [showMenuButton]="true"
-    [menuButtonItems]="menuButtonItems"
+    [menuButtonItems]="menuButtonItems$ | async"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (slideToggleChange)="onSlideToggleChange($event, flag)"
     (menuButtonItemClick)="onMenuButtonItemClick($event, flag)"

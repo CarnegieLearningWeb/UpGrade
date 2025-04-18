@@ -1,36 +1,22 @@
 <div class="experiment-rule">
   <span class="ft-24-700 title">{{ 'home.change-post-experiment-rule.title.text' | translate }}</span>
   <form [formGroup]="postExperimentRuleForm" class="experiment-rule-form">
-    <mat-form-field
-      class="dense-2"
-      appearance="outline"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400">
         {{ 'home-global.post-experiment-rule.text' | translate }}
       </mat-label>
-      <mat-select
-        class="ft-14-400"
-        formControlName="postExperimentRule"
-      >
+      <mat-select class="ft-14-400" formControlName="postExperimentRule">
         <mat-option class="ft-14-400" *ngFor="let rule of postExperimentRules" [value]="rule.value">
           {{ rule.value | titlecase }}
         </mat-option>
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field
-      class="dense-2"
-      appearance="outline"
-      subscriptSizing="dynamic"
-    >
+    <mat-form-field class="dense-2" appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400">
         {{ 'home.new-experiment.design.condition.placeholder.text' | translate }}
       </mat-label>
-      <mat-select
-        class="ft-14-400"
-        formControlName="revertTo"
-      >
+      <mat-select class="ft-14-400" formControlName="revertTo">
         <mat-option class="ft-14-400" *ngFor="let condition of experimentConditions" [value]="condition.id">
           {{ condition.value }}
         </mat-option>
