@@ -198,8 +198,6 @@ const globalReducer = createReducer(
     adapter.upsertMany(globalSegments, { ...state, isLoadingSegments: false })
   ),
   on(SegmentsActions.actionGetSegmentByIdSuccess, (state, { segment }) => {
-    // const segment = segments[0];
-
     if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
       return adapter.upsertOne(segment, { ...state, isLoadingSegments: false });
     }
