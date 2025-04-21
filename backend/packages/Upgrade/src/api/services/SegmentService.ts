@@ -215,27 +215,37 @@ export class SegmentService {
     sortParams?: ISegmentSortParams
   ): Promise<getSegmentsData> {
     logger.info({ message: `Find paginated segments` });
-    let queryBuilder = this.segmentRepository
+    let customSearchString = '';
+    let paginatedParentSubQuery = this.segmentRepository
+      .createQueryBuilder()
+      .subQuery()
+      .from(Segment, 'segment')
+      .select('segment.id')
+      .where('segment.type = :type')
+      .limit(take)
+      .offset(skip);
+    if (searchParams) {
+      customSearchString = searchParams.string.split(' ').join(`:*&`);
+      // add search query
+      const postgresSearchString = this.postgresSearchString(searchParams.key);
+      paginatedParentSubQuery = paginatedParentSubQuery
+        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
+        .addOrderBy('rank', 'DESC');
+    }
+    if (sortParams) {
+      paginatedParentSubQuery = paginatedParentSubQuery.addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs);
+    }
+
+    const segmentsData = await this.segmentRepository
       .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
-      .where('segment.type = :public', { public: SEGMENT_TYPE.PUBLIC });
+      .setParameter('type', SEGMENT_TYPE.PUBLIC)
+      .setParameter('query', `${customSearchString}:*`)
+      .where(`segment.id IN (SELECT segment_id from ${paginatedParentSubQuery.getQuery()} "segment")`)
+      .getMany();
 
-    if (searchParams) {
-      const customSearchString = searchParams.string.split(' ').join(`:*&`);
-      // add search query
-      const postgresSearchString = this.postgresSearchString(searchParams.key);
-      queryBuilder = queryBuilder
-        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
-        .addOrderBy('rank', 'DESC')
-        .setParameter('query', `${customSearchString}:*`);
-    }
-    if (sortParams) {
-      queryBuilder = queryBuilder.addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs);
-    }
-
-    const segmentsData = await queryBuilder.offset(skip).limit(take).getMany();
     return this.getSegmentStatus(segmentsData);
   }
 
@@ -249,9 +259,6 @@ export class SegmentService {
       case SEGMENT_SEARCH_KEY.NAME:
         searchString.push("coalesce(segment.name::TEXT,'')");
         break;
-      case SEGMENT_SEARCH_KEY.STATUS:
-        searchString.push("coalesce(segment.status::TEXT,'')");
-        break;
       case SEGMENT_SEARCH_KEY.CONTEXT:
         searchString.push("coalesce(segment.context::TEXT,'')");
         break;
@@ -260,7 +267,6 @@ export class SegmentService {
         break;
       default:
         searchString.push("coalesce(segment.name::TEXT,'')");
-        searchString.push("coalesce(feature_flag.status::TEXT,'')");
         searchString.push("coalesce(segment.context::TEXT,'')");
         searchString.push("coalesce(segment.tags::TEXT,'')");
         break;
