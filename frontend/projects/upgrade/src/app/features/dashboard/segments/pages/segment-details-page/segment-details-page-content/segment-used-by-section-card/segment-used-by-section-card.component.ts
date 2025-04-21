@@ -9,6 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { SegmentsService } from '../../../../../../../core/segments/segments.service';
 import { Segment } from '../../../../../../../core/segments/store/segments.model';
 import { SegmentUsedByTableComponent } from './segment-used-by-table/segment-used-by-table.component';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-segment-used-by-section-card',
@@ -28,6 +29,7 @@ export class SegmentUsedBySectionCardComponent {
   @Input() data: Segment;
   @Input() isSectionCardExpanded: boolean;
   selectedSegment$ = this.segmentsService.selectedSegment$;
+  tableRowCount$ = this.segmentsService.segmentUsageData$.pipe(map((usageData) => usageData.length));
 
   constructor(private segmentsService: SegmentsService) {}
 
