@@ -106,12 +106,31 @@ const reducer = createReducer(
   on(SegmentsActions.actionUpsertSegmentSuccess, (state, { segment }) =>
     adapter.upsertOne(segment, { ...state, isLoadingSegments: false })
   ),
-  on(SegmentsActions.actionGetSegmentByIdSuccess, (state, { segment }) => {
-    if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-      return adapter.upsertOne(segment, { ...state, isLoadingSegments: false });
+  on(
+    SegmentsActions.actionGetSegmentByIdSuccess,
+    (
+      state,
+      {
+        segment,
+        experimentSegmentExclusion,
+        experimentSegmentInclusion,
+        featureFlagSegmentInclusion,
+        featureFlagSegmentExclusion,
+      }
+    ) => {
+      const newState = {
+        ...state,
+        allExperimentSegmentsInclusion: experimentSegmentInclusion,
+        allExperimentSegmentsExclusion: experimentSegmentExclusion,
+        allFeatureFlagSegmentsInclusion: featureFlagSegmentInclusion,
+        allFeatureFlagSegmentsExclusion: featureFlagSegmentExclusion,
+      };
+      if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+        return adapter.upsertOne(segment, { ...newState, isLoadingSegments: false });
+      }
+      return { ...state, isLoadingSegments: false };
     }
-    return { ...state, isLoadingSegments: false };
-  }),
+  ),
   on(SegmentsActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
   on(SegmentsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchString })),
   on(SegmentsActions.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),

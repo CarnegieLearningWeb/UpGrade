@@ -116,7 +116,13 @@ export const actionGetSegmentById = createAction('[Segments] Get Segment By Id',
 
 export const actionGetSegmentByIdSuccess = createAction(
   '[Segments] Get Segment By Id Success',
-  props<{ segment: Segment }>()
+  props<{
+    segment: Segment;
+    experimentSegmentInclusion: experimentSegmentInclusionExclusionData[];
+    experimentSegmentExclusion: experimentSegmentInclusionExclusionData[];
+    featureFlagSegmentInclusion: featureFlagSegmentInclusionExclusionData[];
+    featureFlagSegmentExclusion: featureFlagSegmentInclusionExclusionData[];
+  }>()
 );
 
 export const actionGetSegmentByIdFailure = createAction('[Segments] Get Segment By Id Failure');
