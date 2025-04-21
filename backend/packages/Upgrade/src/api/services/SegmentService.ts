@@ -251,9 +251,6 @@ export class SegmentService {
       case SEGMENT_SEARCH_KEY.NAME:
         searchString.push("coalesce(segment.name::TEXT,'')");
         break;
-      case SEGMENT_SEARCH_KEY.STATUS:
-        searchString.push("coalesce(segment.status::TEXT,'')");
-        break;
       case SEGMENT_SEARCH_KEY.CONTEXT:
         searchString.push("coalesce(segment.context::TEXT,'')");
         break;
@@ -262,7 +259,6 @@ export class SegmentService {
         break;
       default:
         searchString.push("coalesce(segment.name::TEXT,'')");
-        searchString.push("coalesce(feature_flag.status::TEXT,'')");
         searchString.push("coalesce(segment.context::TEXT,'')");
         searchString.push("coalesce(segment.tags::TEXT,'')");
         break;
