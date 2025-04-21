@@ -5,8 +5,12 @@
       <span *ngIf="item.key !== 'Tags'" class="ft-14-400 item-value">{{ item.value }}</span>
       <mat-chip-listbox *ngIf="item.key === 'Tags'" class="chips-container">
         <mat-chip *ngFor="let tag of item.value">
-          <span class="chip-label" (click)="searchByTag(tag)">
-            {{ tag }}
+          <span
+            class="chip-label"
+            (click)="searchByTag(tag)"
+            [matTooltip]="tag.length > 16 ? tag : null"
+            matTooltipPosition="above">
+              {{ tag | truncate : 16 }}
           </span>
         </mat-chip>
       </mat-chip-listbox>

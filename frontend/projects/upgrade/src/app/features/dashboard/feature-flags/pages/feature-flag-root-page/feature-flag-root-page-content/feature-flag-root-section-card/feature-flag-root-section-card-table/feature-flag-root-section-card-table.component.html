@@ -85,7 +85,12 @@
             class="tag"
             (click)="filterFeatureFlagByChips(tag, FeatureFlagSearchKey.TAG)"
           >
-            <span class="chip-label">{{ tag }}</span>
+          <span
+            class="chip-label"
+            [matTooltip]="tag.length > 16 ? tag : null"
+            matTooltipPosition="above">
+              {{ tag | truncate : 16 }}
+          </span>
           </mat-chip>
         </mat-chip-listbox>
       </td>
