@@ -11,6 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonTagInputType } from '../../../core/feature-flags/store/feature-flags.model';
 import { CommonImportContainerComponent } from '../common-import-container/common-import-container.component';
 import { BehaviorSubject, from, mergeMap, Observable, reduce } from 'rxjs';
+import { SharedModule } from '../../../shared/shared.module';
 
 // This Component is made to manage a list of tags using mat-chips.
 // It uses ControlValueAccessor which implements methods to synchronize the component's value with the parent form control.
@@ -54,6 +55,7 @@ import { BehaviorSubject, from, mergeMap, Observable, reduce } from 'rxjs';
     MatInputModule,
     TranslateModule,
     CommonImportContainerComponent,
+    SharedModule,
   ],
 })
 export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
+import { CommonTagListComponent } from '../common-tag-list/common-tag-list.component';
 
 export interface KeyValueFormat {
   [key: string]: string | string[];
@@ -8,7 +9,7 @@ export interface KeyValueFormat {
 
 @Component({
   selector: 'app-common-section-card-overview-details',
-  imports: [SharedModule],
+  imports: [SharedModule, CommonTagListComponent],
   templateUrl: './common-section-card-overview-details.component.html',
   styleUrl: './common-section-card-overview-details.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

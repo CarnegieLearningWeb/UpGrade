@@ -79,20 +79,11 @@
         {{ FLAG_TRANSLATION_KEYS.TAGS | translate }}
       </th>
       <td mat-cell *matCellDef="let flag" class="tags-column ft-14-400 dense-2">
-        <mat-chip-listbox aria-label="Flag tags">
-          <mat-chip
-            *ngFor="let tag of flag.tags"
-            class="tag"
-            (click)="filterFeatureFlagByChips(tag, FeatureFlagSearchKey.TAG)"
-          >
-          <span
-            class="chip-label"
-            [matTooltip]="tag.length > 16 ? tag : null"
-            matTooltipPosition="above">
-              {{ tag | truncate : 16 }}
-          </span>
-          </mat-chip>
-        </mat-chip-listbox>
+        <app-common-tag-list
+          [tags]="flag.tags"
+          ariaLabel="Flag tags"
+          (tagClick)="filterFeatureFlagByChips($event, FeatureFlagSearchKey.TAG)"
+        ></app-common-tag-list>
       </td>
     </ng-container>
 
