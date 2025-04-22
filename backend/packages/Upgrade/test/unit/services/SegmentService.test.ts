@@ -635,8 +635,7 @@ describe('Segment Service Testing', () => {
       {
         fileName: 'seg1.json',
         error:
-          'Invalid Segment data: ' +
-          'SubSegment: seg2 not found. Please import subSegment with same context and link in segment. ',
+          'warning: ' + 'SubSegment: seg2 not found. Please import subSegment with same context and link in segment.',
         compatibilityType: IMPORT_COMPATIBILITY_TYPE.WARNING,
       },
     ];

@@ -28,7 +28,6 @@ import {
   SegmentInputValidator,
   SegmentImportError,
   SegmentFile,
-  Group,
   SegmentValidationObj,
   ListInputValidator,
   SegmentListImportValidation,
@@ -553,25 +552,37 @@ export class SegmentService {
     const segmentData: ValidSegmentDetail[] = await Promise.all(
       segments.map(async (segment) => {
         let segmentForValidation;
+        let errorMessage = '';
         try {
-          segmentForValidation = this.convertJSONStringToSegInputValFormat(segment.fileContent);
+          segmentForValidation = await this.convertJSONStringToSegInputValFormat(segment.fileContent);
         } catch (err) {
-          importFileErrors.push({
-            fileName: segment.fileName,
-            error: (err as Error).message,
-            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
-          });
+          errorMessage = (err as Error).message;
           return null;
         }
         segmentForValidation = plainToClass(SegmentInputValidator, segmentForValidation);
         const segmentJSONValidation = await this.checkForMissingProperties(segmentForValidation);
+        if (!segmentJSONValidation.isSegmentValid) {
+          errorMessage += segmentJSONValidation.missingProperty;
+        }
 
-        if (segmentJSONValidation.isSegmentValid) {
+        if (segmentForValidation.subSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE)) {
+          await Promise.all(
+            segmentForValidation.subSegments.map(async (subSegment) => {
+              const subSegmentForValidation = plainToClass(SegmentInputValidator, subSegment);
+              const subSegmentJSONValidation = await this.checkForMissingProperties(subSegmentForValidation);
+              if (!subSegmentJSONValidation.isSegmentValid) {
+                errorMessage += ` in list ${subSegment.name} ` + subSegmentJSONValidation.missingProperty;
+              }
+            })
+          );
+        }
+
+        if (!errorMessage) {
           return { filename: segment.fileName, segment: segmentForValidation };
         } else {
           importFileErrors.push({
             fileName: segment.fileName,
-            error: segmentJSONValidation.missingProperty,
+            error: errorMessage,
             compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
           });
           return null;
@@ -593,32 +604,32 @@ export class SegmentService {
     } catch (err) {
       throw new Error('Invalid JSON format');
     }
-    let userIds: string[];
-    let subSegmentIds: string[];
-    let groups: Group[];
 
-    if (segmentInfo.individualForSegment) {
-      userIds = segmentInfo.individualForSegment.map((individual) => (individual.userId ? individual.userId : null));
-    }
+    const addSegmentMembers = (segment: any): SegmentInputValidator => {
+      if (segment.individualForSegment) {
+        segment.userIds = segment.individualForSegment.map((individual) =>
+          individual.userId ? individual.userId : null
+        );
+      }
 
-    if (segmentInfo.subSegments) {
-      subSegmentIds = segmentInfo.subSegments.map((subSegment) => (subSegment.id ? subSegment.id : null));
-    }
+      if (segment.subSegments) {
+        if (!segment.subSegments?.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE)) {
+          segment.subSegmentIds = segment.subSegments.map((subSegment) => (subSegment.id ? subSegment.id : null));
+        } else {
+          segment.subSegments = segment.subSegments.map((subSegment) => addSegmentMembers(subSegment));
+          segment.subSegmentIds = [];
+        }
+      }
 
-    if (segmentInfo.groupForSegment) {
-      groups = segmentInfo.groupForSegment.map((group) => {
-        return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
-      });
-    }
-
-    const segmentForValidation: SegmentInputValidator = {
-      ...segmentInfo,
-      userIds: userIds,
-      subSegmentIds: subSegmentIds,
-      groups: groups,
+      if (segment.groupForSegment) {
+        segment.groups = segment.groupForSegment.map((group) => {
+          return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
+        });
+      }
+      return segment;
     };
-
-    return segmentForValidation;
+    segmentInfo = addSegmentMembers(segmentInfo);
+    return segmentInfo;
   }
 
   public async checkForMissingProperties(segment: SegmentInputValidator): Promise<IsSegmentValidWithError> {
@@ -651,7 +662,14 @@ export class SegmentService {
     const allValidatedSegments: SegmentInputValidator[] = [];
     const allSegmentIds = [
       ...new Set(
-        segmentsData.flatMap((segmentData) => [segmentData.segment.id].concat(segmentData.segment.subSegmentIds))
+        segmentsData.flatMap((segmentData) =>
+          [segmentData.segment.id].concat([
+            ...segmentData.segment.subSegmentIds,
+            ...segmentData.segment.subSegments.flatMap((subSegment) =>
+              [subSegment.id].concat(subSegment.subSegments?.map((subSubSegment) => subSubSegment.id))
+            ),
+          ])
+        )
       ),
     ];
     const allSubSegmentsData = await this.getSegmentByIds(allSegmentIds);
@@ -659,41 +677,9 @@ export class SegmentService {
     const contextMetaDataOptions = Object.keys(contextMetaData);
     const importFileErrors: SegmentImportError[] = [];
 
-    for (const segmentFile of segmentsData) {
-      const segment = segmentFile.segment;
+    const collectErrors = async (segment: SegmentInputValidator, contexts: string[], isList: boolean) => {
       let errorMessage = '';
-      if (!contextMetaDataOptions.includes(segment.context)) {
-        errorMessage =
-          errorMessage + 'Context ' + segment.context + ' not found. Please enter valid context in segment. ';
-      } else if (segment.groups.length > 0) {
-        const segmentGroupOptions = contextMetaData[segment.context].GROUP_TYPES;
-        let invalidGroups = '';
-        segment.groups.forEach((group) => {
-          if (!segmentGroupOptions.includes(group.type)) {
-            invalidGroups = invalidGroups ? invalidGroups + ', ' + group.type : group.type;
-          }
-        });
-        errorMessage = invalidGroups
-          ? errorMessage + 'Group type: ' + invalidGroups + ' not found. Please enter valid group type in segment. '
-          : errorMessage;
-      }
-
-      if (listImport && !segment.listType) {
-        errorMessage = errorMessage + 'List type is required for lists. Please enter valid list type in segment. ';
-      }
-      // Prevent duplicate segment names (but not for private segments)
-      if (segment.type !== SEGMENT_TYPE.PRIVATE) {
-        const duplicateName = await this.segmentRepository.find({
-          where: { name: segment.name, context: segment.context },
-        });
-        if (duplicateName.length) {
-          errorMessage =
-            errorMessage +
-            'Invalid Segment Name: ' +
-            segment.name +
-            ' is already used by another segment with same context. ';
-        }
-      }
+      let compatibilityType = IMPORT_COMPATIBILITY_TYPE.COMPATIBLE;
       let invalidSubSegments = '';
       segment.subSegmentIds.forEach((subSegmentId) => {
         const subSegment = allSubSegmentsData
@@ -703,12 +689,82 @@ export class SegmentService {
           invalidSubSegments = invalidSubSegments ? invalidSubSegments + ', ' + subSegmentId : subSegmentId;
         }
       });
-      errorMessage = invalidSubSegments
-        ? errorMessage +
+      if (invalidSubSegments.length > 0) {
+        errorMessage =
+          errorMessage +
           'SubSegment: ' +
           invalidSubSegments +
-          ' not found. Please import subSegment with same context and link in segment. '
-        : errorMessage;
+          ' not found. Please import subSegment with same context and link in segment.';
+        compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
+      }
+      if (segment.subSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE)) {
+        const subErrors = await Promise.all(
+          segment.subSegments.map(async (subSegment) => {
+            const subErrors = await collectErrors(
+              subSegment as unknown as SegmentInputValidator,
+              [segment.context],
+              true
+            );
+            return subErrors;
+          })
+        );
+        errorMessage =
+          errorMessage +
+          subErrors
+            .map((subError) => subError.errorMessage)
+            .filter((message) => message.length > 0)
+            .join(', ');
+        compatibilityType = subErrors.some(
+          (subError) => subError.compatibilityType === IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE
+        )
+          ? IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE
+          : subErrors.some((subError) => subError.compatibilityType === IMPORT_COMPATIBILITY_TYPE.WARNING)
+          ? IMPORT_COMPATIBILITY_TYPE.WARNING
+          : compatibilityType;
+      }
+      if (!contexts.includes(segment.context)) {
+        errorMessage =
+          errorMessage + 'Context ' + segment.context + ' not found. Please enter valid context in segment. ';
+        compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      } else if (segment.groups.length > 0) {
+        const segmentGroupOptions = contextMetaData[segment.context].GROUP_TYPES;
+        let invalidGroups = '';
+        segment.groups.forEach((group) => {
+          if (!segmentGroupOptions.includes(group.type)) {
+            invalidGroups = invalidGroups ? invalidGroups + ', ' + group.type : group.type;
+          }
+        });
+        if (invalidGroups.length > 0) {
+          errorMessage =
+            errorMessage + 'Group type: ' + invalidGroups + ' not found. Please enter valid group type in segment. ';
+          compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        }
+      }
+      if (isList && !segment.listType) {
+        errorMessage = errorMessage + 'List type is required for lists. Please enter valid list type in segment. ';
+        compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+      }
+      // Prevent duplicate segment names (but not for private segments)
+      if (segment.type !== SEGMENT_TYPE.PRIVATE) {
+        const duplicateName = await this.segmentRepository.find({
+          where: { name: segment.name, context: segment.context, type: SEGMENT_TYPE.PUBLIC },
+        });
+
+        if (duplicateName.length) {
+          errorMessage =
+            errorMessage +
+            'Invalid Segment Name: ' +
+            segment.name +
+            ' is already used by another segment with same context. ';
+          compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        }
+      }
+      return { errorMessage, compatibilityType };
+    };
+
+    for (const segmentFile of segmentsData) {
+      const segment = segmentFile.segment;
+      const { errorMessage, compatibilityType } = await collectErrors(segment, contextMetaDataOptions, listImport);
 
       allValidatedSegments.push(segment);
 
@@ -716,18 +772,14 @@ export class SegmentService {
       const validationResponse: SegmentImportError = {
         fileName: segmentFile.filename,
         error: null,
-        compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
+        compatibilityType: compatibilityType,
       };
 
-      if (errorMessage.length > 0) {
+      if (compatibilityType === IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE) {
         validationResponse.error = 'Invalid Segment data: ' + errorMessage;
-        if (invalidSubSegments) {
-          validationResponse.compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
-        } else {
-          validationResponse.compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-        }
+      } else if (compatibilityType === IMPORT_COMPATIBILITY_TYPE.WARNING) {
+        validationResponse.error = 'warning: ' + errorMessage;
       }
-
       importFileErrors.push(validationResponse);
     }
     return { segments: allValidatedSegments, importErrors: importFileErrors };
@@ -834,28 +886,12 @@ export class SegmentService {
     segment.id = segment.id || uuid();
     const { id, name, description, context, type, listType, tags } = segment;
     const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
-    let subSegmentData = segment.subSegmentIds
-      .map((subSegmentId) => {
-        const subSegment = allSegments.find((segment) => subSegmentId === segment.id);
-        if (subSegment) {
-          return subSegment;
-        } else {
-          const error = new Error(
-            'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
-          );
-          (error as any).type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          return null;
-        }
-      })
-      .filter((subSegment) => subSegment !== null);
-
     // If there are private subsegments, they are lists - so we need to clone the data
-    const isListData = subSegmentData.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
-
+    const isListData = segment.subSegments?.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
+    let subSegmentData;
     if (isListData) {
       subSegmentData = await Promise.all(
-        subSegmentData.map(async (subSegment) => {
+        segment.subSegments?.map(async (subSegment) => {
           // Create a new segment input object for the list
           const segmentInput = subSegment as unknown as SegmentInputValidator;
           segmentInput.userIds = subSegment.individualForSegment.map((user) => user.userId);
@@ -867,8 +903,23 @@ export class SegmentService {
           return await this.addSegmentDataWithPipeline(segmentInput, logger, transactionalEntityManager);
         })
       );
+    } else {
+      subSegmentData = segment.subSegmentIds
+        .map((subSegmentId) => {
+          const subSegment = allSegments.find((segment) => subSegmentId === segment.id);
+          if (subSegment) {
+            return subSegment;
+          } else {
+            const error = new Error(
+              'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
+            );
+            (error as any).type = SERVER_ERROR.QUERY_FAILED;
+            logger.error(error);
+            return null;
+          }
+        })
+        .filter((subSegment) => subSegment !== null);
     }
-
     try {
       segmentDoc = await transactionalEntityManager.getRepository(Segment).save({
         id,
