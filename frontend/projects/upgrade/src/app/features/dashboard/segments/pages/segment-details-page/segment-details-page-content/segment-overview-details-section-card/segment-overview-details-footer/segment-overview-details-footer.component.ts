@@ -17,7 +17,7 @@ export class SegmentOverviewDetailsFooterComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.segment?.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-      this.tabLabels = ['Excluded Lists'];
+      this.tabLabels = ['Exclude Lists'];
     }
     // Initialize to the first tab (Lists)
     this.tabChange.emit(0);
