@@ -779,7 +779,6 @@ export class SegmentController {
     @Body({ validate: true }) segments: SegmentFile[],
     @Req() request: AppRequest
   ): Promise<ValidatedImportResponse[]> {
-    console.log('ARe we calling this?', segments);
     return this.segmentService.validateListsImport(segments, request.logger);
   }
 
