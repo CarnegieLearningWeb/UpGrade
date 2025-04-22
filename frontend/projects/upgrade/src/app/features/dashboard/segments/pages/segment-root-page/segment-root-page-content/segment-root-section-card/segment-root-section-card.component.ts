@@ -16,12 +16,12 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
 import { Observable, map } from 'rxjs';
 import { Segment, SEGMENTS_BUTTON_ACTION } from '../../../../../../../core/segments/store/segments.model';
 import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
+import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
+import { AuthService } from '../../../../../../../core/auth/auth.service';
 import {
   CommonTableHelpersService,
   TableState,
 } from '../../../../../../../shared/services/common-table-helpers.service';
-import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
-import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-segment-root-section-card',
@@ -95,6 +95,7 @@ export class SegmentRootSectionCardComponent {
   onSearch(params: CommonSearchWidgetSearchParams<SEGMENT_SEARCH_KEY>) {
     this.segmentsService.setSearchString(params.searchString);
     this.segmentsService.setSearchKey(params.searchKey as SEGMENT_SEARCH_KEY);
+    this.segmentsService.fetchSegmentsPaginated(true);
   }
 
   onAddSegmentButtonClick() {

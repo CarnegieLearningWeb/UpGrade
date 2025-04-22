@@ -51,19 +51,27 @@ const reducer = createReducer(
         experimentSegmentInclusion,
         featureFlagSegmentInclusion,
         featureFlagSegmentExclusion,
+        fromStarting,
       }
     ) => {
       const newState = {
         ...state,
-        segments,
         totalSegments,
-        skipSegments: state.skipSegments + segments.length,
         allExperimentSegmentsInclusion: experimentSegmentInclusion,
         allExperimentSegmentsExclusion: experimentSegmentExclusion,
         allFeatureFlagSegmentsInclusion: featureFlagSegmentInclusion,
         allFeatureFlagSegmentsExclusion: featureFlagSegmentExclusion,
       };
-      return adapter.upsertMany(segments, { ...newState, isLoadingSegments: false });
+
+      if (fromStarting) {
+        // when going fromStarting (on any fetch other than fetch more on scroll)
+        newState.skipSegments = segments.length;
+        return adapter.setAll(segments, { ...newState, isLoadingSegments: false });
+      } else {
+        // when fetching more
+        newState.skipSegments = state.skipSegments + segments.length;
+        return adapter.upsertMany(segments, { ...newState, isLoadingSegments: false });
+      }
     }
   ),
   on(

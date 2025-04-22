@@ -129,8 +129,9 @@ export class SegmentRootSectionCardTableComponent implements OnInit {
         behavior: 'smooth',
       });
       this.dataSource$.data = this.dataSource$.data.sort(
-        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
     }
+    this.segmentsService.fetchSegmentsPaginated(true);
   }
 }
