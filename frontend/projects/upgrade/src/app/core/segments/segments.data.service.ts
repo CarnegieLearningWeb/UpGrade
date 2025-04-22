@@ -101,6 +101,11 @@ export class SegmentsDataService {
     return this.http.post(url, segments);
   }
 
+  validateListsImport(segments: SegmentFile[]) {
+    const url = this.environment.api.validateListsImport;
+    return this.http.post(url, segments);
+  }
+
   importSegmentList(files: any[], segmentId: string) {
     const lists = { files: files, parentSegmentId: segmentId };
     const url = this.environment.api.importSegmentList;

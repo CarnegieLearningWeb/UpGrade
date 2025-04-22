@@ -53,6 +53,7 @@ export interface APIEndpoints {
   globalSegments: string;
   validateSegments: string;
   validateSegmentsImport: string;
+  validateListsImport: string;
   importSegments: string;
   importSegmentList: string;
   exportSegments: string;

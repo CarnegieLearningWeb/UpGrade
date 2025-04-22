@@ -745,6 +745,46 @@ export class SegmentController {
 
   /**
    * @swagger
+   * /segments/list/import/validation:
+   *    post:
+   *       description: Validating Segments with response for Common Import Modal
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: segments
+   *           description: Segment file
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               type: object
+   *               properties:
+   *                 fileName:
+   *                   type: string
+   *                 fileContent:
+   *                   type: string
+   *       tags:
+   *         - Segment
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: An array of ValidatedImportResponse
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+  @Post('/list/import/validation')
+  public validateImportedLists(
+    @Body({ validate: true }) segments: SegmentFile[],
+    @Req() request: AppRequest
+  ): Promise<ValidatedImportResponse[]> {
+    console.log('ARe we calling this?', segments);
+    return this.segmentService.validateListsImport(segments, request.logger);
+  }
+
+  /**
+   * @swagger
    * /segments/export/json:
    *    get:
    *      description: Get segment JSON export

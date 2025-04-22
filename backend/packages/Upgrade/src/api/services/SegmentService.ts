@@ -511,6 +511,14 @@ export class SegmentService {
     return validatedSegments.importErrors as ValidatedImportResponse[];
   }
 
+  public async validateListsImport(lists: SegmentFile[], logger: UpgradeLogger): Promise<ValidatedImportResponse[]> {
+    logger.info({ message: `Validating segments` });
+    const listImport = true;
+    const validatedSegments = await this.checkSegmentsValidity(lists, listImport);
+
+    return validatedSegments.importErrors as ValidatedImportResponse[];
+  }
+
   public async importSegments(segments: SegmentFile[], logger: UpgradeLogger): Promise<SegmentImportError[]> {
     const validatedSegments = await this.checkSegmentsValidity(segments);
     for (const segment of validatedSegments.segments) {
@@ -524,7 +532,8 @@ export class SegmentService {
   }
 
   public async importLists(lists: SegmentListImportValidation, logger: UpgradeLogger): Promise<any> {
-    const validatedLists = await this.checkSegmentsValidity(lists.files);
+    const listImport = true;
+    const validatedLists = await this.checkSegmentsValidity(lists.files, listImport);
 
     for (const list of validatedLists.segments) {
       // Giving new id to avoid segment duplication
@@ -537,7 +546,7 @@ export class SegmentService {
     return validatedLists.importErrors;
   }
 
-  public async checkSegmentsValidity(fileData: SegmentFile[]): Promise<SegmentValidationObj> {
+  public async checkSegmentsValidity(fileData: SegmentFile[], listImport = false): Promise<SegmentValidationObj> {
     const importFileErrors: SegmentImportError[] = [];
     const segments = fileData.filter((segment) => path.extname(segment.fileName) === '.json');
 
@@ -569,7 +578,10 @@ export class SegmentService {
         }
       })
     );
-    const validatedSegments = await this.validateSegmentsData(segmentData.filter((seg) => seg !== null));
+    const validatedSegments = await this.validateSegmentsData(
+      segmentData.filter((seg) => seg !== null),
+      listImport
+    );
     validatedSegments.importErrors = importFileErrors.concat(validatedSegments.importErrors);
     return validatedSegments;
   }
@@ -632,7 +644,10 @@ export class SegmentService {
     return { missingProperty: missingAllProperties, isSegmentValid: isSegmentValid };
   }
 
-  public async validateSegmentsData(segmentsData: ValidSegmentDetail[]): Promise<SegmentValidationObj> {
+  public async validateSegmentsData(
+    segmentsData: ValidSegmentDetail[],
+    listImport = false
+  ): Promise<SegmentValidationObj> {
     const allValidatedSegments: SegmentInputValidator[] = [];
     const allSegmentIds = [
       ...new Set(
@@ -661,6 +676,10 @@ export class SegmentService {
         errorMessage = invalidGroups
           ? errorMessage + 'Group type: ' + invalidGroups + ' not found. Please enter valid group type in segment. '
           : errorMessage;
+      }
+
+      if (listImport && !segment.listType) {
+        errorMessage = errorMessage + 'List type is required for lists. Please enter valid list type in segment. ';
       }
       // Prevent duplicate segment names (but not for private segments)
       if (segment.type !== SEGMENT_TYPE.PRIVATE) {
