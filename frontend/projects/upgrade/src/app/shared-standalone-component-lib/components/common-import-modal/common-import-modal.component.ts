@@ -204,7 +204,9 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
   }
 
   showNotification(importResult: ValidatedImportResponse[]) {
-    const importSuccessFiles = importResult.filter((data) => data.error == null).map((data) => data.fileName);
+    const importSuccessFiles = importResult
+      .filter((data) => data.error == null || data.error.startsWith('warning'))
+      .map((data) => data.fileName);
 
     let importSuccessMsg = '';
     if (importSuccessFiles.length > 0) {
@@ -216,7 +218,7 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
 
     this.notificationService.showSuccess(importSuccessMsg);
 
-    const importFailedFiles = importResult.filter((data) => data.error != null);
+    const importFailedFiles = importResult.filter((data) => data.error != null && !data.error.startsWith('warning'));
     importFailedFiles.forEach((data) => {
       this.notificationService.showError(`Failed to import ${data.fileName}: ${data.error}`);
     });

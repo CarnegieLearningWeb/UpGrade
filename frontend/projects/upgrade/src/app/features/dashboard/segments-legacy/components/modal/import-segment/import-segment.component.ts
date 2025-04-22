@@ -51,7 +51,9 @@ export class ImportSegmentComponent {
   }
 
   showNotification(importResult: importError[]) {
-    const importSuccessFiles = importResult.filter((data) => data.error == null).map((data) => data.fileName);
+    const importSuccessFiles = importResult
+      .filter((data) => data.error == null || data.error.startsWith('warning'))
+      .map((data) => data.fileName);
 
     const importSuccessMsg =
       importSuccessFiles.length > 0
@@ -59,7 +61,7 @@ export class ImportSegmentComponent {
         : '';
     this.notificationService.showSuccess(importSuccessMsg);
 
-    const importFailedFiles = importResult.filter((data) => data.error != null);
+    const importFailedFiles = importResult.filter((data) => data.error != null && !data.error.startsWith('warning'));
     importFailedFiles.forEach((data) => {
       this.notificationService.showError(`Failed to import ${data.fileName}: ${data.error}`);
     });
