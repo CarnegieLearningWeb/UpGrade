@@ -105,7 +105,7 @@ export class SegmentListImportAdapter implements ImportServiceAdapter {
   constructor(private segmentDataService: SegmentsDataService, private segmentService: SegmentsService) {}
 
   validateFiles(files: any[]): Observable<ValidatedImportResponse[]> {
-    return this.segmentDataService.validateSegmentsImport(files) as Observable<ValidatedImportResponse[]>;
+    return this.segmentDataService.validateListsImport(files) as Observable<ValidatedImportResponse[]>;
   }
 
   importFiles(files: any[], params?: any): Observable<ValidatedImportResponse[]> {

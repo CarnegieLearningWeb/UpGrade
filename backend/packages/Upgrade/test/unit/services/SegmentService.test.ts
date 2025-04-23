@@ -62,6 +62,11 @@ const segValImportFile: SegmentFile = {
   fileContent: '',
 };
 
+const listValImportFile: SegmentFile = {
+  fileName: 'list1.json',
+  fileContent: '',
+};
+
 describe('Segment Service Testing', () => {
   let service: SegmentService;
   let repo: SegmentRepository;
@@ -161,13 +166,25 @@ describe('Segment Service Testing', () => {
     newSeg.context = 'add';
     newSeg.name = 'newSeg';
     newSeg.type = SEGMENT_TYPE.PUBLIC;
-    newList.id = 'newListId';
+    newList.id = 'c6d3fe3b-4ad2-4949-bd05-5a7a2481d32f';
     newList.subSegments = [];
     newList.context = 'add';
     newList.name = 'newList';
     newSeg.subSegments = [];
     newSeg.subSegments.push(newList);
     newList.type = SEGMENT_TYPE.PRIVATE;
+    newList.listType = 'individual';
+    const listValImport = {
+      ...newList,
+      individualForSegment: segValUserIds,
+      groupForSegment: [],
+      subSegments: [],
+      name: 'list1',
+      context: 'add',
+      description: '',
+      type: SEGMENT_TYPE.PRIVATE,
+    };
+    listValImportFile.fileContent = JSON.stringify(listValImport);
     module = await Test.createTestingModule({
       providers: [
         DataSource,
@@ -583,12 +600,27 @@ describe('Segment Service Testing', () => {
     expect(segments).toEqual(returnSegment);
   });
 
-  it('should import a segment list', async () => {
+  it('should import segment lists', async () => {
+    const returnSegment = [
+      {
+        fileName: 'list1.json',
+        error: null,
+        compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
+      },
+    ];
+    service.getSegmentByIds = jest.fn().mockResolvedValue([newList]);
+    repo.find = jest.fn().mockResolvedValue([]);
+    service.addList = jest.fn().mockResolvedValue(segValSegment);
+    const segments = await service.importLists({ parentSegmentId: 'list1', files: [listValImportFile] }, logger);
+    expect(segments).toEqual(returnSegment);
+  });
+
+  it('should throw an error when trying to import a segment list without listType', async () => {
     const returnSegment = [
       {
         fileName: 'seg1.json',
-        error: null,
-        compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE,
+        error: 'Invalid Segment data: List type is required for lists. Please enter valid list type in segment. ',
+        compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
       },
     ];
     service.getSegmentByIds = jest.fn().mockResolvedValue([seg1, seg2]);
@@ -639,7 +671,7 @@ describe('Segment Service Testing', () => {
 
   it('should throw an error on attempting to delete a list not found on the parent segment', async () => {
     service.getSegmentById = jest.fn().mockResolvedValue(seg1);
-    const err = new Error('List newListId not found in parent segment seg1');
+    const err = new Error('List c6d3fe3b-4ad2-4949-bd05-5a7a2481d32f not found in parent segment seg1');
     expect(async () => {
       await service.deleteList(newList.id, seg1.id, logger);
     }).rejects.toThrow(err);
