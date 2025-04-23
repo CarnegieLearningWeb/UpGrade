@@ -3,13 +3,12 @@
     <div class="item-key-value">
       <span class="ft-14-600">{{ item.key }}:</span>
       <span *ngIf="item.key !== 'Tags'" class="ft-14-400 item-value">{{ item.value }}</span>
-      <mat-chip-listbox *ngIf="item.key === 'Tags'" class="chips-container">
-        <mat-chip *ngFor="let tag of item.value">
-          <span class="chip-label" (click)="searchByTag(tag)">
-            {{ tag }}
-          </span>
-        </mat-chip>
-      </mat-chip-listbox>
+      <app-common-tag-list
+        *ngIf="item.key === 'Tags'"
+        class="chips-container"
+        [tags]="item.value"
+        (tagClick)="searchByTag($event)"
+      ></app-common-tag-list>
     </div>
   </div>
 </div>

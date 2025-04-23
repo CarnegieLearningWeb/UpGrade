@@ -1,0 +1,7 @@
+<mat-chip-listbox [attr.aria-label]="ariaLabel">
+  <app-common-tag
+    *ngFor="let tag of tags"
+    [tag]="tag"
+    (tagClick)="onTagClick($event)">
+  </app-common-tag>
+</mat-chip-listbox>

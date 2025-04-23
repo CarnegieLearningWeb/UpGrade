@@ -12,14 +12,26 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { AsyncPipe, NgIf, NgFor } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
-import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
+import {
+  CommonStatusIndicatorChipComponent,
+  CommonTagListComponent,
+} from '../../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/feature-flags.service';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types';
 
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
-  imports: [MatTableModule, AsyncPipe, NgIf, NgFor, SharedModule, RouterModule, CommonStatusIndicatorChipComponent],
+  imports: [
+    MatTableModule,
+    AsyncPipe,
+    NgIf,
+    NgFor,
+    SharedModule,
+    RouterModule,
+    CommonStatusIndicatorChipComponent,
+    CommonTagListComponent,
+  ],
   templateUrl: './feature-flag-root-section-card-table.component.html',
   styleUrl: './feature-flag-root-section-card-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

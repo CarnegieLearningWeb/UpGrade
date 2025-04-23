@@ -18,8 +18,12 @@
           [removable]="isChipRemovable"
           (removed)="removeChip(componentTag)"
         >
-          <span class="chip-label">
-            {{ componentTag }}
+          <span
+            class="chip-label"
+            [matTooltip]="componentTag.length > 16 ? componentTag : null"
+            matTooltipPosition="above"
+          >
+              {{ componentTag | truncate : 16 }}
           </span>
           <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
         </mat-chip-row>

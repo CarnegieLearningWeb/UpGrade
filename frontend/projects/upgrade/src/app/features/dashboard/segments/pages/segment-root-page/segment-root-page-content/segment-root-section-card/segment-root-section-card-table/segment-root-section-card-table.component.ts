@@ -6,7 +6,10 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { AsyncPipe, NgIf, NgFor } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
-import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
+import {
+  CommonStatusIndicatorChipComponent,
+  CommonTagListComponent,
+} from '../../../../../../../../shared-standalone-component-lib/components';
 import { SegmentsService } from '../../../../../../../../core/segments/segments.service';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { SEGMENT_SEARCH_KEY } from 'upgrade_types';
@@ -19,7 +22,16 @@ import {
 
 @Component({
   selector: 'app-segment-root-section-card-table',
-  imports: [MatTableModule, AsyncPipe, NgIf, NgFor, SharedModule, RouterModule, CommonStatusIndicatorChipComponent],
+  imports: [
+    MatTableModule,
+    AsyncPipe,
+    NgIf,
+    NgFor,
+    SharedModule,
+    RouterModule,
+    CommonStatusIndicatorChipComponent,
+    CommonTagListComponent,
+  ],
   templateUrl: './segment-root-section-card-table.component.html',
   styleUrl: './segment-root-section-card-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

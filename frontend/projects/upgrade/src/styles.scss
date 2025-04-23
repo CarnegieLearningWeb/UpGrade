@@ -293,6 +293,7 @@ button[mat-icon-button] {
     font-size: 12px;
     font-weight: 400;
     color: var(--black-2);
+    -webkit-font-smoothing: antialiased;
   }
 
   &.status-indicator {
