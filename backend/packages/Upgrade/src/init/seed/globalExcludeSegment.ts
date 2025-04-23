@@ -88,6 +88,7 @@ function convertSegmentToSegmentInputValidator(
     description: segment.description,
     context: segment.context,
     type: segment.type,
+    tags: segment.tags || [],
     userIds: segment.individualForSegment.map((individual) => individual.userId),
     groups: segment.groupForSegment
       .filter(({ type }) => {

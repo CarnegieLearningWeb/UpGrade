@@ -419,8 +419,8 @@ export class SegmentService {
       if (!parentSegment) {
         throw new Error('Parent Segment not found');
       }
+      parentSegment.tags = parentSegment.tags || [];
       parentSegment.subSegments = [...parentSegment.subSegments, createdSegment];
-
       await transactionalEntityManager.getRepository(Segment).save(parentSegment);
       return createdSegment;
     });
