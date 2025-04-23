@@ -390,7 +390,7 @@ export class UpsertPrivateSegmentListModalComponent {
   createPrivateSegmentListBaseRequest(formData: PrivateSegmentListFormData): PrivateSegmentListRequestBase {
     const privateSegmentListRequestBase: PrivateSegmentListRequestBase = {
       name: formData.name.trim(),
-      description: formData.description.trim(),
+      description: formData.description?.trim(),
       context: this.config.params.sourceAppContext,
       userIds: [],
       groups: [],
