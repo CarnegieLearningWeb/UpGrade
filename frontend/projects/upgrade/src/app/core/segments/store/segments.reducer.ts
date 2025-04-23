@@ -225,7 +225,11 @@ function onAddListSuccess(state, { listResponse }) {
     return adapter.updateOne(
       {
         id: parentSegmentId,
-        changes: { subSegments: updatedSubSegments },
+        changes: {
+          subSegments: updatedSubSegments,
+          updatedAt: listResponse.segment.updatedAt,
+          versionNumber: existingSegment.versionNumber + 1,
+        },
       },
       { ...state, isLoadingSegments: false }
     );
