@@ -1417,16 +1417,9 @@ export class MoocletExperimentService extends ExperimentService {
       return undefined;
     }
 
-    // for mooclet assignments, a user isn't "enrolled" in a version until they have sent in a reward.
-    // only then will /mooclet/policy/run start to return the same version.
-    //
-    // unfortunately this means we can't mark them the same way as a normal experiment
-    // 1. we can't infer condition from userId hash and
-    // 2. we can't call out to mooclet/policy/run to get their assignment because they aren't locked into a version yet
-    //
-    // so we have to use the condition they sent in /mark in order to enroll them.
-    // this will enroll them in upgrade, but NOT yet give them a persistant assignment until they send a reward.
-    // this is ok because after upgrade assignment, we will cache and not reach out again to mooclet, but it's a nuance to know
+    // Note: Unlike regular experiments where we infer the condition the user "should" have gotten,
+    // we have to enroll the condition the client has marked, because the Mooclet assignment won't persist on a user basis.
+    // This means that outside factors can potentially influence the intended balance.
 
     try {
       const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
