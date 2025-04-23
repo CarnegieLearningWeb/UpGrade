@@ -229,7 +229,10 @@ export class SegmentsEffects {
               SegmentsActions.actionGetSegmentById({ segmentId: response.id }),
             ];
           }),
-          catchError(() => {
+          catchError((error) => {
+            if (error?.error?.type === SERVER_ERROR.SEGMENT_DUPLICATE_NAME) {
+              this.segmentsService.setDuplicateSegmentNameError(error.error);
+            }
             return of(SegmentsActions.actionUpdateSegmentFailure());
           })
         );

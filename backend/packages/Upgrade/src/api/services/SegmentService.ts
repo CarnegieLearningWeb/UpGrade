@@ -18,7 +18,7 @@ import {
   SEGMENT_SEARCH_KEY,
   DuplicateSegmentNameError,
 } from 'upgrade_types';
-import { In } from 'typeorm';
+import { In, Not } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
 import Papa from 'papaparse';
 import { env } from '../../env';
@@ -390,11 +390,7 @@ export class SegmentService {
   }
 
   public async upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
-    // skip dupe check if segment has id, which means it's an update not an add
-    if (!segment.id) {
-      await this.checkIsDuplicateSegmentName(segment.name, segment.context, logger);
-    }
-
+    await this.checkIsDuplicateSegmentName(segment.name, segment.context, segment.id, logger);
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
     return this.addSegmentDataInDB(segment, logger);
   }
@@ -1125,9 +1121,21 @@ export class SegmentService {
     }
   }
 
-  async checkIsDuplicateSegmentName(name: string, context: string, logger: UpgradeLogger): Promise<boolean> {
+  async checkIsDuplicateSegmentName(
+    name: string,
+    context: string,
+    id: string,
+    logger: UpgradeLogger
+  ): Promise<boolean> {
     logger.info({ message: `Check for duplicate segment name ${name} in context ${context}` });
-    const sameNameSegment = await this.segmentRepository.find({ where: { name, context } });
+    let sameNameSegment: Segment[] = [];
+    // Check if the segment name already exists in the same context
+    // If id is present, check only for other segments with the same name and context
+    if (id) {
+      sameNameSegment = await this.segmentRepository.find({ where: { name, context, id: Not(id) } });
+    } else {
+      sameNameSegment = await this.segmentRepository.find({ where: { name, context } });
+    }
 
     if (sameNameSegment.length) {
       logger.error({
