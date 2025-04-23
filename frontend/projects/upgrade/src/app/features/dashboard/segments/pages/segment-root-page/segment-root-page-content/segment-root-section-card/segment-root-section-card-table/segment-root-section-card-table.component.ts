@@ -11,6 +11,7 @@ import { SegmentsService } from '../../../../../../../../core/segments/segments.
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { SEGMENT_SEARCH_KEY } from 'upgrade_types';
 import {
+  NUMBER_OF_SEGMENTS,
   Segment,
   SEGMENT_ROOT_COLUMN_NAMES,
   SEGMENT_ROOT_DISPLAYED_COLUMNS,
@@ -65,7 +66,11 @@ export class SegmentRootSectionCardTableComponent implements OnInit {
     };
 
     this.observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
+      // if the list is short, this will trigger again on page load because the bottom trigger is within range already
+      // if the size of the filtered set is less than the number of segments to take though, fetching more will not be needed
+      const isFilteredSetLessThanTake = this.dataSource$?.filteredData?.length < NUMBER_OF_SEGMENTS;
+
+      if (entries[0].isIntersecting && !isFilteredSetLessThanTake) {
         this.fetchSegmentsOnScroll();
       }
     }, options);
