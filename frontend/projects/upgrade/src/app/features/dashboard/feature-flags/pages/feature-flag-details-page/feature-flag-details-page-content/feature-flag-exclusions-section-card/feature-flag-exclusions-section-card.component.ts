@@ -70,7 +70,6 @@ export class FeatureFlagExclusionsSectionCardComponent {
   }
 
   onMenuButtonItemClick(event, flag: FeatureFlag) {
-    const confirmMessage = 'feature-flags.export-all-exclude-lists-design.confirmation-text.text';
     switch (event) {
       case FEATURE_FLAG_BUTTON_ACTION.IMPORT_EXCLUDE_LIST:
         this.dialogService
@@ -81,7 +80,7 @@ export class FeatureFlagExclusionsSectionCardComponent {
       case FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS:
         if (flag.featureFlagSegmentExclusion.length) {
           this.dialogService
-            .openExportDesignModal('Export All Exclude Lists', confirmMessage)
+            .openExportExcludeListModal()
             .afterClosed()
             .subscribe((isExportClicked: boolean) => {
               if (isExportClicked) {

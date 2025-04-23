@@ -132,7 +132,6 @@ export class FeatureFlagInclusionsSectionCardComponent {
   }
 
   onMenuButtonItemClick(event, flag: FeatureFlag) {
-    const confirmMessage = 'feature-flags.export-all-include-lists-design.confirmation-text.text';
     switch (event) {
       case FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST:
         this.dialogService
@@ -143,7 +142,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
       case FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS:
         if (flag.featureFlagSegmentInclusion.length) {
           this.dialogService
-            .openExportDesignModal('Export All Include Lists', confirmMessage)
+            .openExportIncludeListModal()
             .afterClosed()
             .subscribe((isExportClicked: boolean) => {
               if (isExportClicked) {
