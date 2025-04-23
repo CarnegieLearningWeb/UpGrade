@@ -12,7 +12,6 @@ import {
   UpsertSegmentParams,
 } from '../../core/segments/store/segments.model';
 import {
-  FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
   FeatureFlag,
   ParticipantListTableRow,
   UPSERT_FEATURE_FLAG_ACTION,
@@ -418,7 +417,7 @@ export class DialogService {
 
   openExportFeatureFlagDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
-      title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
+      title: 'Export Feature Flag Design',
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -501,7 +500,7 @@ export class DialogService {
     subtext: string
   ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
-      title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
+      title: 'Email Feature Flag Data',
       primaryActionBtnLabel: 'Email',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
