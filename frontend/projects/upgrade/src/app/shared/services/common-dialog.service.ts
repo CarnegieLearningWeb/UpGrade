@@ -417,7 +417,7 @@ export class DialogService {
 
   openExportFeatureFlagDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
-      title: 'Export Feature Flag Design',
+      title: 'Export Feature Flag',
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
