@@ -57,6 +57,7 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 import { MetricService } from './MetricService';
 import { Metric } from '../models/Metric';
 import { MoocletRewardsService } from './MoocletRewardsService';
+import { env } from '../../env';
 
 export interface SyncCreateParams {
   experimentDTO: ExperimentDTO;
@@ -1123,6 +1124,7 @@ export class MoocletExperimentService extends ExperimentService {
 
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
       moocletExperimentRef.policyId = newMoocletRequest.policy;
+      moocletExperimentRef.outcomeVariableName = moocletPolicyParameters['outcome_variable_name'];
     } catch (err) {
       await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
       throw err;
@@ -1401,5 +1403,53 @@ export class MoocletExperimentService extends ExperimentService {
 
   public isMoocletExperiment(assignmentAlgorithm: ASSIGNMENT_ALGORITHM): boolean {
     return SUPPORTED_MOOCLET_ALGORITHMS.includes(assignmentAlgorithm);
+  }
+
+  public async handleEnrollCondition(
+    experimentId: string,
+    condition: string,
+    logger: UpgradeLogger
+  ): Promise<void | ExperimentCondition> {
+    if (!env.mooclets.enabled) {
+      logger.error({
+        message: 'Mooclet experiment algorithm is indicated but mooclets are not enabled',
+      });
+      return undefined;
+    }
+
+    // Note: Unlike regular experiments where we infer the condition the user "should" have gotten,
+    // we have to enroll the condition the client has marked, because the Mooclet assignment won't persist on a user basis.
+    // This means that outside factors can potentially influence the intended balance.
+
+    try {
+      const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
+
+      if (!moocletExperimentRef) {
+        const error = {
+          message: `[Mooclet Mark Condition] No MoocletExperimentRef found for experiment id ${experimentId}`,
+        };
+        logger.error(error);
+        throw new Error(JSON.stringify(error));
+      }
+      const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
+        (expCondition) => expCondition.experimentCondition.conditionCode === condition
+      );
+
+      if (!versionConditionMap) {
+        const error = {
+          message: `[Mooclet Mark Condition] No version found for condition ${condition}`,
+          moocletExperimentRef,
+        };
+        logger.error(error);
+        throw new Error(JSON.stringify(error));
+      }
+      return versionConditionMap.experimentCondition;
+    } catch (err) {
+      logger.error({
+        message: '[Mooclet Mark Condition] There was an error processing marked condition.',
+        err,
+      });
+      throw err;
+    }
   }
 }

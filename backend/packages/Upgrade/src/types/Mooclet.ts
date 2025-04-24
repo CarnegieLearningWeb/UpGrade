@@ -69,7 +69,7 @@ export interface MoocletValueRequestBody {
   value: number;
   mooclet: number;
   version: number;
-  learner?: number;
+  learner?: number | string;
   policy?: number;
 }
 

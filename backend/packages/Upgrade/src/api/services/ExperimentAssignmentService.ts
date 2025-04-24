@@ -561,7 +561,8 @@ export class ExperimentAssignmentService {
       },
       exclusionReason,
       status,
-      condition
+      condition,
+      logger
     );
     if (experiment.enrollmentCompleteCondition) {
       await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
@@ -1406,7 +1407,8 @@ export class ExperimentAssignmentService {
     globallyExcluded: { isUserExcluded: boolean; isGroupExcluded: boolean },
     experimentLevelExcluded: { experiment: Experiment; reason: string; matchedGroup: boolean }[],
     status: MARKED_DECISION_POINT_STATUS,
-    condition: string
+    condition: string,
+    logger: UpgradeLogger
   ): Promise<void> {
     const { assignmentUnit, state, consistencyRule } = experiment;
     // experiment level exclusion
@@ -1623,14 +1625,26 @@ export class ExperimentAssignmentService {
         };
         await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
       } else {
-        const conditionAssigned = await this.assignExperiment(
-          user,
-          experiment,
-          individualEnrollment,
-          groupEnrollment,
-          individualExclusion,
-          groupExclusion
-        );
+        let conditionAssigned: ExperimentCondition | void;
+
+        const isMoocletExperiment = this.moocletExperimentService.isMoocletExperiment(experiment.assignmentAlgorithm);
+
+        if (isMoocletExperiment) {
+          conditionAssigned = await this.moocletExperimentService.handleEnrollCondition(
+            experiment.id,
+            condition,
+            logger
+          );
+        } else {
+          conditionAssigned = await this.assignExperiment(
+            user,
+            experiment,
+            individualEnrollment,
+            groupEnrollment,
+            individualExclusion,
+            groupExclusion
+          );
+        }
         if (!individualEnrollment && !individualExclusion && conditionAssigned) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
             {

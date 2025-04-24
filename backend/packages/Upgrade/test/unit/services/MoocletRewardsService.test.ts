@@ -221,6 +221,7 @@ describe('MoocletRewardsService', () => {
           value: mockRewardValue,
           mooclet: 123,
           version: 456,
+          learner: 'user-1',
         },
         user: mockUser,
       });
@@ -231,6 +232,7 @@ describe('MoocletRewardsService', () => {
           value: mockRewardValue,
           mooclet: 123,
           version: 456,
+          learner: 'user-1',
         },
         mockLogger
       );
