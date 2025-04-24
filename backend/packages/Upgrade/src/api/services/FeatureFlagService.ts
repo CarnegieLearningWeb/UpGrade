@@ -204,7 +204,7 @@ export class FeatureFlagService {
 
     let queryBuilder = this.featureFlagRepository.createQueryBuilder('feature_flag');
     if (searchParams) {
-      const customSearchString = searchParams.string.split(' ').join(`:*&`);
+      const customSearchString = searchParams.key;
       // add search query
       const postgresSearchString = this.postgresSearchString(searchParams.key);
       queryBuilder = queryBuilder
