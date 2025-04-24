@@ -12,7 +12,6 @@ import {
   UpsertSegmentParams,
 } from '../../core/segments/store/segments.model';
 import {
-  FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
   FeatureFlag,
   ParticipantListTableRow,
   UPSERT_FEATURE_FLAG_ACTION,
@@ -25,7 +24,7 @@ import {
   ModalSize,
   SimpleConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
-import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
+import { FEATURE_FLAG_LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { UpsertSegmentModalComponent } from '../../features/dashboard/segments/modals/upsert-segment-modal/upsert-segment-modal.component';
 import {
   FEATURE_FLAG_IMPORT_SERVICE,
@@ -260,9 +259,9 @@ export class DialogService {
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openAddListModal(appContext: string, segmentId: string) {
+  openAddListModal(appContext: string, segmentId: string, segmentType: SEGMENT_TYPE) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
-      title: 'Add List',
+      title: segmentType === SEGMENT_TYPE.GLOBAL_EXCLUDE ? 'Add Exclude List' : 'Add List',
       nameHint: 'segments.upsert-list-modal.name-hint.text',
       valuesLabel: 'segments.upsert-list-modal.values-label.text',
       valuesPlaceholder: 'segments.upsert-list-modal.values-placeholder.text',
@@ -279,9 +278,14 @@ export class DialogService {
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openEditListModal(sourceList: ParticipantListTableRow, appContext: string, segmentId: string) {
+  openEditListModal(
+    sourceList: ParticipantListTableRow,
+    appContext: string,
+    segmentId: string,
+    segmentType: SEGMENT_TYPE
+  ) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
-      title: 'Edit List',
+      title: segmentType === SEGMENT_TYPE.GLOBAL_EXCLUDE ? 'Edit Exclude List' : 'Edit List',
       nameHint: 'segments.upsert-list-modal.name-hint.text',
       valuesLabel: 'segments.upsert-list-modal.values-label.text',
       valuesPlaceholder: 'segments.upsert-list-modal.values-placeholder.text',
@@ -365,6 +369,20 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(deleteIncludeListModalConfig, ModalSize.SMALL);
   }
 
+  openDeleteListModal(segmentName: string, segmentType: SEGMENT_TYPE) {
+    const deleteListModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: segmentType === SEGMENT_TYPE.GLOBAL_EXCLUDE ? 'Delete Exclude List' : 'Delete List',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete "${segmentName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(deleteListModalConfig, ModalSize.SMALL);
+  }
+
   openDeleteFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Delete Feature Flag',
@@ -397,40 +415,82 @@ export class DialogService {
     return this.dialog.open(DeleteSegmentModalComponent, config);
   }
 
-  openExportDesignModal(title: string, warning: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openExportFeatureFlagDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
-      title: title,
+      title: 'Export Feature Flag Design',
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        message: warning,
+        message: 'feature-flags.export-feature-flag-design.confirmation-text.text',
       },
     };
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
-  openExportSegmentDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openExportIncludeListModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
-      title: 'segments.export-segment-design.confirmation-title.text',
+      title: 'Export All Include Lists',
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        message: 'segments.export-segment-design.confirmation-message.text',
+        message: 'feature-flags.export-all-include-lists-design.confirmation-text.text',
       },
     };
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
-  openExportSegmentListsDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openExportExcludeListModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
-      title: 'segments.export-all-segment-lists-design.confirmation-title.text',
+      title: 'Export All Exclude Lists',
       primaryActionBtnLabel: 'Export',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        message: 'segments.export-all-segment-lists-design.confirmation-message.text',
+        message: 'feature-flags.export-all-exclude-lists-design.confirmation-text.text',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openExportSegmentDesignModal(
+    segmentType: SEGMENT_TYPE
+  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig = {
+      title:
+        segmentType === SEGMENT_TYPE.GLOBAL_EXCLUDE
+          ? 'segments.export-global-exclude-design.confirmation-title.text'
+          : 'segments.export-segment-design.confirmation-title.text',
+      primaryActionBtnLabel: 'Export',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message:
+          segmentType === SEGMENT_TYPE.GLOBAL_EXCLUDE
+            ? 'segments.export-global-exclude-design.confirmation-message.text'
+            : 'segments.export-segment-design.confirmation-message.text',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openExportSegmentListsDesignModal(
+    segmentType: SEGMENT_TYPE
+  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig = {
+      title:
+        segmentType === SEGMENT_TYPE.GLOBAL_EXCLUDE
+          ? 'segments.export-all-exclude-lists-design.confirmation-title.text'
+          : 'segments.export-all-lists-design.confirmation-title.text',
+      primaryActionBtnLabel: 'Export',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message:
+          segmentType === SEGMENT_TYPE.GLOBAL_EXCLUDE
+            ? 'segments.export-all-exclude-lists-design.confirmation-message.text'
+            : 'segments.export-all-lists-design.confirmation-message.text',
       },
     };
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
@@ -440,7 +500,7 @@ export class DialogService {
     subtext: string
   ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
-      title: FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
+      title: 'Email Feature Flag Data',
       primaryActionBtnLabel: 'Email',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -482,7 +542,7 @@ export class DialogService {
 
   openEditSegmentModal(sourceSegment: Segment) {
     const commonModalConfig: CommonModalConfig<UpsertSegmentParams> = {
-      title: 'Edit Segment',
+      title: sourceSegment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE ? 'Edit Global Exclude' : 'Edit Segment',
       tagsLabel: 'segments.upsert-segment-modal.tags-label.text',
       tagsPlaceholder: 'segments.upsert-segment-modal.tags-placeholder.text',
       primaryActionBtnLabel: 'Save',
@@ -498,7 +558,7 @@ export class DialogService {
 
   openDuplicateSegmentModal(sourceSegment: Segment) {
     const commonModalConfig: CommonModalConfig = {
-      title: 'Duplicate Segment',
+      title: sourceSegment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE ? 'Duplicate Global Exclude' : 'Duplicate Segment',
       tagsLabel: 'segments.upsert-segment-modal.tags-label.text',
       tagsPlaceholder: 'segments.upsert-segment-modal.tags-placeholder.text',
       primaryActionBtnLabel: 'Create',
@@ -580,9 +640,12 @@ export class DialogService {
     return this.openCommonImportModal(commonModalConfig);
   }
 
-  openImportSegmentListModal(segmentId: string) {
+  openImportSegmentListModal(segmentId: string, segmentType: SEGMENT_TYPE) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'segments.import-list-modal.title.text',
+      title:
+        segmentType === SEGMENT_TYPE.GLOBAL_EXCLUDE
+          ? 'segments.import-exclude-list-modal.title.text'
+          : 'segments.import-list-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',

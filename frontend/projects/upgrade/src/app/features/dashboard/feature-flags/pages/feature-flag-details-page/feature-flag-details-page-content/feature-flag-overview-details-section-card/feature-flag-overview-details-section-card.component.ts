@@ -175,9 +175,8 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   }
 
   openConfirmExportDesignModal(id: string) {
-    const confirmMessage = 'feature-flags.export-feature-flag-design.confirmation-text.text';
     this.dialogService
-      .openExportDesignModal(FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN, confirmMessage)
+      .openExportFeatureFlagDesignModal()
       .afterClosed()
       .subscribe((isExportClicked: boolean) => {
         if (isExportClicked) {

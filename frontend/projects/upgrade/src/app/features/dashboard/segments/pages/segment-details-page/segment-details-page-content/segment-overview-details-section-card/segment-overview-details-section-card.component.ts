@@ -6,7 +6,7 @@ import {
   CommonSectionCardOverviewDetailsComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { Segment, SEGMENT_DETAILS_PAGE_ACTIONS } from '../../../../../../../core/segments/store/segments.model';
-import { SEGMENT_STATUS, SEGMENT_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
+import { SEGMENT_STATUS, SEGMENT_SEARCH_KEY, IMenuButtonItem, SEGMENT_TYPE } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { SegmentOverviewDetailsFooterComponent } from './segment-overview-details-footer/segment-overview-details-footer.component';
@@ -55,31 +55,51 @@ export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDes
     private authService: AuthService
   ) {}
 
+  private segmentTypeConfig = {
+    [SEGMENT_TYPE.GLOBAL_EXCLUDE]: {
+      editLabel: 'segments.details.menu-button.edit-global-exclude.text',
+      duplicateLabel: 'segments.details.menu-button.duplicate-global-exclude.text',
+      exportLabel: 'segments.details.menu-button.export-global-exclude-design.text',
+    },
+    [SEGMENT_TYPE.PUBLIC]: {
+      editLabel: 'segments.details.menu-button.edit-segment.text',
+      duplicateLabel: 'segments.details.menu-button.duplicate-segment.text',
+      exportLabel: 'segments.details.menu-button.export-segment-design.text',
+    },
+  };
+
   ngOnInit(): void {
     this.menuButtonItems$ = this.segmentAndPermissions$.pipe(
-      map(({ segment, permissions }) => [
-        {
-          label: 'segments.details.menu-button.edit-segment.text',
-          action: SEGMENT_DETAILS_PAGE_ACTIONS.EDIT,
-          disabled: !permissions?.segments?.update,
-        },
-        {
-          label: 'segments.details.menu-button.duplicate-segment.text',
-          action: SEGMENT_DETAILS_PAGE_ACTIONS.DUPLICATE,
-          disabled: !permissions?.segments?.create,
-        },
-        {
-          label: 'segments.details.menu-button.export-segment-design.text',
-          action: SEGMENT_DETAILS_PAGE_ACTIONS.EXPORT,
-          disabled: false,
-        },
-        {
-          label: 'segments.details.menu-button.delete-segment.text',
-          action: SEGMENT_DETAILS_PAGE_ACTIONS.DELETE,
-          disabled:
-            !permissions?.segments?.delete || [SEGMENT_STATUS.USED, SEGMENT_STATUS.GLOBAL].includes(segment?.status),
-        },
-      ])
+      map(({ segment, permissions }) => {
+        if (!segment) {
+          return [];
+        }
+        const config = this.segmentTypeConfig[segment.type];
+
+        return [
+          {
+            label: config.editLabel,
+            action: SEGMENT_DETAILS_PAGE_ACTIONS.EDIT,
+            disabled: !permissions?.segments?.update,
+          },
+          {
+            label: config.duplicateLabel,
+            action: SEGMENT_DETAILS_PAGE_ACTIONS.DUPLICATE,
+            disabled: !permissions?.segments?.create,
+          },
+          {
+            label: config.exportLabel,
+            action: SEGMENT_DETAILS_PAGE_ACTIONS.EXPORT,
+            disabled: false,
+          },
+          {
+            label: 'segments.details.menu-button.delete-segment.text',
+            action: SEGMENT_DETAILS_PAGE_ACTIONS.DELETE,
+            disabled:
+              !permissions?.segments?.delete || [SEGMENT_STATUS.USED, SEGMENT_STATUS.GLOBAL].includes(segment?.status),
+          },
+        ];
+      })
     );
   }
 
@@ -105,7 +125,7 @@ export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDes
   onExportDesignConfirm(segment: Segment) {
     this.subscriptions.add(
       this.dialogService
-        .openExportSegmentDesignModal()
+        .openExportSegmentDesignModal(segment.type)
         .afterClosed()
         .subscribe((isExportClicked: boolean) => {
           if (isExportClicked) {

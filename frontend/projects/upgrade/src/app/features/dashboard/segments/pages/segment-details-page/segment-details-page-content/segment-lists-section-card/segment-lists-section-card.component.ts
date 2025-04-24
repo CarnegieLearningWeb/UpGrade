@@ -45,15 +45,17 @@ export class SegmentListsSectionCardComponent {
   selectedSegment$ = this.segmentsService.selectedSegment$;
   subscriptions = new Subscription();
   title = '';
+  subtitle = '';
+  buttonText = '';
 
   menuButtonItems: IMenuButtonItem[] = [
     {
-      label: 'segments.details.lists.menu-button.import-list.text',
+      label: '',
       action: SEGMENT_LIST_ACTIONS.IMPORT,
       disabled: false,
     },
     {
-      label: 'segments.details.lists.menu-button.export-lists.text',
+      label: '',
       action: SEGMENT_LIST_ACTIONS.EXPORT_ALL,
       disabled: false,
     },
@@ -65,16 +67,39 @@ export class SegmentListsSectionCardComponent {
     private authService: AuthService
   ) {}
 
+  private segmentTypeConfig = {
+    [SEGMENT_TYPE.GLOBAL_EXCLUDE]: {
+      title: 'segments.details.lists.card.title.global-excludes.text',
+      subtitle: 'segments.details.lists.card.subtitle.global-excludes.text',
+      buttonText: 'segments.details.add-exclude-list.button.text',
+      importLabel: 'segments.details.lists.menu-button.import-exclude-list.text',
+      exportLabel: 'segments.details.lists.menu-button.export-exclude-lists.text',
+    },
+    [SEGMENT_TYPE.PUBLIC]: {
+      title: 'segments.details.lists.card.title.text',
+      subtitle: 'segments.details.lists.card.subtitle.text',
+      buttonText: 'segments.details.add-list.button.text',
+      importLabel: 'segments.details.lists.menu-button.import-list.text',
+      exportLabel: 'segments.details.lists.menu-button.export-lists.text',
+    },
+  };
+
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.title =
-      this.data.type === SEGMENT_TYPE.GLOBAL_EXCLUDE
-        ? 'segments.details.lists.card.title.global-excludes.text'
-        : 'segments.details.lists.card.title.text';
+    this.configureUiForSegmentType();
+  }
+
+  private configureUiForSegmentType(): void {
+    const config = this.segmentTypeConfig[this.data.type];
+    this.title = config.title;
+    this.subtitle = config.subtitle;
+    this.buttonText = config.buttonText;
+    this.menuButtonItems[0].label = config.importLabel;
+    this.menuButtonItems[1].label = config.exportLabel;
   }
 
   onAddListClick(appContext: string, segmentId: string) {
-    this.dialogService.openAddListModal(appContext, segmentId);
+    this.dialogService.openAddListModal(appContext, segmentId, this.data.type);
   }
 
   onMenuButtonItemClick(event, segment: Segment) {
@@ -92,7 +117,7 @@ export class SegmentListsSectionCardComponent {
 
   onImportList(segmentId: string) {
     this.dialogService
-      .openImportSegmentListModal(segmentId)
+      .openImportSegmentListModal(segmentId, this.data.type)
       .afterClosed()
       .subscribe(() => this.segmentsService.fetchSegmentById(segmentId));
   }
@@ -100,7 +125,7 @@ export class SegmentListsSectionCardComponent {
   onExportAllLists(segment: Segment) {
     this.subscriptions.add(
       this.dialogService
-        .openExportSegmentListsDesignModal()
+        .openExportSegmentListsDesignModal(this.data.type)
         .afterClosed()
         .subscribe((isExportClicked: boolean) => {
           if (isExportClicked) {
@@ -127,12 +152,12 @@ export class SegmentListsSectionCardComponent {
   }
 
   onEditList(rowData: ParticipantListTableRow, segmentId: string): void {
-    this.dialogService.openEditListModal(rowData, rowData.segment.context, segmentId);
+    this.dialogService.openEditListModal(rowData, rowData.segment.context, segmentId, this.data.type);
   }
 
   onDeleteList(segment: Segment): void {
     this.dialogService
-      .openDeleteExcludeListModal(segment.name)
+      .openDeleteListModal(segment.name, this.data.type)
       .afterClosed()
       .subscribe((confirmClicked) => {
         if (confirmClicked) {
