@@ -29,6 +29,7 @@ export const actionFetchSegmentsSuccess = createAction(
     experimentSegmentExclusion: experimentSegmentInclusionExclusionData[];
     featureFlagSegmentInclusion: featureFlagSegmentInclusionExclusionData[];
     featureFlagSegmentExclusion: featureFlagSegmentInclusionExclusionData[];
+    fromStarting?: boolean;
   }>()
 );
 

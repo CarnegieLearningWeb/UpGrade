@@ -68,9 +68,7 @@ export class SegmentsEffects {
         }
         return this.segmentsDataService.fetchSegmentsPaginated(params).pipe(
           switchMap((data: any) => {
-            const actions = fromStarting ? [SegmentsActions.actionSetSkipSegments({ skipSegments: 0 })] : [];
             return [
-              ...actions,
               SegmentsActions.actionFetchSegmentsSuccess({
                 segments: data.nodes.segmentsData,
                 totalSegments: data.total,
@@ -78,6 +76,7 @@ export class SegmentsEffects {
                 experimentSegmentExclusion: data.nodes.experimentSegmentExclusionData,
                 featureFlagSegmentInclusion: data.nodes.featureFlagSegmentInclusionData,
                 featureFlagSegmentExclusion: data.nodes.featureFlagSegmentExclusionData,
+                fromStarting,
               }),
             ];
           }),
