@@ -548,7 +548,7 @@ describe('Segment Service Testing', () => {
     }).rejects.toThrow(dupeError);
 
     // Verify checkIsDuplicateSegmentName was called with correct parameters
-    expect(service.checkIsDuplicateSegmentName).toHaveBeenCalledWith(segVal.name, segVal.context, logger);
+    expect(service.checkIsDuplicateSegmentName).toHaveBeenCalledWith(segVal.name, segVal.context, undefined, logger);
 
     // Verify addSegmentDataInDB was never called
     expect(service.addSegmentDataInDB).not.toHaveBeenCalled();

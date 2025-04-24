@@ -15,7 +15,7 @@ import {
 } from './segments.selectors';
 import JSZip from 'jszip';
 import { of } from 'rxjs';
-import { SERVER_ERROR } from 'upgrade_types';
+import { SEGMENT_STATUS, SERVER_ERROR } from 'upgrade_types';
 import { SegmentsService } from '../segments.service';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
 
@@ -183,6 +183,10 @@ export class SegmentsEffects {
         return action.pipe(
           map((data: Segment) => {
             if (actionType === UpsertSegmentType.CREATE_NEW_SEGMENT) {
+              data = {
+                ...data,
+                status: data.status || SEGMENT_STATUS.UNUSED,
+              };
               this.router.navigate(['/segments']);
             }
             return SegmentsActions.actionUpsertSegmentSuccess({ segment: data });
@@ -225,7 +229,10 @@ export class SegmentsEffects {
               SegmentsActions.actionGetSegmentById({ segmentId: response.id }),
             ];
           }),
-          catchError(() => {
+          catchError((error) => {
+            if (error?.error?.type === SERVER_ERROR.SEGMENT_DUPLICATE_NAME) {
+              this.segmentsService.setDuplicateSegmentNameError(error.error);
+            }
             return of(SegmentsActions.actionUpdateSegmentFailure());
           })
         );
