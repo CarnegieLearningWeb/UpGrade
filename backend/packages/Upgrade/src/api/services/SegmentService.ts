@@ -214,7 +214,6 @@ export class SegmentService {
     sortParams?: ISegmentSortParams
   ): Promise<getSegmentsData> {
     logger.info({ message: `Find paginated segments` });
-    let customSearchString = '';
     let paginatedParentSubQuery = this.segmentRepository
       .createQueryBuilder()
       .subQuery()
@@ -224,25 +223,19 @@ export class SegmentService {
       .limit(take)
       .offset(skip);
     if (searchParams) {
-      customSearchString = searchParams.string.split(' ').join(`:*&`);
-      // add search query
-      const postgresSearchString = this.postgresSearchString(searchParams.key);
-      paginatedParentSubQuery = paginatedParentSubQuery
-        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
-        .addOrderBy('rank', 'DESC');
+      const whereClause = this.postgresSearchString(searchParams);
+      paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
     }
     if (sortParams) {
       paginatedParentSubQuery = paginatedParentSubQuery.addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs);
     }
-
     const segmentsData = await this.segmentRepository
       .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
       .setParameter('type', SEGMENT_TYPE.PUBLIC)
-      .setParameter('query', `${customSearchString}:*`)
-      .where(`segment.id IN (SELECT segment_id from ${paginatedParentSubQuery.getQuery()} "segment")`)
+      .where(`segment.id IN ${paginatedParentSubQuery.getQuery()}`)
       .getMany();
 
     return this.getSegmentStatus(segmentsData);
@@ -252,26 +245,27 @@ export class SegmentService {
     return this.segmentRepository.countBy({ type: SEGMENT_TYPE.PUBLIC });
   }
 
-  private postgresSearchString(type: SEGMENT_SEARCH_KEY): string {
+  private postgresSearchString(params: ISegmentSearchParams): string {
+    const type = params.key;
+    // escape % and ' characters
+    const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    const likeString = `ILIKE '%${serachString}%'`;
     const searchString: string[] = [];
     switch (type) {
-      case SEGMENT_SEARCH_KEY.NAME:
-        searchString.push("coalesce(segment.name::TEXT,'')");
-        break;
-      case SEGMENT_SEARCH_KEY.CONTEXT:
-        searchString.push("coalesce(segment.context::TEXT,'')");
+      case SEGMENT_SEARCH_KEY.NAME || SEGMENT_SEARCH_KEY.CONTEXT:
+        searchString.push(`${type} ${likeString}`);
         break;
       case SEGMENT_SEARCH_KEY.TAG:
-        searchString.push("coalesce(segment.tags::TEXT,'')");
+        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         break;
       default:
-        searchString.push("coalesce(segment.name::TEXT,'')");
-        searchString.push("coalesce(segment.context::TEXT,'')");
-        searchString.push("coalesce(segment.tags::TEXT,'')");
+        searchString.push(`${SEGMENT_SEARCH_KEY.NAME} ${likeString}`);
+        searchString.push(`${SEGMENT_SEARCH_KEY.CONTEXT} ${likeString}`);
+        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         break;
     }
-    const stringConcat = searchString.join(',');
-    const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
+
+    const searchStringConcatenated = `(${searchString.join(' OR ')})`;
     return searchStringConcatenated;
   }
 
@@ -1132,9 +1126,13 @@ export class SegmentService {
     // Check if the segment name already exists in the same context
     // If id is present, check only for other segments with the same name and context
     if (id) {
-      sameNameSegment = await this.segmentRepository.find({ where: { name, context, id: Not(id) } });
+      sameNameSegment = await this.segmentRepository.find({
+        where: { name, context, type: Not(SEGMENT_TYPE.PRIVATE), id: Not(id) },
+      });
     } else {
-      sameNameSegment = await this.segmentRepository.find({ where: { name, context } });
+      sameNameSegment = await this.segmentRepository.find({
+        where: { name, context, type: Not(SEGMENT_TYPE.PRIVATE) },
+      });
     }
 
     if (sameNameSegment.length) {
