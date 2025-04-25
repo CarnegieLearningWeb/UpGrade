@@ -547,6 +547,11 @@ export class SegmentService {
           segmentForValidation = await this.convertJSONStringToSegInputValFormat(segment.fileContent);
         } catch (err) {
           errorMessage = (err as Error).message;
+          importFileErrors.push({
+            fileName: segment.fileName,
+            error: errorMessage,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          });
           return null;
         }
         segmentForValidation = plainToClass(SegmentInputValidator, segmentForValidation);
@@ -555,7 +560,7 @@ export class SegmentService {
           errorMessage += segmentJSONValidation.missingProperty;
         }
 
-        if (segmentForValidation.subSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE)) {
+        if (segmentForValidation.subSegments?.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE)) {
           await Promise.all(
             segmentForValidation.subSegments.map(async (subSegment) => {
               const subSegmentForValidation = plainToClass(SegmentInputValidator, subSegment);
@@ -591,8 +596,11 @@ export class SegmentService {
     let segmentInfo;
     try {
       segmentInfo = JSON.parse(segmentDetails);
+      if (!segmentInfo) {
+        throw new Error('Empty JSON');
+      }
     } catch (err) {
-      throw new Error('Invalid JSON format');
+      throw new Error(`Invalid JSON format: ${(err as Error).message}`);
     }
 
     const addSegmentMembers = (segment: any): SegmentInputValidator => {
