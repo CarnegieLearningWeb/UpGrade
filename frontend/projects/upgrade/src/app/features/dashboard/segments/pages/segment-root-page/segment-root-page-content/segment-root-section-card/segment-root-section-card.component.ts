@@ -93,7 +93,7 @@ export class SegmentRootSectionCardComponent {
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<SEGMENT_SEARCH_KEY>) {
-    this.segmentsService.setSearchString(params.searchString);
+    this.segmentsService.setSearchString(params.searchString.trim());
     this.segmentsService.setSearchKey(params.searchKey as SEGMENT_SEARCH_KEY);
     this.segmentsService.fetchSegmentsPaginated(true);
   }
