@@ -99,7 +99,6 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members2DataSource.next(this.members2.controls);
       // Bind predefined values of experiment participants from backend
       this.bindParticipantsData();
-      this.setSegmentOptions();
     }
   }
 
@@ -192,11 +191,10 @@ export class ExperimentParticipantsComponent implements OnInit {
   }
 
   setSegmentOptions() {
-    this.allSegmentsSub = this.segmentsService
-      .selectListSegmentOptionsByContext(this.currentContext)
-      .subscribe((allSegments) => {
-        this.allSegmentListOptions = allSegments;
-      });
+    const context = this.currentContext || this.experimentInfo?.context[0];
+    this.allSegmentsSub = this.segmentsService.selectListSegmentOptionsByContext(context).subscribe((allSegments) => {
+      this.allSegmentListOptions = allSegments;
+    });
   }
 
   bindParticipantsData() {
