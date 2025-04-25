@@ -80,16 +80,19 @@ export class UpsertFeatureFlagModalComponent {
     this.featureFlagsService.setIsDuplicateKey(false);
     this.experimentService.fetchContextMetaData();
     this.createFeatureFlagForm();
+
+    // Disable restricted fields BEFORE setting up listeners
+    if (this.isDisabled()) {
+      this.disableRestrictedFields();
+    }
+
+    // Add listeners AFTER form is fully set up
     this.listenOnKeyChangesToRemoveWarning();
     this.listenOnNameChangesToUpdateKey();
     this.listenForIsInitialFormValueChanged();
     this.listenForPrimaryButtonDisabled();
     this.listenForDuplicateKey();
     this.listenOnContext();
-
-    if (this.isDisabled()) {
-      this.disableRestrictedFields();
-    }
   }
 
   isDisabled() {
@@ -135,7 +138,7 @@ export class UpsertFeatureFlagModalComponent {
     this.subscriptions.add(
       this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
         const keyControl = this.featureFlagForm.get('key');
-        if (keyControl && !keyControl.dirty) {
+        if (keyControl && !keyControl.dirty && !keyControl.disabled) {
           keyControl.setValue(CommonTextHelpersService.convertStringToFeatureFlagKeyFormat(name));
         }
       })
