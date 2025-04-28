@@ -128,7 +128,7 @@ export class ImportExportService {
             throw error;
           }
           // remove currentPosteriors from moocletPolicyParameters for export
-          const { currentPosteriors: _, ...filteredPolictParameters } = experimentRecord.moocletPolicyParameters;
+          const { current_posteriors: _, ...filteredPolictParameters } = experimentRecord.moocletPolicyParameters;
 
           experimentRecord.moocletPolicyParameters = filteredPolictParameters;
         }
