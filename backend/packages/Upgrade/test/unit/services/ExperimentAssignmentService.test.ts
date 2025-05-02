@@ -138,30 +138,28 @@ describe('Experiment Assignment Service Test', () => {
         subSegments: [],
       },
     ]);
-    testedModule.segmentService.getSegmentByIds
-      .withArgs(['89246cff-c81f-4515-91f3-c033341e45b9', 'd958bf52-7066-4594-ad8a-baf2e75324cf'])
-      .resolves([
-        {
-          id: '89246cff-c81f-4515-91f3-c033341e45b9',
-          name: 'edf54471-5266-4a52-a058-90fac2d03678 Inclusion Segment',
-          description: 'edf54471-5266-4a52-a058-90fac2d03678 Inclusion Segment',
-          context: 'add',
-          type: 'private',
-          individualForSegment: [],
-          groupForSegment: [],
-          subSegments: [],
-        },
-        {
-          id: 'd958bf52-7066-4594-ad8a-baf2e75324cf',
-          name: 'edf54471-5266-4a52-a058-90fac2d03678 Exclusion Segment',
-          description: 'edf54471-5266-4a52-a058-90fac2d03678 Exclusion Segment',
-          context: 'add',
-          type: 'private',
-          individualForSegment: [],
-          groupForSegment: [{ groupId: 'teacher1', type: 'teacher' }],
-          subSegments: [],
-        },
-      ]);
+    testedModule.segmentService.getSegmentByIds.withArgs(['d958bf52-7066-4594-ad8a-baf2e75324cf']).resolves([
+      {
+        id: '89246cff-c81f-4515-91f3-c033341e45b9',
+        name: 'edf54471-5266-4a52-a058-90fac2d03678 Inclusion Segment',
+        description: 'edf54471-5266-4a52-a058-90fac2d03678 Inclusion Segment',
+        context: 'add',
+        type: 'private',
+        individualForSegment: [],
+        groupForSegment: [],
+        subSegments: [],
+      },
+      {
+        id: 'd958bf52-7066-4594-ad8a-baf2e75324cf',
+        name: 'edf54471-5266-4a52-a058-90fac2d03678 Exclusion Segment',
+        description: 'edf54471-5266-4a52-a058-90fac2d03678 Exclusion Segment',
+        context: 'add',
+        type: 'private',
+        individualForSegment: [],
+        groupForSegment: [{ groupId: 'teacher1', type: 'teacher' }],
+        subSegments: [],
+      },
+    ]);
     testedModule.segmentService.getGlobalExcludeSegmentByContext.resolves({
       id: '77777777-7777-7777-7777-777777777777',
       name: 'Global Exclude',
