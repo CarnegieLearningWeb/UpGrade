@@ -62,9 +62,6 @@ export class SegmentRepository extends Repository<Segment> {
    */
   public async findOneSegmentByContextAndType(context: string, type: SEGMENT_TYPE): Promise<Segment> {
     return await this.createQueryBuilder('segment')
-      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
-      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
-      .leftJoinAndSelect('segment.subSegments', 'subSegments')
       .where('segment.context=:context', { context })
       .andWhere('segment.type=:type', { type })
       .getOne()
