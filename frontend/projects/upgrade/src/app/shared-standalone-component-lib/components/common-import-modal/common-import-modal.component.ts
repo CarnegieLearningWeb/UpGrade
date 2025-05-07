@@ -1,4 +1,4 @@
-import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, finalize, map, Observable, Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, Inject, Injector } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -104,6 +104,10 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
   importableFiles$ = new BehaviorSubject<{ fileName: string; fileContent: string | ArrayBuffer }[]>([]);
   mixedCompatibilityMessage$: Observable<string>;
 
+  // Add an isImporting flag to track when the import is in progress
+  private isImportingSubject = new BehaviorSubject<boolean>(false);
+  isImporting$ = this.isImportingSubject.asObservable();
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public config: CommonModalConfig<ImportModalParams>,
     public injector: Injector,
@@ -116,9 +120,13 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.isLoadingImport$ = this.importAdapter.getLoadingState();
 
-    this.isImportActionBtnDisabled$ = combineLatest([this.isLoadingImport$, this.importableFiles$]).pipe(
-      map(([isLoading, importableFiles]) => {
-        return isLoading || importableFiles.length === 0;
+    this.isImportActionBtnDisabled$ = combineLatest([
+      this.isLoadingImport$,
+      this.importableFiles$,
+      this.isImporting$,
+    ]).pipe(
+      map(([isLoading, importableFiles, isImporting]) => {
+        return isLoading || importableFiles.length === 0 || isImporting;
       })
     );
 
@@ -185,9 +193,15 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
 
   importFiles() {
     const filesToImport = this.importableFiles$.getValue();
+    this.isImportingSubject.next(true);
 
     const importSubscription = this.importAdapter
       .importFiles(filesToImport, this.config.params)
+      .pipe(
+        finalize(() => {
+          this.isImportingSubject.next(false);
+        })
+      )
       .subscribe((importResult) => {
         this.showNotification(importResult);
       });
