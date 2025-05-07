@@ -104,10 +104,6 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
   importableFiles$ = new BehaviorSubject<{ fileName: string; fileContent: string | ArrayBuffer }[]>([]);
   mixedCompatibilityMessage$: Observable<string>;
 
-  // Add an isImporting flag to track when the import is in progress
-  private isImportingSubject = new BehaviorSubject<boolean>(false);
-  isImporting$ = this.isImportingSubject.asObservable();
-
   constructor(
     @Inject(MAT_DIALOG_DATA) public config: CommonModalConfig<ImportModalParams>,
     public injector: Injector,
@@ -120,13 +116,9 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.isLoadingImport$ = this.importAdapter.getLoadingState();
 
-    this.isImportActionBtnDisabled$ = combineLatest([
-      this.isLoadingImport$,
-      this.importableFiles$,
-      this.isImporting$,
-    ]).pipe(
-      map(([isLoading, importableFiles, isImporting]) => {
-        return isLoading || importableFiles.length === 0 || isImporting;
+    this.isImportActionBtnDisabled$ = combineLatest([this.isLoadingImport$, this.importableFiles$]).pipe(
+      map(([isLoading, importableFiles]) => {
+        return isLoading || importableFiles.length === 0;
       })
     );
 
@@ -193,13 +185,13 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
 
   importFiles() {
     const filesToImport = this.importableFiles$.getValue();
-    this.isImportingSubject.next(true);
+    this.importAdapter.setLoadingState(true);
 
     const importSubscription = this.importAdapter
       .importFiles(filesToImport, this.config.params)
       .pipe(
         finalize(() => {
-          this.isImportingSubject.next(false);
+          this.importAdapter.setLoadingState(false);
         })
       )
       .subscribe((importResult) => {
