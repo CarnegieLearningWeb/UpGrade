@@ -1178,6 +1178,7 @@ export class FeatureFlagService {
         const featureFlagListFile = featureFlagListFiles.find((file) => file.fileName === fileStatus.fileName);
         return JSON.parse(featureFlagListFile.fileContent as string);
       });
+    const featureFlag = await this.findOne(featureFlagId, logger);
 
     const createdLists: (FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[] =
       await this.dataSource.transaction(async (transactionalEntityManager) => {
@@ -1187,7 +1188,7 @@ export class FeatureFlagService {
             ...list,
             enabled: false,
             id: featureFlagId,
-            segment: { ...list.segment, id: uuid() },
+            segment: { ...list.segment, id: uuid(), context: featureFlag.context[0] },
           };
 
           listDocs.push(listDoc);
@@ -1271,10 +1272,6 @@ export class FeatureFlagService {
     });
 
     if (!(list instanceof ImportFeatureFlagListValidator)) {
-      compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-    }
-
-    if (list?.segment?.context !== flag.context[0]) {
       compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
     }
 
