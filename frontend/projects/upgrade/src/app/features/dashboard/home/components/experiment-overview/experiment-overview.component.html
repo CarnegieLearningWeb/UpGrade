@@ -149,13 +149,17 @@
         </mat-label>
         <mat-chip-grid #tagsList class="chip-grid" aria-label="Tags" formControlName="tags">
           <mat-chip-row
-            *ngFor="let experimentTag of tags.value"
+            *ngFor="let tag of tags.value"
             [selectable]="isChipSelectable"
             [removable]="isChipRemovable"
-            (removed)="removeChip(experimentTag, 'tags')"
+            (removed)="removeChip(tag, 'tags')"
           >
-            <span class="chip-label">
-              {{ experimentTag }}
+            <span
+              class="chip-label"
+              [matTooltip]="tag.length > 16 ? tag : null"
+              matTooltipPosition="above"
+            >
+              {{ tag | truncate : 16 }}
             </span>
             <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
           </mat-chip-row>
