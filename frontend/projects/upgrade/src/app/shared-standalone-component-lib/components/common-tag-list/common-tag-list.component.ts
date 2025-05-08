@@ -28,7 +28,29 @@ export class CommonTagListComponent {
   @Input() ariaLabel = 'Tags';
   @Output() tagClick = new EventEmitter<string>();
 
+  private readonly maxVisibleTags = 2;
+  isExpanded = false;
+
   onTagClick(tag: string): void {
     this.tagClick.emit(tag);
+  }
+
+  get visibleTags(): string[] {
+    if (this.isExpanded || this.tags.length <= this.maxVisibleTags) {
+      return this.tags;
+    }
+    return this.tags.slice(0, this.maxVisibleTags);
+  }
+
+  toggleExpanded(): void {
+    this.isExpanded = !this.isExpanded;
+  }
+
+  get hiddenTagsCount(): number {
+    return this.tags.length - this.maxVisibleTags;
+  }
+
+  get shouldShowMoreChip(): boolean {
+    return !this.isExpanded && this.tags.length > this.maxVisibleTags;
   }
 }
