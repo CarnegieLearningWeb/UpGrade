@@ -1827,7 +1827,7 @@ export class ExperimentAssignmentService {
     const segmentsToFetchArray = Object.keys(segmentObj).map((expId) => segmentObj[expId].segmentIdsQueue);
     const segmentsToFetch = segmentsToFetchArray.flat();
 
-    if (depth === 5 || segmentsToFetch.length === 0) {
+    if (depth === 9 || segmentsToFetch.length === 0) {
       return [segmentObj, segmentDetails];
     }
 
@@ -1850,7 +1850,7 @@ export class ExperimentAssignmentService {
         newExcludedSegments.push(...foundSegment.subSegments.map((subSegment) => subSegment.id));
       });
 
-      if (depth < 4) {
+      if (depth < 8) {
         exp.segmentIdsQueue = [...newIncludedSegments, ...newExcludedSegments];
         exp.currentIncludedSegmentIds = [...newIncludedSegments];
         exp.currentExcludedSegmentIds = [...newExcludedSegments];
