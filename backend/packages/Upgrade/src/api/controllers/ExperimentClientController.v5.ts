@@ -289,15 +289,22 @@ export class ExperimentClientController {
     // append userDoc in logger
     request.logger.child({ userDoc: experimentUserDoc });
     request.logger.info({ message: 'Got the original user doc' });
-    const { id, group } = await this.experimentUserService.updateGroupMembership(
-      experimentUser.id,
+    const upsertResult = await this.experimentUserService.updateGroupMembership(
+      experimentUserDoc.requestedUserId,
       experimentUser.group,
       {
         logger: request.logger,
         userDoc: experimentUserDoc,
       }
     );
-    return { id, group };
+    if (!upsertResult) {
+      request.logger.error({
+        details: 'user group upsert failed',
+      });
+      throw new InternalServerError('set group membership failed');
+    }
+
+    return { id: experimentUserDoc.id, group: experimentUser.workingGroup };
   }
 
   /**
@@ -361,15 +368,22 @@ export class ExperimentClientController {
     // append userDoc in logger
     request.logger.child({ userDoc: experimentUserDoc });
     request.logger.info({ message: 'Got the original user doc' });
-    const { id, workingGroup } = await this.experimentUserService.updateWorkingGroup(
-      workingGroupParams.id,
+    const upsertResult = await this.experimentUserService.updateWorkingGroup(
+      experimentUserDoc.requestedUserId,
       workingGroupParams.workingGroup,
       {
         logger: request.logger,
         userDoc: experimentUserDoc,
       }
     );
-    return { id, workingGroup };
+    if (!upsertResult) {
+      request.logger.error({
+        details: 'user working group upsert failed',
+      });
+      throw new InternalServerError('set working group failed');
+    }
+
+    return { id: experimentUserDoc.id, workingGroup: workingGroupParams.workingGroup };
   }
 
   /**

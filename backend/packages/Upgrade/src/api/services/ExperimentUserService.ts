@@ -116,7 +116,7 @@ export class ExperimentUserService {
       );
     });
     const promiseResult = await Promise.all(promiseArray);
-    const aliasesUserIds = [];
+    const aliasesUserIds: string[] = [];
     const aliasesLinkedWithOtherUser = [];
     const otherRootUser = [];
     let alreadyLinkedAliases = [];
@@ -172,11 +172,10 @@ export class ExperimentUserService {
     }
 
     const userAliasesDocs = aliasesUserIds.map((aliasId) => {
-      const aliasUser: any = {
+      return {
         id: aliasId,
+        originalUser: userExist,
       };
-      aliasUser.originalUser = userExist;
-      return aliasUser;
     });
     alreadyLinkedAliases = alreadyLinkedAliases.map((user) => {
       const { originalUser, ...rest } = user;
@@ -187,12 +186,16 @@ export class ExperimentUserService {
 
     if (userAliasesDocs.length) {
       try {
-        let aliasesUsers = await this.userRepository.save(userAliasesDocs);
-        aliasesUsers = aliasesUsers.map((user) => {
-          const { originalUser, ...rest } = user;
-          return { ...rest, originalUser: originalUser.id };
-        });
-        aliasesToReturn = [...aliasesToReturn, ...aliasesUsers.map((alias) => alias.id)];
+        const insertResponse = await this.userRepository.upsert(userAliasesDocs, ['id']);
+        if (!insertResponse) {
+          const error = new Error(
+            `Error while inserting new aliases for user ${userId}. Aliases: ${JSON.stringify(userAliasesDocs)}`
+          );
+          (error as any).type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+        aliasesToReturn = [...aliasesToReturn, ...aliasesUserIds];
       } catch (err) {
         logger.error({
           message: `Could not insert new aliases for user ${userId}`,
@@ -218,7 +221,7 @@ export class ExperimentUserService {
     userId: string,
     workingGroup: any,
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<ExperimentUser> {
+  ): Promise<InsertResult> {
     const { logger, userDoc } = requestContext;
     const userExist = userDoc;
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
@@ -230,7 +233,7 @@ export class ExperimentUserService {
 
     // TODO check if workingGroup is the subset of group membership
     const newDocument = { ...userExist, workingGroup };
-    return this.userRepository.save(newDocument);
+    return this.userRepository.upsert(newDocument, ['id']);
   }
 
   // TODO should we check for workingGroup as a subset over here?
@@ -238,7 +241,7 @@ export class ExperimentUserService {
     userId: string,
     groupMembership: Record<string, string[]>,
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<ExperimentUser> {
+  ): Promise<InsertResult> {
     const { logger, userDoc } = requestContext;
     const userExist = userDoc;
     logger.info({
@@ -249,7 +252,7 @@ export class ExperimentUserService {
     const newDocument = { ...userExist, group: groupMembership };
 
     // update group membership
-    return this.userRepository.save(newDocument);
+    return this.userRepository.upsert(newDocument, ['id']);
   }
 
   public async getUserDoc(experimentUserId: string, logger: UpgradeLogger): Promise<RequestedExperimentUser> {
