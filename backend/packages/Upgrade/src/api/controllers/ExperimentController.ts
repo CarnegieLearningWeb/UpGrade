@@ -837,7 +837,7 @@ export class ExperimentController {
   ): Promise<ExperimentDTO> {
     let experiment = await this.experimentService.getSingleExperiment(id, request.logger);
 
-    if (SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment.assignmentAlgorithm)) {
+    if (SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment?.assignmentAlgorithm)) {
       if (!env.mooclets?.enabled) {
         throw new BadRequestError(
           'MoocletPolicyParameters are present in the experiment but Mooclet is not enabled in the environment'
