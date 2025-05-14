@@ -265,7 +265,7 @@ export class ExperimentClientController {
     // getOriginalUserDoc call for alias
     const experimentUserDoc = request.userDoc;
 
-    const upsertResult = await this.experimentUserService.updateGroupMembership(
+    const udateResult = await this.experimentUserService.updateGroupMembership(
       experimentUserDoc.requestedUserId,
       experimentUser.group,
       {
@@ -273,9 +273,9 @@ export class ExperimentClientController {
         userDoc: experimentUserDoc,
       }
     );
-    if (!upsertResult) {
+    if (!udateResult) {
       request.logger.error({
-        details: 'user group upsert failed',
+        details: 'update unexpectedly returned empty object',
       });
       throw new InternalServerError('set group membership failed');
     }
@@ -339,7 +339,7 @@ export class ExperimentClientController {
     // getOriginalUserDoc call for alias
     const experimentUserDoc = request.userDoc;
 
-    const upsertResult = await this.experimentUserService.updateWorkingGroup(
+    const updateResult = await this.experimentUserService.updateWorkingGroup(
       experimentUserDoc.requestedUserId,
       workingGroupParams.workingGroup,
       {
@@ -347,9 +347,9 @@ export class ExperimentClientController {
         userDoc: experimentUserDoc,
       }
     );
-    if (!upsertResult) {
+    if (!updateResult) {
       request.logger.error({
-        details: 'user working group upsert failed',
+        details: 'update unexpectedly returned empty object',
       });
       throw new InternalServerError('set working group failed');
     }

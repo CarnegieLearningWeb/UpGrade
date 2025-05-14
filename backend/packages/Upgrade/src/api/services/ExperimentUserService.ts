@@ -6,7 +6,7 @@ import { ExperimentUserRepository } from '../repositories/ExperimentUserReposito
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, IUserAliases, SERVER_ERROR } from 'upgrade_types';
-import { DataSource, In, InsertResult, Not } from 'typeorm';
+import { DataSource, In, InsertResult, Not, UpdateResult } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Experiment } from '../models/Experiment';
@@ -221,19 +221,22 @@ export class ExperimentUserService {
     userId: string,
     workingGroup: any,
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<InsertResult> {
+  ): Promise<UpdateResult> {
     const { logger, userDoc } = requestContext;
     const userExist = userDoc;
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
-
+    // throw error if user not defined
+    if (!userDoc) {
+      logger.error({ message: `User not found in updateWorkingGroup, userId => ${userId}`, details: workingGroup });
+      throw new Error(`User not defined in updateWorkingGroup: ${userId}`);
+    }
     // removing enrollments in case working group is changed
     if (userExist && userExist.workingGroup && workingGroup) {
       await this.removeEnrollments(userExist.id, workingGroup, userExist.workingGroup);
     }
 
     // TODO check if workingGroup is the subset of group membership
-    const newDocument = { ...userExist, workingGroup };
-    return this.userRepository.upsert(newDocument, ['id']);
+    return this.userRepository.update(userId, { workingGroup });
   }
 
   // TODO should we check for workingGroup as a subset over here?
@@ -241,18 +244,21 @@ export class ExperimentUserService {
     userId: string,
     groupMembership: Record<string, string[]>,
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<InsertResult> {
+  ): Promise<UpdateResult> {
     const { logger, userDoc } = requestContext;
-    const userExist = userDoc;
     logger.info({
       message: `Set Group Membership for userId: ${userId} with Group membership details as below:`,
       details: groupMembership,
     });
-
-    const newDocument = { ...userExist, group: groupMembership };
-
+    if (!userDoc) {
+      logger.error({
+        message: `User not found in updateGroupMembership, userId => ${userId}`,
+        details: groupMembership,
+      });
+      throw new Error(`User not defined in updateGroupMembership: ${userId}`);
+    }
     // update group membership
-    return this.userRepository.upsert(newDocument, ['id']);
+    return this.userRepository.update(userId, { group: groupMembership });
   }
 
   public async getUserDoc(experimentUserId: string, logger: UpgradeLogger): Promise<RequestedExperimentUser> {
