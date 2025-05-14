@@ -50,6 +50,7 @@ export class SegmentRootSectionCardComponent {
   searchKey$ = this.segmentsService.selectSearchKey$;
   selectRootTableState$ = this.segmentsService.selectRootTableState$;
   isSearchActive$: Observable<boolean> = this.searchString$.pipe(map((searchString) => !!searchString));
+  expandedTagsMap = new Map<string, boolean>();
 
   segmentFilterOptions = [
     SEGMENT_SEARCH_KEY.ALL,
@@ -93,7 +94,7 @@ export class SegmentRootSectionCardComponent {
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<SEGMENT_SEARCH_KEY>) {
-    this.segmentsService.setSearchString(params.searchString.trim());
+    this.segmentsService.setSearchString(params.searchString?.trim());
     this.segmentsService.setSearchKey(params.searchKey as SEGMENT_SEARCH_KEY);
     this.segmentsService.fetchSegmentsPaginated(true);
   }
@@ -112,5 +113,17 @@ export class SegmentRootSectionCardComponent {
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
     this.isSectionCardExpanded = isSectionCardExpanded;
+  }
+
+  toggleTagExpansion(segmentId: string): void {
+    this.expandedTagsMap.set(segmentId, !(this.expandedTagsMap.get(segmentId) || false));
+  }
+
+  isTagsExpanded(segmentId: string): boolean {
+    return this.expandedTagsMap.get(segmentId) || false;
+  }
+
+  onTagsExpanded(segmentId: string, expanded: boolean): void {
+    this.expandedTagsMap.set(segmentId, expanded);
   }
 }

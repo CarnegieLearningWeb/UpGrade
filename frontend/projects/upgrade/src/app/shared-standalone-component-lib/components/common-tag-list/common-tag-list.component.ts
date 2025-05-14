@@ -12,6 +12,8 @@ import { CommonTagComponent } from '../common-tag/common-tag.component';
  * ```html
  * <app-common-tag-list
  *   [tags]="tags"
+ *   [isExpanded]="isTagsExpanded(id)"
+ *   (expandedChange)="toggleTagExpansion(id)"
  *   (tagClick)="handleTagClick($event)">
  * </app-common-tag-list>
  * ```
@@ -25,10 +27,33 @@ import { CommonTagComponent } from '../common-tag/common-tag.component';
 })
 export class CommonTagListComponent {
   @Input() tags: string[] = [];
-  @Input() ariaLabel = 'Tags';
+  @Input() isExpanded = false;
+  @Output() expandedChange = new EventEmitter<boolean>();
   @Output() tagClick = new EventEmitter<string>();
+
+  private readonly maxVisibleTags = 2;
 
   onTagClick(tag: string): void {
     this.tagClick.emit(tag);
+  }
+
+  get visibleTags(): string[] {
+    if (this.isExpanded || this.tags.length <= this.maxVisibleTags) {
+      return this.tags;
+    }
+    return this.tags.slice(0, this.maxVisibleTags);
+  }
+
+  toggleExpanded(): void {
+    this.isExpanded = !this.isExpanded;
+    this.expandedChange.emit(this.isExpanded);
+  }
+
+  get hiddenTagsCount(): number {
+    return this.tags.length - this.maxVisibleTags;
+  }
+
+  get shouldShowMoreChip(): boolean {
+    return !this.isExpanded && this.tags.length > this.maxVisibleTags;
   }
 }

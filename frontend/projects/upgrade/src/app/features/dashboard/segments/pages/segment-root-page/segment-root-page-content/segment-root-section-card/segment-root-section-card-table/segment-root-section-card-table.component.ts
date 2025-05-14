@@ -1,6 +1,15 @@
 import { Observable } from 'rxjs';
 
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { AsyncPipe, NgIf, NgFor } from '@angular/common';
@@ -41,6 +50,8 @@ export class SegmentRootSectionCardTableComponent implements OnInit {
   @Input() dataSource$: MatTableDataSource<Segment>;
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
+  @Input() expandedTagsMap: Map<string, boolean>;
+  @Output() tagsExpanded = new EventEmitter<{ segmentId: string; expanded: boolean }>();
   segmentSortKey$ = this.segmentsService.selectSegmentSortKey$;
   segmentSortAs$ = this.segmentsService.selectSegmentSortAs$;
 
@@ -150,5 +161,13 @@ export class SegmentRootSectionCardTableComponent implements OnInit {
       );
     }
     this.segmentsService.fetchSegmentsPaginated(true);
+  }
+
+  isTagsExpanded(segmentId: string): boolean {
+    return this.expandedTagsMap?.get(segmentId) || false;
+  }
+
+  onTagExpandedChange(segmentId: string, expanded: boolean): void {
+    this.tagsExpanded.emit({ segmentId, expanded });
   }
 }

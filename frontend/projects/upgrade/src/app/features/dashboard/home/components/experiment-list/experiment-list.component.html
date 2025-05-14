@@ -262,8 +262,12 @@
                 *ngIf="tagIndex < 2; else moreTagsTemplate"
                 (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
               >
-                <span class="chip-label">
-                  {{ tag }}
+                <span
+                  class="chip-label"
+                  [matTooltip]="tag.length > 16 ? tag : null"
+                  matTooltipPosition="above"
+                >
+                  {{ tag | truncate : 16 }}
                 </span>
               </mat-chip>
               <ng-template #moreTagsTemplate>
@@ -271,8 +275,12 @@
                   *ngIf="isAllChipsVisible(experiment.id, 'tagsVisibility')"
                   (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
                 >
-                  <span class="chip-label">
-                    {{ tag }}
+                  <span
+                    class="chip-label"
+                    [matTooltip]="tag.length > 16 ? tag : null"
+                    matTooltipPosition="above"
+                  >
+                    {{ tag | truncate : 16 }}
                   </span>
                 </mat-chip>
               </ng-template>
