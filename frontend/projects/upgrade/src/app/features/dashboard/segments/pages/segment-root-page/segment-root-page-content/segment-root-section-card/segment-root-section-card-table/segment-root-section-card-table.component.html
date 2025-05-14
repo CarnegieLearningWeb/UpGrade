@@ -80,7 +80,8 @@
       <td mat-cell *matCellDef="let segment" class="tags-column ft-14-400 dense-2">
         <app-common-tag-list
           [tags]="segment.tags"
-          ariaLabel="Segment tags"
+          [isExpanded]="isTagsExpanded(segment.id)"
+          (expandedChange)="onTagExpandedChange(segment.id, $event)"
           (tagClick)="filterSegmentByChips($event, SegmentSearchKey.TAG)"
         ></app-common-tag-list>
       </td>
