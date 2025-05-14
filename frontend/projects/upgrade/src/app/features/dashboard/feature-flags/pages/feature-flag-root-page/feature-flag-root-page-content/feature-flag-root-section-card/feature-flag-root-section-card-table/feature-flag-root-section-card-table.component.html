@@ -81,7 +81,8 @@
       <td mat-cell *matCellDef="let flag" class="tags-column ft-14-400 dense-2">
         <app-common-tag-list
           [tags]="flag.tags"
-          ariaLabel="Flag tags"
+          [isExpanded]="isTagsExpanded(flag.id)"
+          (expandedChange)="onTagExpandedChange(flag.id, $event)"
           (tagClick)="filterFeatureFlagByChips($event, FeatureFlagSearchKey.TAG)"
         ></app-common-tag-list>
       </td>

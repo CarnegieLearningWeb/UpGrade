@@ -54,6 +54,7 @@ export class FeatureFlagRootSectionCardComponent {
   searchParams$ = this.featureFlagService.searchParams$;
   selectRootTableState$ = this.featureFlagService.selectRootTableState$;
   isSearchActive$: Observable<boolean> = this.searchString$.pipe(map((searchString) => !!searchString));
+  expandedTagsMap = new Map<string, boolean>();
 
   featureFlagFilterOption = [
     FLAG_SEARCH_KEY.ALL,
@@ -99,7 +100,7 @@ export class FeatureFlagRootSectionCardComponent {
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<FLAG_SEARCH_KEY>) {
-    this.featureFlagService.setSearchString(params.searchString.trim());
+    this.featureFlagService.setSearchString(params.searchString?.trim());
     this.featureFlagService.setSearchKey(params.searchKey as FLAG_SEARCH_KEY);
   }
 
@@ -115,5 +116,17 @@ export class FeatureFlagRootSectionCardComponent {
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean) {
     this.isSectionCardExpanded = isSectionCardExpanded;
+  }
+
+  toggleTagExpansion(flagId: string): void {
+    this.expandedTagsMap.set(flagId, !(this.expandedTagsMap.get(flagId) || false));
+  }
+
+  isTagsExpanded(flagId: string): boolean {
+    return this.expandedTagsMap.get(flagId) || false;
+  }
+
+  onTagsExpanded(flagId: string, expanded: boolean): void {
+    this.expandedTagsMap.set(flagId, expanded);
   }
 }

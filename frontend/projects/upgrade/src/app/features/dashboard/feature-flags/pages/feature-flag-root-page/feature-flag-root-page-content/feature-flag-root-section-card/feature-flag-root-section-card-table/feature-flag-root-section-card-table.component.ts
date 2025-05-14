@@ -1,6 +1,15 @@
 import { Observable } from 'rxjs';
 
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 
 import {
   FLAG_ROOT_COLUMN_NAMES,
@@ -40,6 +49,8 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   @Input() dataSource$: MatTableDataSource<FeatureFlag>;
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
+  @Input() expandedTagsMap: Map<string, boolean>;
+  @Output() tagsExpanded = new EventEmitter<{ flagId: string; expanded: boolean }>();
   flagSortKey$ = this.featureFlagsService.sortKey$;
   flagSortAs$ = this.featureFlagsService.sortAs$;
   warningStatusForAllFlags$ = this.featureFlagsService.warningStatusForAllFlags$;
@@ -153,5 +164,13 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
         (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
     }
+  }
+
+  isTagsExpanded(flagId: string): boolean {
+    return this.expandedTagsMap?.get(flagId) || false;
+  }
+
+  onTagExpandedChange(flagId: string, expanded: boolean): void {
+    this.tagsExpanded.emit({ flagId, expanded });
   }
 }

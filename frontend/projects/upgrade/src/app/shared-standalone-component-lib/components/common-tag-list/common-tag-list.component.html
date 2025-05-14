@@ -1,4 +1,4 @@
-<mat-chip-listbox [attr.aria-label]="ariaLabel" *ngIf="tags && tags.length > 0">
+<mat-chip-listbox aria-label="tags" *ngIf="tags && tags.length > 0">
   <app-common-tag
     *ngFor="let tag of visibleTags"
     [tag]="tag"
