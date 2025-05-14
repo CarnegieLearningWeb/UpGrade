@@ -19,7 +19,7 @@
         <a
           [routerLink]="['/segments', 'detail', segment.id]"
           [matTooltip]="segment.name.length > 24 ? segment.name : null"
-          matTooltipPosition="above"
+          matTooltipPosition="right"
           class="segment-name"
         >
           {{ segment.name | truncate : 24 }}
@@ -27,7 +27,7 @@
         <br />
         <span
           [matTooltip]="segment.description?.length > 35 ? segment.description : null"
-          matTooltipPosition="above"
+          matTooltipPosition="right"
           class="segment-description ft-10-400"
         >
           {{ segment.description | truncate : 35 }}

@@ -110,7 +110,7 @@
               [routerLink]="['/home', 'detail', experiment.id]"
               [matTooltip]="experiment.name"
               class="experiment-name"
-              matTooltipPosition="above"
+              matTooltipPosition="right"
             >
               {{ experiment.name | truncate : 30 }}
             </a>
@@ -126,7 +126,7 @@
             <span
               class="experiment-description ft-10-400"
               [matTooltip]="experiment.description"
-              matTooltipPosition="above"
+              matTooltipPosition="right"
             >
               {{ experiment.description | truncate : 35 }}
             </span>

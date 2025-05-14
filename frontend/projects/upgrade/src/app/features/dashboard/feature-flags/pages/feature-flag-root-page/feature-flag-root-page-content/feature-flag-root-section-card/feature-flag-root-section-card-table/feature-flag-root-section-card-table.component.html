@@ -19,7 +19,7 @@
         <a
           [routerLink]="['/featureflags', 'detail', flag.id]"
           [matTooltip]="flag.name.length > 24 ? flag.name : null"
-          matTooltipPosition="above"
+          matTooltipPosition="right"
           class="flag-name"
         >
           {{ flag.name | truncate : 24 }}
@@ -27,7 +27,7 @@
         <br />
         <span
           [matTooltip]="flag.description?.length > 35 ? flag.description : null"
-          matTooltipPosition="above"
+          matTooltipPosition="right"
           class="flag-description ft-10-400"
         >
           {{ flag.description | truncate : 35 }}
