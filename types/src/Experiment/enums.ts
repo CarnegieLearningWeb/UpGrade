@@ -75,6 +75,7 @@ export enum SERVER_ERROR {
   DUPLICATE_KEY = 'Feature Flag with same key already exists for this app-context',
   MISSING_HEADER_USER_ID = 'Missing `User-Id` header',
   SEGMENT_DUPLICATE_NAME = 'Segment with same name already exists for this app-context, please edit name to be unique.',
+  INVALID_APP_CONTEXT = 'Invalid app context',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {
