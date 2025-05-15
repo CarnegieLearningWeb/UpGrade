@@ -12,8 +12,8 @@ describe('ExperimentStatePipe', () => {
     expect(segmentStatusPipe.transform(SEGMENT_STATUS.UNUSED, SegmentStatusPipeType.COLOR)).toBe('#D8D8D8');
   });
 
-  it('should return #FD9099 color for Global Status', () => {
-    expect(segmentStatusPipe.transform(SEGMENT_STATUS.GLOBAL, SegmentStatusPipeType.COLOR)).toBe('#FD9099');
+  it('should return #FD9099 color for Excluded Status', () => {
+    expect(segmentStatusPipe.transform(SEGMENT_STATUS.EXCLUDED, SegmentStatusPipeType.COLOR)).toBe('#FD9099');
   });
 
   it('should return #0CDDA5 color for Locked Status', () => {

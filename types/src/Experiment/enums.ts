@@ -205,7 +205,7 @@ export enum SEGMENT_TYPE {
 export enum SEGMENT_STATUS {
   USED = 'Used',
   UNUSED = 'Unused',
-  GLOBAL = 'Global',
+  EXCLUDED = 'Excluded',
   LOCKED = 'Locked',
   UNLOCKED = 'Unlocked',
 }
@@ -281,7 +281,7 @@ export enum CACHE_PREFIX {
 }
 
 export enum STATUS_INDICATOR_CHIP_TYPE {
-  GLOBAL = 'global',
+  EXCLUDED = 'excluded',
   USED = 'used',
   UNUSED = 'unused',
   ENABLED = 'enabled',
