@@ -273,7 +273,7 @@ export class SegmentController {
     return globalExcludeSegments.map((segment) => {
       return {
         ...segment,
-        status: SEGMENT_STATUS.GLOBAL,
+        status: SEGMENT_STATUS.EXCLUDED,
       };
     });
   }

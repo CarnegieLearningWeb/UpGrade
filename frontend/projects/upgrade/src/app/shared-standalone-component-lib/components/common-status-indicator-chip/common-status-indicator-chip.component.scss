@@ -57,10 +57,10 @@
       background-color: var(--status-archived-alpha);
     }
 
-    &.global {
-      --mdc-chip-label-text-color: var(--status-global);
-      border: 1px solid var(--status-global);
-      background-color: var(--status-global-alpha);
+    &.excluded {
+      --mdc-chip-label-text-color: var(--status-excluded);
+      border: 1px solid var(--status-excluded);
+      background-color: var(--status-excluded-alpha);
     }
 
     &.unused {
