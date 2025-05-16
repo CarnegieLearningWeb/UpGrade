@@ -336,7 +336,7 @@ export class SegmentService {
 
       const segmentsDataWithStatus = segmentsData.map((segment) => {
         if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-          return { ...segment, status: SEGMENT_STATUS.GLOBAL };
+          return { ...segment, status: SEGMENT_STATUS.EXCLUDED };
         } else if (segmentsUsedList.has(segment.id)) {
           return { ...segment, status: SEGMENT_STATUS.USED };
         } else {

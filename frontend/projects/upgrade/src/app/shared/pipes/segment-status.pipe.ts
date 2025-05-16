@@ -21,8 +21,8 @@ export class SegmentStatusPipe implements PipeTransform {
         return type === SegmentStatusPipeType.TEXT ? 'Used (Locked)' : '#0CDDA5';
       case SEGMENT_STATUS.UNLOCKED:
         return type === SegmentStatusPipeType.TEXT ? 'Unlocked' : '#829CF8';
-      case SEGMENT_STATUS.GLOBAL:
-        return type === SegmentStatusPipeType.TEXT ? 'Global' : '#FD9099';
+      case SEGMENT_STATUS.EXCLUDED:
+        return type === SegmentStatusPipeType.TEXT ? 'Excluded' : '#FD9099';
     }
   }
 }
