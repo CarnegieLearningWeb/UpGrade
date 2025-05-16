@@ -975,6 +975,11 @@ export class ExperimentController {
   ): Promise<ExperimentDTO> {
     request.logger.child({ user: currentUser });
 
+    const validationError = this.experimentService.validateExperimentContext(experiment);
+    if (validationError) {
+      throw new BadRequestError(validationError);
+    }
+
     if ('moocletPolicyParameters' in experiment) {
       if (!env.mooclets?.enabled) {
         throw new BadRequestError(
@@ -1186,6 +1191,11 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
     request.logger.child({ user: currentUser });
+
+    const validationError = this.experimentService.validateExperimentContext(experiment);
+    if (validationError) {
+      throw new BadRequestError(validationError);
+    }
 
     // TODO: there is a story to refactor these duplicate warnings, adding here same way as others for now
     if ('moocletPolicyParameters' in experiment) {
