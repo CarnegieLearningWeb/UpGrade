@@ -443,9 +443,9 @@
             <span class="ft-16-600 experiment-chips-title">{{ 'global.tags.text' | translate }}</span>
             <mat-chip-listbox class="dense-2" *ngIf="experiment.tags?.length">
               <ng-container *ngFor="let tag of experiment.tags">
-                <mat-chip>
-                  <span class="chip-label" (click)="searchExperiment(ExperimentSearchKey.TAG, tag)">
-                    {{ tag }}
+                <mat-chip (click)="searchExperiment(ExperimentSearchKey.TAG, tag)">
+                  <span class="chip-label" [matTooltip]="tag.length > 16 ? tag : null" matTooltipPosition="above">
+                    {{ tag | truncate : 16 }}
                   </span>
                 </mat-chip>
               </ng-container>

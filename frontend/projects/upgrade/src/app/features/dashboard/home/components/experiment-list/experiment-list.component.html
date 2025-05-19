@@ -110,7 +110,7 @@
               [routerLink]="['/home', 'detail', experiment.id]"
               [matTooltip]="experiment.name"
               class="experiment-name"
-              matTooltipPosition="above"
+              matTooltipPosition="right"
             >
               {{ experiment.name | truncate : 30 }}
             </a>
@@ -126,7 +126,7 @@
             <span
               class="experiment-description ft-10-400"
               [matTooltip]="experiment.description"
-              matTooltipPosition="above"
+              matTooltipPosition="right"
             >
               {{ experiment.description | truncate : 35 }}
             </span>
@@ -262,8 +262,8 @@
                 *ngIf="tagIndex < 2; else moreTagsTemplate"
                 (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
               >
-                <span class="chip-label">
-                  {{ tag }}
+                <span class="chip-label" [matTooltip]="tag.length > 16 ? tag : null" matTooltipPosition="above">
+                  {{ tag | truncate : 16 }}
                 </span>
               </mat-chip>
               <ng-template #moreTagsTemplate>
@@ -271,8 +271,8 @@
                   *ngIf="isAllChipsVisible(experiment.id, 'tagsVisibility')"
                   (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
                 >
-                  <span class="chip-label">
-                    {{ tag }}
+                  <span class="chip-label" [matTooltip]="tag.length > 16 ? tag : null" matTooltipPosition="above">
+                    {{ tag | truncate : 16 }}
                   </span>
                 </mat-chip>
               </ng-template>

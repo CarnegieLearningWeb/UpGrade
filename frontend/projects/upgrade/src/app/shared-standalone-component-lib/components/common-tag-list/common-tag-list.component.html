@@ -1,7 +1,6 @@
-<mat-chip-listbox [attr.aria-label]="ariaLabel">
-  <app-common-tag
-    *ngFor="let tag of tags"
-    [tag]="tag"
-    (tagClick)="onTagClick($event)">
-  </app-common-tag>
+<mat-chip-listbox aria-label="tags" *ngIf="tags && tags.length > 0">
+  <app-common-tag *ngFor="let tag of visibleTags" [tag]="tag" (tagClick)="onTagClick($event)"> </app-common-tag>
+  <mat-chip *ngIf="shouldShowMoreChip" (click)="toggleExpanded()">
+    <span class="chip-label">+{{ hiddenTagsCount }}</span>
+  </mat-chip>
 </mat-chip-listbox>

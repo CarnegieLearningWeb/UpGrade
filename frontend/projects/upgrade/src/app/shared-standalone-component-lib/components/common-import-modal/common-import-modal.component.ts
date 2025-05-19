@@ -1,4 +1,4 @@
-import { BehaviorSubject, combineLatest, map, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, finalize, map, Observable, Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, Inject, Injector } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -185,9 +185,15 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
 
   importFiles() {
     const filesToImport = this.importableFiles$.getValue();
+    this.importAdapter.setLoadingState(true);
 
     const importSubscription = this.importAdapter
       .importFiles(filesToImport, this.config.params)
+      .pipe(
+        finalize(() => {
+          this.importAdapter.setLoadingState(false);
+        })
+      )
       .subscribe((importResult) => {
         this.showNotification(importResult);
       });

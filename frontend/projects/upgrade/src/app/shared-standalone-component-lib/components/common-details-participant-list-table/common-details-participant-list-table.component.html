@@ -22,15 +22,7 @@
         {{ PARTICIPANT_LIST_TRANSLATION_KEYS.VALUES | translate }}
       </th>
       <td mat-cell *matCellDef="let rowData" class="values-column ft-14-400">
-        <ng-container *ngIf="rowData.segment">
-          {{
-            (rowData.listType?.toLowerCase() === memberTypes.INDIVIDUAL.toLowerCase()
-              ? rowData.segment.individualForSegment?.length
-              : rowData.listType?.toLowerCase() === memberTypes.SEGMENT.toLowerCase()
-              ? rowData.segment.subSegments?.length
-              : rowData.segment.groupForSegment?.length) + ' Values'
-          }}
-        </ng-container>
+        <ng-container *ngIf="rowData?.segment"> {{ getValuesCount(rowData) }} Values </ng-container>
       </td>
     </ng-container>
 

@@ -35,6 +35,8 @@
           [dataSource$]="dataSource$ | async"
           [isLoading$]="isLoadingFeatureFlags$"
           [isSearchActive$]="isSearchActive$"
+          [expandedTagsMap]="expandedTagsMap"
+          (tagsExpanded)="onTagsExpanded($event.flagId, $event.expanded)"
         >
         </app-feature-flag-root-section-card-table>
       </div>

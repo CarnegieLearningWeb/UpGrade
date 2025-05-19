@@ -75,6 +75,7 @@ export enum SERVER_ERROR {
   DUPLICATE_KEY = 'Feature Flag with same key already exists for this app-context',
   MISSING_HEADER_USER_ID = 'Missing `User-Id` header',
   SEGMENT_DUPLICATE_NAME = 'Segment with same name already exists for this app-context, please edit name to be unique.',
+  INVALID_APP_CONTEXT = 'Invalid app context',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {
@@ -205,7 +206,7 @@ export enum SEGMENT_TYPE {
 export enum SEGMENT_STATUS {
   USED = 'Used',
   UNUSED = 'Unused',
-  GLOBAL = 'Global',
+  EXCLUDED = 'Excluded',
   LOCKED = 'Locked',
   UNLOCKED = 'Unlocked',
 }
@@ -281,7 +282,7 @@ export enum CACHE_PREFIX {
 }
 
 export enum STATUS_INDICATOR_CHIP_TYPE {
-  GLOBAL = 'global',
+  EXCLUDED = 'excluded',
   USED = 'used',
   UNUSED = 'unused',
   ENABLED = 'enabled',

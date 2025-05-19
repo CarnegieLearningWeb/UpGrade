@@ -96,7 +96,8 @@ export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDes
             label: 'segments.details.menu-button.delete-segment.text',
             action: SEGMENT_DETAILS_PAGE_ACTIONS.DELETE,
             disabled:
-              !permissions?.segments?.delete || [SEGMENT_STATUS.USED, SEGMENT_STATUS.GLOBAL].includes(segment?.status),
+              !permissions?.segments?.delete ||
+              [SEGMENT_STATUS.USED, SEGMENT_STATUS.EXCLUDED].includes(segment?.status),
           },
         ];
       })
