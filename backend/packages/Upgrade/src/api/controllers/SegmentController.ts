@@ -1,4 +1,15 @@
-import { JsonController, Get, Delete, Authorized, Post, Req, Body, QueryParams, Params } from 'routing-controllers';
+import {
+  JsonController,
+  Get,
+  Delete,
+  Authorized,
+  Post,
+  Req,
+  Body,
+  QueryParams,
+  Params,
+  BadRequestError,
+} from 'routing-controllers';
 import { SegmentService, SegmentWithStatus } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
 import { AppRequest, PaginationResponse } from '../../types';
@@ -478,6 +489,11 @@ export class SegmentController {
     @Body({ validate: true }) segment: SegmentInputValidator,
     @Req() request: AppRequest
   ): Promise<Segment> {
+    const contextValidationError = this.segmentService.validateSegmentContext(segment);
+    if (contextValidationError) {
+      throw new BadRequestError(contextValidationError);
+    }
+
     return this.segmentService.upsertSegment(segment, request.logger);
   }
 
