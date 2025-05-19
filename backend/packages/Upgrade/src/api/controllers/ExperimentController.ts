@@ -975,9 +975,9 @@ export class ExperimentController {
   ): Promise<ExperimentDTO> {
     request.logger.child({ user: currentUser });
 
-    const validationError = this.experimentService.validateExperimentContext(experiment);
-    if (validationError) {
-      throw new BadRequestError(validationError);
+    const contextValidationError = this.experimentService.validateExperimentContext(experiment);
+    if (contextValidationError) {
+      throw new BadRequestError(contextValidationError);
     }
 
     if ('moocletPolicyParameters' in experiment) {
@@ -1192,9 +1192,9 @@ export class ExperimentController {
   ): Promise<ExperimentDTO> {
     request.logger.child({ user: currentUser });
 
-    const validationError = this.experimentService.validateExperimentContext(experiment);
-    if (validationError) {
-      throw new BadRequestError(validationError);
+    const contextValidationError = this.experimentService.validateExperimentContext(experiment);
+    if (contextValidationError) {
+      throw new BadRequestError(contextValidationError);
     }
 
     // TODO: there is a story to refactor these duplicate warnings, adding here same way as others for now

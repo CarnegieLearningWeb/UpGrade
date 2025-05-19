@@ -11,6 +11,7 @@ import {
   Patch,
   Res,
   CurrentUser,
+  BadRequestError,
 } from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -314,6 +315,11 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
+    const contextValidationError = this.featureFlagService.validateFeatureFlagContext(flag);
+    if (contextValidationError) {
+      throw new BadRequestError(contextValidationError);
+    }
+
     return this.featureFlagService.create(flag, currentUser, request.logger);
   }
 
@@ -462,6 +468,11 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
+    const contextValidationError = this.featureFlagService.validateFeatureFlagContext(flag);
+    if (contextValidationError) {
+      throw new BadRequestError(contextValidationError);
+    }
+
     return this.featureFlagService.update({ ...flag, id }, currentUser, request.logger);
   }
 
