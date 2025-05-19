@@ -200,6 +200,8 @@ Resources:
               Value: '{{resolve:ssm:UPGRADE_USE_NEW_RELIC}}'  
             - Name: IS_ECS
               Value: 'true'
+            - Name: GOOGLE_AUTH_TOKEN_REQUIRED
+              Value: 'true'
             - Name: CONTEXT_METADATA
               Value: '{{resolve:ssm:UPGRADE_CONTEXT_METADATA}}'
             - Name: METRICS
