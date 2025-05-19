@@ -537,16 +537,6 @@ export class SegmentService {
     return validatedLists.importErrors;
   }
 
-  public validateSegmentContext(segment: { name: string; context: string }): string | null {
-    const contextMetadata = env.initialization.contextMetadata;
-
-    if (!contextMetadata[segment.context]) {
-      return `The app context "${segment.context}" is not defined in CONTEXT_METADATA.`;
-    }
-
-    return null;
-  }
-
   public async checkSegmentsValidity(fileData: SegmentFile[], listImport = false): Promise<SegmentValidationObj> {
     const importFileErrors: SegmentImportError[] = [];
     const segments = fileData.filter((segment) => path.extname(segment.fileName) === '.json');
@@ -690,13 +680,6 @@ export class SegmentService {
     const collectErrors = async (segment: SegmentInputValidator, contexts: string[], isList: boolean) => {
       let errorMessage = '';
       let compatibilityType = IMPORT_COMPATIBILITY_TYPE.COMPATIBLE;
-
-      const contextValidationError = this.validateSegmentContext(segment);
-      if (contextValidationError) {
-        errorMessage += contextValidationError;
-        compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-      }
-
       let invalidSubSegments = '';
       segment.subSegmentIds.forEach((subSegmentId) => {
         const subSegment = allSubSegmentsData
