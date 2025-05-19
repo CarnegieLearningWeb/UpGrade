@@ -1594,10 +1594,6 @@ export class ExperimentService {
   }
 
   public validateExperimentContext(experiment: ExperimentDTO): string | null {
-    if (!experiment.context || !Array.isArray(experiment.context) || experiment.context.length === 0) {
-      return `The experiment "${experiment.name}" requires a valid app context.`;
-    }
-
     const experimentContext = experiment.context[0];
     const contextMetadata = env.initialization.contextMetadata;
 

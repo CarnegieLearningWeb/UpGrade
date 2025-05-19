@@ -1034,10 +1034,6 @@ export class FeatureFlagService {
   }
 
   public validateFeatureFlagContext(flag: { name: string; context: string[] }): string | null {
-    if (!flag.context || !Array.isArray(flag.context) || flag.context.length === 0) {
-      return `The feature flag "${flag.name}" requires a valid app context.`;
-    }
-
     const flagContext = flag.context[0];
     const contextMetadata = env.initialization.contextMetadata;
 
