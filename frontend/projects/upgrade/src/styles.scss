@@ -451,6 +451,8 @@ button[mat-icon-button] {
 }
 
 .mat-mdc-tab-group {
+  flex-grow: inherit;
+
   .mat-mdc-tab-header {
     border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 
@@ -486,6 +488,9 @@ button[mat-icon-button] {
         margin-bottom: -20px;
       }
     }
+  }
+  .mat-mdc-tab-body-wrapper {
+    flex-grow: inherit;
   }
 
   &.new-tab-group {
