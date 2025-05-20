@@ -837,6 +837,13 @@ export class ExperimentAssignmentService {
     // Fetch the global exclude segment for the context
     const globalExcludeSegment = await this.segmentService.getGlobalExcludeSegmentByContext(context);
 
+    if (!globalExcludeSegment) {
+      const error = new Error(`Invalid app context: ${context}`);
+      (error as any).type = SERVER_ERROR.INVALID_APP_CONTEXT;
+      (error as any).httpCode = 400;
+      throw error;
+    }
+
     const excludeData = await this.resolveSegment([globalExcludeSegment.id]);
     //users and groups excluded from GlobalExclude segment
     const userExcluded = excludeData.users.find((userId) => userId === experimentUser.id);
