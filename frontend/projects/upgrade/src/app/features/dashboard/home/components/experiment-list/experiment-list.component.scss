@@ -92,7 +92,7 @@ $experiment-state-light-color: #8f9bb3;
         width: 9%;
       }
 
-      &.cdk-column-createdAt {
+      &.cdk-column-updatedAt {
         width: 13%;
       }
 
@@ -106,7 +106,7 @@ $experiment-state-light-color: #8f9bb3;
     .mat-mdc-header-cell {
       &.cdk-column-state,
       &.cdk-column-context,
-      &.cdk-column-createdAt {
+      &.cdk-column-updatedAt {
         padding-left: 5px;
       }
     }

@@ -65,7 +65,7 @@
                 </span>
               </div>
               <span class="experiment-schedule ft-10-400" *ngIf="element.experimentState === ExperimentState.SCHEDULED">
-                {{ '(' + (experiment.startOn | date : 'MMM d, y h:mm a') + ')' }}
+                {{ '(' + (experiment.startOn | date : 'MMM d, y, h:mm a') + ')' }}
               </span>
             </mat-cell>
           </ng-container>

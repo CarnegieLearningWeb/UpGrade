@@ -57,25 +57,16 @@
 
       <div class="experiment-overview">
         <span class="ft-32-700 experiment-overview-dates">
-          <span class="ft-14-700 experiment-overview-create-date">
+          <span class="ft-14-700 experiment-overview-created-date">
             {{
-              ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | formatDate : 'short date')
+              ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | date : 'MMM d, y')
             }}
           </span>
-          <span
-            class="ft-14-700 experiment-overview-last-update-date"
-            *ngIf="experiment.versionNumber === 1; else displayUpdatedAt"
-          >
-            {{ ('home.view-experiment.last-updated-on.text' | translate) + ' -' }}
+          <span class="ft-14-700 experiment-overview-updated-date">
+            {{
+              ('home.view-experiment.updated-at.text' | translate) + (experiment.updatedAt | date : 'MMM d, y, h:mm a')
+            }}
           </span>
-          <ng-template #displayUpdatedAt>
-            <span class="ft-14-700 experiment-overview-last-update-date">
-              {{
-                ('home.view-experiment.last-updated-on.text' | translate) +
-                  (experiment.updatedAt | formatDate : 'short date')
-              }}
-            </span>
-          </ng-template>
         </span>
 
         <!-- <div class="action-buttons">
@@ -142,7 +133,7 @@
                 <div class="section-data-schedule-date">
                   <ng-container *ngIf="experiment.state === ExperimentState.SCHEDULED && experiment.startOn !== null">
                     <span class="ft-12-600">
-                      {{ '(' + (experiment.startOn | date : 'MMM d, y h:mm a') + ')' }}
+                      {{ '(' + (experiment.startOn | date : 'MMM d, y, h:mm a') + ')' }}
                     </span>
                   </ng-container>
                 </div>
