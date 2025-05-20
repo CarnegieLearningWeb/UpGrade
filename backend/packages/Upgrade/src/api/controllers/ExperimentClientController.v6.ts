@@ -265,7 +265,7 @@ export class ExperimentClientController {
     // getOriginalUserDoc call for alias
     const experimentUserDoc = request.userDoc;
 
-    const udateResult = await this.experimentUserService.updateGroupMembership(
+    const updateResult = await this.experimentUserService.updateGroupMembership(
       experimentUserDoc.requestedUserId,
       experimentUser.group,
       {
@@ -273,14 +273,14 @@ export class ExperimentClientController {
         userDoc: experimentUserDoc,
       }
     );
-    if (!udateResult) {
+    if (!updateResult) {
       request.logger.error({
         details: 'update unexpectedly returned empty object',
       });
       throw new InternalServerError('set group membership failed');
     }
 
-    return { id: experimentUserDoc.id, group: experimentUser.workingGroup };
+    return { id: experimentUserDoc.id, group: experimentUser.group };
   }
 
   /**
