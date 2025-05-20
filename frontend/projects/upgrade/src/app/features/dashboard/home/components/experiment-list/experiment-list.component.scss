@@ -85,7 +85,7 @@ $experiment-state-light-color: #8f9bb3;
       }
 
       &.cdk-column-postExperimentRule {
-        width: 16%;
+        width: 13%;
       }
 
       &.cdk-column-enrollment {
@@ -93,13 +93,13 @@ $experiment-state-light-color: #8f9bb3;
       }
 
       &.cdk-column-updatedAt {
-        width: 13%;
+        width: 15%;
       }
 
       &.cdk-column-context,
       &.cdk-column-tags,
       &.cdk-column-state {
-        width: 14%;
+        width: 16%;
       }
     }
 

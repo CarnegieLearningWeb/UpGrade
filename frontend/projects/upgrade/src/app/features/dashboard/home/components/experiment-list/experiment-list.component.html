@@ -205,7 +205,7 @@
           >
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let experiment">
-          {{ experiment.updatedAt | formatDate }}
+          {{ experiment.updatedAt | date : 'MMM d, y, h:mm a' }}
         </td>
       </ng-container>
 
