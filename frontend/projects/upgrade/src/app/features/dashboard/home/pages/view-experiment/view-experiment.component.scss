@@ -7,6 +7,10 @@ $font-size-small: 15px;
 
   .experiment-link {
     text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   .experiment {
