@@ -264,7 +264,8 @@ export class ExperimentClientController {
     request.logger.info({ message: 'Starting the groupmembership call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = request.userDoc;
-    const { id, group } = await this.experimentUserService.updateGroupMembership(
+
+    const updateResult = await this.experimentUserService.updateGroupMembership(
       experimentUserDoc.requestedUserId,
       experimentUser.group,
       {
@@ -272,7 +273,14 @@ export class ExperimentClientController {
         userDoc: experimentUserDoc,
       }
     );
-    return { id, group };
+    if (!updateResult) {
+      request.logger.error({
+        details: 'update unexpectedly returned empty object',
+      });
+      throw new InternalServerError('set group membership failed');
+    }
+
+    return { id: experimentUserDoc.id, group: experimentUser.group };
   }
 
   /**
@@ -330,7 +338,8 @@ export class ExperimentClientController {
     request.logger.info({ message: 'Starting the workinggroup call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = request.userDoc;
-    const { id, workingGroup } = await this.experimentUserService.updateWorkingGroup(
+
+    const updateResult = await this.experimentUserService.updateWorkingGroup(
       experimentUserDoc.requestedUserId,
       workingGroupParams.workingGroup,
       {
@@ -338,7 +347,14 @@ export class ExperimentClientController {
         userDoc: experimentUserDoc,
       }
     );
-    return { id, workingGroup };
+    if (!updateResult) {
+      request.logger.error({
+        details: 'update unexpectedly returned empty object',
+      });
+      throw new InternalServerError('set working group failed');
+    }
+
+    return { id: experimentUserDoc.id, workingGroup: workingGroupParams.workingGroup };
   }
 
   /**
