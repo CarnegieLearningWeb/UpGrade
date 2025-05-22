@@ -867,7 +867,8 @@ export class ExperimentAssignmentService {
 
     //users and groups excluded from GlobalExclude segment
     const userExcluded = excludedUsers.find((userId) => userId === experimentUser.id);
-    const groupExcluded = userGroup.length > 0 ? excludedGroups.filter((group) => userGroup.includes(group)) : [];
+    const groupExcluded =
+      userGroup.length > 0 ? excludedGroups.filter((group) => userGroup.includes(group)) : excludedGroups;
 
     return [userExcluded !== undefined, groupExcluded.length > 0];
   }
