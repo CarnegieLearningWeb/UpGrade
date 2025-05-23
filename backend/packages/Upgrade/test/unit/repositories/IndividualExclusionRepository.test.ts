@@ -146,7 +146,6 @@ describe('IndividualExclusionRepository Testing', () => {
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(2);
     expect(mock.whereInIds).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(1);
 
@@ -162,7 +161,6 @@ describe('IndividualExclusionRepository Testing', () => {
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
-    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(2);
     expect(mock.whereInIds).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(1);
   });

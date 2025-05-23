@@ -83,8 +83,8 @@ describe('IndividualEnrollmentRepository Testing', () => {
 
     expect(repo.find).toHaveBeenCalledTimes(1);
     expect(repo.find).toHaveBeenCalledWith({
-      where: { experiment: { id: In([exp.id]) }, user: { id: individual.id } },
-      relations: ['experiment', 'condition', 'partition'],
+      where: { experimentId: In([exp.id]), userId: individual.id },
+      select: ['id', 'experimentId', 'enrollmentCode', 'conditionId'],
     });
 
     expect(res).toEqual(result);
@@ -99,8 +99,8 @@ describe('IndividualEnrollmentRepository Testing', () => {
 
     expect(repo.find).toHaveBeenCalledTimes(1);
     expect(repo.find).toHaveBeenCalledWith({
-      where: { experiment: { id: In([exp.id]) }, user: { id: individual.id } },
-      relations: ['experiment', 'condition', 'partition'],
+      where: { experimentId: In([exp.id]), userId: individual.id },
+      select: ['id', 'experimentId', 'enrollmentCode', 'conditionId'],
     });
   });
 

@@ -8,8 +8,8 @@ import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 export class GroupEnrollmentRepository extends Repository<GroupEnrollment> {
   public findEnrollments(groupIds: string[], experimentIds: string[]): Promise<GroupEnrollment[]> {
     return this.find({
-      where: { experiment: { id: In(experimentIds) }, groupId: In(groupIds) },
-      relations: ['experiment', 'condition'],
+      where: { experimentId: In(experimentIds), groupId: In(groupIds) },
+      select: ['groupId', 'experimentId', 'conditionId'],
     });
   }
 

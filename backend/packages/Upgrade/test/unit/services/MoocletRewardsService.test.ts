@@ -178,8 +178,8 @@ describe('MoocletRewardsService', () => {
       const enrollments = [
         {
           id: 'enrollment-1',
-          condition: { id: 'condition-1' },
-          experiment: { id: 'exp-1' },
+          conditionId: 'condition-1',
+          experimentId: 'exp-1',
         },
       ] as IndividualEnrollment[];
 
@@ -290,8 +290,8 @@ describe('MoocletRewardsService', () => {
       const enrollments = [
         {
           id: 'enrollment-1',
-          condition: { id: 'condition-1' },
-          experiment: { id: 'exp-1' },
+          conditionId: 'condition-1',
+          experimentId: 'exp-1',
         },
       ] as IndividualEnrollment[];
 
@@ -707,6 +707,7 @@ describe('MoocletRewardsService', () => {
       // Arrange
       const enrollment = {
         id: 'enrollment-1',
+        conditionId: 'condition-1',
         condition: {
           id: 'condition-1',
           name: 'Control',
@@ -743,6 +744,7 @@ describe('MoocletRewardsService', () => {
       // Arrange
       const enrollment = {
         id: 'enrollment-1',
+        conditionId: 'condition-4', // Not in the maps
         condition: {
           id: 'condition-4', // Not in the maps
           name: 'Unknown',
@@ -810,6 +812,7 @@ describe('MoocletRewardsService', () => {
       // Arrange
       const enrollment = {
         id: 'enrollment-1',
+        conditionId: 'condition-1',
         condition: {
           id: 'condition-1',
           name: 'Control',
@@ -838,6 +841,7 @@ describe('MoocletRewardsService', () => {
       // Arrange
       const enrollment = {
         id: 'enrollment-1',
+        conditionId: 'condition-3',
         condition: {
           id: 'condition-3',
           name: 'Treatment B',

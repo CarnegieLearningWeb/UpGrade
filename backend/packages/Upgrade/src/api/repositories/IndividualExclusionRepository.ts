@@ -39,8 +39,6 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
       return `${experimentId}_${userId}`;
     });
     return await this.createQueryBuilder('individualExclusion')
-      .leftJoinAndSelect('individualExclusion.experiment', 'experiment')
-      .leftJoinAndSelect('individualExclusion.user', 'user')
       .whereInIds(primaryKeys)
       .getMany()
       .catch((errorMsg: any) => {
