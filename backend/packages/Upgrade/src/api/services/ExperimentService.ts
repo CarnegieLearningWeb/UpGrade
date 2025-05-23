@@ -1593,6 +1593,17 @@ export class ExperimentService {
     return newExperiment;
   }
 
+  public validateExperimentContext(experiment: ExperimentDTO): string | null {
+    const experimentContext = experiment.context[0];
+    const contextMetadata = env.initialization.contextMetadata;
+
+    if (!contextMetadata[experimentContext]) {
+      return `The app context "${experimentContext}" is not defined in CONTEXT_METADATA.`;
+    }
+
+    return null;
+  }
+
   private async validateExperimentJSON(experiment: ExperimentDTO): Promise<string> {
     let errorString = '';
     await validate(experiment).then((errors) => {
@@ -1605,6 +1616,12 @@ export class ExperimentService {
         errorString = errorString.slice(0, -2);
       }
     });
+
+    // Validate app context against CONTEXT_METADATA
+    const contextValidationError = this.validateExperimentContext(experiment);
+    if (contextValidationError) {
+      errorString = errorString ? errorString + ', ' + contextValidationError : contextValidationError;
+    }
 
     if (experiment.stratificationFactor?.stratificationFactorName) {
       const factorFound = await this.stratificationRepository.findOneBy({
