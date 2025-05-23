@@ -108,7 +108,7 @@ describe('ExperimentEffects', () => {
       Selectors.selectSkipExperiment.setResult(0);
       Selectors.selectTotalExperiment.setResult(1);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
+      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
       Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 
@@ -128,7 +128,7 @@ describe('ExperimentEffects', () => {
       Selectors.selectSkipExperiment.setResult(0);
       Selectors.selectTotalExperiment.setResult(null);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
+      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
       Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 
@@ -157,7 +157,7 @@ describe('ExperimentEffects', () => {
       Selectors.selectSkipExperiment.setResult(0);
       Selectors.selectTotalExperiment.setResult(1);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
+      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
       Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 
@@ -188,7 +188,7 @@ describe('ExperimentEffects', () => {
       Selectors.selectSkipExperiment.setResult(2);
       Selectors.selectTotalExperiment.setResult(1);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
+      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
       Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 

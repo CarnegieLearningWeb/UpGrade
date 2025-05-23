@@ -548,13 +548,13 @@ describe('ExperimentsReducer', () => {
     previousState.sortKey = EXPERIMENT_SORT_KEY.NAME;
 
     const testAction: Action = actionSetSortKey({
-      sortKey: EXPERIMENT_SORT_KEY.CREATED_AT,
+      sortKey: EXPERIMENT_SORT_KEY.UPDATED_AT,
     });
 
     const newState = experimentsReducer(previousState, testAction);
 
     expect(newState).not.toBe(previousState);
-    expect(newState.sortKey).toEqual(EXPERIMENT_SORT_KEY.CREATED_AT);
+    expect(newState.sortKey).toEqual(EXPERIMENT_SORT_KEY.UPDATED_AT);
   });
 
   it('action "actionSetSortingType" should set sort-as', () => {

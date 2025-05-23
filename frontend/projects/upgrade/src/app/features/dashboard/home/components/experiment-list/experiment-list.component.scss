@@ -85,28 +85,28 @@ $experiment-state-light-color: #8f9bb3;
       }
 
       &.cdk-column-postExperimentRule {
-        width: 16%;
+        width: 13%;
       }
 
       &.cdk-column-enrollment {
         width: 9%;
       }
 
-      &.cdk-column-createdAt {
-        width: 13%;
+      &.cdk-column-updatedAt {
+        width: 15%;
       }
 
       &.cdk-column-context,
       &.cdk-column-tags,
       &.cdk-column-state {
-        width: 14%;
+        width: 16%;
       }
     }
 
     .mat-mdc-header-cell {
       &.cdk-column-state,
       &.cdk-column-context,
-      &.cdk-column-createdAt {
+      &.cdk-column-updatedAt {
         padding-left: 5px;
       }
     }

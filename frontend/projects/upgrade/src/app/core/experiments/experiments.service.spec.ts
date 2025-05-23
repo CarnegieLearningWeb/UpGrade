@@ -529,7 +529,7 @@ describe('ExperimentService', () => {
 
   describe('#setSortKey', () => {
     it('should set localStorage item and dispatch actionSetSortKey with the given input', () => {
-      const sortKey = EXPERIMENT_SORT_KEY.CREATED_AT;
+      const sortKey = EXPERIMENT_SORT_KEY.UPDATED_AT;
 
       service.setSortKey(sortKey);
 

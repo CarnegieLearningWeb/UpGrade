@@ -38,7 +38,7 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   permissions$: Observable<UserPermission>;
-  displayedColumns: string[] = ['name', 'status', 'lastUpdate', 'context', 'description', 'membersCount'];
+  displayedColumns: string[] = ['name', 'status', 'updatedAt', 'context', 'description', 'membersCount'];
 
   allSegments: MatTableDataSource<Segment>;
   allSegmentsSub: Subscription;

@@ -53,12 +53,9 @@
         {{ SEGMENT_TRANSLATION_KEYS.UPDATED_AT | translate }}
       </th>
       <td mat-cell *matCellDef="let segment" class="updated-at-column ft-14-400">
-        <ng-container *ngIf="segment.versionNumber === 1; else displayUpdatedAt">
-          {{ '-' }}
+        <ng-container>
+          {{ segment.updatedAt | date : 'MMM d, y, h:mm a' }}
         </ng-container>
-        <ng-template #displayUpdatedAt>
-          {{ segment.updatedAt | date : 'MMM d, y h:mm a' }}
-        </ng-template>
       </td>
     </ng-container>
 

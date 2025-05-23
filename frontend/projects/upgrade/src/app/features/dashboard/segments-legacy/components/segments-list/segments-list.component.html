@@ -117,19 +117,16 @@
         </td>
       </ng-container>
 
-      <ng-container matColumnDef="lastUpdate">
+      <ng-container matColumnDef="updatedAt">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
-          <span [matTooltip]="'segments.global-last-update.text' | translate" matTooltipPosition="above">
-            {{ 'segments.global-last-update.text' | translate | uppercase }}
+          <span [matTooltip]="'segments.global-updated-at.text' | translate" matTooltipPosition="above">
+            {{ 'segments.global-updated-at.text' | translate | uppercase }}
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <ng-container *ngIf="segment.versionNumber === 1; else displayUpdatedAt">
-            {{ '-' }}
+          <ng-container>
+            <span> {{ segment.updatedAt | date : 'MMM d, y, h:mm a' }} </span>
           </ng-container>
-          <ng-template #displayUpdatedAt>
-            <span> {{ segment.updatedAt | date : 'MMM d, y h:mm a' }} </span>
-          </ng-template>
         </td>
       </ng-container>
 
