@@ -117,7 +117,7 @@ describe('ExperimentEffects', () => {
 
         const failureAction = actionGetExperimentsFailure(result);
 
-        expect(result).not.toEqual(failureAction);
+        expect(result).toEqual(failureAction);
       });
 
       actions$.next(actionGetExperiments({}));
