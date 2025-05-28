@@ -43,7 +43,14 @@ projectBuilderV5 (
             automatedBranchBuilds: [
                 "dev",
                 "release/.*"
-            ]
+            ],
+            buildScripts: [
+        [
+            script: 'npm start typecheck && npm test',
+            githubCheck: 'backend typecheck and test',
+            log: 'backend-typecheck-test.log'
+        ]
+    ]
         ],
         "upgrade":[
             artifactType: 'codeartifact',
@@ -59,6 +66,11 @@ projectBuilderV5 (
                     script: 'npm ci --no-audit',
                     githubCheck: '${projectName} npm ci --no-audit',
                     log: '${projectName}-npm-ci.log'
+                ],
+                [
+                    script: 'npm test',
+                    githubCheck: '${projectName} npm test',
+                    log: '${projectName}-npm-test.log'
                 ],
                 [
                     script: 'npm run prebuild:project',
