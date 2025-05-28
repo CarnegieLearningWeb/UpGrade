@@ -1909,7 +1909,7 @@ export class ExperimentAssignmentService {
   public async inclusionExclusionLogic(
     segmentObjMap: object,
     experimentUser: ExperimentUser,
-    modalIds: { id: string; filterMode: FILTER_MODE; group?: string }[] // can be experimentIds or FeatureFlagsIds
+    entityIds: { id: string; filterMode: FILTER_MODE; group?: string }[] // can be experimentIds or FeatureFlagsIds
   ): Promise<[string[], { id: string; reason: string; matchedGroup?: boolean }[]]> {
     const includeData = {};
     const excludeData = {};
@@ -1935,135 +1935,135 @@ export class ExperimentAssignmentService {
       });
     }
 
-    Object.keys(excludeData).forEach((modalId) => {
-      const modalSegment = excludeData[modalId];
+    Object.keys(excludeData).forEach((entityId) => {
+      const entitySegment = excludeData[entityId];
 
-      modalSegment.users.forEach((individual) => {
+      entitySegment.users.forEach((individual) => {
         if (individual === experimentUser.id) {
           explicitIndividualExclusionFilteredData.push({
             userId: individual,
-            id: modalId,
+            id: entityId,
           });
         }
       });
 
-      modalSegment.groups.forEach((group) => {
+      entitySegment.groups.forEach((group) => {
         if (userGroups.some((userGroup) => userGroup.groupId === group.groupId && userGroup.type === group.type)) {
           explicitGroupExclusionFilteredData.push({
             groupId: group.groupId,
             type: group.type,
-            id: modalId,
+            id: entityId,
           });
         }
       });
     });
 
-    Object.keys(includeData).forEach((modalId) => {
-      const modalSegment = includeData[modalId];
-      modalSegment.users.forEach((individual) => {
+    Object.keys(includeData).forEach((entityId) => {
+      const entitySegment = includeData[entityId];
+      entitySegment.users.forEach((individual) => {
         if (individual === experimentUser.id) {
           explicitIndividualInclusionFilteredData.push({
             userId: individual,
-            id: modalId,
+            id: entityId,
           });
         }
       });
 
-      modalSegment.groups.forEach((group) => {
+      entitySegment.groups.forEach((group) => {
         if (userGroups.some((userGroup) => userGroup.groupId === group.groupId && userGroup.type === group.type)) {
           explicitGroupInclusionFilteredData.push({
             groupId: group.groupId,
             type: group.type,
-            id: modalId,
+            id: entityId,
           });
         }
       });
     });
 
-    // pseudocode for modal level inclusion and exclusion
+    // pseudocode for entity level inclusion and exclusion
     //
     // If the user or the user's group is on the global exclude list, exclude the user.
     //
-    // ELSE If the modal default is "include all" then
+    // ELSE If the entity default is "include all" then
     //     If the user is on the exclude list, then exclude the user.
     //     Else if any of the user's groups is on the exclude list then
     //           If the user is on the include list, include the user
     //           Else exclude the user
     //     Else include the user.
-    // ELSE If the modal default is "exclude all" then
+    // ELSE If the entity default is "exclude all" then
     //     If the user is on the include list, then include the user.
     //     Else if any of the user's groups are on the include list then
     //           If the user is on the exclude list, exclude the user
     //           Else include the user
     //     Else exclude the user
 
-    const userIncludedModals: string[] = [];
-    const userExcludedModals: { id: string; reason: string; matchedGroup?: boolean }[] = [];
+    const userIncludedEntities: string[] = [];
+    const userExcludedEntities: { id: string; reason: string; matchedGroup?: boolean }[] = [];
 
-    modalIds.forEach((modal) => {
+    entityIds.forEach((entity) => {
       let inclusionFlag = false;
       let exclusionFlag = false;
       let sameGroupExclusionFlag = false;
 
-      if (modal.filterMode === FILTER_MODE.INCLUDE_ALL) {
-        if (explicitIndividualExclusionFilteredData.some((x) => x.id === modal.id)) {
-          userExcludedModals.push({ id: modal.id, reason: 'user' });
-        } else if (explicitIndividualInclusionFilteredData.some((x) => x.id === modal.id)) {
-          userIncludedModals.push(modal.id);
+      if (entity.filterMode === FILTER_MODE.INCLUDE_ALL) {
+        if (explicitIndividualExclusionFilteredData.some((x) => x.id === entity.id)) {
+          userExcludedEntities.push({ id: entity.id, reason: 'user' });
+        } else if (explicitIndividualInclusionFilteredData.some((x) => x.id === entity.id)) {
+          userIncludedEntities.push(entity.id);
         } else {
           for (const userGroup of userGroups) {
             const matchingExclusionData = explicitGroupExclusionFilteredData.find(
-              (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === modal.id
+              (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === entity.id
             );
 
             if (matchingExclusionData) {
               inclusionFlag = true;
 
-              if (matchingExclusionData.type === modal.group) {
+              if (matchingExclusionData.type === entity.group) {
                 sameGroupExclusionFlag = true;
               }
             }
           }
           if (!inclusionFlag) {
-            userIncludedModals.push(modal.id);
+            userIncludedEntities.push(entity.id);
           } else {
             const matchedGroup = sameGroupExclusionFlag;
-            userExcludedModals.push({
-              id: modal.id,
+            userExcludedEntities.push({
+              id: entity.id,
               reason: 'group',
               matchedGroup, // matchedExcludedGroup === experiment.group
             });
             if (!matchedGroup) {
-              indirectExcludedExperiments.push(modal.id);
+              indirectExcludedExperiments.push(entity.id);
             }
           }
         }
       } else {
-        if (explicitIndividualExclusionFilteredData.some((x) => x.id === modal.id)) {
-          userExcludedModals.push({ id: modal.id, reason: 'filterMode' });
-        } else if (explicitIndividualInclusionFilteredData.some((x) => x.id === modal.id)) {
-          userIncludedModals.push(modal.id);
+        if (explicitIndividualExclusionFilteredData.some((x) => x.id === entity.id)) {
+          userExcludedEntities.push({ id: entity.id, reason: 'filterMode' });
+        } else if (explicitIndividualInclusionFilteredData.some((x) => x.id === entity.id)) {
+          userIncludedEntities.push(entity.id);
         } else {
           for (const userGroup of userGroups) {
             if (
               explicitGroupExclusionFilteredData.some(
-                (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === modal.id
+                (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === entity.id
               )
             ) {
               exclusionFlag = true;
             }
             if (
               explicitGroupInclusionFilteredData.some(
-                (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === modal.id
+                (x) => x.groupId === userGroup.groupId && x.type === userGroup.type && x.id === entity.id
               )
             ) {
               inclusionFlag = true;
             }
           }
           if (inclusionFlag && !exclusionFlag) {
-            userIncludedModals.push(modal.id);
+            userIncludedEntities.push(entity.id);
           } else {
-            userExcludedModals.push({ id: modal.id, reason: 'filterMode' });
+            userExcludedEntities.push({ id: entity.id, reason: 'filterMode' });
           }
         }
       }
@@ -2080,7 +2080,7 @@ export class ExperimentAssignmentService {
       groupId: In(userWorkingGroupIds),
     });
 
-    return [userIncludedModals, userExcludedModals];
+    return [userIncludedEntities, userExcludedEntities];
   }
 
   private getFactorialCondition(
