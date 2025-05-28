@@ -47,8 +47,8 @@ projectBuilderV5 (
             buildScripts: [
                 [
                     script: 'npm start typecheck && npm test',
-                    githubCheck: 'backend typecheck and test',
-                    log: 'backend-typecheck-test.log'
+                    githubCheck: '${projectName} (backend) typecheck and test',
+                    log: '${projectName}-typecheck-test.log'
                 ]
             ]
         ],
@@ -69,7 +69,7 @@ projectBuilderV5 (
                 ],
                 [
                     script: 'npm test',
-                    githubCheck: '${projectName} npm test',
+                    githubCheck: '${projectName} (frontend) npm test',
                     log: '${projectName}-npm-test.log'
                 ],
                 [
