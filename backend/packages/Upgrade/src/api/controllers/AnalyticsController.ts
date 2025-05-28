@@ -77,7 +77,6 @@ export class AnalyticsController {
   public async analyticsService(
     @Body({ validate: true }) auditParams: EnrollmentAnalyticsValidator
   ): Promise<IExperimentEnrollmentStats[]> {
-    console.log('test');
     return this.auditService.getEnrollments(auditParams.experimentIds);
   }
 
