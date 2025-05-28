@@ -30,7 +30,7 @@ describe('Analytics Controller Testing', () => {
       .send({ experimentIds: [uuid()] })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(700);
+      .expect(200);
   });
 
   test('Post request for /api/stats/enrollment/detail', () => {
