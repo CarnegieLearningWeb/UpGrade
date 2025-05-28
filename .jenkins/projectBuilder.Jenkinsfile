@@ -45,12 +45,12 @@ projectBuilderV5 (
                 "release/.*"
             ],
             buildScripts: [
-        [
-            script: 'npm start typecheck && npm test',
-            githubCheck: 'backend typecheck and test',
-            log: 'backend-typecheck-test.log'
-        ]
-    ]
+                [
+                    script: 'npm start typecheck && npm test',
+                    githubCheck: 'backend typecheck and test',
+                    log: 'backend-typecheck-test.log'
+                ]
+            ]
         ],
         "upgrade":[
             artifactType: 'codeartifact',
