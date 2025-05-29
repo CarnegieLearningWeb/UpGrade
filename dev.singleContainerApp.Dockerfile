@@ -20,8 +20,7 @@ ENV NR_NATIVE_METRICS_NO_BUILD=true
 RUN npm install -g concurrently
 
 # Install frontend dependencies
-RUN cd frontend && npm ci && npm uninstall @angular-devkit/build-angular -f && npm install @angular-devkit/build-angular --save-dev -f
-
+RUN cd frontend && npm ci
 # Install backend dependencies
 RUN cd backend/packages/Upgrade && npm ci
 
