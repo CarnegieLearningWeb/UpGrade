@@ -168,7 +168,7 @@
             </span>
           </div>
           <span class="experiment-schedule ft-10-400" *ngIf="experiment.state === ExperimentState.SCHEDULED">
-            {{ '(' + (experiment.startOn | date : 'MMM d, y h:mm a') + ')' }}
+            {{ '(' + (experiment.startOn | date : 'MMM d, y, h:mm a') + ')' }}
           </span>
         </td>
       </ng-container>
@@ -198,14 +198,14 @@
         </td>
       </ng-container>
 
-      <ng-container matColumnDef="createdAt">
+      <ng-container matColumnDef="updatedAt">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
           <span [matTooltip]="'home.experiments-table.start-date-tooltip.text' | translate" matTooltipPosition="above">
-            {{ 'home.experiments-table.text.created-date' | translate }}</span
+            {{ 'home.experiments-table.text.updated-date' | translate }}</span
           >
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let experiment">
-          {{ experiment.createdAt | formatDate }}
+          {{ experiment.updatedAt | date : 'MMM d, y, h:mm a' }}
         </td>
       </ng-container>
 

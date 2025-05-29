@@ -26,7 +26,7 @@ import { FormControl } from '@angular/forms';
 })
 export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions$: Observable<UserPermission>;
-  displayedColumns: string[] = ['name', 'state', 'postExperimentRule', 'createdAt', 'context', 'tags', 'enrollment'];
+  displayedColumns: string[] = ['name', 'state', 'postExperimentRule', 'updatedAt', 'context', 'tags', 'enrollment'];
   allExperiments: MatTableDataSource<Experiment>;
   allExperimentsExcludingArchived: MatTableDataSource<Experiment>;
   allExperimentsSub: Subscription;
