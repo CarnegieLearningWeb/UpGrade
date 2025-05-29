@@ -12,10 +12,10 @@ class CustomMatTableSource extends MatTableDataSource<Segment> {
       let isAsc = sort.direction === 'asc';
       let active = sort.active;
 
-      // Default to 'lastUpdate' in descending order when sort direction is empty
+      // Default to 'updatedAt' in descending order when sort direction is empty
       if (sort.direction === '') {
         isAsc = false;
-        active = 'lastUpdate';
+        active = 'updatedAt';
       }
 
       switch (active) {
@@ -23,7 +23,7 @@ class CustomMatTableSource extends MatTableDataSource<Segment> {
           return compare(a.name, b.name, isAsc);
         case 'status':
           return compare(a.status, b.status, isAsc);
-        case 'lastUpdate':
+        case 'updatedAt':
           return compare(new Date(a.updatedAt), new Date(b.updatedAt), isAsc);
         case 'context':
           return compare(a.context, b.context, isAsc);
@@ -32,7 +32,7 @@ class CustomMatTableSource extends MatTableDataSource<Segment> {
         case 'membersCount':
           return compare(getMembersCount(a), getMembersCount(b), isAsc);
         default:
-          return compare(new Date(a.updatedAt), new Date(b.updatedAt), false); // Default to lastUpdate desc
+          return compare(new Date(a.updatedAt), new Date(b.updatedAt), false); // Default to updatedAt desc
       }
     });
 

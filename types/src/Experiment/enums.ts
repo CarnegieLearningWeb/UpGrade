@@ -144,7 +144,7 @@ export enum EXPERIMENT_SEARCH_KEY {
 export enum EXPERIMENT_SORT_KEY {
   NAME = 'name',
   STATUS = 'state',
-  CREATED_AT = 'createdAt',
+  UPDATED_AT = 'updatedAt',
   POST_EXPERIMENT_RULE = 'postExperimentRule',
 }
 
