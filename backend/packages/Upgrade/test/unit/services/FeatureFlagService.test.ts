@@ -33,6 +33,7 @@ import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/reposito
 import { User } from '../../../src/api/models/User';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
+import { env } from './../../../src/env';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
@@ -42,6 +43,9 @@ describe('Feature Flag Service Testing', () => {
 
   const logger = new UpgradeLogger();
   let dataSource: DataSource;
+  env.initialization.contextMetadata = {
+    context1: { EXP_POINTS: [], EXP_IDS: [], GROUP_TYPES: [], CONDITIONS: [] },
+  };
 
   const mockFlag1 = new FeatureFlag();
   mockFlag1.id = uuid();
