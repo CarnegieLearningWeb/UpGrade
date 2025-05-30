@@ -83,6 +83,7 @@ export const env = {
     clientId: getOsEnvArray('GOOGLE_CLIENT_ID'),
     serviceAccountId: getOsEnvArray('GOOGLE_SERVICE_ACCOUNT_ID'),
     domainName: getOsEnvOptional('DOMAIN_NAME'),
+    authTokenRequired: toBool(getOsEnvOptional('GOOGLE_AUTH_TOKEN_REQUIRED')),
     allowTestTokenService: toBool(getOsEnvOptional('ALLOW_SERVICE_ACCOUNT_TOKEN_SERVICE')),
     keyFilename: getOsEnvOptional('GOOGLE_SERVICE_ACCOUNT_CREDENTIAL_FILE'),
   },
