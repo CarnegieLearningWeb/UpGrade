@@ -405,23 +405,23 @@ export class ExperimentAssignmentService {
       const experimentAssignment = await Promise.all(
         filteredExperiments.map(async (experiment) => {
           const individualEnrollment = mergedIndividualAssignment.find((assignment) => {
-            return assignment.experiment.id === experiment.id;
+            return assignment.experimentId === experiment.id;
           });
 
           const groupEnrollment = groupEnrollments.find((assignment) => {
             return (
-              assignment.experiment.id === experiment.id &&
+              assignment.experimentId === experiment.id &&
               assignment.groupId === experimentUserDoc.workingGroup[experiment.group]
             );
           });
 
           const individualExclusion = individualExclusions.find((exclusion) => {
-            return exclusion.experiment.id === experiment.id;
+            return exclusion.experimentId === experiment.id;
           });
 
           const groupExclusion = groupExclusions.find((exclusion) => {
             return (
-              exclusion.experiment.id === experiment.id &&
+              exclusion.experimentId === experiment.id &&
               exclusion.groupId === experimentUserDoc.workingGroup[experiment.group]
             );
           });
@@ -653,11 +653,11 @@ export class ExperimentAssignmentService {
     const unassignedPools = experimentPools.filter((pool) => {
       return !pool.some((experiment) => {
         const hasIndividualEnrollment = individualEnrollments.some((enrollment) => {
-          return enrollment.experiment.id === experiment.id;
+          return enrollment.experimentId === experiment.id;
         });
         const hasGroupEnrollment = groupEnrollments.some((enrollment) => {
           return (
-            enrollment.experiment.id === experiment.id &&
+            enrollment.experimentId === experiment.id &&
             enrollment.groupId === experimentUser.workingGroup[experiment.group]
           );
         });
@@ -675,11 +675,11 @@ export class ExperimentAssignmentService {
     const priorSelectedExperiments = experimentPools.map((pool) => {
       return pool.filter((experiment) => {
         const individualEnrollment = individualEnrollments.some((enrollment) => {
-          return enrollment.experiment.id === experiment.id;
+          return enrollment.experimentId === experiment.id;
         });
         const groupEnrollment = groupEnrollments.some((enrollment) => {
           return (
-            enrollment.experiment.id === experiment.id &&
+            enrollment.experimentId === experiment.id &&
             enrollment.groupId === experimentUser.workingGroup[experiment.group]
           );
         });
@@ -850,7 +850,7 @@ export class ExperimentAssignmentService {
     const groupExcluded =
       userGroup.length > 0
         ? excludeData.groups.filter((group) => userGroup.includes(`${group.type}_${group.groupId}`))
-        : [];
+        : excludeData.groups;
 
     return [userExcluded !== undefined, groupExcluded.length > 0];
   }
@@ -963,7 +963,7 @@ export class ExperimentAssignmentService {
 
     // check assignments for group experiment
     const experimentAssignedIds = individualEnrollments.map((assignment) => {
-      return assignment.experiment.id;
+      return assignment.experimentId;
     });
 
     // create set of experiment ids
@@ -1656,10 +1656,11 @@ export class ExperimentAssignmentService {
   ): Promise<ExperimentCondition | void> {
     const userId = user.id;
     const individualEnrollmentCondition = experiment.conditions.find(
-      (condition) => condition.id === individualEnrollment?.condition?.id
+      (condition) =>
+        condition.id === individualEnrollment?.conditionId || condition.id === individualEnrollment?.condition?.id
     );
     const groupEnrollmentCondition = experiment.conditions.find(
-      (condition) => condition.id === groupEnrollment?.condition?.id
+      (condition) => condition.id === groupEnrollment?.conditionId || condition.id === groupEnrollment?.condition?.id
     );
     if (experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE && userId) {
       if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
@@ -1861,10 +1862,9 @@ export class ExperimentAssignmentService {
       )
       .map((experiment) => experiment.id);
     const experimentsEnrolled = await this.individualEnrollmentRepository.find({
-      where: { experiment: In(experimentIdsForIndividualConsistency), user: { id: experimentUser.id } },
-      relations: ['experiment'],
+      where: { experimentId: In(experimentIdsForIndividualConsistency), userId: experimentUser.id },
     });
-    const experimentsEnrolledIds = experimentsEnrolled.map((enrollment) => enrollment.experiment.id);
+    const experimentsEnrolledIds = experimentsEnrolled.map((enrollment) => enrollment.experimentId);
 
     // creates segment Object for all experiments
     experiments.forEach((exp) => {

@@ -1,4 +1,14 @@
-import { IsNotEmpty, IsDefined, IsString, IsArray, IsEnum, IsOptional, ValidateNested, IsUUID } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsDefined,
+  IsString,
+  IsArray,
+  IsEnum,
+  IsOptional,
+  ValidateNested,
+  IsUUID,
+  ArrayMinSize,
+} from 'class-validator';
 import { FILTER_MODE, FEATURE_FLAG_STATUS, FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { FeatureFlagListValidator } from './FeatureFlagListValidator';
@@ -26,6 +36,7 @@ export class FeatureFlagCoreValidation {
 
   @IsNotEmpty()
   @IsArray()
+  @ArrayMinSize(1)
   @IsString({ each: true })
   public context: string[];
 

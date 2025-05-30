@@ -1,4 +1,5 @@
 import {
+  ArrayMinSize,
   IsAlphanumeric,
   IsArray,
   IsBoolean,
@@ -353,6 +354,7 @@ abstract class BaseExperimentWithoutPayload {
 
   @IsNotEmpty()
   @IsArray()
+  @ArrayMinSize(1)
   @IsString({ each: true })
   public context: string[];
 

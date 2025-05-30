@@ -26,7 +26,7 @@ import { FormControl } from '@angular/forms';
 })
 export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions$: Observable<UserPermission>;
-  displayedColumns: string[] = ['name', 'state', 'postExperimentRule', 'createdAt', 'context', 'tags', 'enrollment'];
+  displayedColumns: string[] = ['name', 'state', 'postExperimentRule', 'updatedAt', 'context', 'tags', 'enrollment'];
   allExperiments: MatTableDataSource<Experiment>;
   allExperimentsExcludingArchived: MatTableDataSource<Experiment>;
   allExperimentsSub: Subscription;
@@ -49,6 +49,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   experimentSortAs$: Observable<string>;
   @ViewChild('tableContainer') experimentTableContainer: ElementRef;
   @ViewChild('searchInput') searchInput: ElementRef;
+  @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   searchControl = new FormControl();
@@ -61,6 +62,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
       return this.statusFilterOptions;
     }
   }
+
+  private observer: IntersectionObserver;
 
   constructor(
     private experimentService: ExperimentService,
@@ -223,15 +226,6 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
       : '';
   }
 
-  onScroll(): void {
-    const element = this.experimentTableContainer.nativeElement;
-    const atBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
-
-    if (atBottom) {
-      this.fetchExperimentOnScroll();
-    }
-  }
-
   fetchExperimentOnScroll() {
     if (!this.isAllExperimentsFetched) {
       this.experimentService.loadExperiments();
@@ -252,11 +246,35 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
           this.setSearchString((searchInput as any).option.value);
         }
       });
+
+    this.setupIntersectionObserver();
   }
 
   ngOnDestroy() {
     this.allExperimentsSub.unsubscribe();
     this.isAllExperimentsFetchedSub.unsubscribe();
+
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+  }
+
+  private setupIntersectionObserver() {
+    const options = {
+      root: this.experimentTableContainer.nativeElement,
+      rootMargin: '100px',
+      threshold: 0.1,
+    };
+
+    this.observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        this.fetchExperimentOnScroll();
+      }
+    }, options);
+
+    if (this.bottomTrigger) {
+      this.observer.observe(this.bottomTrigger.nativeElement);
+    }
   }
 
   get ExperimentStatePipeTypes() {

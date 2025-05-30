@@ -7,6 +7,10 @@ $font-size-small: 15px;
 
   .experiment-link {
     text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   .experiment {
@@ -80,11 +84,11 @@ $font-size-small: 15px;
           color: var(--grey-5);
         }
 
-        &-create-date {
+        &-created-date {
           display: block;
         }
 
-        &-last-update-date {
+        &-updated-date {
           display: block;
         }
       }

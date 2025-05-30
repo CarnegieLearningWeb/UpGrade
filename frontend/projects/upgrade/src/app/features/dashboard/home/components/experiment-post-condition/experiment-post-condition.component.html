@@ -3,7 +3,7 @@
     <form [formGroup]="postExperimentRuleForm" class="post-experiment-rule-form dense-3">
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label class="ft-14-400">
-          {{ 'home-global.post-experiment-rule.text' | translate }}
+          {{ 'home-global.post-experiment-rule.text' | translate | titlecase }}
         </mat-label>
         <mat-select class="ft-14-400" formControlName="postExperimentRule">
           <mat-option class="ft-14-400" *ngFor="let rule of postExperimentRules" [value]="rule.value">

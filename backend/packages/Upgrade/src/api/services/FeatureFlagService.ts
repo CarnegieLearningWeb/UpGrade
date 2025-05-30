@@ -1033,6 +1033,17 @@ export class FeatureFlagService {
     return fileStatusArray;
   }
 
+  public validateFeatureFlagContext(flag: { name: string; context: string[] }): string | null {
+    const flagContext = flag.context[0];
+    const contextMetadata = env.initialization.contextMetadata;
+
+    if (!contextMetadata[flagContext]) {
+      return `The app context "${flagContext}" is not defined in CONTEXT_METADATA.`;
+    }
+
+    return null;
+  }
+
   public async validateImportFeatureFlags(
     featureFlagFiles: IFeatureFlagFile[],
     logger: UpgradeLogger
@@ -1115,34 +1126,41 @@ export class FeatureFlagService {
     }
 
     if (compatibilityType === IMPORT_COMPATIBILITY_TYPE.COMPATIBLE) {
-      const keyExists = existingFeatureFlags?.find(
-        (existingFlag) => existingFlag.key === flag.key && existingFlag.context[0] === flag.context[0]
-      );
-
-      if (keyExists) {
+      const contextValidationError = this.validateFeatureFlagContext(flag);
+      if (contextValidationError) {
         compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-      } else {
-        const segmentIdsSet = new Set([
-          ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
-            return segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id);
-          }),
-          ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
-            return segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id);
-          }),
-        ]);
+      }
 
-        const segmentIds = Array.from(segmentIdsSet);
-        const segments = await this.segmentService.getSegmentByIds(segmentIds);
+      if (compatibilityType === IMPORT_COMPATIBILITY_TYPE.COMPATIBLE) {
+        const keyExists = existingFeatureFlags?.find(
+          (existingFlag) => existingFlag.key === flag.key && existingFlag.context[0] === flag.context[0]
+        );
 
-        if (segmentIds.length !== segments.length) {
-          compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
-        }
+        if (keyExists) {
+          compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        } else {
+          const segmentIdsSet = new Set([
+            ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
+              return segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id);
+            }),
+            ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
+              return segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id);
+            }),
+          ]);
 
-        segments.forEach((segment) => {
-          if (segment == undefined || segment.context !== flag.context[0]) {
+          const segmentIds = Array.from(segmentIdsSet);
+          const segments = await this.segmentService.getSegmentByIds(segmentIds);
+
+          if (segmentIds.length !== segments.length) {
             compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
           }
-        });
+
+          segments.forEach((segment) => {
+            if (segment == undefined || segment.context !== flag.context[0]) {
+              compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
+            }
+          });
+        }
       }
     }
 

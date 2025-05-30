@@ -428,6 +428,46 @@ describe('Experiment Assignment Service Test', () => {
     expect(exclusionResult).toEqual([true, false]);
   });
 
+  it('[checkUserOrGroupIsGloballyExcluded] should return true for users with no working group if there is a global group exclusion', async () => {
+    const userDoc = { id: 'user6', group: {}, workingGroup: {} };
+    // stub the global exclusion segment with group `anygroup` in groupForSegment
+    testedModule.segmentService.getSegmentByIds.withArgs(['77777777-7777-7777-7777-777777777777']).resolves([
+      {
+        id: '77777777-7777-7777-7777-777777777777',
+        name: 'Global Exclude',
+        description: 'Globally excluded Users, Groups and Segments',
+        context: 'context',
+        type: 'global_exclude',
+        individualForSegment: [],
+        groupForSegment: [{ groupId: 'anygroup', type: 'teacher' }],
+        subSegments: [],
+      },
+    ]);
+
+    const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc, 'context');
+    expect(exclusionResult).toEqual([false, true]);
+  });
+
+  it('[checkUserOrGroupIsGloballyExcluded] should return false for users with a non-excluded working group if there is a global group exclusion', async () => {
+    const userDoc = { id: 'user7', group: { schoolId: ['school1'] }, workingGroup: { schoolId: 'school1' } };
+    // stub the global exclusion segment with group `anygroup` in groupForSegment
+    testedModule.segmentService.getSegmentByIds.withArgs(['77777777-7777-7777-7777-777777777777']).resolves([
+      {
+        id: '77777777-7777-7777-7777-777777777777',
+        name: 'Global Exclude',
+        description: 'Globally excluded Users, Groups and Segments',
+        context: 'context',
+        type: 'global_exclude',
+        individualForSegment: [],
+        groupForSegment: [{ groupId: 'anygroup', type: 'teacher' }],
+        subSegments: [],
+      },
+    ]);
+
+    const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc, 'context');
+    expect(exclusionResult).toEqual([false, false]);
+  });
+
   it('[getAssignmentsAndExclusionsForUser] should return empty enrollment/exclusion user and group documents', async () => {
     const experimentUser = {
       id: 'user123',

@@ -109,7 +109,7 @@ export class MoocletRewardsService {
       await Promise.all(
         experimentsMatchingLoggedRewardKey.map(async ({ moocletExperimentRef, rewardMetricValue }) => {
           const enrollment = enrollments.find(
-            (enrollment) => enrollment.experiment.id === moocletExperimentRef.experimentId
+            (enrollment) => enrollment.experimentId === moocletExperimentRef.experimentId
           );
 
           // not sure if this even possible in reality, but should be handled
@@ -213,7 +213,7 @@ export class MoocletRewardsService {
     logger: UpgradeLogger
   ): number | null {
     const map = moocletExperimentRef.versionConditionMaps.find(
-      (map) => enrollment.condition?.id === map.experimentConditionId
+      (map) => enrollment.conditionId === map.experimentConditionId
     );
     if (!map) {
       logger.error({
