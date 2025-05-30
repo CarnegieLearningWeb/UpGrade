@@ -59,9 +59,7 @@
       <div class="experiment-overview">
         <span class="ft-32-700 experiment-overview-dates">
           <span class="ft-14-700 experiment-overview-created-date">
-            {{
-              ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | date : 'MMM d, y')
-            }}
+            {{ ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | date : 'MMM d, y') }}
           </span>
           <span class="ft-14-700 experiment-overview-updated-date">
             {{
@@ -436,11 +434,7 @@
             <mat-chip-listbox class="dense-2" *ngIf="experiment.tags?.length">
               <ng-container *ngFor="let tag of experiment.tags">
                 <mat-chip (click)="searchExperiment(ExperimentSearchKey.TAG, tag)">
-                  <span
-                    class="chip-label"
-                    [matTooltip]="tag.length > 16 ? tag : null"
-                    matTooltipPosition="above"
-                  >
+                  <span class="chip-label" [matTooltip]="tag.length > 16 ? tag : null" matTooltipPosition="above">
                     {{ tag | truncate : 16 }}
                   </span>
                 </mat-chip>
