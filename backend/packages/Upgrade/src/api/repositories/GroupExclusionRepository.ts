@@ -42,7 +42,6 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
       return [...selectedPrimaryKey, ...accu];
     }, []);
     return this.createQueryBuilder('groupExclusion')
-      .leftJoinAndSelect('groupExclusion.experiment', 'experiment')
       .whereInIds(primaryKeys)
       .getMany()
       .catch((errorMsg: any) => {

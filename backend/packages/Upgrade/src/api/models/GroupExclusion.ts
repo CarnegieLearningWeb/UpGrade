@@ -13,6 +13,9 @@ export class GroupExclusion extends BaseModel {
   @ManyToOne(() => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
+  @Column({ name: 'experimentId' })
+  public experimentId?: string;
+
   @IsNotEmpty()
   @Column({ type: 'enum', enum: EXCLUSION_CODE, nullable: true })
   public exclusionCode: EXCLUSION_CODE;

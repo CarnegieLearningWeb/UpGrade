@@ -413,24 +413,23 @@ export class ExperimentUserService {
     ]);
 
     const enrolledExperimentIds = individualEnrollments.map(
-      (individualAssignment) => individualAssignment.experiment.id
+      (individualAssignment) => individualAssignment.experimentId
     );
     if (enrolledExperimentIds.length > 0) {
       await this.individualEnrollmentRepository.deleteEnrollmentsOfUserInExperiments(userId, enrolledExperimentIds);
     }
 
     // remove individual exclusion related to that group
-    const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experiment.id);
+    const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experimentId);
 
     if (excludedExperimentIds.length > 0) {
       await this.individualExclusionRepository.deleteExperimentsForUserId(userId, excludedExperimentIds);
 
       // check if other individual exclusions are present for that group
       const otherExclusions = await this.individualExclusionRepository.find({
-        where: { experiment: { id: In(excludedExperimentIds) } },
-        relations: ['experiment'],
+        where: { experimentId: In(excludedExperimentIds) },
       });
-      const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experiment.id);
+      const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experimentId);
       // remove group exclusion
       const toRemoveExperimentFromGroupExclusions = excludedExperimentIds.filter((experimentId) => {
         return !otherExcludedExperimentIds.includes(experimentId);
@@ -455,16 +454,15 @@ export class ExperimentUserService {
     const individualExclusions = await this.individualExclusionRepository.findExcluded(userId, filteredExperimentIds);
 
     // remove individual exclusion related to that group
-    const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experiment.id);
+    const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experimentId);
 
     if (excludedExperimentIds.length > 0) {
       await this.individualExclusionRepository.deleteExperimentsForUserId(userId, excludedExperimentIds);
 
       const otherExclusions = await this.individualExclusionRepository.find({
-        where: { experiment: { id: In(excludedExperimentIds) }, user: { id: Not(userId) } },
-        relations: ['experiment', 'user'],
+        where: { experimentId: In(excludedExperimentIds), userId: Not(userId) },
       });
-      const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experiment.id);
+      const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experimentId);
       // remove group exclusion
       const toRemoveExperimentFromGroupExclusions = excludedExperimentIds.filter((experimentId) => {
         return !otherExcludedExperimentIds.includes(experimentId);
