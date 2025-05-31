@@ -26,6 +26,8 @@ export namespace UpGradeClientRequests {
 
   export interface IGetAllFeatureFlagsRequestBody {
     context: string;
+    provideGroupsForSession?: Record<string, string[]>;
+    includeStoredUserGroups?: boolean;
   }
 
   export interface IMarkDecisionPointRequestBody {

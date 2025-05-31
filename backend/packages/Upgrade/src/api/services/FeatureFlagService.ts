@@ -83,13 +83,13 @@ export class FeatureFlagService {
   ): Promise<string[]> {
     logger.info({ message: `getKeys: User: ${experimentUserDoc?.requestedUserId}` });
 
-    // throw error if user not defined
+    // throw error if experimentUserDoc doesn't exist somehow
     if (!experimentUserDoc || !experimentUserDoc.id) {
-      logger.error({ message: 'User not defined in getKeys' });
+      logger.error({ message: 'experimentUserDoc not provided in getKeys' });
       const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: 'User not defined in getKeys',
+          message: 'experimentUserDoc not provided in getKeys',
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
