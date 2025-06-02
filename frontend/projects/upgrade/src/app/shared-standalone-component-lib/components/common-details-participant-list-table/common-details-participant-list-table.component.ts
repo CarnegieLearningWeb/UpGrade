@@ -14,7 +14,8 @@ import {
   ParticipantListTableRow,
 } from '../../../core/feature-flags/store/feature-flags.model';
 import { MemberTypes } from '../../../core/segments/store/segments.model';
-import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
+import { FEATURE_FLAG_LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { SharedModule } from '../../../shared/shared.module';
 
 /**
  * `CommonDetailsParticipantListTableComponent` is a reusable Angular component that displays a table with common details for participant lists.
@@ -43,6 +44,7 @@ import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
     MatSlideToggleModule,
     MatIconModule,
     MatButtonModule,
+    SharedModule,
   ],
   templateUrl: './common-details-participant-list-table.component.html',
   styleUrl: './common-details-participant-list-table.component.scss',
@@ -93,6 +95,12 @@ export class CommonDetailsParticipantListTableComponent {
     } else {
       return rowData.segment.groupForSegment?.length || 0;
     }
+  }
+
+  isPublicSegment(rowData: ParticipantListTableRow): boolean {
+    return (
+      rowData.listType === this.memberTypes.SEGMENT && rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC
+    );
   }
 
   onSlideToggleChange(event: MatSlideToggleChange, rowData: ParticipantListTableRow): void {
