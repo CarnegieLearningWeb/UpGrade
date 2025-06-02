@@ -25,6 +25,7 @@ import { SharedModule } from '../../../shared/shared.module';
 //   [inputType]="CommonTagInputType.TAGS"
 //   [label]="config.tagsLabel"
 //   [placeholder]="config.tagsPlaceholder"
+//   [enableTruncation]="true"
 // ></app-common-tags-input>
 
 // <app-common-tags-input
@@ -63,6 +64,7 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
   @Input() label = '';
   @Input() placeholder = '';
   @Input() forceValidation = false;
+  @Input() enableTruncation = false;
   @Output() downloadRequested = new EventEmitter<string[]>();
   // Add an EventEmitter for blur
   @Output() blur: EventEmitter<void> = new EventEmitter<void>();
