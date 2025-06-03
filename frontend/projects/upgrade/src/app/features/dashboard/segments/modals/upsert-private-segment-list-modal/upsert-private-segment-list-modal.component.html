@@ -46,6 +46,7 @@
         [label]="config.valuesLabel"
         [placeholder]="config.valuesPlaceholder"
         [forceValidation]="forceValidation"
+        [truncationLength]="72"
         (downloadRequested)="onDownloadRequested($event)"
         (blur)="onBlur()"
       ></app-common-tags-input>
