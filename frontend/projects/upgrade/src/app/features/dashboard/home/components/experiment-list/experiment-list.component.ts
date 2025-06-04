@@ -263,10 +263,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.applyFilter(target.value);
   }
 
-  onSearchInputChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    // Use the subject for debounced localStorage updates
-    this.searchSubject.next(target.value);
+  onSearchInputChange(value: string): void {
+    this.searchSubject.next(value);
   }
 
   onAutocompleteSelected(event: any): void {

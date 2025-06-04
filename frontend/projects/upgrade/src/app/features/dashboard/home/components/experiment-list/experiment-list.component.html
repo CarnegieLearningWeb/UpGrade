@@ -19,7 +19,7 @@
             matInput
             [(ngModel)]="searchValue"
             (keyup)="onSearchInputKeyup($event)"
-            (input)="onSearchInputChange($event)"
+            (ngModelChange)="onSearchInputChange($event)"
             [placeholder]="'global.search.text' | translate"
           />
         </div>
@@ -29,7 +29,7 @@
             matInput
             [(ngModel)]="searchValue"
             (keyup)="onSearchInputKeyup($event)"
-            (input)="onSearchInputChange($event)"
+            (ngModelChange)="onSearchInputChange($event)"
             [placeholder]="'global.search.text' | translate"
             [matAutocomplete]="autoCompleteStatus"
           />
