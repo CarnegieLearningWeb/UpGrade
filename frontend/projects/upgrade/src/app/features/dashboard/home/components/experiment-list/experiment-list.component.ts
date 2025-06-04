@@ -7,16 +7,15 @@ import {
   EXPERIMENT_SEARCH_KEY,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { Subscription, fromEvent, Observable } from 'rxjs';
+import { Subscription, Observable, Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { NewExperimentComponent } from '../modal/new-experiment/new-experiment.component';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ImportExperimentComponent } from '../modal/import-experiment/import-experiment.component';
 import { ExportModalComponent } from '../modal/export-experiment/export-experiment.component';
-import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'home-experiment-list',
@@ -48,11 +47,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   experimentSortKey$: Observable<string>;
   experimentSortAs$: Observable<string>;
   @ViewChild('tableContainer') experimentTableContainer: ElementRef;
-  @ViewChild('searchInput') searchInput: ElementRef;
   @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
-
   @ViewChild(MatSort, { static: true }) sort: MatSort;
-  searchControl = new FormControl();
 
   get filteredStatusOptions(): string[] {
     if (typeof this.searchValue === 'string') {
@@ -64,6 +60,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private observer: IntersectionObserver;
+  private searchSubject = new Subject<string>();
+  private searchSubscription: Subscription;
 
   constructor(
     private experimentService: ExperimentService,
@@ -100,6 +98,13 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.isAllExperimentsFetchedSub = this.experimentService
       .isAllExperimentsFetched()
       .subscribe((value) => (this.isAllExperimentsFetched = value));
+
+    // Set up search debouncing
+    this.searchSubscription = this.searchSubject
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((searchValue: string) => {
+        this.setSearchString(searchValue);
+      });
   }
 
   // Modify angular material's table's default search behavior
@@ -199,7 +204,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
 
   setChipsVisible(experimentId: string, type: string) {
     const index = this[type].findIndex((data) => {
-      data.experimentId === experimentId;
+      return data.experimentId === experimentId;
     });
     if (index !== -1) {
       this[type][index] = { experimentId, visibility: true };
@@ -237,16 +242,6 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     const windowHeight = window.innerHeight;
     this.experimentTableContainer.nativeElement.style.maxHeight = windowHeight - 325 + 'px';
 
-    fromEvent(this.searchInput.nativeElement, 'keyup')
-      .pipe(debounceTime(500))
-      .subscribe((searchInput) => {
-        if (this.selectedExperimentFilterOption !== 'status') {
-          this.setSearchString((searchInput as any).target.value);
-        } else {
-          this.setSearchString((searchInput as any).option.value);
-        }
-      });
-
     this.setupIntersectionObserver();
   }
 
@@ -257,6 +252,27 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.observer) {
       this.observer.disconnect();
     }
+
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
+  }
+
+  onSearchInputKeyup(event: KeyboardEvent): void {
+    const target = event.target as HTMLInputElement;
+    this.applyFilter(target.value);
+  }
+
+  onSearchInputChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    // Use the subject for debounced localStorage updates
+    this.searchSubject.next(target.value);
+  }
+
+  onAutocompleteSelected(event: any): void {
+    const selectedValue = event.option.value;
+    this.applyFilter(selectedValue);
+    this.setSearchString(selectedValue);
   }
 
   private setupIntersectionObserver() {
