@@ -221,6 +221,8 @@ describe('Feature Flag Service Testing', () => {
               loadRelationCountAndMap: jest.fn().mockReturnThis(),
               getMany: jest.fn().mockResolvedValue(mockFlagArr),
               getOne: jest.fn().mockResolvedValue(mockFlag1),
+              clone: jest.fn().mockReturnThis(),
+              getCount: jest.fn().mockResolvedValue(mockFlagArr.length),
             })),
             validateUniqueKey: jest.fn().mockResolvedValue(null),
           },
@@ -306,7 +308,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should find all paginated feature flags with search string key', async () => {
@@ -323,7 +325,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should find all paginated feature flags with search string name', async () => {
@@ -340,7 +342,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should find all paginated feature flags with search string status', async () => {
@@ -357,7 +359,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should find all paginated feature flags with search string context', async () => {
@@ -374,12 +376,12 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should find all paginated feature flags without search params', async () => {
     const results = await service.findPaginated(1, 2, logger);
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should update the flag', async () => {

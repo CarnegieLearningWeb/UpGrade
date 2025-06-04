@@ -6,7 +6,7 @@
     <mat-card
       appearance="raised"
       class="experiment-table"
-      *ngIf="(experiments$ | async).length; else noExperimentTemplate"
+      *ngIf="(totalExperiments$ | async) > 0; else noExperimentTemplate"
     >
       <home-experiment-list></home-experiment-list>
     </mat-card>

@@ -156,34 +156,25 @@ export class ExperimentService {
     logger: UpgradeLogger,
     searchParams?: IExperimentSearchParams,
     sortParams?: IExperimentSortParams
-  ): Promise<Experiment[]> {
+  ): Promise<[Experiment[], number]> {
     logger.info({ message: `Find paginated experiments` });
 
-    let queryBuilder = this.experimentRepository
-      .createQueryBuilder('experiment')
-      .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('experiment.partitions', 'partitions');
+    let paginatedParentSubQuery = this.experimentRepository
+      .createQueryBuilder()
+      .subQuery()
+      .from(Experiment, 'experiment')
+      .select('DISTINCT(experiment.id)')
+      .leftJoin('experiment.partitions', 'partitions')
+      .orderBy('experiment.id');
 
+    let countQuery = undefined;
     if (searchParams) {
-      const customSearchString = searchParams.string.split(' ').join(`:*&`);
-      // add search query
-      const postgresSearchString = this.postgresSearchString(searchParams.key);
-      queryBuilder = queryBuilder
-        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
-        .addOrderBy('rank', 'DESC')
-        .setParameter('query', `${customSearchString}:*`);
-    }
-    if (sortParams) {
-      queryBuilder = queryBuilder.addOrderBy(`LOWER(CAST(experiment.name AS TEXT))`, sortParams.sortAs);
-    } else {
-      queryBuilder = queryBuilder.addOrderBy('experiment.updatedAt', 'DESC');
+      const whereClause = this.paginatedSearchString(searchParams);
+      paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
+      countQuery = paginatedParentSubQuery.clone();
     }
 
-    let expIds = (await queryBuilder.getMany()).map((exp) => exp.id);
-    // manually paginating the data
-    // there is an active issue in typeorm where we can't use skip and take with orderby
-    expIds = expIds.slice(skip, skip + take);
-    expIds = Array.from(new Set(expIds));
+    paginatedParentSubQuery = paginatedParentSubQuery.limit(take).offset(skip);
 
     let queryBuilderToReturn = this.experimentRepository
       .createQueryBuilder('experiment')
@@ -209,18 +200,14 @@ export class ExperimentService {
       .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
       .leftJoinAndSelect('partitions.conditionPayloads', 'ConditionPayloadsArray')
       .leftJoinAndSelect('ConditionPayloadsArray.parentCondition', 'parentCondition')
-      .whereInIds(expIds);
+      .where(`experiment.id IN ${paginatedParentSubQuery.getQuery()}`);
 
     if (sortParams) {
-      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(
-        `LOWER(CAST(experiment.${sortParams.key} AS TEXT))`,
-        sortParams.sortAs
-      );
+      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
+    } else {
+      queryBuilderToReturn = queryBuilderToReturn.addOrderBy('experiment.updatedAt', 'DESC');
     }
-    const experiments = await queryBuilderToReturn.getMany();
-    return experiments.map((experiment) => {
-      return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
-    });
+    return await Promise.all([queryBuilderToReturn.getMany(), countQuery ? countQuery.getCount() : countQuery]);
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
@@ -1799,33 +1786,36 @@ export class ExperimentService {
       return -1;
     }
   }
-
-  private postgresSearchString(type: string): string {
+  private paginatedSearchString(params: IExperimentSearchParams): string {
+    const type = params.key;
+    // escape % and ' characters
+    const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    const likeString = `ILIKE '%${serachString}%'`;
     const searchString: string[] = [];
     switch (type) {
       case EXPERIMENT_SEARCH_KEY.NAME:
-        searchString.push("coalesce(experiment.name::TEXT,'')");
-        searchString.push("coalesce(partitions.id::TEXT,'')");
+        searchString.push(`${type} ${likeString}`);
         break;
       case EXPERIMENT_SEARCH_KEY.STATUS:
-        searchString.push("coalesce(experiment.state::TEXT,'')");
-        break;
-      case EXPERIMENT_SEARCH_KEY.TAG:
-        searchString.push("coalesce(experiment.tags::TEXT,'')");
+        searchString.push(`state::TEXT ${likeString}`);
         break;
       case EXPERIMENT_SEARCH_KEY.CONTEXT:
-        searchString.push("coalesce(experiment.context::TEXT,'')");
+        searchString.push(`ARRAY_TO_STRING(${type}, ',') ${likeString}`);
+        break;
+      case EXPERIMENT_SEARCH_KEY.TAG:
+        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         break;
       default:
-        searchString.push("coalesce(experiment.name::TEXT,'')");
-        searchString.push("coalesce(partitions.id::TEXT,'')");
-        searchString.push("coalesce(experiment.state::TEXT,'')");
-        searchString.push("coalesce(experiment.tags::TEXT,'')");
-        searchString.push("coalesce(experiment.context::TEXT,'')");
+        searchString.push(`name ${likeString}`);
+        searchString.push(`state::TEXT ${likeString}`);
+        searchString.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
+        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        searchString.push(`partitions.site ${likeString}`);
+        searchString.push(`partitions.target ${likeString}`);
         break;
     }
-    const stringConcat = searchString.join(',');
-    const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
+
+    const searchStringConcatenated = `(${searchString.join(' OR ')})`;
     return searchStringConcatenated;
   }
 

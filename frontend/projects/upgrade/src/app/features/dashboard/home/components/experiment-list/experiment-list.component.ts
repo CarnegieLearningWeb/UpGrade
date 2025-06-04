@@ -123,7 +123,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
               !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length
             );
           case EXPERIMENT_SEARCH_KEY.NAME:
-            return data.name.toLocaleLowerCase().includes(filter) || this.isPartitionFound(data, filter);
+            return data.name.toLocaleLowerCase().includes(filter);
           case EXPERIMENT_SEARCH_KEY.TAG:
             return !!data.tags.filter((tags) => tags.toLocaleLowerCase().includes(filter)).length;
           case EXPERIMENT_SEARCH_KEY.CONTEXT:
@@ -267,7 +267,9 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     };
 
     this.observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
+      const isFilteredSetLessThanTake = this.allExperiments.filteredData.length < 20;
+
+      if (entries[0].isIntersecting && !isFilteredSetLessThanTake) {
         this.fetchExperimentOnScroll();
       }
     }, options);

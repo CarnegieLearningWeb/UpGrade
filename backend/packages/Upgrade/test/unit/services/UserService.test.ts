@@ -38,7 +38,7 @@ describe('User Service Testing', () => {
 
   const limitSpy = jest.fn().mockReturnThis();
   const offsetSpy = jest.fn().mockReturnThis();
-  const addSelectSpy = jest.fn().mockReturnThis();
+  const andWhereSpy = jest.fn().mockReturnThis();
   const setParamaterSpy = jest.fn().mockReturnThis();
   const addOrderBySpy = jest.fn().mockReturnThis();
 
@@ -64,13 +64,15 @@ describe('User Service Testing', () => {
             updateUserDetails: jest.fn().mockResolvedValue(mockUser1),
             deleteUserByEmail: jest.fn().mockResolvedValue(mockUser1),
             createQueryBuilder: jest.fn(() => ({
-              addSelect: addSelectSpy,
+              andWhere: andWhereSpy,
               addOrderBy: addOrderBySpy,
               setParameter: setParamaterSpy,
               where: jest.fn().mockReturnThis(),
               offset: offsetSpy,
               limit: limitSpy,
               getMany: jest.fn().mockResolvedValue(userArr),
+              clone: jest.fn().mockReturnThis(),
+              getCount: jest.fn().mockResolvedValue(userArr.length - 1),
             })),
           },
         },
@@ -116,7 +118,7 @@ describe('User Service Testing', () => {
     expect(repo.createQueryBuilder).toBeCalledWith('users');
     expect(offsetSpy).toBeCalledWith(1);
     expect(limitSpy).toBeCalledWith(2);
-    expect(users).toEqual(userArr);
+    expect(users).toEqual([userArr, 2]);
   });
 
   it('should return paginated users with search params', async () => {
@@ -128,12 +130,8 @@ describe('User Service Testing', () => {
     expect(repo.createQueryBuilder).toBeCalledWith('users');
     expect(offsetSpy).toBeCalledWith(0);
     expect(limitSpy).toBeCalledWith(0);
-    expect(addSelectSpy).toBeCalledWith(
-      `ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users."firstName"::TEXT,''))), to_tsquery(:query))`,
-      'rank'
-    );
-    expect(setParamaterSpy).toBeCalledWith('query', `${params.string}:*`);
-    expect(users).toEqual(userArr);
+    expect(users).toEqual([userArr, 2]);
+    expect(andWhereSpy).toBeCalledWith('(users."firstName"::TEXT ILIKE \'%Bruce%\')');
   });
 
   it('should return paginated users with sort params', async () => {
@@ -149,13 +147,9 @@ describe('User Service Testing', () => {
     expect(repo.createQueryBuilder).toBeCalledWith('users');
     expect(offsetSpy).toBeCalledWith(0);
     expect(limitSpy).toBeCalledWith(0);
-    expect(addSelectSpy).toBeCalledWith(
-      `ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users."lastName"::TEXT,''))), to_tsquery(:query))`,
-      'rank'
-    );
-    expect(setParamaterSpy).toBeCalledWith('query', `${searchParams.string}:*`);
     expect(addOrderBySpy).toBeCalledWith(`users.${sortParams.key}`, sortParams.sortAs);
-    expect(users).toEqual(userArr);
+    expect(users).toEqual([userArr, 2]);
+    expect(andWhereSpy).toBeCalledWith('(users."firstName"::TEXT ILIKE \'%Bruce%\')');
   });
 
   it('should update the User Details', async () => {
@@ -174,10 +168,7 @@ describe('User Service Testing', () => {
       string: 'Bruce',
     };
     await service.findPaginated(0, 0, logger, params);
-    expect(addSelectSpy).toBeCalledWith(
-      `ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users."firstName"::TEXT,''))), to_tsquery(:query))`,
-      'rank'
-    );
+    expect(andWhereSpy).toBeCalledWith('(users."firstName"::TEXT ILIKE \'%Bruce%\')');
   });
 
   it('should format search string for last name', async () => {
@@ -186,10 +177,7 @@ describe('User Service Testing', () => {
       string: 'Bruce',
     };
     await service.findPaginated(0, 0, logger, params);
-    expect(addSelectSpy).toBeCalledWith(
-      `ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users."lastName"::TEXT,''))), to_tsquery(:query))`,
-      'rank'
-    );
+    expect(andWhereSpy).toBeCalledWith('(users."lastName"::TEXT ILIKE \'%Bruce%\')');
   });
 
   it('should format search string for email', async () => {
@@ -198,10 +186,7 @@ describe('User Service Testing', () => {
       string: 'Bruce',
     };
     await service.findPaginated(0, 0, logger, params);
-    expect(addSelectSpy).toBeCalledWith(
-      "ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users.email::TEXT,''))), to_tsquery(:query))",
-      'rank'
-    );
+    expect(andWhereSpy).toBeCalledWith('(users."email"::TEXT ILIKE \'%Bruce%\')');
   });
 
   it('should format search string for role', async () => {
@@ -210,10 +195,7 @@ describe('User Service Testing', () => {
       string: 'Bruce',
     };
     await service.findPaginated(0, 0, logger, params);
-    expect(addSelectSpy).toBeCalledWith(
-      "ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users.role::TEXT,''))), to_tsquery(:query))",
-      'rank'
-    );
+    expect(andWhereSpy).toBeCalledWith('(users."role"::TEXT ILIKE \'%Bruce%\')');
   });
 
   it('should format search string for all', async () => {
@@ -222,9 +204,6 @@ describe('User Service Testing', () => {
       string: 'Bruce',
     };
     await service.findPaginated(0, 0, logger, params);
-    expect(addSelectSpy).toBeCalledWith(
-      "ts_rank_cd(to_tsvector('english',concat_ws(' ', coalesce(users.email::TEXT,''))), to_tsquery(:query))",
-      'rank'
-    );
+    expect(andWhereSpy).toBeCalledWith('(users."role"::TEXT ILIKE \'%Bruce%\')');
   });
 });
