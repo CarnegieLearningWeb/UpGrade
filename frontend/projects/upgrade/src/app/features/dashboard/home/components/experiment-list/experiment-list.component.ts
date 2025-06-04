@@ -16,6 +16,7 @@ import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ImportExperimentComponent } from '../modal/import-experiment/import-experiment.component';
 import { ExportModalComponent } from '../modal/export-experiment/export-experiment.component';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
 @Component({
   selector: 'home-experiment-list',
