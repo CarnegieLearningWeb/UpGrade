@@ -267,7 +267,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.searchSubject.next(value);
   }
 
-  onAutocompleteSelected(event: any): void {
+  onAutocompleteSelected(event: MatAutocompleteSelectedEvent): void {
     const selectedValue = event.option.value;
     this.applyFilter(selectedValue);
     this.setSearchString(selectedValue);
