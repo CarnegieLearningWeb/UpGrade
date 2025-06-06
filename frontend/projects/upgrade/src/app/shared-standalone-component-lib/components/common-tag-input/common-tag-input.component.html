@@ -20,10 +20,10 @@
         >
           <span
             class="chip-label"
-            [matTooltip]="componentTag.length > 16 ? componentTag : null"
+            [matTooltip]="componentTag.length > truncationLength ? componentTag : null"
             matTooltipPosition="above"
           >
-              {{ componentTag | truncate : 16 }}
+              {{ componentTag | truncate : truncationLength }}
           </span>
           <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
         </mat-chip-row>
