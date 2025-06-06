@@ -354,16 +354,13 @@ export class SegmentController {
     paginatedParams: SegmentPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<SegmentPaginationInfo> {
-    const [segmentsWithStatus, count] = await Promise.all([
-      this.segmentService.findPaginated(
-        paginatedParams.skip,
-        paginatedParams.take,
-        request.logger,
-        paginatedParams.searchParams,
-        paginatedParams.sortParams
-      ),
-      this.segmentService.getTotalPublicSegmentCount(),
-    ]);
+    const [segmentsWithStatus, count] = await this.segmentService.findPaginated(
+      paginatedParams.skip,
+      paginatedParams.take,
+      request.logger,
+      paginatedParams.searchParams,
+      paginatedParams.sortParams
+    );
     return {
       total: count,
       nodes: segmentsWithStatus,

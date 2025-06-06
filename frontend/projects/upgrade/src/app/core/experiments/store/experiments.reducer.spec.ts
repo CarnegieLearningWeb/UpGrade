@@ -84,6 +84,7 @@ describe('ExperimentsReducer', () => {
         } as ExperimentVM,
       ],
       totalExperiments: 1,
+      totalFilteredExperiments: null,
     };
 
     const testAction: Action = actionGetExperimentsSuccess(testProps);

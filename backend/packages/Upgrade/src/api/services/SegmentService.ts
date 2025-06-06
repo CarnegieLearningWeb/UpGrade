@@ -212,40 +212,37 @@ export class SegmentService {
     logger: UpgradeLogger,
     searchParams?: ISegmentSearchParams,
     sortParams?: ISegmentSortParams
-  ): Promise<getSegmentsData> {
+  ): Promise<[getSegmentsData, number]> {
     logger.info({ message: `Find paginated segments` });
     let paginatedParentSubQuery = this.segmentRepository
       .createQueryBuilder()
       .subQuery()
       .from(Segment, 'segment')
-      .select('segment.id')
-      .where('segment.type = :type')
-      .limit(take)
-      .offset(skip);
+      .select('segment.id');
+
     if (searchParams) {
-      const whereClause = this.postgresSearchString(searchParams);
+      const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
     }
-    if (sortParams) {
-      paginatedParentSubQuery = paginatedParentSubQuery.addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs);
-    }
-    const segmentsData = await this.segmentRepository
+    const countQuery = paginatedParentSubQuery.clone().andWhere('segment.type=:type', { type: SEGMENT_TYPE.PUBLIC });
+    paginatedParentSubQuery = paginatedParentSubQuery.andWhere('segment.type = :type').offset(skip).limit(take);
+
+    let segmentsDataQuery = await this.segmentRepository
       .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
       .setParameter('type', SEGMENT_TYPE.PUBLIC)
-      .where(`segment.id IN ${paginatedParentSubQuery.getQuery()}`)
-      .getMany();
+      .where(`segment.id IN ${paginatedParentSubQuery.getQuery()}`);
 
-    return this.getSegmentStatus(segmentsData);
+    if (sortParams) {
+      segmentsDataQuery = segmentsDataQuery.addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs);
+    }
+    const [segmentsData, count] = await Promise.all([segmentsDataQuery.getMany(), countQuery.getCount()]);
+    return [await this.getSegmentStatus(segmentsData), count];
   }
 
-  public getTotalPublicSegmentCount(): Promise<number> {
-    return this.segmentRepository.countBy({ type: SEGMENT_TYPE.PUBLIC });
-  }
-
-  private postgresSearchString(params: ISegmentSearchParams): string {
+  private paginatedSearchString(params: ISegmentSearchParams): string {
     const type = params.key;
     // escape % and ' characters
     const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");

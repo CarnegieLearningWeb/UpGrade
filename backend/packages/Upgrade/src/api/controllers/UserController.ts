@@ -93,16 +93,13 @@ export class UserController {
     paginatedParams: UserPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<UserPaginationInfo> {
-    const [users, count] = await Promise.all([
-      this.userService.findPaginated(
-        paginatedParams.skip,
-        paginatedParams.take,
-        request.logger,
-        paginatedParams.searchParams,
-        paginatedParams.sortParams
-      ),
-      this.userService.getTotalCount(request.logger),
-    ]);
+    const [users, count] = await this.userService.findPaginated(
+      paginatedParams.skip,
+      paginatedParams.take,
+      request.logger,
+      paginatedParams.searchParams,
+      paginatedParams.sortParams
+    );
     return {
       total: count,
       nodes: users,
