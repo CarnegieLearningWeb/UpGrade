@@ -85,15 +85,22 @@ export class CommonDetailsParticipantListTableComponent {
         : ['type', 'values', 'name', 'actions'];
   }
 
-  getValuesCount(rowData: ParticipantListTableRow): number {
-    const listType = rowData.listType?.toLowerCase();
+  getValuesText(rowData: ParticipantListTableRow): string {
+    const listType = rowData.listType;
+    let count: number;
 
-    if (listType === this.memberTypes.INDIVIDUAL.toLowerCase()) {
-      return rowData.segment.individualForSegment?.length || 0;
-    } else if (listType === this.memberTypes.SEGMENT.toLowerCase()) {
-      return rowData.segment.subSegments?.length || 0;
+    if (listType === this.memberTypes.INDIVIDUAL) {
+      count = rowData.segment.individualForSegment?.length || 0;
     } else {
-      return rowData.segment.groupForSegment?.length || 0;
+      count = rowData.segment.groupForSegment?.length || 0;
+    }
+
+    if (count === 0) {
+      return '';
+    } else if (count === 1) {
+      return `${count} Value`;
+    } else {
+      return `${count} Values`;
     }
   }
 
