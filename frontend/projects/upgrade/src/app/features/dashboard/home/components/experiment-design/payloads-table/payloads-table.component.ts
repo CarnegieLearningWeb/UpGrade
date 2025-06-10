@@ -112,13 +112,14 @@ export class PayloadsTableComponent implements OnInit, OnDestroy {
   handleEditClick(rowData: SimpleExperimentPayloadTableRowData, rowIndex: number) {
     const payloadTableData = this.experimentDesignStepperService.getSimpleExperimentPayloadTableData();
     const rowDataCopy = { ...rowData };
+    rowDataCopy.payload = rowDataCopy.payload.trim();
     payloadTableData[rowIndex] = rowDataCopy;
 
-    if (this.currentPayloadInput$.value !== rowData.payload) {
+    if (this.currentPayloadInput$.value !== rowDataCopy.payload) {
       payloadTableData[rowIndex].useCustom = true;
     }
 
-    this.currentPayloadInput$.next(rowData.payload);
+    this.currentPayloadInput$.next(rowDataCopy.payload);
     this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(rowIndex, false);
     this.experimentDesignStepperService.setNewSimpleExperimentPayloadTableData(payloadTableData);
   }
