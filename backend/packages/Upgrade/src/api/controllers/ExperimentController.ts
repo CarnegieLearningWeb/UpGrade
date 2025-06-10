@@ -33,7 +33,6 @@ import { SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
-  filtered: number;
   nodes: Experiment[];
 }
 
@@ -742,18 +741,15 @@ export class ExperimentController {
     @Req()
     request: AppRequest
   ): Promise<ExperimentPaginationInfo> {
-    const [[experiments, filteredCount], count] = await Promise.all([
-      this.experimentService.findPaginated(
-        paginatedParams.skip,
-        paginatedParams.take,
-        request.logger,
-        paginatedParams.searchParams,
-        paginatedParams.sortParams
-      ),
-      this.experimentService.getTotalCount(),
-    ]);
+    const [experiments, count] = await this.experimentService.findPaginated(
+      paginatedParams.skip,
+      paginatedParams.take,
+      request.logger,
+      paginatedParams.searchParams,
+      paginatedParams.sortParams
+    );
+
     return {
-      filtered: paginatedParams.searchParams ? filteredCount : count,
       total: count,
       nodes: experiments,
       ...paginatedParams,

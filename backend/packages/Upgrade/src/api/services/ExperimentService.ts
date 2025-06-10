@@ -167,12 +167,11 @@ export class ExperimentService {
       .leftJoin('experiment.partitions', 'partitions')
       .orderBy('experiment.id');
 
-    let countQuery = undefined;
     if (searchParams) {
       const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
-      countQuery = paginatedParentSubQuery.clone();
     }
+    const countQuery = paginatedParentSubQuery.clone();
 
     paginatedParentSubQuery = paginatedParentSubQuery.limit(take).offset(skip);
 
@@ -207,7 +206,7 @@ export class ExperimentService {
     } else {
       queryBuilderToReturn = queryBuilderToReturn.addOrderBy('experiment.updatedAt', 'DESC');
     }
-    return await Promise.all([queryBuilderToReturn.getMany(), countQuery ? countQuery.getCount() : countQuery]);
+    return await Promise.all([queryBuilderToReturn.getMany(), countQuery.getCount()]);
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
