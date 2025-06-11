@@ -34,6 +34,7 @@ import { TruncatePipe } from './pipes/truncate.pipe';
 import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
 import { FormatDatePipe } from './pipes/format-date.pipe';
 import { ScrollDirective } from './directives/scroll.directive';
+import { TrimInputDirective } from './directives/trim-input.directive';
 import { OperationPipe } from './pipes/operation.pipe';
 import { SegmentStatusPipe } from './pipes/segment-status.pipe';
 import { QueryResultComponent } from './components/query-result/query-result.component';
@@ -76,6 +77,7 @@ import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-c
     TruncatePipe,
     ExperimentStatePipe,
     ScrollDirective,
+    TrimInputDirective,
     FormatDatePipe,
     OperationPipe,
     QueryResultComponent,
@@ -118,6 +120,7 @@ import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-c
     ExperimentStatePipe,
     FormatDatePipe,
     ScrollDirective,
+    TrimInputDirective,
     OperationPipe,
     QueryResultComponent,
     DeleteComponent,

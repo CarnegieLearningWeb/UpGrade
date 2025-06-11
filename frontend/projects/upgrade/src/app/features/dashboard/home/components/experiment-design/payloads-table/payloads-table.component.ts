@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Input, OnDestroy } from '@angular/core';
 import { BehaviorSubject, combineLatest, filter, map, Observable, Subscription } from 'rxjs';
 import { ExperimentDesignStepperService } from '../../../../../../core/experiment-design-stepper/experiment-design-stepper.service';
 import {
@@ -112,14 +112,13 @@ export class PayloadsTableComponent implements OnInit, OnDestroy {
   handleEditClick(rowData: SimpleExperimentPayloadTableRowData, rowIndex: number) {
     const payloadTableData = this.experimentDesignStepperService.getSimpleExperimentPayloadTableData();
     const rowDataCopy = { ...rowData };
-    rowDataCopy.payload = rowDataCopy.payload.trim();
     payloadTableData[rowIndex] = rowDataCopy;
 
-    if (this.currentPayloadInput$.value !== rowDataCopy.payload) {
+    if (this.currentPayloadInput$.value !== rowData.payload) {
       payloadTableData[rowIndex].useCustom = true;
     }
 
-    this.currentPayloadInput$.next(rowDataCopy.payload);
+    this.currentPayloadInput$.next(rowData.payload);
     this.experimentDesignStepperService.setUpdatePayloadTableEditModeDetails(rowIndex, false);
     this.experimentDesignStepperService.setNewSimpleExperimentPayloadTableData(payloadTableData);
   }
