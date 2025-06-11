@@ -22,7 +22,7 @@ export class TrimInputDirective {
 
   @HostListener('blur') onBlur() {
     const value = this.el.nativeElement.value;
-    if (value != null && typeof value === 'string') {
+    if (typeof value === 'string') {
       const trimmedValue = value.trim();
 
       // Only update if the value actually changed after trimming
