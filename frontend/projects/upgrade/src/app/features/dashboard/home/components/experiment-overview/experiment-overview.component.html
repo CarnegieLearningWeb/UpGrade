@@ -5,14 +5,27 @@
         <mat-label class="ft-14-400">
           {{ 'home.new-experiment.overview.name.placeHolder' | translate }}
         </mat-label>
-        <input class="ft-14-400" matInput formControlName="experimentName" autocomplete="off" cdkFocusInitial />
+        <input
+          class="ft-14-400"
+          matInput
+          formControlName="experimentName"
+          autocomplete="off"
+          cdkFocusInitial
+          appTrimInput
+        />
       </mat-form-field>
 
       <mat-form-field class="description" appearance="outline" subscriptSizing="dynamic">
         <mat-label class="ft-14-400">
           {{ 'home.new-experiment.overview.description.placeHolder' | translate }}
         </mat-label>
-        <input class="ft-14-400" matInput formControlName="description" autocomplete="off" />
+        <input
+          class="ft-14-400"
+          matInput
+          formControlName="description"
+          autocomplete="off"
+          appTrimInput
+        />
       </mat-form-field>
 
       <mat-form-field class="chips" appearance="outline" subscriptSizing="dynamic">

@@ -49,6 +49,7 @@
                       [placeholder]="'segments.members-placeholder-id/name.text' | translate"
                       formControlName="id"
                       [matAutocomplete]="autoCompleteSegmentName"
+                      appTrimInput
                     />
                     <mat-autocomplete #autoCompleteSegmentName="matAutocomplete" panelWidth="fit-content">
                       <mat-option
@@ -69,6 +70,7 @@
                       [placeholder]="'segments.members-placeholder-id/name.text' | translate"
                       formControlName="id"
                       autocomplete="off"
+                      appTrimInput
                     />
                   </mat-form-field>
                 </ng-template>
@@ -179,6 +181,7 @@
                         [placeholder]="'segments.members-placeholder-id/name.text' | translate"
                         formControlName="id"
                         [matAutocomplete]="autoCompleteSegmentName"
+                        appTrimInput
                       />
                       <mat-autocomplete #autoCompleteSegmentName="matAutocomplete" panelWidth="fit-content">
                         <mat-option
@@ -199,6 +202,7 @@
                         [placeholder]="'segments.members-placeholder-id/name.text' | translate"
                         formControlName="id"
                         autocomplete="off"
+                        appTrimInput
                       />
                     </mat-form-field>
                   </ng-template>

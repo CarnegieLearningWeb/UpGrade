@@ -28,6 +28,7 @@
                           [placeholder]="getMetricPlaceHolder(keyIndex)"
                           formControlName="metricKey"
                           [matAutocomplete]="auto"
+                          appTrimInput
                         />
                         <mat-autocomplete
                           (optionSelected)="selectedOption($event, null, null, queryIndex, keyIndex)"
@@ -201,6 +202,7 @@
                       [placeholder]="'home.new-experiment.metrics.description.placeholder.text' | translate"
                       formControlName="queryName"
                       autocomplete="off"
+                      appTrimInput
                     />
                   </mat-form-field>
                 </div>
