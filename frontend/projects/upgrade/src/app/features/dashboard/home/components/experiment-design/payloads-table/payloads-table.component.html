@@ -62,6 +62,7 @@
               required
               [matAutocomplete]="payloadRowAutoCompleteConditionCodes"
               (keyup)="handleFilterContextMetaDataConditions(rowData.payload, $event)"
+              appTrimInput
             />
             <mat-autocomplete #payloadRowAutoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
               <mat-option

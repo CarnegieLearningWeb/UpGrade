@@ -29,6 +29,7 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { DuplicateSegmentNameError, SEGMENT_TYPE } from 'upgrade_types';
 import isEqual from 'lodash.isequal';
+import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
   selector: 'upsert-add-segment-modal',
@@ -43,6 +44,7 @@ import isEqual from 'lodash.isequal';
     ReactiveFormsModule,
     TranslateModule,
     CommonTagsInputComponent,
+    SharedModule,
   ],
   templateUrl: './upsert-segment-modal.component.html',
   styleUrl: './upsert-segment-modal.component.scss',

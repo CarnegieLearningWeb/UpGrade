@@ -29,6 +29,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
 import isEqual from 'lodash.isequal';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',
@@ -43,6 +44,7 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
     ReactiveFormsModule,
     TranslateModule,
     CommonTagsInputComponent,
+    SharedModule,
   ],
   templateUrl: './upsert-feature-flag-modal.component.html',
   styleUrl: './upsert-feature-flag-modal.component.scss',

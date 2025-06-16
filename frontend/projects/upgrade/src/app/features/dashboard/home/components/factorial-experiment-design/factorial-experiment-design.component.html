@@ -35,6 +35,7 @@
                           [placeholder]="'home.new-experiment.design.decision-point-site.placeholder.text' | translate"
                           formControlName="site"
                           [matAutocomplete]="autoCompleteSites"
+                          appTrimInput
                         />
                         <mat-autocomplete #autoCompleteSites="matAutocomplete" panelWidth="fit-content">
                           <mat-option
@@ -73,6 +74,7 @@
                           "
                           formControlName="target"
                           [matAutocomplete]="autoCompleteTargets"
+                          appTrimInput
                         />
                         <mat-autocomplete #autoCompleteTargets="matAutocomplete" panelWidth="fit-content">
                           <mat-option
@@ -275,6 +277,7 @@
                           formControlName="name"
                           [value]="name"
                           autocomplete="off"
+                          appTrimInput
                         />
                       </span>
                     </mat-form-field>
@@ -331,6 +334,7 @@
                           [placeholder]="'home.new-experiment.design.description.placeholder.text' | translate"
                           formControlName="description"
                           [value]="description"
+                          appTrimInput
                         />
                       </span>
                     </mat-form-field>
@@ -471,6 +475,7 @@
                                     formControlName="name"
                                     [value]="name"
                                     autocomplete="off"
+                                    appTrimInput
                                   />
                                 </span>
                               </mat-form-field>
@@ -539,6 +544,7 @@
                                     formControlName="value"
                                     [value]="payload?.value"
                                     autocomplete="off"
+                                    appTrimInput
                                   />
                                 </span>
                               </mat-form-field>

@@ -6,7 +6,12 @@
       <mat-label class="ft-14-400">
         {{ 'users-global.form-id-placeholder.text' | translate }}
       </mat-label>
-      <input class="ft-14-400" matInput formControlName="id" />
+      <input
+        class="ft-14-400"
+        matInput
+        formControlName="id"
+        appTrimInput
+      />
     </mat-form-field>
 
     <button
