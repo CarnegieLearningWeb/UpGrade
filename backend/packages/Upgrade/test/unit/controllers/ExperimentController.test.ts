@@ -86,22 +86,26 @@ describe('Experiment Controller Testing', () => {
         order: 0,
       },
     ],
-    experimentSegmentInclusion: {
-      segment: {
-        individualForSegment: [],
-        groupForSegment: [],
-        subSegments: [],
-        type: SEGMENT_TYPE.PRIVATE,
+    experimentSegmentInclusion: [
+      {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
       },
-    },
-    experimentSegmentExclusion: {
-      segment: {
-        individualForSegment: [],
-        groupForSegment: [],
-        subSegments: [],
-        type: SEGMENT_TYPE.PRIVATE,
+    ],
+    experimentSegmentExclusion: [
+      {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
       },
-    },
+    ],
   };
 
   const tsConfigurablePolicyParameters = new MoocletTSConfigurablePolicyParametersDTO();

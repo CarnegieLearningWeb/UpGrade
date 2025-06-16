@@ -29,11 +29,21 @@ import { MoocletExperimentService } from '../services/MoocletExperimentService';
 import { env } from '../../env';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
-import { SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
+import { LIST_FILTER_MODE, SERVER_ERROR, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
+import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
+import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
+import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
+import { IdValidator } from '../controllers/validators/ExperimentUserValidator';
+import { Segment } from '../models/Segment';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
+}
+
+interface ExperimentListValidator {
+  list: SegmentInputValidator;
+  experimentId: string;
 }
 
 /**
@@ -1445,5 +1455,101 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<number> | undefined {
     return this.experimentAssignmentService.getGroupAssignmentStatus(id, request.logger);
+  }
+
+  @Post('/inclusionList')
+  public async addInclusionList(
+    @Body({ validate: true }) experimentListInput: ExperimentListValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<ExperimentSegmentInclusion> {
+    return (
+      await this.experimentService.addList(
+        experimentListInput.list,
+        experimentListInput.experimentId,
+        LIST_FILTER_MODE.INCLUSION,
+        currentUser,
+        request.logger
+      )
+    )[0];
+  }
+
+  @Post('/exclusionList')
+  public async addExclusionList(
+    @Body({ validate: true }) experimentListInput: ExperimentListValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<ExperimentSegmentExclusion> {
+    return await this.experimentService.addList(
+      experimentListInput.list,
+      experimentListInput.experimentId,
+      LIST_FILTER_MODE.EXCLUSION,
+      currentUser,
+      request.logger
+    );
+  }
+
+  @Put('/inclusionList/:id')
+  public async updateInclusionList(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Body({ validate: true }) experimentListInput: ExperimentListValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<ExperimentSegmentInclusion> {
+    if (id !== experimentListInput.list.id) {
+      return Promise.reject(
+        new Error(
+          `${SERVER_ERROR.INCORRECT_PARAM_FORMAT}: The id in the URL (${id}) does not match the list id in the request body (${experimentListInput.list.id}).`
+        )
+      );
+    }
+    return this.experimentService.updateList(
+      experimentListInput.list,
+      experimentListInput.experimentId,
+      LIST_FILTER_MODE.INCLUSION,
+      currentUser,
+      request.logger
+    );
+  }
+
+  @Put('/exclusionList/:id')
+  public async updateExclusionList(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Body({ validate: true }) experimentListInput: ExperimentListValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<ExperimentSegmentExclusion> {
+    if (id !== experimentListInput.list.id) {
+      return Promise.reject(
+        new Error(
+          `${SERVER_ERROR.INCORRECT_PARAM_FORMAT}: The id in the URL (${id}) does not match the list id in the request body (${experimentListInput.list.id}).`
+        )
+      );
+    }
+    return this.experimentService.updateList(
+      experimentListInput.list,
+      experimentListInput.experimentId,
+      LIST_FILTER_MODE.EXCLUSION,
+      currentUser,
+      request.logger
+    );
+  }
+
+  @Delete('/inclusionList/:id')
+  public async deleteInclusionList(
+    @Params({ validate: true }) { id }: IdValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    return this.experimentService.deleteList(id, LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
+  }
+
+  @Delete('/exclusionList/:id')
+  public async deleteExclusionList(
+    @Params({ validate: true }) { id }: IdValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    return this.experimentService.deleteList(id, LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
   }
 }

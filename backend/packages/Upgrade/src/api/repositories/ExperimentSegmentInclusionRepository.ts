@@ -7,7 +7,7 @@ import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion
 @EntityRepository(ExperimentSegmentInclusion)
 export class ExperimentSegmentInclusionRepository extends Repository<ExperimentSegmentInclusion> {
   public async insertData(
-    data: Partial<ExperimentSegmentInclusion>,
+    data: Partial<ExperimentSegmentInclusion>[],
     logger: UpgradeLogger,
     entityManager: EntityManager
   ): Promise<ExperimentSegmentInclusion> {

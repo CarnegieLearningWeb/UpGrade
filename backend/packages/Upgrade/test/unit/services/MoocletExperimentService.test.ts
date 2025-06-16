@@ -170,27 +170,31 @@ const moocletExperimentDataTSConfigurable = {
       excludeIfReached: false,
     },
   ],
-  experimentSegmentInclusion: {
-    segment: {
-      individualForSegment: [],
-      groupForSegment: [
-        {
-          type: 'All',
-          groupId: 'All',
-        },
-      ],
-      subSegments: [],
-      type: SEGMENT_TYPE.PRIVATE,
+  experimentSegmentInclusion: [
+    {
+      segment: {
+        individualForSegment: [],
+        groupForSegment: [
+          {
+            type: 'All',
+            groupId: 'All',
+          },
+        ],
+        subSegments: [],
+        type: SEGMENT_TYPE.PRIVATE,
+      },
     },
-  },
-  experimentSegmentExclusion: {
-    segment: {
-      individualForSegment: [],
-      groupForSegment: [],
-      subSegments: [],
-      type: SEGMENT_TYPE.PRIVATE,
+  ],
+  experimentSegmentExclusion: [
+    {
+      segment: {
+        individualForSegment: [],
+        groupForSegment: [],
+        subSegments: [],
+        type: SEGMENT_TYPE.PRIVATE,
+      },
     },
-  },
+  ],
   filterMode: FILTER_MODE.EXCLUDE_ALL,
   queries: [],
   endOn: null,

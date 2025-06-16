@@ -7,7 +7,7 @@ import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion
 @EntityRepository(ExperimentSegmentExclusion)
 export class ExperimentSegmentExclusionRepository extends Repository<ExperimentSegmentExclusion> {
   public async insertData(
-    data: Partial<ExperimentSegmentExclusion>,
+    data: Partial<ExperimentSegmentExclusion>[],
     logger: UpgradeLogger,
     entityManager: EntityManager
   ): Promise<ExperimentSegmentExclusion> {

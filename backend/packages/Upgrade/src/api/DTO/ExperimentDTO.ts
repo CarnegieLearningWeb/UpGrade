@@ -448,15 +448,17 @@ abstract class BaseExperimentWithoutPayload {
   @Type(() => StateTimeLogValidator)
   public stateTimeLogs?: StateTimeLogValidator[];
 
-  @IsNotEmpty()
-  @ValidateNested()
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => ParticipantsValidator)
-  public experimentSegmentInclusion: ParticipantsValidator;
+  public experimentSegmentInclusion: ParticipantsValidator[];
 
-  @IsNotEmpty()
-  @ValidateNested()
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => ParticipantsValidator)
-  public experimentSegmentExclusion: ParticipantsValidator;
+  public experimentSegmentExclusion: ParticipantsValidator[];
 
   @IsOptional()
   @IsString()

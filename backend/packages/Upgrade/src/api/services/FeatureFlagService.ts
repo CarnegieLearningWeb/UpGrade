@@ -29,7 +29,7 @@ import {
   FeatureFlagCreatedData,
   FeatureFlagStateChangedData,
   FeatureFlagUpdatedData,
-  FEATURE_FLAG_LIST_FILTER_MODE,
+  LIST_FILTER_MODE,
   FEATURE_FLAG_LIST_OPERATION,
   ListOperationsData,
   CACHE_PREFIX,
@@ -458,23 +458,13 @@ export class FeatureFlagService {
         // Create delete audit logs for inclusion and exclusion lists
         if (includeListIds.length) {
           promises.push(
-            this.createDeleteListAuditLogs(
-              includeListIds,
-              FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
-              user,
-              transactionalEntityManager
-            )
+            this.createDeleteListAuditLogs(includeListIds, LIST_FILTER_MODE.INCLUSION, user, transactionalEntityManager)
           );
         }
 
         if (excludeListIds.length) {
           promises.push(
-            this.createDeleteListAuditLogs(
-              excludeListIds,
-              FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
-              user,
-              transactionalEntityManager
-            )
+            this.createDeleteListAuditLogs(excludeListIds, LIST_FILTER_MODE.EXCLUSION, user, transactionalEntityManager)
           );
         }
 
@@ -522,7 +512,7 @@ export class FeatureFlagService {
 
   public async deleteList(
     segmentId: string,
-    filterType: FEATURE_FLAG_LIST_FILTER_MODE,
+    filterType: LIST_FILTER_MODE,
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Segment> {
@@ -533,7 +523,7 @@ export class FeatureFlagService {
 
   async createDeleteListAuditLogs(
     segmentIds: string[],
-    filterType: FEATURE_FLAG_LIST_FILTER_MODE,
+    filterType: LIST_FILTER_MODE,
     currentUser: UserDTO,
     entityManager?: EntityManager
   ): Promise<void> {
@@ -542,7 +532,7 @@ export class FeatureFlagService {
     for (const segmentId of segmentIds) {
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
 
-      if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
+      if (filterType === LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
           where: { segment: { id: segmentId } },
           relations: ['featureFlag', 'segment'],
@@ -587,7 +577,7 @@ export class FeatureFlagService {
 
   public async addList(
     listsInput: FeatureFlagListValidator[],
-    filterType: FEATURE_FLAG_LIST_FILTER_MODE,
+    filterType: LIST_FILTER_MODE,
     currentUser: UserDTO,
     logger: UpgradeLogger,
     transactionalEntityManager?: EntityManager
@@ -632,7 +622,7 @@ export class FeatureFlagService {
       });
 
       try {
-        if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
+        if (filterType === LIST_FILTER_MODE.INCLUSION) {
           await this.featureFlagSegmentInclusionRepository.insertData(
             featureFlagSegmentInclusionOrExclusionArray,
             logger,
@@ -687,7 +677,7 @@ export class FeatureFlagService {
 
   public async updateList(
     listInput: FeatureFlagListValidator,
-    filterType: FEATURE_FLAG_LIST_FILTER_MODE,
+    filterType: LIST_FILTER_MODE,
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
@@ -698,7 +688,7 @@ export class FeatureFlagService {
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
       const featureFlag = await this.findOne(listInput.id);
 
-      if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
+      if (filterType === LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
           where: { featureFlag: { id: listInput.id }, segment: { id: listInput.segment.id } },
           relations: ['featureFlag', 'segment'],
@@ -756,7 +746,7 @@ export class FeatureFlagService {
 
       // Save the updated record
       try {
-        if (filterType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
+        if (filterType === LIST_FILTER_MODE.INCLUSION) {
           await transactionalEntityManager.save(FeatureFlagSegmentInclusion, existingRecord);
         } else {
           await transactionalEntityManager.save(FeatureFlagSegmentExclusion, existingRecord);
@@ -1006,14 +996,14 @@ export class FeatureFlagService {
         const [inclusionDoc, exclusionDoc] = await Promise.all([
           this.addList(
             featureFlagSegmentInclusionList,
-            FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+            LIST_FILTER_MODE.INCLUSION,
             currentUser,
             logger,
             transactionalEntityManager
           ),
           this.addList(
             featureFlagSegmentExclusionList,
-            FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+            LIST_FILTER_MODE.EXCLUSION,
             currentUser,
             logger,
             transactionalEntityManager
@@ -1175,7 +1165,7 @@ export class FeatureFlagService {
   public async importFeatureFlagLists(
     featureFlagListFiles: IFeatureFlagFile[],
     featureFlagId: string,
-    listType: FEATURE_FLAG_LIST_FILTER_MODE,
+    listType: LIST_FILTER_MODE,
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<IImportError[]> {
@@ -1331,16 +1321,16 @@ export class FeatureFlagService {
 
   public async exportAllLists(
     id: string,
-    listType: FEATURE_FLAG_LIST_FILTER_MODE,
+    listType: LIST_FILTER_MODE,
     logger: UpgradeLogger
   ): Promise<ImportFeatureFlagListValidator[] | null> {
     const featureFlag = await this.findOne(id, logger);
     let listsArray: ImportFeatureFlagListValidator[] = [];
     if (featureFlag) {
       let lists: (FeatureFlagSegmentExclusion | FeatureFlagSegmentExclusion)[] = [];
-      if (listType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION) {
+      if (listType === LIST_FILTER_MODE.INCLUSION) {
         lists = featureFlag.featureFlagSegmentInclusion;
-      } else if (listType === FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION) {
+      } else if (listType === LIST_FILTER_MODE.EXCLUSION) {
         lists = featureFlag.featureFlagSegmentExclusion;
       } else {
         return null;
