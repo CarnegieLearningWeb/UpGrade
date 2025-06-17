@@ -50,7 +50,7 @@ import { IndividualExclusionRepository } from '../repositories/IndividualExclusi
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
 import { ISegmentSearchParams, ISegmentSortParams } from '../controllers/validators/SegmentPaginatedParamsValidator';
-import { Experiment } from 'src/api/models/Experiment';
+import { Experiment } from '../models/Experiment';
 
 interface IsSegmentValidWithError {
   missingProperty: string;

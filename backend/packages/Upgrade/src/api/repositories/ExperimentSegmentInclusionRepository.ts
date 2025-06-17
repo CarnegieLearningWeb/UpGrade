@@ -10,7 +10,7 @@ export class ExperimentSegmentInclusionRepository extends Repository<ExperimentS
     data: Partial<ExperimentSegmentInclusion>[],
     logger: UpgradeLogger,
     entityManager: EntityManager
-  ): Promise<ExperimentSegmentInclusion> {
+  ): Promise<ExperimentSegmentInclusion[]> {
     const result = await entityManager
       .createQueryBuilder()
       .insert()

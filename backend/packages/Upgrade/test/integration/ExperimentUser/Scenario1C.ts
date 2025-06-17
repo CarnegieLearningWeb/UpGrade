@@ -140,6 +140,7 @@ export default async function ExcludeGroupsC(): Promise<void> {
   await experimentService.addList(
     {
       ...experimentObject.experimentSegmentExclusion[0].segment,
+      listType: 'group',
       groups: [{ groupId: '1', type: 'teacher' }],
     },
 
