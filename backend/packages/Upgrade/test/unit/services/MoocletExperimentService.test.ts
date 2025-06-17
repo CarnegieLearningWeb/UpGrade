@@ -6,6 +6,7 @@ import { ArchivedStatsRepository } from '../../../src/api/repositories/ArchivedS
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
 import { DecisionPointRepository } from '../../../src/api/repositories/DecisionPointRepository';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
+import { SegmentRepository } from '../../../src/api/repositories/SegmentRepository';
 import { ExperimentConditionRepository } from '../../../src/api/repositories/ExperimentConditionRepository';
 import { ExperimentRepository } from '../../../src/api/repositories/ExperimentRepository';
 import { ExperimentSegmentExclusionRepository } from '../../../src/api/repositories/ExperimentSegmentExclusionRepository';
@@ -73,6 +74,7 @@ jest.mock('../../../src/api/repositories/ExperimentRepository');
 jest.mock('../../../src/api/repositories/ExperimentConditionRepository');
 jest.mock('../../../src/api/repositories/DecisionPointRepository');
 jest.mock('../../../src/api/repositories/ExperimentAuditLogRepository');
+jest.mock('../../../src/api/repositories/SegmentRepository');
 jest.mock('../../../src/api/repositories/IndividualExclusionRepository');
 jest.mock('../../../src/api/repositories/GroupExclusionRepository');
 jest.mock('../../../src/api/repositories/MonitoredDecisionPointRepository');
@@ -213,6 +215,7 @@ describe('#MoocletExperimentService', () => {
   let experimentConditionRepository: ExperimentConditionRepository;
   let decisionPointRepository: DecisionPointRepository;
   let experimentAuditLogRepository: ExperimentAuditLogRepository;
+  let segmentRepository: SegmentRepository;
   let individualExclusionRepository: IndividualExclusionRepository;
   let groupExclusionRepository: GroupExclusionRepository;
   let monitoredDecisionPointRepository: MonitoredDecisionPointRepository;
@@ -277,6 +280,7 @@ describe('#MoocletExperimentService', () => {
       levelCombinationElementsRepository,
       archivedStatsRepository,
       stratificationRepository,
+      segmentRepository,
       moocletExperimentRefRepository,
       mockDataSource,
       previewUserService,

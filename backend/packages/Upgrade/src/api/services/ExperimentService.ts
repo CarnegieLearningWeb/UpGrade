@@ -90,6 +90,8 @@ import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository
 import { MetricService } from './MetricService';
 import { MoocletRewardsService } from './MoocletRewardsService';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
+import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
+import { SegmentRepository } from '../repositories/SegmentRepository';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -117,6 +119,7 @@ export class ExperimentService {
     @InjectRepository() protected stateTimeLogsRepository: StateTimeLogsRepository,
     @InjectRepository() protected experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     @InjectRepository() protected experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
+    @InjectRepository() protected segmentRepository: SegmentRepository,
     @InjectRepository() protected conditionPayloadRepository: ConditionPayloadRepository,
     @InjectRepository() protected factorRepository: FactorRepository,
     @InjectRepository() protected levelRepository: LevelRepository,
@@ -751,8 +754,21 @@ export class ExperimentService {
     const oldDecisionPoints = oldExperiment.partitions;
     const oldQueries = oldExperiment.queries;
     const oldConditionPayloads = oldExperiment.conditionPayloads;
+    const isChangingContext = oldExperiment.context[0] !== experiment.context[0];
 
-    // create schedules to start experiment and end experiment
+    let includeListsToReturn = [...oldExperiment.experimentSegmentInclusion];
+    let excludeListsToReturn = [...oldExperiment.experimentSegmentExclusion];
+
+    if (isChangingContext) {
+      // If the context is changing, we need to delete all lists from the experiment
+      logger.info({
+        message: `Changing context from ${oldExperiment.context[0]} to ${experiment.context[0]}. Deleting all lists from the experiment.`,
+      });
+      await this.deleteAllListsFromExperiment(oldExperiment, user, logger, entityManager);
+      includeListsToReturn = [];
+      excludeListsToReturn = [];
+    }
+
     if (this.scheduledJobService) {
       this.scheduledJobService.updateExperimentSchedules(experiment as any, logger);
     }
@@ -1098,7 +1114,11 @@ export class ExperimentService {
         return { updatedExperiment, toDeleteQueriesDoc };
       })
       .then(async ({ updatedExperiment }) => {
-        return updatedExperiment;
+        return {
+          ...updatedExperiment,
+          experimentSegmentExclusion: excludeListsToReturn,
+          experimentSegmentInclusion: includeListsToReturn,
+        };
       });
   }
 
@@ -1821,22 +1841,23 @@ export class ExperimentService {
         throw error;
       }
 
-      const updateAuditLog: AuditLogData = {
-        experimentId: experiment.id,
-        experimentName: experiment.name,
-        list: {
-          listId: newSegment?.id,
-          listName: newSegment?.name,
-          filterType: filterType,
-          operation: EXPERIMENT_LIST_OPERATION.CREATED,
-        },
-      };
-      await this.experimentAuditLogRepository.saveRawJson(
-        LOG_TYPE.EXPERIMENT_UPDATED,
-        updateAuditLog,
-        currentUser,
-        transactionalEntityManager
-      );
+      // TODO: Uncomment when the frontend is ready to handle the audit logs
+      // const updateAuditLog: AuditLogData = {
+      //   experimentId: experiment.id,
+      //   experimentName: experiment.name,
+      //   list: {
+      //     listId: newSegment?.id,
+      //     listName: newSegment?.name,
+      //     filterType: filterType,
+      //     operation: EXPERIMENT_LIST_OPERATION.CREATED,
+      //   },
+      // };
+      // await this.experimentAuditLogRepository.saveRawJson(
+      //   LOG_TYPE.EXPERIMENT_UPDATED,
+      //   updateAuditLog,
+      //   currentUser,
+      //   transactionalEntityManager
+      // );
 
       // Update exclusions/Enrollments if the filterType is EXCLUSION
       if (filterType === LIST_FILTER_MODE.EXCLUSION) {
@@ -1872,9 +1893,62 @@ export class ExperimentService {
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Segment> {
-    // await this.createDeleteListAuditLogs([segmentId], filterType, currentUser); TODOO create audit log
+    // TODO: Uncomment when the frontend is ready to handle the audit logs
+    //await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return this.segmentService.deleteSegment(segmentId, logger);
+  }
+
+  async createDeleteListAuditLogs(
+    segmentIds: string[],
+    filterType: LIST_FILTER_MODE,
+    currentUser: UserDTO,
+    entityManager?: EntityManager
+  ): Promise<void> {
+    const auditLogPromises = [];
+    for (const segmentId of segmentIds) {
+      let existingRecord: ExperimentSegmentInclusion | ExperimentSegmentExclusion;
+
+      if (filterType === LIST_FILTER_MODE.INCLUSION) {
+        existingRecord = await this.experimentSegmentInclusionRepository.findOne({
+          where: { segment: { id: segmentId } },
+          relations: ['experiment', 'segment'],
+        });
+      } else {
+        existingRecord = await this.experimentSegmentExclusionRepository.findOne({
+          where: { segment: { id: segmentId } },
+          relations: ['experiment', 'segment'],
+        });
+      }
+      // Handle if the record is not found
+      if (!existingRecord) {
+        throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
+      }
+
+      // Create the delete list audit log data
+      const updateAuditLog = {
+        experimentId: existingRecord.experiment.id,
+        experimentName: existingRecord.experiment.name,
+        list: {
+          listId: segmentId,
+          listName: existingRecord.segment.name,
+          filterType: filterType,
+          operation: EXPERIMENT_LIST_OPERATION.DELETED,
+        },
+      };
+
+      const that = entityManager ? entityManager.getRepository(ExperimentAuditLog) : this.experimentAuditLogRepository;
+      const savePromise = that.save({
+        type: LOG_TYPE.EXPERIMENT_UPDATED,
+        data: updateAuditLog,
+        user: currentUser,
+      });
+
+      auditLogPromises.push(savePromise);
+    }
+
+    // Use Promise.all to run all audit log saving operations concurrently
+    await Promise.all(auditLogPromises);
   }
 
   public async updateList(
@@ -2125,6 +2199,39 @@ export class ExperimentService {
       await this.cacheService.delCache(CACHE_PREFIX.MARK_KEY_PREFIX + '-' + partition.site + '-' + partition.target);
     });
     await Promise.all(deletedCache);
+    return;
+  }
+
+  private async deleteAllListsFromExperiment(
+    oldExperiment: Experiment,
+    user: UserDTO,
+    logger: UpgradeLogger,
+    transactionalEntityManager?: EntityManager
+  ): Promise<void> {
+    const includeListIds = oldExperiment.experimentSegmentInclusion.map((list) => list.segment.id);
+    const excludeListIds = oldExperiment.experimentSegmentExclusion.map((list) => list.segment.id);
+
+    // TODO: Uncomment when the frontend is ready to handle the audit logs
+    // const auditLogPromises = [];
+
+    // if (includeListIds.length) {
+    //   auditLogPromises.push(
+    //     this.createDeleteListAuditLogs(includeListIds, LIST_FILTER_MODE.INCLUSION, user, transactionalEntityManager)
+    //   );
+    // }
+
+    // if (excludeListIds.length) {
+    //   auditLogPromises.push(
+    //     this.createDeleteListAuditLogs(excludeListIds, LIST_FILTER_MODE.EXCLUSION, user, transactionalEntityManager)
+    //   );
+    // }
+
+    // Delete segments
+    const segmentIds = [...includeListIds, ...excludeListIds];
+    if (segmentIds.length) {
+      await this.segmentRepository.deleteSegments(segmentIds, logger, transactionalEntityManager);
+    }
+    // await Promise.all(auditLogPromises);
     return;
   }
 }

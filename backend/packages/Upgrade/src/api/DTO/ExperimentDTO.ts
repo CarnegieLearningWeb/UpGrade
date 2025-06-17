@@ -307,6 +307,10 @@ class SegmentValidator {
   @IsString()
   @IsEnum(SEGMENT_TYPE)
   public type: SEGMENT_TYPE;
+
+  @IsOptional()
+  @IsString()
+  public listType?: string;
 }
 export class ParticipantsValidator {
   @IsNotEmpty()
