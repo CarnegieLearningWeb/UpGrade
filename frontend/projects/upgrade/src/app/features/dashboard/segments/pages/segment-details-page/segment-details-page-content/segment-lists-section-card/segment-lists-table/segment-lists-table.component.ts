@@ -4,7 +4,7 @@ import { CommonDetailsParticipantListTableComponent } from '../../../../../../..
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { SegmentsService } from '../../../../../../../../core/segments/segments.service';
-import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
+import { LIST_FILTER_MODE } from 'upgrade_types';
 
 @Component({
   selector: 'app-segment-lists-table',
@@ -15,7 +15,7 @@ import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 })
 export class SegmentListsTableComponent {
   @Input() actionsDisabled?: boolean = false;
-  tableType = FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION;
+  tableType = LIST_FILTER_MODE.EXCLUSION;
   dataSource$ = this.segmentsService.selectSegmentLists$;
   isLoading$ = this.segmentsService.isLoadingSegments$;
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();

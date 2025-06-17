@@ -168,7 +168,7 @@ export const withinSubjectExperiment = clone({
       assignmentWeight: 50,
       conditionCode: 'Abstract',
       twoCharacterId: 'AB',
-      order: 1
+      order: 1,
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -177,7 +177,7 @@ export const withinSubjectExperiment = clone({
       assignmentWeight: 50,
       conditionCode: 'Concrete',
       twoCharacterId: 'CN',
-      order: 2
+      order: 2,
     },
   ],
   assignmentUnit: ASSIGNMENT_UNIT.WITHIN_SUBJECTS,
@@ -232,98 +232,108 @@ export const groupLevelExclusionExperiment = clone({
       excludeIfReached: true,
     },
   ],
-  experimentSegmentInclusion: {
-    segment: {
-      id: 'a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11',
-      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
-      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
-      context: 'home',
-      type: 'private',
-      individualForSegment: [],
-      groupForSegment: [
-        {
-          groupId: 'All',
-          type: 'All',
-        },
-      ],
-      subSegments: [],
+  experimentSegmentInclusion: [
+    {
+      segment: {
+        id: 'a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11',
+        name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+        description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+        context: 'home',
+        type: 'private',
+        individualForSegment: [],
+        groupForSegment: [
+          {
+            groupId: 'All',
+            type: 'All',
+          },
+        ],
+        subSegments: [],
+      },
     },
-  },
-  experimentSegmentExclusion: {
-    segment: {
-      id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
-      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
-      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
-      context: 'home',
-      type: 'private',
-      individualForSegment: [],
-      groupForSegment: [
-        {
-          groupId: '2',
-          type: 'teacher',
-        },
-      ],
-      subSegments: [],
+  ],
+  experimentSegmentExclusion: [
+    {
+      segment: {
+        id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
+        name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+        description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+        context: 'home',
+        type: 'private',
+        individualForSegment: [],
+        groupForSegment: [
+          {
+            groupId: '2',
+            type: 'teacher',
+          },
+        ],
+        subSegments: [],
+      },
     },
-  },
+  ],
 });
 
 export const ExperimentLevelExclusionExperiment = clone({
   ...individualAssignmentExperiment,
-  experimentSegmentExclusion: {
-    segment: {
-      id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
-      name: 'be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment',
-      description: 'be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment',
-      context: 'home',
-      type: 'private',
-      individualForSegment: [
-        {
-          userId: 'student1',
-        },
-      ],
-      groupForSegment: [],
-      subSegments: [],
+  experimentSegmentExclusion: [
+    {
+      segment: {
+        id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
+        name: 'be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment',
+        description: 'be3ae74f-370a-4015-93f3-7761d16f8b17 Exclusion Segment',
+        context: 'home',
+        type: 'private',
+        individualForSegment: [
+          {
+            userId: 'student1',
+          },
+        ],
+        groupForSegment: [],
+        subSegments: [],
+      },
     },
-  },
+  ],
 });
 
 export const ExperimentLevelExclusionExperiment2 = clone({
   ...groupAssignmentWithGroupConsistencyExperiment2,
-  experimentSegmentInclusion: {
-    segment: {
-      id: 'a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11',
-      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
-      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
-      context: 'home',
-      type: 'private',
-      individualForSegment: [],
-      groupForSegment: [
-        {
-          groupId: 'All',
-          type: 'All',
-        },
-      ],
-      subSegments: [],
+  experimentSegmentInclusion: [
+    {
+      segment: {
+        id: 'a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11',
+        name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+        description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+        context: 'home',
+        type: 'private',
+        individualForSegment: [],
+        groupForSegment: [
+          {
+            groupId: 'All',
+            type: 'All',
+          },
+        ],
+        subSegments: [],
+      },
     },
-  },
-  experimentSegmentExclusion: {
-    segment: {
-      id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
-      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
-      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
-      context: 'home',
-      type: 'private',
-      individualForSegment: [],
-      groupForSegment: [
-        {
-          groupId: '2',
-          type: 'teacher',
-        },
-      ],
-      subSegments: [],
+  ],
+  experimentSegmentExclusion: [
+    {
+      segment: {
+        id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
+        name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+        description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+        context: 'home',
+        type: 'private',
+        individualForSegment: [],
+        groupForSegment: [
+          {
+            groupId: '2',
+            type: 'teacher',
+          },
+        ],
+        subSegments: [],
+      },
     },
-  },
+  ],
 });
 
 export const withinSubjectExclusionExperiment = clone({
@@ -350,40 +360,44 @@ export const withinSubjectExclusionExperiment = clone({
       excludeIfReached: true,
     },
   ],
-  experimentSegmentInclusion: {
-    segment: {
-      id: 'a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11',
-      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
-      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
-      context: 'home',
-      type: 'private',
-      individualForSegment: [],
-      groupForSegment: [
-        {
-          groupId: 'All',
-          type: 'All',
-        },
-      ],
-      subSegments: [],
+  experimentSegmentInclusion: [
+    {
+      segment: {
+        id: 'a898b2c5-79c6-4f8b-ab35-2b3b71ba4a11',
+        name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+        description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Inclusion Segment',
+        context: 'home',
+        type: 'private',
+        individualForSegment: [],
+        groupForSegment: [
+          {
+            groupId: 'All',
+            type: 'All',
+          },
+        ],
+        subSegments: [],
+      },
     },
-  },
-  experimentSegmentExclusion: {
-    segment: {
-      id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
-      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
-      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
-      context: 'home',
-      type: 'private',
-      individualForSegment: [],
-      groupForSegment: [
-        {
-          groupId: '2',
-          type: 'teacher',
-        },
-      ],
-      subSegments: [],
+  ],
+  experimentSegmentExclusion: [
+    {
+      segment: {
+        id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
+        name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+        description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+        context: 'home',
+        type: 'private',
+        individualForSegment: [],
+        groupForSegment: [
+          {
+            groupId: '2',
+            type: 'teacher',
+          },
+        ],
+        subSegments: [],
+      },
     },
-  },
+  ],
 });
 
 // enrollment code experiments:
@@ -569,7 +583,7 @@ export const stratificationSRSExperimentAssignmentExperiment1 = clone({
       assignmentWeight: 50,
       conditionCode: 'Abstract',
       twoCharacterId: 'AB',
-      order: 1
+      order: 1,
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -578,7 +592,7 @@ export const stratificationSRSExperimentAssignmentExperiment1 = clone({
       assignmentWeight: 50,
       conditionCode: 'Concrete',
       twoCharacterId: 'CN',
-      order: 2
+      order: 2,
     },
   ],
   conditionOrder: CONDITION_ORDER.RANDOM,
@@ -598,7 +612,7 @@ export const stratificationRandomExperimentAssignmentExperiment2 = clone({
       assignmentWeight: 50,
       conditionCode: 'Abstract',
       twoCharacterId: 'AB',
-      order: 1
+      order: 1,
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -607,7 +621,7 @@ export const stratificationRandomExperimentAssignmentExperiment2 = clone({
       assignmentWeight: 50,
       conditionCode: 'Concrete',
       twoCharacterId: 'CN',
-      order: 2
+      order: 2,
     },
   ],
   conditionOrder: CONDITION_ORDER.RANDOM,

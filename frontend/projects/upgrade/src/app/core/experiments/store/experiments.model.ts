@@ -314,7 +314,6 @@ export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperimentExport: boolean;
   skipExperiment: number;
   totalExperiments: number;
-  totalFilteredExperiments: number;
   searchKey: EXPERIMENT_SEARCH_KEY;
   searchString: string;
   sortKey: EXPERIMENT_SORT_KEY;

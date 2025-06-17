@@ -48,14 +48,14 @@ afterEach(() => {
 
 describe('ExperimentSegmentInclusionRepository Testing', () => {
   it('should insert a segment inclusion', async () => {
-    const res = await repo.insertData(segment, logger, manager);
+    const res = await repo.insertData([segment], logger, manager);
 
     expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
 
     expect(mock.insert).toHaveBeenCalledTimes(1);
     expect(mock.into).toHaveBeenCalledTimes(1);
     expect(mock.values).toHaveBeenCalledTimes(1);
-    expect(mock.values).toHaveBeenCalledWith(segment);
+    expect(mock.values).toHaveBeenCalledWith([segment]);
     expect(mock.orIgnore).toHaveBeenCalledTimes(1);
     expect(mock.returning).toHaveBeenCalledTimes(1);
     expect(mock.returning).toHaveBeenCalledWith('*');
@@ -68,7 +68,7 @@ describe('ExperimentSegmentInclusionRepository Testing', () => {
     mock.execute.mockRejectedValue(err);
 
     expect(async () => {
-      await repo.insertData(segment, logger, manager);
+      await repo.insertData([segment], logger, manager);
     }).rejects.toThrow(err);
 
     expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
@@ -76,7 +76,7 @@ describe('ExperimentSegmentInclusionRepository Testing', () => {
     expect(mock.insert).toHaveBeenCalledTimes(1);
     expect(mock.into).toHaveBeenCalledTimes(1);
     expect(mock.values).toHaveBeenCalledTimes(1);
-    expect(mock.values).toHaveBeenCalledWith(segment);
+    expect(mock.values).toHaveBeenCalledWith([segment]);
     expect(mock.orIgnore).toHaveBeenCalledTimes(1);
     expect(mock.returning).toHaveBeenCalledTimes(1);
     expect(mock.returning).toHaveBeenCalledWith('*');

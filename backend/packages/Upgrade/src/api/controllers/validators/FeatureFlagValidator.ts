@@ -9,7 +9,7 @@ import {
   IsUUID,
   ArrayMinSize,
 } from 'class-validator';
-import { FILTER_MODE, FEATURE_FLAG_STATUS, FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
+import { FILTER_MODE, FEATURE_FLAG_STATUS, LIST_FILTER_MODE } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { FeatureFlagListValidator } from './FeatureFlagListValidator';
 
@@ -85,8 +85,8 @@ export class FeatureFlagListImportValidation {
 
   @IsString()
   @IsNotEmpty()
-  @IsEnum(FEATURE_FLAG_LIST_FILTER_MODE)
-  public listType: FEATURE_FLAG_LIST_FILTER_MODE;
+  @IsEnum(LIST_FILTER_MODE)
+  public listType: LIST_FILTER_MODE;
 
   @IsUUID()
   @IsNotEmpty()

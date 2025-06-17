@@ -11,9 +11,10 @@ import {
   FEATURE_FLAG_LIST_OPERATION,
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
-  FEATURE_FLAG_LIST_FILTER_MODE,
+  LIST_FILTER_MODE,
   IMPORT_COMPATIBILITY_TYPE,
   SERVER_ERROR,
+  EXPERIMENT_LIST_OPERATION,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -102,8 +103,8 @@ export interface FeatureFlagUpdatedData {
 export interface ListOperationsData {
   listId: string;
   listName: string;
-  filterType: FEATURE_FLAG_LIST_FILTER_MODE;
-  operation: FEATURE_FLAG_LIST_OPERATION;
+  filterType: LIST_FILTER_MODE;
+  operation: FEATURE_FLAG_LIST_OPERATION | EXPERIMENT_LIST_OPERATION;
   enabled?: boolean;
   diff?: string;
 }

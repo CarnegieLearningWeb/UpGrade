@@ -17,7 +17,7 @@ export const actionGetExperiments = createAction('[Experiment] Get Experiments',
 
 export const actionGetExperimentsSuccess = createAction(
   '[Experiment] Get Experiments Success',
-  props<{ experiments: Experiment[]; totalExperiments: number; totalFilteredExperiments: number }>()
+  props<{ experiments: Experiment[]; totalExperiments: number }>()
 );
 
 export const actionGetExperimentsFailure = createAction('[Experiment] Get Experiment Failure', props<{ error: any }>());

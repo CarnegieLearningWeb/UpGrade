@@ -42,7 +42,7 @@ describe('Experiment Controller Testing', () => {
 
   afterAll(() => {
     Container.reset();
-    //asdfasdf
+    //wefewf
   });
 
   const experimentData: ExperimentDTO = {
@@ -86,22 +86,28 @@ describe('Experiment Controller Testing', () => {
         order: 0,
       },
     ],
-    experimentSegmentInclusion: {
-      segment: {
-        individualForSegment: [],
-        groupForSegment: [],
-        subSegments: [],
-        type: SEGMENT_TYPE.PRIVATE,
+    experimentSegmentInclusion: [
+      {
+        segment: {
+          individualForSegment: [{ userId: 'bob' }],
+          groupForSegment: [],
+          subSegments: [],
+          listType: 'individual',
+          type: SEGMENT_TYPE.PRIVATE,
+        },
       },
-    },
-    experimentSegmentExclusion: {
-      segment: {
-        individualForSegment: [],
-        groupForSegment: [],
-        subSegments: [],
-        type: SEGMENT_TYPE.PRIVATE,
+    ],
+    experimentSegmentExclusion: [
+      {
+        segment: {
+          individualForSegment: [{ userId: 'alice' }],
+          groupForSegment: [],
+          subSegments: [],
+          listType: 'individual',
+          type: SEGMENT_TYPE.PRIVATE,
+        },
       },
-    },
+    ],
   };
 
   const tsConfigurablePolicyParameters = new MoocletTSConfigurablePolicyParametersDTO();
@@ -243,6 +249,62 @@ describe('Experiment Controller Testing', () => {
       .query({
         ids: [uuid()],
       })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Post request for /api/experiments/inclusionList', () => {
+    return request(app)
+      .post('/api/experiments/inclusionList')
+      .send({
+        experimentId: experimentData.id,
+        list: {
+          name: 'string',
+          context: 'home',
+          type: 'private',
+          listType: 'individual',
+          userIds: ['string'],
+          groups: [],
+          subSegmentIds: [],
+        },
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Post request for /api/experiments/exclusionList', () => {
+    return request(app)
+      .post('/api/experiments/exclusionList')
+      .send({
+        experimentId: experimentData.id,
+        list: {
+          name: 'string',
+          context: 'home',
+          type: 'private',
+          listType: 'individual',
+          userIds: ['string'],
+          groups: [],
+          subSegmentIds: [],
+        },
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Delete request for /api/experiments/inclusionList/id', () => {
+    return request(app)
+      .delete('/api/experiments/inclusionList/' + uuid())
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Delete request for /api/experiments/exclusionList/id', () => {
+    return request(app)
+      .delete('/api/experiments/exclusionList/' + uuid())
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

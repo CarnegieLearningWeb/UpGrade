@@ -7,7 +7,7 @@ import {
   SORT_AS_DIRECTION,
   SEGMENT_SORT_KEY,
   FILTER_MODE,
-  FEATURE_FLAG_LIST_FILTER_MODE,
+  LIST_FILTER_MODE,
 } from 'upgrade_types';
 export { SEGMENT_STATUS };
 

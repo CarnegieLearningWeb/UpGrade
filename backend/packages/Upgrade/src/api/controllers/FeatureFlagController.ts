@@ -21,7 +21,7 @@ import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatus
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-import { IImportError, ValidatedImportResponse, FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
+import { IImportError, ValidatedImportResponse, LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
 import {
   FeatureFlagImportValidation,
   FeatureFlagListImportValidation,
@@ -502,12 +502,7 @@ export class FeatureFlagsController {
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
     return (
-      await this.featureFlagService.addList(
-        [inclusionList],
-        FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
-        currentUser,
-        request.logger
-      )
+      await this.featureFlagService.addList([inclusionList], LIST_FILTER_MODE.INCLUSION, currentUser, request.logger)
     )[0];
   }
 
@@ -540,12 +535,7 @@ export class FeatureFlagsController {
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
     return (
-      await this.featureFlagService.addList(
-        [exclusionList],
-        FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
-        currentUser,
-        request.logger
-      )
+      await this.featureFlagService.addList([exclusionList], LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger)
     )[0];
   }
 
@@ -591,12 +581,7 @@ export class FeatureFlagsController {
         )
       );
     }
-    return this.featureFlagService.updateList(
-      exclusionList,
-      FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
-      currentUser,
-      request.logger
-    );
+    return this.featureFlagService.updateList(exclusionList, LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
   }
 
   /**
@@ -641,12 +626,7 @@ export class FeatureFlagsController {
         )
       );
     }
-    return this.featureFlagService.updateList(
-      inclusionList,
-      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
-      currentUser,
-      request.logger
-    );
+    return this.featureFlagService.updateList(inclusionList, LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
   }
 
   /**
@@ -677,7 +657,7 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.featureFlagService.deleteList(id, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
+    return this.featureFlagService.deleteList(id, LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
   }
 
   /**
@@ -708,7 +688,7 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.featureFlagService.deleteList(id, FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
+    return this.featureFlagService.deleteList(id, LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
   }
 
   /**
@@ -980,11 +960,7 @@ export class FeatureFlagsController {
     @Req() request: AppRequest,
     @Res() response: Response
   ): Promise<ImportFeatureFlagListValidator[]> {
-    const lists = await this.featureFlagService.exportAllLists(
-      id,
-      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
-      request.logger
-    );
+    const lists = await this.featureFlagService.exportAllLists(id, LIST_FILTER_MODE.INCLUSION, request.logger);
     if (lists?.length) {
       // download JSON file with appropriate headers to response body;
       if (lists.length === 1) {
@@ -1034,11 +1010,7 @@ export class FeatureFlagsController {
     @Req() request: AppRequest,
     @Res() response: Response
   ): Promise<ImportFeatureFlagListValidator[]> {
-    const lists = await this.featureFlagService.exportAllLists(
-      id,
-      FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
-      request.logger
-    );
+    const lists = await this.featureFlagService.exportAllLists(id, LIST_FILTER_MODE.EXCLUSION, request.logger);
     if (lists?.length) {
       // download JSON file with appropriate headers to response body;
       if (lists.length === 1) {

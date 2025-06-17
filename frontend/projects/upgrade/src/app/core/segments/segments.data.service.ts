@@ -13,7 +13,6 @@ import { map, Observable } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { FeatureFlagSegmentListDetails } from '../feature-flags/store/feature-flags.model';
-import { FEATURE_FLAG_LIST_FILTER_MODE } from '../../../../../../../types/src';
 
 @Injectable()
 export class SegmentsDataService {

@@ -20,7 +20,6 @@ export const initialState: ExperimentState = adapter.getInitialState({
   isLoadingExperimentExport: false,
   skipExperiment: 0,
   totalExperiments: null,
-  totalFilteredExperiments: null,
   searchKey: EXPERIMENT_SEARCH_KEY.ALL,
   searchString: null,
   sortKey: EXPERIMENT_SORT_KEY.NAME,
@@ -43,18 +42,14 @@ const reducer = createReducer(
   on(experimentsAction.actionGetExperiments, (state) => ({
     ...state,
   })),
-  on(
-    experimentsAction.actionGetExperimentsSuccess,
-    (state, { experiments, totalExperiments, totalFilteredExperiments }) => {
-      const newState = {
-        ...state,
-        totalExperiments,
-        totalFilteredExperiments,
-        skipExperiment: state.skipExperiment + experiments.length,
-      };
-      return adapter.upsertMany(experiments, { ...newState, isLoadingExperiment: false });
-    }
-  ),
+  on(experimentsAction.actionGetExperimentsSuccess, (state, { experiments, totalExperiments }) => {
+    const newState = {
+      ...state,
+      totalExperiments,
+      skipExperiment: state.skipExperiment + experiments.length,
+    };
+    return adapter.upsertMany(experiments, { ...newState, isLoadingExperiment: false });
+  }),
   on(
     experimentsAction.actionGetExperimentsFailure,
     experimentsAction.actionGetExperimentByIdFailure,

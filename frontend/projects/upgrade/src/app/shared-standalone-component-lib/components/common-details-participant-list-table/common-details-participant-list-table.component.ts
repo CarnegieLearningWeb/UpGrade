@@ -14,7 +14,7 @@ import {
   ParticipantListTableRow,
 } from '../../../core/feature-flags/store/feature-flags.model';
 import { MemberTypes } from '../../../core/segments/store/segments.model';
-import { FEATURE_FLAG_LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { SharedModule } from '../../../shared/shared.module';
 
 /**
@@ -51,7 +51,7 @@ import { SharedModule } from '../../../shared/shared.module';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonDetailsParticipantListTableComponent {
-  @Input() tableType: FEATURE_FLAG_LIST_FILTER_MODE;
+  @Input() tableType: LIST_FILTER_MODE;
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
   @Input() slideToggleDisabled?: boolean = false;
@@ -80,7 +80,7 @@ export class CommonDetailsParticipantListTableComponent {
 
   ngOnInit() {
     this.displayedColumns =
-      this.tableType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION
+      this.tableType === LIST_FILTER_MODE.INCLUSION
         ? ['type', 'values', 'name', 'enable', 'actions']
         : ['type', 'values', 'name', 'actions'];
   }

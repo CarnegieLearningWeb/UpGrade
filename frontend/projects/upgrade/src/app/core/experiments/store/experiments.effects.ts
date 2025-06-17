@@ -110,11 +110,7 @@ export class ExperimentEffects {
 
             return [
               ...actions,
-              experimentAction.actionGetExperimentsSuccess({
-                experiments,
-                totalExperiments: data.total,
-                totalFilteredExperiments: data.filtered,
-              }),
+              experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
               experimentAction.actionFetchExperimentStats({ experimentIds }),
             ];
           }),
