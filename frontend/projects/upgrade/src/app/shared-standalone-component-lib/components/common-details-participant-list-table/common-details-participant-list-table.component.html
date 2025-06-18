@@ -8,7 +8,7 @@
   >
     <!-- Type Column -->
     <ng-container [matColumnDef]="PARTICIPANT_LIST_COLUMN_NAMES.TYPE">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header class="type-column ft-14-600">
+      <th mat-header-cell *matHeaderCellDef class="type-column ft-14-600">
         {{ PARTICIPANT_LIST_TRANSLATION_KEYS.TYPE | translate }}
       </th>
       <td mat-cell *matCellDef="let rowData" class="type-column ft-14-400">
@@ -18,24 +18,36 @@
 
     <!-- Values Column -->
     <ng-container [matColumnDef]="PARTICIPANT_LIST_COLUMN_NAMES.VALUES">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header class="values-column ft-14-600">
+      <th mat-header-cell *matHeaderCellDef class="values-column ft-14-600">
         {{ PARTICIPANT_LIST_TRANSLATION_KEYS.VALUES | translate }}
       </th>
       <td mat-cell *matCellDef="let rowData" class="values-column ft-14-400">
-        <ng-container *ngIf="rowData?.segment">
-          {{ getValuesCount(rowData) }} Values
-        </ng-container>
+        <ng-container *ngIf="rowData?.segment && rowData.listType !== memberTypes.SEGMENT"> {{ getValuesText(rowData) }} </ng-container>
       </td>
     </ng-container>
 
     <!-- Name Column -->
     <ng-container [matColumnDef]="PARTICIPANT_LIST_COLUMN_NAMES.NAME">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header class="name-column ft-14-600">
+      <th mat-header-cell *matHeaderCellDef class="name-column ft-14-600">
         {{ PARTICIPANT_LIST_TRANSLATION_KEYS.NAME | translate }}
       </th>
-      <!-- TODO this is placeholder logic, need to simplify -->
       <td mat-cell *matCellDef="let rowData" class="name-column ft-14-400">
-        {{ rowData.segment?.name }}
+        <ng-container *ngIf="isPublicSegment(rowData); else plainText">
+          <a
+            [routerLink]="['/segments', 'detail', rowData.segment.subSegments[0].id]"
+            class="segment-name"
+            [matTooltip]="rowData.segment.name?.length > 24 ? rowData.segment.name : null"
+            matTooltipPosition="right">
+            {{ rowData.segment.name | truncate : 24 }}
+          </a>
+        </ng-container>
+        <ng-template #plainText>
+          <span
+            [matTooltip]="rowData.segment?.name?.length > 24 ? rowData.segment?.name : null"
+            matTooltipPosition="right">
+            {{ rowData.segment?.name | truncate : 24 }}
+          </span>
+        </ng-template>
       </td>
     </ng-container>
 

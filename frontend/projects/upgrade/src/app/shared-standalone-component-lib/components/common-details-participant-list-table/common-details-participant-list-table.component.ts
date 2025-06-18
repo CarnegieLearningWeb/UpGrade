@@ -14,7 +14,8 @@ import {
   ParticipantListTableRow,
 } from '../../../core/feature-flags/store/feature-flags.model';
 import { MemberTypes } from '../../../core/segments/store/segments.model';
-import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
+import { FEATURE_FLAG_LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { SharedModule } from '../../../shared/shared.module';
 
 /**
  * `CommonDetailsParticipantListTableComponent` is a reusable Angular component that displays a table with common details for participant lists.
@@ -43,6 +44,7 @@ import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
     MatSlideToggleModule,
     MatIconModule,
     MatButtonModule,
+    SharedModule,
   ],
   templateUrl: './common-details-participant-list-table.component.html',
   styleUrl: './common-details-participant-list-table.component.scss',
@@ -83,16 +85,29 @@ export class CommonDetailsParticipantListTableComponent {
         : ['type', 'values', 'name', 'actions'];
   }
 
-  getValuesCount(rowData: ParticipantListTableRow): number {
-    const listType = rowData.listType?.toLowerCase();
+  getValuesText(rowData: ParticipantListTableRow): string {
+    const listType = rowData.listType;
+    let count: number;
 
-    if (listType === this.memberTypes.INDIVIDUAL.toLowerCase()) {
-      return rowData.segment.individualForSegment?.length || 0;
-    } else if (listType === this.memberTypes.SEGMENT.toLowerCase()) {
-      return rowData.segment.subSegments?.length || 0;
+    if (listType === this.memberTypes.INDIVIDUAL) {
+      count = rowData.segment.individualForSegment?.length || 0;
     } else {
-      return rowData.segment.groupForSegment?.length || 0;
+      count = rowData.segment.groupForSegment?.length || 0;
     }
+
+    if (count === 0) {
+      return '';
+    } else if (count === 1) {
+      return `${count} Value`;
+    } else {
+      return `${count} Values`;
+    }
+  }
+
+  isPublicSegment(rowData: ParticipantListTableRow): boolean {
+    return (
+      rowData.listType === this.memberTypes.SEGMENT && rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC
+    );
   }
 
   onSlideToggleChange(event: MatSlideToggleChange, rowData: ParticipantListTableRow): void {

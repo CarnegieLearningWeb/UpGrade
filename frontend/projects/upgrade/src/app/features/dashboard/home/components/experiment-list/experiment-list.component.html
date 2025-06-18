@@ -17,9 +17,9 @@
           <input
             class="ft-14-400 search-input"
             matInput
-            #searchInput
             [(ngModel)]="searchValue"
-            (keyup)="applyFilter($event.target.value)"
+            (keyup)="onSearchInputKeyup($event)"
+            (ngModelChange)="onSearchInputChange($event)"
             [placeholder]="'global.search.text' | translate"
           />
         </div>
@@ -27,17 +27,16 @@
           <input
             class="ft-14-400 search-input"
             matInput
-            #searchInput
             [(ngModel)]="searchValue"
-            (keyup)="applyFilter($event.target.value)"
+            (keyup)="onSearchInputKeyup($event)"
+            (ngModelChange)="onSearchInputChange($event)"
             [placeholder]="'global.search.text' | translate"
-            [formControl]="searchControl"
             [matAutocomplete]="autoCompleteStatus"
           />
           <mat-autocomplete
             #autoCompleteStatus="matAutocomplete"
             panelWidth="fit-content"
-            (optionSelected)="applyFilter($event.option.value)"
+            (optionSelected)="onAutocompleteSelected($event)"
           >
             <mat-option class="ft-14-400" *ngFor="let filterOption of filteredStatusOptions" [value]="filterOption">
               {{ filterOption | titlecase }}
@@ -262,11 +261,7 @@
                 *ngIf="tagIndex < 2; else moreTagsTemplate"
                 (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
               >
-                <span
-                  class="chip-label"
-                  [matTooltip]="tag.length > 16 ? tag : null"
-                  matTooltipPosition="above"
-                >
+                <span class="chip-label" [matTooltip]="tag.length > 16 ? tag : null" matTooltipPosition="above">
                   {{ tag | truncate : 16 }}
                 </span>
               </mat-chip>
@@ -275,11 +270,7 @@
                   *ngIf="isAllChipsVisible(experiment.id, 'tagsVisibility')"
                   (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
                 >
-                  <span
-                    class="chip-label"
-                    [matTooltip]="tag.length > 16 ? tag : null"
-                    matTooltipPosition="above"
-                  >
+                  <span class="chip-label" [matTooltip]="tag.length > 16 ? tag : null" matTooltipPosition="above">
                     {{ tag | truncate : 16 }}
                   </span>
                 </mat-chip>

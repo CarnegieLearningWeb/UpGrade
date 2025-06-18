@@ -269,16 +269,13 @@ export class FeatureFlagsController {
     paginatedParams: FeatureFlagPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagsPaginationInfo> {
-    const [featureFlags, count] = await Promise.all([
-      this.featureFlagService.findPaginated(
-        paginatedParams.skip,
-        paginatedParams.take,
-        request.logger,
-        paginatedParams.searchParams,
-        paginatedParams.sortParams
-      ),
-      this.featureFlagService.getTotalCount(),
-    ]);
+    const [featureFlags, count] = await this.featureFlagService.findPaginated(
+      paginatedParams.skip,
+      paginatedParams.take,
+      request.logger,
+      paginatedParams.searchParams,
+      paginatedParams.sortParams
+    );
     return {
       total: count,
       nodes: featureFlags,

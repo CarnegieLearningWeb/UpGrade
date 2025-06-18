@@ -71,6 +71,10 @@
 
     .name-column {
       width: 25%;
+
+      .segment-name {
+        color: var(--black-2);
+      }
     }
 
     .enable-column {

@@ -185,31 +185,30 @@ export class FeatureFlagService {
     logger: UpgradeLogger,
     searchParams?: IFeatureFlagSearchParams,
     sortParams?: IFeatureFlagSortParams
-  ): Promise<FeatureFlag[]> {
+  ): Promise<[FeatureFlag[], number]> {
     logger.info({ message: 'Find paginated Feature flags' });
 
     let queryBuilder = this.featureFlagRepository.createQueryBuilder('feature_flag');
     if (searchParams) {
-      const customSearchString = searchParams.key;
-      // add search query
-      const postgresSearchString = this.postgresSearchString(searchParams.key);
-      queryBuilder = queryBuilder
-        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
-        .addOrderBy('rank', 'DESC')
-        .setParameter('query', `${customSearchString}:*`);
+      const whereClause = this.paginatedSearchString(searchParams);
+      queryBuilder = queryBuilder.where(whereClause);
     }
     if (sortParams) {
       queryBuilder = queryBuilder.addOrderBy(`feature_flag.${sortParams.key}`, sortParams.sortAs);
     }
+    const countQueryBuilder = queryBuilder.clone();
 
     queryBuilder = queryBuilder.offset(skip).limit(take);
 
     // TODO: the type of queryBuilder.getMany() is Promise<FeatureFlag[]>
     // However, the above query returns Promise<(Omit<FeatureFlag, 'featureFlagExposures'> & { featureFlagExposures: number })[]>
     // This can be fixed by using a @VirtualColumn in the FeatureFlag entity, when we are on TypeORM 0.3
-    const featureFlagsWithExposures = await queryBuilder
-      .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures')
-      .getMany();
+    const [featureFlagsWithExposures, count] = await Promise.all([
+      queryBuilder
+        .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures')
+        .getMany(),
+      countQueryBuilder.getCount(),
+    ]);
 
     // Get the feature flag ids
     const featureFlagIds = featureFlagsWithExposures.map(({ id }) => id);
@@ -222,19 +221,22 @@ export class FeatureFlagService {
     });
 
     // Add the inclusion documents to the featureFlagsWithExposures
-    return featureFlagsWithExposures.map((featureFlag) => {
-      // Find the matching featureFlagSegmentInclusion for the current item
-      const inclusionSegment = featureFlagWithInclusionSegments.find(
-        ({ id }) => id === featureFlag.id
-      )?.featureFlagSegmentInclusion;
+    return [
+      featureFlagsWithExposures.map((featureFlag) => {
+        // Find the matching featureFlagSegmentInclusion for the current item
+        const inclusionSegment = featureFlagWithInclusionSegments.find(
+          ({ id }) => id === featureFlag.id
+        )?.featureFlagSegmentInclusion;
 
-      // Construct the new object with conditional properties
-      return {
-        ...featureFlag,
-        // Only include featureFlagSegmentInclusion if inclusionSegment is defined and not empty
-        ...(inclusionSegment && inclusionSegment.length > 0 ? { featureFlagSegmentInclusion: inclusionSegment } : {}),
-      };
-    });
+        // Construct the new object with conditional properties
+        return {
+          ...featureFlag,
+          // Only include featureFlagSegmentInclusion if inclusionSegment is defined and not empty
+          ...(inclusionSegment && inclusionSegment.length > 0 ? { featureFlagSegmentInclusion: inclusionSegment } : {}),
+        };
+      }),
+      count,
+    ];
   }
 
   public async delete(
@@ -835,34 +837,34 @@ export class FeatureFlagService {
     }
   }
 
-  private postgresSearchString(type: FLAG_SEARCH_KEY): string {
+  private paginatedSearchString(params: IFeatureFlagSearchParams): string {
+    const type = params.key;
+    // escape % and ' characters
+    const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    const likeString = `ILIKE '%${serachString}%'`;
     const searchString: string[] = [];
     switch (type) {
       case FLAG_SEARCH_KEY.NAME:
-        searchString.push("coalesce(feature_flag.name::TEXT,'')");
-        break;
-      case FLAG_SEARCH_KEY.KEY:
-        searchString.push("coalesce(feature_flag.key::TEXT,'')");
+        searchString.push(`${type} ${likeString}`);
         break;
       case FLAG_SEARCH_KEY.STATUS:
-        searchString.push("coalesce(feature_flag.status::TEXT,'')");
+        searchString.push(`status::TEXT ${likeString}`);
         break;
       case FLAG_SEARCH_KEY.CONTEXT:
-        searchString.push("coalesce(feature_flag.context::TEXT,'')");
+        searchString.push(`ARRAY_TO_STRING(${type}, ',') ${likeString}`);
         break;
       case FLAG_SEARCH_KEY.TAG:
-        searchString.push("coalesce(feature_flag.tags::TEXT,'')");
+        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         break;
       default:
-        searchString.push("coalesce(feature_flag.name::TEXT,'')");
-        searchString.push("coalesce(feature_flag.key::TEXT,'')");
-        searchString.push("coalesce(feature_flag.status::TEXT,'')");
-        searchString.push("coalesce(feature_flag.context::TEXT,'')");
-        searchString.push("coalesce(feature_flag.tags::TEXT,'')");
+        searchString.push(`name ${likeString}`);
+        searchString.push(`status::TEXT ${likeString}`);
+        searchString.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
+        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         break;
     }
-    const stringConcat = searchString.join(',');
-    const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
+
+    const searchStringConcatenated = `(${searchString.join(' OR ')})`;
     return searchStringConcatenated;
   }
 

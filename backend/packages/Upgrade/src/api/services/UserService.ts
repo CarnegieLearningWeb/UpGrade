@@ -77,27 +77,28 @@ export class UserService {
     logger: UpgradeLogger,
     searchParams?: UserSearchParamsValidator,
     sortParams?: UserSortParamsValidator
-  ): Promise<any[]> {
+  ): Promise<[User[], number]> {
     logger.info({ message: `Find paginated Users` });
-    let queryBuilder = this.userRepository.createQueryBuilder('users');
+    const systemEmail = systemUserDoc.email;
+
+    let queryBuilder = this.userRepository
+      .createQueryBuilder('users')
+      .where('users.email != :email', { email: systemEmail });
 
     if (searchParams) {
-      const customSearchString = searchParams.string.split(' ').join(`:*&`);
-      // add search query
-      const postgresSearchString = this.postgresSearchString(searchParams.key);
-      queryBuilder = queryBuilder
-        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
-        .addOrderBy('rank', 'DESC')
-        .setParameter('query', `${customSearchString}:*`);
+      const whereClause = this.paginatedSearchString(searchParams);
+      queryBuilder = queryBuilder.andWhere(whereClause);
     }
 
     if (sortParams) {
       queryBuilder = queryBuilder.addOrderBy(`users.${sortParams.key}`, sortParams.sortAs);
     }
-    const systemEmail = systemUserDoc.email;
-    queryBuilder = queryBuilder.where('users.email != :email', { email: systemEmail }).offset(skip).limit(take);
 
-    return queryBuilder.getMany();
+    const countQueryBuilder = queryBuilder.clone();
+
+    queryBuilder = queryBuilder.offset(skip).limit(take);
+
+    return await Promise.all([queryBuilder.getMany(), countQueryBuilder.getCount()]);
   }
 
   public async getUserByEmail(email: string): Promise<User[]> {
@@ -116,33 +117,22 @@ export class UserService {
     return this.userRepository.deleteUserByEmail(email);
   }
 
-  private postgresSearchString(type: string): string {
-    const searchString: string[] = [];
-    switch (type) {
-      case USER_SEARCH_SORT_KEY.FIRST_NAME:
-        // TODO: Update column name
-        searchString.push(`coalesce(users."firstName"::TEXT,'')`);
-        break;
-      case USER_SEARCH_SORT_KEY.LAST_NAME:
-        // TODO: Update column name
-        searchString.push(`coalesce(users."lastName"::TEXT,'')`);
-        break;
-      case USER_SEARCH_SORT_KEY.EMAIL:
-        searchString.push("coalesce(users.email::TEXT,'')");
-        break;
-      case USER_SEARCH_SORT_KEY.ROLE:
-        searchString.push("coalesce(users.role::TEXT,'')");
-        break;
-      default:
-        // TODO: Update column name
-        // searchString.push("coalesce(users.firstName::TEXT,'')");
-        // searchString.push("coalesce(users.lastName::TEXT,'')");
-        searchString.push("coalesce(users.email::TEXT,'')");
-        searchString.push("coalesce(users.role::TEXT,'')");
-        break;
+  private paginatedSearchString(params: UserSearchParamsValidator): string {
+    const type = params.key;
+    // escape % and ' characters
+    const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    const likeString = `ILIKE '%${serachString}%'`;
+    const likes: string[] = [];
+    if (type === USER_SEARCH_SORT_KEY.ALL) {
+      likes.push(`users.email::TEXT ${likeString}`);
+      likes.push(`users.role::TEXT ${likeString}`);
+      likes.push(`users."firstName"::TEXT ${likeString}`);
+      likes.push(`users."lastName"::TEXT ${likeString}`);
+    } else {
+      likes.push(`users."${type}"::TEXT ${likeString}`);
     }
-    const stringConcat = searchString.join(',');
-    const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
+
+    const searchStringConcatenated = `(${likes.join(' OR ')})`;
     return searchStringConcatenated;
   }
 

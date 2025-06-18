@@ -56,14 +56,10 @@
         </div>
       </div>
       <span class="ft-14-700 segment-created-date">
-        {{
-          ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | date : 'MMM d, y')
-        }}
+        {{ ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | date : 'MMM d, y') }}
       </span>
       <span class="ft-14-700 segment-updated-date">
-        {{
-          ('home.view-experiment.updated-at.text' | translate) + (segment.updatedAt | date : 'MMM d, y, h:mm a')
-        }}
+        {{ ('home.view-experiment.updated-at.text' | translate) + (segment.updatedAt | date : 'MMM d, y, h:mm a') }}
       </span>
     </div>
 
