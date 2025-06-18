@@ -1,5 +1,5 @@
 import { UpGradeClientInterfaces } from '../types';
-import { IExperimentAssignmentv5, IFeatureFlag } from 'upgrade_types';
+import { IExperimentAssignmentv5 } from 'upgrade_types';
 
 /**
  * Synchronous data store

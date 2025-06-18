@@ -9,7 +9,6 @@ import {
 import Assignment from '../Assignment/Assignment';
 import ApiService from '../ApiService/ApiService';
 import { DataService } from '../DataService/DataService';
-import { IConfigOptions } from './UpGradeClient.types';
 import { v4 as uuidv4 } from 'uuid';
 
 declare const API_VERSION: string;
@@ -63,14 +62,58 @@ export default class UpgradeClient {
    * const options: {
    *   token: "someToken";
    *   clientSessionId: "someSessionId";
+   *   featureFlagUserGroupsForSession: null
    * }
    *
    * const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context);
    * const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context, options);
    * ```
+   *
+   * UPDATE: #featureFlagUserGroupsForSession
+   *
+   * ```typescript
+   * // required
+   * const hostUrl: "htts://my-hosted-upgrade-api.com";
+   * const userId: "abc123";
+   * const context: "my-app-context-name";
+   *
+   * // to configure feature flag endpoint to rely on session-only groups or merge supplemental groups with stored user groups
+   * // see below for usage scenarios
+   * // note: this is optional, and if not provided, the client will use standard user lookup with stored groups only
+   * const options: {
+   *   featureFlagUserGroupsForSession: {
+   *     groupsForSession: { "classId": ["testClass"] };
+   *     includeStoredUserGroups: false; // true to merge with stored user groups, false to skip any stored user entirely
+   *   }
+   * }
+   *
+   * const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context);
+   * const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context, options);
+   * ```
+   *
+   * **Scenario 1: Session-only groups (Ephemeral user request)**
+   * - `groupsForSession`: provided
+   * - `includeStoredUserGroups`: explicitly `false`
+   * - Behavior: Uses ONLY the provided session groups, ignoring any stored user groups
+   * - Use case: Contexts where complete group information is preferred to be provided at runtime,
+   *    rather reading from stored user groups.
+   *
+   * **Scenario 2: Merged groups (Merged stored/ephemeral groups request mode)**
+   * - `groupsForSession`: provided
+   * - `includeStoredUserGroups`: `true`
+   * - Behavior: Merges session groups with stored user groups, if they don't already exist
+   * - Use case: Adding temporary context while preserving existing user groups
+   * - Note: This will 404 if user does not exist, as use cases would only exist for application
+   *   contexts that are 'dependent' on another context to set complete user data.
+   *
+   * **Scenario 3: Default behavior (Standard mode)**
+   * - `groupsForSession`: not provided or undefined
+   * - `includeStoredUserGroups`: not provided or undefined
+   * - Behavior: Uses standard user lookup with stored groups only
+   * - Use case: Normal feature flag evaluation without session context
    */
 
-  constructor(userId: string, hostUrl: string, context: string, options?: IConfigOptions) {
+  constructor(userId: string, hostUrl: string, context: string, options?: UpGradeClientInterfaces.IConfigOptions) {
     const config: UpGradeClientInterfaces.IConfig = {
       apiVersion: 'v' + API_VERSION,
       userId: userId,
@@ -79,10 +122,26 @@ export default class UpgradeClient {
       clientSessionId: options?.clientSessionId || uuidv4(),
       token: options?.token,
       httpClient: options?.httpClient,
+      featureFlagUserGroupsForSession: options.featureFlagUserGroupsForSession ?? null,
     };
 
+    this.validateFeatureFlagGroupOptions(config);
     this.dataService = new DataService();
     this.apiService = new ApiService(config, this.dataService);
+  }
+
+  private validateFeatureFlagGroupOptions(config: UpGradeClientInterfaces.IConfig): void {
+    if (
+      config.featureFlagUserGroupsForSession &&
+      (!config.featureFlagUserGroupsForSession.groupsForSession ||
+        config.featureFlagUserGroupsForSession.includeStoredUserGroups === undefined)
+    ) {
+      throw new Error(
+        `${JSON.stringify(
+          config
+        )} featureFlagUserGroupsForSession must contain both groupsForSession and includeStoredUserGroups properties.`
+      );
+    }
   }
 
   /**
@@ -346,6 +405,9 @@ export default class UpgradeClient {
    * const featureFlags = await upgradeClient.getAllFeatureFlags();
    * console.log(featureFlags); // ['feature1', 'feature2', 'feature3']
    * ```
+   *
+   * NOTE: See `#featureFlagUserGroupsForSession` option explanation in the constructor of UpgradeClient
+   * to see configurations that may affect the responses to this method
    */
 
   async getAllFeatureFlags(): Promise<string[]> {
@@ -365,6 +427,9 @@ export default class UpgradeClient {
    * const isFeatureEnabled = await upgradeClient.hasFeatureFlag('feature1');
    * console.log(isFeatureEnabled); // true or false
    * ```
+   *
+   * NOTE: See `#featureFlagUserGroupsForSession` option explanation in the constructor of UpgradeClient
+   * to see configurations that may affect the responses to this method
    */
   public async hasFeatureFlag(key: string): Promise<boolean> {
     if (this.dataService.getFeatureFlags() == null) {

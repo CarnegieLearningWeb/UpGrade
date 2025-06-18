@@ -24,9 +24,15 @@ export namespace UpGradeClientRequests {
     context: string;
   }
 
-  export interface IGetAllFeatureFlagsRequestBody {
-    context: string;
-  }
+  export type IGetAllFeatureFlagsRequestBody =
+    | {
+        context: string;
+      }
+    | {
+        context: string;
+        groupsForSession: Record<string, string[]>;
+        includeStoredUserGroups: boolean;
+      };
 
   export interface IMarkDecisionPointRequestBody {
     status: MARKED_DECISION_POINT_STATUS;

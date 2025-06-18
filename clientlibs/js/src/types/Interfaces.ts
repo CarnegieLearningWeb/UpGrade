@@ -2,6 +2,8 @@
 import { IMetricMetaData, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 
 export namespace UpGradeClientInterfaces {
+  // this namespace should be for consumer facing interface
+  // IConfig is really only internally used and could be confusing to consumers, should be moved in a future major version update
   export interface IConfig {
     hostURL: string;
     userId: string;
@@ -10,7 +12,21 @@ export namespace UpGradeClientInterfaces {
     clientSessionId?: string;
     token?: string;
     httpClient?: UpGradeClientInterfaces.IHttpClientWrapper;
+    featureFlagUserGroupsForSession: IFeatureFlagOptions | null;
   }
+
+  export interface IConfigOptions {
+    token?: string;
+    clientSessionId?: string;
+    httpClient?: UpGradeClientInterfaces.IHttpClientWrapper;
+    featureFlagUserGroupsForSession?: IFeatureFlagOptions | null;
+  }
+
+  export interface IFeatureFlagOptions {
+    groupsForSession: Record<string, string[]>;
+    includeStoredUserGroups: boolean;
+  }
+
   export interface IResponse {
     status: boolean;
     data?: any;
