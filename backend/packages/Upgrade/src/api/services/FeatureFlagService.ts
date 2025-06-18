@@ -40,6 +40,7 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentAssignmentService } from './ExperimentAssignmentService';
+import { ExperimentUserService } from './ExperimentUserService';
 import { SegmentService } from './SegmentService';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
@@ -67,6 +68,7 @@ export class FeatureFlagService {
     @InjectRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
     @InjectDataSource() private dataSource: DataSource,
     public experimentAssignmentService: ExperimentAssignmentService,
+    public experimentUserService: ExperimentUserService,
     public segmentService: SegmentService,
     public cacheService: CacheService
   ) {}
@@ -83,13 +85,13 @@ export class FeatureFlagService {
   ): Promise<string[]> {
     logger.info({ message: `getKeys: User: ${experimentUserDoc?.requestedUserId}` });
 
-    // throw error if user not defined
+    // throw error if experimentUserDoc doesn't exist somehow
     if (!experimentUserDoc || !experimentUserDoc.id) {
-      logger.error({ message: 'User not defined in getKeys' });
+      logger.error({ message: 'experimentUserDoc not provided in getKeys' });
       const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: 'User not defined in getKeys',
+          message: 'experimentUserDoc not provided in getKeys',
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
@@ -110,24 +112,8 @@ export class FeatureFlagService {
 
     const includedFeatureFlags = await this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, experimentUserDoc);
 
-    // save exposures in db
-    try {
-      await this.dataSource.transaction(async (transactionalEntityManager) => {
-        const exposureRepo = transactionalEntityManager.getRepository(FeatureFlagExposure);
-        const exposuresToSave = includedFeatureFlags.map((flag) => ({
-          featureFlag: flag,
-          experimentUser: experimentUserDoc,
-        }));
-        if (exposuresToSave.length > 0) {
-          // fire and forget, we don't need to wait on this, return flag asap to user
-          exposureRepo.save(exposuresToSave);
-        }
-      });
-    } catch (err) {
-      const error = new Error(`Error in saving feature flag exposure records ${err}`);
-      (error as any).type = SERVER_ERROR.QUERY_FAILED;
-      logger.error(error);
-    }
+    // Fire and forget: save exposures in background without blocking response
+    this.saveExposuresAsync(includedFeatureFlags, experimentUserDoc, logger);
 
     return includedFeatureFlags.map((flags) => flags.key);
   }
@@ -797,6 +783,56 @@ export class FeatureFlagService {
 
       return existingRecord;
     });
+  }
+
+  /**
+   * Asynchronously saves feature flag exposures, ensuring users exist before saving.
+   * Creates stub user records if they don't exist to satisfy foreign key constraints.
+   * Handles duplicate exposures by using database constraints (composite primary key).
+   * This method is non-blocking and fires asynchronously without affecting response time.
+   */
+  private async saveExposuresAsync(
+    includedFeatureFlags: FeatureFlag[],
+    experimentUserDoc: RequestedExperimentUser,
+    logger: UpgradeLogger
+  ): Promise<void> {
+    if (includedFeatureFlags.length === 0) {
+      return;
+    }
+
+    try {
+      // Step 1: Ensure user exists in database (create stub record if needed)
+      await this.experimentUserService.createGrouplessUserRecordIfNotExists(experimentUserDoc.id, logger);
+
+      // Step 2: Save exposures in transaction
+      await this.dataSource.transaction(async (transactionalEntityManager) => {
+        const exposureRepo = transactionalEntityManager.getRepository(FeatureFlagExposure);
+
+        const exposuresToSave = includedFeatureFlags.map((flag) => ({
+          featureFlagId: flag.id,
+          experimentUserId: experimentUserDoc.id,
+          featureFlag: flag,
+          experimentUser: experimentUserDoc,
+        }));
+
+        if (exposuresToSave.length > 0) {
+          // Using upsert to handle duplicates - won't insert if composite key already exists
+          await exposureRepo.upsert(exposuresToSave, ['featureFlagId', 'experimentUserId']);
+        }
+      });
+
+      logger.info({
+        message: 'Feature flag exposures saved successfully',
+        userId: experimentUserDoc.id,
+        exposureCount: includedFeatureFlags.length,
+      });
+    } catch (error) {
+      // Non-blocking: log error but don't throw to avoid affecting feature flag response
+      logger.error({
+        message: 'Failed to save feature flag exposures (non-blocking)',
+        userId: experimentUserDoc.id,
+      });
+    }
   }
 
   private postgresSearchString(type: FLAG_SEARCH_KEY): string {

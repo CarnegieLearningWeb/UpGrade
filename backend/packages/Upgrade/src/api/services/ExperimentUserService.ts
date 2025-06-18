@@ -485,4 +485,51 @@ export class ExperimentUserService {
     // remove individual assignment related to that group
     await this.individualEnrollmentRepository.deleteEnrollmentsOfUserInExperiments(userId, filteredExperimentIds);
   }
+
+  /**
+   * Creates a minimal user record with only an ID if the user doesn't exist in the database.
+   *
+   * WARNING: This method is specifically designed for internal use by services that need to
+   * ensure foreign key constraints are satisfied (e.g., feature flag exposure tracking).
+   * It creates "stub" records with minimal data and should NOT be used for general user creation.
+   *
+   * For normal user creation, use the create() method instead.
+   *
+   * @param userId - The user ID to create a stub record for
+   * @param logger - Logger instance for tracking operations
+   * @returns Promise<boolean> - true if user was created, false if user already existed
+   */
+  public async createGrouplessUserRecordIfNotExists(userId: string, logger: UpgradeLogger): Promise<void> {
+    try {
+      // Check if user already exists
+      const existingUser = await this.getOriginalUserDoc(userId, logger);
+
+      if (existingUser) {
+        logger.debug({
+          message: 'User already exists, no stub record needed',
+          userId: userId,
+        });
+        return;
+      }
+
+      // Create minimal stub record with only the ID
+      const grouplessUser: Partial<ExperimentUser> = {
+        id: userId,
+      };
+
+      await this.create([grouplessUser], logger);
+
+      logger.info({
+        message: 'Created stub user record for foreign key constraint satisfaction',
+        userId: userId,
+      });
+    } catch (error) {
+      logger.warn({
+        message: 'Failed to create stub user record, foreign key constraints may fail',
+        userId: userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      // Don't throw - let the calling service handle the constraint failure gracefully
+    }
+  }
 }
