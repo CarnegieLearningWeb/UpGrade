@@ -12,6 +12,7 @@ import {
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { ExperimentAssignmentValidatorv6 } from './validators/ExperimentAssignmentValidator';
+import { FeatureFlagRequestValidator } from './validators/FeatureFlagRequestValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidatorv6 } from './validators/UpdateWorkingGroupValidator';
@@ -665,20 +666,85 @@ export class ExperimentClientController {
    * @swagger
    * /v6/featureflag:
    *    post:
-   *       description: Get all feature flags using SDK
+   *       description: |
+   *         Get feature flags that have been assigned to the user.
+   *
+   *         This endpoint supports three different modes of operation based on the optional parameters:
+   *
+   *         **Stored-user Mode** (Standard stored user lookup):
+   *         - Uses only stored user groups from the database
+   *         - User must already have been initialized
+   *         - Omit both `groupsForSession` and `includeStoredUserGroups` parameters
+   *
+   *         **Ephemeral Mode** (Session-only groups):
+   *         - Uses only the groups provided in the session, ignoring any stored user groups
+   *         - Set `includeStoredUserGroups` to `false` and provide `groupsForSession`
+   *         - Useful when complete group information is always provided at runtime
+   *
+   *         **Merged Mode** (Stored + Session groups):
+   *         - Combines stored user groups (if exists) with session groups provided in the request
+   *         - Set `includeStoredUserGroups` to `true` and provide `groupsForSession`
+   *         - Session groups are merged with stored groups, with unique values per group key
+   *
    *       consumes:
    *         - application/json
    *       parameters:
+   *         - in: header
+   *           name: User-Id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           example: user123
+   *           description: The unique identifier for the user
    *         - in: body
    *           name: user
    *           required: true
    *           schema:
    *             type: object
+   *             required:
+   *               - context
    *             properties:
    *               context:
    *                 type: string
-   *                 example: add
-   *             description: User Document
+   *                 example: "test-context"
+   *                 description: The context for feature flag evaluation
+   *               groupsForSession:
+   *                 type: object
+   *                 additionalProperties:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                 example:
+   *                   schoolId: ["temporary-school-id"]
+   *                 description: Optional groups to provide for the session (not persisted)
+   *               includeStoredUserGroups:
+   *                 type: boolean
+   *                 description: Whether to include stored user groups in evaluation
+   *                 example: false
+   *             description: Feature flag request parameters
+   *             examples:
+   *               normal_mode:
+   *                 summary: Normal Mode - Standard stored user lookup
+   *                 description: Uses only stored user groups from the database
+   *                 value:
+   *                   context: "test-context"
+   *               ephemeral_mode:
+   *                 summary: Ephemeral Mode - Session-only groups
+   *                 description: Uses only session groups, ignoring stored user groups
+   *                 value:
+   *                   context: "test-context"
+   *                   groupsForSession:
+   *                     schoolId: ["demo-school"]
+   *                     classId: ["demo-class-advanced"]
+   *                   includeStoredUserGroups: false
+   *               merged_mode:
+   *                 summary: Merged Mode - Stored + Session groups
+   *                 description: Combines stored user groups (if exists) with session groups
+   *                 value:
+   *                   context: "test-context"
+   *                   groupsForSession:
+   *                     classId: ["temp-class-123", "special-session"]
+   *                   includeStoredUserGroups: true
    *       produces:
    *         - application/json
    *       tags:
@@ -686,6 +752,11 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Feature flags list
+   *            schema:
+   *              type: array
+   *              items:
+   *                type: string
+   *              example: ["NEW_FEATURE", "TEST_FLAG"]
    *          '400':
    *            description: BadRequestError - InvalidParameterValue
    *          '401':
@@ -699,10 +770,10 @@ export class ExperimentClientController {
   public async getAllFlags(
     @Req() request: AppRequest,
     @Body({ validate: true })
-    experiment: ExperimentAssignmentValidatorv6
+    featureFlagRequest: FeatureFlagRequestValidator
   ): Promise<string[]> {
     const experimentUserDoc = request.userDoc;
-    return this.featureFlagService.getKeys(experimentUserDoc, experiment.context, request.logger);
+    return this.featureFlagService.getKeys(experimentUserDoc, featureFlagRequest.context, request.logger);
   }
 
   /**
