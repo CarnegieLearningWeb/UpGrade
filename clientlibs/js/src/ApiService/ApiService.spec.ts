@@ -22,6 +22,7 @@ const defaultConfig: UpGradeClientInterfaces.IConfig = {
   clientSessionId: 'testClientSessionId',
   token: 'testToken',
   httpClient: mockHttpClient,
+  featureFlagUserGroupsForSession: null,
 };
 
 describe('ApiService', () => {
