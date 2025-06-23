@@ -60,6 +60,8 @@ export const selectFeatureFlagSegmentsExclusion = createSelector(
   (state) => state.allFeatureFlagSegmentsExclusion
 );
 
+export const selectParentSegments = createSelector(selectSegmentsState, (state) => state.allParentSegments);
+
 export const selectAllSegmentEntities = createSelector(
   selectSegmentsState,
   selectGlobalSegmentsState,
@@ -200,7 +202,8 @@ export const selectSegmentUsageData = createSelector(
   selectExperimentSegmentsExclusion,
   selectFeatureFlagSegmentsInclusion,
   selectFeatureFlagSegmentsExclusion,
-  (segment, expInclusions, expExclusions, flagInclusions, flagExclusions) => {
+  selectParentSegments,
+  (segment, expInclusions, expExclusions, flagInclusions, flagExclusions, parentSegments) => {
     if (!segment) return [];
 
     // Use Map to prevent duplicates with experimentId or featureFlagId as the key
@@ -213,6 +216,9 @@ export const selectSegmentUsageData = createSelector(
     // Process feature flag segments
     processFeatureFlagSegments(flagInclusions, segment.id, usedByMap);
     processFeatureFlagSegments(flagExclusions, segment.id, usedByMap);
+
+    // Process parent segments if they exist
+    processParentSegments(parentSegments, segment.id, usedByMap);
 
     // Convert Map values to array and sort by updatedAt (newest first)
     return Array.from(usedByMap.values()).sort(
@@ -297,6 +303,29 @@ function processFeatureFlagSegments(
               status: item.featureFlag.status,
               updatedAt: item.updatedAt,
               link: `/featureflags/detail/${item.featureFlagId}`,
+            });
+          }
+        }
+      });
+    }
+  });
+}
+
+function processParentSegments(segmentData: Segment[], segmentId: string, resultMap: Map<string, UsedByTableRow>) {
+  if (!segmentData) return;
+
+  segmentData.forEach((item) => {
+    if (item.subSegments) {
+      item.subSegments.forEach((subSegment) => {
+        // Sub-sub-segments are public segments that are members of lists of type 'segment'
+        if (subSegment.subSegments.map((subSubSegment) => subSubSegment.id).includes(segmentId)) {
+          if (!resultMap.has(item.id)) {
+            resultMap.set(item.id, {
+              name: item.name,
+              type: USED_BY_TYPE.SEGMENT,
+              status: 'active', // Assuming active status for segments
+              updatedAt: item.updatedAt,
+              link: `/segments/detail/${item.id}`,
             });
           }
         }

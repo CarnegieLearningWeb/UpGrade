@@ -273,17 +273,20 @@ export class SegmentService {
 
   public async getSegmentStatus(segmentsData: Segment[]): Promise<getSegmentsData> {
     const connection = this.dataSource.manager.connection;
+    const segmentIds = segmentsData.map((segment) => segment.id);
     const segmentsDataWithStatus = await connection.transaction(async () => {
       const [
         allExperimentSegmentsInclusion,
         allExperimentSegmentsExclusion,
         allFeatureFlagSegmentsInclusion,
         allFeatureFlagSegmentsExclusion,
+        allSegmentsWithSubSegments,
       ] = await Promise.all([
         this.getExperimentSegmentInclusionData(),
         this.getExperimentSegmentExclusionData(),
         this.getFeatureFlagSegmentInclusionData(),
         this.getFeatureFlagSegmentExclusionData(),
+        this.getParentSegments(segmentIds),
       ]);
 
       const segmentMap = new Map<string, string[]>();
@@ -294,7 +297,11 @@ export class SegmentService {
         );
       });
 
-      const segmentsUsedList = new Set<string>();
+      const segmentsUsedList = new Set<string>(
+        allSegmentsWithSubSegments.flatMap((seg) =>
+          seg.subSegments.flatMap((subSeg) => subSeg.subSegments.map((subSubSeg) => subSubSeg.id))
+        )
+      );
 
       const collectSegmentIds = (segmentId: string) => {
         if (segmentsUsedList.has(segmentId)) return;
@@ -347,6 +354,7 @@ export class SegmentService {
         experimentSegmentExclusionData: allExperimentSegmentsExclusion,
         featureFlagSegmentInclusionData: allFeatureFlagSegmentsInclusion,
         featureFlagSegmentExclusionData: allFeatureFlagSegmentsExclusion,
+        allParentSegments: allSegmentsWithSubSegments,
       };
     });
 
@@ -1169,5 +1177,12 @@ export class SegmentService {
     } else {
       return false;
     }
+  }
+
+  private async getParentSegments(ids: string[]): Promise<Segment[]> {
+    if (!ids.length) {
+      return [];
+    }
+    return await this.segmentRepository.getAllParentSegments(ids);
   }
 }
