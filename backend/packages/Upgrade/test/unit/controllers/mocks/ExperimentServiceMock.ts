@@ -1,6 +1,8 @@
+import { SegmentInputValidator } from '../../../../src/api/controllers/validators/SegmentInputValidator';
 import { Experiment } from '../../../../src/api/models/Experiment';
 import { User } from '../../../../src/api/models/User';
 import { Service } from 'typedi';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 @Service()
 export default class ExperimentServiceMock {
@@ -58,5 +60,20 @@ export default class ExperimentServiceMock {
 
   public validateExperimentContext(experiment: Experiment): boolean {
     return false;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  public addList(
+    listInput: SegmentInputValidator,
+    experimentId: string,
+    filterType: string,
+    CurrentUser: User,
+    logger: UpgradeLogger
+  ): Promise<[]> {
+    return Promise.resolve([]);
+  }
+
+  public deleteList(segmentId: string, logger: UpgradeLogger): Promise<[]> {
+    return Promise.resolve([]);
   }
 }

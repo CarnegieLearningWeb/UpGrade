@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, OneToMany, OneToOne, ManyToOne } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany, ManyToOne } from 'typeorm';
 import { IsNotEmpty, ValidateNested, ValidateIf } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { DecisionPoint } from './DecisionPoint';
@@ -154,13 +154,13 @@ export class Experiment extends BaseModel {
   @Type(() => StateTimeLog)
   public stateTimeLogs: StateTimeLog[];
 
-  @OneToOne(() => ExperimentSegmentInclusion, (experimentSegmentInclusion) => experimentSegmentInclusion.experiment)
+  @OneToMany(() => ExperimentSegmentInclusion, (experimentSegmentInclusion) => experimentSegmentInclusion.experiment)
   @Type(() => ExperimentSegmentInclusion)
-  public experimentSegmentInclusion: ExperimentSegmentInclusion;
+  public experimentSegmentInclusion: ExperimentSegmentInclusion[];
 
-  @OneToOne(() => ExperimentSegmentExclusion, (experimentSegmentExclusion) => experimentSegmentExclusion.experiment)
+  @OneToMany(() => ExperimentSegmentExclusion, (experimentSegmentExclusion) => experimentSegmentExclusion.experiment)
   @Type(() => ExperimentSegmentExclusion)
-  public experimentSegmentExclusion: ExperimentSegmentExclusion;
+  public experimentSegmentExclusion: ExperimentSegmentExclusion[];
 
   @Column({ default: '1.0.0' })
   public backendVersion: string;

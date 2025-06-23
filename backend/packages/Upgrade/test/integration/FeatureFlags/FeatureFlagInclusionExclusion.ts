@@ -3,7 +3,7 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import { featureFlag } from '../mockData/featureFlag';
 import { experimentUsers } from '../mockData/experimentUsers/index';
-import { FEATURE_FLAG_LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { RequestedExperimentUser } from 'src/api/controllers/validators/ExperimentUserValidator';
 import { systemUser } from '../mockData/user';
 import { UserService } from '../../../src/api/services/UserService';
@@ -54,13 +54,13 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
 
   await featureFlagService.addList(
     [featureFlagSegmentExclusion],
-    FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+    LIST_FILTER_MODE.EXCLUSION,
     user,
     new UpgradeLogger()
   );
   await featureFlagService.addList(
     [featureFlagSegmentInclusion],
-    FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+    LIST_FILTER_MODE.INCLUSION,
     user,
     new UpgradeLogger()
   );

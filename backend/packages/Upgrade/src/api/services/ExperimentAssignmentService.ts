@@ -140,12 +140,8 @@ export class ExperimentAssignmentService {
           'experiment.conditions',
           'experiment.conditions.conditionPayloads',
           'experiment.partitions',
-          'experiment.experimentSegmentInclusion',
-          'experiment.experimentSegmentExclusion',
           'experiment.experimentSegmentInclusion.segment',
           'experiment.experimentSegmentExclusion.segment',
-          'experiment.experimentSegmentInclusion.segment.subSegments',
-          'experiment.experimentSegmentExclusion.segment.subSegments',
         ],
       })
     );
@@ -1869,15 +1865,15 @@ export class ExperimentAssignmentService {
     // creates segment Object for all experiments
     experiments.forEach((exp) => {
       if (!experimentsEnrolledIds.includes(exp.id)) {
-        const includeId = exp.experimentSegmentInclusion.segment.id;
-        const excludeId = exp.experimentSegmentExclusion.segment.id;
+        const includeIds = exp.experimentSegmentInclusion?.map((segmentInclusion) => segmentInclusion.segment.id) || [];
+        const excludeIds = exp.experimentSegmentExclusion?.map((segmentExclusion) => segmentExclusion.segment.id) || [];
 
         segmentObj[exp.id] = {
-          segmentIdsQueue: [includeId, excludeId],
-          currentIncludedSegmentIds: [includeId],
-          currentExcludedSegmentIds: [excludeId],
-          allIncludedSegmentIds: [includeId],
-          allExcludedSegmentIds: [excludeId],
+          segmentIdsQueue: [...includeIds, ...excludeIds],
+          currentIncludedSegmentIds: includeIds,
+          currentExcludedSegmentIds: excludeIds,
+          allIncludedSegmentIds: includeIds,
+          allExcludedSegmentIds: excludeIds,
         };
       }
     });
