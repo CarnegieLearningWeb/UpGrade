@@ -168,8 +168,9 @@ describe('UserCheckMiddleware Tests', () => {
       expect(mockRequest.userDoc.requestedUserId).toBe(userId);
       expect(mockRequest.userDoc.group).toEqual(sessionGroups);
       expect(mockRequest.userDoc.workingGroup).toBeUndefined();
-      expect(mockLogger.info).toHaveBeenCalledWith({
-        message: 'Using session-only groups (ephemeral user mode)',
+      expect(mockLogger.debug).toHaveBeenCalledWith({
+        message: 'Created ephemeral user with session groups',
+        experimentUserDoc: expect.any(Object),
       });
     });
 
@@ -198,7 +199,7 @@ describe('UserCheckMiddleware Tests', () => {
         instructorId: ['stored-instructor'],
         schoolId: ['session-school'],
       });
-      expect(mockLogger.info).toHaveBeenCalledWith({
+      expect(mockLogger.debug).toHaveBeenCalledWith({
         message: 'Merged session groups with stored user groups',
         experimentUserDoc: expect.any(Object),
       });
@@ -225,8 +226,9 @@ describe('UserCheckMiddleware Tests', () => {
 
       expect(nextFunction).toHaveBeenCalledWith();
       expect(mockRequest.userDoc.group).toEqual(sessionGroups);
-      expect(mockLogger.info).toHaveBeenCalledWith({
-        message: 'No stored groups found, using session groups only',
+      expect(mockLogger.debug).toHaveBeenCalledWith({
+        message: 'Merged session groups with stored user groups',
+        experimentUserDoc: expect.any(Object),
       });
     });
 
@@ -250,6 +252,28 @@ describe('UserCheckMiddleware Tests', () => {
         message: 'Using standard user lookup without session group modifications',
         experimentUserDoc: storedUser,
       });
+    });
+
+    test('should return error when user not found with includeStoredUserGroups=true', async () => {
+      const userId = 'non-existent-user';
+      mockRequest.url = '/api/v6/featureflag';
+      (mockRequest.get as jest.Mock).mockReturnValue(userId);
+      mockRequest.body = {
+        groupsForSession: { classId: ['session-class'] },
+        includeStoredUserGroups: true,
+      };
+
+      // No user set in mock service
+
+      await middleware.use(mockRequest as AppRequest, mockResponse, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: `User not found: ${userId}`,
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          httpCode: 404,
+        })
+      );
     });
   });
 
@@ -348,7 +372,7 @@ describe('UserCheckMiddleware Tests', () => {
       (mockRequest.get as jest.Mock).mockReturnValue(userId);
       mockRequest.body = {
         includeStoredUserGroups: false,
-        // No groupsForSession provided
+        // No groupsForSession provided - this should fallback to standard lookup
       };
 
       const storedUser = new RequestedExperimentUser();
@@ -360,6 +384,10 @@ describe('UserCheckMiddleware Tests', () => {
 
       expect(nextFunction).toHaveBeenCalledWith();
       expect(mockRequest.userDoc).toEqual(storedUser);
+      expect(mockLogger.debug).toHaveBeenCalledWith({
+        message: 'Using standard user lookup without session group modifications',
+        experimentUserDoc: storedUser,
+      });
     });
 
     test('should handle complex group merging with multiple overlapping keys', async () => {

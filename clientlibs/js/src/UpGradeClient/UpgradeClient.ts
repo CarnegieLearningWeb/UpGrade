@@ -122,26 +122,67 @@ export default class UpgradeClient {
       clientSessionId: options?.clientSessionId || uuidv4(),
       token: options?.token,
       httpClient: options?.httpClient,
-      featureFlagUserGroupsForSession: options.featureFlagUserGroupsForSession ?? null,
+      featureFlagUserGroupsForSession: options?.featureFlagUserGroupsForSession ?? null,
     };
 
-    this.validateFeatureFlagGroupOptions(config);
     this.dataService = new DataService();
     this.apiService = new ApiService(config, this.dataService);
+    this.validateFeatureFlagGroupOptions(config.featureFlagUserGroupsForSession);
   }
 
-  private validateFeatureFlagGroupOptions(config: UpGradeClientInterfaces.IConfig): void {
-    if (
-      config.featureFlagUserGroupsForSession &&
-      (!config.featureFlagUserGroupsForSession.groupsForSession ||
-        config.featureFlagUserGroupsForSession.includeStoredUserGroups === undefined)
-    ) {
+  private validateFeatureFlagGroupOptions(
+    options: UpGradeClientInterfaces.IFeatureFlagOptions | null | undefined
+  ): void {
+    if (options && (!options.groupsForSession || options.includeStoredUserGroups === undefined)) {
       throw new Error(
         `${JSON.stringify(
-          config
+          options
         )} featureFlagUserGroupsForSession must contain both groupsForSession and includeStoredUserGroups properties.`
       );
     }
+  }
+
+  /**
+   * Sets the feature flag session user group options.
+   *
+   * Note: This is a convenience method, this can also be set directly in the constructor of UpgradeClient.
+   * See example usage in the constructor documentation.
+   *
+   * @example
+   * ```typescript
+   *
+   * **Scenario 1: Session-only groups (Ephemeral user request)**
+   * const options: UpGradeClientInterfaces.IFeatureFlagOptions = {
+   *   groupsForSession: { classId: ['testClass'] },
+   *   includeStoredUserGroups: false
+   * };
+   * ```
+   *
+   * **Scenario 2: Merged groups (Merged stored/ephemeral groups request mode)**
+   * ```typescript
+   * const options: UpGradeClientInterfaces.IFeatureFlagOptions = {
+   *   groupsForSession: { classId: ['testClass'] },
+   *   includeStoredUserGroups: true
+   * };
+   * ```
+   *
+   * **Scenario 3: Default behavior (Standard mode)**
+   * Note this is the default behavior and does not need to be set, unless clearing previously set groupsForSession options
+
+   * ```typescript
+   * const options: UpGradeClientInterfaces.IFeatureFlagOptions = null;
+   * ```
+   */
+
+  public setFeatureFlagUserGroupsForSession(
+    featureFlagOptions: UpGradeClientInterfaces.IFeatureFlagOptions | null | undefined
+  ): void {
+    this.validateFeatureFlagGroupOptions(featureFlagOptions);
+
+    this.apiService.setFeatureFlagUserGroupsForSession(
+      featureFlagOptions?.groupsForSession,
+      featureFlagOptions?.includeStoredUserGroups
+    );
   }
 
   /**

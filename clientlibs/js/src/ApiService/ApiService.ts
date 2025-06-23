@@ -44,6 +44,14 @@ export default class ApiService {
     this.includeStoredUserGroups = config.featureFlagUserGroupsForSession?.includeStoredUserGroups ?? null;
   }
 
+  public setFeatureFlagUserGroupsForSession(
+    groupsForSession: Record<string, Array<string>>,
+    includeStoredUserGroups: boolean
+  ): void {
+    this.groupsForSession = groupsForSession;
+    this.includeStoredUserGroups = includeStoredUserGroups;
+  }
+
   private setHttpClient(httpClient: UpGradeClientInterfaces.IHttpClientWrapper) {
     if (USE_CUSTOM_HTTP_CLIENT && !httpClient) {
       throw new Error(

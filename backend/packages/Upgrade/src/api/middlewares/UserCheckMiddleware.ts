@@ -30,14 +30,16 @@ export class UserCheckMiddleware {
         experimentUserDoc = await this.handleProvidedGroupsForSession(req, user_id);
       } else {
         experimentUserDoc = await this.experimentUserService.getUserDoc(user_id, req.logger);
-        if (!req.url.endsWith('/init') && !experimentUserDoc) {
-          const error = new Error(`User not found: ${user_id}`);
-          (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-          (error as any).httpCode = 404;
-          req.logger.error(error);
-          return next(error);
-        }
       }
+
+      if (!req.url.endsWith('/init') && !experimentUserDoc) {
+        const error = new Error(`User not found: ${user_id}`);
+        (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+        (error as any).httpCode = 404;
+        req.logger.error(error);
+        return next(error);
+      }
+
       req.userDoc = experimentUserDoc;
       // Continue to the next middleware/controller
       return next();
@@ -109,33 +111,31 @@ export class UserCheckMiddleware {
     // Scenario 1: Session-only groups (ephemeral user mode)
     // explicitly check if includeStoredUserGroups is exactly false and not just undefined
     if (req.body.groupsForSession && req.body.includeStoredUserGroups === false) {
-      req.logger.info({
-        message: 'Using session-only groups (ephemeral user mode)',
+      const experimentUserDoc = this.createSessionUser(user_id, req.body.groupsForSession);
+
+      req.logger.debug({
+        message: 'Created ephemeral user with session groups',
+        experimentUserDoc,
       });
 
-      return this.createSessionUser(user_id, req.body.groupsForSession);
+      return experimentUserDoc;
     }
 
-    // Load stored user document for scenarios 2 and 3
+    // Load stored user document, required for scenarios 2 and 3
     const experimentUserDoc = await this.experimentUserService.getUserDoc(user_id, req.logger);
 
-    // Scenario 2: Merged groups (Merged stored/ephemeral groups mode)
-    if (req.body.includeStoredUserGroups && req.body.groupsForSession) {
-      if (experimentUserDoc?.group) {
-        experimentUserDoc.group = this.mergeGroupsWithUniqueValues(experimentUserDoc.group, req.body.groupsForSession);
+    if (!experimentUserDoc) {
+      return null; // User not found, will be handled in the main middleware
+    }
 
-        req.logger.info({
-          message: 'Merged session groups with stored user groups',
-          experimentUserDoc,
-        });
-      } else {
-        req.logger.info({
-          message: 'No stored groups found, using session groups only',
-        });
+    if (req.body.groupsForSession && req.body.includeStoredUserGroups) {
+      // Scenario 2: Merged groups (Merged stored/ephemeral groups mode)
+      experimentUserDoc.group = this.mergeGroupsWithUniqueValues(experimentUserDoc.group, req.body.groupsForSession);
 
-        // If no stored groups exist, just use session groups
-        return this.createSessionUser(user_id, req.body.groupsForSession);
-      }
+      req.logger.debug({
+        message: 'Merged session groups with stored user groups',
+        experimentUserDoc,
+      });
     } else {
       // Scenario 3: Standard behavior (user-lookup from user-id)
       req.logger.debug({
@@ -148,7 +148,7 @@ export class UserCheckMiddleware {
   }
 
   /**
-   * Creates a RequestedExperimentUser object for session-only or ephemeral user scenarios.
+   * Creates a RequestedExperimentUser object for ephemeral user scenarios.
    *
    * @param user_id - The user ID for the experiment user
    * @param groupsForSession - The groups provided in the session

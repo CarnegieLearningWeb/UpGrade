@@ -119,4 +119,84 @@ describe('UpgradeClient', () => {
       });
     });
   });
+
+  describe('#setFeatureFlagUserGroupsForSession', () => {
+    it('should call apiService "setFeatureFlagUserGroupsForSession" with valid feature flag options', () => {
+      const mockFeatureFlagOptions = {
+        groupsForSession: {
+          school: ['testSchool1', 'testSchool2'],
+          class: ['testClass1'],
+        },
+        includeStoredUserGroups: true,
+      };
+      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
+
+      upgradeClient.setFeatureFlagUserGroupsForSession(mockFeatureFlagOptions);
+
+      expect(ApiService.prototype.setFeatureFlagUserGroupsForSession).toHaveBeenCalledWith(
+        mockFeatureFlagOptions.groupsForSession,
+        mockFeatureFlagOptions.includeStoredUserGroups
+      );
+    });
+
+    it('should call apiService "setFeatureFlagUserGroupsForSession" with null options', () => {
+      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
+
+      upgradeClient.setFeatureFlagUserGroupsForSession(null);
+
+      expect(ApiService.prototype.setFeatureFlagUserGroupsForSession).toHaveBeenCalledWith(undefined, undefined);
+    });
+
+    it('should call apiService "setFeatureFlagUserGroupsForSession" with undefined options', () => {
+      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
+
+      upgradeClient.setFeatureFlagUserGroupsForSession(undefined);
+
+      expect(ApiService.prototype.setFeatureFlagUserGroupsForSession).toHaveBeenCalledWith(undefined, undefined);
+    });
+
+    it('should throw error when groupsForSession is missing', () => {
+      const invalidOptions = {
+        includeStoredUserGroups: true,
+      } as any;
+
+      expect(() => {
+        upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
+      }).toThrow();
+    });
+
+    it('should throw error when includeStoredUserGroups is missing', () => {
+      const invalidOptions = {
+        groupsForSession: {
+          school: ['testSchool1'],
+        },
+      } as any;
+
+      expect(() => {
+        upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
+      }).toThrow();
+    });
+
+    it('should throw error when both properties are missing', () => {
+      const invalidOptions = {} as any;
+
+      expect(() => {
+        upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
+      }).toThrow();
+    });
+
+    it('should throw error with proper message format', () => {
+      const invalidOptions = {
+        groupsForSession: {
+          school: ['testSchool1'],
+        },
+      } as any;
+
+      expect(() => {
+        upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
+      }).toThrow(
+        /featureFlagUserGroupsForSession must contain both groupsForSession and includeStoredUserGroups properties/
+      );
+    });
+  });
 });

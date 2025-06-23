@@ -672,19 +672,21 @@ export class ExperimentClientController {
    *         This endpoint supports three different modes of operation based on the optional parameters:
    *
    *         **Stored-user Mode** (Standard stored user lookup):
-   *         - Uses only stored user groups from the database
-   *         - User must already have been initialized
    *         - Omit both `groupsForSession` and `includeStoredUserGroups` parameters
+   *         - Uses only stored user groups from the database
+   *         - User must already have been initialized, will 404 if user does not exist
    *
    *         **Ephemeral Mode** (Session-only groups):
-   *         - Uses only the groups provided in the session, ignoring any stored user groups
    *         - Set `includeStoredUserGroups` to `false` and provide `groupsForSession`
-   *         - Useful when complete group information is always provided at runtime
+   *         - Uses only the groups provided in the session, ignoring any stored user groups.
+   *         - Useful when complete group information is always provided at runtime.
    *
    *         **Merged Mode** (Stored + Session groups):
-   *         - Combines stored user groups (if exists) with session groups provided in the request
    *         - Set `includeStoredUserGroups` to `true` and provide `groupsForSession`
-   *         - Session groups are merged with stored groups, with unique values per group key
+   *         - User must already have been initialized, will 404 if user does not exist.
+   *         - Session groups are merged with stored groups if they don't already exist for stored user.
+   *         - Session groups are never persisted.
+   *         - Useful for adding context-specific ephemeral groups to an existing user.
    *
    *       consumes:
    *         - application/json

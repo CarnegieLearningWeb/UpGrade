@@ -10,12 +10,12 @@ const URL = {
   ECS_STAGING: 'https://apps.qa-cli.com/upgrade-service',
 };
 
-const userId = 'zelmo1';
-const useEphemeralGroups = true;
+const userId = 'qwerty6';
+const useEphemeralGroups = false;
 const group = { classId: ['STORED_USER_GROUP'] };
 const workingGroup = 'STORED_USER_GROUP';
 const groupsForSession = { classId: ['EPHEMERAL_USER_GROUP'] };
-const includeStoredUserGroups = false; // true to merge with stored user groups, false for session-only groups
+const includeStoredUserGroups = true; // true to merge with stored user groups, false for session-only groups
 const alias = 'alias' + userId;
 const hostUrl = URL.LOCAL;
 const context = 'mathstream';
@@ -72,10 +72,11 @@ async function quickTest() {
   const client = new UpgradeClient(userId, hostUrl, context, options);
   await doInit(client);
   await doGroupMembership(client);
-  // await doWorkingGroupMembership(client);
-  // await doAliases(client);
-  // await doAssign(client);
-  // const condition = await doGetDecisionPointAssignment(client);
+  await doWorkingGroupMembership(client);
+  await doAliases(client);
+  await doAssign(client);
+  const condition = await doGetDecisionPointAssignment(client);
+  doSetFeatureFlagUserGroupsForSession(client, options);
   await doFeatureFlags(client);
   // await doHasFeatureFlag(client);
   // await doMark(client, condition);
@@ -154,6 +155,14 @@ async function doGetDecisionPointAssignment(client: UpgradeClient): Promise<stri
     console.error('\n[Decision Point Assignment error]:', error);
     return null;
   }
+}
+
+// to test this function, omit passing options to constructor
+function doSetFeatureFlagUserGroupsForSession(
+  client: UpgradeClient,
+  options: UpGradeClientInterfaces.IConfigOptions | null | undefined
+) {
+  client.setFeatureFlagUserGroupsForSession(options?.featureFlagUserGroupsForSession);
 }
 
 async function doFeatureFlags(client: UpgradeClient) {
