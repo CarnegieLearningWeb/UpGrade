@@ -4,7 +4,7 @@ import { ParticipantListRowActionEvent } from '../../../../../../../../core/feat
 import { CommonDetailsParticipantListTableComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-details-participant-list-table/common-details-participant-list-table.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
+import { LIST_FILTER_MODE } from 'upgrade_types';
 
 @Component({
   selector: 'app-feature-flag-exclusions-table',
@@ -15,7 +15,7 @@ import { FEATURE_FLAG_LIST_FILTER_MODE } from 'upgrade_types';
 })
 export class FeatureFlagExclusionsTableComponent {
   @Input() actionsDisabled?: boolean = false;
-  tableType = FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION;
+  tableType = LIST_FILTER_MODE.EXCLUSION;
   dataSource$ = this.featureFlagService.selectFeatureFlagExclusions$;
   isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();

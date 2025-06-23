@@ -17,6 +17,7 @@ import { InjectRepository, InjectDataSource } from '../../typeorm-typedi-extensi
 import { DataSource, EntityManager } from 'typeorm';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
 import { ConditionPayloadRepository } from '../repositories/ConditionPayloadRepository';
+import { SegmentRepository } from '../repositories/SegmentRepository';
 import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
@@ -119,6 +120,7 @@ export class MoocletExperimentService extends ExperimentService {
     @InjectRepository() levelCombinationElementsRepository: LevelCombinationElementRepository,
     @InjectRepository() archivedStatsRepository: ArchivedStatsRepository,
     @InjectRepository() stratificationRepository: StratificationFactorRepository,
+    @InjectRepository() segmentRepository: SegmentRepository,
     @InjectRepository()
     moocletExperimentRefRepository: MoocletExperimentRefRepository,
     @InjectDataSource() dataSource: DataSource,
@@ -145,6 +147,7 @@ export class MoocletExperimentService extends ExperimentService {
       stateTimeLogsRepository,
       experimentSegmentInclusionRepository,
       experimentSegmentExclusionRepository,
+      segmentRepository,
       conditionPayloadRepository,
       factorRepository,
       levelRepository,

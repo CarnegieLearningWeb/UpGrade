@@ -49,11 +49,6 @@ export const selectSkipExperiment = createSelector(selectExperimentState, (state
 
 export const selectTotalExperiment = createSelector(selectExperimentState, (state) => state.totalExperiments);
 
-export const selectTotalFilteredExperiment = createSelector(
-  selectExperimentState,
-  (state) => state.totalFilteredExperiments
-);
-
 export const selectSearchKey = createSelector(selectExperimentState, (state) => state.searchKey);
 
 export const selectSearchString = createSelector(selectExperimentState, (state) => state.searchString);

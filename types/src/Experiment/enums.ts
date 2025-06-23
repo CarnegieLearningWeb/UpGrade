@@ -36,6 +36,7 @@ export enum POST_EXPERIMENT_RULE {
 }
 
 export enum EXPERIMENT_STATE {
+  DRAFT = 'draft',
   INACTIVE = 'inactive',
   PREVIEW = 'preview',
   SCHEDULED = 'scheduled',
@@ -129,9 +130,15 @@ export enum FEATURE_FLAG_LIST_OPERATION {
   STATUS_CHANGED = 'statusChanged',
 }
 
-export enum FEATURE_FLAG_LIST_FILTER_MODE {
+export enum LIST_FILTER_MODE {
   INCLUSION = 'inclusion',
   EXCLUSION = 'exclusion',
+}
+
+export enum EXPERIMENT_LIST_OPERATION {
+  CREATED = 'created',
+  UPDATED = 'updated',
+  DELETED = 'deleted',
 }
 
 export enum EXPERIMENT_SEARCH_KEY {

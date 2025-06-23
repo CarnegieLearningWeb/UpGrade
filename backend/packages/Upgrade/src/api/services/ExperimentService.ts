@@ -30,6 +30,8 @@ import {
   CACHE_PREFIX,
   ASSIGNMENT_UNIT,
   FILTER_MODE,
+  LIST_FILTER_MODE,
+  EXPERIMENT_LIST_OPERATION,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -73,7 +75,6 @@ import {
   ParticipantsValidator,
   ExperimentFile,
   ValidatedExperimentError,
-  OldExperimentDTO,
 } from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
@@ -86,10 +87,11 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
 import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
-import { compare } from 'compare-versions';
 import { MetricService } from './MetricService';
 import { MoocletRewardsService } from './MoocletRewardsService';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
+import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
+import { SegmentRepository } from '../repositories/SegmentRepository';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -117,6 +119,7 @@ export class ExperimentService {
     @InjectRepository() protected stateTimeLogsRepository: StateTimeLogsRepository,
     @InjectRepository() protected experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     @InjectRepository() protected experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
+    @InjectRepository() protected segmentRepository: SegmentRepository,
     @InjectRepository() protected conditionPayloadRepository: ConditionPayloadRepository,
     @InjectRepository() protected factorRepository: FactorRepository,
     @InjectRepository() protected levelRepository: LevelRepository,
@@ -167,12 +170,11 @@ export class ExperimentService {
       .leftJoin('experiment.partitions', 'partitions')
       .orderBy('experiment.id');
 
-    let countQuery = undefined;
     if (searchParams) {
       const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
-      countQuery = paginatedParentSubQuery.clone();
     }
+    const countQuery = paginatedParentSubQuery.clone();
 
     paginatedParentSubQuery = paginatedParentSubQuery.limit(take).offset(skip);
 
@@ -207,22 +209,27 @@ export class ExperimentService {
     } else {
       queryBuilderToReturn = queryBuilderToReturn.addOrderBy('experiment.updatedAt', 'DESC');
     }
-    const [experiments, count] = await Promise.all([
-      queryBuilderToReturn.getMany(),
-      countQuery ? countQuery.getCount() : countQuery,
-    ]);
-
-    return [
-      experiments.map((experiment) => {
-        return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
-      }),
-      count || 0,
-    ];
+    const [experimentData, count] = await Promise.all([queryBuilderToReturn.getMany(), countQuery.getCount()]);
+    experimentData.forEach((experiment) => {
+      experiment.experimentSegmentExclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
+        experiment.experimentSegmentExclusion
+      );
+      experiment.experimentSegmentInclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
+        experiment.experimentSegmentInclusion
+      );
+    });
+    return [experimentData, count];
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
     const experiment = await this.findOne(id, logger);
     if (experiment) {
+      experiment.experimentSegmentExclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
+        experiment.experimentSegmentExclusion
+      );
+      experiment.experimentSegmentInclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
+        experiment.experimentSegmentInclusion
+      );
       return this.reducedConditionPayload(this.formattingPayload(experiment));
     } else {
       return undefined;
@@ -266,7 +273,7 @@ export class ExperimentService {
       });
   }
 
-  public create(
+  public async create(
     experiment: ExperimentDTO,
     currentUser: UserDTO,
     logger: UpgradeLogger,
@@ -277,6 +284,7 @@ export class ExperimentService {
   ): Promise<ExperimentDTO> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
     const { createType, existingEntityManager } = options || {};
+    const entityManager = existingEntityManager || this.dataSource.manager;
 
     // order for condition
     let newConditionId;
@@ -305,7 +313,39 @@ export class ExperimentService {
     });
     experiment.backendVersion = env.app.version;
 
-    return this.addExperimentInDB(experiment, currentUser, logger, existingEntityManager);
+    const createdExperiment = await this.addExperimentInDB(experiment, currentUser, logger, entityManager);
+    const addListPromises = [];
+    if (experiment.experimentSegmentExclusion?.length > 0) {
+      addListPromises.push(
+        ...experiment.experimentSegmentExclusion.map((exclusion) =>
+          this.addList(
+            this.getListSegment(exclusion, createdExperiment.context),
+            createdExperiment.id,
+            LIST_FILTER_MODE.EXCLUSION,
+            currentUser,
+            logger,
+            entityManager
+          )
+        )
+      );
+    }
+    if (experiment.experimentSegmentInclusion?.length > 0) {
+      addListPromises.push(
+        ...experiment.experimentSegmentInclusion.map((inclusion) =>
+          this.addList(
+            this.getListSegment(inclusion, createdExperiment.context),
+            createdExperiment.id,
+            LIST_FILTER_MODE.INCLUSION,
+            currentUser,
+            logger,
+            entityManager
+          )
+        )
+      );
+      await Promise.all(addListPromises);
+    }
+
+    return createdExperiment;
   }
 
   public async delete(
@@ -338,32 +378,33 @@ export class ExperimentService {
 
         // Add log for experiment deleted
         this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_DELETED, deleteAuditLogData, currentUser);
-        if (experiment.experimentSegmentInclusion) {
-          try {
-            await transactionalEntityManager
-              .getRepository(Segment)
-              .delete(experiment.experimentSegmentInclusion.segment.id);
-          } catch (err) {
-            const error = err as ErrorWithType;
-            error.details = 'Error in deleting Include Segment from DB';
-            error.type = SERVER_ERROR.QUERY_FAILED;
-            logger.error(error);
-            throw error;
-          }
-        }
-        if (experiment.experimentSegmentExclusion) {
-          try {
-            await transactionalEntityManager
-              .getRepository(Segment)
-              .delete(experiment.experimentSegmentExclusion.segment.id);
-          } catch (err) {
-            const error = err as ErrorWithType;
-            error.details = 'Error in deleting Exclude Segment fron DB';
-            error.type = SERVER_ERROR.QUERY_FAILED;
-            logger.error(error);
-            throw error;
-          }
-        }
+
+        await Promise.all(
+          experiment.experimentSegmentInclusion.map(async (segmentInclusion) => {
+            try {
+              await transactionalEntityManager.getRepository(Segment).delete(segmentInclusion.segment.id);
+            } catch (err) {
+              const error = err as ErrorWithType;
+              error.details = 'Error in deleting Experiment Included Segment from DB';
+              error.type = SERVER_ERROR.QUERY_FAILED;
+              logger.error(error);
+              throw error;
+            }
+          })
+        );
+        await Promise.all(
+          experiment.experimentSegmentExclusion.map(async (segmentExclusion) => {
+            try {
+              await transactionalEntityManager.getRepository(Segment).delete(segmentExclusion.segment.id);
+            } catch (err) {
+              const error = err as ErrorWithType;
+              error.details = 'Error in deleting Experiment Excluded Segment from DB';
+              error.type = SERVER_ERROR.QUERY_FAILED;
+              logger.error(error);
+              throw error;
+            }
+          })
+        );
         return deletedExperiment;
       }
       return undefined;
@@ -713,9 +754,24 @@ export class ExperimentService {
     const oldDecisionPoints = oldExperiment.partitions;
     const oldQueries = oldExperiment.queries;
     const oldConditionPayloads = oldExperiment.conditionPayloads;
+    const isChangingContext = oldExperiment.context[0] !== experiment.context[0];
 
-    // create schedules to start experiment and end experiment
-    this.experimentSchedulerService.updateExperimentSchedules(experiment as any, logger);
+    let includeListsToReturn = [...oldExperiment.experimentSegmentInclusion];
+    let excludeListsToReturn = [...oldExperiment.experimentSegmentExclusion];
+
+    if (isChangingContext) {
+      // If the context is changing, we need to delete all lists from the experiment
+      logger.info({
+        message: `Changing context from ${oldExperiment.context[0]} to ${experiment.context[0]}. Deleting all lists from the experiment.`,
+      });
+      await this.deleteAllListsFromExperiment(oldExperiment, user, logger, entityManager);
+      includeListsToReturn = [];
+      excludeListsToReturn = [];
+    }
+
+    if (this.experimentSchedulerService) {
+      this.experimentSchedulerService.updateExperimentSchedules(experiment as any, logger);
+    }
 
     return entityManager
       .transaction(async (transactionalEntityManager) => {
@@ -738,14 +794,8 @@ export class ExperimentService {
           factors,
           conditionPayloads,
           queries,
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          // versionNumber,
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          // createdAt,
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          // updatedAt,
-          experimentSegmentInclusion,
           experimentSegmentExclusion,
+          experimentSegmentInclusion,
           ...expDoc
         } = experiment;
 
@@ -768,49 +818,6 @@ export class ExperimentService {
           logger.error(error);
           throw error;
         }
-
-        experimentDoc.experimentSegmentInclusion = oldExperiment.experimentSegmentInclusion;
-        const segmentIncludeData = this.includeExcludeSegmentCreation(
-          experimentSegmentInclusion,
-          experimentDoc.experimentSegmentInclusion,
-          experiment.id,
-          experiment.context,
-          true
-        );
-
-        experimentDoc.experimentSegmentExclusion = oldExperiment.experimentSegmentExclusion;
-        const segmentExcludeData = this.includeExcludeSegmentCreation(
-          experimentSegmentExclusion,
-          experimentDoc.experimentSegmentExclusion,
-          experiment.id,
-          experiment.context,
-          false
-        );
-
-        let segmentIncludeDoc: Segment;
-        try {
-          segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
-        } catch (err) {
-          const error = err as ErrorWithType;
-          error.details = 'Error in updating IncludeSegment in DB';
-          error.type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          throw error;
-        }
-
-        let segmentExcludeDoc: Segment;
-        try {
-          segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
-        } catch (err) {
-          const error = err as ErrorWithType;
-          error.details = 'Error in updating ExcludeSegment in DB';
-          error.type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          throw error;
-        }
-
-        experimentDoc.experimentSegmentInclusion.segment = segmentIncludeDoc;
-        experimentDoc.experimentSegmentExclusion.segment = segmentExcludeDoc;
 
         // Check for conditionCode is 'default' then return error:
         this.checkConditionCodeDefault(conditions);
@@ -1109,7 +1116,11 @@ export class ExperimentService {
         return { updatedExperiment, toDeleteQueriesDoc };
       })
       .then(async ({ updatedExperiment }) => {
-        return updatedExperiment;
+        return {
+          ...updatedExperiment,
+          experimentSegmentExclusion: excludeListsToReturn,
+          experimentSegmentInclusion: includeListsToReturn,
+        };
       });
   }
 
@@ -1164,7 +1175,7 @@ export class ExperimentService {
     experiment: ExperimentDTO,
     user: UserDTO,
     logger: UpgradeLogger,
-    existingEntityManager?: EntityManager
+    entityManager: EntityManager
   ): Promise<ExperimentDTO> {
     await this.clearExperimentCacheDetail(
       experiment.context[0],
@@ -1173,8 +1184,6 @@ export class ExperimentService {
       })
     );
 
-    // if the upgrade experiment is being created as part of a transaction that has already been opened (along with mooclet creation) that transaction handler need to be used
-    const entityManager = existingEntityManager || this.dataSource.manager;
     const createdExperiment = await entityManager.transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.description = experiment.description || '';
@@ -1223,101 +1232,6 @@ export class ExperimentService {
         error.type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
-      }
-      let includeSegmentExists = true;
-      let segmentIncludeDoc: Segment;
-      let segmentIncludeDocToSave: Partial<ExperimentSegmentInclusion> = {};
-      if (experimentSegmentInclusion) {
-        // creating Include Segment
-        let segmentInclude;
-        if (experimentSegmentInclusion?.segment) {
-          const includeSegment = experimentSegmentInclusion.segment;
-          segmentInclude = {
-            ...experimentSegmentInclusion.segment,
-            type: includeSegment.type,
-            userIds: includeSegment.individualForSegment?.map((x) => x.userId) || [],
-            groups:
-              includeSegment.groupForSegment?.map((x) => {
-                return { type: x.type, groupId: x.groupId };
-              }) || [],
-            subSegmentIds: includeSegment.subSegments?.map((x) => x.id) || [],
-          };
-        } else {
-          segmentInclude = experimentSegmentInclusion;
-        }
-
-        const segmentIncludeData: SegmentInputValidator = {
-          ...segmentInclude,
-          id: segmentInclude.id || uuid(),
-          name: experiment.id + ' Inclusion Segment',
-          description: experiment.id + ' Inclusion Segment',
-          context: experiment.context[0],
-          type: SEGMENT_TYPE.PRIVATE,
-        };
-        try {
-          segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
-        } catch (err) {
-          const error = err as ErrorWithType;
-          error.details = 'Error in adding segment in DB';
-          error.type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          throw error;
-        }
-        // creating segmentInclude doc
-        const includeTempDoc = new ExperimentSegmentInclusion();
-        includeTempDoc.segment = segmentIncludeDoc;
-        includeTempDoc.experiment = experimentDoc;
-        segmentIncludeDocToSave = this.getSegmentDoc(includeTempDoc);
-      } else {
-        includeSegmentExists = false;
-      }
-
-      let excludeSegmentExists = true;
-      let segmentExcludeDoc: Segment;
-      let segmentExcludeDocToSave: Partial<ExperimentSegmentExclusion> = {};
-      if (experimentSegmentExclusion) {
-        // creating Exclude Segment
-        let segmentExclude;
-        if (experimentSegmentExclusion?.segment) {
-          const excludeSegment = experimentSegmentExclusion.segment;
-          segmentExclude = {
-            ...experimentSegmentExclusion.segment,
-            type: excludeSegment.type,
-            userIds: excludeSegment.individualForSegment?.map((x) => x.userId) || [],
-            groups:
-              excludeSegment.groupForSegment?.map((x) => {
-                return { type: x.type, groupId: x.groupId };
-              }) || [],
-            subSegmentIds: excludeSegment.subSegments?.map((x) => x.id) || [],
-          };
-        } else {
-          segmentExclude = experimentSegmentExclusion;
-        }
-
-        const segmentExcludeData: SegmentInputValidator = {
-          ...segmentExclude,
-          id: segmentExclude.id || uuid(),
-          name: experiment.id + ' Exclusion Segment',
-          description: experiment.id + ' Exclusion Segment',
-          context: experiment.context[0],
-          type: SEGMENT_TYPE.PRIVATE,
-        };
-        try {
-          segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
-        } catch (err) {
-          const error = err as ErrorWithType;
-          error.details = 'Error in adding segment in DB';
-          error.type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          throw error;
-        }
-        // creating segmentExclude doc
-        const excludeTempDoc = new ExperimentSegmentExclusion();
-        excludeTempDoc.segment = segmentExcludeDoc;
-        excludeTempDoc.experiment = experimentDoc;
-        segmentExcludeDocToSave = this.getSegmentDoc(excludeTempDoc);
-      } else {
-        excludeSegmentExists = false;
       }
 
       // creating condition docs
@@ -1385,36 +1299,14 @@ export class ExperimentService {
 
       // saving conditions, decision points, queries, segmentInclude, segmentExclude
       let conditionDocs: ExperimentCondition[];
-      let experimentSegmentInclusionDoc: ExperimentSegmentInclusion;
-      let experimentSegmentExclusionDoc: ExperimentSegmentExclusion;
       let decisionPointDocs: DecisionPoint[];
       let conditionPayloadDoc: ConditionPayload[];
       let queryDocs: any;
       try {
-        [
-          conditionDocs,
-          decisionPointDocs,
-          experimentSegmentInclusionDoc,
-          experimentSegmentExclusionDoc,
-          conditionPayloadDoc,
-          queryDocs,
-        ] = await Promise.all([
+        [conditionDocs, decisionPointDocs, conditionPayloadDoc, queryDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
-          includeSegmentExists
-            ? this.experimentSegmentInclusionRepository.insertData(
-                segmentIncludeDocToSave,
-                logger,
-                transactionalEntityManager
-              )
-            : (Promise.resolve([]) as any),
-          excludeSegmentExists
-            ? this.experimentSegmentExclusionRepository.insertData(
-                segmentExcludeDocToSave,
-                logger,
-                transactionalEntityManager
-              )
-            : (Promise.resolve([]) as any),
+
           conditionPayloadDocToSave.length > 0
             ? this.conditionPayloadRepository.insertConditionPayload(
                 conditionPayloadDocToSave,
@@ -1471,8 +1363,6 @@ export class ExperimentService {
           conditions: conditionDocToReturn as any,
           partitions: decisionPointDocToReturn as any,
           factors: factorDocToReturn as any,
-          experimentSegmentInclusion: { ...experimentSegmentInclusionDoc, segment: segmentIncludeDoc } as any,
-          experimentSegmentExclusion: { ...experimentSegmentExclusionDoc, segment: segmentExcludeDoc } as any,
           conditionPayloads: conditionPayloadDocToReturn as any,
           queries: (queryDocToReturn as any) || [],
         };
@@ -1517,12 +1407,7 @@ export class ExperimentService {
           return { fileName: experimentFile.fileName, error: 'Invalid JSON' };
         }
 
-        let newExperiment: ExperimentDTO;
-        if (compare(experiment.backendVersion, '5.3.0', '>=')) {
-          newExperiment = plainToClass(ExperimentDTO, experiment);
-        } else {
-          newExperiment = plainToClass(ExperimentDTO, this.experimentPayloadConverter(experiment));
-        }
+        const newExperiment = plainToClass(ExperimentDTO, experiment);
 
         if (!(newExperiment instanceof ExperimentDTO)) {
           return { fileName: experimentFile.fileName, error: 'Invalid JSON' };
@@ -1573,19 +1458,6 @@ export class ExperimentService {
         }
       })
       .filter((error) => error !== null);
-  }
-
-  private experimentPayloadConverter(experiment: OldExperimentDTO): ExperimentDTO {
-    const updatedExperimentPayload = experiment.conditionPayloads.map((conditionPayload) => {
-      return {
-        ...conditionPayload,
-        parentCondition: conditionPayload.parentCondition.id,
-        decisionPoint: conditionPayload.decisionPoint.id,
-      };
-    });
-
-    const newExperiment: ExperimentDTO = { ...experiment, conditionPayloads: updatedExperimentPayload };
-    return newExperiment;
   }
 
   public validateExperimentContext(experiment: ExperimentDTO): string | null {
@@ -1746,28 +1618,14 @@ export class ExperimentService {
 
   deduceParticipants(result) {
     if (!result.experimentSegmentInclusion) {
-      result.experimentSegmentInclusion = {
-        segment: {
-          individualForSegment: [],
-          groupForSegment: [],
-          subSegments: [],
-          type: SEGMENT_TYPE.PRIVATE,
-        },
-      };
+      result.experimentSegmentInclusion = [];
     }
-    result.experimentSegmentInclusion.segment.id = uuid();
+    result.experimentSegmentInclusion.forEach((segmentInclusion) => (segmentInclusion.segment.id = uuid()));
 
     if (!result.experimentSegmentExclusion) {
-      result.experimentSegmentExclusion = {
-        segment: {
-          individualForSegment: [],
-          groupForSegment: [],
-          subSegments: [],
-          type: SEGMENT_TYPE.PRIVATE,
-        },
-      };
+      result.experimentSegmentExclusion = [];
     }
-    result.experimentSegmentExclusion.segment.id = uuid();
+    result.experimentSegmentExclusion.forEach((segmentExclusion) => (segmentExclusion.segment.id = uuid()));
   }
 
   deduceQueries(result) {
@@ -1889,54 +1747,308 @@ export class ExperimentService {
     return { ...experiment, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
   }
 
-  public includeExcludeSegmentCreation(
-    experimentSegment: ParticipantsValidator,
-    experimentDocSegmentData: ExperimentSegmentInclusion | ExperimentSegmentExclusion,
+  private inferListTypesForExperimentListForExperimentRedesignDataChange(
+    list: ExperimentSegmentExclusion[] | ExperimentSegmentInclusion[]
+  ): ExperimentSegmentExclusion[] | ExperimentSegmentInclusion[] {
+    return list.reduce((acc, exclusion) => {
+      const inferreedListType = this.inferListType(exclusion.segment);
+      if (inferreedListType) {
+        exclusion.segment.listType = inferreedListType;
+        return [...acc, exclusion];
+      }
+      return acc;
+    }, []);
+  }
+
+  private inferListType(segment: Segment) {
+    if (segment.listType) {
+      return segment.listType;
+    }
+    if (
+      segment.individualForSegment?.length > 0 &&
+      segment.groupForSegment?.length === 0 &&
+      segment.subSegments?.length === 0
+    ) {
+      return 'individual';
+    }
+    if (
+      segment.individualForSegment?.length === 0 &&
+      segment.groupForSegment?.length > 0 &&
+      segment.subSegments?.length === 0
+    ) {
+      const groupType = segment.groupForSegment[0].type;
+      if (segment.groupForSegment.every((val) => val.type !== 'All' && val.type === groupType)) return groupType;
+    }
+    if (
+      segment.individualForSegment?.length === 0 &&
+      segment.groupForSegment?.length === 0 &&
+      segment.subSegments?.length > 0
+    ) {
+      return 'segment';
+    }
+    return null;
+  }
+
+  public async addList(
+    listInput: SegmentInputValidator,
     experimentId: string,
-    context: string[],
-    isIncludeMode: boolean
-  ) {
-    const currentData = experimentSegment.segment
-      ? {
-          ...experimentSegment.segment,
-          userIds: experimentSegment.segment.individualForSegment.map((user) => user.userId),
-          groups: experimentSegment.segment.groupForSegment.map((group) => {
-            return { groupId: group.groupId, type: group.type };
-          }),
-          subSegmentIds: experimentSegment.segment.subSegments.map((segment) => segment.id),
+    filterType: LIST_FILTER_MODE,
+    currentUser: UserDTO,
+    logger: UpgradeLogger,
+    transactionalEntityManager?: EntityManager
+  ): Promise<ExperimentSegmentInclusion | ExperimentSegmentExclusion> {
+    logger.info({ message: `Add ${filterType} list to experiment` });
+
+    const executeTransaction = async (manager: EntityManager) => {
+      const segmentToCreate = { type: SEGMENT_TYPE.PRIVATE, ...listInput };
+
+      let newSegment: Segment;
+      try {
+        newSegment = await this.segmentService.upsertSegmentInPipeline(segmentToCreate, logger, manager);
+      } catch (err) {
+        const error = new Error(`Error in creating private segment for experiment ${filterType} list: ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+
+      const experiment = await manager.getRepository(Experiment).findOne({
+        where: { id: experimentId },
+      });
+
+      const experimentSegmentInclusionOrExclusion =
+        filterType === LIST_FILTER_MODE.INCLUSION ? new ExperimentSegmentInclusion() : new ExperimentSegmentExclusion();
+      experimentSegmentInclusionOrExclusion.experiment = experiment;
+      experimentSegmentInclusionOrExclusion.segment = newSegment;
+      try {
+        if (filterType === LIST_FILTER_MODE.INCLUSION) {
+          await this.experimentSegmentInclusionRepository.insertData(
+            [experimentSegmentInclusionOrExclusion],
+            logger,
+            manager
+          );
+        } else {
+          await this.experimentSegmentExclusionRepository.insertData(
+            [experimentSegmentInclusionOrExclusion],
+            logger,
+            manager
+          );
         }
-      : experimentSegment;
+      } catch (err) {
+        const error = new Error(`Error in adding segment for experiment ${filterType} list: ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
 
-    let segment;
-    let segmentDataToReturn;
-    if (experimentDocSegmentData.segment) {
-      segmentDataToReturn = {
-        ...currentData,
-        id: experimentDocSegmentData.segment.id,
-        name: experimentDocSegmentData.segment.name,
-        description: experimentDocSegmentData.segment.description,
-        context: context[0],
-        type: SEGMENT_TYPE.PRIVATE,
-      };
+      // TODO: Uncomment when the frontend is ready to handle the audit logs
+      // const updateAuditLog: AuditLogData = {
+      //   experimentId: experiment.id,
+      //   experimentName: experiment.name,
+      //   list: {
+      //     listId: newSegment?.id,
+      //     listName: newSegment?.name,
+      //     filterType: filterType,
+      //     operation: EXPERIMENT_LIST_OPERATION.CREATED,
+      //   },
+      // };
+      // await this.experimentAuditLogRepository.saveRawJson(
+      //   LOG_TYPE.EXPERIMENT_UPDATED,
+      //   updateAuditLog,
+      //   currentUser,
+      //   transactionalEntityManager
+      // );
+
+      // Update exclusions/Enrollments if the filterType is EXCLUSION
+      if (filterType === LIST_FILTER_MODE.EXCLUSION) {
+        let newUsers = [];
+        let newGroups = [];
+        if (newSegment.listType === 'individual') {
+          newUsers = newSegment.individualForSegment.map((ifs) => ifs.userId);
+        } else if (newSegment.listType !== 'segment') {
+          newGroups = newSegment.groupForSegment.map((gfs) => {
+            return { groupId: gfs.groupId, type: gfs.type };
+          });
+        }
+
+        await this.segmentService.updateEnrollmentAndExclusionDocuments(experiment, newUsers, newGroups);
+      }
+      return experimentSegmentInclusionOrExclusion;
+    };
+
+    if (transactionalEntityManager) {
+      // Use the provided entity manager
+      return await executeTransaction(transactionalEntityManager);
     } else {
-      segment = experimentDocSegmentData;
-      segmentDataToReturn = {
-        ...segment,
-        id: uuid(),
-        name: isIncludeMode ? experimentId + ' Inclusion Segment' : experimentId + ' Exclusion Segment',
-        description: isIncludeMode ? experimentId + ' Inclusion Segment' : experimentId + ' Exclusion Segment',
-        context: context[0],
+      // Create a new transaction if no entity manager is provided
+      return await this.dataSource.transaction(async (manager) => {
+        return await executeTransaction(manager);
+      });
+    }
+  }
+
+  public async deleteList(
+    segmentId: string,
+    filterType: LIST_FILTER_MODE,
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<Segment> {
+    // TODO: Uncomment when the frontend is ready to handle the audit logs
+    //await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
+    return this.segmentService.deleteSegment(segmentId, logger);
+  }
+
+  async createDeleteListAuditLogs(
+    segmentIds: string[],
+    filterType: LIST_FILTER_MODE,
+    currentUser: UserDTO,
+    entityManager?: EntityManager
+  ): Promise<void> {
+    const auditLogPromises = [];
+    for (const segmentId of segmentIds) {
+      let existingRecord: ExperimentSegmentInclusion | ExperimentSegmentExclusion;
+
+      if (filterType === LIST_FILTER_MODE.INCLUSION) {
+        existingRecord = await this.experimentSegmentInclusionRepository.findOne({
+          where: { segment: { id: segmentId } },
+          relations: ['experiment', 'segment'],
+        });
+      } else {
+        existingRecord = await this.experimentSegmentExclusionRepository.findOne({
+          where: { segment: { id: segmentId } },
+          relations: ['experiment', 'segment'],
+        });
+      }
+      // Handle if the record is not found
+      if (!existingRecord) {
+        throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
+      }
+
+      // Create the delete list audit log data
+      const updateAuditLog = {
+        experimentId: existingRecord.experiment.id,
+        experimentName: existingRecord.experiment.name,
+        list: {
+          listId: segmentId,
+          listName: existingRecord.segment.name,
+          filterType: filterType,
+          operation: EXPERIMENT_LIST_OPERATION.DELETED,
+        },
       };
+
+      const that = entityManager ? entityManager.getRepository(ExperimentAuditLog) : this.experimentAuditLogRepository;
+      const savePromise = that.save({
+        type: LOG_TYPE.EXPERIMENT_UPDATED,
+        data: updateAuditLog,
+        user: currentUser,
+      });
+
+      auditLogPromises.push(savePromise);
     }
 
-    // for test cases:
-    if (segmentDataToReturn['subSegmentIds'] === undefined) {
-      segmentDataToReturn.subSegmentIds = [];
-      segmentDataToReturn.userIds = [];
-      segmentDataToReturn.groups = [];
-    }
+    // Use Promise.all to run all audit log saving operations concurrently
+    await Promise.all(auditLogPromises);
+  }
 
-    return segmentDataToReturn;
+  public async updateList(
+    listInput: SegmentInputValidator,
+    experimentId: string,
+    filterType: LIST_FILTER_MODE,
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<ExperimentSegmentInclusion | ExperimentSegmentExclusion> {
+    logger.info({ message: `Update ${filterType} list for experiment` });
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX);
+    return await this.dataSource.transaction(async (transactionalEntityManager) => {
+      // Find the existing record
+      let existingRecord: ExperimentSegmentInclusion | ExperimentSegmentExclusion;
+      const experiment = await this.findOne(experimentId);
+
+      if (filterType === LIST_FILTER_MODE.INCLUSION) {
+        existingRecord = await this.experimentSegmentInclusionRepository.findOne({
+          where: { experiment: { id: experimentId }, segment: { id: listInput.id } },
+          relations: ['experiment', 'segment'],
+        });
+      } else {
+        existingRecord = await this.experimentSegmentExclusionRepository.findOne({
+          where: { experiment: { id: experimentId }, segment: { id: listInput.id } },
+          relations: ['experiment', 'segment'],
+        });
+      }
+
+      if (!existingRecord) {
+        throw new Error(
+          `No existing ${filterType} record found for experiment ${listInput.id} and segment ${listInput.id}`
+        );
+      }
+
+      const { versionNumber, createdAt, updatedAt, type, ...oldSegmentDoc } = existingRecord.segment;
+
+      const oldSegmentDocClone = JSON.parse(JSON.stringify(oldSegmentDoc));
+      let newSegmentDocClone;
+
+      // Update the segment
+      try {
+        const updatedSegment = await this.segmentService.upsertSegmentInPipeline(
+          listInput,
+          logger,
+          transactionalEntityManager
+        );
+        existingRecord.segment = updatedSegment;
+
+        const {
+          featureFlagSegmentExclusion,
+          featureFlagSegmentInclusion,
+          experimentSegmentInclusion,
+          experimentSegmentExclusion,
+          versionNumber,
+          createdAt,
+          updatedAt,
+          type,
+          ...newSegmentDoc
+        } = updatedSegment;
+        newSegmentDocClone = JSON.parse(JSON.stringify(newSegmentDoc));
+      } catch (err) {
+        const error = new Error(`Error in updating private segment for experiment ${filterType} list: ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+
+      // Save the updated record
+      try {
+        if (filterType === LIST_FILTER_MODE.INCLUSION) {
+          await transactionalEntityManager.save(ExperimentSegmentInclusion, existingRecord);
+        } else {
+          await transactionalEntityManager.save(ExperimentSegmentExclusion, existingRecord);
+        }
+      } catch (err) {
+        const error = new Error(`Error in updating segment for experiment ${filterType} list: ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+
+      const listData = {
+        listId: existingRecord.segment.id,
+        listName: existingRecord.segment.name,
+        filterType: filterType,
+        operation: EXPERIMENT_LIST_OPERATION.UPDATED,
+        diff: diffString(newSegmentDocClone, oldSegmentDocClone),
+      };
+
+      // update list AuditLogs here
+      const updateAuditLog: AuditLogData = {
+        flagId: experiment.id,
+        flagName: experiment.name,
+        list: listData,
+      };
+
+      await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, currentUser);
+
+      return existingRecord;
+    });
   }
 
   private async addFactorialDataInDB(
@@ -2053,10 +2165,29 @@ export class ExperimentService {
     return formatedData;
   }
 
-  private getSegmentDoc(doc: ExperimentSegmentExclusion | ExperimentSegmentInclusion) {
+  private getListSegment(list: ParticipantsValidator, context): SegmentInputValidator {
+    list.segment.id = uuid();
+
+    const userIds = list.segment.individualForSegment?.map((individual) =>
+      individual.userId ? individual.userId : null
+    );
+    const subSegmentIds = list.segment.subSegments?.map((subSegment) => (subSegment.id ? subSegment.id : null));
+    const groups = list.segment.groupForSegment?.map((group) => {
+      return group.type && group.groupId ? { type: group.type, groupId: group.groupId } : null;
+    });
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { createdAt, updatedAt, versionNumber, ...newDoc } = doc;
-    return newDoc;
+    const { subSegments, ...inputSegment } = list.segment;
+    const segmentToAdd = { ...inputSegment, userIds, subSegmentIds, groups, context };
+
+    return {
+      ...segmentToAdd,
+      id: list.segment.id,
+      name: list.segment.name || list.segment.id + ' Segment',
+      description: list.segment.description || list.segment.id + ' Segment',
+      context: context[0],
+      type: SEGMENT_TYPE.PRIVATE,
+    };
   }
 
   private async clearExperimentCacheDetail(
@@ -2068,6 +2199,39 @@ export class ExperimentService {
       await this.cacheService.delCache(CACHE_PREFIX.MARK_KEY_PREFIX + '-' + partition.site + '-' + partition.target);
     });
     await Promise.all(deletedCache);
+    return;
+  }
+
+  private async deleteAllListsFromExperiment(
+    oldExperiment: Experiment,
+    user: UserDTO,
+    logger: UpgradeLogger,
+    transactionalEntityManager?: EntityManager
+  ): Promise<void> {
+    const includeListIds = oldExperiment.experimentSegmentInclusion.map((list) => list.segment.id);
+    const excludeListIds = oldExperiment.experimentSegmentExclusion.map((list) => list.segment.id);
+
+    // TODO: Uncomment when the frontend is ready to handle the audit logs
+    // const auditLogPromises = [];
+
+    // if (includeListIds.length) {
+    //   auditLogPromises.push(
+    //     this.createDeleteListAuditLogs(includeListIds, LIST_FILTER_MODE.INCLUSION, user, transactionalEntityManager)
+    //   );
+    // }
+
+    // if (excludeListIds.length) {
+    //   auditLogPromises.push(
+    //     this.createDeleteListAuditLogs(excludeListIds, LIST_FILTER_MODE.EXCLUSION, user, transactionalEntityManager)
+    //   );
+    // }
+
+    // Delete segments
+    const segmentIds = [...includeListIds, ...excludeListIds];
+    if (segmentIds.length) {
+      await this.segmentRepository.deleteSegments(segmentIds, logger, transactionalEntityManager);
+    }
+    // await Promise.all(auditLogPromises);
     return;
   }
 }

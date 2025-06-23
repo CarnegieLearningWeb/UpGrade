@@ -36,7 +36,6 @@ import {
   selectCurrentContextMetaDataConditions,
   selectIsLoadingContextMetaData,
   selectExperimentsExportLoading,
-  selectTotalFilteredExperiment,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -99,8 +98,8 @@ export class ExperimentService {
   isAllExperimentsFetched() {
     return combineLatest([
       this.store$.pipe(select(selectSkipExperiment)),
-      this.store$.pipe(select(selectTotalFilteredExperiment)),
-    ]).pipe(map(([skipExperiments, totalFilteredExperiments]) => skipExperiments === totalFilteredExperiments));
+      this.store$.pipe(select(selectTotalExperiment)),
+    ]).pipe(map(([skipExperiments, totalExperiments]) => skipExperiments === totalExperiments));
   }
 
   loadExperiments(fromStarting?: boolean) {

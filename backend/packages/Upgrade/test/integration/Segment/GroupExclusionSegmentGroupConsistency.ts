@@ -6,7 +6,7 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { segmentThird } from '../mockData/segment';
 import { systemUser } from '../mockData/user/index';
 import { groupAssignmentWithGroupConsistencyExperiment } from '../mockData/experiment/index';
-import { ENROLLMENT_CODE, EXPERIMENT_STATE } from 'upgrade_types';
+import { ENROLLMENT_CODE, EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { checkMarkExperimentPointForUser } from '../utils/index';
@@ -127,11 +127,10 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
   //   ])
   // );
 
-  experimentObject.state = 'enrolling';
-  experimentObject.experimentSegmentExclusion = segmentObject;
+  await experimentService.addList(segmentObject, experimentId, LIST_FILTER_MODE.EXCLUSION, user, new UpgradeLogger());
 
   // update experiment with the above segment Object:
-  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());

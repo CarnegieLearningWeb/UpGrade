@@ -13,7 +13,7 @@ import {
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
 
 /* Explanation:
 A user1 in mark in an experiment with Individual Assignment and Individual Consistency
@@ -134,15 +134,21 @@ export default async function ExcludeGroupsA(): Promise<void> {
   experimentObject = {
     ...experimentObject,
     state: EXPERIMENT_STATE.ENROLLING,
-    experimentSegmentExclusion: {
-      ...experimentObject.experimentSegmentExclusion,
-      segment: {
-        ...experimentObject.experimentSegmentExclusion.segment,
-        groupForSegment: [{ groupId: '1', type: 'teacher' }],
-      },
-    },
   };
   await experimentService.update(experimentObject, user, new UpgradeLogger());
+
+  await experimentService.addList(
+    {
+      ...experimentObject.experimentSegmentExclusion[0].segment,
+      listType: 'group',
+      groups: [{ groupId: '1', type: 'teacher' }],
+    },
+
+    experimentObject.id,
+    LIST_FILTER_MODE.EXCLUSION,
+    user,
+    new UpgradeLogger()
+  );
 
   // check stats
   stats = await analyticsService.getDetailEnrollment(experimentId);

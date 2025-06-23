@@ -29,26 +29,38 @@ import { MoocletExperimentService } from '../services/MoocletExperimentService';
 import { env } from '../../env';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
-import { SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
+import { LIST_FILTER_MODE, SERVER_ERROR, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
+import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
+import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
+import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
+import { IdValidator } from '../controllers/validators/ExperimentUserValidator';
+import { Segment } from '../models/Segment';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
-  filtered: number;
   nodes: Experiment[];
+}
+
+interface ExperimentListValidator {
+  list: SegmentInputValidator;
+  experimentId: string;
 }
 
 /**
  * @swagger
  * definitions:
- *   InclusionExclusionList:
+ *   InclusionExclusionListInput:
  *     required:
  *      - name
  *      - context
  *      - type
- *      - individualForSegment
- *      - groupForSegment
- *      - subSegments
+ *      - listType
+ *      - userIds
+ *      - groups
+ *      - subSegmentIds
  *     properties:
+ *       id:
+ *        type: string
  *       name:
  *        type: string
  *       description:
@@ -58,14 +70,13 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       type:
  *        type: string
  *        enum: [private]
- *       individualForSegment:
+ *       listType:
+ *        type: string
+ *       userIds:
  *        type: array
  *        items:
- *          type: object
- *          properties:
- *            userId:
- *              type: string
- *       groupForSegment:
+ *          type: string
+ *       groups:
  *        type: array
  *        items:
  *          type: object
@@ -74,18 +85,58 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *              type: string
  *            type:
  *              type: string
- *       subSegments:
+ *       subSegmentIds:
  *        type: array
  *        items:
- *          type: object
- *          properties:
- *            id:
- *              type: string
- *              example: 218dc2d8-a833-4e06-b3e3-d3adf74bffd6
- *            name:
- *              type: string
- *            context:
- *              type: string
+ *          type: string
+ *   InclusionExclusionList:
+ *     required:
+ *       - name
+ *       - context
+ *       - type
+ *       - individualForSegment
+ *       - groupForSegment
+ *       - subSegments
+ *     properties:
+ *       name:
+ *         type: string
+ *       description:
+ *         type: string
+ *       context:
+ *         type: string
+ *       listType:
+ *         type: string
+ *       type:
+ *         type: string
+ *         enum: [private]
+ *       individualForSegment:
+ *         type: array
+ *         items:
+ *           type: object
+ *           properties:
+ *             userId:
+ *               type: string
+ *       groupForSegment:
+ *         type: array
+ *         items:
+ *           type: object
+ *           properties:
+ *             groupId:
+ *               type: string
+ *             type:
+ *               type: string
+ *       subSegments:
+ *         type: array
+ *         items:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               example: 218dc2d8-a833-4e06-b3e3-d3adf74bffd6
+ *             name:
+ *               type: string
+ *             context:
+ *               type: string
  *   Experiment:
  *     required:
  *       - name
@@ -98,8 +149,6 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *       - postExperimentRule
  *       - conditions
  *       - partitions
- *       - experimentSegmentInclusion
- *       - experimentSegmentExclusion
  *       - conditionPayload
  *       - type
  *     properties:
@@ -249,17 +298,21 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *              type: string
  *              enum: [MEAN, EARLIEST, PERCENTAGE]
  *       experimentSegmentInclusion:
- *          type: object
- *          properties:
- *              segment:
- *                type: object
- *                $ref: '#/definitions/InclusionExclusionList'
+ *         type: array
+ *         items:
+ *           type: object
+ *           properties:
+ *             segment:
+ *               type: object
+ *               $ref: '#/definitions/InclusionExclusionList'
  *       experimentSegmentExclusion:
- *          type: object
- *          properties:
- *              segment:
- *                type: object
- *                $ref: '#/definitions/InclusionExclusionList'
+ *         type: array
+ *         items:
+ *           type: object
+ *           properties:
+ *             segment:
+ *               type: object
+ *               $ref: '#/definitions/InclusionExclusionList'
  *       type:
  *         type: string
  *         enum: [Simple, Factorial]
@@ -456,95 +509,99 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *               type: string
  *               minLength: 1
  *       experimentSegmentInclusion:
- *          type: object
- *          properties:
- *              segment:
- *                type: object
- *                properties:
- *                  individualForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        userId:
- *                          type: string
- *                          example: user1
- *                  groupForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        groupId:
- *                          type: string
- *                          example: school1
- *                        type:
- *                           type: string
- *                           example: schoolId
- *                  subSegments:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        id:
- *                          type: string
- *                        name:
- *                          type: string
- *                        context:
- *                          type: string
+ *         type: array
+ *         items:
+ *           type: object
+ *           properties:
+ *             segment:
+ *               type: object
+ *               properties:
+ *                 individualForSegment:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       userId:
+ *                         type: string
+ *                         example: user1
+ *                 groupForSegment:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       groupId:
+ *                         type: string
+ *                         example: school1
+ *                       type:
+ *                         type: string
+ *                         example: schoolId
+ *                 subSegments:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       context:
+ *                         type: string
  *       experimentSegmentExclusion:
- *          type: object
- *          properties:
- *              segment:
- *                type: object
- *                properties:
- *                  individualForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        userId:
- *                          type: string
- *                          example: user1
- *                  groupForSegment:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        groupId:
- *                          type: string
- *                          example: school1
- *                        type:
- *                           type: string
- *                           example: schoolId
- *                  subSegments:
- *                    type: array
- *                    items:
- *                      type: object
- *                      properties:
- *                        id:
- *                          type: string
- *                        name:
- *                          type: string
- *                        context:
- *                          type: string
+ *         type: array
+ *         items:
+ *           type: object
+ *           properties:
+ *             segment:
+ *               type: object
+ *               properties:
+ *                 individualForSegment:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       userId:
+ *                         type: string
+ *                         example: user1
+ *                 groupForSegment:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       groupId:
+ *                         type: string
+ *                         example: school1
+ *                       type:
+ *                         type: string
+ *                         example: schoolId
+ *                 subSegments:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       context:
+ *                         type: string
  *       conditionPayloads:
  *         type: array
  *         items:
- *             type: object
- *             properties:
- *               id:
- *                 type: string
- *               payload:
- *                 type: object
- *                 properties:
- *                   type:
- *                     type: enum
- *                   value:
- *                     type: enum
- *               parentCondition:
- *                 type: object
- *               decisionPoint:
- *                 type: object
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *             payload:
+ *               type: object
+ *               properties:
+ *                 type:
+ *                   type: string
+ *                 value:
+ *                   type: string
+ *             parentCondition:
+ *               type: object
+ *             decisionPoint:
+ *               type: object
  *     required:
  *       - createdAt
  *       - updatedAt
@@ -742,18 +799,15 @@ export class ExperimentController {
     @Req()
     request: AppRequest
   ): Promise<ExperimentPaginationInfo> {
-    const [[experiments, filteredCount], count] = await Promise.all([
-      this.experimentService.findPaginated(
-        paginatedParams.skip,
-        paginatedParams.take,
-        request.logger,
-        paginatedParams.searchParams,
-        paginatedParams.sortParams
-      ),
-      this.experimentService.getTotalCount(),
-    ]);
+    const [experiments, count] = await this.experimentService.findPaginated(
+      paginatedParams.skip,
+      paginatedParams.take,
+      request.logger,
+      paginatedParams.searchParams,
+      paginatedParams.sortParams
+    );
+
     return {
-      filtered: paginatedParams.searchParams ? filteredCount : count,
       total: count,
       nodes: experiments,
       ...paginatedParams,
@@ -1151,38 +1205,37 @@ export class ExperimentController {
 
   /**
    * @swagger
-   * /experiments/{id}:
-   *    put:
-   *       description: Update Experiment
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: path
-   *           name: id
-   *           required: true
-   *           schema:
-   *             type: string
-   *           description: Experiment Id
-   *         - in: body
-   *           name: experiment
-   *           required: true
-   *           schema:
-   *             type: object
-   *             $ref: '#/definitions/Experiment'
-   *           description: Experiment Structure
-   *       tags:
-   *         - Experiments
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Experiment is updated
-   *            schema:
-   *              $ref: '#/definitions/ExperimentResponse'
-   *          '401':
-   *            description: AuthorizationRequiredError
-   *          '500':
-   *            description: invalid input syntax for type uuid, Error in experiment scheduler (user is not authorized), Insert Error in database
+   * /experiments/:id:
+   *   put:
+   *     description: Update Experiment
+   *     consumes:
+   *       - application/json
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Experiment Id
+   *       - in: body
+   *         name: experiment
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/Experiment'
+   *         description: Experiment Structure
+   *     tags:
+   *       - Experiments
+   *     produces:
+   *       - application/json
+   *     responses:
+   *       '200':
+   *         description: Experiment is updated
+   *         schema:
+   *           $ref: '#/definitions/ExperimentResponse'
+   *       '401':
+   *         description: AuthorizationRequiredError
+   *       '500':
+   *         description: invalid input syntax for type uuid, Error in experiment scheduler (user is not authorized), Insert Error in database
    */
   @Put('/:id')
   public update(
@@ -1449,5 +1502,267 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<number> | undefined {
     return this.experimentAssignmentService.getGroupAssignmentStatus(id, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /experiments/inclusionList:
+   *    post:
+   *       description: Add Experiment Inclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: add inclusionList
+   *           description: Adding an inclusion list to the experiment
+   *           schema:
+   *             type: object
+   *             properties:
+   *               experimentId:
+   *                 type: string
+   *                 description: The ID of the experiment to which the inclusion list is being added.
+   *               list:
+   *                type: object
+   *                $ref: '#/definitions/InclusionExclusionListInput'
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: New Experiment inclusion list is added
+   */
+  @Post('/inclusionList')
+  public async addInclusionList(
+    @Body({ validate: true }) experimentListInput: ExperimentListValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<ExperimentSegmentInclusion> {
+    return await this.experimentService.addList(
+      experimentListInput.list,
+      experimentListInput.experimentId,
+      LIST_FILTER_MODE.INCLUSION,
+      currentUser,
+      request.logger
+    );
+  }
+
+  /**
+   * @swagger
+   * /experiments/exclusionList:
+   *    post:
+   *       description: Add Experiment Exclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: add exclusionList
+   *           description: Adding an exclusion list to the experiment
+   *           schema:
+   *             type: object
+   *             properties:
+   *               experimentId:
+   *                 type: string
+   *                 description: The ID of the experiment to which the exclusion list is being added.
+   *               list:
+   *                type: object
+   *                $ref: '#/definitions/InclusionExclusionListInput'
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: New Experiment exclusion list is added
+   */
+  @Post('/exclusionList')
+  public async addExclusionList(
+    @Body({ validate: true }) experimentListInput: ExperimentListValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<ExperimentSegmentExclusion> {
+    return await this.experimentService.addList(
+      experimentListInput.list,
+      experimentListInput.experimentId,
+      LIST_FILTER_MODE.EXCLUSION,
+      currentUser,
+      request.logger
+    );
+  }
+
+  /**
+   * @swagger
+   * /experiments/inclusionList/{id}:
+   *    put:
+   *       description: Update Experiment Inclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: ID of the segment
+   *         - in: body
+   *           name: updateInclusionList
+   *           description: Updating an inclusion list on the experiment
+   *           schema:
+   *             type: object
+   *             properties:
+   *               experimentId:
+   *                 type: string
+   *                 description: The ID of the experiment to which the inclusion list is being added.
+   *               list:
+   *                type: object
+   *                $ref: '#/definitions/InclusionExclusionListInput'
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiment inclusion list is updated
+   */
+  @Put('/inclusionList/:id')
+  public async updateInclusionList(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Body({ validate: true }) experimentListInput: ExperimentListValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<ExperimentSegmentInclusion> {
+    if (id !== experimentListInput.list.id) {
+      return Promise.reject(
+        new Error(
+          `${SERVER_ERROR.INCORRECT_PARAM_FORMAT}: The id in the URL (${id}) does not match the list id in the request body (${experimentListInput.list.id}).`
+        )
+      );
+    }
+    return this.experimentService.updateList(
+      experimentListInput.list,
+      experimentListInput.experimentId,
+      LIST_FILTER_MODE.INCLUSION,
+      currentUser,
+      request.logger
+    );
+  }
+
+  /**
+   * @swagger
+   * /experiments/exclusionList/{id}:
+   *    put:
+   *       description: Update Experiment Exclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: ID of the segment
+   *         - in: body
+   *           name: updateExclusionList
+   *           description: Updating an exclusion list on the experiment
+   *           schema:
+   *             type: object
+   *             properties:
+   *               experimentId:
+   *                 type: string
+   *                 description: The ID of the experiment to which the exclusion list is being added.
+   *               list:
+   *                type: object
+   *                $ref: '#/definitions/InclusionExclusionListInput'
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiment exclusion list is updated
+   */
+  @Put('/exclusionList/:id')
+  public async updateExclusionList(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Body({ validate: true }) experimentListInput: ExperimentListValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<ExperimentSegmentExclusion> {
+    if (id !== experimentListInput.list.id) {
+      return Promise.reject(
+        new Error(
+          `${SERVER_ERROR.INCORRECT_PARAM_FORMAT}: The id in the URL (${id}) does not match the list id in the request body (${experimentListInput.list.id}).`
+        )
+      );
+    }
+    return this.experimentService.updateList(
+      experimentListInput.list,
+      experimentListInput.experimentId,
+      LIST_FILTER_MODE.EXCLUSION,
+      currentUser,
+      request.logger
+    );
+  }
+
+  /**
+   * @swagger
+   * /experiments/inclusionList/{id}:
+   *    delete:
+   *       description: Delete Experiment Inclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Segment Id of private segment
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Delete Experiment Inclusion List by segment Id
+   */
+  @Delete('/inclusionList/:id')
+  public async deleteInclusionList(
+    @Params({ validate: true }) { id }: IdValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    return this.experimentService.deleteList(id, LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /experiments/exclusionList/{id}:
+   *    delete:
+   *       description: Delete Experiment Exclusion List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Segment Id of private segment
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Delete Experiment Exclusion List by segment Id
+   */
+  @Delete('/exclusionList/:id')
+  public async deleteExclusionList(
+    @Params({ validate: true }) { id }: IdValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    return this.experimentService.deleteList(id, LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
   }
 }

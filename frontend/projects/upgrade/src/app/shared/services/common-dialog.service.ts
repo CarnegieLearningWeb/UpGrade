@@ -24,7 +24,7 @@ import {
   ModalSize,
   SimpleConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
-import { FEATURE_FLAG_LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { UpsertSegmentModalComponent } from '../../features/dashboard/segments/modals/upsert-segment-modal/upsert-segment-modal.component';
 import {
   FEATURE_FLAG_IMPORT_SERVICE,
@@ -43,7 +43,7 @@ export interface ImportModalParams {
   incompatibleMessageKey: string; // Translation key for incompatible message
   flagId?: string; // for feature flag list import
   segmentId?: string; // for segment list import
-  listType?: FEATURE_FLAG_LIST_FILTER_MODE; // for feature flag list import
+  listType?: LIST_FILTER_MODE; // for feature flag list import
 }
 
 @Injectable({
@@ -615,7 +615,7 @@ export class DialogService {
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
         incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
-        listType: FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+        listType: LIST_FILTER_MODE.EXCLUSION,
         flagId,
       },
     };
@@ -633,7 +633,7 @@ export class DialogService {
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
         incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
-        listType: FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+        listType: LIST_FILTER_MODE.INCLUSION,
         flagId,
       },
     };
