@@ -323,7 +323,7 @@ function processParentSegments(segmentData: Segment[], segmentId: string, result
             resultMap.set(item.id, {
               name: item.name,
               type: USED_BY_TYPE.SEGMENT,
-              status: 'active', // Assuming active status for segments
+              status: item.status,
               updatedAt: item.updatedAt,
               link: `/segments/detail/${item.id}`,
             });

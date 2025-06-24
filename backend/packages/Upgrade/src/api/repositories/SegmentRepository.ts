@@ -52,12 +52,11 @@ export class SegmentRepository extends Repository<Segment> {
       });
   }
 
-  public async getAllParentSegments(ids: string[]): Promise<Segment[]> {
+  public async getAllParentSegments(): Promise<Segment[]> {
     return this.createQueryBuilder('segment')
       .leftJoinAndSelect('segment.subSegments', 'subSegments')
       .leftJoinAndSelect('subSegments.subSegments', 'subSubSegments')
       .where('subSegments.listType=:type', { type: 'Segment' })
-      .andWhere('subSubSegments.id IN (:...ids)', { ids })
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('segmentRepository', 'getAllParentSegments', {}, errorMsg);

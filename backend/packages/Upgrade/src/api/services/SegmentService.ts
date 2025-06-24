@@ -273,7 +273,6 @@ export class SegmentService {
 
   public async getSegmentStatus(segmentsData: Segment[]): Promise<getSegmentsData> {
     const connection = this.dataSource.manager.connection;
-    const segmentIds = segmentsData.map((segment) => segment.id);
     const segmentsDataWithStatus = await connection.transaction(async () => {
       const [
         allExperimentSegmentsInclusion,
@@ -286,7 +285,7 @@ export class SegmentService {
         this.getExperimentSegmentExclusionData(),
         this.getFeatureFlagSegmentInclusionData(),
         this.getFeatureFlagSegmentExclusionData(),
-        this.getParentSegments(segmentIds),
+        this.getParentSegments(),
       ]);
 
       const segmentMap = new Map<string, string[]>();
@@ -338,15 +337,21 @@ export class SegmentService {
         });
       }
 
-      const segmentsDataWithStatus = segmentsData.map((segment) => {
-        if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-          return { ...segment, status: SEGMENT_STATUS.EXCLUDED };
-        } else if (segmentsUsedList.has(segment.id)) {
-          return { ...segment, status: SEGMENT_STATUS.USED };
-        } else {
-          return { ...segment, status: SEGMENT_STATUS.UNUSED };
-        }
-      });
+      const addStatusToSegments = (segments: Segment[]) => {
+        return segments.map((segment) => {
+          if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+            return { ...segment, status: SEGMENT_STATUS.EXCLUDED };
+          } else if (segmentsUsedList.has(segment.id)) {
+            return { ...segment, status: SEGMENT_STATUS.USED };
+          } else {
+            return { ...segment, status: SEGMENT_STATUS.UNUSED };
+          }
+        });
+      };
+
+      const segmentsDataWithStatus: SegmentWithStatus[] = addStatusToSegments(segmentsData);
+
+      const parentSegmentsDataWithStatus: SegmentWithStatus[] = addStatusToSegments(allSegmentsWithSubSegments);
 
       return {
         segmentsData: segmentsDataWithStatus,
@@ -354,7 +359,7 @@ export class SegmentService {
         experimentSegmentExclusionData: allExperimentSegmentsExclusion,
         featureFlagSegmentInclusionData: allFeatureFlagSegmentsInclusion,
         featureFlagSegmentExclusionData: allFeatureFlagSegmentsExclusion,
-        allParentSegments: allSegmentsWithSubSegments,
+        allParentSegments: parentSegmentsDataWithStatus,
       };
     });
 
@@ -1179,10 +1184,7 @@ export class SegmentService {
     }
   }
 
-  private async getParentSegments(ids: string[]): Promise<Segment[]> {
-    if (!ids.length) {
-      return [];
-    }
-    return await this.segmentRepository.getAllParentSegments(ids);
+  private async getParentSegments(): Promise<Segment[]> {
+    return await this.segmentRepository.getAllParentSegments();
   }
 }

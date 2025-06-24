@@ -384,7 +384,10 @@ describe('Segment Service Testing', () => {
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
       featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
       featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-      allParentSegments: [seg1, seg2],
+      allParentSegments: [
+        { status: 'Used', ...seg1 },
+        { status: 'Used', ...seg2 },
+      ],
     };
     const segments = await service.getAllSegmentWithStatus(logger);
     expect(segments).toEqual(res);
@@ -408,7 +411,10 @@ describe('Segment Service Testing', () => {
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
       featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
       featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-      allParentSegments: [seg1, seg2],
+      allParentSegments: [
+        { status: 'Used', ...seg1 },
+        { status: 'Used', ...seg2 },
+      ],
     };
     const segments = await service.getAllSegmentWithStatus(logger);
     expect(segments).toEqual(res);
@@ -428,7 +434,10 @@ describe('Segment Service Testing', () => {
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
       featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
       featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-      allParentSegments: [seg1, seg2],
+      allParentSegments: [
+        { status: 'Used', ...seg1 },
+        { status: 'Used', ...seg2 },
+      ],
     };
     const segment = await service.getSingleSegmentWithStatus(seg1.id, logger);
     expect(segment).toEqual(res);
@@ -693,7 +702,10 @@ describe('Segment Service Testing', () => {
         experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
         featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
         featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-        allParentSegments: [seg1, seg2],
+        allParentSegments: [
+          { status: 'Used', ...seg1 },
+          { status: 'Used', ...seg2 },
+        ],
       },
       2,
     ];
@@ -723,7 +735,10 @@ describe('Segment Service Testing', () => {
         experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
         featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
         featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-        allParentSegments: [seg1, seg2],
+        allParentSegments: [
+          { status: 'Used', ...seg1 },
+          { status: 'Used', ...seg2 },
+        ],
       },
       2,
     ];
@@ -753,7 +768,10 @@ describe('Segment Service Testing', () => {
         experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
         featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
         featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-        allParentSegments: [seg1, seg2],
+        allParentSegments: [
+          { status: 'Used', ...seg1 },
+          { status: 'Used', ...seg2 },
+        ],
       },
       2,
     ];
@@ -783,7 +801,10 @@ describe('Segment Service Testing', () => {
         experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
         featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
         featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-        allParentSegments: [seg1, seg2],
+        allParentSegments: [
+          { status: 'Used', ...seg1 },
+          { status: 'Used', ...seg2 },
+        ],
       },
       2,
     ];
@@ -813,7 +834,10 @@ describe('Segment Service Testing', () => {
         experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
         featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
         featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-        allParentSegments: [seg1, seg2],
+        allParentSegments: [
+          { status: 'Used', ...seg1 },
+          { status: 'Used', ...seg2 },
+        ],
       },
       2,
     ];
