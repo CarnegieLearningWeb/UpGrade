@@ -85,6 +85,7 @@ describe('ExperimentEffects', () => {
     };
     notificationService = {
       showError: jest.fn(),
+      showInfo: jest.fn(),
       showSuccess: jest.fn(),
     };
     translate = {
