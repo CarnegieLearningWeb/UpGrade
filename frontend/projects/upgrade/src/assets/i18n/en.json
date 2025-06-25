@@ -353,6 +353,8 @@
   "profile.new-user.add-btn.text": "ADD",
   "profile.action.authorization.text": "Authorization",
   "profile.action.filter-metric.text": "Filter Metric",
+  "experiments.title.text": "Experiments",
+  "experiments.subtitle.text": "Create and analyze experiments",
   "feature-flags.details-created-on.text": "Created on: ",
   "feature-flags.details-updated-at.text": "Updated at: ",
   "feature-flags.global-name.text": "Name",
