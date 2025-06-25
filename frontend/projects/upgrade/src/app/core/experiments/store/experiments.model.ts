@@ -307,6 +307,15 @@ export interface ExperimentVM extends Experiment {
   stat: IExperimentEnrollmentDetailStats;
 }
 
+export enum EXPERIMENT_BUTTON_ACTION {
+  IMPORT = 'import experiment',
+  EXPORT_ALL = 'export all experiments',
+  IMPORT_INCLUDE_LIST = 'import include list',
+  IMPORT_EXCLUDE_LIST = 'import exclude list',
+  EXPORT_ALL_INCLUDE_LISTS = 'export all include lists',
+  EXPORT_ALL_EXCLUDE_LISTS = 'export all exclude lists',
+}
+
 export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
   isLoadingExperimentDetailStats: boolean;

@@ -1,6 +1,6 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { selectAll } from './experiments.reducer';
-import { ExperimentState } from './experiments.model';
+import { EXPERIMENT_SEARCH_KEY, ExperimentState } from './experiments.model';
 import { selectRouterState } from '../../core.state';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
@@ -52,6 +52,27 @@ export const selectTotalExperiment = createSelector(selectExperimentState, (stat
 export const selectSearchKey = createSelector(selectExperimentState, (state) => state.searchKey);
 
 export const selectSearchString = createSelector(selectExperimentState, (state) => state.searchString);
+
+export const selectSearchExperimentParams = createSelector(
+  selectSearchKey,
+  selectSearchString,
+  (searchKey, searchString) => {
+    if (!!searchKey && (!!searchString || searchString === '')) {
+      return { searchKey, searchString };
+    }
+    return null;
+  }
+);
+
+export const selectRootTableState = createSelector(
+  selectAllExperimentFromState,
+  selectSearchExperimentParams,
+  (tableData, searchParams) => ({
+    tableData,
+    searchParams,
+    allSearchableProperties: Object.values(EXPERIMENT_SEARCH_KEY),
+  })
+);
 
 export const selectSortKey = createSelector(selectExperimentState, (state) => state.sortKey);
 

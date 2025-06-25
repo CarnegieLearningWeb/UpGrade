@@ -5,6 +5,7 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 import { MatTableDataSource } from '@angular/material/table';
 import { ExperimentDataService } from '../../../../../../core/experiments/experiments.data.service';
 import { NotificationService } from '../../../../../../core/notifications/notification.service';
+import { HomeModule } from '../../../home.module';
 
 export interface ValidateExperimentError {
   fileName: string;
