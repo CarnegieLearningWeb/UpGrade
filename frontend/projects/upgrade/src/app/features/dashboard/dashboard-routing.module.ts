@@ -49,7 +49,10 @@ const routes: Routes = [
       },
       {
         path: 'home',
-        loadChildren: () => import('./home/home.module').then((m) => m.HomeModule),
+        loadComponent: () =>
+          import('./experiments/pages/experiment-root-page/experiment-root-page.component').then(
+            (c) => c.ExperimentRootPageComponent
+          ),
         data: {
           title: 'app-header.title.experiments',
         },
