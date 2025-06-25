@@ -13,7 +13,7 @@ export class GroupEnrollment extends BaseModel {
   @ManyToOne(() => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
-  @Column({ name: 'experimentId' })
+  @Column({ name: 'experimentId', nullable: true })
   experimentId?: string;
 
   @Index()
@@ -26,6 +26,6 @@ export class GroupEnrollment extends BaseModel {
   @ManyToOne(() => ExperimentCondition, { onDelete: 'CASCADE' })
   public condition: ExperimentCondition;
 
-  @Column({ name: 'conditionId' })
+  @Column({ name: 'conditionId', nullable: true })
   conditionId?: string;
 }
