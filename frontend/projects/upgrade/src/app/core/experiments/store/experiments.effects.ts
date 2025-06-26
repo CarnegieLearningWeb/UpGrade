@@ -456,8 +456,12 @@ export class ExperimentEffects {
         this.experimentDataService.exportExperimentInfo(experimentId, email).pipe(
           tap(() => {
             email
-              ? this.notificationService.showSuccess(`Email will be sent to ${email}`)
-              : this.notificationService.showSuccess('Email will be sent to registered email');
+              ? this.notificationService.showInfo(
+                  `Export requested. If the export succeeds, email will be sent to ${email}`
+                )
+              : this.notificationService.showInfo(
+                  'Export requested. If the export succeeds, email will be sent to registered email'
+                );
           }),
           map(() => experimentAction.actionExportExperimentInfoSuccess()),
           catchError(() => [experimentAction.actionExportExperimentInfoFailure()])

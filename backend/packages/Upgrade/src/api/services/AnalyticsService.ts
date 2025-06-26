@@ -170,6 +170,22 @@ export class AnalyticsService {
 
   public async getCSVData(experimentId: string, email: string, logger: UpgradeLogger): Promise<string> {
     logger.info({ message: `Inside getCSVData ${experimentId} , ${email}` });
+
+    const experimentDetails: ExperimentDetailsForCSVData[] =
+      await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
+    if (!experimentDetails || experimentDetails.length === 0) {
+      throw new HttpError(404, `Experiment not found for id: ${experimentId}`);
+    }
+
+    this.sendExportData(experimentDetails, email, logger);
+    return 'Exporting CSV data for the experiment...';
+  }
+
+  private async sendExportData(
+    experimentDetails: ExperimentDetailsForCSVData[],
+    email: string,
+    logger: UpgradeLogger
+  ): Promise<string> {
     try {
       const timeStamp = new Date().toISOString();
       const folderPath = 'src/api/assets/files/';
@@ -181,13 +197,6 @@ export class AnalyticsService {
 
       const userRepository: UserRepository = Container.getCustomRepository(UserRepository, 'export');
       const user = await userRepository.findOneBy({ email });
-
-      const experimentDetails: ExperimentDetailsForCSVData[] =
-        await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
-      if (!experimentDetails || experimentDetails.length === 0) {
-        throw new HttpError(404, `Experiment not found for id: ${experimentId}`);
-      }
-
       const experimentMap = new Map<string, ExperimentDetailsForCSVData>();
 
       const formattedExperiment: ExperimentDetailsForCSVData[] = experimentDetails.reduce((acc, item) => {
@@ -225,12 +234,15 @@ export class AnalyticsService {
 
       let csvExportData: CSVExportDataRow[];
       if (experimentDetails[0].assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-        csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentId);
+        csvExportData = await this.analyticsRepository.getCSVDataForWithInSubExport(experimentDetails[0].experimentId);
       } else {
-        csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(formattedExperiment[0], experimentId);
+        csvExportData = await this.analyticsRepository.getCSVDataForSimpleExport(
+          formattedExperiment[0],
+          experimentDetails[0].experimentId
+        );
       }
 
-      const queryData = await this.logRepository.getLogPerExperimentQuery(experimentId);
+      const queryData = await this.logRepository.getLogPerExperimentQuery(experimentDetails[0].experimentId);
 
       type queryDataArrayType = typeof queryData;
       type queryDataType = queryDataArrayType[0];
