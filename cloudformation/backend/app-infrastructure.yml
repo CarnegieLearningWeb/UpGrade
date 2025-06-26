@@ -209,11 +209,11 @@ Resources:
             - Name: MIDDLEWARES
               Value: '{{resolve:ssm:UPGRADE_MIDDLEWARES}}'
             - Name: MOOCLETS_ENABLED
-              Value: '{{resolve:ssm:UPGRADE_MOOLETS_ENABLED}}'
+              Value: '{{resolve:ssm:MOOCLETS_ENABLED}}'
             - Name: MOOCLETS_HOST_URL
-              Value: '{{resolve:ssm:UPGRADE_MOOLETS_HOSTURL}}'
+              Value: '{{resolve:ssm:MOOCLETS_HOST_URL}}'
             - Name: MOOCLETS_API_ROUTE
-              Value: '{{resolve:ssm:UPGRADE_MOOLETS_API_ROUTE}}'
+              Value: '{{resolve:ssm:MOOCLETS_API_ROUTE}}'
           Secrets:
             - Name: NEW_RELIC_LICENSE_KEY
               ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/NEW_RELIC_LICENSE_KEY
