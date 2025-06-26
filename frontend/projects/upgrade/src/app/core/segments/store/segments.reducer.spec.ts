@@ -34,6 +34,7 @@ describe('SegmentsReducer', () => {
         experimentSegmentInclusion: [],
         featureFlagSegmentExclusion: [],
         featureFlagSegmentInclusion: [],
+        allParentSegments: [],
       });
 
       const newState = segmentsReducer(previousState, testAction);
@@ -121,6 +122,7 @@ describe('SegmentsReducer', () => {
         experimentSegmentInclusion: [],
         featureFlagSegmentExclusion: [],
         featureFlagSegmentInclusion: [],
+        allParentSegments: [],
       });
 
       const newState = segmentsReducer(previousState, testAction);

@@ -279,11 +279,13 @@ export class SegmentService {
         allExperimentSegmentsExclusion,
         allFeatureFlagSegmentsInclusion,
         allFeatureFlagSegmentsExclusion,
+        allSegmentsWithSubSegments,
       ] = await Promise.all([
         this.getExperimentSegmentInclusionData(),
         this.getExperimentSegmentExclusionData(),
         this.getFeatureFlagSegmentInclusionData(),
         this.getFeatureFlagSegmentExclusionData(),
+        this.getParentSegments(),
       ]);
 
       const segmentMap = new Map<string, string[]>();
@@ -294,7 +296,11 @@ export class SegmentService {
         );
       });
 
-      const segmentsUsedList = new Set<string>();
+      const segmentsUsedList = new Set<string>(
+        allSegmentsWithSubSegments.flatMap((seg) =>
+          seg.subSegments.flatMap((subSeg) => subSeg.subSegments.map((subSubSeg) => subSubSeg.id))
+        )
+      );
 
       const collectSegmentIds = (segmentId: string) => {
         if (segmentsUsedList.has(segmentId)) return;
@@ -331,15 +337,21 @@ export class SegmentService {
         });
       }
 
-      const segmentsDataWithStatus = segmentsData.map((segment) => {
-        if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-          return { ...segment, status: SEGMENT_STATUS.EXCLUDED };
-        } else if (segmentsUsedList.has(segment.id)) {
-          return { ...segment, status: SEGMENT_STATUS.USED };
-        } else {
-          return { ...segment, status: SEGMENT_STATUS.UNUSED };
-        }
-      });
+      const addStatusToSegments = (segments: Segment[]) => {
+        return segments.map((segment) => {
+          if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+            return { ...segment, status: SEGMENT_STATUS.EXCLUDED };
+          } else if (segmentsUsedList.has(segment.id)) {
+            return { ...segment, status: SEGMENT_STATUS.USED };
+          } else {
+            return { ...segment, status: SEGMENT_STATUS.UNUSED };
+          }
+        });
+      };
+
+      const segmentsDataWithStatus: SegmentWithStatus[] = addStatusToSegments(segmentsData);
+
+      const parentSegmentsDataWithStatus: SegmentWithStatus[] = addStatusToSegments(allSegmentsWithSubSegments);
 
       return {
         segmentsData: segmentsDataWithStatus,
@@ -347,6 +359,7 @@ export class SegmentService {
         experimentSegmentExclusionData: allExperimentSegmentsExclusion,
         featureFlagSegmentInclusionData: allFeatureFlagSegmentsInclusion,
         featureFlagSegmentExclusionData: allFeatureFlagSegmentsExclusion,
+        allParentSegments: parentSegmentsDataWithStatus,
       };
     });
 
@@ -1169,5 +1182,9 @@ export class SegmentService {
     } else {
       return false;
     }
+  }
+
+  private async getParentSegments(): Promise<Segment[]> {
+    return await this.segmentRepository.getAllParentSegments();
   }
 }

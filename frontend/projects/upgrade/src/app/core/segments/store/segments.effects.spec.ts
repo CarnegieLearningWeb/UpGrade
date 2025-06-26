@@ -77,6 +77,7 @@ describe('SegmentsEffects', () => {
           experimentSegmentExclusionData: [],
           featureFlagSegmentInclusionData: [],
           featureFlagSegmentExclusionData: [],
+          allParentSegments: [],
         })
       );
       selectAllSegments.setResult([{ ...mockSegment }]);
@@ -87,6 +88,7 @@ describe('SegmentsEffects', () => {
         experimentSegmentExclusion: [],
         featureFlagSegmentInclusion: [],
         featureFlagSegmentExclusion: [],
+        allParentSegments: [],
       });
 
       service.fetchAllSegments$.subscribe((result) => {

@@ -26,6 +26,7 @@ import {
   isLoadingUpsertSegment,
   selectSegmentIdAfterNavigation,
   selectListSegmentOptionsByContext,
+  selectParentSegments,
 } from './store/segments.selectors';
 import {
   AddPrivateSegmentListRequest,
@@ -81,6 +82,7 @@ export class SegmentsService {
   allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
   allFeatureFlagSegmentsExclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsExclusion));
   allFeatureFlagSegmentsInclusion$ = this.store$.pipe(select(selectFeatureFlagSegmentsInclusion));
+  allParentSegments$ = this.store$.pipe(select(selectParentSegments));
   segmentUsageData$ = this.store$.pipe(select(selectSegmentUsageData));
   duplicateSegmentNameError$ = new BehaviorSubject<DuplicateSegmentNameError>(null);
   selectSegmentIdAfterNavigation$ = this.store$.pipe(select(selectSegmentIdAfterNavigation));
