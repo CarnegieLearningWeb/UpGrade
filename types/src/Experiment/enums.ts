@@ -298,7 +298,7 @@ export enum STATUS_INDICATOR_CHIP_TYPE {
   ARCHIVED = 'archived',
   INACTIVE = 'inactive',
   ENROLLING = 'enrolling',
-  ENROLLMENT_COMPLETE = 'enrollment-complete',
+  ENROLLMENT_COMPLETE = 'enrollmentComplete',
   CANCELLED = 'cancelled',
   SCHEDULED = 'scheduled',
   COMPATIBLE = 'compatible',

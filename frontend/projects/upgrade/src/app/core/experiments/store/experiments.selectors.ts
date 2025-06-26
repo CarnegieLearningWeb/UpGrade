@@ -65,7 +65,7 @@ export const selectSearchExperimentParams = createSelector(
 );
 
 export const selectRootTableState = createSelector(
-  selectAllExperimentFromState,
+  selectAllExperiment,
   selectSearchExperimentParams,
   (tableData, searchParams) => ({
     tableData,
