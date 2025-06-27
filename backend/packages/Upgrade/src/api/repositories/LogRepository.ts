@@ -8,12 +8,11 @@ import { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE, EXPERIMENT_TYPE } f
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 import { Query } from '../models/Query';
 import { LevelCombinationElement } from '../models/LevelCombinationElement';
-import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
-import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { QueryRepository } from './QueryRepository';
 import { MetricRepository } from './MetricRepository';
 import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
+import { RepeatedEnrollment } from '../models/RepeatedEnrollment';
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
   public async deleteExceptByIds(values: string[], entityManager: EntityManager): Promise<Log[]> {
@@ -230,20 +229,9 @@ export class LogRepository extends Repository<Log> {
     }
     innerQuery
       .innerJoin(
-        (qb) =>
-          qb
-            .subQuery()
-            .select(['"monitoredDecisionPointLog"."condition"', '"monitoredDecisionPointLog".uniquifier', '"userId"'])
-            .from(MonitoredDecisionPoint, 'monitoredDecisionPoint')
-            .innerJoin(
-              MonitoredDecisionPointLog,
-              'monitoredDecisionPointLog',
-              '"monitoredDecisionPointLog"."monitoredDecisionPointId" = "monitoredDecisionPoint".id'
-            )
-            .where(`"monitoredDecisionPoint"."experimentId" = '${experimentId}'`)
-            .andWhere('uniquifier is not null'),
-        'mdpl',
-        'mdpl."userId"="individualEnrollment"."userId"'
+        RepeatedEnrollment,
+        'repeatedEnrollment',
+        '"repeatedEnrollment"."individualEnrollmentId"="individualEnrollment"."id"'
       )
       .innerJoin(
         (qb) =>
@@ -253,9 +241,13 @@ export class LogRepository extends Repository<Log> {
             .from(Log, 'logs')
             .where(`${metricString} is not null`),
         'logs',
-        'logs."userId"="individualEnrollment"."userId" AND logs."uniquifier" = mdpl."uniquifier"'
+        'logs."userId"="individualEnrollment"."userId" AND logs."uniquifier" = "repeatedEnrollment"."uniquifier"'
       )
-      .innerJoin(ExperimentCondition, 'experimentCondition', '"experimentCondition"."conditionCode" = mdpl.condition');
+      .innerJoin(
+        ExperimentCondition,
+        'experimentCondition',
+        '"experimentCondition"."id" = "repeatedEnrollment"."conditionId"'
+      );
 
     if (isFactorialExperiment) {
       innerQuery.innerJoin(

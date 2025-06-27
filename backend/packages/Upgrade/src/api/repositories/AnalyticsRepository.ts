@@ -1,4 +1,3 @@
-import { MonitoredDecisionPoint } from './../models/MonitoredDecisionPoint';
 import { Experiment } from '../models/Experiment';
 import { IndividualExclusionRepository } from './IndividualExclusionRepository';
 import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
@@ -15,11 +14,11 @@ import { GroupEnrollmentRepository } from './GroupEnrollmentRepository';
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import { GroupExclusionRepository } from './GroupExclusionRepository';
 import { DecisionPoint } from '../models/DecisionPoint';
-import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { UserStratificationFactorRepository } from './UserStratificationRepository';
 import _ from 'lodash';
 import { Repository } from 'typeorm';
+import { RepeatedEnrollment } from '../models/RepeatedEnrollment';
 
 export interface IEnrollmentByCondition {
   conditions_id: string;
@@ -222,13 +221,8 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
             '"expCond"."id" as "conditionId"',
             'COUNT(DISTINCT("individualEnrollment"."userId"))::int as count',
           ])
-          .leftJoin(MonitoredDecisionPoint, 'mdp', 'individualEnrollment.userId = mdp.userId')
-          .leftJoin(DecisionPoint, 'dp', 'dp.id = individualEnrollment.partitionId')
-          .where('"mdp"."site" = "dp"."site"')
-          .andWhere('"mdp"."target" = "dp"."target"')
-          .andWhere('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
-          .leftJoin(MonitoredDecisionPointLog, 'mdpl', 'mdp.id = mdpl.monitoredDecisionPointId')
-          .leftJoin(ExperimentCondition, 'expCond', 'expCond.conditionCode = mdpl.condition')
+          .leftJoin(RepeatedEnrollment, 'repeated', 'individualEnrollment.id = repeated.individualEnrollmentId')
+          .leftJoin(ExperimentCondition, 'expCond', 'expCond.id = repeated.conditionId')
           .groupBy('"individualEnrollment"."experimentId"')
           .addGroupBy('expCond.id')
           .execute(),
@@ -240,13 +234,10 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
             '"expCond"."id" as "conditionId"',
             'COUNT(DISTINCT("individualEnrollment"."userId"))::int as count',
           ])
-          .leftJoin(MonitoredDecisionPoint, 'mdp', 'individualEnrollment.userId = mdp.userId')
           .leftJoin(DecisionPoint, 'dp', 'dp.id = individualEnrollment.partitionId')
-          .where('mdp.site = dp.site')
-          .andWhere('mdp.target = dp.target')
-          .andWhere('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
-          .leftJoin(MonitoredDecisionPointLog, 'mdpl', 'mdp.id = mdpl.monitoredDecisionPointId')
-          .leftJoin(ExperimentCondition, 'expCond', 'expCond.conditionCode = mdpl.condition')
+          .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
+          .leftJoin(RepeatedEnrollment, 'repeated', 'individualEnrollment.id = repeated.individualEnrollmentId')
+          .leftJoin(ExperimentCondition, 'expCond', 'expCond.id = repeated.conditionId')
           .groupBy('"dp"."id"')
           .addGroupBy('"expCond"."id"')
           .addGroupBy('"individualEnrollment"."experimentId"')
@@ -547,32 +538,31 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
         'experiment.context as "context"',
         'experiment.assignmentUnit as "assignmentUnit"',
         'experiment.group as "group"',
-        'monitored.site as "site"',
-        'monitored.target as "target"',
+        '"decisionPoint".site as "site"',
+        '"decisionPoint".target as "target"',
         '"individualEnrollment"."userId" as "userId"',
         '"individualEnrollment"."partitionId" as "decisionPointId"',
         '"individualEnrollment"."groupId" as "groupId"',
-        '"monitoredPointLogs"."condition" as "conditionName"',
-        'MIN("monitoredPointLogs"."createdAt") as "firstDecisionPointReachedOn"',
-        'CAST(COUNT("monitoredPointLogs"."id") as int) as "decisionPointReachedCount"',
+        '"condition"."conditionCode" as "conditionName"',
+        'MIN("repeatedEnrollment"."createdAt") as "firstDecisionPointReachedOn"',
+        'CAST(COUNT("repeatedEnrollment"."id") as int) as "decisionPointReachedCount"',
       ])
-      .leftJoin('individualEnrollment.condition', 'condition')
       .innerJoin(Experiment, 'experiment', 'experiment.id = "individualEnrollment"."experimentId"')
       .leftJoin('individualEnrollment.partition', 'decisionPoint')
       .innerJoin(
-        MonitoredDecisionPoint,
-        'monitored',
-        'monitored.userId = individualEnrollment.userId AND monitored.site = decisionPoint.site AND monitored.target = decisionPoint.target'
+        RepeatedEnrollment,
+        'repeatedEnrollment',
+        '"repeatedEnrollment"."individualEnrollmentId" = "individualEnrollment".id'
       )
-      .leftJoin('monitored.monitoredPointLogs', 'monitoredPointLogs')
+      .leftJoin(ExperimentCondition, 'condition', '"condition"."id" = "repeatedEnrollment"."conditionId"')
       .groupBy('experiment.id')
       .addGroupBy('experiment.name')
-      .addGroupBy('"monitored"."site"')
-      .addGroupBy('"monitored"."target"')
+      .addGroupBy('"decisionPoint"."site"')
+      .addGroupBy('"decisionPoint"."target"')
       .addGroupBy('"individualEnrollment"."userId"')
       .addGroupBy('"individualEnrollment"."partitionId"')
       .addGroupBy('"individualEnrollment"."groupId"')
-      .addGroupBy('"monitoredPointLogs"."condition"')
+      .addGroupBy('"condition"."conditionCode"')
       .orderBy('"individualEnrollment"."userId"', 'ASC')
       .where('"individualEnrollment"."experimentId" = :experimentId::uuid', { experimentId })
       .execute();
@@ -605,18 +595,15 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
           '"individualEnrollment"."partitionId"',
           individualSelectRange,
         ])
-        .leftJoin(MonitoredDecisionPoint, 'mdp', 'individualEnrollment.userId = mdp.userId')
         .leftJoin(DecisionPoint, 'dp', 'dp.id = individualEnrollment.partitionId')
-        .where('mdp.site = dp.site')
-        .andWhere('mdp.target = dp.target')
-        .andWhere('"individualEnrollment"."experimentId" = :id', { id: experimentId })
+        .where('"individualEnrollment"."experimentId" = :id', { id: experimentId })
         .andWhere(individualWhereDate)
         .andWhere((qb) => {
           const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
           return '"individualEnrollment"."userId" NOT IN ' + subQuery;
         })
-        .leftJoin(MonitoredDecisionPointLog, 'mdpl', 'mdp.id = mdpl.monitoredDecisionPointId')
-        .leftJoin(ExperimentCondition, 'expCond', 'expCond.conditionCode = mdpl.condition')
+        .leftJoin(RepeatedEnrollment, 'repeated', 'individualEnrollment.id = repeated.individualEnrollmentId')
+        .leftJoin(ExperimentCondition, 'expCond', 'expCond.id = repeated.conditionId')
         .groupBy('"expCond"."id"')
         .addGroupBy('"individualEnrollment"."partitionId"')
         .addGroupBy(groupByRange)

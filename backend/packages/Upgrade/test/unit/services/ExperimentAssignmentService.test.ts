@@ -9,7 +9,7 @@ import { IndividualEnrollmentRepository } from '../../../src/api/repositories/In
 import { IndividualExclusionRepository } from '../../../src/api/repositories/IndividualExclusionRepository';
 import { LogRepository } from '../../../src/api/repositories/LogRepository';
 import { MetricRepository } from '../../../src/api/repositories/MetricRepository';
-import { MonitoredDecisionPointLogRepository } from '../../../src/api/repositories/MonitoredDecisionPointLogRepository';
+import { RepeatedEnrollmentRepository } from '../../../src/api/repositories/RepeatedEnrollmentRepository';
 import { MonitoredDecisionPointRepository } from '../../../src/api/repositories/MonitoredDecisionPointRepository';
 import { StateTimeLogsRepository } from '../../../src/api/repositories/StateTimeLogsRepository';
 import { ErrorService } from '../../../src/api/services/ErrorService';
@@ -54,7 +54,7 @@ describe('Experiment Assignment Service Test', () => {
   let conditionPayloadRepositoryMock = sinon.createStubInstance(ConditionPayloadRepository);
   let factorRepositoryMock = sinon.createStubInstance(FactorRepository);
   const experimentRepositoryMock = sinon.createStubInstance(ExperimentRepository);
-  const monitoredDecisionPointLogRepositoryMock = sinon.createStubInstance(MonitoredDecisionPointLogRepository);
+  const repeatedEnrollmentRepositoryMock = sinon.createStubInstance(RepeatedEnrollmentRepository);
   const monitoredDecisionPointRepositoryMock = sinon.createStubInstance(MonitoredDecisionPointRepository);
   const errorRepositoryMock = sinon.createStubInstance(ErrorRepository);
   const logRepositoryMock = sinon.createStubInstance(LogRepository);
@@ -106,7 +106,7 @@ describe('Experiment Assignment Service Test', () => {
       groupExclusionRepositoryMock,
       groupEnrollmentRepositoryMock,
       individualEnrollmentRepositoryMock,
-      monitoredDecisionPointLogRepositoryMock,
+      repeatedEnrollmentRepositoryMock,
       monitoredDecisionPointRepositoryMock,
       errorRepositoryMock,
       logRepositoryMock,
@@ -265,14 +265,14 @@ describe('Experiment Assignment Service Test', () => {
     const exp = simpleWithinSubjectOrderedRoundRobinExperiment;
 
     const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
-    const monitoredDecisionPointLogRepositoryMock = {
+    const repeatedEnrollmentRepositoryMock = {
       find: sandbox.stub().resolves(0),
-      getAllMonitoredDecisionPointLog: sandbox.stub().resolves([]),
+      getRepeatedEnrollmentCount: sandbox.stub().resolves([]),
     };
 
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
     testedModule.experimentUserService = experimentUserServiceMock;
-    testedModule.monitoredDecisionPointLogRepository = monitoredDecisionPointLogRepositoryMock;
+    testedModule.repeatedEnrollmentRepositoryMock = repeatedEnrollmentRepositoryMock;
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
     const cond = [
