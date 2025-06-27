@@ -91,26 +91,23 @@ export default class UpgradeClient {
    * const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context, options);
    * ```
    *
-   * **Scenario 1: Session-only groups (Ephemeral user request)**
-   * - `groupsForSession`: provided
-   * - `includeStoredUserGroups`: explicitly `false`
-   * - Behavior: Uses ONLY the provided session groups, ignoring any stored user groups
-   * - Use case: Contexts where complete group information is preferred to be provided at runtime,
-   *    rather reading from stored user groups.
+   * **Stored-user Mode** (Standard stored user lookup):
+   * - Omit both `groupsForSession` and `includeStoredUserGroups` parameters
+   * - Uses only stored user groups from the database
+   * - User must already have been initialized, will 404 if user does not exist
    *
-   * **Scenario 2: Merged groups (Merged stored/ephemeral groups request mode)**
-   * - `groupsForSession`: provided
-   * - `includeStoredUserGroups`: `true`
-   * - Behavior: Merges session groups with stored user groups, if they don't already exist
-   * - Use case: Adding temporary context while preserving existing user groups
-   * - Note: This will 404 if user does not exist, as use cases would only exist for application
-   *   contexts that are 'dependent' on another context to set complete user data.
+   * **Ephemeral Mode** (Session-only groups):
+   * - Set `includeStoredUserGroups` to `false` and provide `groupsForSession`
+   * - Uses only the groups provided in the session, ignoring any stored user groups.
+   * - Does not require the user to be initialized (it will bypass stored user lookup)
+   * - Useful when complete group information is always provided at runtime.
    *
-   * **Scenario 3: Default behavior (Standard mode)**
-   * - `groupsForSession`: not provided or undefined
-   * - `includeStoredUserGroups`: not provided or undefined
-   * - Behavior: Uses standard user lookup with stored groups only
-   * - Use case: Normal feature flag evaluation without session context
+   * **Merged Mode** (Stored + Session groups):
+   * - Set `includeStoredUserGroups` to `true` and provide `groupsForSession`
+   * - User must already have been initialized, will 404 if user does not exist.
+   * - Session groups are merged with stored groups if they don't already exist for stored user.
+   * - Session groups are never persisted.
+   * - Useful for adding context-specific ephemeral groups to an existing user.
    */
 
   constructor(userId: string, hostUrl: string, context: string, options?: UpGradeClientInterfaces.IConfigOptions) {

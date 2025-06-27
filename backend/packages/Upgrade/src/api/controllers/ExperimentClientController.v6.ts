@@ -679,6 +679,7 @@ export class ExperimentClientController {
    *         **Ephemeral Mode** (Session-only groups):
    *         - Set `includeStoredUserGroups` to `false` and provide `groupsForSession`
    *         - Uses only the groups provided in the session, ignoring any stored user groups.
+   *         - Does not require the user to be initialized (it will bypass stored user lookup)
    *         - Useful when complete group information is always provided at runtime.
    *
    *         **Merged Mode** (Stored + Session groups):
