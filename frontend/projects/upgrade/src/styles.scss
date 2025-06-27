@@ -315,15 +315,38 @@ button[mat-icon-button] {
   background-color: white !important;
 }
 
-.mat-mdc-radio-button {
-  .mdc-radio {
-    margin-left: -10px;
+.mat-mdc-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  user-select: none;
+
+  .section-label,
+  .radio-label,
+  .radio-description {
+    font-family: 'Roboto' !important;
+    -webkit-font-smoothing: antialiased;
   }
 
-  .radio-button-label {
-    margin-left: -6px;
-    color: var(--black-2);
-    user-select: none;
+  .section-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--dark-grey);
+  }
+
+  .mat-mdc-radio-button {
+    .radio-content {
+      display: flex;
+      flex-direction: column;
+
+      .radio-label {
+        color: var(--light-black);
+      }
+
+      .radio-description {
+        color: var(--dark-grey);
+      }
+    }
   }
 }
 

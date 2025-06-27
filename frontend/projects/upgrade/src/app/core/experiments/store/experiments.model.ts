@@ -307,6 +307,12 @@ export interface ExperimentVM extends Experiment {
   stat: IExperimentEnrollmentDetailStats;
 }
 
+export enum UPSERT_EXPERIMENT_ACTION {
+  ADD = 'add',
+  EDIT = 'edit',
+  DUPLICATE = 'duplicate',
+}
+
 export enum EXPERIMENT_BUTTON_ACTION {
   IMPORT = 'import experiment',
   EXPORT_ALL = 'export all experiments',
@@ -314,6 +320,42 @@ export enum EXPERIMENT_BUTTON_ACTION {
   IMPORT_EXCLUDE_LIST = 'import exclude list',
   EXPORT_ALL_INCLUDE_LISTS = 'export all include lists',
   EXPORT_ALL_EXCLUDE_LISTS = 'export all exclude lists',
+}
+
+export interface UpsertExperimentParams {
+  sourceExperiment: Experiment;
+  action: UPSERT_EXPERIMENT_ACTION;
+}
+
+export interface ExperimentFormData {
+  name: string;
+  description: string;
+  appContext: string;
+  experimentType: ExperimentDesignTypes;
+  unitOfAssignment: ASSIGNMENT_UNIT;
+  consistencyRule: CONSISTENCY_RULE;
+  assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
+  stratificationFactor?: string;
+  tags: string[];
+}
+
+export interface AddExperimentRequest {
+  name: string;
+  description: string;
+  context: string[];
+  type: ExperimentDesignTypes;
+  assignmentUnit: ASSIGNMENT_UNIT;
+  consistencyRule: CONSISTENCY_RULE;
+  assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
+  stratificationFactor?: { stratificationFactorName: string } | null;
+  tags: string[];
+  state: EXPERIMENT_STATE;
+  filterMode: FILTER_MODE;
+}
+
+// so that we can throw an error if we try to update the id
+export interface UpdateExperimentRequest extends AddExperimentRequest {
+  readonly id: string;
 }
 
 export interface ExperimentState extends EntityState<Experiment> {
