@@ -102,7 +102,7 @@ export class ExperimentRootSectionCardComponent {
   }
 
   onAddExperimentButtonClick() {
-    // this.dialogService.openAddExperimentModal();
+    this.dialogService.openAddExperimentModal();
   }
 
   onMenuButtonItemClick(action: string) {
