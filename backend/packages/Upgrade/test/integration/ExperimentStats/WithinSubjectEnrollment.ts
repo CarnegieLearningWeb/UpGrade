@@ -112,7 +112,7 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);
   // Make sure the condition list has not yet rotated
   expect(
-    experimentConditionAssignments.find((decsionPoint) => decsionPoint.target === experimentName1).assignedCondition[0]
+    experimentConditionAssignments.find((decisionPoint) => decisionPoint.target === experimentName1).assignedCondition[0]
       .conditionCode
   ).toEqual(condition1);
 
