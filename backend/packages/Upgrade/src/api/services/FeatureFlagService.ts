@@ -116,7 +116,7 @@ export class FeatureFlagService {
         const exposureRepo = transactionalEntityManager.getRepository(FeatureFlagExposure);
         const exposuresToSave = includedFeatureFlags.map((flag) => ({
           featureFlag: flag,
-          experimentUser: experimentUserDoc,
+          experimentUserId: experimentUserDoc.id,
         }));
         if (exposuresToSave.length > 0) {
           // fire and forget, we don't need to wait on this, return flag asap to user
