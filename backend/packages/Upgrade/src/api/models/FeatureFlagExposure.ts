@@ -8,7 +8,6 @@ export class FeatureFlagExposure extends BaseModel {
   @PrimaryColumn()
   featureFlagId: string;
 
-  // Define primary column for the foreign key
   @PrimaryColumn()
   experimentUserId: string;
 
