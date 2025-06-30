@@ -58,7 +58,7 @@ export const selectSearchExperimentParams = createSelector(
   selectSearchString,
   (searchKey, searchString) => {
     if (!!searchKey && (!!searchString || searchString === '')) {
-      return { searchKey, searchString };
+      return { searchKey: searchKey === EXPERIMENT_SEARCH_KEY.STATUS ? 'state' : searchKey, searchString };
     }
     return null;
   }
@@ -70,7 +70,9 @@ export const selectRootTableState = createSelector(
   (tableData, searchParams) => ({
     tableData,
     searchParams,
-    allSearchableProperties: Object.values(EXPERIMENT_SEARCH_KEY),
+    allSearchableProperties: Object.values(EXPERIMENT_SEARCH_KEY).map((key) =>
+      key === EXPERIMENT_SEARCH_KEY.STATUS ? 'state' : key
+    ),
   })
 );
 
