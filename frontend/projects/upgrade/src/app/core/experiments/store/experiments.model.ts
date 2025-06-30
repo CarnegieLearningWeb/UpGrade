@@ -316,6 +316,26 @@ export enum EXPERIMENT_BUTTON_ACTION {
   EXPORT_ALL_EXCLUDE_LISTS = 'export all exclude lists',
 }
 
+export const EXPERIMENT_ROOT_COLUMN_NAMES = {
+  NAME: 'name',
+  STATUS: 'state',
+  UPDATED_AT: 'updatedAt',
+  APP_CONTEXT: 'appContext',
+  TAGS: 'tags',
+  ENROLLMENT: 'enrollment',
+};
+
+export const EXPERIMENT_TRANSLATION_KEYS = {
+  NAME: 'experiments.global-name.text',
+  STATUS: 'experiments.global-status.text',
+  UPDATED_AT: 'experiments.global-updated-at.text',
+  APP_CONTEXT: 'experiments.global-app-context.text',
+  TAGS: 'experiments.global-tags.text',
+  ENROLLMENT: 'experiments.global-enrollment.text',
+};
+
+export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
+
 export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
   isLoadingExperimentDetailStats: boolean;
