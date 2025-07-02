@@ -1,0 +1,28 @@
+<app-common-section-card class="details-overview-card">
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'Area - Question Type'"
+    [subtitle]="'experiments.overview-details.subtitle.text' | translate"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showMenuButton]="true"
+    [menuButtonItems]="menuButtonItems"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (menuButtonItemClick)="onMenuButtonItemClick($event)"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  ></app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <ng-container content>
+    <app-common-section-card-overview-details>
+      <!-- TODO: Add experiment overview details data -->
+    </app-common-section-card-overview-details>
+  </ng-container>
+
+  <!-- footer -->
+  <app-experiment-overview-details-footer footer></app-experiment-overview-details-footer>
+</app-common-section-card>

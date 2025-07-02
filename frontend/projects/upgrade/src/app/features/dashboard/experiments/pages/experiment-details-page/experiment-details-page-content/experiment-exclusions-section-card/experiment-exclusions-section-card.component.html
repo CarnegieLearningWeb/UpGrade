@@ -1,0 +1,25 @@
+<app-common-section-card>
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'experiments.exclusions.title.text' | translate"
+    [subtitle]="'experiments.exclusions.subtitle.text' | translate"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="true"
+    [primaryButtonText]="'experiments.exclusions.add.button.text' | translate"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (primaryButtonClick)="onAddExclusionClick()"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-experiment-exclusions-table
+    content
+    *ngIf="isSectionCardExpanded"
+  ></app-experiment-exclusions-table>
+</app-common-section-card>

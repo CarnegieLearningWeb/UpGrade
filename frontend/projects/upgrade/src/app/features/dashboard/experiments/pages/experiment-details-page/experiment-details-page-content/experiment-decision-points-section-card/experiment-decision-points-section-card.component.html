@@ -1,0 +1,25 @@
+<app-common-section-card>
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'experiments.decision-points.title.text' | translate"
+    [subtitle]="'experiments.decision-points.subtitle.text' | translate"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="true"
+    [primaryButtonText]="'experiments.decision-points.add.button.text' | translate"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (primaryButtonClick)="onAddDecisionPointClick()"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-experiment-decision-points-table
+    content
+    *ngIf="isSectionCardExpanded"
+  ></app-experiment-decision-points-table>
+</app-common-section-card>

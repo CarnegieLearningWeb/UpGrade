@@ -1,0 +1,25 @@
+<app-common-section-card>
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'experiments.inclusions.title.text' | translate"
+    [subtitle]="'experiments.inclusions.subtitle.text' | translate"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="true"
+    [primaryButtonText]="'experiments.inclusions.add.button.text' | translate"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (primaryButtonClick)="onAddInclusionClick()"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-experiment-inclusions-table
+    content
+    *ngIf="isSectionCardExpanded"
+  ></app-experiment-inclusions-table>
+</app-common-section-card>
