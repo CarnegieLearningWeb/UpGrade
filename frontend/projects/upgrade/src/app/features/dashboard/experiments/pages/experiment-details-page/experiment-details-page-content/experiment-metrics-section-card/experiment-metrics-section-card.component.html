@@ -1,0 +1,25 @@
+<app-common-section-card>
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'experiments.metrics.title.text' | translate"
+    [subtitle]="'experiments.metrics.subtitle.text' | translate"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="true"
+    [primaryButtonText]="'experiments.metrics.add.button.text' | translate"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (primaryButtonClick)="onAddMetricClick()"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-experiment-metrics-table
+    content
+    *ngIf="isSectionCardExpanded"
+  ></app-experiment-metrics-table>
+</app-common-section-card>

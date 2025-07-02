@@ -1,0 +1,22 @@
+<app-common-section-card>
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'experiments.enrollment-data.title.text' | translate"
+    [subtitle]="'experiments.enrollment-data.subtitle.text' | translate"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-experiment-enrollment-data
+    content
+    *ngIf="isSectionCardExpanded"
+  ></app-experiment-enrollment-data>
+</app-common-section-card>

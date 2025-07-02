@@ -1,0 +1,25 @@
+<app-common-section-card>
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'experiments.conditions.title.text' | translate"
+    [subtitle]="'experiments.conditions.subtitle.text' | translate"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="true"
+    [primaryButtonText]="'experiments.conditions.add.button.text' | translate"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (primaryButtonClick)="onAddConditionClick()"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-experiment-conditions-table
+    content
+    *ngIf="isSectionCardExpanded"
+  ></app-experiment-conditions-table>
+</app-common-section-card>
