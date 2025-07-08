@@ -334,8 +334,10 @@ export interface ExperimentFormData {
   experimentType: ExperimentDesignTypes;
   unitOfAssignment: ASSIGNMENT_UNIT;
   consistencyRule: CONSISTENCY_RULE;
+  conditionOrder?: CONDITION_ORDER;
   assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
   stratificationFactor?: string;
+  groupType?: string;
   tags: string[];
 }
 
@@ -346,11 +348,14 @@ export interface AddExperimentRequest {
   type: ExperimentDesignTypes;
   assignmentUnit: ASSIGNMENT_UNIT;
   consistencyRule: CONSISTENCY_RULE;
+  conditionOrder?: CONDITION_ORDER;
   assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
   stratificationFactor?: { stratificationFactorName: string } | null;
+  group?: string;
   tags: string[];
   state: EXPERIMENT_STATE;
   filterMode: FILTER_MODE;
+  // TODO: We might need to add other missing props (see Experiment interface for reference)
 }
 
 // so that we can throw an error if we try to update the id

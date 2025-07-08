@@ -68,13 +68,55 @@
       </mat-radio-group>
     </div>
 
-    <div class="consistency-rule-section dense-1">
+    <mat-form-field
+      *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.GROUP"
+      appearance="outline"
+      subscriptSizing="dynamic"
+    >
+      <mat-label class="ft-14-400">Group Type</mat-label>
+      <mat-select formControlName="groupType" class="ft-14-400">
+        <mat-option *ngFor="let group of groupTypes" [value]="group.value" class="ft-14-400">
+          {{ group.value }}
+        </mat-option>
+      </mat-select>
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'experiments.upsert-experiment-modal.group-type-hint.text' | translate }}
+      </mat-hint>
+    </mat-form-field>
+
+    <div class="consistency-rule-section dense-1" *ngIf="unitOfAssignmentValue !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS">
       <mat-radio-group formControlName="consistencyRule">
         <span class="section-label ft-14-600">Consistency Rule</span>
-        <mat-radio-button *ngFor="let rule of consistencyRules" [value]="rule.value">
+        <mat-radio-button
+          *ngFor="let rule of consistencyRules"
+          [value]="rule.value"
+          [disabled]="rule.disabled"
+        >
           <div class="radio-content">
-            <span class="radio-label ft-14-600">{{ rule.value | titlecase }}</span>
-            <span class="radio-description ft-12-400">{{ rule.description | translate }}</span>
+            <span
+              class="radio-label ft-14-600"
+              [class.disabled-text]="rule.disabled"
+            >
+              {{ rule.value | titlecase }}
+            </span>
+            <span
+              class="radio-description ft-12-400"
+              [class.disabled-text]="rule.disabled"
+            >
+              {{ rule.description | translate }}
+            </span>
+          </div>
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <div class="condition-order-section dense-1" *ngIf="unitOfAssignmentValue === ASSIGNMENT_UNIT.WITHIN_SUBJECTS">
+      <mat-radio-group formControlName="conditionOrder">
+        <span class="section-label ft-14-600">Condition Order</span>
+        <mat-radio-button *ngFor="let order of conditionOrders" [value]="order.value">
+          <div class="radio-content">
+            <span class="radio-label ft-14-600">{{ order.value | titlecase }}</span>
+            <span class="radio-description ft-12-400">{{ order.description | translate }}</span>
           </div>
         </mat-radio-button>
       </mat-radio-group>
@@ -89,8 +131,18 @@
           [disabled]="algorithm.disabled"
         >
           <div class="radio-content">
-            <span class="radio-label ft-14-600">{{ ASSIGNMENT_ALGORITHM_DISPLAY_MAP[algorithm.value] }}</span>
-            <span class="radio-description ft-12-400">{{ algorithm.description | translate }}</span>
+            <span
+              class="radio-label ft-14-600"
+              [class.disabled-text]="algorithm.disabled"
+            >
+              {{ ASSIGNMENT_ALGORITHM_DISPLAY_MAP[algorithm.value] }}
+            </span>
+            <span
+              class="radio-description ft-12-400"
+              [class.disabled-text]="algorithm.disabled"
+            >
+              {{ algorithm.description | translate }}
+            </span>
           </div>
         </mat-radio-button>
       </mat-radio-group>
@@ -112,11 +164,8 @@
         </mat-option>
       </mat-select>
       <mat-hint class="form-hint ft-12-400">
-        Select a stratification factor for balanced random assignment.
+        {{ 'experiments.upsert-experiment-modal.stratification-factor-hint.text' | translate }}
       </mat-hint>
-      <mat-error *ngIf="!isStratificationFactorSelected">
-        A stratification factor is required when using Stratified Random Sampling.
-      </mat-error>
     </mat-form-field>
 
     <app-common-tags-input

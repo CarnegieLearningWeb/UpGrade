@@ -2,9 +2,14 @@
   color: red;
 }
 
+.disabled-text {
+  color: rgba(0, 0, 0, 0.38) !important;
+}
+
 .experiment-type-section,
 .unit-assignment-section,
 .consistency-rule-section,
+.condition-order-section,
 .assignment-algorithm-section {
   padding: 4px 0;
 }

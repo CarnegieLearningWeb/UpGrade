@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { TranslateModule } from '@ngx-translate/core';
-import { BehaviorSubject, Observable, Subscription, combineLatestWith, map, startWith } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, combineLatestWith, map, startWith, take } from 'rxjs';
 import { isEqual } from 'lodash';
 
 import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
@@ -30,6 +30,7 @@ import { CommonFormHelpersService } from '../../../../../shared/services/common-
 import {
   ASSIGNMENT_UNIT,
   CONSISTENCY_RULE,
+  CONDITION_ORDER,
   ASSIGNMENT_ALGORITHM,
   EXPERIMENT_STATE,
   FILTER_MODE,
@@ -67,9 +68,12 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   contextMetaData$ = this.experimentService.contextMetaData$;
   allContexts: string[] = [];
 
+  // Group types
+  groupTypes: Array<{ value: string }> = [];
+  currentContext = '';
+
   // Stratification factors
   allStratificationFactors: Array<{ factorName: string }> = [];
-  isStratificationFactorSelected = true;
   isLoadingStratificationFactors$ = this.stratificationFactorsService.isLoading$;
 
   subscriptions = new Subscription();
@@ -88,6 +92,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   ExperimentDesignTypes = ExperimentDesignTypes;
   ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
   CONSISTENCY_RULE = CONSISTENCY_RULE;
+  CONDITION_ORDER = CONDITION_ORDER;
   ASSIGNMENT_ALGORITHM = ASSIGNMENT_ALGORITHM;
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP = ASSIGNMENT_ALGORITHM_DISPLAY_MAP;
 
@@ -117,10 +122,27 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     {
       value: CONSISTENCY_RULE.INDIVIDUAL,
       description: 'experiments.upsert-experiment-modal.consistency-rule-individual-description.text',
+      disabled: false,
     },
     {
       value: CONSISTENCY_RULE.GROUP,
       description: 'experiments.upsert-experiment-modal.consistency-rule-group-description.text',
+      disabled: false,
+    },
+  ];
+
+  conditionOrders = [
+    {
+      value: CONDITION_ORDER.RANDOM,
+      description: 'experiments.upsert-experiment-modal.condition-order-random-description.text',
+    },
+    {
+      value: CONDITION_ORDER.RANDOM_ROUND_ROBIN,
+      description: 'experiments.upsert-experiment-modal.condition-order-random-round-robin-description.text',
+    },
+    {
+      value: CONDITION_ORDER.ORDERED_ROUND_ROBIN,
+      description: 'experiments.upsert-experiment-modal.condition-order-ordered-round-robin-description.text',
     },
   ];
 
@@ -182,6 +204,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.listenForPrimaryButtonDisabled();
     this.listenOnContext();
     this.listenOnAssignmentAlgorithm();
+    this.listenOnUnitOfAssignment();
   }
 
   isDisabled() {
@@ -197,7 +220,9 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.experimentForm.get('experimentType')?.disable();
     this.experimentForm.get('unitOfAssignment')?.disable();
     this.experimentForm.get('consistencyRule')?.disable();
+    this.experimentForm.get('conditionOrder')?.disable();
     this.experimentForm.get('assignmentAlgorithm')?.disable();
+    this.experimentForm.get('groupType')?.disable();
   }
 
   createExperimentForm(): void {
@@ -212,12 +237,25 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       experimentType: [initialValues.experimentType, Validators.required],
       unitOfAssignment: [initialValues.unitOfAssignment, Validators.required],
       consistencyRule: [initialValues.consistencyRule, Validators.required],
+      conditionOrder: [initialValues.conditionOrder],
       assignmentAlgorithm: [initialValues.assignmentAlgorithm, Validators.required],
       stratificationFactor: [initialValues.stratificationFactor],
+      groupType: [initialValues.groupType],
       tags: [initialValues.tags],
     });
 
+    // Initialize consistency rules state based on initial unit of assignment
+    this.initializeConsistencyRules(initialValues.unitOfAssignment);
+
     this.initialFormValues$.next(this.experimentForm.value);
+  }
+
+  initializeConsistencyRules(unitOfAssignment: ASSIGNMENT_UNIT): void {
+    // Set initial disabled state for consistency rules based on unit of assignment
+    this.consistencyRules = this.consistencyRules.map((rule) => ({
+      ...rule,
+      disabled: unitOfAssignment === ASSIGNMENT_UNIT.INDIVIDUAL && rule.value === CONSISTENCY_RULE.GROUP,
+    }));
   }
 
   deriveInitialFormValues(sourceExperiment: Experiment, action: string): ExperimentFormData {
@@ -228,8 +266,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       sourceExperiment?.type === 'Factorial' ? ExperimentDesignTypes.FACTORIAL : ExperimentDesignTypes.SIMPLE;
     const unitOfAssignment = sourceExperiment?.assignmentUnit || ASSIGNMENT_UNIT.INDIVIDUAL;
     const consistencyRule = sourceExperiment?.consistencyRule || CONSISTENCY_RULE.INDIVIDUAL;
+    const conditionOrder = sourceExperiment?.conditionOrder || null;
     const assignmentAlgorithm = sourceExperiment?.assignmentAlgorithm || ASSIGNMENT_ALGORITHM.RANDOM;
     const stratificationFactor = sourceExperiment?.stratificationFactor?.stratificationFactorName || null;
+    const groupType = sourceExperiment?.group || null;
     const tags = sourceExperiment?.tags || [];
 
     return {
@@ -239,8 +279,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       experimentType,
       unitOfAssignment,
       consistencyRule,
+      conditionOrder,
       assignmentAlgorithm,
       stratificationFactor,
+      groupType,
       tags,
     };
   }
@@ -250,6 +292,13 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       this.contextMetaData$.subscribe((contextMetaData: IContextMetaData) => {
         if (contextMetaData?.contextMetadata) {
           this.allContexts = Object.keys(contextMetaData.contextMetadata);
+
+          // Update group types when context metadata changes
+          const currentContext = this.experimentForm.get('appContext')?.value;
+          if (currentContext) {
+            this.currentContext = currentContext;
+            this.setGroupTypes(contextMetaData);
+          }
         }
       })
     );
@@ -259,6 +308,17 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.experimentForm.get('appContext')?.valueChanges.subscribe((context) => {
         this.isContextChanged = context !== this.initialContext;
+        this.currentContext = context;
+
+        // Reset group type when context changes
+        this.experimentForm.get('groupType')?.setValue(null);
+
+        // Update group types based on current context metadata
+        this.contextMetaData$.pipe(take(1)).subscribe((contextMetaData: IContextMetaData) => {
+          if (contextMetaData) {
+            this.setGroupTypes(contextMetaData);
+          }
+        });
       })
     );
   }
@@ -300,6 +360,87 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     );
   }
 
+  listenOnUnitOfAssignment(): void {
+    this.subscriptions.add(
+      this.experimentForm.get('unitOfAssignment')?.valueChanges.subscribe((assignmentUnit) => {
+        const groupTypeControl = this.experimentForm.get('groupType');
+        const consistencyRuleControl = this.experimentForm.get('consistencyRule');
+        const conditionOrderControl = this.experimentForm.get('conditionOrder');
+
+        switch (assignmentUnit) {
+          case ASSIGNMENT_UNIT.INDIVIDUAL:
+            // Individual assignment: disable group type, enable consistency rule with default, disable condition order
+            groupTypeControl?.disable();
+            groupTypeControl?.clearValidators();
+            groupTypeControl?.setValue(null);
+
+            consistencyRuleControl?.enable();
+            consistencyRuleControl?.setValidators([Validators.required]);
+            consistencyRuleControl?.setValue(CONSISTENCY_RULE.INDIVIDUAL);
+
+            conditionOrderControl?.disable();
+            conditionOrderControl?.clearValidators();
+            conditionOrderControl?.setValue(null);
+
+            // Disable Group consistency rule for Individual assignment
+            this.consistencyRules = this.consistencyRules.map((rule) => ({
+              ...rule,
+              disabled: rule.value === CONSISTENCY_RULE.GROUP,
+            }));
+            break;
+
+          case ASSIGNMENT_UNIT.GROUP:
+            // Group assignment: enable group type and consistency rule with default, disable condition order
+            groupTypeControl?.enable();
+            groupTypeControl?.setValidators([Validators.required]);
+            // Note: groupType value will be set when group types are loaded from context metadata
+
+            consistencyRuleControl?.enable();
+            consistencyRuleControl?.setValidators([Validators.required]);
+            consistencyRuleControl?.setValue(CONSISTENCY_RULE.INDIVIDUAL); // Default to Individual
+
+            conditionOrderControl?.disable();
+            conditionOrderControl?.clearValidators();
+            conditionOrderControl?.setValue(null);
+
+            // Enable all consistency rules for Group assignment
+            this.consistencyRules = this.consistencyRules.map((rule) => ({
+              ...rule,
+              disabled: false,
+            }));
+
+            // Update group types based on current context metadata
+            this.contextMetaData$.pipe(take(1)).subscribe((contextMetaData: IContextMetaData) => {
+              if (contextMetaData) {
+                this.setGroupTypes(contextMetaData);
+              }
+            });
+            break;
+
+          case ASSIGNMENT_UNIT.WITHIN_SUBJECTS:
+            // Within subjects: disable group type and consistency rule, enable condition order with default
+            groupTypeControl?.disable();
+            groupTypeControl?.clearValidators();
+            groupTypeControl?.setValue(null);
+
+            consistencyRuleControl?.disable();
+            consistencyRuleControl?.clearValidators();
+            consistencyRuleControl?.setValue(null);
+
+            conditionOrderControl?.enable();
+            conditionOrderControl?.setValidators([Validators.required]);
+            conditionOrderControl?.setValue(CONDITION_ORDER.RANDOM); // Default to Random
+            break;
+        }
+
+        // Update validators for all controls
+        groupTypeControl?.updateValueAndValidity();
+        consistencyRuleControl?.updateValueAndValidity();
+        conditionOrderControl?.updateValueAndValidity();
+      })
+    );
+  }
+
   updateAssignmentAlgorithms(): void {
     // Disable stratified random sampling if no stratification factors are available
     const stratifiedAlgorithm = this.assignmentAlgorithms.find(
@@ -312,18 +453,36 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }
 
   validateStratificationFactorSelection(algorithm: ASSIGNMENT_ALGORITHM): void {
+    const stratificationFactorControl = this.experimentForm.get('stratificationFactor');
+
     if (algorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
-      const stratificationFactorValue = this.experimentForm.get('stratificationFactor')?.value;
-      this.isStratificationFactorSelected = !!stratificationFactorValue || this.allStratificationFactors.length === 0;
+      // Add required validator when stratified random sampling is selected
+      stratificationFactorControl?.setValidators([Validators.required]);
     } else {
-      this.isStratificationFactorSelected = true;
-      // Reset stratification factor when not using stratified random sampling
-      this.experimentForm.get('stratificationFactor')?.setValue(null);
+      // Remove validators and reset value when other algorithms are selected
+      stratificationFactorControl?.clearValidators();
+      stratificationFactorControl?.setValue(null);
     }
+
+    stratificationFactorControl?.updateValueAndValidity();
   }
 
   get assignmentAlgorithmValue() {
     return this.experimentForm.get('assignmentAlgorithm')?.value;
+  }
+
+  get unitOfAssignmentValue() {
+    return this.experimentForm.get('unitOfAssignment')?.value;
+  }
+
+  setGroupTypes(contextMetaData?: IContextMetaData): void {
+    this.groupTypes = [];
+    // We'll use the current subscription to get context metadata if not provided
+    if (contextMetaData?.contextMetadata?.[this.currentContext]) {
+      contextMetaData.contextMetadata[this.currentContext].GROUP_TYPES.forEach((groupType) => {
+        this.groupTypes.push({ value: groupType });
+      });
+    }
   }
 
   onPrimaryActionBtnClicked() {
@@ -353,8 +512,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     experimentType,
     unitOfAssignment,
     consistencyRule,
+    conditionOrder,
     assignmentAlgorithm,
     stratificationFactor,
+    groupType,
     tags,
   }: ExperimentFormData): void {
     const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
@@ -366,8 +527,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       type: experimentType,
       assignmentUnit: unitOfAssignment,
       consistencyRule,
+      conditionOrder: conditionOrder || undefined,
       assignmentAlgorithm,
       stratificationFactor: stratificationFactorObj,
+      group: groupType || undefined,
       tags,
       state: EXPERIMENT_STATE.INACTIVE,
       filterMode: FILTER_MODE.EXCLUDE_ALL,
@@ -385,8 +548,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       experimentType,
       unitOfAssignment,
       consistencyRule,
+      conditionOrder,
       assignmentAlgorithm,
       stratificationFactor,
+      groupType,
       tags,
     }: ExperimentFormData,
     sourceExperiment: Experiment
@@ -401,8 +566,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       type: experimentType,
       assignmentUnit: unitOfAssignment,
       consistencyRule,
+      conditionOrder: conditionOrder || undefined,
       assignmentAlgorithm,
       stratificationFactor: stratificationFactorObj,
+      group: groupType || undefined,
       tags,
       state: sourceExperiment.state,
       filterMode: FILTER_MODE.EXCLUDE_ALL,
