@@ -134,7 +134,7 @@
                             <a
                               class="link"
                               *ngIf="log.data.isExperimentExist; else experimentNotExist"
-                              [routerLink]="['/home', 'detail', log.data.flagId]"
+                              [routerLink]="['/home', 'detail', log.data.experimentId]"
                               >{{ log.data.experimentName }}</a
                             >
                             -
