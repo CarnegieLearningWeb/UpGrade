@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import * as env from '../../../../../../environments/environment';
 import { LogType } from '../../../../../core/logs/store/logs.model';
-import { FEATURE_FLAG_LIST_OPERATION, LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
+import { EXPERIMENT_LIST_OPERATION, FEATURE_FLAG_LIST_OPERATION, LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 import Convert from 'ansi-to-html';
 
 @Component({
@@ -28,6 +28,10 @@ export class TimelineComponent {
 
   get FEATURE_FLAG_LIST_OPERATION() {
     return FEATURE_FLAG_LIST_OPERATION;
+  }
+
+  get EXPERIMENT_LIST_OPERATION() {
+    return EXPERIMENT_LIST_OPERATION;
   }
 
   get ServerErrors() {
