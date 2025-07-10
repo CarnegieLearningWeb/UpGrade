@@ -1,6 +1,6 @@
 // to run: npx ts-node clientlibs/js/quickTest.ts
 
-import UpgradeClient, { AssignedCondition, MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
+import UpgradeClient, { MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
 
 const URL = {
   LOCAL: 'http://localhost:3030',
@@ -10,15 +10,29 @@ const URL = {
   ECS_STAGING: 'https://apps.qa-cli.com/upgrade-service',
 };
 
-const userId = 'quicktest_user_' + Date.now().toString();
-const group = 'test_class_group';
+const userId = 'qwerty6';
+const useEphemeralGroups = false;
+const group = { classId: ['STORED_USER_GROUP'] };
+const workingGroup = 'STORED_USER_GROUP';
+const groupsForSession = { classId: ['EPHEMERAL_USER_GROUP'] };
+const includeStoredUserGroups = true; // true to merge with stored user groups, false for session-only groups
 const alias = 'alias' + userId;
 const hostUrl = URL.LOCAL;
-const context = 'assign-prog';
+const context = 'mathstream';
 const site = 'SelectSection';
 const target = 'absolute_value_plot_equality';
 const status = MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED;
 const featureFlagKey = 'TEST_FEATURE_FLAG';
+
+const options: UpGradeClientInterfaces.IConfigOptions = {
+  featureFlagUserGroupsForSession: useEphemeralGroups
+    ? {
+        groupsForSession,
+        includeStoredUserGroups,
+      }
+    : null,
+};
+
 const logRequest = [
   {
     userId,
@@ -55,17 +69,18 @@ quickTest();
 
 /** main test *******************************************************************************/
 async function quickTest() {
-  const client = new UpgradeClient(userId, hostUrl, context);
+  const client = new UpgradeClient(userId, hostUrl, context, options);
   await doInit(client);
   await doGroupMembership(client);
   await doWorkingGroupMembership(client);
   await doAliases(client);
   await doAssign(client);
   const condition = await doGetDecisionPointAssignment(client);
+  doSetFeatureFlagUserGroupsForSession(client, options);
   await doFeatureFlags(client);
-  await doHasFeatureFlag(client);
-  await doMark(client, condition);
-  await doLog(client);
+  // await doHasFeatureFlag(client);
+  // await doMark(client, condition);
+  // await doLog(client);
 }
 
 /** test functions *******************************************************************************/
@@ -80,9 +95,7 @@ async function doInit(client: UpgradeClient) {
 }
 
 async function doGroupMembership(client: UpgradeClient) {
-  const groupRequest: UpGradeClientInterfaces.IExperimentUserGroup = {
-    schoolId: [group],
-  };
+  const groupRequest: UpGradeClientInterfaces.IExperimentUserGroup = group;
 
   try {
     const response = await client.setGroupMembership(groupRequest);
@@ -93,9 +106,7 @@ async function doGroupMembership(client: UpgradeClient) {
 }
 
 async function doWorkingGroupMembership(client: UpgradeClient) {
-  const workingGroupRequest: UpGradeClientInterfaces.IExperimentUserWorkingGroup = {
-    workingGroup: group,
-  };
+  const workingGroupRequest: UpGradeClientInterfaces.IExperimentUserWorkingGroup = { workingGroup };
   try {
     const response = await client.setWorkingGroup(workingGroupRequest);
     console.log('\n[Working Group response]:', JSON.stringify(response));
@@ -146,6 +157,14 @@ async function doGetDecisionPointAssignment(client: UpgradeClient): Promise<stri
   }
 }
 
+// to test this function, omit passing options to constructor
+function doSetFeatureFlagUserGroupsForSession(
+  client: UpgradeClient,
+  options: UpGradeClientInterfaces.IConfigOptions | null | undefined
+) {
+  client.setFeatureFlagUserGroupsForSession(options?.featureFlagUserGroupsForSession);
+}
+
 async function doFeatureFlags(client: UpgradeClient) {
   try {
     const response = await client.getAllFeatureFlags();
@@ -157,8 +176,8 @@ async function doFeatureFlags(client: UpgradeClient) {
 
 async function doHasFeatureFlag(client: UpgradeClient) {
   try {
-    const response = client.hasFeatureFlag(featureFlagKey);
-    console.log('\n[Has Feature Flag response]:', JSON.stringify(response));
+    const response = await client.hasFeatureFlag(featureFlagKey);
+    console.log('\n[Has Feature Flag response]:', response);
   } catch (error) {
     console.error('\n[Has Feature Flag error]:', error);
   }
