@@ -32,19 +32,22 @@ export class CommonStatusIndicatorChipComponent {
   chipText = '';
 
   ngOnInit() {
-    this.chipText = this.convertKebabToTitleCase(this.chipClass);
+    this.chipText = this.convertToTitleCase(this.chipClass);
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.chipClass && changes.chipClass.currentValue) {
-      this.chipText = this.convertKebabToTitleCase(changes.chipClass.currentValue);
+    if (changes.chipClass?.currentValue) {
+      this.chipText = this.convertToTitleCase(changes.chipClass.currentValue);
     }
   }
 
-  convertKebabToTitleCase(kebabCaseStr: STATUS_INDICATOR_CHIP_TYPE): string {
-    return kebabCaseStr
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+  convertToTitleCase(value: STATUS_INDICATOR_CHIP_TYPE): string {
+    // Handle special case for enrollmentComplete
+    if (value === STATUS_INDICATOR_CHIP_TYPE.ENROLLMENT_COMPLETE) {
+      return 'Enrollment Complete';
+    }
+
+    // For all other cases, just capitalize the first letter
+    return value.charAt(0).toUpperCase() + value.slice(1);
   }
 }

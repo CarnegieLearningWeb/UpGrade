@@ -307,6 +307,12 @@ export interface ExperimentVM extends Experiment {
   stat: IExperimentEnrollmentDetailStats;
 }
 
+export enum UPSERT_EXPERIMENT_ACTION {
+  ADD = 'add',
+  EDIT = 'edit',
+  DUPLICATE = 'duplicate',
+}
+
 export enum EXPERIMENT_BUTTON_ACTION {
   IMPORT = 'import experiment',
   EXPORT_ALL = 'export all experiments',
@@ -315,6 +321,67 @@ export enum EXPERIMENT_BUTTON_ACTION {
   EXPORT_ALL_INCLUDE_LISTS = 'export all include lists',
   EXPORT_ALL_EXCLUDE_LISTS = 'export all exclude lists',
 }
+
+export interface UpsertExperimentParams {
+  sourceExperiment: Experiment;
+  action: UPSERT_EXPERIMENT_ACTION;
+}
+
+export interface ExperimentFormData {
+  name: string;
+  description: string;
+  appContext: string;
+  experimentType: ExperimentDesignTypes;
+  unitOfAssignment: ASSIGNMENT_UNIT;
+  consistencyRule: CONSISTENCY_RULE;
+  conditionOrder?: CONDITION_ORDER;
+  assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
+  stratificationFactor?: string;
+  groupType?: string;
+  tags: string[];
+}
+
+export interface AddExperimentRequest {
+  name: string;
+  description: string;
+  context: string[];
+  type: ExperimentDesignTypes;
+  assignmentUnit: ASSIGNMENT_UNIT;
+  consistencyRule: CONSISTENCY_RULE;
+  conditionOrder?: CONDITION_ORDER;
+  assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
+  stratificationFactor?: { stratificationFactorName: string } | null;
+  group?: string;
+  tags: string[];
+  state: EXPERIMENT_STATE;
+  filterMode: FILTER_MODE;
+  // TODO: We might need to add other missing props (see Experiment interface for reference)
+}
+
+// so that we can throw an error if we try to update the id
+export interface UpdateExperimentRequest extends AddExperimentRequest {
+  readonly id: string;
+}
+=======
+export const EXPERIMENT_ROOT_COLUMN_NAMES = {
+  NAME: 'name',
+  STATUS: 'state',
+  UPDATED_AT: 'updatedAt',
+  APP_CONTEXT: 'appContext',
+  TAGS: 'tags',
+  ENROLLMENT: 'enrollment',
+};
+
+export const EXPERIMENT_TRANSLATION_KEYS = {
+  NAME: 'experiments.global-name.text',
+  STATUS: 'experiments.global-status.text',
+  UPDATED_AT: 'experiments.global-updated-at.text',
+  APP_CONTEXT: 'experiments.global-app-context.text',
+  TAGS: 'experiments.global-tags.text',
+  ENROLLMENT: 'experiments.global-enrollment.text',
+};
+
+export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
 
 export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
