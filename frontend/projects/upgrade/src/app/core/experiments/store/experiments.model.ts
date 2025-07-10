@@ -362,7 +362,7 @@ export interface AddExperimentRequest {
 export interface UpdateExperimentRequest extends AddExperimentRequest {
   readonly id: string;
 }
-=======
+
 export const EXPERIMENT_ROOT_COLUMN_NAMES = {
   NAME: 'name',
   STATUS: 'state',
