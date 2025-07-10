@@ -1109,7 +1109,7 @@ export class ExperimentService {
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,
           experimentName: experiment.name,
-          diff: diffString(newExperimentClone, oldExperimentClone),
+          diff: diffString(oldExperimentClone, newExperimentClone),
         };
 
         await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
@@ -1841,23 +1841,22 @@ export class ExperimentService {
         throw error;
       }
 
-      // TODO: Uncomment when the frontend is ready to handle the audit logs
-      // const updateAuditLog: AuditLogData = {
-      //   experimentId: experiment.id,
-      //   experimentName: experiment.name,
-      //   list: {
-      //     listId: newSegment?.id,
-      //     listName: newSegment?.name,
-      //     filterType: filterType,
-      //     operation: EXPERIMENT_LIST_OPERATION.CREATED,
-      //   },
-      // };
-      // await this.experimentAuditLogRepository.saveRawJson(
-      //   LOG_TYPE.EXPERIMENT_UPDATED,
-      //   updateAuditLog,
-      //   currentUser,
-      //   transactionalEntityManager
-      // );
+      const updateAuditLog: AuditLogData = {
+        experimentId: experiment.id,
+        experimentName: experiment.name,
+        list: {
+          listId: newSegment?.id,
+          listName: newSegment?.name,
+          filterType: filterType,
+          operation: EXPERIMENT_LIST_OPERATION.CREATED,
+        },
+      };
+      await this.experimentAuditLogRepository.saveRawJson(
+        LOG_TYPE.EXPERIMENT_UPDATED,
+        updateAuditLog,
+        currentUser,
+        transactionalEntityManager
+      );
 
       // Update exclusions/Enrollments if the filterType is EXCLUSION
       if (filterType === LIST_FILTER_MODE.EXCLUSION) {
@@ -1893,8 +1892,7 @@ export class ExperimentService {
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Segment> {
-    // TODO: Uncomment when the frontend is ready to handle the audit logs
-    //await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
+    await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return this.segmentService.deleteSegment(segmentId, logger);
   }
@@ -2035,7 +2033,7 @@ export class ExperimentService {
         listName: existingRecord.segment.name,
         filterType: filterType,
         operation: EXPERIMENT_LIST_OPERATION.UPDATED,
-        diff: diffString(newSegmentDocClone, oldSegmentDocClone),
+        diff: diffString(oldSegmentDocClone, newSegmentDocClone),
       };
 
       // update list AuditLogs here
@@ -2211,20 +2209,19 @@ export class ExperimentService {
     const includeListIds = oldExperiment.experimentSegmentInclusion.map((list) => list.segment.id);
     const excludeListIds = oldExperiment.experimentSegmentExclusion.map((list) => list.segment.id);
 
-    // TODO: Uncomment when the frontend is ready to handle the audit logs
-    // const auditLogPromises = [];
+    const auditLogPromises = [];
 
-    // if (includeListIds.length) {
-    //   auditLogPromises.push(
-    //     this.createDeleteListAuditLogs(includeListIds, LIST_FILTER_MODE.INCLUSION, user, transactionalEntityManager)
-    //   );
-    // }
+    if (includeListIds.length) {
+      auditLogPromises.push(
+        this.createDeleteListAuditLogs(includeListIds, LIST_FILTER_MODE.INCLUSION, user, transactionalEntityManager)
+      );
+    }
 
-    // if (excludeListIds.length) {
-    //   auditLogPromises.push(
-    //     this.createDeleteListAuditLogs(excludeListIds, LIST_FILTER_MODE.EXCLUSION, user, transactionalEntityManager)
-    //   );
-    // }
+    if (excludeListIds.length) {
+      auditLogPromises.push(
+        this.createDeleteListAuditLogs(excludeListIds, LIST_FILTER_MODE.EXCLUSION, user, transactionalEntityManager)
+      );
+    }
 
     // Delete segments
     const segmentIds = [...includeListIds, ...excludeListIds];
