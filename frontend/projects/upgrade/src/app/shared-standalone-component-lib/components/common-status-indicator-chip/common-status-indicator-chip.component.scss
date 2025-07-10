@@ -37,7 +37,19 @@
       background-color: var(--status-enrolling-alpha);
     }
 
-    &.enrollment-complete,
+    &.scheduled {
+      --mdc-chip-label-text-color: var(--status-scheduled);
+      border: 1px solid var(--status-scheduled);
+      background-color: var(--status-scheduled-alpha);
+    }
+
+    &.preview {
+      --mdc-chip-label-text-color: var(--status-preview);
+      border: 1px solid var(--status-preview);
+      background-color: var(--status-preview-alpha);
+    }
+
+    &.enrollmentComplete,
     &.compatible {
       --mdc-chip-label-text-color: var(--status-enrollment-complete);
       border: 1px solid var(--status-enrollment-complete);
