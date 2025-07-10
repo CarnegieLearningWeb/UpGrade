@@ -15,7 +15,6 @@ import {
   FeatureFlag,
   ParticipantListTableRow,
   UPSERT_FEATURE_FLAG_ACTION,
-  UPSERT_FEATURE_FLAG_LIST_ACTION,
   UpsertFeatureFlagParams,
 } from '../../core/feature-flags/store/feature-flags.model';
 import { CommonSimpleConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
@@ -35,6 +34,8 @@ import {
 } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
 import { CommonImportModalComponent } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-modal.component';
 import { DeleteSegmentModalComponent } from '../../features/dashboard/segments/modals/delete-segment-modal/delete-segment-modal.component';
+import { UpsertExperimentModalComponent } from '../../features/dashboard/experiments/modals/upsert-experiment-modal/upsert-experiment-modal.component';
+import { UPSERT_EXPERIMENT_ACTION } from '../../core/experiments/store/experiments.model';
 
 export interface ImportModalParams {
   importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
@@ -60,6 +61,33 @@ export class DialogService {
     });
   }
 
+  // experiment modal ---------------------------------------- //
+  openAddExperimentModal() {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Add Experiment',
+      tagsLabel: 'experiments.upsert-experiment-modal.tags-label.text',
+      tagsPlaceholder: 'experiments.upsert-experiment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceFlag: null,
+        action: UPSERT_EXPERIMENT_ACTION.ADD,
+      },
+    };
+    return this.openUpsertExperimentModal(commonModalConfig);
+  }
+
+  openUpsertExperimentModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: 'input',
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertExperimentModalComponent, config);
+  }
+
   // feature flag modal ---------------------------------------- //
   openAddFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
@@ -71,7 +99,7 @@ export class DialogService {
       cancelBtnLabel: 'Cancel',
       params: {
         sourceFlag: null,
-        action: UPSERT_FEATURE_FLAG_LIST_ACTION.ADD,
+        action: UPSERT_FEATURE_FLAG_ACTION.ADD,
       },
     };
     return this.openUpsertFeatureFlagModal(commonModalConfig);
