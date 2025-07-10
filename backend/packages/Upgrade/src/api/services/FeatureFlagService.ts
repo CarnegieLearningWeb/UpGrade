@@ -497,7 +497,7 @@ export class FeatureFlagService {
       const updateAuditLog: FeatureFlagUpdatedData = {
         flagId: featureFlagDoc.id,
         flagName: featureFlagDoc.name,
-        diff: diffString(newFlagDocClone, oldFlagDocClone),
+        diff: diffString(oldFlagDocClone, newFlagDocClone),
       };
 
       await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, user);
@@ -774,7 +774,7 @@ export class FeatureFlagService {
           listName: existingRecord.segment.name,
           filterType: filterType,
           operation: FEATURE_FLAG_LIST_OPERATION.UPDATED,
-          diff: diffString(newSegmentDocClone, oldSegmentDocClone),
+          diff: diffString(oldSegmentDocClone, newSegmentDocClone),
         };
       }
 
