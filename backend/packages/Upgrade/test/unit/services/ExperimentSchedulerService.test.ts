@@ -15,7 +15,7 @@ import { ExperimentRepository } from '../../../src/api/repositories/ExperimentRe
 import { UserRepository } from '../../../src/api/repositories/UserRepository';
 import { configureLogger } from '../../utils/logger';
 
-describe('Scheduled Job Service Testing', () => {
+describe('Experiment Scheduler Service Testing', () => {
   let service: ExperimentSchedulerService;
   let scheduledJobRepo: Repository<ScheduledJobRepository>;
   let awsService: AWSService;
