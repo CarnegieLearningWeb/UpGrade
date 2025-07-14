@@ -68,8 +68,6 @@ describe('Scheduled Job Service Testing', () => {
     dataSource.transaction = mockTransaction;
     tteContainer.setDataSource('default', dataSource);
 
-    // Container.set(ExperimentService, new ExperimentServiceMock());
-
     module = await Test.createTestingModule({
       providers: [
         DataSource,
