@@ -207,7 +207,17 @@ export class ExperimentService {
     } else {
       queryBuilderToReturn = queryBuilderToReturn.addOrderBy('experiment.updatedAt', 'DESC');
     }
-    return await Promise.all([queryBuilderToReturn.getMany(), countQuery ? countQuery.getCount() : countQuery]);
+    const [experiments, count] = await Promise.all([
+      queryBuilderToReturn.getMany(),
+      countQuery ? countQuery.getCount() : countQuery,
+    ]);
+
+    return [
+      experiments.map((experiment) => {
+        return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
+      }),
+      count || 0,
+    ];
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
