@@ -1,44 +1,52 @@
 <div class="content-container">
-  <app-common-section-card-list class="common-section-card-list">
-    <app-experiment-overview-details-section-card
-      [isSectionCardExpanded]="isSectionCardExpanded"
-      (sectionCardExpandChange)="onSectionCardExpandChange($event)"
-      section-card
-    ></app-experiment-overview-details-section-card>
-    
-    <app-experiment-decision-points-section-card
-      [isSectionCardExpanded]="isSectionCardExpanded"
-      section-card
-    ></app-experiment-decision-points-section-card>
-    
-    <app-experiment-conditions-section-card
-      [isSectionCardExpanded]="isSectionCardExpanded"
-      section-card
-    ></app-experiment-conditions-section-card>
-    
-    <app-experiment-inclusions-section-card
-      [isSectionCardExpanded]="isSectionCardExpanded"
-      section-card
-    ></app-experiment-inclusions-section-card>
-    
-    <app-experiment-exclusions-section-card
-      [isSectionCardExpanded]="isSectionCardExpanded"
-      section-card
-    ></app-experiment-exclusions-section-card>
-    
-    <app-experiment-metrics-section-card
-      [isSectionCardExpanded]="isSectionCardExpanded"
-      section-card
-    ></app-experiment-metrics-section-card>
-    
-    <app-experiment-enrollment-data-section-card
-      [isSectionCardExpanded]="isSectionCardExpanded"
-      section-card
-    ></app-experiment-enrollment-data-section-card>
-    
-    <app-experiment-metrics-data-section-card
-      [isSectionCardExpanded]="isSectionCardExpanded"
-      section-card
-    ></app-experiment-metrics-data-section-card>
-  </app-common-section-card-list>
+  <ng-container *ngIf="experiment$ | async as experiment; else loading">
+    <app-common-section-card-list class="common-section-card-list">
+      <app-experiment-overview-details-section-card
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+        section-card
+      ></app-experiment-overview-details-section-card>
+
+      <app-experiment-decision-points-section-card
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-decision-points-section-card>
+
+      <app-experiment-conditions-section-card
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-conditions-section-card>
+
+      <app-experiment-inclusions-section-card
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-inclusions-section-card>
+
+      <app-experiment-exclusions-section-card
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-exclusions-section-card>
+
+      <app-experiment-metrics-section-card
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-metrics-section-card>
+
+      <app-experiment-enrollment-data-section-card
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-enrollment-data-section-card>
+
+      <app-experiment-metrics-data-section-card
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-metrics-data-section-card>
+    </app-common-section-card-list>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="mat-spinner-container">
+      <mat-spinner diameter="100"></mat-spinner>
+    </div>
+  </ng-template>
 </div>

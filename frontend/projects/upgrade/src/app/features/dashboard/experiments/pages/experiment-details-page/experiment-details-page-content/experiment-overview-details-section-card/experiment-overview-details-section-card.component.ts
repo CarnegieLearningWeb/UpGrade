@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
@@ -8,7 +8,11 @@ import {
 import { ExperimentOverviewDetailsFooterComponent } from './experiment-overview-details-footer/experiment-overview-details-footer.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { IMenuButtonItem } from 'upgrade_types';
+import { IMenuButtonItem, EXPERIMENT_SEARCH_KEY } from 'upgrade_types';
+import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
+import { Observable } from 'rxjs';
+import { Experiment } from '../../../../../../../core/experiments/store/experiments.model';
+import { Router } from '@angular/router';
 
 export enum EXPERIMENT_DETAILS_PAGE_ACTIONS {
   EDIT = 'edit',
@@ -34,12 +38,24 @@ export enum EXPERIMENT_DETAILS_PAGE_ACTIONS {
   styleUrl: './experiment-overview-details-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExperimentOverviewDetailsSectionCardComponent {
+export class ExperimentOverviewDetailsSectionCardComponent implements OnInit {
   @Input() isSectionCardExpanded = true;
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
 
-  // TODO: Add experiment data input
-  // @Input() data: Experiment | null = null;
+  experiment$: Observable<Experiment> = this.experimentService.selectedExperiment$;
+  experimentOverviewDetails$ = this.experimentService.selectedExperimentOverviewDetails$;
+
+  constructor(private experimentService: ExperimentService, private router: Router) {}
+
+  ngOnInit(): void {
+    // Any initialization logic can go here
+  }
+
+  filterExperimentByChips(tagValue: string) {
+    this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.TAG);
+    this.experimentService.setSearchString(tagValue);
+    this.router.navigate(['/experiments']);
+  }
 
   menuButtonItems: IMenuButtonItem[] = [
     {

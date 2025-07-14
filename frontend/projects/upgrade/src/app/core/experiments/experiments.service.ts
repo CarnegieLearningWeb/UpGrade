@@ -18,6 +18,7 @@ import {
   selectIsLoadingExperiment,
   selectIsLoadingExperimentDetailStats,
   selectSelectedExperiment,
+  selectExperimentOverviewDetails,
   selectSearchExperimentParams,
   selectRootTableState,
   selectAllDecisionPoints,
@@ -69,6 +70,7 @@ export class ExperimentService {
   isPollingExperimentDetailStats$ = this.store$.pipe(select(selectIsPollingExperimentDetailStats));
   isExperimentsExportLoading$ = this.store$.pipe(select(selectExperimentsExportLoading));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
+  selectedExperimentOverviewDetails$ = this.store$.pipe(select(selectExperimentOverviewDetails));
   searchParams$ = this.store$.pipe(select(selectSearchExperimentParams));
   selectRootTableState$ = this.store$.select(selectRootTableState);
   allDecisionPoints$ = this.store$.pipe(select(selectAllDecisionPoints));

@@ -25,14 +25,21 @@ export const selectSelectedExperiment = createSelector(
   selectRouterState,
   selectExperimentState,
   (routerState, experimentState) => {
-    if (routerState?.state && experimentState?.entities && experimentState?.stats) {
-      const {
-        state: { params },
-      } = routerState;
-      return experimentState.stats[params.experimentId]
-        ? { ...experimentState.entities[params.experimentId], stat: experimentState.stats[params.experimentId] }
-        : { ...experimentState.entities[params.experimentId], stat: null };
+    // be very defensive here to make sure routerState is correct
+    const experimentId = routerState?.state?.params?.experimentId;
+    if (experimentId && experimentState?.entities) {
+      const experiment = experimentState.entities[experimentId];
+
+      // Return undefined if experiment doesn't exist yet
+      if (!experiment) {
+        return undefined;
+      }
+
+      // Merge with stats if available
+      const stat = experimentState.stats?.[experimentId] || null;
+      return { ...experiment, stat };
     }
+    return undefined;
   }
 );
 
@@ -137,6 +144,16 @@ export const selectExperimentQueries = createSelector(selectExperimentState, (st
   }
   return null;
 });
+
+export const selectExperimentOverviewDetails = createSelector(selectSelectedExperiment, (experiment) => ({
+  ['Description']: experiment?.description,
+  ['App Context']: experiment?.context?.[0],
+  ['Experiment Type']: experiment?.type,
+  ['Unit of Assignment']: experiment?.assignmentUnit,
+  ['Consistency Rule']: experiment?.consistencyRule,
+  ['Assignment Algorithm']: experiment?.assignmentAlgorithm,
+  ['Tags']: experiment?.tags,
+}));
 
 export const selectIsPollingExperimentDetailStats = createSelector(
   selectExperimentState,

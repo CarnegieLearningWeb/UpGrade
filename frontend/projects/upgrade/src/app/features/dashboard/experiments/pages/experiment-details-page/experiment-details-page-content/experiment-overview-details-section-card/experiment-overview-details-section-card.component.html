@@ -1,9 +1,12 @@
-<app-common-section-card class="details-overview-card">
+<app-common-section-card class="details-overview-card" *ngIf="experiment$ | async as experiment">
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
-    [title]="'Area - Question Type'"
-    [subtitle]="'experiments.overview-details.subtitle.text' | translate"
+    [title]="experiment.name"
+    [createdAt]="experiment.createdAt"
+    [updatedAt]="experiment.updatedAt"
+    [versionNumber]="experiment.versionNumber"
+    [chipClass]="experiment.state"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
@@ -18,9 +21,10 @@
 
   <!-- content -->
   <ng-container content>
-    <app-common-section-card-overview-details>
-      <!-- TODO: Add experiment overview details data -->
-    </app-common-section-card-overview-details>
+    <app-common-section-card-overview-details
+      [data]="experimentOverviewDetails$ | async"
+      (tagItemClick)="filterExperimentByChips($event)"
+    ></app-common-section-card-overview-details>
   </ng-container>
 
   <!-- footer -->
