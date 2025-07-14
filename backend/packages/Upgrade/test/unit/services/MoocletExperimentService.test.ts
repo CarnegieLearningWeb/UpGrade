@@ -44,7 +44,7 @@ import {
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { MetricService } from '../../../src/api/services/MetricService';
 import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsService';
-import { ExperimentSchedulerService } from 'src/api/services/ExperimentSchedulerService';
+import { ExperimentSchedulerService } from '../../../src/api/services/ExperimentSchedulerService';
 
 const mockDataSource = {
   initialize: jest.fn(),
