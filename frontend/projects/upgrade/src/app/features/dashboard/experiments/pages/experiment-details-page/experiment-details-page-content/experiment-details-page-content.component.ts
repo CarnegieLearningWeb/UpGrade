@@ -38,6 +38,7 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
 })
 export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy {
   isSectionCardExpanded = true;
+  activeTabIndex = 0; // 0 for Design, 1 for Data
   experiment$: Observable<Experiment>;
   experimentIdSub: Subscription;
 
@@ -77,6 +78,10 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
 
   onSectionCardExpandChange(expanded: boolean): void {
     this.isSectionCardExpanded = expanded;
+  }
+
+  onTabChange(tabIndex: number): void {
+    this.activeTabIndex = tabIndex;
   }
 
   ngOnDestroy() {

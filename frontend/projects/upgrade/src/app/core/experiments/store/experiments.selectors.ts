@@ -2,6 +2,13 @@ import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { selectAll } from './experiments.reducer';
 import { EXPERIMENT_SEARCH_KEY, ExperimentState } from './experiments.model';
 import { selectRouterState } from '../../core.state';
+import {
+  ASSIGNMENT_UNIT,
+  ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
+  CONDITION_ORDER_DISPLAY_MAP,
+  CONSISTENCY_RULE_DISPLAY_MAP,
+  ASSIGNMENT_UNIT_DISPLAY_MAP,
+} from 'upgrade_types';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
 
@@ -145,15 +152,31 @@ export const selectExperimentQueries = createSelector(selectExperimentState, (st
   return null;
 });
 
-export const selectExperimentOverviewDetails = createSelector(selectSelectedExperiment, (experiment) => ({
-  ['Description']: experiment?.description,
-  ['App Context']: experiment?.context?.[0],
-  ['Experiment Type']: experiment?.type,
-  ['Unit of Assignment']: experiment?.assignmentUnit,
-  ['Consistency Rule']: experiment?.consistencyRule,
-  ['Assignment Algorithm']: experiment?.assignmentAlgorithm,
-  ['Tags']: experiment?.tags,
-}));
+export const selectExperimentOverviewDetails = createSelector(selectSelectedExperiment, (experiment) => {
+  // Format Unit of Assignment based on the assignment unit type
+  const formatUnitOfAssignment = (): string => {
+    const baseUnit = ASSIGNMENT_UNIT_DISPLAY_MAP[experiment?.assignmentUnit];
+
+    if (experiment?.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
+      return `${baseUnit} (${experiment.group})`;
+    }
+    if (experiment?.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+      return `${baseUnit} (${CONDITION_ORDER_DISPLAY_MAP[experiment.conditionOrder]})`;
+    }
+    return baseUnit;
+  };
+
+  return {
+    ['Description']: experiment?.description,
+    ['App Context']: experiment?.context?.[0],
+    ['Experiment Type']: experiment?.type,
+    ['Unit Of Assignment']: formatUnitOfAssignment(),
+    ['Consistency Rule']: CONSISTENCY_RULE_DISPLAY_MAP[experiment?.consistencyRule] || experiment?.consistencyRule,
+    ['Assignment Algorithm']:
+      ASSIGNMENT_ALGORITHM_DISPLAY_MAP[experiment?.assignmentAlgorithm] || experiment?.assignmentAlgorithm,
+    ['Tags']: experiment?.tags,
+  };
+});
 
 export const selectIsPollingExperimentDetailStats = createSelector(
   selectExperimentState,

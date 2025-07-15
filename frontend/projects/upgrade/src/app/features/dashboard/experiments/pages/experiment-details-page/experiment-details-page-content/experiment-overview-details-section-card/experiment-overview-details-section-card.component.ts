@@ -41,6 +41,7 @@ export enum EXPERIMENT_DETAILS_PAGE_ACTIONS {
 export class ExperimentOverviewDetailsSectionCardComponent implements OnInit {
   @Input() isSectionCardExpanded = true;
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
+  @Output() tabChange = new EventEmitter<number>();
 
   experiment$: Observable<Experiment> = this.experimentService.selectedExperiment$;
   experimentOverviewDetails$ = this.experimentService.selectedExperimentOverviewDetails$;
@@ -93,6 +94,10 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit {
   onSectionCardExpandChange(expanded: boolean): void {
     this.isSectionCardExpanded = expanded;
     this.sectionCardExpandChange.emit(expanded);
+  }
+
+  onSelectedTabChange(tabIndex: number): void {
+    this.tabChange.emit(tabIndex);
   }
 
   onMenuButtonItemClick(action: EXPERIMENT_DETAILS_PAGE_ACTIONS): void {

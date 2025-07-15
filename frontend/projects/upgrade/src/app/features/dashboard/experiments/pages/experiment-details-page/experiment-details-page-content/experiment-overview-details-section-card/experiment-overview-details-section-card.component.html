@@ -28,5 +28,8 @@
   </ng-container>
 
   <!-- footer -->
-  <app-experiment-overview-details-footer footer></app-experiment-overview-details-footer>
+  <app-experiment-overview-details-footer
+    footer
+    (tabChange)="onSelectedTabChange($event)"
+  ></app-experiment-overview-details-footer>
 </app-common-section-card>

@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
-import { ExperimentService } from '../../../../../../../../core/experiments/experiments.service';
 
 @Component({
   selector: 'app-experiment-overview-details-footer',
@@ -10,15 +9,18 @@ import { ExperimentService } from '../../../../../../../../core/experiments/expe
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperimentOverviewDetailsFooterComponent implements OnInit {
-  tabLabels = ['Design', 'Data'];
+  @Output() tabChange = new EventEmitter<number>();
 
-  constructor(private experimentService: ExperimentService) {}
+  tabLabels = [
+    { label: 'Design', disabled: false },
+    { label: 'Data', disabled: false },
+  ];
 
   onSelectedTabChange(selectedTabIndex: number): void {
-    // this.experimentService.setActiveDetailsTab(selectedTabIndex);
+    this.tabChange.emit(selectedTabIndex);
   }
 
   ngOnInit(): void {
-    // this.experimentService.setActiveDetailsTab(0);
+    // Initialize with the first tab
   }
 }

@@ -4,17 +4,35 @@ export enum CONSISTENCY_RULE {
   GROUP = 'group',
 }
 
+export const CONSISTENCY_RULE_DISPLAY_MAP = {
+  [CONSISTENCY_RULE.INDIVIDUAL]: 'Individual',
+  [CONSISTENCY_RULE.EXPERIMENT]: 'Experiment',
+  [CONSISTENCY_RULE.GROUP]: 'Group',
+};
+
 export enum ASSIGNMENT_UNIT {
   INDIVIDUAL = 'individual',
   GROUP = 'group',
   WITHIN_SUBJECTS = 'within-subjects',
 }
 
+export const ASSIGNMENT_UNIT_DISPLAY_MAP = {
+  [ASSIGNMENT_UNIT.INDIVIDUAL]: 'Individual',
+  [ASSIGNMENT_UNIT.GROUP]: 'Group',
+  [ASSIGNMENT_UNIT.WITHIN_SUBJECTS]: 'Within-subjects',
+};
+
 export enum CONDITION_ORDER {
   RANDOM = 'random',
   RANDOM_ROUND_ROBIN = 'random round robin',
   ORDERED_ROUND_ROBIN = 'ordered round robin',
 }
+
+export const CONDITION_ORDER_DISPLAY_MAP = {
+  [CONDITION_ORDER.RANDOM]: 'Random',
+  [CONDITION_ORDER.RANDOM_ROUND_ROBIN]: 'Random Round Robin',
+  [CONDITION_ORDER.ORDERED_ROUND_ROBIN]: 'Ordered Round Robin',
+};
 
 export enum ASSIGNMENT_ALGORITHM {
   RANDOM = 'random',
