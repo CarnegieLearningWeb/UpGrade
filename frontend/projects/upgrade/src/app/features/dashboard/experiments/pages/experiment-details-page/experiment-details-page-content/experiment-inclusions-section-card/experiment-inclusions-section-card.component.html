@@ -1,18 +1,29 @@
-<app-common-section-card>
+<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
-    [title]="'experiments.inclusions.title.text' | translate"
-    [subtitle]="'experiments.inclusions.subtitle.text' | translate"
+    [title]="'experiments.details.inclusions.card.title.text' | translate"
+    [subtitle]="'experiments.details.inclusions.card.subtitle.text' | translate"
+    [tableRowCount]="rowCountWithInclude$ | async"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="true"
-    [primaryButtonText]="'experiments.inclusions.add.button.text' | translate"
-    [isSectionCardExpanded]="isSectionCardExpanded"
+    [showSlideToggle]="true"
+    [slideToggleText]="'experiments.details.inclusions.include-all.toggle.text' | translate"
+    [slideToggleChecked]="experiment.filterMode === FILTER_MODE.INCLUDE_ALL"
+    [slideToggleDisabled]="!(permissions$ | async)?.experiments.update"
+    [showPrimaryButton]="(permissions$ | async)?.experiments.update"
+    [primaryButtonText]="'experiments.details.add-include-list.button.text' | translate"
+    [showMenuButton]="(permissions$ | async)?.experiments.update"
+    [menuButtonItems]="menuButtonItems"
+    [isSectionCardExpanded]="isSectionCardExpanded && experiment.filterMode !== FILTER_MODE.INCLUDE_ALL"
+    [primaryActionBtnDisabled]="experiment.filterMode === FILTER_MODE.INCLUDE_ALL"
+    [sectionCardExpandBtnDisabled]="experiment.filterMode === FILTER_MODE.INCLUDE_ALL"
     (primaryButtonClick)="onAddInclusionClick()"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
+    (slideToggleChange)="onSlideToggleChange($event, experiment.id)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
@@ -20,6 +31,6 @@
   <!-- content -->
   <app-experiment-inclusions-table
     content
-    *ngIf="isSectionCardExpanded"
+    *ngIf="isSectionCardExpanded && experiment.filterMode !== FILTER_MODE.INCLUDE_ALL"
   ></app-experiment-inclusions-table>
 </app-common-section-card>

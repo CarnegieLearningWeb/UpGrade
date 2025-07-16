@@ -60,32 +60,32 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit {
 
   menuButtonItems: IMenuButtonItem[] = [
     {
-      label: 'experiments.details.menu-button.edit-experiment.text',
+      label: 'experiments.details.edit-experiment.menu-item.text',
       action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT,
       disabled: false, // TODO: Add permission check
     },
     {
-      label: 'experiments.details.menu-button.duplicate-experiment.text',
+      label: 'experiments.details.duplicate-experiment.menu-item.text',
       action: EXPERIMENT_DETAILS_PAGE_ACTIONS.DUPLICATE,
       disabled: false, // TODO: Add permission check
     },
     {
-      label: 'experiments.details.menu-button.export-experiment-design.text',
+      label: 'experiments.details.export-experiment-design.menu-item.text',
       action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
       disabled: false,
     },
     {
-      label: 'experiments.details.menu-button.email-data.text',
+      label: 'experiments.details.email-experiment-data.menu-item.text',
       action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
       disabled: true, // TODO: Implement email data functionality
     },
     {
-      label: 'experiments.details.menu-button.archive.text',
+      label: 'experiments.details.archive-experiment.menu-item.text',
       action: EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE,
       disabled: true, // TODO: Implement archive functionality
     },
     {
-      label: 'experiments.details.menu-button.delete-experiment.text',
+      label: 'experiments.details.delete-experiment.menu-item.text',
       action: EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE,
       disabled: false, // TODO: Add permission check and status check
     },

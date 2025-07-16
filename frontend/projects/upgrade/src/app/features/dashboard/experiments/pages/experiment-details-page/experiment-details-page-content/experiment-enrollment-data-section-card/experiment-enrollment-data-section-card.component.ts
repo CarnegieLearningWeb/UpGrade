@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
@@ -6,7 +6,13 @@ import {
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { IMenuButtonItem } from 'upgrade_types';
 import { ExperimentEnrollmentDataComponent } from './experiment-enrollment-data/experiment-enrollment-data.component';
+import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
+import { Observable } from 'rxjs';
+import { Experiment, EXPERIMENT_BUTTON_ACTION } from '../../../../../../../core/experiments/store/experiments.model';
+import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
+import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-experiment-enrollment-data-section-card',
@@ -22,12 +28,38 @@ import { ExperimentEnrollmentDataComponent } from './experiment-enrollment-data/
   styleUrl: './experiment-enrollment-data-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExperimentEnrollmentDataSectionCardComponent {
+export class ExperimentEnrollmentDataSectionCardComponent implements OnInit {
   @Input() isSectionCardExpanded = true;
 
-  // TODO: Add experiment data input and ExperimentEnrollmentDataComponent integration
+  permissions$: Observable<UserPermission>;
+  selectedExperiment$ = this.experimentService.selectedExperiment$;
 
-  onSectionCardExpandChange(expanded: boolean): void {
-    // TODO: Emit to parent component if needed
+  menuButtonItems: IMenuButtonItem[] = [
+    {
+      label: 'experiments.details.export-enrollment-data.menu-item.text',
+      action: EXPERIMENT_BUTTON_ACTION.EXPORT_ENROLLMENT_DATA,
+      disabled: false,
+    },
+  ];
+
+  constructor(private experimentService: ExperimentService, private authService: AuthService) {}
+
+  ngOnInit() {
+    this.permissions$ = this.authService.userPermissions$;
+  }
+
+  onMenuButtonItemClick(event: string, experiment: Experiment): void {
+    switch (event) {
+      case EXPERIMENT_BUTTON_ACTION.EXPORT_ENROLLMENT_DATA:
+        // TODO: Implement export enrollment data functionality when experiment service methods are available
+        console.log('Export enrollment data clicked for experiment:', experiment.id);
+        break;
+      default:
+        console.log('Unknown action:', event);
+    }
+  }
+
+  onSectionCardExpandChange(isSectionCardExpanded: boolean): void {
+    this.isSectionCardExpanded = isSectionCardExpanded;
   }
 }

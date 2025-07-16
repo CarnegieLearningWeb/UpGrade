@@ -1,18 +1,22 @@
-<app-common-section-card>
+<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
-    [title]="'experiments.conditions.title.text' | translate"
-    [subtitle]="'experiments.conditions.subtitle.text' | translate"
+    [title]="'experiments.details.conditions.card.title.text' | translate"
+    [subtitle]="'experiments.details.conditions.card.subtitle.text' | translate"
+    [tableRowCount]="tableRowCount"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="true"
-    [primaryButtonText]="'experiments.conditions.add.button.text' | translate"
+    [showPrimaryButton]="(permissions$ | async)?.experiments.update"
+    [primaryButtonText]="'experiments.details.add-condition.button.text' | translate"
+    [showMenuButton]="(permissions$ | async)?.experiments.update"
+    [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddConditionClick()"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
