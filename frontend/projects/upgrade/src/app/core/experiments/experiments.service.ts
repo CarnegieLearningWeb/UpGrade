@@ -11,6 +11,7 @@ import {
   DATE_RANGE,
   ExperimentLocalStorageKeys,
   EXPERIMENT_STATE,
+  AddExperimentRequest,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -112,11 +113,11 @@ export class ExperimentService {
     return this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting }));
   }
 
-  createNewExperiment(experiment: Experiment) {
+  createNewExperiment(experiment: AddExperimentRequest) {
     //const experiment = this.forExperimentWithPayloadObj(experimentWithPayloadAsString);
     this.store$.dispatch(
       experimentAction.actionUpsertExperiment({
-        experiment,
+        experiment: experiment as unknown as Experiment,
         actionType: UpsertExperimentType.CREATE_NEW_EXPERIMENT,
       })
     );

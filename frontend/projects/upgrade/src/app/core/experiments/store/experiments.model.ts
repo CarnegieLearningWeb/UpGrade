@@ -350,25 +350,49 @@ export interface ExperimentFormData {
 }
 
 export interface AddExperimentRequest {
+  // Required fields from form
   name: string;
-  description: string;
+  description?: string; // @IsOptional in DTO
   context: string[];
   type: ExperimentDesignTypes;
   assignmentUnit: ASSIGNMENT_UNIT;
-  consistencyRule: CONSISTENCY_RULE;
-  conditionOrder?: CONDITION_ORDER;
-  assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
-  stratificationFactor?: { stratificationFactorName: string } | null;
-  group?: string;
-  tags: string[];
+  consistencyRule?: CONSISTENCY_RULE; // Conditional validation - ValidateIf for non-WITHIN_SUBJECTS
+  assignmentAlgorithm?: ASSIGNMENT_ALGORITHM; // @IsOptional in DTO
   state: EXPERIMENT_STATE;
   filterMode: FILTER_MODE;
-  // TODO: We might need to add other missing props (see Experiment interface for reference)
+  tags: string[];
+
+  // Optional fields from form
+  conditionOrder?: CONDITION_ORDER; // ValidateIf for WITHIN_SUBJECTS
+  stratificationFactor?: { stratificationFactorName: string } | null;
+  group?: string;
+
+  // Backend required fields with defaults
+  postExperimentRule: POST_EXPERIMENT_RULE;
+  enrollmentCompleteCondition?: Partial<any>; // @IsOptional in DTO
+  startOn?: string; // @IsOptional @IsDateString
+  endOn?: string; // @IsOptional @IsDateString
+  revertTo?: string; // @IsOptional
+  conditions: any[]; // @IsNotEmpty @IsArray - must be array, not undefined
+  partitions: any[]; // @IsNotEmpty @IsArray - must be array, not undefined
+  factors?: any[]; // @IsOptional @IsArray
+  conditionPayloads?: any[]; // @IsOptional @IsArray
+  queries?: any[]; // @IsOptional @IsArray
+  experimentSegmentInclusion?: any[]; // @IsOptional @IsArray
+  experimentSegmentExclusion?: any[]; // @IsOptional @IsArray
+  stateTimeLogs?: any[]; // @IsOptional @IsArray
+  backendVersion?: string; // @IsOptional
+  moocletPolicyParameters?: any; // Conditional validation
+  rewardMetricKey?: string; // Conditional validation
 }
 
-// so that we can throw an error if we try to update the id
-export interface UpdateExperimentRequest extends AddExperimentRequest {
+// UpdateExperimentRequest should extend AddExperimentRequest but override with id
+export interface UpdateExperimentRequest
+  extends Omit<AddExperimentRequest, 'experimentSegmentInclusion' | 'experimentSegmentExclusion'> {
   readonly id: string;
+  // These fields might be different in updates - using the original types from Experiment
+  experimentSegmentInclusion?: SegmentNew;
+  experimentSegmentExclusion?: SegmentNew;
 }
 
 export const EXPERIMENT_ROOT_COLUMN_NAMES = {

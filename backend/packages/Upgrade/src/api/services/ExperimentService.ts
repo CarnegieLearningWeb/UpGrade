@@ -1234,22 +1234,22 @@ export class ExperimentService {
 
       // creating condition docs
       const conditionDocsToSave: Array<Partial<Omit<ExperimentCondition, 'levelCombinationElements'>>> =
-        conditions &&
-        conditions.length > 0 &&
-        conditions.map((condition: ConditionValidator) => {
-          condition.id = condition.id || uuid();
-          return { ...condition, experiment: experimentDoc };
-        });
+        conditions && conditions.length > 0
+          ? conditions.map((condition: ConditionValidator) => {
+              condition.id = condition.id || uuid();
+              return { ...condition, experiment: experimentDoc };
+            })
+          : [];
 
       // creating decision point docs
       const decisionPointDocsToSave: Array<Partial<DecisionPoint>> =
-        partitions &&
-        partitions.length > 0 &&
-        partitions.map((decisionPoint) => {
-          decisionPoint.id = decisionPoint.id || uuid();
-          decisionPoint.description = decisionPoint.description || '';
-          return { ...decisionPoint, experiment: experimentDoc };
-        });
+        partitions && partitions.length > 0
+          ? partitions.map((decisionPoint) => {
+              decisionPoint.id = decisionPoint.id || uuid();
+              decisionPoint.description = decisionPoint.description || '';
+              return { ...decisionPoint, experiment: experimentDoc };
+            })
+          : [];
 
       if (!conditionPayloads) {
         experiment = { ...experiment, conditionPayloads: [] };
@@ -1302,9 +1302,12 @@ export class ExperimentService {
       let queryDocs: any;
       try {
         [conditionDocs, decisionPointDocs, conditionPayloadDoc, queryDocs] = await Promise.all([
-          this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
-          this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
-
+          conditionDocsToSave.length > 0
+            ? this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager)
+            : (Promise.resolve([]) as any),
+          decisionPointDocsToSave.length > 0
+            ? this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager)
+            : (Promise.resolve([]) as any),
           conditionPayloadDocToSave.length > 0
             ? this.conditionPayloadRepository.insertConditionPayload(
                 conditionPayloadDocToSave,
