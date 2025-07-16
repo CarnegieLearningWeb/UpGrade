@@ -36,7 +36,6 @@ import { CacheService } from './CacheService';
 import { ErrorService } from './ErrorService';
 import { PreviewUserService } from './PreviewUserService';
 import { QueryService } from './QueryService';
-import { ScheduledJobService } from './ScheduledJobService';
 import { SegmentService } from './SegmentService';
 import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletVersionConditionMap } from '../models/MoocletVersionConditionMap';
@@ -58,6 +57,7 @@ import { MetricService } from './MetricService';
 import { Metric } from '../models/Metric';
 import { MoocletRewardsService } from './MoocletRewardsService';
 import { env } from '../../env';
+import { ExperimentSchedulerService } from './ExperimentSchedulerService';
 
 export interface SyncCreateParams {
   experimentDTO: ExperimentDTO;
@@ -124,7 +124,7 @@ export class MoocletExperimentService extends ExperimentService {
     @InjectDataSource() dataSource: DataSource,
     previewUserService: PreviewUserService,
     segmentService: SegmentService,
-    scheduledJobService: ScheduledJobService,
+    experimentSchedulerService: ExperimentSchedulerService,
     errorService: ErrorService,
     cacheService: CacheService,
     queryService: QueryService,
@@ -155,7 +155,7 @@ export class MoocletExperimentService extends ExperimentService {
       dataSource,
       previewUserService,
       segmentService,
-      scheduledJobService,
+      experimentSchedulerService,
       errorService,
       cacheService,
       queryService,

@@ -15,7 +15,7 @@ import { ExperimentConditionRepository } from '../repositories/ExperimentConditi
 import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { DecisionPoint } from '../models/DecisionPoint';
-import { ScheduledJobService } from './ScheduledJobService';
+import { ExperimentSchedulerService } from './ExperimentSchedulerService';
 import { In, EntityManager, DataSource } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
@@ -127,7 +127,7 @@ export class ExperimentService {
     @InjectDataSource() protected dataSource: DataSource,
     protected previewUserService: PreviewUserService,
     protected segmentService: SegmentService,
-    protected scheduledJobService: ScheduledJobService,
+    protected experimentSchedulerService: ExperimentSchedulerService,
     protected errorService: ErrorService,
     protected cacheService: CacheService,
     protected queryService: QueryService,
@@ -577,8 +577,8 @@ export class ExperimentService {
     const experimentRepo = entityManager ? entityManager.getRepository(Experiment) : this.experimentRepository;
     logger.info({ message: `Updating experiment schedules for experiment ${experimentId}` });
     const experiment = await experimentRepo.findByIds([experimentId]);
-    if (experiment.length > 0 && this.scheduledJobService) {
-      await this.scheduledJobService.updateExperimentSchedules(experiment[0], logger, entityManager);
+    if (experiment.length > 0) {
+      await this.experimentSchedulerService.updateExperimentSchedules(experiment[0], logger, entityManager);
     }
   }
 
@@ -715,9 +715,7 @@ export class ExperimentService {
     const oldConditionPayloads = oldExperiment.conditionPayloads;
 
     // create schedules to start experiment and end experiment
-    if (this.scheduledJobService) {
-      this.scheduledJobService.updateExperimentSchedules(experiment as any, logger);
-    }
+    this.experimentSchedulerService.updateExperimentSchedules(experiment as any, logger);
 
     return entityManager
       .transaction(async (transactionalEntityManager) => {
@@ -1491,9 +1489,7 @@ export class ExperimentService {
     });
 
     // create schedules to start experiment and end experiment
-    if (this.scheduledJobService) {
-      await this.scheduledJobService.updateExperimentSchedules(createdExperiment, logger);
-    }
+    await this.experimentSchedulerService.updateExperimentSchedules(createdExperiment, logger);
 
     // add auditLog here
     const createAuditLogData: AuditLogData = {
