@@ -104,6 +104,21 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           : this.allMetrics.filter((metric) =>
               metric.context?.includes(this.currentContext || this.experimentInfo?.context)
             );
+      this.filterOutRewardMetricKeysFromOtherExperiments();
+    });
+  }
+
+  /**
+   * If the metric key ends with '_REWARD', it should only show the reward metric for the current experiment.
+   * This function will work regardless of whether mooclet is enabled or not.
+   */
+  filterOutRewardMetricKeysFromOtherExperiments() {
+    // Filter out reward metric keys from other experiments
+    this.options = this.options.filter((option) => {
+      if (option.key.endsWith('_REWARD')) {
+        return option.key === this.experimentService.getRewardMetricKey(this.experimentInfo.name);
+      }
+      return true;
     });
   }
 
