@@ -385,14 +385,12 @@
   "experiments.upsert-experiment-modal.tags-label.text": "Tags (optional)",
   "experiments.upsert-experiment-modal.tags-placeholder.text": "Tags separated by commas",
   "experiments.delete-modal.warning-message.text": "Are you sure you want to delete ",
-
   "experiments.details.edit-experiment.menu-item.text": "Edit Experiment",
   "experiments.details.duplicate-experiment.menu-item.text": "Duplicate Experiment",
   "experiments.details.export-experiment-design.menu-item.text": "Export Experiment Design",
   "experiments.details.email-experiment-data.menu-item.text": "Email Experiment Data",
-  "experiments.details.delete-experiment.menu-item.text": "Delete Experiment",
   "experiments.details.archive-experiment.menu-item.text": "Archive Experiment",
-
+  "experiments.details.delete-experiment.menu-item.text": "Delete Experiment",
   "experiments.details.decision-points.card.title.text": "Decision Points",
   "experiments.details.decision-points.card.subtitle.text": "Define decision points for this experiment.",
   "experiments.details.add-decision-point.button.text": "Add Decision Point",
