@@ -1030,10 +1030,12 @@ export class MoocletExperimentService extends ExperimentService {
 
       // delete the mooclet resources. If this fails, the transaction will abort and the upgrade experiment will not be deleted,
       // but the Mooclet resources may not be deleted either
-      await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
-
+      const removedResources = await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
+      const deleteMessage = removedResources
+        ? 'Upgrade and Mooclet experiment resources deleted successfully'
+        : 'Mooclet resources deletion failed, but upgrade experiment deleted successfully';
       logger.debug({
-        message: 'Upgrade and Mooclet experiment resources deleted successfully',
+        message: deleteMessage,
         deleteResponse,
       });
 
@@ -1153,7 +1155,7 @@ export class MoocletExperimentService extends ExperimentService {
   public async orchestrateDeleteMoocletResources(
     moocletExperimentRef: MoocletExperimentRef,
     logger: UpgradeLogger
-  ): Promise<void> {
+  ): Promise<boolean> {
     try {
       if (!moocletExperimentRef) {
         throw new Error(`MoocletExperimentRef not defined`);
@@ -1189,6 +1191,7 @@ export class MoocletExperimentService extends ExperimentService {
       }
 
       logger.info({ message: '[Mooclet Deletion]: Completed deletion of Mooclet resources', moocletExperimentRef });
+      return true; // Return true to indicate successful deletion of all resources
     } catch (err) {
       const error = {
         message:
@@ -1197,13 +1200,8 @@ export class MoocletExperimentService extends ExperimentService {
         moocletExperimentRef: moocletExperimentRef,
       };
 
-      logger.error({
-        message:
-          '[Mooclet Deletion]: Failed to delete Mooclet resources, please check manually for out of sync resources',
-        error: err,
-        moocletExperimentRef: moocletExperimentRef,
-      });
-      throw new Error(JSON.stringify(error));
+      logger.error(error);
+      return false; // Return false to indicate failure, but do not throw an error to allow the transaction to complete
     }
   }
 

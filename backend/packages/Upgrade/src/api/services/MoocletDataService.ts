@@ -352,6 +352,7 @@ export class MoocletDataService {
         }
       } catch (err) {
         logger.error({ message: `Error fetching data from Mooclets API: ${err}` });
+        throw new Error(`Error fetching data from Mooclets API: ${err}`);
       }
     }
   }
