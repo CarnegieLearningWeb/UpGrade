@@ -109,21 +109,28 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   /**
-   * If the metric key ends with '_REWARD', it should only show the reward metric for the current experiment.
+   * No *_REWARD metric keys should be shown on Add Experiment flow.
+   * Only the current experiment's reward metric key should be shown on Edit Experiment flow.
    * This function will work regardless of whether mooclet is enabled or not.
    */
   filterOutRewardMetricKeysFromOtherExperiments() {
     // Filter out reward metric keys from other experiments
     this.options = this.options.filter((option) => {
       if (option.key.endsWith('_REWARD')) {
-        return option.key === this.experimentService.getRewardMetricKey(this.experimentInfo.name);
+        const result =
+          this.experimentInfo?.name &&
+          option.key === this.experimentService.getRewardMetricKey(this.experimentInfo.name);
+        return result;
+      } else {
+        return true;
       }
-      return true;
     });
   }
 
   ngOnInit() {
-    // TODO: Invalidate the global metric rows whenever the unit of assignment updates to Within-subjects
+    console.log('>>> Monitored Metrics Component Initialized');
+    // TODO: Invalid
+    // ate the global metric rows whenever the unit of assignment updates to Within-subjects
     this.experimentDesignStepperService.currentAssignmentUnit$.subscribe((unit) => {
       if (unit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
         // console.log('this.queries:', this.queries);
