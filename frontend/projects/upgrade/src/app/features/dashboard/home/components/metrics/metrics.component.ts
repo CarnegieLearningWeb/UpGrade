@@ -117,10 +117,16 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     // Filter out reward metric keys from other experiments
     this.options = this.options.filter((option) => {
       if (option.key.endsWith('_REWARD')) {
-        const result =
-          this.experimentInfo?.name &&
-          option.key === this.experimentService.getRewardMetricKey(this.experimentInfo.name);
-        return result;
+        const isAddMode = !this.experimentInfo?.name;
+        if (isAddMode) {
+          // Exclude all reward keys if in add mode
+          return false;
+        } else {
+          // Else, exclude all reward keys except the current experiment's reward key
+          const isCurrentExperimentRewardKey =
+            option.key === this.experimentService.getRewardMetricKey(this.experimentInfo.name);
+          return isCurrentExperimentRewardKey;
+        }
       } else {
         return true;
       }
