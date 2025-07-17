@@ -13,7 +13,21 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
+    <div class="explainer-box">
+      <span class="ft-14-400"
+        >Metrics are added by context. Each JSON metric schema can be added here individually, or in an array. Reference
+        example placeholder value or
+        <a
+          class="learn-more-link"
+          href="https://upgrade-platform.gitbook.io/upgrade-documentation/developer-guide/reference/metrics"
+          target="_blank"
+          rel="noopener noreferrer"
+          >learn more.</a
+        ></span
+      >
+    </div>
   </div>
+
   <div class="json-editor-container">
     <json-editor #metricsEditor [options]="options"></json-editor>
   </div>
