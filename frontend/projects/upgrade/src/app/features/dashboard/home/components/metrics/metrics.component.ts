@@ -134,9 +134,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
-    console.log('>>> Monitored Metrics Component Initialized');
-    // TODO: Invalid
-    // ate the global metric rows whenever the unit of assignment updates to Within-subjects
+    // TODO: Invalidate the global metric rows whenever the unit of assignment updates to Within-subjects
     this.experimentDesignStepperService.currentAssignmentUnit$.subscribe((unit) => {
       if (unit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
         // console.log('this.queries:', this.queries);
