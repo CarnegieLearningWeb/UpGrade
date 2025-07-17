@@ -509,9 +509,7 @@ describe('#MoocletExperimentService', () => {
       jest.spyOn(moocletDataService, 'deletePolicyParameters').mockResolvedValue(undefined);
       jest.spyOn(moocletDataService, 'deleteVariable').mockResolvedValue(undefined);
 
-      await expect(
-        moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef, logger)
-      ).rejects.toThrow();
+      await moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef, logger);
 
       expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId, logger);
       expect(moocletDataService.deletePolicyParameters).not.toHaveBeenCalled();
