@@ -403,6 +403,17 @@ $font-size-small: 15px;
       margin-right: 20px;
     }
   }
+
+  .reward-metric-description {
+    padding: 16px 8px 0;
+    color: var(--black-2);
+
+    .reward-metric-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+  }
 }
 
 ::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-selected {
