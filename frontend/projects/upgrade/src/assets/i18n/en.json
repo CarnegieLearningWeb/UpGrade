@@ -370,7 +370,7 @@
   "experiments.upsert-experiment-modal.app-context-hint.text": "The App Context indicates where the experiment will run, known to UpGrade.",
   "experiments.upsert-experiment-modal.app-context-warning.text": "Updating the App Context will clear the existing include and exclude lists.",
   "experiments.upsert-experiment-modal.experiment-type-simple-description.text": "Conditions are independent.",
-  "experiments.upsert-experiment-modal.experiment-type-factorial-description.text": "Conditions vary on two or more dimensions.",
+  "experiments.upsert-experiment-modal.experiment-type-factorial-description.text": "Conditions vary on two or more dimensions. (Coming soon)",
   "experiments.upsert-experiment-modal.unit-of-assignment-individual-description.text": "Condition will be assigned individually.",
   "experiments.upsert-experiment-modal.unit-of-assignment-group-description.text": "Condition will be assigned by group (e.g., school, class, teacher).",
   "experiments.upsert-experiment-modal.group-type-hint.text": "Select the group type for group-based assignment.",

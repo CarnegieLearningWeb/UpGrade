@@ -102,10 +102,12 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     {
       value: ExperimentDesignTypes.SIMPLE,
       description: 'experiments.upsert-experiment-modal.experiment-type-simple-description.text',
+      disabled: false,
     },
     {
       value: ExperimentDesignTypes.FACTORIAL,
       description: 'experiments.upsert-experiment-modal.experiment-type-factorial-description.text',
+      disabled: true, // Disabled for v2 - will be enabled in future versions
     },
   ];
 
