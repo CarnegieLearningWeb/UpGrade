@@ -2134,7 +2134,7 @@ export class ExperimentService {
 
         const userIds = list.segment.individualForSegment.map((individual) => individual.userId);
 
-        const subSegmentIds = list.segment.subSegments.map((subSegment) => subSegment.id);
+        const subSegmentIds = list.segment.subSegments?.map((subSegment) => subSegment.id) || [];
 
         const groups = list.segment.groupForSegment.map((group) => {
           return { type: group.type, groupId: group.groupId };
