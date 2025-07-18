@@ -304,6 +304,17 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
+  isRewardMetric(queryIndex: number): boolean {
+    const keysFormArray = this.queries.at(queryIndex)?.get('keys') as UntypedFormArray;
+    const firstKey = keysFormArray?.at(0);
+    const metricKey = firstKey?.get('metricKey')?.value;
+    if (!metricKey) return false;
+
+    // Extract the key string, handling both string and object formats
+    const keyString = metricKey.key ? metricKey.key : metricKey;
+    return keyString && keyString.endsWith('_REWARD');
+  }
+
   displayFn(node?: any): string | undefined {
     if (node && node.key) {
       return node ? node.key : undefined;
