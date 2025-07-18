@@ -1884,7 +1884,7 @@ export class ExperimentController {
    *            type: string
    *      responses:
    *        '200':
-   *          description: Get Experiment's All Include Lists JSON
+   *          description: Get Experiment's All Exclude Lists JSON
    *        '401':
    *          description: Authorization Required Error
    *        '404':
