@@ -905,8 +905,8 @@
                   {{ 'monitor.statistic.text' | translate }}
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let data">
-                  <div *ngFor="let statisticOperation of data.metric_Operation">
-                    {{ statisticOperation | titlecase }}
+                  <div style="white-space: pre-line;">
+                    {{ formatStatisticOperation(data.metric_Operation) }}
                   </div>
                 </mat-cell>
               </ng-container>

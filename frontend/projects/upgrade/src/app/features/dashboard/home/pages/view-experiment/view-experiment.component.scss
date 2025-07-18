@@ -378,6 +378,12 @@ $font-size-small: 15px;
       mat-header-cell {
         color: var(--grey-2);
       }
+
+      .cdk-column-metricsKey,
+      .cdk-column-metricsOperation {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
 
     pre {
