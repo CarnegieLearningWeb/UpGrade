@@ -2081,7 +2081,7 @@ export class ExperimentService {
 
     const createdLists: (ExperimentSegmentInclusion | ExperimentSegmentExclusion)[] = await this.dataSource.transaction(
       async (transactionalEntityManager) => {
-        const listDocs: any[] = [];
+        const listDocs: (ExperimentSegmentInclusion | ExperimentSegmentExclusion)[] = [];
         for (const list of validFiles) {
           const listDoc: SegmentInputValidator = { ...list, id: uuid(), context: experiment.context[0] };
           const createdList = await this.addList(
@@ -2134,7 +2134,7 @@ export class ExperimentService {
 
         const userIds = list.segment.individualForSegment.map((individual) => individual.userId);
 
-        const subSegmentIds = list.segment.subSegments?.map((subSegment) => subSegment.id) || [];
+        const subSegmentIds = list.segment.subSegments.map((subSegment) => subSegment.id);
 
         const groups = list.segment.groupForSegment.map((group) => {
           return { type: group.type, groupId: group.groupId };
