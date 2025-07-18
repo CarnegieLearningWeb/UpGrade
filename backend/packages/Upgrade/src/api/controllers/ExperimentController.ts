@@ -1827,7 +1827,7 @@ export class ExperimentController {
    *        - application/json
    *      parameters:
    *        - in: path
-   *          flagId: Id
+   *          id: Id
    *          description: Experiment Id
    *          required: true
    *          schema:
