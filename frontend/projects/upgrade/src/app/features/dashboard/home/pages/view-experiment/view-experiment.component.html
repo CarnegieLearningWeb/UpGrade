@@ -938,11 +938,13 @@
             <span class="ft-24-700">{{ 'home.new-experiment.metrics.reward-metric.text' | translate }}</span>
             <div class="reward-metric-description" *ngIf="displayRewardMetrics as rewardMetricData">
               <div class="reward-metric-item" *ngFor="let row of rewardMetricData">
-                <span class="ft-14-400">
-                  • Key: "{{ row.metric_Key }}"
+                <span>
+                  <span class="ft-14-600">• Key:</span>
+                  <span class="ft-14-400"> "{{ row.metric_Key }}"</span>
                 </span>
-                <span class="ft-14-400">
-                  • Allowed Values: ["SUCCESS", "FAILURE"]
+                <span>
+                  <span class="ft-14-600">• Allowed Values:</span>
+                  <span class="ft-14-400"> ["SUCCESS", "FAILURE"]</span>
                 </span>
                 <span class="ft-12-400">
                   Adaptive experiments require "reward" feedback to be logged from enrolled users, which will tilt the probability of experimental assignments towards conditions that receive more successful feedback. Use this key when logging metrics as a simple metric value.
