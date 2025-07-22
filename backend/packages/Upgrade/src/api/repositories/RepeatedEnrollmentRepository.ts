@@ -17,7 +17,7 @@ export class RepeatedEnrollmentRepository extends Repository<RepeatedEnrollment>
     logger: UpgradeLogger
   ): Promise<RepeatedEnrollmentDataCount[]> {
     const result = await this.createQueryBuilder('repeatedEnrollment')
-      .select(['ie.userId as userId', 'ie.partitionId as decisionPointId'])
+      .select(['ie.userId as "userId"', 'ie.partitionId as "decisionPointId"'])
       .addSelect('COUNT(*) as count')
       .leftJoin('repeatedEnrollment.individualEnrollment', 'ie')
       .where('ie.userId = :userId', { userId })
