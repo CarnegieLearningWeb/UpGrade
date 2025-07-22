@@ -905,13 +905,14 @@ export class SegmentService {
     // create/update segment document
     segment.id = segment.id || uuid();
     const { id, name, description, context, type, listType, tags } = segment;
-    const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
+    const segmentsById = await this.getSegmentByIds(segment.subSegmentIds);
+    const allSegments = [...segmentsById, ...(segment.subSegments || [])];
     // If there are private subsegments, they are lists - so we need to clone the data
-    const isListData = segment.subSegments?.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
+    const isListData = allSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
     let subSegmentData;
     if (isListData) {
       subSegmentData = await Promise.all(
-        segment.subSegments?.map(async (subSegment) => {
+        allSegments.map(async (subSegment) => {
           // Create a new segment input object for the list
           const segmentInput = subSegment as unknown as SegmentInputValidator;
           segmentInput.userIds = subSegment.individualForSegment.map((user) => user.userId);
@@ -926,7 +927,7 @@ export class SegmentService {
     } else {
       subSegmentData = segment.subSegmentIds
         .map((subSegmentId) => {
-          const subSegment = allSegments.find((segment) => subSegmentId === segment.id);
+          const subSegment = segmentsById.find((segment) => subSegmentId === segment.id);
           if (subSegment) {
             return subSegment;
           } else {
