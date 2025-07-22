@@ -615,7 +615,7 @@ export class SegmentService {
     return validatedSegments;
   }
 
-  convertJSONStringToSegInputValFormat(segmentDetails: string): SegmentInputValidator {
+  public convertJSONStringToSegInputValFormat(segmentDetails: string): SegmentInputValidator {
     let segmentInfo;
     try {
       segmentInfo = JSON.parse(segmentDetails);
@@ -686,7 +686,7 @@ export class SegmentService {
         segmentsData.flatMap((segmentData) =>
           [segmentData.segment.id].concat([
             ...segmentData.segment.subSegmentIds,
-            ...segmentData.segment.subSegments.flatMap((subSegment) =>
+            ...(segmentData.segment.subSegments || []).flatMap((subSegment) =>
               [subSegment.id].concat(subSegment.subSegments?.map((subSubSegment) => subSubSegment.id))
             ),
           ])
@@ -718,7 +718,7 @@ export class SegmentService {
           ' not found. Please import subSegment with same context and link in segment.';
         compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
       }
-      if (segment.subSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE)) {
+      if (segment.subSegments?.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE)) {
         const subErrors = await Promise.all(
           segment.subSegments.map(async (subSegment) => {
             const subErrors = await collectErrors(

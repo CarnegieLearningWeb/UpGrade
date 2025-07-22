@@ -12,6 +12,7 @@ import {
   QueryParams,
   Params,
   BadRequestError,
+  Res,
 } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
@@ -27,9 +28,10 @@ import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
 import { MoocletExperimentService } from '../services/MoocletExperimentService';
 import { env } from '../../env';
+import { Response } from 'express';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
-import { LIST_FILTER_MODE, SERVER_ERROR, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
+import { IImportError, LIST_FILTER_MODE, SERVER_ERROR, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
@@ -44,6 +46,12 @@ interface ExperimentPaginationInfo extends PaginationResponse {
 interface ExperimentListValidator {
   list: SegmentInputValidator;
   experimentId: string;
+}
+
+interface ExperimentListImportValidation {
+  files: ExperimentFile[];
+  experimentId: string;
+  filterType: LIST_FILTER_MODE;
 }
 
 /**
@@ -1764,5 +1772,147 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<Segment> {
     return this.experimentService.deleteList(id, LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /experiments/lists/import:
+   *    post:
+   *       description: Importing Experiment List
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: lists
+   *           description: Import Experiment List Files
+   *           required: true
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/ExperimentListImportObject'
+   *       tags:
+   *         - Experiment Lists
+   *       produces:
+   *         - application/json
+   *       responses:
+   *         '200':
+   *           description: New Experiment list is imported
+   *         '401':
+   *           description: AuthorizationRequiredError
+   *         '500':
+   *           description: Internal Server Error
+   */
+  @Post('/lists/import')
+  public async importExperimentLists(
+    @Body({ validate: true }) lists: ExperimentListImportValidation,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<IImportError[]> {
+    return await this.experimentService.importExperimentLists(
+      lists.files,
+      lists.experimentId,
+      lists.filterType,
+      currentUser,
+      request.logger
+    );
+  }
+
+  /**
+   * @swagger
+   * /experiments/export/includeLists/{id}:
+   *    get:
+   *      description: Export All Include lists of Experiment JSON
+   *      tags:
+   *        - Experiments
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          id: Id
+   *          description: Experiment Id
+   *          required: true
+   *          schema:
+   *            type: string
+   *      responses:
+   *        '200':
+   *          description: Get Experiment's All Include Lists JSON
+   *        '401':
+   *          description: Authorization Required Error
+   *        '404':
+   *          description: Experiment not found
+   *        '400':
+   *          description: id must be a UUID
+   *        '500':
+   *          description: Internal Server Error
+   */
+  @Get('/export/includeLists/:id')
+  public async exportAllIncludeLists(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest,
+    @Res() response: Response
+  ): Promise<SegmentInputValidator[]> {
+    const lists = await this.experimentService.exportAllLists(id, LIST_FILTER_MODE.INCLUSION, request.logger);
+    if (lists?.length) {
+      // download JSON file with appropriate headers to response body;
+      if (lists.length === 1) {
+        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].name}.json"`);
+      } else {
+        response.setHeader('Content-Disposition', `attachment; filename="lists.zip"`);
+      }
+      response.setHeader('Content-Type', 'application/json');
+    } else {
+      throw new NotFoundException('Include lists not found.');
+    }
+
+    return lists;
+  }
+
+  /**
+   * @swagger
+   * /experiments/export/excludeLists/{id}:
+   *    get:
+   *      description: Export All Exclude lists of Experiment JSON
+   *      tags:
+   *        - Experiments
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          flagId: Id
+   *          description: Experiment Id
+   *          required: true
+   *          schema:
+   *            type: string
+   *      responses:
+   *        '200':
+   *          description: Get Experiment's All Exclude Lists JSON
+   *        '401':
+   *          description: Authorization Required Error
+   *        '404':
+   *          description: Experiment not found
+   *        '400':
+   *          description: id must be a UUID
+   *        '500':
+   *          description: Internal Server Error
+   */
+  @Get('/export/excludeLists/:id')
+  public async exportAllExcludeLists(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest,
+    @Res() response: Response
+  ): Promise<SegmentInputValidator[]> {
+    const lists = await this.experimentService.exportAllLists(id, LIST_FILTER_MODE.EXCLUSION, request.logger);
+    if (lists?.length) {
+      // download JSON file with appropriate headers to response body;
+      if (lists.length === 1) {
+        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].name}.json"`);
+      } else {
+        response.setHeader('Content-Disposition', `attachment; filename="lists.zip"`);
+      }
+      response.setHeader('Content-Type', 'application/json');
+    } else {
+      throw new NotFoundException('Exclude lists not found.');
+    }
+
+    return lists;
   }
 }
