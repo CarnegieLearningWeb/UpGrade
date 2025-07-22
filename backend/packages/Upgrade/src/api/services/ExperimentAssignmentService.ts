@@ -1,5 +1,9 @@
 import { GroupEnrollmentRepository } from './../repositories/GroupEnrollmentRepository';
 import { IndividualEnrollmentRepository } from './../repositories/IndividualEnrollmentRepository';
+import {
+  RepeatedEnrollmentDataCount,
+  RepeatedEnrollmentRepository,
+} from './../repositories/RepeatedEnrollmentRepository';
 import { IndividualEnrollment } from './../models/IndividualEnrollment';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
@@ -52,10 +56,6 @@ import { ILogInput, ENROLLMENT_CODE } from 'upgrade_types';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SegmentService } from './SegmentService';
-import {
-  MonitoredDecisionPointLogDataCount,
-  MonitoredDecisionPointLogRepository,
-} from '../repositories/MonitoredDecisionPointLogRepository';
 import seedrandom from 'seedrandom';
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
@@ -100,7 +100,7 @@ export class ExperimentAssignmentService {
     @InjectRepository()
     private individualEnrollmentRepository: IndividualEnrollmentRepository,
     @InjectRepository()
-    private monitoredDecisionPointLogRepository: MonitoredDecisionPointLogRepository,
+    private repeatedEnrollmentRepository: RepeatedEnrollmentRepository,
     @InjectRepository()
     private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
     @InjectRepository()
@@ -280,12 +280,13 @@ export class ExperimentAssignmentService {
           exclusionReason,
           status,
           condition,
+          uniquifier,
           logger
         );
       }
     }
 
-    // 6. Storing new/updated monitored decision point document and store each monitored log document
+    // 6. Storing new/updated monitored decision point document
     const assignmentUnit = experiments
       ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
       : null;
@@ -298,15 +299,9 @@ export class ExperimentAssignmentService {
       target: target,
     });
 
-    const logDocument = await this.monitoredDecisionPointLogRepository.save({
-      monitoredDecisionPoint: monitoredDocument,
-      condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? condition : null,
-      uniquifier: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? uniquifier : null,
-    });
-
     return {
       ...monitoredDocument,
-      condition: monitoredDocument.condition || logDocument.condition,
+      condition: monitoredDocument.condition || condition,
     };
   }
 
@@ -441,27 +436,22 @@ export class ExperimentAssignmentService {
           );
         })
       );
-      let monitoredLogCounts: MonitoredDecisionPointLogDataCount[] = [];
+      let repeatedEnrollmentCounts: RepeatedEnrollmentDataCount[] = [];
       if (filteredExperiments.some((experiment) => experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS)) {
         const filteredWithinSubjectExperiments = filteredExperiments.filter(
           (experiment) => experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
         );
-        const allWithinSubjectsSites = [];
-        const allWithinSubjectsTargets = [];
-        filteredWithinSubjectExperiments.forEach((exp) => {
-          exp.partitions.forEach((partition) => {
-            allWithinSubjectsSites.push(partition.site);
-            allWithinSubjectsTargets.push(partition.target);
-          });
-        });
-        monitoredLogCounts = await this.monitoredDecisionPointLogRepository.getAllMonitoredDecisionPointLog(
+
+        const allWithinSubjectDecisionPoints = filteredWithinSubjectExperiments
+          .map((experiment) => experiment.partitions)
+          .flat();
+
+        repeatedEnrollmentCounts = await this.repeatedEnrollmentRepository.getRepeatedEnrollmentCount(
           userId,
-          allWithinSubjectsSites,
-          allWithinSubjectsTargets,
+          allWithinSubjectDecisionPoints.map((dp) => dp.id),
           logger
         );
       }
-
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         const { conditionPayloads, type, factors } = this.experimentService.formattingPayload(experiment);
@@ -474,7 +464,7 @@ export class ExperimentAssignmentService {
             conditionPayloads,
             type,
             factors,
-            monitoredLogCounts,
+            repeatedEnrollmentCounts || [],
             logger
           );
           return [...accumulator, ...decisionPoints];
@@ -501,6 +491,7 @@ export class ExperimentAssignmentService {
     exclusionReason: { experiment: Experiment; reason: string; matchedGroup: boolean }[],
     status: MARKED_DECISION_POINT_STATUS | undefined,
     condition: string,
+    uniquifier: string | undefined,
     logger: UpgradeLogger
   ) {
     const decisionPointId = selectedExperimentDP.id;
@@ -561,6 +552,7 @@ export class ExperimentAssignmentService {
       exclusionReason,
       status,
       condition,
+      uniquifier,
       logger
     );
     if (experiment.enrollmentCompleteCondition) {
@@ -697,7 +689,7 @@ export class ExperimentAssignmentService {
     conditionPayloads: ConditionPayloadDTO[],
     type: EXPERIMENT_TYPE,
     factors: FactorDTO[],
-    monitoredLogCounts: { site: string; target: string; count: number }[],
+    repeatedEnrollmentCounts: { userId: string; decisionPointId: string; count: number }[],
     logger: UpgradeLogger
   ): IExperimentAssignmentv5[] {
     return experiment.partitions.map((decisionPoint) => {
@@ -729,8 +721,10 @@ export class ExperimentAssignmentService {
         };
 
       if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-        const count = monitoredLogCounts.find((log) => log.site === site && log.target === target)?.count || 0;
-        return withInSubjectType(experiment, conditionPayloads, site, target, factors, userId, count);
+        const count =
+          repeatedEnrollmentCounts.find((repeatedEnrollment) => repeatedEnrollment.decisionPointId === decisionPoint.id)
+            ?.count || 0;
+        return withInSubjectType(experiment, conditionPayloads, decisionPoint, factors, userId, count);
       } else {
         const experimentId = experiment.id;
         return {
@@ -1391,6 +1385,7 @@ export class ExperimentAssignmentService {
     experimentLevelExcluded: { experiment: Experiment; reason: string; matchedGroup: boolean }[],
     status: MARKED_DECISION_POINT_STATUS,
     condition: string,
+    uniquifier,
     logger: UpgradeLogger
   ): Promise<void> {
     const { assignmentUnit, state, consistencyRule } = experiment;
@@ -1597,16 +1592,29 @@ export class ExperimentAssignmentService {
           promiseArray.push(this.individualExclusionRepository.saveRawJson([individualExclusionDocument]));
         }
         await Promise.all(promiseArray);
-      } else if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS && !individualEnrollment) {
-        const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> = {
-          id: uuid(),
-          experiment,
-          partition: decisionPoint as DecisionPoint,
-          user,
-          condition: null,
-          enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+      } else if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        if (!individualEnrollment) {
+          const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
+            {
+              id: uuid(),
+              experiment,
+              partition: decisionPoint as DecisionPoint,
+              user,
+              condition: null,
+              enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+            };
+          individualEnrollment = await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
+        }
+        // Create a repeated enrollment for with the condition and uniquifier
+        const conditionAssigned = experiment.conditions.find(
+          (expCondition) => expCondition.conditionCode === condition
+        );
+        const RepeatedEnrollmentDocument: any = {
+          condition: conditionAssigned,
+          uniquifier,
+          individualEnrollment,
         };
-        await this.individualEnrollmentRepository.save(individualEnrollmentDocument);
+        await this.repeatedEnrollmentRepository.save(RepeatedEnrollmentDocument);
       } else {
         let conditionAssigned: ExperimentCondition | void;
 

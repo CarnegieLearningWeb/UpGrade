@@ -30,7 +30,6 @@ import { LogValidatorv6 } from './validators/LogValidator';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidatorv6 } from './validators/ExperimentUserAliasesValidator';
 import { AppRequest } from '../../types';
-import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { MarkExperimentValidatorv6 } from './validators/MarkExperimentValidator.v6';
 import { Log } from '../models/Log';
 import { ExperimentUserValidatorv6 } from './validators/ExperimentUserValidator';
@@ -43,7 +42,6 @@ interface IMonitoredDecisionPoint {
   target: string;
   experimentId: string;
   condition: string;
-  monitoredPointLogs: MonitoredDecisionPointLog[];
 }
 
 /**
