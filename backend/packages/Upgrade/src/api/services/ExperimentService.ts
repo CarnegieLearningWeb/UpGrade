@@ -32,6 +32,8 @@ import {
   FILTER_MODE,
   LIST_FILTER_MODE,
   EXPERIMENT_LIST_OPERATION,
+  IImportError,
+  IMPORT_COMPATIBILITY_TYPE,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -92,6 +94,7 @@ import { MoocletRewardsService } from './MoocletRewardsService';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { SegmentRepository } from '../repositories/SegmentRepository';
+import { NotFoundException } from '@nestjs/common/exceptions';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -2047,6 +2050,113 @@ export class ExperimentService {
 
       return existingRecord;
     });
+  }
+
+  public async importExperimentLists(
+    experimentListFiles: ExperimentFile[],
+    experimentId: string,
+    filterType: LIST_FILTER_MODE,
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<IImportError[]> {
+    logger.info({ message: 'Import experiment lists' });
+    const validatedExperiments = await this.segmentService.checkSegmentsValidity(experimentListFiles, true);
+    const fileStatusArray = experimentListFiles.map((file) => {
+      const validation = validatedExperiments.importErrors.find((error) => error.fileName === file.fileName);
+      const isCompatible = validation && validation.compatibilityType !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+
+      return {
+        fileName: file.fileName,
+        error: isCompatible ? validation.compatibilityType : IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+      };
+    });
+
+    const validFiles: any[] = fileStatusArray
+      .filter((fileStatus) => fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE)
+      .map((fileStatus) => {
+        const experimentListFile = experimentListFiles.find((file) => file.fileName === fileStatus.fileName);
+        return this.segmentService.convertJSONStringToSegInputValFormat(experimentListFile.fileContent as string);
+      });
+    const experiment = await this.findOne(experimentId, logger);
+
+    const createdLists: (ExperimentSegmentInclusion | ExperimentSegmentExclusion)[] = await this.dataSource.transaction(
+      async (transactionalEntityManager) => {
+        const listDocs: (ExperimentSegmentInclusion | ExperimentSegmentExclusion)[] = [];
+        for (const list of validFiles) {
+          const listDoc: SegmentInputValidator = { ...list, id: uuid(), context: experiment.context[0] };
+          const createdList = await this.addList(
+            listDoc,
+            experimentId,
+            filterType,
+            currentUser,
+            logger,
+            transactionalEntityManager
+          );
+
+          listDocs.push(createdList);
+        }
+
+        return listDocs;
+      }
+    );
+
+    logger.info({ message: 'Imported experiment lists', details: createdLists });
+
+    fileStatusArray.forEach((fileStatus) => {
+      if (fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE) {
+        fileStatus.error = null;
+      }
+    });
+    return fileStatusArray;
+  }
+
+  public async exportAllLists(
+    id: string,
+    filterType: LIST_FILTER_MODE,
+    logger: UpgradeLogger
+  ): Promise<SegmentInputValidator[] | null> {
+    const experiment = await this.findOne(id, logger);
+    let listsArray: SegmentInputValidator[] = [];
+    if (experiment) {
+      let lists: (ExperimentSegmentInclusion | ExperimentSegmentExclusion)[] = [];
+      if (filterType === LIST_FILTER_MODE.INCLUSION) {
+        lists = experiment.experimentSegmentInclusion;
+      } else if (filterType === LIST_FILTER_MODE.EXCLUSION) {
+        lists = experiment.experimentSegmentExclusion;
+      } else {
+        return null;
+      }
+
+      if (!lists.length) return [];
+
+      listsArray = lists.map((list) => {
+        const { name, description, context, type, listType } = list.segment;
+
+        const userIds = list.segment.individualForSegment.map((individual) => individual.userId);
+
+        const subSegmentIds = list.segment.subSegments.map((subSegment) => subSegment.id);
+
+        const groups = list.segment.groupForSegment.map((group) => {
+          return { type: group.type, groupId: group.groupId };
+        });
+
+        const listDoc: SegmentInputValidator = {
+          name,
+          description,
+          context,
+          type,
+          userIds,
+          subSegmentIds,
+          groups,
+          listType,
+        };
+        return listDoc;
+      });
+    } else {
+      throw new NotFoundException('Experiment not found.');
+    }
+
+    return listsArray;
   }
 
   private async addFactorialDataInDB(
