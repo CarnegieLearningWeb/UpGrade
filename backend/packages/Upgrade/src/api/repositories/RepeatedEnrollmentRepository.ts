@@ -1,7 +1,7 @@
 import { RepeatedEnrollment } from '../models/RepeatedEnrollment';
 import { Repository } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
-import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import repositoryError from './utils/repositoryError';
 
 export interface RepeatedEnrollmentDataCount {

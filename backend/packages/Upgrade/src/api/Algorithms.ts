@@ -4,7 +4,7 @@ import { Experiment } from './models/Experiment';
 import { CONDITION_ORDER, EXPERIMENT_TYPE, IExperimentAssignmentv5, IPayload } from 'upgrade_types';
 import { FactorDTO } from './DTO/FactorDTO';
 import { ExperimentCondition } from './models/ExperimentCondition';
-import { DecisionPoint } from 'src/api/models/DecisionPoint';
+import { DecisionPoint } from './models/DecisionPoint';
 
 export function withInSubjectType(
   experiment: Experiment,
