@@ -421,7 +421,7 @@ export interface ExperimentStateTimeLogDTO {
   id: string;
   fromState: EXPERIMENT_STATE;
   toState: EXPERIMENT_STATE;
-  timeLog: Date;
+  timeLog: string; // ISO date string when sending to backend
 }
 
 // Progressive typing for different experiment creation stages
