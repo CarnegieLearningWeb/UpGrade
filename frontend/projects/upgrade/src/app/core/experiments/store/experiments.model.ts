@@ -356,12 +356,12 @@ export interface ExperimentFormData {
 // Base interfaces matching backend DTO structure
 export interface ExperimentConditionDTO {
   id: string;
-  name?: string;
-  description?: string;
+  name?: string; // Optional as per backend DTO
+  description?: string; // Optional as per backend DTO
   conditionCode: string;
   assignmentWeight: number;
   order: number;
-  twoCharacterId?: string;
+  twoCharacterId?: string; // Optional as per backend DTO
   levelCombinationElements?: LevelCombinationElement[];
 }
 
@@ -384,13 +384,13 @@ export interface ExperimentFactorDTO {
 }
 
 export interface ExperimentConditionPayloadDTO {
-  id: string;
+  id?: string; // Optional to match existing ExperimentConditionPayload interface
   payload: {
     type: PAYLOAD_TYPE;
     value: string;
   };
   parentCondition: string;
-  decisionPoint?: string;
+  decisionPoint: string; // Required to match existing ExperimentConditionPayload interface
 }
 
 export interface ExperimentQueryDTO {
