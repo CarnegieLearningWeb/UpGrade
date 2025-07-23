@@ -1300,23 +1300,41 @@ export class ExperimentService {
       let decisionPointDocs: DecisionPoint[];
       let conditionPayloadDoc: ConditionPayload[];
       let queryDocs: any;
+
+      // Helper functions to create promises conditionally
+      const createConditionsPromise = () => {
+        return conditionDocsToSave.length > 0
+          ? this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager)
+          : Promise.resolve([]);
+      };
+
+      const createDecisionPointsPromise = () => {
+        return decisionPointDocsToSave.length > 0
+          ? this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager)
+          : Promise.resolve([]);
+      };
+
+      const createConditionPayloadsPromise = () => {
+        return conditionPayloadDocToSave.length > 0
+          ? this.conditionPayloadRepository.insertConditionPayload(
+              conditionPayloadDocToSave,
+              transactionalEntityManager
+            )
+          : Promise.resolve([]);
+      };
+
+      const createQueriesPromise = () => {
+        return queryDocsToSave.length > 0
+          ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
+          : Promise.resolve([]);
+      };
+
       try {
         [conditionDocs, decisionPointDocs, conditionPayloadDoc, queryDocs] = await Promise.all([
-          conditionDocsToSave.length > 0
-            ? this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager)
-            : (Promise.resolve([]) as any),
-          decisionPointDocsToSave.length > 0
-            ? this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager)
-            : (Promise.resolve([]) as any),
-          conditionPayloadDocToSave.length > 0
-            ? this.conditionPayloadRepository.insertConditionPayload(
-                conditionPayloadDocToSave,
-                transactionalEntityManager
-              )
-            : (Promise.resolve([]) as any),
-          queryDocsToSave.length > 0
-            ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
-            : (Promise.resolve([]) as any),
+          createConditionsPromise(),
+          createDecisionPointsPromise(),
+          createConditionPayloadsPromise(),
+          createQueriesPromise(),
         ]);
       } catch (err) {
         const error = err as Error;
