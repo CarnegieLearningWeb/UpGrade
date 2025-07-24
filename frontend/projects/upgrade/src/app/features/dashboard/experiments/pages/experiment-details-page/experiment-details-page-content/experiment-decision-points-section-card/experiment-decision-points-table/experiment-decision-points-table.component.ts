@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatTableModule } from '@angular/material/table';
@@ -30,7 +30,7 @@ import { SharedModule } from '../../../../../../../../shared/shared.module';
   styleUrl: './experiment-decision-points-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExperimentDecisionPointsTableComponent implements OnInit {
+export class ExperimentDecisionPointsTableComponent {
   @Input() decisionPoints: ExperimentDecisionPoint[] = [];
   @Input() isLoading$: Observable<boolean>;
   @Input() actionsDisabled?: boolean = false;
@@ -44,10 +44,6 @@ export class ExperimentDecisionPointsTableComponent implements OnInit {
     EXCLUDE_IF_REACHED: 'experiments.details.decision-points.exclude-if-reached.text',
     ACTIONS: 'experiments.details.decision-points.actions.text',
   };
-
-  ngOnInit(): void {
-    // Component is ready
-  }
 
   onEditButtonClick(decisionPoint: ExperimentDecisionPoint): void {
     this.rowAction.emit({ action: EXPERIMENT_ROW_ACTION.EDIT, decisionPoint });
