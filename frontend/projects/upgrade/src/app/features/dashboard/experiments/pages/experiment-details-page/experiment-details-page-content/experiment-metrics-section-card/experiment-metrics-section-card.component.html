@@ -1,0 +1,29 @@
+<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'experiments.details.metrics.card.title.text' | translate"
+    [subtitle]="'experiments.details.metrics.card.subtitle.text' | translate"
+    [tableRowCount]="tableRowCount"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="(permissions$ | async)?.experiments.update"
+    [primaryButtonText]="'experiments.details.add-metric.button.text' | translate"
+    [showMenuButton]="(permissions$ | async)?.experiments.update"
+    [menuButtonItems]="menuButtonItems"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (primaryButtonClick)="onAddMetricClick()"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-experiment-metrics-table
+    content
+    *ngIf="isSectionCardExpanded"
+  ></app-experiment-metrics-table>
+</app-common-section-card>

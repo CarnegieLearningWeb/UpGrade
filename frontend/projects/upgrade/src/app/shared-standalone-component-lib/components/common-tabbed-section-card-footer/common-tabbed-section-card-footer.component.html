@@ -7,10 +7,10 @@
     (selectedTabChange)="onSelectedTabChange($event)"
     class="new-tab-group"
   >
-    <mat-tab *ngFor="let label of tabLabels" [disabled]="label === 'Data'">
+    <mat-tab *ngFor="let tab of tabLabels" [disabled]="tab.disabled">
       <ng-template mat-tab-label>
         <span class="ft-18-600">
-          {{ label }}
+          {{ tab.label }}
         </span>
       </ng-template>
     </mat-tab>

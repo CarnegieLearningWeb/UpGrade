@@ -46,6 +46,7 @@ import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { ENV, Environment } from '../../../../environments/environment-types';
 import JSZip from 'jszip';
 import { TranslateService } from '@ngx-translate/core';
+import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
 @Injectable()
 export class ExperimentEffects {
   constructor(
@@ -55,6 +56,7 @@ export class ExperimentEffects {
     private router: Router,
     private translate: TranslateService,
     private notificationService: NotificationService,
+    private commonModalEvents: CommonModalEventsService,
     @Inject(ENV) private environment: Environment
   ) {}
 
@@ -159,6 +161,7 @@ export class ExperimentEffects {
               switchMap((experimentStat: IExperimentEnrollmentStats) => {
                 const stats = { ...experimentStats, [data.id]: experimentStat[0] };
                 this.notificationService.showSuccess(this.translate.instant('global.save-confirmation.message.text'));
+                this.commonModalEvents.forceCloseModal();
                 return [
                   experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),

@@ -10,7 +10,7 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
  *
  * ```html
  * <app-common-tabbed-section-card-footer
- *   [tabLabels]="['Tab 1', 'Tab 2', 'Tab 3']"
+ *   [tabLabels]="[{label: 'Tab 1'}, {label: 'Tab 2', disabled: true}]"
  *   (selectedTabChange)="onSelectedTabChange($event)">
  * </app-common-tabbed-section-card-footer>
  * ```
@@ -23,8 +23,8 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonTabbedSectionCardFooterComponent {
-  @Input() tabLabels = [];
   @Input() selectedIndex = 0; // Default to the first tab
+  @Input() tabLabels: { label: string; disabled?: boolean }[] = [];
   @Output() selectedTabChange = new EventEmitter<number>();
 
   onSelectedTabChange(event: MatTabChangeEvent) {

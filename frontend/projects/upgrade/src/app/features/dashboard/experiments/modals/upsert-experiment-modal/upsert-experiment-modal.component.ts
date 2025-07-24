@@ -21,6 +21,7 @@ import {
   UpsertExperimentParams,
   ExperimentDesignTypes,
   Experiment,
+  ExperimentVM,
   IContextMetaData,
   ExperimentFormData,
   AddExperimentRequest,
@@ -34,6 +35,7 @@ import {
   ASSIGNMENT_ALGORITHM,
   EXPERIMENT_STATE,
   FILTER_MODE,
+  POST_EXPERIMENT_RULE,
   SUPPORTED_MOOCLET_ALGORITHMS,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
 } from 'upgrade_types';
@@ -100,10 +102,12 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     {
       value: ExperimentDesignTypes.SIMPLE,
       description: 'experiments.upsert-experiment-modal.experiment-type-simple-description.text',
+      disabled: false,
     },
     {
       value: ExperimentDesignTypes.FACTORIAL,
       description: 'experiments.upsert-experiment-modal.experiment-type-factorial-description.text',
+      disabled: true, // Disabled for v2 - will be enabled in future versions
     },
   ];
 
@@ -521,23 +525,41 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
 
     const experimentRequest: AddExperimentRequest = {
+      // Form data
       name,
-      description,
+      description: description || undefined, // @IsOptional - can be undefined
       context: [appContext],
       type: experimentType,
       assignmentUnit: unitOfAssignment,
-      consistencyRule,
-      conditionOrder: conditionOrder || undefined,
-      assignmentAlgorithm,
+      consistencyRule: unitOfAssignment !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? consistencyRule : undefined, // Conditional validation
+      conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined, // Conditional validation
+      assignmentAlgorithm: assignmentAlgorithm || undefined, // @IsOptional
       stratificationFactor: stratificationFactorObj,
       group: groupType || undefined,
       tags,
       state: EXPERIMENT_STATE.INACTIVE,
       filterMode: FILTER_MODE.EXCLUDE_ALL,
+
+      // Backend required fields with correct defaults
+      postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+      enrollmentCompleteCondition: undefined, // @IsOptional - can be undefined
+      startOn: undefined, // @IsOptional
+      endOn: undefined, // @IsOptional
+      revertTo: undefined, // @IsOptional
+      conditions: [], // @IsNotEmpty @IsArray - must be empty array, not undefined
+      partitions: [], // @IsNotEmpty @IsArray - must be empty array, not undefined
+      factors: undefined, // @IsOptional @IsArray - can be undefined
+      conditionPayloads: undefined, // @IsOptional @IsArray - can be undefined
+      queries: undefined, // @IsOptional @IsArray - can be undefined
+      experimentSegmentInclusion: undefined, // @IsOptional @IsArray - can be undefined
+      experimentSegmentExclusion: undefined, // @IsOptional @IsArray - can be undefined
+      stateTimeLogs: undefined, // @IsOptional @IsArray - can be undefined
+      backendVersion: undefined, // @IsOptional - can be undefined
+      moocletPolicyParameters: undefined, // Conditional validation - can be undefined
+      rewardMetricKey: undefined, // Conditional validation - can be undefined
     };
 
-    console.log('Create experiment request:', experimentRequest);
-    this.dialogRef.close(experimentRequest);
+    this.experimentService.createNewExperiment(experimentRequest);
   }
 
   createEditRequest(
@@ -559,24 +581,50 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
 
     const experimentRequest: UpdateExperimentRequest = {
+      // Spread existing experiment data first
       ...sourceExperiment,
+
+      // Override with form data
       name,
-      description,
+      description: description || undefined,
       context: [appContext],
       type: experimentType,
       assignmentUnit: unitOfAssignment,
-      consistencyRule,
-      conditionOrder: conditionOrder || undefined,
-      assignmentAlgorithm,
+      consistencyRule: unitOfAssignment !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? consistencyRule : undefined,
+      conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined,
+      assignmentAlgorithm: assignmentAlgorithm || undefined,
       stratificationFactor: stratificationFactorObj,
       group: groupType || undefined,
       tags,
+
+      // Preserve existing state and structure
       state: sourceExperiment.state,
-      filterMode: FILTER_MODE.EXCLUDE_ALL,
+      filterMode: sourceExperiment.filterMode || FILTER_MODE.EXCLUDE_ALL,
+
+      // Ensure required arrays are maintained from source
+      conditions: sourceExperiment.conditions || [],
+      partitions: sourceExperiment.partitions || [],
+
+      // Preserve optional arrays from source
+      factors: sourceExperiment.factors,
+      conditionPayloads: sourceExperiment.conditionPayloads,
+      queries: sourceExperiment.queries,
+      stateTimeLogs: sourceExperiment.stateTimeLogs,
+
+      // Backend metadata
+      backendVersion: sourceExperiment.backendVersion,
+      moocletPolicyParameters: sourceExperiment.moocletPolicyParameters,
+      rewardMetricKey: sourceExperiment.rewardMetricKey,
+
+      // Required backend fields with defaults if not present
+      postExperimentRule: sourceExperiment.postExperimentRule || POST_EXPERIMENT_RULE.CONTINUE,
+      enrollmentCompleteCondition: sourceExperiment.enrollmentCompleteCondition,
+      startOn: sourceExperiment.startOn,
+      endOn: sourceExperiment.endOn,
+      revertTo: sourceExperiment.revertTo,
     };
 
-    console.log('Update experiment request:', experimentRequest);
-    this.dialogRef.close(experimentRequest);
+    this.experimentService.updateExperiment(experimentRequest as unknown as ExperimentVM);
   }
 
   closeModal() {

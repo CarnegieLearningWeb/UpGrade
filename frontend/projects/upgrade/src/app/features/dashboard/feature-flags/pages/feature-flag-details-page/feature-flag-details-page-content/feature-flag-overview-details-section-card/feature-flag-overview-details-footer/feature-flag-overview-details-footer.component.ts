@@ -10,7 +10,10 @@ import { FeatureFlagsService } from '../../../../../../../../core/feature-flags/
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagOverviewDetailsFooterComponent implements OnInit {
-  tabLabels = ['Participants', 'Data'];
+  tabLabels = [
+    { label: 'Participants', disabled: false },
+    { label: 'Data', disabled: true }, // Disabled because the Exposures section card is not implemented yet
+  ];
 
   constructor(private featureFlagsService: FeatureFlagsService) {}
 

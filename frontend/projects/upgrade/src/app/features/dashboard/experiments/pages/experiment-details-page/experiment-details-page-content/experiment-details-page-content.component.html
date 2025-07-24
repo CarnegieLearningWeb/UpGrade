@@ -1,0 +1,62 @@
+<div class="content-container">
+  <ng-container *ngIf="experiment$ | async as experiment; else loading">
+    <app-common-section-card-list class="common-section-card-list">
+      <app-experiment-overview-details-section-card
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+        (tabChange)="onTabChange($event)"
+        section-card
+      ></app-experiment-overview-details-section-card>
+
+      <!-- Design Tab -->
+      <app-experiment-decision-points-section-card
+        *ngIf="activeTabIndex === 0"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-decision-points-section-card>
+
+      <app-experiment-conditions-section-card
+        *ngIf="activeTabIndex === 0"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-conditions-section-card>
+
+      <app-experiment-inclusions-section-card
+        *ngIf="activeTabIndex === 0"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-inclusions-section-card>
+
+      <app-experiment-exclusions-section-card
+        *ngIf="activeTabIndex === 0"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-exclusions-section-card>
+
+      <app-experiment-metrics-section-card
+        *ngIf="activeTabIndex === 0"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-metrics-section-card>
+
+      <!-- Data Tab -->
+      <app-experiment-enrollment-data-section-card
+        *ngIf="activeTabIndex === 1"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-enrollment-data-section-card>
+
+      <app-experiment-metrics-data-section-card
+        *ngIf="activeTabIndex === 1"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-metrics-data-section-card>
+    </app-common-section-card-list>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="mat-spinner-container">
+      <mat-spinner diameter="100"></mat-spinner>
+    </div>
+  </ng-template>
+</div>

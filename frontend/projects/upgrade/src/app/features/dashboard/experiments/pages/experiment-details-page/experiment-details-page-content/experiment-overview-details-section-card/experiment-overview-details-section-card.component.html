@@ -1,0 +1,35 @@
+<app-common-section-card class="details-overview-card" *ngIf="experiment$ | async as experiment">
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="experiment.name"
+    [createdAt]="experiment.createdAt"
+    [updatedAt]="experiment.updatedAt"
+    [versionNumber]="experiment.versionNumber"
+    [chipClass]="experiment.state"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showMenuButton]="true"
+    [menuButtonItems]="menuButtonItems"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (menuButtonItemClick)="onMenuButtonItemClick($event)"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  ></app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <ng-container content>
+    <app-common-section-card-overview-details
+      [data]="experimentOverviewDetails$ | async"
+      (tagItemClick)="filterExperimentByChips($event)"
+    ></app-common-section-card-overview-details>
+  </ng-container>
+
+  <!-- footer -->
+  <app-experiment-overview-details-footer
+    footer
+    (tabChange)="onSelectedTabChange($event)"
+  ></app-experiment-overview-details-footer>
+</app-common-section-card>
