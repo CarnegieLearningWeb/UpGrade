@@ -20,6 +20,10 @@ import {
   CONDITION_ORDER,
   ASSIGNMENT_ALGORITHM,
   MoocletTSConfigurablePolicyParametersDTO,
+  MoocletPolicyParametersDTO,
+  REPEATED_MEASURE,
+  SEGMENT_TYPE,
+  IEnrollmentCompleteCondition,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -320,6 +324,14 @@ export enum EXPERIMENT_BUTTON_ACTION {
   IMPORT_EXCLUDE_LIST = 'import exclude list',
   EXPORT_ALL_INCLUDE_LISTS = 'export all include lists',
   EXPORT_ALL_EXCLUDE_LISTS = 'export all exclude lists',
+  IMPORT_DECISION_POINT = 'import decision point',
+  EXPORT_ALL_DECISION_POINTS = 'export all decision points',
+  IMPORT_CONDITION = 'import condition',
+  EXPORT_ALL_CONDITIONS = 'export all conditions',
+  IMPORT_METRIC = 'import metric',
+  EXPORT_ALL_METRICS = 'export all metrics',
+  EXPORT_ENROLLMENT_DATA = 'export enrollment data',
+  EXPORT_METRICS_DATA = 'export metrics data',
 }
 
 export interface UpsertExperimentParams {
@@ -341,26 +353,133 @@ export interface ExperimentFormData {
   tags: string[];
 }
 
-export interface AddExperimentRequest {
+// Base interfaces matching backend DTO structure
+export interface ExperimentConditionDTO {
+  id: string;
+  name?: string;
+  description?: string;
+  conditionCode: string;
+  assignmentWeight: number;
+  order: number;
+  twoCharacterId?: string;
+  levelCombinationElements?: LevelCombinationElement[];
+}
+
+export interface ExperimentPartitionDTO {
+  id: string;
+  site: string;
+  target?: string;
+  description?: string;
+  order: number;
+  excludeIfReached: boolean;
+  twoCharacterId?: string;
+}
+
+export interface ExperimentFactorDTO {
+  id?: string;
   name: string;
-  description: string;
+  description?: string;
+  order: number;
+  levels: ExperimentLevel[];
+}
+
+export interface ExperimentConditionPayloadDTO {
+  id?: string;
+  payload: {
+    type: PAYLOAD_TYPE;
+    value: string;
+  };
+  parentCondition: string;
+  decisionPoint: string;
+}
+
+export interface ExperimentQueryDTO {
+  id?: string;
+  name: string;
+  query: object;
+  metric: {
+    key: string;
+  };
+  repeatedMeasure: REPEATED_MEASURE;
+}
+
+export interface ExperimentSegmentDTO {
+  segment: {
+    id?: string;
+    name?: string;
+    description?: string;
+    context?: string;
+    type: SEGMENT_TYPE;
+    listType?: string;
+    individualForSegment?: Array<{ userId: string }>;
+    groupForSegment?: Array<{ groupId: string; type: string }>;
+    subSegments?: Array<{ id: string }>;
+  };
+}
+
+export interface ExperimentStateTimeLogDTO {
+  id: string;
+  fromState: EXPERIMENT_STATE;
+  toState: EXPERIMENT_STATE;
+  timeLog: string;
+}
+
+// Progressive typing for different experiment creation stages
+export interface DraftExperimentRequest {
+  // Minimum required for saving a draft
+  name: string;
+  description?: string;
   context: string[];
   type: ExperimentDesignTypes;
   assignmentUnit: ASSIGNMENT_UNIT;
-  consistencyRule: CONSISTENCY_RULE;
-  conditionOrder?: CONDITION_ORDER;
-  assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
-  stratificationFactor?: { stratificationFactorName: string } | null;
-  group?: string;
-  tags: string[];
   state: EXPERIMENT_STATE;
   filterMode: FILTER_MODE;
-  // TODO: We might need to add other missing props (see Experiment interface for reference)
+  tags: string[];
+
+  // Optional fields that can be filled later
+  consistencyRule?: CONSISTENCY_RULE;
+  conditionOrder?: CONDITION_ORDER;
+  assignmentAlgorithm?: ASSIGNMENT_ALGORITHM;
+  stratificationFactor?: { stratificationFactorName: string } | null;
+  group?: string;
+  postExperimentRule?: POST_EXPERIMENT_RULE;
+  enrollmentCompleteCondition?: Partial<IEnrollmentCompleteCondition>;
+  startOn?: string;
+  endOn?: string;
+  revertTo?: string;
+  backendVersion?: string;
+  moocletPolicyParameters?: MoocletPolicyParametersDTO;
+  rewardMetricKey?: string;
+
+  // Arrays that can be empty for drafts
+  conditions?: ExperimentConditionDTO[];
+  partitions?: ExperimentPartitionDTO[];
+  factors?: ExperimentFactorDTO[];
+  conditionPayloads?: ExperimentConditionPayloadDTO[];
+  queries?: ExperimentQueryDTO[];
+  experimentSegmentInclusion?: ExperimentSegmentDTO[];
+  experimentSegmentExclusion?: ExperimentSegmentDTO[];
+  stateTimeLogs?: ExperimentStateTimeLogDTO[];
 }
 
-// so that we can throw an error if we try to update the id
-export interface UpdateExperimentRequest extends AddExperimentRequest {
+export interface CompleteExperimentRequest extends DraftExperimentRequest {
+  // Required fields for a complete experiment that can be activated
+  consistencyRule: CONSISTENCY_RULE; // Required for non-WITHIN_SUBJECTS
+  postExperimentRule: POST_EXPERIMENT_RULE;
+  conditions: ExperimentConditionDTO[]; // Must have at least one condition
+  partitions: ExperimentPartitionDTO[]; // Must have at least one partition
+}
+
+// Legacy type alias for backwards compatibility - consider migrating to CompleteExperimentRequest
+export type AddExperimentRequest = CompleteExperimentRequest;
+
+// UpdateExperimentRequest should extend CompleteExperimentRequest but add id and handle segment differences
+export interface UpdateExperimentRequest
+  extends Omit<CompleteExperimentRequest, 'experimentSegmentInclusion' | 'experimentSegmentExclusion'> {
   readonly id: string;
+  // These fields might have different structure in updates vs creates
+  experimentSegmentInclusion?: SegmentNew;
+  experimentSegmentExclusion?: SegmentNew;
 }
 
 export const EXPERIMENT_ROOT_COLUMN_NAMES = {

@@ -47,10 +47,24 @@
     <div class="experiment-type-section dense-1">
       <mat-radio-group formControlName="experimentType">
         <span class="section-label ft-14-600">Experiment Type</span>
-        <mat-radio-button *ngFor="let type of experimentTypes" [value]="type.value">
+        <mat-radio-button
+          *ngFor="let type of experimentTypes"
+          [value]="type.value"
+          [disabled]="type.disabled"
+        >
           <div class="radio-content">
-            <span class="radio-label ft-14-600">{{ type.value + ' Experiment' }}</span>
-            <span class="radio-description ft-12-400">{{ type.description | translate }}</span>
+            <span
+              class="radio-label ft-14-600"
+              [class.disabled-text]="type.disabled"
+            >
+              {{ type.value + ' Experiment' }}
+            </span>
+            <span
+              class="radio-description ft-12-400"
+              [class.disabled-text]="type.disabled"
+            >
+              {{ type.description | translate }}
+            </span>
           </div>
         </mat-radio-button>
       </mat-radio-group>

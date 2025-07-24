@@ -12,12 +12,15 @@ import { SEGMENT_TYPE } from 'upgrade_types';
 })
 export class SegmentOverviewDetailsFooterComponent implements OnInit {
   @Input() segment: Segment;
-  tabLabels = ['Lists', 'Used By'];
+  tabLabels = [
+    { label: 'Lists', disabled: false },
+    { label: 'Used By', disabled: false },
+  ];
   @Output() tabChange = new EventEmitter<number>();
 
   ngOnInit(): void {
     if (this.segment?.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-      this.tabLabels = ['Exclude Lists'];
+      this.tabLabels = [{ label: 'Exclude Lists', disabled: false }];
     }
     // Initialize to the first tab (Lists)
     this.tabChange.emit(0);

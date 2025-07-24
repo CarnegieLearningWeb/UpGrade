@@ -1237,22 +1237,22 @@ export class ExperimentService {
 
       // creating condition docs
       const conditionDocsToSave: Array<Partial<Omit<ExperimentCondition, 'levelCombinationElements'>>> =
-        conditions &&
-        conditions.length > 0 &&
-        conditions.map((condition: ConditionValidator) => {
-          condition.id = condition.id || uuid();
-          return { ...condition, experiment: experimentDoc };
-        });
+        conditions && conditions.length > 0
+          ? conditions.map((condition: ConditionValidator) => {
+              condition.id = condition.id || uuid();
+              return { ...condition, experiment: experimentDoc };
+            })
+          : [];
 
       // creating decision point docs
       const decisionPointDocsToSave: Array<Partial<DecisionPoint>> =
-        partitions &&
-        partitions.length > 0 &&
-        partitions.map((decisionPoint) => {
-          decisionPoint.id = decisionPoint.id || uuid();
-          decisionPoint.description = decisionPoint.description || '';
-          return { ...decisionPoint, experiment: experimentDoc };
-        });
+        partitions && partitions.length > 0
+          ? partitions.map((decisionPoint) => {
+              decisionPoint.id = decisionPoint.id || uuid();
+              decisionPoint.description = decisionPoint.description || '';
+              return { ...decisionPoint, experiment: experimentDoc };
+            })
+          : [];
 
       if (!conditionPayloads) {
         experiment = { ...experiment, conditionPayloads: [] };
@@ -1303,20 +1303,41 @@ export class ExperimentService {
       let decisionPointDocs: DecisionPoint[];
       let conditionPayloadDoc: ConditionPayload[];
       let queryDocs: any;
+
+      // Helper functions to create promises conditionally
+      const createConditionsPromise = () => {
+        return conditionDocsToSave.length > 0
+          ? this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager)
+          : Promise.resolve([]);
+      };
+
+      const createDecisionPointsPromise = () => {
+        return decisionPointDocsToSave.length > 0
+          ? this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager)
+          : Promise.resolve([]);
+      };
+
+      const createConditionPayloadsPromise = () => {
+        return conditionPayloadDocToSave.length > 0
+          ? this.conditionPayloadRepository.insertConditionPayload(
+              conditionPayloadDocToSave,
+              transactionalEntityManager
+            )
+          : Promise.resolve([]);
+      };
+
+      const createQueriesPromise = () => {
+        return queryDocsToSave.length > 0
+          ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
+          : Promise.resolve([]);
+      };
+
       try {
         [conditionDocs, decisionPointDocs, conditionPayloadDoc, queryDocs] = await Promise.all([
-          this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
-          this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
-
-          conditionPayloadDocToSave.length > 0
-            ? this.conditionPayloadRepository.insertConditionPayload(
-                conditionPayloadDocToSave,
-                transactionalEntityManager
-              )
-            : (Promise.resolve([]) as any),
-          queryDocsToSave.length > 0
-            ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
-            : (Promise.resolve([]) as any),
+          createConditionsPromise(),
+          createDecisionPointsPromise(),
+          createConditionPayloadsPromise(),
+          createQueriesPromise(),
         ]);
       } catch (err) {
         const error = err as Error;

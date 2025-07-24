@@ -17,7 +17,7 @@
       </th>
       <td mat-cell *matCellDef="let experiment" class="name-column ft-14-400">
         <a
-          [routerLink]="['/experiments', 'detail', experiment.id]"
+          [routerLink]="['/home', 'detail', experiment.id]"
           [matTooltip]="experiment.name.length > 24 ? experiment.name : null"
           matTooltipPosition="right"
           class="experiment-name"

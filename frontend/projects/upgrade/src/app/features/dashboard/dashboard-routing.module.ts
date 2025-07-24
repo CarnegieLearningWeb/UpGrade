@@ -58,6 +58,16 @@ const routes: Routes = [
         },
       },
       {
+        path: 'home/detail/:experimentId',
+        loadComponent: () =>
+          import('./experiments/pages/experiment-details-page/experiment-details-page.component').then(
+            (c) => c.ExperimentDetailsPageComponent
+          ),
+        data: {
+          title: 'app-header.title.experiments',
+        },
+      },
+      {
         path: 'participants',
         loadChildren: () => import('./experiment-users/experiment-users.module').then((m) => m.ExperimentUsersModule),
         data: {
