@@ -4,7 +4,7 @@
     header-left
     [title]="'experiments.details.conditions.card.title.text' | translate"
     [subtitle]="'experiments.details.conditions.card.subtitle.text' | translate"
-    [tableRowCount]="tableRowCount"
+    [tableRowCount]="experiment.conditions?.length || 0"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
@@ -25,5 +25,10 @@
   <app-experiment-conditions-table
     content
     *ngIf="isSectionCardExpanded"
+    [conditions]="experiment.conditions || []"
+    [conditionPayloads]="experiment.conditionPayloads || []"
+    [isLoading$]="experimentService.isLoadingSelectedExperiment$"
+    [actionsDisabled]="!(permissions$ | async)?.experiments.update"
+    (rowAction)="onRowAction($event, experiment.id)"
   ></app-experiment-conditions-table>
 </app-common-section-card>

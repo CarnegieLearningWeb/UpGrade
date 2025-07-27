@@ -1,3 +1,84 @@
 <div class="table-container">
-  <p>experiment-conditions-table works!</p>
+  <!-- Loading spinner -->
+  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+
+  <!-- Table -->
+  <table
+    mat-table
+    [dataSource]="conditions"
+    [ngClass]="{ 'no-data': !conditions?.length }"
+    class="conditions-table"
+  >
+    <!-- Condition Column -->
+    <ng-container matColumnDef="condition">
+      <th mat-header-cell *matHeaderCellDef class="condition-column ft-14-600">
+        {{ CONDITION_TRANSLATION_KEYS.CONDITION | translate }}
+      </th>
+      <td mat-cell *matCellDef="let condition" class="condition-column ft-14-400">
+        {{ condition.conditionCode }}
+      </td>
+    </ng-container>
+
+    <!-- Payload Column -->
+    <ng-container matColumnDef="payload">
+      <th mat-header-cell *matHeaderCellDef class="payload-column ft-14-600">
+        {{ CONDITION_TRANSLATION_KEYS.PAYLOAD | translate }}
+      </th>
+      <td mat-cell *matCellDef="let condition" class="payload-column ft-14-400">
+        <span [ngSwitch]="getPayloadDisplayType(condition)">
+          <span *ngSwitchCase="EXPERIMENT_PAYLOAD_DISPLAY_TYPE.UNIVERSAL">{{ getUniversalPayload(condition) }}</span>
+          <span *ngSwitchCase="EXPERIMENT_PAYLOAD_DISPLAY_TYPE.SPECIFIC">{{ 'experiments.details.conditions.payload.specific-to-decision-point.text' | translate }}</span>
+          <span *ngSwitchDefault>-</span>
+        </span>
+      </td>
+    </ng-container>
+
+    <!-- Weight Column -->
+    <ng-container matColumnDef="weight">
+      <th mat-header-cell *matHeaderCellDef class="weight-column ft-14-600">
+        {{ CONDITION_TRANSLATION_KEYS.WEIGHT | translate }}
+      </th>
+      <td mat-cell *matCellDef="let condition" class="weight-column ft-14-400">
+        {{ condition.assignmentWeight }}%
+      </td>
+    </ng-container>
+
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef class="actions-column ft-14-600">
+        {{ CONDITION_TRANSLATION_KEYS.ACTIONS | translate }}
+      </th>
+      <td mat-cell *matCellDef="let condition" class="actions-column ft-14-400 dense-2">
+        <div class="button-wrapper">
+          <button
+            mat-icon-button
+            class="action-button"
+            [disabled]="actionsDisabled"
+            (click)="onEditButtonClick(condition)">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+        <div class="button-wrapper">
+          <button
+            mat-icon-button
+            class="action-button"
+            [disabled]="actionsDisabled"
+            (click)="onDeleteButtonClick(condition)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Header and Row Definitions -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+    <!-- No Data Row -->
+    <tr *matNoDataRow>
+      <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
+        {{ 'experiments.details.conditions.card.no-data-row.text' | translate }}
+      </td>
+    </tr>
+  </table>
 </div>
