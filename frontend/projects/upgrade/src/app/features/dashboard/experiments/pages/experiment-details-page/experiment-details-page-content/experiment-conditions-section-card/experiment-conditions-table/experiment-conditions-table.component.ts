@@ -15,21 +15,6 @@ import {
 } from '../../../../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 
-/**
- * `ExperimentConditionsTableComponent` displays experiment conditions in a table format.
- * It shows condition code, payload information, assignment weight, and provides edit/delete actions.
- *
- * ```html
- * <app-experiment-conditions-table
- *   [conditions]="experiment.conditions"
- *   [conditionPayloads]="experiment.conditionPayloads"
- *   [isLoading$]="isLoading$ | async"
- *   [actionsDisabled]="!(permissions$ | async)?.experiments.update"
- *   (rowAction)="onRowAction($event, experiment.id)"
- * ></app-experiment-conditions-table>
- * ```
- */
-
 @Component({
   selector: 'app-experiment-conditions-table',
   imports: [
@@ -52,7 +37,7 @@ export class ExperimentConditionsTableComponent {
   @Input() actionsDisabled?: boolean = false;
   @Output() rowAction = new EventEmitter<ExperimentConditionRowActionEvent>();
 
-  displayedColumns: string[] = ['condition', 'payload', 'weight', 'actions'];
+  displayedColumns: string[] = ['condition', 'payload', 'weight', 'weightEdit', 'actions'];
 
   // Make enum accessible in template
   EXPERIMENT_PAYLOAD_DISPLAY_TYPE = EXPERIMENT_PAYLOAD_DISPLAY_TYPE;
@@ -122,5 +107,10 @@ export class ExperimentConditionsTableComponent {
 
   onDeleteButtonClick(condition: ExperimentCondition): void {
     this.rowAction.emit({ action: EXPERIMENT_ROW_ACTION.DELETE, condition });
+  }
+
+  onEditWeightsClick(): void {
+    // TODO: Implement edit weights functionality when dialog service is available
+    console.log('Edit condition weights clicked');
   }
 }

@@ -53,7 +53,7 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
     },
   ];
 
-  constructor(private authService: AuthService, public experimentService: ExperimentService) {}
+  constructor(public experimentService: ExperimentService, private authService: AuthService) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;

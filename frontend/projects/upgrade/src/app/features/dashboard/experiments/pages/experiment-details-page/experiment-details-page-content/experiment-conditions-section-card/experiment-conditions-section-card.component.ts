@@ -59,7 +59,7 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
     this.permissions$ = this.authService.userPermissions$;
   }
 
-  onAddConditionClick(): void {
+  onAddConditionClick(appContext: string, experimentId: string): void {
     // TODO: Implement add condition functionality when dialog service is available
     console.log('Add condition clicked');
   }

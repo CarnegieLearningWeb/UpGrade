@@ -62,17 +62,36 @@
     }
 
     .condition-column {
-      width: 30%;
+      width: 35%;
       padding-left: 32px;
     }
 
     .payload-column {
-      width: 35%;
+      width: 30%;
     }
 
     .weight-column {
-      width: 25%;
-      text-align: center;
+      width: 20%;
+      text-align: right;
+    }
+
+    .weight-edit-column {
+      width: 5%;
+      text-align: left;
+
+      .weight-edit-button {
+        color: var(--dark-grey);
+
+        &[disabled] {
+          .mat-icon {
+            opacity: 0.5;
+          }
+        }
+
+        &:has(.weight-edit-button:disabled) {
+          cursor: not-allowed;
+        }
+      }
     }
 
     .actions-column {
@@ -88,7 +107,7 @@
 
           &[disabled] {
             .mat-icon {
-              opacity: 1; /* Placeholder for potential later change */
+              opacity: 0.5;
             }
           }
         }
