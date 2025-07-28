@@ -73,9 +73,8 @@ export class ExperimentConditionsTableComponent {
         payload.payload?.type === firstPayload.payload?.type && payload.payload?.value === firstPayload.payload?.value
     );
 
-    // If all payloads are the same and there's more than one decision point,
-    // or if there's only one payload, it's universal
-    if (allSame && conditionPayloads.length >= 1) {
+    // If all payloads are the same, it's universal
+    if (allSame) {
       return EXPERIMENT_PAYLOAD_DISPLAY_TYPE.UNIVERSAL;
     }
 
