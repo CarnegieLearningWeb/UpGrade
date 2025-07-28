@@ -17,7 +17,7 @@ export class ExperimentInclusionsTableComponent {
   @Input() actionsDisabled?: boolean = false;
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
 
-  tableType = LIST_FILTER_MODE.INCLUSION;
+  tableType = LIST_FILTER_MODE.EXCLUSION; // Use EXCLUSION to hide enable column for experiments
   dataSource$ = this.experimentService.selectExperimentInclusions$;
   isLoading$ = this.experimentService.isLoadingExperiment$;
 

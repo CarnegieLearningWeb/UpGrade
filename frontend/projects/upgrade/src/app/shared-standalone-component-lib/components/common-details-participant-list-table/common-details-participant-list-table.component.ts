@@ -89,7 +89,7 @@ export class CommonDetailsParticipantListTableComponent {
     const listType = rowData.listType;
     let count: number;
 
-    if (listType === this.memberTypes.INDIVIDUAL) {
+    if (listType?.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
       count = rowData.segment.individualForSegment?.length || 0;
     } else {
       count = rowData.segment.groupForSegment?.length || 0;
@@ -106,7 +106,8 @@ export class CommonDetailsParticipantListTableComponent {
 
   isPublicSegment(rowData: ParticipantListTableRow): boolean {
     return (
-      rowData.listType === this.memberTypes.SEGMENT && rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC
+      rowData.listType?.toLowerCase() === this.memberTypes.SEGMENT.toLowerCase() &&
+      rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC
     );
   }
 
