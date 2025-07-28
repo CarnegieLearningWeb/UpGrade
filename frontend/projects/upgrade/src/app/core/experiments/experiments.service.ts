@@ -40,6 +40,8 @@ import {
   selectCurrentContextMetaDataConditions,
   selectIsLoadingContextMetaData,
   selectExperimentsExportLoading,
+  selectExperimentInclusions,
+  selectExperimentInclusionsLength,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -82,6 +84,8 @@ export class ExperimentService {
   selectExperimentSortAs$ = this.store$.pipe(select(selectSortAs));
   selectExperimentGraphInfo$ = this.store$.pipe(select(selectExperimentGraphInfo));
   isGraphLoading$ = this.store$.pipe(select(selectIsGraphLoading));
+  selectExperimentInclusions$ = this.store$.pipe(select(selectExperimentInclusions));
+  selectExperimentInclusionsLength$ = this.store$.pipe(select(selectExperimentInclusionsLength));
   experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
   contextMetaData$ = this.store$.pipe(select(selectContextMetaData));
   isLoadingContextMetaData$ = this.store$.pipe(select(selectIsLoadingContextMetaData));
