@@ -486,9 +486,10 @@ export class ExperimentRepository extends Repository<Experiment> {
         'experiment.assignmentAlgorithm as "algorithmType"',
         'experiment.stratificationFactorStratificationFactorName as "stratification"',
         'experiment.postExperimentRule as "postRule"',
+        'experiment.conditionOrder as "conditionOrder"',
         'experimentRevertCondition.conditionCode as "revertTo"',
-        '"enrollingStateTimeLog"."timeLog" as "enrollmentStartDate"',
-        '"enrollmentCompleteStateTimeLog"."timeLog" as "enrollmentCompleteDate"',
+        'MIN("enrollingStateTimeLog"."timeLog") as "enrollmentStartDate"',
+        'MIN("enrollmentCompleteStateTimeLog"."timeLog") as "enrollmentCompleteDate"',
         '"conditionPayloadMain"."payloadValue" as "payload"',
         '"decisionPointData"."excludeIfReached" as "excludeIfReached"',
         '"decisionPointData"."id" as "expDecisionPointId"',
@@ -518,8 +519,6 @@ export class ExperimentRepository extends Repository<Experiment> {
       .addGroupBy('experimentRevertCondition.conditionCode')
       .addGroupBy('decisionPointData.id')
       .addGroupBy('conditionPayloadMain.payloadValue')
-      .addGroupBy('enrollingStateTimeLog.timeLog')
-      .addGroupBy('enrollmentCompleteStateTimeLog.timeLog')
       .where('experiment.id = :experimentId', { experimentId })
       .getRawMany();
 

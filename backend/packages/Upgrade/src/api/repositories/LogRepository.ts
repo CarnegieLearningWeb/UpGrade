@@ -134,6 +134,7 @@ export class LogRepository extends Repository<Log> {
       updatedAt: string;
       key: string;
       type: IMetricMetaData;
+      uniquifier: string;
     }>
   > {
     const experimentRepo = Container.getCustomRepository(ExperimentRepository, 'export');
@@ -146,6 +147,7 @@ export class LogRepository extends Repository<Log> {
         'queries."repeatedMeasure" as "repeatedMeasure"',
         'logs."userId" as "userId"',
         'logs."updatedAt" as "updatedAt"',
+        'logs."uniquifier" as "uniquifier"',
         'metric.key as key',
         'metric.type as type',
       ])
