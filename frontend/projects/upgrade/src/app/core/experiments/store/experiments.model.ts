@@ -482,6 +482,11 @@ export interface UpdateExperimentRequest
   experimentSegmentExclusion?: SegmentNew[];
 }
 
+export interface UpdateExperimentFilterModeRequest {
+  experimentId: string;
+  filterMode: FILTER_MODE;
+}
+
 export const EXPERIMENT_ROOT_COLUMN_NAMES = {
   NAME: 'name',
   STATUS: 'state',

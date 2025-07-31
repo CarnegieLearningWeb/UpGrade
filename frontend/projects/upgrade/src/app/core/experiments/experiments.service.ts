@@ -12,6 +12,7 @@ import {
   ExperimentLocalStorageKeys,
   EXPERIMENT_STATE,
   AddExperimentRequest,
+  UpdateExperimentFilterModeRequest,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -179,6 +180,10 @@ export class ExperimentService {
 
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {
     this.store$.dispatch(experimentAction.actionUpdateExperimentState({ experimentId, experimentStateInfo }));
+  }
+
+  updateFilterMode(updateExperimentFilterModeRequest: UpdateExperimentFilterModeRequest) {
+    this.store$.dispatch(experimentAction.actionUpdateExperimentFilterMode({ updateExperimentFilterModeRequest }));
   }
 
   fetchContextMetaData() {

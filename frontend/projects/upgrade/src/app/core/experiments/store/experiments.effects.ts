@@ -202,6 +202,20 @@ export class ExperimentEffects {
     )
   );
 
+  updateExperimentFilterMode$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentFilterMode),
+      switchMap((action) => {
+        return this.experimentDataService.updateFilterMode(action.updateExperimentFilterModeRequest).pipe(
+          map((experiment) => {
+            return experimentAction.actionUpdateExperimentFilterModeSuccess({ experiment });
+          }),
+          catchError(() => [experimentAction.actionUpdateExperimentFilterModeFailure()])
+        );
+      })
+    )
+  );
+
   deleteExperiment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionDeleteExperiment),
