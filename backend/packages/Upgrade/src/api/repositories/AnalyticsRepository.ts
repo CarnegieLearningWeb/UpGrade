@@ -430,106 +430,6 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     return result;
   }
 
-  public async getCSVDataForSimpleExport(
-    experimentsData: ExperimentDetailsForCSVData,
-    experimentId: string
-  ): Promise<CSVExportDataRow[]> {
-    // Get the individual enrollment-related data
-    const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
-    const individualEnrollmentQuery = individualEnrollmentRepository
-      .createQueryBuilder('individualEnrollment')
-      .select([
-        '"individualEnrollment"."userId" as "userId"',
-        '"individualEnrollment"."createdAt" as "createdAt"',
-        '"individualEnrollment"."groupId" as "enrollmentGroupId"',
-        '"individualEnrollment"."enrollmentCode" as "enrollmentCode"',
-        '"individualEnrollment"."experimentId" as "experimentId"',
-        '"individualEnrollment"."conditionId" as "conditionId"',
-        '"individualEnrollment"."partitionId" as "partitionId"',
-        '"decisionPointData"."site" as "site"',
-        '"decisionPointData"."target" as "target"',
-      ])
-      .leftJoin(
-        DecisionPoint,
-        'decisionPointData',
-        'decisionPointData.experimentId = individualEnrollment.experimentId AND decisionPointData.id = individualEnrollment.partitionId'
-      )
-      .groupBy('individualEnrollment.userId')
-      .addGroupBy('individualEnrollment.groupId')
-      .addGroupBy('individualEnrollment.enrollmentCode')
-      .addGroupBy('individualEnrollment.experimentId')
-      .addGroupBy('individualEnrollment.conditionId')
-      .addGroupBy('individualEnrollment.partitionId')
-      .addGroupBy('individualEnrollment.createdAt')
-      .addGroupBy('decisionPointData.site')
-      .addGroupBy('decisionPointData.target')
-      .orderBy('individualEnrollment.userId', 'ASC')
-      .where('individualEnrollment.experimentId = :experimentId::uuid', { experimentId });
-
-    const individualEnrollmentQueryResults = await individualEnrollmentQuery.getRawMany();
-    const userStratificationFactorUserList = [];
-
-    const individualEnrollmentExperimentData = [];
-    individualEnrollmentQueryResults.forEach((individualEnrollmentQueryResult) => {
-      experimentsData.details.forEach((detail) => {
-        const modifiedExperiments = [];
-        if (
-          detail.expDecisionPointId === individualEnrollmentQueryResult.partitionId &&
-          detail.expConditionId === individualEnrollmentQueryResult.conditionId
-        ) {
-          // prepare users list that have SRS experiment:
-          if (experimentsData.stratification) {
-            userStratificationFactorUserList.push(individualEnrollmentQueryResult.userId);
-          }
-          const { details, ...baseProperties } = experimentsData;
-
-          modifiedExperiments.push({ ...baseProperties, ...detail });
-          individualEnrollmentExperimentData.push({
-            ...modifiedExperiments[0],
-            userId: individualEnrollmentQueryResult.userId,
-            groupId: individualEnrollmentQueryResult.enrollmentGroupId,
-            enrollmentCode: individualEnrollmentQueryResult.enrollmentCode,
-            expDecisionPointId: individualEnrollmentQueryResult.partitionId,
-            expConditionId: individualEnrollmentQueryResult.conditionId,
-            site: individualEnrollmentQueryResult.site,
-            target: individualEnrollmentQueryResult.target,
-            markExperimentPointTime: individualEnrollmentQueryResult.createdAt,
-          });
-        }
-      });
-    });
-
-    let userStratificationFactorQueryResult = [];
-    if (experimentsData.stratification) {
-      // get users stratification factor values:
-      const userStratificationFactorRepository = Container.getCustomRepository(
-        UserStratificationFactorRepository,
-        'export'
-      );
-
-      const userStratificationFactorQuery = userStratificationFactorRepository
-        .createQueryBuilder('userStratificationFactor')
-        .select([
-          'userStratificationFactor.user as "userId"',
-          'userStratificationFactor.stratificationFactorValue as "stratificationFactorValue"',
-        ])
-        .where('userStratificationFactor.user IN (:...userIds)', {
-          userIds: userStratificationFactorUserList.map((data) => data),
-        });
-
-      userStratificationFactorQueryResult = await userStratificationFactorQuery.getRawMany();
-    }
-
-    return individualEnrollmentExperimentData.map((individualEnrollmentExperiment) => ({
-      ...individualEnrollmentExperiment,
-      enrollmentGroupId: individualEnrollmentExperiment.groupId,
-      stratificationValue: experimentsData.stratification
-        ? userStratificationFactorQueryResult.find((user) => user.userId === individualEnrollmentExperiment.userId)
-            ?.stratificationFactorValue
-        : null,
-    }));
-  }
-
   public async getCSVDataForExport(
     experimentsData: ExperimentDetailsForCSVData,
     experimentId: string
@@ -545,7 +445,6 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     const individualEnrollmentExperimentData = [];
     individualEnrollmentQueryResults.forEach((individualEnrollmentQueryResult) => {
       experimentsData.details.forEach((detail) => {
-        const modifiedExperiments = [];
         if (
           detail.expDecisionPointId === individualEnrollmentQueryResult.partitionId &&
           detail.expConditionId === individualEnrollmentQueryResult.conditionId
@@ -556,9 +455,8 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
           }
           const { details, ...baseProperties } = experimentsData;
 
-          modifiedExperiments.push({ ...baseProperties, ...detail });
           individualEnrollmentExperimentData.push({
-            ...modifiedExperiments[0],
+            ...{ ...baseProperties, ...detail },
             userId: individualEnrollmentQueryResult.userId,
             groupId: individualEnrollmentQueryResult.enrollmentGroupId,
             enrollmentCode: individualEnrollmentQueryResult.enrollmentCode,
