@@ -77,7 +77,6 @@ describe('Query Service Testing', () => {
         ArchivedStatsRepository,
         ErrorService,
         ErrorRepository,
-        DataSource,
         {
           provide: getRepositoryToken(QueryRepository),
           useValue: {
