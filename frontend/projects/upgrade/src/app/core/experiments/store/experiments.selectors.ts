@@ -3,7 +3,6 @@ import { selectAll } from './experiments.reducer';
 import { EXPERIMENT_SEARCH_KEY, ExperimentState, Experiment } from './experiments.model';
 import { selectRouterState } from '../../core.state';
 import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
-import { MemberTypes } from '../../segments/store/segments.model';
 import {
   ASSIGNMENT_UNIT,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
@@ -196,7 +195,7 @@ export const selectExperimentInclusions = createSelector(
       .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
       .map((inclusion) => ({
         segment: inclusion.segment,
-        listType: inclusion.segment.listType || MemberTypes.INDIVIDUAL, // Default to INDIVIDUAL if listType is missing
+        listType: inclusion.segment.listType,
       }));
   }
 );

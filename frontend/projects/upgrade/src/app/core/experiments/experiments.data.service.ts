@@ -8,7 +8,7 @@ import {
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 @Injectable()
@@ -122,11 +122,39 @@ export class ExperimentDataService {
     // Get the current experiment first, then update it with the new filter mode
     return this.getExperimentById(params.experimentId).pipe(
       switchMap((experiment: Experiment) => {
+        // Preserve the original segment listTypes since backend may not preserve them
+        const originalSegmentListTypes = new Map<string, string>();
+        experiment.experimentSegmentInclusion?.forEach((inc) => {
+          if (inc.segment?.id && inc.segment.listType) {
+            originalSegmentListTypes.set(inc.segment.id, inc.segment.listType);
+          }
+        });
+
         const updatedExperiment = {
           ...experiment,
           filterMode: params.filterMode,
         };
-        return this.updateExperiment(updatedExperiment);
+
+        return this.updateExperiment(updatedExperiment).pipe(
+          map((updatedResult: Experiment) => {
+            // Restore the listType fields that the backend may have lost
+            if (updatedResult.experimentSegmentInclusion) {
+              updatedResult.experimentSegmentInclusion = updatedResult.experimentSegmentInclusion.map((inc) => {
+                if (inc.segment?.id && originalSegmentListTypes.has(inc.segment.id)) {
+                  return {
+                    ...inc,
+                    segment: {
+                      ...inc.segment,
+                      listType: originalSegmentListTypes.get(inc.segment.id),
+                    },
+                  };
+                }
+                return inc;
+              });
+            }
+            return updatedResult;
+          })
+        );
       })
     );
   }

@@ -104,6 +104,25 @@ export class CommonDetailsParticipantListTableComponent {
     }
   }
 
+  getFormattedListType(rowData: ParticipantListTableRow): string {
+    const listType = rowData.listType;
+
+    if (!listType) {
+      return '';
+    }
+
+    // For standard types (Individual, Segment), apply title case
+    if (listType.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
+      return this.memberTypes.INDIVIDUAL;
+    }
+
+    if (listType.toLowerCase() === this.memberTypes.SEGMENT.toLowerCase()) {
+      return this.memberTypes.SEGMENT;
+    }
+
+    return listType;
+  }
+
   isPublicSegment(rowData: ParticipantListTableRow): boolean {
     return (
       rowData.listType?.toLowerCase() === this.memberTypes.SEGMENT.toLowerCase() &&
