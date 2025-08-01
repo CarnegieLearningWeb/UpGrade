@@ -19,7 +19,7 @@ import {
   ParticipantsMember,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { Segment, MemberTypes, ListSegmentOption } from '../../../../../core/segments/store/segments.model';
+import { MemberTypes, ListSegmentOption } from '../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
@@ -80,13 +80,7 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   ngOnChanges() {
     if (this.currentContext) {
-      this.subSegmentIds = [];
-      if (this.allSegmentListOptions) {
-        this.allSegmentListOptions.forEach((segment) => {
-          this.subSegmentIds.push(segment.name);
-          this.segmentNameId.set(segment.name, segment.id);
-        });
-      }
+      this.setSegmentOptions();
       this.setMemberTypes();
     }
 
@@ -99,6 +93,16 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members2DataSource.next(this.members2.controls);
       // Bind predefined values of experiment participants from backend
       this.bindParticipantsData();
+    }
+  }
+
+  updateSegmentData() {
+    this.subSegmentIds = [];
+    if (this.allSegmentListOptions) {
+      this.allSegmentListOptions.forEach((segment) => {
+        this.subSegmentIds.push(segment.name);
+        this.segmentNameId.set(segment.name, segment.id);
+      });
     }
   }
 
@@ -192,12 +196,22 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   setSegmentOptions() {
     const context = this.currentContext || this.experimentInfo?.context[0];
+    if (this.allSegmentsSub) {
+      this.allSegmentsSub.unsubscribe();
+    }
     this.allSegmentsSub = this.segmentsService.selectListSegmentOptionsByContext(context).subscribe((allSegments) => {
       this.allSegmentListOptions = allSegments;
+      this.updateSegmentData();
+      // Rebind participants data after segment options are updated to refresh autocomplete
+      this.bindParticipantsData();
     });
   }
 
   bindParticipantsData() {
+    if (!this.participantsForm || !this.participantsForm2) {
+      return;
+    }
+
     const participantsForm1Control = this.participantsForm?.get('members1') as UntypedFormArray;
     participantsForm1Control?.controls.forEach((_, groupindex) => {
       this.manageSegmentIdsControl(groupindex, 1);
@@ -212,6 +226,9 @@ export class ExperimentParticipantsComponent implements OnInit {
   manageSegmentIdsControl(index: number, form: number) {
     if (form === 1) {
       const participantsForm = this.members1 as UntypedFormArray;
+      if (!participantsForm || !participantsForm.at(index)) {
+        return;
+      }
 
       this.filteredSegmentIds$[index] = participantsForm
         .at(index)
@@ -222,6 +239,9 @@ export class ExperimentParticipantsComponent implements OnInit {
         );
     } else {
       const participantsForm = this.members2 as UntypedFormArray;
+      if (!participantsForm || !participantsForm.at(index)) {
+        return;
+      }
 
       this.filteredSegmentIds2$[index] = participantsForm
         .at(index)
@@ -295,7 +315,7 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   addMember1(index) {
     this.members1.push(this.addMembers1(null, null, index));
-    this.manageSegmentIdsControl(index, 1);
+    this.manageSegmentIdsControl(this.members1.controls.length - 1, 1);
     this.updateView1();
   }
 
@@ -518,7 +538,11 @@ export class ExperimentParticipantsComponent implements OnInit {
   }
 
   ngOnDestroy() {
-    this.contextMetaDataSub.unsubscribe();
-    this.allSegmentsSub.unsubscribe();
+    if (this.contextMetaDataSub) {
+      this.contextMetaDataSub.unsubscribe();
+    }
+    if (this.allSegmentsSub) {
+      this.allSegmentsSub.unsubscribe();
+    }
   }
 }
