@@ -177,9 +177,6 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.updateView1();
     this.updateView2();
 
-    // Bind predefined values of experiment participants from backend
-    this.bindParticipantsData();
-
     this.participantsForm.get('members1').valueChanges.subscribe((newValues) => {
       this.checkSegmentValidity(newValues, 1);
     });
@@ -202,7 +199,6 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.allSegmentsSub = this.segmentsService.selectListSegmentOptionsByContext(context).subscribe((allSegments) => {
       this.allSegmentListOptions = allSegments;
       this.updateSegmentData();
-      // Rebind participants data after segment options are updated to refresh autocomplete
       this.bindParticipantsData();
     });
   }
