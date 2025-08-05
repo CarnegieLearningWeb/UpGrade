@@ -87,7 +87,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
     console.log('Add include list clicked for experiment:', experimentId, 'context:', appContext);
   }
 
-  onSlideToggleChange(event: MatSlideToggleChange, experimentId: string): void {
+  onSlideToggleChange(event: MatSlideToggleChange, experiment: Experiment): void {
     const slideToggleEvent = event.source;
     const newFilterMode = slideToggleEvent.checked ? FILTER_MODE.INCLUDE_ALL : FILTER_MODE.EXCLUDE_ALL;
 
@@ -96,7 +96,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
     } else {
       this.confirmIncludeAllChangeDialogRef = this.openDisableConfirmModal();
     }
-    this.listenForConfirmIncludeAllChangeDialogRefClose(experimentId, newFilterMode);
+    this.listenForConfirmIncludeAllChangeDialogRefClose(experiment, newFilterMode);
 
     // Revert the toggle state (will be updated when service call succeeds)
     slideToggleEvent.checked = !slideToggleEvent.checked;
@@ -110,18 +110,18 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
     return this.dialogService.openDisableIncludeAllConfirmModal();
   }
 
-  listenForConfirmIncludeAllChangeDialogRefClose(experimentId: string, newFilterMode: FILTER_MODE) {
+  listenForConfirmIncludeAllChangeDialogRefClose(experiment: Experiment, newFilterMode: FILTER_MODE) {
     this.subscriptions.add(
       this.confirmIncludeAllChangeDialogRef.afterClosed().subscribe((confirmClicked) => {
-        this.handleDialogClose(confirmClicked, experimentId, newFilterMode);
+        this.handleDialogClose(confirmClicked, experiment, newFilterMode);
       })
     );
   }
 
-  handleDialogClose(confirmClicked: boolean, experimentId: string, newFilterMode: FILTER_MODE): void {
+  handleDialogClose(confirmClicked: boolean, experiment: Experiment, newFilterMode: FILTER_MODE): void {
     if (confirmClicked) {
       this.experimentService.updateFilterMode({
-        experimentId: experimentId,
+        experiment: experiment,
         filterMode: newFilterMode,
       });
       this.updateSectionCardExpansion(newFilterMode);

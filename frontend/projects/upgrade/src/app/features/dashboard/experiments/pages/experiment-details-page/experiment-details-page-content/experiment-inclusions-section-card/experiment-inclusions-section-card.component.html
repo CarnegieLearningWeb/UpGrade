@@ -23,7 +23,7 @@
     [sectionCardExpandBtnDisabled]="experiment.filterMode === FILTER_MODE.INCLUDE_ALL"
     (primaryButtonClick)="onAddIncludeListClick(experiment.context[0], experiment.id)"
     (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
-    (slideToggleChange)="onSlideToggleChange($event, experiment.id)"
+    (slideToggleChange)="onSlideToggleChange($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>

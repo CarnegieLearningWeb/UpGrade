@@ -483,7 +483,7 @@ export interface UpdateExperimentRequest
 }
 
 export interface UpdateExperimentFilterModeRequest {
-  experimentId: string;
+  experiment: Experiment;
   filterMode: FILTER_MODE;
 }
 
