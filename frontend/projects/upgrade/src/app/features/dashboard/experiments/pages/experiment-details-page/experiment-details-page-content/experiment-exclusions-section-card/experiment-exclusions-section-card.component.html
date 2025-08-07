@@ -4,7 +4,7 @@
     header-left
     [title]="'experiments.details.exclusions.card.title.text' | translate"
     [subtitle]="'experiments.details.exclusions.card.subtitle.text' | translate"
-    [tableRowCount]="tableRowCount"
+    [tableRowCount]="tableRowCount$ | async"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
@@ -15,7 +15,7 @@
     [showMenuButton]="(permissions$ | async)?.experiments.update"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="onAddExclusionClick()"
+    (primaryButtonClick)="onAddExcludeListClick(experiment.context[0], experiment.id)"
     (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
@@ -25,5 +25,7 @@
   <app-experiment-exclusions-table
     content
     *ngIf="isSectionCardExpanded"
+    [actionsDisabled]="!(permissions$ | async)?.experiments.update"
+    (rowAction)="onRowAction($event, experiment.id)"
   ></app-experiment-exclusions-table>
 </app-common-section-card>
