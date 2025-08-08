@@ -117,7 +117,6 @@ export class BatchAssignController {
     @Req() request: AppRequest
   ): Promise<Record<string, IExperimentAssignmentv5 | null>> {
     request.logger.info({ message: 'Request received for batch assignments' });
-    console.log('Request Body:', requestBody);
     const { context, site, target, userIds } = requestBody;
     request.logger.info({
       message: `Context: ${context}, Site: ${site}, Target: ${target}, User IDs: ${userIds.join(', ')}`,

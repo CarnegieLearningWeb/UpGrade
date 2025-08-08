@@ -2371,7 +2371,7 @@ export class ExperimentAssignmentService {
         userWorkingGroupIds.push(experimentUser.workingGroup[type]);
       });
     }
-    if (indirectExcludedExperiments.length > 0) {
+    if (indirectExcludedExperiments?.length > 0) {
       await this.groupEnrollmentRepository.delete({
         experiment: { id: In(indirectExcludedExperiments) },
         groupId: In(userWorkingGroupIds),
