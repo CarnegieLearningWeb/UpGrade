@@ -495,27 +495,20 @@ export class ExperimentAssignmentService {
     });
     const experiments: Experiment[] = await this.getExperimentsForContextAndDecisionPoint(context, site, target);
 
-    // Explicitly filter out experiments with WITHIN_SUBJECTS assignment unit
-    const filteredExperiments = experiments.filter(
-      (experiment) => experiment.assignmentUnit !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS
-    );
-    if (filteredExperiments.length === 0) {
+    if (experiments.length === 0) {
       return {};
     }
     const filteredUsers = await this.filterGloballyExcludedUsers(experimentUserDocs, context);
 
     try {
-      const experimentIds = filteredExperiments.map((experiment) => experiment.id);
+      const experimentIds = experiments.map((experiment) => experiment.id);
 
       // Query assignments and exclusions for the users
       const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
         await this.getAssignmentsAndExclusionsForUsers(filteredUsers, experimentIds);
 
       // Check for experiment level inclusion and exclusion and return valid inclusion experiments for each user
-      const experimentsForUser = await this.experimentLevelExclusionInclusionForUsers(
-        filteredExperiments,
-        filteredUsers
-      );
+      const experimentsForUser = await this.experimentLevelExclusionInclusionForUsers(experiments, filteredUsers);
       // Select a single experiment for each user based on enrollments and pooling logic
       const assignedExperimentsForUsers = experimentsForUser.reduce((acc, experimentForUser, index) => {
         const exps = this.processExperimentPools(

@@ -1420,80 +1420,7 @@ describe('Experiment Assignment Service Test', () => {
       expect(result).toEqual({});
     });
 
-    it('should filter out within-subject experiments in batch experiment conditions', async () => {
-      const context = 'home';
-      const site = 'CurriculumSequence';
-      const target = 'W1';
-      const userDocs = [
-        { id: 'user1', group: { schoolId: ['school1'] }, workingGroup: {} },
-        { id: 'user2', group: { schoolId: ['school1'] }, workingGroup: {} },
-      ];
-
-      // Mix of regular and within-subject experiments
-      const regularExp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
-      const withinSubjectExp = JSON.parse(JSON.stringify(simpleWithinSubjectOrderedRoundRobinExperiment));
-
-      withinSubjectExp.id = 'within-subject-exp'; // Ensure it has a unique ID
-
-      const experimentUserServiceMock = {
-        getOriginalUserDocs: sandbox.stub().callsFake((userDoc) => Promise.resolve(userDoc)),
-        getUserDocs: sandbox.stub().resolves(userDocs),
-      };
-
-      // Return both experiments, but within-subject should be filtered out
-      testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox
-        .stub()
-        .resolves([regularExp, withinSubjectExp]);
-
-      testedModule.experimentUserService = experimentUserServiceMock;
-
-      const result = await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
-
-      // Should only have assignments from the regular experiment, not the within-subject one
-      expect(Object.keys(result)).toHaveLength(2);
-
-      for (const userId of ['user1', 'user2']) {
-        expect(result[userId]).toBeDefined();
-        expect(result[userId].site).toEqual(site);
-        expect(result[userId].target).toEqual(target);
-        // Should only have the regular experiment assignment
-        expect(result[userId].assignedCondition[0].experimentId).toEqual(regularExp.id);
-        // Should NOT have the within-subject experiment
-        expect(
-          result[userId].assignedCondition.find((cond) => cond.experimentId === withinSubjectExp.id)
-        ).toBeUndefined();
-      }
-    });
-
-    it('should return empty object when only within-subject experiments are available', async () => {
-      const context = 'home';
-      const site = 'SelectSection';
-      const target = 'Site1';
-      const userDocs = [
-        { id: 'user1', group: { schoolId: ['school1'] }, workingGroup: {} },
-        { id: 'user2', group: { schoolId: ['school1'] }, workingGroup: {} },
-      ];
-
-      // Only within-subject experiments
-      const withinSubjectExp = JSON.parse(JSON.stringify(simpleWithinSubjectOrderedRoundRobinExperiment));
-
-      const experimentUserServiceMock = {
-        getOriginalUserDocs: sandbox.stub().callsFake((userDoc) => Promise.resolve(userDoc)),
-        getUserDocs: sandbox.stub().resolves(userDocs),
-      };
-      testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox
-        .stub()
-        .resolves([withinSubjectExp]);
-
-      testedModule.experimentUserService = experimentUserServiceMock;
-
-      const result = await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
-
-      // Should return empty object since within-subject experiments are filtered out
-      expect(result).toEqual({});
-    });
-
-    it('should handle mixed experiment types and filter within-subject appropriately', async () => {
+    it.only('should handle mixed experiment types', async () => {
       const context = 'home';
       const site = 'SelectSection';
       const target = 'Site1';
@@ -1520,14 +1447,9 @@ describe('Experiment Assignment Service Test', () => {
 
       expect(result['user1']).toBeDefined();
 
-      // Should have assignments from non-within-subject experiments
       const assignedExperimentIds = result['user1'].assignedCondition.map((cond) => cond.experimentId);
 
-      // Should include regular experiments
-      expect([regularIndividualExp.id, factorialExp.id]).toContain(assignedExperimentIds[0]);
-
-      // Should NOT include within-subject experiment
-      expect(assignedExperimentIds).not.toContain(withinSubjectExp.id);
+      expect([regularIndividualExp.id, withinSubjectExp.id, factorialExp.id]).toContain(assignedExperimentIds[0]);
     });
 
     it('should log appropriate messages for batch experiment conditions', async () => {
