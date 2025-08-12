@@ -194,13 +194,16 @@ export class LogRepository extends Repository<Log> {
     isFactorialExperiment: boolean,
     isCategorical: boolean,
     repeatedMeasure: REPEATED_MEASURE,
-    query: any
+    query: any,
+    transactionalEntityManager: EntityManager
   ) {
-    const individualEnrollmentRepo = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
+    const individualEnrollmentRepo = transactionalEntityManager.withRepository(
+      Container.getCustomRepository(IndividualEnrollmentRepository, 'export')
+    );
     const innerQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
 
-    const analyticsQuery = Container.getDataSource().manager.createQueryBuilder();
-    const middleQuery = Container.getDataSource().manager.createQueryBuilder();
+    const analyticsQuery = transactionalEntityManager.createQueryBuilder();
+    const middleQuery = transactionalEntityManager.createQueryBuilder();
 
     const idToSelect = isFactorialExperiment ? '"levelId"' : '"conditionId"';
     const valueToSelect = isFactorialExperiment
@@ -290,9 +293,12 @@ export class LogRepository extends Repository<Log> {
     isFactorialExperiment: boolean,
     isCategorical: boolean,
     repeatedMeasure: REPEATED_MEASURE,
-    query: any
+    query: any,
+    transactionalEntityManager: EntityManager
   ) {
-    const individualEnrollmentRepo = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
+    const individualEnrollmentRepo = transactionalEntityManager.withRepository(
+      Container.getCustomRepository(IndividualEnrollmentRepository, 'export')
+    );
     const analyticsQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
 
     const idToSelect = isFactorialExperiment
@@ -361,7 +367,7 @@ export class LogRepository extends Repository<Log> {
     return analyticsQuery;
   }
 
-  public async analysis(query: Query): Promise<any> {
+  public async analysis(query: Query, transactionalEntityManager: EntityManager): Promise<any> {
     const {
       metric: { key: metricKey, type: metricType },
       experiment: { id: experimentId, assignmentUnit: unitOfAssignment, type: experimentType },
@@ -383,7 +389,8 @@ export class LogRepository extends Repository<Log> {
             isFactorialExperiment,
             !isContinuousMetric,
             repeatedMeasure,
-            query.query
+            query.query,
+            transactionalEntityManager
           )
         : this.getWithinSubjectsAnalyticsQuery(
             experimentId,
@@ -392,7 +399,8 @@ export class LogRepository extends Repository<Log> {
             isFactorialExperiment,
             !isContinuousMetric,
             repeatedMeasure,
-            query.query
+            query.query,
+            transactionalEntityManager
           );
 
     return newQuery.getRawMany();
