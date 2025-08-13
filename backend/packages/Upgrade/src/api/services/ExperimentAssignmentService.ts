@@ -2357,18 +2357,19 @@ export class ExperimentAssignmentService {
         }
       }
     });
-
-    const userWorkingGroupIds = [];
-    if (experimentUser.workingGroup) {
-      Object.keys(experimentUser.workingGroup).forEach((type) => {
-        userWorkingGroupIds.push(experimentUser.workingGroup[type]);
-      });
-    }
     if (indirectExcludedExperiments?.length > 0) {
-      await this.groupEnrollmentRepository.delete({
-        experiment: { id: In(indirectExcludedExperiments) },
-        groupId: In(userWorkingGroupIds),
-      });
+      const userWorkingGroupIds = [];
+      if (experimentUser.workingGroup) {
+        Object.keys(experimentUser.workingGroup).forEach((type) => {
+          userWorkingGroupIds.push(experimentUser.workingGroup[type]);
+        });
+      }
+      if (userWorkingGroupIds.length > 0) {
+        await this.groupEnrollmentRepository.delete({
+          experiment: { id: In(indirectExcludedExperiments) },
+          groupId: In(userWorkingGroupIds),
+        });
+      }
     }
 
     return [userIncludedEntities, userExcludedEntities];
