@@ -270,7 +270,6 @@ export default class UpgradeClient {
    * @param options.ignoreCache If true, it will ignore the cached experiment assignments and fetch fresh data from the API.
    *  This is useful when you want to ensure you have the latest assignments.
    *  If false, it will return the cached assignments if available.
-   * This is useful when you want to ensure you have the latest assignments.
    * @example
    * ```typescript
    * const userId = "User1"
