@@ -1,6 +1,7 @@
 import { DataService } from './../DataService/DataService';
 import ApiService from './../ApiService/ApiService';
 import UpgradeClient from './UpgradeClient';
+import { EXPERIMENT_TYPE } from '../../../../types/src';
 
 const mockHttpClient = {
   doGet: jest.fn(),
@@ -154,49 +155,156 @@ describe('UpgradeClient', () => {
 
       expect(ApiService.prototype.setFeatureFlagUserGroupsForSession).toHaveBeenCalledWith(undefined, undefined);
     });
+  });
 
-    it('should throw error when groupsForSession is missing', () => {
-      const invalidOptions = {
-        includeStoredUserGroups: true,
-      } as any;
-
-      expect(() => {
-        upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
-      }).toThrow();
+  describe('#getAllExperimentConditions', () => {
+    it('should call apiService "getAllExperimentConditions" with no options', async () => {
+      ApiService.prototype.getAllExperimentConditions = jest.fn();
+      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => {
+        return null;
+      });
+      await upgradeClient.getAllExperimentConditions();
+      expect(ApiService.prototype.getAllExperimentConditions).toHaveBeenCalled();
+    });
+    it('should not call apiService "getAllExperimentConditions" when there is cached data', async () => {
+      ApiService.prototype.getAllExperimentConditions = jest.fn();
+      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => {
+        return ['foo'];
+      });
+      upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
+      await upgradeClient.getAllExperimentConditions();
+      expect(ApiService.prototype.getAllExperimentConditions).not.toHaveBeenCalled();
     });
 
-    it('should throw error when includeStoredUserGroups is missing', () => {
-      const invalidOptions = {
-        groupsForSession: {
-          school: ['testSchool1'],
-        },
-      } as any;
-
-      expect(() => {
-        upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
-      }).toThrow();
-    });
-
-    it('should throw error when both properties are missing', () => {
-      const invalidOptions = {} as any;
-
-      expect(() => {
-        upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
-      }).toThrow();
-    });
-
-    it('should throw error with proper message format', () => {
-      const invalidOptions = {
-        groupsForSession: {
-          school: ['testSchool1'],
-        },
-      } as any;
-
-      expect(() => {
-        upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
-      }).toThrow(
-        /featureFlagUserGroupsForSession must contain both groupsForSession and includeStoredUserGroups properties/
-      );
+    it('should call apiService "getAllExperimentConditions" when there is cached data if ignoreCache is specified', async () => {
+      ApiService.prototype.getAllExperimentConditions = jest.fn();
+      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => {
+        return ['foo'];
+      });
+      upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
+      await upgradeClient.getAllExperimentConditions({ ignoreCache: true });
+      expect(ApiService.prototype.getAllExperimentConditions).toHaveBeenCalled();
     });
   });
+  describe('#getDecisionPointAssignment', () => {
+    it('should call apiService "getAllExperimentConditions" with no options', async () => {
+      ApiService.prototype.getAllExperimentConditions = jest.fn();
+      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => {
+        return null;
+      });
+      await upgradeClient.getDecisionPointAssignment('testSite');
+      expect(ApiService.prototype.getAllExperimentConditions).toHaveBeenCalled();
+    });
+    it('should not call apiService "getAllExperimentConditions" when there is cached data', async () => {
+      ApiService.prototype.getAllExperimentConditions = jest.fn();
+      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => {
+        return ['foo'];
+      });
+      DataService.prototype.findExperimentAssignmentBySiteAndTarget = jest.fn((site, target) => {
+        return {
+          site: site,
+          target: target,
+          assignedCondition: [],
+          experimentType: EXPERIMENT_TYPE.SIMPLE,
+        };
+      });
+      upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
+      await upgradeClient.getDecisionPointAssignment('testSite');
+      expect(ApiService.prototype.getAllExperimentConditions).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('#getAllFeatureFlags', () => {
+    it('should call apiService "getAllFeatureFlags" with no options', async () => {
+      ApiService.prototype.getAllFeatureFlags = jest.fn();
+      DataService.prototype.getFeatureFlags = jest.fn((): any => {
+        return null;
+      });
+      await upgradeClient.getAllFeatureFlags();
+      expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalled();
+    });
+    it('should not call apiService "getAllFeatureFlags" when there is cached data', async () => {
+      ApiService.prototype.getAllFeatureFlags = jest.fn();
+      DataService.prototype.getFeatureFlags = jest.fn((): any => {
+        return ['foo'];
+      });
+      upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
+      await upgradeClient.getAllFeatureFlags();
+      expect(ApiService.prototype.getAllFeatureFlags).not.toHaveBeenCalled();
+    });
+
+    it('should call apiService "getAllFeatureFlags" when there is cached data if ignoreCache is specified', async () => {
+      ApiService.prototype.getAllFeatureFlags = jest.fn();
+      DataService.prototype.getFeatureFlags = jest.fn((): any => {
+        return ['foo'];
+      });
+      upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
+      await upgradeClient.getAllFeatureFlags({ ignoreCache: true });
+      expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalled();
+    });
+  });
+  describe('#hasFeatureFlag', () => {
+    it('should call apiService "getAllFeatureFlags" with no options', async () => {
+      ApiService.prototype.getAllFeatureFlags = jest.fn();
+      DataService.prototype.getFeatureFlags = jest.fn((): any => {
+        return null;
+      });
+      await upgradeClient.hasFeatureFlag('testFlag');
+      expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalled();
+    });
+    it('should not call apiService "getAllFeatureFlags" when there is cached data', async () => {
+      ApiService.prototype.getAllFeatureFlags = jest.fn();
+      DataService.prototype.getFeatureFlags = jest.fn((): any => {
+        return ['foo'];
+      });
+      upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
+      await upgradeClient.hasFeatureFlag('testFlag');
+      expect(ApiService.prototype.getAllFeatureFlags).not.toHaveBeenCalled();
+    });
+  });
+
+  it('should throw error when groupsForSession is missing', () => {
+    const invalidOptions = {
+      includeStoredUserGroups: true,
+    } as any;
+
+    expect(() => {
+      upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
+    }).toThrow();
+  });
+
+  it('should throw error when includeStoredUserGroups is missing', () => {
+    const invalidOptions = {
+      groupsForSession: {
+        school: ['testSchool1'],
+      },
+    } as any;
+
+    expect(() => {
+      upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
+    }).toThrow();
+  });
+
+  it('should throw error when both properties are missing', () => {
+    const invalidOptions = {} as any;
+
+    expect(() => {
+      upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
+    }).toThrow();
+  });
+
+  it('should throw error with proper message format', () => {
+    const invalidOptions = {
+      groupsForSession: {
+        school: ['testSchool1'],
+      },
+    } as any;
+
+    expect(() => {
+      upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
+    }).toThrow(
+      /featureFlagUserGroupsForSession must contain both groupsForSession and includeStoredUserGroups properties/
+    );
+  });
 });
+// });

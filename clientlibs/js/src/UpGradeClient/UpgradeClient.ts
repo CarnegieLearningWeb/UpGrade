@@ -267,7 +267,10 @@ export default class UpgradeClient {
    *    They will return a stack of condition user will be assigned in that order
    * For With-in subjects these stacks will be contain all conditions according to the chosen `Condition-Order`
    * For Between subjects experiment both stack will return array containing single condition.
-   *
+   * @param options.ignoreCache If true, it will ignore the cached experiment assignments and fetch fresh data from the API.
+   *  This is useful when you want to ensure you have the latest assignments.
+   *  If false, it will return the cached assignments if available.
+   * This is useful when you want to ensure you have the latest assignments.
    * @example
    * ```typescript
    * const userId = "User1"
@@ -276,13 +279,16 @@ export default class UpgradeClient {
    * const getAllResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions();
    * ```
    */
-  async getAllExperimentConditions(): Promise<IExperimentAssignmentv5[]> {
-    const response = await this.apiService.getAllExperimentConditions();
-    if (Array.isArray(response)) {
-      this.dataService.setExperimentAssignmentData(response);
+  async getAllExperimentConditions(options = { ignoreCache: false }): Promise<IExperimentAssignmentv5[]> {
+    let response: IExperimentAssignmentv5[] = options.ignoreCache
+      ? null
+      : await this.dataService.getExperimentAssignmentData();
+    if (response == null) {
+      response = await this.apiService.getAllExperimentConditions();
+      if (Array.isArray(response)) {
+        this.dataService.setExperimentAssignmentData(response);
+      }
     }
-
-    // returns the first element of the queue
     return response;
   }
 
@@ -298,10 +304,8 @@ export default class UpgradeClient {
    */
 
   async getDecisionPointAssignment(site: string, target?: string): Promise<Assignment> {
-    if (this.dataService.getExperimentAssignmentData() == null) {
-      await this.getAllExperimentConditions();
-    }
-    // const clientState: UpGradeClientInterfaces.IClientState = this.getClientState();
+    await this.getAllExperimentConditions();
+
     if (this.dataService.getExperimentAssignmentData()) {
       const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
 
@@ -437,6 +441,7 @@ export default class UpgradeClient {
 
   /**
    * Fetches flags for the user given a context and stores them in the data service.
+   * @param options.ignoreCache If true, it will ignore the cached feature flags and fetch fresh data from the API.
    *
    * @example
    * ```typescript
@@ -448,10 +453,13 @@ export default class UpgradeClient {
    * to see configurations that may affect the responses to this method
    */
 
-  async getAllFeatureFlags(): Promise<string[]> {
-    const response = await this.apiService.getAllFeatureFlags();
-    if (response.length) {
-      this.dataService.setFeatureFlags(response);
+  async getAllFeatureFlags(options = { ignoreCache: false }): Promise<string[]> {
+    let response = options.ignoreCache ? null : await this.dataService.getFeatureFlags();
+    if (response == null) {
+      response = await this.apiService.getAllFeatureFlags();
+      if (Array.isArray(response)) {
+        this.dataService.setFeatureFlags(response);
+      }
     }
     return response;
   }
@@ -470,9 +478,7 @@ export default class UpgradeClient {
    * to see configurations that may affect the responses to this method
    */
   public async hasFeatureFlag(key: string): Promise<boolean> {
-    if (this.dataService.getFeatureFlags() == null) {
-      await this.getAllFeatureFlags();
-    }
+    await this.getAllFeatureFlags();
     return this.dataService.hasFeatureFlag(key);
   }
 
