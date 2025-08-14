@@ -106,8 +106,6 @@ export class BatchAssignController {
    *            description: BadRequestError - InvalidParameterValue
    *          '401':
    *            description: AuthorizationRequiredError
-   *          '404':
-   *            description: Experiment User not defined
    *          '500':
    *            description: Internal Server Error
    */
