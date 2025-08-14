@@ -591,7 +591,7 @@ export class ExperimentAssignmentService {
     }
   }
 
-  public formatAssignments(assignedData: IExperimentAssignmentv5[]) {
+  public formatAssignments(assignedData: IExperimentAssignmentv5[]): IExperimentAssignmentv5[] {
     return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
       const finalFactorData = assignedFactor?.map((factor) => {
         const updatedAssignedFactor: Record<string, { level: string; payload: IPayload }> = {};

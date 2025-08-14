@@ -1232,13 +1232,7 @@ describe('Experiment Assignment Service Test', () => {
       ];
       const exp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
 
-      const experimentUserServiceMock = {
-        getOriginalUserDocs: sandbox.stub().callsFake((userDoc) => Promise.resolve(userDoc)),
-        getUserDocs: sandbox.stub().resolves(userDocs),
-      };
-
       testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([exp]);
-      testedModule.experimentUserService = experimentUserServiceMock;
 
       const result = await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
 
@@ -1263,12 +1257,7 @@ describe('Experiment Assignment Service Test', () => {
       ];
       const exp = JSON.parse(JSON.stringify(factorialIndividualAssignmentExperiment));
 
-      const experimentUserServiceMock = {
-        getOriginalUserDocs: sandbox.stub().callsFake((userDoc) => Promise.resolve(userDoc)),
-        getUserDocs: sandbox.stub().resolves(userDocs),
-      };
       testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([exp]);
-      testedModule.experimentUserService = experimentUserServiceMock;
 
       const result = await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
 
@@ -1299,10 +1288,6 @@ describe('Experiment Assignment Service Test', () => {
       groupEnrollment.condition = exp.conditions[0];
       groupEnrollment.groupId = 'add-group1';
 
-      const experimentUserServiceMock = {
-        getOriginalUserDocs: sandbox.stub().callsFake((userDoc) => Promise.resolve(userDoc)),
-        getUserDocs: sandbox.stub().resolves(userDocs),
-      };
       groupEnrollmentRepositoryMock = {
         findEnrollments: sandbox.stub().resolves([groupEnrollment]),
         delete: sandbox.stub().resolves(),
@@ -1317,7 +1302,6 @@ describe('Experiment Assignment Service Test', () => {
           individualExclusionRepositoryMock,
           groupExclusionRepositoryMock,
         ]);
-      testedModule.experimentUserService = experimentUserServiceMock;
 
       const result = await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
 
@@ -1343,13 +1327,7 @@ describe('Experiment Assignment Service Test', () => {
       ];
       const exp = JSON.parse(JSON.stringify(simpleGroupAssignmentExperiment));
 
-      const experimentUserServiceMock = {
-        getOriginalUserDocs: sandbox.stub().callsFake((userDoc) => Promise.resolve(userDoc)),
-        getUserDocs: sandbox.stub().resolves(userDocs),
-      };
-
       testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([exp]);
-      testedModule.experimentUserService = experimentUserServiceMock;
 
       const result = await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
 
@@ -1369,11 +1347,6 @@ describe('Experiment Assignment Service Test', () => {
       ];
       const exp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
 
-      const experimentUserServiceMock = {
-        getOriginalUserDocs: sandbox.stub().callsFake((userDoc) => Promise.resolve(userDoc)),
-        getUserDocs: sandbox.stub().resolves(userDocs),
-      };
-
       // Stub the global exclusion segment with user `user5` in individualForSegment
       testedModule.segmentService.getSegmentByIds.withArgs(['77777777-7777-7777-7777-777777777777']).resolves([
         {
@@ -1389,7 +1362,6 @@ describe('Experiment Assignment Service Test', () => {
       ]);
 
       testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([exp]);
-      testedModule.experimentUserService = experimentUserServiceMock;
 
       const result = await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
 
@@ -1407,20 +1379,14 @@ describe('Experiment Assignment Service Test', () => {
         { id: 'user2', group: { schoolId: ['school1'] }, workingGroup: {} },
       ];
 
-      const experimentUserServiceMock = {
-        getOriginalUserDocss: sandbox.stub().callsFake((userDoc) => Promise.resolve(userDoc)),
-        getUserDocs: sandbox.stub().resolves(userDocs),
-      };
-
       testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([]);
-      testedModule.experimentUserService = experimentUserServiceMock;
 
       const result = await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
 
       expect(result).toEqual({});
     });
 
-    it.only('should handle mixed experiment types', async () => {
+    it('should handle mixed experiment types', async () => {
       const context = 'home';
       const site = 'SelectSection';
       const target = 'Site1';
@@ -1433,15 +1399,9 @@ describe('Experiment Assignment Service Test', () => {
 
       withinSubjectExp.id = 'within-subject-exp'; // Ensure it has a unique ID
 
-      const experimentUserServiceMock = {
-        getOriginalUserDocs: sandbox.stub().callsFake((userDoc) => Promise.resolve(userDoc)),
-        getUserDocs: sandbox.stub().resolves(userDocs),
-      };
       testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox
         .stub()
         .resolves([regularIndividualExp, withinSubjectExp, factorialExp]);
-
-      testedModule.experimentUserService = experimentUserServiceMock;
 
       const result = await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
 
@@ -1461,13 +1421,7 @@ describe('Experiment Assignment Service Test', () => {
       ];
       const exp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
 
-      const experimentUserServiceMock = {
-        getOriginalUserDocs: sandbox.stub().callsFake((userDoc) => Promise.resolve(userDoc)),
-        getUserDocs: sandbox.stub().resolves(userDocs),
-      };
       testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([exp]);
-
-      testedModule.experimentUserService = experimentUserServiceMock;
 
       await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
 
