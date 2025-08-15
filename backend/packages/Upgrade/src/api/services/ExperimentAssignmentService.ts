@@ -773,20 +773,17 @@ export class ExperimentAssignmentService {
     experimentUser: ExperimentUser,
     experimentIds: string[]
   ): Promise<[IndividualEnrollment[], GroupEnrollment[], IndividualExclusion[], GroupExclusion[]]> {
-    const allGroupIds: string[] = (experimentUser.workingGroup && Object.values(experimentUser.workingGroup)) || [];
+    const groupIds: string[] = experimentUser.workingGroup ? Object.values(experimentUser.workingGroup) : [];
+
+    const hasExperiments = experimentIds.length > 0;
+    const hasGroups = groupIds.length > 0;
+
+    // Query assignments and exclusions for the user
     const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] = await Promise.all([
-      experimentIds.length > 0
-        ? this.individualEnrollmentRepository.findEnrollments(experimentUser.id, experimentIds)
-        : Promise.resolve([] as IndividualEnrollment[]),
-      allGroupIds.length > 0 && experimentIds.length > 0
-        ? this.groupEnrollmentRepository.findEnrollments(allGroupIds, experimentIds)
-        : Promise.resolve([] as GroupEnrollment[]),
-      experimentIds.length > 0
-        ? this.individualExclusionRepository.findExcluded(experimentUser.id, experimentIds)
-        : Promise.resolve([] as IndividualExclusion[]),
-      allGroupIds.length > 0 && experimentIds.length > 0
-        ? this.groupExclusionRepository.findExcluded(allGroupIds, experimentIds)
-        : Promise.resolve([] as GroupExclusion[]),
+      hasExperiments ? this.individualEnrollmentRepository.findEnrollments(experimentUser.id, experimentIds) : [],
+      hasGroups && hasExperiments ? this.groupEnrollmentRepository.findEnrollments(groupIds, experimentIds) : [],
+      hasExperiments ? this.individualExclusionRepository.findExcluded(experimentUser.id, experimentIds) : [],
+      hasGroups && hasExperiments ? this.groupExclusionRepository.findExcluded(groupIds, experimentIds) : [],
     ]);
     return [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions];
   }
@@ -795,28 +792,17 @@ export class ExperimentAssignmentService {
     experimentUsers: ExperimentUser[],
     experimentIds: string[]
   ): Promise<[IndividualEnrollment[], GroupEnrollment[], IndividualExclusion[], GroupExclusion[]]> {
-    const allGroupIds: string[] = experimentUsers
-      .map((user) => (user.workingGroup && Object.values(user.workingGroup)) || [])
-      .flat();
+    const groupIds = experimentUsers.flatMap((user) => (user.workingGroup ? Object.values(user.workingGroup) : []));
+    const userIds = experimentUsers.map((user) => user.id);
+
+    const hasExperiments = experimentIds.length > 0;
+    const hasGroups = groupIds.length > 0;
+
     const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] = await Promise.all([
-      experimentIds.length > 0
-        ? this.individualEnrollmentRepository.findEnrollmentsForUsers(
-            experimentUsers.map((user) => user.id),
-            experimentIds
-          )
-        : Promise.resolve([] as IndividualEnrollment[]),
-      allGroupIds.length > 0 && experimentIds.length > 0
-        ? this.groupEnrollmentRepository.findEnrollments(allGroupIds, experimentIds)
-        : Promise.resolve([] as GroupEnrollment[]),
-      experimentIds.length > 0
-        ? this.individualExclusionRepository.findExcludedForUsers(
-            experimentUsers.map((user) => user.id),
-            experimentIds
-          )
-        : Promise.resolve([] as IndividualExclusion[]),
-      allGroupIds.length > 0 && experimentIds.length > 0
-        ? this.groupExclusionRepository.findExcluded(allGroupIds, experimentIds)
-        : Promise.resolve([] as GroupExclusion[]),
+      hasExperiments ? this.individualEnrollmentRepository.findEnrollmentsForUsers(userIds, experimentIds) : [],
+      hasGroups && hasExperiments ? this.groupEnrollmentRepository.findEnrollments(groupIds, experimentIds) : [],
+      hasExperiments ? this.individualExclusionRepository.findExcludedForUsers(userIds, experimentIds) : [],
+      hasGroups && hasExperiments ? this.groupExclusionRepository.findExcluded(groupIds, experimentIds) : [],
     ]);
     return [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions];
   }
