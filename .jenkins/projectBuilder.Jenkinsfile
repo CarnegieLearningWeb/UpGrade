@@ -65,6 +65,11 @@ projectBuilderV5 (
                     log: 'env-pre-build.log',
                 ],
                 [
+                    script: 'npm run prebuild',
+                    githubCheck: '${projectName}-test',
+                    log: 'env-pre-build-test.log',
+                ],
+                [
                     script: 'npm run build:project',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'

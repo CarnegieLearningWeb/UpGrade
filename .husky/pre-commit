@@ -3,11 +3,10 @@
 
 npx lint-staged
 
-# Testing Frontend
+# Typecheck Frontend
 cd frontend
-npm run test
-cd ..
+npm run typecheck
 
-# Testing Backend Upgrade
-cd backend/packages/Upgrade
-npm start typecheck && npm test
+# Typecheck Backend Upgrade
+cd ../backend/packages/Upgrade
+npm start typecheck
