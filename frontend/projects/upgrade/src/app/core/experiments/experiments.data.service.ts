@@ -119,41 +119,10 @@ export class ExperimentDataService {
   }
 
   updateFilterMode(params: UpdateExperimentFilterModeRequest): Observable<Experiment> {
-    // Use the provided experiment instead of making an unnecessary API call
-    const experiment = params.experiment;
-
-    // Preserve the original segment listTypes since backend may not preserve them
-    const originalSegmentListTypes = new Map<string, string>();
-    experiment.experimentSegmentInclusion?.forEach((inc) => {
-      if (inc.segment?.id && inc.segment.listType) {
-        originalSegmentListTypes.set(inc.segment.id, inc.segment.listType);
-      }
-    });
-
     const updatedExperiment = {
-      ...experiment,
+      ...params.experiment,
       filterMode: params.filterMode,
     };
-
-    return this.updateExperiment(updatedExperiment).pipe(
-      map((updatedResult: Experiment) => {
-        // Restore the listType fields that the backend may have lost
-        if (updatedResult.experimentSegmentInclusion) {
-          updatedResult.experimentSegmentInclusion = updatedResult.experimentSegmentInclusion.map((inc) => {
-            if (inc.segment?.id && originalSegmentListTypes.has(inc.segment.id)) {
-              return {
-                ...inc,
-                segment: {
-                  ...inc.segment,
-                  listType: originalSegmentListTypes.get(inc.segment.id),
-                },
-              };
-            }
-            return inc;
-          });
-        }
-        return updatedResult;
-      })
-    );
+    return this.updateExperiment(updatedExperiment);
   }
 }

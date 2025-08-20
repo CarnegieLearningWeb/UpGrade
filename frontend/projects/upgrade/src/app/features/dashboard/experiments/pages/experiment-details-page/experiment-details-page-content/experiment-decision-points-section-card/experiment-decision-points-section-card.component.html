@@ -4,7 +4,7 @@
     header-left
     [title]="'experiments.details.decision-points.card.title.text' | translate"
     [subtitle]="'experiments.details.decision-points.card.subtitle.text' | translate"
-    [tableRowCount]="tableRowCount"
+    [tableRowCount]="experiment.partitions?.length || 0"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
@@ -15,7 +15,7 @@
     [showMenuButton]="(permissions$ | async)?.experiments.update"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="onAddDecisionPointClick()"
+    (primaryButtonClick)="onAddDecisionPointClick(experiment.context[0], experiment.id)"
     (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
@@ -25,5 +25,9 @@
   <app-experiment-decision-points-table
     content
     *ngIf="isSectionCardExpanded"
+    [decisionPoints]="experiment.partitions"
+    [isLoading$]="experimentService.isLoadingSelectedExperiment$"
+    [actionsDisabled]="!(permissions$ | async)?.experiments.update"
+    (rowAction)="onRowAction($event, experiment.id)"
   ></app-experiment-decision-points-table>
 </app-common-section-card>
