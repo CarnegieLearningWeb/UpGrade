@@ -569,6 +569,16 @@ export interface InteractionEffectLineChartSeriesData {
   participantsLogged: number;
 }
 
+export enum EXPERIMENT_ROW_ACTION {
+  EDIT = 'edit',
+  DELETE = 'delete',
+}
+
+export interface ExperimentDecisionPointRowActionEvent {
+  action: EXPERIMENT_ROW_ACTION;
+  decisionPoint: ExperimentDecisionPoint;
+}
+
 export interface InteractionEffectGraphData {
   name: string;
   series: InteractionEffectLineChartSeriesData[];
