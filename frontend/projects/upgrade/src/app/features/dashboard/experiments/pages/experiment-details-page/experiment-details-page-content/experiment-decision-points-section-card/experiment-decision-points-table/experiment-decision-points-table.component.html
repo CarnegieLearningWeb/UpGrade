@@ -1,3 +1,83 @@
 <div class="table-container">
-  <p>experiment-decision-points-table works!</p>
+  <!-- Loading spinner -->
+  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+
+  <!-- Table -->
+  <table
+    mat-table
+    [dataSource]="decisionPoints"
+    [ngClass]="{ 'no-data': !decisionPoints?.length }"
+    class="decision-points-table"
+  >
+    <!-- Site Column -->
+    <ng-container matColumnDef="site">
+      <th mat-header-cell *matHeaderCellDef class="site-column ft-14-600">
+        {{ DECISION_POINT_TRANSLATION_KEYS.SITE | translate }}
+      </th>
+      <td mat-cell *matCellDef="let decisionPoint" class="site-column ft-14-400">
+        {{ decisionPoint.site }}
+      </td>
+    </ng-container>
+
+    <!-- Target Column -->
+    <ng-container matColumnDef="target">
+      <th mat-header-cell *matHeaderCellDef class="target-column ft-14-600">
+        {{ DECISION_POINT_TRANSLATION_KEYS.TARGET | translate }}
+      </th>
+      <td mat-cell *matCellDef="let decisionPoint" class="target-column ft-14-400">
+        {{ decisionPoint.target }}
+      </td>
+    </ng-container>
+
+    <!-- Exclude If Reached Column -->
+    <ng-container matColumnDef="excludeIfReached">
+      <th mat-header-cell *matHeaderCellDef class="exclude-if-reached-column ft-14-600">
+        {{ DECISION_POINT_TRANSLATION_KEYS.EXCLUDE_IF_REACHED | translate }}
+      </th>
+      <td mat-cell *matCellDef="let decisionPoint" class="exclude-if-reached-column ft-14-400">
+        <mat-checkbox
+          [checked]="decisionPoint.excludeIfReached"
+          [disabled]="true">
+        </mat-checkbox>
+      </td>
+    </ng-container>
+
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef class="actions-column ft-14-600">
+        {{ DECISION_POINT_TRANSLATION_KEYS.ACTIONS | translate }}
+      </th>
+      <td mat-cell *matCellDef="let decisionPoint" class="actions-column ft-14-400 dense-2">
+        <div class="button-wrapper">
+          <button
+            mat-icon-button
+            class="action-button"
+            [disabled]="actionsDisabled"
+            (click)="onEditButtonClick(decisionPoint)">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+        <div class="button-wrapper">
+          <button
+            mat-icon-button
+            class="action-button"
+            [disabled]="actionsDisabled"
+            (click)="onDeleteButtonClick(decisionPoint)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Header and Row Definitions -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+    <!-- No Data Row -->
+    <tr *matNoDataRow>
+      <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
+        {{ 'experiments.details.decision-points.card.no-data-row.text' | translate }}
+      </td>
+    </tr>
+  </table>
 </div>
