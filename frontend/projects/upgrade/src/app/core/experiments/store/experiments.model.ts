@@ -257,8 +257,8 @@ export interface Experiment {
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   filterMode: FILTER_MODE;
-  experimentSegmentInclusion: SegmentNew;
-  experimentSegmentExclusion: SegmentNew;
+  experimentSegmentInclusion: SegmentNew[];
+  experimentSegmentExclusion: SegmentNew[];
   groupSatisfied?: number;
   backendVersion: string;
   moocletPolicyParameters?: MoocletTSConfigurablePolicyParametersDTO;
@@ -478,8 +478,13 @@ export interface UpdateExperimentRequest
   extends Omit<CompleteExperimentRequest, 'experimentSegmentInclusion' | 'experimentSegmentExclusion'> {
   readonly id: string;
   // These fields might have different structure in updates vs creates
-  experimentSegmentInclusion?: SegmentNew;
-  experimentSegmentExclusion?: SegmentNew;
+  experimentSegmentInclusion?: SegmentNew[];
+  experimentSegmentExclusion?: SegmentNew[];
+}
+
+export interface UpdateExperimentFilterModeRequest {
+  experiment: Experiment;
+  filterMode: FILTER_MODE;
 }
 
 export const EXPERIMENT_ROOT_COLUMN_NAMES = {

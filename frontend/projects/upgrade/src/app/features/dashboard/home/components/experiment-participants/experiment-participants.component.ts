@@ -131,42 +131,42 @@ export class ExperimentParticipantsComponent implements OnInit {
     ) {
       if (this.experimentInfo.filterMode === FILTER_MODE.EXCLUDE_ALL) {
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
-        this.experimentInfo.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
+        (this.experimentInfo.experimentSegmentInclusion as any).segment.individualForSegment.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
         });
-        this.experimentInfo.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
+        (this.experimentInfo.experimentSegmentInclusion as any).segment.groupForSegment.forEach((group) => {
           this.members1.push(this.addMembers1(group.type, group.groupId));
         });
-        this.experimentInfo.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
+        (this.experimentInfo.experimentSegmentInclusion as any).segment.subSegments.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.SEGMENT, id.name));
         });
-        this.experimentInfo.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+        (this.experimentInfo.experimentSegmentExclusion as any).segment.individualForSegment.forEach((id) => {
           this.members2.push(this.addMembers2(MemberTypes.INDIVIDUAL, id.userId));
         });
-        this.experimentInfo.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+        (this.experimentInfo.experimentSegmentExclusion as any).segment.groupForSegment.forEach((group) => {
           this.members2.push(this.addMembers2(group.type, group.groupId));
         });
-        this.experimentInfo.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+        (this.experimentInfo.experimentSegmentExclusion as any).segment.subSegments.forEach((id) => {
           this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
         });
       } else {
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
-        this.experimentInfo.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
+        (this.experimentInfo.experimentSegmentInclusion as any).segment.individualForSegment.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
         });
-        this.experimentInfo.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
+        (this.experimentInfo.experimentSegmentInclusion as any).segment.groupForSegment.forEach((group) => {
           this.members1.push(this.addMembers1(group.type, group.groupId));
         });
-        this.experimentInfo.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
+        (this.experimentInfo.experimentSegmentInclusion as any).segment.subSegments.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.SEGMENT, id.name));
         });
-        this.experimentInfo.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+        (this.experimentInfo.experimentSegmentExclusion as any).segment.individualForSegment.forEach((id) => {
           this.members2.push(this.addMembers2(MemberTypes.INDIVIDUAL, id.userId));
         });
-        this.experimentInfo.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+        (this.experimentInfo.experimentSegmentExclusion as any).segment.groupForSegment.forEach((group) => {
           this.members2.push(this.addMembers2(group.type, group.groupId));
         });
-        this.experimentInfo.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+        (this.experimentInfo.experimentSegmentExclusion as any).segment.subSegments.forEach((id) => {
           this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
         });
       }

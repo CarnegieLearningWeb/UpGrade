@@ -1,8 +1,15 @@
 import { Inject, Injectable } from '@angular/core';
-import { Experiment, ExperimentStateInfo, ExperimentPaginationParams } from './store/experiments.model';
+import {
+  Experiment,
+  ExperimentStateInfo,
+  ExperimentPaginationParams,
+  UpdateExperimentFilterModeRequest,
+} from './store/experiments.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class ExperimentDataService {
@@ -38,9 +45,9 @@ export class ExperimentDataService {
     return this.http.post(url, experiments);
   }
 
-  updateExperiment(experiment: Experiment) {
+  updateExperiment(experiment: Experiment): Observable<Experiment> {
     const url = `${this.environment.api.updateExperiments}/${experiment.id}`;
-    return this.http.put(url, { ...experiment });
+    return this.http.put<Experiment>(url, { ...experiment });
   }
 
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {
@@ -57,9 +64,9 @@ export class ExperimentDataService {
     return this.http.delete(url);
   }
 
-  getExperimentById(experimentId: string) {
+  getExperimentById(experimentId: string): Observable<Experiment> {
     const url = `${this.environment.api.getExperimentById}/${experimentId}`;
-    return this.http.get(url);
+    return this.http.get<Experiment>(url);
   }
 
   fetchAllPartitions() {
@@ -109,5 +116,13 @@ export class ExperimentDataService {
   fetchGroupAssignmentStatus(experimentId: string) {
     const url = `${this.environment.api.getGroupAssignmentStatus}/${experimentId}`;
     return this.http.get(url);
+  }
+
+  updateFilterMode(params: UpdateExperimentFilterModeRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      filterMode: params.filterMode,
+    };
+    return this.updateExperiment(updatedExperiment);
   }
 }

@@ -89,7 +89,7 @@ export class CommonDetailsParticipantListTableComponent {
     const listType = rowData.listType;
     let count: number;
 
-    if (listType === this.memberTypes.INDIVIDUAL) {
+    if (listType?.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
       count = rowData.segment.individualForSegment?.length || 0;
     } else {
       count = rowData.segment.groupForSegment?.length || 0;
@@ -104,9 +104,29 @@ export class CommonDetailsParticipantListTableComponent {
     }
   }
 
+  getFormattedListType(rowData: ParticipantListTableRow): string {
+    const listType = rowData.listType;
+
+    if (!listType) {
+      return '';
+    }
+
+    // For standard types (Individual, Segment), apply title case
+    if (listType.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
+      return this.memberTypes.INDIVIDUAL;
+    }
+
+    if (listType.toLowerCase() === this.memberTypes.SEGMENT.toLowerCase()) {
+      return this.memberTypes.SEGMENT;
+    }
+
+    return listType;
+  }
+
   isPublicSegment(rowData: ParticipantListTableRow): boolean {
     return (
-      rowData.listType === this.memberTypes.SEGMENT && rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC
+      rowData.listType?.toLowerCase() === this.memberTypes.SEGMENT.toLowerCase() &&
+      rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC
     );
   }
 
