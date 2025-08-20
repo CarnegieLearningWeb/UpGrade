@@ -119,9 +119,8 @@ export class ExperimentDataService {
   }
 
   updateFilterMode(params: UpdateExperimentFilterModeRequest): Observable<Experiment> {
-    const experiment = params.experiment;
     const updatedExperiment = {
-      ...experiment,
+      ...params.experiment,
       filterMode: params.filterMode,
     };
     return this.updateExperiment(updatedExperiment);
