@@ -480,6 +480,7 @@ export class ExperimentClientController {
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.checkIfUserExist(experiment.userId, request.logger);
     // append userDoc in logger
+    console.log('experimentUserDoc', experimentUserDoc);
     request.logger.child({ userDoc: experimentUserDoc });
     request.logger.info({ message: 'Got the original user doc' });
     const { createdAt, updatedAt, versionNumber, ...rest } = await this.experimentAssignmentService.markExperimentPoint(
