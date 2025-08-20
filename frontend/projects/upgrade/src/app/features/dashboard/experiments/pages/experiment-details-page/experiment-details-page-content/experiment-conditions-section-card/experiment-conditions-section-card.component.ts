@@ -10,7 +10,13 @@ import { IMenuButtonItem } from 'upgrade_types';
 import { ExperimentConditionsTableComponent } from './experiment-conditions-table/experiment-conditions-table.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
 import { Observable } from 'rxjs';
-import { Experiment, EXPERIMENT_BUTTON_ACTION } from '../../../../../../../core/experiments/store/experiments.model';
+import {
+  Experiment,
+  EXPERIMENT_BUTTON_ACTION,
+  EXPERIMENT_ROW_ACTION,
+  ExperimentCondition,
+  ExperimentConditionRowActionEvent,
+} from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
@@ -34,9 +40,6 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
   permissions$: Observable<UserPermission>;
   selectedExperiment$ = this.experimentService.selectedExperiment$;
 
-  // TODO: Add tableRowCount$ when experiment conditions are implemented
-  tableRowCount = 0;
-
   menuButtonItems: IMenuButtonItem[] = [
     {
       label: 'experiments.details.import-condition.menu-item.text',
@@ -56,7 +59,7 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
     this.permissions$ = this.authService.userPermissions$;
   }
 
-  onAddConditionClick(): void {
+  onAddConditionClick(appContext: string, experimentId: string): void {
     // TODO: Implement add condition functionality when dialog service is available
     console.log('Add condition clicked');
   }
@@ -80,8 +83,27 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
     this.isSectionCardExpanded = isSectionCardExpanded;
   }
 
-  // TODO: Add row action methods when experiment conditions table events are implemented
-  // onRowAction(event: ExperimentConditionRowActionEvent, experimentId: string): void {}
-  // onEditCondition(rowData: ExperimentConditionTableRow, experimentId: string): void {}
-  // onDeleteCondition(condition: ExperimentCondition): void {}
+  // Condition row action events
+  onRowAction(event: ExperimentConditionRowActionEvent, experimentId: string): void {
+    switch (event.action) {
+      case EXPERIMENT_ROW_ACTION.EDIT:
+        this.onEditCondition(event.condition, experimentId);
+        break;
+      case EXPERIMENT_ROW_ACTION.DELETE:
+        this.onDeleteCondition(event.condition);
+        break;
+      default:
+        console.log('Unknown action:', event.action);
+    }
+  }
+
+  onEditCondition(condition: ExperimentCondition, experimentId: string): void {
+    // TODO: Implement edit functionality when dialog service is available
+    console.log('Edit condition:', condition, 'for experiment:', experimentId);
+  }
+
+  onDeleteCondition(condition: ExperimentCondition): void {
+    // TODO: Implement delete functionality when dialog service is available
+    console.log('Delete condition:', condition);
+  }
 }
