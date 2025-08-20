@@ -579,6 +579,17 @@ export interface ExperimentDecisionPointRowActionEvent {
   decisionPoint: ExperimentDecisionPoint;
 }
 
+export interface ExperimentConditionRowActionEvent {
+  action: EXPERIMENT_ROW_ACTION;
+  condition: ExperimentCondition;
+}
+
+export enum EXPERIMENT_PAYLOAD_DISPLAY_TYPE {
+  UNIVERSAL = 'universal',
+  SPECIFIC = 'specific',
+  NONE = 'none',
+}
+
 export interface InteractionEffectGraphData {
   name: string;
   series: InteractionEffectLineChartSeriesData[];
