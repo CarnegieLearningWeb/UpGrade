@@ -227,12 +227,6 @@ export class ExperimentService {
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
     const experiment = await this.findOne(id, logger);
     if (experiment) {
-      experiment.experimentSegmentExclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
-        experiment.experimentSegmentExclusion
-      );
-      experiment.experimentSegmentInclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
-        experiment.experimentSegmentInclusion
-      );
       return this.reducedConditionPayload(this.formattingPayload(experiment));
     } else {
       return undefined;
@@ -246,6 +240,12 @@ export class ExperimentService {
     const experiment = await this.experimentRepository.findOneExperiment(id);
 
     if (experiment) {
+      experiment.experimentSegmentExclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
+        experiment.experimentSegmentExclusion
+      );
+      experiment.experimentSegmentInclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
+        experiment.experimentSegmentInclusion
+      );
       return this.formattingConditionPayload(experiment);
     } else {
       return undefined;
@@ -362,7 +362,7 @@ export class ExperimentService {
     }
     const entityManager = existingEntityManager || this.dataSource.manager;
     return await entityManager.transaction(async (transactionalEntityManager) => {
-      const experiment = await this.findOne(experimentId, logger);
+      const experiment = await this.experimentRepository.findOneExperiment(experimentId);
 
       if (experiment) {
         await this.clearExperimentCacheDetail(
@@ -1985,7 +1985,7 @@ export class ExperimentService {
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
       // Find the existing record
       let existingRecord: ExperimentSegmentInclusion | ExperimentSegmentExclusion;
-      const experiment = await this.findOne(experimentId);
+      const experiment = await this.experimentRepository.findOne({ where: { id: experimentId } });
 
       if (filterType === LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.experimentSegmentInclusionRepository.findOne({
@@ -2098,7 +2098,7 @@ export class ExperimentService {
         const experimentListFile = experimentListFiles.find((file) => file.fileName === fileStatus.fileName);
         return this.segmentService.convertJSONStringToSegInputValFormat(experimentListFile.fileContent as string);
       });
-    const experiment = await this.findOne(experimentId, logger);
+    const experiment = await this.experimentRepository.findOne({ where: { id: experimentId } });
 
     const createdLists: (ExperimentSegmentInclusion | ExperimentSegmentExclusion)[] = await this.dataSource.transaction(
       async (transactionalEntityManager) => {
