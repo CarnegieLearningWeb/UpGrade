@@ -66,7 +66,7 @@ projectBuilderV5 (
                 ],
                 [
                     script: 'npm run prebuild',
-                    githubCheck: '${projectName}-test',
+                    githubCheck: '${projectName}-frontend-test',
                     log: 'env-pre-build-test.log',
                 ],
                 [

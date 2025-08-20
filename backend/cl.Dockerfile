@@ -16,6 +16,7 @@ RUN npm ci --no-audit
 
 WORKDIR /usr/src/app/backend/
 RUN npm ci --no-audit
+RUN ["npm", "run", "test:upgrade"]
 RUN ["npm", "run", "build:upgrade"]
 
 FROM ${IMAGE_REPO}node:22.14-alpine3.21
