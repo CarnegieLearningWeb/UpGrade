@@ -1,7 +1,8 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { selectAll } from './experiments.reducer';
-import { EXPERIMENT_SEARCH_KEY, ExperimentState } from './experiments.model';
+import { EXPERIMENT_SEARCH_KEY, ExperimentState, Experiment } from './experiments.model';
 import { selectRouterState } from '../../core.state';
+import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
 import {
   ASSIGNMENT_UNIT,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
@@ -181,4 +182,25 @@ export const selectExperimentOverviewDetails = createSelector(selectSelectedExpe
 export const selectIsPollingExperimentDetailStats = createSelector(
   selectExperimentState,
   (state) => state.isPollingExperimentDetailStats
+);
+
+export const selectExperimentInclusions = createSelector(
+  selectSelectedExperiment,
+  (experiment: Experiment): ParticipantListTableRow[] => {
+    if (!experiment?.experimentSegmentInclusion?.length) {
+      return [];
+    }
+    return experiment.experimentSegmentInclusion
+      .filter((inclusion) => inclusion.segment)
+      .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
+      .map((inclusion) => ({
+        segment: inclusion.segment,
+        listType: inclusion.segment.listType,
+      }));
+  }
+);
+
+export const selectExperimentInclusionsLength = createSelector(
+  selectExperimentInclusions,
+  (inclusions) => inclusions.length
 );

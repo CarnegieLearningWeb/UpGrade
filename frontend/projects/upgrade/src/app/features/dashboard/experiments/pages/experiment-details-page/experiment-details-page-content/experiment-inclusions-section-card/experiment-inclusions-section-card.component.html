@@ -21,9 +21,9 @@
     [isSectionCardExpanded]="isSectionCardExpanded && experiment.filterMode !== FILTER_MODE.INCLUDE_ALL"
     [primaryActionBtnDisabled]="experiment.filterMode === FILTER_MODE.INCLUDE_ALL"
     [sectionCardExpandBtnDisabled]="experiment.filterMode === FILTER_MODE.INCLUDE_ALL"
-    (primaryButtonClick)="onAddInclusionClick()"
+    (primaryButtonClick)="onAddIncludeListClick(experiment.context[0], experiment.id)"
     (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
-    (slideToggleChange)="onSlideToggleChange($event, experiment.id)"
+    (slideToggleChange)="onSlideToggleChange($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
@@ -32,5 +32,6 @@
   <app-experiment-inclusions-table
     content
     *ngIf="isSectionCardExpanded && experiment.filterMode !== FILTER_MODE.INCLUDE_ALL"
+    (rowAction)="onRowAction($event, experiment.id)"
   ></app-experiment-inclusions-table>
 </app-common-section-card>

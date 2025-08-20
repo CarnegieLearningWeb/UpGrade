@@ -11,6 +11,7 @@ import {
   DATE_RANGE,
   IEnrollmentStatByDate,
   IContextMetaData,
+  UpdateExperimentFilterModeRequest,
 } from './experiments.model';
 
 export const actionGetExperiments = createAction('[Experiment] Get Experiments', props<{ fromStarting?: boolean }>());
@@ -83,6 +84,20 @@ export const actionUpdateExperimentStateSuccess = createAction(
 );
 
 export const actionUpdateExperimentStateFailure = createAction('[Experiment] Update Experiment State Failure');
+
+export const actionUpdateExperimentFilterMode = createAction(
+  '[Experiment] Update Experiment Filter Mode',
+  props<{ updateExperimentFilterModeRequest: UpdateExperimentFilterModeRequest }>()
+);
+
+export const actionUpdateExperimentFilterModeSuccess = createAction(
+  '[Experiment] Update Experiment Filter Mode Success',
+  props<{ experiment: Experiment }>()
+);
+
+export const actionUpdateExperimentFilterModeFailure = createAction(
+  '[Experiment] Update Experiment Filter Mode Failure'
+);
 
 export const actionFetchAllDecisionPoints = createAction('[Experiment] Fetch All Decision Points');
 
