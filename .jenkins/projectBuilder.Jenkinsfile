@@ -22,6 +22,25 @@ projectBuilderV5 (
                 ]
             ]
         ],
+        "upgrade-backend-test": [
+            artifactType: "codeartifact",
+            projectDir: "backend/packages/Upgrade",
+            runInProjectDir: true,
+            skipArtifactUpload: true,
+            dependencies: ["types"],
+            buildScripts: [
+                [
+                    script: 'npm ci --no-audit',
+                    githubCheck: '${projectName} npm ci --no-audit',
+                    log: '${projectName}-npm-ci.log'
+                ],
+                [
+                    script: 'npm run test',
+                    githubCheck: '${projectName}-test',
+                    log: '${projectName}-test.log'
+                ]
+            ]
+        ],
         "upgrade-service":[
             artifactType: "ecr",
             projectDir: "backend",
@@ -35,18 +54,6 @@ projectBuilderV5 (
             ],
             fileFilter: [
                 include: ["types/.*","cloudformation/backend/app-infrastructure.yml"]
-            ],
-            dependencies: ["types"],
-            buildScripts: [
-                [
-                    script: 'npm ci --no-audit',
-                    log: '${projectName}-backend-npm-ci.log'
-                ],
-                [
-                    script: 'npm run test',
-                    log: '${projectName}-backend-test.log',
-                    githubCheck: '${projectName}-backend-test'
-                ]
             ],
             dockerConfig: [
                 dockerFile: "backend/cl.Dockerfile",
