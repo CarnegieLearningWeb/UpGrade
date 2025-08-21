@@ -27,7 +27,6 @@ projectBuilderV5 (
             projectDir: "backend/packages/Upgrade",
             runInProjectDir: true,
             skipArtifactUpload: true,
-            dependencies: ["types"],
             versioning: "branch",
             fileFilter: [
                 include: ["types/.*"]
