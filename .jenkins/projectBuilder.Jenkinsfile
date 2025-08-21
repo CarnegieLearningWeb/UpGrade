@@ -31,13 +31,12 @@ projectBuilderV5 (
             buildScripts: [
                 [
                     script: 'npm ci --no-audit',
-                    githubCheck: '${projectName} npm ci --no-audit',
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'npm run test:unit',
-                    githubCheck: '${projectName}-test',
-                    log: '${projectName}-test.log'
+                    script: 'npm run test:ci',
+                    githubCheck: '${projectName}',
+                    log: '${projectName}.log'
                 ]
             ]
         ],

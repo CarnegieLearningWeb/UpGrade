@@ -27,7 +27,7 @@ module.exports = {
       unit: {
         default: {
           script: series('nps banner.testUnit', 'nps test.unit.run'),
-          description: 'Runs the integration tests',
+          description: 'Runs the unit tests',
         },
         run: {
           default: {
