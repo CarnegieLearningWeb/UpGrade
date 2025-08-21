@@ -28,6 +28,10 @@ projectBuilderV5 (
             runInProjectDir: true,
             skipArtifactUpload: true,
             dependencies: ["types"],
+            versioning: "branch",
+            fileFilter: [
+                include: ["types/.*"]
+            ],
             buildScripts: [
                 [
                     script: 'npm ci --no-audit',
