@@ -35,7 +35,7 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'npm run test',
+                    script: 'npm run test:unit',
                     githubCheck: '${projectName}-test',
                     log: '${projectName}-test.log'
                 ]
