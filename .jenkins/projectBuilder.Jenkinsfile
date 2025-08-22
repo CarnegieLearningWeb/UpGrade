@@ -165,21 +165,20 @@ projectBuilderV5 (
         ],
     ],
     prChecks: [
-        runParallel: true, // optional - whether to run checks in parallel
+        runParallel: true, 
         checks: [
             "upgrade": [
+                fileFilter: [
+                    include: ["frontend/.*"]
+                ],
                 buildScripts: [
                     [
-                        script: "npm run test",
+                        script: "cd frontend && npm run test",
                         githubCheck: "upgrade-frontend-test",
                         log: "upgrade-frontend-test.log"
                     ]
                 ],
-                continueOnFailure: false, // optional - whether to continue if this check fails
-                buildAgent: [ // optional - custom build agent config for this check
-                    cpu: 512,
-                    memory: 1024
-                ]
+                continueOnFailure: false
             ]
         ]
     ]
