@@ -67,16 +67,20 @@ export class ExperimentMetricsTableComponent {
 
   getStatisticOperations(query: ExperimentQueryDTO): string[] {
     const operations: string[] = [];
+    const queryData = query.query as any; // Type assertion since query is object type
 
-    // Add repeated measure if metric has multiple keys
+    // Step 1: Add repeated measure if metric has multiple keys (FIRST for group metrics)
     const metricKeys = this.getMetricKeys(query);
     if (metricKeys.length > 1 && query.repeatedMeasure) {
       operations.push(this.formatRepeatedMeasure(query.repeatedMeasure));
     }
 
-    const queryData = query.query as any; // Type assertion since query is object type
+    // Step 2: Add operation type (FIRST for categorical, SECOND for group metrics)
+    if (queryData?.operationType) {
+      operations.push(this.formatOperationType(queryData.operationType));
+    }
 
-    // Add comparison function for categorical metrics
+    // Step 3: Add comparison function and value for categorical metrics (AFTER operation type)
     if ((query.metric as any)?.type === IMetricMetaData.CATEGORICAL) {
       if (queryData?.compareFn) {
         const compareFn = this.comparisonFns.find((fn) => fn.value === queryData.compareFn);
@@ -87,11 +91,6 @@ export class ExperimentMetricsTableComponent {
       if (queryData?.compareValue) {
         operations.push(queryData.compareValue);
       }
-    }
-
-    // Add the main operation type
-    if (queryData?.operationType) {
-      operations.push(this.formatOperationType(queryData.operationType));
     }
 
     return operations;
