@@ -204,3 +204,24 @@ export const selectExperimentInclusionsLength = createSelector(
   selectExperimentInclusions,
   (inclusions) => inclusions.length
 );
+
+export const selectExperimentExclusions = createSelector(
+  selectSelectedExperiment,
+  (experiment: Experiment): ParticipantListTableRow[] => {
+    if (!experiment?.experimentSegmentExclusion?.length) {
+      return [];
+    }
+    return experiment.experimentSegmentExclusion
+      .filter((exclusion) => exclusion.segment)
+      .sort((a, b) => new Date(a.segment.createdAt).getTime() - new Date(b.segment.createdAt).getTime())
+      .map((exclusion) => ({
+        segment: exclusion.segment,
+        listType: exclusion.segment.listType,
+      }));
+  }
+);
+
+export const selectExperimentExclusionsLength = createSelector(
+  selectExperimentExclusions,
+  (exclusions) => exclusions.length
+);
