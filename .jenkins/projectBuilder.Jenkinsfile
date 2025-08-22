@@ -168,10 +168,6 @@ projectBuilderV5 (
         runParallel: true, // optional - whether to run checks in parallel
         checks: [
             "upgrade": [
-                fileFilter: [
-                    include: ["src/.*", "tests/.*"],
-                    exclude: ["dist/.*"]
-                ],
                 buildScripts: [
                     [
                         script: "npm run test",
