@@ -25,6 +25,7 @@
     "test:watch": " jest --maxWorkers=25% --watchAll --coverage",
     "test:badges": "coverage-badge-creator",
     "test:dev": "npm-run-all --parallel test:watch test:coverage test:badges",
+    "typecheck": "tsc --noEmit",
     "prettier:write": "prettier --config ../.prettierrc './projects/upgrade/src/**/*.{ts,js,html,json,scss}' --write",
     "prettier:check": "prettier --config ../.prettierrc './projects/upgrade/src/**/*.{ts,js,html,json,scss}' --check",
     "release": "standard-version && git push --follow-tags origin master",
