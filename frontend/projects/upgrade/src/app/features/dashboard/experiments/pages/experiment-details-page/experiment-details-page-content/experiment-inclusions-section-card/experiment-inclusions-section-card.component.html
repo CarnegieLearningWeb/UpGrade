@@ -32,6 +32,8 @@
   <app-experiment-inclusions-table
     content
     *ngIf="isSectionCardExpanded && experiment.filterMode !== FILTER_MODE.INCLUDE_ALL"
+    [slideToggleDisabled]="!(permissions$ | async)?.experiments.update"
+    [actionsDisabled]="!(permissions$ | async)?.experiments.update"
     (rowAction)="onRowAction($event, experiment.id)"
   ></app-experiment-inclusions-table>
 </app-common-section-card>

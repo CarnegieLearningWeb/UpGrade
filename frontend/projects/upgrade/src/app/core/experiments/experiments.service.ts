@@ -43,6 +43,8 @@ import {
   selectExperimentsExportLoading,
   selectExperimentInclusions,
   selectExperimentInclusionsLength,
+  selectExperimentExclusions,
+  selectExperimentExclusionsLength,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -87,6 +89,8 @@ export class ExperimentService {
   isGraphLoading$ = this.store$.pipe(select(selectIsGraphLoading));
   selectExperimentInclusions$ = this.store$.pipe(select(selectExperimentInclusions));
   selectExperimentInclusionsLength$ = this.store$.pipe(select(selectExperimentInclusionsLength));
+  selectExperimentExclusions$ = this.store$.pipe(select(selectExperimentExclusions));
+  selectExperimentExclusionsLength$ = this.store$.pipe(select(selectExperimentExclusionsLength));
   experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
   contextMetaData$ = this.store$.pipe(select(selectContextMetaData));
   isLoadingContextMetaData$ = this.store$.pipe(select(selectIsLoadingContextMetaData));
