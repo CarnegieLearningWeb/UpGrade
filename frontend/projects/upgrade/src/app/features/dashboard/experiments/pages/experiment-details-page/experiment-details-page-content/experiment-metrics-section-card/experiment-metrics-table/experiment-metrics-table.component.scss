@@ -48,8 +48,8 @@
         td {
           min-width: 96px;
           padding-left: 0;
-          padding-top: 12px;
-          padding-bottom: 12px;
+          padding-top: 16px;
+          padding-bottom: 8px;
           color: var(--black-2);
           vertical-align: top;
         }
@@ -73,10 +73,6 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
-
-        .metric-key {
-          line-height: 1.5;
-        }
       }
     }
 
@@ -87,10 +83,6 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
-
-        .statistic-operation {
-          line-height: 1.5;
-        }
       }
     }
 
@@ -107,6 +99,7 @@
       min-width: 96px;
       text-align: center;
       padding-right: 16px;
+      padding-top: 8px;
 
       .button-wrapper {
         display: inline-block;
