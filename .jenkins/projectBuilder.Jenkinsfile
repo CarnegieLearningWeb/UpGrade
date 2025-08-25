@@ -168,17 +168,13 @@ projectBuilderV5 (
         runParallel: true, 
         checks: [
             "upgrade": [
-                fileFilter: [
-                    include: ["frontend/.*"]
-                ],
                 buildScripts: [
                     [
-                        script: """
-                            dir('frontend') {
-                                npm ci --no-audit
-                                npm run test
-                            }
-                        """,
+                        script: 'npm ci --no-audit',
+                        log: "upgrade-frontend-npm-ci.log",
+                    ],
+                    [
+                        script: 'npm run test',
                         githubCheck: "upgrade-frontend-test",
                         log: "upgrade-frontend-test.log"
                     ]
