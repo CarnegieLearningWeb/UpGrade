@@ -170,11 +170,11 @@ projectBuilderV5 (
             "upgrade": [
                 buildScripts: [
                     [
-                        script: 'npm ci --no-audit',
+                        script: 'cd frontend && npm ci --no-audit',
                         log: "upgrade-frontend-npm-ci.log",
                     ],
                     [
-                        script: 'npm run test',
+                        script: 'cd frontend && npm run test',
                         githubCheck: "upgrade-frontend-test",
                         log: "upgrade-frontend-test.log"
                     ]
