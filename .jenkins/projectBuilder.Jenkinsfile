@@ -172,6 +172,11 @@ projectBuilderV5 (
      prChecks: [
         checks: [
             "unit-tests": [
+                buildAgent: [
+                    image: "docker:latest",
+                    cpu: 1024,
+                    memory: 2048
+                ],
                 fileFilter: [
                     include: ["backend/.*", "types/.*"]
                 ],
