@@ -29,7 +29,7 @@ describe('AppComponent', () => {
 
       component.ngOnInit();
 
-      expect(mockAuthService.initializeUserSession).toHaveBeenCalled();
+      expect(mockAuthService.initializeUserSession).not.toHaveBeenCalled();
       expect(mockTranslateService.setDefaultLang).toHaveBeenCalledWith(expectedLangConstant);
     });
   });

@@ -175,8 +175,8 @@ projectBuilderV5 (
                     [
                         script: """
                             dir('frontend') {
-                                sh 'npm ci --no-audit'
-                                sh 'npm run test'
+                                npm ci --no-audit
+                                npm run test
                             }
                         """,
                         githubCheck: "upgrade-frontend-test",
