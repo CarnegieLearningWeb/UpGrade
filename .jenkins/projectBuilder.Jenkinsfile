@@ -61,6 +61,11 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
+                        script: 'npm run test',
+                        githubCheck: "upgrade-frontend-test",
+                        log: "upgrade-frontend-test.log"
+                ],
+                [
                     script: 'npm run prebuild:project',
                     log: 'env-pre-build.log',
                 ],
@@ -163,24 +168,5 @@ projectBuilderV5 (
                 ]
             ]
         ],
-    ],
-    prChecks: [
-        runParallel: true, 
-        checks: [
-            "upgrade": [
-                buildScripts: [
-                    [
-                        script: 'cd frontend && npm ci --no-audit',
-                        log: "upgrade-frontend-npm-ci.log",
-                    ],
-                    [
-                        script: 'cd frontend && npm run test',
-                        githubCheck: "upgrade-frontend-test",
-                        log: "upgrade-frontend-test.log"
-                    ]
-                ],
-                continueOnFailure: false
-            ]
-        ]
     ]
 )
