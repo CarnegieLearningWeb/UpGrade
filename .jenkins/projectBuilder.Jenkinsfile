@@ -168,5 +168,25 @@ projectBuilderV5 (
                 ]
             ]
         ],
+    ],
+     prChecks: [
+        checks: [
+            "unit-tests": [
+                fileFilter: [
+                    include: ["backend/.*", "types/.*"]
+                ],
+                buildScripts: [
+                    [
+                        script: "docker build -f backend/citest.Dockerfile -t backend-unit-test .",
+                        log: "backend-unit-test-build.log",
+                    ],
+                    [
+                        script: "docker run --rm backend-unit-test npm test:unit",
+                        log: "backend-unit-test.log",
+                        githubCheck: "backend-unit-test-results"
+                    ]
+                ]
+            ]
+        ]
     ]
 )
