@@ -932,6 +932,7 @@ export class ExperimentClientController {
   @Authorized()
   @Delete('clearDB')
   public async clearDB(@Req() request: AppRequest): Promise<string> {
+    console.log('cleardb called'); // test change
     return this.experimentUserService.clearDB(request.logger);
   }
 }
