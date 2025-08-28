@@ -75,10 +75,15 @@ async function quickTest() {
   await doWorkingGroupMembership(client);
   await doAliases(client);
   await doAssign(client);
+  await doAssignIgnoreCache(client);
+  await doAssign(client);
+
   const condition = await doGetDecisionPointAssignment(client);
   doSetFeatureFlagUserGroupsForSession(client, options);
   await doFeatureFlags(client);
-  // await doHasFeatureFlag(client);
+  await doFeatureFlagsIgnoreCache(client);
+  await doHasFeatureFlag(client);
+  await doHasFeatureFlag(client);
   // await doMark(client, condition);
   // await doLog(client);
 }
@@ -134,6 +139,15 @@ async function doAssign(client: UpgradeClient) {
   }
 }
 
+async function doAssignIgnoreCache(client: UpgradeClient) {
+  try {
+    const response = await client.getAllExperimentConditions({ ignoreCache: true });
+    console.log('\n[Assign response]:', JSON.stringify(response));
+  } catch (error) {
+    console.error('\n[Assign error]:', error);
+  }
+}
+
 async function doGetDecisionPointAssignment(client: UpgradeClient): Promise<string | null> {
   try {
     const response = await client.getDecisionPointAssignment(site, target);
@@ -168,6 +182,15 @@ function doSetFeatureFlagUserGroupsForSession(
 async function doFeatureFlags(client: UpgradeClient) {
   try {
     const response = await client.getAllFeatureFlags();
+    console.log('\n[Feature Flag response]:', JSON.stringify(response));
+  } catch (error) {
+    console.error('\n[Feature Flag error]:', error);
+  }
+}
+
+async function doFeatureFlagsIgnoreCache(client: UpgradeClient) {
+  try {
+    const response = await client.getAllFeatureFlags({ ignoreCache: true });
     console.log('\n[Feature Flag response]:', JSON.stringify(response));
   } catch (error) {
     console.error('\n[Feature Flag error]:', error);
