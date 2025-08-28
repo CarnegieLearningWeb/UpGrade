@@ -35,7 +35,8 @@ import {
 import { CommonImportModalComponent } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-modal.component';
 import { DeleteSegmentModalComponent } from '../../features/dashboard/segments/modals/delete-segment-modal/delete-segment-modal.component';
 import { UpsertExperimentModalComponent } from '../../features/dashboard/experiments/modals/upsert-experiment-modal/upsert-experiment-modal.component';
-import { UPSERT_EXPERIMENT_ACTION } from '../../core/experiments/store/experiments.model';
+import { UpsertDecisionPointModalComponent } from '../../features/dashboard/experiments/modals/upsert-decision-point-modal/upsert-decision-point-modal.component';
+import { UPSERT_EXPERIMENT_ACTION, ExperimentDecisionPoint } from '../../core/experiments/store/experiments.model';
 
 export interface ImportModalParams {
   importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
@@ -45,6 +46,13 @@ export interface ImportModalParams {
   flagId?: string; // for feature flag list import
   segmentId?: string; // for segment list import
   listType?: LIST_FILTER_MODE; // for feature flag list import
+}
+
+export interface UpsertDecisionPointModalParams {
+  sourceDecisionPoint: ExperimentDecisionPoint | null;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
+  context: string;
 }
 
 @Injectable({
@@ -86,6 +94,48 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(UpsertExperimentModalComponent, config);
+  }
+
+  openAddDecisionPointModal(experimentId: string, context: string) {
+    const commonModalConfig: CommonModalConfig<UpsertDecisionPointModalParams> = {
+      title: 'Add Decision Point',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceDecisionPoint: null,
+        action: UPSERT_EXPERIMENT_ACTION.ADD,
+        experimentId,
+        context,
+      },
+    };
+    return this.openUpsertDecisionPointModal(commonModalConfig);
+  }
+
+  openEditDecisionPointModal(sourceDecisionPoint: ExperimentDecisionPoint, experimentId: string, context: string) {
+    const commonModalConfig: CommonModalConfig<UpsertDecisionPointModalParams> = {
+      title: 'Edit Decision Point',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceDecisionPoint: { ...sourceDecisionPoint },
+        action: UPSERT_EXPERIMENT_ACTION.EDIT,
+        experimentId,
+        context,
+      },
+    };
+    return this.openUpsertDecisionPointModal(commonModalConfig);
+  }
+
+  openUpsertDecisionPointModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: false,
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertDecisionPointModalComponent, config);
   }
 
   // feature flag modal ---------------------------------------- //

@@ -19,6 +19,7 @@ import {
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
+import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 
 @Component({
   selector: 'app-experiment-decision-points-section-card',
@@ -36,6 +37,7 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 })
 export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
   @Input() isSectionCardExpanded = true;
+  @Input() experimentContext = '';
 
   permissions$: Observable<UserPermission>;
   selectedExperiment$ = this.experimentService.selectedExperiment$;
@@ -53,15 +55,18 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
     },
   ];
 
-  constructor(public experimentService: ExperimentService, private authService: AuthService) {}
+  constructor(
+    public experimentService: ExperimentService,
+    private authService: AuthService,
+    private dialogService: DialogService
+  ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
   }
 
   onAddDecisionPointClick(appContext: string, experimentId: string): void {
-    // TODO: Implement add decision point functionality when dialog service is available
-    console.log('Add decision point');
+    this.dialogService.openAddDecisionPointModal(experimentId, this.experimentContext);
   }
 
   onMenuButtonItemClick(event: string, experiment: Experiment): void {
@@ -98,8 +103,7 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
   }
 
   onEditDecisionPoint(decisionPoint: ExperimentDecisionPoint, experimentId: string): void {
-    // TODO: Implement edit functionality when dialog service is available
-    console.log('Edit decision point');
+    this.dialogService.openEditDecisionPointModal(decisionPoint, experimentId, this.experimentContext);
   }
 
   onDeleteDecisionPoint(decisionPoint: ExperimentDecisionPoint): void {
