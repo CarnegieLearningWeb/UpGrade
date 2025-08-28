@@ -86,7 +86,29 @@ projectBuilderV5 (
                 "release/.*"
             ]
         ],
-         "scheduler-lambda": [
+        "backend-tests": [
+            artifactType: "codeartifact",
+            versioning: "none",
+            projectDir: "backend/packages/UpGrade",
+            runInProjectDir: true,
+            skipArtifactUpload: true,
+            dependencies: ["types"],
+            fileFilter: [
+                include: ["backend/packages/UpGrade/.*"]
+            ],
+            buildScripts: [
+                [
+                    script: 'npm ci --no-audit',
+                    log: '${projectName}-npm-ci.log'
+                ],
+                [
+                    script: 'npm run test:unit',
+                    githubCheck: '${projectName} test',
+                    log: '${projectName}-test.log'
+                ]
+            ]
+        ],
+        "scheduler-lambda": [
             artifactType: "s3",
             versioning: "calendar",
             projectDir: "backend/packages/Scheduler",
@@ -168,30 +190,5 @@ projectBuilderV5 (
                 ]
             ]
         ],
-    ],
-     prChecks: [
-        checks: [
-            "unit-tests": [
-                buildAgent: [
-                    image: "docker:latest",
-                    cpu: 1024,
-                    memory: 2048
-                ],
-                fileFilter: [
-                    include: ["backend/.*", "types/.*"]
-                ],
-                buildScripts: [
-                    [
-                        script: "docker build -f backend/citest.Dockerfile -t backend-unit-test .",
-                        log: "backend-unit-test-build.log",
-                    ],
-                    [
-                        script: "docker run --rm backend-unit-test npm test:unit",
-                        log: "backend-unit-test.log",
-                        githubCheck: "backend-unit-test-results"
-                    ]
-                ]
-            ]
-        ]
     ]
 )
