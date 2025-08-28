@@ -102,6 +102,11 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
+                    script: 'npm start typecheck',
+                    githubCheck: '${projectName} typecheck',
+                    log: '${projectName}-typecheck.log'
+                ],
+                [
                     script: 'npm run test:unit',
                     githubCheck: '${projectName} test',
                     log: '${projectName}-test.log'

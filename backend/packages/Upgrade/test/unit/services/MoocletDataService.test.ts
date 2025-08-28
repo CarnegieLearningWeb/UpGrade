@@ -16,7 +16,7 @@ import { Container } from 'typedi';
 import axios from 'axios';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ASSIGNMENT_ALGORITHM } from '../../../../../../types/src';
-import { MoocletTSConfigurablePolicyParametersDTO } from 'types/src';
+import { MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
 
 jest.mock('axios');
 
