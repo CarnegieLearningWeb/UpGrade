@@ -89,12 +89,12 @@ projectBuilderV5 (
         "backend-tests": [
             artifactType: "codeartifact",
             versioning: "none",
-            projectDir: "backend/packages/UpGrade",
+            projectDir: "backend/packages/Upgrade",
             runInProjectDir: true,
             skipArtifactUpload: true,
             dependencies: ["types"],
             fileFilter: [
-                include: ["backend/packages/UpGrade/.*"]
+                include: ["backend/packages/Upgrade/.*"]
             ],
             buildScripts: [
                 [
