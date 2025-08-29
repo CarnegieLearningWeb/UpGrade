@@ -89,7 +89,7 @@ projectBuilderV5 (
         "backend-tests": [
             artifactType: "codeartifact",
             versioning: "none",
-            projectDir: "backend/packages/Upgrade",
+            projectDir: "backend",
             runInProjectDir: true,
             skipArtifactUpload: true,
             dependencies: ["types"],
@@ -98,11 +98,11 @@ projectBuilderV5 (
             ],
             buildScripts: [
                 [
-                    script: 'npm ci --no-audit',
+                    script: 'npm run install:upgrade',
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'npm run test:unit',
+                    script: 'npm run test:upgrade-unit',
                     githubCheck: '${projectName} test',
                     log: '${projectName}-test.log'
                 ]
@@ -190,5 +190,23 @@ projectBuilderV5 (
                 ]
             ]
         ],
+    ],
+    prChecks: [
+        "checks": [
+           "lint": [
+             buildScripts: [
+               [
+                 script: 'npm ci --no-audit',
+                 log: 'npm-ci.log'
+               ],
+               [
+                 script: 'npm run lint',
+                 githubCheck: 'lint',
+                 log: 'lint.log'
+               ]
+             ]
+           ]
+        ]
     ]
 )
+
