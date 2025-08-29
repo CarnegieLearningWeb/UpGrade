@@ -86,7 +86,7 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  let individualExclusions = await checkService.getAllIndividualExclusion();
+  const individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(1);
   experimentObject.state = EXPERIMENT_STATE.ENROLLING;
   experimentObject.experimentSegmentExclusion = {

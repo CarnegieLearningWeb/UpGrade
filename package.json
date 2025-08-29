@@ -20,7 +20,7 @@
   },
   "scripts": {
     "prepare": "is-ci || husky install",
-    "lint": "eslint -c .eslintrc.js --ext .ts './{frontend,backend,types,clientlibs}/**/*.ts'",
+    "lint": "eslint --quiet -c .eslintrc.js --ext .ts './{frontend,backend,types,clientlibs}/**/*.ts'",
     "prettier:write": "prettier --config .prettierrc './{frontend,backend,types,clientlibs}/**/*.{ts,js,html,json,scss}' --write",
     "prettier:check": "prettier --config .prettierrc './{frontend,backend,types,clientlibs}/**/*.{ts,js,html,json,scss}' --check"
   },
