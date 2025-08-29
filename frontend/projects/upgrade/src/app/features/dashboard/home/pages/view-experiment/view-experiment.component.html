@@ -905,7 +905,7 @@
                   {{ 'monitor.statistic.text' | translate }}
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let data">
-                  <div style="white-space: pre-line;">
+                  <div style="white-space: pre-line">
                     {{ formatStatisticOperation(data.metric_Operation) }}
                   </div>
                 </mat-cell>
@@ -947,7 +947,9 @@
                   <span class="ft-14-400"> ["SUCCESS", "FAILURE"]</span>
                 </span>
                 <span class="ft-12-400">
-                  Adaptive experiments require "reward" feedback to be logged from enrolled users, which will tilt the probability of experimental assignments towards conditions that receive more successful feedback. Use this key when logging metrics as a simple metric value.
+                  Adaptive experiments require "reward" feedback to be logged from enrolled users, which will tilt the
+                  probability of experimental assignments towards conditions that receive more successful feedback. Use
+                  this key when logging metrics as a simple metric value.
                 </span>
               </div>
             </div>

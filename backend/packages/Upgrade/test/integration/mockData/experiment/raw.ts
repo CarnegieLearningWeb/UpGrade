@@ -1,5 +1,16 @@
 import { METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
-import { ASSIGNMENT_ALGORITHM, ASSIGNMENT_UNIT, EXPERIMENT_STATE, EXPERIMENT_TYPE, FILTER_MODE, OPERATION_TYPES, REPEATED_MEASURE, CONSISTENCY_RULE, POST_EXPERIMENT_RULE, SEGMENT_TYPE } from 'upgrade_types';
+import {
+  ASSIGNMENT_ALGORITHM,
+  ASSIGNMENT_UNIT,
+  EXPERIMENT_STATE,
+  EXPERIMENT_TYPE,
+  FILTER_MODE,
+  OPERATION_TYPES,
+  REPEATED_MEASURE,
+  CONSISTENCY_RULE,
+  POST_EXPERIMENT_RULE,
+  SEGMENT_TYPE,
+} from 'upgrade_types';
 
 export const revertToExperiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b11',
@@ -32,7 +43,9 @@ export const revertToExperiment = {
     },
   ],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
+  experimentSegmentInclusion: {
+    segment: { individualForSegment: [], groupForSegment: [{ groupId: 'All', type: 'All' }], subSegments: [] },
+  },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -90,8 +103,17 @@ export const experiment = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], type: SEGMENT_TYPE.PRIVATE, subSegments: []} },
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], type: SEGMENT_TYPE.PRIVATE, subSegments: [] } },
+  experimentSegmentInclusion: {
+    segment: {
+      individualForSegment: [],
+      groupForSegment: [{ groupId: 'All', type: 'All' }],
+      type: SEGMENT_TYPE.PRIVATE,
+      subSegments: [],
+    },
+  },
+  experimentSegmentExclusion: {
+    segment: { individualForSegment: [], groupForSegment: [], type: SEGMENT_TYPE.PRIVATE, subSegments: [] },
+  },
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -160,7 +182,9 @@ export const experimentSecond = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
+  experimentSegmentInclusion: {
+    segment: { individualForSegment: [], groupForSegment: [{ groupId: 'All', type: 'All' }], subSegments: [] },
+  },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -220,7 +244,9 @@ export const experimentThird = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
+  experimentSegmentInclusion: {
+    segment: { individualForSegment: [], groupForSegment: [{ groupId: 'All', type: 'All' }], subSegments: [] },
+  },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -280,7 +306,9 @@ export const experimentFourth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
+  experimentSegmentInclusion: {
+    segment: { individualForSegment: [], groupForSegment: [{ groupId: 'All', type: 'All' }], subSegments: [] },
+  },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -341,7 +369,9 @@ export const experimentFifth = {
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
   type: EXPERIMENT_TYPE.SIMPLE,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
+  experimentSegmentInclusion: {
+    segment: { individualForSegment: [], groupForSegment: [{ groupId: 'All', type: 'All' }], subSegments: [] },
+  },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -430,7 +460,9 @@ export const experimentSixth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [{"groupId": "All", "type": "All"}], subSegments: [] } },
+  experimentSegmentInclusion: {
+    segment: { individualForSegment: [], groupForSegment: [{ groupId: 'All', type: 'All' }], subSegments: [] },
+  },
   experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
@@ -615,7 +647,7 @@ export const factorialExperimentFirst = {
       context: 'add',
       type: 'private',
       individualForSegment: [],
-      groupForSegment: [{"groupId": "All", "type": "All"}],
+      groupForSegment: [{ groupId: 'All', type: 'All' }],
       subSegments: [],
     },
   },
@@ -848,7 +880,7 @@ export const factorialExperimentSecond = {
       context: 'add',
       type: 'private',
       individualForSegment: [],
-      groupForSegment: [{"groupId": "All", "type": "All"}],
+      groupForSegment: [{ groupId: 'All', type: 'All' }],
       subSegments: [],
     },
   },

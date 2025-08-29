@@ -1,11 +1,10 @@
 {
-    "AWSEBDockerrunVersion": "1",
-    "Ports": [
-      {
-        "ContainerPort": "3030"
-      }
-    ],
-    "Volumes": [],
-    "Logging": "/var/log/eb-activity.log"
-  }
-  
+  "AWSEBDockerrunVersion": "1",
+  "Ports": [
+    {
+      "ContainerPort": "3030"
+    }
+  ],
+  "Volumes": [],
+  "Logging": "/var/log/eb-activity.log"
+}

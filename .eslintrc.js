@@ -20,7 +20,6 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', '@angular-eslint/eslint-plugin', 'eslint-plugin-tsdoc', 'prettier'],
   root: true,
-  ignorePatterns: ['**/test/**/*', '**/migrations/**/*', 'dist/**/*', 'node_modules/**/*', '!.prettierrc.js'],
   rules: {
     'tsdoc/syntax': 'warn',
     '@angular-eslint/component-class-suffix': 'error',
