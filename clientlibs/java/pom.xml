@@ -9,7 +9,7 @@
 		at the same time that happen to rev to the same new version will be caught 
 		by a merge conflict. -->
 
-	<version>6.1.1</version> <!-- 6.1.1: switch to jersey-apache-connector -->  
+	<version>6.1.2</version> <!-- 6.1.2: add context to client object-->  
 	<build>
 		<plugins>
 			<plugin>
