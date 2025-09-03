@@ -298,7 +298,7 @@ const reducer = createReducer(
     }
     return state;
   }),
-  on(experimentsAction.actionAddExperimentExclusionListFailure, (state) => ({
+  on(experimentsAction.actionUpdateExperimentExclusionListFailure, (state) => ({
     ...state,
     isLoadingUpsertPrivateSegmentList: false,
   })),
