@@ -477,6 +477,20 @@ export class DialogService {
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
   }
 
+  openDeleteDecisionPointModal(decisionPointName: string) {
+    const deleteDecisionPointModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Delete Decision Point',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete decision point "${decisionPointName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(deleteDecisionPointModalConfig, ModalSize.SMALL);
+  }
+
   openDeleteSegmentModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Delete Segment',

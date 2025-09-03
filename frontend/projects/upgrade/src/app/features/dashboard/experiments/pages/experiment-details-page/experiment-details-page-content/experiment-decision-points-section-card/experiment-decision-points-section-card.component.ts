@@ -9,13 +9,14 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IMenuButtonItem } from 'upgrade_types';
 import { ExperimentDecisionPointsTableComponent } from './experiment-decision-points-table/experiment-decision-points-table.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
-import { Observable } from 'rxjs';
+import { DecisionPointHelperService } from '../../../../../../../core/experiments/decision-point-helper.service';
+import { Observable, take } from 'rxjs';
 import {
-  Experiment,
   EXPERIMENT_BUTTON_ACTION,
   EXPERIMENT_ROW_ACTION,
   ExperimentDecisionPoint,
   ExperimentDecisionPointRowActionEvent,
+  Experiment,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
@@ -58,7 +59,8 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
   constructor(
     public experimentService: ExperimentService,
     private authService: AuthService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private decisionPointHelperService: DecisionPointHelperService
   ) {}
 
   ngOnInit() {
@@ -69,7 +71,7 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
     this.dialogService.openAddDecisionPointModal(experimentId, this.experimentContext);
   }
 
-  onMenuButtonItemClick(event: string, experiment: Experiment): void {
+  onMenuButtonItemClick(event: string): void {
     switch (event) {
       case EXPERIMENT_BUTTON_ACTION.IMPORT_DECISION_POINT:
         // TODO: Implement import functionality when dialog service is available
@@ -107,7 +109,19 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
   }
 
   onDeleteDecisionPoint(decisionPoint: ExperimentDecisionPoint): void {
-    // TODO: Implement delete functionality when dialog service is available
-    console.log('Delete decision point');
+    const decisionPointDisplayName = `${decisionPoint.site}; ${decisionPoint.target}`;
+
+    this.dialogService
+      .openDeleteDecisionPointModal(decisionPointDisplayName)
+      .afterClosed()
+      .subscribe((confirmClicked) => {
+        if (confirmClicked) {
+          this.selectedExperiment$.pipe(take(1)).subscribe((experiment: Experiment) => {
+            if (experiment) {
+              this.decisionPointHelperService.deleteDecisionPoint(experiment, decisionPoint);
+            }
+          });
+        }
+      });
   }
 }
