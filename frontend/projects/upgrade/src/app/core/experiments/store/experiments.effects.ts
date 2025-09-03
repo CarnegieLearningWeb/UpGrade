@@ -216,6 +216,30 @@ export class ExperimentEffects {
     )
   );
 
+  updateExperimentDecisionPoints$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentDecisionPoints),
+      switchMap((action) => {
+        return this.experimentDataService
+          .updateExperimentDecisionPoints(action.updateExperimentDecisionPointsRequest)
+          .pipe(
+            map((experiment) => {
+              this.notificationService.showSuccess(
+                this.translate.instant('experiments.decision-points.update-success.text')
+              );
+              return experimentAction.actionUpdateExperimentDecisionPointsSuccess({ experiment });
+            }),
+            catchError(() => {
+              this.notificationService.showError(
+                this.translate.instant('experiments.decision-points.update-error.text')
+              );
+              return [experimentAction.actionUpdateExperimentDecisionPointsFailure()];
+            })
+          );
+      })
+    )
+  );
+
   deleteExperiment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionDeleteExperiment),

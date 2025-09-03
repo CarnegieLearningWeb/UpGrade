@@ -500,6 +500,11 @@ export interface UpdateExperimentFilterModeRequest {
   filterMode: FILTER_MODE;
 }
 
+export interface UpdateExperimentDecisionPointsRequest {
+  experiment: Experiment;
+  decisionPoints: ExperimentDecisionPoint[];
+}
+
 export const EXPERIMENT_ROOT_COLUMN_NAMES = {
   NAME: 'name',
   STATUS: 'state',
