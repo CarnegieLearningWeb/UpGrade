@@ -41,7 +41,7 @@ import {
   selectIsPollingExperimentDetailStats,
   selectExperimentGraphRange,
 } from './experiments.selectors';
-import { interval } from 'rxjs';
+import { interval, of } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { ENV, Environment } from '../../../../environments/environment-types';
 import JSZip from 'jszip';
@@ -507,6 +507,92 @@ export class ExperimentEffects {
             return experimentAction.actionExportExperimentDesignSuccess();
           }),
           catchError(() => [experimentAction.actionExportExperimentDesignFailure()])
+        );
+      })
+    )
+  );
+
+  addExperimentInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionAddExperimentInclusionList),
+      switchMap((action) => {
+        return this.experimentDataService.addInclusionList(action.list).pipe(
+          map((listResponse) => {
+            this.commonModalEvents.forceCloseModal();
+            return experimentAction.actionAddExperimentInclusionListSuccess({ listResponse });
+          }),
+          catchError((error) => of(experimentAction.actionAddExperimentInclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  updateExperimentInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentInclusionList),
+      switchMap((action) => {
+        return this.experimentDataService.updateInclusionList(action.list).pipe(
+          map((listResponse) => {
+            this.commonModalEvents.forceCloseModal();
+            return experimentAction.actionUpdateExperimentInclusionListSuccess({ listResponse });
+          }),
+          catchError((error) => of(experimentAction.actionUpdateExperimentInclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  deleteExperimentInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionDeleteExperimentInclusionList),
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.experimentDataService.deleteInclusionList(segmentId).pipe(
+          map(() => experimentAction.actionDeleteExperimentInclusionListSuccess({ segmentId })),
+          catchError((error) => of(experimentAction.actionDeleteExperimentInclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  addExperimentExclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionAddExperimentExclusionList),
+      switchMap((action) => {
+        return this.experimentDataService.addExclusionList(action.list).pipe(
+          map((listResponse) => {
+            this.commonModalEvents.forceCloseModal();
+            return experimentAction.actionAddExperimentExclusionListSuccess({ listResponse });
+          }),
+          catchError((error) => of(experimentAction.actionAddExperimentExclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  updateExperimentExclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentExclusionList),
+      switchMap((action) => {
+        return this.experimentDataService.updateExclusionList(action.list).pipe(
+          map((listResponse) => {
+            this.commonModalEvents.forceCloseModal();
+            return experimentAction.actionUpdateExperimentExclusionListSuccess({ listResponse });
+          }),
+          catchError((error) => of(experimentAction.actionUpdateExperimentExclusionListFailure({ error })))
+        );
+      })
+    )
+  );
+
+  deleteExperimentExclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionDeleteExperimentExclusionList),
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.experimentDataService.deleteExclusionList(segmentId).pipe(
+          map(() => experimentAction.actionDeleteExperimentExclusionListSuccess({ segmentId })),
+          catchError((error) => of(experimentAction.actionDeleteExperimentExclusionListFailure({ error })))
         );
       })
     )

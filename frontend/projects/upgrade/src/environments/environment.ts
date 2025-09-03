@@ -83,5 +83,7 @@ export const environment = {
     exportSegmentCSV: '/segments/export/csv',
     addSegmentList: '/segments/list',
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
+    addExperimentInclusionList: '/experiments/inclusionList',
+    addExperimentExclusionList: '/experiments/exclusionList',
   },
 };

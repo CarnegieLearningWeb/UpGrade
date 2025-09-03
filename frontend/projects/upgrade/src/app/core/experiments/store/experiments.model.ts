@@ -606,3 +606,7 @@ export interface RewardMetricData {
   metric_Operation: string;
   metric_Name: string;
 }
+
+export interface ExperimentSegmentListResponse extends SegmentNew {
+  experiment: Experiment;
+}
