@@ -38,7 +38,6 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
 })
 export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
   @Input() isSectionCardExpanded = true;
-  @Input() experimentContext = '';
 
   permissions$: Observable<UserPermission>;
   selectedExperiment$ = this.experimentService.selectedExperiment$;
@@ -67,8 +66,8 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
     this.permissions$ = this.authService.userPermissions$;
   }
 
-  onAddDecisionPointClick(appContext: string, experimentId: string): void {
-    this.dialogService.openAddDecisionPointModal(experimentId, this.experimentContext);
+  onAddDecisionPointClick(experimentId: string, appContext: string): void {
+    this.dialogService.openAddDecisionPointModal(experimentId, appContext);
   }
 
   onMenuButtonItemClick(event: string): void {
@@ -91,10 +90,10 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
   }
 
   // Decision point row action events
-  onRowAction(event: ExperimentDecisionPointRowActionEvent, experimentId: string): void {
+  onRowAction(event: ExperimentDecisionPointRowActionEvent, experimentId: string, context: string): void {
     switch (event.action) {
       case EXPERIMENT_ROW_ACTION.EDIT:
-        this.onEditDecisionPoint(event.decisionPoint, experimentId);
+        this.onEditDecisionPoint(event.decisionPoint, experimentId, context);
         break;
       case EXPERIMENT_ROW_ACTION.DELETE:
         this.onDeleteDecisionPoint(event.decisionPoint);
@@ -104,8 +103,8 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
     }
   }
 
-  onEditDecisionPoint(decisionPoint: ExperimentDecisionPoint, experimentId: string): void {
-    this.dialogService.openEditDecisionPointModal(decisionPoint, experimentId, this.experimentContext);
+  onEditDecisionPoint(decisionPoint: ExperimentDecisionPoint, experimentId: string, context: string): void {
+    this.dialogService.openEditDecisionPointModal(decisionPoint, experimentId, context);
   }
 
   onDeleteDecisionPoint(decisionPoint: ExperimentDecisionPoint): void {

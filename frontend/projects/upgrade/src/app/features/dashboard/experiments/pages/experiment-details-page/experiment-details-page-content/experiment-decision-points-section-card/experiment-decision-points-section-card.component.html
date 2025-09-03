@@ -15,7 +15,7 @@
     [showMenuButton]="(permissions$ | async)?.experiments.update"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="onAddDecisionPointClick(experiment.context[0], experiment.id)"
+    (primaryButtonClick)="onAddDecisionPointClick(experiment.id, experiment.context[0])"
     (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
@@ -28,6 +28,6 @@
     [decisionPoints]="experiment.partitions"
     [isLoading$]="experimentService.isLoadingSelectedExperiment$"
     [actionsDisabled]="!(permissions$ | async)?.experiments.update"
-    (rowAction)="onRowAction($event, experiment.id)"
+    (rowAction)="onRowAction($event, experiment.id, experiment.context[0] || '')"
   ></app-experiment-decision-points-table>
 </app-common-section-card>
