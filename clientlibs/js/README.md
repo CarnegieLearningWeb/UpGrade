@@ -1,470 +1,431 @@
 # JavaScript / TypeScript SDK for use with the Upgrade A/B Testing platform.
-Please see https://upgrade-platform.gitbook.io/docs/developer-guide/reference/client-libraries/typescript-js for more documentation.
+Please see https://upgrade-platform.gitbook.io/docs/developer-guide/reference/client-libraries/typescript-js for this and more documentation.
 
+# UpGrade TypeScript Client Library
 
 ## Installation
 
-`npm i upgrade_client_lib@6.0.7`
+Install the UpGrade client library using npm:
 
-## Usage
+```bash
+npm install upgrade_client_lib
+```
 
-See [`quicktest.ts`](https://github.com/CarnegieLearningWeb/UpGrade/blob/release/6.0/clientlibs/js/quickTest.ts) to see basic in executable form to play around with: `npm run quicktest`
+## Import
 
----
-**`Example`**
+The library provides different builds for different environments:
 
+**For Browser environments:**
 ```typescript
 import UpgradeClient from 'upgrade_client_lib/dist/browser';
 ```
 
+**For Node.js environments:**
 ```typescript
 import UpgradeClient from 'upgrade_client_lib/dist/node';
 ```
 
-General UpGrade types can also be accessed as named exports:
+**Import with additional types:**
 ```typescript
-import UpgradeClient, { Assignment } from 'upgrade_client_lib/dist/browser';
+import UpgradeClient, { Assignment, MARKED_DECISION_POINT_STATUS } from 'upgrade_client_lib/dist/browser';
 ```
 
-SDK-Specific types can be accessed also:
-```typescript
-import { Interfaces } from 'upgrade_client_lib/dist/clientlibs/js/src/identifiers';
+## Essential Classes
 
-const initResponse: Interfaces.IUser = await upgradeClient.init();
-```
-# Class: UpgradeClient
+### UpgradeClient
 
-[UpgradeClient](../modules/UpgradeClient.md).UpgradeClient
+The `UpgradeClient` is the main class for interacting with the UpGrade API. It handles user initialization, experiment assignments, feature flags, and logging.
 
-## Table of contents
-
-### Constructors
-
-- [constructor](UpgradeClient.UpgradeClient.md#constructor)
-
-### Methods
-
-- [getAllExperimentConditions](UpgradeClient.UpgradeClient.md#getallexperimentconditions)
-- [getDecisionPointAssignment](UpgradeClient.UpgradeClient.md#getdecisionpointassignment)
-- [init](UpgradeClient.UpgradeClient.md#init)
-- [log](UpgradeClient.UpgradeClient.md#log)
-- [logCaliper](UpgradeClient.UpgradeClient.md#logcaliper)
-- [markExperimentPoint](UpgradeClient.UpgradeClient.md#markexperimentpoint)
-- [setAltUserIds](UpgradeClient.UpgradeClient.md#setaltuserids)
-- [setGroupMembership](UpgradeClient.UpgradeClient.md#setgroupmembership)
-- [setWorkingGroup](UpgradeClient.UpgradeClient.md#setworkinggroup)
-
-## Constructors
-
-### constructor
-
-• **new UpgradeClient**(`userId`, `hostUrl`, `context`, `options?`)
-
-When constructing UpgradeClient, the user id, api host url, and "context" identifier are required.
-These will be attached to various API calls for this instance of the client.
-
-**`Example`**
+#### Constructor
 
 ```typescript
-// required
-const hostUrl: "htts://my-hosted-upgrade-api.com";
-const userId: "abc123";
-const context: "my-app-context-name";
-
-// not required, each is also optional
-const options: {
-  token: "someToken";
-  clientSessionId: "someSessionId";
-}
-
-const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context);
-const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context, options);
+new UpgradeClient(userId: string, hostUrl: string, context: string, options?: IConfigOptions)
 ```
 
-#### Parameters
+**Parameters:**
+- `userId`: Unique identifier for the user
+- `hostUrl`: URL of your UpGrade API server
+- `context`: Context identifier for your application
+- `options` (optional): Configuration options including:
+  - `token`: Authorization token
+  - `clientSessionId`: Custom session identifier
+  - `featureFlagUserGroupsForSession`: Special configuration for feature flag group handling (see [Feature Flag Usage Modes](#feature-flag-usage-modes))
 
-| Name | Type |
-| :------ | :------ |
-| `userId` | `string` |
-| `hostUrl` | `string` |
-| `context` | `string` |
-| `options?` | `Object` |
-| `options.clientSessionId?` | `string` |
-| `options.token?` | `string` |
-
-#### Defined in
-
-[UpgradeClient.ts:99](https://github.com/CarnegieLearningWeb/UpGrade/blob/01c083e7/clientlibs/js/src/UpgradeClient.ts#L99)
-
-## Methods
-
-### getAllExperimentConditions
-
-▸ **getAllExperimentConditions**(): `Promise`<`IExperimentAssignment5`[]\>
-
-Will return all the experiment conditions for the user.
-Internally this uses the `context` and `userId` to query conditions for all eligible decision points at enrolling experiments for this user.
-
-**`Example`**
-
+**Example:**
 ```typescript
-const allExperimentConditionsResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions(workingGroup);
+const upgradeClient = new UpgradeClient(
+  'user123',
+  'https://my-upgrade-server.com',
+  'my-app-context'
+);
 ```
 
-#### Returns
+#### Key Methods
 
-`Promise`<`IExperimentAssignmentv5`[]\>
+##### `init(group?, workingGroup?): Promise<IExperimentUser>`
 
-#### Defined in
+Initializes the user and metadata. Must be called before using other methods.
 
-[UpgradeClient.ts:237](https://github.com/CarnegieLearningWeb/UpGrade/blob/01c083e7/clientlibs/js/src/UpgradeClient.ts#L237)
+**Parameters:**
+- `group` (optional): Record of group memberships
+- `workingGroup` (optional): Record of active working groups
 
-___
-
-### getDecisionPointAssignment
-
-▸ **getDecisionPointAssignment**(`site`, `target?`): `Promise`<[`Assignment`](functions_getExperimentCondition.Assignment.md)\>
-
-Given a site and optional target, return the condition assignment at this decision point
-NOTE: If getAllExperimentConditions() has not been called, this will call it first.
-NOTE ALSO: If getAllExperimentConditions() has been called, this will return the cached result and not make a network call.
-
-**`Example`**
-
+**Example:**
 ```typescript
-const allExperimentConditionsResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions(workingGroup);
-```
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `site` | `string` |
-| `target?` | `string` |
-
-#### Returns
-
-`Promise`<[`Assignment`](functions_getExperimentCondition.Assignment.md)\>
-
-#### Defined in
-
-[UpgradeClient.ts:263](https://github.com/CarnegieLearningWeb/UpGrade/blob/01c083e7/clientlibs/js/src/UpgradeClient.ts#L263)
-
-___
-
-### init
-
-▸ **init**(`group?`, `workingGroup?`): `Promise`<[`IUser`](../interfaces/identifiers_Interfaces.Interfaces.IUser.md)\>
-
-This will initialize user and metadata for the user. It will return the user object with id, group, and working group.
-NOTE: A user must be initialized at least once before calling any other methods.
-Else, you will see "Experiment user not defined" errors when other SDK methods are called.
-
-**`Example`**
-
-```typescript
-const group: Record<string, Array<string>> = {
+const group = {
   classId: ['class1', 'class2'],
-  districtId: ['district1', 'district2'],
-}
+  districtId: ['district1']
+};
 
-const workingGroup: Record<string, string> = {
- classId: 'class1',
- districtId: 'district2',
-}
+const workingGroup = {
+  classId: 'class1',
+  districtId: 'district1'
+};
 
-const initResponse: Interfaces.IUser[] = await upgradeClient.init();
-const initResponse: Interfaces.IUser[] = await upgradeClient.init(group);
-const initResponse: Interfaces.IUser[] = await upgradeClient.init(group, workingGroup);
-
+const user = await upgradeClient.init(group, workingGroup);
 ```
 
-#### Parameters
+##### `getAllExperimentConditions(options?): Promise<IExperimentAssignmentv5[]>`
 
-| Name | Type |
-| :------ | :------ |
-| `group?` | `Record`<`string`, `string`[]\> |
-| `workingGroup?` | `Record`<`string`, `string`\> |
+Retrieves all experiment assignments for the current context.
 
-#### Returns
+**Parameters:**
+- `options.ignoreCache` (optional): If true, fetches fresh data from API instead of using cache
 
-`Promise`<[`IUser`](../interfaces/identifiers_Interfaces.Interfaces.IUser.md)\>
-
-#### Defined in
-
-[UpgradeClient.ts:157](https://github.com/CarnegieLearningWeb/UpGrade/blob/01c083e7/clientlibs/js/src/UpgradeClient.ts#L157)
-
-___
-
-### log
-
-▸ **log**(`value`, `sendAsAnalytics?`): `Promise`<[`ILog`](../interfaces/identifiers_Interfaces.Interfaces.ILog.md)[]\>
-
-Will report user outcome metrics to Upgrade.
-Please see https://upgrade-platform.gitbook.io/docs/developer-guide/reference/metrics for more information.
-
-**`Example`**
-
-```ts
-const metrics: IMetricInput[] = [
-    {
-        "metric": "totalTimeSeconds",
-        "datatype": "continuous"
-    },
-    {
-        "metric": "completedAll",
-        "datatype": "categorical",
-        "allowedValues": [ "COMPLETE", "INCOMPLETE" ]
-    },
-    {
-        "groupClass": "quizzes",
-        "allowedKeys":
-            [
-                "quiz1",
-                "quiz2",
-                "quiz3"
-            ],
-        "attributes": 
-            [
-                {
-                    "metric": "quizTimeSeconds",
-                    "datatype": "continuous"
-                },
-                {
-                    "metric": "score",
-                    "datatype": "continuous"
-                },
-                {
-                    "metric": "passStatus",
-                    "datatype": "categorical",
-                    "allowedValues": [ "PASS", "FAIL" ]
-                }
-            ]
-     },
-     {
-         "groupClass": "polls",
-         "allowedKeys":
-             [
-                 "poll1",
-                 "poll2"
-             ],
-         "attributes": 
-             [
-                 {
-                     "metric": "pollTimeSeconds",
-                     "datatype": "continuous"
-                 },
-                 {
-                     "metric": "rank",
-                     "datatype": "categorical",
-                     "allowedValues": [ "UNHAPPY", "NEUTRAL", "HAPPY" ]
-                 }
-             ]
-       }
-  ];
-
-const logResponse: ILog[] = await upgradeClient.metrics(metrics);
+**Example:**
+```typescript
+const assignments = await upgradeClient.getAllExperimentConditions();
 ```
 
-#### Parameters
+##### `getDecisionPointAssignment(site, target?): Promise<Assignment>`
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `value` | `ILogInput`[] | `undefined` |
-| `sendAsAnalytics` | `boolean` | `false` |
+Gets the assignment for a specific decision point.
 
-#### Returns
+**Parameters:**
+- `site`: The site identifier
+- `target` (optional): The target identifier within the site
 
-`Promise`<[`ILog`](../interfaces/identifiers_Interfaces.Interfaces.ILog.md)[]\>
-
-#### Defined in
-
-[UpgradeClient.ts:414](https://github.com/CarnegieLearningWeb/UpGrade/blob/01c083e7/clientlibs/js/src/UpgradeClient.ts#L414)
-
-___
-
-### logCaliper
-
-▸ **logCaliper**(`value`, `sendAsAnalytics?`): `Promise`<[`ILog`](../interfaces/identifiers_Interfaces.Interfaces.ILog.md)[]\>
-
-Will report Caliper user outcome metrics to Upgrade, same as log() but with Caliper envelope.
-
-**`Example`**
-
-```ts
-const logRequest: CaliperEnvelope = {
-     sensor: 'test',
-     sendTime: 'test',
-     dataVersion: 'test',
-     data: [],
-   };
-
- const logCaliperResponse: ILog[] = await upgradeClient.logCaliper(logRequest);
-
+**Example:**
+```typescript
+const assignment = await upgradeClient.getDecisionPointAssignment('dashboard', 'button');
 ```
 
-#### Parameters
+##### `markDecisionPoint(site, target, condition?, status, uniquifier?, clientError?): Promise<IMarkDecisionPoint>`
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `value` | `CaliperEnvelope` | `undefined` |
-| `sendAsAnalytics` | `boolean` | `false` |
+Records that a user has encountered a decision point.
 
-#### Returns
+**Parameters:**
+- `site`: The site identifier
+- `target`: The target identifier
+- `condition` (optional): The assigned condition
+- `status`: Status of the condition application (from `MARKED_DECISION_POINT_STATUS` enum)
+- `uniquifier` (optional): Unique identifier for linking metrics
+- `clientError` (optional): Error message if condition failed to apply
 
-`Promise`<[`ILog`](../interfaces/identifiers_Interfaces.Interfaces.ILog.md)[]\>
+**Example:**
+```typescript
+import { MARKED_DECISION_POINT_STATUS } from 'upgrade_client_lib/dist/browser';
 
-#### Defined in
-
-[UpgradeClient.ts:436](https://github.com/CarnegieLearningWeb/UpGrade/blob/01c083e7/clientlibs/js/src/UpgradeClient.ts#L436)
-
-___
-
-### markExperimentPoint
-
-▸ **markExperimentPoint**(`site`, `condition?`, `status`, `target?`, `clientError?`): `Promise`<[`IMarkExperimentPoint`](../interfaces/identifiers_Interfaces.Interfaces.IMarkExperimentPoint.md)\>
-
-Will record ("mark") that a user has "seen" a decision point.
-
-Marking the decision point will record the user's condition assignment and the time of the decision point, regardless of whether the user is enrolled in an experiment.
-
-`status` signifies a client application's note on what it did in the code with condition assignment that Upgrade provided.
- Status can be one of the following:
-
-```ts
-export enum MARKED_DECISION_POINT_STATUS {
-  CONDITION_APPLIED = 'condition applied',
-  CONDITION_FAILED_TO_APPLY = 'condition not applied',
-  NO_CONDITION_ASSIGNED = 'no condition assigned',
-}
+await upgradeClient.markDecisionPoint(
+  'dashboard',
+  'button',
+  'variant_a',
+  MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
+);
 ```
 
-The client can also send along an additional `clientError` string to log context as to why a condition was not applied.
+## Feature Flag Usage Modes
 
-**`Example`**
+**Important:** Feature flags work differently from experiments and have special configuration options that can eliminate the need to call `init()`.
 
-```ts
-import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+The UpGrade client supports three different modes for feature flag evaluation:
 
-const site = 'dashboard';
-const condition = 'variant_x'; // send null if no condition / no experiment is running / error
-const status: MARKED_DECISION_POINT_STATUS = MARKED_DECISION_POINT_STATUS.CONDITION_FAILED_TO_APPLY
-const target = 'experimental button'; // optional
-const clientError = 'variant not recognized'; //optional
-
-const allExperimentConditionsResponse: IExperimentAssignment5[] = await upgradeClient.markExperimentPoint(site, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED, target, clientError);
-```
-
-#### Parameters
-
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `site` | `string` | `undefined` |
-| `condition` | `string` | `null` |
-| `status` | `MARKED_DECISION_POINT_STATUS` | `undefined` |
-| `target?` | `string` | `undefined` |
-| `clientError?` | `string` | `undefined` |
-
-#### Returns
-
-`Promise`<[`IMarkExperimentPoint`](../interfaces/identifiers_Interfaces.Interfaces.IMarkExperimentPoint.md)\>
-
-#### Defined in
-
-[UpgradeClient.ts:303](https://github.com/CarnegieLearningWeb/UpGrade/blob/01c083e7/clientlibs/js/src/UpgradeClient.ts#L303)
-
-___
-
-### setAltUserIds
-
-▸ **setAltUserIds**(`altUserIds`): `Promise`<[`IExperimentUserAliases`](../interfaces/identifiers_Interfaces.Interfaces.IExperimentUserAliases.md)[]\>
-
-Will set an array of alternate user ids for the user.
-
-**`Example`**
-
-```ts
-const aliases: string[] = ['alias1', 'alias2'];
-
-const setAltUserIdsResponse: IExperimentUserAliases[] = await upgradeClient.setAltUserIds(aliases);
-```
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `altUserIds` | `string`[] |
-
-#### Returns
-
-`Promise`<[`IExperimentUserAliases`](../interfaces/identifiers_Interfaces.Interfaces.IExperimentUserAliases.md)[]\>
-
-#### Defined in
-
-[UpgradeClient.ts:451](https://github.com/CarnegieLearningWeb/UpGrade/blob/01c083e7/clientlibs/js/src/UpgradeClient.ts#L451)
-
-___
-
-### setGroupMembership
-
-▸ **setGroupMembership**(`group`): `Promise`<[`IUser`](../interfaces/identifiers_Interfaces.Interfaces.IUser.md)\>
-
-Will set the group membership(s) for the user and return the user object with updated working group.
-
-**`Example`**
+### 1. Stored-user Mode (Standard)
+- **Usage:** Omit `featureFlagUserGroupsForSession` configuration
+- **Behavior:** Uses only stored user groups from the database  
+- **Requirements:** User must be initialized with `init()` first, will return 404 if user does not exist
+- **Best for:** Standard scenarios where users are pre-registered in the system
 
 ```typescript
-const group: Record<string, Array<string>> = {
-  classId: ['class1', 'class2'],
-  districtId: ['district1', 'district2'],
-}
-
-const groupMembershipResponse: Interfaces.IUser[] = await upgradeClient.setGroupMembership(group);
+// Standard mode - requires init()
+const upgradeClient = new UpgradeClient('user123', 'https://api.com', 'context');
+await upgradeClient.init();
+const flags = await upgradeClient.getAllFeatureFlags();
 ```
 
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `group` | `Record`<`string`, `string`[]\> |
-
-#### Returns
-
-`Promise`<[`IUser`](../interfaces/identifiers_Interfaces.Interfaces.IUser.md)\>
-
-#### Defined in
-
-[UpgradeClient.ts:175](https://github.com/CarnegieLearningWeb/UpGrade/blob/01c083e7/clientlibs/js/src/UpgradeClient.ts#L175)
-
-___
-
-### setWorkingGroup
-
-▸ **setWorkingGroup**(`workingGroup`): `Promise`<[`IUser`](../interfaces/identifiers_Interfaces.Interfaces.IUser.md)\>
-
-Will set the working group(s) for the user and return the user object with updated working group.
-
-**`Example`**
+### 2. Ephemeral Mode (Session-only groups)
+- **Usage:** Set `includeStoredUserGroups: false` and provide `groupsForSession`
+- **Behavior:** Uses only the groups provided in the session, ignoring stored user groups
+- **Requirements:** **Does NOT require `init()` - bypasses stored user lookup entirely**
+- **Best for:** When complete group information is always provided at runtime
 
 ```typescript
-const workingGroup: Record<string, string> = {
- classId: 'class1',
- districtId: 'district2',
-}
+// Ephemeral mode - NO init() required!
+const upgradeClient = new UpgradeClient('user123', 'https://api.com', 'context', {
+  featureFlagUserGroupsForSession: {
+    groupsForSession: { 
+      classId: ['testClass'], 
+      roleId: ['teacher'] 
+    },
+    includeStoredUserGroups: false
+  }
+});
 
-const workingGroupResponse: Interfaces.IUser[] = await upgradeClient.setWorkingGroup(workingGroup);
+// Can call feature flag methods directly without init()
+const flags = await upgradeClient.getAllFeatureFlags();
+const hasFlag = await upgradeClient.hasFeatureFlag('new-feature');
 ```
 
-#### Parameters
+### 3. Merged Mode (Stored + Session groups)
+- **Usage:** Set `includeStoredUserGroups: true` and provide `groupsForSession`
+- **Behavior:** Session groups are merged with stored groups if they don't already exist for the user
+- **Requirements:** User must be initialized with `init()` first, will return 404 if user does not exist
+- **Best for:** Adding context-specific ephemeral groups to an existing user
+- **Note:** Session groups are never persisted
 
-| Name | Type |
-| :------ | :------ |
-| `workingGroup` | `Record`<`string`, `string`\> |
+```typescript
+// Merged mode - requires init()
+const upgradeClient = new UpgradeClient('user123', 'https://api.com', 'context', {
+  featureFlagUserGroupsForSession: {
+    groupsForSession: { 
+      sessionId: ['current-session'] 
+    },
+    includeStoredUserGroups: true
+  }
+});
 
-#### Returns
+await upgradeClient.init();
+const flags = await upgradeClient.getAllFeatureFlags();
+```
 
-`Promise`<[`IUser`](../interfaces/identifiers_Interfaces.Interfaces.IUser.md)\>
+### Dynamic Feature Flag Configuration
 
-#### Defined in
+You can also change the feature flag mode after client creation:
 
-[UpgradeClient.ts:208](https://github.com/CarnegieLearningWeb/UpGrade/blob/01c083e7/clientlibs/js/src/UpgradeClient.ts#L208)
+```typescript
+const upgradeClient = new UpgradeClient('user123', 'https://api.com', 'context');
+
+// Switch to ephemeral mode
+upgradeClient.setFeatureFlagUserGroupsForSession({
+  groupsForSession: { classId: ['testClass'] },
+  includeStoredUserGroups: false
+});
+
+// Now you can use feature flags without init()
+const flags = await upgradeClient.getAllFeatureFlags();
+
+// Switch back to standard mode
+upgradeClient.setFeatureFlagUserGroupsForSession(null);
+// Now init() is required again for feature flags
+await upgradeClient.init();
+```
+
+### Feature Flag Methods
+
+##### `getAllFeatureFlags(options?): Promise<string[]>`
+
+Retrieves all feature flags for the user.
+
+**Parameters:**
+- `options.ignoreCache` (optional): If true, fetches fresh data from API
+
+**Example:**
+```typescript
+const featureFlags = await upgradeClient.getAllFeatureFlags();
+console.log(featureFlags); // ['feature1', 'feature2']
+```
+
+##### `hasFeatureFlag(key): Promise<boolean>`
+
+Checks if a specific feature flag is enabled for the user.
+
+**Example:**
+```typescript
+const isEnabled = await upgradeClient.hasFeatureFlag('new-dashboard');
+```
+
+##### `log(metrics): Promise<ILogResponse[]>`
+
+Reports user outcome metrics to UpGrade.
+
+**Example:**
+```typescript
+const metrics = [{
+  userId: 'user123',
+  timestamp: '2023-03-03T19:49:00.496Z',
+  metrics: {
+    attributes: {
+      totalTimeSeconds: 300,
+      tasksCompleted: 5
+    },
+    groupedMetrics: [{
+      groupClass: 'session',
+      groupKey: 'math-lesson-1',
+      groupUniquifier: '2023-03-03T19:48:53.861Z',
+      attributes: {
+        timeSeconds: 120,
+        correctAnswers: 8
+      }
+    }]
+  }
+}];
+
+await upgradeClient.log(metrics);
+```
+
+### Assignment
+
+The `Assignment` class represents an experiment assignment for a specific decision point. It provides access to assigned conditions, payloads, and factorial experiment data.
+
+#### Properties
+
+##### `getCondition(): string`
+
+Returns the assigned condition code.
+
+**Example:**
+```typescript
+const assignment = await upgradeClient.getDecisionPointAssignment('site', 'target');
+const condition = assignment.getCondition(); // 'control' or 'treatment'
+```
+
+##### `getPayload(): IPayload | null`
+
+Returns the payload associated with the assignment.
+
+**Example:**
+```typescript
+const payload = assignment.getPayload();
+if (payload) {
+  console.log(payload.type); // 'string', 'number', 'boolean', etc.
+  console.log(payload.value); // The actual payload value
+}
+```
+
+##### `getExperimentType(): EXPERIMENT_TYPE`
+
+Returns the type of experiment (e.g., 'Simple', 'Factorial').
+
+**Example:**
+```typescript
+const experimentType = assignment.getExperimentType();
+```
+
+#### Factorial Experiment Methods
+
+For factorial experiments, the Assignment class provides additional methods:
+
+##### `factors: string[]`
+
+Returns an array of factor names (only for factorial experiments).
+
+**Example:**
+```typescript
+const factors = assignment.factors; // ['color', 'size']
+```
+
+##### `getFactorLevel(factor): string`
+
+Returns the level assigned for a specific factor.
+
+**Example:**
+```typescript
+const colorLevel = assignment.getFactorLevel('color'); // 'red' or 'blue'
+```
+
+##### `getFactorPayload(factor): IPayload | null`
+
+Returns the payload for a specific factor.
+
+**Example:**
+```typescript
+const colorPayload = assignment.getFactorPayload('color');
+```
+
+#### Marking Decision Points
+
+##### `markDecisionPoint(status, uniquifier?, clientError?): Promise<IMarkDecisionPoint>`
+
+Records that the user encountered this assignment's decision point.
+
+**Example:**
+```typescript
+import { MARKED_DECISION_POINT_STATUS } from 'upgrade_client_lib/dist/browser';
+
+const assignment = await upgradeClient.getDecisionPointAssignment('site', 'target');
+await assignment.markDecisionPoint(MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
+```
+
+## Status Enums
+
+The `MARKED_DECISION_POINT_STATUS` enum defines the possible statuses when marking decision points:
+
+- `CONDITION_APPLIED`: The condition was successfully applied
+- `CONDITION_FAILED_TO_APPLY`: The condition could not be applied
+- `NO_CONDITION_ASSIGNED`: No condition was assigned
+
+## Usage Workflow
+
+### For Experiments
+A typical experiment workflow with the UpGrade client follows these steps:
+
+1. **Initialize the client** with user, host, and context information
+2. **Initialize the user** to register them with the UpGrade system (always required for experiments)
+3. **Get experiment assignments** to determine what conditions the user should see
+4. **Apply conditions** in your application logic
+5. **Mark decision points** to record that the user encountered the experimental conditions
+6. **Log metrics** to track user outcomes and measure experiment success
+
+### For Feature Flags
+Feature flag workflow can be simpler and has multiple options:
+
+**Option 1: Standard Mode (requires init)**
+1. Initialize client → Call `init()` → Use feature flag methods
+
+**Option 2: Ephemeral Mode (no init required)**
+1. Initialize client with `featureFlagUserGroupsForSession` → Directly use feature flag methods
+
+See [Feature Flag Usage Modes](#feature-flag-usage-modes) for detailed configuration options.
+
+**Complete Example:**
+```typescript
+import UpgradeClient, { MARKED_DECISION_POINT_STATUS } from 'upgrade_client_lib/dist/browser';
+
+// 1. Initialize client
+const upgradeClient = new UpgradeClient(
+  'user123',
+  'https://my-upgrade-server.com',
+  'my-app'
+);
+
+// 2. Initialize user
+await upgradeClient.init();
+
+// 3. Get assignment for a decision point
+const assignment = await upgradeClient.getDecisionPointAssignment('dashboard', 'header-color');
+
+// 4. Apply the condition
+const condition = assignment.getCondition();
+if (condition === 'blue-header') {
+  // Apply blue header styling
+} else {
+  // Apply default header styling
+}
+
+// 5. Mark that we've shown the condition
+await assignment.markDecisionPoint(MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
+
+// 6. Later, log user outcomes
+const metrics = [{
+  userId: 'user123',
+  timestamp: new Date().toISOString(),
+  metrics: {
+    attributes: {
+      buttonClicks: 5,
+      timeOnPage: 120
+    }
+  }
+}];
+
+await upgradeClient.log(metrics);
+```
