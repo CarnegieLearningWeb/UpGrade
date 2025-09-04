@@ -32,7 +32,8 @@
     "server": "node ./projects/server/server.js",
     "server:demo": "node ./projects/server/demo-server.js",
     "build:development": "npm run build:dev",
-    "build:production": "npm run build:prod"
+    "build:production": "npm run build:prod",
+    "typecheck": "tsc --noEmit"
   },
   "private": true,
   "dependencies": {
