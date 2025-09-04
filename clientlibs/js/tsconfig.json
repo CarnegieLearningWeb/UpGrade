@@ -21,11 +21,7 @@
     "paths": {
       "upgrade_types": ["../../../types"]
     },
-    "esModuleInterop": true,
+    "esModuleInterop": true
   },
-  "include": [
-    "src",
-    ".eslintrc.js",
-    "webpack.config.ts",
-  ]
+  "include": ["src", ".eslintrc.js", "webpack.config.ts"]
 }
