@@ -1,3 +1,93 @@
 <div class="table-container">
-  <p>experiment-metrics-table works!</p>
+  <!-- Loading spinner -->
+  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+
+  <!-- Table -->
+  <table
+    mat-table
+    [dataSource]="queries"
+    [ngClass]="{ 'no-data': !queries?.length }"
+    class="metrics-table"
+  >
+    <!-- Metric Column -->
+    <ng-container matColumnDef="metric">
+      <th mat-header-cell *matHeaderCellDef class="metric-column ft-14-600">
+        {{ METRIC_TRANSLATION_KEYS.METRIC | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="metric-column ft-14-400">
+        <div class="multi-line-cell" *ngIf="getMetricKeys(row).length > 0">
+          <div *ngFor="let key of getMetricKeys(row)" class="metric-key">
+            {{ key }}
+          </div>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Statistic Column -->
+    <ng-container matColumnDef="statistic">
+      <th mat-header-cell *matHeaderCellDef class="statistic-column ft-14-600">
+        {{ METRIC_TRANSLATION_KEYS.STATISTIC | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="statistic-column ft-14-400">
+        <div class="multi-line-cell" *ngIf="getStatisticOperations(row).length > 0">
+          <div *ngFor="let operation of getStatisticOperations(row)" class="statistic-operation">
+            {{ operation | titlecase }}
+          </div>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Display Name Column -->
+    <ng-container matColumnDef="displayName">
+      <th mat-header-cell *matHeaderCellDef class="display-name-column ft-14-600">
+        {{ METRIC_TRANSLATION_KEYS.DISPLAY_NAME | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="display-name-column ft-14-400">
+        <span *ngIf="row.name && row.name?.length <= 50">
+          {{ row.name }}
+        </span>
+        <span *ngIf="row.name && row.name?.length > 50" [matTooltip]="row.name" matTooltipPosition="above">
+          {{ row.name | truncate : 50 }}
+        </span>
+      </td>
+    </ng-container>
+
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef class="actions-column ft-14-600">
+        {{ METRIC_TRANSLATION_KEYS.ACTIONS | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="actions-column ft-14-400 dense-2">
+        <div class="button-wrapper">
+          <button
+            mat-icon-button
+            class="action-button"
+            [disabled]="actionsDisabled"
+            (click)="onEditButtonClick(row)">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+        <div class="button-wrapper">
+          <button
+            mat-icon-button
+            class="action-button"
+            [disabled]="actionsDisabled"
+            (click)="onDeleteButtonClick(row)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Header and Row Definitions -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+    <!-- No Data Row -->
+    <tr *matNoDataRow>
+      <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
+        {{ 'experiments.details.metrics.card.no-data-row.text' | translate }}
+      </td>
+    </tr>
+  </table>
 </div>
