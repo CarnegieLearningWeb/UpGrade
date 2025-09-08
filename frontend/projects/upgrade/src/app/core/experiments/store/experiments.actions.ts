@@ -12,7 +12,9 @@ import {
   IEnrollmentStatByDate,
   IContextMetaData,
   UpdateExperimentFilterModeRequest,
+  ExperimentSegmentListResponse,
 } from './experiments.model';
+import { ExperimentSegmentListRequest, ExperimentSegmentListDetails } from '../../segments/store/segments.model';
 
 export const actionGetExperiments = createAction('[Experiment] Get Experiments', props<{ fromStarting?: boolean }>());
 
@@ -254,3 +256,93 @@ export const actionBeginExperimentDetailStatsPolling = createAction(
 );
 
 export const actionEndExperimentDetailStatsPolling = createAction('[Experiment] End polling for detail stats');
+
+export const actionAddExperimentInclusionList = createAction(
+  '[Experiment] Add Experiment Inclusion List',
+  props<{ list: ExperimentSegmentListRequest }>()
+);
+
+export const actionAddExperimentInclusionListSuccess = createAction(
+  '[Experiment] Add Experiment Inclusion List Success',
+  props<{ listResponse: ExperimentSegmentListResponse }>()
+);
+
+export const actionAddExperimentInclusionListFailure = createAction(
+  '[Experiment] Add Experiment Inclusion List Failure',
+  props<{ error: any }>()
+);
+
+export const actionUpdateExperimentInclusionList = createAction(
+  '[Experiment] Update Experiment Inclusion List',
+  props<{ list: ExperimentSegmentListRequest }>()
+);
+
+export const actionUpdateExperimentInclusionListSuccess = createAction(
+  '[Experiment] Update Experiment Inclusion List Success',
+  props<{ listResponse: ExperimentSegmentListResponse }>()
+);
+
+export const actionUpdateExperimentInclusionListFailure = createAction(
+  '[Experiment] Update Experiment Inclusion List Failure',
+  props<{ error: any }>()
+);
+
+export const actionDeleteExperimentInclusionList = createAction(
+  '[Experiment] Delete Experiment Inclusion List',
+  props<{ segmentId: string }>()
+);
+
+export const actionDeleteExperimentInclusionListSuccess = createAction(
+  '[Experiment] Delete Experiment Inclusion List Success',
+  props<{ segmentId: string }>()
+);
+
+export const actionDeleteExperimentInclusionListFailure = createAction(
+  '[Experiment] Delete Experiment Inclusion List Failure',
+  props<{ error: any }>()
+);
+
+export const actionAddExperimentExclusionList = createAction(
+  '[Experiment] Add Experiment Exclusion List',
+  props<{ list: ExperimentSegmentListRequest }>()
+);
+
+export const actionAddExperimentExclusionListSuccess = createAction(
+  '[Experiment] Add Experiment Exclusion List Success',
+  props<{ listResponse: ExperimentSegmentListResponse }>()
+);
+
+export const actionAddExperimentExclusionListFailure = createAction(
+  '[Experiment] Add Experiment Exclusion List Failure',
+  props<{ error: any }>()
+);
+
+export const actionUpdateExperimentExclusionList = createAction(
+  '[Experiment] Update Experiment Exclusion List',
+  props<{ list: ExperimentSegmentListRequest }>()
+);
+
+export const actionUpdateExperimentExclusionListSuccess = createAction(
+  '[Experiment] Update Experiment Exclusion List Success',
+  props<{ listResponse: ExperimentSegmentListResponse }>()
+);
+
+export const actionUpdateExperimentExclusionListFailure = createAction(
+  '[Experiment] Update Experiment Exclusion List Failure',
+  props<{ error: any }>()
+);
+
+export const actionDeleteExperimentExclusionList = createAction(
+  '[Experiment] Delete Experiment Exclusion List',
+  props<{ segmentId: string }>()
+);
+
+export const actionDeleteExperimentExclusionListSuccess = createAction(
+  '[Experiment] Delete Experiment Exclusion List Success',
+  props<{ segmentId: string }>()
+);
+
+export const actionDeleteExperimentExclusionListFailure = createAction(
+  '[Experiment] Delete Experiment Exclusion List Failure',
+  props<{ error: any }>()
+);

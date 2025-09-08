@@ -42,6 +42,8 @@ export interface APIEndpoints {
   emailFlagData: string;
   addFlagInclusionList: string;
   addFlagExclusionList: string;
+  addExperimentInclusionList: string;
+  addExperimentExclusionList: string;
   setting: string;
   metrics: string;
   metricsSave: string;

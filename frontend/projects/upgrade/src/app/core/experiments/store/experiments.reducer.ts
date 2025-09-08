@@ -165,6 +165,174 @@ const reducer = createReducer(
   on(experimentsAction.actionExportExperimentDesignSuccess, (state) => ({
     ...state,
     isLoadingExperimentExport: false,
+  })),
+
+  // Experiment Inclusion List Add Actions
+  on(experimentsAction.actionAddExperimentInclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(experimentsAction.actionAddExperimentInclusionListSuccess, (state, { listResponse }) => {
+    const { experiment } = listResponse;
+    const existingExperiment = state.entities[experiment?.id];
+
+    return adapter.updateOne(
+      {
+        id: experiment?.id,
+        changes: { experimentSegmentInclusion: [listResponse, ...existingExperiment.experimentSegmentInclusion] },
+      },
+      { ...state }
+    );
+  }),
+  on(experimentsAction.actionAddExperimentInclusionListFailure, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: false,
+  })),
+
+  // Experiment Inclusion List Update Actions
+  on(experimentsAction.actionUpdateExperimentInclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(experimentsAction.actionUpdateExperimentInclusionListSuccess, (state, { listResponse }) => {
+    const { experiment } = listResponse;
+    const existingExperiment = state.entities[experiment?.id];
+
+    if (existingExperiment) {
+      const updatedInclusions =
+        existingExperiment.experimentSegmentInclusion?.map((inclusion) =>
+          inclusion.segment.id === listResponse.segment.id ? listResponse : inclusion
+        ) ?? [];
+
+      return adapter.updateOne(
+        {
+          id: experiment?.id,
+          changes: { experimentSegmentInclusion: updatedInclusions },
+        },
+        { ...state, isLoadingUpsertPrivateSegmentList: false }
+      );
+    }
+    return state;
+  }),
+  on(experimentsAction.actionUpdateExperimentInclusionListFailure, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: false,
+  })),
+
+  // Experiment Inclusion List Delete Actions
+  on(experimentsAction.actionDeleteExperimentInclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(experimentsAction.actionDeleteExperimentInclusionListSuccess, (state, { segmentId }) => {
+    const updatedState = { ...state, isLoadingUpsertPrivateSegmentList: false };
+    const experimentId = Object.keys(state.entities).find((id) =>
+      state.entities[id].experimentSegmentInclusion?.some((inclusion) => inclusion.segment?.id === segmentId)
+    );
+
+    if (experimentId) {
+      const experiment = state.entities[experimentId];
+      const updatedInclusions =
+        experiment.experimentSegmentInclusion?.filter((inclusion) => inclusion.segment.id !== segmentId) ?? [];
+
+      return adapter.updateOne(
+        {
+          id: experiment.id,
+          changes: { experimentSegmentInclusion: updatedInclusions },
+        },
+        updatedState
+      );
+    }
+
+    return updatedState;
+  }),
+  on(experimentsAction.actionDeleteExperimentInclusionListFailure, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: false,
+  })),
+
+  // Experiment Exclusion List Add Actions
+  on(experimentsAction.actionAddExperimentExclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(experimentsAction.actionAddExperimentExclusionListSuccess, (state, { listResponse }) => {
+    const { experiment } = listResponse;
+    const existingExperiment = state.entities[experiment?.id];
+
+    return adapter.updateOne(
+      {
+        id: experiment?.id,
+        changes: { experimentSegmentExclusion: [listResponse, ...existingExperiment.experimentSegmentExclusion] },
+      },
+      { ...state }
+    );
+  }),
+  on(experimentsAction.actionAddExperimentExclusionListFailure, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: false,
+  })),
+
+  // Experiment Exclusion List Update Actions
+  on(experimentsAction.actionUpdateExperimentExclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(experimentsAction.actionUpdateExperimentExclusionListSuccess, (state, { listResponse }) => {
+    const { experiment } = listResponse;
+    const existingExperiment = state.entities[experiment?.id];
+
+    if (existingExperiment) {
+      const updatedExclusions =
+        existingExperiment.experimentSegmentExclusion?.map((exclusion) =>
+          exclusion.segment.id === listResponse.segment.id ? listResponse : exclusion
+        ) ?? [];
+
+      return adapter.updateOne(
+        {
+          id: experiment?.id,
+          changes: { experimentSegmentExclusion: updatedExclusions },
+        },
+        { ...state, isLoadingUpsertPrivateSegmentList: false }
+      );
+    }
+    return state;
+  }),
+  on(experimentsAction.actionUpdateExperimentExclusionListFailure, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: false,
+  })),
+
+  // Experiment Exclusion List Delete Actions
+  on(experimentsAction.actionDeleteExperimentExclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
+  on(experimentsAction.actionDeleteExperimentExclusionListSuccess, (state, { segmentId }) => {
+    const updatedState = { ...state, isLoadingUpsertPrivateSegmentList: false };
+    const experimentId = Object.keys(state.entities).find((id) =>
+      state.entities[id].experimentSegmentExclusion?.some((exclusion) => exclusion.segment?.id === segmentId)
+    );
+
+    if (experimentId) {
+      const experiment = state.entities[experimentId];
+      const updatedExclusions =
+        experiment.experimentSegmentExclusion?.filter((exclusion) => exclusion.segment.id !== segmentId) ?? [];
+
+      return adapter.updateOne(
+        {
+          id: experiment.id,
+          changes: { experimentSegmentExclusion: updatedExclusions },
+        },
+        updatedState
+      );
+    }
+
+    return updatedState;
+  }),
+  on(experimentsAction.actionDeleteExperimentExclusionListFailure, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: false,
   }))
 );
 

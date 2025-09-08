@@ -211,7 +211,7 @@ export class DialogService {
     return this.dialog.open(UpsertFeatureFlagModalComponent, config);
   }
 
-  openAddIncludeListModal(appContext: string, flagId: string) {
+  openFeatureFlagAddIncludeListModal(appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Include List',
       nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
@@ -230,7 +230,7 @@ export class DialogService {
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openEditIncludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
+  openFeatureFlagEditIncludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Edit Include List',
       nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
@@ -249,7 +249,7 @@ export class DialogService {
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openAddExcludeListModal(appContext: string, flagId: string) {
+  openFeatureFlagAddExcludeListModal(appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Exclude List',
       nameHint: 'feature-flags.upsert-exclude-list-modal.name-hint.text',
@@ -268,7 +268,7 @@ export class DialogService {
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openEditExcludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
+  openFeatureFlagEditExcludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Edit Exclude List',
       nameHint: 'feature-flags.upsert-exclude-list-modal.name-hint.text',
@@ -282,6 +282,82 @@ export class DialogService {
         sourceAppContext: appContext,
         action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
         id: flagId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openExperimentAddIncludeListModal(appContext: string, experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Add Include List',
+      nameHint: 'experiments.upsert-include-list-modal.name-hint.text',
+      valuesLabel: 'experiments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'experiments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList: null,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_EXPERIMENT_INCLUDE_LIST,
+        id: experimentId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openExperimentEditIncludeListModal(sourceList: ParticipantListTableRow, appContext: string, experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Edit Include List',
+      nameHint: 'experiments.upsert-include-list-modal.name-hint.text',
+      valuesLabel: 'experiments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'experiments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_INCLUDE_LIST,
+        id: experimentId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openExperimentAddExcludeListModal(appContext: string, experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Add Exclude List',
+      nameHint: 'experiments.upsert-exclude-list-modal.name-hint.text',
+      valuesLabel: 'experiments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'experiments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList: null,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_EXPERIMENT_EXCLUDE_LIST,
+        id: experimentId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openExperimentEditExcludeListModal(sourceList: ParticipantListTableRow, appContext: string, experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Edit Exclude List',
+      nameHint: 'experiments.upsert-exclude-list-modal.name-hint.text',
+      valuesLabel: 'experiments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'experiments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_EXCLUDE_LIST,
+        id: experimentId,
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
