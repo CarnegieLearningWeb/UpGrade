@@ -24,6 +24,7 @@ import { SegmentsService } from '../../../../../core/segments/segments.service';
 import {
   AddPrivateSegmentListRequest,
   EditPrivateSegmentListRequest,
+  ExperimentSegmentListRequest,
   LIST_OPTION_TYPE,
   ListSegmentOption,
   PRIVATE_SEGMENT_LIST_FORM_DEFAULTS,
@@ -109,6 +110,8 @@ export class UpsertPrivateSegmentListModalComponent {
       [
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_INCLUDE_LIST,
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_EXPERIMENT_INCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_EXPERIMENT_EXCLUDE_LIST,
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_SEGMENT_LIST,
       ].includes(this.config.params.action)
     ) {
@@ -186,6 +189,8 @@ export class UpsertPrivateSegmentListModalComponent {
       ![
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_INCLUDE_LIST,
+        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_EXCLUDE_LIST,
         UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_SEGMENT_LIST,
       ].includes(this.config.params.action)
     ) {
@@ -336,6 +341,8 @@ export class UpsertPrivateSegmentListModalComponent {
     const isExcludeList = [
       UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
       UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
+      UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_EXPERIMENT_EXCLUDE_LIST,
+      UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_EXCLUDE_LIST,
     ].includes(action);
     let list: PrivateSegmentListRequestBase = this.createPrivateSegmentListBaseRequest(formData);
     list = this.createRequestByListType(formData, listType);
@@ -352,6 +359,20 @@ export class UpsertPrivateSegmentListModalComponent {
       ...listRequest,
       segment: {
         ...listRequest.segment,
+        id: this.config.params.sourceList?.segment?.id,
+      },
+    };
+
+    const addExperimentListRequest: ExperimentSegmentListRequest = {
+      experimentId: this.config.params.id,
+      list: { ...list, listType },
+    };
+
+    const experimentEditRequest: ExperimentSegmentListRequest = {
+      ...addExperimentListRequest,
+      list: {
+        ...listRequest.segment,
+        listType,
         id: this.config.params.sourceList?.segment?.id,
       },
     };
@@ -374,6 +395,18 @@ export class UpsertPrivateSegmentListModalComponent {
         break;
       case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_SEGMENT_LIST:
         this.sendUpdateSegmentListRequest(editRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_EXPERIMENT_INCLUDE_LIST:
+        this.sendAddExperimentInclusionRequest(addExperimentListRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_INCLUDE_LIST:
+        this.sendUpdateExperimentInclusionRequest(experimentEditRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_EXPERIMENT_EXCLUDE_LIST:
+        this.sendAddExperimentExclusionRequest(addExperimentListRequest);
+        break;
+      case UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_EXCLUDE_LIST:
+        this.sendUpdateExperimentExclusionRequest(experimentEditRequest);
         break;
     }
   }
@@ -417,6 +450,19 @@ export class UpsertPrivateSegmentListModalComponent {
 
   sendUpdateFeatureFlagInclusionRequest(editListRequest: EditPrivateSegmentListRequest): void {
     this.featureFlagService.updateFeatureFlagInclusionPrivateSegmentList(editListRequest);
+  }
+
+  sendAddExperimentInclusionRequest(addListRequest: ExperimentSegmentListRequest): void {
+    this.experimentService.addExperimentInclusionPrivateSegmentList(addListRequest);
+  }
+  sendUpdateExperimentInclusionRequest(editListRequest: ExperimentSegmentListRequest): void {
+    this.experimentService.updateExperimentInclusionPrivateSegmentList(editListRequest);
+  }
+  sendAddExperimentExclusionRequest(addListRequest: ExperimentSegmentListRequest): void {
+    this.experimentService.addExperimentExclusionPrivateSegmentList(addListRequest);
+  }
+  sendUpdateExperimentExclusionRequest(editListRequest: ExperimentSegmentListRequest): void {
+    this.experimentService.updateExperimentExclusionPrivateSegmentList(editListRequest);
   }
 
   sendAddFeatureFlagExclusionRequest(addListRequest: AddPrivateSegmentListRequest): void {

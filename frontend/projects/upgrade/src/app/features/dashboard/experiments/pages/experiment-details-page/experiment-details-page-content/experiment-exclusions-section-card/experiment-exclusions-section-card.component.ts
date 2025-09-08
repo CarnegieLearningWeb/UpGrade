@@ -65,8 +65,7 @@ export class ExperimentExclusionsSectionCardComponent implements OnInit {
   }
 
   onAddExcludeListClick(appContext: string, experimentId: string): void {
-    // TODO: Implement add exclude list functionality when dialog service is available
-    console.log('Add exclude list clicked for experiment:', experimentId, 'context:', appContext);
+    this.dialogService.openExperimentAddExcludeListModal(appContext, experimentId);
   }
 
   onMenuButtonItemClick(event: string, experiment: Experiment): void {
@@ -103,22 +102,17 @@ export class ExperimentExclusionsSectionCardComponent implements OnInit {
   }
 
   onEditExcludeList(rowData: ParticipantListTableRow, experimentId: string): void {
-    console.log('Edit exclude list for experiment:', rowData, experimentId);
-    // TODO: Implement edit exclude list modal
-    // this.dialogService.openEditExperimentExcludeListModal(experimentId, rowData.segment.id)
-    //   .afterClosed()
+    this.dialogService.openExperimentEditExcludeListModal(rowData, rowData.segment.context, experimentId);
   }
 
   onDeleteExcludeList(segment: Segment): void {
-    console.log('Delete exclude list:', segment.name);
-    // TODO: Implement delete exclude list modal
-    // this.dialogService
-    //   .openDeleteExcludeListModal(segment.name)
-    //   .afterClosed()
-    //   .subscribe((confirmClicked) => {
-    //     if (confirmClicked) {
-    //       this.experimentService.deleteExperimentExclusionPrivateSegmentList(segment.id);
-    //     }
-    //   });
+    this.dialogService
+      .openDeleteExcludeListModal(segment.name)
+      .afterClosed()
+      .subscribe((confirmClicked) => {
+        if (confirmClicked) {
+          this.experimentService.deleteExperimentExclusionPrivateSegmentList(segment.id);
+        }
+      });
   }
 }

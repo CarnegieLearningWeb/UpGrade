@@ -59,6 +59,8 @@ export const environment: Environment = {
     emailFlagData: '/flags/email',
     addFlagInclusionList: '/flags/inclusionList',
     addFlagExclusionList: '/flags/exclusionList',
+    addExperimentInclusionList: '/experiments/inclusionList',
+    addExperimentExclusionList: '/experiments/exclusionList',
     setting: '/setting',
     metrics: '/metric',
     metricsSave: '/metric/save',

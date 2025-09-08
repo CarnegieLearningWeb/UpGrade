@@ -288,6 +288,10 @@ export enum UPSERT_PRIVATE_SEGMENT_LIST_ACTION {
   EDIT_FLAG_INCLUDE_LIST = 'edit_flag_include',
   ADD_FLAG_EXCLUDE_LIST = 'add_flag_exclude',
   EDIT_FLAG_EXCLUDE_LIST = 'edit_flag_exclude',
+  ADD_EXPERIMENT_INCLUDE_LIST = 'add_experiment_include',
+  EDIT_EXPERIMENT_INCLUDE_LIST = 'edit_experiment_include',
+  ADD_EXPERIMENT_EXCLUDE_LIST = 'add_experiment_exclude',
+  EDIT_EXPERIMENT_EXCLUDE_LIST = 'edit_experiment_exclude',
   ADD_SEGMENT_LIST = 'add_segment_list',
   EDIT_SEGMENT_LIST = 'edit_segment_list',
 }
@@ -343,11 +347,21 @@ export interface EditPrivateSegmentListDetails extends PrivateSegmentListRequest
   id: string;
 }
 
+export interface ExperimentSegmentListDetails extends PrivateSegmentListRequestBase {
+  id?: string;
+  listType: string;
+}
+
 export interface PrivateSegmentListRequest {
   id: string;
   enabled: boolean;
   listType: string;
   segment: AddPrivateSegmentListRequestDetails | EditPrivateSegmentListDetails;
+}
+
+export interface ExperimentSegmentListRequest {
+  experimentId: string;
+  list: ExperimentSegmentListDetails;
 }
 
 export interface AddPrivateSegmentListRequest extends PrivateSegmentListRequest {

@@ -66,7 +66,7 @@ export class FeatureFlagExclusionsSectionCardComponent {
   }
 
   onAddExcludeListClick(appContext: string, flagId: string) {
-    this.dialogService.openAddExcludeListModal(appContext, flagId);
+    this.dialogService.openFeatureFlagAddExcludeListModal(appContext, flagId);
   }
 
   onMenuButtonItemClick(event, flag: FeatureFlag) {
@@ -111,7 +111,7 @@ export class FeatureFlagExclusionsSectionCardComponent {
   }
 
   onEditExcludeList(rowData: ParticipantListTableRow, flagId: string): void {
-    this.dialogService.openEditExcludeListModal(rowData, rowData.segment.context, flagId);
+    this.dialogService.openFeatureFlagEditExcludeListModal(rowData, rowData.segment.context, flagId);
   }
 
   onDeleteExcludeList(segment: Segment): void {
