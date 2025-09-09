@@ -445,6 +445,7 @@
   "experiments.upsert-exclude-list-modal.name-hint.text": "The name for this exclude list.",
   "experiments.upsert-list-modal.values-label.text": "Values",
   "experiments.upsert-list-modal.values-placeholder.text": "Values separated by commas",
+  "experiments.edit-condition-weights-modal.title.text": "Edit Condition Weights",
   "feature-flags.details-created-on.text": "Created on: ",
   "feature-flags.details-updated-at.text": "Updated at: ",
   "feature-flags.global-name.text": "Name",

@@ -52,6 +52,7 @@ import { map, filter, tap } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { ExperimentSegmentListRequest } from '../segments/store/segments.model';
+import { ConditionWeightUpdate } from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
 
 @Injectable()
 export class ExperimentService {
@@ -313,5 +314,30 @@ export class ExperimentService {
 
   deleteExperimentExclusionPrivateSegmentList(segmentId: string) {
     this.store$.dispatch(experimentAction.actionDeleteExperimentExclusionList({ segmentId }));
+  }
+
+  updateExperimentConditionWeights(experiment: ExperimentVM, weightUpdates: ConditionWeightUpdate[]): void {
+    // Create updated experiment with new condition weights
+    const updatedExperiment: ExperimentVM = {
+      ...experiment,
+      conditions: experiment.conditions.map((condition) => {
+        const weightUpdate = weightUpdates.find((update) => update.conditionId === condition.id);
+
+        return weightUpdate
+          ? {
+              ...condition,
+              assignmentWeight: weightUpdate.assignmentWeight,
+            }
+          : condition;
+      }),
+    };
+
+    // Dispatch the update action
+    this.store$.dispatch(
+      experimentAction.actionUpsertExperiment({
+        experiment: updatedExperiment,
+        actionType: UpsertExperimentType.UPDATE_EXPERIMENT,
+      })
+    );
   }
 }

@@ -1,0 +1,134 @@
+.weight-input {
+  width: 90px;
+  
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
+}
+
+.table-container {
+  position: relative;
+  overflow: auto;
+  width: 100%;
+
+  /* Add gap between header and body when no data exists */
+  ::ng-deep .no-data tbody:before {
+    display: block;
+    line-height: 8px;
+    content: '\200C';
+  }
+ .conditions-table {
+    ::ng-deep thead {
+      background-color: var(--zircon);
+
+      tr.mat-mdc-header-row {
+        height: 48px;
+        border: 0;
+
+        th {
+          padding-left: 0;
+          color: var(--darker-grey);
+
+          &:first-child {
+            border-top-left-radius: 4px;
+          }
+
+          &:last-child {
+            border-top-right-radius: 4px;
+          }
+        }
+      }
+    }
+
+    ::ng-deep tbody {
+      tr.mat-mdc-row {
+        height: 56px;
+
+        td {
+          min-width: 96px;
+          padding-left: 0;
+          color: var(--black-2);
+        }
+      }
+
+      tr.mat-mdc-no-data-row {
+        td {
+          height: 48px;
+          text-align: center;
+          border: 1.5px dashed var(--light-grey-2);
+          color: var(--dark-grey);
+        }
+      }
+    }
+
+    .condition-column {
+      width: 65%;
+      padding-left: 32px;
+    }
+
+    .weight-column {
+      width: 35%;
+      text-align: center;
+      
+      .weight-input {
+        width: 90px;
+        
+        .mat-mdc-form-field-subscript-wrapper {
+          display: none;
+        }
+      }
+    }
+  }
+}
+.weight-summary {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  text-align: center;
+  
+  &.error {
+    border-color: #f44336;
+    background-color: #ffebee;
+  }
+  
+  .success-text {
+    color: #4caf50;
+  }
+  
+  mat-error {
+    margin: 0;
+  }
+}
+
+.weight-method-section {
+  margin-bottom: 24px;
+  
+  .section-label {
+    display: block;
+    margin-bottom: 16px;
+  }
+  
+  mat-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .radio-content {
+    display: flex;
+    flex-direction: column;
+    
+    .radio-label {
+      margin-bottom: 4px;
+    }
+    
+    .radio-description {
+      color: var(--dark-grey);
+    }
+  }
+  
+  .disabled-text {
+    opacity: 0.6;
+  }
+}

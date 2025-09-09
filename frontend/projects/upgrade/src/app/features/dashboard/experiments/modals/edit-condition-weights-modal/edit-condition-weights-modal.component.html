@@ -1,0 +1,118 @@
+<app-common-dialog
+  [title]="config.title"
+  [cancelBtnLabel]="config.cancelBtnLabel"
+  [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+  [primaryActionBtnColor]="config.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
+  (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+>
+  <form [formGroup]="conditionWeightForm" class="form-standard dense-3">
+    <div class="weight-method-section dense-1">
+      <mat-radio-group formControlName="weightingMethod">
+        <span class="section-label ft-14-600">Weighting Method</span>
+        <mat-radio-button
+          *ngFor="let method of weightingMethods"
+          [value]="method.value"
+          [disabled]="method.disabled"
+        >
+          <div class="radio-content">
+            <span
+              class="radio-label ft-14-600"
+              [class.disabled-text]="method.disabled"
+            >
+              {{ method.name | titlecase }}
+            </span>
+            <span
+              class="radio-description ft-12-400"
+              [class.disabled-text]="method.disabled"
+            >
+              {{ method.description | translate }}
+            </span>
+          </div>
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <div class="table-container">
+      <table
+        mat-table
+        [dataSource]="conditions"
+        class="conditions-table"
+        [ngClass]="{ 'no-data': !conditions?.length }"
+      >
+        <!-- Condition Column -->
+        <ng-container matColumnDef="condition">
+          <th mat-header-cell *matHeaderCellDef class="condition-column ft-14-600">
+            Condition
+          </th>
+          <td mat-cell *matCellDef="let condition" class="condition-column ft-14-400">
+            {{ condition.conditionCode }}
+          </td>
+        </ng-container>
+
+        <!-- Weight Column -->
+        <ng-container matColumnDef="weight">
+          <th mat-header-cell *matHeaderCellDef class="weight-column ft-14-600">
+            Weight (%)
+          </th>
+          <td mat-cell *matCellDef="let condition; let i = index" class="weight-column ft-14-400">
+            <mat-form-field appearance="outline" class="weight-input">
+              <input 
+                matInput 
+                type="number" 
+                min="0" 
+                max="100"
+                step="0.01"
+                [formControl]="getWeightControl(i)"
+                (input)="onWeightChange()"
+                placeholder="0.00"
+              />
+              <span matSuffix>%</span>
+              
+              <!-- Individual field errors -->
+              <mat-error *ngIf="getWeightControl(i).hasError('required')">
+                Weight is required
+              </mat-error>
+              <mat-error *ngIf="getWeightControl(i).hasError('min')">
+                Weight cannot be negative
+              </mat-error>
+              <mat-error *ngIf="getWeightControl(i).hasError('max')">
+                Weight cannot exceed 100%
+              </mat-error>
+              <mat-error *ngIf="getWeightControl(i).hasError('tooManyDecimals')">
+                Maximum 2 decimal places
+              </mat-error>
+              <mat-error *ngIf="getWeightControl(i).hasError('invalidNumber')">
+                Invalid number
+              </mat-error>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- Header and Row Definitions -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <!-- No Data Row -->
+        <tr *matNoDataRow>
+          <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
+            No conditions available
+          </td>
+        </tr>
+      </table>
+
+      <!-- Total Weight Summary -->
+      <div class="weight-summary" [ngClass]="{'error': !getTotalWeightStatus().isValid}">
+        <span class="ft-14-600">
+          Total: {{ getTotalWeightStatus().total }}%
+        </span>
+        <mat-error *ngIf="!getTotalWeightStatus().isValid" class="ft-12-400">
+          {{ getTotalWeightStatus().error }}
+        </mat-error>
+        <span *ngIf="getTotalWeightStatus().isValid" class="success-text ft-12-400">
+          ✓ Weights are balanced
+        </span>
+      </div>
+    </div>
+  </form>
+</app-common-dialog>
