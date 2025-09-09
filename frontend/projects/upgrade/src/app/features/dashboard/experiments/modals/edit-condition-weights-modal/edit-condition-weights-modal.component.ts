@@ -62,7 +62,7 @@ export class EditConditionWeightsModalComponent implements OnInit {
       value: 'custom',
       name: 'Custom Percentages',
       description: 'Define a custom weight percentage for each condition.',
-      disabled: false, // Disabled for v2 - will be enabled in future versions
+      disabled: false,
     },
   ];
 
