@@ -64,14 +64,15 @@ export default async function GroupExclusionSegmentIndividualConsistency(): Prom
   expect(experimentConditionAssignments).toHaveLength(3);
 
   // mark experiment point for user 1
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  let markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint, 1);
 
   // the user should be enrolled, as not exclusions added yet:
   let individualExclusions = await checkService.getAllIndividualExclusion();
@@ -86,15 +87,15 @@ export default async function GroupExclusionSegmentIndividualConsistency(): Prom
     expect.arrayContaining([
       expect.objectContaining({
         user: expect.objectContaining({
-          id: experimentUsers[0].id
+          id: experimentUsers[0].id,
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
-      })
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+      }),
     ])
   );
 
   // create group exclusion segment
-  let segmentObject = segmentThird;
+  const segmentObject = segmentThird;
 
   // await segmentService.upsertSegment(segmentObject, new UpgradeLogger(), "exclude");
   // let segments = await segmentService.getAllSegments(new UpgradeLogger());
@@ -127,43 +128,44 @@ export default async function GroupExclusionSegmentIndividualConsistency(): Prom
   // );
 
   experimentObject.state = 'enrolling';
-  console.log("exc segments: ", segmentObject)
+  console.log('exc segments: ', segmentObject);
   experimentObject.experimentSegmentExclusion = segmentObject;
 
   // update experiment with the above segment Object:
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   // create segment to include above users who already reached before
-  let segmentObject1 = segmentFourth;
+  const segmentObject1 = segmentFourth;
   // await segmentService.upsertSegment(segmentObject, new UpgradeLogger(), "include");
   // segments = await segmentService.getAllSegments(new UpgradeLogger());
   // expect(segments.length).toEqual(3);
-  console.log("inc segments: ", segmentObject1)
+  console.log('inc segments: ', segmentObject1);
   experimentObject.state = 'enrolling';
   experimentObject.experimentSegmentInclusion.segment.groupForSegment = [];
   experimentObject.experimentSegmentInclusion.segment.individualForSegment = [segmentObject1];
-  console.log("experimentObject: ", experimentObject)
+  console.log('experimentObject: ', experimentObject);
   // update experiment with the above segment Object:
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   // fetch experiment
 
   experiments = await experimentService.find(new UpgradeLogger());
-  console.log("exc: ", experiments[0].experimentSegmentExclusion)
-  console.log("inc: ", experiments[0].experimentSegmentInclusion)
+  console.log('exc: ', experiments[0].experimentSegmentExclusion);
+  console.log('inc: ', experiments[0].experimentSegmentInclusion);
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(3);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
-    2
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint, 2);
 
   // the user should be still enrolled:
   groupExclusions = await checkService.getAllGroupExclusions();

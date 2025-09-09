@@ -46,14 +46,15 @@ export default async function testCase(): Promise<void> {
   // mark experiment point
   // User marks before the experiment is in enrolling state:
   const experimentId = experiments[0].id;
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  let markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint, 1);
 
   // change experiment status to Enrolling
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
@@ -81,9 +82,9 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[0].id,
-        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR
-      })
+        id: experiments[0].id + '_' + experimentUsers[0].id,
+        exclusionCode: EXCLUSION_CODE.REACHED_PRIOR,
+      }),
     ])
   );
 
@@ -107,14 +108,15 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
 
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[1].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint, 1);
 
   // the user should be excluded due to 'REACHED_AFTER' exclusion code:
   individualAssignments = await checkService.getAllIndividualAssignment();
@@ -125,9 +127,9 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[1].id,
-        exclusionCode: EXCLUSION_CODE.REACHED_AFTER
-      })
+        id: experiments[0].id + '_' + experimentUsers[1].id,
+        exclusionCode: EXCLUSION_CODE.REACHED_AFTER,
+      }),
     ])
   );
 }

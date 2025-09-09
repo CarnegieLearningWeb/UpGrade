@@ -57,8 +57,7 @@ export const experimentUsers: Array<Partial<ExperimentUser>> = [
   },
   {
     id: 'student7',
-    group: {
-    },
+    group: {},
     workingGroup: {
       teacher: '4',
     },
@@ -75,8 +74,7 @@ export const experimentUsers: Array<Partial<ExperimentUser>> = [
     group: {
       teacher: ['4'],
     },
-    workingGroup: {
-    },
+    workingGroup: {},
   },
   {
     id: 'student10',
@@ -102,5 +100,5 @@ export const experimentUsers: Array<Partial<ExperimentUser>> = [
     workingGroup: {
       teacher: '4',
     },
-  }
+  },
 ];
