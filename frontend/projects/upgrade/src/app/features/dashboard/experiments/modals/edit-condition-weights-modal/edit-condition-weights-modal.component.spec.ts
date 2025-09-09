@@ -23,8 +23,8 @@ describe('EditConditionWeightsModalComponent', () => {
     cancelBtnLabel: 'Cancel',
     params: {
       experimentWeightsArray: [
-        { id: '1', conditionCode: 'Control', assignmentWeight: 50 },
-        { id: '2', conditionCode: 'Treatment', assignmentWeight: 50 },
+        { conditionId: '1', conditionCode: 'Control', assignmentWeight: 50 },
+        { conditionId: '2', conditionCode: 'Treatment', assignmentWeight: 50 },
       ],
     },
   };
