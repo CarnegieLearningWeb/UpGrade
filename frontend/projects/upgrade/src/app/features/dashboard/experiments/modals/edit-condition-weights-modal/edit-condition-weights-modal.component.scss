@@ -72,6 +72,7 @@
       
       .weight-input {
         width: 90px;
+        flex-direction: row;
         
         .mat-mdc-form-field-subscript-wrapper {
           display: none;
@@ -102,26 +103,21 @@
 }
 
 .weight-method-section {
-  margin-bottom: 24px;
-  
+  margin-bottom: 6px;
+
   .section-label {
     display: block;
-    margin-bottom: 16px;
   }
   
   mat-radio-group {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 6px;
   }
   
   .radio-content {
     display: flex;
     flex-direction: column;
-    
-    .radio-label {
-      margin-bottom: 4px;
-    }
     
     .radio-description {
       color: var(--dark-grey);
