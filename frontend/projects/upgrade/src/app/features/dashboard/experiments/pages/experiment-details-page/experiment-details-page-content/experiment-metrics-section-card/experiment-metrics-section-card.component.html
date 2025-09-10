@@ -25,5 +25,9 @@
   <app-experiment-metrics-table
     content
     *ngIf="isSectionCardExpanded"
+    [queries]="experiment.queries || []"
+    [isLoading$]="isLoadingExperiment$"
+    [actionsDisabled]="!(permissions$ | async)?.experiments.update"
+    (rowAction)="onRowAction($event, experiment.id)"
   ></app-experiment-metrics-table>
 </app-common-section-card>

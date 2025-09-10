@@ -86,7 +86,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
   }
 
   onAddIncludeListClick(appContext: string, flagId: string) {
-    this.dialogService.openAddIncludeListModal(appContext, flagId);
+    this.dialogService.openFeatureFlagAddIncludeListModal(appContext, flagId);
   }
 
   onSlideToggleChange(event: MatSlideToggleChange, flagId: string): void {
@@ -201,7 +201,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
   }
 
   onEditIncludeList(rowData: ParticipantListTableRow, flagId: string): void {
-    this.dialogService.openEditIncludeListModal(rowData, rowData.segment.context, flagId);
+    this.dialogService.openFeatureFlagEditIncludeListModal(rowData, rowData.segment.context, flagId);
   }
 
   sendUpdateIncludeListRequest(flagId: string, enabled: boolean, listType: string, segment: Segment): void {

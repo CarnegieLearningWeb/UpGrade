@@ -83,8 +83,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
   }
 
   onAddIncludeListClick(appContext: string, experimentId: string): void {
-    // TODO: Implement add include list functionality when dialog service is available
-    console.log('Add include list clicked for experiment:', experimentId, 'context:', appContext);
+    this.dialogService.openExperimentAddIncludeListModal(appContext, experimentId);
   }
 
   onSlideToggleChange(event: MatSlideToggleChange, experiment: Experiment): void {
@@ -181,17 +180,18 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
   }
 
   onEditIncludeList(rowData: ParticipantListTableRow, experimentId: string): void {
-    console.log('Edit participant for experiment:', rowData, experimentId);
-    // TODO: Implement edit participant inclusion modal
-    // this.dialogService.openEditExperimentIncludeListModal(experimentId, rowData.segment.id)
-    //   .afterClosed()
-    //   .subscribe(() => this.experimentService.fetchExperimentById(experimentId));
+    this.dialogService.openExperimentEditIncludeListModal(rowData, rowData.segment.context, experimentId);
   }
 
   onDeleteIncludeList(segment: Segment): void {
-    console.log('Delete participant segment:', segment);
-    // TODO: Implement delete participant inclusion
-    // this.experimentService.deleteParticipantInclusion(segment.id);
+    this.dialogService
+      .openDeleteIncludeListModal(segment.name)
+      .afterClosed()
+      .subscribe((confirmClicked) => {
+        if (confirmClicked) {
+          this.experimentService.deleteExperimentInclusionPrivateSegmentList(segment.id);
+        }
+      });
   }
 
   ngOnDestroy(): void {

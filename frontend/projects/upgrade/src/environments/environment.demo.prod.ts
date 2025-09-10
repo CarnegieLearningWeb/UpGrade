@@ -54,6 +54,8 @@ export const environment: Environment = {
     importFeatureFlag: '/flags/import',
     importFeatureFlagList: '/flags/lists/import',
     exportFlagsDesign: '/flags/export',
+    addExperimentInclusionList: '/experiments/inclusionList',
+    addExperimentExclusionList: '/experiments/exclusionList',
     exportFFAllIncludeListsDesign: '/flags/export/includeLists',
     exportFFAllExcludeListsDesign: '/flags/export/excludeLists',
     emailFlagData: '/flags/email',

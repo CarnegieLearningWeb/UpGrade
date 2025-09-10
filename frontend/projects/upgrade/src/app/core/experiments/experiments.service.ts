@@ -52,6 +52,7 @@ import { AppState } from '../core.state';
 import { map, filter, tap } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { ENV, Environment } from '../../../environments/environment-types';
+import { ExperimentSegmentListRequest } from '../segments/store/segments.model';
 
 @Injectable()
 export class ExperimentService {
@@ -295,5 +296,29 @@ export class ExperimentService {
       metric_Operation: 'Percentage (Success)',
       metric_Name: 'Success Rate',
     };
+  }
+
+  addExperimentInclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
+    this.store$.dispatch(experimentAction.actionAddExperimentInclusionList({ list }));
+  }
+
+  updateExperimentInclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
+    this.store$.dispatch(experimentAction.actionUpdateExperimentInclusionList({ list }));
+  }
+
+  deleteExperimentInclusionPrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(experimentAction.actionDeleteExperimentInclusionList({ segmentId }));
+  }
+
+  addExperimentExclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
+    this.store$.dispatch(experimentAction.actionAddExperimentExclusionList({ list }));
+  }
+
+  updateExperimentExclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
+    this.store$.dispatch(experimentAction.actionUpdateExperimentExclusionList({ list }));
+  }
+
+  deleteExperimentExclusionPrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(experimentAction.actionDeleteExperimentExclusionList({ segmentId }));
   }
 }

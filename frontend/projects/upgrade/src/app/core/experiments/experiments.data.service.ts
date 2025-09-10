@@ -5,12 +5,13 @@ import {
   ExperimentPaginationParams,
   UpdateExperimentFilterModeRequest,
   UpdateExperimentDecisionPointsRequest,
+  ExperimentSegmentListResponse,
 } from './store/experiments.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
-import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { ExperimentSegmentListRequest } from '../segments/store/segments.model';
 
 @Injectable()
 export class ExperimentDataService {
@@ -107,6 +108,36 @@ export class ExperimentDataService {
   fetchExperimentGraphInfo(params: any) {
     const url = this.environment.api.experimentGraphInfo;
     return this.http.post(url, params);
+  }
+
+  addInclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = this.environment.api.addExperimentInclusionList;
+    return this.http.post<ExperimentSegmentListResponse>(url, list);
+  }
+
+  updateInclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = `${this.environment.api.addExperimentInclusionList}/${list.list.id}`;
+    return this.http.put<ExperimentSegmentListResponse>(url, list);
+  }
+
+  deleteInclusionList(segmentId: string) {
+    const url = `${this.environment.api.addExperimentInclusionList}/${segmentId}`;
+    return this.http.delete(url);
+  }
+
+  addExclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = this.environment.api.addExperimentExclusionList;
+    return this.http.post<ExperimentSegmentListResponse>(url, list);
+  }
+
+  updateExclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = `${this.environment.api.addExperimentExclusionList}/${list.list.id}`;
+    return this.http.put<ExperimentSegmentListResponse>(url, list);
+  }
+
+  deleteExclusionList(segmentId: string) {
+    const url = `${this.environment.api.addExperimentExclusionList}/${segmentId}`;
+    return this.http.delete(url);
   }
 
   fetchContextMetaData() {
