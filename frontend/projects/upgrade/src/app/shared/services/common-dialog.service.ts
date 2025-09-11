@@ -372,6 +372,7 @@ export class DialogService {
     const dialogRef = this.dialog.open(EditConditionWeightsModalComponent, {
       panelClass: ['experiment-modal', 'modal-shadow'],
       hasBackdrop: true,
+      autoFocus: false,
       backdropClass: 'modal-backdrop',
       width: ModalSize.STANDARD,
 

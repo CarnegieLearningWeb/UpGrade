@@ -16,7 +16,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatTableModule } from '@angular/material/table';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable, combineLatest, map, startWith } from 'rxjs';
 import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
@@ -39,7 +39,6 @@ export interface ConditionWeightUpdate {
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
-    NgIf,
   ],
   templateUrl: './edit-condition-weights-modal.component.html',
   styleUrl: './edit-condition-weights-modal.component.scss',
@@ -54,14 +53,18 @@ export class EditConditionWeightsModalComponent implements OnInit {
   weightingMethods = [
     {
       value: 'equal',
-      name: 'Weight Equally',
-      description: 'Equally distribute weight percentages across all conditions.',
+      name: this.translate.instant('experiments.edit-condition-weights-modal.equal-assignment-weights.label.text'),
+      description: this.translate.instant(
+        'experiments.edit-condition-weights-modal.equal-assignment-weights.description.text'
+      ),
       disabled: false,
     },
     {
       value: 'custom',
-      name: 'Custom Percentages',
-      description: 'Define a custom weight percentage for each condition.',
+      name: this.translate.instant('experiments.edit-condition-weights-modal.custom-percentages.label.text'),
+      description: this.translate.instant(
+        'experiments.edit-condition-weights-modal.custom-percentages.description.text'
+      ),
       disabled: false,
     },
   ];
@@ -71,6 +74,7 @@ export class EditConditionWeightsModalComponent implements OnInit {
     public config: CommonModalConfig<{ experimentWeightsArray: ConditionWeightUpdate[] }>,
     public dialog: MatDialog,
     private readonly formBuilder: FormBuilder,
+    private translate: TranslateService,
     public dialogRef: MatDialogRef<EditConditionWeightsModalComponent>
   ) {}
 
@@ -81,6 +85,9 @@ export class EditConditionWeightsModalComponent implements OnInit {
   createconditionWeightForm(): void {
     const { experimentWeightsArray } = this.config.params;
     this.conditions = experimentWeightsArray;
+
+    // Determine initial weighting method based on existing weights
+    const initialWeightingMethod = this.determineInitialWeightingMethod(experimentWeightsArray);
 
     // Create FormArray for conditions with individual validators
     const conditionsFormArray = this.formBuilder.array(
@@ -97,7 +104,7 @@ export class EditConditionWeightsModalComponent implements OnInit {
     );
 
     this.conditionWeightForm = this.formBuilder.group({
-      weightingMethod: [null, Validators.required],
+      weightingMethod: [initialWeightingMethod, Validators.required],
       conditions: conditionsFormArray,
     });
 
@@ -107,8 +114,37 @@ export class EditConditionWeightsModalComponent implements OnInit {
     // Watch for weighting method changes
     this.watchWeightingMethodChanges();
 
-    // Initially disable weight inputs until method is selected
-    this.disableWeightInputs();
+    // Set initial input state based on the determined method
+    if (initialWeightingMethod === 'equal') {
+      this.disableWeightInputs();
+    } else {
+      this.enableWeightInputs();
+    }
+  }
+
+  private determineInitialWeightingMethod(conditions: ConditionWeightUpdate[]): string {
+    if (!conditions || conditions.length === 0) {
+      return 'equal';
+    }
+
+    if (conditions.length === 1) {
+      // Single condition should always be 100%
+      return Math.abs(conditions[0].assignmentWeight - 100) < 0.01 ? 'equal' : 'custom';
+    }
+
+    const expectedEqualWeight = 100 / conditions.length;
+
+    // Check if all weights are close to the expected equal distribution
+    const areWeightsEquallyDistributed = conditions.every(
+      (condition) => Math.abs(condition.assignmentWeight - expectedEqualWeight) < 0.01
+    );
+
+    // Additional check: ensure total is close to 100%
+    const totalWeight = conditions.reduce((sum, condition) => sum + condition.assignmentWeight, 0);
+    const isTotalValid = Math.abs(totalWeight - 100) < 0.01;
+
+    // Return 'equal' only if weights are equally distributed AND total is valid
+    return areWeightsEquallyDistributed && isTotalValid ? 'equal' : 'custom';
   }
 
   private setupFormValidation(): void {
@@ -117,20 +153,25 @@ export class EditConditionWeightsModalComponent implements OnInit {
       this.conditionWeightForm.valueChanges.pipe(startWith(this.conditionWeightForm.value)),
     ]).pipe(
       map(([status, value]) => {
-        return status === 'INVALID' || this.conditionsFormArray.hasError('totalWeightInvalid');
+        return (
+          status === 'INVALID' ||
+          this.conditionsFormArray.hasError('totalWeightInvalid') ||
+          this.conditionWeightForm.pristine
+        );
       })
     );
   }
 
   private watchWeightingMethodChanges(): void {
     this.conditionWeightForm.get('weightingMethod')?.valueChanges.subscribe((method) => {
+      this.conditionWeightForm.markAsDirty();
+
       if (method === 'equal') {
         this.distributeWeightsEqually();
         this.disableWeightInputs();
       } else if (method === 'custom') {
         this.enableWeightInputs();
       } else if (method === null) {
-        // No method selected - disable inputs
         this.disableWeightInputs();
       }
     });
@@ -156,28 +197,33 @@ export class EditConditionWeightsModalComponent implements OnInit {
     return null;
   }
 
-  // Array-level validator to ensure total weight equals 100
+  // Array-level validator for total weight and individual control errors
   totalWeightValidator(formArray: AbstractControl): ValidationErrors | null {
     if (!(formArray instanceof FormArray)) {
       return null;
     }
 
-    const total = formArray.controls.reduce((sum, control) => {
-      const weight = control.get('assignmentWeight')?.value;
-      return sum + (parseFloat(weight) || 0);
-    }, 0);
-
-    // Allow for small rounding errors (within 0.01)
+    const [total, formErrors] = formArray.controls.reduce(
+      (acc, control) => {
+        const weight = control.get('assignmentWeight')?.value;
+        return [acc[0] + (parseFloat(weight) || 0), { ...acc[1], ...control.get('assignmentWeight')?.errors }];
+      },
+      [0, {}] as [number, ValidationErrors]
+    );
     const isValid = Math.abs(total - 100) < 0.01;
-
-    return isValid
-      ? null
+    const totalValidation = isValid
+      ? {}
       : {
           totalWeightInvalid: {
             actualTotal: Math.round(total * 100) / 100,
             expectedTotal: 100,
           },
         };
+    const allErrors = {
+      ...formErrors,
+      ...totalValidation,
+    };
+    return Object.keys(allErrors).length === 0 ? null : allErrors;
   }
 
   get conditionsFormArray(): FormArray {
@@ -228,15 +274,8 @@ export class EditConditionWeightsModalComponent implements OnInit {
   }
 
   // Helper method to get total weight status for display
-  getTotalWeightStatus(): { total: number; isValid: boolean; error?: string } {
-    const total = this.getCurrentTotal();
-    const isValid = Math.abs(total - 100) < 0.01;
-
-    return {
-      total: Math.round(total * 100) / 100,
-      isValid,
-      error: !isValid ? `Total must equal 100% (current: ${Math.round(total * 100) / 100}%)` : undefined,
-    };
+  getTotalWeightStatus(): ValidationErrors {
+    return this.conditionsFormArray.errors as ValidationErrors;
   }
 
   onPrimaryActionBtnClicked() {
