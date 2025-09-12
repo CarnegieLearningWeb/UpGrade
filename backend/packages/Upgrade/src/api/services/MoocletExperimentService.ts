@@ -763,7 +763,7 @@ export class MoocletExperimentService extends ExperimentService {
     const results = await Promise.allSettled(taskPromises);
 
     // Check if any tasks failed
-    const failures = results.filter((result) => result.status === 'rejected');
+    const failures = results.filter((result): result is PromiseRejectedResult => result.status === 'rejected');
 
     if (failures.length > 0) {
       // Log all the errors that occurred

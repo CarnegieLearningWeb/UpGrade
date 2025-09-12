@@ -174,7 +174,7 @@ export class MoocletRewardsService {
 
       for (const key in simpleMetrics) {
         if (this.isBinaryRewardMetricAllowedValue(simpleMetrics[key])) {
-          acc.push({ key, value: simpleMetrics[key] });
+          acc.push({ key, value: simpleMetrics[key] as BinaryRewardMetricAllowedValue });
         }
       }
 
