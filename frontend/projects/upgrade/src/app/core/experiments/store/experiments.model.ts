@@ -366,6 +366,20 @@ export interface DecisionPointFormData {
   excludeIfReached: boolean;
 }
 
+export interface MetricFormData {
+  metricType: 'global' | 'repeatable';
+  metricId: string;
+  displayName: string;
+  description?: string;
+  metricClass?: string; // For repeatable metrics only
+  metricKey?: string; // For repeatable metrics only
+  aggregateStatistic?: string;
+  individualStatistic?: string; // For repeatable metrics only
+  comparison?: string;
+  compareValue?: string;
+  allowableDataKeys?: string[]; // For categorical metrics only
+}
+
 // Base interfaces matching backend DTO structure
 export interface ExperimentConditionDTO {
   id: string;
@@ -607,6 +621,11 @@ export interface ExperimentConditionRowActionEvent {
   condition: ExperimentCondition;
 }
 
+export interface ExperimentQueryRowActionEvent {
+  action: EXPERIMENT_ROW_ACTION;
+  query: ExperimentQueryDTO;
+}
+
 export enum EXPERIMENT_PAYLOAD_DISPLAY_TYPE {
   UNIVERSAL = 'universal',
   SPECIFIC = 'specific',
@@ -627,4 +646,12 @@ export interface RewardMetricData {
 
 export interface ExperimentSegmentListResponse extends SegmentNew {
   experiment: Experiment;
+}
+
+export interface UpsertMetricParams {
+  sourceQuery: ExperimentQueryDTO | null;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
+  currentContext?: string;
+  experimentInfo?: ExperimentVM;
 }

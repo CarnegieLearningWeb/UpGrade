@@ -13,13 +13,17 @@ import {
 } from './experiment-metrics-table/experiment-metrics-table.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
 import { Observable, map } from 'rxjs';
+import { take } from 'rxjs/operators';
 import {
   Experiment,
   EXPERIMENT_BUTTON_ACTION,
   EXPERIMENT_ROW_ACTION,
+  ExperimentQueryDTO,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
+import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
+import { ModalSize } from '../../../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 
 @Component({
   selector: 'app-experiment-metrics-section-card',
@@ -63,15 +67,23 @@ export class ExperimentMetricsSectionCardComponent implements OnInit {
     },
   ];
 
-  constructor(private experimentService: ExperimentService, private authService: AuthService) {}
+  constructor(
+    private experimentService: ExperimentService,
+    private authService: AuthService,
+    private dialogService: DialogService
+  ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
   }
 
   onAddMetricClick(): void {
-    // TODO: Implement add metric functionality when dialog service is available
-    console.log('Add metric clicked');
+    // Get experiment ID from selected experiment
+    this.selectedExperiment$.pipe(take(1)).subscribe((experiment: Experiment) => {
+      if (experiment?.id) {
+        this.dialogService.openAddMetricModal(experiment.id);
+      }
+    });
   }
 
   onMenuButtonItemClick(event: string, experiment: Experiment): void {
@@ -106,13 +118,28 @@ export class ExperimentMetricsSectionCardComponent implements OnInit {
     }
   }
 
-  private onEditMetric(query: any, experimentId: string): void {
-    // TODO: Implement edit metric functionality when dialog service is available
-    console.log('Edit metric clicked for query:', query.id, 'in experiment:', experimentId);
+  private onEditMetric(query: ExperimentQueryDTO, experimentId: string): void {
+    this.dialogService.openEditMetricModal(query, experimentId);
   }
 
-  private onDeleteMetric(query: any, experimentId: string): void {
-    // TODO: Implement delete metric functionality when dialog service is available
-    console.log('Delete metric clicked for query:', query.id, 'in experiment:', experimentId);
+  private onDeleteMetric(query: ExperimentQueryDTO, experimentId: string): void {
+    const metricDisplayName = query.name || `${query.metric?.key}`;
+
+    const confirmationParams = {
+      title: 'Delete Metric',
+      description: `Are you sure you want to delete the metric "${metricDisplayName}"?`,
+      primaryActionBtnText: 'Delete',
+      cancelBtnText: 'Cancel',
+    };
+
+    this.dialogService
+      .openSimpleCommonConfirmationModal(confirmationParams, ModalSize.MEDIUM)
+      .afterClosed()
+      .subscribe((confirmClicked) => {
+        if (confirmClicked) {
+          // TODO: Implement actual metric deletion logic
+          console.log('Delete metric confirmed for query:', query.id, 'in experiment:', experimentId);
+        }
+      });
   }
 }
