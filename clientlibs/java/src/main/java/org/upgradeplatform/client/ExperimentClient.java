@@ -22,12 +22,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.AsyncInvoker;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.InvocationCallback;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.client.AsyncInvoker;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.InvocationCallback;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
@@ -71,7 +71,7 @@ public class ExperimentClient implements AutoCloseable {
 	 *                   Properties to permit users to control how the underlying
 	 *                   JAX-RS
 	 *                   client behaves. These are passed through to
-	 *                   {@link javax.ws.rs.core.Configurable#property(String, Object)}.
+	 *                   {@link jakarta.ws.rs.core.Configurable#property(String, Object)}.
 	 */
 	public ExperimentClient(String userId, String context, String authToken, String baseUrl,
 			Map<String, Object> properties) {
@@ -83,7 +83,7 @@ public class ExperimentClient implements AutoCloseable {
 	 *                   Properties to permit users to control how the underlying
 	 *                   JAX-RS
 	 *                   client behaves. These are passed through to
-	 *                   {@link javax.ws.rs.core.Configurable#property(String, Object)}.
+	 *                   {@link jakarta.ws.rs.core.Configurable#property(String, Object)}.
 	 */
 	public ExperimentClient(String userId, String context, String authToken, String sessionId, String baseUrl,
 			Map<String, Object> properties) {

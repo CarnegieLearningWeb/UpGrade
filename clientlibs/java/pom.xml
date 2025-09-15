@@ -9,7 +9,7 @@
 		at the same time that happen to rev to the same new version will be caught 
 		by a merge conflict. -->
 
-	<version>6.1.2</version> <!-- 6.1.2: add context to client object-->  
+	<version>7.0.0</version> <!-- 7.0.0 move Jaxb -> jakarta and update to Jersey 3-->
 	<build>
 		<plugins>
 			<plugin>
@@ -40,7 +40,12 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-client</artifactId>
-			<version>2.30.1</version>
+			<version>3.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.ws.rs</groupId>
+			<artifactId>jakarta.ws.rs-api</artifactId>
+			<version>3.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
