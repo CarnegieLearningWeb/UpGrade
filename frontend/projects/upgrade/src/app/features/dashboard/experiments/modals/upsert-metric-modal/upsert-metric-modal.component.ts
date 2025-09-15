@@ -253,14 +253,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       // Global metrics: only show metrics without children
       this.metricClassOptions$.next([]);
       this.metricKeyOptions$.next([]);
-      this.metricIdOptions$.next(
-        this.allMetrics.filter((metric) => !metric.children || metric.children.length === 0)
-      );
+      this.metricIdOptions$.next(this.allMetrics.filter((metric) => !metric.children || metric.children.length === 0));
     } else {
       // Repeatable metrics: show hierarchical structure
-      this.metricClassOptions$.next(
-        this.allMetrics.filter((metric) => metric.children && metric.children.length > 0)
-      );
+      this.metricClassOptions$.next(this.allMetrics.filter((metric) => metric.children && metric.children.length > 0));
       this.metricKeyOptions$.next([]);
       this.metricIdOptions$.next([]);
     }
