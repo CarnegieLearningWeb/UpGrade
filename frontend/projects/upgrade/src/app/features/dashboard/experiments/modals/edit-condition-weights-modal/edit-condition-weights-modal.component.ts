@@ -10,7 +10,7 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { NgIf, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -152,7 +152,7 @@ export class EditConditionWeightsModalComponent implements OnInit {
       this.conditionWeightForm.statusChanges.pipe(startWith(this.conditionWeightForm.status)),
       this.conditionWeightForm.valueChanges.pipe(startWith(this.conditionWeightForm.value)),
     ]).pipe(
-      map(([status, value]) => {
+      map(([status]) => {
         return (
           status === 'INVALID' ||
           this.conditionsFormArray.hasError('totalWeightInvalid') ||
@@ -275,7 +275,7 @@ export class EditConditionWeightsModalComponent implements OnInit {
 
   // Helper method to get total weight status for display
   getTotalWeightStatus(): ValidationErrors {
-    return this.conditionsFormArray.errors as ValidationErrors;
+    return this.conditionsFormArray.errors;
   }
 
   onPrimaryActionBtnClicked() {
