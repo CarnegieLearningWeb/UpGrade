@@ -6,9 +6,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
-import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
 import org.upgradeplatform.responsebeans.*;
-import org.upgradeplatform.utils.Utils;
 import org.upgradeplatform.utils.Utils.ExperimentType;
 import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 import org.upgradeplatform.utils.Utils.PayloadType;
@@ -18,18 +16,15 @@ import org.upgradeplatform.requestbeans.LogMetrics;
 
 public class QuickTest {
     private static final String LOCAL_URL = "http://localhost:3030";
-    private static final String BEANSTALK_QA_URL = "https://upgradeapi.qa-cli.net";
-    private static final String BEANSTALK_STAGING_URL = "https://upgradeapi.qa-cli.com";
     private static final String ECS_QA_URL = "https://apps.qa-cli.net/upgrade-service";
     private static final String ECS_STAGING_URL = "https://apps.qa-cli.com/upgrade-service";
-
     private static final String userId = "quicktest_user_" + System.currentTimeMillis();
     private static final String group = "test_class_group";
     private static final String alias = "alias" + userId;
-    private static final String hostUrl = LOCAL_URL;
-    private static final String context = "assign-prog";
+    private static final String hostUrl = ECS_STAGING_URL;
+    private static final String context = "upgrade-internal";
     private static final String site = "SelectSection";
-    private static final String target = "absolute_value_plot_equality";
+    private static final String target = "my_fave_workspace";
     private static final String condition = "control";
     private static final MarkedDecisionPointStatus status = MarkedDecisionPointStatus.CONDITION_APPLIED;
     private static final String featureFlagKey = "TEST_FEATURE_FLAG";

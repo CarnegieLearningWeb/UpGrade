@@ -41,4 +41,9 @@ public class InitializeUserResponse {
     public void setWorkingGroup(Map<String, String> workingGroup) {
         this.workingGroup = workingGroup;
     }
+
+    @Override
+    public String toString() {
+        return "InitializeUserResponse [id=" + id + ", group=" + group + ", workingGroup=" + workingGroup + "]";
+    }
 }
