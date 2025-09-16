@@ -1,5 +1,7 @@
 package org.upgradeplatform.responsebeans;
 
+import java.util.Arrays;
+
 public class LogEventResponse {
 
 	private String id;
@@ -69,6 +71,12 @@ public class LogEventResponse {
 
 	public void setUniquifier(String uniquifier) {
 		this.uniquifier = uniquifier;
+	}
+
+	@Override
+	public String toString() {
+		return "LogEventResponse [id=" + id + ", data=" + data + ", metrics=" + Arrays.toString(metrics)
+			   + ", user=" + user + ", timeStamp=" + timeStamp + ", uniquifier=" + uniquifier + "]";
 	}
 
 }
