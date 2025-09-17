@@ -405,23 +405,13 @@ export class ExperimentAssignmentService {
             return assignment.experimentId === experiment.id;
           });
 
-          const groupEnrollment = groupEnrollments.find((assignment) => {
-            return (
-              assignment.experimentId === experiment.id &&
-              assignment.groupId === experimentUserDoc.workingGroup[experiment.group]
-            );
-          });
-
-          const individualExclusion = individualExclusions.find((exclusion) => {
-            return exclusion.experimentId === experiment.id;
-          });
-
-          const groupExclusion = groupExclusions.find((exclusion) => {
-            return (
-              exclusion.experimentId === experiment.id &&
-              exclusion.groupId === experimentUserDoc.workingGroup[experiment.group]
-            );
-          });
+          const assignmentRecords = this.findAssignmentAndExclusionRecordsExceptIndividualEnrollment(
+            experimentUserDoc,
+            experiment,
+            groupEnrollments,
+            individualExclusions,
+            groupExclusions
+          );
 
           let enrollmentCountPerCondition = null;
           if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
@@ -431,9 +421,9 @@ export class ExperimentAssignmentService {
             experimentUserDoc,
             experiment,
             individualEnrollment,
-            groupEnrollment,
-            individualExclusion,
-            groupExclusion,
+            assignmentRecords.groupEnrollment,
+            assignmentRecords.individualExclusion,
+            assignmentRecords.groupExclusion,
             enrollmentCountPerCondition
           );
         })
@@ -526,23 +516,13 @@ export class ExperimentAssignmentService {
             return assignment.userId === experimentUserDoc.id && assignment.experimentId === experiment?.id;
           });
 
-          const groupEnrollment = groupEnrollments.find((assignment) => {
-            return (
-              assignment.experimentId === experiment.id &&
-              assignment.groupId === experimentUserDoc.workingGroup[experiment.group]
-            );
-          });
-
-          const individualExclusion = individualExclusions.find((exclusion) => {
-            return exclusion.experimentId === experiment.id;
-          });
-
-          const groupExclusion = groupExclusions.find((exclusion) => {
-            return (
-              exclusion.experimentId === experiment.id &&
-              exclusion.groupId === experimentUserDoc.workingGroup[experiment.group]
-            );
-          });
+          const assignmentRecords = this.findAssignmentAndExclusionRecordsExceptIndividualEnrollment(
+            experimentUserDoc,
+            experiment,
+            groupEnrollments,
+            individualExclusions,
+            groupExclusions
+          );
 
           let enrollmentCountPerCondition = null;
           if (experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
@@ -555,9 +535,9 @@ export class ExperimentAssignmentService {
             experimentUserDoc,
             experiment,
             individualEnrollment,
-            groupEnrollment,
-            individualExclusion,
-            groupExclusion,
+            assignmentRecords.groupEnrollment,
+            assignmentRecords.individualExclusion,
+            assignmentRecords.groupExclusion,
             enrollmentCountPerCondition
           );
           let fullAssignment: IExperimentAssignmentv5[] | null = null;
@@ -747,6 +727,42 @@ export class ExperimentAssignmentService {
       return experiments.filter(({ id }) => !invalidGroupExperimentIds.includes(id));
     }
     return experiments;
+  }
+
+  private findAssignmentAndExclusionRecordsExceptIndividualEnrollment(
+    experimentUserDoc: RequestedExperimentUser,
+    experiment: Experiment,
+    groupEnrollments: GroupEnrollment[],
+    individualExclusions: IndividualExclusion[],
+    groupExclusions: GroupExclusion[]
+  ): {
+    groupEnrollment: GroupEnrollment | undefined;
+    individualExclusion: IndividualExclusion | undefined;
+    groupExclusion: GroupExclusion | undefined;
+  } {
+    const groupEnrollment = groupEnrollments.find((assignment) => {
+      return (
+        assignment.experimentId === experiment.id &&
+        assignment.groupId === experimentUserDoc.workingGroup[experiment.group]
+      );
+    });
+
+    const individualExclusion = individualExclusions.find((exclusion) => {
+      return exclusion.experimentId === experiment.id;
+    });
+
+    const groupExclusion = groupExclusions.find((exclusion) => {
+      return (
+        exclusion.experimentId === experiment.id &&
+        exclusion.groupId === experimentUserDoc.workingGroup[experiment.group]
+      );
+    });
+
+    return {
+      groupEnrollment,
+      individualExclusion,
+      groupExclusion,
+    };
   }
 
   private async getInvalidGroupNotEnrolledExperiments(
