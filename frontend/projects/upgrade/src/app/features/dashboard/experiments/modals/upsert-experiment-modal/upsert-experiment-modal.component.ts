@@ -19,7 +19,6 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import {
   UPSERT_EXPERIMENT_ACTION,
   UpsertExperimentParams,
-  ExperimentDesignTypes,
   Experiment,
   ExperimentVM,
   IContextMetaData,
@@ -38,6 +37,7 @@ import {
   POST_EXPERIMENT_RULE,
   SUPPORTED_MOOCLET_ALGORITHMS,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
@@ -91,7 +91,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   // Enum references for template
   UPSERT_EXPERIMENT_ACTION = UPSERT_EXPERIMENT_ACTION;
-  ExperimentDesignTypes = ExperimentDesignTypes;
+  EXPERIMENT_TYPE = EXPERIMENT_TYPE;
   ASSIGNMENT_UNIT = ASSIGNMENT_UNIT;
   CONSISTENCY_RULE = CONSISTENCY_RULE;
   CONDITION_ORDER = CONDITION_ORDER;
@@ -100,12 +100,12 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   experimentTypes = [
     {
-      value: ExperimentDesignTypes.SIMPLE,
+      value: EXPERIMENT_TYPE.SIMPLE,
       description: 'experiments.upsert-experiment-modal.experiment-type-simple-description.text',
       disabled: false,
     },
     {
-      value: ExperimentDesignTypes.FACTORIAL,
+      value: EXPERIMENT_TYPE.FACTORIAL,
       description: 'experiments.upsert-experiment-modal.experiment-type-factorial-description.text',
       disabled: true, // Disabled for v2 - will be enabled in future versions
     },
@@ -266,8 +266,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     const name = action === UPSERT_EXPERIMENT_ACTION.EDIT ? sourceExperiment?.name : '';
     const description = sourceExperiment?.description || '';
     const appContext = sourceExperiment?.context?.[0] || '';
-    const experimentType =
-      sourceExperiment?.type === 'Factorial' ? ExperimentDesignTypes.FACTORIAL : ExperimentDesignTypes.SIMPLE;
+    const experimentType = sourceExperiment?.type === 'Factorial' ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
     const unitOfAssignment = sourceExperiment?.assignmentUnit || ASSIGNMENT_UNIT.INDIVIDUAL;
     const consistencyRule = sourceExperiment?.consistencyRule || CONSISTENCY_RULE.INDIVIDUAL;
     const conditionOrder = sourceExperiment?.conditionOrder || null;
