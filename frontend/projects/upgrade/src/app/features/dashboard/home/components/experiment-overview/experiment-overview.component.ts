@@ -27,7 +27,6 @@ import {
   ExperimentVM,
   NewExperimentPaths,
   IContextMetaData,
-  ExperimentDesignTypes,
   OverviewFormWarningStatus,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
@@ -72,7 +71,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     { value: CONDITION_ORDER.RANDOM_ROUND_ROBIN },
     { value: CONDITION_ORDER.ORDERED_ROUND_ROBIN },
   ];
-  designTypes = [{ value: ExperimentDesignTypes.SIMPLE }, { value: ExperimentDesignTypes.FACTORIAL }];
+  designTypes = [{ value: EXPERIMENT_TYPE.SIMPLE }, { value: EXPERIMENT_TYPE.FACTORIAL }];
   assignmentAlgorithms = [
     { value: ASSIGNMENT_ALGORITHM.RANDOM },
     { value: ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING },
@@ -143,7 +142,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         groupType: [null],
         consistencyRule: [null, Validators.required],
         conditionOrder: [null],
-        designType: [ExperimentDesignTypes.SIMPLE, Validators.required],
+        designType: [EXPERIMENT_TYPE.SIMPLE, Validators.required],
         assignmentAlgorithm: [ASSIGNMENT_ALGORITHM.RANDOM, Validators.required],
         stratificationFactor: [null],
         context: [null, Validators.required],
