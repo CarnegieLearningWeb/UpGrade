@@ -1,7 +1,7 @@
 # educational-experiment-service-java-client-libs
 
-Make a new instance of ExperimentClient class by passing `userId, authToken, baseUrl`.
-> ExperimentClient experimentClient = new ExperimentClient(userId , authToken , baseUrl);
+Make a new instance of ExperimentClient class by passing `userId, context, authToken, baseUrl`.
+> ExperimentClient experimentClient = new ExperimentClient(userId , context, authToken , baseUrl);
 
 # Functions
 
@@ -36,14 +36,14 @@ Updates/Set the working group of the initialized user
 ## getAllExperimentCondition
 Get all the experiment assignments for the initialized user
 
-> getAllExperimentCondition(String context, callback)
+> getAllExperimentCondition(callback)
 
 ## getExperimentCondition
 Returns the Experiment Condition for the partition and point received from the getAllExperimentConditions for the initialized user
 
-> getExperimentCondition(String context, String experimentPoint, callback)
+> getExperimentCondition(String experimentPoint, callback)
 
-> getExperimentCondition(String context, String experimentPoint,  String experimentId, callback)
+> getExperimentCondition(String experimentPoint,  String experimentId, callback)
 
 ## markExperimentPoint
 Calls markExperimentPoint for experiment point and partitionId. It will use the user definition from initialized user
@@ -91,9 +91,9 @@ getFeatureFlag(String key, callback)
 		String baseUrl = "http://upgrade-development.us-east-1.elasticbeanstalk.com/";
 		String userId = "user1";
 
-		ExperimentClient experimentClient = new ExperimentClient( userId , authToken , baseUrl);
+		ExperimentClient experimentClient = new ExperimentClient( userId , appContext, authToken , baseUrl);
 
-		experimentClient.getExperimentCondition("appContext", "Workspace1", new ResponseCallback<GetExperimentCondition>() {
+		experimentClient.getExperimentCondition("Workspace1", new ResponseCallback<GetExperimentCondition>() {
 
 			@Override
 			public void onSuccess(@NonNull GetExperimentCondition t) {

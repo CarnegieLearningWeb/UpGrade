@@ -67,6 +67,7 @@ beforeEach(() => {
 
   manager = {
     createQueryBuilder: repo.createQueryBuilder,
+    withRepository: jest.fn().mockReturnValue(individualEnrollmentRepo),
   };
 });
 
@@ -326,7 +327,7 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    const res = await repo.analysis(q);
+    const res = await repo.analysis(q, manager);
 
     expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 
@@ -359,7 +360,7 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    const res = await repo.analysis(q);
+    const res = await repo.analysis(q, manager);
 
     expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 
@@ -393,7 +394,7 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    const res = await repo.analysis(q);
+    const res = await repo.analysis(q, manager);
 
     expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 
@@ -427,7 +428,7 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    const res = await repo.analysis(q);
+    const res = await repo.analysis(q, manager);
 
     expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 
@@ -461,7 +462,7 @@ describe('LogRepository Testing', () => {
     };
     q.repeatedMeasure = REPEATED_MEASURE.mostRecent;
 
-    const res = await repo.analysis(q);
+    const res = await repo.analysis(q, manager);
 
     expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 
@@ -506,7 +507,7 @@ describe('LogRepository Testing', () => {
     };
     q.repeatedMeasure = REPEATED_MEASURE.earliest;
 
-    const res = await repo.analysis(q);
+    const res = await repo.analysis(q, manager);
 
     expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
 

@@ -1,7 +1,7 @@
 import { QueryService } from '../../../src/api/services/QueryService';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getRepositoryToken, getDataSourceToken } from '@nestjs/typeorm';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { QueryRepository } from '../../../src/api/repositories/QueryRepository';
 import { LogRepository } from '../../../src/api/repositories/LogRepository';
@@ -20,6 +20,7 @@ describe('Query Service Testing', () => {
   let queryRepo: Repository<QueryRepository>;
   let archivedStatsRepo: Repository<ArchivedStatsRepository>;
   let module: TestingModule;
+  let dataSource: DataSource;
 
   const exp1 = new Experiment();
   exp1.id = 'exp1';
@@ -58,6 +59,16 @@ describe('Query Service Testing', () => {
   });
 
   beforeEach(async () => {
+    dataSource = new DataSource({
+      type: 'postgres',
+      database: 'postgres',
+      entities: [Query, Experiment, ArchivedStats, ErrorRepository],
+      synchronize: true,
+    });
+
+    dataSource.transaction = jest.fn().mockImplementation((passedFunction) => {
+      return passedFunction(dataSource.manager);
+    });
     module = await Test.createTestingModule({
       providers: [
         QueryService,
@@ -95,6 +106,10 @@ describe('Query Service Testing', () => {
           useValue: {
             create: jest.fn(),
           },
+        },
+        {
+          provide: getDataSourceToken('default'),
+          useValue: dataSource,
         },
       ],
     }).compile();

@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { InjectRepository } from '../../typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
@@ -9,7 +9,7 @@ import { ExperimentError } from '../models/ExperimentError';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { Experiment } from '../models/Experiment';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
-import { In } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 
 interface queryResult {
   conditionId?: string;
@@ -24,6 +24,7 @@ export class QueryService {
     @InjectRepository() private queryRepository: QueryRepository,
     @InjectRepository() private logRepository: LogRepository,
     @InjectRepository() private archivedStatsRepository: ArchivedStatsRepository,
+    @InjectDataSource() protected dataSource: DataSource,
     public errorService: ErrorService
   ) {}
 
@@ -77,22 +78,28 @@ export class QueryService {
       return [];
     }
 
-    const analyzePromise = promiseResult.map((query) => {
-      experiments.push(query.experiment);
-      if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
-        return [
-          this.logRepository.analysis(query),
-          this.logRepository.analysis({
-            ...query,
-            experiment: { ...query.experiment, type: EXPERIMENT_TYPE.SIMPLE },
-          }),
-        ];
-      }
-      return [this.logRepository.analysis(query)];
+    const transactionPromise = await this.dataSource.transaction(async (transactionalEntityManager) => {
+      const analyzePromise = promiseResult.map((query) => {
+        experiments.push(query.experiment);
+        if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
+          return [
+            this.logRepository.analysis(query, transactionalEntityManager),
+            this.logRepository.analysis(
+              {
+                ...query,
+                experiment: { ...query.experiment, type: EXPERIMENT_TYPE.SIMPLE },
+              },
+              transactionalEntityManager
+            ),
+          ];
+        }
+        return [this.logRepository.analysis(query, transactionalEntityManager)];
+      });
+      return analyzePromise;
     });
 
     const response = await Promise.all(
-      analyzePromise.map(async (queryArray) => {
+      transactionPromise.map(async (queryArray) => {
         return await Promise.allSettled(queryArray);
       })
     );

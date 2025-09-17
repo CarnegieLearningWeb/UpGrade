@@ -64,14 +64,15 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
   expect(experimentConditionAssignments).toHaveLength(3);
 
   // mark experiment point for user 1
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  let markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint, 1);
 
   // the user should be enrolled, as not exclusions added yet:
   let individualExclusions = await checkService.getAllIndividualExclusion();
@@ -86,15 +87,15 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
     expect.arrayContaining([
       expect.objectContaining({
         user: expect.objectContaining({
-          id: experimentUsers[0].id
+          id: experimentUsers[0].id,
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
-      })
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+      }),
     ])
   );
 
   // create individual exclusion segment:
-  let segmentObject = segmentThird;
+  const segmentObject = segmentThird;
   // await segmentService.upsertSegment(segmentObject, new UpgradeLogger(), "exclude");
   // let segments = await segmentService.getAllSegments(new UpgradeLogger());
   // expect(segments.length).toEqual(1);
@@ -138,14 +139,15 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
-    2
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint, 2);
 
   // the user should be still excluded:
   groupExclusions = await checkService.getAllGroupExclusions();
@@ -157,21 +159,21 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
   individualAssignments = await checkService.getAllIndividualAssignment();
   expect(individualAssignments.length).toEqual(1);
 
-
   // For new users of same group that is excluded:
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[1].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint, 1);
 
   // the user should be enrolled, as not exclusions added yet:
   individualExclusions = await checkService.getAllIndividualExclusion();

@@ -63,14 +63,15 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 3
-  const markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  const markedExperimentPoint = await markExperimentPoint(
     experimentUsers[2].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint, 1);
 
   // the user should be excluded due to 'GROUP_ON_EXCLUSION_LIST' exclusion code:
   const groupExclusions = await checkService.getAllGroupExclusions();
@@ -78,10 +79,9 @@ export default async function testCase(): Promise<void> {
   expect(groupExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[2].workingGroup[Object.keys(experimentUsers[2].workingGroup)[0]],
-        exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST
-      })
+        id: experiments[0].id + '_' + experimentUsers[2].workingGroup[Object.keys(experimentUsers[2].workingGroup)[0]],
+        exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
+      }),
     ])
   );
-
 }

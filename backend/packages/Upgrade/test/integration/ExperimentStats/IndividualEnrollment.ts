@@ -2,7 +2,12 @@ import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
-import { checkExperimentAssignedIsNull, getAllExperimentCondition, markExperimentPoint, updateExcludeIfReachedFlag } from '../utils';
+import {
+  checkExperimentAssignedIsNull,
+  getAllExperimentCondition,
+  markExperimentPoint,
+  updateExcludeIfReachedFlag,
+} from '../utils';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { individualExperimentStats } from '../mockData/experiment/index';

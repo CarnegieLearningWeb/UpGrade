@@ -22,12 +22,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.AsyncInvoker;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.InvocationCallback;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.client.AsyncInvoker;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.InvocationCallback;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
@@ -61,6 +61,7 @@ import org.upgradeplatform.utils.Utils.RequestType;
 public class ExperimentClient implements AutoCloseable {
 
 	private final APIService apiService;
+	private final String context;
 
 	private List<ExperimentsResponse> allExperiments;
 	private List<String> allFeatureFlags;
@@ -70,10 +71,11 @@ public class ExperimentClient implements AutoCloseable {
 	 *                   Properties to permit users to control how the underlying
 	 *                   JAX-RS
 	 *                   client behaves. These are passed through to
-	 *                   {@link javax.ws.rs.core.Configurable#property(String, Object)}.
+	 *                   {@link jakarta.ws.rs.core.Configurable#property(String, Object)}.
 	 */
-	public ExperimentClient(String userId, String authToken, String baseUrl, Map<String, Object> properties) {
-		this(userId, authToken, UUID.randomUUID().toString(), baseUrl, properties);
+	public ExperimentClient(String userId, String context, String authToken, String baseUrl,
+			Map<String, Object> properties) {
+		this(userId, context, authToken, UUID.randomUUID().toString(), baseUrl, properties);
 	}
 
 	/**
@@ -81,13 +83,17 @@ public class ExperimentClient implements AutoCloseable {
 	 *                   Properties to permit users to control how the underlying
 	 *                   JAX-RS
 	 *                   client behaves. These are passed through to
-	 *                   {@link javax.ws.rs.core.Configurable#property(String, Object)}.
+	 *                   {@link jakarta.ws.rs.core.Configurable#property(String, Object)}.
 	 */
-	public ExperimentClient(String userId, String authToken, String sessionId, String baseUrl,
+	public ExperimentClient(String userId, String context, String authToken, String sessionId, String baseUrl,
 			Map<String, Object> properties) {
 		if (isStringNull(userId)) {
 			throw new IllegalArgumentException(INVALID_STUDENT_ID);
 		}
+		if (isStringNull(context)) {
+			throw new IllegalArgumentException("Context cannot be null or empty");
+		}
+		this.context = context;
 		this.apiService = new APIService(baseUrl, authToken, sessionId, userId, properties);
 	}
 
@@ -209,137 +215,121 @@ public class ExperimentClient implements AutoCloseable {
 						}));
 	}
 
-	public void getAllExperimentConditions(String context,
+	public void getAllExperimentConditions(
 			final ResponseCallback<List<ExperimentsResponse>> callbacks) {
-		ExperimentRequest experimentRequest = new ExperimentRequest(context);
-		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
-		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
+		getAllExperimentConditions(false, callbacks);
+	}
 
-		invocation.post(requestContent,
-				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
-						new InvocationCallback<Response>() {
+	public void getAllExperimentConditions(boolean ignoreCache,
+			final ResponseCallback<List<ExperimentsResponse>> callbacks) {
+		if (allExperiments == null || ignoreCache) {
+			ExperimentRequest experimentRequest = new ExperimentRequest(this.context);
+			AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
+			Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
 
-							@Override
-							public void completed(Response response) {
-								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-									// Cache allExperiment data for future requests
-									readResponseToCallback(response, callbacks,
-											new GenericType<List<ExperimentsResponse>>() {
-											})
-											.ifPresent(ae -> allExperiments = ae);
-								} else {
-									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
-									ErrorResponse error = new ErrorResponse(response.getStatus(),
-											response.readEntity(String.class), status);
-									if (callbacks != null)
-										callbacks.onError(error);
+			invocation.post(requestContent,
+					new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+							new InvocationCallback<Response>() {
+
+								@Override
+								public void completed(Response response) {
+									if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+										// Cache allExperiment data for future requests
+										readResponseToCallback(response, callbacks,
+												new GenericType<List<ExperimentsResponse>>() {
+												})
+												.ifPresent(ae -> allExperiments = ae);
+									} else {
+										String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+										ErrorResponse error = new ErrorResponse(response.getStatus(),
+												response.readEntity(String.class), status);
+										if (callbacks != null)
+											callbacks.onError(error);
+									}
 								}
-							}
 
-							@Override
-							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
-							}
+								@Override
+								public void failed(Throwable throwable) {
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								}
 
-						}));
+							}));
+		} else {
+			if (callbacks != null) {
+				callbacks.onSuccess(allExperiments);
+			}
+		}
 	}
 
 	/** @param site This is matched case-insensitively */
-	public void getExperimentCondition(String context, String site, final ResponseCallback<Assignment> callbacks) {
-		getExperimentCondition(context, site, null, callbacks);
+	public void getExperimentCondition(String site, final ResponseCallback<Assignment> callbacks) {
+		getExperimentCondition(site, null, callbacks);
 	}
 
 	/**
 	 * @param site   This is matched case-insensitively
 	 * @param target This is matched case-insensitively
 	 */
-	public void getExperimentCondition(String context, String site, String target,
+	public void getExperimentCondition(String site, String target,
 			final ResponseCallback<Assignment> callbacks) {
+		getAllExperimentConditions(new ResponseCallback<List<ExperimentsResponse>>() {
+			@Override
+			public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
-		if (this.allExperiments != null) {
-			ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, allExperiments);
-			Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null
-					? resultExperimentsResponse.getAssignedFactor()[0]
-					: null;
-			Condition assignedCondition = resultExperimentsResponse.getAssignedCondition() != null
-					? resultExperimentsResponse.getAssignedCondition()[0]
-					: null;
-			Assignment resultAssignment = new Assignment(this, target, site,
-					resultExperimentsResponse.getExperimentType(), assignedCondition, assignedFactor);
+				ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, experiments);
+				Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null
+						? resultExperimentsResponse.getAssignedFactor()[0]
+						: null;
+				Condition assignedCondition = resultExperimentsResponse.getAssignedCondition() != null
+						? resultExperimentsResponse.getAssignedCondition()[0]
+						: null;
+				Assignment resultAssignment = new Assignment(ExperimentClient.this, target, site,
+						resultExperimentsResponse.getExperimentType(), assignedCondition, assignedFactor);
 
-			if (callbacks != null) {
-				callbacks.onSuccess(resultAssignment);
+				if (callbacks != null) {
+					callbacks.onSuccess(resultAssignment);
+				}
 			}
-		} else {
-			getAllExperimentConditions(context, new ResponseCallback<List<ExperimentsResponse>>() {
-				@Override
-				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
-					ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, experiments);
-					Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null
-							? resultExperimentsResponse.getAssignedFactor()[0]
-							: null;
-					Condition assignedCondition = resultExperimentsResponse.getAssignedCondition() != null
-							? resultExperimentsResponse.getAssignedCondition()[0]
-							: null;
-					Assignment resultAssignment = new Assignment(ExperimentClient.this, target, site,
-							resultExperimentsResponse.getExperimentType(), assignedCondition, assignedFactor);
+			@Override
+			public void onError(@NonNull ErrorResponse error) {
+				if (callbacks != null)
+					callbacks.onError(error);
 
-					if (callbacks != null) {
-						callbacks.onSuccess(resultAssignment);
-					}
-				}
-
-				@Override
-				public void onError(@NonNull ErrorResponse error) {
-					if (callbacks != null)
-						callbacks.onError(error);
-
-				}
-			});
-		}
-
+			}
+		});
 	}
 
 	/** @param site This is matched case-insensitively */
-	public void getAllExperimentConditions(String context, String site,
+	public void getAllExperimentConditions(String site,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
-		getAllExperimentConditions(context, site, null, callbacks);
+		getAllExperimentConditions(site, null, callbacks);
 	}
 
 	/**
 	 * @param site   This is matched case-insensitively
 	 * @param target This is matched case-insensitively
 	 */
-	public void getAllExperimentConditions(String context, String site, String target,
+	public void getAllExperimentConditions(String site, String target,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
-		if (this.allExperiments != null) {
+		getAllExperimentConditions(new ResponseCallback<List<ExperimentsResponse>>() {
+			@Override
+			public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
-			ExperimentsResponse resultCondition = findExperimentResponse(site, target, allExperiments);
+				ExperimentsResponse resultCondition = findExperimentResponse(site, target, experiments);
 
-			if (callbacks != null) {
-				callbacks.onSuccess(resultCondition);
+				if (callbacks != null) {
+					callbacks.onSuccess(resultCondition);
+				}
 			}
-		} else {
-			getAllExperimentConditions(context, new ResponseCallback<List<ExperimentsResponse>>() {
-				@Override
-				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
-					ExperimentsResponse resultCondition = findExperimentResponse(site, target, experiments);
+			@Override
+			public void onError(@NonNull ErrorResponse error) {
+				if (callbacks != null)
+					callbacks.onError(error);
 
-					if (callbacks != null) {
-						callbacks.onSuccess(resultCondition);
-					}
-				}
-
-				@Override
-				public void onError(@NonNull ErrorResponse error) {
-					if (callbacks != null)
-						callbacks.onError(error);
-
-				}
-			});
-		}
+			}
+		});
 	}
 
 	private ExperimentsResponse findExperimentResponse(String site, String target,
@@ -467,13 +457,13 @@ public class ExperimentClient implements AutoCloseable {
 
 	}
 
-	public void getAllFeatureFlags(String context, final ResponseCallback<List<String>> callbacks) {
-		if (this.allFeatureFlags != null) {
-			if (callbacks != null) {
-				callbacks.onSuccess(allFeatureFlags);
-			}
-		} else {
-			Entity<ExperimentRequest> requestContent = Entity.json(new ExperimentRequest(context));
+	public void getAllFeatureFlags(final ResponseCallback<List<String>> callbacks) {
+		getAllFeatureFlags(false, callbacks);
+	}
+
+	public void getAllFeatureFlags(boolean ignoreCache, final ResponseCallback<List<String>> callbacks) {
+		if (this.allFeatureFlags == null || ignoreCache) {
+			Entity<ExperimentRequest> requestContent = Entity.json(new ExperimentRequest(this.context));
 
 			AsyncInvoker invocation = this.apiService.prepareRequest(FEATURE_FLAGS);
 			invocation.post(requestContent, new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,
@@ -499,31 +489,30 @@ public class ExperimentClient implements AutoCloseable {
 							callbacks.onError(new ErrorResponse(throwable.getMessage()));
 						}
 					}));
+
+		} else {
+			if (callbacks != null) {
+				callbacks.onSuccess(allFeatureFlags);
+			}
 		}
 	}
 
-	public void hasFeatureFlag(String context, String featureFlag, final ResponseCallback<Boolean> callbacks) {
-		if (this.allFeatureFlags != null) {
-			if (callbacks != null) {
-				callbacks.onSuccess(this.allFeatureFlags.contains(featureFlag));
+	public void hasFeatureFlag(String featureFlag, final ResponseCallback<Boolean> callbacks) {
+		this.getAllFeatureFlags(new ResponseCallback<List<String>>() {
+			@Override
+			public void onSuccess(@NonNull List<String> featureFlags) {
+				if (callbacks != null) {
+					callbacks.onSuccess(featureFlags.contains(featureFlag));
+				}
 			}
-		} else {
-			this.getAllFeatureFlags(context, new ResponseCallback<List<String>>() {
-				@Override
-				public void onSuccess(@NonNull List<String> featureFlags) {
-					if (callbacks != null) {
-						callbacks.onSuccess(featureFlags.contains(featureFlag));
-					}
-				}
 
-				@Override
-				public void onError(@NonNull ErrorResponse error) {
-					if (callbacks != null) {
-						callbacks.onError(error);
-					}
+			@Override
+			public void onError(@NonNull ErrorResponse error) {
+				if (callbacks != null) {
+					callbacks.onError(error);
 				}
-			});
-		}
+			}
+		});
 	}
 
 	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<UserAliasResponse> callbacks) {

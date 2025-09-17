@@ -6,9 +6,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
-import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
 import org.upgradeplatform.responsebeans.*;
-import org.upgradeplatform.utils.Utils;
 import org.upgradeplatform.utils.Utils.ExperimentType;
 import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 import org.upgradeplatform.utils.Utils.PayloadType;
@@ -18,18 +16,15 @@ import org.upgradeplatform.requestbeans.LogMetrics;
 
 public class QuickTest {
     private static final String LOCAL_URL = "http://localhost:3030";
-    private static final String BEANSTALK_QA_URL = "https://upgradeapi.qa-cli.net";
-    private static final String BEANSTALK_STAGING_URL = "https://upgradeapi.qa-cli.com";
     private static final String ECS_QA_URL = "https://apps.qa-cli.net/upgrade-service";
     private static final String ECS_STAGING_URL = "https://apps.qa-cli.com/upgrade-service";
-
     private static final String userId = "quicktest_user_" + System.currentTimeMillis();
     private static final String group = "test_class_group";
     private static final String alias = "alias" + userId;
-    private static final String hostUrl = LOCAL_URL;
-    private static final String context = "assign-prog";
+    private static final String hostUrl = ECS_STAGING_URL;
+    private static final String context = "upgrade-internal";
     private static final String site = "SelectSection";
-    private static final String target = "absolute_value_plot_equality";
+    private static final String target = "my_fave_workspace";
     private static final String condition = "control";
     private static final MarkedDecisionPointStatus status = MarkedDecisionPointStatus.CONDITION_APPLIED;
     private static final String featureFlagKey = "TEST_FEATURE_FLAG";
@@ -52,7 +47,7 @@ public class QuickTest {
     }
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
-        ExperimentClient client = new ExperimentClient(userId, "BearerToken", hostUrl, Collections.emptyMap());
+        ExperimentClient client = new ExperimentClient(userId, context, "BearerToken", hostUrl, Collections.emptyMap());
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             try {
                 doInit(client)
@@ -60,8 +55,10 @@ public class QuickTest {
                         .thenCompose(v -> doWorkingGroupMembership(client))
                         .thenCompose(v -> doAliases(client))
                         .thenCompose(v -> doAssign(client))
+                        .thenCompose(v -> doAssignIgnoreCache(client))
                         .thenCompose(v -> doGetDecisionPointAssignment(client))
                         .thenCompose(v -> doFeatureFlags(client))
+                        .thenCompose(v -> doFeatureFlagsIgnoreCache(client))
                         .thenCompose(v -> doHasFeatureFlag(client))
                         .thenCompose(v -> doMark(client))
                         .thenCompose(v -> doLog(client))
@@ -159,7 +156,25 @@ public class QuickTest {
 
     private static CompletableFuture<Void> doAssign(ExperimentClient client) {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        client.getAllExperimentConditions(context, new ResponseCallback<List<ExperimentsResponse>>() {
+        client.getAllExperimentConditions(new ResponseCallback<List<ExperimentsResponse>>() {
+            @Override
+            public void onSuccess(@NonNull List<ExperimentsResponse> response) {
+                System.out.println("\n[Assign response]:" + response);
+                future.complete(null);
+            }
+
+            @Override
+            public void onError(@NonNull ErrorResponse error) {
+                System.err.println("\n[Assign error]:" + error);
+                future.completeExceptionally(new RuntimeException(error.toString()));
+            }
+        });
+        return future;
+    }
+
+    private static CompletableFuture<Void> doAssignIgnoreCache(ExperimentClient client) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        client.getAllExperimentConditions(true, new ResponseCallback<List<ExperimentsResponse>>() {
             @Override
             public void onSuccess(@NonNull List<ExperimentsResponse> response) {
                 System.out.println("\n[Assign response]:" + response);
@@ -177,7 +192,7 @@ public class QuickTest {
 
     private static CompletableFuture<Void> doGetDecisionPointAssignment(ExperimentClient client) {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        client.getExperimentCondition(context, site, target, new ResponseCallback<Assignment>() {
+        client.getExperimentCondition(site, target, new ResponseCallback<Assignment>() {
             @Override
             public void onSuccess(@NonNull Assignment response) {
                 System.out.println("\n[Decision Point Assignment response]:" + response);
@@ -222,7 +237,25 @@ public class QuickTest {
 
     private static CompletableFuture<Void> doFeatureFlags(ExperimentClient client) {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        client.getAllFeatureFlags(context, new ResponseCallback<List<String>>() {
+        client.getAllFeatureFlags(new ResponseCallback<List<String>>() {
+            @Override
+            public void onSuccess(@NonNull List<String> response) {
+                System.out.println("\n[Feature Flag response]:" + response);
+                future.complete(null);
+            }
+
+            @Override
+            public void onError(@NonNull ErrorResponse error) {
+                System.err.println("\n[Feature Flag error]:" + error);
+                future.completeExceptionally(new RuntimeException(error.toString()));
+            }
+        });
+        return future;
+    }
+
+    private static CompletableFuture<Void> doFeatureFlagsIgnoreCache(ExperimentClient client) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        client.getAllFeatureFlags(true, new ResponseCallback<List<String>>() {
             @Override
             public void onSuccess(@NonNull List<String> response) {
                 System.out.println("\n[Feature Flag response]:" + response);
@@ -240,7 +273,7 @@ public class QuickTest {
 
     private static CompletableFuture<Void> doHasFeatureFlag(ExperimentClient client) {
         CompletableFuture<Void> future = new CompletableFuture<>();
-        client.hasFeatureFlag(context, featureFlagKey, new ResponseCallback<Boolean>() {
+        client.hasFeatureFlag(featureFlagKey, new ResponseCallback<Boolean>() {
             @Override
             public void onSuccess(@NonNull Boolean response) {
                 System.out.println("\n[Has Feature Flag response]:" + response);

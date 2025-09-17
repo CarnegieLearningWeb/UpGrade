@@ -120,6 +120,7 @@ import {
   ExperimentLevelExclusionCodeGroup,
   WithinSubjectExclusionCode,
 } from './Experiment/exclusionCode';
+import { ExperimentValidation } from './Experiment/validation';
 import { FeatureFlagInclusionExclusion } from './FeatureFlags';
 
 describe('Integration Tests', () => {
@@ -178,6 +179,10 @@ describe('Integration Tests', () => {
 
   test('Group not having the key', () => {
     return IncorrectGroup();
+  });
+
+  test('Experiment Validation (assignmentUnit/group validation)', () => {
+    return ExperimentValidation();
   });
 
   test('Group and Participants', () => {

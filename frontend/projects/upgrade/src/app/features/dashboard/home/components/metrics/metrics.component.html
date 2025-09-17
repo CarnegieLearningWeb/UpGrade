@@ -222,7 +222,11 @@
                   [attr.aria-disabled]="isRewardMetric(queryIndex)"
                   [attr.tabindex]="isRewardMetric(queryIndex) ? -1 : 0"
                   (click)="!isRewardMetric(queryIndex) && removeMetric(queryIndex)"
-                  (keydown)="$event.key === 'Enter' || $event.key === ' ' ? (!isRewardMetric(queryIndex) && removeMetric(queryIndex)) : null"
+                  (keydown)="
+                    $event.key === 'Enter' || $event.key === ' '
+                      ? !isRewardMetric(queryIndex) && removeMetric(queryIndex)
+                      : null
+                  "
                 >
                   delete_outline
                 </mat-icon>
@@ -292,11 +296,20 @@
               <span class="ft-14-400"> ["SUCCESS", "FAILURE"]</span>
             </span>
             <span class="ft-12-400">
-              Adaptive experiments require "reward" feedback to be logged from enrolled users, which will tilt the probability of experimental assignments towards conditions that receive more successful feedback. Use this key when logging metrics as a simple metric value.
+              Adaptive experiments require "reward" feedback to be logged from enrolled users, which will tilt the
+              probability of experimental assignments towards conditions that receive more successful feedback. Use this
+              key when logging metrics as a simple metric value.
             </span>
             <span class="ft-12-600" *ngIf="!experimentInfo">
-              UpGrade automatically creates this metric for your experiment when created, and a metric query for success rate will also be automatically applied.
-              <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">Learn more</a>
+              UpGrade automatically creates this metric for your experiment when created, and a metric query for success
+              rate will also be automatically applied.
+              <a
+                class="learn-more-link"
+                href="https://www.upgradeplatform.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Learn more</a
+              >
             </span>
           </div>
         </div>

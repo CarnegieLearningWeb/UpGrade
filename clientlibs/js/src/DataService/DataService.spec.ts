@@ -302,9 +302,20 @@ describe('DataService', () => {
           experimentType: EXPERIMENT_TYPE.FACTORIAL,
         },
       ];
-
+      const emptyAssignment: IExperimentAssignmentv5 = {
+        site: 'site',
+        target: 'target1',
+        assignedCondition: [
+          {
+            payload: null,
+            conditionCode: null,
+            id: null,
+          },
+        ],
+        experimentType: null,
+      };
       dataService.setExperimentAssignmentData(experimentAssignmentData);
-      expect(dataService.findExperimentAssignmentBySiteAndTarget('site', 'target1')).toEqual(undefined);
+      expect(dataService.findExperimentAssignmentBySiteAndTarget('site', 'target1')).toEqual(emptyAssignment);
     });
   });
 });
