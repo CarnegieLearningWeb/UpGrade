@@ -753,12 +753,14 @@ export class ExperimentService {
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
           // Store state time log for the experiment
-          const stateTimeLogDoc = await this.prepareStateTimeLogDoc(
-            experimentDoc,
-            oldExperiment.state,
-            experimentDoc.state
-          );
-          await transactionalEntityManager.getRepository(StateTimeLog).save(stateTimeLogDoc);
+          if (oldExperiment.state !== experimentDoc.state) {
+            const stateTimeLogDoc = await this.prepareStateTimeLogDoc(
+              experimentDoc,
+              oldExperiment.state,
+              experimentDoc.state
+            );
+            await transactionalEntityManager.getRepository(StateTimeLog).save(stateTimeLogDoc);
+          }
         } catch (err) {
           const error = err as ErrorWithType;
           error.details = `Error in updating experiment document "updateExperimentInDB"`;
