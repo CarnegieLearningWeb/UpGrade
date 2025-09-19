@@ -68,7 +68,12 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.experimentService.fetchContextMetaData();
-    this.currentContext = this.config.params.context || '';
+
+    if (!this.config.params.context) {
+      throw new Error('Context parameter is required for decision point modal');
+    }
+
+    this.currentContext = this.config.params.context;
     this.createDecisionPointForm();
     this.setupAutocompleteFilters();
 
@@ -98,8 +103,9 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
     sourceDecisionPoint: ExperimentDecisionPoint,
     action: UPSERT_EXPERIMENT_ACTION
   ): DecisionPointFormData {
-    const site = action === UPSERT_EXPERIMENT_ACTION.EDIT ? sourceDecisionPoint?.site || '' : '';
-    const target = action === UPSERT_EXPERIMENT_ACTION.EDIT ? sourceDecisionPoint?.target || '' : '';
+    const site = action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceDecisionPoint?.site ? sourceDecisionPoint.site : '';
+    const target =
+      action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceDecisionPoint?.target ? sourceDecisionPoint.target : '';
     const excludeIfReached = sourceDecisionPoint?.excludeIfReached || false;
 
     return { site, target, excludeIfReached };
