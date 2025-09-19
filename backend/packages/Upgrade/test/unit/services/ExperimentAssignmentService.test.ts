@@ -40,9 +40,9 @@ import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsS
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
 import { FactorRepository } from '../../../src/api/repositories/FactorRepository';
-import { IndividualEnrollment } from 'src/api/models/IndividualEnrollment';
-import { IndividualExclusion } from 'src/api/models/IndividualExclusion';
-import { GroupExclusion } from 'src/api/models/GroupExclusion';
+import { IndividualEnrollment } from '../../../src/api/models/IndividualEnrollment';
+import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion';
+import { GroupExclusion } from '../../../src/api/models/GroupExclusion';
 
 describe('Experiment Assignment Service Test', () => {
   let sandbox;
