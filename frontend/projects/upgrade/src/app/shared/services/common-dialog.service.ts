@@ -36,8 +36,11 @@ import { CommonImportModalComponent } from '../../shared-standalone-component-li
 import { DeleteSegmentModalComponent } from '../../features/dashboard/segments/modals/delete-segment-modal/delete-segment-modal.component';
 import { UpsertExperimentModalComponent } from '../../features/dashboard/experiments/modals/upsert-experiment-modal/upsert-experiment-modal.component';
 import { UpsertDecisionPointModalComponent } from '../../features/dashboard/experiments/modals/upsert-decision-point-modal/upsert-decision-point-modal.component';
-import { UPSERT_EXPERIMENT_ACTION, ExperimentDecisionPoint } from '../../core/experiments/store/experiments.model';
-import { ExperimentCondition, UPSERT_EXPERIMENT_ACTION } from '../../core/experiments/store/experiments.model';
+import {
+  UPSERT_EXPERIMENT_ACTION,
+  ExperimentDecisionPoint,
+  ExperimentCondition,
+} from '../../core/experiments/store/experiments.model';
 import {
   ConditionWeightUpdate,
   EditConditionWeightsModalComponent,
