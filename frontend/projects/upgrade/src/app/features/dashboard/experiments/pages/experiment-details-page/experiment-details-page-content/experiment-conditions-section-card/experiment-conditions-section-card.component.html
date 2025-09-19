@@ -30,5 +30,6 @@
     [isLoading$]="experimentService.isLoadingSelectedExperiment$"
     [actionsDisabled]="!(permissions$ | async)?.experiments.update"
     (rowAction)="onRowAction($event, experiment.id)"
+    (editWeights)="onEditWeights($event, experiment)"
   ></app-experiment-conditions-table>
 </app-common-section-card>

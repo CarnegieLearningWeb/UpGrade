@@ -37,6 +37,12 @@ import { DeleteSegmentModalComponent } from '../../features/dashboard/segments/m
 import { UpsertExperimentModalComponent } from '../../features/dashboard/experiments/modals/upsert-experiment-modal/upsert-experiment-modal.component';
 import { UpsertDecisionPointModalComponent } from '../../features/dashboard/experiments/modals/upsert-decision-point-modal/upsert-decision-point-modal.component';
 import { UPSERT_EXPERIMENT_ACTION, ExperimentDecisionPoint } from '../../core/experiments/store/experiments.model';
+import { ExperimentCondition, UPSERT_EXPERIMENT_ACTION } from '../../core/experiments/store/experiments.model';
+import {
+  ConditionWeightUpdate,
+  EditConditionWeightsModalComponent,
+} from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
+import { Observable } from 'rxjs';
 
 export interface ImportModalParams {
   importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
@@ -411,6 +417,32 @@ export class DialogService {
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openEditConditionWeightsModal(conditions: ExperimentCondition[]): Observable<ConditionWeightUpdate[]> {
+    const dialogRef = this.dialog.open(EditConditionWeightsModalComponent, {
+      panelClass: ['experiment-modal', 'modal-shadow'],
+      hasBackdrop: true,
+      autoFocus: false,
+      backdropClass: 'modal-backdrop',
+      width: ModalSize.STANDARD,
+
+      data: {
+        title: 'experiments.edit-condition-weights-modal.title.text',
+        primaryActionBtnLabel: 'Save',
+        primaryActionBtnColor: 'primary',
+        cancelBtnLabel: 'Cancel',
+        params: {
+          experimentWeightsArray: conditions.map((condition) => ({
+            conditionId: condition.id,
+            conditionCode: condition.conditionCode,
+            assignmentWeight: condition.assignmentWeight || 0,
+          })),
+        },
+      },
+    });
+
+    return dialogRef.afterClosed();
   }
 
   openAddListModal(appContext: string, segmentId: string, segmentType: SEGMENT_TYPE) {

@@ -16,9 +16,12 @@ import {
   EXPERIMENT_ROW_ACTION,
   ExperimentCondition,
   ExperimentConditionRowActionEvent,
+  ExperimentVM,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
+import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
+import { ConditionWeightUpdate } from '../../../../modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
 
 @Component({
   selector: 'app-experiment-conditions-section-card',
@@ -53,7 +56,11 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
     },
   ];
 
-  constructor(private experimentService: ExperimentService, private authService: AuthService) {}
+  constructor(
+    private experimentService: ExperimentService,
+    private authService: AuthService,
+    private dialogService: DialogService
+  ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
@@ -105,5 +112,16 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
   onDeleteCondition(condition: ExperimentCondition): void {
     // TODO: Implement delete functionality when dialog service is available
     console.log('Delete condition:', condition);
+  }
+
+  onEditWeights(conditions: ExperimentCondition[], experiment: ExperimentVM): void {
+    this.dialogService
+      .openEditConditionWeightsModal(conditions)
+      .subscribe((result: ConditionWeightUpdate[] | undefined) => {
+        if (result) {
+          // Update the experiment with new condition weights
+          this.experimentService.updateExperimentConditionWeights(experiment, result);
+        }
+      });
   }
 }

@@ -80,11 +80,6 @@ export enum NewExperimentPaths {
   POST_EXPERIMENT_RULE = 'Post Experiment Rule',
 }
 
-export enum ExperimentDesignTypes {
-  SIMPLE = 'Simple',
-  FACTORIAL = 'Factorial',
-}
-
 export enum OverviewFormWarningStatus {
   NO_WARNING = 'no warning',
   CONTEXT_CHANGED = 'context changed',
@@ -350,7 +345,7 @@ export interface ExperimentFormData {
   name: string;
   description: string;
   appContext: string;
-  experimentType: ExperimentDesignTypes;
+  experimentType: EXPERIMENT_TYPE;
   unitOfAssignment: ASSIGNMENT_UNIT;
   consistencyRule: CONSISTENCY_RULE;
   conditionOrder?: CONDITION_ORDER;
@@ -443,7 +438,7 @@ export interface DraftExperimentRequest {
   name: string;
   description?: string;
   context: string[];
-  type: ExperimentDesignTypes;
+  type: EXPERIMENT_TYPE;
   assignmentUnit: ASSIGNMENT_UNIT;
   state: EXPERIMENT_STATE;
   filterMode: FILTER_MODE;
