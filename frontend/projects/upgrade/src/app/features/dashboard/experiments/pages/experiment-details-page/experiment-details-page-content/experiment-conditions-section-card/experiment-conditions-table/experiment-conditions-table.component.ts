@@ -36,6 +36,7 @@ export class ExperimentConditionsTableComponent {
   @Input() isLoading$: Observable<boolean>;
   @Input() actionsDisabled?: boolean = false;
   @Output() rowAction = new EventEmitter<ExperimentConditionRowActionEvent>();
+  @Output() editWeights = new EventEmitter<ExperimentCondition[]>();
 
   displayedColumns: string[] = ['condition', 'payload', 'weight', 'weightEdit', 'actions'];
 
@@ -109,7 +110,6 @@ export class ExperimentConditionsTableComponent {
   }
 
   onEditWeightsClick(): void {
-    // TODO: Implement edit weights functionality when dialog service is available
-    console.log('Edit condition weights clicked');
+    this.editWeights.emit(this.conditions);
   }
 }
