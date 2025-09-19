@@ -178,20 +178,9 @@ export default async function testCase(): Promise<void> {
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
-  // get all experiment condition for user 4
+  // user 4 should not be assigned to any condition as he has not marked any experiment point
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id, new UpgradeLogger());
-  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-
-  // mark experiment point for user 4
-  markedExperimentPoint = await markExperimentPoint(
-    experimentUsers[3].id,
-    experimentName,
-    experimentPoint,
-    condition,
-    experimentId,
-    new UpgradeLogger()
-  );
-  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
+  expect(experimentConditionAssignments).toHaveLength(0);
 
   await checkDeletedExperiment(experimentId, user);
 }

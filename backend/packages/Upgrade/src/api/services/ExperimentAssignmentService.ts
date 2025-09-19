@@ -388,7 +388,10 @@ export class ExperimentAssignmentService {
         filteredExperiments,
         mergedIndividualAssignment,
         groupEnrollments,
-        experimentUserDoc
+        individualExclusions,
+        groupExclusions,
+        experimentUserDoc,
+        previewUser
       );
 
       // return empty if no experiments
@@ -636,50 +639,55 @@ export class ExperimentAssignmentService {
     experiments: Experiment[],
     individualEnrollments: IndividualEnrollment[],
     groupEnrollments: GroupEnrollment[],
-    experimentUser: ExperimentUser
+    individualExclusions: IndividualExclusion[],
+    groupExclusions: GroupExclusion[],
+    experimentUser: ExperimentUser,
+    previewUser: PreviewUser | null
   ): Experiment[] {
     // Create experiment pool
     const experimentPools = this.createExperimentPool(experiments);
-
-    // Filter pools which are not assigned
-    const unassignedPools = experimentPools.filter((pool) => {
-      return !pool.some((experiment) => {
-        const hasIndividualEnrollment = individualEnrollments.some((enrollment) => {
-          return enrollment.experimentId === experiment.id;
-        });
-        const hasGroupEnrollment = groupEnrollments.some((enrollment) => {
-          return (
-            enrollment.experimentId === experiment.id &&
-            enrollment.groupId === experimentUser.workingGroup[experiment.group]
-          );
-        });
-        return !!(hasIndividualEnrollment || hasGroupEnrollment);
-      });
-    });
-
-    // Select experiments inside the pools
     const random = seedrandom(experimentUser.id)();
-    const newSelectedExperiments = unassignedPools.map((pool) => {
-      return pool[Math.floor(random * pool.length)];
-    });
 
-    // Create new filtered experiment list
-    const priorSelectedExperiments = experimentPools.map((pool) => {
-      return pool.filter((experiment) => {
-        const individualEnrollment = individualEnrollments.some((enrollment) => {
-          return enrollment.experimentId === experiment.id;
+    // Choose experiments from each pool
+    const experimentsToAssign = experimentPools
+      .map((pool) => {
+        const assignedExperiments = pool.filter((experiment) => {
+          const hasIndividualEnrollment = individualEnrollments.some((enrollment) => {
+            return enrollment.experimentId === experiment.id;
+          });
+          const hasGroupEnrollment = groupEnrollments.some((enrollment) => {
+            return (
+              enrollment.experimentId === experiment.id &&
+              enrollment.groupId === experimentUser.workingGroup[experiment.group]
+            );
+          });
+          return hasIndividualEnrollment || hasGroupEnrollment;
         });
-        const groupEnrollment = groupEnrollments.some((enrollment) => {
-          return (
-            enrollment.experimentId === experiment.id &&
-            enrollment.groupId === experimentUser.workingGroup[experiment.group]
-          );
-        });
-        return !!(individualEnrollment || groupEnrollment);
-      });
-    });
+        // If there are experiments already assigned to the user, choose those experiments
+        if (assignedExperiments.length > 0) {
+          return assignedExperiments;
+        }
 
-    return priorSelectedExperiments.flat().concat(newSelectedExperiments);
+        // Otherwise choose a random ENROLLING experiment from which the user is not excluded
+        const filteredUnassignedPool = pool.filter((experiment) => {
+          const hasIndividualExclusion = individualExclusions.some((exclusion) => {
+            return exclusion.experimentId === experiment.id;
+          });
+          const hasGroupExclusion = groupExclusions.some((exclusion) => {
+            return (
+              exclusion.experimentId === experiment.id &&
+              exclusion.groupId === experimentUser.workingGroup[experiment.group]
+            );
+          });
+          const includable =
+            experiment.state === EXPERIMENT_STATE.ENROLLING ||
+            (previewUser && experiment.state === EXPERIMENT_STATE.PREVIEW);
+          return !(hasIndividualExclusion || hasGroupExclusion || !includable);
+        });
+        return filteredUnassignedPool[Math.floor(random * filteredUnassignedPool.length)];
+      })
+      .filter((exp) => exp !== undefined);
+    return experimentsToAssign.flat();
   }
 
   private mapDecisionPoints(

@@ -2,12 +2,7 @@ import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
-import {
-  checkExperimentAssignedIsNull,
-  getAllExperimentCondition,
-  markExperimentPoint,
-  updateExcludeIfReachedFlag,
-} from '../utils';
+import { checkExperimentAssignedIsNull, getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { withinSubjectExperiment } from '../mockData/experiment/index';
@@ -30,7 +25,6 @@ export default async function testCase(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
   // experiment object
   const experimentObject = withinSubjectExperiment;
-  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
 
   // create experiment
   await experimentService.create(
