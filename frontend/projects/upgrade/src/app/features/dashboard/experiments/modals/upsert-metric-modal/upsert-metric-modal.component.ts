@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject, Observable, Subscription, combineLatest } from 'rxjs';
@@ -103,7 +103,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     { value: OPERATION_TYPES.AVERAGE, label: 'Mean' },
     { value: OPERATION_TYPES.MODE, label: 'Mode' },
     { value: OPERATION_TYPES.MEDIAN, label: 'Median' },
-    { value: 'STDEV', label: 'Standard Deviation' },
+    { value: OPERATION_TYPES.STDEV, label: 'Standard Deviation' },
   ];
 
   continuousIndividualOptions: StatisticOption[] = [
@@ -129,6 +129,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     private formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private analysisService: AnalysisService,
+    private cdr: ChangeDetectorRef,
     public dialogRef: MatDialogRef<UpsertMetricModalComponent>
   ) {}
 
@@ -166,9 +167,12 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.allowableDataKeys = initialValues.allowableDataKeys || [];
     this.initialFormValues$.next(initialValues);
 
-    // Set initial form visibility states
+    // Set initial form visibility states - detect metric data type first if we have a metric ID
+    if (initialValues.metricId) {
+      this.detectMetricDataType(initialValues.metricId);
+      this.updateStatisticOptions();
+    }
     this.updateFormVisibility();
-    this.detectMetricDataType(initialValues.metricId);
   }
 
   deriveInitialFormValues(sourceQuery: any, action: UPSERT_EXPERIMENT_ACTION): MetricFormData {
@@ -347,19 +351,21 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     // Clear everything and repopulate
     this.currentSelectedClass = null;
     this.currentSelectedKey = null;
+    this.metricDataType = null;
 
     // Clear form fields
     this.metricForm.get('metricClass')?.setValue('');
     this.metricForm.get('metricKey')?.setValue('');
     this.metricForm.get('metricId')?.setValue('');
+    this.metricForm.get('displayName')?.setValue(''); // Clear display name when metric type changes
 
     // Repopulate options based on new metric type
     // BehaviorSubjects will automatically trigger observable re-emission
     this.populateOptions();
 
     // Update form state
-    this.updateFormVisibility();
     this.resetStatisticFields();
+    this.updateFormVisibility();
     this.updateFormValidators();
   }
 
@@ -368,6 +374,12 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       this.detectMetricDataType(metricId);
       this.updateStatisticOptions();
       this.updateFormVisibility();
+      this.updateFormValidators();
+    } else {
+      // Clear everything when metric ID is cleared
+      this.metricDataType = null;
+      this.hideStatisticDropdowns();
+      this.resetStatisticFields();
       this.updateFormValidators();
     }
   }
@@ -420,25 +432,36 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
   updateFormVisibility(): void {
     const metricType = this.metricForm.get('metricType')?.value;
+    const hasMetricId = !!this.metricForm.get('metricId')?.value;
+
+    // Base visibility for metric type
     this.showMetricClass = metricType === 'repeatable';
     this.showMetricKey = metricType === 'repeatable';
-    this.showIndividualStatistic = metricType === 'repeatable';
+
+    // Statistics only show when metric ID is selected
+    if (hasMetricId && this.metricDataType) {
+      this.showAggregateStatistic = true;
+      this.showIndividualStatistic = metricType === 'repeatable';
+      this.showComparison = this.metricDataType === IMetricMetaData.CATEGORICAL;
+    } else {
+      this.showAggregateStatistic = false;
+      this.showIndividualStatistic = false;
+      this.showComparison = false;
+    }
+
+    // Trigger change detection with OnPush strategy
+    this.cdr.markForCheck();
   }
 
   updateStatisticOptions(): void {
     if (this.metricDataType === IMetricMetaData.CONTINUOUS) {
       this.aggregateStatisticOptions = this.continuousAggregateOptions;
       this.individualStatisticOptions = this.continuousIndividualOptions;
-      this.showComparison = false;
-    } else {
+    } else if (this.metricDataType === IMetricMetaData.CATEGORICAL) {
       this.aggregateStatisticOptions = this.categoricalAggregateOptions;
       this.individualStatisticOptions = this.categoricalIndividualOptions;
-      this.showComparison = true;
     }
-  }
-
-  showStatisticDropdowns(): void {
-    this.showAggregateStatistic = true;
+    // Note: showComparison is handled in updateFormVisibility()
   }
 
   hideStatisticDropdowns(): void {
@@ -451,6 +474,8 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.metricForm.patchValue({
       aggregateStatistic: '',
       individualStatistic: '',
+      comparison: '=',
+      compareValue: '',
     });
     this.allowableDataKeys = [];
   }
@@ -531,17 +556,13 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   sendUpsertMetricRequest(): void {
-    const formValue = this.metricForm.value;
-    const metricData: MetricFormData = {
-      ...formValue,
-      allowableDataKeys: this.allowableDataKeys,
-    };
-
     // TODO: Implement the actual metric creation/update logic
     // This would typically call a service method to create or update the metric
-    console.log('Metric data to be processed:', metricData);
-    console.log('Experiment ID:', this.config.params.experimentId);
-    console.log('Action:', this.config.params.action);
+    // const formValue = this.metricForm.value;
+    // const metricData: MetricFormData = {
+    //   ...formValue,
+    //   allowableDataKeys: this.allowableDataKeys,
+    // };
 
     // For now, just close the modal
     this.closeModal();
