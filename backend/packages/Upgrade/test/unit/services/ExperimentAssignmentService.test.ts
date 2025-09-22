@@ -878,7 +878,7 @@ describe('Experiment Assignment Service Test', () => {
     expect(result).toEqual([]);
   });
 
-  it('[processExperimentPools] should include experiments with competing decision points if there are multiple enrollments', () => {
+  it('[processExperimentPools] should return the enrolling experiment if there are multiple enrollments', () => {
     const enrollingExperiment = {
       ...simpleIndividualAssignmentExperiment,
       id: 'enrolling-exp',
@@ -916,9 +916,8 @@ describe('Experiment Assignment Service Test', () => {
       [],
       experimentUser
     );
-    expect(result.length).toBe(2);
+    expect(result.length).toBe(1);
     expect(result).toContain(enrollingExperiment);
-    expect(result).toContain(enrollmentCompleteExperiment);
   });
 
   it('should log an error when clientError is provided', async () => {

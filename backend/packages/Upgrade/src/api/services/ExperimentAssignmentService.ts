@@ -648,7 +648,7 @@ export class ExperimentAssignmentService {
     const experimentPools = this.createExperimentPool(experiments);
     const random = seedrandom(experimentUser.id)();
 
-    // Choose experiments from each pool
+    // Choose one experiment from each pool
     const experimentsToAssign = experimentPools
       .map((pool) => {
         const assignedExperiments = pool.filter((experiment) => {
@@ -663,9 +663,13 @@ export class ExperimentAssignmentService {
           });
           return hasIndividualEnrollment || hasGroupEnrollment;
         });
-        // If there are experiments already assigned to the user, choose those experiments
-        if (assignedExperiments.length > 0) {
-          return assignedExperiments;
+        // If there is an experiment already assigned to the user, choose that experiment
+        if (assignedExperiments.length === 1) {
+          return assignedExperiments[0];
+        }
+        // If there are multiple experiments assigned to the user, choose the ENROLLING experiment
+        if (assignedExperiments.length > 1) {
+          return assignedExperiments.find((exp) => exp.state === EXPERIMENT_STATE.ENROLLING);
         }
 
         // Otherwise choose a random ENROLLING experiment from which the user is not excluded
@@ -687,7 +691,7 @@ export class ExperimentAssignmentService {
         return filteredUnassignedPool[Math.floor(random * filteredUnassignedPool.length)];
       })
       .filter((exp) => exp !== undefined);
-    return experimentsToAssign.flat();
+    return experimentsToAssign;
   }
 
   private mapDecisionPoints(
