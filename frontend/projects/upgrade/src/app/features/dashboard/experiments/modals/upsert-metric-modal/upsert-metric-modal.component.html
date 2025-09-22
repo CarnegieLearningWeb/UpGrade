@@ -12,7 +12,7 @@
     <div class="metric-type-container dense-1">
       <span class="section-label ft-14-600">Metric Type</span>
       <mat-radio-group formControlName="metricType" class="radio-group-vertical">
-        <mat-radio-button value="global" class="ft-14-400">
+        <mat-radio-button value="global" class="ft-14-400" [disabled]="isGlobalMetricDisabled">
           <span class="radio-label">
             <strong>Global Metric</strong>
             <span class="radio-description">Used for globally accumulated measures (e.g., total time spent using the app).</span>

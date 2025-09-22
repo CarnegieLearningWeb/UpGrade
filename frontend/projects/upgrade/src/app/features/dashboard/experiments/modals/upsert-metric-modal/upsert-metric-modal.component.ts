@@ -22,7 +22,7 @@ import {
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
-import { IMetricMetaData, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
+import { ASSIGNMENT_UNIT, IMetricMetaData, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
 
 interface StatisticOption {
   value: string;
@@ -64,6 +64,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   showIndividualStatistic = false;
   showComparison = false;
   metricDataType: IMetricMetaData | null = null;
+  isGlobalMetricDisabled = false;
 
   // Dropdown options
   aggregateStatisticOptions: StatisticOption[] = [];
@@ -86,6 +87,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   // Current selections
   currentSelectedClass: any = null;
   currentSelectedKey: any = null;
+
+  // Assignment unit and context for filtering (same as legacy component)
+  currentAssignmentUnit: ASSIGNMENT_UNIT | null = null;
+  currentContext: string[] | null = null;
 
   // For categorical metrics comparison
   allowableDataKeys: string[] = [];
@@ -137,6 +142,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.createMetricForm();
     this.setupFormChangeListeners();
     this.setupAutocomplete();
+    this.setupExperimentContext();
 
     // Add listeners AFTER form is fully set up
     this.listenForIsInitialFormValueChanged();
@@ -173,6 +179,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       this.updateStatisticOptions();
     }
     this.updateFormVisibility();
+    this.updateMetricTypeAvailability();
   }
 
   deriveInitialFormValues(sourceQuery: any, action: UPSERT_EXPERIMENT_ACTION): MetricFormData {
@@ -250,17 +257,76 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     );
   }
 
+  setupExperimentContext(): void {
+    // Get experiment context and assignment unit for filtering (same as legacy component)
+    this.subscriptions.add(
+      this.experimentService.selectedExperiment$.subscribe((experiment) => {
+        if (experiment) {
+          this.currentAssignmentUnit = experiment.assignmentUnit;
+          this.currentContext = experiment.context;
+          // Update metric type availability based on assignment unit
+          this.updateMetricTypeAvailability();
+          // Repopulate options when experiment context changes
+          this.populateOptions();
+        }
+      })
+    );
+
+    // Also try to get experiment from the experimentId parameter if no selected experiment
+    if (this.config.params.experimentId && !this.currentAssignmentUnit) {
+      this.subscriptions.add(
+        this.experimentService.experiments$.subscribe((experiments) => {
+          const experiment = experiments.find((exp) => exp.id === this.config.params.experimentId);
+          if (experiment && !this.currentAssignmentUnit) {
+            this.currentAssignmentUnit = experiment.assignmentUnit;
+            this.currentContext = experiment.context;
+            // Update metric type availability based on assignment unit
+            this.updateMetricTypeAvailability();
+            this.populateOptions();
+          }
+        })
+      );
+    }
+  }
+
   populateOptions(): void {
     const metricType = this.metricForm.get('metricType')?.value;
 
+    // Start with all metrics - this ensures dropdowns always have options
+    let filteredMetrics = this.allMetrics || [];
+
+    // Apply assignment unit filtering ONLY if we have a valid experiment context
+    // This prevents breaking the dropdowns when no experiment is selected
+    if (this.currentAssignmentUnit && filteredMetrics.length > 0) {
+      if (this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        // Within-subjects: only show metrics with children (repeatable metrics)
+        const withinSubjectsMetrics = filteredMetrics.filter((metric) => metric.children && metric.children.length > 0);
+        // Only apply filter if we found matching metrics, otherwise keep all metrics
+        if (withinSubjectsMetrics.length > 0) {
+          filteredMetrics = withinSubjectsMetrics;
+        }
+      } else if (this.currentContext && this.currentContext.length > 0) {
+        // Between-subjects or other: filter by context
+        const contextFilteredMetrics = filteredMetrics.filter(
+          (metric) => metric.context && this.currentContext?.some((ctx) => metric.context.includes(ctx))
+        );
+        // Only apply filter if we found matching metrics, otherwise keep all metrics
+        if (contextFilteredMetrics.length > 0) {
+          filteredMetrics = contextFilteredMetrics;
+        }
+      }
+    }
+
     if (metricType === 'global') {
-      // Global metrics: only show metrics without children
+      // Global metrics: only show metrics without children from filtered set
       this.metricClassOptions$.next([]);
       this.metricKeyOptions$.next([]);
-      this.metricIdOptions$.next(this.allMetrics.filter((metric) => !metric.children || metric.children.length === 0));
+      const globalMetrics = filteredMetrics.filter((metric) => !metric.children || metric.children.length === 0);
+      this.metricIdOptions$.next(globalMetrics);
     } else {
-      // Repeatable metrics: show hierarchical structure
-      this.metricClassOptions$.next(this.allMetrics.filter((metric) => metric.children && metric.children.length > 0));
+      // Repeatable metrics: show hierarchical structure from filtered set
+      const repeatableMetrics = filteredMetrics.filter((metric) => metric.children && metric.children.length > 0);
+      this.metricClassOptions$.next(repeatableMetrics);
       this.metricKeyOptions$.next([]);
       this.metricIdOptions$.next([]);
     }
@@ -453,6 +519,18 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  updateMetricTypeAvailability(): void {
+    // Disable global metrics for within-subjects experiments (same as legacy component)
+    this.isGlobalMetricDisabled = this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS;
+
+    // If global metrics are disabled and global is currently selected, switch to repeatable
+    if (this.isGlobalMetricDisabled && this.metricForm.get('metricType')?.value === 'global') {
+      this.metricForm.get('metricType')?.setValue('repeatable');
+    }
+
+    this.cdr.markForCheck();
+  }
+
   updateStatisticOptions(): void {
     if (this.metricDataType === IMetricMetaData.CONTINUOUS) {
       this.aggregateStatisticOptions = this.continuousAggregateOptions;
@@ -559,13 +637,56 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     // TODO: Implement the actual metric creation/update logic
     // This would typically call a service method to create or update the metric
     // const formValue = this.metricForm.value;
-    // const metricData: MetricFormData = {
-    //   ...formValue,
-    //   allowableDataKeys: this.allowableDataKeys,
-    // };
+    // const metricData = this.prepareMetricDataForBackend(formValue);
+    // Example: this.experimentService.createMetric(this.config.params.experimentId, metricData)
 
     // For now, just close the modal
     this.closeModal();
+  }
+
+  private prepareMetricDataForBackend(formValue: any): any {
+    const metricType = formValue.metricType;
+    const METRICS_JOIN_TEXT = '@__@'; // Same as backend constant
+
+    // Prepare metric key based on type
+    let metricKey: string;
+    if (metricType === 'global') {
+      // Global metrics use just the metric ID
+      metricKey = typeof formValue.metricId === 'object' ? formValue.metricId.key : formValue.metricId;
+    } else {
+      // Repeatable metrics use class@__@key@__@id format
+      const metricClass = typeof formValue.metricClass === 'object' ? formValue.metricClass.key : formValue.metricClass;
+      const metricKeyValue = typeof formValue.metricKey === 'object' ? formValue.metricKey.key : formValue.metricKey;
+      const metricId = typeof formValue.metricId === 'object' ? formValue.metricId.key : formValue.metricId;
+      metricKey = `${metricClass}${METRICS_JOIN_TEXT}${metricKeyValue}${METRICS_JOIN_TEXT}${metricId}`;
+    }
+
+    // Prepare query object in the same format as legacy component
+    const queryObj: any = {
+      name: formValue.displayName,
+      query: {
+        operationType: formValue.aggregateStatistic,
+      },
+      metric: {
+        key: metricKey,
+      },
+    };
+
+    // Add repeatedMeasure for repeatable metrics
+    if (metricType === 'repeatable') {
+      queryObj.repeatedMeasure = formValue.individualStatistic;
+    }
+
+    // Add comparison function and value for categorical metrics
+    if (this.metricDataType === IMetricMetaData.CATEGORICAL && formValue.comparison && formValue.compareValue) {
+      queryObj.query = {
+        ...queryObj.query,
+        compareFn: formValue.comparison,
+        compareValue: formValue.compareValue,
+      };
+    }
+
+    return queryObj;
   }
 
   get UPSERT_EXPERIMENT_ACTION() {
