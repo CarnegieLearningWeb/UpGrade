@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 // to run: npx ts-node clientlibs/js/quickTest.ts
 
-import UpgradeClient, { MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
+import UpgradeClient, { ILogInput, MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
 
 const URL = {
   LOCAL: 'http://localhost:3030',
@@ -10,19 +11,38 @@ const URL = {
   ECS_STAGING: 'https://apps.qa-cli.com/upgrade-service',
 };
 
-const userId = 'qwerty6';
+const userId = 'qwerty6' + Math.floor(Math.random() * 10000);
 const useEphemeralGroups = false;
 const group = { classId: ['STORED_USER_GROUP'] };
 const workingGroup = 'STORED_USER_GROUP';
 const groupsForSession = { classId: ['EPHEMERAL_USER_GROUP'] };
 const includeStoredUserGroups = true; // true to merge with stored user groups, false for session-only groups
 const alias = 'alias' + userId;
-const hostUrl = URL.LOCAL;
-const context = 'mathstream';
-const site = 'SelectSection';
-const target = 'absolute_value_plot_equality';
+const hostUrl = URL.ECS_QA;
+const context = 'upgrade-internal';
+const site = 'fakesite';
+const target = 'faketarget';
 const status = MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED;
 const featureFlagKey = 'TEST_FEATURE_FLAG';
+//----MOOCLET----
+const moocletRewardMetricKey = 'MOOC5-BATCH_REWARD'; // the metric key that the reward values will be logged to
+const versionOnePayload = 'control';
+const versionTwoPayload = 'variant';
+
+const rewardRatio = {
+  [versionOnePayload]: 0.5, // percentage of SUCCESS to be doled out when the user gets the "control" version
+  [versionTwoPayload]: 0.5, // percentage of SUCCESS to be doled out when the user gets the "variant" version
+};
+// "current_posteriors": {
+//     "84": {
+//       "successes": 0,
+//       "failures": 0
+//     },
+//     "85": {
+//       "successes": 0,
+//       "failures": 0
+//     }
+//   },
 
 const options: UpGradeClientInterfaces.IConfigOptions = {
   featureFlagUserGroupsForSession: useEphemeralGroups
@@ -33,34 +53,12 @@ const options: UpGradeClientInterfaces.IConfigOptions = {
     : null,
 };
 
-const logRequest = [
+const logRequest: ILogInput[] = [
   {
-    userId,
     timestamp: '2022-03-03T19:49:00.496',
     metrics: {
-      attributes: {
-        totalTimeSeconds: 41834,
-        totalMasteryWorkspacesCompleted: 15,
-        totalConceptBuildersCompleted: 17,
-        totalMasteryWorkspacesGraduated: 15,
-        totalSessions: 50,
-        totalProblemsCompleted: 249,
-      },
-      groupedMetrics: [
-        {
-          groupClass: 'conceptBuilderWorkspace',
-          groupKey: 'graphs_of_functions',
-          groupUniquifier: '2022-02-03T19:48:53.861Z',
-          attributes: {
-            timeSeconds: 488,
-            hintCount: 2,
-            errorCount: 15,
-            completionCount: 1,
-            workspaceCompletionStatus: 'GRADUATED',
-            problemsCompleted: 4,
-          },
-        },
-      ],
+      attributes: {},
+      groupedMetrics: [],
     },
   },
 ];
@@ -73,19 +71,20 @@ async function quickTest() {
   await doInit(client);
   await doGroupMembership(client);
   await doWorkingGroupMembership(client);
-  await doAliases(client);
-  await doAssign(client);
-  await doAssignIgnoreCache(client);
-  await doAssign(client);
+  // await doAliases(client);
+  // await doAssign(client);
+  // await doAssignIgnoreCache(client);
+  // await doAssign(client);
 
   const condition = await doGetDecisionPointAssignment(client);
-  doSetFeatureFlagUserGroupsForSession(client, options);
-  await doFeatureFlags(client);
-  await doFeatureFlagsIgnoreCache(client);
-  await doHasFeatureFlag(client);
-  await doHasFeatureFlag(client);
-  // await doMark(client, condition);
+  // doSetFeatureFlagUserGroupsForSession(client, options);
+  // await doFeatureFlags(client);
+  // await doFeatureFlagsIgnoreCache(client);
+  // await doHasFeatureFlag(client);
+  // await doHasFeatureFlag(client);
+  await doMark(client, condition);
   // await doLog(client);
+  await doLogWithRewards(client, condition);
 }
 
 /** test functions *******************************************************************************/
@@ -141,7 +140,7 @@ async function doAssign(client: UpgradeClient) {
 
 async function doAssignIgnoreCache(client: UpgradeClient) {
   try {
-    const response = await client.getAllExperimentConditions({ ignoreCache: true });
+    const response = await client.getAllExperimentConditions();
     console.log('\n[Assign response]:', JSON.stringify(response));
   } catch (error) {
     console.error('\n[Assign error]:', error);
@@ -190,7 +189,7 @@ async function doFeatureFlags(client: UpgradeClient) {
 
 async function doFeatureFlagsIgnoreCache(client: UpgradeClient) {
   try {
-    const response = await client.getAllFeatureFlags({ ignoreCache: true });
+    const response = await client.getAllFeatureFlags();
     console.log('\n[Feature Flag response]:', JSON.stringify(response));
   } catch (error) {
     console.error('\n[Feature Flag error]:', error);
@@ -216,6 +215,35 @@ async function doMark(client: UpgradeClient, condition: string | null) {
 }
 
 async function doLog(client: UpgradeClient) {
+  try {
+    const response = await client.log(logRequest);
+    console.log('\n[Log response]:', JSON.stringify(response));
+  } catch (error) {
+    console.error('\n[Log error]:', error);
+  }
+}
+
+async function doLogWithRewards(client: UpgradeClient, condition: string | null) {
+  if (!condition) {
+    console.log('\n[No condition assigned, so no reward log to send]');
+    return;
+  }
+
+  if (condition !== versionOnePayload && condition !== versionTwoPayload) {
+    console.log(`\n[Condition not recognized: ${condition}, so no reward]`);
+    return;
+  }
+
+  if (condition === versionOnePayload) {
+    logRequest[0].metrics!.attributes![moocletRewardMetricKey] =
+      Math.random() < rewardRatio[versionOnePayload] ? 'SUCCESS' : 'FAILURE';
+  } else if (condition === versionTwoPayload) {
+    logRequest[0].metrics!.attributes![moocletRewardMetricKey] =
+      Math.random() < rewardRatio[versionTwoPayload] ? 'SUCCESS' : 'FAILURE';
+  } else {
+    console.log(`\n[Condition not recognized: ${condition}, so no reward]`);
+  }
+
   try {
     const response = await client.log(logRequest);
     console.log('\n[Log response]:', JSON.stringify(response));
