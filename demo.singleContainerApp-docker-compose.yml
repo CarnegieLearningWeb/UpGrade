@@ -9,6 +9,7 @@ services:
       - ./backend/packages/Upgrade/.env.docker.local
     environment:
       - NODE_ENV=production
+      - CONTEXT=upgrade
     command: >
       sh -c "
       npm --prefix ./frontend run build:demo &&
