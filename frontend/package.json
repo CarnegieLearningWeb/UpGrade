@@ -6,6 +6,7 @@
     "ng": "ng",
     "start": "ng serve --open --configuration=local",
     "docker:local": "ng serve --open --host 0.0.0.0 --configuration=local",
+    "docker:demo": "ng serve --open --host 0.0.0.0 --configuration=demo",
     "cl:build": "npm run build:prod && npm run cl:copy-package-json",
     "cl:copy-package-json": "cp projects/upgrade/package.json dist/upgrade/",
     "start:prod": "npm run build:prod && npm run server",
