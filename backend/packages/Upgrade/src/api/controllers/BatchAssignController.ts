@@ -120,13 +120,17 @@ export class BatchAssignController {
       message: `Context: ${context}, Site: ${site}, Target: ${target}, User IDs: ${userIds.join(', ')}`,
     });
 
-    // Initialize response with nulls for all userIds
-    const nullResponse = userIds.reduce((acc, userId) => {
-      acc[userId] = null; // Initialize with null for each userId
+    const userDocs = await this.experimentUserService.getUserDocs(userIds, request.logger);
+
+    // Initialize response for all userIds
+    const initializedResponse = userIds.reduce((acc, userId) => {
+      if (userDocs.find((doc) => doc.id === userId)) {
+        acc[userId] = null; // initialize with null if userDoc exists
+      } else {
+        acc[userId] = 'NOT_FOUND'; // 'NOT_FOUND' if userDoc does not exist
+      }
       return acc;
     }, {});
-
-    const userDocs = await this.experimentUserService.getUserDocs(userIds, request.logger);
     request.logger.info({ message: `User Docs: ${JSON.stringify(userDocs)}` });
 
     const assignments = await this.experimentAssignmentService.getBatchExperimentConditions(
@@ -137,6 +141,6 @@ export class BatchAssignController {
       request.logger
     );
 
-    return { ...nullResponse, ...assignments };
+    return { ...initializedResponse, ...assignments };
   }
 }
