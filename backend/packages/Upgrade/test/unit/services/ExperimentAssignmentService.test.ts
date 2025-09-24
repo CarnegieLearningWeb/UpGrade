@@ -30,7 +30,7 @@ import {
   withinSubjectDPExperiment,
 } from '../mockdata';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
-import { ENROLLMENT_CODE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { ENROLLMENT_CODE, EXPERIMENT_STATE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
@@ -40,6 +40,9 @@ import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsS
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
 import { FactorRepository } from '../../../src/api/repositories/FactorRepository';
+import { IndividualEnrollment } from '../../../src/api/models/IndividualEnrollment';
+import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion';
+import { GroupExclusion } from '../../../src/api/models/GroupExclusion';
 
 describe('Experiment Assignment Service Test', () => {
   let sandbox;
@@ -580,15 +583,20 @@ describe('Experiment Assignment Service Test', () => {
 
     testedModule.createExperimentPool = sandbox.stub().returns([[]]);
 
-    const [individualEnrollments, groupEnrollments, _, __] = await testedModule.getAssignmentsAndExclusionsForUser(
-      userDoc,
-      experimentIds
-    );
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
+      await testedModule.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
 
     testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([]);
     testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([]);
 
-    const expResult = await testedModule.processExperimentPools([], individualEnrollments, groupEnrollments, userDoc);
+    const expResult = await testedModule.processExperimentPools(
+      [],
+      individualEnrollments,
+      groupEnrollments,
+      individualExclusions,
+      groupExclusions,
+      userDoc
+    );
     expect(expResult).toEqual([]);
   });
 
@@ -600,10 +608,8 @@ describe('Experiment Assignment Service Test', () => {
 
     testedModule.createExperimentPool = sandbox.stub().returns([[exp1, exp2]]);
 
-    const [individualEnrollments, groupEnrollments, _, __] = await testedModule.getAssignmentsAndExclusionsForUser(
-      userDoc,
-      experimentIds
-    );
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
+      await testedModule.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
 
     testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([exp1, exp2]);
     testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([exp1, exp2]);
@@ -612,11 +618,306 @@ describe('Experiment Assignment Service Test', () => {
       [exp1, exp2],
       individualEnrollments,
       groupEnrollments,
+      individualExclusions,
+      groupExclusions,
       userDoc
     );
     // based on the seed as userId: `user123`, exp2 is randomly selected from the pool of experiments:
     expect(expResult).toEqual([exp2]);
     expect(expResult.length).toEqual(1);
+  });
+
+  it('[processExperimentPools] should return enrolled experiments even if they are enrollment complete', () => {
+    const enrolledExperiment = {
+      ...simpleIndividualAssignmentExperiment,
+      state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+    };
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: { schoolId: 'school1' },
+    };
+    const groupEnrollments = [];
+    const individualExclusions = [];
+    const groupExclusions = [];
+    const enrollment = {
+      experimentId: enrolledExperiment.id,
+      userId: experimentUser.id,
+      condition: enrolledExperiment.conditions[0],
+    } as IndividualEnrollment;
+
+    const individualEnrollments = [enrollment];
+
+    testedModule.createExperimentPool = sandbox.stub().returns([[enrolledExperiment]]);
+
+    const result = testedModule.processExperimentPools(
+      [enrolledExperiment],
+      individualEnrollments,
+      groupEnrollments,
+      individualExclusions,
+      groupExclusions,
+      experimentUser
+    );
+
+    expect(result).toEqual([enrolledExperiment]);
+  });
+
+  it('[processExperimentPools] should exclude enrollment complete experiments when user is not enrolled', () => {
+    const enrollmentCompleteExperiment = {
+      ...simpleIndividualAssignmentExperiment,
+      state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+    };
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: { schoolId: 'school1' },
+    };
+    testedModule.createExperimentPool = sandbox.stub().returns([[enrollmentCompleteExperiment]]);
+
+    const result = testedModule.processExperimentPools([enrollmentCompleteExperiment], [], [], [], [], experimentUser);
+
+    expect(result).toEqual([]);
+  });
+
+  it('[processExperimentPools] should include enrolling experiments when user is not enrolled or excluded', () => {
+    const enrollingExperiment = {
+      ...simpleIndividualAssignmentExperiment,
+      state: EXPERIMENT_STATE.ENROLLING,
+    };
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: { schoolId: 'school1' },
+    };
+    testedModule.createExperimentPool = sandbox.stub().returns([[enrollingExperiment]]);
+
+    const result = testedModule.processExperimentPools([enrollingExperiment], [], [], [], [], experimentUser);
+
+    expect(result).toEqual([enrollingExperiment]);
+  });
+
+  it('[processExperimentPools] should exclude experiments where user is individually excluded', () => {
+    const experiment = {
+      ...simpleIndividualAssignmentExperiment,
+      state: EXPERIMENT_STATE.ENROLLING,
+    };
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: { schoolId: 'school1' },
+    };
+    const exclusion = {
+      experimentId: experiment.id,
+      userId: experimentUser.id,
+    } as IndividualExclusion;
+
+    const individualExclusions = [exclusion];
+
+    testedModule.createExperimentPool = sandbox.stub().returns([[experiment]]);
+
+    const result = testedModule.processExperimentPools([experiment], [], [], individualExclusions, [], experimentUser);
+
+    expect(result).toEqual([]);
+  });
+
+  it('[processExperimentPools] should exclude experiments where user group is excluded', () => {
+    const groupExperiment = {
+      ...simpleGroupAssignmentExperiment,
+      state: EXPERIMENT_STATE.ENROLLING,
+    };
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: { schoolId: 'school1' },
+    };
+    const groupExclusion = {
+      experimentId: groupExperiment.id,
+      groupId: experimentUser.workingGroup[groupExperiment.group],
+    } as GroupExclusion;
+
+    const groupExclusions = [groupExclusion];
+
+    testedModule.createExperimentPool = sandbox.stub().returns([[groupExperiment]]);
+
+    const result = testedModule.processExperimentPools([groupExperiment], [], [], [], groupExclusions, experimentUser);
+
+    expect(result).toEqual([]);
+  });
+
+  it('[processExperimentPools] should return enrolled experiments from mixed pool', () => {
+    const enrolledExperiment = {
+      ...simpleIndividualAssignmentExperiment,
+      id: 'enrolled-exp',
+      state: EXPERIMENT_STATE.ENROLLING,
+    };
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: { schoolId: 'school1' },
+    };
+    const unenrolledExperiment = {
+      ...simpleIndividualAssignmentExperiment2,
+      id: 'unenrolled-exp',
+      state: EXPERIMENT_STATE.ENROLLING,
+    };
+
+    const enrollment = {
+      experimentId: enrolledExperiment.id,
+      userId: experimentUser.id,
+    } as IndividualEnrollment;
+
+    const individualEnrollments = [enrollment];
+
+    testedModule.createExperimentPool = sandbox.stub().returns([[enrolledExperiment, unenrolledExperiment]]);
+
+    const result = testedModule.processExperimentPools(
+      [enrolledExperiment, unenrolledExperiment],
+      individualEnrollments,
+      [],
+      [],
+      [],
+      experimentUser
+    );
+
+    expect(result).toEqual([enrolledExperiment]);
+  });
+
+  it('[processExperimentPools] should randomly select from available experiments in pool when none are enrolled', () => {
+    const experiment1 = {
+      ...simpleIndividualAssignmentExperiment,
+      id: 'exp1',
+      state: EXPERIMENT_STATE.ENROLLING,
+    };
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: { schoolId: 'school1' },
+    };
+    const experiment2 = {
+      ...simpleIndividualAssignmentExperiment2,
+      id: 'exp2',
+      state: EXPERIMENT_STATE.ENROLLING,
+    };
+
+    testedModule.createExperimentPool = sandbox.stub().returns([[experiment1, experiment2]]);
+
+    const result = testedModule.processExperimentPools([experiment1, experiment2], [], [], [], [], experimentUser);
+
+    // Should select one experiment based on seeded random
+    expect(result.length).toBe(1);
+    expect([experiment1, experiment2]).toContain(result[0]);
+  });
+
+  it('[processExperimentPools] should handle multiple pools correctly', () => {
+    const pool1Experiment = {
+      ...simpleIndividualAssignmentExperiment,
+      id: 'pool1-exp',
+      state: EXPERIMENT_STATE.ENROLLING,
+    };
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: { schoolId: 'school1' },
+    };
+    const pool2Experiment = {
+      ...simpleIndividualAssignmentExperiment2,
+      id: 'pool2-exp',
+      state: EXPERIMENT_STATE.ENROLLING,
+    };
+
+    testedModule.createExperimentPool = sandbox.stub().returns([[pool1Experiment], [pool2Experiment]]);
+
+    const result = testedModule.processExperimentPools(
+      [pool1Experiment, pool2Experiment],
+      [],
+      [],
+      [],
+      [],
+      experimentUser
+    );
+
+    expect(result.length).toBe(2);
+    expect(result).toContain(pool1Experiment);
+    expect(result).toContain(pool2Experiment);
+  });
+
+  it('[processExperimentPools] should return empty array when all experiments in pool are excluded or not enrolling', () => {
+    const excludedExperiment = {
+      ...simpleIndividualAssignmentExperiment,
+      id: 'excluded-exp',
+      state: EXPERIMENT_STATE.ENROLLING,
+    };
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: { schoolId: 'school1' },
+    };
+    const enrollmentCompleteExperiment = {
+      ...simpleIndividualAssignmentExperiment2,
+      id: 'complete-exp',
+      state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+    };
+
+    const exclusion = {
+      experimentId: excludedExperiment.id,
+      userId: experimentUser.id,
+    } as IndividualExclusion;
+
+    const individualExclusions = [exclusion];
+
+    testedModule.createExperimentPool = sandbox.stub().returns([[excludedExperiment, enrollmentCompleteExperiment]]);
+
+    const result = testedModule.processExperimentPools(
+      [excludedExperiment, enrollmentCompleteExperiment],
+      [],
+      [],
+      individualExclusions,
+      [],
+      experimentUser
+    );
+    expect(result).toEqual([]);
+  });
+
+  it('[processExperimentPools] should return the enrolling experiment if there are multiple enrollments', () => {
+    const enrollingExperiment = {
+      ...simpleIndividualAssignmentExperiment,
+      id: 'enrolling-exp',
+      state: EXPERIMENT_STATE.ENROLLING,
+    };
+    const experimentUser = {
+      id: 'user123',
+      group: { schoolId: ['school1'] },
+      workingGroup: { schoolId: 'school1' },
+    };
+    const enrollmentCompleteExperiment = {
+      ...simpleIndividualAssignmentExperiment2,
+      id: 'complete-exp',
+      state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+    };
+
+    const enrollment = {
+      experimentId: enrollingExperiment.id,
+      userId: experimentUser.id,
+    } as IndividualEnrollment;
+    const enrollment2 = {
+      experimentId: enrollmentCompleteExperiment.id,
+      userId: experimentUser.id,
+    } as IndividualEnrollment;
+
+    const individualEnrollments = [enrollment, enrollment2];
+
+    testedModule.createExperimentPool = sandbox.stub().returns([[enrollingExperiment, enrollmentCompleteExperiment]]);
+
+    const result = testedModule.processExperimentPools(
+      [enrollingExperiment, enrollmentCompleteExperiment],
+      individualEnrollments,
+      [],
+      [],
+      [],
+      experimentUser
+    );
+    expect(result.length).toBe(1);
+    expect(result).toContain(enrollingExperiment);
   });
 
   it('should log an error when clientError is provided', async () => {
