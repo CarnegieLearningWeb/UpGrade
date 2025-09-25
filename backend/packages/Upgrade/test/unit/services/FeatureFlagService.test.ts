@@ -176,6 +176,7 @@ describe('Feature Flag Service Testing', () => {
           useValue: {
             inclusionExclusionLogic: jest.fn().mockResolvedValue([[mockFlag1.id]]),
             checkUserOrGroupIsGloballyExcluded: jest.fn().mockResolvedValue([false, false]),
+            resolveSegmentsForEntities: jest.fn().mockResolvedValue([]),
           },
         },
         {

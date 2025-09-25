@@ -1,5 +1,7 @@
 import { Service } from 'typedi';
+import { IExperimentAssignmentv5 } from 'types/src';
 import { ILogInput } from 'upgrade_types';
+import { v4 as uuid } from 'uuid';
 
 @Service()
 export default class ExperimentAssignmentServiceMock {
@@ -11,6 +13,41 @@ export default class ExperimentAssignmentServiceMock {
     return Promise.resolve([]);
   }
 
+  public formatAssignments(assignments: IExperimentAssignmentv5[]): IExperimentAssignmentv5[] {
+    return [];
+  }
+
+  public async getBatchExperimentConditions(
+    userDocs: any[],
+    context: string,
+    site: string,
+    target: string,
+    logger: any
+  ): Promise<Record<string, any>> {
+    // Mock response matching the controller's expected return type
+    const assignments = {};
+
+    userDocs.forEach((userDoc) => {
+      assignments[userDoc.id] = {
+        site,
+        target,
+        experimentType: 'Simple',
+        assignedCondition: [
+          {
+            conditionCode: 'control',
+            payload: {
+              type: 'string',
+              value: 'Control Content',
+            },
+            id: uuid(),
+            experimentId: uuid(),
+          },
+        ],
+      };
+    });
+
+    return assignments;
+  }
   public dataLog(userId: string, value: ILogInput[]): Promise<[]> {
     return Promise.resolve([]);
   }

@@ -870,9 +870,11 @@ export class FeatureFlagService {
     const featureFlagIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = featureFlags.map(
       ({ id, filterMode }) => ({ id, filterMode })
     );
+    const [includeData, excludeData] = await this.experimentAssignmentService.resolveSegmentsForEntities(segmentObjMap);
 
     const [includedFeatureFlagIds] = await this.experimentAssignmentService.inclusionExclusionLogic(
-      segmentObjMap,
+      includeData,
+      excludeData,
       experimentUser,
       featureFlagIdsWithFilter
     );
