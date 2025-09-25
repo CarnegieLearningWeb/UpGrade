@@ -1,40 +1,8 @@
-.comparison-container {
-  .section-label {
-    display: block;
-    margin-bottom: 8px;
-  }
-
-  .radio-group-horizontal {
-    display: flex;
-    gap: 16px;
-
-    mat-radio-button {
-      margin-right: 0;
-    }
-  }
+.disabled-text {
+  color: rgba(0, 0, 0, 0.38) !important;
 }
 
-.metric-type-container {
-  .radio-group-vertical {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-
-    mat-radio-button {
-      margin-right: 0;
-
-      .radio-label {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-
-        .radio-description {
-          font-weight: 400;
-          color: rgba(0, 0, 0, 0.6);
-          font-size: 12px;
-          line-height: 1.4;
-        }
-      }
-    }
-  }
+.metric-type-section,
+.comparison-section {
+  padding: 4px 0;
 }

@@ -188,7 +188,7 @@ export class DialogService {
   openUpsertMetricModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
-      width: ModalSize.LARGE,
+      width: ModalSize.STANDARD,
       autoFocus: false,
       disableClose: true,
     };

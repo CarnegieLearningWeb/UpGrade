@@ -9,20 +9,30 @@
   <form [formGroup]="metricForm" class="form-standard dense-3">
 
     <!-- Metric Type Radio Group -->
-    <div class="metric-type-container dense-1">
-      <span class="section-label ft-14-600">Metric Type</span>
-      <mat-radio-group formControlName="metricType" class="radio-group-vertical">
-        <mat-radio-button value="global" class="ft-14-400" [disabled]="isGlobalMetricDisabled">
-          <span class="radio-label">
-            <strong>Global Metric</strong>
-            <span class="radio-description">Used for globally accumulated measures (e.g., total time spent using the app).</span>
-          </span>
+    <div class="metric-type-section dense-1">
+      <mat-radio-group formControlName="metricType">
+        <span class="section-label ft-14-600">Metric Type</span>
+        <mat-radio-button value="global" [disabled]="isGlobalMetricDisabled">
+          <div class="radio-content">
+            <span
+              class="radio-label ft-14-600"
+              [class.disabled-text]="isGlobalMetricDisabled"
+            >
+              Global Metric
+            </span>
+            <span
+              class="radio-description ft-12-400"
+              [class.disabled-text]="isGlobalMetricDisabled"
+            >
+              Used for globally accumulated measures (e.g., total time spent using the app).
+            </span>
+          </div>
         </mat-radio-button>
-        <mat-radio-button value="repeatable" class="ft-14-400">
-          <span class="radio-label">
-            <strong>Repeatable Metric</strong>
-            <span class="radio-description">Used for repeatable measures (e.g., score on a quiz that can be taken multiple times).</span>
-          </span>
+        <mat-radio-button value="repeatable">
+          <div class="radio-content">
+            <span class="radio-label ft-14-600">Repeatable Metric</span>
+            <span class="radio-description ft-12-400">Used for repeatable measures (e.g., score on a quiz that can be taken multiple times).</span>
+          </div>
         </mat-radio-button>
       </mat-radio-group>
     </div>
@@ -48,7 +58,7 @@
           </mat-option>
         </mat-autocomplete>
         <mat-hint class="form-hint ft-12-400">
-          The metric class categorizes what type of app component is being measured (e.g., workspace).
+          Categorizes what type of app component is being measured (e.g., workspace).
         </mat-hint>
       </mat-form-field>
     </ng-container>
@@ -73,7 +83,7 @@
           </mat-option>
         </mat-autocomplete>
         <mat-hint class="form-hint ft-12-400">
-          The metric key specifies the specific instance of the metric class being measured (e.g., problem ID).
+          Specifies the specific instance of the metric class being measured (e.g., problem ID).
         </mat-hint>
       </mat-form-field>
     </ng-container>
@@ -98,7 +108,7 @@
         </mat-option>
       </mat-autocomplete>
       <mat-hint class="form-hint ft-12-400">
-        The Metric ID specifies the data type (continuous or categorical) and what data to measure.
+        Specifies the data type (continuous or categorical) and what data to measure.
       </mat-hint>
     </mat-form-field>
 
@@ -148,15 +158,16 @@
 
     <!-- Comparison (Categorical only) -->
     <ng-container *ngIf="showComparison">
-      <div class="comparison-container dense-1">
-        <span class="section-label ft-14-600">Comparison</span>
-        <mat-radio-group formControlName="comparison" class="radio-group-horizontal">
+      <div class="comparison-section dense-1">
+        <mat-radio-group formControlName="comparison">
+          <span class="section-label ft-14-600">Comparison</span>
           <mat-radio-button
             *ngFor="let option of comparisonOptions"
             [value]="option.value"
-            class="ft-14-400"
           >
-            {{ option.label }}
+            <div class="radio-content">
+              <span class="radio-label ft-14-600">{{ option.label }}</span>
+            </div>
           </mat-radio-button>
         </mat-radio-group>
       </div>
@@ -198,16 +209,7 @@
     <!-- Description -->
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Description (optional)</mat-label>
-      <textarea
-        matInput
-        formControlName="description"
-        rows="3"
-        placeholder="Enter description"
-        class="ft-14-400"
-      ></textarea>
-      <mat-hint class="form-hint ft-12-400">
-        Optional description for this metric.
-      </mat-hint>
+      <input matInput formControlName="description" placeholder="Describe this metric" class="ft-14-400" />
     </mat-form-field>
 
   </form>
