@@ -24,14 +24,16 @@
               class="radio-description ft-12-400"
               [class.disabled-text]="isGlobalMetricDisabled"
             >
-              Used for globally accumulated measures (e.g., total time spent using the app).
+              {{ 'experiments.upsert-metric-modal.metric-type-global-metric-description.text' | translate }}
             </span>
           </div>
         </mat-radio-button>
         <mat-radio-button value="repeatable">
           <div class="radio-content">
             <span class="radio-label ft-14-600">Repeatable Metric</span>
-            <span class="radio-description ft-12-400">Used for repeatable measures (e.g., score on a quiz that can be taken multiple times).</span>
+            <span class="radio-description ft-12-400">
+              {{ 'experiments.upsert-metric-modal.metric-type-repeatable-metric-description.text' | translate }}
+            </span>
           </div>
         </mat-radio-button>
       </mat-radio-group>
@@ -58,7 +60,7 @@
           </mat-option>
         </mat-autocomplete>
         <mat-hint class="form-hint ft-12-400">
-          Categorizes what type of app component is being measured (e.g., workspace).
+          {{ 'experiments.upsert-metric-modal.metric-class-hint.text' | translate }}
         </mat-hint>
       </mat-form-field>
     </ng-container>
@@ -83,7 +85,7 @@
           </mat-option>
         </mat-autocomplete>
         <mat-hint class="form-hint ft-12-400">
-          Specifies the specific instance of the metric class being measured (e.g., problem ID).
+          {{ 'experiments.upsert-metric-modal.metric-key-hint.text' | translate }}
         </mat-hint>
       </mat-form-field>
     </ng-container>
@@ -108,7 +110,7 @@
         </mat-option>
       </mat-autocomplete>
       <mat-hint class="form-hint ft-12-400">
-        Specifies the data type (continuous or categorical) and what data to measure.
+        {{ 'experiments.upsert-metric-modal.metric-id-hint.text' | translate }}
       </mat-hint>
     </mat-form-field>
 
@@ -126,7 +128,7 @@
           </mat-option>
         </mat-select>
         <mat-hint class="form-hint ft-12-400">
-          The Individual Statistic determines which value to use for each student.
+          {{ 'experiments.upsert-metric-modal.individual-statistic-hint.text' | translate }}
           <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
             Learn more
           </a>
@@ -148,7 +150,7 @@
           </mat-option>
         </mat-select>
         <mat-hint class="form-hint ft-12-400">
-          The Aggregate Statistic determines how to combine values across all students.
+          {{ 'experiments.upsert-metric-modal.aggregate-statistic-hint.text' | translate }}
           <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
             Learn more
           </a>
@@ -187,7 +189,7 @@
           </mat-option>
         </mat-select>
         <mat-hint class="form-hint ft-12-400">
-          The categorical metric data type requires you to specify which allowed value to measure.
+          {{ 'experiments.upsert-metric-modal.value-hint.text' | translate }}
         </mat-hint>
       </mat-form-field>
     </ng-container>
@@ -202,7 +204,7 @@
         class="ft-14-400"
       />
       <mat-hint class="form-hint ft-12-400">
-        The display name is used to refer to this metric in the experiment UI.
+        {{ 'experiments.upsert-metric-modal.display-name-hint.text' | translate }}
       </mat-hint>
     </mat-form-field>
 
