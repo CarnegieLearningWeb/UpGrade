@@ -334,6 +334,13 @@ export interface UpsertExperimentParams {
   action: UPSERT_EXPERIMENT_ACTION;
 }
 
+export interface UpsertDecisionPointParams {
+  sourceDecisionPoint: ExperimentDecisionPoint;
+  context: string;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
+}
+
 export interface ExperimentFormData {
   name: string;
   description: string;
@@ -346,6 +353,12 @@ export interface ExperimentFormData {
   stratificationFactor?: string;
   groupType?: string;
   tags: string[];
+}
+
+export interface DecisionPointFormData {
+  site: string;
+  target: string;
+  excludeIfReached: boolean;
 }
 
 // Base interfaces matching backend DTO structure
@@ -480,6 +493,11 @@ export interface UpdateExperimentRequest
 export interface UpdateExperimentFilterModeRequest {
   experiment: Experiment;
   filterMode: FILTER_MODE;
+}
+
+export interface UpdateExperimentDecisionPointsRequest {
+  experiment: Experiment;
+  decisionPoints: ExperimentDecisionPoint[];
 }
 
 export const EXPERIMENT_ROOT_COLUMN_NAMES = {

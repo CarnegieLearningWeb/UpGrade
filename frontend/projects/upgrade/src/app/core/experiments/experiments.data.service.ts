@@ -4,6 +4,7 @@ import {
   ExperimentStateInfo,
   ExperimentPaginationParams,
   UpdateExperimentFilterModeRequest,
+  UpdateExperimentDecisionPointsRequest,
   ExperimentSegmentListResponse,
 } from './store/experiments.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -153,6 +154,14 @@ export class ExperimentDataService {
     const updatedExperiment = {
       ...params.experiment,
       filterMode: params.filterMode,
+    };
+    return this.updateExperiment(updatedExperiment);
+  }
+
+  updateExperimentDecisionPoints(params: UpdateExperimentDecisionPointsRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      partitions: params.decisionPoints,
     };
     return this.updateExperiment(updatedExperiment);
   }

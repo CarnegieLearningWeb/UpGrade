@@ -9,16 +9,18 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IMenuButtonItem } from 'upgrade_types';
 import { ExperimentDecisionPointsTableComponent } from './experiment-decision-points-table/experiment-decision-points-table.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
-import { Observable } from 'rxjs';
+import { DecisionPointHelperService } from '../../../../../../../core/experiments/decision-point-helper.service';
+import { Observable, take } from 'rxjs';
 import {
-  Experiment,
   EXPERIMENT_BUTTON_ACTION,
   EXPERIMENT_ROW_ACTION,
   ExperimentDecisionPoint,
   ExperimentDecisionPointRowActionEvent,
+  Experiment,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
+import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 
 @Component({
   selector: 'app-experiment-decision-points-section-card',
@@ -53,18 +55,22 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
     },
   ];
 
-  constructor(public experimentService: ExperimentService, private authService: AuthService) {}
+  constructor(
+    public experimentService: ExperimentService,
+    private authService: AuthService,
+    private dialogService: DialogService,
+    private decisionPointHelperService: DecisionPointHelperService
+  ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
   }
 
-  onAddDecisionPointClick(appContext: string, experimentId: string): void {
-    // TODO: Implement add decision point functionality when dialog service is available
-    console.log('Add decision point');
+  onAddDecisionPointClick(experimentId: string, appContext: string): void {
+    this.dialogService.openAddDecisionPointModal(experimentId, appContext);
   }
 
-  onMenuButtonItemClick(event: string, experiment: Experiment): void {
+  onMenuButtonItemClick(event: string): void {
     switch (event) {
       case EXPERIMENT_BUTTON_ACTION.IMPORT_DECISION_POINT:
         // TODO: Implement import functionality when dialog service is available
@@ -84,10 +90,10 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
   }
 
   // Decision point row action events
-  onRowAction(event: ExperimentDecisionPointRowActionEvent, experimentId: string): void {
+  onRowAction(event: ExperimentDecisionPointRowActionEvent, experimentId: string, context: string): void {
     switch (event.action) {
       case EXPERIMENT_ROW_ACTION.EDIT:
-        this.onEditDecisionPoint(event.decisionPoint, experimentId);
+        this.onEditDecisionPoint(event.decisionPoint, experimentId, context);
         break;
       case EXPERIMENT_ROW_ACTION.DELETE:
         this.onDeleteDecisionPoint(event.decisionPoint);
@@ -97,13 +103,24 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
     }
   }
 
-  onEditDecisionPoint(decisionPoint: ExperimentDecisionPoint, experimentId: string): void {
-    // TODO: Implement edit functionality when dialog service is available
-    console.log('Edit decision point');
+  onEditDecisionPoint(decisionPoint: ExperimentDecisionPoint, experimentId: string, context: string): void {
+    this.dialogService.openEditDecisionPointModal(decisionPoint, experimentId, context);
   }
 
   onDeleteDecisionPoint(decisionPoint: ExperimentDecisionPoint): void {
-    // TODO: Implement delete functionality when dialog service is available
-    console.log('Delete decision point');
+    const decisionPointDisplayName = `${decisionPoint.site}; ${decisionPoint.target}`;
+
+    this.dialogService
+      .openDeleteDecisionPointModal(decisionPointDisplayName)
+      .afterClosed()
+      .subscribe((confirmClicked) => {
+        if (confirmClicked) {
+          this.selectedExperiment$.pipe(take(1)).subscribe((experiment: Experiment) => {
+            if (experiment) {
+              this.decisionPointHelperService.deleteDecisionPoint(experiment, decisionPoint);
+            }
+          });
+        }
+      });
   }
 }
