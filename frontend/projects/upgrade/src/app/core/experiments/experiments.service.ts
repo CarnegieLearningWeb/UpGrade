@@ -13,6 +13,7 @@ import {
   EXPERIMENT_STATE,
   AddExperimentRequest,
   UpdateExperimentFilterModeRequest,
+  UpdateExperimentDecisionPointsRequest,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -190,6 +191,12 @@ export class ExperimentService {
 
   updateFilterMode(updateExperimentFilterModeRequest: UpdateExperimentFilterModeRequest) {
     this.store$.dispatch(experimentAction.actionUpdateExperimentFilterMode({ updateExperimentFilterModeRequest }));
+  }
+
+  updateExperimentDecisionPoints(updateExperimentDecisionPointsRequest: UpdateExperimentDecisionPointsRequest) {
+    this.store$.dispatch(
+      experimentAction.actionUpdateExperimentDecisionPoints({ updateExperimentDecisionPointsRequest })
+    );
   }
 
   fetchContextMetaData() {

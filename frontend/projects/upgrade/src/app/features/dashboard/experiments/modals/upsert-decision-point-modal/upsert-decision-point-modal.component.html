@@ -1,0 +1,76 @@
+<app-common-dialog
+  [title]="config.title"
+  [cancelBtnLabel]="config.cancelBtnLabel"
+  [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+  [primaryActionBtnColor]="config.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
+  (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+>
+  <form [formGroup]="decisionPointForm" class="form-standard dense-3">
+
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Site</mat-label>
+      <input
+        matInput
+        formControlName="site"
+        placeholder="e.g., assignProblem"
+        class="ft-14-400"
+        [matAutocomplete]="siteAutocomplete"
+      />
+      <mat-autocomplete #siteAutocomplete="matAutocomplete" panelWidth="auto">
+        <mat-option
+          *ngFor="let site of filteredSites$ | async"
+          [value]="site"
+          class="ft-14-400"
+        >
+          {{ site }}
+        </mat-option>
+      </mat-autocomplete>
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'experiments.upsert-decision-point-modal.site-hint.text' | translate }}
+        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+          Learn more
+        </a>
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Target</mat-label>
+      <input
+        matInput
+        formControlName="target"
+        placeholder="e.g., targetProblem"
+        class="ft-14-400"
+        [matAutocomplete]="targetAutocomplete"
+      />
+      <mat-autocomplete #targetAutocomplete="matAutocomplete" panelWidth="auto">
+        <mat-option
+          *ngFor="let target of filteredTargets$ | async"
+          [value]="target"
+          class="ft-14-400"
+        >
+          {{ target }}
+        </mat-option>
+      </mat-autocomplete>
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'experiments.upsert-decision-point-modal.target-hint.text' | translate }}
+        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+          Learn more
+        </a>
+      </mat-hint>
+    </mat-form-field>
+
+    <div class="exclude-if-reached-container dense-1">
+      <mat-checkbox formControlName="excludeIfReached">
+        <span class="checkbox-label ft-14-600">Exclude If Reached</span>
+        <span class="form-hint ft-12-400" style="display:block; user-select: none;">
+          {{ 'experiments.upsert-decision-point-modal.exclude-if-reached-hint.text' | translate }}
+          <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+            Learn more
+          </a>
+        </span>
+      </mat-checkbox>
+    </div>
+
+  </form>
+</app-common-dialog>

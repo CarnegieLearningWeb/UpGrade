@@ -12,6 +12,7 @@ import {
   IEnrollmentStatByDate,
   IContextMetaData,
   UpdateExperimentFilterModeRequest,
+  UpdateExperimentDecisionPointsRequest,
   ExperimentSegmentListResponse,
 } from './experiments.model';
 import { ExperimentSegmentListRequest, ExperimentSegmentListDetails } from '../../segments/store/segments.model';
@@ -99,6 +100,20 @@ export const actionUpdateExperimentFilterModeSuccess = createAction(
 
 export const actionUpdateExperimentFilterModeFailure = createAction(
   '[Experiment] Update Experiment Filter Mode Failure'
+);
+
+export const actionUpdateExperimentDecisionPoints = createAction(
+  '[Experiment] Update Experiment Decision Points',
+  props<{ updateExperimentDecisionPointsRequest: UpdateExperimentDecisionPointsRequest }>()
+);
+
+export const actionUpdateExperimentDecisionPointsSuccess = createAction(
+  '[Experiment] Update Experiment Decision Points Success',
+  props<{ experiment: Experiment }>()
+);
+
+export const actionUpdateExperimentDecisionPointsFailure = createAction(
+  '[Experiment] Update Experiment Decision Points Failure'
 );
 
 export const actionFetchAllDecisionPoints = createAction('[Experiment] Fetch All Decision Points');
