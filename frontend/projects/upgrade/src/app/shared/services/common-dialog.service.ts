@@ -650,6 +650,20 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(deleteDecisionPointModalConfig, ModalSize.SMALL);
   }
 
+  openDeleteMetricModal(metricName: string) {
+    const deleteMetricModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Delete Metric',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete the metric "${metricName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(deleteMetricModalConfig, ModalSize.SMALL);
+  }
+
   openDeleteSegmentModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Delete Segment',

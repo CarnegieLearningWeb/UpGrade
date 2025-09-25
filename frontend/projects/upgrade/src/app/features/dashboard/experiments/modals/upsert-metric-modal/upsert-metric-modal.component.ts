@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestro
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject, Observable, Subscription, combineLatest } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import { map, startWith, take } from 'rxjs/operators';
+import isEqual from 'lodash.isequal';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -15,13 +16,18 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
 import {
   MetricFormData,
   UPSERT_EXPERIMENT_ACTION,
   UpsertMetricParams,
+  Experiment,
+  ExperimentQueryDTO,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { MetricHelperService } from '../../../../../core/experiments/metric-helper.service';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
+import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ASSIGNMENT_UNIT, IMetricMetaData, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
 
 interface StatisticOption {
@@ -133,6 +139,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     public config: CommonModalConfig<UpsertMetricParams>,
     private formBuilder: FormBuilder,
     private experimentService: ExperimentService,
+    private metricHelperService: MetricHelperService,
     private analysisService: AnalysisService,
     private cdr: ChangeDetectorRef,
     public dialogRef: MatDialogRef<UpsertMetricModalComponent>
@@ -180,18 +187,48 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
     this.updateFormVisibility();
     this.updateMetricTypeAvailability();
+
+    // For edit mode, populate form after allMetrics are loaded
+    if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceQuery) {
+      this.populateFormForEditMode(sourceQuery, initialValues);
+    }
   }
 
   deriveInitialFormValues(sourceQuery: any, action: UPSERT_EXPERIMENT_ACTION): MetricFormData {
     if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceQuery) {
-      // Extract values from existing query for edit mode
+      const metricKey = sourceQuery.metric?.key || '';
+
+      // The correct way to determine if it's repeatable is by checking if the metric key contains METRICS_JOIN_TEXT
+      // NOT by checking if repeatedMeasure exists (global metrics can also have individual statistics)
+      const isRepeatable = metricKey.includes(METRICS_JOIN_TEXT);
+
+      let metricClass = '';
+      let metricKeyValue = '';
+      let metricId = '';
+
+      if (isRepeatable) {
+        // Parse combined key for repeatable metrics: "class@__@key@__@id"
+        const keyParts = metricKey.split(METRICS_JOIN_TEXT);
+        if (keyParts.length === 3) {
+          metricClass = keyParts[0];
+          metricKeyValue = keyParts[1];
+          metricId = keyParts[2];
+        } else {
+          // Fallback if format is unexpected
+          metricId = metricKey;
+        }
+      } else {
+        // Global metric: use the key as-is for metricId
+        metricId = metricKey;
+      }
+
       return {
-        metricType: sourceQuery.repeatedMeasure ? 'repeatable' : 'global',
-        metricId: sourceQuery.metric?.key || '',
+        metricType: (isRepeatable ? 'repeatable' : 'global') as 'repeatable' | 'global',
+        metricId,
         displayName: sourceQuery.name || '',
         description: '', // Not available in current structure
-        metricClass: '', // Not available in current structure
-        metricKey: '', // Not available in current structure
+        metricClass,
+        metricKey: metricKeyValue,
         aggregateStatistic: sourceQuery.query?.operationType || '',
         individualStatistic: sourceQuery.repeatedMeasure || '',
         comparison: sourceQuery.query?.compareFn || '=',
@@ -214,6 +251,67 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       compareValue: '',
       allowableDataKeys: [],
     };
+  }
+
+  populateFormForEditMode(sourceQuery: any, initialValues: MetricFormData): void {
+    // Wait for allMetrics to be loaded, then populate form with proper objects
+    this.subscriptions.add(
+      this.allMetrics$.pipe(take(1)).subscribe((metrics) => {
+        if (!metrics || metrics.length === 0) return;
+
+        const metricType = initialValues.metricType;
+        let classObject = null;
+        let keyObject = null;
+        let idObject = null;
+
+        if (metricType === 'repeatable') {
+          // Find the class object
+          classObject = metrics.find((m) => m.key === initialValues.metricClass);
+          if (classObject && classObject.children) {
+            // Find the key object within the class children
+            keyObject = classObject.children.find((k) => k.key === initialValues.metricKey);
+            if (keyObject && keyObject.children) {
+              // Find the ID object within the key children
+              idObject = keyObject.children.find((id) => id.key === initialValues.metricId);
+            } else if (keyObject) {
+              // If no children in keyObject, keyObject itself might be the ID
+              idObject = keyObject;
+            }
+          }
+        } else {
+          // Global metric: find the metric directly
+          idObject = metrics.find((m) => m.key === initialValues.metricId);
+        }
+
+        // Update form with found objects (or keep strings if objects not found)
+        const formUpdates = {
+          metricType: initialValues.metricType, // Ensure metric type is properly set
+          metricClass: classObject || initialValues.metricClass,
+          metricKey: keyObject || initialValues.metricKey,
+          metricId: idObject || initialValues.metricId,
+        };
+
+        this.metricForm.patchValue(formUpdates);
+
+        // Update the initial form values to reflect the object values
+        const currentInitialValues = this.initialFormValues$.value;
+        const newInitialValues = { ...currentInitialValues, ...formUpdates };
+        if (!isEqual(currentInitialValues, newInitialValues)) {
+          this.initialFormValues$.next(newInitialValues);
+        }
+
+        // Update the options and form state
+        this.populateOptions();
+        if (idObject) {
+          this.detectMetricDataType(idObject);
+          this.updateStatisticOptions();
+          this.updateFormVisibility();
+        }
+
+        // Trigger change detection to ensure UI updates
+        this.cdr.markForCheck();
+      })
+    );
   }
 
   setupFormChangeListeners(): void {
@@ -630,23 +728,40 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   onPrimaryActionBtnClicked(): void {
     if (this.metricForm.valid) {
       this.sendUpsertMetricRequest();
+    } else {
+      CommonFormHelpersService.triggerTouchedToDisplayErrors(this.metricForm);
     }
   }
 
   sendUpsertMetricRequest(): void {
-    // TODO: Implement the actual metric creation/update logic
-    // This would typically call a service method to create or update the metric
-    // const formValue = this.metricForm.value;
-    // const metricData = this.prepareMetricDataForBackend(formValue);
-    // Example: this.experimentService.createMetric(this.config.params.experimentId, metricData)
+    const formValue = this.metricForm.value;
+    const metricData = this.prepareMetricDataForBackend(formValue);
 
-    // For now, just close the modal
-    this.closeModal();
+    // Get current experiment and call helper service
+    this.experimentService.selectedExperiment$.pipe(take(1)).subscribe((experiment: Experiment) => {
+      if (!experiment) {
+        console.error('No experiment selected');
+        return;
+      }
+
+      if (this.config.params.action === UPSERT_EXPERIMENT_ACTION.ADD) {
+        this.metricHelperService.addMetric(experiment, metricData);
+      } else {
+        const sourceQuery = this.config.params.sourceQuery;
+        if (!sourceQuery) {
+          console.error('No source query for edit action');
+          return;
+        }
+
+        this.metricHelperService.updateMetric(experiment, sourceQuery, metricData);
+      }
+
+      this.closeModal();
+    });
   }
 
-  private prepareMetricDataForBackend(formValue: any): any {
+  private prepareMetricDataForBackend(formValue: any): ExperimentQueryDTO {
     const metricType = formValue.metricType;
-    const METRICS_JOIN_TEXT = '@__@'; // Same as backend constant
 
     // Prepare metric key based on type
     let metricKey: string;
@@ -662,7 +777,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
 
     // Prepare query object in the same format as legacy component
-    const queryObj: any = {
+    const queryObj: ExperimentQueryDTO = {
       name: formValue.displayName,
       query: {
         operationType: formValue.aggregateStatistic,
@@ -670,12 +785,8 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       metric: {
         key: metricKey,
       },
+      repeatedMeasure: metricType === 'repeatable' ? formValue.individualStatistic : REPEATED_MEASURE.mostRecent,
     };
-
-    // Add repeatedMeasure for repeatable metrics
-    if (metricType === 'repeatable') {
-      queryObj.repeatedMeasure = formValue.individualStatistic;
-    }
 
     // Add comparison function and value for categorical metrics
     if (this.metricDataType === IMetricMetaData.CATEGORICAL && formValue.comparison && formValue.compareValue) {

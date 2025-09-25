@@ -514,6 +514,11 @@ export interface UpdateExperimentDecisionPointsRequest {
   decisionPoints: ExperimentDecisionPoint[];
 }
 
+export interface UpdateExperimentMetricsRequest {
+  experiment: Experiment;
+  metrics: ExperimentQueryDTO[];
+}
+
 export const EXPERIMENT_ROOT_COLUMN_NAMES = {
   NAME: 'name',
   STATUS: 'state',

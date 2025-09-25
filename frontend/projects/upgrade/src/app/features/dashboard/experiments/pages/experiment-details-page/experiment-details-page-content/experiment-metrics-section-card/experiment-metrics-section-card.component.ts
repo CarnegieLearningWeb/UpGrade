@@ -12,6 +12,7 @@ import {
   ExperimentQueryRowActionEvent,
 } from './experiment-metrics-table/experiment-metrics-table.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
+import { MetricHelperService } from '../../../../../../../core/experiments/metric-helper.service';
 import { Observable, map } from 'rxjs';
 import { take } from 'rxjs/operators';
 import {
@@ -23,7 +24,6 @@ import {
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import { ModalSize } from '../../../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 
 @Component({
   selector: 'app-experiment-metrics-section-card',
@@ -69,6 +69,7 @@ export class ExperimentMetricsSectionCardComponent implements OnInit {
 
   constructor(
     private experimentService: ExperimentService,
+    private metricHelperService: MetricHelperService,
     private authService: AuthService,
     private dialogService: DialogService
   ) {}
@@ -111,7 +112,7 @@ export class ExperimentMetricsSectionCardComponent implements OnInit {
         this.onEditMetric(event.query, experimentId);
         break;
       case EXPERIMENT_ROW_ACTION.DELETE:
-        this.onDeleteMetric(event.query, experimentId);
+        this.onDeleteMetric(event.query);
         break;
       default:
         console.log('Unknown action:', event.action);
@@ -122,23 +123,19 @@ export class ExperimentMetricsSectionCardComponent implements OnInit {
     this.dialogService.openEditMetricModal(query, experimentId);
   }
 
-  private onDeleteMetric(query: ExperimentQueryDTO, experimentId: string): void {
+  private onDeleteMetric(query: ExperimentQueryDTO): void {
     const metricDisplayName = query.name || `${query.metric?.key}`;
 
-    const confirmationParams = {
-      title: 'Delete Metric',
-      description: `Are you sure you want to delete the metric "${metricDisplayName}"?`,
-      primaryActionBtnText: 'Delete',
-      cancelBtnText: 'Cancel',
-    };
-
     this.dialogService
-      .openSimpleCommonConfirmationModal(confirmationParams, ModalSize.MEDIUM)
+      .openDeleteMetricModal(metricDisplayName)
       .afterClosed()
       .subscribe((confirmClicked) => {
         if (confirmClicked) {
-          // TODO: Implement actual metric deletion logic
-          console.log('Delete metric confirmed for query:', query.id, 'in experiment:', experimentId);
+          this.selectedExperiment$.pipe(take(1)).subscribe((experiment: Experiment) => {
+            if (experiment) {
+              this.metricHelperService.deleteMetric(experiment, query);
+            }
+          });
         }
       });
   }
