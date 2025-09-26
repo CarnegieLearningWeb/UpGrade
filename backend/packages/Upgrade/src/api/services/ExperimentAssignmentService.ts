@@ -508,7 +508,10 @@ export class ExperimentAssignmentService {
           experimentForUser.experiments,
           individualEnrollments.filter((assignment) => assignment.userId === experimentForUser.userId),
           groupEnrollments,
-          filteredUsers[index]
+          individualExclusions,
+          groupExclusions,
+          filteredUsers[index],
+          null
         );
         return { ...acc, [experimentForUser.userId]: exps[0] || null };
       }, {});
