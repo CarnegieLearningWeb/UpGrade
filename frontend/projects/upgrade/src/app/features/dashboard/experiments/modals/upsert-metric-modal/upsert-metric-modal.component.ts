@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestro
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject, Observable, Subscription, combineLatest } from 'rxjs';
-import { map, startWith, take } from 'rxjs/operators';
+import { combineLatestWith, map, startWith, take } from 'rxjs/operators';
 import isEqual from 'lodash.isequal';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -76,36 +76,34 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   aggregateStatisticOptions: StatisticOption[] = [];
   individualStatisticOptions: StatisticOption[] = [];
 
-  // Autocomplete - Professional solution with BehaviorSubjects for source data
+  // Autocomplete
   allMetrics$ = this.analysisService.allMetrics$;
   allMetrics: any[] = [];
 
-  // BehaviorSubjects for source data - this is the professional way
-  private metricClassOptions$ = new BehaviorSubject<any[]>([]);
-  private metricKeyOptions$ = new BehaviorSubject<any[]>([]);
-  private metricIdOptions$ = new BehaviorSubject<any[]>([]);
-
-  // Filtered observables that combine user input with reactive source data
+  // Filtered autocomplete observables
   filteredMetricClasses$: Observable<any[]>;
   filteredMetricKeys$: Observable<any[]>;
   filteredMetricIds$: Observable<any[]>;
 
+  // BehaviorSubjects for source data
+  private metricClassOptions$ = new BehaviorSubject<any[]>([]);
+  private metricKeyOptions$ = new BehaviorSubject<any[]>([]);
+  private metricIdOptions$ = new BehaviorSubject<any[]>([]);
+
   // Current selections
-  currentSelectedClass: any = null;
-  currentSelectedKey: any = null;
+  private currentSelectedClass: any = null;
+  private currentSelectedKey: any = null;
 
-  // Assignment unit and context for filtering (same as legacy component)
-  currentAssignmentUnit: ASSIGNMENT_UNIT | null = null;
-  currentContext: string[] | null = null;
+  // Assignment unit and context for filtering
+  private currentAssignmentUnit: ASSIGNMENT_UNIT | null = null;
+  private currentContext: string[] | null = null;
 
-  // For categorical metrics comparison
   allowableDataKeys: string[] = [];
   comparisonOptions = [
     { value: '=', label: 'Equal' },
     { value: '<>', label: 'Not equal' },
   ];
 
-  // Continuous statistic options
   continuousAggregateOptions: StatisticOption[] = [
     { value: OPERATION_TYPES.SUM, label: 'Sum' },
     { value: OPERATION_TYPES.MIN, label: 'Min' },
@@ -123,7 +121,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     { value: REPEATED_MEASURE.mostRecent, label: 'Most Recent' },
   ];
 
-  // Categorical statistic options
   categoricalAggregateOptions: StatisticOption[] = [
     { value: OPERATION_TYPES.COUNT, label: 'Count' },
     { value: OPERATION_TYPES.PERCENTAGE, label: 'Percentage' },
@@ -190,7 +187,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
     // For edit mode, populate form after allMetrics are loaded
     if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceQuery) {
-      this.populateFormForEditMode(sourceQuery, initialValues);
+      this.populateFormForEditMode(initialValues);
     }
   }
 
@@ -253,26 +250,28 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     };
   }
 
-  populateFormForEditMode(sourceQuery: any, initialValues: MetricFormData): void {
+  populateFormForEditMode(initialValues: MetricFormData): void {
     // Wait for allMetrics to be loaded, then populate form with proper objects
     this.subscriptions.add(
       this.allMetrics$.pipe(take(1)).subscribe((metrics) => {
         if (!metrics || metrics.length === 0) return;
 
-        const metricType = initialValues.metricType;
+        const { metricType, metricClass, metricKey, metricId } = initialValues;
         let classObject = null;
         let keyObject = null;
         let idObject = null;
 
         if (metricType === 'repeatable') {
           // Find the class object
-          classObject = metrics.find((m) => m.key === initialValues.metricClass);
-          if (classObject && classObject.children) {
+          classObject = metrics.find((m) => m.key === metricClass);
+
+          if (classObject?.children) {
             // Find the key object within the class children
-            keyObject = classObject.children.find((k) => k.key === initialValues.metricKey);
-            if (keyObject && keyObject.children) {
+            keyObject = classObject.children.find((k) => k.key === metricKey);
+
+            if (keyObject?.children) {
               // Find the ID object within the key children
-              idObject = keyObject.children.find((id) => id.key === initialValues.metricId);
+              idObject = keyObject.children.find((id) => id.key === metricId);
             } else if (keyObject) {
               // If no children in keyObject, keyObject itself might be the ID
               idObject = keyObject;
@@ -280,15 +279,14 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
           }
         } else {
           // Global metric: find the metric directly
-          idObject = metrics.find((m) => m.key === initialValues.metricId);
+          idObject = metrics.find((m) => m.key === metricId);
         }
 
         // Update form with found objects (or keep strings if objects not found)
         const formUpdates = {
-          metricType: initialValues.metricType, // Ensure metric type is properly set
-          metricClass: classObject || initialValues.metricClass,
-          metricKey: keyObject || initialValues.metricKey,
-          metricId: idObject || initialValues.metricId,
+          metricClass: classObject || metricClass,
+          metricKey: keyObject || metricKey,
+          metricId: idObject || metricId,
         };
 
         this.metricForm.patchValue(formUpdates);
@@ -315,28 +313,24 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   setupFormChangeListeners(): void {
-    // Listen for metric type changes
     this.subscriptions.add(
       this.metricForm.get('metricType')?.valueChanges.subscribe(() => {
         this.onMetricTypeChange();
       })
     );
 
-    // Listen for metric class changes
     this.subscriptions.add(
       this.metricForm.get('metricClass')?.valueChanges.subscribe((selectedClass) => {
         this.onMetricClassChange(selectedClass);
       })
     );
 
-    // Listen for metric key changes
     this.subscriptions.add(
       this.metricForm.get('metricKey')?.valueChanges.subscribe((selectedKey) => {
         this.onMetricKeyChange(selectedKey);
       })
     );
 
-    // Listen for metric ID changes
     this.subscriptions.add(
       this.metricForm.get('metricId')?.valueChanges.subscribe((metricId) => {
         this.onMetricIdChange(metricId);
@@ -345,7 +339,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   setupAutocomplete(): void {
-    // Load all metrics data - EXACTLY like legacy component
     this.subscriptions.add(
       this.allMetrics$.subscribe((metrics) => {
         this.allMetrics = metrics || [];
@@ -356,21 +349,17 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   setupExperimentContext(): void {
-    // Get experiment context and assignment unit for filtering (same as legacy component)
     this.subscriptions.add(
       this.experimentService.selectedExperiment$.subscribe((experiment) => {
         if (experiment) {
           this.currentAssignmentUnit = experiment.assignmentUnit;
           this.currentContext = experiment.context;
-          // Update metric type availability based on assignment unit
           this.updateMetricTypeAvailability();
-          // Repopulate options when experiment context changes
           this.populateOptions();
         }
       })
     );
 
-    // Also try to get experiment from the experimentId parameter if no selected experiment
     if (this.config.params.experimentId && !this.currentAssignmentUnit) {
       this.subscriptions.add(
         this.experimentService.experiments$.subscribe((experiments) => {
@@ -378,7 +367,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
           if (experiment && !this.currentAssignmentUnit) {
             this.currentAssignmentUnit = experiment.assignmentUnit;
             this.currentContext = experiment.context;
-            // Update metric type availability based on assignment unit
             this.updateMetricTypeAvailability();
             this.populateOptions();
           }
@@ -389,26 +377,18 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
   populateOptions(): void {
     const metricType = this.metricForm.get('metricType')?.value;
-
-    // Start with all metrics - this ensures dropdowns always have options
     let filteredMetrics = this.allMetrics || [];
 
-    // Apply assignment unit filtering ONLY if we have a valid experiment context
-    // This prevents breaking the dropdowns when no experiment is selected
     if (this.currentAssignmentUnit && filteredMetrics.length > 0) {
       if (this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-        // Within-subjects: only show metrics with children (repeatable metrics)
         const withinSubjectsMetrics = filteredMetrics.filter((metric) => metric.children && metric.children.length > 0);
-        // Only apply filter if we found matching metrics, otherwise keep all metrics
         if (withinSubjectsMetrics.length > 0) {
           filteredMetrics = withinSubjectsMetrics;
         }
       } else if (this.currentContext && this.currentContext.length > 0) {
-        // Between-subjects or other: filter by context
         const contextFilteredMetrics = filteredMetrics.filter(
           (metric) => metric.context && this.currentContext?.some((ctx) => metric.context.includes(ctx))
         );
-        // Only apply filter if we found matching metrics, otherwise keep all metrics
         if (contextFilteredMetrics.length > 0) {
           filteredMetrics = contextFilteredMetrics;
         }
@@ -416,13 +396,11 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
 
     if (metricType === 'global') {
-      // Global metrics: only show metrics without children from filtered set
       this.metricClassOptions$.next([]);
       this.metricKeyOptions$.next([]);
       const globalMetrics = filteredMetrics.filter((metric) => !metric.children || metric.children.length === 0);
       this.metricIdOptions$.next(globalMetrics);
     } else {
-      // Repeatable metrics: show hierarchical structure from filtered set
       const repeatableMetrics = filteredMetrics.filter((metric) => metric.children && metric.children.length > 0);
       this.metricClassOptions$.next(repeatableMetrics);
       this.metricKeyOptions$.next([]);
@@ -431,7 +409,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   createFilteredObservables(): void {
-    // Professional solution: combine user input with reactive source data
     this.filteredMetricClasses$ = combineLatest([
       this.metricForm.get('metricClass')?.valueChanges.pipe(startWith('')) || new BehaviorSubject(''),
       this.metricClassOptions$,
@@ -490,24 +467,16 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     // Don't do anything for string values - user is typing
   }
 
-  displayFn(option?: any): string | undefined {
-    if (option && option.key) {
-      return option.key;
-    } else if (typeof option === 'string') {
-      return option;
-    }
-    return option ? option : undefined;
+  displayFn = (option?: any): string => {
+    return option?.key || option || '';
+  };
+
+  private extractKey(value: any): string {
+    return typeof value === 'object' ? value?.key || '' : value || '';
   }
 
   private _filter(value: any, options: any[]): any[] {
-    let filterValue: string;
-    if (typeof value === 'string') {
-      filterValue = value.toLowerCase();
-    } else if (value && value.key) {
-      filterValue = value.key.toLowerCase();
-    } else {
-      filterValue = '';
-    }
+    const filterValue = this.extractKey(value).toLowerCase();
     return options.filter((option) => option.key?.toLowerCase().includes(filterValue));
   }
 
@@ -549,48 +518,60 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   detectMetricDataType(metricId: any): void {
-    let selectedMetric: any = null;
+    const selectedMetric = this.findSelectedMetric(metricId);
 
-    // Find the selected metric in current metricIdOptions
-    if (typeof metricId === 'object' && metricId.metadata) {
-      selectedMetric = metricId;
-    } else if (typeof metricId === 'string') {
-      // Find by string key - get current value from BehaviorSubject
-      const currentOptions = this.metricIdOptions$.getValue();
-      selectedMetric = currentOptions.find((metric) => metric.key === metricId);
+    // Use metadata if available
+    if (selectedMetric?.metadata?.type) {
+      this.setMetricDataType(selectedMetric.metadata.type, selectedMetric);
+      return;
     }
 
-    if (selectedMetric && selectedMetric.metadata && selectedMetric.metadata.type) {
-      this.metricDataType = selectedMetric.metadata.type;
+    // Fallback to heuristic detection
+    this.detectMetricTypeByHeuristic(metricId);
+  }
 
-      // For categorical metrics, populate allowable data from the metric and set default comparison
-      if (this.metricDataType === IMetricMetaData.CATEGORICAL) {
-        if (selectedMetric.allowedData) {
-          this.allowableDataKeys = [...selectedMetric.allowedData];
-        }
-        // Set default comparison to "=" if not already set
-        if (!this.metricForm.get('comparison')?.value) {
-          this.metricForm.get('comparison')?.setValue('=');
-        }
-      } else {
-        this.allowableDataKeys = [];
+  private findSelectedMetric(metricId: any): any {
+    if (typeof metricId === 'object' && metricId.metadata) {
+      return metricId;
+    }
+
+    if (typeof metricId === 'string') {
+      const currentOptions = this.metricIdOptions$.getValue();
+      return currentOptions.find((metric) => metric.key === metricId);
+    }
+
+    return null;
+  }
+
+  private setMetricDataType(dataType: IMetricMetaData, selectedMetric?: any): void {
+    this.metricDataType = dataType;
+
+    if (dataType === IMetricMetaData.CATEGORICAL) {
+      this.allowableDataKeys = selectedMetric?.allowedData ? [...selectedMetric.allowedData] : [];
+
+      // Set default comparison if not already set
+      if (!this.metricForm.get('comparison')?.value) {
+        this.metricForm.get('comparison')?.setValue('=');
       }
     } else {
-      // Fallback to heuristic if metadata is not available
-      const metricKey = typeof metricId === 'string' ? metricId : metricId?.key || '';
-      const continuousKeywords = ['time', 'count', 'score', 'number', 'seconds', 'minutes', 'duration'];
-      const categoricalKeywords = ['status', 'type', 'category', 'level', 'completion'];
+      this.allowableDataKeys = [];
+    }
+  }
 
-      const lowerMetricKey = metricKey.toLowerCase();
+  private detectMetricTypeByHeuristic(metricId: any): void {
+    const metricKey = this.extractKey(metricId);
+    const lowerMetricKey = metricKey.toLowerCase();
 
-      if (continuousKeywords.some((keyword) => lowerMetricKey.includes(keyword))) {
-        this.metricDataType = IMetricMetaData.CONTINUOUS;
-      } else if (categoricalKeywords.some((keyword) => lowerMetricKey.includes(keyword))) {
-        this.metricDataType = IMetricMetaData.CATEGORICAL;
-      } else {
-        // Default to continuous for unknown types
-        this.metricDataType = IMetricMetaData.CONTINUOUS;
-      }
+    const continuousKeywords = ['time', 'count', 'score', 'number', 'seconds', 'minutes', 'duration'];
+    const categoricalKeywords = ['status', 'type', 'category', 'level', 'completion'];
+
+    if (continuousKeywords.some((keyword) => lowerMetricKey.includes(keyword))) {
+      this.setMetricDataType(IMetricMetaData.CONTINUOUS);
+    } else if (categoricalKeywords.some((keyword) => lowerMetricKey.includes(keyword))) {
+      this.setMetricDataType(IMetricMetaData.CATEGORICAL);
+    } else {
+      // Default to continuous for unknown types
+      this.setMetricDataType(IMetricMetaData.CONTINUOUS);
     }
   }
 
@@ -618,7 +599,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   updateMetricTypeAvailability(): void {
-    // Disable global metrics for within-subjects experiments (same as legacy component)
+    // Disable global metrics for within-subjects experiments
     this.isGlobalMetricDisabled = this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS;
 
     // If global metrics are disabled and global is currently selected, switch to repeatable
@@ -693,35 +674,27 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   listenForIsInitialFormValueChanged(): void {
-    this.isInitialFormValueChanged$ = combineLatest([
-      this.metricForm.valueChanges.pipe(startWith(this.metricForm.value)),
-      this.initialFormValues$,
-    ]).pipe(
-      map(([currentFormValue, initialFormValue]) => {
-        if (!initialFormValue) return false;
-
+    this.isInitialFormValueChanged$ = this.metricForm.valueChanges.pipe(
+      startWith(this.metricForm.value),
+      map(() => {
         const currentWithKeys = {
-          ...currentFormValue,
+          ...this.metricForm.value,
           allowableDataKeys: this.allowableDataKeys,
         };
-
-        return JSON.stringify(currentWithKeys) !== JSON.stringify(initialFormValue);
+        return !isEqual(currentWithKeys, this.initialFormValues$.value);
       })
     );
   }
 
   listenForPrimaryButtonDisabled(): void {
-    this.isPrimaryButtonDisabled$ = combineLatest([
-      this.metricForm.statusChanges.pipe(startWith(this.metricForm.status)),
-      this.isLoadingUpsertMetric$,
-      this.isInitialFormValueChanged$,
-    ]).pipe(
-      map(([formStatus, isLoading, isFormChanged]) => {
-        const isFormInvalid = formStatus !== 'VALID';
-        const isEditModeWithoutChanges = this.config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT && !isFormChanged;
-
-        return isFormInvalid || isLoading || isEditModeWithoutChanges;
-      })
+    this.isPrimaryButtonDisabled$ = this.isLoadingUpsertMetric$.pipe(
+      combineLatestWith(this.isInitialFormValueChanged$),
+      map(
+        ([isLoading, isInitialFormValueChanged]) =>
+          isLoading ||
+          this.metricForm.invalid ||
+          (!isInitialFormValueChanged && this.config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT)
+      )
     );
   }
 
@@ -761,26 +734,28 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   private prepareMetricDataForBackend(formValue: any): ExperimentQueryDTO {
-    const metricType = formValue.metricType;
+    const { metricType, metricClass, metricKey: metricKeyValue, metricId } = formValue;
 
     // Prepare metric key based on type
-    let metricKey: string;
-    if (metricType === 'global') {
-      // Global metrics use just the metric ID
-      metricKey = typeof formValue.metricId === 'object' ? formValue.metricId.key : formValue.metricId;
-    } else {
-      // Repeatable metrics use class@__@key@__@id format
-      const metricClass = typeof formValue.metricClass === 'object' ? formValue.metricClass.key : formValue.metricClass;
-      const metricKeyValue = typeof formValue.metricKey === 'object' ? formValue.metricKey.key : formValue.metricKey;
-      const metricId = typeof formValue.metricId === 'object' ? formValue.metricId.key : formValue.metricId;
-      metricKey = `${metricClass}${METRICS_JOIN_TEXT}${metricKeyValue}${METRICS_JOIN_TEXT}${metricId}`;
-    }
+    const metricKey =
+      metricType === 'global'
+        ? this.extractKey(metricId)
+        : `${this.extractKey(metricClass)}${METRICS_JOIN_TEXT}${this.extractKey(
+            metricKeyValue
+          )}${METRICS_JOIN_TEXT}${this.extractKey(metricId)}`;
 
-    // Prepare query object in the same format as legacy component
+    // Prepare query object
     const queryObj: ExperimentQueryDTO = {
       name: formValue.displayName,
       query: {
         operationType: formValue.aggregateStatistic,
+        // Add comparison for categorical metrics
+        ...(this.metricDataType === IMetricMetaData.CATEGORICAL &&
+          formValue.comparison &&
+          formValue.compareValue && {
+            compareFn: formValue.comparison,
+            compareValue: formValue.compareValue,
+          }),
       },
       metric: {
         key: metricKey,
@@ -788,20 +763,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       repeatedMeasure: metricType === 'repeatable' ? formValue.individualStatistic : REPEATED_MEASURE.mostRecent,
     };
 
-    // Add comparison function and value for categorical metrics
-    if (this.metricDataType === IMetricMetaData.CATEGORICAL && formValue.comparison && formValue.compareValue) {
-      queryObj.query = {
-        ...queryObj.query,
-        compareFn: formValue.comparison,
-        compareValue: formValue.compareValue,
-      };
-    }
-
     return queryObj;
-  }
-
-  get UPSERT_EXPERIMENT_ACTION() {
-    return UPSERT_EXPERIMENT_ACTION;
   }
 
   closeModal(): void {
