@@ -24,6 +24,7 @@ import {
   REPEATED_MEASURE,
   SEGMENT_TYPE,
   IEnrollmentCompleteCondition,
+  METRIC_TYPE,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -41,6 +42,7 @@ export {
   IExperimentSortParams,
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
+  METRIC_TYPE,
 };
 
 export interface ExperimentConditionFilterOptions {
@@ -362,7 +364,7 @@ export interface DecisionPointFormData {
 }
 
 export interface MetricFormData {
-  metricType: 'global' | 'repeatable';
+  metricType: METRIC_TYPE;
   metricId: string;
   displayName: string;
   description?: string;

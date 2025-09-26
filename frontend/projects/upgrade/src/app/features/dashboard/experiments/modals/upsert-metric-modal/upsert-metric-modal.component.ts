@@ -28,7 +28,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { MetricHelperService } from '../../../../../core/experiments/metric-helper.service';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
-import { ASSIGNMENT_UNIT, IMetricMetaData, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
+import { ASSIGNMENT_UNIT, IMetricMetaData, METRIC_TYPE, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
 
 interface StatisticOption {
   value: string;
@@ -220,7 +220,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       }
 
       return {
-        metricType: (isRepeatable ? 'repeatable' : 'global') as 'repeatable' | 'global',
+        metricType: isRepeatable ? METRIC_TYPE.REPEATABLE : METRIC_TYPE.GLOBAL,
         metricId,
         displayName: sourceQuery.name || '',
         description: '', // Not available in current structure
@@ -236,7 +236,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
     // Default values for add mode
     return {
-      metricType: 'global',
+      metricType: METRIC_TYPE.GLOBAL,
       metricId: '',
       displayName: '',
       description: '',
@@ -261,7 +261,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
         let keyObject = null;
         let idObject = null;
 
-        if (metricType === 'repeatable') {
+        if (metricType === METRIC_TYPE.REPEATABLE) {
           // Find the class object
           classObject = metrics.find((m) => m.key === metricClass);
 
@@ -395,7 +395,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (metricType === 'global') {
+    if (metricType === METRIC_TYPE.GLOBAL) {
       this.metricClassOptions$.next([]);
       this.metricKeyOptions$.next([]);
       const globalMetrics = filteredMetrics.filter((metric) => !metric.children || metric.children.length === 0);
@@ -580,13 +580,13 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     const hasMetricId = !!this.metricForm.get('metricId')?.value;
 
     // Base visibility for metric type
-    this.showMetricClass = metricType === 'repeatable';
-    this.showMetricKey = metricType === 'repeatable';
+    this.showMetricClass = metricType === METRIC_TYPE.REPEATABLE;
+    this.showMetricKey = metricType === METRIC_TYPE.REPEATABLE;
 
     // Statistics only show when metric ID is selected
     if (hasMetricId && this.metricDataType) {
       this.showAggregateStatistic = true;
-      this.showIndividualStatistic = metricType === 'repeatable';
+      this.showIndividualStatistic = metricType === METRIC_TYPE.REPEATABLE;
       this.showComparison = this.metricDataType === IMetricMetaData.CATEGORICAL;
     } else {
       this.showAggregateStatistic = false;
@@ -603,8 +603,8 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.isGlobalMetricDisabled = this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS;
 
     // If global metrics are disabled and global is currently selected, switch to repeatable
-    if (this.isGlobalMetricDisabled && this.metricForm.get('metricType')?.value === 'global') {
-      this.metricForm.get('metricType')?.setValue('repeatable');
+    if (this.isGlobalMetricDisabled && this.metricForm.get('metricType')?.value === METRIC_TYPE.GLOBAL) {
+      this.metricForm.get('metricType')?.setValue(METRIC_TYPE.REPEATABLE);
     }
 
     this.cdr.markForCheck();
@@ -641,7 +641,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     const metricType = this.metricForm.get('metricType')?.value;
 
     // Update validators based on metric type
-    if (metricType === 'repeatable') {
+    if (metricType === METRIC_TYPE.REPEATABLE) {
       this.metricForm.get('metricClass')?.setValidators([Validators.required]);
       this.metricForm.get('metricKey')?.setValidators([Validators.required]);
       this.metricForm.get('individualStatistic')?.setValidators([Validators.required]);
@@ -738,7 +738,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
     // Prepare metric key based on type
     const metricKey =
-      metricType === 'global'
+      metricType === METRIC_TYPE.GLOBAL
         ? this.extractKey(metricId)
         : `${this.extractKey(metricClass)}${METRICS_JOIN_TEXT}${this.extractKey(
             metricKeyValue
@@ -760,7 +760,8 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       metric: {
         key: metricKey,
       },
-      repeatedMeasure: metricType === 'repeatable' ? formValue.individualStatistic : REPEATED_MEASURE.mostRecent,
+      repeatedMeasure:
+        metricType === METRIC_TYPE.REPEATABLE ? formValue.individualStatistic : REPEATED_MEASURE.mostRecent,
     };
 
     return queryObj;
