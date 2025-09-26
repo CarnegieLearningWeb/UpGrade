@@ -36,10 +36,12 @@ import { CommonImportModalComponent } from '../../shared-standalone-component-li
 import { DeleteSegmentModalComponent } from '../../features/dashboard/segments/modals/delete-segment-modal/delete-segment-modal.component';
 import { UpsertExperimentModalComponent } from '../../features/dashboard/experiments/modals/upsert-experiment-modal/upsert-experiment-modal.component';
 import { UpsertDecisionPointModalComponent } from '../../features/dashboard/experiments/modals/upsert-decision-point-modal/upsert-decision-point-modal.component';
+import { UpsertMetricModalComponent } from '../../features/dashboard/experiments/modals/upsert-metric-modal/upsert-metric-modal.component';
 import {
   UPSERT_EXPERIMENT_ACTION,
   ExperimentDecisionPoint,
   ExperimentCondition,
+  ExperimentQueryDTO,
 } from '../../core/experiments/store/experiments.model';
 import {
   ConditionWeightUpdate,
@@ -62,6 +64,12 @@ export interface UpsertDecisionPointModalParams {
   action: UPSERT_EXPERIMENT_ACTION;
   experimentId: string;
   context: string;
+}
+
+export interface UpsertMetricModalParams {
+  sourceQuery: ExperimentQueryDTO | null;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
 }
 
 @Injectable({
@@ -145,6 +153,46 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(UpsertDecisionPointModalComponent, config);
+  }
+
+  openAddMetricModal(experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertMetricModalParams> = {
+      title: 'Add Metric',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceQuery: null,
+        action: UPSERT_EXPERIMENT_ACTION.ADD,
+        experimentId,
+      },
+    };
+    return this.openUpsertMetricModal(commonModalConfig);
+  }
+
+  openEditMetricModal(sourceQuery: ExperimentQueryDTO, experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertMetricModalParams> = {
+      title: 'Edit Metric',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceQuery: { ...sourceQuery },
+        action: UPSERT_EXPERIMENT_ACTION.EDIT,
+        experimentId,
+      },
+    };
+    return this.openUpsertMetricModal(commonModalConfig);
+  }
+
+  openUpsertMetricModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: false,
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertMetricModalComponent, config);
   }
 
   // feature flag modal ---------------------------------------- //
@@ -600,6 +648,20 @@ export class DialogService {
     };
 
     return this.openSimpleCommonConfirmationModal(deleteDecisionPointModalConfig, ModalSize.SMALL);
+  }
+
+  openDeleteMetricModal(metricName: string) {
+    const deleteMetricModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Delete Metric',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete the metric "${metricName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(deleteMetricModalConfig, ModalSize.SMALL);
   }
 
   openDeleteSegmentModal() {
