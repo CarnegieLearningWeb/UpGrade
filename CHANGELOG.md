@@ -1,3 +1,34 @@
+UpGrade 6.2 Release Notes
+
+Primarily bug fixes, enhancements, and vulnerable dependency updates
+
+UI:
+- Universally trims text inputs to avoid subtle bugs with unseen spaces or characters
+- Improved UX in paginated / search / filtering on experiment page
+- Improved consistency in UI elements / messages
+- Revised Mooclet TS_Configurable "reward metric" displays
+
+Backend:
+- Adds "batch assign" feature for querying multipe users' conditions
+- Fixes erroneous "competing decision point" assignments in some complex scenarios
+- Improved Metrics query performance
+- Fixed CSV export functionality so UI does not wait and accidentally cancel a long-running query
+- The algorithm for searching through sub-segments had been capped, it can now handle any depth of nested sub-segments
+- Tightening up of several API error-handling and validation cases
+
+Within-Subjects feature:
+- New `repeated-enrollment` db table necessary for performant future support
+- Fixed data exports
+
+DB changes (backwards compatible, no impact should be noticed):
+- Migration needed to add `repeated-enrollment` table
+- Migration for 'Draft' status enum added to support future experiment UI refresh
+
+Client Libraries:
+- Newest TS and Java clients will "cache" assign and feature flag responses by default, with option to ignore cache and force refetch
+- Java client will now require context in the constructor instead of in the getAllExperimentCondtions method
+- Backwards compatible, not required to update (but encouraged!)
+
 UpGrade 6.1 Release Notes
 
 Segments Refresh:
