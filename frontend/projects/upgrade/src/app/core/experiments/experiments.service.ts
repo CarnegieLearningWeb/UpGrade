@@ -90,7 +90,7 @@ export class ExperimentService {
     );
   }
 
-  isInitialExperimentsLoading() {
+  haveInitialExperimentsLoaded() {
     return combineLatest([this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$]).pipe(
       map(([isLoading, experiments]) => !isLoading || !!experiments.length)
     );

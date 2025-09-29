@@ -22,7 +22,7 @@ export class HomeComponent implements OnInit {
   permissions$: Observable<UserPermission>;
   experiments$: Observable<Experiment[]> = this.experimentService.experiments$;
   totalExperiments$: Observable<number> = this.experimentService.totalExperiments$;
-  isLoadingExperiments$ = this.experimentService.isInitialExperimentsLoading();
+  haveInitialExperimentsLoaded$ = this.experimentService.haveInitialExperimentsLoaded();
 
   constructor(
     private experimentService: ExperimentService,
