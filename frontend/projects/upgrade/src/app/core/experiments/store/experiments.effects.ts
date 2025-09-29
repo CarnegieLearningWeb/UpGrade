@@ -181,6 +181,19 @@ export class ExperimentEffects {
     )
   );
 
+  navigateToExperimentDetail$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionUpsertExperimentSuccess),
+        tap(({ experiment }) => {
+          if (!this.router.url.includes('/home/detail')) {
+            this.router.navigate(['/home', 'detail', experiment.id]);
+          }
+        })
+      ),
+    { dispatch: false }
+  );
+
   updateExperimentState$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionUpdateExperimentState),

@@ -246,7 +246,7 @@ describe('ExperimentService', () => {
     });
   });
 
-  describe('#isInitialExperimentsLoading', () => {
+  describe('#haveInitialExperimentsLoaded', () => {
     describe('should return true if experiments are not loading and experiment data exists, and false otherwise', () => {
       const testCases = [
         {
@@ -282,7 +282,7 @@ describe('ExperimentService', () => {
           ExperimentSelectors.selectIsLoadingExperiment.setResult(isLoading);
           ExperimentSelectors.selectAllExperiment.setResult(experiments);
 
-          service.isInitialExperimentsLoading().subscribe((val) => {
+          service.haveInitialExperimentsLoaded().subscribe((val) => {
             tick(0);
             expect(val).toBe(expectedValue);
           });
