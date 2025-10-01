@@ -1,5 +1,6 @@
 import { Service } from 'typedi';
 import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
+import { Container } from './../../typeorm-typedi-extensions/Container';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
@@ -78,7 +79,9 @@ export class QueryService {
       return [];
     }
 
-    const transactionPromise = await this.dataSource.transaction(async (transactionalEntityManager) => {
+    const customDataSource = Container.getDataSource('export');
+
+    const transactionPromise = await customDataSource.transaction(async (transactionalEntityManager) => {
       const analyzePromise = promiseResult.map((query) => {
         experiments.push(query.experiment);
         if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {

@@ -12,6 +12,7 @@ import { ErrorRepository } from '../../../src/api/repositories/ErrorRepository';
 import { ArchivedStatsRepository } from '../../../src/api/repositories/ArchivedStatsRepository';
 import { ArchivedStats } from '../../../src/api/models/ArchivedStats';
 import { configureLogger } from '../../utils/logger';
+import { Container } from '../../../src/typeorm-typedi-extensions';
 
 const logger = new UpgradeLogger();
 
@@ -65,6 +66,7 @@ describe('Query Service Testing', () => {
       entities: [Query, Experiment, ArchivedStats, ErrorRepository],
       synchronize: true,
     });
+    Container.setDataSource('export', dataSource);
 
     dataSource.transaction = jest.fn().mockImplementation((passedFunction) => {
       return passedFunction(dataSource.manager);
