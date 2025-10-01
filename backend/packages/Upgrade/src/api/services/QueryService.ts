@@ -1,5 +1,6 @@
 import { Service } from 'typedi';
 import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
+import { Container } from './../../typeorm-typedi-extensions/Container';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
