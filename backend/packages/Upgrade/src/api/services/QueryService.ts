@@ -1,6 +1,5 @@
 import { Service } from 'typedi';
 import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
-import { Container } from './../../typeorm-typedi-extensions/Container';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
@@ -75,30 +74,22 @@ export class QueryService {
       return [];
     }
 
-    const customDataSource = Container.getDataSource('export');
-
-    const transactionPromise = await customDataSource.transaction(async (transactionalEntityManager) => {
-      const analyzePromise = queryList.map((query) => {
-        experiments.push(query.experiment);
-        if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
-          return [
-            this.logRepository.analysis(query, transactionalEntityManager),
-            this.logRepository.analysis(
-              {
-                ...query,
-                experiment: { ...query.experiment, type: EXPERIMENT_TYPE.SIMPLE },
-              },
-              transactionalEntityManager
-            ),
-          ];
-        }
-        return [this.logRepository.analysis(query, transactionalEntityManager)];
-      });
-      return analyzePromise;
+    const analyzePromise = queryList.map((query) => {
+      experiments.push(query.experiment);
+      if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
+        return [
+          this.logRepository.analysis(query),
+          this.logRepository.analysis({
+            ...query,
+            experiment: { ...query.experiment, type: EXPERIMENT_TYPE.SIMPLE },
+          }),
+        ];
+      }
+      return [this.logRepository.analysis(query)];
     });
 
     const response = await Promise.all(
-      transactionPromise.map(async (queryArray) => {
+      analyzePromise.map(async (queryArray) => {
         return await Promise.allSettled(queryArray);
       })
     );
