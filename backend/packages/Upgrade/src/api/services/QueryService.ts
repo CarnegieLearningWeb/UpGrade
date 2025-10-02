@@ -53,26 +53,22 @@ export class QueryService {
 
   public async analyze(queryIds: string[], logger: UpgradeLogger): Promise<any> {
     logger.info({ message: `Get analysis of query with queryIds ${queryIds}` });
-    const promiseArray = queryIds.map((queryId) =>
-      this.queryRepository.findOne({
-        where: { id: queryId },
-        relations: [
-          'metric',
-          'experiment',
-          'experiment.conditions',
-          'experiment.partitions',
-          'experiment.factors',
-          'experiment.factors.levels',
-        ],
-      })
-    );
-
-    const promiseResult = await Promise.all(promiseArray);
+    const queryList = await this.queryRepository.find({
+      where: { id: In(queryIds) },
+      relations: [
+        'metric',
+        'experiment',
+        'experiment.conditions',
+        'experiment.partitions',
+        'experiment.factors',
+        'experiment.factors.levels',
+      ],
+    });
     const experiments: Experiment[] = [];
 
     // checks for archieve state experiment
     if (queryIds.length !== 0) {
-      if (promiseResult[0].experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
+      if (queryList[0]?.experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
         return this.getArchivedStats(queryIds, logger);
       }
     } else {
@@ -82,7 +78,7 @@ export class QueryService {
     const customDataSource = Container.getDataSource('export');
 
     const transactionPromise = await customDataSource.transaction(async (transactionalEntityManager) => {
-      const analyzePromise = promiseResult.map((query) => {
+      const analyzePromise = queryList.map((query) => {
         experiments.push(query.experiment);
         if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
           return [
@@ -147,7 +143,7 @@ export class QueryService {
     mainEffect: queryResult[],
     interactionEffect: queryResult[]
   ): [queryResult[], queryResult[]] {
-    const conditionIds = experiment?.conditions.map((condition) => condition.id) || [];
+    const conditionIds = experiment?.conditions?.map((condition) => condition.id) || [];
 
     if (interactionEffect) {
       conditionIds.forEach((conditionId) => {

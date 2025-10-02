@@ -11,8 +11,8 @@ import { LevelCombinationElement } from '../models/LevelCombinationElement';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { QueryRepository } from './QueryRepository';
 import { MetricRepository } from './MetricRepository';
-import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
 import { RepeatedEnrollment } from '../models/RepeatedEnrollment';
+import { IndividualEnrollment } from '../models/IndividualEnrollment';
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
   public async deleteExceptByIds(values: string[], entityManager: EntityManager): Promise<Log[]> {
@@ -199,13 +199,12 @@ export class LogRepository extends Repository<Log> {
     query: any,
     transactionalEntityManager: EntityManager
   ) {
-    const individualEnrollmentRepo = transactionalEntityManager.withRepository(
-      Container.getCustomRepository(IndividualEnrollmentRepository, 'export')
-    );
+    const individualEnrollmentRepo = transactionalEntityManager.connection.getRepository(IndividualEnrollment);
+
     const innerQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
 
-    const analyticsQuery = transactionalEntityManager.createQueryBuilder();
-    const middleQuery = transactionalEntityManager.createQueryBuilder();
+    const analyticsQuery = transactionalEntityManager.connection.createQueryBuilder();
+    const middleQuery = transactionalEntityManager.connection.createQueryBuilder();
 
     const idToSelect = isFactorialExperiment ? '"levelId"' : '"conditionId"';
     const valueToSelect = isFactorialExperiment
@@ -298,9 +297,8 @@ export class LogRepository extends Repository<Log> {
     query: any,
     transactionalEntityManager: EntityManager
   ) {
-    const individualEnrollmentRepo = transactionalEntityManager.withRepository(
-      Container.getCustomRepository(IndividualEnrollmentRepository, 'export')
-    );
+    const individualEnrollmentRepo = transactionalEntityManager.connection.getRepository(IndividualEnrollment);
+
     const analyticsQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
 
     const idToSelect = isFactorialExperiment
