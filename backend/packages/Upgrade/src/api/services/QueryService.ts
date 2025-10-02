@@ -1,6 +1,5 @@
 import { Service } from 'typedi';
 import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
-import { Container } from './../../typeorm-typedi-extensions/Container';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
@@ -53,56 +52,44 @@ export class QueryService {
 
   public async analyze(queryIds: string[], logger: UpgradeLogger): Promise<any> {
     logger.info({ message: `Get analysis of query with queryIds ${queryIds}` });
-    const promiseArray = queryIds.map((queryId) =>
-      this.queryRepository.findOne({
-        where: { id: queryId },
-        relations: [
-          'metric',
-          'experiment',
-          'experiment.conditions',
-          'experiment.partitions',
-          'experiment.factors',
-          'experiment.factors.levels',
-        ],
-      })
-    );
-
-    const promiseResult = await Promise.all(promiseArray);
+    const queryList = await this.queryRepository.find({
+      where: { id: In(queryIds) },
+      relations: [
+        'metric',
+        'experiment',
+        'experiment.conditions',
+        'experiment.partitions',
+        'experiment.factors',
+        'experiment.factors.levels',
+      ],
+    });
     const experiments: Experiment[] = [];
 
     // checks for archieve state experiment
     if (queryIds.length !== 0) {
-      if (promiseResult[0].experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
+      if (queryList[0]?.experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
         return this.getArchivedStats(queryIds, logger);
       }
     } else {
       return [];
     }
 
-    const customDataSource = Container.getDataSource('export');
-
-    const transactionPromise = await customDataSource.transaction(async (transactionalEntityManager) => {
-      const analyzePromise = promiseResult.map((query) => {
-        experiments.push(query.experiment);
-        if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
-          return [
-            this.logRepository.analysis(query, transactionalEntityManager),
-            this.logRepository.analysis(
-              {
-                ...query,
-                experiment: { ...query.experiment, type: EXPERIMENT_TYPE.SIMPLE },
-              },
-              transactionalEntityManager
-            ),
-          ];
-        }
-        return [this.logRepository.analysis(query, transactionalEntityManager)];
-      });
-      return analyzePromise;
+    const analyzePromise = queryList.map((query) => {
+      experiments.push(query.experiment);
+      if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
+        return [
+          this.logRepository.analysis(query),
+          this.logRepository.analysis({
+            ...query,
+            experiment: { ...query.experiment, type: EXPERIMENT_TYPE.SIMPLE },
+          }),
+        ];
+      }
+      return [this.logRepository.analysis(query)];
     });
 
     const response = await Promise.all(
-      transactionPromise.map(async (queryArray) => {
+      analyzePromise.map(async (queryArray) => {
         return await Promise.allSettled(queryArray);
       })
     );
@@ -147,7 +134,7 @@ export class QueryService {
     mainEffect: queryResult[],
     interactionEffect: queryResult[]
   ): [queryResult[], queryResult[]] {
-    const conditionIds = experiment?.conditions.map((condition) => condition.id) || [];
+    const conditionIds = experiment?.conditions?.map((condition) => condition.id) || [];
 
     if (interactionEffect) {
       conditionIds.forEach((conditionId) => {

@@ -67,12 +67,15 @@ beforeEach(() => {
 
   manager = {
     createQueryBuilder: repo.createQueryBuilder,
-    withRepository: jest.fn().mockReturnValue(individualEnrollmentRepo),
+    connection: {
+      getRepository: jest.fn().mockReturnValue(individualEnrollmentRepo),
+    },
   };
 });
 
 afterEach(() => {
   jest.clearAllMocks();
+  jest.restoreAllMocks();
 });
 
 describe('LogRepository Testing', () => {
@@ -309,8 +312,9 @@ describe('LogRepository Testing', () => {
 
   // TODO: Work in progress
   it('should analyse a continuous simple metric sum', async () => {
-    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
-
+    jest.spyOn(Container, 'getCustomRepository').mockImplementation(() => {
+      return individualEnrollmentRepo;
+    });
     const q = new Query();
     q.id = 'id1';
     q.name = 'Average Time';
@@ -327,9 +331,7 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    const res = await repo.analysis(q, manager);
-
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
+    const res = await repo.analysis(q);
 
     expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
@@ -342,7 +344,9 @@ describe('LogRepository Testing', () => {
   });
 
   it('should analyse a continuous simple metric median', async () => {
-    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
+    jest.spyOn(Container, 'getCustomRepository').mockImplementation(() => {
+      return individualEnrollmentRepo;
+    });
 
     const q = new Query();
     q.id = 'id1';
@@ -360,9 +364,7 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    const res = await repo.analysis(q, manager);
-
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
+    const res = await repo.analysis(q);
 
     expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
@@ -376,8 +378,9 @@ describe('LogRepository Testing', () => {
   });
 
   it('should analyse a continuous simple metric mode', async () => {
-    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
-
+    jest.spyOn(Container, 'getCustomRepository').mockImplementation(() => {
+      return individualEnrollmentRepo;
+    });
     const q = new Query();
     q.id = 'id1';
     q.name = 'Average Time';
@@ -394,9 +397,7 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    const res = await repo.analysis(q, manager);
-
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
+    const res = await repo.analysis(q);
 
     expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
@@ -410,8 +411,9 @@ describe('LogRepository Testing', () => {
   });
 
   it('should analyse a continuous simple metric count', async () => {
-    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
-
+    jest.spyOn(Container, 'getCustomRepository').mockImplementation(() => {
+      return individualEnrollmentRepo;
+    });
     const q = new Query();
     q.id = 'id1';
     q.name = 'Average Time';
@@ -428,9 +430,7 @@ describe('LogRepository Testing', () => {
       compareValue: '10',
     };
 
-    const res = await repo.analysis(q, manager);
-
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
+    const res = await repo.analysis(q);
 
     expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
@@ -443,8 +443,12 @@ describe('LogRepository Testing', () => {
   });
 
   it('should analyse a continuous repeated metric most recent avg', async () => {
-    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
-
+    jest.spyOn(Container, 'getCustomRepository').mockImplementation(() => {
+      return individualEnrollmentRepo;
+    });
+    jest.spyOn(Container, 'getDataSource').mockImplementation(() => {
+      return dataSource;
+    });
     const q = new Query();
     q.id = 'id1';
     q.name = 'Average Time';
@@ -462,9 +466,7 @@ describe('LogRepository Testing', () => {
     };
     q.repeatedMeasure = REPEATED_MEASURE.mostRecent;
 
-    const res = await repo.analysis(q, manager);
-
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
+    const res = await repo.analysis(q);
 
     expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
@@ -478,8 +480,12 @@ describe('LogRepository Testing', () => {
   });
 
   it('should analyse a categorical repeated metric earliest percentage', async () => {
-    jest.spyOn(Container, 'getCustomRepository').mockReturnValueOnce(individualEnrollmentRepo);
-
+    jest.spyOn(Container, 'getCustomRepository').mockImplementation(() => {
+      return individualEnrollmentRepo;
+    });
+    jest.spyOn(Container, 'getDataSource').mockImplementation(() => {
+      return dataSource;
+    });
     const data1 = {
       conditionId: 1,
       result: 10,
@@ -507,9 +513,7 @@ describe('LogRepository Testing', () => {
     };
     q.repeatedMeasure = REPEATED_MEASURE.earliest;
 
-    const res = await repo.analysis(q, manager);
-
-    expect(Container.getCustomRepository).toHaveBeenCalledWith(IndividualEnrollmentRepository, 'export');
+    const res = await repo.analysis(q);
 
     expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
