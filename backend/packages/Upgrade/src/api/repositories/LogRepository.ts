@@ -12,7 +12,7 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 import { QueryRepository } from './QueryRepository';
 import { MetricRepository } from './MetricRepository';
 import { RepeatedEnrollment } from '../models/RepeatedEnrollment';
-import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
+import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
   public async deleteExceptByIds(values: string[], entityManager: EntityManager): Promise<Log[]> {
