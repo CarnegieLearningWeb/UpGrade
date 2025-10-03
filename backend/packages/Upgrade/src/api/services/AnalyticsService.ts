@@ -164,8 +164,8 @@ export class AnalyticsService {
     });
   }
 
-  public async getCSVData(experimentId: string, email: string, logger: UpgradeLogger): Promise<string> {
-    logger.info({ message: `Inside getCSVData ${experimentId} , ${email}` });
+  public async exportCSVData(experimentId: string, email: string, logger: UpgradeLogger): Promise<void> {
+    logger.info({ message: `Inside exportCSVData ${experimentId} , ${email}` });
 
     const experimentDetails: ExperimentDetailsForCSVData[] =
       await this.experimentService.getExperimentDetailsForCSVDataExport(experimentId);
@@ -174,14 +174,13 @@ export class AnalyticsService {
     }
 
     this.sendExportData(experimentDetails, email, logger);
-    return 'Exporting CSV data for the experiment...';
   }
 
   private async sendExportData(
     experimentDetails: ExperimentDetailsForCSVData[],
     email: string,
     logger: UpgradeLogger
-  ): Promise<string> {
+  ): Promise<void> {
     try {
       const timeStamp = new Date().toISOString();
       const folderPath = 'src/api/assets/files/';
@@ -495,7 +494,5 @@ export class AnalyticsService {
     }
 
     logger.info({ message: 'Completing experiment data export' });
-
-    return 'Exported CSV data sent, you should receive an email shortly.';
   }
 }
