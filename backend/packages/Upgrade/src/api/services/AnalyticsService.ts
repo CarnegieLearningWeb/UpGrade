@@ -243,7 +243,8 @@ export class AnalyticsService {
         if (!splitCache.has(query.key)) {
           splitCache.set(query.key, query.key.split(METRICS_JOIN_TEXT));
         }
-        const header = splitCache.get(query.key)?.join('->');
+        const keySplitArray = splitCache.get(query.key);
+        const header = keySplitArray ? keySplitArray.join('->') : query.key;
         queryHeadersMap.set(query.id, header);
         uniqueQueryIds.add(query.id);
       });
