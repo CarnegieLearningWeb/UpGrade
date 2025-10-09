@@ -368,7 +368,7 @@ export class AnalyticsService {
         } else if (experimentDetails[0].assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
           const key = `${row.userId}_${row.uniquifier}`;
           if (withinSubjectsLookup.has(key)) {
-            queryObject = withinSubjectsLookup.get(key);
+            queryObject = withinSubjectsLookup.get(key) ?? {};
           }
         }
 
