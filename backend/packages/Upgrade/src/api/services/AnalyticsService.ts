@@ -373,7 +373,9 @@ export class AnalyticsService {
         }
 
         const queryDataToAdd = Object.fromEntries(
-          Array.from(uniqueQueryIds).map((queryId) => [queryHeadersMap.get(queryId), queryObject[queryId] || ''])
+          Array.from(uniqueQueryIds)
+            .map((queryId) => [queryHeadersMap.get(queryId), queryObject[queryId] || ''])
+            .filter(([header, _]) => header !== undefined)
         );
 
         const revertToCondition = row.revertTo ? row.revertTo : 'Default';
