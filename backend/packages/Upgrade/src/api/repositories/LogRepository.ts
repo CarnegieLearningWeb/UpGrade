@@ -13,6 +13,7 @@ import { QueryRepository } from './QueryRepository';
 import { MetricRepository } from './MetricRepository';
 import { RepeatedEnrollment } from '../models/RepeatedEnrollment';
 import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
+import { IndividualEnrollment } from '../models/IndividualEnrollment';
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
   public async deleteExceptByIds(values: string[], entityManager: EntityManager): Promise<Log[]> {
@@ -151,9 +152,10 @@ export class LogRepository extends Repository<Log> {
         'metric.key as key',
         'metric.type as type',
       ])
+      .innerJoin(IndividualEnrollment, 'individualEnrollment', '"individualEnrollment"."experimentId"=experiment.id')
       .innerJoin('experiment.queries', 'queries')
       .innerJoin('queries.metric', 'metric')
-      .innerJoin('metric.logs', 'logs')
+      .innerJoin('metric.logs', 'logs', '"logs"."userId"="individualEnrollment"."userId"')
       .where('experiment.id=:experimentId', { experimentId })
       .execute();
   }

@@ -235,10 +235,45 @@ export class AnalyticsService {
 
       const queryData = await this.logRepository.getLogPerExperimentQuery(experimentDetails[0].experimentId);
 
+      // create a map of query id to header
+      const queryHeadersMap = new Map<string, string>();
+      const uniqueQueryIds = new Set<string>();
+      const splitCache = new Map<string, string[]>();
+      queryData.forEach((query) => {
+        if (!splitCache.has(query.key)) {
+          splitCache.set(query.key, query.key.split(METRICS_JOIN_TEXT));
+        }
+        const keySplitArray = splitCache.get(query.key);
+        const header = keySplitArray ? keySplitArray.join('->') : query.key;
+        queryHeadersMap.set(query.id, header);
+        uniqueQueryIds.add(query.id);
+      });
       type queryDataArrayType = typeof queryData;
       type queryDataType = queryDataArrayType[0];
+
+      // pre-process data according to assignment unit
+      const withinSubjectsLookup = new Map<string, Record<string, any>>();
       const logsUser: Record<string, Record<string, any>> = {};
-      if (experimentDetails[0].assignmentUnit !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+
+      if (experimentDetails[0].assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+        queryData.forEach((query) => {
+          const key = `${query.userId}_${query.uniquifier}`;
+          if (!withinSubjectsLookup.has(key)) {
+            withinSubjectsLookup.set(key, {});
+          }
+
+          const keySplitArray = splitCache.get(query.key);
+          let value: any;
+
+          if (query.type === IMetricMetaData.CONTINUOUS) {
+            value = +keySplitArray.reduce((accumulator, attribute: string) => accumulator[attribute], query.data);
+          } else {
+            value = keySplitArray.reduce((accumulator, attribute: string) => accumulator[attribute], query.data);
+          }
+
+          withinSubjectsLookup.get(key)[query.id] = value;
+        });
+      } else {
         // filter and group data according to repeated measure
         const groupedUser: Record<string, Record<string, queryDataType[]>> = {};
         // group data according to user and query id
@@ -328,37 +363,20 @@ export class AnalyticsService {
       const csvRows = csvExportData.map((row) => {
         let queryObject: Record<string, any> = {};
 
-        if (logsUser && logsUser[row.userId]) {
+        if (logsUser?.[row.userId]) {
           queryObject = logsUser[row.userId];
-        } else if (queryData && queryData.length > 0) {
-          queryObject = queryData.reduce((acc, query) => {
-            if (query.userId === row.userId && query.uniquifier === row.uniquifier) {
-              const keySplitArray = query.key.split(METRICS_JOIN_TEXT);
-              if (query.type === IMetricMetaData.CONTINUOUS) {
-                acc[query.id] = +keySplitArray.reduce(
-                  (accumulator, attribute: string) => accumulator[attribute],
-                  query.data
-                );
-              } else {
-                acc[query.id] = keySplitArray.reduce(
-                  (accumulator, attribute: string) => accumulator[attribute],
-                  query.data
-                );
-              }
-            }
-            return acc;
-          }, {});
-        }
-        const queryDataToAdd = {};
-
-        queryData.forEach((query) => {
-          const header = query.key.split(METRICS_JOIN_TEXT).join('->');
-          if (queryObject[query.id]) {
-            queryDataToAdd[header] = queryObject[query.id];
-          } else {
-            queryDataToAdd[header] = '';
+        } else if (experimentDetails[0].assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+          const key = `${row.userId}_${row.uniquifier}`;
+          if (withinSubjectsLookup.has(key)) {
+            queryObject = withinSubjectsLookup.get(key) ?? {};
           }
-        });
+        }
+
+        const queryDataToAdd = Object.fromEntries(
+          Array.from(uniqueQueryIds)
+            .map((queryId) => [queryHeadersMap.get(queryId), queryObject[queryId] || ''])
+            .filter(([header, _]) => header !== undefined)
+        );
 
         const revertToCondition = row.revertTo ? row.revertTo : 'Default';
         const postRule = row.postRule === 'assign' ? `Assign: ${revertToCondition}` : 'Continue';
