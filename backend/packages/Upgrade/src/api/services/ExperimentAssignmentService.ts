@@ -289,9 +289,10 @@ export class ExperimentAssignmentService {
     }
 
     // 6. Storing new/updated monitored decision point document
-    const assignmentUnit = experiments
-      ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
-      : null;
+    const assignmentUnit =
+      experiments?.length > 0
+        ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
+        : null;
     monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
       id: monitoredDocument?.id || uuid(),
       experimentId: experimentId,
