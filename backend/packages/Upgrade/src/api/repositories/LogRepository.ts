@@ -11,8 +11,9 @@ import { LevelCombinationElement } from '../models/LevelCombinationElement';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { QueryRepository } from './QueryRepository';
 import { MetricRepository } from './MetricRepository';
-import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
 import { RepeatedEnrollment } from '../models/RepeatedEnrollment';
+import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
+import { IndividualEnrollment } from '../models/IndividualEnrollment';
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
   public async deleteExceptByIds(values: string[], entityManager: EntityManager): Promise<Log[]> {
@@ -151,9 +152,10 @@ export class LogRepository extends Repository<Log> {
         'metric.key as key',
         'metric.type as type',
       ])
+      .innerJoin(IndividualEnrollment, 'individualEnrollment', '"individualEnrollment"."experimentId"=experiment.id')
       .innerJoin('experiment.queries', 'queries')
       .innerJoin('queries.metric', 'metric')
-      .innerJoin('metric.logs', 'logs')
+      .innerJoin('metric.logs', 'logs', '"logs"."userId"="individualEnrollment"."userId"')
       .where('experiment.id=:experimentId', { experimentId })
       .execute();
   }
@@ -196,16 +198,14 @@ export class LogRepository extends Repository<Log> {
     isFactorialExperiment: boolean,
     isCategorical: boolean,
     repeatedMeasure: REPEATED_MEASURE,
-    query: any,
-    transactionalEntityManager: EntityManager
+    query: any
   ) {
-    const individualEnrollmentRepo = transactionalEntityManager.withRepository(
-      Container.getCustomRepository(IndividualEnrollmentRepository, 'export')
-    );
+    const individualEnrollmentRepo = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
+
     const innerQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
 
-    const analyticsQuery = transactionalEntityManager.createQueryBuilder();
-    const middleQuery = transactionalEntityManager.createQueryBuilder();
+    const analyticsQuery = Container.getDataSource('export').createQueryBuilder();
+    const middleQuery = Container.getDataSource('export').createQueryBuilder();
 
     const idToSelect = isFactorialExperiment ? '"levelId"' : '"conditionId"';
     const valueToSelect = isFactorialExperiment
@@ -295,12 +295,10 @@ export class LogRepository extends Repository<Log> {
     isFactorialExperiment: boolean,
     isCategorical: boolean,
     repeatedMeasure: REPEATED_MEASURE,
-    query: any,
-    transactionalEntityManager: EntityManager
+    query: any
   ) {
-    const individualEnrollmentRepo = transactionalEntityManager.withRepository(
-      Container.getCustomRepository(IndividualEnrollmentRepository, 'export')
-    );
+    const individualEnrollmentRepo = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
+
     const analyticsQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
 
     const idToSelect = isFactorialExperiment
@@ -369,7 +367,7 @@ export class LogRepository extends Repository<Log> {
     return analyticsQuery;
   }
 
-  public async analysis(query: Query, transactionalEntityManager: EntityManager): Promise<any> {
+  public async analysis(query: Query): Promise<any> {
     const {
       metric: { key: metricKey, type: metricType },
       experiment: { id: experimentId, assignmentUnit: unitOfAssignment, type: experimentType },
@@ -391,8 +389,7 @@ export class LogRepository extends Repository<Log> {
             isFactorialExperiment,
             !isContinuousMetric,
             repeatedMeasure,
-            query.query,
-            transactionalEntityManager
+            query.query
           )
         : this.getWithinSubjectsAnalyticsQuery(
             experimentId,
@@ -401,8 +398,7 @@ export class LogRepository extends Repository<Log> {
             isFactorialExperiment,
             !isContinuousMetric,
             repeatedMeasure,
-            query.query,
-            transactionalEntityManager
+            query.query
           );
 
     return newQuery.getRawMany();

@@ -156,6 +156,7 @@ describe('Query Service Testing', () => {
   });
 
   it('should find and map results to queries', async () => {
+    queryRepo.find = jest.fn().mockResolvedValue([mockquery1]);
     const response = await service.analyze(['id1'], logger);
     expect(response).toEqual([
       {
@@ -167,7 +168,7 @@ describe('Query Service Testing', () => {
   });
 
   it('should log error when query fails', async () => {
-    queryRepo.findOne = jest.fn().mockResolvedValue([]);
+    queryRepo.find = jest.fn().mockResolvedValue(['nothing']);
     const response = await service.analyze(['id1'], logger);
     expect(response).toEqual([
       {

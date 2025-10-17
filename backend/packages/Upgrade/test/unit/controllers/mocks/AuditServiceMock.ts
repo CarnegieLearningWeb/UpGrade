@@ -16,7 +16,7 @@ export default class AuditServiceMock {
     return Promise.resolve([]);
   }
 
-  public getCSVData(experimentId: string, email: string): Promise<[]> {
+  public exportCSVData(experimentId: string, email: string): Promise<[]> {
     return Promise.resolve([]);
   }
 
