@@ -1,7 +1,7 @@
 import { Container } from './../../typeorm-typedi-extensions/Container';
 import { ExperimentRepository } from './ExperimentRepository';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
-import { Repository, EntityManager } from 'typeorm';
+import { Repository, EntityManager, SelectQueryBuilder } from 'typeorm';
 import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE, EXPERIMENT_TYPE } from 'upgrade_types';
@@ -14,6 +14,13 @@ import { MetricRepository } from './MetricRepository';
 import { RepeatedEnrollment } from '../models/RepeatedEnrollment';
 import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
 import { IndividualEnrollment } from '../models/IndividualEnrollment';
+
+export interface AnalyticsQueryResult {
+  conditionId?: string;
+  levelId?: string;
+  result: number;
+  participantsLogged: number;
+}
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
   public async deleteExceptByIds(values: string[], entityManager: EntityManager): Promise<Log[]> {
@@ -204,7 +211,8 @@ export class LogRepository extends Repository<Log> {
 
     const innerQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
 
-    const analyticsQuery = Container.getDataSource('export').createQueryBuilder();
+    const analyticsQuery: SelectQueryBuilder<AnalyticsQueryResult> =
+      Container.getDataSource('export').createQueryBuilder();
     const middleQuery = Container.getDataSource('export').createQueryBuilder();
 
     const idToSelect = isFactorialExperiment ? '"levelId"' : '"conditionId"';
@@ -299,7 +307,10 @@ export class LogRepository extends Repository<Log> {
   ) {
     const individualEnrollmentRepo = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
 
-    const analyticsQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
+    // Build the base query with the eventual custom type from added selects
+    const analyticsQuery = individualEnrollmentRepo.createQueryBuilder(
+      'individualEnrollment'
+    ) as unknown as SelectQueryBuilder<AnalyticsQueryResult>;
 
     const idToSelect = isFactorialExperiment
       ? '"levelCombinationElement"."levelId"'
@@ -367,7 +378,7 @@ export class LogRepository extends Repository<Log> {
     return analyticsQuery;
   }
 
-  public async analysis(query: Query): Promise<any> {
+  public async analysis(query: Query) {
     const {
       metric: { key: metricKey, type: metricType },
       experiment: { id: experimentId, assignmentUnit: unitOfAssignment, type: experimentType },
@@ -401,6 +412,6 @@ export class LogRepository extends Repository<Log> {
             query.query
           );
 
-    return newQuery.getRawMany();
+    return newQuery.getRawMany<AnalyticsQueryResult>();
   }
 }
