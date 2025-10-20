@@ -378,7 +378,7 @@ export class LogRepository extends Repository<Log> {
     return analyticsQuery;
   }
 
-  public async analysis(query: Query) {
+  public async analysis(query: Query): Promise<AnalyticsQueryResult[]> {
     const {
       metric: { key: metricKey, type: metricType },
       experiment: { id: experimentId, assignmentUnit: unitOfAssignment, type: experimentType },
