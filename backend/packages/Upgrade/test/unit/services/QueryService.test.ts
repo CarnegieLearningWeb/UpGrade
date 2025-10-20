@@ -170,6 +170,7 @@ describe('Query Service Testing', () => {
   });
 
   it('should log error when query fails', async () => {
+    queryRepo.find = jest.fn().mockResolvedValue([mockquery1]);
     logRepo.analysis = jest.fn().mockRejectedValue(new Error('Query Failed'));
     const response = await service.analyze(['id1'], logger);
     expect(response).toEqual([
