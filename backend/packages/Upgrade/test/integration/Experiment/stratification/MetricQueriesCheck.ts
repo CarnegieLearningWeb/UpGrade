@@ -703,8 +703,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
   );
 
   const allQuery = await queryService.find(new UpgradeLogger());
-  for (const element of allQuery) {
-    const query = element;
+  for (const query of allQuery) {
     const queryResult = await queryService.analyze([query.id], new UpgradeLogger());
     const mainEffect = queryResult[0].mainEffect as AnalyticsQueryResult[];
     let expectedValue;
