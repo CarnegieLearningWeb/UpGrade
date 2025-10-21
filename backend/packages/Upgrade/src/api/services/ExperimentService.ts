@@ -459,10 +459,10 @@ export class ExperimentService {
         (result) => {
           const queryId = result.id;
           delete result.id;
-          const archivedStats: Partial<ArchivedStats> = {
+          const archivedStats: Omit<ArchivedStats, 'createdAt' | 'updatedAt' | 'versionNumber'> = {
             id: uuid(),
             result: result,
-            query: queryId,
+            query: { id: queryId } as Query,
           };
           return archivedStats;
         }
