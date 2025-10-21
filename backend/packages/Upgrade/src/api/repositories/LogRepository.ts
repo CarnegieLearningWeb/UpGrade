@@ -18,9 +18,10 @@ import { IndividualEnrollment } from '../models/IndividualEnrollment';
 export interface AnalyticsQueryResult {
   conditionId?: string;
   levelId?: string;
-  result: number;
+  result: string;
   participantsLogged: number;
 }
+
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
   public async deleteExceptByIds(values: string[], entityManager: EntityManager): Promise<Log[]> {

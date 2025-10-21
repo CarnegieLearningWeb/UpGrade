@@ -11,6 +11,12 @@ import { Experiment } from '../models/Experiment';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
 import { DataSource, In } from 'typeorm';
 
+interface AnalyzeResponse {
+  id: string;
+  mainEffect: (AnalyticsQueryResult | 'rejected')[];
+  interactionEffect: (AnalyticsQueryResult | 'rejected')[];
+}
+
 @Service()
 export class QueryService {
   constructor(
@@ -43,7 +49,7 @@ export class QueryService {
     });
   }
 
-  public async analyze(queryIds: string[], logger: UpgradeLogger) {
+  public async analyze(queryIds: string[], logger: UpgradeLogger): Promise<AnalyzeResponse[]> {
     logger.info({ message: `Get analysis of query with queryIds ${queryIds}` });
     const queryList = await this.queryRepository.find({
       where: { id: In(queryIds) },
@@ -140,25 +146,25 @@ export class QueryService {
     interactionEffect: (AnalyticsQueryResult | 'rejected')[]
   ): [(AnalyticsQueryResult | 'rejected')[], (AnalyticsQueryResult | 'rejected')[]] {
     const conditionIds = experiment?.conditions?.map((condition) => condition.id) || [];
-    console.log('mainEffect before:', mainEffect);
+
     if (interactionEffect) {
       conditionIds.forEach((conditionId) => {
         if (!interactionEffect.some((result) => result !== 'rejected' && result.conditionId === conditionId)) {
-          interactionEffect.push({ conditionId, result: 0, participantsLogged: 0 });
+          interactionEffect.push({ conditionId, result: '0', participantsLogged: 0 });
         }
       });
 
       experiment.factors.forEach((factor) => {
         factor.levels.forEach((level) => {
           if (!mainEffect.some((result) => result !== 'rejected' && result.levelId === level.id)) {
-            mainEffect.push({ levelId: level.id, result: 0, participantsLogged: 0 });
+            mainEffect.push({ levelId: level.id, result: '0', participantsLogged: 0 });
           }
         });
       });
     } else {
       conditionIds.forEach((conditionId) => {
         if (!mainEffect.some((result) => result !== 'rejected' && result.conditionId === conditionId)) {
-          mainEffect.push({ conditionId, result: 0, participantsLogged: 0 });
+          mainEffect.push({ conditionId, result: '0', participantsLogged: 0 });
         }
       });
     }
