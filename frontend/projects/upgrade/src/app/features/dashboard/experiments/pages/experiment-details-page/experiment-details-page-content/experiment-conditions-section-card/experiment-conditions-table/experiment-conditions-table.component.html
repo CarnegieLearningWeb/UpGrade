@@ -19,20 +19,6 @@
       </td>
     </ng-container>
 
-    <!-- Payload Column -->
-    <ng-container matColumnDef="payload">
-      <th mat-header-cell *matHeaderCellDef class="payload-column ft-14-600">
-        {{ CONDITION_TRANSLATION_KEYS.PAYLOAD | translate }}
-      </th>
-      <td mat-cell *matCellDef="let condition" class="payload-column ft-14-400">
-        <span [ngSwitch]="getPayloadDisplayType(condition)">
-          <span *ngSwitchCase="EXPERIMENT_PAYLOAD_DISPLAY_TYPE.UNIVERSAL">{{ getUniversalPayload(condition) }}</span>
-          <span *ngSwitchCase="EXPERIMENT_PAYLOAD_DISPLAY_TYPE.SPECIFIC">{{ 'experiments.details.conditions.payload.specific-to-decision-point.text' | translate }}</span>
-          <span *ngSwitchDefault></span>
-        </span>
-      </td>
-    </ng-container>
-
     <!-- Weight Column -->
     <ng-container matColumnDef="weight">
       <th mat-header-cell *matHeaderCellDef class="weight-column ft-14-600">
@@ -56,6 +42,16 @@
       </th>
       <td mat-cell *matCellDef="let condition" class="weight-edit-column ft-14-400">
         <!-- Empty cell for alignment -->
+      </td>
+    </ng-container>
+
+    <!-- Description Column -->
+    <ng-container matColumnDef="description">
+      <th mat-header-cell *matHeaderCellDef class="description-column ft-14-600">
+        {{ CONDITION_TRANSLATION_KEYS.DESCRIPTION | translate }}
+      </th>
+      <td mat-cell *matCellDef="let condition" class="description-column ft-14-400">
+        {{ condition.description }}
       </td>
     </ng-container>
 
