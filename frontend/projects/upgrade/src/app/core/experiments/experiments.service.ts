@@ -14,6 +14,7 @@ import {
   AddExperimentRequest,
   UpdateExperimentFilterModeRequest,
   UpdateExperimentDecisionPointsRequest,
+  UpdateExperimentConditionsRequest,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -197,6 +198,10 @@ export class ExperimentService {
     this.store$.dispatch(
       experimentAction.actionUpdateExperimentDecisionPoints({ updateExperimentDecisionPointsRequest })
     );
+  }
+
+  updateExperimentConditions(updateExperimentConditionsRequest: UpdateExperimentConditionsRequest) {
+    this.store$.dispatch(experimentAction.actionUpdateExperimentConditions({ updateExperimentConditionsRequest }));
   }
 
   fetchContextMetaData() {

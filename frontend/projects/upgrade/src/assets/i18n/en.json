@@ -417,6 +417,7 @@
   "experiments.details.conditions.weight.text": "Weight (%)",
   "experiments.details.conditions.actions.text": "Actions",
   "experiments.details.conditions.card.no-data-row.text": "No conditions defined. Simple experiments require conditions.",
+  "experiments.upsert-condition-modal.condition-hint.text": "The name of the condition that will be used to identify the variant in your code.",
   "experiments.details.inclusions.card.title.text": "Include Lists",
   "experiments.details.inclusions.include-all.toggle.text": "Include All",
   "experiments.details.inclusions.card.subtitle.text": "Define include lists for this experiment.",

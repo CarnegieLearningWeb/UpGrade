@@ -36,6 +36,7 @@ import { CommonImportModalComponent } from '../../shared-standalone-component-li
 import { DeleteSegmentModalComponent } from '../../features/dashboard/segments/modals/delete-segment-modal/delete-segment-modal.component';
 import { UpsertExperimentModalComponent } from '../../features/dashboard/experiments/modals/upsert-experiment-modal/upsert-experiment-modal.component';
 import { UpsertDecisionPointModalComponent } from '../../features/dashboard/experiments/modals/upsert-decision-point-modal/upsert-decision-point-modal.component';
+import { UpsertConditionModalComponent } from '../../features/dashboard/experiments/modals/upsert-condition-modal/upsert-condition-modal.component';
 import {
   UPSERT_EXPERIMENT_ACTION,
   ExperimentDecisionPoint,
@@ -59,6 +60,13 @@ export interface ImportModalParams {
 
 export interface UpsertDecisionPointModalParams {
   sourceDecisionPoint: ExperimentDecisionPoint | null;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
+  context: string;
+}
+
+export interface UpsertConditionModalParams {
+  sourceCondition: ExperimentCondition | null;
   action: UPSERT_EXPERIMENT_ACTION;
   experimentId: string;
   context: string;
@@ -145,6 +153,48 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(UpsertDecisionPointModalComponent, config);
+  }
+
+  openAddConditionModal(experimentId: string, context: string) {
+    const commonModalConfig: CommonModalConfig<UpsertConditionModalParams> = {
+      title: 'Add Condition',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceCondition: null,
+        action: UPSERT_EXPERIMENT_ACTION.ADD,
+        experimentId,
+        context,
+      },
+    };
+    return this.openUpsertConditionModal(commonModalConfig);
+  }
+
+  openEditConditionModal(sourceCondition: ExperimentCondition, experimentId: string, context: string) {
+    const commonModalConfig: CommonModalConfig<UpsertConditionModalParams> = {
+      title: 'Edit Condition',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceCondition: { ...sourceCondition },
+        action: UPSERT_EXPERIMENT_ACTION.EDIT,
+        experimentId,
+        context,
+      },
+    };
+    return this.openUpsertConditionModal(commonModalConfig);
+  }
+
+  openUpsertConditionModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: false,
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertConditionModalComponent, config);
   }
 
   // feature flag modal ---------------------------------------- //
@@ -600,6 +650,20 @@ export class DialogService {
     };
 
     return this.openSimpleCommonConfirmationModal(deleteDecisionPointModalConfig, ModalSize.SMALL);
+  }
+
+  openDeleteConditionModal(conditionName: string) {
+    const deleteConditionModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Delete Condition',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete the condition "${conditionName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(deleteConditionModalConfig, ModalSize.SMALL);
   }
 
   openDeleteSegmentModal() {
