@@ -342,7 +342,7 @@ export interface UpsertDecisionPointParams {
 }
 
 export interface UpsertConditionParams {
-  sourceCondition: ExperimentCondition;
+  sourceCondition: ExperimentCondition | null;
   context: string;
   action: UPSERT_EXPERIMENT_ACTION;
   experimentId: string;

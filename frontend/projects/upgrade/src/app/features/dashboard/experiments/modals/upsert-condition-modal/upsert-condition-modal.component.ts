@@ -186,7 +186,7 @@ export class UpsertConditionModalComponent implements OnInit, OnDestroy {
         take(1),
         map((experiment: Experiment) => {
           if (!experiment) {
-            console.error('No experiment selected');
+            console.error('Unable to validate condition: experiment data not loaded');
             return null;
           }
 
@@ -218,7 +218,7 @@ export class UpsertConditionModalComponent implements OnInit, OnDestroy {
       const sourceCondition = this.config.params.sourceCondition;
 
       if (!experiment) {
-        console.error('No experiment selected');
+        console.error('Cannot save condition: experiment not found or not selected');
         return;
       }
 
@@ -234,7 +234,7 @@ export class UpsertConditionModalComponent implements OnInit, OnDestroy {
         this.conditionHelperService.addCondition(experiment, conditionData);
       } else {
         if (!sourceCondition) {
-          console.error('No source condition for edit action');
+          console.error('Cannot update condition: source condition data is missing');
           return;
         }
         this.conditionHelperService.updateCondition(experiment, sourceCondition, conditionData);

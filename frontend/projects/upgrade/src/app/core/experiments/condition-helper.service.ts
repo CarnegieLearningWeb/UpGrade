@@ -64,14 +64,14 @@ export class ConditionHelperService {
     const updatedConditionPayloads = (experiment.conditionPayloads || []).filter(
       (cp) => cp.parentCondition !== conditionToDelete.id
     );
-    experiment.conditionPayloads = updatedConditionPayloads;
+    const updatedExperiment = { ...experiment, conditionPayloads: updatedConditionPayloads };
 
     // Reorder the remaining conditions
     const reorderedConditions = updatedConditions.map((c, index) => ({
       ...c,
       order: index + 1,
     }));
-    this.updateExperimentConditions(experiment, reorderedConditions);
+    this.updateExperimentConditions(updatedExperiment, reorderedConditions);
   }
 
   /**
