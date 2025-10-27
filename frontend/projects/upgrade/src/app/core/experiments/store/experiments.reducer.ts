@@ -109,6 +109,14 @@ const reducer = createReducer(
     ...state,
     isLoadingExperiment: false,
   })),
+  on(experimentsAction.actionUpdateExperimentConditions, (state) => ({ ...state, isLoadingExperiment: true })),
+  on(experimentsAction.actionUpdateExperimentConditionsSuccess, (state, { experiment }) =>
+    adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
+  ),
+  on(experimentsAction.actionUpdateExperimentConditionsFailure, (state) => ({
+    ...state,
+    isLoadingExperiment: false,
+  })),
   on(experimentsAction.actionFetchAllDecisionPointsSuccess, (state, { decisionPoints }) => ({
     ...state,
     allDecisionPoints: decisionPoints,

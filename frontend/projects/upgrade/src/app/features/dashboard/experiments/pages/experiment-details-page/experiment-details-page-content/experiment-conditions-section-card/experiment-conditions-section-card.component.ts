@@ -9,7 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IMenuButtonItem } from 'upgrade_types';
 import { ExperimentConditionsTableComponent } from './experiment-conditions-table/experiment-conditions-table.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
-import { Observable } from 'rxjs';
+import { Observable, take } from 'rxjs';
 import {
   Experiment,
   EXPERIMENT_BUTTON_ACTION,
@@ -22,6 +22,7 @@ import { UserPermission } from '../../../../../../../core/auth/store/auth.models
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { ConditionWeightUpdate } from '../../../../modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
+import { ConditionHelperService } from '../../../../../../../core/experiments/condition-helper.service';
 
 @Component({
   selector: 'app-experiment-conditions-section-card',
@@ -59,7 +60,8 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
   constructor(
     private experimentService: ExperimentService,
     private authService: AuthService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private conditionHelperService: ConditionHelperService
   ) {}
 
   ngOnInit() {
@@ -67,8 +69,7 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
   }
 
   onAddConditionClick(appContext: string, experimentId: string): void {
-    // TODO: Implement add condition functionality when dialog service is available
-    console.log('Add condition clicked');
+    this.dialogService.openAddConditionModal(experimentId, appContext);
   }
 
   onMenuButtonItemClick(event: string, experiment: Experiment): void {
@@ -91,10 +92,10 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
   }
 
   // Condition row action events
-  onRowAction(event: ExperimentConditionRowActionEvent, experimentId: string): void {
+  onRowAction(event: ExperimentConditionRowActionEvent, experimentId: string, context: string): void {
     switch (event.action) {
       case EXPERIMENT_ROW_ACTION.EDIT:
-        this.onEditCondition(event.condition, experimentId);
+        this.onEditCondition(event.condition, experimentId, context);
         break;
       case EXPERIMENT_ROW_ACTION.DELETE:
         this.onDeleteCondition(event.condition);
@@ -104,14 +105,23 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
     }
   }
 
-  onEditCondition(condition: ExperimentCondition, experimentId: string): void {
-    // TODO: Implement edit functionality when dialog service is available
-    console.log('Edit condition:', condition, 'for experiment:', experimentId);
+  onEditCondition(condition: ExperimentCondition, experimentId: string, context: string): void {
+    this.dialogService.openEditConditionModal(condition, experimentId, context);
   }
 
   onDeleteCondition(condition: ExperimentCondition): void {
-    // TODO: Implement delete functionality when dialog service is available
-    console.log('Delete condition:', condition);
+    this.dialogService
+      .openDeleteConditionModal(condition.conditionCode)
+      .afterClosed()
+      .subscribe((confirmClicked) => {
+        if (confirmClicked) {
+          this.selectedExperiment$.pipe(take(1)).subscribe((experiment: Experiment) => {
+            if (experiment) {
+              this.conditionHelperService.deleteCondition(experiment, condition);
+            }
+          });
+        }
+      });
   }
 
   onEditWeights(conditions: ExperimentCondition[], experiment: ExperimentVM): void {

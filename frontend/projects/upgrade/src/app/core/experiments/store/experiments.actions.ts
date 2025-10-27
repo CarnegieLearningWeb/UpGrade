@@ -14,6 +14,7 @@ import {
   UpdateExperimentFilterModeRequest,
   UpdateExperimentDecisionPointsRequest,
   ExperimentSegmentListResponse,
+  UpdateExperimentConditionsRequest,
 } from './experiments.model';
 import { ExperimentSegmentListRequest, ExperimentSegmentListDetails } from '../../segments/store/segments.model';
 
@@ -128,6 +129,20 @@ export const actionFetchAllDecisionPointsFailure = createAction('[Experiment] Fe
 export const actionSetIsLoadingExperiment = createAction(
   '[Experiment] Set Is Loading Experiment',
   props<{ isLoadingExperiment: boolean }>()
+);
+
+export const actionUpdateExperimentConditions = createAction(
+  '[Experiment] Update Experiment Conditions',
+  props<{ updateExperimentConditionsRequest: UpdateExperimentConditionsRequest }>()
+);
+
+export const actionUpdateExperimentConditionsSuccess = createAction(
+  '[Experiment] Update Experiment Conditions Success',
+  props<{ experiment: Experiment }>()
+);
+
+export const actionUpdateExperimentConditionsFailure = createAction(
+  '[Experiment] Update Experiment Conditions Failure'
 );
 
 export const actionSetSkipExperiment = createAction(
