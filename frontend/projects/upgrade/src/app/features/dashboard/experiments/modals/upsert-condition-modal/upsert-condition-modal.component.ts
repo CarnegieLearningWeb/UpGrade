@@ -196,7 +196,11 @@ export class UpsertConditionModalComponent implements OnInit, OnDestroy {
             .map((condition) => condition.conditionCode);
 
           const isDuplicate = otherConditions.includes(control.value);
-          return isDuplicate ? { duplicateCondition: { value: control.value } } : null;
+          if (isDuplicate) {
+            console.error('Condition code must be unique within the experiment');
+            return { duplicateCondition: { value: control.value } };
+          }
+          return null;
         })
       );
     };
@@ -222,14 +226,6 @@ export class UpsertConditionModalComponent implements OnInit, OnDestroy {
         return;
       }
 
-      if (
-        experiment.conditions
-          .filter((c) => c.id !== sourceCondition?.id)
-          .some((c) => c.conditionCode === conditionData.conditionCode)
-      ) {
-        console.error('Condition code must be unique within the experiment');
-        return;
-      }
       if (this.config.params.action === UPSERT_EXPERIMENT_ACTION.ADD) {
         this.conditionHelperService.addCondition(experiment, conditionData);
       } else {
