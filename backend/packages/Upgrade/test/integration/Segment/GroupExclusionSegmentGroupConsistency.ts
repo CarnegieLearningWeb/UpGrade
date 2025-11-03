@@ -64,14 +64,15 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
   expect(experimentConditionAssignments).toHaveLength(3);
 
   // mark experiment point for user 1
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  let markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint, 1);
 
   // the user should be enrolled, as not exclusions added yet:
   let individualExclusions = await checkService.getAllIndividualExclusion();
@@ -86,15 +87,15 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
     expect.arrayContaining([
       expect.objectContaining({
         user: expect.objectContaining({
-          id: experimentUsers[0].id
+          id: experimentUsers[0].id,
         }),
-        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC
-      })
+        enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
+      }),
     ])
   );
 
   // create group exclusion segment
-  let segmentObject = segmentThird;
+  const segmentObject = segmentThird;
 
   // await segmentService.upsertSegment(segmentObject, new UpgradeLogger(), "exclude");
   // let segments = await segmentService.getAllSegments(new UpgradeLogger());
@@ -139,14 +140,15 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
-    2
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint, 2);
 
   // the user should be still enrolled:
   groupExclusions = await checkService.getAllGroupExclusions();

@@ -168,7 +168,7 @@ export const withinSubjectExperiment = clone({
       assignmentWeight: 50,
       conditionCode: 'Abstract',
       twoCharacterId: 'AB',
-      order: 1
+      order: 1,
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -177,7 +177,7 @@ export const withinSubjectExperiment = clone({
       assignmentWeight: 50,
       conditionCode: 'Concrete',
       twoCharacterId: 'CN',
-      order: 2
+      order: 2,
     },
   ],
   assignmentUnit: ASSIGNMENT_UNIT.WITHIN_SUBJECTS,
@@ -569,7 +569,7 @@ export const stratificationSRSExperimentAssignmentExperiment1 = clone({
       assignmentWeight: 50,
       conditionCode: 'Abstract',
       twoCharacterId: 'AB',
-      order: 1
+      order: 1,
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -578,7 +578,7 @@ export const stratificationSRSExperimentAssignmentExperiment1 = clone({
       assignmentWeight: 50,
       conditionCode: 'Concrete',
       twoCharacterId: 'CN',
-      order: 2
+      order: 2,
     },
   ],
   conditionOrder: CONDITION_ORDER.RANDOM,
@@ -598,7 +598,7 @@ export const stratificationRandomExperimentAssignmentExperiment2 = clone({
       assignmentWeight: 50,
       conditionCode: 'Abstract',
       twoCharacterId: 'AB',
-      order: 1
+      order: 1,
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -607,7 +607,7 @@ export const stratificationRandomExperimentAssignmentExperiment2 = clone({
       assignmentWeight: 50,
       conditionCode: 'Concrete',
       twoCharacterId: 'CN',
-      order: 2
+      order: 2,
     },
   ],
   conditionOrder: CONDITION_ORDER.RANDOM,

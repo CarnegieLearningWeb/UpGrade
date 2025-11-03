@@ -19,7 +19,7 @@ export default async function testCase(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
-  let experimentObject = ExperimentLevelExclusionExperiment;
+  const experimentObject = ExperimentLevelExclusionExperiment;
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -36,12 +36,12 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  let experimentName = experimentObject.partitions[0].target;
-  let experimentPoint = experimentObject.partitions[0].site;
-  let condition = experimentObject.conditions[0].conditionCode;
+  const experimentName = experimentObject.partitions[0].target;
+  const experimentPoint = experimentObject.partitions[0].site;
+  const condition = experimentObject.conditions[0].conditionCode;
 
   // change experiment status to Enrolling
-  let experimentId = experiments[0].id;
+  const experimentId = experiments[0].id;
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
@@ -59,18 +59,19 @@ export default async function testCase(): Promise<void> {
   );
 
   // // get all experiment condition for user 1
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
+  const experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 1
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  const markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint, 1);
 
   // the user should be excluded due to 'PARTICIPANT_ON_EXCLUSION_LIST' exclusion code:
   const individualExclusions = await checkService.getAllIndividualExclusion();
@@ -78,9 +79,9 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[0].id,
-        exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST
-      })
+        id: experiments[0].id + '_' + experimentUsers[0].id,
+        exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
+      }),
     ])
   );
 }

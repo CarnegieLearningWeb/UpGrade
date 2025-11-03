@@ -104,6 +104,32 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           : this.allMetrics.filter((metric) =>
               metric.context?.includes(this.currentContext || this.experimentInfo?.context)
             );
+      this.filterOutRewardMetricKeysFromOtherExperiments();
+    });
+  }
+
+  /**
+   * No *_REWARD metric keys should be shown on Add Experiment flow.
+   * Only the current experiment's reward metric key should be shown on Edit Experiment flow.
+   * This function will work regardless of whether mooclet is enabled or not.
+   */
+  filterOutRewardMetricKeysFromOtherExperiments() {
+    // Filter out reward metric keys from other experiments
+    this.options = this.options.filter((option) => {
+      if (option.key.endsWith('_REWARD')) {
+        const isAddMode = !this.experimentInfo?.name;
+        if (isAddMode) {
+          // Exclude all reward keys if in add mode
+          return false;
+        } else {
+          // Else, exclude all reward keys except the current experiment's reward key
+          const isCurrentExperimentRewardKey =
+            option.key === this.experimentService.getRewardMetricKey(this.experimentInfo.name);
+          return isCurrentExperimentRewardKey;
+        }
+      } else {
+        return true;
+      }
     });
   }
 
@@ -276,6 +302,17 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return this._formBuilder.group({
       metricKey: [key, Validators.required],
     });
+  }
+
+  isRewardMetric(queryIndex: number): boolean {
+    const keysFormArray = this.queries.at(queryIndex)?.get('keys') as UntypedFormArray;
+    const firstKey = keysFormArray?.at(0);
+    const metricKey = firstKey?.get('metricKey')?.value;
+    if (!metricKey) return false;
+
+    // Extract the key string, handling both string and object formats
+    const keyString = metricKey.key ? metricKey.key : metricKey;
+    return keyString && keyString.endsWith('_REWARD');
   }
 
   displayFn(node?: any): string | undefined {

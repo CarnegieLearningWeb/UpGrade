@@ -2,6 +2,7 @@ import { Action } from 'routing-controllers';
 import { Container } from 'typedi';
 import { AuthService } from './AuthService';
 import { UpgradeLogger } from '../lib/logger/UpgradeLogger';
+import { env } from '../env';
 
 export function authorizationChecker(): (action: Action, roles: any[]) => Promise<boolean> | boolean {
   const log = new UpgradeLogger();
@@ -16,8 +17,10 @@ export function authorizationChecker(): (action: Action, roles: any[]) => Promis
     const authService = Container.get<AuthService>(AuthService);
     const token = authService.parseBasicAuthFromRequest(action.request);
     if (token === undefined) {
-      log.warn({ message: 'No token provided' });
-      return false;
+      if (env.google.authTokenRequired) {
+        log.warn({ message: 'No token provided' });
+      }
+      return !env.google.authTokenRequired;
     }
     try {
       const userDoc = await authService.validateUser(token, action.request);
@@ -25,7 +28,10 @@ export function authorizationChecker(): (action: Action, roles: any[]) => Promis
       action.request.user = userDoc;
       return true;
     } catch (error) {
-      return false;
+      if (env.google.authTokenRequired) {
+        log.error({ message: 'User validation failed', error });
+      }
+      return !env.google.authTokenRequired;
     }
   };
 }

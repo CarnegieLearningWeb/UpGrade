@@ -9,7 +9,7 @@
   <form [formGroup]="featureFlagForm" class="form-standard dense-3">
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Name</mat-label>
-      <input matInput formControlName="name" placeholder="e.g., My feature flag" class="ft-14-400" />
+      <input matInput formControlName="name" placeholder="e.g., My feature flag" class="ft-14-400" appTrimInput />
       <mat-hint class="form-hint ft-12-400">
         {{ 'feature-flags.upsert-flag-modal.name-hint.text' | translate }}
       </mat-hint>
@@ -17,7 +17,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Key</mat-label>
-      <input matInput formControlName="key" placeholder="Key for this feature flag" class="ft-14-400" />
+      <input matInput formControlName="key" placeholder="Key for this feature flag" class="ft-14-400" appTrimInput />
       <mat-hint class="form-hint ft-12-400">
         <ng-container *ngIf="!validationError; else duplicateError">
           <span class="key-hint">
@@ -37,7 +37,13 @@
 
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Description (optional)</mat-label>
-      <input matInput formControlName="description" placeholder="Describe your feature flag" class="ft-14-400" />
+      <input
+        matInput
+        formControlName="description"
+        placeholder="Describe your feature flag"
+        class="ft-14-400"
+        appTrimInput
+      />
     </mat-form-field>
 
     <mat-form-field appearance="outline">

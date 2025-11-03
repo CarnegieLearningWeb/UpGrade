@@ -116,7 +116,7 @@ export class FeatureFlagService {
         const exposureRepo = transactionalEntityManager.getRepository(FeatureFlagExposure);
         const exposuresToSave = includedFeatureFlags.map((flag) => ({
           featureFlag: flag,
-          experimentUser: experimentUserDoc,
+          experimentUserId: experimentUserDoc.id,
         }));
         if (exposuresToSave.length > 0) {
           // fire and forget, we don't need to wait on this, return flag asap to user
@@ -199,31 +199,30 @@ export class FeatureFlagService {
     logger: UpgradeLogger,
     searchParams?: IFeatureFlagSearchParams,
     sortParams?: IFeatureFlagSortParams
-  ): Promise<FeatureFlag[]> {
+  ): Promise<[FeatureFlag[], number]> {
     logger.info({ message: 'Find paginated Feature flags' });
 
     let queryBuilder = this.featureFlagRepository.createQueryBuilder('feature_flag');
     if (searchParams) {
-      const customSearchString = searchParams.key;
-      // add search query
-      const postgresSearchString = this.postgresSearchString(searchParams.key);
-      queryBuilder = queryBuilder
-        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
-        .addOrderBy('rank', 'DESC')
-        .setParameter('query', `${customSearchString}:*`);
+      const whereClause = this.paginatedSearchString(searchParams);
+      queryBuilder = queryBuilder.where(whereClause);
     }
     if (sortParams) {
       queryBuilder = queryBuilder.addOrderBy(`feature_flag.${sortParams.key}`, sortParams.sortAs);
     }
+    const countQueryBuilder = queryBuilder.clone();
 
     queryBuilder = queryBuilder.offset(skip).limit(take);
 
     // TODO: the type of queryBuilder.getMany() is Promise<FeatureFlag[]>
     // However, the above query returns Promise<(Omit<FeatureFlag, 'featureFlagExposures'> & { featureFlagExposures: number })[]>
     // This can be fixed by using a @VirtualColumn in the FeatureFlag entity, when we are on TypeORM 0.3
-    const featureFlagsWithExposures = await queryBuilder
-      .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures')
-      .getMany();
+    const [featureFlagsWithExposures, count] = await Promise.all([
+      queryBuilder
+        .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures')
+        .getMany(),
+      countQueryBuilder.getCount(),
+    ]);
 
     // Get the feature flag ids
     const featureFlagIds = featureFlagsWithExposures.map(({ id }) => id);
@@ -236,19 +235,22 @@ export class FeatureFlagService {
     });
 
     // Add the inclusion documents to the featureFlagsWithExposures
-    return featureFlagsWithExposures.map((featureFlag) => {
-      // Find the matching featureFlagSegmentInclusion for the current item
-      const inclusionSegment = featureFlagWithInclusionSegments.find(
-        ({ id }) => id === featureFlag.id
-      )?.featureFlagSegmentInclusion;
+    return [
+      featureFlagsWithExposures.map((featureFlag) => {
+        // Find the matching featureFlagSegmentInclusion for the current item
+        const inclusionSegment = featureFlagWithInclusionSegments.find(
+          ({ id }) => id === featureFlag.id
+        )?.featureFlagSegmentInclusion;
 
-      // Construct the new object with conditional properties
-      return {
-        ...featureFlag,
-        // Only include featureFlagSegmentInclusion if inclusionSegment is defined and not empty
-        ...(inclusionSegment && inclusionSegment.length > 0 ? { featureFlagSegmentInclusion: inclusionSegment } : {}),
-      };
-    });
+        // Construct the new object with conditional properties
+        return {
+          ...featureFlag,
+          // Only include featureFlagSegmentInclusion if inclusionSegment is defined and not empty
+          ...(inclusionSegment && inclusionSegment.length > 0 ? { featureFlagSegmentInclusion: inclusionSegment } : {}),
+        };
+      }),
+      count,
+    ];
   }
 
   public async delete(
@@ -799,34 +801,34 @@ export class FeatureFlagService {
     });
   }
 
-  private postgresSearchString(type: FLAG_SEARCH_KEY): string {
+  private paginatedSearchString(params: IFeatureFlagSearchParams): string {
+    const type = params.key;
+    // escape % and ' characters
+    const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    const likeString = `ILIKE '%${serachString}%'`;
     const searchString: string[] = [];
     switch (type) {
       case FLAG_SEARCH_KEY.NAME:
-        searchString.push("coalesce(feature_flag.name::TEXT,'')");
-        break;
-      case FLAG_SEARCH_KEY.KEY:
-        searchString.push("coalesce(feature_flag.key::TEXT,'')");
+        searchString.push(`${type} ${likeString}`);
         break;
       case FLAG_SEARCH_KEY.STATUS:
-        searchString.push("coalesce(feature_flag.status::TEXT,'')");
+        searchString.push(`status::TEXT ${likeString}`);
         break;
       case FLAG_SEARCH_KEY.CONTEXT:
-        searchString.push("coalesce(feature_flag.context::TEXT,'')");
+        searchString.push(`ARRAY_TO_STRING(${type}, ',') ${likeString}`);
         break;
       case FLAG_SEARCH_KEY.TAG:
-        searchString.push("coalesce(feature_flag.tags::TEXT,'')");
+        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         break;
       default:
-        searchString.push("coalesce(feature_flag.name::TEXT,'')");
-        searchString.push("coalesce(feature_flag.key::TEXT,'')");
-        searchString.push("coalesce(feature_flag.status::TEXT,'')");
-        searchString.push("coalesce(feature_flag.context::TEXT,'')");
-        searchString.push("coalesce(feature_flag.tags::TEXT,'')");
+        searchString.push(`name ${likeString}`);
+        searchString.push(`status::TEXT ${likeString}`);
+        searchString.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
+        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         break;
     }
-    const stringConcat = searchString.join(',');
-    const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
+
+    const searchStringConcatenated = `(${searchString.join(' OR ')})`;
     return searchStringConcatenated;
   }
 
@@ -868,9 +870,11 @@ export class FeatureFlagService {
     const featureFlagIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = featureFlags.map(
       ({ id, filterMode }) => ({ id, filterMode })
     );
+    const [includeData, excludeData] = await this.experimentAssignmentService.resolveSegmentsForEntities(segmentObjMap);
 
     const [includedFeatureFlagIds] = await this.experimentAssignmentService.inclusionExclusionLogic(
-      segmentObjMap,
+      includeData,
+      excludeData,
       experimentUser,
       featureFlagIdsWithFilter
     );
@@ -1033,6 +1037,17 @@ export class FeatureFlagService {
     return fileStatusArray;
   }
 
+  public validateFeatureFlagContext(flag: { name: string; context: string[] }): string | null {
+    const flagContext = flag.context[0];
+    const contextMetadata = env.initialization.contextMetadata;
+
+    if (!contextMetadata[flagContext]) {
+      return `The app context "${flagContext}" is not defined in CONTEXT_METADATA.`;
+    }
+
+    return null;
+  }
+
   public async validateImportFeatureFlags(
     featureFlagFiles: IFeatureFlagFile[],
     logger: UpgradeLogger
@@ -1115,34 +1130,41 @@ export class FeatureFlagService {
     }
 
     if (compatibilityType === IMPORT_COMPATIBILITY_TYPE.COMPATIBLE) {
-      const keyExists = existingFeatureFlags?.find(
-        (existingFlag) => existingFlag.key === flag.key && existingFlag.context[0] === flag.context[0]
-      );
-
-      if (keyExists) {
+      const contextValidationError = this.validateFeatureFlagContext(flag);
+      if (contextValidationError) {
         compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-      } else {
-        const segmentIdsSet = new Set([
-          ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
-            return segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id);
-          }),
-          ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
-            return segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id);
-          }),
-        ]);
+      }
 
-        const segmentIds = Array.from(segmentIdsSet);
-        const segments = await this.segmentService.getSegmentByIds(segmentIds);
+      if (compatibilityType === IMPORT_COMPATIBILITY_TYPE.COMPATIBLE) {
+        const keyExists = existingFeatureFlags?.find(
+          (existingFlag) => existingFlag.key === flag.key && existingFlag.context[0] === flag.context[0]
+        );
 
-        if (segmentIds.length !== segments.length) {
-          compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
-        }
+        if (keyExists) {
+          compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
+        } else {
+          const segmentIdsSet = new Set([
+            ...flag.featureFlagSegmentInclusion.flatMap((segmentInclusion) => {
+              return segmentInclusion.segment.subSegments.map((subSegment) => subSegment.id);
+            }),
+            ...flag.featureFlagSegmentExclusion.flatMap((segmentExclusion) => {
+              return segmentExclusion.segment.subSegments.map((subSegment) => subSegment.id);
+            }),
+          ]);
 
-        segments.forEach((segment) => {
-          if (segment == undefined || segment.context !== flag.context[0]) {
+          const segmentIds = Array.from(segmentIdsSet);
+          const segments = await this.segmentService.getSegmentByIds(segmentIds);
+
+          if (segmentIds.length !== segments.length) {
             compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
           }
-        });
+
+          segments.forEach((segment) => {
+            if (segment == undefined || segment.context !== flag.context[0]) {
+              compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
+            }
+          });
+        }
       }
     }
 
@@ -1178,6 +1200,7 @@ export class FeatureFlagService {
         const featureFlagListFile = featureFlagListFiles.find((file) => file.fileName === fileStatus.fileName);
         return JSON.parse(featureFlagListFile.fileContent as string);
       });
+    const featureFlag = await this.findOne(featureFlagId, logger);
 
     const createdLists: (FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[] =
       await this.dataSource.transaction(async (transactionalEntityManager) => {
@@ -1187,7 +1210,7 @@ export class FeatureFlagService {
             ...list,
             enabled: false,
             id: featureFlagId,
-            segment: { ...list.segment, id: uuid() },
+            segment: { ...list.segment, id: uuid(), context: featureFlag.context[0] },
           };
 
           listDocs.push(listDoc);
@@ -1271,10 +1294,6 @@ export class FeatureFlagService {
     });
 
     if (!(list instanceof ImportFeatureFlagListValidator)) {
-      compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-    }
-
-    if (list?.segment?.context !== flag.context[0]) {
       compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
     }
 

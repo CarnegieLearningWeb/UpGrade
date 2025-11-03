@@ -17,9 +17,9 @@
           <input
             class="ft-14-400 search-input"
             matInput
-            #searchInput
             [(ngModel)]="searchValue"
-            (keyup)="applyFilter($event.target.value)"
+            (keyup)="onSearchInputKeyup($event)"
+            (ngModelChange)="onSearchInputChange($event)"
             [placeholder]="'global.search.text' | translate"
           />
         </div>
@@ -27,17 +27,16 @@
           <input
             class="ft-14-400 search-input"
             matInput
-            #searchInput
             [(ngModel)]="searchValue"
-            (keyup)="applyFilter($event.target.value)"
+            (keyup)="onSearchInputKeyup($event)"
+            (ngModelChange)="onSearchInputChange($event)"
             [placeholder]="'global.search.text' | translate"
-            [formControl]="searchControl"
             [matAutocomplete]="autoCompleteStatus"
           />
           <mat-autocomplete
             #autoCompleteStatus="matAutocomplete"
             panelWidth="fit-content"
-            (optionSelected)="applyFilter($event.option.value)"
+            (optionSelected)="onAutocompleteSelected($event)"
           >
             <mat-option class="ft-14-400" *ngFor="let filterOption of filteredStatusOptions" [value]="filterOption">
               {{ filterOption | titlecase }}
@@ -80,7 +79,7 @@
     </div>
   </div>
 
-  <div (scroll)="onScroll()" class="experiment-list-table-container" #tableContainer>
+  <div class="experiment-list-table-container" #tableContainer>
     <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingExperiment$ | async"></mat-progress-bar>
     <table
       class="experiment-list"
@@ -110,7 +109,7 @@
               [routerLink]="['/home', 'detail', experiment.id]"
               [matTooltip]="experiment.name"
               class="experiment-name"
-              matTooltipPosition="above"
+              matTooltipPosition="right"
             >
               {{ experiment.name | truncate : 30 }}
             </a>
@@ -126,7 +125,7 @@
             <span
               class="experiment-description ft-10-400"
               [matTooltip]="experiment.description"
-              matTooltipPosition="above"
+              matTooltipPosition="right"
             >
               {{ experiment.description | truncate : 35 }}
             </span>
@@ -168,7 +167,7 @@
             </span>
           </div>
           <span class="experiment-schedule ft-10-400" *ngIf="experiment.state === ExperimentState.SCHEDULED">
-            {{ '(' + (experiment.startOn | date : 'MMM d, y h:mm a') + ')' }}
+            {{ '(' + (experiment.startOn | date : 'MMM d, y, h:mm a') + ')' }}
           </span>
         </td>
       </ng-container>
@@ -198,14 +197,14 @@
         </td>
       </ng-container>
 
-      <ng-container matColumnDef="createdAt">
+      <ng-container matColumnDef="updatedAt">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
           <span [matTooltip]="'home.experiments-table.start-date-tooltip.text' | translate" matTooltipPosition="above">
-            {{ 'home.experiments-table.text.created-date' | translate }}</span
+            {{ 'home.experiments-table.text.updated-date' | translate }}</span
           >
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let experiment">
-          {{ experiment.createdAt | formatDate }}
+          {{ experiment.updatedAt | date : 'MMM d, y, h:mm a' }}
         </td>
       </ng-container>
 
@@ -262,8 +261,8 @@
                 *ngIf="tagIndex < 2; else moreTagsTemplate"
                 (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
               >
-                <span class="chip-label">
-                  {{ tag }}
+                <span class="chip-label" [matTooltip]="tag.length > 16 ? tag : null" matTooltipPosition="above">
+                  {{ tag | truncate : 16 }}
                 </span>
               </mat-chip>
               <ng-template #moreTagsTemplate>
@@ -271,8 +270,8 @@
                   *ngIf="isAllChipsVisible(experiment.id, 'tagsVisibility')"
                   (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
                 >
-                  <span class="chip-label">
-                    {{ tag }}
+                  <span class="chip-label" [matTooltip]="tag.length > 16 ? tag : null" matTooltipPosition="above">
+                    {{ tag | truncate : 16 }}
                   </span>
                 </mat-chip>
               </ng-template>
@@ -339,5 +338,6 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
+    <div #bottomTrigger></div>
   </div>
 </mat-card>

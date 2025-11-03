@@ -29,6 +29,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
 import isEqual from 'lodash.isequal';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',
@@ -43,6 +44,7 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
     ReactiveFormsModule,
     TranslateModule,
     CommonTagsInputComponent,
+    SharedModule,
   ],
   templateUrl: './upsert-feature-flag-modal.component.html',
   styleUrl: './upsert-feature-flag-modal.component.scss',
@@ -80,16 +82,19 @@ export class UpsertFeatureFlagModalComponent {
     this.featureFlagsService.setIsDuplicateKey(false);
     this.experimentService.fetchContextMetaData();
     this.createFeatureFlagForm();
+
+    // Disable restricted fields BEFORE setting up listeners
+    if (this.isDisabled()) {
+      this.disableRestrictedFields();
+    }
+
+    // Add listeners AFTER form is fully set up
     this.listenOnKeyChangesToRemoveWarning();
     this.listenOnNameChangesToUpdateKey();
     this.listenForIsInitialFormValueChanged();
     this.listenForPrimaryButtonDisabled();
     this.listenForDuplicateKey();
     this.listenOnContext();
-
-    if (this.isDisabled()) {
-      this.disableRestrictedFields();
-    }
   }
 
   isDisabled() {
@@ -135,7 +140,7 @@ export class UpsertFeatureFlagModalComponent {
     this.subscriptions.add(
       this.featureFlagForm.get('name')?.valueChanges.subscribe((name) => {
         const keyControl = this.featureFlagForm.get('key');
-        if (keyControl && !keyControl.dirty) {
+        if (keyControl && !keyControl.dirty && !keyControl.disabled) {
           keyControl.setValue(CommonTextHelpersService.convertStringToFeatureFlagKeyFormat(name));
         }
       })

@@ -33,6 +33,7 @@ import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/reposito
 import { User } from '../../../src/api/models/User';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
+import { env } from './../../../src/env';
 
 describe('Feature Flag Service Testing', () => {
   let service: FeatureFlagService;
@@ -42,6 +43,9 @@ describe('Feature Flag Service Testing', () => {
 
   const logger = new UpgradeLogger();
   let dataSource: DataSource;
+  env.initialization.contextMetadata = {
+    context1: { EXP_POINTS: [], EXP_IDS: [], GROUP_TYPES: [], CONDITIONS: [] },
+  };
 
   const mockFlag1 = new FeatureFlag();
   mockFlag1.id = uuid();
@@ -172,6 +176,7 @@ describe('Feature Flag Service Testing', () => {
           useValue: {
             inclusionExclusionLogic: jest.fn().mockResolvedValue([[mockFlag1.id]]),
             checkUserOrGroupIsGloballyExcluded: jest.fn().mockResolvedValue([false, false]),
+            resolveSegmentsForEntities: jest.fn().mockResolvedValue([]),
           },
         },
         {
@@ -217,6 +222,8 @@ describe('Feature Flag Service Testing', () => {
               loadRelationCountAndMap: jest.fn().mockReturnThis(),
               getMany: jest.fn().mockResolvedValue(mockFlagArr),
               getOne: jest.fn().mockResolvedValue(mockFlag1),
+              clone: jest.fn().mockReturnThis(),
+              getCount: jest.fn().mockResolvedValue(mockFlagArr.length),
             })),
             validateUniqueKey: jest.fn().mockResolvedValue(null),
           },
@@ -302,7 +309,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should find all paginated feature flags with search string key', async () => {
@@ -319,7 +326,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should find all paginated feature flags with search string name', async () => {
@@ -336,7 +343,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should find all paginated feature flags with search string status', async () => {
@@ -353,7 +360,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should find all paginated feature flags with search string context', async () => {
@@ -370,12 +377,12 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should find all paginated feature flags without search params', async () => {
     const results = await service.findPaginated(1, 2, logger);
-    expect(results).toEqual(mockFlagArr);
+    expect(results).toEqual([mockFlagArr, 3]);
   });
 
   it('should update the flag', async () => {

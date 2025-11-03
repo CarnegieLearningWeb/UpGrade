@@ -320,6 +320,9 @@ export class AnalyticsController {
     request: AppRequest
   ): Promise<string> {
     request.logger.info({ message: `Request received for csv download ${JSON.stringify(params, null, 2)}` });
-    return this.auditService.getCSVData(params.experimentId, params.email, request.logger);
+    this.auditService.exportCSVData(params.experimentId, params.email, request.logger).catch((error) => {
+      request.logger.error({ message: `Error in exporting csv ${error}` });
+    });
+    return 'Exporting CSV data for the experiment...';
   }
 }

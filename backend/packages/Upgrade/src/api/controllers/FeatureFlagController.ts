@@ -11,6 +11,7 @@ import {
   Patch,
   Res,
   CurrentUser,
+  BadRequestError,
 } from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -268,16 +269,13 @@ export class FeatureFlagsController {
     paginatedParams: FeatureFlagPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagsPaginationInfo> {
-    const [featureFlags, count] = await Promise.all([
-      this.featureFlagService.findPaginated(
-        paginatedParams.skip,
-        paginatedParams.take,
-        request.logger,
-        paginatedParams.searchParams,
-        paginatedParams.sortParams
-      ),
-      this.featureFlagService.getTotalCount(),
-    ]);
+    const [featureFlags, count] = await this.featureFlagService.findPaginated(
+      paginatedParams.skip,
+      paginatedParams.take,
+      request.logger,
+      paginatedParams.searchParams,
+      paginatedParams.sortParams
+    );
     return {
       total: count,
       nodes: featureFlags,
@@ -314,6 +312,11 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
+    const contextValidationError = this.featureFlagService.validateFeatureFlagContext(flag);
+    if (contextValidationError) {
+      throw new BadRequestError(contextValidationError);
+    }
+
     return this.featureFlagService.create(flag, currentUser, request.logger);
   }
 
@@ -462,6 +465,11 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
+    const contextValidationError = this.featureFlagService.validateFeatureFlagContext(flag);
+    if (contextValidationError) {
+      throw new BadRequestError(contextValidationError);
+    }
+
     return this.featureFlagService.update({ ...flag, id }, currentUser, request.logger);
   }
 

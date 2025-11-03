@@ -1,0 +1,39 @@
+name: Npm Build Script
+description: Installs dependencies and builds project with npm
+inputs:
+  working_directory:
+    description: Working directory to run build commands in
+    required: true
+  build_script:
+    description: Build script in package.json to run
+    required: false
+    default: build
+  version:
+    description: Version to set in package.json
+    required: false
+    default: ""
+  node_version:
+    description: Version of nodejs to build with
+    required: false
+    default: 18
+runs:
+  using: composite
+  steps:
+    - uses: tw3lveparsecs/github-actions-setvars@v0.1
+    - uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.node_version }}
+        check-latest: true
+    - name: Set Version
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: |
+        if [ -n "$INPUT_VERSION" ]; then
+          npm version ${{ inputs.version }} --allow-same-version
+        fi
+    - shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: npm ci
+    - shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: npm run ${{ inputs.build_script }}

@@ -4,7 +4,12 @@ import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { UserService } from '../../../src/api/services/UserService';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { systemUser } from '../mockData/user/index';
-import { checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint, updateExcludeIfReachedFlag } from '../utils';
+import {
+  checkMarkExperimentPointForUser,
+  getAllExperimentCondition,
+  markExperimentPoint,
+  updateExcludeIfReachedFlag,
+} from '../utils';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -85,7 +90,7 @@ export default async function testCase(): Promise<void> {
     experimentPoint,
     condition,
     experimentId,
-    new UpgradeLogger(),
+    new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 

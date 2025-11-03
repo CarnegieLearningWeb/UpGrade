@@ -24,6 +24,7 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 })
 export class CommonTabbedSectionCardFooterComponent {
   @Input() tabLabels = [];
+  @Input() selectedIndex = 0; // Default to the first tab
   @Output() selectedTabChange = new EventEmitter<number>();
 
   onSelectedTabChange(event: MatTabChangeEvent) {

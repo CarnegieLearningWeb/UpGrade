@@ -14,6 +14,9 @@ export class IndividualExclusion extends BaseModel {
   @ManyToOne(() => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
+  @Column({ name: 'experimentId', nullable: true })
+  public experimentId?: string;
+
   @IsNotEmpty()
   @Column({ type: 'enum', enum: EXCLUSION_CODE, nullable: true })
   public exclusionCode: EXCLUSION_CODE;
@@ -21,4 +24,7 @@ export class IndividualExclusion extends BaseModel {
   @Index()
   @ManyToOne(() => ExperimentUser, { onDelete: 'CASCADE' })
   public user: ExperimentUser;
+
+  @Column({ name: 'userId', nullable: true })
+  public userId?: string;
 }

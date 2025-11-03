@@ -63,7 +63,7 @@ describe('Experiment Controller Testing', () => {
     endOn: new Date('2021-08-11T05:41:51.655Z'),
     revertTo: 'string',
     tags: ['string'],
-    group: 'string',
+    group: null,
     filterMode: FILTER_MODE.INCLUDE_ALL,
     type: EXPERIMENT_TYPE.SIMPLE,
     conditions: [

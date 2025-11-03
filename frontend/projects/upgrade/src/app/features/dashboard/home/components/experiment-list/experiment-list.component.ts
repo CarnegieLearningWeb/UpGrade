@@ -7,16 +7,16 @@ import {
   EXPERIMENT_SEARCH_KEY,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { Subscription, fromEvent, Observable } from 'rxjs';
+import { Subscription, Observable, Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { NewExperimentComponent } from '../modal/new-experiment/new-experiment.component';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ImportExperimentComponent } from '../modal/import-experiment/import-experiment.component';
 import { ExportModalComponent } from '../modal/export-experiment/export-experiment.component';
-import { FormControl } from '@angular/forms';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
 @Component({
   selector: 'home-experiment-list',
@@ -26,7 +26,7 @@ import { FormControl } from '@angular/forms';
 })
 export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions$: Observable<UserPermission>;
-  displayedColumns: string[] = ['name', 'state', 'postExperimentRule', 'createdAt', 'context', 'tags', 'enrollment'];
+  displayedColumns: string[] = ['name', 'state', 'postExperimentRule', 'updatedAt', 'context', 'tags', 'enrollment'];
   allExperiments: MatTableDataSource<Experiment>;
   allExperimentsExcludingArchived: MatTableDataSource<Experiment>;
   allExperimentsSub: Subscription;
@@ -48,10 +48,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   experimentSortKey$: Observable<string>;
   experimentSortAs$: Observable<string>;
   @ViewChild('tableContainer') experimentTableContainer: ElementRef;
-  @ViewChild('searchInput') searchInput: ElementRef;
-
+  @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
-  searchControl = new FormControl();
 
   get filteredStatusOptions(): string[] {
     if (typeof this.searchValue === 'string') {
@@ -61,6 +59,10 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
       return this.statusFilterOptions;
     }
   }
+
+  private observer: IntersectionObserver;
+  private searchSubject = new Subject<string>();
+  private searchSubscription: Subscription;
 
   constructor(
     private experimentService: ExperimentService,
@@ -97,6 +99,13 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.isAllExperimentsFetchedSub = this.experimentService
       .isAllExperimentsFetched()
       .subscribe((value) => (this.isAllExperimentsFetched = value));
+
+    // Set up search debouncing
+    this.searchSubscription = this.searchSubject
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((searchValue: string) => {
+        this.setSearchString(searchValue);
+      });
   }
 
   // Modify angular material's table's default search behavior
@@ -120,7 +129,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
               !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length
             );
           case EXPERIMENT_SEARCH_KEY.NAME:
-            return data.name.toLocaleLowerCase().includes(filter) || this.isPartitionFound(data, filter);
+            return data.name.toLocaleLowerCase().includes(filter);
           case EXPERIMENT_SEARCH_KEY.TAG:
             return !!data.tags.filter((tags) => tags.toLocaleLowerCase().includes(filter)).length;
           case EXPERIMENT_SEARCH_KEY.CONTEXT:
@@ -196,7 +205,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
 
   setChipsVisible(experimentId: string, type: string) {
     const index = this[type].findIndex((data) => {
-      data.experimentId === experimentId;
+      return data.experimentId === experimentId;
     });
     if (index !== -1) {
       this[type][index] = { experimentId, visibility: true };
@@ -223,15 +232,6 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
       : '';
   }
 
-  onScroll(): void {
-    const element = this.experimentTableContainer.nativeElement;
-    const atBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
-
-    if (atBottom) {
-      this.fetchExperimentOnScroll();
-    }
-  }
-
   fetchExperimentOnScroll() {
     if (!this.isAllExperimentsFetched) {
       this.experimentService.loadExperiments();
@@ -243,20 +243,55 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     const windowHeight = window.innerHeight;
     this.experimentTableContainer.nativeElement.style.maxHeight = windowHeight - 325 + 'px';
 
-    fromEvent(this.searchInput.nativeElement, 'keyup')
-      .pipe(debounceTime(500))
-      .subscribe((searchInput) => {
-        if (this.selectedExperimentFilterOption !== 'status') {
-          this.setSearchString((searchInput as any).target.value);
-        } else {
-          this.setSearchString((searchInput as any).option.value);
-        }
-      });
+    this.setupIntersectionObserver();
   }
 
   ngOnDestroy() {
     this.allExperimentsSub.unsubscribe();
     this.isAllExperimentsFetchedSub.unsubscribe();
+
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
+  }
+
+  onSearchInputKeyup(event: KeyboardEvent): void {
+    const target = event.target as HTMLInputElement;
+    this.applyFilter(target.value);
+  }
+
+  onSearchInputChange(value: string): void {
+    this.searchSubject.next(value);
+  }
+
+  onAutocompleteSelected(event: MatAutocompleteSelectedEvent): void {
+    const selectedValue = event.option.value;
+    this.applyFilter(selectedValue);
+    this.setSearchString(selectedValue);
+  }
+
+  private setupIntersectionObserver() {
+    const options = {
+      root: this.experimentTableContainer.nativeElement,
+      rootMargin: '100px',
+      threshold: 0.1,
+    };
+
+    this.observer = new IntersectionObserver((entries) => {
+      const isFilteredSetLessThanTake = this.allExperiments.filteredData.length < 20;
+
+      if (entries[0].isIntersecting && !isFilteredSetLessThanTake) {
+        this.fetchExperimentOnScroll();
+      }
+    }, options);
+
+    if (this.bottomTrigger) {
+      this.observer.observe(this.bottomTrigger.nativeElement);
+    }
   }
 
   get ExperimentStatePipeTypes() {

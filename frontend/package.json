@@ -1,11 +1,12 @@
 {
   "name": "ab-testing",
-  "version": "6.1.0",
+  "version": "6.2.0",
   "license": "MIT",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open --configuration=local",
     "docker:local": "ng serve --open --host 0.0.0.0 --configuration=local",
+    "docker:demo": "ng serve --open --host 0.0.0.0 --configuration=demo",
     "cl:build": "npm run build:prod && npm run cl:copy-package-json",
     "cl:copy-package-json": "cp projects/upgrade/package.json dist/upgrade/",
     "start:prod": "npm run build:prod && npm run server",
@@ -32,7 +33,8 @@
     "server": "node ./projects/server/server.js",
     "server:demo": "node ./projects/server/demo-server.js",
     "build:development": "npm run build:dev",
-    "build:production": "npm run build:prod"
+    "build:production": "npm run build:prod",
+    "typecheck": "tsc --noEmit"
   },
   "private": true,
   "dependencies": {

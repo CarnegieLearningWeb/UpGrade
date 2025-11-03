@@ -4,31 +4,31 @@ import { Experiment } from './models/Experiment';
 import { CONDITION_ORDER, EXPERIMENT_TYPE, IExperimentAssignmentv5, IPayload } from 'upgrade_types';
 import { FactorDTO } from './DTO/FactorDTO';
 import { ExperimentCondition } from './models/ExperimentCondition';
+import { DecisionPoint } from './models/DecisionPoint';
 
 export function withInSubjectType(
   experiment: Experiment,
   conditionPayloads: ConditionPayloadDTO[],
-  site: string,
-  target: string,
+  decisionPoint: DecisionPoint,
   factors: FactorDTO[],
   userID: string,
-  monitoredDecisionPointLogsLength: number
+  repeatedEnrollmentLength: number
 ): IExperimentAssignmentv5 {
-  let assignedData = convertToAssignedCondition(experiment, conditionPayloads, site, target, factors);
+  let assignedData = convertToAssignedCondition(experiment, conditionPayloads, decisionPoint, factors);
 
   // passing assigned conditions data converted into queue based on selected algorithm
   if (assignedData.assignedCondition.length > 1) {
     switch (experiment.conditionOrder) {
       case CONDITION_ORDER.RANDOM: {
-        assignedData = randomCondition(experiment, assignedData, userID, monitoredDecisionPointLogsLength);
+        assignedData = randomCondition(experiment, assignedData, userID, repeatedEnrollmentLength);
         break;
       }
       case CONDITION_ORDER.RANDOM_ROUND_ROBIN: {
-        assignedData = randomRoundRobinCondition(experiment, assignedData, userID, monitoredDecisionPointLogsLength);
+        assignedData = randomRoundRobinCondition(experiment, assignedData, userID, repeatedEnrollmentLength);
         break;
       }
       case CONDITION_ORDER.ORDERED_ROUND_ROBIN: {
-        assignedData = rotateElements(assignedData, monitoredDecisionPointLogsLength);
+        assignedData = rotateElements(assignedData, repeatedEnrollmentLength);
         break;
       }
       default: {
@@ -44,7 +44,7 @@ export function randomCondition(
   experiment,
   assignedData: IExperimentAssignmentv5,
   userID: string,
-  monitoredDecisionPointLogsLength: number
+  repeatedEnrollmentLength: number
 ): IExperimentAssignmentv5 {
   const randomConditionArray: IExperimentAssignmentv5['assignedCondition'] = [];
   const assignedFactorsArray: Record<string, { level: string; payload: IPayload }>[] = [];
@@ -69,15 +69,15 @@ export function randomCondition(
     experimentType: experiment.type,
   };
 
-  // rotate elements in assigned condition array based on number of monitored decision point
-  return rotateElements(randomAssignData, monitoredDecisionPointLogsLength);
+  // rotate elements in assigned condition array based on number of repeated enrollments
+  return rotateElements(randomAssignData, repeatedEnrollmentLength);
 }
 
 export function randomRoundRobinCondition(
   experiment,
   assignedData: IExperimentAssignmentv5,
   userID: string,
-  monitoredDecisionPointLogsLength: number
+  repeatedEnrollmentLength: number
 ): IExperimentAssignmentv5 {
   const randomRoundRobinConditionArray: IExperimentAssignmentv5['assignedCondition'] = [];
   const assignedFactorsArray: Record<string, { level: string; payload: IPayload }>[] = [];
@@ -112,16 +112,16 @@ export function randomRoundRobinCondition(
     experimentType: experiment.type,
   };
 
-  // rotate elements in assigned condition array based on number of monitored decision point
-  return rotateElements(randomRoundRobinAssignData, monitoredDecisionPointLogsLength);
+  // rotate elements in assigned condition array based on number of repeated enrollments
+  return rotateElements(randomRoundRobinAssignData, repeatedEnrollmentLength);
 }
 
 export function rotateElements(
   assignedData: IExperimentAssignmentv5,
-  monitoredDecisionPointLogsLength: number
+  repeatedEnrollmentLength: number
 ): IExperimentAssignmentv5 {
-  if (monitoredDecisionPointLogsLength > 0 && assignedData.assignedCondition.length >= 2) {
-    const totalloopIteration = monitoredDecisionPointLogsLength % assignedData.assignedCondition.length;
+  if (repeatedEnrollmentLength > 0 && assignedData.assignedCondition.length >= 2) {
+    const totalloopIteration = repeatedEnrollmentLength % assignedData.assignedCondition.length;
 
     for (let i = 0; i < totalloopIteration; i++) {
       const assignedCondition = assignedData.assignedCondition.shift();
@@ -139,8 +139,7 @@ export function rotateElements(
 function convertToAssignedCondition(
   experiment: Experiment,
   conditionPayloads: ConditionPayloadDTO[],
-  site: string,
-  target: string,
+  decisionPoint: DecisionPoint,
   factors: FactorDTO[]
 ): IExperimentAssignmentv5 {
   const assignedConditionArray: IExperimentAssignmentv5['assignedCondition'] = [];
@@ -157,8 +156,7 @@ function convertToAssignedCondition(
     } else {
       // checking alias condition for simple experiment
       conditionPayload = conditionPayloads.find(
-        (cP) =>
-          cP.parentCondition.id === condition.id && cP.decisionPoint.site === site && cP.decisionPoint.target === target
+        (cP) => cP.parentCondition.id === condition.id && cP.decisionPoint.id === decisionPoint.id
       );
     }
 
@@ -173,8 +171,8 @@ function convertToAssignedCondition(
   });
 
   return {
-    site: site,
-    target: target,
+    site: decisionPoint.site,
+    target: decisionPoint.target,
     assignedCondition: assignedConditionArray,
     assignedFactor: experiment.type === EXPERIMENT_TYPE.FACTORIAL ? assignedFactorsArray : null,
     experimentType: experiment.type,

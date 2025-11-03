@@ -1,4 +1,5 @@
 import {
+  ArrayMinSize,
   IsAlphanumeric,
   IsArray,
   IsBoolean,
@@ -16,6 +17,9 @@ import {
   MinLength,
   ValidateIf,
   ValidateNested,
+  ValidationArguments,
+  registerDecorator,
+  ValidationOptions,
 } from 'class-validator';
 
 import {
@@ -353,6 +357,7 @@ abstract class BaseExperimentWithoutPayload {
 
   @IsNotEmpty()
   @IsArray()
+  @ArrayMinSize(1)
   @IsString({ each: true })
   public context: string[];
 
@@ -371,6 +376,7 @@ abstract class BaseExperimentWithoutPayload {
 
   @IsNotEmpty()
   @IsEnum(ASSIGNMENT_UNIT)
+  @IsAssignmentUnitGroupConsistent()
   public assignmentUnit: ASSIGNMENT_UNIT;
 
   @IsNotEmpty()
@@ -467,6 +473,34 @@ abstract class BaseExperimentWithoutPayload {
 
 const isMoocletAssignmentAlgorithm = (experiment: ExperimentDTO) =>
   experiment.assignmentAlgorithm && SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment.assignmentAlgorithm);
+
+function IsAssignmentUnitGroupConsistent(validationOptions?: ValidationOptions) {
+  return function (object: any, propertyName: string) {
+    registerDecorator({
+      name: 'isAssignmentUnitGroupConsistent',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(assignmentUnitValue: any, args: ValidationArguments) {
+          const experiment = args.object as any;
+          const groupValue = experiment.group;
+
+          if (assignmentUnitValue === ASSIGNMENT_UNIT.GROUP) {
+            // When assignmentUnit is GROUP, group must be a non-empty string
+            return groupValue && typeof groupValue === 'string';
+          } else {
+            // When assignmentUnit is not GROUP, group must be null or undefined
+            return !groupValue;
+          }
+        },
+        defaultMessage(args: ValidationArguments) {
+          return 'When assignmentUnit is GROUP, group must be defined. When assignmentUnit is not GROUP, group must be null or undefined.';
+        },
+      },
+    });
+  };
+}
 
 export class ExperimentDTO extends BaseExperimentWithoutPayload {
   @IsOptional()

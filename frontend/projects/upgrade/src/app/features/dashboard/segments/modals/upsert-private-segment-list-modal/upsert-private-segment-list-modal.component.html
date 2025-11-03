@@ -29,6 +29,7 @@
         [matAutocomplete]="auto"
         [placeholder]="'feature-flags.upsert-list-modal.segment-placeholder.text' | translate"
         class="ft-14-400"
+        appTrimInput
       />
       <mat-error class="ft-12-400">
         {{ 'feature-flags.upsert-list-modal.segment.error.message.text' | translate }}
@@ -46,19 +47,20 @@
         [label]="config.valuesLabel"
         [placeholder]="config.valuesPlaceholder"
         [forceValidation]="forceValidation"
+        [truncationLength]="72"
         (downloadRequested)="onDownloadRequested($event)"
         (blur)="onBlur()"
       ></app-common-tags-input>
       <mat-form-field appearance="outline">
         <mat-label class="ft-14-400">Name</mat-label>
-        <input matInput formControlName="name" placeholder="e.g., My schools" class="ft-14-400" />
+        <input matInput formControlName="name" placeholder="e.g., My schools" class="ft-14-400" appTrimInput />
         <mat-hint class="form-hint ft-12-400">
           {{ config.nameHint | translate }}
         </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label class="ft-14-400">Description (optional)</mat-label>
-        <input matInput formControlName="description" class="ft-14-400" />
+        <input matInput formControlName="description" class="ft-14-400" appTrimInput />
       </mat-form-field>
     </ng-container>
   </form>

@@ -212,40 +212,37 @@ export class SegmentService {
     logger: UpgradeLogger,
     searchParams?: ISegmentSearchParams,
     sortParams?: ISegmentSortParams
-  ): Promise<getSegmentsData> {
+  ): Promise<[getSegmentsData, number]> {
     logger.info({ message: `Find paginated segments` });
     let paginatedParentSubQuery = this.segmentRepository
       .createQueryBuilder()
       .subQuery()
       .from(Segment, 'segment')
-      .select('segment.id')
-      .where('segment.type = :type')
-      .limit(take)
-      .offset(skip);
+      .select('segment.id');
+
     if (searchParams) {
-      const whereClause = this.postgresSearchString(searchParams);
+      const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
     }
-    if (sortParams) {
-      paginatedParentSubQuery = paginatedParentSubQuery.addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs);
-    }
-    const segmentsData = await this.segmentRepository
+    const countQuery = paginatedParentSubQuery.clone().andWhere('segment.type=:type', { type: SEGMENT_TYPE.PUBLIC });
+    paginatedParentSubQuery = paginatedParentSubQuery.andWhere('segment.type = :type').offset(skip).limit(take);
+
+    let segmentsDataQuery = await this.segmentRepository
       .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
       .setParameter('type', SEGMENT_TYPE.PUBLIC)
-      .where(`segment.id IN ${paginatedParentSubQuery.getQuery()}`)
-      .getMany();
+      .where(`segment.id IN ${paginatedParentSubQuery.getQuery()}`);
 
-    return this.getSegmentStatus(segmentsData);
+    if (sortParams) {
+      segmentsDataQuery = segmentsDataQuery.addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs);
+    }
+    const [segmentsData, count] = await Promise.all([segmentsDataQuery.getMany(), countQuery.getCount()]);
+    return [await this.getSegmentStatus(segmentsData), count];
   }
 
-  public getTotalPublicSegmentCount(): Promise<number> {
-    return this.segmentRepository.countBy({ type: SEGMENT_TYPE.PUBLIC });
-  }
-
-  private postgresSearchString(params: ISegmentSearchParams): string {
+  private paginatedSearchString(params: ISegmentSearchParams): string {
     const type = params.key;
     // escape % and ' characters
     const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
@@ -282,11 +279,13 @@ export class SegmentService {
         allExperimentSegmentsExclusion,
         allFeatureFlagSegmentsInclusion,
         allFeatureFlagSegmentsExclusion,
+        allSegmentsWithSubSegments,
       ] = await Promise.all([
         this.getExperimentSegmentInclusionData(),
         this.getExperimentSegmentExclusionData(),
         this.getFeatureFlagSegmentInclusionData(),
         this.getFeatureFlagSegmentExclusionData(),
+        this.getParentSegments(),
       ]);
 
       const segmentMap = new Map<string, string[]>();
@@ -297,7 +296,11 @@ export class SegmentService {
         );
       });
 
-      const segmentsUsedList = new Set<string>();
+      const segmentsUsedList = new Set<string>(
+        allSegmentsWithSubSegments.flatMap((seg) =>
+          seg.subSegments.flatMap((subSeg) => subSeg.subSegments.map((subSubSeg) => subSubSeg.id))
+        )
+      );
 
       const collectSegmentIds = (segmentId: string) => {
         if (segmentsUsedList.has(segmentId)) return;
@@ -334,15 +337,21 @@ export class SegmentService {
         });
       }
 
-      const segmentsDataWithStatus = segmentsData.map((segment) => {
-        if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-          return { ...segment, status: SEGMENT_STATUS.GLOBAL };
-        } else if (segmentsUsedList.has(segment.id)) {
-          return { ...segment, status: SEGMENT_STATUS.USED };
-        } else {
-          return { ...segment, status: SEGMENT_STATUS.UNUSED };
-        }
-      });
+      const addStatusToSegments = (segments: Segment[]) => {
+        return segments.map((segment) => {
+          if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+            return { ...segment, status: SEGMENT_STATUS.EXCLUDED };
+          } else if (segmentsUsedList.has(segment.id)) {
+            return { ...segment, status: SEGMENT_STATUS.USED };
+          } else {
+            return { ...segment, status: SEGMENT_STATUS.UNUSED };
+          }
+        });
+      };
+
+      const segmentsDataWithStatus: SegmentWithStatus[] = addStatusToSegments(segmentsData);
+
+      const parentSegmentsDataWithStatus: SegmentWithStatus[] = addStatusToSegments(allSegmentsWithSubSegments);
 
       return {
         segmentsData: segmentsDataWithStatus,
@@ -350,6 +359,7 @@ export class SegmentService {
         experimentSegmentExclusionData: allExperimentSegmentsExclusion,
         featureFlagSegmentInclusionData: allFeatureFlagSegmentsInclusion,
         featureFlagSegmentExclusionData: allFeatureFlagSegmentsExclusion,
+        allParentSegments: parentSegmentsDataWithStatus,
       };
     });
 
@@ -537,6 +547,16 @@ export class SegmentService {
     return validatedLists.importErrors;
   }
 
+  public validateSegmentContext(segment: { name: string; context: string }): string | null {
+    const contextMetadata = env.initialization.contextMetadata;
+
+    if (!contextMetadata[segment.context]) {
+      return `The app context "${segment.context}" is not defined in CONTEXT_METADATA.`;
+    }
+
+    return null;
+  }
+
   public async checkSegmentsValidity(fileData: SegmentFile[], listImport = false): Promise<SegmentValidationObj> {
     const importFileErrors: SegmentImportError[] = [];
     const segments = fileData.filter((segment) => path.extname(segment.fileName) === '.json');
@@ -722,7 +742,7 @@ export class SegmentService {
           ? IMPORT_COMPATIBILITY_TYPE.WARNING
           : compatibilityType;
       }
-      if (!contexts.includes(segment.context)) {
+      if (!contexts.includes(segment.context) || !contextMetaDataOptions.includes(segment.context)) {
         errorMessage =
           errorMessage + 'Context ' + segment.context + ' not found. Please enter valid context in segment. ';
         compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
@@ -885,13 +905,14 @@ export class SegmentService {
     // create/update segment document
     segment.id = segment.id || uuid();
     const { id, name, description, context, type, listType, tags } = segment;
-    const allSegments = await this.getSegmentByIds(segment.subSegmentIds);
+    const segmentsById = await this.getSegmentByIds(segment.subSegmentIds);
+    const allSegments = [...segmentsById, ...(segment.subSegments || [])];
     // If there are private subsegments, they are lists - so we need to clone the data
-    const isListData = segment.subSegments?.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
+    const isListData = allSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
     let subSegmentData;
     if (isListData) {
       subSegmentData = await Promise.all(
-        segment.subSegments?.map(async (subSegment) => {
+        allSegments.map(async (subSegment) => {
           // Create a new segment input object for the list
           const segmentInput = subSegment as unknown as SegmentInputValidator;
           segmentInput.userIds = subSegment.individualForSegment.map((user) => user.userId);
@@ -906,7 +927,7 @@ export class SegmentService {
     } else {
       subSegmentData = segment.subSegmentIds
         .map((subSegmentId) => {
-          const subSegment = allSegments.find((segment) => subSegmentId === segment.id);
+          const subSegment = segmentsById.find((segment) => subSegmentId === segment.id);
           if (subSegment) {
             return subSegment;
           } else {
@@ -1162,5 +1183,9 @@ export class SegmentService {
     } else {
       return false;
     }
+  }
+
+  private async getParentSegments(): Promise<Segment[]> {
+    return await this.segmentRepository.getAllParentSegments();
   }
 }

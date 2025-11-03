@@ -6,7 +6,7 @@ import { ExperimentUserRepository } from '../repositories/ExperimentUserReposito
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, IUserAliases, SERVER_ERROR } from 'upgrade_types';
-import { DataSource, In, InsertResult, Not } from 'typeorm';
+import { DataSource, In, InsertResult, Not, UpdateResult } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Experiment } from '../models/Experiment';
@@ -116,7 +116,7 @@ export class ExperimentUserService {
       );
     });
     const promiseResult = await Promise.all(promiseArray);
-    const aliasesUserIds = [];
+    const aliasesUserIds: string[] = [];
     const aliasesLinkedWithOtherUser = [];
     const otherRootUser = [];
     let alreadyLinkedAliases = [];
@@ -172,11 +172,10 @@ export class ExperimentUserService {
     }
 
     const userAliasesDocs = aliasesUserIds.map((aliasId) => {
-      const aliasUser: any = {
+      return {
         id: aliasId,
+        originalUser: userExist,
       };
-      aliasUser.originalUser = userExist;
-      return aliasUser;
     });
     alreadyLinkedAliases = alreadyLinkedAliases.map((user) => {
       const { originalUser, ...rest } = user;
@@ -187,12 +186,16 @@ export class ExperimentUserService {
 
     if (userAliasesDocs.length) {
       try {
-        let aliasesUsers = await this.userRepository.save(userAliasesDocs);
-        aliasesUsers = aliasesUsers.map((user) => {
-          const { originalUser, ...rest } = user;
-          return { ...rest, originalUser: originalUser.id };
-        });
-        aliasesToReturn = [...aliasesToReturn, ...aliasesUsers.map((alias) => alias.id)];
+        const insertResponse = await this.userRepository.upsert(userAliasesDocs, ['id']);
+        if (!insertResponse) {
+          const error = new Error(
+            `Error while inserting new aliases for user ${userId}. Aliases: ${JSON.stringify(userAliasesDocs)}`
+          );
+          (error as any).type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+        aliasesToReturn = [...aliasesToReturn, ...aliasesUserIds];
       } catch (err) {
         logger.error({
           message: `Could not insert new aliases for user ${userId}`,
@@ -218,19 +221,22 @@ export class ExperimentUserService {
     userId: string,
     workingGroup: any,
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<ExperimentUser> {
+  ): Promise<UpdateResult> {
     const { logger, userDoc } = requestContext;
     const userExist = userDoc;
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
-
+    // throw error if user not defined
+    if (!userDoc) {
+      logger.error({ message: `User not found in updateWorkingGroup, userId => ${userId}`, details: workingGroup });
+      throw new Error(`User not defined in updateWorkingGroup: ${userId}`);
+    }
     // removing enrollments in case working group is changed
     if (userExist && userExist.workingGroup && workingGroup) {
       await this.removeEnrollments(userExist.id, workingGroup, userExist.workingGroup);
     }
 
     // TODO check if workingGroup is the subset of group membership
-    const newDocument = { ...userExist, workingGroup };
-    return this.userRepository.save(newDocument);
+    return this.userRepository.update(userId, { workingGroup });
   }
 
   // TODO should we check for workingGroup as a subset over here?
@@ -238,18 +244,21 @@ export class ExperimentUserService {
     userId: string,
     groupMembership: Record<string, string[]>,
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<ExperimentUser> {
+  ): Promise<UpdateResult> {
     const { logger, userDoc } = requestContext;
-    const userExist = userDoc;
     logger.info({
       message: `Set Group Membership for userId: ${userId} with Group membership details as below:`,
       details: groupMembership,
     });
-
-    const newDocument = { ...userExist, group: groupMembership };
-
+    if (!userDoc) {
+      logger.error({
+        message: `User not found in updateGroupMembership, userId => ${userId}`,
+        details: groupMembership,
+      });
+      throw new Error(`User not defined in updateGroupMembership: ${userId}`);
+    }
     // update group membership
-    return this.userRepository.save(newDocument);
+    return this.userRepository.update(userId, { group: groupMembership });
   }
 
   public async getUserDoc(experimentUserId: string, logger: UpgradeLogger): Promise<RequestedExperimentUser> {
@@ -291,6 +300,53 @@ export class ExperimentUserService {
         JSON.stringify({
           type: SERVER_ERROR.QUERY_FAILED,
           message: `Error while finding original user for userId ${userId}`,
+          details: error,
+        })
+      );
+    }
+  }
+
+  public async getUserDocs(experimentUserIds: string[], logger: UpgradeLogger): Promise<RequestedExperimentUser[]> {
+    const experimentUserDocs = await this.getOriginalUserDocs(experimentUserIds, logger);
+    if (experimentUserDocs) {
+      const userDocs = experimentUserDocs.map((doc) => ({
+        ...doc,
+        requestedUserId: doc.id,
+      }));
+      logger.info({ message: 'Got the user docs', details: userDocs });
+      return userDocs;
+    } else {
+      return null;
+    }
+  }
+
+  public async getOriginalUserDocs(userIds: string[], logger?: UpgradeLogger): Promise<(ExperimentUser | null)[]> {
+    if (logger) {
+      logger.info({ message: `Find original users for userIds ${userIds.join(', ')}` });
+    }
+    try {
+      const userDocs = await this.userRepository.find({
+        where: { id: In(userIds) },
+        relations: ['originalUser'],
+      });
+
+      return userDocs.map((doc) => {
+        if (doc.originalUser) {
+          // If user is alias user
+          return doc.originalUser;
+        } else {
+          // If user is original user
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { originalUser, ...rest } = doc;
+          return rest as any;
+        }
+      });
+    } catch (error) {
+      logger.error(error);
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.QUERY_FAILED,
+          message: `Error while finding original user for userIds ${userIds.join(', ')}`,
           details: error,
         })
       );
@@ -404,24 +460,23 @@ export class ExperimentUserService {
     ]);
 
     const enrolledExperimentIds = individualEnrollments.map(
-      (individualAssignment) => individualAssignment.experiment.id
+      (individualAssignment) => individualAssignment.experimentId
     );
     if (enrolledExperimentIds.length > 0) {
       await this.individualEnrollmentRepository.deleteEnrollmentsOfUserInExperiments(userId, enrolledExperimentIds);
     }
 
     // remove individual exclusion related to that group
-    const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experiment.id);
+    const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experimentId);
 
     if (excludedExperimentIds.length > 0) {
       await this.individualExclusionRepository.deleteExperimentsForUserId(userId, excludedExperimentIds);
 
       // check if other individual exclusions are present for that group
       const otherExclusions = await this.individualExclusionRepository.find({
-        where: { experiment: { id: In(excludedExperimentIds) } },
-        relations: ['experiment'],
+        where: { experimentId: In(excludedExperimentIds) },
       });
-      const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experiment.id);
+      const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experimentId);
       // remove group exclusion
       const toRemoveExperimentFromGroupExclusions = excludedExperimentIds.filter((experimentId) => {
         return !otherExcludedExperimentIds.includes(experimentId);
@@ -446,16 +501,15 @@ export class ExperimentUserService {
     const individualExclusions = await this.individualExclusionRepository.findExcluded(userId, filteredExperimentIds);
 
     // remove individual exclusion related to that group
-    const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experiment.id);
+    const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experimentId);
 
     if (excludedExperimentIds.length > 0) {
       await this.individualExclusionRepository.deleteExperimentsForUserId(userId, excludedExperimentIds);
 
       const otherExclusions = await this.individualExclusionRepository.find({
-        where: { experiment: { id: In(excludedExperimentIds) }, user: { id: Not(userId) } },
-        relations: ['experiment', 'user'],
+        where: { experimentId: In(excludedExperimentIds), userId: Not(userId) },
       });
-      const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experiment.id);
+      const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experimentId);
       // remove group exclusion
       const toRemoveExperimentFromGroupExclusions = excludedExperimentIds.filter((experimentId) => {
         return !otherExcludedExperimentIds.includes(experimentId);

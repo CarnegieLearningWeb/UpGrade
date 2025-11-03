@@ -19,7 +19,7 @@
         <a
           [routerLink]="['/segments', 'detail', segment.id]"
           [matTooltip]="segment.name.length > 24 ? segment.name : null"
-          matTooltipPosition="above"
+          matTooltipPosition="right"
           class="segment-name"
         >
           {{ segment.name | truncate : 24 }}
@@ -27,7 +27,7 @@
         <br />
         <span
           [matTooltip]="segment.description?.length > 35 ? segment.description : null"
-          matTooltipPosition="above"
+          matTooltipPosition="right"
           class="segment-description ft-10-400"
         >
           {{ segment.description | truncate : 35 }}
@@ -53,12 +53,9 @@
         {{ SEGMENT_TRANSLATION_KEYS.UPDATED_AT | translate }}
       </th>
       <td mat-cell *matCellDef="let segment" class="updated-at-column ft-14-400">
-        <ng-container *ngIf="segment.versionNumber === 1; else displayUpdatedAt">
-          {{ '-' }}
+        <ng-container>
+          {{ segment.updatedAt | date : 'MMM d, y, h:mm a' }}
         </ng-container>
-        <ng-template #displayUpdatedAt>
-          {{ segment.updatedAt | date : 'MMM d, y h:mm a' }}
-        </ng-template>
       </td>
     </ng-container>
 
@@ -80,7 +77,8 @@
       <td mat-cell *matCellDef="let segment" class="tags-column ft-14-400 dense-2">
         <app-common-tag-list
           [tags]="segment.tags"
-          ariaLabel="Segment tags"
+          [isExpanded]="isTagsExpanded(segment.id)"
+          (expandedChange)="onTagExpandedChange(segment.id, $event)"
           (tagClick)="filterSegmentByChips($event, SegmentSearchKey.TAG)"
         ></app-common-tag-list>
       </td>

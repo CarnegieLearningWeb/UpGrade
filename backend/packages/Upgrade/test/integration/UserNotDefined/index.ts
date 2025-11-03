@@ -57,7 +57,7 @@ export const UserNotDefined = async () => {
       null,
       new UpgradeLogger()
     )
-  ).toEqual(Promise.resolve({ "aliases": [], "userId": undefined }));
+  ).toEqual(Promise.resolve({ aliases: [], userId: undefined }));
 
   await expect(
     experimentUserService.updateGroupMembership(experimentUsers[0].id, null, {
