@@ -397,6 +397,29 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       : '';
   }
 
+  formatStatisticOperation(statisticOperations: string[]): string {
+    if (!statisticOperations || statisticOperations.length === 0) {
+      return '';
+    }
+
+    // Check if this is a categorical metric with comparison (length 3 or 4)
+    const isCategoricalWithComparison =
+      statisticOperations.length >= 3 && statisticOperations.some((op) => op === 'equal' || op === 'not equal');
+
+    if (isCategoricalWithComparison) {
+      // For categorical metrics: [..., compareFn, compareValue, operationType]
+      const operationType = statisticOperations[statisticOperations.length - 1];
+      const compareValue = statisticOperations[statisticOperations.length - 2];
+      const compareFn = statisticOperations[statisticOperations.length - 3];
+
+      const operator = compareFn === 'equal' ? 'Equal' : 'Not Equal';
+      return `${operationType}\n${operator}\n${compareValue}`;
+    }
+
+    // For other cases (continuous metrics, etc.), show as separate lines
+    return statisticOperations.join('\n');
+  }
+
   ngOnDestroy() {
     this.experimentSub.unsubscribe();
     this.permissionsSub.unsubscribe();

@@ -20,6 +20,7 @@ export const initialState: ExperimentState = adapter.getInitialState({
   isLoadingExperimentExport: false,
   skipExperiment: 0,
   totalExperiments: null,
+  totalFilteredExperiments: null,
   searchKey: EXPERIMENT_SEARCH_KEY.ALL,
   searchString: null,
   sortKey: EXPERIMENT_SORT_KEY.NAME,
@@ -42,14 +43,18 @@ const reducer = createReducer(
   on(experimentsAction.actionGetExperiments, (state) => ({
     ...state,
   })),
-  on(experimentsAction.actionGetExperimentsSuccess, (state, { experiments, totalExperiments }) => {
-    const newState = {
-      ...state,
-      totalExperiments,
-      skipExperiment: state.skipExperiment + experiments.length,
-    };
-    return adapter.upsertMany(experiments, { ...newState, isLoadingExperiment: false });
-  }),
+  on(
+    experimentsAction.actionGetExperimentsSuccess,
+    (state, { experiments, totalExperiments, totalFilteredExperiments }) => {
+      const newState = {
+        ...state,
+        totalExperiments,
+        totalFilteredExperiments,
+        skipExperiment: state.skipExperiment + experiments.length,
+      };
+      return adapter.upsertMany(experiments, { ...newState, isLoadingExperiment: false });
+    }
+  ),
   on(
     experimentsAction.actionGetExperimentsFailure,
     experimentsAction.actionGetExperimentByIdFailure,
@@ -83,6 +88,9 @@ const reducer = createReducer(
   on(experimentsAction.actionUpsertExperiment, experimentsAction.actionGetExperimentById, (state) => ({
     ...state,
     isLoadingExperiment: true,
+    // if we don't have a totalExperiments count yet (no paginated call with > 1 has occured yet),
+    // set it to 1 because we are loading at least one experiment so that nav to root page will not show empty template
+    totalExperiments: !state.totalExperiments ? 1 : state.totalExperiments,
   })),
   on(experimentsAction.actionGetExperimentByIdSuccess, (state, { experiment }) =>
     adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })

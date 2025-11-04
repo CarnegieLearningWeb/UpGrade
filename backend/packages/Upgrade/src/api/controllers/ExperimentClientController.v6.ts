@@ -12,24 +12,17 @@ import {
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { ExperimentAssignmentValidatorv6 } from './validators/ExperimentAssignmentValidator';
+import { FeatureFlagRequestValidator } from './validators/FeatureFlagRequestValidator';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidatorv6 } from './validators/UpdateWorkingGroupValidator';
-import {
-  IExperimentAssignmentv5,
-  IGroupMembership,
-  IUserAliases,
-  IWorkingGroup,
-  PAYLOAD_TYPE,
-  IPayload,
-} from 'upgrade_types';
+import { IExperimentAssignmentv5, IGroupMembership, IUserAliases, IWorkingGroup } from 'upgrade_types';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidatorv6 } from './validators/LogValidator';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidatorv6 } from './validators/ExperimentUserAliasesValidator';
 import { AppRequest } from '../../types';
-import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { MarkExperimentValidatorv6 } from './validators/MarkExperimentValidator.v6';
 import { Log } from '../models/Log';
 import { ExperimentUserValidatorv6 } from './validators/ExperimentUserValidator';
@@ -42,7 +35,6 @@ interface IMonitoredDecisionPoint {
   target: string;
   experimentId: string;
   condition: string;
-  monitoredPointLogs: MonitoredDecisionPointLog[];
 }
 
 /**
@@ -264,7 +256,8 @@ export class ExperimentClientController {
     request.logger.info({ message: 'Starting the groupmembership call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = request.userDoc;
-    const { id, group } = await this.experimentUserService.updateGroupMembership(
+
+    const updateResult = await this.experimentUserService.updateGroupMembership(
       experimentUserDoc.requestedUserId,
       experimentUser.group,
       {
@@ -272,7 +265,14 @@ export class ExperimentClientController {
         userDoc: experimentUserDoc,
       }
     );
-    return { id, group };
+    if (!updateResult) {
+      request.logger.error({
+        details: 'update unexpectedly returned empty object',
+      });
+      throw new InternalServerError('set group membership failed');
+    }
+
+    return { id: experimentUserDoc.id, group: experimentUser.group };
   }
 
   /**
@@ -330,7 +330,8 @@ export class ExperimentClientController {
     request.logger.info({ message: 'Starting the workinggroup call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = request.userDoc;
-    const { id, workingGroup } = await this.experimentUserService.updateWorkingGroup(
+
+    const updateResult = await this.experimentUserService.updateWorkingGroup(
       experimentUserDoc.requestedUserId,
       workingGroupParams.workingGroup,
       {
@@ -338,7 +339,14 @@ export class ExperimentClientController {
         userDoc: experimentUserDoc,
       }
     );
-    return { id, workingGroup };
+    if (!updateResult) {
+      request.logger.error({
+        details: 'update unexpectedly returned empty object',
+      });
+      throw new InternalServerError('set working group failed');
+    }
+
+    return { id: experimentUserDoc.id, workingGroup: workingGroupParams.workingGroup };
   }
 
   /**
@@ -534,38 +542,7 @@ export class ExperimentClientController {
       request.logger
     );
 
-    return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
-      const finalFactorData = assignedFactor?.map((factor) => {
-        const updatedAssignedFactor: Record<string, { level: string; payload: IPayload }> = {};
-        Object.keys(factor).forEach((key) => {
-          updatedAssignedFactor[key] = {
-            level: factor[key].level,
-            payload:
-              factor[key].payload && factor[key].payload.value
-                ? { type: PAYLOAD_TYPE.STRING, value: factor[key].payload.value }
-                : null,
-          };
-        });
-        return updatedAssignedFactor;
-      });
-
-      const finalConditionData = assignedCondition.map((condition) => {
-        return {
-          id: condition.id,
-          conditionCode: condition.conditionCode,
-          payload:
-            condition.payload && condition.payload.value
-              ? { type: condition.payload.type, value: condition.payload.value }
-              : null,
-          experimentId: condition.experimentId,
-        };
-      });
-      return {
-        ...rest,
-        assignedCondition: finalConditionData,
-        assignedFactor: assignedFactor ? finalFactorData : undefined,
-      };
-    });
+    return this.experimentAssignmentService.formatAssignments(assignedData);
   }
 
   /**
@@ -665,20 +642,88 @@ export class ExperimentClientController {
    * @swagger
    * /v6/featureflag:
    *    post:
-   *       description: Get all feature flags using SDK
+   *       description: |
+   *         Get feature flags that have been assigned to the user.
+   *
+   *         This endpoint supports three different modes of operation based on the optional parameters:
+   *
+   *         **Stored-user Mode** (Standard stored user lookup):
+   *         - Omit both `groupsForSession` and `includeStoredUserGroups` parameters
+   *         - Uses only stored user groups from the database
+   *         - User must already have been initialized, will 404 if user does not exist
+   *
+   *         **Ephemeral Mode** (Session-only groups):
+   *         - Set `includeStoredUserGroups` to `false` and provide `groupsForSession`
+   *         - Uses only the groups provided in the session, ignoring any stored user groups.
+   *         - Does not require the user to be initialized (it will bypass stored user lookup)
+   *         - Useful when complete group information is always provided at runtime.
+   *
+   *         **Merged Mode** (Stored + Session groups):
+   *         - Set `includeStoredUserGroups` to `true` and provide `groupsForSession`
+   *         - User must already have been initialized, will 404 if user does not exist.
+   *         - Session groups are merged with stored groups if they don't already exist for stored user.
+   *         - Session groups are never persisted.
+   *         - Useful for adding context-specific ephemeral groups to an existing user.
+   *
    *       consumes:
    *         - application/json
    *       parameters:
+   *         - in: header
+   *           name: User-Id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           example: user123
+   *           description: The unique identifier for the user
    *         - in: body
    *           name: user
    *           required: true
    *           schema:
    *             type: object
+   *             required:
+   *               - context
    *             properties:
    *               context:
    *                 type: string
-   *                 example: add
-   *             description: User Document
+   *                 example: "test-context"
+   *                 description: The context for feature flag evaluation
+   *               groupsForSession:
+   *                 type: object
+   *                 additionalProperties:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                 example:
+   *                   schoolId: ["temporary-school-id"]
+   *                 description: Optional groups to provide for the session (not persisted)
+   *               includeStoredUserGroups:
+   *                 type: boolean
+   *                 description: Whether to include stored user groups in evaluation
+   *                 example: false
+   *             description: Feature flag request parameters
+   *             examples:
+   *               normal_mode:
+   *                 summary: Normal Mode - Standard stored user lookup
+   *                 description: Uses only stored user groups from the database
+   *                 value:
+   *                   context: "test-context"
+   *               ephemeral_mode:
+   *                 summary: Ephemeral Mode - Session-only groups
+   *                 description: Uses only session groups, ignoring stored user groups
+   *                 value:
+   *                   context: "test-context"
+   *                   groupsForSession:
+   *                     schoolId: ["demo-school"]
+   *                     classId: ["demo-class-advanced"]
+   *                   includeStoredUserGroups: false
+   *               merged_mode:
+   *                 summary: Merged Mode - Stored + Session groups
+   *                 description: Combines stored user groups (if exists) with session groups
+   *                 value:
+   *                   context: "test-context"
+   *                   groupsForSession:
+   *                     classId: ["temp-class-123", "special-session"]
+   *                   includeStoredUserGroups: true
    *       produces:
    *         - application/json
    *       tags:
@@ -686,6 +731,11 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Feature flags list
+   *            schema:
+   *              type: array
+   *              items:
+   *                type: string
+   *              example: ["NEW_FEATURE", "TEST_FLAG"]
    *          '400':
    *            description: BadRequestError - InvalidParameterValue
    *          '401':
@@ -699,10 +749,10 @@ export class ExperimentClientController {
   public async getAllFlags(
     @Req() request: AppRequest,
     @Body({ validate: true })
-    experiment: ExperimentAssignmentValidatorv6
+    featureFlagRequest: FeatureFlagRequestValidator
   ): Promise<string[]> {
     const experimentUserDoc = request.userDoc;
-    return this.featureFlagService.getKeys(experimentUserDoc, experiment.context, request.logger);
+    return this.featureFlagService.getKeys(experimentUserDoc, featureFlagRequest.context, request.logger);
   }
 
   /**

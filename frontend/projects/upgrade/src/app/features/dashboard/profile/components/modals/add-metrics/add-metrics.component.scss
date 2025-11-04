@@ -9,6 +9,19 @@
   .filter-container {
     margin: 16px;
     padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .filter-options {
+    flex-shrink: 0;
+  }
+
+  .explainer-box {
+    flex: 1;
+    font-size: 14px;
+    line-height: 20px;
   }
 
   .json-editor-container {

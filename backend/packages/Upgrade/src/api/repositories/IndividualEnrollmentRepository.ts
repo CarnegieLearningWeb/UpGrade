@@ -6,8 +6,15 @@ import { IndividualEnrollment } from '../models/IndividualEnrollment';
 export class IndividualEnrollmentRepository extends Repository<IndividualEnrollment> {
   public findEnrollments(userId: string, experimentIds: string[]): Promise<IndividualEnrollment[]> {
     return this.find({
-      where: { experiment: { id: In(experimentIds) }, user: { id: userId } },
-      relations: ['experiment', 'condition', 'partition'],
+      where: { experimentId: In(experimentIds), userId: userId },
+      select: ['id', 'experimentId', 'enrollmentCode', 'conditionId'],
+    });
+  }
+
+  public findEnrollmentsForUsers(userIds: string[], experimentIds: string[]): Promise<IndividualEnrollment[]> {
+    return this.find({
+      where: { experimentId: In(experimentIds), userId: In(userIds) },
+      select: ['id', 'userId', 'experimentId', 'enrollmentCode', 'conditionId'],
     });
   }
 

@@ -1,19 +1,27 @@
 import { Container } from './../../typeorm-typedi-extensions/Container';
 import { ExperimentRepository } from './ExperimentRepository';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
-import { Repository, EntityManager } from 'typeorm';
+import { Repository, EntityManager, SelectQueryBuilder } from 'typeorm';
 import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE, EXPERIMENT_TYPE } from 'upgrade_types';
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 import { Query } from '../models/Query';
 import { LevelCombinationElement } from '../models/LevelCombinationElement';
-import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
-import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { QueryRepository } from './QueryRepository';
 import { MetricRepository } from './MetricRepository';
+import { RepeatedEnrollment } from '../models/RepeatedEnrollment';
 import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
+import { IndividualEnrollment } from '../models/IndividualEnrollment';
+
+export interface AnalyticsQueryResult {
+  conditionId?: string;
+  levelId?: string;
+  result: string;
+  participantsLogged: number;
+}
+
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
   public async deleteExceptByIds(values: string[], entityManager: EntityManager): Promise<Log[]> {
@@ -135,6 +143,7 @@ export class LogRepository extends Repository<Log> {
       updatedAt: string;
       key: string;
       type: IMetricMetaData;
+      uniquifier: string;
     }>
   > {
     const experimentRepo = Container.getCustomRepository(ExperimentRepository, 'export');
@@ -147,12 +156,14 @@ export class LogRepository extends Repository<Log> {
         'queries."repeatedMeasure" as "repeatedMeasure"',
         'logs."userId" as "userId"',
         'logs."updatedAt" as "updatedAt"',
+        'logs."uniquifier" as "uniquifier"',
         'metric.key as key',
         'metric.type as type',
       ])
+      .innerJoin(IndividualEnrollment, 'individualEnrollment', '"individualEnrollment"."experimentId"=experiment.id')
       .innerJoin('experiment.queries', 'queries')
       .innerJoin('queries.metric', 'metric')
-      .innerJoin('metric.logs', 'logs')
+      .innerJoin('metric.logs', 'logs', '"logs"."userId"="individualEnrollment"."userId"')
       .where('experiment.id=:experimentId', { experimentId })
       .execute();
   }
@@ -198,10 +209,12 @@ export class LogRepository extends Repository<Log> {
     query: any
   ) {
     const individualEnrollmentRepo = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
+
     const innerQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
 
-    const analyticsQuery = Container.getDataSource().manager.createQueryBuilder();
-    const middleQuery = Container.getDataSource().manager.createQueryBuilder();
+    const analyticsQuery: SelectQueryBuilder<AnalyticsQueryResult> =
+      Container.getDataSource('export').createQueryBuilder();
+    const middleQuery = Container.getDataSource('export').createQueryBuilder();
 
     const idToSelect = isFactorialExperiment ? '"levelId"' : '"conditionId"';
     const valueToSelect = isFactorialExperiment
@@ -230,20 +243,9 @@ export class LogRepository extends Repository<Log> {
     }
     innerQuery
       .innerJoin(
-        (qb) =>
-          qb
-            .subQuery()
-            .select(['"monitoredDecisionPointLog"."condition"', '"monitoredDecisionPointLog".uniquifier', '"userId"'])
-            .from(MonitoredDecisionPoint, 'monitoredDecisionPoint')
-            .innerJoin(
-              MonitoredDecisionPointLog,
-              'monitoredDecisionPointLog',
-              '"monitoredDecisionPointLog"."monitoredDecisionPointId" = "monitoredDecisionPoint".id'
-            )
-            .where(`"monitoredDecisionPoint"."experimentId" = '${experimentId}'`)
-            .andWhere('uniquifier is not null'),
-        'mdpl',
-        'mdpl."userId"="individualEnrollment"."userId"'
+        RepeatedEnrollment,
+        'repeatedEnrollment',
+        '"repeatedEnrollment"."individualEnrollmentId"="individualEnrollment"."id"'
       )
       .innerJoin(
         (qb) =>
@@ -253,9 +255,13 @@ export class LogRepository extends Repository<Log> {
             .from(Log, 'logs')
             .where(`${metricString} is not null`),
         'logs',
-        'logs."userId"="individualEnrollment"."userId" AND logs."uniquifier" = mdpl."uniquifier"'
+        'logs."userId"="individualEnrollment"."userId" AND logs."uniquifier" = "repeatedEnrollment"."uniquifier"'
       )
-      .innerJoin(ExperimentCondition, 'experimentCondition', '"experimentCondition"."conditionCode" = mdpl.condition');
+      .innerJoin(
+        ExperimentCondition,
+        'experimentCondition',
+        '"experimentCondition"."id" = "repeatedEnrollment"."conditionId"'
+      );
 
     if (isFactorialExperiment) {
       innerQuery.innerJoin(
@@ -301,7 +307,11 @@ export class LogRepository extends Repository<Log> {
     query: any
   ) {
     const individualEnrollmentRepo = Container.getCustomRepository(IndividualEnrollmentRepository, 'export');
-    const analyticsQuery = individualEnrollmentRepo.createQueryBuilder('individualEnrollment');
+
+    // Build the base query with the eventual custom type from added selects
+    const analyticsQuery = individualEnrollmentRepo.createQueryBuilder(
+      'individualEnrollment'
+    ) as unknown as SelectQueryBuilder<AnalyticsQueryResult>;
 
     const idToSelect = isFactorialExperiment
       ? '"levelCombinationElement"."levelId"'
@@ -369,7 +379,7 @@ export class LogRepository extends Repository<Log> {
     return analyticsQuery;
   }
 
-  public async analysis(query: Query): Promise<any> {
+  public async analysis(query: Query) {
     const {
       metric: { key: metricKey, type: metricType },
       experiment: { id: experimentId, assignmentUnit: unitOfAssignment, type: experimentType },
@@ -403,6 +413,6 @@ export class LogRepository extends Repository<Log> {
             query.query
           );
 
-    return newQuery.getRawMany();
+    return newQuery.getRawMany<AnalyticsQueryResult>();
   }
 }

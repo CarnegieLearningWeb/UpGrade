@@ -441,7 +441,7 @@ describe('#MoocletDataService', () => {
       expect(response).toEqual({ error: mockErrorResponse });
     });
 
-    it('should log an error and return undefined when the request throws an error', async () => {
+    it('should handle and log errors when the request fails', async () => {
       const mockRequestParams: MoocletProxyRequestParams = {
         method: 'POST',
         url: 'https://api.example.com/mooclet',
@@ -454,9 +454,10 @@ describe('#MoocletDataService', () => {
 
       (axios.request as jest.Mock).mockRejectedValue(mockError);
       logger.error = jest.fn().mockReturnValue(mockErrorMessage);
+      await expect(moocletDataService.fetchExternalMoocletsData(mockRequestParams, logger)).rejects.toThrow(
+        mockErrorMessage.message
+      );
 
-      const response = await moocletDataService.fetchExternalMoocletsData(mockRequestParams, logger);
-      expect(response).toBeUndefined();
       expect(logger.error).toHaveBeenCalledWith(mockErrorMessage);
     });
   });

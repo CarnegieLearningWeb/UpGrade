@@ -9,7 +9,7 @@
   <form [formGroup]="segmentForm" class="form-standard dense-3">
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Name</mat-label>
-      <input matInput formControlName="name" placeholder="Enter segment name" class="ft-14-400" />
+      <input matInput formControlName="name" placeholder="Enter segment name" class="ft-14-400" appTrimInput />
       <!-- Required error will show by default when the control is invalid and touched -->
       <mat-error *ngIf="nameControl?.errors?.['required']"> Name is required </mat-error>
 
@@ -29,7 +29,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Description (optional)</mat-label>
-      <input matInput formControlName="description" placeholder="Enter description" class="ft-14-400" />
+      <input matInput formControlName="description" placeholder="Enter description" class="ft-14-400" appTrimInput />
     </mat-form-field>
 
     <mat-form-field appearance="outline">

@@ -53,8 +53,8 @@ describe('GroupEnrollmentRepository Testing', () => {
 
     expect(repo.find).toHaveBeenCalledTimes(1);
     expect(repo.find).toHaveBeenCalledWith({
-      where: { experiment: { id: In([exp.id]) }, groupId: In([group.id]) },
-      relations: ['experiment', 'condition'],
+      where: { experimentId: In([exp.id]), groupId: In([group.id]) },
+      select: ['groupId', 'experimentId', 'conditionId'],
     });
 
     expect(res).toEqual(result);
@@ -69,8 +69,8 @@ describe('GroupEnrollmentRepository Testing', () => {
 
     expect(repo.find).toHaveBeenCalledTimes(1);
     expect(repo.find).toHaveBeenCalledWith({
-      where: { experiment: { id: In([exp.id]) }, groupId: In([group.id]) },
-      relations: ['experiment', 'condition'],
+      where: { experimentId: In([exp.id]), groupId: In([group.id]) },
+      select: ['groupId', 'experimentId', 'conditionId'],
     });
   });
 

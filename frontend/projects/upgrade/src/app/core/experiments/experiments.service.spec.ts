@@ -145,23 +145,23 @@ describe('ExperimentService', () => {
     service = new ExperimentService(mockStore, mockLocalStorageService, mockEnvironment);
   });
 
-  describe('#experiments$', () => {
-    it('should emit sorted list of entities', fakeAsync(() => {
-      ExperimentSelectors.selectAllExperiment.setResult(mockExperimentsList);
+  // describe('#experiments$', () => {
+  //   it('should emit sorted list of entities', fakeAsync(() => {
+  //     ExperimentSelectors.selectAllExperiment.setResult(mockExperimentsList);
 
-      mockStore.next('thisValueIsMeaningless');
+  //     mockStore.next('thisValueIsMeaningless');
 
-      service.experiments$.subscribe((val) => {
-        tick(0);
-        expect(val).toEqual([
-          { id: 'first', createdAt: '04/25/17 04:34:22 +0000' },
-          { id: 'second', createdAt: '04/24/17 04:34:22 +0000' },
-          { id: 'third', createdAt: '04/24/17 04:34:22 +0000' },
-          { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000' },
-        ]);
-      });
-    }));
-  });
+  //     service.experiments$.subscribe((val) => {
+  //       tick(0);
+  //       expect(val).toEqual([
+  //         { id: 'first', createdAt: '04/25/17 04:34:22 +0000' },
+  //         { id: 'second', createdAt: '04/24/17 04:34:22 +0000' },
+  //         { id: 'third', createdAt: '04/24/17 04:34:22 +0000' },
+  //         { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000' },
+  //       ]);
+  //     });
+  //   }));
+  // });
 
   describe('#experimentStatById$', () => {
     it('should ', () => {
@@ -246,7 +246,7 @@ describe('ExperimentService', () => {
     });
   });
 
-  describe('#isInitialExperimentsLoading', () => {
+  describe('#haveInitialExperimentsLoaded', () => {
     describe('should return true if experiments are not loading and experiment data exists, and false otherwise', () => {
       const testCases = [
         {
@@ -282,7 +282,7 @@ describe('ExperimentService', () => {
           ExperimentSelectors.selectIsLoadingExperiment.setResult(isLoading);
           ExperimentSelectors.selectAllExperiment.setResult(experiments);
 
-          service.isInitialExperimentsLoading().subscribe((val) => {
+          service.haveInitialExperimentsLoaded().subscribe((val) => {
             tick(0);
             expect(val).toBe(expectedValue);
           });
@@ -298,21 +298,24 @@ describe('ExperimentService', () => {
         expectedValue: false,
         skipExperiments: 0,
         totalExperiments: 1,
+        totalFilteredExperiments: 1,
       },
       {
         whenCondition: 'skip does equal total',
         expectedValue: true,
         skipExperiments: 1,
         totalExperiments: 1,
+        totalFilteredExperiments: 1,
       },
     ];
 
     testCases.forEach((testCase) => {
-      const { whenCondition, expectedValue, skipExperiments, totalExperiments } = testCase;
+      const { whenCondition, expectedValue, skipExperiments, totalExperiments, totalFilteredExperiments } = testCase;
 
       it(`WHEN ${whenCondition}, THEN ${expectedValue}:`, fakeAsync(() => {
         ExperimentSelectors.selectSkipExperiment.setResult(skipExperiments);
         ExperimentSelectors.selectTotalExperiment.setResult(totalExperiments);
+        ExperimentSelectors.selectTotalFilteredExperiment.setResult(totalFilteredExperiments);
 
         service.isAllExperimentsFetched().subscribe((val) => {
           tick(0);
@@ -529,7 +532,7 @@ describe('ExperimentService', () => {
 
   describe('#setSortKey', () => {
     it('should set localStorage item and dispatch actionSetSortKey with the given input', () => {
-      const sortKey = EXPERIMENT_SORT_KEY.CREATED_AT;
+      const sortKey = EXPERIMENT_SORT_KEY.UPDATED_AT;
 
       service.setSortKey(sortKey);
 

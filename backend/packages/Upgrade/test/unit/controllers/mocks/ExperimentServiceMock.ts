@@ -55,4 +55,8 @@ export default class ExperimentServiceMock {
   public updateState(id: string, state: string, currentUser: User, date?: any): Promise<[]> {
     return Promise.resolve([]);
   }
+
+  public validateExperimentContext(experiment: Experiment): boolean {
+    return false;
+  }
 }

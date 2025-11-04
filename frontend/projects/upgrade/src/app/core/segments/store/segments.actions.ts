@@ -29,6 +29,7 @@ export const actionFetchSegmentsSuccess = createAction(
     experimentSegmentExclusion: experimentSegmentInclusionExclusionData[];
     featureFlagSegmentInclusion: featureFlagSegmentInclusionExclusionData[];
     featureFlagSegmentExclusion: featureFlagSegmentInclusionExclusionData[];
+    allParentSegments: Segment[];
     fromStarting?: boolean;
   }>()
 );
@@ -46,6 +47,7 @@ export const actionFetchSegmentsSuccessLegacyGetAll = createAction(
     experimentSegmentExclusion: experimentSegmentInclusionExclusionData[];
     featureFlagSegmentInclusion: featureFlagSegmentInclusionExclusionData[];
     featureFlagSegmentExclusion: featureFlagSegmentInclusionExclusionData[];
+    allParentSegments: Segment[];
   }>()
 );
 
@@ -123,6 +125,7 @@ export const actionGetSegmentByIdSuccess = createAction(
     experimentSegmentExclusion: experimentSegmentInclusionExclusionData[];
     featureFlagSegmentInclusion: featureFlagSegmentInclusionExclusionData[];
     featureFlagSegmentExclusion: featureFlagSegmentInclusionExclusionData[];
+    allParentSegments: Segment[];
   }>()
 );
 

@@ -55,19 +55,12 @@
           </button>
         </div>
       </div>
-      <span class="ft-14-700 segment-create-date">
-        {{ ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | formatDate : 'short date') }}
+      <span class="ft-14-700 segment-created-date">
+        {{ ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | date : 'MMM d, y') }}
       </span>
-      <span class="ft-14-700 segment-update-date" *ngIf="segment.versionNumber === 1; else displayUpdatedAt">
-        {{ ('home.view-experiment.last-updated-on.text' | translate) + ' -' }}
+      <span class="ft-14-700 segment-updated-date">
+        {{ ('home.view-experiment.updated-at.text' | translate) + (segment.updatedAt | date : 'MMM d, y, h:mm a') }}
       </span>
-      <ng-template #displayUpdatedAt>
-        <span class="ft-14-700 segment-update-date">
-          {{
-            ('home.view-experiment.last-updated-on.text' | translate) + (segment.updatedAt | formatDate : 'short date')
-          }}
-        </span>
-      </ng-template>
     </div>
 
     <div class="segment-secondary-info">

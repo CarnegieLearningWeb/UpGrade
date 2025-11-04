@@ -10,7 +10,7 @@ import { previewUsers } from '../mockData/previewUsers/index';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNull,
-  checkExperimentAssignedIsNotDefault
+  checkExperimentAssignedIsNotDefault,
 } from '../utils/index';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 

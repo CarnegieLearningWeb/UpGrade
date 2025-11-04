@@ -110,7 +110,11 @@ export class ExperimentEffects {
 
             return [
               ...actions,
-              experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
+              experimentAction.actionGetExperimentsSuccess({
+                experiments,
+                totalExperiments: data.total,
+                totalFilteredExperiments: data.filtered,
+              }),
               experimentAction.actionFetchExperimentStats({ experimentIds }),
             ];
           }),
@@ -175,6 +179,19 @@ export class ExperimentEffects {
         );
       })
     )
+  );
+
+  navigateToExperimentDetail$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionUpsertExperimentSuccess),
+        tap(({ experiment }) => {
+          if (!this.router.url.includes('/home/detail')) {
+            this.router.navigate(['/home', 'detail', experiment.id]);
+          }
+        })
+      ),
+    { dispatch: false }
   );
 
   updateExperimentState$ = createEffect(() =>
@@ -452,8 +469,12 @@ export class ExperimentEffects {
         this.experimentDataService.exportExperimentInfo(experimentId, email).pipe(
           tap(() => {
             email
-              ? this.notificationService.showSuccess(`Email will be sent to ${email}`)
-              : this.notificationService.showSuccess('Email will be sent to registered email');
+              ? this.notificationService.showInfo(
+                  `Export requested. If the export succeeds, email will be sent to ${email}`
+                )
+              : this.notificationService.showInfo(
+                  'Export requested. If the export succeeds, email will be sent to registered email'
+                );
           }),
           map(() => experimentAction.actionExportExperimentInfoSuccess()),
           catchError(() => [experimentAction.actionExportExperimentInfoFailure()])

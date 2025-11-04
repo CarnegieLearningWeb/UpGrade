@@ -7,7 +7,6 @@ import { NewExperimentComponent } from '../components/modal/new-experiment/new-e
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../core/auth/store/auth.models';
 import { ImportExperimentComponent } from '../components/modal/import-experiment/import-experiment.component';
-import { SegmentsService } from '../../../../core/segments/segments.service';
 import { StratificationFactorsService } from '../../../../core/stratification-factors/stratification-factors.service';
 import { PreviewUsersService } from '../../../../core/preview-users/preview-users.service';
 import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flags.service';
@@ -22,7 +21,8 @@ import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flag
 export class HomeComponent implements OnInit {
   permissions$: Observable<UserPermission>;
   experiments$: Observable<Experiment[]> = this.experimentService.experiments$;
-  isLoadingExperiments$ = this.experimentService.isInitialExperimentsLoading();
+  totalExperiments$: Observable<number> = this.experimentService.totalExperiments$;
+  haveInitialExperimentsLoaded$ = this.experimentService.haveInitialExperimentsLoaded();
 
   constructor(
     private experimentService: ExperimentService,

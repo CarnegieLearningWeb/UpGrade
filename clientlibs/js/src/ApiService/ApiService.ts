@@ -18,6 +18,8 @@ export default class ApiService {
   private clientSessionId: string;
   private httpClient: UpGradeClientInterfaces.IHttpClientWrapper;
   private api: IEndpoints;
+  private groupsForSession: Record<string, Array<string>> | null;
+  private includeStoredUserGroups: boolean;
 
   constructor(config: UpGradeClientInterfaces.IConfig, private dataService: DataService) {
     this.context = config.context;
@@ -38,6 +40,16 @@ export default class ApiService {
       altUserIds: `${this.hostUrl}/api/${this.apiVersion}/useraliases`,
     };
     this.httpClient = this.setHttpClient(config.httpClient);
+    this.groupsForSession = config.featureFlagUserGroupsForSession?.groupsForSession ?? null;
+    this.includeStoredUserGroups = config.featureFlagUserGroupsForSession?.includeStoredUserGroups ?? null;
+  }
+
+  public setFeatureFlagUserGroupsForSession(
+    groupsForSession: Record<string, Array<string>>,
+    includeStoredUserGroups: boolean
+  ): void {
+    this.groupsForSession = groupsForSession;
+    this.includeStoredUserGroups = includeStoredUserGroups;
   }
 
   private setHttpClient(httpClient: UpGradeClientInterfaces.IHttpClientWrapper) {
@@ -278,9 +290,23 @@ export default class ApiService {
   }
 
   public async getAllFeatureFlags(): Promise<string[]> {
-    const requestBody: UpGradeClientRequests.IGetAllFeatureFlagsRequestBody = {
-      context: this.context,
-    };
+    let requestBody: UpGradeClientRequests.IGetAllFeatureFlagsRequestBody;
+
+    if (this.groupsForSession && this.includeStoredUserGroups !== undefined) {
+      // if groupsForSession is provided, we need to include it in the request body
+      requestBody = {
+        context: this.context,
+        groupsForSession: this.groupsForSession,
+        includeStoredUserGroups: this.includeStoredUserGroups,
+      };
+    } else {
+      // if no groupsForSession is provided, just use the context
+      requestBody = {
+        context: this.context,
+      };
+    }
+
+    console.log('[ApiService] getAllFeatureFlags requestBody:', requestBody);
 
     const response = await this.sendRequest<string[], never>({
       path: this.api.getAllFeatureFlag,

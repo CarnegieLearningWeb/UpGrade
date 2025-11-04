@@ -46,8 +46,20 @@ export class SegmentRepository extends Repository<Segment> {
       .where('segment.type=:type', { type })
       .getMany()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('segmentRepository', 'getAllGlobalExcludeSegment', {}, errorMsg);
+        const errorMsgString = repositoryError('segmentRepository', 'getAllSegmentByType', {}, errorMsg);
         logger.error(errorMsg);
+        throw errorMsgString;
+      });
+  }
+
+  public async getAllParentSegments(): Promise<Segment[]> {
+    return this.createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegments')
+      .leftJoinAndSelect('subSegments.subSegments', 'subSubSegments')
+      .where('subSegments.listType=:type', { type: 'Segment' })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('segmentRepository', 'getAllParentSegments', {}, errorMsg);
         throw errorMsgString;
       });
   }

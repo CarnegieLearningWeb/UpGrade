@@ -1,21 +1,20 @@
 import { Service } from 'typedi';
-import { InjectRepository } from '../../typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
-import { LogRepository } from '../repositories/LogRepository';
+import { AnalyticsQueryResult, LogRepository } from '../repositories/LogRepository';
 import { EXPERIMENT_STATE, EXPERIMENT_TYPE, SERVER_ERROR } from 'upgrade_types';
 import { ErrorService } from './ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { Experiment } from '../models/Experiment';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
-import { In } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 
-interface queryResult {
-  conditionId?: string;
-  levelId?: string;
-  result: number;
-  participantsLogged: number;
+interface AnalyzeResponse {
+  id: string;
+  mainEffect: (AnalyticsQueryResult | 'rejected')[];
+  interactionEffect: (AnalyticsQueryResult | 'rejected')[];
 }
 
 @Service()
@@ -24,6 +23,7 @@ export class QueryService {
     @InjectRepository() private queryRepository: QueryRepository,
     @InjectRepository() private logRepository: LogRepository,
     @InjectRepository() private archivedStatsRepository: ArchivedStatsRepository,
+    @InjectDataSource() protected dataSource: DataSource,
     public errorService: ErrorService
   ) {}
 
@@ -49,35 +49,43 @@ export class QueryService {
     });
   }
 
-  public async analyze(queryIds: string[], logger: UpgradeLogger): Promise<any> {
+  public async analyze(queryIds: string[], logger: UpgradeLogger): Promise<AnalyzeResponse[]> {
     logger.info({ message: `Get analysis of query with queryIds ${queryIds}` });
-    const promiseArray = queryIds.map((queryId) =>
-      this.queryRepository.findOne({
-        where: { id: queryId },
-        relations: [
-          'metric',
-          'experiment',
-          'experiment.conditions',
-          'experiment.partitions',
-          'experiment.factors',
-          'experiment.factors.levels',
-        ],
-      })
-    );
-
-    const promiseResult = await Promise.all(promiseArray);
+    const queryList = await this.queryRepository.find({
+      where: { id: In(queryIds) },
+      relations: [
+        'metric',
+        'experiment',
+        'experiment.conditions',
+        'experiment.partitions',
+        'experiment.factors',
+        'experiment.factors.levels',
+      ],
+    });
     const experiments: Experiment[] = [];
 
     // checks for archieve state experiment
     if (queryIds.length !== 0) {
-      if (promiseResult[0].experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
+      if (queryList[0]?.experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
         return this.getArchivedStats(queryIds, logger);
       }
     } else {
       return [];
     }
 
-    const analyzePromise = promiseResult.map((query) => {
+    // Build maps to maintain query ID associations
+    const queryMap = new Map<string, Query>();
+
+    queryList.forEach((query) => {
+      queryMap.set(query.id, query);
+    });
+
+    const analyzePromise = queryIds.map((queryId) => {
+      const query = queryMap.get(queryId);
+      if (!query) {
+        experiments.push(null);
+        return [];
+      }
       experiments.push(query.experiment);
       if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
         return [
@@ -97,7 +105,7 @@ export class QueryService {
       })
     );
 
-    const failedQuery = Array<Promise<any>>();
+    const failedQuery = Array<Promise<ExperimentError>>();
 
     const modifiedResponse = response.map((queryArray, index) => {
       return queryArray.map((query) => {
@@ -134,29 +142,29 @@ export class QueryService {
 
   public addZeroDataToResults(
     experiment: Experiment,
-    mainEffect: queryResult[],
-    interactionEffect: queryResult[]
-  ): [queryResult[], queryResult[]] {
-    const conditionIds = experiment?.conditions.map((condition) => condition.id) || [];
+    mainEffect: (AnalyticsQueryResult | 'rejected')[],
+    interactionEffect: (AnalyticsQueryResult | 'rejected')[]
+  ): [(AnalyticsQueryResult | 'rejected')[], (AnalyticsQueryResult | 'rejected')[]] {
+    const conditionIds = experiment?.conditions?.map((condition) => condition.id) || [];
 
     if (interactionEffect) {
       conditionIds.forEach((conditionId) => {
-        if (!interactionEffect.some((result) => result.conditionId === conditionId)) {
-          interactionEffect.push({ conditionId, result: 0, participantsLogged: 0 });
+        if (!interactionEffect.some((result) => result !== 'rejected' && result.conditionId === conditionId)) {
+          interactionEffect.push({ conditionId, result: '0', participantsLogged: 0 });
         }
       });
 
       experiment.factors.forEach((factor) => {
         factor.levels.forEach((level) => {
-          if (!mainEffect.some((result) => result.levelId === level.id)) {
-            mainEffect.push({ levelId: level.id, result: 0, participantsLogged: 0 });
+          if (!mainEffect.some((result) => result !== 'rejected' && result.levelId === level.id)) {
+            mainEffect.push({ levelId: level.id, result: '0', participantsLogged: 0 });
           }
         });
       });
     } else {
       conditionIds.forEach((conditionId) => {
-        if (!mainEffect.some((result) => result.conditionId === conditionId)) {
-          mainEffect.push({ conditionId, result: 0, participantsLogged: 0 });
+        if (!mainEffect.some((result) => result !== 'rejected' && result.conditionId === conditionId)) {
+          mainEffect.push({ conditionId, result: '0', participantsLogged: 0 });
         }
       });
     }

@@ -214,6 +214,7 @@ describe('Segment Service Testing', () => {
             delete: jest.fn(),
             countBy: jest.fn().mockResolvedValue(segmentArr.length),
             getAllSegments: jest.fn().mockResolvedValue(segmentArr),
+            getAllParentSegments: jest.fn().mockResolvedValue(segmentArr),
             deleteSegment: jest.fn().mockImplementation((seg) => {
               return seg;
             }),
@@ -236,6 +237,8 @@ describe('Segment Service Testing', () => {
               from: jest.fn().mockReturnThis(),
               select: jest.fn().mockReturnThis(),
               getQuery: jest.fn().mockReturnThis(),
+              clone: jest.fn().mockReturnThis(),
+              getCount: jest.fn().mockResolvedValue(segmentArr.length),
             })),
           },
         },
@@ -381,6 +384,10 @@ describe('Segment Service Testing', () => {
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
       featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
       featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+      allParentSegments: [
+        { status: 'Used', ...seg1 },
+        { status: 'Used', ...seg2 },
+      ],
     };
     const segments = await service.getAllSegmentWithStatus(logger);
     expect(segments).toEqual(res);
@@ -404,6 +411,10 @@ describe('Segment Service Testing', () => {
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
       featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
       featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+      allParentSegments: [
+        { status: 'Used', ...seg1 },
+        { status: 'Used', ...seg2 },
+      ],
     };
     const segments = await service.getAllSegmentWithStatus(logger);
     expect(segments).toEqual(res);
@@ -423,6 +434,10 @@ describe('Segment Service Testing', () => {
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
       featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
       featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+      allParentSegments: [
+        { status: 'Used', ...seg1 },
+        { status: 'Used', ...seg2 },
+      ],
     };
     const segment = await service.getSingleSegmentWithStatus(seg1.id, logger);
     expect(segment).toEqual(res);
@@ -677,21 +692,23 @@ describe('Segment Service Testing', () => {
     }).rejects.toThrow(err);
   });
 
-  it('should return a count of public segment', async () => {
-    const results = await service.getTotalPublicSegmentCount();
-    expect(results).toEqual(segmentArr.length);
-  });
-
   it('should find all paginated segments with search string all', async () => {
-    const res = {
-      segmentsData: segmentArr.map((segment) => {
-        return { ...segment, status: 'Used' };
-      }),
-      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
-      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
-      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
-      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-    };
+    const res = [
+      {
+        segmentsData: segmentArr.map((segment) => {
+          return { ...segment, status: 'Used' };
+        }),
+        experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+        experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+        featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+        featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+        allParentSegments: [
+          { status: 'Used', ...seg1 },
+          { status: 'Used', ...seg2 },
+        ],
+      },
+      2,
+    ];
     const results = await service.findPaginated(
       1,
       2,
@@ -709,15 +726,22 @@ describe('Segment Service Testing', () => {
   });
 
   it('should find all paginated segments with search string tag', async () => {
-    const res = {
-      segmentsData: segmentArr.map((segment) => {
-        return { ...segment, status: 'Used' };
-      }),
-      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
-      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
-      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
-      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-    };
+    const res = [
+      {
+        segmentsData: segmentArr.map((segment) => {
+          return { ...segment, status: 'Used' };
+        }),
+        experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+        experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+        featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+        featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+        allParentSegments: [
+          { status: 'Used', ...seg1 },
+          { status: 'Used', ...seg2 },
+        ],
+      },
+      2,
+    ];
     const results = await service.findPaginated(
       1,
       2,
@@ -734,16 +758,23 @@ describe('Segment Service Testing', () => {
     expect(results).toEqual(res);
   });
 
-  it('should find all paginated segmentss with search string name', async () => {
-    const res = {
-      segmentsData: segmentArr.map((segment) => {
-        return { ...segment, status: 'Used' };
-      }),
-      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
-      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
-      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
-      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-    };
+  it('should find all paginated segments with search string name', async () => {
+    const res = [
+      {
+        segmentsData: segmentArr.map((segment) => {
+          return { ...segment, status: 'Used' };
+        }),
+        experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+        experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+        featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+        featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+        allParentSegments: [
+          { status: 'Used', ...seg1 },
+          { status: 'Used', ...seg2 },
+        ],
+      },
+      2,
+    ];
     const results = await service.findPaginated(
       1,
       2,
@@ -761,15 +792,22 @@ describe('Segment Service Testing', () => {
   });
 
   it('should find all paginated segments with search string context', async () => {
-    const res = {
-      segmentsData: segmentArr.map((segment) => {
-        return { ...segment, status: 'Used' };
-      }),
-      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
-      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
-      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
-      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-    };
+    const res = [
+      {
+        segmentsData: segmentArr.map((segment) => {
+          return { ...segment, status: 'Used' };
+        }),
+        experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+        experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+        featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+        featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+        allParentSegments: [
+          { status: 'Used', ...seg1 },
+          { status: 'Used', ...seg2 },
+        ],
+      },
+      2,
+    ];
     const results = await service.findPaginated(
       1,
       2,
@@ -787,15 +825,22 @@ describe('Segment Service Testing', () => {
   });
 
   it('should find all paginated segments without search params', async () => {
-    const res = {
-      segmentsData: segmentArr.map((segment) => {
-        return { ...segment, status: 'Used' };
-      }),
-      experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
-      experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
-      featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
-      featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
-    };
+    const res = [
+      {
+        segmentsData: segmentArr.map((segment) => {
+          return { ...segment, status: 'Used' };
+        }),
+        experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
+        experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
+        featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
+        featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
+        allParentSegments: [
+          { status: 'Used', ...seg1 },
+          { status: 'Used', ...seg2 },
+        ],
+      },
+      2,
+    ];
     const results = await service.findPaginated(1, 2, logger);
     expect(results).toEqual(res);
   });

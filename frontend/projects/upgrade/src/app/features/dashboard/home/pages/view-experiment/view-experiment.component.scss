@@ -7,6 +7,10 @@ $font-size-small: 15px;
 
   .experiment-link {
     text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   .experiment {
@@ -80,11 +84,11 @@ $font-size-small: 15px;
           color: var(--grey-5);
         }
 
-        &-create-date {
+        &-created-date {
           display: block;
         }
 
-        &-last-update-date {
+        &-updated-date {
           display: block;
         }
       }
@@ -374,6 +378,12 @@ $font-size-small: 15px;
       mat-header-cell {
         color: var(--grey-2);
       }
+
+      .cdk-column-metricsKey,
+      .cdk-column-metricsOperation {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
 
     pre {
@@ -397,6 +407,17 @@ $font-size-small: 15px;
 
     .mat-icon {
       margin-right: 20px;
+    }
+  }
+
+  .reward-metric-description {
+    padding: 16px 8px 0;
+    color: var(--black-2);
+
+    .reward-metric-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
   }
 }

@@ -70,8 +70,8 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
     return a.assignedCondition[0].conditionCode > b.assignedCondition[0].conditionCode
       ? 1
       : a.assignedCondition[0].conditionCode < b.assignedCondition[0].conditionCode
-        ? -1
-        : 0;
+      ? -1
+      : 0;
   });
   // expecting response from Service
   expect(experimentConditionAssignments).toEqual(

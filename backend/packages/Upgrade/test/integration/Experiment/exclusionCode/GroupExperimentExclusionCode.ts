@@ -64,14 +64,15 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point for user 3
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  let markedExperimentPoint = await markExperimentPoint(
     experimentUsers[2].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint, 1);
 
   // the user should be excluded due to 'GROUP_ON_EXCLUSION_LIST' exclusion code:
   let groupExclusions = await checkService.getAllGroupExclusions();
@@ -79,9 +80,9 @@ export default async function testCase(): Promise<void> {
   expect(groupExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[2].workingGroup[Object.keys(experimentUsers[2].workingGroup)[0]],
-        exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST
-      })
+        id: experiments[0].id + '_' + experimentUsers[2].workingGroup[Object.keys(experimentUsers[2].workingGroup)[0]],
+        exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
+      }),
     ])
   );
 
@@ -90,16 +91,16 @@ export default async function testCase(): Promise<void> {
   // EXCLUDED_DUE_TO_GROUP_LOGIC
   experimentObject.state = EXPERIMENT_STATE.ENROLLING;
   experimentObject.experimentSegmentExclusion = {
-    "segment": {
-      "id": "1b0c0200-7a15-4e19-8688-f9ac283f18aa",
-      "name": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-      "description": "8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment",
-      "context": "home",
-      "type": "private",
-      "individualForSegment": [],
-      "groupForSegment": [],
-      "subSegments": []
-    }
+    segment: {
+      id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
+      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+      context: 'home',
+      type: 'private',
+      individualForSegment: [],
+      groupForSegment: [],
+      subSegments: [],
+    },
   };
 
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
@@ -109,14 +110,15 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[3].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint, 1);
 
   // the user should be excluded due to 'EXCLUDED_DUE_TO_GROUP_LOGIC' exclusion code:
   groupExclusions = await checkService.getAllGroupExclusions();
@@ -127,9 +129,9 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[3].id,
-        exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC
-      })
+        id: experiments[0].id + '_' + experimentUsers[3].id,
+        exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
+      }),
     ])
   );
 
@@ -140,14 +142,15 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[6].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[6].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[6].id, experimentName, experimentPoint, 1);
 
   // the user should be excluded due to 'NO_GROUP_SPECIFIED' exclusion code:
   individualExclusions = await checkService.getAllIndividualExclusion();
@@ -155,9 +158,9 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[6].id,
-        exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED
-      })
+        id: experiments[0].id + '_' + experimentUsers[6].id,
+        exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED,
+      }),
     ])
   );
 
@@ -166,14 +169,15 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[7].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[7].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[7].id, experimentName, experimentPoint, 1);
 
   // the user should be excluded due to 'NO_GROUP_SPECIFIED' exclusion code:
   individualExclusions = await checkService.getAllIndividualExclusion();
@@ -181,9 +185,9 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[7].id,
-        exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED
-      })
+        id: experiments[0].id + '_' + experimentUsers[7].id,
+        exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED,
+      }),
     ])
   );
 
@@ -192,14 +196,15 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[8].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[8].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[8].id, experimentName, experimentPoint, 1);
 
   // the user should be excluded due to 'NO_GROUP_SPECIFIED' exclusion code:
   individualExclusions = await checkService.getAllIndividualExclusion();
@@ -207,9 +212,9 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[8].id,
-        exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED
-      })
+        id: experiments[0].id + '_' + experimentUsers[8].id,
+        exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED,
+      }),
     ])
   );
 
@@ -218,14 +223,15 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[9].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[9].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[9].id, experimentName, experimentPoint, 1);
 
   // the user should be excluded due to 'NO_GROUP_SPECIFIED' exclusion code:
   individualExclusions = await checkService.getAllIndividualExclusion();
@@ -233,9 +239,9 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[9].id,
-        exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED
-      })
+        id: experiments[0].id + '_' + experimentUsers[9].id,
+        exclusionCode: EXCLUSION_CODE.NO_GROUP_SPECIFIED,
+      }),
     ])
   );
 
@@ -246,14 +252,15 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[10].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[10].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[10].id, experimentName, experimentPoint, 1);
 
   // the user should be excluded due to 'INVALID_GROUP_OR_WORKING_GROUP' exclusion code:
   individualExclusions = await checkService.getAllIndividualExclusion();
@@ -261,9 +268,9 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[10].id,
-        exclusionCode: EXCLUSION_CODE.INVALID_GROUP_OR_WORKING_GROUP
-      })
+        id: experiments[0].id + '_' + experimentUsers[10].id,
+        exclusionCode: EXCLUSION_CODE.INVALID_GROUP_OR_WORKING_GROUP,
+      }),
     ])
   );
 
@@ -272,14 +279,15 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[11].id, experimentName, experimentPoint, condition, experimentId, new UpgradeLogger());
-  checkMarkExperimentPointForUser(
-    markedExperimentPoint,
+  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[11].id,
     experimentName,
     experimentPoint,
-    1
+    condition,
+    experimentId,
+    new UpgradeLogger()
   );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[11].id, experimentName, experimentPoint, 1);
 
   // the user should be excluded due to 'INVALID_GROUP_OR_WORKING_GROUP' exclusion code:
   individualExclusions = await checkService.getAllIndividualExclusion();
@@ -287,9 +295,9 @@ export default async function testCase(): Promise<void> {
   expect(individualExclusions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experiments[0].id + "_" + experimentUsers[11].id,
-        exclusionCode: EXCLUSION_CODE.INVALID_GROUP_OR_WORKING_GROUP
-      })
+        id: experiments[0].id + '_' + experimentUsers[11].id,
+        exclusionCode: EXCLUSION_CODE.INVALID_GROUP_OR_WORKING_GROUP,
+      }),
     ])
   );
 }

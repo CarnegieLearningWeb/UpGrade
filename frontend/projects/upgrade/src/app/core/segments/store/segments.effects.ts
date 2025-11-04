@@ -76,6 +76,7 @@ export class SegmentsEffects {
                 experimentSegmentExclusion: data.nodes.experimentSegmentExclusionData,
                 featureFlagSegmentInclusion: data.nodes.featureFlagSegmentInclusionData,
                 featureFlagSegmentExclusion: data.nodes.featureFlagSegmentExclusionData,
+                allParentSegments: data.nodes.allParentSegments,
                 fromStarting,
               }),
             ];
@@ -99,6 +100,7 @@ export class SegmentsEffects {
               experimentSegmentExclusion: data.experimentSegmentExclusionData,
               featureFlagSegmentInclusion: data.featureFlagSegmentInclusionData,
               featureFlagSegmentExclusion: data.featureFlagSegmentExclusionData,
+              allParentSegments: data.allParentSegments,
             })
           ),
           catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
@@ -159,6 +161,7 @@ export class SegmentsEffects {
               experimentSegmentExclusion: data.experimentSegmentExclusionData,
               featureFlagSegmentInclusion: data.featureFlagSegmentInclusionData,
               featureFlagSegmentExclusion: data.featureFlagSegmentExclusionData,
+              allParentSegments: data.allParentSegments,
             });
           }),
           catchError(() => [SegmentsActions.actionGetSegmentByIdFailure()])

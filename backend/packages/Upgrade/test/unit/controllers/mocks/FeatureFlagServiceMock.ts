@@ -7,6 +7,7 @@ import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../../../../src/api/controllers/validators/FeatureFlagValidator';
 import { RequestedExperimentUser } from '../../../../src/api/controllers/validators/ExperimentUserValidator';
 import { FeatureFlagListValidator } from '../../../../src/api/controllers/validators/FeatureFlagListValidator';
+import { FeatureFlag } from '../../../../src/api/models/FeatureFlag';
 
 @Service()
 export default class FeatureFlagServiceMock {
@@ -56,5 +57,9 @@ export default class FeatureFlagServiceMock {
 
   public deleteList(segmentId: string, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
+  }
+
+  public validateFeatureFlagContext(flag: FeatureFlag): boolean {
+    return false;
   }
 }

@@ -35,6 +35,8 @@
           [dataSource$]="dataSource$ | async"
           [isLoading$]="isLoadingSegments$"
           [isSearchActive$]="isSearchActive$"
+          [expandedTagsMap]="expandedTagsMap"
+          (tagsExpanded)="onTagsExpanded($event.segmentId, $event.expanded)"
         >
         </app-segment-root-section-card-table>
       </div>

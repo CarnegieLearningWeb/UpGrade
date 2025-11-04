@@ -98,9 +98,6 @@ export class FeatureFlagsEffects {
             this.commonModalEvents.forceCloseModal();
             return FeatureFlagsActions.actionAddFeatureFlagSuccess({ response });
           }),
-          tap(({ response }) => {
-            this.router.navigate(['/featureflags', 'detail', response.id]);
-          }),
           catchError((res) => {
             if (res.error.type == SERVER_ERROR.DUPLICATE_KEY) {
               return [FeatureFlagsActions.actionSetIsDuplicateKey({ duplicateKeyFound: true })];
@@ -110,6 +107,17 @@ export class FeatureFlagsEffects {
         );
       })
     )
+  );
+
+  navigateToFeatureFlagDetail$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(FeatureFlagsActions.actionAddFeatureFlagSuccess),
+        tap(({ response }) => {
+          this.router.navigate(['/featureflags', 'detail', response.id]);
+        })
+      ),
+    { dispatch: false }
   );
 
   updateFeatureFlag$ = createEffect(() =>

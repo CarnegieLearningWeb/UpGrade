@@ -48,6 +48,7 @@
                           [placeholder]="'home.new-experiment.design.decision-point-site.placeholder.text' | translate"
                           [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.SITE"
                           [matAutocomplete]="autoCompleteSites"
+                          appTrimInput
                         />
                         <mat-autocomplete #autoCompleteSites="matAutocomplete" panelWidth="fit-content">
                           <mat-option
@@ -99,6 +100,7 @@
                           "
                           [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.TARGET"
                           [matAutocomplete]="autoCompleteTargets"
+                          appTrimInput
                         />
                         <mat-autocomplete #autoCompleteTargets="matAutocomplete" panelWidth="fit-content">
                           <mat-option
@@ -268,6 +270,7 @@
                           [placeholder]="'home.new-experiment.design.condition.placeholder.text' | translate"
                           [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.CONDITION_CODE"
                           [matAutocomplete]="autoCompleteConditionCodes"
+                          appTrimInput
                         />
                         <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
                           <mat-option
@@ -352,6 +355,7 @@
                         [placeholder]="'home.new-experiment.design.description.placeholder.text' | translate"
                         [formControlName]="SIMPLE_EXP_CONSTANTS.FORM_CONTROL_NAMES.DESCRIPTION"
                         autocomplete="off"
+                        appTrimInput
                       />
                     </mat-form-field>
                   </ng-container>

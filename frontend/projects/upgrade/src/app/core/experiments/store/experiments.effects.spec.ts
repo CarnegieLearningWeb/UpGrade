@@ -85,6 +85,7 @@ describe('ExperimentEffects', () => {
     };
     notificationService = {
       showError: jest.fn(),
+      showInfo: jest.fn(),
       showSuccess: jest.fn(),
     };
     translate = {
@@ -108,7 +109,7 @@ describe('ExperimentEffects', () => {
       Selectors.selectSkipExperiment.setResult(0);
       Selectors.selectTotalExperiment.setResult(1);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
+      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
       Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 
@@ -128,7 +129,7 @@ describe('ExperimentEffects', () => {
       Selectors.selectSkipExperiment.setResult(0);
       Selectors.selectTotalExperiment.setResult(null);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
+      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
       Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 
@@ -152,19 +153,22 @@ describe('ExperimentEffects', () => {
 
       const experimentIds = ['test1'];
       const totalExperiments = 1;
+      const totalFilteredExperiments = 1;
 
-      experimentDataService.getAllExperiment = jest.fn().mockReturnValue(of({ nodes: experiments, total: 1 }));
+      experimentDataService.getAllExperiment = jest
+        .fn()
+        .mockReturnValue(of({ nodes: experiments, total: 1, filtered: 1 }));
       Selectors.selectSkipExperiment.setResult(0);
       Selectors.selectTotalExperiment.setResult(1);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
+      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
       Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 
       service.getPaginatedExperiment$.pipe(take(2), pairwise()).subscribe((result: any) => {
         tick(0);
 
-        const successAction = actionGetExperimentsSuccess({ experiments, totalExperiments });
+        const successAction = actionGetExperimentsSuccess({ experiments, totalExperiments, totalFilteredExperiments });
         const fetchAction = actionFetchExperimentStats({ experimentIds });
 
         expect(result).toEqual([successAction, fetchAction]);
@@ -183,12 +187,16 @@ describe('ExperimentEffects', () => {
 
       const experimentIds = ['test1'];
       const totalExperiments = 1;
+      const totalFilteredExperiments = 1;
 
-      experimentDataService.getAllExperiment = jest.fn().mockReturnValue(of({ nodes: experiments, total: 1 }));
+      experimentDataService.getAllExperiment = jest
+        .fn()
+        .mockReturnValue(of({ nodes: experiments, total: 1, filtered: 1 }));
       Selectors.selectSkipExperiment.setResult(2);
       Selectors.selectTotalExperiment.setResult(1);
+      Selectors.selectTotalFilteredExperiment.setResult(1);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.CREATED_AT);
+      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
       Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
       Selectors.selectSearchString.setResult('test');
 
@@ -206,7 +214,11 @@ describe('ExperimentEffects', () => {
           tick(0);
 
           const skipAction = actionSetSkipExperiment({ skipExperiment: 0 });
-          const successAction = actionGetExperimentsSuccess({ experiments, totalExperiments });
+          const successAction = actionGetExperimentsSuccess({
+            experiments,
+            totalExperiments,
+            totalFilteredExperiments,
+          });
           const fetchAction = actionFetchExperimentStats({ experimentIds });
 
           expect(result.reverse()).toEqual([skipAction, successAction, fetchAction]);

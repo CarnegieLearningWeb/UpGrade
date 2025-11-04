@@ -7,7 +7,7 @@ import { getAllExperimentCondition, markExperimentPoint, updateExcludeIfReachedF
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsNull
+  checkExperimentAssignedIsNull,
 } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';

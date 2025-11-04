@@ -33,6 +33,7 @@ import { SharedModule } from '../../../shared/shared.module';
 //   [label]="config.valuesLabel"
 //   [placeholder]="config.valuesPlaceholder"
 //   [forceValidation]="forceValidation"
+//   [truncationLength]="72"
 //   (downloadRequested)="onDownloadRequested($event)"
 // ></app-common-tags-input>
 
@@ -63,6 +64,7 @@ export class CommonTagsInputComponent implements ControlValueAccessor, OnInit {
   @Input() label = '';
   @Input() placeholder = '';
   @Input() forceValidation = false;
+  @Input() truncationLength = 16;
   @Output() downloadRequested = new EventEmitter<string[]>();
   // Add an EventEmitter for blur
   @Output() blur: EventEmitter<void> = new EventEmitter<void>();

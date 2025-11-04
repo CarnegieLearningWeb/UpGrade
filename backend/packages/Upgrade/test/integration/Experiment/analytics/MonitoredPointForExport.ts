@@ -258,7 +258,7 @@ export default async function LogOperations(): Promise<void> {
 
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
-  await analyticsService.getCSVData(experimentObject.id, emailAddress, new UpgradeLogger());
+  await analyticsService.exportCSVData(experimentObject.id, emailAddress, new UpgradeLogger());
 
   // log data here
   let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
@@ -337,7 +337,7 @@ export default async function LogOperations(): Promise<void> {
     new UpgradeLogger()
   );
 
-  await analyticsService.getCSVData(experimentObject.id, emailAddress, new UpgradeLogger());
+  await analyticsService.exportCSVData(experimentObject.id, emailAddress, new UpgradeLogger());
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[2].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(
     { ...experimentUserDoc, requestedUserId: experimentUsers[2].id },

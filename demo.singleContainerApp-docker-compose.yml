@@ -1,0 +1,52 @@
+services:
+  upgrade-app:
+    build:
+      context: .
+      dockerfile: ./demo.singleContainerApp.Dockerfile
+    image: upgrade-app:latest
+    user: "node"
+    env_file:
+      - ./backend/packages/Upgrade/.env.docker.local
+    environment:
+      - NODE_ENV=production
+      - CONTEXT=upgrade
+    command: >
+      sh -c "
+      npm --prefix ./frontend run build:demo &&
+      npm --prefix ./backend run build:upgrade &&
+      concurrently
+      \"npm --prefix ./frontend run server:demo\"
+      \"npm --prefix ./backend run production:upgrade\"
+      "
+    volumes:
+      - ./frontend:/usr/src/app/frontend
+      - ./backend:/usr/src/app/backend
+      - frontend-node_modules:/usr/src/app/frontend/node_modules
+    networks:
+      - localdev
+    ports:
+      - "4200:4200"
+      - "3030:3030"
+    depends_on:
+      - "postgres"
+
+  postgres:
+    image: postgres:alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - localdev
+    ports:
+      - "5432:5432"
+    volumes:
+      - upgradedbdata:/var/lib/postgresql/data
+
+volumes:
+  upgradedbdata:
+  frontend-node_modules:
+
+networks:
+  localdev:
+    driver: "bridge"

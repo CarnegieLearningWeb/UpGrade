@@ -1,4 +1,15 @@
-import { JsonController, Get, Delete, Authorized, Post, Req, Body, QueryParams, Params } from 'routing-controllers';
+import {
+  JsonController,
+  Get,
+  Delete,
+  Authorized,
+  Post,
+  Req,
+  Body,
+  QueryParams,
+  Params,
+  BadRequestError,
+} from 'routing-controllers';
 import { SegmentService, SegmentWithStatus } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
 import { AppRequest, PaginationResponse } from '../../types';
@@ -273,7 +284,7 @@ export class SegmentController {
     return globalExcludeSegments.map((segment) => {
       return {
         ...segment,
-        status: SEGMENT_STATUS.GLOBAL,
+        status: SEGMENT_STATUS.EXCLUDED,
       };
     });
   }
@@ -343,16 +354,13 @@ export class SegmentController {
     paginatedParams: SegmentPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<SegmentPaginationInfo> {
-    const [segmentsWithStatus, count] = await Promise.all([
-      this.segmentService.findPaginated(
-        paginatedParams.skip,
-        paginatedParams.take,
-        request.logger,
-        paginatedParams.searchParams,
-        paginatedParams.sortParams
-      ),
-      this.segmentService.getTotalPublicSegmentCount(),
-    ]);
+    const [segmentsWithStatus, count] = await this.segmentService.findPaginated(
+      paginatedParams.skip,
+      paginatedParams.take,
+      request.logger,
+      paginatedParams.searchParams,
+      paginatedParams.sortParams
+    );
     return {
       total: count,
       nodes: segmentsWithStatus,
@@ -478,6 +486,11 @@ export class SegmentController {
     @Body({ validate: true }) segment: SegmentInputValidator,
     @Req() request: AppRequest
   ): Promise<Segment> {
+    const contextValidationError = this.segmentService.validateSegmentContext(segment);
+    if (contextValidationError) {
+      throw new BadRequestError(contextValidationError);
+    }
+
     return this.segmentService.upsertSegment(segment, request.logger);
   }
 

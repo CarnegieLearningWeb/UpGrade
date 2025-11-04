@@ -36,6 +36,7 @@ import {
   selectCurrentContextMetaDataConditions,
   selectIsLoadingContextMetaData,
   selectExperimentsExportLoading,
+  selectTotalFilteredExperiment,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -61,6 +62,7 @@ export class ExperimentService {
       })
     )
   );
+  totalExperiments$ = this.store$.pipe(select(selectTotalExperiment));
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
   isLoadingExperimentDetailStats$ = this.store$.pipe(select(selectIsLoadingExperimentDetailStats));
   isPollingExperimentDetailStats$ = this.store$.pipe(select(selectIsPollingExperimentDetailStats));
@@ -88,7 +90,7 @@ export class ExperimentService {
     );
   }
 
-  isInitialExperimentsLoading() {
+  haveInitialExperimentsLoaded() {
     return combineLatest([this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$]).pipe(
       map(([isLoading, experiments]) => !isLoading || !!experiments.length)
     );
@@ -97,8 +99,8 @@ export class ExperimentService {
   isAllExperimentsFetched() {
     return combineLatest([
       this.store$.pipe(select(selectSkipExperiment)),
-      this.store$.pipe(select(selectTotalExperiment)),
-    ]).pipe(map(([skipExperiments, totalExperiments]) => skipExperiments === totalExperiments));
+      this.store$.pipe(select(selectTotalFilteredExperiment)),
+    ]).pipe(map(([skipExperiments, totalFilteredExperiments]) => skipExperiments === totalFilteredExperiments));
   }
 
   loadExperiments(fromStarting?: boolean) {

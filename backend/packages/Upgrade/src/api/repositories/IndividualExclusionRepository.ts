@@ -39,8 +39,6 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
       return `${experimentId}_${userId}`;
     });
     return await this.createQueryBuilder('individualExclusion')
-      .leftJoinAndSelect('individualExclusion.experiment', 'experiment')
-      .leftJoinAndSelect('individualExclusion.user', 'user')
       .whereInIds(primaryKeys)
       .getMany()
       .catch((errorMsg: any) => {
@@ -48,6 +46,24 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
           this.constructor.name,
           'findExcluded',
           { userId, experimentIds },
+          errorMsg
+        );
+        throw errorMsgString;
+      });
+  }
+
+  public async findExcludedForUsers(userIds: string[], experimentIds: string[]): Promise<IndividualExclusion[]> {
+    const primaryKeys = experimentIds.flatMap((experimentId) => {
+      return userIds.map((userId) => `${experimentId}_${userId}`);
+    });
+    return await this.createQueryBuilder('individualExclusion')
+      .whereInIds(primaryKeys)
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'findExcludedForUsers',
+          { userIds, experimentIds },
           errorMsg
         );
         throw errorMsgString;

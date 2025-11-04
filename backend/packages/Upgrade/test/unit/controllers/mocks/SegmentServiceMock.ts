@@ -1,3 +1,4 @@
+import { Segment } from '../../../../src/api/models/Segment';
 import { Service } from 'typedi';
 
 @Service()
@@ -60,5 +61,8 @@ export default class SegmentServiceMock {
 
   public deleteList(): Promise<[]> {
     return Promise.resolve([]);
+  }
+  public validateSegmentContext(segment: Segment): boolean {
+    return false;
   }
 }
