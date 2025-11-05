@@ -100,7 +100,11 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       // Hide global metrics options if Within-subjects is selected
       this.options =
         this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
-          ? this.allMetrics.filter((metric) => metric.children.length > 0)
+          ? this.allMetrics.filter(
+              (metric) =>
+                metric.children.length > 0 &&
+                metric.context?.includes(this.currentContext || this.experimentInfo?.context)
+            )
           : this.allMetrics.filter((metric) =>
               metric.context?.includes(this.currentContext || this.experimentInfo?.context)
             );
