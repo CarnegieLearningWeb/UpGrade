@@ -55,6 +55,7 @@ export class SegmentRootSectionCardComponent {
   segmentFilterOptions = [
     SEGMENT_SEARCH_KEY.ALL,
     SEGMENT_SEARCH_KEY.NAME,
+    SEGMENT_SEARCH_KEY.ID,
     SEGMENT_SEARCH_KEY.CONTEXT,
     SEGMENT_SEARCH_KEY.TAG,
   ];

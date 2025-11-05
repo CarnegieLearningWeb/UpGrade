@@ -82,7 +82,7 @@ import { CacheService } from './CacheService';
 import { QueryService } from './QueryService';
 import { ArchivedStats } from '../models/ArchivedStats';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
-import { validate } from 'class-validator';
+import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
 import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
@@ -1798,6 +1798,10 @@ export class ExperimentService {
     const type = params.key;
     // escape % and ' characters
     const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    if (type === EXPERIMENT_SEARCH_KEY.ID && !isUUID(serachString)) {
+      return '';
+    }
+
     const likeString = `ILIKE '%${serachString}%'`;
     const searchString: string[] = [];
     switch (type) {
@@ -1813,6 +1817,9 @@ export class ExperimentService {
       case EXPERIMENT_SEARCH_KEY.TAG:
         searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         break;
+      case EXPERIMENT_SEARCH_KEY.ID:
+        searchString.push(`experiment.id = '${serachString}'`);
+        break;
       default:
         searchString.push(`name ${likeString}`);
         searchString.push(`state::TEXT ${likeString}`);
@@ -1820,6 +1827,9 @@ export class ExperimentService {
         searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         searchString.push(`partitions.site ${likeString}`);
         searchString.push(`partitions.target ${likeString}`);
+        if (isUUID(serachString)) {
+          searchString.push(`experiment.id = '${serachString}'`);
+        }
         break;
     }
 

@@ -43,7 +43,7 @@ import { ExperimentAssignmentService } from './ExperimentAssignmentService';
 import { SegmentService } from './SegmentService';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
-import { validate } from 'class-validator';
+import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import {
   FeatureFlagImportDataValidation,
@@ -805,6 +805,9 @@ export class FeatureFlagService {
     const type = params.key;
     // escape % and ' characters
     const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    if (type === FLAG_SEARCH_KEY.ID && !isUUID(serachString)) {
+      return '';
+    }
     const likeString = `ILIKE '%${serachString}%'`;
     const searchString: string[] = [];
     switch (type) {
@@ -820,11 +823,17 @@ export class FeatureFlagService {
       case FLAG_SEARCH_KEY.TAG:
         searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         break;
+      case FLAG_SEARCH_KEY.ID:
+        searchString.push(`feature_flag.id = '${serachString}'`);
+        break;
       default:
         searchString.push(`name ${likeString}`);
         searchString.push(`status::TEXT ${likeString}`);
         searchString.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
         searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        if (isUUID(serachString)) {
+          searchString.push(`feature_flag.id = '${serachString}'`);
+        }
         break;
     }
 
