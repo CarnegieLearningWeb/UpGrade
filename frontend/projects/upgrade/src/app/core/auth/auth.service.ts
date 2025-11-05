@@ -9,6 +9,7 @@ import {
   selectCurrentUser,
   selectGoogleCredential,
   selectUserIsAdmin,
+  selectUserIsReader,
 } from './store/auth.selectors';
 import { UserPermission } from './store/auth.models';
 import { BehaviorSubject, filter, take } from 'rxjs';
@@ -23,6 +24,7 @@ export class AuthService {
   isLoggedIn$ = this.store$.pipe(select(selectIsLoggedIn));
   isAuthenticating$ = this.store$.pipe(select(selectIsAuthenticating));
   isUserAdmin$ = this.store$.pipe(select(selectUserIsAdmin));
+  isUserReader$ = this.store$.pipe(select(selectUserIsReader));
   currentUser$ = this.store$.pipe(select(selectCurrentUser));
   getGoogleCredential$ = this.store$.pipe(select(selectGoogleCredential));
   userPermissions$ = new BehaviorSubject<UserPermission>(null);

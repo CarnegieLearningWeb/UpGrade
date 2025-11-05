@@ -45,6 +45,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
     this.featureFlag$,
     this.permissions$,
   ]).pipe(map(([flag, permissions]) => ({ flag, permissions })));
+  isUserReader$ = this.authService.isUserReader$;
 
   subscriptions = new Subscription();
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
