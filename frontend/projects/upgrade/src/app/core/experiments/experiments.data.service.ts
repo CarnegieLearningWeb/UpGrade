@@ -6,6 +6,7 @@ import {
   UpdateExperimentFilterModeRequest,
   UpdateExperimentDecisionPointsRequest,
   ExperimentSegmentListResponse,
+  UpdateExperimentConditionsRequest,
 } from './store/experiments.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
@@ -162,6 +163,14 @@ export class ExperimentDataService {
     const updatedExperiment = {
       ...params.experiment,
       partitions: params.decisionPoints,
+    };
+    return this.updateExperiment(updatedExperiment);
+  }
+
+  updateExperimentConditions(params: UpdateExperimentConditionsRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      conditions: params.conditions,
     };
     return this.updateExperiment(updatedExperiment);
   }
