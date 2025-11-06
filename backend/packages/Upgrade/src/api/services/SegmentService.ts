@@ -222,9 +222,7 @@ export class SegmentService {
 
     if (searchParams) {
       const whereClause = this.paginatedSearchString(searchParams);
-      if (whereClause) {
-        paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
-      }
+      paginatedParentSubQuery = paginatedParentSubQuery.where(whereClause);
     }
     const countQuery = paginatedParentSubQuery.clone().andWhere('segment.type=:type', { type: SEGMENT_TYPE.PUBLIC });
     paginatedParentSubQuery = paginatedParentSubQuery.andWhere('segment.type = :type').offset(skip).limit(take);
@@ -247,33 +245,33 @@ export class SegmentService {
   private paginatedSearchString(params: ISegmentSearchParams): string {
     const type = params.key;
     // escape % and ' characters
-    const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
-    if (type === SEGMENT_SEARCH_KEY.ID && !isUUID(serachString)) {
-      return null;
+    const searchString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    if (type === SEGMENT_SEARCH_KEY.ID && !isUUID(searchString)) {
+      return '';
     }
-    const likeString = `ILIKE '%${serachString}%'`;
-    const searchString: string[] = [];
+    const likeString = `ILIKE '%${searchString}%'`;
+    const searchArray: string[] = [];
     switch (type) {
       case SEGMENT_SEARCH_KEY.NAME || SEGMENT_SEARCH_KEY.CONTEXT:
-        searchString.push(`${type} ${likeString}`);
+        searchArray.push(`${type} ${likeString}`);
         break;
       case SEGMENT_SEARCH_KEY.TAG:
-        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         break;
       case SEGMENT_SEARCH_KEY.ID:
-        searchString.push(`segment.id = '${serachString}'`);
+        searchArray.push(`segment.id = '${searchString}'`);
         break;
       default:
-        searchString.push(`${SEGMENT_SEARCH_KEY.NAME} ${likeString}`);
-        searchString.push(`${SEGMENT_SEARCH_KEY.CONTEXT} ${likeString}`);
-        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
-        if (isUUID(serachString)) {
-          searchString.push(`segment.id = '${serachString}'`);
+        searchArray.push(`${SEGMENT_SEARCH_KEY.NAME} ${likeString}`);
+        searchArray.push(`${SEGMENT_SEARCH_KEY.CONTEXT} ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        if (isUUID(searchString)) {
+          searchArray.push(`segment.id = '${searchString}'`);
         }
         break;
     }
 
-    const searchStringConcatenated = `(${searchString.join(' OR ')})`;
+    const searchStringConcatenated = `(${searchArray.join(' OR ')})`;
     return searchStringConcatenated;
   }
 
