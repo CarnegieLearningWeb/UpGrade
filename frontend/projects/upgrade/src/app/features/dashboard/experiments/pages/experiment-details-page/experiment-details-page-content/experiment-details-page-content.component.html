@@ -21,6 +21,12 @@
         section-card
       ></app-experiment-conditions-section-card>
 
+      <app-experiment-payloads-section-card
+        *ngIf="activeTabIndex === 0"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-payloads-section-card>
+
       <app-experiment-inclusions-section-card
         *ngIf="activeTabIndex === 0"
         [isSectionCardExpanded]="isSectionCardExpanded"

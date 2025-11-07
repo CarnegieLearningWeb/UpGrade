@@ -1,0 +1,26 @@
+<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'experiments.details.payloads.card.title.text' | translate"
+    [subtitle]="'experiments.details.payloads.card.subtitle.text' | translate"
+    [tableRowCount]="experiment.conditionPayloads?.length || 0"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="(permissions$ | async)?.experiments.update"
+    [primaryButtonText]="'experiments.details.add-payload.button.text' | translate"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (primaryButtonClick)="onAddPayloadClick(experiment.context[0], experiment.id)"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <div content *ngIf="isSectionCardExpanded" class="placeholder-content">
+    <!-- Payload table component will be implemented here in the next phase -->
+  </div>
+</app-common-section-card>

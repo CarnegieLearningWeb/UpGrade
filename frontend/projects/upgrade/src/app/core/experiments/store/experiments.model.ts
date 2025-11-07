@@ -323,6 +323,8 @@ export enum EXPERIMENT_BUTTON_ACTION {
   EXPORT_ALL_DECISION_POINTS = 'export all decision points',
   IMPORT_CONDITION = 'import condition',
   EXPORT_ALL_CONDITIONS = 'export all conditions',
+  IMPORT_PAYLOAD = 'import payload',
+  EXPORT_ALL_PAYLOADS = 'export all payloads',
   IMPORT_METRIC = 'import metric',
   EXPORT_ALL_METRICS = 'export all metrics',
   EXPORT_ENROLLMENT_DATA = 'export enrollment data',

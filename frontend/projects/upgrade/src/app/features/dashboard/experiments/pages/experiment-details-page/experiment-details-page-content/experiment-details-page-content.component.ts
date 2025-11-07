@@ -5,6 +5,7 @@ import { SharedModule } from '../../../../../../shared/shared.module';
 import { ExperimentOverviewDetailsSectionCardComponent } from './experiment-overview-details-section-card/experiment-overview-details-section-card.component';
 import { ExperimentDecisionPointsSectionCardComponent } from './experiment-decision-points-section-card/experiment-decision-points-section-card.component';
 import { ExperimentConditionsSectionCardComponent } from './experiment-conditions-section-card/experiment-conditions-section-card.component';
+import { ExperimentPayloadsSectionCardComponent } from './experiment-payloads-section-card/experiment-payloads-section-card.component';
 import { ExperimentInclusionsSectionCardComponent } from './experiment-inclusions-section-card/experiment-inclusions-section-card.component';
 import { ExperimentExclusionsSectionCardComponent } from './experiment-exclusions-section-card/experiment-exclusions-section-card.component';
 import { ExperimentMetricsSectionCardComponent } from './experiment-metrics-section-card/experiment-metrics-section-card.component';
@@ -26,6 +27,7 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
     ExperimentOverviewDetailsSectionCardComponent,
     ExperimentDecisionPointsSectionCardComponent,
     ExperimentConditionsSectionCardComponent,
+    ExperimentPayloadsSectionCardComponent,
     ExperimentInclusionsSectionCardComponent,
     ExperimentExclusionsSectionCardComponent,
     ExperimentMetricsSectionCardComponent,
