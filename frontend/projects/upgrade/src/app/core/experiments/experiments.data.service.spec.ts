@@ -112,8 +112,8 @@ describe('ExperimentDataService', () => {
       backendVersion: '1.0.0',
       filterMode: FILTER_MODE.INCLUDE_ALL,
       groupSatisfied: 0,
-      experimentSegmentInclusion: dummyInclusionData,
-      experimentSegmentExclusion: dummyExclusionData,
+      experimentSegmentInclusion: [dummyInclusionData],
+      experimentSegmentExclusion: [dummyExclusionData],
       type: EXPERIMENT_TYPE.SIMPLE,
       assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
     };

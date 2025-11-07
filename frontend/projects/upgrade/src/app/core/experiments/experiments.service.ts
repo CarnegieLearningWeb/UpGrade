@@ -82,7 +82,7 @@ export class ExperimentService {
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
   selectedExperimentOverviewDetails$ = this.store$.pipe(select(selectExperimentOverviewDetails));
   searchParams$ = this.store$.pipe(select(selectSearchExperimentParams));
-  selectRootTableState$ = this.store$.select(selectRootTableState);
+  selectRootTableState$ = this.store$.pipe(select(selectRootTableState));
   allDecisionPoints$ = this.store$.pipe(select(selectAllDecisionPoints));
   allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));

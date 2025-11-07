@@ -62,7 +62,6 @@ export enum EXPERIMENT_STATE {
   ENROLLMENT_COMPLETE = 'enrollmentComplete',
   CANCELLED = 'cancelled',
   ARCHIVED = 'archived',
-  DRAFT = 'draft',
 }
 
 export enum FEATURE_FLAG_STATUS {

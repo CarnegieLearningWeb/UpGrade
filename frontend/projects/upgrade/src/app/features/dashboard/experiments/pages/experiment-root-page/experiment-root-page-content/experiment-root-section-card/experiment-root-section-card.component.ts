@@ -43,7 +43,7 @@ export class ExperimentRootSectionCardComponent {
   permissions$: Observable<UserPermission>;
   dataSource$: Observable<MatTableDataSource<Experiment>>;
   isLoadingExperiments$ = this.experimentService.isLoadingExperiment$;
-  isInitialLoading$ = this.experimentService.isInitialExperimentsLoading();
+  isInitialLoading$ = this.experimentService.haveInitialExperimentsLoaded();
   searchString$ = this.experimentService.selectSearchString$;
   searchKey$ = this.experimentService.selectSearchKey$;
   searchParams$ = this.experimentService.searchParams$;
