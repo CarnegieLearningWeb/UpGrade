@@ -62,21 +62,17 @@
     }
 
     .condition-column {
-      width: 35%;
+      width: 30%;
       padding-left: 32px;
     }
 
-    .payload-column {
-      width: 30%;
-    }
-
     .weight-column {
-      width: 20%;
+      width: 5%;
       text-align: right;
     }
 
     .weight-edit-column {
-      width: 5%;
+      width: 15%;
       text-align: left;
 
       .weight-edit-button {
@@ -92,6 +88,10 @@
           cursor: not-allowed;
         }
       }
+    }
+
+    .description-column {
+      width: 40%;
     }
 
     .actions-column {
