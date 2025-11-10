@@ -41,11 +41,18 @@ import {
   UPSERT_EXPERIMENT_ACTION,
   ExperimentDecisionPoint,
   ExperimentCondition,
+  ExperimentConditionPayload,
+  Experiment,
+  ExperimentVM,
 } from '../../core/experiments/store/experiments.model';
 import {
   ConditionWeightUpdate,
   EditConditionWeightsModalComponent,
 } from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
+import {
+  EditPayloadModalComponent,
+  EditPayloadModalParams,
+} from '../../features/dashboard/experiments/modals/edit-payload-modal/edit-payload-modal.component';
 import { Observable } from 'rxjs';
 
 export interface ImportModalParams {
@@ -195,6 +202,27 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(UpsertConditionModalComponent, config);
+  }
+
+  openEditPayloadModal(payload: ExperimentConditionPayload): MatDialogRef<EditPayloadModalComponent> {
+    const commonModalConfig: CommonModalConfig<EditPayloadModalParams> = {
+      title: 'Edit Payload',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        payload: { ...payload },
+      },
+    };
+
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: 'input',
+      disableClose: true,
+    };
+
+    return this.dialog.open(EditPayloadModalComponent, config);
   }
 
   // feature flag modal ---------------------------------------- //

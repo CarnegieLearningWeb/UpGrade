@@ -38,11 +38,10 @@ export class ExperimentPayloadsTableComponent {
   @Input() actionsDisabled?: boolean = false;
   @Output() rowAction = new EventEmitter<ExperimentPayloadRowActionEvent>();
 
-  displayedColumns: string[] = ['site', 'target', 'condition', 'payload', 'actions'];
+  displayedColumns: string[] = ['decisionPoint', 'condition', 'payload', 'actions'];
 
   PAYLOAD_TRANSLATION_KEYS = {
-    SITE: 'experiments.details.payloads.site.text',
-    TARGET: 'experiments.details.payloads.target.text',
+    DECISION_POINT: 'experiments.details.payloads.decision-point.text',
     CONDITION: 'experiments.details.payloads.condition.text',
     PAYLOAD: 'experiments.details.payloads.payload.text',
     ACTIONS: 'experiments.details.payloads.actions.text',

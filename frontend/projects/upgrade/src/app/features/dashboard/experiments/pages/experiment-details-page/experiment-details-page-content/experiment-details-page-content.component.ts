@@ -10,6 +10,7 @@ import { ExperimentExclusionsSectionCardComponent } from './experiment-exclusion
 import { ExperimentMetricsSectionCardComponent } from './experiment-metrics-section-card/experiment-metrics-section-card.component';
 import { ExperimentEnrollmentDataSectionCardComponent } from './experiment-enrollment-data-section-card/experiment-enrollment-data-section-card.component';
 import { ExperimentMetricsDataSectionCardComponent } from './experiment-metrics-data-section-card/experiment-metrics-data-section-card.component';
+import { ExperimentPayloadsSectionCardComponent } from './experiment-payloads-section-card/experiment-payloads-section-card.component';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { Observable, Subscription, combineLatest } from 'rxjs';
@@ -26,6 +27,7 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
     ExperimentOverviewDetailsSectionCardComponent,
     ExperimentDecisionPointsSectionCardComponent,
     ExperimentConditionsSectionCardComponent,
+    ExperimentPayloadsSectionCardComponent,
     ExperimentInclusionsSectionCardComponent,
     ExperimentExclusionsSectionCardComponent,
     ExperimentMetricsSectionCardComponent,

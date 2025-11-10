@@ -24,6 +24,6 @@
     [partitions]="experiment.partitions || []"
     [isLoading$]="experimentService.isLoadingSelectedExperiment$"
     [actionsDisabled]="!(permissions$ | async)?.experiments.update"
-    (rowAction)="onRowAction($event, experiment.id, experiment.context[0])"
+    (rowAction)="onRowAction($event)"
   ></app-experiment-payloads-table>
 </app-common-section-card>

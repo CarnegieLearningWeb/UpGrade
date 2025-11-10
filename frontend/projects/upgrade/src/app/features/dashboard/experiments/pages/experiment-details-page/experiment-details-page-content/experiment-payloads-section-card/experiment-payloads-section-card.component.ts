@@ -10,6 +10,7 @@ import { ExperimentService } from '../../../../../../../core/experiments/experim
 import { Observable } from 'rxjs';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
+import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import {
   ExperimentConditionPayload,
   ExperimentPayloadRowActionEvent,
@@ -37,7 +38,11 @@ export class ExperimentPayloadsSectionCardComponent implements OnInit {
   permissions$: Observable<UserPermission>;
   selectedExperiment$ = this.experimentService.selectedExperiment$;
 
-  constructor(private experimentService: ExperimentService, private authService: AuthService) {}
+  constructor(
+    private experimentService: ExperimentService,
+    private authService: AuthService,
+    private dialogService: DialogService
+  ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
@@ -47,18 +52,17 @@ export class ExperimentPayloadsSectionCardComponent implements OnInit {
     this.isSectionCardExpanded = isSectionCardExpanded;
   }
 
-  onRowAction(event: ExperimentPayloadRowActionEvent, experimentId: string, context: string): void {
+  onRowAction(event: ExperimentPayloadRowActionEvent): void {
     switch (event.action) {
       case EXPERIMENT_ROW_ACTION.EDIT:
-        this.onEditPayload(event.payload, experimentId, context);
+        this.onEditPayload(event.payload);
         break;
       default:
         console.log('Unknown action:', event.action);
     }
   }
 
-  onEditPayload(payload: ExperimentConditionPayload, experimentId: string, context: string): void {
-    // TODO: Implement edit payload modal when dialog service is available
-    console.log('Edit payload clicked:', payload, experimentId, context);
+  onEditPayload(payload: ExperimentConditionPayload): void {
+    this.dialogService.openEditPayloadModal(payload);
   }
 }
