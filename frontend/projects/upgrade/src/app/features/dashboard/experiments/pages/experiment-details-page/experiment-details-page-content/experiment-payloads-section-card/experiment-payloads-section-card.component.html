@@ -1,0 +1,29 @@
+<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'experiments.details.payloads.card.title.text' | translate"
+    [subtitle]="'experiments.details.payloads.card.subtitle.text' | translate"
+    [tableRowCount]="experiment.conditionPayloads?.length || 0"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <app-experiment-payloads-table
+    content
+    *ngIf="isSectionCardExpanded"
+    [conditionPayloads]="experiment.conditionPayloads || []"
+    [conditions]="experiment.conditions || []"
+    [partitions]="experiment.partitions || []"
+    [isLoading$]="experimentService.isLoadingSelectedExperiment$"
+    [actionsDisabled]="!(permissions$ | async)?.experiments.update"
+    (rowAction)="onRowAction($event, experiment.id, experiment.context[0])"
+  ></app-experiment-payloads-table>
+</app-common-section-card>

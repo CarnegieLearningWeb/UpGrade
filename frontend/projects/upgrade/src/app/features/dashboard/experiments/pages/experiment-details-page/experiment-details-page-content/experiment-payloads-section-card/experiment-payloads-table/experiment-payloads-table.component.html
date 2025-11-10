@@ -1,0 +1,82 @@
+<div class="table-container">
+  <!-- Loading spinner -->
+  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+
+  <!-- Table -->
+  <table
+    mat-table
+    [dataSource]="conditionPayloads"
+    [ngClass]="{ 'no-data': !conditionPayloads?.length }"
+    class="payloads-table"
+  >
+    <!-- Site Column -->
+    <ng-container matColumnDef="site">
+      <th mat-header-cell *matHeaderCellDef class="site-column ft-14-600">
+        {{ PAYLOAD_TRANSLATION_KEYS.SITE | translate }}
+      </th>
+      <td mat-cell *matCellDef="let payload" class="site-column ft-14-400">
+        {{ getSite(payload.decisionPoint) }}
+      </td>
+    </ng-container>
+
+    <!-- Target Column -->
+    <ng-container matColumnDef="target">
+      <th mat-header-cell *matHeaderCellDef class="target-column ft-14-600">
+        {{ PAYLOAD_TRANSLATION_KEYS.TARGET | translate }}
+      </th>
+      <td mat-cell *matCellDef="let payload" class="target-column ft-14-400">
+        {{ getTarget(payload.decisionPoint) }}
+      </td>
+    </ng-container>
+
+    <!-- Condition Column -->
+    <ng-container matColumnDef="condition">
+      <th mat-header-cell *matHeaderCellDef class="condition-column ft-14-600">
+        {{ PAYLOAD_TRANSLATION_KEYS.CONDITION | translate }}
+      </th>
+      <td mat-cell *matCellDef="let payload" class="condition-column ft-14-400">
+        {{ getConditionName(payload.parentCondition) }}
+      </td>
+    </ng-container>
+
+    <!-- Payload Column -->
+    <ng-container matColumnDef="payload">
+      <th mat-header-cell *matHeaderCellDef class="payload-column ft-14-600">
+        {{ PAYLOAD_TRANSLATION_KEYS.PAYLOAD | translate }}
+      </th>
+      <td mat-cell *matCellDef="let payload" class="payload-column ft-14-400">
+        {{ payload.payload?.value || '' }}
+      </td>
+    </ng-container>
+
+    <!-- Actions Column (Edit only) -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef class="actions-column ft-14-600">
+        {{ PAYLOAD_TRANSLATION_KEYS.ACTIONS | translate }}
+      </th>
+      <td mat-cell *matCellDef="let payload" class="actions-column ft-14-400 dense-2">
+        <div class="button-wrapper">
+          <button
+            mat-icon-button
+            class="action-button"
+            [disabled]="actionsDisabled"
+            (click)="onEditButtonClick(payload)"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Header and Row Definitions -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+    <!-- No Data Row -->
+    <tr *matNoDataRow>
+      <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
+        {{ 'experiments.details.payloads.card.no-data-row.text' | translate }}
+      </td>
+    </tr>
+  </table>
+</div>
