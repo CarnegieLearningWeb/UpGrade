@@ -11,6 +11,13 @@ export class IndividualEnrollmentRepository extends Repository<IndividualEnrollm
     });
   }
 
+  public findEnrollmentsForUsers(userIds: string[], experimentIds: string[]): Promise<IndividualEnrollment[]> {
+    return this.find({
+      where: { experimentId: In(experimentIds), userId: In(userIds) },
+      select: ['id', 'userId', 'experimentId', 'enrollmentCode', 'conditionId'],
+    });
+  }
+
   public async deleteEnrollmentsOfUserInExperiments(userId: string, experimentIds: string[]): Promise<DeleteResult> {
     return this.delete({
       user: { id: userId },

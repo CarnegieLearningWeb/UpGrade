@@ -95,7 +95,7 @@ export default async function GroupExclusionSegmentIndividualConsistency(): Prom
   );
 
   // create group exclusion segment
-  let segmentObject = segmentThird;
+  const segmentObject = segmentThird;
 
   // await segmentService.upsertSegment(segmentObject, new UpgradeLogger(), "exclude");
   // let segments = await segmentService.getAllSegments(new UpgradeLogger());
@@ -134,7 +134,7 @@ export default async function GroupExclusionSegmentIndividualConsistency(): Prom
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   // create segment to include above users who already reached before
-  let segmentObject1 = segmentFourth;
+  const segmentObject1 = segmentFourth;
   experimentObject.state = 'enrolling';
   experimentObject.experimentSegmentInclusion[0].segment.groupForSegment = [];
   experimentObject.experimentSegmentInclusion[0].segment.individualForSegment = [segmentObject1];

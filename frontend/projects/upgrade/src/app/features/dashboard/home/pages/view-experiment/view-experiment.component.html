@@ -905,8 +905,8 @@
                   {{ 'monitor.statistic.text' | translate }}
                 </mat-header-cell>
                 <mat-cell class="ft-12-600" *matCellDef="let data">
-                  <div *ngFor="let statisticOperation of data.metric_Operation">
-                    {{ statisticOperation | titlecase }}
+                  <div style="white-space: pre-line">
+                    {{ formatStatisticOperation(data.metric_Operation) }}
                   </div>
                 </mat-cell>
               </ng-container>
@@ -933,43 +933,26 @@
             </mat-table>
           </div>
 
-          <!-- Experiment reward metric table -->
-          <div class="table-container table-container-metrics" *ngIf="experiment?.rewardMetricKey">
+          <!-- Experiment reward metric section -->
+          <div class="table-container" *ngIf="experiment?.rewardMetricKey">
             <span class="ft-24-700">{{ 'home.new-experiment.metrics.reward-metric.text' | translate }}</span>
-            <mat-table [dataSource]="displayRewardMetrics" class="table">
-              <!-- Metric Column -->
-              <ng-container matColumnDef="metricsKey">
-                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                  {{ 'query.metric.text' | translate }}
-                </mat-header-cell>
-                <mat-cell class="ft-12-600" *matCellDef="let row">
-                  {{ row.metric_Key }}
-                </mat-cell>
-              </ng-container>
-
-              <!-- Statistic Column -->
-              <ng-container matColumnDef="metricsOperation">
-                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                  {{ 'monitor.statistic.text' | translate }}
-                </mat-header-cell>
-                <mat-cell class="ft-12-600" *matCellDef="let row">
-                  {{ row.metric_Operation }}
-                </mat-cell>
-              </ng-container>
-
-              <!-- Description Column -->
-              <ng-container matColumnDef="metricsName">
-                <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                  {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
-                </mat-header-cell>
-                <mat-cell class="ft-12-600" *matCellDef="let row">
-                  {{ row.metric_Name }}
-                </mat-cell>
-              </ng-container>
-
-              <mat-header-row *matHeaderRowDef="displayedMetricsColumns"></mat-header-row>
-              <mat-row *matRowDef="let row; columns: displayedMetricsColumns"></mat-row>
-            </mat-table>
+            <div class="reward-metric-description" *ngIf="displayRewardMetrics as rewardMetricData">
+              <div class="reward-metric-item" *ngFor="let row of rewardMetricData">
+                <span>
+                  <span class="ft-14-600">Key:</span>
+                  <span class="ft-14-400"> "{{ row.metric_Key }}"</span>
+                </span>
+                <span>
+                  <span class="ft-14-600">Allowed Values:</span>
+                  <span class="ft-14-400"> ["SUCCESS", "FAILURE"]</span>
+                </span>
+                <span class="ft-12-400">
+                  Adaptive experiments require "reward" feedback to be logged from enrolled users, which will tilt the
+                  probability of experimental assignments towards conditions that receive more successful feedback. Use
+                  this key when logging metrics as a simple metric value.
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </mat-tab>

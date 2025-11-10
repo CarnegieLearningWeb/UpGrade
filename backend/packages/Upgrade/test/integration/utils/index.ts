@@ -78,12 +78,6 @@ export function checkMarkExperimentPointForUser(
         }),
       ])
     );
-
-    const monitorDocument = markedDecisionPoint.find((markedPoint) => {
-      return markedPoint.site === site && markedPoint.target === target && markedPoint.user.id === userId;
-    });
-
-    expect(monitorDocument.monitoredPointLogs.length).toEqual(markExperimentPointLogLength);
   }
 }
 

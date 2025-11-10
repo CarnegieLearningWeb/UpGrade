@@ -191,6 +191,7 @@ export interface UsedByTableRow {
 export enum USED_BY_TYPE {
   EXPERIMENT = 'Experiment',
   FEATURE_FLAG = 'Feature Flag',
+  SEGMENT = 'Segment',
 }
 
 export interface SegmentsPaginationInfo {
@@ -240,6 +241,7 @@ export interface SegmentState extends EntityState<Segment> {
   allExperimentSegmentsExclusion: any;
   allFeatureFlagSegmentsInclusion: any;
   allFeatureFlagSegmentsExclusion: any;
+  allParentSegments: any;
   skipSegments: number;
   totalSegments: number;
   searchKey: SEGMENT_SEARCH_KEY;

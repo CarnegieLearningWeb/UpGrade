@@ -73,6 +73,7 @@ describe('ExperimentEffects', () => {
   let router: any;
   let notificationService: any;
   let translate: any;
+  let commonModalEventsService: any;
   let mockEnvironment: Environment;
 
   beforeEach(() => {
@@ -85,12 +86,17 @@ describe('ExperimentEffects', () => {
     };
     notificationService = {
       showError: jest.fn(),
+      showInfo: jest.fn(),
       showSuccess: jest.fn(),
     };
     translate = {
       instant: jest.fn(),
     };
     mockEnvironment = { ...environment };
+    commonModalEventsService = {
+      forceCloseModal: jest.fn(),
+      emitCloseModalEvent: jest.fn(),
+    };
     service = new ExperimentEffects(
       actions$,
       store$,
@@ -98,6 +104,7 @@ describe('ExperimentEffects', () => {
       router,
       translate,
       notificationService,
+      commonModalEventsService,
       mockEnvironment
     );
   });

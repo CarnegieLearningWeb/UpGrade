@@ -215,6 +215,25 @@ export class ExperimentRepository extends Repository<Experiment> {
     return mergedData;
   }
 
+  public async getValidExperimentsForContextAndDecisionPoint(
+    context: string,
+    site: string,
+    target: string
+  ): Promise<Experiment[]> {
+    const whereExperimentsClause =
+      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context]) AND partitions.site = :site AND partitions.target = :target';
+    const whereClauseParams = {
+      enrolling: 'enrolling',
+      enrollmentComplete: 'enrollmentComplete',
+      assign: 'assign',
+      context,
+      site,
+      target,
+    };
+    const experiment = await this.createBaseQueryBuilder().where(whereExperimentsClause, whereClauseParams).getMany();
+    return experiment;
+  }
+
   public async getValidExperimentsWithPreview(context: string): Promise<Experiment[]> {
     const whereExperimentsClause =
       '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context])';
@@ -486,9 +505,10 @@ export class ExperimentRepository extends Repository<Experiment> {
         'experiment.assignmentAlgorithm as "algorithmType"',
         'experiment.stratificationFactorStratificationFactorName as "stratification"',
         'experiment.postExperimentRule as "postRule"',
+        'experiment.conditionOrder as "conditionOrder"',
         'experimentRevertCondition.conditionCode as "revertTo"',
-        '"enrollingStateTimeLog"."timeLog" as "enrollmentStartDate"',
-        '"enrollmentCompleteStateTimeLog"."timeLog" as "enrollmentCompleteDate"',
+        'MIN("enrollingStateTimeLog"."timeLog") as "enrollmentStartDate"',
+        'MIN("enrollmentCompleteStateTimeLog"."timeLog") as "enrollmentCompleteDate"',
         '"conditionPayloadMain"."payloadValue" as "payload"',
         '"decisionPointData"."excludeIfReached" as "excludeIfReached"',
         '"decisionPointData"."id" as "expDecisionPointId"',
@@ -518,8 +538,6 @@ export class ExperimentRepository extends Repository<Experiment> {
       .addGroupBy('experimentRevertCondition.conditionCode')
       .addGroupBy('decisionPointData.id')
       .addGroupBy('conditionPayloadMain.payloadValue')
-      .addGroupBy('enrollingStateTimeLog.timeLog')
-      .addGroupBy('enrollmentCompleteStateTimeLog.timeLog')
       .where('experiment.id = :experimentId', { experimentId })
       .getRawMany();
 

@@ -14,10 +14,10 @@ export const environment: Environment = {
   pollingInterval: 10 * 1000,
   pollingLimit: 600,
   segmentsRefreshToggle: true,
-  withinSubjectExperimentSupportToggle: false,
+  withinSubjectExperimentSupportToggle: true,
   errorLogsToggle: false,
   metricAnalyticsExperimentDisplayToggle: true,
-  moocletToggle: false,
+  moocletToggle: true,
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',

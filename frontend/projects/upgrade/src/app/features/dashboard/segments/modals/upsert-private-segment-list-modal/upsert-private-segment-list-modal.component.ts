@@ -44,6 +44,7 @@ import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
+import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
   selector: 'upsert-private-segment-list-modal',
@@ -58,6 +59,7 @@ import { CommonTagInputType } from '../../../../../core/feature-flags/store/feat
     ReactiveFormsModule,
     TranslateModule,
     SegmentsModule,
+    SharedModule,
   ],
   templateUrl: './upsert-private-segment-list-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

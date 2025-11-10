@@ -82,19 +82,23 @@ describe('ExperimentService', () => {
     status: SEGMENT_STATUS.UNUSED,
   };
 
-  const dummyInclusionData: SegmentNew = {
-    updatedAt: '2022-06-20T13:14:52.900Z',
-    createdAt: '2022-06-20T13:14:52.900Z',
-    versionNumber: 1,
-    segment: segmentData,
-  };
+  const dummyInclusionData: SegmentNew[] = [
+    {
+      updatedAt: '2022-06-20T13:14:52.900Z',
+      createdAt: '2022-06-20T13:14:52.900Z',
+      versionNumber: 1,
+      segment: segmentData,
+    },
+  ];
 
-  const dummyExclusionData: SegmentNew = {
-    updatedAt: '2022-06-20T13:14:52.900Z',
-    createdAt: '2022-06-20T13:14:52.900Z',
-    versionNumber: 1,
-    segment: segmentData,
-  };
+  const dummyExclusionData: SegmentNew[] = [
+    {
+      updatedAt: '2022-06-20T13:14:52.900Z',
+      createdAt: '2022-06-20T13:14:52.900Z',
+      versionNumber: 1,
+      segment: segmentData,
+    },
+  ];
 
   const mockExperiment = {
     id: 'abc123',
@@ -246,7 +250,7 @@ describe('ExperimentService', () => {
     });
   });
 
-  describe('#isInitialExperimentsLoading', () => {
+  describe('#haveInitialExperimentsLoaded', () => {
     describe('should return true if experiments are not loading and experiment data exists, and false otherwise', () => {
       const testCases = [
         {
@@ -282,7 +286,7 @@ describe('ExperimentService', () => {
           ExperimentSelectors.selectIsLoadingExperiment.setResult(isLoading);
           ExperimentSelectors.selectAllExperiment.setResult(experiments);
 
-          service.isInitialExperimentsLoading().subscribe((val) => {
+          service.haveInitialExperimentsLoaded().subscribe((val) => {
             tick(0);
             expect(val).toBe(expectedValue);
           });

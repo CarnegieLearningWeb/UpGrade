@@ -306,6 +306,53 @@ export class ExperimentUserService {
     }
   }
 
+  public async getUserDocs(experimentUserIds: string[], logger: UpgradeLogger): Promise<RequestedExperimentUser[]> {
+    const experimentUserDocs = await this.getOriginalUserDocs(experimentUserIds, logger);
+    if (experimentUserDocs) {
+      const userDocs = experimentUserDocs.map((doc) => ({
+        ...doc,
+        requestedUserId: doc.id,
+      }));
+      logger.info({ message: 'Got the user docs', details: userDocs });
+      return userDocs;
+    } else {
+      return null;
+    }
+  }
+
+  public async getOriginalUserDocs(userIds: string[], logger?: UpgradeLogger): Promise<(ExperimentUser | null)[]> {
+    if (logger) {
+      logger.info({ message: `Find original users for userIds ${userIds.join(', ')}` });
+    }
+    try {
+      const userDocs = await this.userRepository.find({
+        where: { id: In(userIds) },
+        relations: ['originalUser'],
+      });
+
+      return userDocs.map((doc) => {
+        if (doc.originalUser) {
+          // If user is alias user
+          return doc.originalUser;
+        } else {
+          // If user is original user
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { originalUser, ...rest } = doc;
+          return rest as any;
+        }
+      });
+    } catch (error) {
+      logger.error(error);
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.QUERY_FAILED,
+          message: `Error while finding original user for userIds ${userIds.join(', ')}`,
+          details: error,
+        })
+      );
+    }
+  }
+
   public async clearDB(logger: UpgradeLogger): Promise<string> {
     if (!env.app.demo) {
       return 'DEMO mode is disabled. You cannot clear DB.';

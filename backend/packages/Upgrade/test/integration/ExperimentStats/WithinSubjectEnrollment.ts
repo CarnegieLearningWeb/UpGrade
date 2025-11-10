@@ -2,12 +2,12 @@ import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
-import { checkExperimentAssignedIsNull, getAllExperimentCondition, markExperimentPoint, updateExcludeIfReachedFlag } from '../utils';
+import { checkExperimentAssignedIsNull, getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { withinSubjectExperiment } from '../mockData/experiment/index';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { CONDITION_ORDER, EXPERIMENT_STATE } from 'upgrade_types';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { previewUsers } from '../mockData/previewUsers/index';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -25,10 +25,13 @@ export default async function testCase(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
   // experiment object
   const experimentObject = withinSubjectExperiment;
-  experimentObject.partitions = updateExcludeIfReachedFlag(experimentObject.partitions);
 
   // create experiment
-  await experimentService.create(experimentObject, user, new UpgradeLogger());
+  await experimentService.create(
+    { ...experimentObject, conditionOrder: CONDITION_ORDER.ORDERED_ROUND_ROBIN },
+    user,
+    new UpgradeLogger()
+  );
   const experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -59,22 +62,6 @@ export default async function testCase(): Promise<void> {
 
   // mark experiment point
   let markedExperimentPoint = await markExperimentPoint(
-    experimentUsers[0].id,
-    experimentName1,
-    experimentPoint1,
-    condition1,
-    experimentId,
-    new UpgradeLogger()
-  );
-  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
-
-  // user 1 logs in experiment
-  // get all experiment condition for user 1
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
-  expect(experimentConditionAssignments).toHaveLength(0);
-
-  // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName1,
     experimentPoint1,
@@ -117,6 +104,12 @@ export default async function testCase(): Promise<void> {
 
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);
+  // Make sure the condition list has not yet rotated
+  expect(
+    experimentConditionAssignments.find((decisionPoint) => decisionPoint.target === experimentName1)
+      .assignedCondition[0].conditionCode
+  ).toEqual(condition1);
+
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,

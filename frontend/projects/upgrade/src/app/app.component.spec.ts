@@ -16,11 +16,19 @@ describe('AppComponent', () => {
       };
     },
   };
+  const mockHashRoutingNavigationService: any = {
+    initializeHashRouting: jest.fn(),
+  };
 
   let component: AppComponent;
 
   beforeEach(() => {
-    component = new AppComponent(mockAuthService, mockTranslateService, mockOverlayContainer);
+    component = new AppComponent(
+      mockAuthService,
+      mockHashRoutingNavigationService,
+      mockTranslateService,
+      mockOverlayContainer
+    );
   });
 
   describe('#ngOnInit', () => {

@@ -15,15 +15,7 @@ import { ExperimentAssignmentValidator } from './validators/ExperimentAssignment
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
-import {
-  IExperimentAssignmentv5,
-  SERVER_ERROR,
-  IGroupMembership,
-  IUserAliases,
-  IWorkingGroup,
-  PAYLOAD_TYPE,
-  IPayload,
-} from 'upgrade_types';
+import { IExperimentAssignmentv5, SERVER_ERROR, IGroupMembership, IUserAliases, IWorkingGroup } from 'upgrade_types';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
@@ -588,38 +580,7 @@ export class ExperimentClientController {
       request.logger
     );
 
-    return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
-      const finalFactorData = assignedFactor?.map((factor) => {
-        const updatedAssignedFactor: Record<string, { level: string; payload: IPayload }> = {};
-        Object.keys(factor).forEach((key) => {
-          updatedAssignedFactor[key] = {
-            level: factor[key].level,
-            payload:
-              factor[key].payload && factor[key].payload.value
-                ? { type: PAYLOAD_TYPE.STRING, value: factor[key].payload.value }
-                : null,
-          };
-        });
-        return updatedAssignedFactor;
-      });
-
-      const finalConditionData = assignedCondition.map((condition) => {
-        return {
-          id: condition.id,
-          conditionCode: condition.conditionCode,
-          payload:
-            condition.payload && condition.payload.value
-              ? { type: condition.payload.type, value: condition.payload.value }
-              : null,
-          experimentId: condition.experimentId,
-        };
-      });
-      return {
-        ...rest,
-        assignedCondition: finalConditionData,
-        assignedFactor: assignedFactor ? finalFactorData : undefined,
-      };
-    });
+    return this.experimentAssignmentService.formatAssignments(assignedData);
   }
 
   /**

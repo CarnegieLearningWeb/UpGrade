@@ -33,7 +33,7 @@ export class UserService {
     user.email = userDTO.email;
     user.firstName = userDTO.firstName;
     user.lastName = userDTO.lastName;
-    user.role = userDTO.role;
+    user.role = env.app.demo ? UserRole.CREATOR : userDTO.role;
     user.imageUrl = userDTO.imageUrl;
     user.localTimeZone = userDTO.localTimeZone;
     user.auditLogs = userDTO.auditLogs?.map((auditLogDTO) => {

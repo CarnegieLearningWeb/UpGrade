@@ -83,6 +83,9 @@ const reducer = createReducer(
   on(experimentsAction.actionUpsertExperiment, experimentsAction.actionGetExperimentById, (state) => ({
     ...state,
     isLoadingExperiment: true,
+    // if we don't have a totalExperiments count yet (no paginated call with > 1 has occured yet),
+    // set it to 1 because we are loading at least one experiment so that nav to root page will not show empty template
+    totalExperiments: !state.totalExperiments ? 1 : state.totalExperiments,
   })),
   on(experimentsAction.actionGetExperimentByIdSuccess, (state, { experiment }) =>
     adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })

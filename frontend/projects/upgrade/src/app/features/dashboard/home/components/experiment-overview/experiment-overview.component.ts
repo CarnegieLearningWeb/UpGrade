@@ -375,7 +375,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           consistencyRule: consistencyRule,
           conditionOrder: conditionOrder,
           assignmentUnit: unitOfAssignment,
-          group: groupType,
+          group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
           type: designType,
           context: [context],
           assignmentAlgorithm: assignmentAlgorithm,

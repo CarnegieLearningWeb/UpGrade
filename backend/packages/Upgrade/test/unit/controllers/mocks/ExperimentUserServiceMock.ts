@@ -33,6 +33,19 @@ export default class ExperimentUserServiceMock {
     return Promise.resolve([{ id: '123' }]);
   }
 
+  public async getUserDocs(userIds: string[], logger: any): Promise<any[]> {
+    // Mock user documents
+    return userIds.map((userId) => ({
+      id: userId,
+      originalUser: {
+        id: userId,
+        firstName: 'Test',
+        lastName: 'User',
+        email: `test-${userId}@example.com`,
+      },
+    }));
+  }
+
   public find(logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }

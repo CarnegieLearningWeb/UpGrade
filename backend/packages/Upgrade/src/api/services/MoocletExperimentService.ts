@@ -37,7 +37,6 @@ import { CacheService } from './CacheService';
 import { ErrorService } from './ErrorService';
 import { PreviewUserService } from './PreviewUserService';
 import { QueryService } from './QueryService';
-import { ScheduledJobService } from './ScheduledJobService';
 import { SegmentService } from './SegmentService';
 import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletVersionConditionMap } from '../models/MoocletVersionConditionMap';
@@ -59,6 +58,7 @@ import { MetricService } from './MetricService';
 import { Metric } from '../models/Metric';
 import { MoocletRewardsService } from './MoocletRewardsService';
 import { env } from '../../env';
+import { ExperimentSchedulerService } from './ExperimentSchedulerService';
 
 export interface SyncCreateParams {
   experimentDTO: ExperimentDTO;
@@ -126,7 +126,7 @@ export class MoocletExperimentService extends ExperimentService {
     @InjectDataSource() dataSource: DataSource,
     previewUserService: PreviewUserService,
     segmentService: SegmentService,
-    scheduledJobService: ScheduledJobService,
+    experimentSchedulerService: ExperimentSchedulerService,
     errorService: ErrorService,
     cacheService: CacheService,
     queryService: QueryService,
@@ -158,7 +158,7 @@ export class MoocletExperimentService extends ExperimentService {
       dataSource,
       previewUserService,
       segmentService,
-      scheduledJobService,
+      experimentSchedulerService,
       errorService,
       cacheService,
       queryService,
@@ -1033,10 +1033,12 @@ export class MoocletExperimentService extends ExperimentService {
 
       // delete the mooclet resources. If this fails, the transaction will abort and the upgrade experiment will not be deleted,
       // but the Mooclet resources may not be deleted either
-      await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
-
+      const removedResources = await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
+      const deleteMessage = removedResources
+        ? 'Upgrade and Mooclet experiment resources deleted successfully'
+        : 'Mooclet resources deletion failed, but upgrade experiment deleted successfully';
       logger.debug({
-        message: 'Upgrade and Mooclet experiment resources deleted successfully',
+        message: deleteMessage,
         deleteResponse,
       });
 
@@ -1156,7 +1158,7 @@ export class MoocletExperimentService extends ExperimentService {
   public async orchestrateDeleteMoocletResources(
     moocletExperimentRef: MoocletExperimentRef,
     logger: UpgradeLogger
-  ): Promise<void> {
+  ): Promise<boolean> {
     try {
       if (!moocletExperimentRef) {
         throw new Error(`MoocletExperimentRef not defined`);
@@ -1192,6 +1194,7 @@ export class MoocletExperimentService extends ExperimentService {
       }
 
       logger.info({ message: '[Mooclet Deletion]: Completed deletion of Mooclet resources', moocletExperimentRef });
+      return true; // Return true to indicate successful deletion of all resources
     } catch (err) {
       const error = {
         message:
@@ -1200,13 +1203,8 @@ export class MoocletExperimentService extends ExperimentService {
         moocletExperimentRef: moocletExperimentRef,
       };
 
-      logger.error({
-        message:
-          '[Mooclet Deletion]: Failed to delete Mooclet resources, please check manually for out of sync resources',
-        error: err,
-        moocletExperimentRef: moocletExperimentRef,
-      });
-      throw new Error(JSON.stringify(error));
+      logger.error(error);
+      return false; // Return false to indicate failure, but do not throw an error to allow the transaction to complete
     }
   }
 

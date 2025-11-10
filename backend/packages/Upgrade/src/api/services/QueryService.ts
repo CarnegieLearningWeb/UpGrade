@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { InjectRepository } from '../../typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
@@ -9,7 +9,7 @@ import { ExperimentError } from '../models/ExperimentError';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { Experiment } from '../models/Experiment';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
-import { In } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 
 interface queryResult {
   conditionId?: string;
@@ -24,6 +24,7 @@ export class QueryService {
     @InjectRepository() private queryRepository: QueryRepository,
     @InjectRepository() private logRepository: LogRepository,
     @InjectRepository() private archivedStatsRepository: ArchivedStatsRepository,
+    @InjectDataSource() protected dataSource: DataSource,
     public errorService: ErrorService
   ) {}
 
@@ -51,33 +52,29 @@ export class QueryService {
 
   public async analyze(queryIds: string[], logger: UpgradeLogger): Promise<any> {
     logger.info({ message: `Get analysis of query with queryIds ${queryIds}` });
-    const promiseArray = queryIds.map((queryId) =>
-      this.queryRepository.findOne({
-        where: { id: queryId },
-        relations: [
-          'metric',
-          'experiment',
-          'experiment.conditions',
-          'experiment.partitions',
-          'experiment.factors',
-          'experiment.factors.levels',
-        ],
-      })
-    );
-
-    const promiseResult = await Promise.all(promiseArray);
+    const queryList = await this.queryRepository.find({
+      where: { id: In(queryIds) },
+      relations: [
+        'metric',
+        'experiment',
+        'experiment.conditions',
+        'experiment.partitions',
+        'experiment.factors',
+        'experiment.factors.levels',
+      ],
+    });
     const experiments: Experiment[] = [];
 
     // checks for archieve state experiment
     if (queryIds.length !== 0) {
-      if (promiseResult[0].experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
+      if (queryList[0]?.experiment?.state === EXPERIMENT_STATE.ARCHIVED) {
         return this.getArchivedStats(queryIds, logger);
       }
     } else {
       return [];
     }
 
-    const analyzePromise = promiseResult.map((query) => {
+    const analyzePromise = queryList.map((query) => {
       experiments.push(query.experiment);
       if (query.experiment?.type === EXPERIMENT_TYPE.FACTORIAL) {
         return [
@@ -137,7 +134,7 @@ export class QueryService {
     mainEffect: queryResult[],
     interactionEffect: queryResult[]
   ): [queryResult[], queryResult[]] {
-    const conditionIds = experiment?.conditions.map((condition) => condition.id) || [];
+    const conditionIds = experiment?.conditions?.map((condition) => condition.id) || [];
 
     if (interactionEffect) {
       conditionIds.forEach((conditionId) => {

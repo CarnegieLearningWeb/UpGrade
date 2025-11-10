@@ -29,7 +29,6 @@ import { MoocletDataService } from '../../../src/api/services/MoocletDataService
 import { MoocletExperimentService, SyncCreateParams } from '../../../src/api/services/MoocletExperimentService';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { QueryService } from '../../../src/api/services/QueryService';
-import { ScheduledJobService } from '../../../src/api/services/ScheduledJobService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { DataSource, EntityManager } from 'typeorm';
 import {
@@ -46,6 +45,7 @@ import {
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { MetricService } from '../../../src/api/services/MetricService';
 import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsService';
+import { ExperimentSchedulerService } from '../../../src/api/services/ExperimentSchedulerService';
 
 const mockDataSource = {
   initialize: jest.fn(),
@@ -234,7 +234,7 @@ describe('#MoocletExperimentService', () => {
   let moocletExperimentRefRepository: MoocletExperimentRefRepository;
   let previewUserService: PreviewUserService;
   let segmentService: SegmentService;
-  let scheduledJobService: ScheduledJobService;
+  let experimentSchedulerService: ExperimentSchedulerService;
   let errorService: ErrorService;
   let cacheService: CacheService;
   let queryService: QueryService;
@@ -285,7 +285,7 @@ describe('#MoocletExperimentService', () => {
       mockDataSource,
       previewUserService,
       segmentService,
-      scheduledJobService,
+      experimentSchedulerService,
       errorService,
       cacheService,
       queryService,
@@ -517,9 +517,7 @@ describe('#MoocletExperimentService', () => {
       jest.spyOn(moocletDataService, 'deletePolicyParameters').mockResolvedValue(undefined);
       jest.spyOn(moocletDataService, 'deleteVariable').mockResolvedValue(undefined);
 
-      await expect(
-        moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef, logger)
-      ).rejects.toThrow();
+      await moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef, logger);
 
       expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId, logger);
       expect(moocletDataService.deletePolicyParameters).not.toHaveBeenCalled();

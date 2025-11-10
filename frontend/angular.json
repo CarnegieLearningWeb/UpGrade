@@ -21,26 +21,15 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "allowedCommonJsDependencies": [
-              "validator",
-              "lodash",
-              "reflect-metadata"
-            ],
+            "allowedCommonJsDependencies": ["validator", "lodash", "reflect-metadata"],
             "outputPath": {
               "base": "dist/upgrade"
             },
             "index": "projects/upgrade/src/index.html",
-            "polyfills": [
-              "projects/upgrade/src/polyfills.ts"
-            ],
+            "polyfills": ["projects/upgrade/src/polyfills.ts"],
             "tsConfig": "projects/upgrade/tsconfig.app.json",
-            "assets": [
-              "projects/upgrade/src/favicon.ico",
-              "projects/upgrade/src/assets"
-            ],
-            "styles": [
-              "projects/upgrade/src/styles.scss"
-            ],
+            "assets": ["projects/upgrade/src/favicon.ico", "projects/upgrade/src/assets"],
+            "styles": ["projects/upgrade/src/styles.scss"],
             "scripts": [],
             "extractLicenses": false,
             "sourceMap": true,

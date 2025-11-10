@@ -1,6 +1,6 @@
 {
   "name": "UpGrade",
-  "version": "6.2.0",
+  "version": "6.3.0",
   "description": "This is a combined repository for UpGrade, an open-source platform to support large-scale A/B testing in educational applications.  Learn more at www.upgradeplatform.org",
   "main": "index.js",
   "devDependencies": {
@@ -19,7 +19,10 @@
     "prettier": "^2.7.1"
   },
   "scripts": {
-    "prepare": "is-ci || husky install"
+    "prepare": "is-ci || husky install",
+    "lint": "eslint --quiet -c .eslintrc.js --ext .ts './{frontend,backend,types,clientlibs}/**/*.ts'",
+    "prettier:write": "prettier --config .prettierrc './{frontend,backend,types,clientlibs}/**/*.{ts,js,html,json,scss}' --write",
+    "prettier:check": "prettier --config .prettierrc './{frontend,backend,types,clientlibs}/**/*.{ts,js,html,json,scss}' --check"
   },
   "lint-staged": {
     "./frontend/projects/upgrade/src/**/*.{ts,js,html,json,scss}": [

@@ -19,6 +19,7 @@ export const initialState: SegmentState = adapter.getInitialState({
   allExperimentSegmentsExclusion: null,
   allFeatureFlagSegmentsInclusion: null,
   allFeatureFlagSegmentsExclusion: null,
+  allParentSegments: null,
   skipSegments: 0,
   totalSegments: null,
   searchKey: SEGMENT_SEARCH_KEY.ALL,
@@ -51,6 +52,7 @@ const reducer = createReducer(
         experimentSegmentInclusion,
         featureFlagSegmentInclusion,
         featureFlagSegmentExclusion,
+        allParentSegments,
         fromStarting,
       }
     ) => {
@@ -61,6 +63,7 @@ const reducer = createReducer(
         allExperimentSegmentsExclusion: experimentSegmentExclusion,
         allFeatureFlagSegmentsInclusion: featureFlagSegmentInclusion,
         allFeatureFlagSegmentsExclusion: featureFlagSegmentExclusion,
+        allParentSegments,
       };
 
       if (fromStarting) {
@@ -84,6 +87,7 @@ const reducer = createReducer(
         experimentSegmentInclusion,
         featureFlagSegmentInclusion,
         featureFlagSegmentExclusion,
+        allParentSegments,
       }
     ) => {
       const newState = {
@@ -93,6 +97,7 @@ const reducer = createReducer(
         allExperimentSegmentsExclusion: experimentSegmentExclusion,
         allFeatureFlagSegmentsInclusion: featureFlagSegmentInclusion,
         allFeatureFlagSegmentsExclusion: featureFlagSegmentExclusion,
+        allParentSegments,
       };
       return adapter.upsertMany(segments, { ...newState, isLoadingSegments: false });
     }
@@ -124,6 +129,7 @@ const reducer = createReducer(
         experimentSegmentInclusion,
         featureFlagSegmentInclusion,
         featureFlagSegmentExclusion,
+        allParentSegments,
       }
     ) => {
       const newState = {
@@ -132,6 +138,7 @@ const reducer = createReducer(
         allExperimentSegmentsExclusion: experimentSegmentExclusion,
         allFeatureFlagSegmentsInclusion: featureFlagSegmentInclusion,
         allFeatureFlagSegmentsExclusion: featureFlagSegmentExclusion,
+        allParentSegments,
       };
       if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
         return adapter.upsertOne(segment, { ...newState, isLoadingSegments: false });

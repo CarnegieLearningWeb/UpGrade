@@ -95,7 +95,7 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
   );
 
   // create group exclusion segment
-  let segmentObject = segmentThird;
+  const segmentObject = segmentThird;
 
   // await segmentService.upsertSegment(segmentObject, new UpgradeLogger(), "exclude");
   // let segments = await segmentService.getAllSegments(new UpgradeLogger());

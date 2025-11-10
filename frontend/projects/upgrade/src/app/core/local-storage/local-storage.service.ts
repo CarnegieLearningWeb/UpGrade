@@ -87,6 +87,7 @@ export class LocalStorageService {
       allExperimentSegmentsExclusion: null,
       allFeatureFlagSegmentsInclusion: null,
       allFeatureFlagSegmentsExclusion: null,
+      allParentSegments: null,
       skipSegments: 0,
       totalSegments: null,
       searchKey: (segmentSearchKey as SEGMENT_SEARCH_KEY) || SEGMENT_SEARCH_KEY.ALL,

@@ -95,7 +95,7 @@ export default async function IndividualExclusionSegmentGroupConsistency(): Prom
   );
 
   // create individual exclusion segment:
-  let segmentObject = segmentThird;
+  const segmentObject = segmentThird;
   // await segmentService.upsertSegment(segmentObject, new UpgradeLogger(), "exclude");
   // let segments = await segmentService.getAllSegments(new UpgradeLogger());
   // expect(segments.length).toEqual(1);

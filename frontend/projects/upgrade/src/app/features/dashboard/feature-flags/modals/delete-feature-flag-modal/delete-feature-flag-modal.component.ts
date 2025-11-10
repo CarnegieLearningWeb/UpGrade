@@ -9,10 +9,11 @@ import { BehaviorSubject, Observable, Subscription, combineLatest, map } from 'r
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
   selector: 'app-add-feature-flag-modal',
-  imports: [CommonModalComponent, MatInputModule, FormsModule, TranslateModule, CommonModule],
+  imports: [CommonModalComponent, MatInputModule, FormsModule, TranslateModule, CommonModule, SharedModule],
   templateUrl: './delete-feature-flag-modal.component.html',
   styleUrl: './delete-feature-flag-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,7 +26,9 @@ export class DeleteFeatureFlagModalComponent {
   private inputSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   // Observable that emits true if inputValue is 'delete', false otherwise
-  isDeleteNotTyped$: Observable<boolean> = this.inputSubject.pipe(map((value) => value.toLowerCase() !== 'delete'));
+  isDeleteNotTyped$: Observable<boolean> = this.inputSubject.pipe(
+    map((value) => value.trim().toLowerCase() !== 'delete')
+  );
 
   isDeleteActionBtnDisabled$: Observable<boolean> = combineLatest([
     this.isDeleteNotTyped$,

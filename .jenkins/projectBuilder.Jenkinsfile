@@ -1,8 +1,6 @@
 projectBuilderV5 (
     buildAgent:[
-        image: "467155500999.dkr.ecr.us-east-1.amazonaws.com/jenkins-agent:default",
-        cpu: 2048,
-        memory: 4096
+        taskDefinitionOverride: "upgrade-ci"
     ],
 
     projects: [
@@ -61,6 +59,11 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
+                    script: 'npm run test',
+                    githubCheck: "upgrade-frontend-test",
+                    log: "upgrade-frontend-test.log"
+                ],
+                [
                     script: 'npm run prebuild:project',
                     log: 'env-pre-build.log',
                 ],
@@ -79,6 +82,28 @@ projectBuilderV5 (
             automatedBranchBuilds: [
                 "dev",
                 "release/.*"
+            ]
+        ],
+        "upgrade-backend-tests": [
+            artifactType: "codeartifact",
+            versioning: "none",
+            projectDir: "backend",
+            runInProjectDir: true,
+            skipArtifactUpload: true,
+            dependencies: ["types"],
+            fileFilter: [
+                include: ["backend/packages/Upgrade/.*"]
+            ],
+            buildScripts: [
+                [
+                    script: 'npm run install:upgrade',
+                    log: '${projectName}-npm-ci.log'
+                ],
+                [
+                    script: 'npm run test:upgrade',
+                    githubCheck: '${projectName} test',
+                    log: '${projectName}-test.log'
+                ]
             ]
         ],
          "scheduler-lambda": [
@@ -163,5 +188,22 @@ projectBuilderV5 (
                 ]
             ]
         ],
+    ],
+    prChecks: [
+        "checks": [
+           "lint": [
+             buildScripts: [
+               [
+                 script: 'npm ci --no-audit',
+                 log: 'npm-ci.log'
+               ],
+               [
+                 script: 'npm run lint',
+                 githubCheck: 'lint',
+                 log: 'lint.log'
+               ]
+             ]
+           ]
+        ]
     ]
 )

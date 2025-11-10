@@ -1,5 +1,6 @@
 package org.upgradeplatform.responsebeans;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.upgradeplatform.utils.Utils.ExperimentType;
@@ -66,8 +67,8 @@ public class ExperimentsResponse {
 
     @Override
     public String toString(){
-        return "ExperimentsResponse [target=" + target + ", site=" + site 
-               + ", assignedCondition=" + assignedCondition + ", assignedFactor=" + assignedFactor + "]";
+        return "ExperimentsResponse [target=" + target + ", site=" + site
+               + ", assignedCondition=" + Arrays.toString(assignedCondition) + ", assignedFactor=" + Arrays.toString(assignedFactor) + "]";
     }
 
 	public String getFactorLevel(String factor) {
