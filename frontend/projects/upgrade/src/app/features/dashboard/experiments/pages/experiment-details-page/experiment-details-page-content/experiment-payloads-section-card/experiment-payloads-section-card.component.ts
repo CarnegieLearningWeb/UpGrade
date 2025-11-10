@@ -36,11 +36,6 @@ export class ExperimentPayloadsSectionCardComponent implements OnInit {
     this.permissions$ = this.authService.userPermissions$;
   }
 
-  onAddPayloadClick(appContext: string, experimentId: string): void {
-    // TODO: Implement add payload modal when dialog service is available
-    console.log('Add payload clicked for experiment:', experimentId, 'context:', appContext);
-  }
-
   onSectionCardExpandChange(isSectionCardExpanded: boolean): void {
     this.isSectionCardExpanded = isSectionCardExpanded;
   }
