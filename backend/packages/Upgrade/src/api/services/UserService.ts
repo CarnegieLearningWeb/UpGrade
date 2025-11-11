@@ -120,8 +120,8 @@ export class UserService {
   private paginatedSearchString(params: UserSearchParamsValidator): string {
     const type = params.key;
     // escape % and ' characters
-    const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
-    const likeString = `ILIKE '%${serachString}%'`;
+    const searchString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    const likeString = `ILIKE '%${searchString}%'`;
     const likes: string[] = [];
     if (type === USER_SEARCH_SORT_KEY.ALL) {
       likes.push(`users.email::TEXT ${likeString}`);

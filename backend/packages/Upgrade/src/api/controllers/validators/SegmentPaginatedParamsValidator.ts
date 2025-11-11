@@ -22,6 +22,7 @@ export enum SEGMENT_SEARCH_KEY {
   NAME = 'name',
   TAG = 'tag',
   CONTEXT = 'context',
+  ID = 'id',
 }
 
 class ISegmentSortParamsValidator {

@@ -82,7 +82,7 @@ import { CacheService } from './CacheService';
 import { QueryService } from './QueryService';
 import { ArchivedStats } from '../models/ArchivedStats';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
-import { validate } from 'class-validator';
+import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
 import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
@@ -1797,33 +1797,43 @@ export class ExperimentService {
   private paginatedSearchString(params: IExperimentSearchParams): string {
     const type = params.key;
     // escape % and ' characters
-    const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
-    const likeString = `ILIKE '%${serachString}%'`;
-    const searchString: string[] = [];
+    const searchString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    if (type === EXPERIMENT_SEARCH_KEY.ID && !isUUID(searchString)) {
+      return '';
+    }
+
+    const likeString = `ILIKE '%${searchString}%'`;
+    const searchArray: string[] = [];
     switch (type) {
       case EXPERIMENT_SEARCH_KEY.NAME:
-        searchString.push(`${type} ${likeString}`);
+        searchArray.push(`${type} ${likeString}`);
         break;
       case EXPERIMENT_SEARCH_KEY.STATUS:
-        searchString.push(`state::TEXT ${likeString}`);
+        searchArray.push(`state::TEXT ${likeString}`);
         break;
       case EXPERIMENT_SEARCH_KEY.CONTEXT:
-        searchString.push(`ARRAY_TO_STRING(${type}, ',') ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(${type}, ',') ${likeString}`);
         break;
       case EXPERIMENT_SEARCH_KEY.TAG:
-        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        break;
+      case EXPERIMENT_SEARCH_KEY.ID:
+        searchArray.push(`experiment.id = '${searchString}'`);
         break;
       default:
-        searchString.push(`name ${likeString}`);
-        searchString.push(`state::TEXT ${likeString}`);
-        searchString.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
-        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
-        searchString.push(`partitions.site ${likeString}`);
-        searchString.push(`partitions.target ${likeString}`);
+        searchArray.push(`name ${likeString}`);
+        searchArray.push(`state::TEXT ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        searchArray.push(`partitions.site ${likeString}`);
+        searchArray.push(`partitions.target ${likeString}`);
+        if (isUUID(searchString)) {
+          searchArray.push(`experiment.id = '${searchString}'`);
+        }
         break;
     }
 
-    const searchStringConcatenated = `(${searchString.join(' OR ')})`;
+    const searchStringConcatenated = `(${searchArray.join(' OR ')})`;
     return searchStringConcatenated;
   }
 
