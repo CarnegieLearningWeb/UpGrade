@@ -613,7 +613,7 @@ export const factorialExperimentFirst = {
       twoCharacterId: '5H',
       name: '',
       description: null,
-      conditionCode: 'Shape=Circle; Color=Red',
+      conditionCode: 'Color=Red; Shape=Circle',
       assignmentWeight: 50,
       order: 1,
       levelCombinationElements: [
@@ -633,7 +633,7 @@ export const factorialExperimentFirst = {
       twoCharacterId: '6Y',
       name: '',
       description: null,
-      conditionCode: 'Shape=Rectangle; Color=Blue',
+      conditionCode: 'Color=Blue; Shape=Rectangle',
       assignmentWeight: 50,
       order: 2,
       levelCombinationElements: [
@@ -700,6 +700,7 @@ export const factorialExperimentFirst = {
         value: 'Red-Circle alias name',
       },
       parentCondition: '6dd63ad9-f121-4d95-8d27-08a80e9560a4',
+      decisionPoint: '5e335ac8-28df-463d-86bb-837dcd8240c4',
     },
   ],
   assignmentAlgorithm: 'random',

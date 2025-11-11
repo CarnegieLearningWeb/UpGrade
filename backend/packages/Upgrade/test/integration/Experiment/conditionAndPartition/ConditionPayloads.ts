@@ -93,6 +93,8 @@ export default async function ConditionPayload(): Promise<void> {
     ])
   );
 
+  // # of conditionPayloads should be # of partitions (3) * # of conditions (2): 6
+  expect(updatedExperimentDoc.conditionPayloads.length).toEqual(6);
   // delete first condition payload
   updatedExperimentDoc.conditions.sort((a, b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
@@ -105,7 +107,8 @@ export default async function ConditionPayload(): Promise<void> {
     new UpgradeLogger()
   );
 
-  expect(updatedExperimentDoc.conditionPayloads.length).toEqual(1);
+  // # of conditionPayloads should be # of partitions (3) * # of conditions (1): 3
+  expect(updatedExperimentDoc.conditionPayloads.length).toEqual(3);
   expect(updatedExperimentDoc.conditionPayloads).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -129,5 +132,6 @@ export default async function ConditionPayload(): Promise<void> {
     updatedExperimentDoc.id as any,
     new UpgradeLogger()
   );
-  expect(updatedExperimentDoc.conditionPayloads.length).toEqual(0);
+  // # of conditionPayloads should be # of partitions (2) * # of conditions (1): 2
+  expect(updatedExperimentDoc.conditionPayloads.length).toEqual(2);
 }
