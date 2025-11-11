@@ -34,6 +34,7 @@ import {
   EXPERIMENT_LIST_OPERATION,
   IImportError,
   IMPORT_COMPATIBILITY_TYPE,
+  PAYLOAD_TYPE,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -77,6 +78,7 @@ import {
   ParticipantsValidator,
   ExperimentFile,
   ValidatedExperimentError,
+  ConditionPayloadValidator,
 } from '../DTO/ExperimentDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
@@ -835,10 +837,51 @@ export class ExperimentService {
             })) ||
           [];
 
+        // Only keep payloads for current decision points
+        const decisionPointIds = new Set(decisionPoints.map((dp) => dp.id));
+        const filteredConditionPayloads = conditionPayloads.reduce((acc, payload) => {
+          if (!decisionPointIds.has(payload.decisionPoint)) {
+            return acc;
+          }
+          if (!acc[payload.decisionPoint]) {
+            acc[payload.decisionPoint] = {};
+          }
+          acc[payload.decisionPoint][payload.parentCondition] = payload;
+          return acc;
+        }, {});
+
+        const oldConditionsById = oldConditions.reduce((acc, oldCondition) => {
+          acc[oldCondition.id] = oldCondition;
+          return acc;
+        }, {});
+
+        const newPayloads = decisionPoints.flatMap((decisionPoint) => {
+          return conditions.map((condition) => {
+            const payload = filteredConditionPayloads[decisionPoint.id]?.[condition.id];
+            if (!payload) {
+              const payloadToAdd: ConditionPayloadValidator = {
+                id: uuid(),
+                parentCondition: condition.id,
+                decisionPoint: decisionPoint.id,
+                payload: {
+                  type: PAYLOAD_TYPE.STRING,
+                  value: condition.conditionCode,
+                },
+              };
+              return payloadToAdd;
+            }
+            // If it's not a custom payload, keep it in sync with conditionCode
+            if (payload.payload.value === oldConditionsById[condition.id]?.conditionCode) {
+              payload.payload.value = condition.conditionCode;
+            }
+            return payload;
+          });
+        });
+
         const conditionPayloadDocToSave: Array<Partial<Omit<ConditionPayload, 'parentCondition' | 'decisionPoint'>>> =
-          (conditionPayloads &&
-            conditionPayloads.length > 0 &&
-            conditionPayloads.map((conditionPayload) => {
+          (newPayloads &&
+            newPayloads.length > 0 &&
+            newPayloads.map((conditionPayload) => {
               const conditionPayloadToReturn = {
                 id: conditionPayload.id,
                 payloadType: conditionPayload.payload.type,
