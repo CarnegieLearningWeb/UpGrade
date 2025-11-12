@@ -12,11 +12,8 @@
     header-right
     [showPrimaryButton]="(permissions$ | async)?.experiments.update"
     [primaryButtonText]="'experiments.details.add-decision-point.button.text' | translate"
-    [showMenuButton]="(permissions$ | async)?.experiments.update"
-    [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddDecisionPointClick(experiment.id, experiment.context[0])"
-    (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>

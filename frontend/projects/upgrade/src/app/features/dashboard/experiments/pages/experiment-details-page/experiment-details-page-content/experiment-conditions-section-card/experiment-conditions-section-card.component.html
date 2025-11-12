@@ -12,11 +12,8 @@
     header-right
     [showPrimaryButton]="(permissions$ | async)?.experiments.update"
     [primaryButtonText]="'experiments.details.add-condition.button.text' | translate"
-    [showMenuButton]="(permissions$ | async)?.experiments.update"
-    [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddConditionClick(experiment.context[0], experiment.id)"
-    (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
