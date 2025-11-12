@@ -21,7 +21,6 @@ import { SharedModule } from '../../../../../shared/shared.module';
 export class DeleteExperimentModalComponent {
   selectedExperiment$ = this.experimentService.selectedExperiment$;
   inputValue = '';
-  subscriptions = new Subscription();
   isLoadingExperimentDelete$ = this.experimentService.isLoadingExperimentDelete$;
   private readonly inputSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
