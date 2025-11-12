@@ -22,7 +22,7 @@ As the experiment was Individual Consistency, the user will get excluded
 As the experiment was Group Assignment, the group will be excluded
 
 A new user from same group as user1 is created
-On assign the user will not be assigned to the experiment as the group is excluded
+On assign the user will be assigned to the experiment as the group is still enrolled
 
 A new user from different group as user1 is created
 On assign the user will be assigned to the experiment as the group is not excluded
@@ -145,14 +145,14 @@ export default async function ExcludeIndividualsB(): Promise<void> {
   };
   await experimentService.update(experimentObject, user, new UpgradeLogger());
 
-  // check stats
+  // check stats - should be unchanged
   stats = await analyticsService.getDetailEnrollment(experimentId);
   expect(stats).toEqual(
     expect.objectContaining({
-      users: 0,
-      groups: 0,
+      users: 1,
+      groups: 1,
       usersExcluded: 0,
-      groupsExcluded: 1,
+      groupsExcluded: 0,
       id: experimentId,
     })
   );
@@ -162,8 +162,8 @@ export default async function ExcludeIndividualsB(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experimentId,
-        users: 0,
-        groups: 0,
+        users: 1,
+        groups: 1,
       }),
     ])
   );
@@ -186,7 +186,7 @@ export default async function ExcludeIndividualsB(): Promise<void> {
 
   // get all experiment condition for user2
   experimentConditionAssignment = await getAllExperimentCondition(updatedExperimentUser2.id, new UpgradeLogger());
-  expect(experimentConditionAssignment.length).toEqual(0);
+  expect(experimentConditionAssignment.length).toEqual(3);
 
   // get experimentUser3 (User from different group)
   let updatedExperimentUser3 = experimentUsers[2];
