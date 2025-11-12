@@ -332,7 +332,6 @@ describe('Segment Service Testing', () => {
     }).compile();
 
     service = module.get<SegmentService>(SegmentService);
-    // service.getExperimentSegmentExclusionDocBySegmentId = jest.fn().mockResolvedValue([]);
     repo = module.get<SegmentRepository>(getRepositoryToken(SegmentRepository));
   });
 
