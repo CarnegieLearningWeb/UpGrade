@@ -1,0 +1,126 @@
+.table-container {
+  position: relative;
+  overflow: auto;
+  width: 100%;
+  padding: 32px;
+
+  .spinner {
+    position: sticky;
+    top: 0;
+    z-index: 1111;
+  }
+
+  /* Add gap between header and body when no data exists */
+  ::ng-deep .no-data tbody:before {
+    display: block;
+    line-height: 8px;
+    content: '\200C';
+  }
+
+  .payloads-table {
+    ::ng-deep thead {
+      background-color: var(--zircon);
+
+      tr.mat-mdc-header-row {
+        height: 48px;
+        border: 0;
+
+        th {
+          padding-left: 0;
+          color: var(--darker-grey);
+
+          &:first-child {
+            border-top-left-radius: 4px;
+          }
+
+          &:last-child {
+            border-top-right-radius: 4px;
+          }
+        }
+      }
+    }
+
+    ::ng-deep tbody {
+      tr.mat-mdc-row {
+        height: 64px;
+
+        td {
+          vertical-align: top;
+          padding-top: 10px;
+          min-width: 100%;
+          padding-left: 0;
+          color: var(--black-2);
+        }
+      }
+
+      tr.mat-mdc-no-data-row {
+        td {
+          height: 48px;
+          text-align: center;
+          border: 1.5px dashed var(--light-grey-2);
+          color: var(--dark-grey);
+        }
+      }
+    }
+
+    .decision-point-column {
+      width: 25%;
+      padding-left: 32px;
+    }
+
+    .condition-column {
+      width: 25%;
+    }
+
+    .payload-column {
+      width: 50%;
+    }
+
+    td.decision-point-column {
+      .stacked-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+    }
+
+    td.payload-column {
+      &.mat-mdc-cell {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        line-height: 20px;
+        max-height: 50px;
+        overflow: hidden;
+        word-break: break-word;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .actions-column {
+      width: 10%;
+      min-width: 96px;
+      text-align: center;
+      padding-right: 16px;
+
+      .button-wrapper {
+        display: inline-block;
+
+        .action-button {
+          color: var(--dark-grey);
+
+          &[disabled] {
+            .mat-icon {
+              opacity: 0.5;
+            }
+          }
+        }
+
+        &:has(.action-button:disabled) {
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}

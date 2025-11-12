@@ -1,0 +1,30 @@
+<app-common-dialog
+  [title]="config.title"
+  [cancelBtnLabel]="config.cancelBtnLabel"
+  [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+  [primaryActionBtnColor]="config.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
+  (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+>
+  <form [formGroup]="payloadForm" class="form-standard dense-3">
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Payload</mat-label>
+      <textarea
+        matInput
+        formControlName="payloadValue"
+        appTrimInput
+        placeholder="e.g., problem_rating_ampt"
+        class="ft-14-400"
+        cdkTextareaAutosize
+        cdkAutosizeMinRows="1"
+        cdkAutosizeMaxRows="12"
+      ></textarea>
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'experiments.edit-payload-modal.payload-hint.text' | translate }}
+        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+          Learn more
+        </a>
+      </mat-hint>
+    </mat-form-field>
+  </form>
+</app-common-dialog>

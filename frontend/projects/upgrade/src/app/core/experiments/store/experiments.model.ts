@@ -619,6 +619,11 @@ export interface ExperimentConditionRowActionEvent {
   condition: ExperimentCondition;
 }
 
+export interface ExperimentPayloadRowActionEvent {
+  action: EXPERIMENT_ROW_ACTION;
+  payload: ExperimentConditionPayload;
+}
+
 export enum EXPERIMENT_PAYLOAD_DISPLAY_TYPE {
   UNIVERSAL = 'universal',
   SPECIFIC = 'specific',
