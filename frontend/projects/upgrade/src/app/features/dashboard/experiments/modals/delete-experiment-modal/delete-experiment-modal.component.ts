@@ -37,7 +37,6 @@ export class DeleteExperimentModalComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public data: CommonModalConfig,
-    public dialog: MatDialog,
     private readonly experimentService: ExperimentService,
     public dialogRef: MatDialogRef<DeleteExperimentModalComponent>
   ) {}
