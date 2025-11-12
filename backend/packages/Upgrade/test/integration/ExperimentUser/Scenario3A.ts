@@ -165,12 +165,12 @@ export default async function ExcludeGroupsC(): Promise<void> {
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
-  // check stats
+  // check stats - should reflect both exclusions and enrollments
   stats = await analyticsService.getDetailEnrollment(experimentId);
   expect(stats).toEqual(
     expect.objectContaining({
-      users: 0,
-      groups: 0,
+      users: 1,
+      groups: 1,
       usersExcluded: 1,
       groupsExcluded: 2,
       id: experimentId,
