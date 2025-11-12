@@ -51,7 +51,6 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit {
     this.experiment$,
     this.permissions$,
   ]).pipe(map(([experiment, permissions]) => ({ experiment, permissions })));
-  isUserReader$ = this.authService.isUserReader$;
   experimentOverviewDetails$ = this.experimentService.selectedExperimentOverviewDetails$;
   menuButtonItems$: Observable<IMenuButtonItem[]>;
 
