@@ -13,9 +13,9 @@
   <app-common-section-card-action-buttons
     header-right
     [showMenuButton]="true"
-    [menuButtonItems]="menuButtonItems"
+    [menuButtonItems]="menuButtonItems$ | async"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (menuButtonItemClick)="onMenuButtonItemClick($event)"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   ></app-common-section-card-action-buttons>
 

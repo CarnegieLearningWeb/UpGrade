@@ -54,6 +54,7 @@ import {
   EditPayloadModalParams,
 } from '../../features/dashboard/experiments/modals/edit-payload-modal/edit-payload-modal.component';
 import { Observable } from 'rxjs';
+import { DeleteExperimentModalComponent } from '../../features/dashboard/experiments/modals/delete-experiment-modal/delete-experiment-modal.component';
 
 export interface ImportModalParams {
   importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
@@ -666,6 +667,22 @@ export class DialogService {
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
   }
 
+  openDeleteExperimentModal() {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Delete Experiment',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+    };
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.SMALL,
+      autoFocus: 'input',
+      disableClose: true,
+    };
+    return this.dialog.open(DeleteExperimentModalComponent, config);
+  }
+
   openDeleteDecisionPointModal(decisionPointName: string) {
     const deleteDecisionPointModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
       title: 'Delete Decision Point',
@@ -718,6 +735,19 @@ export class DialogService {
       cancelBtnLabel: 'Cancel',
       params: {
         message: 'feature-flags.export-feature-flag-design.confirmation-text.text',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openExportExperimentDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Export Experiment',
+      primaryActionBtnLabel: 'Export',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: 'experiments.export-experiment-design.confirmation-text.text',
       },
     };
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);

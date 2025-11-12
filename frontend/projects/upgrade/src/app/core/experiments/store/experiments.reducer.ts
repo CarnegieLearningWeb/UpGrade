@@ -35,6 +35,7 @@ export const initialState: ExperimentState = adapter.getInitialState({
   },
   isLoadingContextMetaData: false,
   currentUserSelectedContext: null,
+  isLoadingExperimentDelete: false,
 });
 
 const reducer = createReducer(
@@ -90,9 +91,18 @@ const reducer = createReducer(
   on(experimentsAction.actionGetExperimentByIdSuccess, (state, { experiment }) =>
     adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
   ),
-  on(experimentsAction.actionDeleteExperimentSuccess, (state, { experimentId }) =>
-    adapter.removeOne(experimentId, state)
-  ),
+  // Experiment Delete Actions
+  on(experimentsAction.actionDeleteExperiment, (state) => ({ ...state, isLoadingExperimentDelete: true })),
+  on(experimentsAction.actionDeleteExperimentSuccess, (state, { experimentId }) => {
+    return adapter.removeOne(experimentId, {
+      ...state,
+      isLoadingExperimentDelete: false,
+    });
+  }),
+  on(experimentsAction.actionDeleteExperimentFailure, (state) => ({
+    ...state,
+    isLoadingExperimentDelete: false,
+  })),
   on(experimentsAction.actionUpdateExperimentState, (state) => ({ ...state, isLoadingExperiment: true })),
   on(experimentsAction.actionUpdateExperimentStateSuccess, (state, { experiment }) =>
     adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })

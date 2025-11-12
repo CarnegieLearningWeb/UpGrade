@@ -56,6 +56,7 @@ export class LocalStorageService {
       },
       isLoadingContextMetaData: false,
       currentUserSelectedContext: null,
+      isLoadingExperimentDelete: false,
     };
 
     const featureFlagState: FeatureFlagState = {

@@ -47,6 +47,7 @@ import {
   selectExperimentInclusionsLength,
   selectExperimentExclusions,
   selectExperimentExclusionsLength,
+  selectIsLoadingExperimentDelete,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -101,6 +102,7 @@ export class ExperimentService {
   groupSatisfied$ = (experimentId) => this.store$.pipe(select(selectGroupAssignmentStatus, { experimentId }));
   pollingEnabled: boolean = this.environment.pollingEnabled;
   currentContextMetaDataConditions$ = this.store$.pipe(select(selectCurrentContextMetaDataConditions));
+  isLoadingExperimentDelete$ = this.store$.pipe(select(selectIsLoadingExperimentDelete));
 
   selectSearchExperimentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(

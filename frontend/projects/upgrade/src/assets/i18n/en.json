@@ -462,6 +462,7 @@
   "experiments.upsert-include-list-modal.name-hint.text": "The name for this include list.",
   "experiments.upsert-exclude-list-modal.name-hint.text": "The name for this exclude list.",
   "experiments.upsert-list-modal.values-label.text": "Values",
+  "experiments.export-experiment-design.confirmation-text.text": "Are you sure you want to export the experiment design (JSON)?",
   "experiments.upsert-list-modal.values-placeholder.text": "Values separated by commas",
   "experiments.edit-condition-weights-modal.title.text": "Edit Condition Weights",
   "experiments.edit-condition-weights-modal.method-header.text": "Weighting Method",
