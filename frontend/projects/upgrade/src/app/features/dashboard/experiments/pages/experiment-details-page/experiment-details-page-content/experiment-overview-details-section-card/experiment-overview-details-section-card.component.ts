@@ -128,7 +128,6 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit {
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN:
         this.openConfirmExportDesignModal(experiment.id);
-
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA:
         console.log('Email experiment data - TODO: Implement');
