@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { IMenuButtonItem, EXPERIMENT_SEARCH_KEY } from 'upgrade_types';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
-import { combineLatest, map, Observable, Subscription, take } from 'rxjs';
+import { combineLatest, map, Observable } from 'rxjs';
 import { Experiment } from '../../../../../../../core/experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
