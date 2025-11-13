@@ -44,19 +44,6 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
   permissions$: Observable<UserPermission>;
   selectedExperiment$ = this.experimentService.selectedExperiment$;
 
-  menuButtonItems: IMenuButtonItem[] = [
-    {
-      label: 'experiments.details.import-condition.menu-item.text',
-      action: EXPERIMENT_BUTTON_ACTION.IMPORT_CONDITION,
-      disabled: false,
-    },
-    {
-      label: 'experiments.details.export-all-conditions.menu-item.text',
-      action: EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_CONDITIONS,
-      disabled: false,
-    },
-  ];
-
   constructor(
     private experimentService: ExperimentService,
     private authService: AuthService,
@@ -70,21 +57,6 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
 
   onAddConditionClick(appContext: string, experimentId: string): void {
     this.dialogService.openAddConditionModal(experimentId, appContext);
-  }
-
-  onMenuButtonItemClick(event: string, experiment: Experiment): void {
-    switch (event) {
-      case EXPERIMENT_BUTTON_ACTION.IMPORT_CONDITION:
-        // TODO: Implement import functionality when dialog service is available
-        console.log('Import condition clicked for experiment:', experiment.id);
-        break;
-      case EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_CONDITIONS:
-        // TODO: Implement export functionality when experiment service methods are available
-        console.log('Export all conditions clicked for experiment:', experiment.id);
-        break;
-      default:
-        console.log('Unknown action:', event);
-    }
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean): void {

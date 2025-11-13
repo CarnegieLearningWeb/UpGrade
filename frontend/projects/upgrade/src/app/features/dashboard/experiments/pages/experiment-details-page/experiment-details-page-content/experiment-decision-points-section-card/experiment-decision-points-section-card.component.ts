@@ -42,19 +42,6 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
   permissions$: Observable<UserPermission>;
   selectedExperiment$ = this.experimentService.selectedExperiment$;
 
-  menuButtonItems: IMenuButtonItem[] = [
-    {
-      label: 'experiments.details.import-decision-point.menu-item.text',
-      action: EXPERIMENT_BUTTON_ACTION.IMPORT_DECISION_POINT,
-      disabled: false,
-    },
-    {
-      label: 'experiments.details.export-all-decision-points.menu-item.text',
-      action: EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_DECISION_POINTS,
-      disabled: false,
-    },
-  ];
-
   constructor(
     public experimentService: ExperimentService,
     private authService: AuthService,
@@ -68,21 +55,6 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
 
   onAddDecisionPointClick(experimentId: string, appContext: string): void {
     this.dialogService.openAddDecisionPointModal(experimentId, appContext);
-  }
-
-  onMenuButtonItemClick(event: string): void {
-    switch (event) {
-      case EXPERIMENT_BUTTON_ACTION.IMPORT_DECISION_POINT:
-        // TODO: Implement import functionality when dialog service is available
-        console.log('Import decision point');
-        break;
-      case EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_DECISION_POINTS:
-        // TODO: Implement export functionality when experiment service methods are available
-        console.log('Export all decision points');
-        break;
-      default:
-        console.log('Unknown action:', event);
-    }
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean): void {
