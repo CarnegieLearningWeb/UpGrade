@@ -134,7 +134,6 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA:
         this.openConfirmEmailDataModal(experiment.id, experiment.name);
-        console.log('Email experiment data - TODO: Implement');
         break;
       default:
         console.log('Unknown action');
