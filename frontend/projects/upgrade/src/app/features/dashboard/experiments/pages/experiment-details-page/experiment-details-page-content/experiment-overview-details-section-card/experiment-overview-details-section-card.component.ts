@@ -54,6 +54,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   experimentOverviewDetails$ = this.experimentService.selectedExperimentOverviewDetails$;
   menuButtonItems$: Observable<IMenuButtonItem[]>;
   subscriptions = new Subscription();
+  emailId = '';
 
   constructor(
     private readonly experimentService: ExperimentService,
@@ -68,6 +69,8 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
     this.router.navigate(['/experiments']);
   }
   ngOnInit(): void {
+    this.subscriptions.add(this.experimentService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
+
     this.menuButtonItems$ = this.experimentAndPermissions$.pipe(
       map(({ experiment, permissions }) => [
         {
@@ -88,7 +91,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         {
           label: 'experiments.details.email-experiment-data.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
-          disabled: true, // TODO: Implement email data functionality
+          disabled: false,
         },
         {
           label: 'experiments.details.archive-experiment.menu-item.text',
@@ -130,6 +133,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         this.openConfirmExportDesignModal(experiment.id);
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA:
+        this.openConfirmEmailDataModal(experiment.id, experiment.name);
         console.log('Email experiment data - TODO: Implement');
         break;
       default:
@@ -145,6 +149,21 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         .subscribe((isExportClicked: boolean) => {
           if (isExportClicked) {
             this.experimentService.exportExperimentDesign([id]);
+          }
+        })
+    );
+  }
+
+  openConfirmEmailDataModal(id: string, name: string) {
+    const confirmMessage = 'experiments.export-experiment-data.confirmation-text.text';
+    const emailConfirmationMessage = "The experiment data will be sent to '" + this.emailId + "'.";
+    this.subscriptions.add(
+      this.dialogService
+        .openEmailExperimentDataModal(confirmMessage, emailConfirmationMessage)
+        .afterClosed()
+        .subscribe((isExportClicked: boolean) => {
+          if (isExportClicked) {
+            this.experimentService.exportExperimentInfo(id, name);
           }
         })
     );

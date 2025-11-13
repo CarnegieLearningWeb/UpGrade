@@ -56,6 +56,7 @@ import { LocalStorageService } from '../local-storage/local-storage.service';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { ExperimentSegmentListRequest } from '../segments/store/segments.model';
 import { ConditionWeightUpdate } from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
+import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 
 @Injectable()
 export class ExperimentService {
@@ -75,6 +76,7 @@ export class ExperimentService {
       })
     )
   );
+  currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));
   totalExperiments$ = this.store$.pipe(select(selectTotalExperiment));
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
   isLoadingExperimentDetailStats$ = this.store$.pipe(select(selectIsLoadingExperimentDetailStats));
