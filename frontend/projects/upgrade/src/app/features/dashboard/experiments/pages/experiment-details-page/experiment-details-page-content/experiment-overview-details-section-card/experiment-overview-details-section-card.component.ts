@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angular/core';
 import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { IMenuButtonItem, EXPERIMENT_SEARCH_KEY } from 'upgrade_types';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
-import { combineLatest, map, Observable } from 'rxjs';
+import { combineLatest, map, Observable, Subscription } from 'rxjs';
 import { Experiment } from '../../../../../../../core/experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
@@ -41,7 +41,7 @@ export enum EXPERIMENT_DETAILS_PAGE_ACTIONS {
   styleUrl: './experiment-overview-details-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExperimentOverviewDetailsSectionCardComponent implements OnInit {
+export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, OnDestroy {
   @Input() isSectionCardExpanded = true;
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
   @Output() tabChange = new EventEmitter<number>();
@@ -53,6 +53,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit {
   ]).pipe(map(([experiment, permissions]) => ({ experiment, permissions })));
   experimentOverviewDetails$ = this.experimentService.selectedExperimentOverviewDetails$;
   menuButtonItems$: Observable<IMenuButtonItem[]>;
+  subscriptions = new Subscription();
 
   constructor(
     private readonly experimentService: ExperimentService,
@@ -137,13 +138,19 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit {
   }
 
   openConfirmExportDesignModal(id: string) {
-    this.dialogService
-      .openExportExperimentDesignModal()
-      .afterClosed()
-      .subscribe((isExportClicked: boolean) => {
-        if (isExportClicked) {
-          this.experimentService.exportExperimentDesign([id]);
-        }
-      });
+    this.subscriptions.add(
+      this.dialogService
+        .openExportExperimentDesignModal()
+        .afterClosed()
+        .subscribe((isExportClicked: boolean) => {
+          if (isExportClicked) {
+            this.experimentService.exportExperimentDesign([id]);
+          }
+        })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 }
