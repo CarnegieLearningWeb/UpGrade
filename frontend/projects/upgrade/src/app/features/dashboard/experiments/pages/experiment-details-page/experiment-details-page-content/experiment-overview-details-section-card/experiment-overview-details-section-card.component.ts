@@ -155,7 +155,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
 
   openConfirmEmailDataModal(id: string, name: string) {
     const confirmMessage = 'experiments.export-experiment-data.confirmation-text.text';
-    const emailConfirmationMessage = "The experiment data will be sent to '" + this.emailId + "'.";
+    const emailConfirmationMessage = `The experiment data will be sent to '${this.emailId}'.`;
     this.subscriptions.add(
       this.dialogService
         .openEmailExperimentDataModal(confirmMessage, emailConfirmationMessage)
