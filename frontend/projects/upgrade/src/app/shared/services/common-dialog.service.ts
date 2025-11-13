@@ -838,6 +838,24 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
+  openEmailExperimentDataModal(
+    warning: string,
+    subtext: string
+  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Email Experiment Data',
+      primaryActionBtnLabel: 'Email',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: warning,
+        subMessage: subtext,
+        subMessageClass: 'info',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
   // segment modal ---------------------------------------- //
   openUpsertSegmentModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
