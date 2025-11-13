@@ -44,6 +44,7 @@ describe('LocalStorageService', () => {
       },
       isLoadingContextMetaData: false,
       currentUserSelectedContext: null,
+      isLoadingExperimentDelete: false,
     };
     const expectedStateWithDefaults: ExperimentState = {
       ids: [],
@@ -69,6 +70,7 @@ describe('LocalStorageService', () => {
       },
       isLoadingContextMetaData: false,
       currentUserSelectedContext: null,
+      isLoadingExperimentDelete: false,
     };
 
     const testCases = [

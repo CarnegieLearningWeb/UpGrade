@@ -153,6 +153,11 @@ export const selectExperimentQueries = createSelector(selectExperimentState, (st
   return null;
 });
 
+export const selectIsLoadingExperimentDelete = createSelector(
+  selectExperimentState,
+  (state) => state.isLoadingExperimentDelete
+);
+
 export const selectExperimentOverviewDetails = createSelector(selectSelectedExperiment, (experiment) => {
   // Format Unit of Assignment based on the assignment unit type
   const formatUnitOfAssignment = (): string => {

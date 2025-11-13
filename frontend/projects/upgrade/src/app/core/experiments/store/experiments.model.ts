@@ -554,6 +554,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   isLoadingContextMetaData: boolean;
   currentUserSelectedContext: ISingleContextMetadata;
   updatedStat?: IExperimentEnrollmentDetailStats;
+  isLoadingExperimentDelete: boolean;
 }
 
 export interface State extends AppState {
