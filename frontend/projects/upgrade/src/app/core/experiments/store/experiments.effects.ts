@@ -690,7 +690,7 @@ export class ExperimentEffects {
           map((exportedAllListsDesign: any[]) => {
             if (exportedAllListsDesign) {
               this.commonExportHelpersService.convertDataToDownload(exportedAllListsDesign, 'Lists');
-              this.notificationService.showSuccess('Experiment Design JSON downloaded!');
+              this.notificationService.showSuccess('Experiment include lists JSON downloaded!');
             }
             return experimentAction.actionExportAllExcludeListsDesignSuccess();
           }),
