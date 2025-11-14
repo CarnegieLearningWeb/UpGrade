@@ -65,7 +65,7 @@ export interface ImportModalParams {
   flagId?: string; // for feature flag list import
   experimentId?: string; // for experiment list import
   segmentId?: string; // for segment list import
-  filterType?: LIST_FILTER_MODE; // for list import
+  filterType?: LIST_FILTER_MODE; // for list import (specifies filter mode)
 }
 
 export interface UpsertDecisionPointModalParams {
