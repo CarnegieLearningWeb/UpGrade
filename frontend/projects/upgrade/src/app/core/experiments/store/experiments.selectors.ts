@@ -1,6 +1,6 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { selectAll } from './experiments.reducer';
-import { EXPERIMENT_SEARCH_KEY, ExperimentState, Experiment } from './experiments.model';
+import { EXPERIMENT_SEARCH_KEY, ExperimentState, Experiment, ExperimentVM } from './experiments.model';
 import { selectRouterState } from '../../core.state';
 import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
 import {
@@ -10,6 +10,7 @@ import {
   CONSISTENCY_RULE_DISPLAY_MAP,
   ASSIGNMENT_UNIT_DISPLAY_MAP,
 } from 'upgrade_types';
+import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
 
@@ -32,7 +33,7 @@ export const selectIsLoadingExperimentDetailStats = createSelector(
 export const selectSelectedExperiment = createSelector(
   selectRouterState,
   selectExperimentState,
-  (routerState, experimentState) => {
+  (routerState, experimentState): ExperimentVM => {
     // be very defensive here to make sure routerState is correct
     const experimentId = routerState?.state?.params?.experimentId;
     if (experimentId && experimentState?.entities) {
@@ -45,11 +46,18 @@ export const selectSelectedExperiment = createSelector(
 
       // Merge with stats if available
       const stat = experimentState.stats?.[experimentId] || null;
-      return { ...experiment, stat };
+
+      const weightingMethod = determineWeightingMethod(experiment.conditions || []);
+
+      return { ...experiment, stat, weightingMethod };
     }
     return undefined;
   }
 );
+
+export const selectConditionWeightsValid = createSelector(selectSelectedExperiment, (experiment): boolean => {
+  return isWeightSumValid(experiment?.conditions || []);
+});
 
 export const selectExperimentById = createSelector(
   selectExperimentState,

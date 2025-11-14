@@ -303,8 +303,16 @@ export interface IExperimentGraphInfo {
 }
 
 export interface ExperimentVM extends Experiment {
-  stat: IExperimentEnrollmentDetailStats;
+  stat?: IExperimentEnrollmentDetailStats;
+  weightingMethod?: WeightingMethod;
 }
+
+export type WeightingMethod = 'equal' | 'custom';
+
+export const WEIGHTING_METHOD = {
+  EQUAL: 'equal' as WeightingMethod,
+  CUSTOM: 'custom' as WeightingMethod,
+} as const;
 
 export enum UPSERT_EXPERIMENT_ACTION {
   ADD = 'add',
@@ -533,7 +541,7 @@ export const EXPERIMENT_TRANSLATION_KEYS = {
 
 export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
 
-export interface ExperimentState extends EntityState<Experiment> {
+export interface ExperimentState extends EntityState<ExperimentVM> {
   isLoadingExperiment: boolean;
   isLoadingExperimentDetailStats: boolean;
   isPollingExperimentDetailStats: boolean;

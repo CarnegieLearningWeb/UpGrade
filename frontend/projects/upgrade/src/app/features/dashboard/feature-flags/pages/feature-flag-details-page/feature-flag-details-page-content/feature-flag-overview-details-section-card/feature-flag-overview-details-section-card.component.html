@@ -5,9 +5,10 @@
     [title]="flag.name"
     [createdAt]="flag.createdAt"
     [updatedAt]="flag.updatedAt"
-    [versionNumber]="flag.versionNumber"
     [chipClass]="flag.status"
-    [showWarning]="shouldShowWarning$ | async"
+    [warningMessage]="
+      (shouldShowWarning$ | async) ? ('feature-flags.global-status-warning-tooltip.text' | translate) : ''
+    "
   ></app-common-section-card-title-header>
 
   <!-- header-right -->

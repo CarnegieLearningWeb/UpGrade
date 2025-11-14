@@ -1,13 +1,17 @@
 <div class="title-header">
   <h5 class="title ft-18-700">
     {{ title | translate }} &nbsp;<span *ngIf="tableRowCount > 0"> ({{ tableRowCount }}) </span>
-    <ng-container *ngIf="chipClass">
-      <app-common-status-indicator-chip
-        [chipClass]="chipClass"
-        [showWarning]="showWarning"
-        class="status-chip"
-      ></app-common-status-indicator-chip>
-    </ng-container>
+    <app-common-status-indicator-chip
+      *ngIf="chipClass"
+      [chipClass]="chipClass"
+      [warningMessage]="warningMessage | translate"
+      class="status-chip"
+    ></app-common-status-indicator-chip>
+    <app-common-warning-icon
+      *ngIf="!chipClass && warningMessage"
+      [warningMessage]="warningMessage | translate"
+      class="warning-icon"
+    ></app-common-warning-icon>
   </h5>
   <p class="subtitle">
     <ng-container *ngIf="subtitle">
@@ -17,10 +21,14 @@
     </ng-container>
     <ng-container *ngIf="createdAt && updatedAt">
       <span class="ft-14-400">
-        {{ ('feature-flags.details-created-on.text' | translate) + (createdAt | date : 'MMM d, y') + ' | ' }}
+        {{ ('common-section-card-title-header.created-on.text' | translate) + (createdAt | date : 'MMM d, y') + ' | ' }}
       </span>
       <span class="ft-14-400">
-        {{ ('feature-flags.details-updated-at.text' | translate) + (updatedAt | date : 'MMM d, y, h:mm a') + '.' }}
+        {{
+          ('common-section-card-title-header.details-updated-at.text' | translate) +
+            (updatedAt | date : 'MMM d, y, h:mm a') +
+            '.'
+        }}
       </span>
     </ng-container>
   </p>

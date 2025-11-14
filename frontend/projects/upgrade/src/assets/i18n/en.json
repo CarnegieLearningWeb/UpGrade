@@ -470,8 +470,6 @@
   "experiments.edit-condition-weights-modal.equal-assignment-weights.description.text": "Equally distribute weight percentages across all conditions.",
   "experiments.edit-condition-weights-modal.custom-percentages.label.text": "Custom Percentages",
   "experiments.edit-condition-weights-modal.custom-percentages.description.text": "Define a custom weight percentage for each condition.",
-  "feature-flags.details-created-on.text": "Created on: ",
-  "feature-flags.details-updated-at.text": "Updated at: ",
   "feature-flags.global-name.text": "Name",
   "feature-flags.global-status.text": "Status",
   "feature-flags.global-status-warning-tooltip.text": "No include lists enabled",
@@ -712,5 +710,7 @@
   "monitor.metric-most-recent.text": "Most recent",
   "monitor.metric-repeated-measure.text": "Repeated measure treatment",
   "monitor.monitored-metrics.text": "Monitored Metrics",
-  "common-import-modal.incompatible-import-warning.text": "*Incompatible files will not be imported"
+  "common-import-modal.incompatible-import-warning.text": "*Incompatible files will not be imported",
+  "common-section-card-title-header.created-on.text": "Created on: ",
+  "common-section-card-title-header.details-updated-at.text": "Updated at: "
 }

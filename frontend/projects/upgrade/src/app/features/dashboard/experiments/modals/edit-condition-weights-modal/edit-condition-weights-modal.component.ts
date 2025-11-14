@@ -21,6 +21,8 @@ import { Observable, combineLatest, map, startWith } from 'rxjs';
 import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { WeightingMethod, WEIGHTING_METHOD } from '../../../../../core/experiments/store/experiments.model';
+import { distributeWeightsEqually, WEIGHT_CONFIG } from '../../../../../core/experiments/condition-helper.service';
 
 export interface ConditionWeightUpdate {
   conditionId: string;
@@ -52,7 +54,7 @@ export class EditConditionWeightsModalComponent implements OnInit {
   conditions: ConditionWeightUpdate[] = [];
   weightingMethods = [
     {
-      value: 'equal',
+      value: WEIGHTING_METHOD.EQUAL,
       name: this.translate.instant('experiments.edit-condition-weights-modal.equal-assignment-weights.label.text'),
       description: this.translate.instant(
         'experiments.edit-condition-weights-modal.equal-assignment-weights.description.text'
@@ -60,7 +62,7 @@ export class EditConditionWeightsModalComponent implements OnInit {
       disabled: false,
     },
     {
-      value: 'custom',
+      value: WEIGHTING_METHOD.CUSTOM,
       name: this.translate.instant('experiments.edit-condition-weights-modal.custom-percentages.label.text'),
       description: this.translate.instant(
         'experiments.edit-condition-weights-modal.custom-percentages.description.text'
@@ -71,7 +73,10 @@ export class EditConditionWeightsModalComponent implements OnInit {
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
-    public config: CommonModalConfig<{ experimentWeightsArray: ConditionWeightUpdate[] }>,
+    public config: CommonModalConfig<{
+      experimentWeightsArray: ConditionWeightUpdate[];
+      weightingMethod: WeightingMethod;
+    }>,
     public dialog: MatDialog,
     private readonly formBuilder: FormBuilder,
     private translate: TranslateService,
@@ -79,15 +84,12 @@ export class EditConditionWeightsModalComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.createconditionWeightForm();
+    this.createConditionWeightForm();
   }
 
-  createconditionWeightForm(): void {
-    const { experimentWeightsArray } = this.config.params;
+  createConditionWeightForm(): void {
+    const { experimentWeightsArray, weightingMethod } = this.config.params;
     this.conditions = experimentWeightsArray;
-
-    // Determine initial weighting method based on existing weights
-    const initialWeightingMethod = this.determineInitialWeightingMethod(experimentWeightsArray);
 
     // Create FormArray for conditions with individual validators
     const conditionsFormArray = this.formBuilder.array(
@@ -96,7 +98,7 @@ export class EditConditionWeightsModalComponent implements OnInit {
           conditionCode: [condition.conditionCode],
           assignmentWeight: [
             condition.assignmentWeight,
-            [Validators.required, Validators.min(0), Validators.max(100), this.decimalValidator],
+            [Validators.required, Validators.min(0), Validators.max(WEIGHT_CONFIG.TOTAL_WEIGHT), this.decimalValidator],
           ],
         })
       ),
@@ -104,7 +106,7 @@ export class EditConditionWeightsModalComponent implements OnInit {
     );
 
     this.conditionWeightForm = this.formBuilder.group({
-      weightingMethod: [initialWeightingMethod, Validators.required],
+      weightingMethod: [weightingMethod, Validators.required],
       conditions: conditionsFormArray,
     });
 
@@ -115,36 +117,11 @@ export class EditConditionWeightsModalComponent implements OnInit {
     this.watchWeightingMethodChanges();
 
     // Set initial input state based on the determined method
-    if (initialWeightingMethod === 'equal') {
+    if (weightingMethod === WEIGHTING_METHOD.EQUAL) {
       this.disableWeightInputs();
     } else {
       this.enableWeightInputs();
     }
-  }
-
-  private determineInitialWeightingMethod(conditions: ConditionWeightUpdate[]): string {
-    if (!conditions || conditions.length === 0) {
-      return 'equal';
-    }
-
-    if (conditions.length === 1) {
-      // Single condition should always be 100%
-      return Math.abs(conditions[0].assignmentWeight - 100) < 0.01 ? 'equal' : 'custom';
-    }
-
-    const expectedEqualWeight = 100 / conditions.length;
-
-    // Check if all weights are close to the expected equal distribution
-    const areWeightsEquallyDistributed = conditions.every(
-      (condition) => Math.abs(condition.assignmentWeight - expectedEqualWeight) < 0.01
-    );
-
-    // Additional check: ensure total is close to 100%
-    const totalWeight = conditions.reduce((sum, condition) => sum + condition.assignmentWeight, 0);
-    const isTotalValid = Math.abs(totalWeight - 100) < 0.01;
-
-    // Return 'equal' only if weights are equally distributed AND total is valid
-    return areWeightsEquallyDistributed && isTotalValid ? 'equal' : 'custom';
   }
 
   private setupFormValidation(): void {
@@ -166,10 +143,10 @@ export class EditConditionWeightsModalComponent implements OnInit {
     this.conditionWeightForm.get('weightingMethod')?.valueChanges.subscribe((method) => {
       this.conditionWeightForm.markAsDirty();
 
-      if (method === 'equal') {
-        this.distributeWeightsEqually();
+      if (method === WEIGHTING_METHOD.EQUAL) {
+        this.distributeWeightsEquallyInFormControls();
         this.disableWeightInputs();
-      } else if (method === 'custom') {
+      } else if (method === WEIGHTING_METHOD.CUSTOM) {
         this.enableWeightInputs();
       } else if (method === null) {
         this.disableWeightInputs();
@@ -188,9 +165,9 @@ export class EditConditionWeightsModalComponent implements OnInit {
       return { invalidNumber: true };
     }
 
-    // Allow up to 2 decimal places
+    // Allow up to configured decimal places
     const decimalPlaces = (control.value.toString().split('.')[1] || '').length;
-    if (decimalPlaces > 2) {
+    if (decimalPlaces > WEIGHT_CONFIG.DECIMAL_PLACES) {
       return { tooManyDecimals: true };
     }
 
@@ -210,13 +187,13 @@ export class EditConditionWeightsModalComponent implements OnInit {
       },
       [0, {}] as [number, ValidationErrors]
     );
-    const isValid = Math.abs(total - 100) < 0.01;
+    const isValid = Math.abs(total - WEIGHT_CONFIG.TOTAL_WEIGHT) < WEIGHT_CONFIG.VALIDATION_TOLERANCE;
     const totalValidation = isValid
       ? {}
       : {
           totalWeightInvalid: {
             actualTotal: Math.round(total * 100) / 100,
-            expectedTotal: 100,
+            expectedTotal: WEIGHT_CONFIG.TOTAL_WEIGHT,
           },
         };
     const allErrors = {
@@ -241,18 +218,13 @@ export class EditConditionWeightsModalComponent implements OnInit {
     }, 0);
   }
 
-  distributeWeightsEqually(): void {
-    const equalWeight = Math.round((100 / this.conditions.length) * 100) / 100;
-    let remainingWeight = 100;
+  distributeWeightsEquallyInFormControls(): void {
+    // Use service to calculate equal weights
+    distributeWeightsEqually(this.conditions);
 
+    // Apply to form controls
     this.conditionsFormArray.controls.forEach((control, index) => {
-      if (index === this.conditionsFormArray.controls.length - 1) {
-        // Last condition gets the remaining weight to ensure total = 100
-        control.get('assignmentWeight')?.setValue(Math.round(remainingWeight * 100) / 100);
-      } else {
-        control.get('assignmentWeight')?.setValue(equalWeight);
-        remainingWeight -= equalWeight;
-      }
+      control.get('assignmentWeight')?.setValue(this.conditions[index].assignmentWeight);
     });
   }
 
