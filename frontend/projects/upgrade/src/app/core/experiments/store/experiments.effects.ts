@@ -692,7 +692,7 @@ export class ExperimentEffects {
               this.commonExportHelpersService.convertDataToDownload(exportedAllListsDesign, 'Lists');
               this.notificationService.showSuccess('Experiment include lists JSON downloaded!');
             }
-            return experimentAction.actionExportAllExcludeListsDesignSuccess();
+            return experimentAction.actionExportAllIncludeListsDesignSuccess();
           }),
           catchError((error) => {
             this.notificationService.showError('Failed to export all include lists design');
