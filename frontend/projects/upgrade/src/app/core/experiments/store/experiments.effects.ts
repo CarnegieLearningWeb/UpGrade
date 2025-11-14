@@ -695,7 +695,7 @@ export class ExperimentEffects {
             return experimentAction.actionExportAllExcludeListsDesignSuccess();
           }),
           catchError((error) => {
-            this.notificationService.showError('Failed to export All include lists Design');
+            this.notificationService.showError('Failed to export all include lists design');
             return of(experimentAction.actionExportAllIncludeListsDesignFailure());
           })
         )
