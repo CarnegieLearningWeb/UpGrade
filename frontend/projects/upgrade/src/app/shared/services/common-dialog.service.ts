@@ -26,6 +26,7 @@ import {
 import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { UpsertSegmentModalComponent } from '../../features/dashboard/segments/modals/upsert-segment-modal/upsert-segment-modal.component';
 import {
+  EXPERIMENT_LIST_IMPORT_SERVICE,
   FEATURE_FLAG_IMPORT_SERVICE,
   ImportServiceAdapter,
   LIST_IMPORT_SERVICE,
@@ -62,8 +63,9 @@ export interface ImportModalParams {
   warningMessageKey: string; // Translation key for warning message
   incompatibleMessageKey: string; // Translation key for incompatible message
   flagId?: string; // for feature flag list import
+  experimentId?: string; // for experiment list import
   segmentId?: string; // for segment list import
-  listType?: LIST_FILTER_MODE; // for feature flag list import
+  filterType?: LIST_FILTER_MODE; // for list import
 }
 
 export interface UpsertDecisionPointModalParams {
@@ -958,8 +960,44 @@ export class DialogService {
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
         incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
-        listType: LIST_FILTER_MODE.EXCLUSION,
+        filterType: LIST_FILTER_MODE.EXCLUSION,
         flagId,
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportExperimentExcludeListModal(experimentId: string) {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'segments.import-exclude-list-modal.title.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: EXPERIMENT_LIST_IMPORT_SERVICE,
+        messageKey: 'segments.import-list.message.text',
+        warningMessageKey: 'segments.import-list-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'segments.import-list-modal.compatibility-description.incompatible.text',
+        filterType: LIST_FILTER_MODE.EXCLUSION,
+        experimentId,
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportExperimentIncludeListModal(experimentId: string) {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'experiments.details.import-include-list.menu-item.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: EXPERIMENT_LIST_IMPORT_SERVICE,
+        messageKey: 'segments.import-list.message.text',
+        warningMessageKey: 'segments.import-list-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'segments.import-list-modal.compatibility-description.incompatible.text',
+        filterType: LIST_FILTER_MODE.INCLUSION,
+        experimentId,
       },
     };
     return this.openCommonImportModal(commonModalConfig);
@@ -976,7 +1014,7 @@ export class DialogService {
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
         incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
-        listType: LIST_FILTER_MODE.INCLUSION,
+        filterType: LIST_FILTER_MODE.INCLUSION,
         flagId,
       },
     };

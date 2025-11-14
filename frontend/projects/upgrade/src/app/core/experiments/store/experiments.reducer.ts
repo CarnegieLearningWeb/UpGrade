@@ -362,6 +362,10 @@ const reducer = createReducer(
   on(experimentsAction.actionDeleteExperimentExclusionListFailure, (state) => ({
     ...state,
     isLoadingUpsertPrivateSegmentList: false,
+  })),
+  on(experimentsAction.actionSetIsLoadingImportExperiment, (state, { isLoadingImportExperiment }) => ({
+    ...state,
+    isLoadingImportExperiment,
   }))
 );
 

@@ -67,7 +67,7 @@ import { ImportModalParams } from '../../../shared/services/common-dialog.servic
  *   warningMessageKey: string;       // Translation key for warning message
  *   incompatibleMessageKey: string;  // Translation key for incompatible message
  *   flagId?: string;                 // Optional: for feature flag list import
- *   listType?: LIST_FILTER_MODE; // Optional: for feature flag list import
+ *   filterType?: LIST_FILTER_MODE; // Optional: for feature flag list import
  * }
  * ```
  *

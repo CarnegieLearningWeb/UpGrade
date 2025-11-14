@@ -47,6 +47,7 @@ import { ENV, Environment } from '../../../../environments/environment-types';
 import JSZip from 'jszip';
 import { TranslateService } from '@ngx-translate/core';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
+import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
 @Injectable()
 export class ExperimentEffects {
   constructor(
@@ -57,6 +58,7 @@ export class ExperimentEffects {
     private translate: TranslateService,
     private notificationService: NotificationService,
     private commonModalEvents: CommonModalEventsService,
+    private commonExportHelpersService: CommonExportHelpersService,
     @Inject(ENV) private environment: Environment
   ) {}
 
@@ -654,6 +656,50 @@ export class ExperimentEffects {
           catchError((error) => of(experimentAction.actionDeleteExperimentExclusionListFailure({ error })))
         );
       })
+    )
+  );
+
+  exportAllExcludeListsDesign$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionExportAllExcludeListsDesign),
+      map((action) => ({ experimentId: action.experimentId })),
+      switchMap(({ experimentId }) =>
+        this.experimentDataService.exportAllExcludeListsDesign(experimentId).pipe(
+          map((exportedAllListsDesign: any[]) => {
+            if (exportedAllListsDesign) {
+              this.commonExportHelpersService.convertDataToDownload(exportedAllListsDesign, 'Lists');
+              this.notificationService.showSuccess('Experiment Design JSON downloaded!');
+            }
+            return experimentAction.actionExportAllExcludeListsDesignSuccess();
+          }),
+          catchError((error) => {
+            this.notificationService.showError('Failed to export All exclude lists Design');
+            return of(experimentAction.actionExportAllExcludeListsDesignFailure());
+          })
+        )
+      )
+    )
+  );
+
+  exportAllIncludeListsDesign$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionExportAllIncludeListsDesign),
+      map((action) => ({ experimentId: action.experimentId })),
+      switchMap(({ experimentId }) =>
+        this.experimentDataService.exportAllIncludeListsDesign(experimentId).pipe(
+          map((exportedAllListsDesign: any[]) => {
+            if (exportedAllListsDesign) {
+              this.commonExportHelpersService.convertDataToDownload(exportedAllListsDesign, 'Lists');
+              this.notificationService.showSuccess('Experiment Design JSON downloaded!');
+            }
+            return experimentAction.actionExportAllExcludeListsDesignSuccess();
+          }),
+          catchError((error) => {
+            this.notificationService.showError('Failed to export All include lists Design');
+            return of(experimentAction.actionExportAllIncludeListsDesignFailure());
+          })
+        )
+      )
     )
   );
 

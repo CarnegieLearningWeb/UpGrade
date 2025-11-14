@@ -64,6 +64,7 @@ import { actionExecuteQuery, actionFetchMetrics } from '../../analysis/store/ana
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { UserRole } from '../../users/store/users.model';
 import { Environment } from '../../../../environments/environment-types';
+import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
 
 describe('ExperimentEffects', () => {
   let service: ExperimentEffects;
@@ -75,6 +76,7 @@ describe('ExperimentEffects', () => {
   let translate: any;
   let commonModalEventsService: any;
   let mockEnvironment: Environment;
+  let commonExportHelpersService: any;
 
   beforeEach(() => {
     actions$ = new ActionsSubject();
@@ -105,6 +107,7 @@ describe('ExperimentEffects', () => {
       translate,
       notificationService,
       commonModalEventsService,
+      commonExportHelpersService,
       mockEnvironment
     );
   });

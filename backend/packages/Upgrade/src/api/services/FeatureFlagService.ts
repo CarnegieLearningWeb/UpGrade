@@ -1167,7 +1167,7 @@ export class FeatureFlagService {
   public async importFeatureFlagLists(
     featureFlagListFiles: IFeatureFlagFile[],
     featureFlagId: string,
-    listType: LIST_FILTER_MODE,
+    filterType: LIST_FILTER_MODE,
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<IImportError[]> {
@@ -1206,7 +1206,7 @@ export class FeatureFlagService {
           listDocs.push(listDoc);
         }
 
-        return await this.addList(listDocs, listType, currentUser, logger, transactionalEntityManager);
+        return await this.addList(listDocs, filterType, currentUser, logger, transactionalEntityManager);
       });
 
     logger.info({ message: 'Imported feature flags', details: createdLists });
