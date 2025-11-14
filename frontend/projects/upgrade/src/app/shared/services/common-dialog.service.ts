@@ -969,7 +969,7 @@ export class DialogService {
 
   openImportExperimentExcludeListModal(experimentId: string) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'segments.import-exclude-list-modal.title.text',
+      title: 'experiments.import-experiment-list-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -987,7 +987,7 @@ export class DialogService {
 
   openImportExperimentIncludeListModal(experimentId: string) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'experiments.details.import-include-list.menu-item.text',
+      title: 'experiments.import-experiment-list-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',

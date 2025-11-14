@@ -138,7 +138,7 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *        type: object
  *      filterType:
  *        type: string
- *        enum: [featureFlagSegmentInclusion, featureFlagSegmentExclusion]
+ *        enum: [inclusion, exclusion]
  *      flagId:
  *        type: string
  */
@@ -900,7 +900,7 @@ export class FeatureFlagsController {
    *             type: object
    *             $ref: '#/definitions/FeatureFlagListImportObject'
    *       tags:
-   *         - Feature Flag Lists
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
