@@ -673,7 +673,7 @@ export class ExperimentEffects {
             return experimentAction.actionExportAllExcludeListsDesignSuccess();
           }),
           catchError((error) => {
-            this.notificationService.showError('Failed to export All exclude lists Design');
+            this.notificationService.showError('Failed to export all exclude lists design');
             return of(experimentAction.actionExportAllExcludeListsDesignFailure());
           })
         )
