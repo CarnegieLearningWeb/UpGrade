@@ -64,7 +64,6 @@ import { actionExecuteQuery, actionFetchMetrics } from '../../analysis/store/ana
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { UserRole } from '../../users/store/users.model';
 import { Environment } from '../../../../environments/environment-types';
-import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
 
 describe('ExperimentEffects', () => {
   let service: ExperimentEffects;
