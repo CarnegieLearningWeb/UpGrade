@@ -18,7 +18,7 @@ import {
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { Segment } from '../../../../../../../core/segments/store/segments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
-import { Observable } from 'rxjs';
+import { Observable, take } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
@@ -71,12 +71,24 @@ export class ExperimentExclusionsSectionCardComponent implements OnInit {
   onMenuButtonItemClick(event: string, experiment: Experiment): void {
     switch (event) {
       case EXPERIMENT_BUTTON_ACTION.IMPORT_EXCLUDE_LIST:
-        // TODO: Implement import functionality when dialog service is available
-        console.log('Import exclude list clicked for experiment:', experiment.id);
+        this.dialogService
+          .openImportExperimentExcludeListModal(experiment.id)
+          .afterClosed()
+          .pipe(take(1))
+          .subscribe(() => this.experimentService.fetchExperimentById(experiment.id));
         break;
       case EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS:
-        // TODO: Implement export functionality when experiment service methods are available
-        console.log('Export all exclude lists clicked for experiment:', experiment.id);
+        if (experiment.experimentSegmentExclusion.length) {
+          this.dialogService
+            .openExportExcludeListModal()
+            .afterClosed()
+            .pipe(take(1))
+            .subscribe((isExportClicked: boolean) => {
+              if (isExportClicked) {
+                this.experimentService.exportAllExcludeListsData(experiment.id);
+              }
+            });
+        }
         break;
       default:
         console.log('Unknown action:', event);
@@ -109,6 +121,7 @@ export class ExperimentExclusionsSectionCardComponent implements OnInit {
     this.dialogService
       .openDeleteExcludeListModal(segment.name)
       .afterClosed()
+      .pipe(take(1))
       .subscribe((confirmClicked) => {
         if (confirmClicked) {
           this.experimentService.deleteExperimentExclusionPrivateSegmentList(segment.id);

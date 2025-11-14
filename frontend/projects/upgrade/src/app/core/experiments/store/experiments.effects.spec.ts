@@ -75,6 +75,7 @@ describe('ExperimentEffects', () => {
   let translate: any;
   let commonModalEventsService: any;
   let mockEnvironment: Environment;
+  let commonExportHelpersService: any;
 
   beforeEach(() => {
     actions$ = new ActionsSubject();
@@ -105,6 +106,7 @@ describe('ExperimentEffects', () => {
       translate,
       notificationService,
       commonModalEventsService,
+      commonExportHelpersService,
       mockEnvironment
     );
   });

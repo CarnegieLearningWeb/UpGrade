@@ -268,6 +268,14 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionFetchGroupAssignmentStatus({ experimentId }));
   }
 
+  exportAllExcludeListsData(experimentId: string) {
+    this.store$.dispatch(experimentAction.actionExportAllExcludeListsDesign({ experimentId }));
+  }
+
+  exportAllIncludeListsData(experimentId: string) {
+    this.store$.dispatch(experimentAction.actionExportAllIncludeListsDesign({ experimentId }));
+  }
+
   toggleDetailsPolling(experiment: Experiment, isPolling: boolean) {
     if (!isPolling && experiment.state === EXPERIMENT_STATE.ENROLLING) {
       this.beginDetailStatsPolling(experiment.id);
@@ -355,5 +363,9 @@ export class ExperimentService {
         actionType: UpsertExperimentType.UPDATE_EXPERIMENT,
       })
     );
+  }
+
+  setIsLoadingImportExperiment(isLoadingImportExperiment: boolean) {
+    this.store$.dispatch(experimentAction.actionSetIsLoadingImportExperiment({ isLoadingImportExperiment }));
   }
 }

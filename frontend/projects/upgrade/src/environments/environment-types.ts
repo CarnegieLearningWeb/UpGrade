@@ -7,6 +7,7 @@ export interface APIEndpoints {
   createNewExperiments: string;
   validateExperiment: string;
   importExperiment: string;
+  importExperimentList: string;
   exportExperiment: string;
   exportAllExperiment: string;
   updateExperiments: string;
@@ -44,6 +45,8 @@ export interface APIEndpoints {
   addFlagExclusionList: string;
   addExperimentInclusionList: string;
   addExperimentExclusionList: string;
+  exportAllExperimentIncludeLists: string;
+  exportAllExperimentExcludeLists: string;
   setting: string;
   metrics: string;
   metricsSave: string;

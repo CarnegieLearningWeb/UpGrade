@@ -50,8 +50,8 @@ export class FeatureFlagsDataService {
     return this.http.post(url, featureFlags);
   }
 
-  validateFeatureFlagList(files: IFeatureFlagFile[], flagId: string, listType: LIST_FILTER_MODE) {
-    const lists = { files: files, listType: listType, flagId: flagId };
+  validateFeatureFlagList(files: IFeatureFlagFile[], flagId: string, filterType: LIST_FILTER_MODE) {
+    const lists = { files: files, filterType: filterType, flagId: flagId };
     const url = this.environment.api.validateFeatureFlagList;
     return this.http.post(url, lists);
   }
@@ -61,8 +61,8 @@ export class FeatureFlagsDataService {
     return this.http.post(url, featureFlag);
   }
 
-  importFeatureFlagList(files: IFeatureFlagFile[], flagId: string, listType: LIST_FILTER_MODE) {
-    const lists = { files: files, listType: listType, flagId: flagId };
+  importFeatureFlagList(files: IFeatureFlagFile[], flagId: string, filterType: LIST_FILTER_MODE) {
+    const lists = { files: files, filterType: filterType, flagId: flagId };
     const url = this.environment.api.importFeatureFlagList;
     return this.http.post(url, lists);
   }

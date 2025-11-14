@@ -460,6 +460,7 @@
   "experiments.upsert-list-modal.values-label.text": "Values",
   "experiments.export-experiment-design.confirmation-text.text": "Are you sure you want to export the experiment design (JSON)?",
   "experiments.export-experiment-data.confirmation-text.text": "Are you sure you want to email the experiment data (CSV)?",
+  "experiments.import-experiment-list-modal.title.text": "Import Experiment List",
   "experiments.upsert-list-modal.values-placeholder.text": "Values separated by commas",
   "experiments.edit-condition-weights-modal.title.text": "Edit Condition Weights",
   "experiments.edit-condition-weights-modal.method-header.text": "Weighting Method",

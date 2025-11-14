@@ -86,7 +86,7 @@ export class FeatureFlagListImportValidation {
   @IsString()
   @IsNotEmpty()
   @IsEnum(LIST_FILTER_MODE)
-  public listType: LIST_FILTER_MODE;
+  public filterType: LIST_FILTER_MODE;
 
   @IsUUID()
   @IsNotEmpty()

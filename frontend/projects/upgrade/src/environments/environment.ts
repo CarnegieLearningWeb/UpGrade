@@ -85,5 +85,8 @@ export const environment = {
     getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
     addExperimentInclusionList: '/experiments/inclusionList',
     addExperimentExclusionList: '/experiments/exclusionList',
+    exportAllExperimentIncludeLists: '/experiments/export/includeLists',
+    exportAllExperimentExcludeLists: '/experiments/export/excludeLists',
+    importExperimentList: '/experiments/lists/import',
   },
 };

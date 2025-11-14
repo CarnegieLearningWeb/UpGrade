@@ -12,7 +12,7 @@ import { ExperimentService } from '../../../../../../../core/experiments/experim
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CommonSimpleConfirmationModalComponent } from '../../../../../../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
-import { Observable, map, Subscription, combineLatest } from 'rxjs';
+import { Observable, map, Subscription, combineLatest, take } from 'rxjs';
 import { Experiment, EXPERIMENT_BUTTON_ACTION } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
@@ -135,26 +135,24 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
   onMenuButtonItemClick(event: string, experiment: Experiment): void {
     switch (event) {
       case EXPERIMENT_BUTTON_ACTION.IMPORT_INCLUDE_LIST:
-        // TODO: Uncomment when dialog service is available
-        // this.dialogService
-        //   .openImportExperimentIncludeListModal(experiment.id)
-        //   .afterClosed()
-        //   .subscribe(() => this.experimentService.fetchExperimentById(experiment.id));
-        console.log('Import include list clicked for experiment:', experiment.id);
+        this.dialogService
+          .openImportExperimentIncludeListModal(experiment.id)
+          .afterClosed()
+          .pipe(take(1))
+          .subscribe(() => this.experimentService.fetchExperimentById(experiment.id));
         break;
       case EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS:
-        // TODO: Uncomment when dialog service is available and check for inclusions
-        // if (experiment.experimentSegmentInclusion.length) {
-        //   this.dialogService
-        //     .openExportIncludeListModal()
-        //     .afterClosed()
-        //     .subscribe((isExportClicked: boolean) => {
-        //       if (isExportClicked) {
-        //         this.experimentService.exportAllIncludeListsData(experiment.id);
-        //       }
-        //     });
-        // }
-        console.log('Export all include lists clicked for experiment:', experiment.id);
+        if (experiment.experimentSegmentInclusion.length) {
+          this.dialogService
+            .openExportIncludeListModal()
+            .afterClosed()
+            .pipe(take(1))
+            .subscribe((isExportClicked: boolean) => {
+              if (isExportClicked) {
+                this.experimentService.exportAllIncludeListsData(experiment.id);
+              }
+            });
+        }
         break;
       default:
         console.log('Unknown menu action:', event);
@@ -187,6 +185,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
     this.dialogService
       .openDeleteIncludeListModal(segment.name)
       .afterClosed()
+      .pipe(take(1))
       .subscribe((confirmClicked) => {
         if (confirmClicked) {
           this.experimentService.deleteExperimentInclusionPrivateSegmentList(segment.id);
