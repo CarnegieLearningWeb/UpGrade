@@ -206,6 +206,8 @@ describe('Experiments Selectors', () => {
         ],
         type: EXPERIMENT_TYPE.SIMPLE,
         assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+        stat: null,
+        weightingMethod: 'equal',
       },
     },
     isLoadingExperiment: false,
