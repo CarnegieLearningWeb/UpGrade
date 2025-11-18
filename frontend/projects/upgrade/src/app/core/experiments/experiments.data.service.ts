@@ -13,6 +13,7 @@ import { ENV, Environment } from '../../../environments/environment-types';
 import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
 import { Observable } from 'rxjs';
 import { ExperimentSegmentListRequest } from '../segments/store/segments.model';
+import { LIST_FILTER_MODE } from 'upgrade_types';
 
 @Injectable()
 export class ExperimentDataService {
@@ -173,5 +174,26 @@ export class ExperimentDataService {
       conditions: params.conditions,
     };
     return this.updateExperiment(updatedExperiment);
+  }
+
+  validateListsImport(segments: any[]) {
+    const url = this.environment.api.validateSegmentsImport;
+    return this.http.post(url, segments);
+  }
+
+  importExperimentList(files: any[], experimentId: string, filterType: LIST_FILTER_MODE) {
+    const lists = { files: files, filterType: filterType, experimentId: experimentId };
+    const url = this.environment.api.importExperimentList;
+    return this.http.post(url, lists);
+  }
+
+  exportAllExcludeListsDesign(id: string) {
+    const url = `${this.environment.api.exportAllExperimentExcludeLists}/${id}`;
+    return this.http.get(url);
+  }
+
+  exportAllIncludeListsDesign(id: string) {
+    const url = `${this.environment.api.exportAllExperimentIncludeLists}/${id}`;
+    return this.http.get(url);
   }
 }

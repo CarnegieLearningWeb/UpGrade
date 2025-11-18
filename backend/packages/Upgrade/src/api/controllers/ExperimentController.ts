@@ -628,6 +628,19 @@ interface ExperimentListImportValidation {
  *       - partitions
  *       - queries
  *       - stateTimeLogs
+ *   ExperimentListImportObject:
+ *    required:
+ *      - files
+ *      - filterType
+ *      - experimentId
+ *    properties:
+ *      files:
+ *        type: object
+ *      filterType:
+ *        type: string
+ *        enum: [inclusion, exclusion]
+ *      experimentId:
+ *        type: string
  */
 
 /**
@@ -1790,7 +1803,7 @@ export class ExperimentController {
    *             type: object
    *             $ref: '#/definitions/ExperimentListImportObject'
    *       tags:
-   *         - Experiment Lists
+   *         - Experiments
    *       produces:
    *         - application/json
    *       responses:

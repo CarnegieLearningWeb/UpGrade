@@ -376,3 +376,34 @@ export const actionDeleteExperimentExclusionListFailure = createAction(
   '[Experiment] Delete Experiment Exclusion List Failure',
   props<{ error: any }>()
 );
+
+export const actionSetIsLoadingImportExperiment = createAction(
+  '[Experiment] Set Is Loading for Experiment Import',
+  props<{ isLoadingImportExperiment: boolean }>()
+);
+
+export const actionExportAllExcludeListsDesign = createAction(
+  '[Experiment] Export All Exclude Lists Design',
+  props<{ experimentId: string }>()
+);
+
+export const actionExportAllExcludeListsDesignSuccess = createAction(
+  '[Experiment] Export All Exclude Lists Design Success'
+);
+
+export const actionExportAllExcludeListsDesignFailure = createAction(
+  '[Experiment] Export All Exclude Lists Design Failure'
+);
+
+export const actionExportAllIncludeListsDesign = createAction(
+  '[Experiment] Export All Include Lists Design',
+  props<{ experimentId: string }>()
+);
+
+export const actionExportAllIncludeListsDesignSuccess = createAction(
+  '[Experiment] Export All Include Lists Design Success'
+);
+
+export const actionExportAllIncludeListsDesignFailure = createAction(
+  '[Experiment] Export All Include Lists Design Failure'
+);

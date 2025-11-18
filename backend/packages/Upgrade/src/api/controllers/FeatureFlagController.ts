@@ -131,14 +131,14 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *   FeatureFlagListImportObject:
  *    required:
  *      - files
- *      - listType
+ *      - filterType
  *      - flagId
  *    properties:
  *      files:
  *        type: object
- *      listType:
+ *      filterType:
  *        type: string
- *        enum: [featureFlagSegmentInclusion, featureFlagSegmentExclusion]
+ *        enum: [inclusion, exclusion]
  *      flagId:
  *        type: string
  */
@@ -900,7 +900,7 @@ export class FeatureFlagsController {
    *             type: object
    *             $ref: '#/definitions/FeatureFlagListImportObject'
    *       tags:
-   *         - Feature Flag Lists
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
@@ -920,7 +920,7 @@ export class FeatureFlagsController {
     return await this.featureFlagService.importFeatureFlagLists(
       lists.files,
       lists.flagId,
-      lists.listType,
+      lists.filterType,
       currentUser,
       request.logger
     );
