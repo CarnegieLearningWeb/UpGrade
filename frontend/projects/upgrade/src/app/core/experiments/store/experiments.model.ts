@@ -321,8 +321,6 @@ export enum EXPERIMENT_BUTTON_ACTION {
   EXPORT_ALL_EXCLUDE_LISTS = 'export all exclude lists',
   IMPORT_METRIC = 'import metric',
   EXPORT_ALL_METRICS = 'export all metrics',
-  EXPORT_ENROLLMENT_DATA = 'export enrollment data',
-  EXPORT_METRICS_DATA = 'export metrics data',
 }
 
 export interface UpsertExperimentParams {

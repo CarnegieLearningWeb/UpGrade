@@ -10,17 +10,11 @@
   <app-common-section-card-action-buttons
     header-right
     [showPrimaryButton]="false"
-    [showMenuButton]="(permissions$ | async)?.experiments.update"
-    [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
 
   <!-- content -->
-  <app-experiment-metrics-data
-    content
-    *ngIf="isSectionCardExpanded"
-  ></app-experiment-metrics-data>
+  <app-experiment-metrics-data content *ngIf="isSectionCardExpanded"></app-experiment-metrics-data>
 </app-common-section-card>
