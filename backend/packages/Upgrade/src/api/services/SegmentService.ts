@@ -533,7 +533,7 @@ export class SegmentService {
     return validatedSegments.importErrors;
   }
 
-  public async importLists(lists: SegmentListImportValidation, logger: UpgradeLogger): Promise<any> {
+  public async importLists(lists: SegmentListImportValidation, logger: UpgradeLogger): Promise<SegmentImportError[]> {
     const listImport = true;
     const validatedLists = await this.checkSegmentsValidity(lists.files, listImport);
 
@@ -626,7 +626,7 @@ export class SegmentService {
       throw new Error(`Invalid JSON format: ${(err as Error).message}`);
     }
 
-    const addSegmentMembers = (segment: any): SegmentInputValidator => {
+    const addSegmentMembers = (segment): SegmentInputValidator => {
       if (segment.individualForSegment) {
         segment.userIds = segment.individualForSegment.map((individual) =>
           individual.userId ? individual.userId : null
@@ -649,7 +649,10 @@ export class SegmentService {
       }
       return segment;
     };
-    segmentInfo = addSegmentMembers(segmentInfo);
+    const segmentData: SegmentInputValidator = segmentInfo.segment
+      ? { ...segmentInfo.segment, listType: segmentInfo.listType || segmentInfo.segment.listType }
+      : segmentInfo;
+    segmentInfo = addSegmentMembers(segmentData);
     return segmentInfo;
   }
 

@@ -33,8 +33,8 @@ import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagL
 import { Segment } from 'src/api/models/Segment';
 import { Response } from 'express';
 import { UserDTO } from '../DTO/UserDTO';
-import { ImportFeatureFlagListValidator } from './validators/FeatureFlagImportValidator';
 import { NotFoundException } from '@nestjs/common/exceptions';
+import { SegmentInputValidator } from 'src/api/controllers/validators/SegmentInputValidator';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -841,51 +841,6 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags/lists/import/validation:
-   *    post:
-   *       description: Validating Feature Flag List
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: body
-   *           name: lists
-   *           description: Import FeatureFlag List Files
-   *           required: true
-   *           schema:
-   *             type: object
-   *             $ref: '#/definitions/FeatureFlagListImportObject'
-   *       tags:
-   *         - Feature Flags
-   *       produces:
-   *         - application/json
-   *       responses:
-   *         '200':
-   *           description: Validations are completed
-   *           schema:
-   *            type: array
-   *            items:
-   *              type: object
-   *              properties:
-   *                fileName:
-   *                  type: string
-   *                compatibilityType:
-   *                  type: string
-   *                  enum: [compatible, warning, incompatible]
-   *         '401':
-   *           description: AuthorizationRequiredError
-   *         '500':
-   *           description: Internal Server Error
-   */
-  @Post('/lists/import/validation')
-  public async validateImportFeatureFlagList(
-    @Body({ validate: true }) lists: FeatureFlagListImportValidation,
-    @Req() request: AppRequest
-  ): Promise<ValidatedImportResponse[]> {
-    return await this.featureFlagService.validateImportFeatureFlagLists(lists.files, lists.flagId, request.logger);
-  }
-
-  /**
-   * @swagger
    * /flags/lists/import:
    *    post:
    *       description: Importing Feature Flag List
@@ -959,12 +914,12 @@ export class FeatureFlagsController {
     @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest,
     @Res() response: Response
-  ): Promise<ImportFeatureFlagListValidator[]> {
+  ): Promise<SegmentInputValidator[]> {
     const lists = await this.featureFlagService.exportAllLists(id, LIST_FILTER_MODE.INCLUSION, request.logger);
     if (lists?.length) {
       // download JSON file with appropriate headers to response body;
       if (lists.length === 1) {
-        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
+        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].name}.json"`);
       } else {
         response.setHeader('Content-Disposition', `attachment; filename="lists.zip"`);
       }
@@ -1009,12 +964,12 @@ export class FeatureFlagsController {
     @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest,
     @Res() response: Response
-  ): Promise<ImportFeatureFlagListValidator[]> {
+  ): Promise<SegmentInputValidator[]> {
     const lists = await this.featureFlagService.exportAllLists(id, LIST_FILTER_MODE.EXCLUSION, request.logger);
     if (lists?.length) {
       // download JSON file with appropriate headers to response body;
       if (lists.length === 1) {
-        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
+        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].name}.json"`);
       } else {
         response.setHeader('Content-Disposition', `attachment; filename="lists.zip"`);
       }

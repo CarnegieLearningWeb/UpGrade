@@ -1,14 +1,6 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
-import {
-  SEGMENT_TYPE,
-  SEGMENT_STATUS,
-  SEGMENT_SEARCH_KEY,
-  SORT_AS_DIRECTION,
-  SEGMENT_SORT_KEY,
-  FILTER_MODE,
-  LIST_FILTER_MODE,
-} from 'upgrade_types';
+import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 export { SEGMENT_STATUS };
 
 export enum NewSegmentDialogEvents {
@@ -340,6 +332,7 @@ export interface PrivateSegmentListRequestBase {
   userIds: string[];
   groups: Group[];
   subSegmentIds: string[];
+  listType?: string;
 }
 
 export type AddPrivateSegmentListRequestDetails = PrivateSegmentListRequestBase;

@@ -45,10 +45,7 @@ import { ErrorWithType } from '../errors/ErrorWithType';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import {
-  FeatureFlagImportDataValidation,
-  ImportFeatureFlagListValidator,
-} from '../controllers/validators/FeatureFlagImportValidator';
+import { FeatureFlagImportDataValidation } from '../controllers/validators/FeatureFlagImportValidator';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { UserDTO } from '../DTO/UserDTO';
 import { diffString } from 'json-diff';
@@ -56,6 +53,7 @@ import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
+import { SegmentFile, SegmentInputValidator } from 'src/api/controllers/validators/SegmentInputValidator';
 
 @Service()
 export class FeatureFlagService {
@@ -971,7 +969,13 @@ export class FeatureFlagService {
             ...segmentInclusionList,
             enabled: false,
             id: newFlag.id,
-            segment: { ...segmentInclusionList.segment, userIds, subSegmentIds, groups },
+            segment: {
+              ...segmentInclusionList.segment,
+              userIds,
+              subSegmentIds,
+              groups,
+              listType: segmentInclusionList.listType,
+            },
           };
         });
 
@@ -991,7 +995,13 @@ export class FeatureFlagService {
           return {
             ...segmentExclusionList,
             id: newFlag.id,
-            segment: { ...segmentExclusionList.segment, userIds, subSegmentIds, groups },
+            segment: {
+              ...segmentExclusionList.segment,
+              userIds,
+              subSegmentIds,
+              groups,
+              listType: segmentExclusionList.listType,
+            },
           };
         });
 
@@ -1165,17 +1175,17 @@ export class FeatureFlagService {
   }
 
   public async importFeatureFlagLists(
-    featureFlagListFiles: IFeatureFlagFile[],
+    featureFlagListFiles: SegmentFile[],
     featureFlagId: string,
     filterType: LIST_FILTER_MODE,
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<IImportError[]> {
     logger.info({ message: 'Import feature flags' });
-    const validatedFlags = await this.validateImportFeatureFlagLists(featureFlagListFiles, featureFlagId, logger);
+    const validatedFlags = await this.segmentService.checkSegmentsValidity(featureFlagListFiles, true);
 
     const fileStatusArray = featureFlagListFiles.map((file) => {
-      const validation = validatedFlags.find((error) => error.fileName === file.fileName);
+      const validation = validatedFlags.importErrors.find((error) => error.fileName === file.fileName);
       const isCompatible = validation && validation.compatibilityType !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
 
       return {
@@ -1184,11 +1194,11 @@ export class FeatureFlagService {
       };
     });
 
-    const validFiles: ImportFeatureFlagListValidator[] = fileStatusArray
+    const validFiles: SegmentInputValidator[] = fileStatusArray
       .filter((fileStatus) => fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE)
       .map((fileStatus) => {
         const featureFlagListFile = featureFlagListFiles.find((file) => file.fileName === fileStatus.fileName);
-        return JSON.parse(featureFlagListFile.fileContent as string);
+        return this.segmentService.convertJSONStringToSegInputValFormat(featureFlagListFile.fileContent as string);
       });
     const featureFlag = await this.findOne(featureFlagId, logger);
 
@@ -1197,10 +1207,10 @@ export class FeatureFlagService {
         const listDocs: FeatureFlagListValidator[] = [];
         for (const list of validFiles) {
           const listDoc: FeatureFlagListValidator = {
-            ...list,
             enabled: false,
+            listType: list.listType,
             id: featureFlagId,
-            segment: { ...list.segment, id: uuid(), context: featureFlag.context[0] },
+            segment: { ...list, id: uuid(), context: featureFlag.context[0] },
           };
 
           listDocs.push(listDoc);
@@ -1219,120 +1229,18 @@ export class FeatureFlagService {
     return fileStatusArray;
   }
 
-  public async validateImportFeatureFlagLists(
-    featureFlagFiles: IFeatureFlagFile[],
-    featureFlagId: string,
-    logger: UpgradeLogger
-  ): Promise<ValidatedImportResponse[]> {
-    logger.info({ message: 'Validate feature flag lists' });
-
-    const parsedFeatureFlagLists = featureFlagFiles.map((featureFlagFile) => {
-      try {
-        return {
-          fileName: featureFlagFile.fileName,
-          content: JSON.parse(featureFlagFile.fileContent as string),
-        };
-      } catch (parseError) {
-        logger.error({ message: 'Error in parsing feature flag file', details: parseError });
-        return {
-          fileName: featureFlagFile.fileName,
-          content: null,
-        };
-      }
-    });
-
-    const featureFlag = await this.findOne(featureFlagId, logger);
-
-    const validationErrors = await Promise.allSettled(
-      parsedFeatureFlagLists.map(async (parsedFile) => {
-        if (!featureFlag || !parsedFile.content) {
-          return {
-            fileName: parsedFile.fileName,
-            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
-          };
-        }
-
-        return this.validateImportFeatureFlagList(parsedFile.fileName, featureFlag, parsedFile.content);
-      })
-    );
-
-    // Filter out the files that have no promise rejection errors
-    return validationErrors
-      .map((result) => {
-        if (result.status === 'fulfilled') {
-          return result.value ? result.value : null;
-        } else {
-          const { fileName, compatibilityType } = result.reason;
-          return { fileName: fileName, compatibilityType: compatibilityType };
-        }
-      })
-      .filter((error) => error !== null);
-  }
-
-  public async validateImportFeatureFlagList(
-    fileName: string,
-    flag: FeatureFlag,
-    list: ImportFeatureFlagListValidator
-  ) {
-    let compatibilityType = IMPORT_COMPATIBILITY_TYPE.COMPATIBLE;
-
-    list = plainToClass(ImportFeatureFlagListValidator, list);
-    await validate(list, { forbidUnknownValues: true, stopAtFirstError: true }).then((errors) => {
-      if (errors.length > 0) {
-        compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-      }
-    });
-
-    if (!(list instanceof ImportFeatureFlagListValidator)) {
-      compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-    }
-
-    if (compatibilityType === IMPORT_COMPATIBILITY_TYPE.COMPATIBLE) {
-      if (list.listType === 'Segment') {
-        const segments = await this.segmentService.getSegmentByIds(list.segment.subSegmentIds);
-
-        if (!segments.length) {
-          compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-        }
-
-        segments?.forEach((segment) => {
-          if (!segment || segment.context !== flag.context[0]) {
-            compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-          }
-        });
-      } else if (list.listType !== 'Individual' && list.segment.groups.length) {
-        const contextMetaData = env.initialization.contextMetadata;
-        const groupTypes = contextMetaData[flag.context[0]].GROUP_TYPES;
-        if (!groupTypes.includes(list.listType)) {
-          compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-        }
-
-        list.segment.groups.forEach((group) => {
-          if (group.type !== list.listType) {
-            compatibilityType = IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE;
-          }
-        });
-      }
-    }
-
-    return {
-      fileName: fileName,
-      compatibilityType: compatibilityType,
-    };
-  }
-
   public async exportAllLists(
     id: string,
-    listType: LIST_FILTER_MODE,
+    filterType: LIST_FILTER_MODE,
     logger: UpgradeLogger
-  ): Promise<ImportFeatureFlagListValidator[] | null> {
+  ): Promise<SegmentInputValidator[] | null> {
     const featureFlag = await this.findOne(id, logger);
-    let listsArray: ImportFeatureFlagListValidator[] = [];
+    let listsArray: SegmentInputValidator[] = [];
     if (featureFlag) {
-      let lists: (FeatureFlagSegmentExclusion | FeatureFlagSegmentExclusion)[] = [];
-      if (listType === LIST_FILTER_MODE.INCLUSION) {
+      let lists: (FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[] = [];
+      if (filterType === LIST_FILTER_MODE.INCLUSION) {
         lists = featureFlag.featureFlagSegmentInclusion;
-      } else if (listType === LIST_FILTER_MODE.EXCLUSION) {
+      } else if (filterType === LIST_FILTER_MODE.EXCLUSION) {
         lists = featureFlag.featureFlagSegmentExclusion;
       } else {
         return null;
@@ -1342,6 +1250,7 @@ export class FeatureFlagService {
 
       listsArray = lists.map((list) => {
         const { name, description, context, type } = list.segment;
+        const listType = list.segment.listType || list.listType;
 
         const userIds = list.segment.individualForSegment.map((individual) => individual.userId);
 
@@ -1351,9 +1260,15 @@ export class FeatureFlagService {
           return { type: group.type, groupId: group.groupId };
         });
 
-        const listDoc: ImportFeatureFlagListValidator = {
-          listType: list.listType,
-          segment: { name, description, context, type, userIds, subSegmentIds, groups },
+        const listDoc: SegmentInputValidator = {
+          name,
+          description,
+          context,
+          type,
+          userIds,
+          subSegmentIds,
+          groups,
+          listType,
         };
         return listDoc;
       });

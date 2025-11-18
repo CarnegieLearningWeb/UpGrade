@@ -283,7 +283,7 @@ export interface IMenuButtonItem {
 
 export interface IFeatureFlagFile {
   fileName: string;
-  fileContent: string | ArrayBuffer;
+  fileContent: string;
 }
 
 export interface IImportError {
