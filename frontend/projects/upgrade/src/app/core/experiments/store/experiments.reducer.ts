@@ -4,12 +4,13 @@ import {
   EXPERIMENT_SEARCH_KEY,
   SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
+  ExperimentVM,
 } from './experiments.model';
 import { createReducer, on, Action } from '@ngrx/store';
 import * as experimentsAction from './experiments.actions';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 
-export const adapter: EntityAdapter<Experiment> = createEntityAdapter<Experiment>();
+export const adapter: EntityAdapter<ExperimentVM> = createEntityAdapter<ExperimentVM>();
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
@@ -36,6 +37,8 @@ export const initialState: ExperimentState = adapter.getInitialState({
   isLoadingContextMetaData: false,
   currentUserSelectedContext: null,
   isLoadingExperimentDelete: false,
+  stat: null,
+  weightingMethod: 'equal',
 });
 
 const reducer = createReducer(

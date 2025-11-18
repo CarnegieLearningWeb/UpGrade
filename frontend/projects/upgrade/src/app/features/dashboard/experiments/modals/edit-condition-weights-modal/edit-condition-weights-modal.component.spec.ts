@@ -245,7 +245,7 @@ describe('EditConditionWeightsModalComponent', () => {
       };
 
       const { component } = await setupComponent(threeConditionsData);
-      component.distributeWeightsEqually();
+      component.distributeWeightsEquallyInFormControls();
 
       const total = component.getCurrentTotal();
       expect(total).toBe(100);
