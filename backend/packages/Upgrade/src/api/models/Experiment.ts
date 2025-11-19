@@ -24,7 +24,7 @@ import { Query } from './Query';
 import { StateTimeLog } from './StateTimeLogs';
 import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
-import { ConditionPayload } from 'src/api/models/ConditionPayload';
+import { ConditionPayload } from '../models/ConditionPayload';
 import { Factor } from './Factor';
 import { StratificationFactor } from './StratificationFactor';
 

@@ -626,7 +626,7 @@ export class SegmentService {
       throw new Error(`Invalid JSON format: ${(err as Error).message}`);
     }
 
-    const addSegmentMembers = (segment): SegmentInputValidator => {
+    const addSegmentMembers = (segment: any): SegmentInputValidator => {
       if (segment.individualForSegment) {
         segment.userIds = segment.individualForSegment.map((individual) =>
           individual.userId ? individual.userId : null

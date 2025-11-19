@@ -30,11 +30,11 @@ import {
 } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
-import { Segment } from 'src/api/models/Segment';
+import { Segment } from '../models/Segment';
 import { Response } from 'express';
 import { UserDTO } from '../DTO/UserDTO';
 import { NotFoundException } from '@nestjs/common/exceptions';
-import { SegmentInputValidator } from 'src/api/controllers/validators/SegmentInputValidator';
+import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];

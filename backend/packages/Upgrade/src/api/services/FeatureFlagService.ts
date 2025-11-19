@@ -53,7 +53,7 @@ import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
-import { SegmentFile, SegmentInputValidator } from 'src/api/controllers/validators/SegmentInputValidator';
+import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 
 @Service()
 export class FeatureFlagService {
