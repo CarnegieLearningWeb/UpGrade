@@ -38,10 +38,6 @@ import { ExperimentSegmentExclusion } from '../../../src/api/models/ExperimentSe
 import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from '../../../src/api/models/FeatureFlagSegmentExclusion';
 import { FeatureFlagSegmentInclusion } from '../../../src/api/models/FeatureFlagSegmentInclusion';
-import { IndividualEnrollmentRepository } from '../../../src/api/repositories/IndividualEnrollmentRepository';
-import { GroupEnrollmentRepository } from '../../../src/api/repositories/GroupEnrollmentRepository';
-import { IndividualExclusionRepository } from '../../../src/api/repositories/IndividualExclusionRepository';
-import { GroupExclusionRepository } from '../../../src/api/repositories/GroupExclusionRepository';
 import { Container } from '../../../src/typeorm-typedi-extensions';
 
 const exp = new Experiment();
@@ -195,10 +191,6 @@ describe('Segment Service Testing', () => {
         ExperimentSegmentInclusionRepository,
         FeatureFlagSegmentExclusionRepository,
         FeatureFlagSegmentInclusionRepository,
-        IndividualEnrollmentRepository,
-        GroupEnrollmentRepository,
-        IndividualExclusionRepository,
-        GroupExclusionRepository,
         CacheService,
         SegmentRepository,
         {
@@ -340,7 +332,6 @@ describe('Segment Service Testing', () => {
     }).compile();
 
     service = module.get<SegmentService>(SegmentService);
-    service.getExperimentSegmentExclusionDocBySegmentId = jest.fn().mockResolvedValue([]);
     repo = module.get<SegmentRepository>(getRepositoryToken(SegmentRepository));
   });
 

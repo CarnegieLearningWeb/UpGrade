@@ -2232,8 +2232,7 @@ export class ExperimentAssignmentService {
     const explicitGroupInclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
     const explicitGroupExclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
 
-    const userGroups = [],
-      indirectExcludedExperiments = [];
+    const userGroups = [];
     if (experimentUser.group) {
       Object.keys(experimentUser.group).forEach((type) => {
         experimentUser.group[type].forEach((groupId) => {
@@ -2340,9 +2339,6 @@ export class ExperimentAssignmentService {
               reason: 'group',
               matchedGroup, // matchedExcludedGroup === experiment.group
             });
-            if (!matchedGroup) {
-              indirectExcludedExperiments.push(entity.id);
-            }
           }
         }
       } else {
@@ -2375,20 +2371,6 @@ export class ExperimentAssignmentService {
         }
       }
     });
-    if (indirectExcludedExperiments?.length > 0) {
-      const userWorkingGroupIds = [];
-      if (experimentUser.workingGroup) {
-        Object.keys(experimentUser.workingGroup).forEach((type) => {
-          userWorkingGroupIds.push(experimentUser.workingGroup[type]);
-        });
-      }
-      if (userWorkingGroupIds.length > 0) {
-        await this.groupEnrollmentRepository.delete({
-          experiment: { id: In(indirectExcludedExperiments) },
-          groupId: In(userWorkingGroupIds),
-        });
-      }
-    }
 
     return [userIncludedEntities, userExcludedEntities];
   }
