@@ -12,7 +12,11 @@ import {
   UpdateFilterModeRequest,
 } from './store/feature-flags.model';
 import { Observable, delay, of } from 'rxjs';
-import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
+import {
+  AddPrivateSegmentListRequest,
+  EditPrivateSegmentListRequest,
+  SegmentFile,
+} from '../segments/store/segments.model';
 import { LIST_FILTER_MODE, IFeatureFlagFile } from 'upgrade_types';
 
 @Injectable()
@@ -50,10 +54,9 @@ export class FeatureFlagsDataService {
     return this.http.post(url, featureFlags);
   }
 
-  validateFeatureFlagList(files: IFeatureFlagFile[], flagId: string, filterType: LIST_FILTER_MODE) {
-    const lists = { files: files, filterType: filterType, flagId: flagId };
-    const url = this.environment.api.validateFeatureFlagList;
-    return this.http.post(url, lists);
+  validateListsImport(segments: SegmentFile[]) {
+    const url = this.environment.api.validateListsImport;
+    return this.http.post(url, segments);
   }
 
   importFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
