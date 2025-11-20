@@ -44,7 +44,7 @@ import {
   ExperimentCondition,
   ExperimentConditionPayload,
   Experiment,
-  ExperimentVM,
+  UpsertExperimentParams,
 } from '../../core/experiments/store/experiments.model';
 import {
   ConditionWeightUpdate,
@@ -106,8 +106,24 @@ export class DialogService {
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        sourceFlag: null,
+        sourceExperiment: null,
         action: UPSERT_EXPERIMENT_ACTION.ADD,
+      },
+    };
+    return this.openUpsertExperimentModal(commonModalConfig);
+  }
+
+  openEditExperimentModal(sourceExperiment: Experiment) {
+    const commonModalConfig: CommonModalConfig<UpsertExperimentParams> = {
+      title: 'Edit Experiment',
+      tagsLabel: 'experiments.upsert-experiment-modal.tags-label.text',
+      tagsPlaceholder: 'experiments.upsert-experiment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceExperiment: { ...sourceExperiment },
+        action: UPSERT_EXPERIMENT_ACTION.EDIT,
       },
     };
     return this.openUpsertExperimentModal(commonModalConfig);
