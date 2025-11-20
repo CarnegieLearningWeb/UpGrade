@@ -219,7 +219,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }
 
   disableRestrictedFields(): void {
-    this.experimentForm.get('name')?.disable();
     this.experimentForm.get('appContext')?.disable();
     this.experimentForm.get('experimentType')?.disable();
     this.experimentForm.get('unitOfAssignment')?.disable();
@@ -244,7 +243,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       conditionOrder: [initialValues.conditionOrder],
       assignmentAlgorithm: [initialValues.assignmentAlgorithm, Validators.required],
       stratificationFactor: [initialValues.stratificationFactor],
-      groupType: [initialValues.groupType],
+      groupType: [
+        initialValues.groupType,
+        ...(initialValues.unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? [Validators.required] : []),
+      ],
       tags: [initialValues.tags],
     });
 
