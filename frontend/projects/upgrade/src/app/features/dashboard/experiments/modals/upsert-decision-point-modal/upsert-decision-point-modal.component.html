@@ -7,7 +7,6 @@
   (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
 >
   <form [formGroup]="decisionPointForm" class="form-standard dense-3">
-
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Site</mat-label>
       <input
@@ -16,13 +15,10 @@
         placeholder="e.g., assignProblem"
         class="ft-14-400"
         [matAutocomplete]="siteAutocomplete"
+        appTrimInput
       />
       <mat-autocomplete #siteAutocomplete="matAutocomplete" panelWidth="auto">
-        <mat-option
-          *ngFor="let site of filteredSites$ | async"
-          [value]="site"
-          class="ft-14-400"
-        >
+        <mat-option *ngFor="let site of filteredSites$ | async" [value]="site" class="ft-14-400">
           {{ site }}
         </mat-option>
       </mat-autocomplete>
@@ -42,13 +38,10 @@
         placeholder="e.g., targetProblem"
         class="ft-14-400"
         [matAutocomplete]="targetAutocomplete"
+        appTrimInput
       />
       <mat-autocomplete #targetAutocomplete="matAutocomplete" panelWidth="auto">
-        <mat-option
-          *ngFor="let target of filteredTargets$ | async"
-          [value]="target"
-          class="ft-14-400"
-        >
+        <mat-option *ngFor="let target of filteredTargets$ | async" [value]="target" class="ft-14-400">
           {{ target }}
         </mat-option>
       </mat-autocomplete>
@@ -63,7 +56,7 @@
     <div class="exclude-if-reached-container dense-1">
       <mat-checkbox formControlName="excludeIfReached">
         <span class="checkbox-label ft-14-600">Exclude If Reached</span>
-        <span class="form-hint ft-12-400" style="display:block; user-select: none;">
+        <span class="form-hint ft-12-400" style="display: block; user-select: none">
           {{ 'experiments.upsert-decision-point-modal.exclude-if-reached-hint.text' | translate }}
           <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
             Learn more
@@ -71,6 +64,5 @@
         </span>
       </mat-checkbox>
     </div>
-
   </form>
 </app-common-dialog>
