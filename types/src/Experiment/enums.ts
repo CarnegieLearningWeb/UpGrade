@@ -185,6 +185,11 @@ export enum UserRole {
   READER = 'reader',
 }
 
+export enum METRIC_TYPE {
+  GLOBAL = 'global',
+  REPEATABLE = 'repeatable',
+}
+
 export enum OPERATION_TYPES {
   SUM = 'sum',
   COUNT = 'count',

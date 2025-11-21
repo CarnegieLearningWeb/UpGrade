@@ -1,0 +1,218 @@
+<app-common-dialog
+  [title]="config.title"
+  [cancelBtnLabel]="config.cancelBtnLabel"
+  [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+  [primaryActionBtnColor]="config.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
+  (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+>
+  <form [formGroup]="metricForm" class="form-standard dense-3">
+
+    <!-- Metric Type Radio Group -->
+    <div class="metric-type-section dense-1">
+      <mat-radio-group formControlName="metricType">
+        <span class="section-label ft-14-600">Metric Type</span>
+        <mat-radio-button value="global" [disabled]="isGlobalMetricDisabled">
+          <div class="radio-content">
+            <span
+              class="radio-label ft-14-600"
+              [class.disabled-text]="isGlobalMetricDisabled"
+            >
+              Global Metric
+            </span>
+            <span
+              class="radio-description ft-12-400"
+              [class.disabled-text]="isGlobalMetricDisabled"
+            >
+              {{ 'experiments.upsert-metric-modal.metric-type-global-metric-description.text' | translate }}
+            </span>
+          </div>
+        </mat-radio-button>
+        <mat-radio-button value="repeatable">
+          <div class="radio-content">
+            <span class="radio-label ft-14-600">Repeatable Metric</span>
+            <span class="radio-description ft-12-400">
+              {{ 'experiments.upsert-metric-modal.metric-type-repeatable-metric-description.text' | translate }}
+            </span>
+          </div>
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <!-- Repeatable Metric Fields -->
+    <ng-container *ngIf="showMetricClass">
+      <mat-form-field appearance="outline">
+        <mat-label class="ft-14-400">Metric Class</mat-label>
+        <input
+          matInput
+          formControlName="metricClass"
+          placeholder="e.g., workspace"
+          class="ft-14-400"
+          [matAutocomplete]="metricClassAutocomplete"
+        />
+        <mat-autocomplete #metricClassAutocomplete="matAutocomplete" panelWidth="auto" [displayWith]="displayFn">
+          <mat-option
+            *ngFor="let metricClass of filteredMetricClasses$ | async"
+            [value]="metricClass"
+            class="ft-14-400"
+          >
+            {{ metricClass.key }}
+          </mat-option>
+        </mat-autocomplete>
+        <mat-hint class="form-hint ft-12-400">
+          {{ 'experiments.upsert-metric-modal.metric-class-hint.text' | translate }}
+        </mat-hint>
+      </mat-form-field>
+    </ng-container>
+
+    <ng-container *ngIf="showMetricKey">
+      <mat-form-field appearance="outline">
+        <mat-label class="ft-14-400">Metric Key</mat-label>
+        <input
+          matInput
+          formControlName="metricKey"
+          placeholder="e.g., problem ID"
+          class="ft-14-400"
+          [matAutocomplete]="metricKeyAutocomplete"
+        />
+        <mat-autocomplete #metricKeyAutocomplete="matAutocomplete" panelWidth="auto" [displayWith]="displayFn">
+          <mat-option
+            *ngFor="let metricKey of filteredMetricKeys$ | async"
+            [value]="metricKey"
+            class="ft-14-400"
+          >
+            {{ metricKey.key }}
+          </mat-option>
+        </mat-autocomplete>
+        <mat-hint class="form-hint ft-12-400">
+          {{ 'experiments.upsert-metric-modal.metric-key-hint.text' | translate }}
+        </mat-hint>
+      </mat-form-field>
+    </ng-container>
+
+    <!-- Metric ID -->
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Metric ID</mat-label>
+      <input
+        matInput
+        formControlName="metricId"
+        placeholder="e.g., completionStatus, totalTimeSeconds"
+        class="ft-14-400"
+        [matAutocomplete]="metricIdAutocomplete"
+      />
+      <mat-autocomplete #metricIdAutocomplete="matAutocomplete" panelWidth="auto" [displayWith]="displayFn">
+        <mat-option
+          *ngFor="let metric of filteredMetricIds$ | async"
+          [value]="metric"
+          class="ft-14-400"
+        >
+          {{ metric.key }}
+        </mat-option>
+      </mat-autocomplete>
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'experiments.upsert-metric-modal.metric-id-hint.text' | translate }}
+      </mat-hint>
+    </mat-form-field>
+
+    <!-- Individual Statistic (Repeatable only) -->
+    <ng-container *ngIf="showIndividualStatistic">
+      <mat-form-field appearance="outline">
+        <mat-label class="ft-14-400">Individual Statistic</mat-label>
+        <mat-select formControlName="individualStatistic" class="ft-14-400">
+          <mat-option
+            *ngFor="let option of individualStatisticOptions"
+            [value]="option.value"
+            class="ft-14-400"
+          >
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+        <mat-hint class="form-hint ft-12-400">
+          {{ 'experiments.upsert-metric-modal.individual-statistic-hint.text' | translate }}
+          <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+            Learn more
+          </a>
+        </mat-hint>
+      </mat-form-field>
+    </ng-container>
+
+    <!-- Aggregate Statistic -->
+    <ng-container *ngIf="showAggregateStatistic">
+      <mat-form-field appearance="outline">
+        <mat-label class="ft-14-400">Aggregate Statistic</mat-label>
+        <mat-select formControlName="aggregateStatistic" class="ft-14-400">
+          <mat-option
+            *ngFor="let option of aggregateStatisticOptions"
+            [value]="option.value"
+            class="ft-14-400"
+          >
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+        <mat-hint class="form-hint ft-12-400">
+          {{ 'experiments.upsert-metric-modal.aggregate-statistic-hint.text' | translate }}
+          <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+            Learn more
+          </a>
+        </mat-hint>
+      </mat-form-field>
+    </ng-container>
+
+    <!-- Comparison (Categorical only) -->
+    <ng-container *ngIf="showComparison">
+      <div class="comparison-section dense-1">
+        <mat-radio-group formControlName="comparison">
+          <span class="section-label ft-14-600">Comparison</span>
+          <mat-radio-button
+            *ngFor="let option of comparisonOptions"
+            [value]="option.value"
+          >
+            <div class="radio-content">
+              <span class="radio-label ft-14-600">{{ option.label }}</span>
+            </div>
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+    </ng-container>
+
+    <!-- Value (Categorical only) -->
+    <ng-container *ngIf="showComparison && allowableDataKeys.length > 0">
+      <mat-form-field appearance="outline">
+        <mat-label class="ft-14-400">Value</mat-label>
+        <mat-select formControlName="compareValue" class="ft-14-400">
+          <mat-option
+            *ngFor="let value of allowableDataKeys"
+            [value]="value"
+            class="ft-14-400"
+          >
+            {{ value }}
+          </mat-option>
+        </mat-select>
+        <mat-hint class="form-hint ft-12-400">
+          {{ 'experiments.upsert-metric-modal.value-hint.text' | translate }}
+        </mat-hint>
+      </mat-form-field>
+    </ng-container>
+
+    <!-- Display Name -->
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Display Name</mat-label>
+      <input
+        matInput
+        formControlName="displayName"
+        placeholder="Enter display name"
+        class="ft-14-400"
+      />
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'experiments.upsert-metric-modal.display-name-hint.text' | translate }}
+      </mat-hint>
+    </mat-form-field>
+
+    <!-- Description -->
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Description (optional)</mat-label>
+      <input matInput formControlName="description" placeholder="Describe this metric" class="ft-14-400" />
+    </mat-form-field>
+
+  </form>
+</app-common-dialog>
