@@ -297,6 +297,8 @@ export interface IContextMetaData {
 
 export interface IExperimentGraphInfo {
   [DATE_RANGE.LAST_SEVEN_DAYS]: IEnrollmentStatByDate[];
+  [DATE_RANGE.LAST_TWO_WEEKS]: IEnrollmentStatByDate[];
+  [DATE_RANGE.LAST_ONE_MONTH]: IEnrollmentStatByDate[];
   [DATE_RANGE.LAST_THREE_MONTHS]: IEnrollmentStatByDate[];
   [DATE_RANGE.LAST_SIX_MONTHS]: IEnrollmentStatByDate[];
   [DATE_RANGE.LAST_TWELVE_MONTHS]: IEnrollmentStatByDate[];

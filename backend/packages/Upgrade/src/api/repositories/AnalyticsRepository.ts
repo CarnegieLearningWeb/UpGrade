@@ -505,7 +505,8 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
   public async getEnrollmentByDateRange(
     experimentId: string,
     dateRange: DATE_RANGE,
-    clientOffset: number
+    clientOffset: number,
+    experimentAge?: number
   ): Promise<[IEnrollmentConditionAndPartitionDate[], IEnrollmentConditionAndPartitionDate[]]> {
     const experimentRepository = Container.getCustomRepository(ExperimentRepository);
     const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository);
@@ -515,13 +516,14 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     const { whereDate: individualWhereDate, selectRange: individualSelectRange } = this.getDateVariables(
       dateRange,
       clientOffset,
-      'individualEnrollment'
+      'individualEnrollment',
+      experimentAge
     );
 
     const experiment = await experimentRepository.findOneBy({ id: experimentId });
     let individualEnrollmentConditionAndDecisionPoint: Promise<any>;
     if (experiment && experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-      individualEnrollmentConditionAndDecisionPoint = individualEnrollmentRepository
+      const individualEnrollmentConditionAndDecisionPointQuery = individualEnrollmentRepository
         .createQueryBuilder('individualEnrollment')
         .select([
           'count(distinct("individualEnrollment"."userId"))::int',
@@ -530,8 +532,11 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
           individualSelectRange,
         ])
         .leftJoin(DecisionPoint, 'dp', 'dp.id = individualEnrollment.partitionId')
-        .where('"individualEnrollment"."experimentId" = :id', { id: experimentId })
-        .andWhere(individualWhereDate)
+        .where('"individualEnrollment"."experimentId" = :id', { id: experimentId });
+      if (dateRange !== DATE_RANGE.TOTAL) {
+        individualEnrollmentConditionAndDecisionPointQuery.andWhere(individualWhereDate);
+      }
+      individualEnrollmentConditionAndDecisionPoint = individualEnrollmentConditionAndDecisionPointQuery
         .andWhere((qb) => {
           const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
           return '"individualEnrollment"."userId" NOT IN ' + subQuery;
@@ -543,7 +548,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
         .addGroupBy(groupByRange)
         .execute();
     } else {
-      individualEnrollmentConditionAndDecisionPoint = individualEnrollmentRepository
+      const individualEnrollmentConditionAndDecisionPointQuery = individualEnrollmentRepository
         .createQueryBuilder('individualEnrollment')
         .select([
           'count(distinct("individualEnrollment"."userId"))::int',
@@ -551,8 +556,11 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
           '"individualEnrollment"."partitionId"',
           individualSelectRange,
         ])
-        .where('"individualEnrollment"."experimentId" = :id', { id: experimentId })
-        .andWhere(individualWhereDate)
+        .where('"individualEnrollment"."experimentId" = :id', { id: experimentId });
+      if (dateRange !== DATE_RANGE.TOTAL) {
+        individualEnrollmentConditionAndDecisionPointQuery.andWhere(individualWhereDate);
+      }
+      individualEnrollmentConditionAndDecisionPoint = individualEnrollmentConditionAndDecisionPointQuery
         .andWhere((qb) => {
           const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
           return '"individualEnrollment"."userId" NOT IN ' + subQuery;
@@ -566,7 +574,8 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     const { whereDate: groupWhereDate, selectRange: groupSelectRange } = this.getDateVariables(
       dateRange,
       clientOffset,
-      'groupEnrollment'
+      'groupEnrollment',
+      experimentAge
     );
     const groupEnrollmentConditionAndDecisionPoint = groupEnrollmentRepository
       .createQueryBuilder('groupEnrollment')
@@ -576,26 +585,50 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
         '"groupEnrollment"."partitionId"',
         groupSelectRange,
       ])
-      .where('"groupEnrollment"."experimentId" = :id', { id: experimentId })
-      .andWhere(groupWhereDate)
+      .where('"groupEnrollment"."experimentId" = :id', { id: experimentId });
+
+    const groupEnrollmentQueryWithDateRange =
+      dateRange === DATE_RANGE.TOTAL
+        ? groupEnrollmentConditionAndDecisionPoint
+        : groupEnrollmentConditionAndDecisionPoint.andWhere(groupWhereDate);
+
+    const ret = groupEnrollmentQueryWithDateRange
       .groupBy('"groupEnrollment"."conditionId"')
       .addGroupBy('"groupEnrollment"."partitionId"')
       .addGroupBy(groupByRange)
       .execute();
 
-    return Promise.all([individualEnrollmentConditionAndDecisionPoint, groupEnrollmentConditionAndDecisionPoint]);
+    return Promise.all([individualEnrollmentConditionAndDecisionPoint, ret]);
   }
 
   private getDateVariables(
     dateRange: DATE_RANGE,
     clientOffset: number,
-    tableName: string
+    tableName: string,
+    experimentAge?: number
   ): { whereDate: string; selectRange: string } {
     let whereDate = '';
     let selectRange = '';
+    const dateTruncString = experimentAge !== undefined && experimentAge > 0 ? 'years' : 'month';
     switch (dateRange) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
         whereDate = `"${tableName}"."createdAt" > current_date - interval '7 days'`;
+        selectRange =
+          `date_trunc('day', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
+      + interval '` +
+          clientOffset +
+          ` minutes') AS date_range`;
+        break;
+      case DATE_RANGE.LAST_TWO_WEEKS:
+        whereDate = `"${tableName}"."createdAt" > current_date - interval '14 days'`;
+        selectRange =
+          `date_trunc('day', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
+      + interval '` +
+          clientOffset +
+          ` minutes') AS date_range`;
+        break;
+      case DATE_RANGE.LAST_ONE_MONTH:
+        whereDate = `"${tableName}"."createdAt" > current_date - interval '30 days'`;
         selectRange =
           `date_trunc('day', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
       + interval '` +
@@ -618,10 +651,17 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
           clientOffset +
           ` minutes') AS date_range`;
         break;
-      default:
+      case DATE_RANGE.LAST_TWELVE_MONTHS:
         whereDate = `"${tableName}"."createdAt" > current_date - interval '12 months'`;
         selectRange =
           `date_trunc('month', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
+      + interval '` +
+          clientOffset +
+          ` minutes') AS date_range`;
+        break;
+      default:
+        selectRange =
+          `date_trunc('${dateTruncString}', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
       + interval '` +
           clientOffset +
           ` minutes') AS date_range`;
