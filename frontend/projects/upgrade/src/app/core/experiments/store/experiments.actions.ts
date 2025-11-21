@@ -13,6 +13,7 @@ import {
   IContextMetaData,
   UpdateExperimentFilterModeRequest,
   UpdateExperimentDecisionPointsRequest,
+  UpdateExperimentMetricsRequest,
   ExperimentSegmentListResponse,
   UpdateExperimentConditionsRequest,
 } from './experiments.model';
@@ -406,4 +407,18 @@ export const actionExportAllIncludeListsDesignSuccess = createAction(
 
 export const actionExportAllIncludeListsDesignFailure = createAction(
   '[Experiment] Export All Include Lists Design Failure'
+);
+
+export const actionUpdateExperimentMetrics = createAction(
+  '[Experiment] Update Experiment Metrics',
+  props<{ updateExperimentMetricsRequest: UpdateExperimentMetricsRequest }>()
+);
+
+export const actionUpdateExperimentMetricsSuccess = createAction(
+  '[Experiment] Update Experiment Metrics Success',
+  props<{ experiment: Experiment }>()
+);
+
+export const actionUpdateExperimentMetricsFailure = createAction(
+  '[Experiment] Update Experiment Metrics Failure'
 );
