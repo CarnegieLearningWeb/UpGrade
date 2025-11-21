@@ -204,9 +204,12 @@ export enum IMetricMetaData {
 
 export enum DATE_RANGE {
   LAST_SEVEN_DAYS = 'last_seven_days',
+  LAST_TWO_WEEKS = 'last_two_weeks',
+  LAST_ONE_MONTH = 'last_one_month',
   LAST_THREE_MONTHS = 'last_three_months',
   LAST_SIX_MONTHS = 'last_six_months',
   LAST_TWELVE_MONTHS = 'last_twelve_months',
+  TOTAL = 'total',
 }
 
 export enum REPEATED_MEASURE {

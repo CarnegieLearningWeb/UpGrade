@@ -454,6 +454,8 @@ describe('Experiments Selectors', () => {
       [DATE_RANGE.LAST_SIX_MONTHS]: null,
       [DATE_RANGE.LAST_THREE_MONTHS]: null,
       [DATE_RANGE.LAST_TWELVE_MONTHS]: null,
+      [DATE_RANGE.LAST_ONE_MONTH]: null,
+      [DATE_RANGE.LAST_TWO_WEEKS]: null,
     },
     graphRange: DATE_RANGE.LAST_SEVEN_DAYS,
     isGraphInfoLoading: false,

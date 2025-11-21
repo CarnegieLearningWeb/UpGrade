@@ -52,7 +52,6 @@ import { MoocletPolicyEditorComponent } from './components/experiment-design/moo
     ViewExperimentComponent,
     ExperimentStatusComponent,
     PostExperimentRuleComponent,
-    EnrollmentOverTimeComponent,
     EnrollmentConditionTableComponent,
     EnrollmentPointPartitionTableComponent,
     ExperimentPostConditionComponent,
