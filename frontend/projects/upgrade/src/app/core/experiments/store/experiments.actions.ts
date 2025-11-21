@@ -419,6 +419,4 @@ export const actionUpdateExperimentMetricsSuccess = createAction(
   props<{ experiment: Experiment }>()
 );
 
-export const actionUpdateExperimentMetricsFailure = createAction(
-  '[Experiment] Update Experiment Metrics Failure'
-);
+export const actionUpdateExperimentMetricsFailure = createAction('[Experiment] Update Experiment Metrics Failure');
