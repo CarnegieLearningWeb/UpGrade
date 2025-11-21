@@ -151,11 +151,11 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       this.effectiveDateFilter === DATE_RANGE.LAST_TWO_WEEKS ||
       this.effectiveDateFilter === DATE_RANGE.LAST_ONE_MONTH
     ) {
-      return !isNaN(value) ? '' : value.substring(0, 5);
+      return typeof value === 'string' ? value.substring(0, 5) : '';
     } else if (this.effectiveDateFilter === DATE_RANGE.TOTAL) {
-      return value.substring(0, 4);
+      return typeof value === 'string' ? value.substring(0, 4) : '';
     }
-    return !isNaN(value) ? '' : value.substring(0, 3);
+    return typeof value === 'string' ? value.substring(0, 3) : '';
   }
 
   formateYAxisLabel(value) {
@@ -255,7 +255,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       case ExperimentFilterType.DATE_FILTER:
         this.setEffectiveDateFilter();
         this.experimentService.setGraphRange(
-          this.selectedDateFilter,
+          this.effectiveDateFilter,
           this.experiment.id,
           -new Date().getTimezoneOffset()
         );

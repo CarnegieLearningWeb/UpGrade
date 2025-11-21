@@ -505,8 +505,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
   public async getEnrollmentByDateRange(
     experimentId: string,
     dateRange: DATE_RANGE,
-    clientOffset: number,
-    experimentAge?: number
+    clientOffset: number
   ): Promise<[IEnrollmentConditionAndPartitionDate[], IEnrollmentConditionAndPartitionDate[]]> {
     const experimentRepository = Container.getCustomRepository(ExperimentRepository);
     const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository);
@@ -516,8 +515,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     const { whereDate: individualWhereDate, selectRange: individualSelectRange } = this.getDateVariables(
       dateRange,
       clientOffset,
-      'individualEnrollment',
-      experimentAge
+      'individualEnrollment'
     );
 
     const experiment = await experimentRepository.findOneBy({ id: experimentId });
@@ -574,8 +572,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     const { whereDate: groupWhereDate, selectRange: groupSelectRange } = this.getDateVariables(
       dateRange,
       clientOffset,
-      'groupEnrollment',
-      experimentAge
+      'groupEnrollment'
     );
     const groupEnrollmentConditionAndDecisionPoint = groupEnrollmentRepository
       .createQueryBuilder('groupEnrollment')
@@ -604,12 +601,11 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
   private getDateVariables(
     dateRange: DATE_RANGE,
     clientOffset: number,
-    tableName: string,
-    experimentAge?: number
+    tableName: string
   ): { whereDate: string; selectRange: string } {
     let whereDate = '';
     let selectRange = '';
-    const dateTruncString = experimentAge !== undefined && experimentAge > 0 ? 'years' : 'month';
+    const dateTruncString = dateRange === DATE_RANGE.TOTAL ? 'year' : 'month';
     switch (dateRange) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
         whereDate = `"${tableName}"."createdAt" > current_date - interval '7 days'`;

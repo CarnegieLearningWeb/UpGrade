@@ -74,13 +74,10 @@ export class AnalyticsService {
       relations: ['conditions', 'partitions'],
     });
 
-    // if experiment is less than a year old, return monthly data, otherwise return yearly data for every year since creation
-    let experimentAge = experiment && dayjs().diff(dayjs(experiment.createdAt), 'year');
-    if (experimentAge > 0) {
-      experimentAge = dayjs().year() - dayjs(experiment.createdAt).year();
-    }
+    const experimentAge = dayjs().year() - dayjs(experiment.createdAt).year();
+
     const [individualEnrollmentConditionAndDecisionPoint, groupEnrollmentConditionAndDecisionPoint] =
-      await this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange, clientOffset, experimentAge);
+      await this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange, clientOffset);
     const keyToReturn = {};
     switch (dateRange) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
@@ -141,26 +138,16 @@ export class AnalyticsService {
         }
         break;
       default:
-        if (experimentAge !== undefined && experimentAge < 1) {
-          for (let i = 0; i < 12; i++) {
-            const date = new Date();
-            date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
-            date.setDate(1);
-            date.setMonth(date.getMonth() - i);
-            const newDate = date.toDateString();
-            keyToReturn[newDate] = {};
-          }
-        } else {
-          for (let i = 0; i < experimentAge + 1; i++) {
-            const date = new Date();
-            date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
-            date.setDate(1);
-            date.setFullYear(date.getFullYear() - i);
-            date.setMonth(0);
-            const newDate = date.toDateString();
-            keyToReturn[newDate] = {};
-          }
+        for (let i = 0; i < experimentAge + 1; i++) {
+          const date = new Date();
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
+          date.setDate(1);
+          date.setFullYear(date.getFullYear() - i);
+          date.setMonth(0);
+          const newDate = date.toDateString();
+          keyToReturn[newDate] = {};
         }
+
         break;
     }
     return Object.keys(keyToReturn).map((date) => {
