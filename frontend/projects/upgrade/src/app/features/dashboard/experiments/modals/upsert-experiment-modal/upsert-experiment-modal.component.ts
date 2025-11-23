@@ -38,6 +38,7 @@ import {
   SUPPORTED_MOOCLET_ALGORITHMS,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
   EXPERIMENT_TYPE,
+  MOOCLET_POLICY_SCHEMA_MAP,
 } from 'upgrade_types';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
@@ -523,6 +524,24 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }: ExperimentFormData): void {
     const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
 
+    // Initialize moocletPolicyParameters and rewardMetricKey for Mooclet algorithms
+    let moocletPolicyParameters = undefined;
+    let rewardMetricKey = undefined;
+    let queries = undefined;
+
+    if (assignmentAlgorithm && SUPPORTED_MOOCLET_ALGORITHMS.includes(assignmentAlgorithm)) {
+      // Create default policy parameters for the selected algorithm
+      moocletPolicyParameters = new MOOCLET_POLICY_SCHEMA_MAP[assignmentAlgorithm]();
+      moocletPolicyParameters.assignmentAlgorithm = assignmentAlgorithm;
+      moocletPolicyParameters.outcome_variable_name = this.experimentService.getOutcomeVariableName(name);
+
+      // Set reward metric key
+      rewardMetricKey = this.experimentService.getRewardMetricKey(name);
+
+      // Set queries to empty array as required by backend
+      queries = [];
+    }
+
     const experimentRequest: AddExperimentRequest = {
       // Form data
       name,
@@ -549,13 +568,13 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       partitions: [], // @IsNotEmpty @IsArray - must be empty array, not undefined
       factors: undefined, // @IsOptional @IsArray - can be undefined
       conditionPayloads: undefined, // @IsOptional @IsArray - can be undefined
-      queries: undefined, // @IsOptional @IsArray - can be undefined
+      queries, // Set to empty array for Mooclet algorithms, undefined otherwise
       experimentSegmentInclusion: undefined, // @IsOptional @IsArray - can be undefined
       experimentSegmentExclusion: undefined, // @IsOptional @IsArray - can be undefined
       stateTimeLogs: undefined, // @IsOptional @IsArray - can be undefined
       backendVersion: undefined, // @IsOptional - can be undefined
-      moocletPolicyParameters: undefined, // Conditional validation - can be undefined
-      rewardMetricKey: undefined, // Conditional validation - can be undefined
+      moocletPolicyParameters, // Set for Mooclet algorithms, undefined otherwise
+      rewardMetricKey, // Set for Mooclet algorithms, undefined otherwise
     };
 
     this.experimentService.createNewExperiment(experimentRequest);
