@@ -354,6 +354,14 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
           this.detectMetricDataType(idObject);
           this.updateStatisticOptions();
           this.updateFormVisibility();
+
+          // Update initial form values with allowableDataKeys to prevent false "changed" detection
+          // This is crucial for categorical metrics where allowableDataKeys gets populated
+          const updatedInitialValues = {
+            ...this.initialFormValues$.value,
+            allowableDataKeys: this.allowableDataKeys,
+          };
+          this.initialFormValues$.next(updatedInitialValues);
         }
 
         // Trigger change detection to ensure UI updates
@@ -658,11 +666,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
     if (dataType === IMetricMetaData.CATEGORICAL) {
       this.allowableDataKeys = selectedMetric?.allowedData ? [...selectedMetric.allowedData] : [];
-
-      // Set default comparison if not already set
-      if (!this.metricForm.get('comparison')?.value) {
-        this.metricForm.get('comparison')?.setValue('=');
-      }
     } else {
       this.allowableDataKeys = [];
     }
