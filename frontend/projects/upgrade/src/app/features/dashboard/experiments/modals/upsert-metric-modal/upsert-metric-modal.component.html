@@ -49,6 +49,7 @@
           placeholder="e.g., workspace"
           class="ft-14-400"
           [matAutocomplete]="metricClassAutocomplete"
+          appTrimInput
         />
         <mat-autocomplete
           #metricClassAutocomplete="matAutocomplete"
@@ -84,6 +85,7 @@
           placeholder="e.g., problem ID"
           class="ft-14-400"
           [matAutocomplete]="metricKeyAutocomplete"
+          appTrimInput
         />
         <mat-autocomplete
           #metricKeyAutocomplete="matAutocomplete"
@@ -119,6 +121,7 @@
         placeholder="e.g., completionStatus, totalTimeSeconds"
         class="ft-14-400"
         [matAutocomplete]="metricIdAutocomplete"
+        appTrimInput
       />
       <mat-autocomplete
         #metricIdAutocomplete="matAutocomplete"
@@ -232,6 +235,7 @@
         formControlName="displayName"
         placeholder="Enter display name"
         class="ft-14-400"
+        appTrimInput
       />
       <mat-hint class="form-hint ft-12-400">
         {{ 'experiments.upsert-metric-modal.display-name-hint.text' | translate }}
@@ -241,7 +245,7 @@
     <!-- Description -->
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Description (optional)</mat-label>
-      <input matInput formControlName="description" placeholder="Describe this metric" class="ft-14-400" />
+      <input matInput formControlName="description" placeholder="Describe this metric" class="ft-14-400" appTrimInput />
     </mat-form-field>
 
   </form>

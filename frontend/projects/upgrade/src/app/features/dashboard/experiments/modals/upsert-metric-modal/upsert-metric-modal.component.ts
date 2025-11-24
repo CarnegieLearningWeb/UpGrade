@@ -17,6 +17,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
+import { SharedModule } from '../../../../../shared/shared.module';
 import {
   MetricFormData,
   UPSERT_EXPERIMENT_ACTION,
@@ -49,6 +50,7 @@ interface StatisticOption {
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    SharedModule,
   ],
   templateUrl: './upsert-metric-modal.component.html',
   styleUrl: './upsert-metric-modal.component.scss',
