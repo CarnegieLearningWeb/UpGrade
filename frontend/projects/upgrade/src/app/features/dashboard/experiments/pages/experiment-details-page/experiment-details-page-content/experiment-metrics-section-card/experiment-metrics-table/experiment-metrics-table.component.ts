@@ -40,6 +40,7 @@ export class ExperimentMetricsTableComponent {
   @Input() queries: ExperimentQueryDTO[] = [];
   @Input() isLoading$: Observable<boolean>;
   @Input() actionsDisabled?: boolean = false;
+  @Input() isRewardMetricActionsDisabled?: boolean = false;
   @Output() rowAction = new EventEmitter<ExperimentQueryRowActionEvent>();
 
   displayedColumns: string[] = ['metric', 'statistic', 'displayName', 'actions'];
@@ -115,6 +116,17 @@ export class ExperimentMetricsTableComponent {
   private formatRepeatedMeasure(repeatedMeasure: REPEATED_MEASURE): string {
     // Format repeated measure for display
     return repeatedMeasure.replace(/_/g, ' ').toLowerCase();
+  }
+
+  isRewardMetric(query: ExperimentQueryDTO): boolean {
+    return query.metric?.key?.endsWith('_REWARD') || false;
+  }
+
+  isRowActionsDisabled(query: ExperimentQueryDTO): boolean {
+    // Disable actions if:
+    // 1. General actions are disabled (no update permission), OR
+    // 2. This is a reward metric AND the experiment uses TS Configurable algorithm
+    return this.actionsDisabled || (this.isRewardMetricActionsDisabled && this.isRewardMetric(query));
   }
 
   onEditButtonClick(query: ExperimentQueryDTO): void {

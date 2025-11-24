@@ -62,7 +62,7 @@
           <button
             mat-icon-button
             class="action-button"
-            [disabled]="actionsDisabled"
+            [disabled]="isRowActionsDisabled(row)"
             (click)="onEditButtonClick(row)">
             <mat-icon>edit</mat-icon>
           </button>
@@ -71,7 +71,7 @@
           <button
             mat-icon-button
             class="action-button"
-            [disabled]="actionsDisabled"
+            [disabled]="isRowActionsDisabled(row)"
             (click)="onDeleteButtonClick(row)">
             <mat-icon>delete_outline</mat-icon>
           </button>

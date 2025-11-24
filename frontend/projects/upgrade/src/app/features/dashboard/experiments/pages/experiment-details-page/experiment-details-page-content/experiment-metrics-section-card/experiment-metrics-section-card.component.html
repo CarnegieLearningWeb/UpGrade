@@ -28,6 +28,7 @@
     [queries]="experiment.queries || []"
     [isLoading$]="isLoadingExperiment$"
     [actionsDisabled]="!(permissions$ | async)?.experiments.update"
+    [isRewardMetricActionsDisabled]="isRewardMetricActionsDisabled$ | async"
     (rowAction)="onRowAction($event, experiment.id)"
   ></app-experiment-metrics-table>
 </app-common-section-card>
