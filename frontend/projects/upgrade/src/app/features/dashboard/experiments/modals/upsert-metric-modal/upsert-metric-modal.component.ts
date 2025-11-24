@@ -395,6 +395,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       }
     }
 
+    // Filter out all reward metric keys (ending with _REWARD)
+    // These are automatically added by the app and should not be manually selectable
+    filteredMetrics = filteredMetrics.filter((metric) => !metric.key?.endsWith('_REWARD'));
+
     if (metricType === METRIC_TYPE.GLOBAL) {
       this.metricClassOptions$.next([]);
       this.metricKeyOptions$.next([]);
