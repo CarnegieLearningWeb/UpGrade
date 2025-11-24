@@ -100,7 +100,12 @@
         class="ft-14-400"
         [matAutocomplete]="metricIdAutocomplete"
       />
-      <mat-autocomplete #metricIdAutocomplete="matAutocomplete" panelWidth="auto" [displayWith]="displayFn">
+      <mat-autocomplete
+        #metricIdAutocomplete="matAutocomplete"
+        panelWidth="auto"
+        [displayWith]="displayFn"
+        (optionSelected)="onMetricIdOptionSelected($event.option.value)"
+      >
         <mat-option
           *ngFor="let metric of filteredMetricIds$ | async"
           [value]="metric"
@@ -109,7 +114,12 @@
           {{ metric.key }}
         </mat-option>
       </mat-autocomplete>
-      <mat-hint class="form-hint ft-12-400">
+
+      <!-- Show error when validation fails AND field has been touched, otherwise show hint -->
+      <mat-error *ngIf="metricForm.get('metricId')?.hasError('mustSelectFromOptions') && metricForm.get('metricId')?.touched" class="form-hint ft-12-400">
+        Please select a Metric ID from the available options.
+      </mat-error>
+      <mat-hint *ngIf="!(metricForm.get('metricId')?.hasError('mustSelectFromOptions') && metricForm.get('metricId')?.touched)" class="form-hint ft-12-400">
         {{ 'experiments.upsert-metric-modal.metric-id-hint.text' | translate }}
       </mat-hint>
     </mat-form-field>

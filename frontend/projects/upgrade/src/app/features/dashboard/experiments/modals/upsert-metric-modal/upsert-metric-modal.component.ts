@@ -94,6 +94,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   private currentSelectedClass: any = null;
   private currentSelectedKey: any = null;
 
+  // Track if user has selected a valid option from autocomplete (vs just typing)
+  private hasValidMetricIdSelection$ = new BehaviorSubject<boolean>(false);
+
   // Assignment unit and context for filtering
   private currentAssignmentUnit: ASSIGNMENT_UNIT | null = null;
   private currentContext: string[] | null = null;
@@ -157,13 +160,27 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
+  // Custom validator to ensure metricId is selected from options (object) not typed (string)
+  private metricIdSelectedValidator(control: any): { [key: string]: any } | null {
+    const value = control.value;
+    if (!value) {
+      return null; // Let required validator handle empty values
+    }
+    // Valid if it's an object (selected from autocomplete)
+    if (typeof value === 'object' && value !== null) {
+      return null;
+    }
+    // Invalid if it's a string (typed, not selected)
+    return { mustSelectFromOptions: true };
+  }
+
   createMetricForm(): void {
     const { sourceQuery, action } = this.config.params;
     const initialValues = this.deriveInitialFormValues(sourceQuery, action);
 
     this.metricForm = this.formBuilder.group({
       metricType: [initialValues.metricType, Validators.required],
-      metricId: [initialValues.metricId, Validators.required],
+      metricId: [initialValues.metricId, [Validators.required, this.metricIdSelectedValidator.bind(this)]],
       displayName: [initialValues.displayName, Validators.required],
       description: [initialValues.description],
       metricClass: [initialValues.metricClass],
@@ -301,6 +318,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
         // Update the options and form state
         this.populateOptions();
         if (idObject) {
+          this.hasValidMetricIdSelection$.next(true); // Mark as valid selection in edit mode
           this.detectMetricDataType(idObject);
           this.updateStatisticOptions();
           this.updateFormVisibility();
@@ -333,7 +351,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
     this.subscriptions.add(
       this.metricForm.get('metricId')?.valueChanges.subscribe((metricId) => {
-        this.onMetricIdChange(metricId);
+        this.onMetricIdValueChange(metricId);
       })
     );
   }
@@ -439,6 +457,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       this.metricForm.get('metricId')?.setValue('');
       this.currentSelectedKey = null;
       this.metricIdOptions$.next([]);
+      this.hasValidMetricIdSelection$.next(false);
     } else if (selectedClass === '' || selectedClass === null) {
       // Clear everything if class is cleared
       this.currentSelectedClass = null;
@@ -446,6 +465,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       this.metricIdOptions$.next([]);
       this.metricForm.get('metricKey')?.setValue('');
       this.metricForm.get('metricId')?.setValue('');
+      this.hasValidMetricIdSelection$.next(false);
     }
     // Don't do anything for string values - user is typing
   }
@@ -463,10 +483,12 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
       // Reset ID field - no forced refresh
       this.metricForm.get('metricId')?.setValue('');
+      this.hasValidMetricIdSelection$.next(false);
     } else if (selectedKey === '' || selectedKey === null) {
       // Clear IDs if key is cleared
       this.metricIdOptions$.next([]);
       this.metricForm.get('metricId')?.setValue('');
+      this.hasValidMetricIdSelection$.next(false);
     }
     // Don't do anything for string values - user is typing
   }
@@ -489,6 +511,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.currentSelectedClass = null;
     this.currentSelectedKey = null;
     this.metricDataType = null;
+    this.hasValidMetricIdSelection$.next(false);
 
     // Clear form fields
     this.metricForm.get('metricClass')?.setValue('');
@@ -506,17 +529,33 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.updateFormValidators();
   }
 
-  onMetricIdChange(metricId: any): void {
-    if (metricId) {
-      this.detectMetricDataType(metricId);
-      this.updateStatisticOptions();
-      this.updateFormVisibility();
-      this.updateFormValidators();
-    } else {
-      // Clear everything when metric ID is cleared
+  onMetricIdValueChange(metricId: any): void {
+    // If user is typing (string value) after selecting an option, invalidate the selection
+    if (typeof metricId === 'string' && this.hasValidMetricIdSelection$.getValue()) {
+      this.hasValidMetricIdSelection$.next(false);
       this.metricDataType = null;
       this.hideStatisticDropdowns();
       this.resetStatisticFields();
+      this.updateFormValidators();
+    }
+
+    // If field is cleared completely
+    if (!metricId) {
+      this.hasValidMetricIdSelection$.next(false);
+      this.metricDataType = null;
+      this.hideStatisticDropdowns();
+      this.resetStatisticFields();
+      this.updateFormValidators();
+    }
+  }
+
+  onMetricIdOptionSelected(metricId: any): void {
+    // This is called when user actually selects an option from autocomplete
+    if (metricId && typeof metricId === 'object') {
+      this.hasValidMetricIdSelection$.next(true);
+      this.detectMetricDataType(metricId);
+      this.updateStatisticOptions();
+      this.updateFormVisibility();
       this.updateFormValidators();
     }
   }
@@ -581,14 +620,13 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
   updateFormVisibility(): void {
     const metricType = this.metricForm.get('metricType')?.value;
-    const hasMetricId = !!this.metricForm.get('metricId')?.value;
 
     // Base visibility for metric type
     this.showMetricClass = metricType === METRIC_TYPE.REPEATABLE;
     this.showMetricKey = metricType === METRIC_TYPE.REPEATABLE;
 
-    // Statistics only show when metric ID is selected
-    if (hasMetricId && this.metricDataType) {
+    // Statistics only show when a valid metric ID option has been selected
+    if (this.hasValidMetricIdSelection$.getValue() && this.metricDataType) {
       this.showAggregateStatistic = true;
       this.showIndividualStatistic = metricType === METRIC_TYPE.REPEATABLE;
       this.showComparison = this.metricDataType === IMetricMetaData.CATEGORICAL;
@@ -675,6 +713,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     Object.keys(this.metricForm.controls).forEach((key) => {
       this.metricForm.get(key)?.updateValueAndValidity({ emitEvent: false });
     });
+
+    // Update the form's overall validity status WITH event emission
+    // This ensures the observable streams are updated for button state
+    this.metricForm.updateValueAndValidity({ emitEvent: true });
   }
 
   listenForIsInitialFormValueChanged(): void {
@@ -692,11 +734,12 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
   listenForPrimaryButtonDisabled(): void {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertMetric$.pipe(
-      combineLatestWith(this.isInitialFormValueChanged$),
+      combineLatestWith(this.isInitialFormValueChanged$, this.hasValidMetricIdSelection$),
       map(
-        ([isLoading, isInitialFormValueChanged]) =>
+        ([isLoading, isInitialFormValueChanged, hasValidMetricIdSelection]) =>
           isLoading ||
           this.metricForm.invalid ||
+          !hasValidMetricIdSelection ||
           (!isInitialFormValueChanged && this.config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT)
       )
     );
