@@ -18,12 +18,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
 
   constructor(public errorService: ErrorService) {}
 
-  public async error(
-    error: any,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): Promise<void> {
+  public error(error: any, req: express.Request, res: express.Response, next: express.NextFunction): void {
     // It seems like some decorators handle setting the response (i.e. class-validators)
     let message: string;
     let type: SERVER_ERROR;
@@ -123,7 +118,9 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     // #1042 send request in logging output, don't need to put into database
     experimentError.request = req.body;
 
-    req.logger.error(experimentError);
+    if (req.logger) {
+      req.logger.error(experimentError);
+    }
 
     // #1040
     // experimentError.type ? await this.errorService.create(experimentError, req.logger) : await Promise.resolve(error);
