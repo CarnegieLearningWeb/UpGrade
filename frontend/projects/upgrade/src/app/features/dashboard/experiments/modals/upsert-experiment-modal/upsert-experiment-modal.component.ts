@@ -42,6 +42,7 @@ import {
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 import { ENV, Environment } from '../../../../../../environments/environment-types';
+import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
   selector: 'upsert-experiment-modal',
@@ -59,6 +60,7 @@ import { ENV, Environment } from '../../../../../../environments/environment-typ
     CommonTagsInputComponent,
     AsyncPipe,
     NgIf,
+    SharedModule,
   ],
   templateUrl: './upsert-experiment-modal.component.html',
   styleUrl: './upsert-experiment-modal.component.scss',

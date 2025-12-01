@@ -31,6 +31,7 @@ import {
   ExperimentCondition,
   Experiment,
 } from '../../../../../core/experiments/store/experiments.model';
+import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
   selector: 'upsert-condition-modal',
@@ -42,6 +43,7 @@ import {
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    SharedModule,
   ],
   templateUrl: './upsert-condition-modal.component.html',
   styleUrl: './upsert-condition-modal.component.scss',
