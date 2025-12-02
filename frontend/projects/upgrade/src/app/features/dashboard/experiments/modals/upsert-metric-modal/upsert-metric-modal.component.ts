@@ -182,7 +182,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       metricType: [initialValues.metricType, Validators.required],
       metricId: [initialValues.metricId, [Validators.required, this.autocompleteSelectionValidator.bind(this)]],
       displayName: [initialValues.displayName, Validators.required],
-      description: [initialValues.description],
       metricClass: [initialValues.metricClass, this.autocompleteSelectionValidator.bind(this)],
       metricKey: [initialValues.metricKey, this.autocompleteSelectionValidator.bind(this)],
       aggregateStatistic: [initialValues.aggregateStatistic],
@@ -240,7 +239,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
         metricType: isRepeatable ? METRIC_TYPE.REPEATABLE : METRIC_TYPE.GLOBAL,
         metricId,
         displayName: sourceQuery.name || '',
-        description: '', // Not available in current structure
         metricClass,
         metricKey: metricKeyValue,
         aggregateStatistic: sourceQuery.query?.operationType || '',
@@ -256,7 +254,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       metricType: METRIC_TYPE.GLOBAL,
       metricId: '',
       displayName: '',
-      description: '',
       metricClass: '',
       metricKey: '',
       aggregateStatistic: '',

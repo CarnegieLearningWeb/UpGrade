@@ -373,7 +373,6 @@ export interface MetricFormData {
   metricType: METRIC_TYPE;
   metricId: string;
   displayName: string;
-  description?: string;
   metricClass?: string; // For repeatable metrics only
   metricKey?: string; // For repeatable metrics only
   aggregateStatistic?: string;
