@@ -1,6 +1,16 @@
 // to run: npx ts-node clientlibs/js/quickTest.ts
 
 import UpgradeClient, { MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
+import {
+  ASSIGNMENT_ALGORITHM,
+  ASSIGNMENT_UNIT,
+  CONSISTENCY_RULE,
+  EXPERIMENT_STATE,
+  EXPERIMENT_TYPE,
+  FILTER_MODE,
+  MoocletTSConfigurablePolicyParametersDTO,
+  POST_EXPERIMENT_RULE,
+} from '../../types';
 
 const URL = {
   LOCAL: 'http://localhost:3030',
@@ -18,11 +28,106 @@ const groupsForSession = { classId: ['EPHEMERAL_USER_GROUP'] };
 const includeStoredUserGroups = true; // true to merge with stored user groups, false for session-only groups
 const alias = 'alias' + userId;
 const hostUrl = URL.LOCAL;
-const context = 'mathstream';
-const site = 'SelectSection';
-const target = 'absolute_value_plot_equality';
+const context = 'upgrade-internal';
+const site = 'asdf';
+const target = 'fssfs';
 const status = MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED;
 const featureFlagKey = 'TEST_FEATURE_FLAG';
+const experimentId = 'f9c3927c-b786-45f5-a96c-dd9262e3b4b6'; // needed for reward testing
+const rewardSite = site;
+const rewardTarget = target;
+
+// Experiment creation variables - modify these to create different types of experiments
+// const experimentConfig = {
+//   name: 'Quick Test Experiment ' + Date.now(),
+//   description: 'A test experiment created via quickTest.ts',
+//   context: [context],
+//   state: EXPERIMENT_STATE.ENROLLING,
+//   startOn: null, // ISO date string or null
+//   endOn: null, // ISO date string or null
+//   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL, // 'individual', 'experiment', 'group'
+//   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL, // 'individual', 'group', 'within-subjects'
+//   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+//   assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+//   enrollmentCompleteCondition: null, // { userCount: 100, groupCount: 20 } or null
+//   revertTo: null, // condition id to revert to, or null
+//   tags: ['quicktest', 'automated'],
+//   group: null, // group key if assignmentUnit is 'group', otherwise null
+//   conditionOrder: null, // 'random', 'ordered_round_robin', 'ordered_sequential' (only for within-subjects)
+//   filterMode: FILTER_MODE.INCLUDE_ALL, // 'includeAll', 'excludeAll'
+//   stratificationFactor: null, // { stratificationFactorName: 'gender' } or null
+//   type: EXPERIMENT_TYPE.SIMPLE, // 'Simple', 'Factorial'
+
+//   // Conditions - at least one required
+//   conditions: [
+//     {
+//       id: 'control' + Date.now(),
+//       name: 'control',
+//       description: 'Control condition',
+//       conditionCode: 'control',
+//       assignmentWeight: 50,
+//       order: 1,
+//     },
+//     {
+//       id: 'variant' + Date.now(),
+//       name: 'variant',
+//       description: 'Treatment condition',
+//       conditionCode: 'variant',
+//       assignmentWeight: 50,
+//       order: 2,
+//     },
+//   ],
+
+//   // Factors - only for factorial experiments
+//   factors: [],
+
+//   // Partitions (decision points) - at least one required
+//   partitions: [
+//     {
+//       id: 'partition_1_' + Date.now(),
+//       twoCharacterId: 'P1',
+//       site: site,
+//       target: target,
+//       description: 'Test decision point',
+//       order: 1,
+//       excludeIfReached: false,
+//     },
+//   ],
+
+//   // Queries - optional, for analytics
+//   queries: [],
+
+//   conditionPayloads: [],
+
+//   // Segment inclusion - required
+//   experimentSegmentInclusion: {
+//     segment: {
+//       type: 'public', // 'public', 'private'
+//       name: null,
+//       description: null,
+//       context: null,
+//       individualForSegment: [],
+//       groupForSegment: [],
+//       subSegments: [],
+//     },
+//   },
+
+//   // Segment exclusion - required
+//   experimentSegmentExclusion: {
+//     segment: {
+//       type: 'public', // 'public', 'private'
+//       name: null,
+//       description: null,
+//       context: null,
+//       individualForSegment: [],
+//       groupForSegment: [],
+//       subSegments: [],
+//     },
+//   },
+
+//   // Mooclet policy parameters - only for adaptive experiments
+//   // moocletPolicyParameters: new MoocletTSConfigurablePolicyParametersDTO(),
+// };
 
 const options: UpGradeClientInterfaces.IConfigOptions = {
   featureFlagUserGroupsForSession: useEphemeralGroups
@@ -69,22 +174,32 @@ quickTest();
 
 /** main test *******************************************************************************/
 async function quickTest() {
+  // Create experiment first (optional - uncomment to test)
+  // const createdExperimentId = await doCreateExperiment();
+
   const client = new UpgradeClient(userId, hostUrl, context, options);
   await doInit(client);
-  await doGroupMembership(client);
-  await doWorkingGroupMembership(client);
-  await doAliases(client);
+  // await doGroupMembership(client);
+  // await doWorkingGroupMembership(client);
+  // await doAliases(client);
   await doAssign(client);
-  await doAssignIgnoreCache(client);
-  await doAssign(client);
+  // await doAssignIgnoreCache(client);
+  // await doAssign(client);
 
   const condition = await doGetDecisionPointAssignment(client);
-  doSetFeatureFlagUserGroupsForSession(client, options);
-  await doFeatureFlags(client);
-  await doFeatureFlagsIgnoreCache(client);
-  await doHasFeatureFlag(client);
-  await doHasFeatureFlag(client);
-  // await doMark(client, condition);
+  // doSetFeatureFlagUserGroupsForSession(client, options);
+  // await doFeatureFlags(client);
+  // await doFeatureFlagsIgnoreCache(client);
+  // await doHasFeatureFlag(client);
+  // await doHasFeatureFlag(client);
+  await doMark(client, condition);
+
+  // Use the created experiment ID for reward testing (optional)
+  if (experimentId) {
+    // await doSendRewardByExperimentId(client);
+    // await doSendRewardWithEnum(client);
+  }
+  await doSendRewardByDecisionPoint(client);
   // await doLog(client);
 }
 
@@ -223,3 +338,104 @@ async function doLog(client: UpgradeClient) {
     console.error('\n[Log error]:', error);
   }
 }
+
+async function doSendRewardByExperimentId(client: UpgradeClient) {
+  try {
+    const response = await client.sendReward({
+      rewardValue: 'SUCCESS',
+      experimentId,
+    });
+    console.log('\n[Send Reward by ExperimentId response]:', JSON.stringify(response));
+  } catch (error) {
+    console.error('\n[Send Reward by ExperimentId error]:', error);
+  }
+}
+
+async function doSendRewardByDecisionPoint(client: UpgradeClient) {
+  try {
+    const response = await client.sendReward({
+      rewardValue: 'FAILURE',
+      context,
+      decisionPoint: {
+        site: rewardSite,
+        target: rewardTarget,
+      },
+    });
+    console.log('\n[Send Reward by Decision Point response]:', JSON.stringify(response));
+  } catch (error) {
+    console.error('\n[Send Reward by Decision Point error]:', error);
+  }
+}
+
+async function doSendRewardWithEnum(client: UpgradeClient) {
+  try {
+    const response = await client.sendReward({
+      rewardValue: UpgradeClient.BINARY_REWARD_VALUE.SUCCESS,
+      experimentId,
+    });
+    console.log('\n[Send Reward with Enum response]:', JSON.stringify(response));
+  } catch (error) {
+    console.error('\n[Send Reward with Enum error]:', error);
+  }
+}
+
+// async function doCreateExperiment(): Promise<string | null> {
+//   try {
+//     // Build the experiment payload from config
+//     const experimentPayload = {
+//       name: experimentConfig.name,
+//       description: experimentConfig.description,
+//       context: experimentConfig.context,
+//       state: experimentConfig.state,
+//       startOn: experimentConfig.startOn,
+//       endOn: experimentConfig.endOn,
+//       consistencyRule: experimentConfig.consistencyRule,
+//       assignmentUnit: experimentConfig.assignmentUnit,
+//       postExperimentRule: experimentConfig.postExperimentRule,
+//       assignmentAlgorithm: experimentConfig.assignmentAlgorithm,
+//       enrollmentCompleteCondition: experimentConfig.enrollmentCompleteCondition,
+//       revertTo: experimentConfig.revertTo,
+//       tags: experimentConfig.tags,
+//       group: experimentConfig.group,
+//       conditionOrder: experimentConfig.conditionOrder,
+//       filterMode: experimentConfig.filterMode,
+//       stratificationFactor: experimentConfig.stratificationFactor,
+//       type: experimentConfig.type,
+//       conditions: experimentConfig.conditions,
+//       factors: experimentConfig.factors,
+//       partitions: experimentConfig.partitions,
+//       queries: experimentConfig.queries,
+//       conditionPayloads: experimentConfig.conditionPayloads,
+//       experimentSegmentInclusion: experimentConfig.experimentSegmentInclusion,
+//       experimentSegmentExclusion: experimentConfig.experimentSegmentExclusion,
+//       // moocletPolicyParameters: experimentConfig.moocletPolicyParameters,
+//     };
+
+//     console.log('\n[Creating experiment with payload]:', JSON.stringify(experimentPayload, null, 2));
+
+//     const response = await fetch(`${hostUrl}/api/experiments`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(experimentPayload),
+//     });
+
+//     if (!response.ok) {
+//       const errorText = await response.text();
+//       console.error('\n[Create Experiment HTTP error]:', response.status, errorText);
+//       return null;
+//     }
+
+//     const data = await response.json();
+//     console.log('\n[Create Experiment response]:', JSON.stringify(data, null, 2));
+
+//     const experimentId = data.id;
+//     console.log('\n[✓ Created Experiment ID]:', experimentId);
+
+//     return experimentId;
+//   } catch (error) {
+//     console.error('\n[Create Experiment error]:', error);
+//     return null;
+//   }
+// }
