@@ -88,18 +88,14 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   filteredMetricIds$: Observable<any[]>;
 
   // BehaviorSubjects for source data
-  private metricClassOptions$ = new BehaviorSubject<any[]>([]);
-  private metricKeyOptions$ = new BehaviorSubject<any[]>([]);
-  private metricIdOptions$ = new BehaviorSubject<any[]>([]);
-
-  // Current selections
-  private currentSelectedClass: any = null;
-  private currentSelectedKey: any = null;
+  private readonly metricClassOptions$ = new BehaviorSubject<any[]>([]);
+  private readonly metricKeyOptions$ = new BehaviorSubject<any[]>([]);
+  private readonly metricIdOptions$ = new BehaviorSubject<any[]>([]);
 
   // Track if user has selected a valid option from autocomplete (vs just typing)
-  private hasValidMetricClassSelection$ = new BehaviorSubject<boolean>(false);
-  private hasValidMetricKeySelection$ = new BehaviorSubject<boolean>(false);
-  private hasValidMetricIdSelection$ = new BehaviorSubject<boolean>(false);
+  private readonly hasValidMetricClassSelection$ = new BehaviorSubject<boolean>(false);
+  private readonly hasValidMetricKeySelection$ = new BehaviorSubject<boolean>(false);
+  private readonly hasValidMetricIdSelection$ = new BehaviorSubject<boolean>(false);
 
   // Assignment unit and context for filtering
   private currentAssignmentUnit: ASSIGNMENT_UNIT | null = null;
@@ -141,12 +137,12 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public config: CommonModalConfig<UpsertMetricParams>,
-    private formBuilder: FormBuilder,
-    private experimentService: ExperimentService,
-    private metricHelperService: MetricHelperService,
-    private analysisService: AnalysisService,
-    private cdr: ChangeDetectorRef,
-    public dialogRef: MatDialogRef<UpsertMetricModalComponent>
+    private readonly formBuilder: FormBuilder,
+    private readonly experimentService: ExperimentService,
+    private readonly metricHelperService: MetricHelperService,
+    private readonly analysisService: AnalysisService,
+    private readonly cdr: ChangeDetectorRef,
+    public readonly dialogRef: MatDialogRef<UpsertMetricModalComponent>
   ) {}
 
   ngOnInit(): void {
@@ -164,34 +160,8 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  // Custom validators to ensure fields are selected from options (object) not typed (string)
-  private metricClassSelectedValidator(control: any): { [key: string]: any } | null {
-    const value = control.value;
-    if (!value) {
-      return null; // Let required validator handle empty values
-    }
-    // Valid if it's an object (selected from autocomplete)
-    if (typeof value === 'object' && value !== null) {
-      return null;
-    }
-    // Invalid if it's a string (typed, not selected)
-    return { mustSelectFromOptions: true };
-  }
-
-  private metricKeySelectedValidator(control: any): { [key: string]: any } | null {
-    const value = control.value;
-    if (!value) {
-      return null; // Let required validator handle empty values
-    }
-    // Valid if it's an object (selected from autocomplete)
-    if (typeof value === 'object' && value !== null) {
-      return null;
-    }
-    // Invalid if it's a string (typed, not selected)
-    return { mustSelectFromOptions: true };
-  }
-
-  private metricIdSelectedValidator(control: any): { [key: string]: any } | null {
+  // Custom validator to ensure fields are selected from options (object) not typed (string)
+  private autocompleteSelectionValidator(control: any): { [key: string]: any } | null {
     const value = control.value;
     if (!value) {
       return null; // Let required validator handle empty values
@@ -210,11 +180,11 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
     this.metricForm = this.formBuilder.group({
       metricType: [initialValues.metricType, Validators.required],
-      metricId: [initialValues.metricId, [Validators.required, this.metricIdSelectedValidator.bind(this)]],
+      metricId: [initialValues.metricId, [Validators.required, this.autocompleteSelectionValidator.bind(this)]],
       displayName: [initialValues.displayName, Validators.required],
       description: [initialValues.description],
-      metricClass: [initialValues.metricClass, this.metricClassSelectedValidator.bind(this)],
-      metricKey: [initialValues.metricKey, this.metricKeySelectedValidator.bind(this)],
+      metricClass: [initialValues.metricClass, this.autocompleteSelectionValidator.bind(this)],
+      metricKey: [initialValues.metricKey, this.autocompleteSelectionValidator.bind(this)],
       aggregateStatistic: [initialValues.aggregateStatistic],
       individualStatistic: [initialValues.individualStatistic],
       comparison: [initialValues.comparison || '='],
@@ -505,7 +475,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     // If field is cleared completely
     if (!selectedClass) {
       this.hasValidMetricClassSelection$.next(false);
-      this.currentSelectedClass = null;
       this.metricKeyOptions$.next([]);
       this.metricIdOptions$.next([]);
       this.metricForm.get('metricKey')?.setValue('');
@@ -518,13 +487,11 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   onMetricClassOptionSelected(selectedClass: any): void {
     if (selectedClass && typeof selectedClass === 'object' && selectedClass.children) {
       this.hasValidMetricClassSelection$.next(true);
-      this.currentSelectedClass = selectedClass;
       this.metricKeyOptions$.next(selectedClass.children);
 
       // Reset dependent fields
       this.metricForm.get('metricKey')?.setValue('');
       this.metricForm.get('metricId')?.setValue('');
-      this.currentSelectedKey = null;
       this.metricIdOptions$.next([]);
       this.hasValidMetricKeySelection$.next(false);
       this.hasValidMetricIdSelection$.next(false);
@@ -553,7 +520,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   onMetricKeyOptionSelected(selectedKey: any): void {
     if (selectedKey && typeof selectedKey === 'object') {
       this.hasValidMetricKeySelection$.next(true);
-      this.currentSelectedKey = selectedKey;
 
       // Set metric IDs based on selected key's children
       if (selectedKey.children && selectedKey.children.length > 0) {
@@ -583,8 +549,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
   onMetricTypeChange(): void {
     // Clear everything and repopulate
-    this.currentSelectedClass = null;
-    this.currentSelectedKey = null;
     this.metricDataType = null;
     this.hasValidMetricClassSelection$.next(false);
     this.hasValidMetricKeySelection$.next(false);
@@ -758,10 +722,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     if (metricType === METRIC_TYPE.REPEATABLE) {
       this.metricForm
         .get('metricClass')
-        ?.setValidators([Validators.required, this.metricClassSelectedValidator.bind(this)]);
+        ?.setValidators([Validators.required, this.autocompleteSelectionValidator.bind(this)]);
       this.metricForm
         .get('metricKey')
-        ?.setValidators([Validators.required, this.metricKeySelectedValidator.bind(this)]);
+        ?.setValidators([Validators.required, this.autocompleteSelectionValidator.bind(this)]);
       this.metricForm.get('individualStatistic')?.setValidators([Validators.required]);
     } else {
       this.metricForm.get('metricClass')?.clearValidators();
@@ -786,9 +750,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
 
     // Update all validators without emitting events to prevent recursion
-    Object.keys(this.metricForm.controls).forEach((key) => {
+    for (const key of Object.keys(this.metricForm.controls)) {
       this.metricForm.get(key)?.updateValueAndValidity({ emitEvent: false });
-    });
+    }
 
     // Update the form's overall validity status WITH event emission
     // This ensures the observable streams are updated for button state
