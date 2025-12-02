@@ -1,5 +1,5 @@
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
+import { EXPERIMENT_STATE, SERVER_ERROR, BinaryRewardValueMap } from 'upgrade_types';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletDataService } from './MoocletDataService';
@@ -11,7 +11,6 @@ import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { HttpError } from 'routing-controllers';
 import { MoocletValueRequestBody } from '../../types/Mooclet';
 import { RewardValidator } from '../controllers/validators/RewardValidator';
-import { BinaryRewardValueMap } from '../../../../../../types/src/Mooclet';
 
 export interface IRewardResponse {
   message: string;
