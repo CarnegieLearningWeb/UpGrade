@@ -458,40 +458,19 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   populateOptions(): void {
-    const metricType = this.metricForm.get('metricType')?.value;
-    let filteredMetrics = this.allMetrics || [];
-
-    if (this.currentAssignmentUnit && filteredMetrics.length > 0) {
-      if (this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-        const withinSubjectsMetrics = filteredMetrics.filter((metric) => metric.children && metric.children.length > 0);
-        if (withinSubjectsMetrics.length > 0) {
-          filteredMetrics = withinSubjectsMetrics;
-        }
-      } else if (this.currentContext && this.currentContext.length > 0) {
-        const contextFilteredMetrics = filteredMetrics.filter(
-          (metric) => metric.context && this.currentContext?.some((ctx) => metric.context.includes(ctx))
-        );
-        if (contextFilteredMetrics.length > 0) {
-          filteredMetrics = contextFilteredMetrics;
-        }
-      }
+    if (!this.metricForm) {
+      return;
     }
 
-    // Filter out all reward metric keys (ending with _REWARD)
-    // These are automatically added by the app and should not be manually selectable
-    filteredMetrics = filteredMetrics.filter((metric) => !metric.key?.endsWith('_REWARD'));
+    const metricType = this.metricForm.get('metricType')?.value;
+    const filteredMetrics = this.sanitizeMetricOptions(this.filterMetricsByAssignmentContext(this.allMetrics || []));
 
     if (metricType === METRIC_TYPE.GLOBAL) {
-      this.metricClassOptions$.next([]);
-      this.metricKeyOptions$.next([]);
-      const globalMetrics = filteredMetrics.filter((metric) => !metric.children || metric.children.length === 0);
-      this.metricIdOptions$.next(globalMetrics);
-    } else {
-      const repeatableMetrics = filteredMetrics.filter((metric) => metric.children && metric.children.length > 0);
-      this.metricClassOptions$.next(repeatableMetrics);
-      this.metricKeyOptions$.next([]);
-      this.metricIdOptions$.next([]);
+      this.populateGlobalMetricOptions(filteredMetrics);
+      return;
     }
+
+    this.populateRepeatableMetricOptions(filteredMetrics);
   }
 
   createFilteredObservables(): void {
@@ -539,7 +518,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   onMetricClassOptionSelected(selectedClass: any): void {
     if (selectedClass && typeof selectedClass === 'object' && selectedClass.children) {
       this.hasValidMetricClassSelection$.next(true);
-      this.metricKeyOptions$.next(selectedClass.children);
+      this.metricKeyOptions$.next(this.sanitizeMetricOptions(selectedClass.children));
 
       // Reset dependent fields
       this.metricForm.get('metricKey')?.setValue('');
@@ -574,11 +553,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       this.hasValidMetricKeySelection$.next(true);
 
       // Set metric IDs based on selected key's children
-      if (selectedKey.children && selectedKey.children.length > 0) {
-        this.metricIdOptions$.next(selectedKey.children);
-      } else {
-        this.metricIdOptions$.next([selectedKey]);
-      }
+      this.metricIdOptions$.next(this.getMetricIdOptionsFromKey(selectedKey));
 
       // Reset ID field
       this.metricForm.get('metricId')?.setValue('');
@@ -597,6 +572,94 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   private _filter(value: any, options: any[]): any[] {
     const filterValue = this.extractKey(value).toLowerCase();
     return options.filter((option) => option.key?.toLowerCase().includes(filterValue));
+  }
+
+  private sanitizeMetricOptions(options?: any[]): any[] {
+    if (!options?.length) {
+      return [];
+    }
+    return options.filter((option) => !option?.key?.endsWith('_REWARD'));
+  }
+
+  private findOptionByKey(options: any[], key: string): any {
+    if (!options.length || !key) {
+      return undefined;
+    }
+    return options.find((option) => option?.key === key);
+  }
+
+  private resolveSelectedOption(controlValue: any, options: any[] = []): any {
+    if (!controlValue) {
+      return undefined;
+    }
+    if (typeof controlValue === 'object') {
+      return controlValue;
+    }
+    return this.findOptionByKey(options, this.extractKey(controlValue));
+  }
+
+  private getMetricIdOptionsFromKey(selectedKey: any): any[] {
+    if (!selectedKey || typeof selectedKey !== 'object') {
+      return [];
+    }
+
+    if (selectedKey.children && selectedKey.children.length > 0) {
+      return this.sanitizeMetricOptions(selectedKey.children);
+    }
+
+    return this.sanitizeMetricOptions([selectedKey]);
+  }
+
+  private filterMetricsByAssignmentContext(metrics: any[]): any[] {
+    if (!metrics?.length) {
+      return [];
+    }
+
+    if (this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+      const withinSubjectsMetrics = metrics.filter((metric) => metric.children && metric.children.length > 0);
+      return withinSubjectsMetrics.length > 0 ? withinSubjectsMetrics : metrics;
+    }
+
+    if (this.currentAssignmentUnit && this.currentContext?.length) {
+      const contextFilteredMetrics = metrics.filter(
+        (metric) => metric.context && this.currentContext?.some((ctx) => metric.context.includes(ctx))
+      );
+      if (contextFilteredMetrics.length > 0) {
+        return contextFilteredMetrics;
+      }
+    }
+
+    return metrics;
+  }
+
+  private populateGlobalMetricOptions(metrics: any[]): void {
+    this.metricClassOptions$.next([]);
+    this.metricKeyOptions$.next([]);
+    const globalMetrics = metrics.filter((metric) => !metric.children || metric.children.length === 0);
+    this.metricIdOptions$.next(this.sanitizeMetricOptions(globalMetrics));
+  }
+
+  private populateRepeatableMetricOptions(metrics: any[]): void {
+    const repeatableMetrics = metrics.filter((metric) => metric.children && metric.children.length > 0);
+    this.metricClassOptions$.next(repeatableMetrics);
+
+    const selectedClass = this.resolveSelectedOption(this.metricForm.get('metricClass')?.value, repeatableMetrics);
+    if (!selectedClass?.children?.length) {
+      this.metricKeyOptions$.next([]);
+      this.metricIdOptions$.next([]);
+      return;
+    }
+
+    const sanitizedClassChildren = this.sanitizeMetricOptions(selectedClass.children);
+    this.metricKeyOptions$.next(sanitizedClassChildren);
+
+    const selectedKey = this.resolveSelectedOption(this.metricForm.get('metricKey')?.value, sanitizedClassChildren);
+    if (!selectedKey) {
+      this.metricIdOptions$.next([]);
+      return;
+    }
+
+    this.metricIdOptions$.next(this.getMetricIdOptionsFromKey(selectedKey));
   }
 
   onMetricTypeChange(): void {

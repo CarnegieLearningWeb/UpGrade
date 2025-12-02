@@ -151,7 +151,11 @@
     <ng-container *ngIf="showIndividualStatistic">
       <mat-form-field appearance="outline">
         <mat-label class="ft-14-400">Individual Statistic</mat-label>
-        <mat-select formControlName="individualStatistic" class="ft-14-400">
+        <mat-select
+          formControlName="individualStatistic"
+          placeholder="Select individual statistic"
+          class="ft-14-400"
+        >
           <mat-option
             *ngFor="let option of individualStatisticOptions"
             [value]="option.value"
@@ -173,7 +177,11 @@
     <ng-container *ngIf="showAggregateStatistic">
       <mat-form-field appearance="outline">
         <mat-label class="ft-14-400">Aggregate Statistic</mat-label>
-        <mat-select formControlName="aggregateStatistic" class="ft-14-400">
+        <mat-select
+          formControlName="aggregateStatistic"
+          placeholder="Select aggregate statistic"
+          class="ft-14-400"
+        >
           <mat-option
             *ngFor="let option of aggregateStatisticOptions"
             [value]="option.value"
