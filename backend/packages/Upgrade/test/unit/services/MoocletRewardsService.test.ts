@@ -107,7 +107,7 @@ describe('MoocletRewardsService', () => {
 
         const result = await service.sendReward(mockUser, request, mockLogger as any);
 
-        expect(result.message).toBe('Reward sent to mooclet successfuly.');
+        expect(result.message).toBe('Reward sent to mooclet successfully.');
         expect(result.reward).toEqual({
           variable: 'reward_variable',
           value: 1,
@@ -137,7 +137,7 @@ describe('MoocletRewardsService', () => {
 
         const result = await service.sendReward(mockUser, request, mockLogger as any);
 
-        expect(result.message).toBe('Reward sent to mooclet successfuly.');
+        expect(result.message).toBe('Reward sent to mooclet successfully.');
         expect(result.reward.value).toBe(0); // FAILURE maps to 0
         expect(mockMoocletDataService.postNewReward).toHaveBeenCalledTimes(1);
       });
@@ -209,7 +209,7 @@ describe('MoocletRewardsService', () => {
           await service.sendReward(mockUser, request, mockLogger as any);
         } catch (error) {
           expect((error as HttpError).httpCode).toBe(409);
-          expect((error as Error).message).toContain('No active mooclet experiment ref found');
+          expect((error as HttpError).message).toContain('No active mooclet experiment ref found');
         }
       });
 
@@ -234,7 +234,7 @@ describe('MoocletRewardsService', () => {
           await service.sendReward(mockUser, request, mockLogger as any);
         } catch (error) {
           expect((error as HttpError).httpCode).toBe(409);
-          expect((error as Error).message).toContain('No active experiment found for decision point');
+          expect((error as HttpError).message).toContain('No active experiment found for decision point');
         }
       });
 
@@ -262,7 +262,7 @@ describe('MoocletRewardsService', () => {
           await service.sendReward(mockUser, request, mockLogger as any);
         } catch (error) {
           expect((error as HttpError).httpCode).toBe(409);
-          expect((error as Error).message).toContain('Multiple active experiments found for decision point');
+          expect((error as HttpError).message).toContain('Multiple active experiments found for decision point');
         }
       });
 
@@ -290,7 +290,7 @@ describe('MoocletRewardsService', () => {
           await service.sendReward(mockUser, request, mockLogger as any);
         } catch (error) {
           expect((error as HttpError).httpCode).toBe(409);
-          expect((error as Error).message).toContain('not actively enrolling');
+          expect((error as HttpError).message).toContain('not actively enrolling');
         }
       });
     });
@@ -337,7 +337,7 @@ describe('MoocletRewardsService', () => {
           await service.sendReward(mockUser, request, mockLogger as any);
         } catch (error) {
           expect((error as HttpError).httpCode).toBe(409);
-          expect((error as Error).message).toContain('Could not find unique user enrollment');
+          expect((error as HttpError).message).toContain('Could not find unique user enrollment');
         }
       });
 
@@ -354,7 +354,7 @@ describe('MoocletRewardsService', () => {
 
         const result = await service.sendReward(mockUser, request, mockLogger as any);
 
-        expect(result.message).toBe('Reward sent to mooclet successfuly.');
+        expect(result.message).toBe('Reward sent to mooclet successfully.');
       });
     });
 
@@ -383,7 +383,7 @@ describe('MoocletRewardsService', () => {
           await service.sendReward(mockUser, request, mockLogger as any);
         } catch (error) {
           expect((error as HttpError).httpCode).toBe(409);
-          expect((error as Error).message).toContain('Version-condtion mapping not found');
+          expect((error as HttpError).message).toContain('Version-condition mapping not found');
         }
       });
 
@@ -428,7 +428,7 @@ describe('MoocletRewardsService', () => {
           await service.sendReward(mockUser, request, mockLogger as any);
         } catch (error) {
           expect((error as HttpError).httpCode).toBe(409);
-          expect((error as Error).message).toContain('Failed to process reward request due to unexpected error');
+          expect((error as HttpError).message).toContain('Failed to process reward request due to unexpected error');
         }
       });
 
@@ -557,7 +557,7 @@ describe('MoocletRewardsService', () => {
         const result = await service.sendReward(mockUser, request, mockLogger as any);
 
         expect(mockMoocletExperimentRefRepository.findOne).toHaveBeenCalledTimes(1);
-        expect(result.message).toBe('Reward sent to mooclet successfuly.');
+        expect(result.message).toBe('Reward sent to mooclet successfully.');
       });
 
       it('should query with correct relations', async () => {

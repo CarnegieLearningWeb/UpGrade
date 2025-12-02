@@ -107,7 +107,7 @@ export class MoocletRewardsService {
       // NOTE: in the future we may want to batch these, the mooclet API technically supports it by adding "/create_many" to an endpoint but it's not documented
       this.moocletDataService.postNewReward(reward, logger);
 
-      return { message: `Reward sent to mooclet successfuly.`, request: this.request, reward };
+      return { message: `Reward sent to mooclet successfully.`, request: this.request, reward };
     } catch (error) {
       if (error instanceof HttpError) {
         throw error;
@@ -186,7 +186,7 @@ export class MoocletRewardsService {
       (map) => enrollment.conditionId === map.experimentConditionId
     );
     if (!map) {
-      this.throwConflictError(`Version-condtiion mapping not found, no reward sent.`);
+      this.throwConflictError(`Version-condition mapping not found, no reward sent.`);
     }
     return map.moocletVersionId;
   }
@@ -197,9 +197,8 @@ export class MoocletRewardsService {
   private throwConflictError(message: string): never {
     this.logger.error({ message, request: this.request });
 
-    const error = new Error(message);
+    const error = new HttpError(409, message);
     (error as any).type = SERVER_ERROR.MOOCLET_REWARD_ERROR;
-    (error as any).httpCode = 409;
     throw error;
   }
 }
