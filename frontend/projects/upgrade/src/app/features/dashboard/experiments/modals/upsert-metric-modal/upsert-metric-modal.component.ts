@@ -267,23 +267,25 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   populateFormForEditMode(initialValues: MetricFormData): void {
     // Wait for allMetrics to be loaded, then populate form with proper objects
     // Using take(1) ensures subscription auto-completes, no manual cleanup needed
-    this.allMetrics$
-      .pipe(
-        filter((metrics) => Array.isArray(metrics) && metrics.length > 0),
-        take(1)
-      )
-      .subscribe((metrics) => {
-        const metricObjects = this.findMetricObjects(metrics, initialValues);
-        this.updateFormWithMetricObjects(initialValues, metricObjects);
+    this.subscriptions.add(
+      this.allMetrics$
+        .pipe(
+          filter((metrics) => Array.isArray(metrics) && metrics.length > 0),
+          take(1)
+        )
+        .subscribe((metrics) => {
+          const metricObjects = this.findMetricObjects(metrics, initialValues);
+          this.updateFormWithMetricObjects(initialValues, metricObjects);
 
-        // Only update validation state and initialize statistics if idObject exists
-        if (metricObjects.idObject) {
-          this.updateValidationState(metricObjects);
-          this.initializeMetricTypeAndStatistics(metricObjects.idObject);
-        }
+          // Only update validation state and initialize statistics if idObject exists
+          if (metricObjects.idObject) {
+            this.updateValidationState(metricObjects);
+            this.initializeMetricTypeAndStatistics(metricObjects.idObject);
+          }
 
-        this.cdr.markForCheck();
-      });
+          this.cdr.markForCheck();
+        })
+    );
   }
 
   private findMetricObjects(
