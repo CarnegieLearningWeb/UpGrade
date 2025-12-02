@@ -30,7 +30,7 @@ import { env } from '../../env';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
 import { ImportExportService } from '../services/ImportExportService';
-import { SUPPORTED_MOOCLET_ALGORITHMS } from 'types/src';
+import { SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   filtered: number;

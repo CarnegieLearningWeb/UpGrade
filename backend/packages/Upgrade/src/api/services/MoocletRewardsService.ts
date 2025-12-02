@@ -167,6 +167,8 @@ export class MoocletRewardsService {
       );
     }
 
+    // TODO: this is a spot where we want to use shared-decision-point pooling logic,
+    // but for now if there are competing experiments, it will be required to use experimentId
     if (moocletExperimentRefs.length > 1) {
       this.throwConflictError(
         `Multiple active experiments found for decision point (context: ${context}, site: ${site}, target: ${target}), cannot determine which to send reward to.`
