@@ -354,7 +354,7 @@ describe('MoocletRewardsService', () => {
 
         const result = await service.sendReward(mockUser, request, mockLogger as any);
 
-        expect(result.message).toBe('Reward sent to mooclet successfuly.');
+        expect(result.message).toBe('Reward sent to mooclet successfully.');
       });
     });
 
