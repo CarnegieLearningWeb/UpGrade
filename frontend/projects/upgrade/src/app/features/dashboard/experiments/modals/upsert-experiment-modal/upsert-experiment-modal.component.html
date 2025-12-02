@@ -9,7 +9,7 @@
   <form [formGroup]="experimentForm" class="form-standard dense-3">
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Name</mat-label>
-      <input matInput formControlName="name" placeholder="e.g., My experiment" class="ft-14-400" />
+      <input matInput formControlName="name" placeholder="e.g., My experiment" class="ft-14-400" appTrimInput />
       <mat-hint class="form-hint ft-12-400">
         {{ 'experiments.upsert-experiment-modal.name-hint.text' | translate }}
       </mat-hint>
@@ -17,15 +17,19 @@
 
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Description (optional)</mat-label>
-      <input matInput formControlName="description" placeholder="Describe your experiment" class="ft-14-400" />
+      <input
+        matInput
+        formControlName="description"
+        placeholder="Describe your experiment"
+        class="ft-14-400"
+        appTrimInput
+      />
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">App Context</mat-label>
       <mat-select formControlName="appContext" class="ft-14-400">
-        <mat-option *ngFor="let context of allContexts" [value]="context" class="ft-14-400">{{
-          context
-        }}</mat-option>
+        <mat-option *ngFor="let context of allContexts" [value]="context" class="ft-14-400">{{ context }}</mat-option>
       </mat-select>
       <mat-hint
         *ngIf="!(config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT && isContextChanged)"
@@ -47,22 +51,12 @@
     <div class="experiment-type-section dense-1">
       <mat-radio-group formControlName="experimentType">
         <span class="section-label ft-14-600">Experiment Type</span>
-        <mat-radio-button
-          *ngFor="let type of experimentTypes"
-          [value]="type.value"
-          [disabled]="type.disabled"
-        >
+        <mat-radio-button *ngFor="let type of experimentTypes" [value]="type.value" [disabled]="type.disabled">
           <div class="radio-content">
-            <span
-              class="radio-label ft-14-600"
-              [class.disabled-text]="type.disabled"
-            >
+            <span class="radio-label ft-14-600" [class.disabled-text]="type.disabled">
               {{ type.value + ' Experiment' }}
             </span>
-            <span
-              class="radio-description ft-12-400"
-              [class.disabled-text]="type.disabled"
-            >
+            <span class="radio-description ft-12-400" [class.disabled-text]="type.disabled">
               {{ type.description | translate }}
             </span>
           </div>
@@ -101,22 +95,12 @@
     <div class="consistency-rule-section dense-1" *ngIf="unitOfAssignmentValue !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS">
       <mat-radio-group formControlName="consistencyRule">
         <span class="section-label ft-14-600">Consistency Rule</span>
-        <mat-radio-button
-          *ngFor="let rule of consistencyRules"
-          [value]="rule.value"
-          [disabled]="rule.disabled"
-        >
+        <mat-radio-button *ngFor="let rule of consistencyRules" [value]="rule.value" [disabled]="rule.disabled">
           <div class="radio-content">
-            <span
-              class="radio-label ft-14-600"
-              [class.disabled-text]="rule.disabled"
-            >
+            <span class="radio-label ft-14-600" [class.disabled-text]="rule.disabled">
               {{ rule.value | titlecase }}
             </span>
-            <span
-              class="radio-description ft-12-400"
-              [class.disabled-text]="rule.disabled"
-            >
+            <span class="radio-description ft-12-400" [class.disabled-text]="rule.disabled">
               {{ rule.description | translate }}
             </span>
           </div>
@@ -145,16 +129,10 @@
           [disabled]="algorithm.disabled"
         >
           <div class="radio-content">
-            <span
-              class="radio-label ft-14-600"
-              [class.disabled-text]="algorithm.disabled"
-            >
+            <span class="radio-label ft-14-600" [class.disabled-text]="algorithm.disabled">
               {{ ASSIGNMENT_ALGORITHM_DISPLAY_MAP[algorithm.value] }}
             </span>
-            <span
-              class="radio-description ft-12-400"
-              [class.disabled-text]="algorithm.disabled"
-            >
+            <span class="radio-description ft-12-400" [class.disabled-text]="algorithm.disabled">
               {{ algorithm.description | translate }}
             </span>
           </div>
@@ -169,11 +147,7 @@
     >
       <mat-label class="ft-14-400">Stratification Factor</mat-label>
       <mat-select formControlName="stratificationFactor" class="ft-14-400">
-        <mat-option
-          *ngFor="let factor of allStratificationFactors"
-          [value]="factor.factorName"
-          class="ft-14-400"
-        >
+        <mat-option *ngFor="let factor of allStratificationFactors" [value]="factor.factorName" class="ft-14-400">
           {{ factor.factorName }}
         </mat-option>
       </mat-select>
