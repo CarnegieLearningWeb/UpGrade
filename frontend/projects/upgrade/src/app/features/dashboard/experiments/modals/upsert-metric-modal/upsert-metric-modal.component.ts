@@ -269,77 +269,129 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
   populateFormForEditMode(initialValues: MetricFormData): void {
     // Wait for allMetrics to be loaded, then populate form with proper objects
-    this.subscriptions.add(
-      this.allMetrics$.pipe(take(1)).subscribe((metrics) => {
-        if (!metrics || metrics.length === 0) return;
+    // Using take(1) ensures subscription auto-completes, no manual cleanup needed
+    this.allMetrics$.pipe(take(1)).subscribe((metrics) => {
+      if (!metrics?.length) {
+        return;
+      }
 
-        const { metricType, metricClass, metricKey, metricId } = initialValues;
-        let classObject = null;
-        let keyObject = null;
-        let idObject = null;
+      const metricObjects = this.findMetricObjects(metrics, initialValues);
+      this.updateFormWithMetricObjects(initialValues, metricObjects);
 
-        if (metricType === METRIC_TYPE.REPEATABLE) {
-          // Find the class object
-          classObject = metrics.find((m) => m.key === metricClass);
+      // Only update validation state and initialize statistics if idObject exists
+      if (metricObjects.idObject) {
+        this.updateValidationState(metricObjects);
+        this.initializeMetricTypeAndStatistics(metricObjects.idObject);
+      }
 
-          if (classObject?.children) {
-            // Find the key object within the class children
-            keyObject = classObject.children.find((k) => k.key === metricKey);
+      this.cdr.markForCheck();
+    });
+  }
 
-            if (keyObject?.children) {
-              // Find the ID object within the key children
-              idObject = keyObject.children.find((id) => id.key === metricId);
-            } else if (keyObject) {
-              // If no children in keyObject, keyObject itself might be the ID
-              idObject = keyObject;
-            }
-          }
-        } else {
-          // Global metric: find the metric directly
-          idObject = metrics.find((m) => m.key === metricId);
-        }
+  private findMetricObjects(
+    metrics: any[],
+    initialValues: MetricFormData
+  ): { classObject: any; keyObject: any; idObject: any } {
+    const { metricType, metricClass, metricKey, metricId } = initialValues;
 
-        // Update form with found objects (or keep strings if objects not found)
-        const formUpdates = {
-          metricClass: classObject || metricClass,
-          metricKey: keyObject || metricKey,
-          metricId: idObject || metricId,
-        };
+    if (metricType === METRIC_TYPE.REPEATABLE) {
+      return this.findRepeatableMetricObjects(metrics, metricClass, metricKey, metricId);
+    }
 
-        this.metricForm.patchValue(formUpdates);
+    // Global metric: find the metric directly
+    return {
+      classObject: null,
+      keyObject: null,
+      idObject: metrics.find((m) => m.key === metricId) ?? null,
+    };
+  }
 
-        // Update the initial form values to reflect the object values
-        const currentInitialValues = this.initialFormValues$.value;
-        const newInitialValues = { ...currentInitialValues, ...formUpdates };
-        if (!isEqual(currentInitialValues, newInitialValues)) {
-          this.initialFormValues$.next(newInitialValues);
-        }
+  private findRepeatableMetricObjects(
+    metrics: any[],
+    metricClass: string,
+    metricKey: string,
+    metricId: string
+  ): { classObject: any; keyObject: any; idObject: any } {
+    const classObject = metrics.find((m) => m.key === metricClass) ?? null;
 
-        // Update the options and form state
-        this.populateOptions();
-        if (idObject) {
-          // Mark as valid selections in edit mode
-          if (classObject) this.hasValidMetricClassSelection$.next(true);
-          if (keyObject) this.hasValidMetricKeySelection$.next(true);
-          this.hasValidMetricIdSelection$.next(true);
+    if (!classObject?.children) {
+      return { classObject, keyObject: null, idObject: null };
+    }
 
-          this.detectMetricDataType(idObject);
-          this.updateStatisticOptions();
-          this.updateFormVisibility();
+    const keyObject = classObject.children.find((k: any) => k.key === metricKey) ?? null;
 
-          // Update initial form values with allowableDataKeys to prevent false "changed" detection
-          // This is crucial for categorical metrics where allowableDataKeys gets populated
-          const updatedInitialValues = {
-            ...this.initialFormValues$.value,
-            allowableDataKeys: this.allowableDataKeys,
-          };
-          this.initialFormValues$.next(updatedInitialValues);
-        }
+    if (!keyObject) {
+      return { classObject, keyObject: null, idObject: null };
+    }
 
-        // Trigger change detection to ensure UI updates
-        this.cdr.markForCheck();
-      })
-    );
+    // Find ID object in key's children, or use key itself if no children
+    const idObject = keyObject.children?.length
+      ? keyObject.children.find((id: any) => id.key === metricId) ?? null
+      : keyObject;
+
+    return { classObject, keyObject, idObject };
+  }
+
+  private updateFormWithMetricObjects(
+    initialValues: MetricFormData,
+    metricObjects: { classObject: any; keyObject: any; idObject: any }
+  ): void {
+    const { classObject, keyObject, idObject } = metricObjects;
+
+    // Update form with found objects (fallback to string values if not found)
+    const formUpdates = {
+      metricClass: classObject ?? initialValues.metricClass,
+      metricKey: keyObject ?? initialValues.metricKey,
+      metricId: idObject ?? initialValues.metricId,
+    };
+
+    this.metricForm.patchValue(formUpdates);
+    this.populateOptions();
+
+    // Update initial form values once with all necessary data
+    const updatedInitialValues: MetricFormData = {
+      ...this.initialFormValues$.value,
+      ...formUpdates,
+      // Include allowableDataKeys if available (for categorical metrics)
+      allowableDataKeys: this.allowableDataKeys.length > 0 ? this.allowableDataKeys : initialValues.allowableDataKeys,
+    };
+
+    if (!isEqual(this.initialFormValues$.value, updatedInitialValues)) {
+      this.initialFormValues$.next(updatedInitialValues);
+    }
+  }
+
+  private updateValidationState(metricObjects: { classObject: any; keyObject: any; idObject: any }): void {
+    const { classObject, keyObject, idObject } = metricObjects;
+
+    // Mark selections as valid based on found objects
+    if (classObject) {
+      this.hasValidMetricClassSelection$.next(true);
+    }
+    if (keyObject) {
+      this.hasValidMetricKeySelection$.next(true);
+    }
+    if (idObject) {
+      this.hasValidMetricIdSelection$.next(true);
+    }
+  }
+
+  private initializeMetricTypeAndStatistics(idObject: any): void {
+    this.detectMetricDataType(idObject);
+    this.updateStatisticOptions();
+    this.updateFormVisibility();
+
+    // Re-sync allowableDataKeys to initial values after detection
+    // This prevents false "changed" detection for categorical metrics
+    if (this.allowableDataKeys.length > 0) {
+      const syncedInitialValues: MetricFormData = {
+        ...this.initialFormValues$.value,
+        allowableDataKeys: this.allowableDataKeys,
+      };
+      if (!isEqual(this.initialFormValues$.value, syncedInitialValues)) {
+        this.initialFormValues$.next(syncedInitialValues);
+      }
+    }
   }
 
   setupFormChangeListeners(): void {
