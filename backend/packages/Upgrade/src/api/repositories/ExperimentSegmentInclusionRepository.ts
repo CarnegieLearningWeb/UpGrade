@@ -49,6 +49,14 @@ export class ExperimentSegmentInclusionRepository extends Repository<ExperimentS
       });
   }
 
+  public getExistingSegments(segmentIds: string[]): Promise<ExperimentSegmentInclusion[]> {
+    return this.createQueryBuilder('experimentSegmentInclusion')
+      .leftJoinAndSelect(`experimentSegmentInclusion.segment`, 'segment')
+      .leftJoinAndSelect(`experimentSegmentInclusion.experiment`, 'experiment')
+      .where('segment.id IN (:...segmentIds)', { segmentIds })
+      .getMany();
+  }
+
   public async deleteData(
     segmentId: string,
     experimentId: string,

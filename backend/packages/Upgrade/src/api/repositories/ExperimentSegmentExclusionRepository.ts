@@ -49,6 +49,14 @@ export class ExperimentSegmentExclusionRepository extends Repository<ExperimentS
       });
   }
 
+  public getExistingSegments(segmentIds: string[]): Promise<ExperimentSegmentExclusion[]> {
+    return this.createQueryBuilder('experimentSegmentExclusion')
+      .leftJoinAndSelect(`experimentSegmentExclusion.segment`, 'segment')
+      .leftJoinAndSelect(`experimentSegmentExclusion.experiment`, 'experiment')
+      .where('segment.id IN (:...segmentIds)', { segmentIds })
+      .getMany();
+  }
+
   public async getExperimentSegmentExclusionDocBySegmentId(
     segmentId: string
   ): Promise<Partial<ExperimentSegmentExclusion[]>> {
