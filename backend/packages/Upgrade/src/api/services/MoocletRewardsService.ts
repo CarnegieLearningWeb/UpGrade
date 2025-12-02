@@ -1,5 +1,5 @@
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletDataService } from './MoocletDataService';
@@ -194,6 +194,10 @@ export class MoocletRewardsService {
    */
   private throwConflictError(message: string): never {
     this.logger.error({ message, request: this.request });
-    throw new HttpError(409, message);
+
+    const error = new Error(message);
+    (error as any).type = SERVER_ERROR.MOOCLET_REWARD_ERROR;
+    (error as any).httpCode = 409;
+    throw error;
   }
 }

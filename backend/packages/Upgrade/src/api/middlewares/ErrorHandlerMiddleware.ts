@@ -83,6 +83,10 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
         type = SERVER_ERROR.EMAIL_SEND_ERROR;
         message = errorMessage;
         break;
+      case SERVER_ERROR.MOOCLET_REWARD_ERROR:
+        type = SERVER_ERROR.MOOCLET_REWARD_ERROR;
+        message = errorMessage;
+        break;
       default:
         switch (error.httpCode) {
           case 400:

@@ -30,6 +30,7 @@ import { env } from '../../env';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
 import { ImportExportService } from '../services/ImportExportService';
+import { SUPPORTED_MOOCLET_ALGORITHMS } from 'types/src';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   filtered: number;
@@ -836,7 +837,17 @@ export class ExperimentController {
     @Params({ validate: true }) { id }: ExperimentIdValidator,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
-    const experiment = await this.experimentService.getSingleExperiment(id, request.logger);
+    let experiment = await this.experimentService.getSingleExperiment(id, request.logger);
+
+    if (SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment?.assignmentAlgorithm)) {
+      if (!env.mooclets?.enabled) {
+        throw new BadRequestError(
+          'MoocletPolicyParameters are present in the experiment but Mooclet is not enabled in the environment'
+        );
+      } else {
+        experiment = await this.moocletExperimentService.attachPolicyParamsToExperimentDTO(experiment, request.logger);
+      }
+    }
 
     return experiment;
   }

@@ -1209,11 +1209,11 @@ export class MoocletExperimentService extends ExperimentService {
   ): Promise<ExperimentDTO> {
     try {
       const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experiment.id);
-      const policyParamters = await this.moocletDataService.getPolicyParameters(
+      const policyParameters = await this.moocletDataService.getPolicyParameters(
         moocletExperimentRef.policyParametersId,
         logger
       );
-      experiment.moocletPolicyParameters = policyParamters.parameters;
+      experiment.moocletPolicyParameters = policyParameters.parameters;
 
       return experiment;
     } catch (err) {
