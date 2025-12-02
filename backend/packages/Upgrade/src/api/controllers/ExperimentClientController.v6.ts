@@ -865,22 +865,22 @@ export class ExperimentClientController {
    *                 description: The binary reward value indicating success or failure of the assigned condition
    *               experimentId:
    *                 type: string
-   *                 example: exp_adaptive_123
+   *                 example: uuid-of-adaptive-experiment
    *                 description: The ID of the adaptive experiment. Required if context and decisionPoint are not provided.
    *               context:
    *                 type: string
-   *                 example: learning-module
+   *                 example: upgrade-internal
    *                 description: The context for the decision point. Required with decisionPoint if experimentId is not provided.
    *               decisionPoint:
    *                 type: object
    *                 properties:
    *                   site:
    *                     type: string
-   *                     example: math-course
+   *                     example: fakesite
    *                     description: The site of the decision point
    *                   target:
    *                     type: string
-   *                     example: problem-set-1
+   *                     example: faketarget
    *                     description: The target of the decision point
    *                 description: The decision point information. Required with context if experimentId is not provided.
    *           description: Reward data for the adaptive experiment
@@ -890,16 +890,16 @@ export class ExperimentClientController {
    *               description: Send reward using the experiment ID directly
    *               value:
    *                 rewardValue: SUCCESS
-   *                 experimentId: exp_adaptive_123
+   *                 experimentId: uuid-of-adaptive-experiment
    *             decision_point_lookup:
    *               summary: Decision Point Lookup - Using context and decisionPoint
    *               description: Send reward by identifying the experiment through decision point
    *               value:
    *                 rewardValue: FAILURE
-   *                 context: learning-module
+   *                 context: upgrade-internal
    *                 decisionPoint:
-   *                   site: math-course
-   *                   target: problem-set-1
+   *                   site: fakesite
+   *                   target: faketarget
    *       tags:
    *         - Client Side SDK
    *       produces:
@@ -939,10 +939,8 @@ export class ExperimentClientController {
    *            description: BadRequestError - Invalid parameters (e.g., missing required fields, invalid rewardValue)
    *          '401':
    *            description: AuthorizationRequiredError
-   *          '404':
-   *            description: Experiment User not defined or experiment not found
    *          '409':
-   *            description: Conflict - Data conflict (e.g., user not enrolled in experiment, experiment not in correct state)
+   *            description: Conflict - Data conflict (e.g., site or target not found, enrollment data not found, etc)
    *          '500':
    *            description: Internal Server Error
    */
