@@ -381,6 +381,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.updateStatisticOptions();
     this.clearInvalidStatisticSelections();
     this.updateFormVisibility();
+    this.updateFormValidators();
 
     // Re-sync allowableDataKeys to initial values after detection
     // This prevents false "changed" detection for categorical metrics
