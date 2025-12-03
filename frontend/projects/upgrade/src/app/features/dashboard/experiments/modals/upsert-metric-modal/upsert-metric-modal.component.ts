@@ -379,6 +379,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   private initializeMetricTypeAndStatistics(idObject: any): void {
     this.detectMetricDataType(idObject);
     this.updateStatisticOptions();
+    this.clearInvalidStatisticSelections();
     this.updateFormVisibility();
 
     // Re-sync allowableDataKeys to initial values after detection
@@ -711,6 +712,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       this.hasValidMetricIdSelection$.next(true);
       this.detectMetricDataType(metricId);
       this.updateStatisticOptions();
+      this.clearInvalidStatisticSelections();
       this.updateFormVisibility();
       this.updateFormValidators();
     }
@@ -812,6 +814,29 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       this.individualStatisticOptions = this.categoricalIndividualOptions;
     }
     // Note: showComparison is handled in updateFormVisibility()
+  }
+
+  private clearInvalidStatisticSelections(): void {
+    if (!this.metricForm || !this.hasValidMetricIdSelection$.getValue()) {
+      return;
+    }
+
+    const aggregateControl = this.metricForm.get('aggregateStatistic');
+    const individualControl = this.metricForm.get('individualStatistic');
+
+    const validAggregateValues = this.aggregateStatisticOptions.map((option) => option.value);
+    const currentAggregateValue = aggregateControl?.value;
+
+    if (currentAggregateValue && !validAggregateValues.includes(currentAggregateValue)) {
+      aggregateControl?.setValue('', { emitEvent: false });
+    }
+
+    const validIndividualValues = this.individualStatisticOptions.map((option) => option.value);
+    const currentIndividualValue = individualControl?.value;
+
+    if (currentIndividualValue && !validIndividualValues.includes(currentIndividualValue)) {
+      individualControl?.setValue('', { emitEvent: false });
+    }
   }
 
   hideStatisticDropdowns(): void {
