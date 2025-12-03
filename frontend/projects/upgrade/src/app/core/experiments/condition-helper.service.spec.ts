@@ -33,7 +33,7 @@ describe('ConditionHelperService', () => {
     it('should have correct configuration values', () => {
       expect(WEIGHT_CONFIG.TOTAL_WEIGHT).toBe(100);
       expect(WEIGHT_CONFIG.DECIMAL_PLACES).toBe(2);
-      expect(WEIGHT_CONFIG.VALIDATION_TOLERANCE).toBe(0.1);
+      expect(WEIGHT_CONFIG.VALIDATION_TOLERANCE).toBe(0.03);
     });
   });
 
@@ -98,7 +98,7 @@ describe('ConditionHelperService', () => {
     });
 
     it('should return EQUAL for weights within tolerance', () => {
-      // Expected weight is 33.33, actual is 33.32 (within 0.1 tolerance)
+      // Expected weight is 33.33, actual is 33.32 (within 0.03 tolerance)
       const conditions: ExperimentCondition[] = [
         createCondition('A', 33.32),
         createCondition('B', 33.33),
@@ -248,13 +248,13 @@ describe('ConditionHelperService', () => {
       expect(isWeightSumValid(conditions)).toBe(true);
     });
 
-    it('should return true for weights at lower tolerance boundary (99.9)', () => {
-      const conditions: ExperimentCondition[] = [createCondition('Control', 99.9)];
+    it('should return true for weights at lower tolerance boundary (99.97)', () => {
+      const conditions: ExperimentCondition[] = [createCondition('Control', 99.97)];
       expect(isWeightSumValid(conditions)).toBe(true);
     });
 
-    it('should return true for weights at upper tolerance boundary (100.1)', () => {
-      const conditions: ExperimentCondition[] = [createCondition('Control', 100.1)];
+    it('should return true for weights at upper tolerance boundary (100.03)', () => {
+      const conditions: ExperimentCondition[] = [createCondition('Control', 100.03)];
       expect(isWeightSumValid(conditions)).toBe(true);
     });
 
@@ -276,13 +276,13 @@ describe('ConditionHelperService', () => {
       expect(isWeightSumValid(conditions)).toBe(false);
     });
 
-    it('should return false for weights outside lower tolerance (99.89)', () => {
-      const conditions: ExperimentCondition[] = [createCondition('Control', 99.89)];
+    it('should return false for weights outside lower tolerance (99.96)', () => {
+      const conditions: ExperimentCondition[] = [createCondition('Control', 99.96)];
       expect(isWeightSumValid(conditions)).toBe(false);
     });
 
-    it('should return false for weights outside upper tolerance (100.11)', () => {
-      const conditions: ExperimentCondition[] = [createCondition('Control', 100.11)];
+    it('should return false for weights outside upper tolerance (100.04)', () => {
+      const conditions: ExperimentCondition[] = [createCondition('Control', 100.04)];
       expect(isWeightSumValid(conditions)).toBe(false);
     });
 

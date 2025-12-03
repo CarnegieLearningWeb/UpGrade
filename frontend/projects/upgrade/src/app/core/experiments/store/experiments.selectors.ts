@@ -33,7 +33,7 @@ export const selectIsLoadingExperimentDetailStats = createSelector(
 export const selectSelectedExperiment = createSelector(
   selectRouterState,
   selectExperimentState,
-  (routerState, experimentState): ExperimentVM => {
+  (routerState, experimentState): ExperimentVM | undefined => {
     // be very defensive here to make sure routerState is correct
     const experimentId = routerState?.state?.params?.experimentId;
     if (experimentId && experimentState?.entities) {

@@ -37,8 +37,6 @@ export const initialState: ExperimentState = adapter.getInitialState({
   isLoadingContextMetaData: false,
   currentUserSelectedContext: null,
   isLoadingExperimentDelete: false,
-  stat: null,
-  weightingMethod: 'equal',
 });
 
 const reducer = createReducer(

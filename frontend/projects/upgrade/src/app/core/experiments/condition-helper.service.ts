@@ -15,7 +15,7 @@ import { ConditionWeightUpdate } from '../../features/dashboard/experiments/moda
 export const WEIGHT_CONFIG = {
   TOTAL_WEIGHT: 100,
   DECIMAL_PLACES: 2,
-  VALIDATION_TOLERANCE: 0.1, // Allow rounding errors from equal distribution (e.g., 3 × 33.33 = 99.99)
+  VALIDATION_TOLERANCE: 0.03, // Allow rounding errors from equal distribution (e.g., 3 × 33.33 = 99.99)
 } as const;
 
 // ============================================================================
@@ -77,8 +77,9 @@ export function isWeightSumValid(conditions: ExperimentCondition[]): boolean {
   }
 
   const totalWeight = conditions.reduce((sum, condition) => sum + (condition.assignmentWeight || 0), 0);
+  const difference = roundToDecimalPlaces(Math.abs(totalWeight - WEIGHT_CONFIG.TOTAL_WEIGHT));
 
-  return Math.abs(totalWeight - WEIGHT_CONFIG.TOTAL_WEIGHT) < WEIGHT_CONFIG.VALIDATION_TOLERANCE;
+  return difference <= WEIGHT_CONFIG.VALIDATION_TOLERANCE;
 }
 
 // ============================================================================
