@@ -266,7 +266,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
   populateFormForEditMode(initialValues: MetricFormData): void {
     // Wait for allMetrics to be loaded, then populate form with proper objects
-    // Using take(1) ensures subscription auto-completes, no manual cleanup needed
     this.subscriptions.add(
       this.allMetrics$
         .pipe(
