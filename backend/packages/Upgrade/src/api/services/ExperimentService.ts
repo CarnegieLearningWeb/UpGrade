@@ -1960,6 +1960,9 @@ export class ExperimentService {
     logger: UpgradeLogger
   ): Promise<Segment> {
     const existingRecords = await this.getExistingInclusionExclusionSegments([segmentId], filterType);
+    if (existingRecords.length === 0) {
+      throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
+    }
     await this.createDeleteListAuditLogs(existingRecords, filterType, currentUser);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return this.segmentService.deleteSegment(segmentId, logger);
