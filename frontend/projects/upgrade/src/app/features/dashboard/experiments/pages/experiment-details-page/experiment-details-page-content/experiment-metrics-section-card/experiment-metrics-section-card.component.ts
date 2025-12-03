@@ -6,7 +6,6 @@ import {
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { IMenuButtonItem } from 'upgrade_types';
 import {
   ExperimentMetricsTableComponent,
   ExperimentQueryRowActionEvent,
@@ -17,7 +16,6 @@ import { Observable, map } from 'rxjs';
 import { take } from 'rxjs/operators';
 import {
   Experiment,
-  EXPERIMENT_BUTTON_ACTION,
   EXPERIMENT_ROW_ACTION,
   ExperimentQueryDTO,
 } from '../../../../../../../core/experiments/store/experiments.model';
@@ -54,24 +52,11 @@ export class ExperimentMetricsSectionCardComponent implements OnInit {
     return count;
   }
 
-  menuButtonItems: IMenuButtonItem[] = [
-    {
-      label: 'experiments.details.import-metric.menu-item.text',
-      action: EXPERIMENT_BUTTON_ACTION.IMPORT_METRIC,
-      disabled: false,
-    },
-    {
-      label: 'experiments.details.export-all-metrics.menu-item.text',
-      action: EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_METRICS,
-      disabled: false,
-    },
-  ];
-
   constructor(
-    private experimentService: ExperimentService,
-    private metricHelperService: MetricHelperService,
-    private authService: AuthService,
-    private dialogService: DialogService
+    private readonly experimentService: ExperimentService,
+    private readonly metricHelperService: MetricHelperService,
+    private readonly authService: AuthService,
+    private readonly dialogService: DialogService
   ) {}
 
   ngOnInit() {
@@ -85,21 +70,6 @@ export class ExperimentMetricsSectionCardComponent implements OnInit {
         this.dialogService.openAddMetricModal(experiment.id);
       }
     });
-  }
-
-  onMenuButtonItemClick(event: string, experiment: Experiment): void {
-    switch (event) {
-      case EXPERIMENT_BUTTON_ACTION.IMPORT_METRIC:
-        // TODO: Implement import functionality when dialog service is available
-        console.log('Import metric clicked for experiment:', experiment.id);
-        break;
-      case EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_METRICS:
-        // TODO: Implement export functionality when experiment service methods are available
-        console.log('Export all metrics clicked for experiment:', experiment.id);
-        break;
-      default:
-        console.log('Unknown action:', event);
-    }
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean): void {
