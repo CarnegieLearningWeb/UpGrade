@@ -47,9 +47,6 @@ export class ExperimentMetricsSectionCardComponent implements OnInit {
   isLoadingExperiment$ = this.experimentService.isLoadingExperiment$;
 
   tableRowCount$ = this.selectedExperiment$.pipe(map((experiment) => experiment?.queries?.length || 0));
-  isRewardMetricActionsDisabled$ = this.selectedExperiment$.pipe(
-    map((experiment) => experiment?.assignmentAlgorithm === 'ts_configurable')
-  );
 
   get tableRowCount(): number {
     let count = 0;

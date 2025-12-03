@@ -464,7 +464,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
 
     const metricType = this.metricForm.get('metricType')?.value;
-    const filteredMetrics = this.sanitizeMetricOptions(this.filterMetricsByAssignmentContext(this.allMetrics || []));
+    const filteredMetrics = this.filterMetricsByAssignmentContext(this.allMetrics || []);
 
     if (metricType === METRIC_TYPE.GLOBAL) {
       this.populateGlobalMetricOptions(filteredMetrics);
@@ -519,7 +519,8 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   onMetricClassOptionSelected(selectedClass: any): void {
     if (selectedClass && typeof selectedClass === 'object' && selectedClass.children) {
       this.hasValidMetricClassSelection$.next(true);
-      this.metricKeyOptions$.next(this.sanitizeMetricOptions(selectedClass.children));
+      const classChildren = Array.isArray(selectedClass.children) ? selectedClass.children : [];
+      this.metricKeyOptions$.next(classChildren);
 
       // Reset dependent fields
       this.metricForm.get('metricKey')?.setValue('');
@@ -575,13 +576,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     return options.filter((option) => option.key?.toLowerCase().includes(filterValue));
   }
 
-  private sanitizeMetricOptions(options?: any[]): any[] {
-    if (!options?.length) {
-      return [];
-    }
-    return options.filter((option) => !option?.key?.endsWith('_REWARD'));
-  }
-
   private findOptionByKey(options: any[], key: string): any {
     if (!options.length || !key) {
       return undefined;
@@ -605,10 +599,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
 
     if (selectedKey.children && selectedKey.children.length > 0) {
-      return this.sanitizeMetricOptions(selectedKey.children);
+      return selectedKey.children;
     }
 
-    return this.sanitizeMetricOptions([selectedKey]);
+    return [selectedKey];
   }
 
   private filterMetricsByAssignmentContext(metrics: any[]): any[] {
@@ -637,7 +631,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.metricClassOptions$.next([]);
     this.metricKeyOptions$.next([]);
     const globalMetrics = metrics.filter((metric) => !metric.children || metric.children.length === 0);
-    this.metricIdOptions$.next(this.sanitizeMetricOptions(globalMetrics));
+    this.metricIdOptions$.next(globalMetrics);
   }
 
   private populateRepeatableMetricOptions(metrics: any[]): void {
@@ -651,10 +645,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const sanitizedClassChildren = this.sanitizeMetricOptions(selectedClass.children);
-    this.metricKeyOptions$.next(sanitizedClassChildren);
+    const classChildren = Array.isArray(selectedClass.children) ? selectedClass.children : [];
+    this.metricKeyOptions$.next(classChildren);
 
-    const selectedKey = this.resolveSelectedOption(this.metricForm.get('metricKey')?.value, sanitizedClassChildren);
+    const selectedKey = this.resolveSelectedOption(this.metricForm.get('metricKey')?.value, classChildren);
     if (!selectedKey) {
       this.metricIdOptions$.next([]);
       return;
