@@ -220,7 +220,11 @@
     <ng-container *ngIf="showComparison && allowableDataKeys.length > 0">
       <mat-form-field appearance="outline">
         <mat-label class="ft-14-400">Value</mat-label>
-        <mat-select formControlName="compareValue" class="ft-14-400">
+        <mat-select
+          formControlName="compareValue"
+          placeholder="Select value"
+          class="ft-14-400"
+        >
           <mat-option
             *ngFor="let value of allowableDataKeys"
             [value]="value"
