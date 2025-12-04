@@ -29,8 +29,8 @@ import { MoocletExperimentService } from '../services/MoocletExperimentService';
 import { env } from '../../env';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
-import { SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
+import { SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   filtered: number;
@@ -845,12 +845,10 @@ export class ExperimentController {
           'MoocletPolicyParameters are present in the experiment but Mooclet is not enabled in the environment'
         );
       } else {
-        experiment = await this.moocletExperimentService.attachRewardKeyAndPolicyParamsToExperimentDTO(
-          experiment,
-          request.logger
-        );
+        experiment = await this.moocletExperimentService.attachPolicyParamsToExperimentDTO(experiment, request.logger);
       }
     }
+
     return experiment;
   }
 
