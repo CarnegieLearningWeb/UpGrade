@@ -3,12 +3,7 @@
   <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
 
   <!-- Table -->
-  <table
-    mat-table
-    [dataSource]="conditions"
-    [ngClass]="{ 'no-data': !conditions?.length }"
-    class="conditions-table"
-  >
+  <table mat-table [dataSource]="conditions" [ngClass]="{ 'no-data': !conditions?.length }" class="conditions-table">
     <!-- Condition Column -->
     <ng-container matColumnDef="condition">
       <th mat-header-cell *matHeaderCellDef class="condition-column ft-14-600">
@@ -24,19 +19,13 @@
       <th mat-header-cell *matHeaderCellDef class="weight-column ft-14-600">
         {{ CONDITION_TRANSLATION_KEYS.WEIGHT | translate }}
       </th>
-      <td mat-cell *matCellDef="let condition" class="weight-column ft-14-400">
-        {{ condition.assignmentWeight }}%
-      </td>
+      <td mat-cell *matCellDef="let condition" class="weight-column ft-14-400">{{ condition.assignmentWeight }}%</td>
     </ng-container>
 
     <!-- Weight Edit Column -->
     <ng-container matColumnDef="weightEdit">
       <th mat-header-cell *matHeaderCellDef class="weight-edit-column ft-14-600 dense-2">
-        <button
-          mat-icon-button
-          class="weight-edit-button"
-          [disabled]="actionsDisabled || conditions.length < 2"
-          (click)="onEditWeightsClick()">
+        <button mat-icon-button class="weight-edit-button" (click)="onEditWeightsClick()">
           <mat-icon>edit</mat-icon>
         </button>
       </th>
@@ -66,7 +55,8 @@
             mat-icon-button
             class="action-button"
             [disabled]="actionsDisabled"
-            (click)="onEditButtonClick(condition)">
+            (click)="onEditButtonClick(condition)"
+          >
             <mat-icon>edit</mat-icon>
           </button>
         </div>
@@ -75,7 +65,8 @@
             mat-icon-button
             class="action-button"
             [disabled]="actionsDisabled"
-            (click)="onDeleteButtonClick(condition)">
+            (click)="onDeleteButtonClick(condition)"
+          >
             <mat-icon>delete_outline</mat-icon>
           </button>
         </div>
@@ -84,7 +75,7 @@
 
     <!-- Header and Row Definitions -->
     <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
     <!-- No Data Row -->
     <tr *matNoDataRow>

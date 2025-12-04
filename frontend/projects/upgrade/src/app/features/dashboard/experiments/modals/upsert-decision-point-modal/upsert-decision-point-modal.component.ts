@@ -23,6 +23,7 @@ import {
   ExperimentDecisionPoint,
   Experiment,
 } from '../../../../../core/experiments/store/experiments.model';
+import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
   selector: 'upsert-decision-point-modal',
@@ -35,6 +36,7 @@ import {
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    SharedModule,
   ],
   templateUrl: './upsert-decision-point-modal.component.html',
   styleUrl: './upsert-decision-point-modal.component.scss',

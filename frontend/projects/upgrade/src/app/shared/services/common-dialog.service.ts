@@ -45,6 +45,7 @@ import {
   ExperimentConditionPayload,
   Experiment,
   UpsertExperimentParams,
+  WeightingMethod,
 } from '../../core/experiments/store/experiments.model';
 import {
   ConditionWeightUpdate,
@@ -519,7 +520,10 @@ export class DialogService {
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openEditConditionWeightsModal(conditions: ExperimentCondition[]): Observable<ConditionWeightUpdate[]> {
+  openEditConditionWeightsModal(
+    conditions: ExperimentCondition[],
+    weightingMethod: WeightingMethod
+  ): Observable<ConditionWeightUpdate[]> {
     const dialogRef = this.dialog.open(EditConditionWeightsModalComponent, {
       panelClass: ['experiment-modal', 'modal-shadow'],
       hasBackdrop: true,
@@ -538,6 +542,7 @@ export class DialogService {
             conditionCode: condition.conditionCode,
             assignmentWeight: condition.assignmentWeight || 0,
           })),
+          weightingMethod,
         },
       },
     });
