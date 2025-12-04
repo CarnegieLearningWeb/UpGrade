@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsIn, registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
 import { BinaryRewardAllowedValue } from 'upgrade_types';
 
-// Custom validator specific to AdaptiveExperimentRewardValidator
+// Custom validator specific to RewardValidator
 function RequireDecisionPointOrExperimentId(validationOptions?: ValidationOptions) {
   return function (target: RewardValidator, propertyName: string) {
     registerDecorator({
