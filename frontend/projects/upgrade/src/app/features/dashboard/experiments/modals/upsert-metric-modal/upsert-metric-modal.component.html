@@ -68,7 +68,7 @@
 
         <!-- Show error when validation fails AND field has been touched, otherwise show hint -->
         <mat-error *ngIf="metricForm.get('metricClass')?.hasError('mustSelectFromOptions') && metricForm.get('metricClass')?.touched" class="form-hint ft-12-400">
-          Please select a Metric Class from the available options.
+          {{ 'experiments.upsert-metric-modal.metric-class-warning.text' | translate }}
         </mat-error>
         <mat-hint *ngIf="!(metricForm.get('metricClass')?.hasError('mustSelectFromOptions') && metricForm.get('metricClass')?.touched)" class="form-hint ft-12-400">
           {{ 'experiments.upsert-metric-modal.metric-class-hint.text' | translate }}
@@ -104,7 +104,7 @@
 
         <!-- Show error when validation fails AND field has been touched, otherwise show hint -->
         <mat-error *ngIf="metricForm.get('metricKey')?.hasError('mustSelectFromOptions') && metricForm.get('metricKey')?.touched" class="form-hint ft-12-400">
-          Please select a Metric Key from the available options.
+          {{ 'experiments.upsert-metric-modal.metric-key-warning.text' | translate }}
         </mat-error>
         <mat-hint *ngIf="!(metricForm.get('metricKey')?.hasError('mustSelectFromOptions') && metricForm.get('metricKey')?.touched)" class="form-hint ft-12-400">
           {{ 'experiments.upsert-metric-modal.metric-key-hint.text' | translate }}
@@ -140,7 +140,7 @@
 
       <!-- Show error when validation fails AND field has been touched, otherwise show hint -->
       <mat-error *ngIf="metricForm.get('metricId')?.hasError('mustSelectFromOptions') && metricForm.get('metricId')?.touched" class="form-hint ft-12-400">
-        Please select a Metric ID from the available options.
+        {{ 'experiments.upsert-metric-modal.metric-id-warning.text' | translate }}
       </mat-error>
       <mat-hint *ngIf="!(metricForm.get('metricId')?.hasError('mustSelectFromOptions') && metricForm.get('metricId')?.touched)" class="form-hint ft-12-400">
         {{ 'experiments.upsert-metric-modal.metric-id-hint.text' | translate }}
