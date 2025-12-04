@@ -1,9 +1,10 @@
 {
   "name": "upgrade_client_lib",
-  "version": "6.2.1",
+  "version": "6.2.2",
   "description": "Client library to communicate with the Upgrade server",
   "files": [
-    "dist/*"
+    "dist/*",
+    "index.d.ts"
   ],
   "exports": {
     ".": {
@@ -11,7 +12,7 @@
       "browser-lite": "./dist/browser-lite/index.js",
       "node": "./dist/node/index.js",
       "node-lite": "./dist/node-lite/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./index.d.ts"
     },
     "./dist/browser": {
       "default": "./dist/browser/index.js",
@@ -33,7 +34,7 @@
   "scripts": {
     "build:bundler": "webpack",
     "build:types": "concurrently \"npm:build:types-*\"",
-    "build:types-default": "./node_modules/.bin/dts-bundle-generator -o dist/index.d.ts src/index.ts",
+    "build:types-default": "./node_modules/.bin/dts-bundle-generator -o ./index.d.ts src/index.ts",
     "build:types-browser": "./node_modules/.bin/dts-bundle-generator -o dist/browser/index.d.ts src/index.ts",
     "build:types-node": "./node_modules/.bin/dts-bundle-generator -o dist/node/index.d.ts src/index.ts",
     "build:types-browser-lite": "./node_modules/.bin/dts-bundle-generator -o dist/browser-lite/index.d.ts src/index.ts",
