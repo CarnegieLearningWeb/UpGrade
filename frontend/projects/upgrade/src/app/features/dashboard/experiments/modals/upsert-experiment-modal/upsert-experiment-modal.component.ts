@@ -536,7 +536,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined, // Conditional validation
       assignmentAlgorithm: assignmentAlgorithm || undefined, // @IsOptional
       stratificationFactor: stratificationFactorObj,
-      group: groupType || undefined,
+      group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
       tags,
       state: EXPERIMENT_STATE.INACTIVE,
       filterMode: FILTER_MODE.EXCLUDE_ALL,
@@ -595,7 +595,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined,
       assignmentAlgorithm: assignmentAlgorithm || undefined,
       stratificationFactor: stratificationFactorObj,
-      group: groupType || undefined,
+      group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
       tags,
 
       // Preserve existing state and structure
