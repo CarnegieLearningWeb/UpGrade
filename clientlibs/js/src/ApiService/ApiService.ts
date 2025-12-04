@@ -38,6 +38,7 @@ export default class ApiService {
       log: `${this.hostUrl}/api/${this.apiVersion}/log`,
       logCaliper: `${this.hostUrl}/api/${this.apiVersion}/log/caliper`,
       altUserIds: `${this.hostUrl}/api/${this.apiVersion}/useraliases`,
+      reward: `${this.hostUrl}/api/${this.apiVersion}/reward`,
     };
     this.httpClient = this.setHttpClient(config.httpClient);
     this.groupsForSession = config.featureFlagUserGroupsForSession?.groupsForSession ?? null;
@@ -315,5 +316,25 @@ export default class ApiService {
     });
 
     return response;
+  }
+
+  public sendReward(params: {
+    rewardValue: 'SUCCESS' | 'FAILURE';
+    experimentId?: string;
+    context?: string;
+    decisionPoint?: { site: string; target: string };
+  }): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
+    const requestBody: UpGradeClientRequests.ISendRewardRequestBody = {
+      rewardValue: params.rewardValue,
+      experimentId: params.experimentId,
+      context: params.context,
+      decisionPoint: params.decisionPoint,
+    };
+
+    return this.sendRequest<UpGradeClientInterfaces.ISendRewardResponse, UpGradeClientRequests.ISendRewardRequestBody>({
+      path: this.api.reward,
+      method: UpGradeClientEnums.REQUEST_METHOD.POST,
+      body: requestBody,
+    });
   }
 }
