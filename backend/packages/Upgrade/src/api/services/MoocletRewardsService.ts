@@ -20,10 +20,6 @@ export interface IRewardResponse {
 
 @Service()
 export class MoocletRewardsService {
-  userId: string;
-  request: RewardValidator;
-  logger: UpgradeLogger;
-
   constructor(
     @InjectRepository()
     private moocletExperimentRefRepository: MoocletExperimentRefRepository,
@@ -58,17 +54,13 @@ export class MoocletRewardsService {
     request: RewardValidator,
     logger: UpgradeLogger
   ): Promise<IRewardResponse> {
-    this.request = request;
-    this.logger = logger;
-    this.userId = user.id;
-
     const { experimentId, context, decisionPoint, rewardValue } = request;
 
     try {
       // Find the mooclet experiment ref by ID or decision point
       const moocletExperimentRef = experimentId
-        ? await this.findMoocletExperimentRefById(experimentId)
-        : await this.findMoocletExperimentRefByDecisionPoint(context, decisionPoint);
+        ? await this.findMoocletExperimentRefById(experimentId, request, logger)
+        : await this.findMoocletExperimentRefByDecisionPoint(context, decisionPoint, request, logger);
 
       // Find user's enrollment
       const enrollments = await this.individualEnrollmentRepository.findEnrollments(user.id, [
@@ -77,17 +69,21 @@ export class MoocletRewardsService {
 
       if (!enrollments.length || enrollments.length > 1) {
         this.throwConflictError(
-          `Could not find unique user enrollment for experiment (userId: ${user.id}, enrollments: ${enrollments}), no reward sent.`
+          `Could not find unique user enrollment for experiment (userId: ${user.id}, enrollments: ${enrollments}), no reward sent.`,
+          request,
+          logger
         );
       }
 
       // Get version ID for the user's condition
       const enrollment = enrollments[0];
-      const versionId = this.getVersionIdByConditionId(enrollment, moocletExperimentRef);
+      const versionId = this.getVersionIdByConditionId(enrollment, moocletExperimentRef, request, logger);
 
       if (!versionId) {
         this.throwConflictError(
-          `Could not find version id for user enrollment (userId: ${user.id}, experimentId: ${moocletExperimentRef.experimentId}, conditionId: ${enrollment.conditionId}).`
+          `Could not find version id for user enrollment (userId: ${user.id}, experimentId: ${moocletExperimentRef.experimentId}, conditionId: ${enrollment.conditionId}).`,
+          request,
+          logger
         );
       }
 
@@ -106,7 +102,7 @@ export class MoocletRewardsService {
       // NOTE: in the future we may want to batch these, the mooclet API technically supports it by adding "/create_many" to an endpoint but it's not documented
       this.moocletDataService.postNewReward(reward, logger);
 
-      return { message: `Reward sent to mooclet successfully.`, request: this.request, reward };
+      return { message: `Reward sent to mooclet successfully.`, request, reward };
     } catch (error) {
       if (error instanceof HttpError) {
         throw error;
@@ -116,7 +112,9 @@ export class MoocletRewardsService {
       this.throwConflictError(
         `Failed to process reward request due to unexpected error (userId: ${user.id}, experimentId: ${
           experimentId || 'not provided'
-        }, rewardValue: ${rewardValue}).`
+        }, rewardValue: ${rewardValue}).`,
+        request,
+        logger
       );
     }
   }
@@ -124,7 +122,11 @@ export class MoocletRewardsService {
   /**
    * Finds mooclet experiment ref by experiment ID
    */
-  private async findMoocletExperimentRefById(experimentId: string): Promise<MoocletExperimentRef> {
+  private async findMoocletExperimentRefById(
+    experimentId: string,
+    request: RewardValidator,
+    logger: UpgradeLogger
+  ): Promise<MoocletExperimentRef> {
     const moocletExperimentRef = await this.moocletExperimentRefRepository.findOne({
       where: { experimentId },
       relations: ['versionConditionMaps', 'versionConditionMaps.experimentCondition', 'experiment'],
@@ -132,13 +134,17 @@ export class MoocletRewardsService {
 
     if (!moocletExperimentRef) {
       this.throwConflictError(
-        `No active mooclet experiment ref found for experiment id: ${experimentId}, could not send reward.`
+        `No active mooclet experiment ref found for experiment id: ${experimentId}, could not send reward.`,
+        request,
+        logger
       );
     }
 
     if (moocletExperimentRef.experiment.state !== EXPERIMENT_STATE.ENROLLING) {
       this.throwConflictError(
-        `Experiment with id: ${experimentId} is not actively enrolling (current state: ${moocletExperimentRef.experiment.state}), could not send reward.`
+        `Experiment with id: ${experimentId} is not actively enrolling (current state: ${moocletExperimentRef.experiment.state}), could not send reward.`,
+        request,
+        logger
       );
     }
 
@@ -150,7 +156,9 @@ export class MoocletRewardsService {
    */
   private async findMoocletExperimentRefByDecisionPoint(
     context: string,
-    decisionPoint: { site: string; target: string }
+    decisionPoint: { site: string; target: string },
+    request: RewardValidator,
+    logger: UpgradeLogger
   ): Promise<MoocletExperimentRef> {
     const { site, target } = decisionPoint;
     const moocletExperimentRefs =
@@ -162,7 +170,9 @@ export class MoocletRewardsService {
 
     if (moocletExperimentRefs.length === 0) {
       this.throwConflictError(
-        `No active experiment found for decision point (context: ${context}, site: ${site}, target: ${target}), could not send reward.`
+        `No active experiment found for decision point (context: ${context}, site: ${site}, target: ${target}), could not send reward.`,
+        request,
+        logger
       );
     }
 
@@ -170,7 +180,9 @@ export class MoocletRewardsService {
     // but for now if there are competing experiments, it will be required to use experimentId
     if (moocletExperimentRefs.length > 1) {
       this.throwConflictError(
-        `Multiple active experiments found for decision point (context: ${context}, site: ${site}, target: ${target}), cannot determine which to send reward to.`
+        `Multiple active experiments found for decision point (context: ${context}, site: ${site}, target: ${target}), cannot determine which to send reward to.`,
+        request,
+        logger
       );
     }
 
@@ -179,13 +191,15 @@ export class MoocletRewardsService {
 
   private getVersionIdByConditionId(
     enrollment: IndividualEnrollment,
-    moocletExperimentRef: MoocletExperimentRef
+    moocletExperimentRef: MoocletExperimentRef,
+    request: RewardValidator,
+    logger: UpgradeLogger
   ): number | null {
     const map = moocletExperimentRef.versionConditionMaps.find(
       (map) => enrollment.conditionId === map.experimentConditionId
     );
     if (!map) {
-      this.throwConflictError(`Version-condition mapping not found, no reward sent.`);
+      this.throwConflictError(`Version-condition mapping not found, no reward sent.`, request, logger);
     }
     return map.moocletVersionId;
   }
@@ -193,8 +207,8 @@ export class MoocletRewardsService {
   /**
    * Throws a 409 data-conflict error for most unexpected cases
    */
-  private throwConflictError(message: string): never {
-    this.logger.error({ message, request: this.request });
+  private throwConflictError(message: string, request: RewardValidator, logger: UpgradeLogger): never {
+    logger.error({ message, request });
 
     const error = new HttpError(409, message);
     (error as any).type = SERVER_ERROR.MOOCLET_REWARD_ERROR;
