@@ -25,6 +25,7 @@ import {
   SEGMENT_TYPE,
   IEnrollmentCompleteCondition,
   METRIC_TYPE,
+  IMetricMetaData,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -378,6 +379,133 @@ export interface MetricFormData {
   comparison?: string;
   compareValue?: string;
   allowableDataKeys?: string[]; // For categorical metrics only
+}
+
+// ============================================================================
+// PHASE 1: Type-Safe Metric Types
+// ============================================================================
+
+/**
+ * Represents a metric option object from the backend metrics API.
+ * These objects have a hierarchical structure with children for repeatable metrics.
+ */
+export interface MetricOption {
+  key: string;
+  context?: string[];
+  children?: MetricOption[];
+  metadata?: {
+    type: IMetricMetaData;
+  };
+  allowedData?: string[];
+}
+
+/**
+ * Type-safe union for form control values that can be either typed text
+ * or a selected option object from autocomplete
+ */
+export type MetricFormControlValue = string | MetricOption | null | undefined;
+
+/**
+ * Result of finding metric objects in the hierarchy during edit mode
+ */
+export interface MetricObjectResult {
+  classObject: MetricOption | null;
+  keyObject: MetricOption | null;
+  idObject: MetricOption | null;
+}
+
+/**
+ * Discriminated union for metric form values based on metric type.
+ * This ensures that repeatable metrics have class/key and individual statistics,
+ * while global metrics don't require these fields.
+ */
+export type TypedMetricFormValue = GlobalMetricFormValue | RepeatableMetricFormValue;
+
+/**
+ * Form values for Global metric type
+ */
+export interface GlobalMetricFormValue {
+  metricType: METRIC_TYPE.GLOBAL;
+  metricId: MetricFormControlValue;
+  displayName: string;
+  metricClass?: never;
+  metricKey?: never;
+  aggregateStatistic: string;
+  individualStatistic?: never; // Global metrics don't need individual statistics
+  comparison?: string;
+  compareValue?: string;
+}
+
+/**
+ * Form values for Repeatable metric type
+ */
+export interface RepeatableMetricFormValue {
+  metricType: METRIC_TYPE.REPEATABLE;
+  metricId: MetricFormControlValue;
+  displayName: string;
+  metricClass: MetricFormControlValue;
+  metricKey: MetricFormControlValue;
+  aggregateStatistic: string;
+  individualStatistic: string; // Required for repeatable metrics
+  comparison?: string;
+  compareValue?: string;
+}
+
+/**
+ * Type guard to check if a form value is for a global metric
+ */
+export function isGlobalMetricFormValue(value: TypedMetricFormValue): value is GlobalMetricFormValue {
+  return value.metricType === METRIC_TYPE.GLOBAL;
+}
+
+/**
+ * Type guard to check if a form value is for a repeatable metric
+ */
+export function isRepeatableMetricFormValue(value: TypedMetricFormValue): value is RepeatableMetricFormValue {
+  return value.metricType === METRIC_TYPE.REPEATABLE;
+}
+
+/**
+ * Type guard to check if a metric form control value is a valid MetricOption object.
+ * This replaces unsafe 'typeof value === "object"' checks throughout the codebase.
+ */
+export function isMetricOption(value: MetricFormControlValue): value is MetricOption {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    'key' in value &&
+    typeof value.key === 'string'
+  );
+}
+
+// ============================================================================
+// PHASE 2: Simplified types for split components (no 'never' needed!)
+// ============================================================================
+
+/**
+ * Simple form data for Global metric modal - no optional fields masking required ones!
+ */
+export interface GlobalMetricFormData {
+  metricId: MetricFormControlValue;
+  displayName: string;
+  aggregateStatistic: string;
+  comparison?: string;
+  compareValue?: string;
+}
+
+/**
+ * Simple form data for Repeatable metric modal - all required fields are clearly required!
+ */
+export interface RepeatableMetricFormData {
+  metricClass: MetricFormControlValue;
+  metricKey: MetricFormControlValue;
+  metricId: MetricFormControlValue;
+  individualStatistic: string;
+  displayName: string;
+  aggregateStatistic: string;
+  comparison?: string;
+  compareValue?: string;
 }
 
 // Base interfaces matching backend DTO structure

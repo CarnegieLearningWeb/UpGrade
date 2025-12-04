@@ -24,6 +24,13 @@ import {
   UpsertMetricParams,
   Experiment,
   ExperimentQueryDTO,
+  MetricOption,
+  MetricFormControlValue,
+  MetricObjectResult,
+  TypedMetricFormValue,
+  isMetricOption,
+  isGlobalMetricFormValue,
+  isRepeatableMetricFormValue,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MetricHelperService } from '../../../../../core/experiments/metric-helper.service';
@@ -80,17 +87,17 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
   // Autocomplete
   allMetrics$ = this.analysisService.allMetrics$;
-  allMetrics: any[] = [];
+  allMetrics: MetricOption[] = [];
 
   // Filtered autocomplete observables
-  filteredMetricClasses$: Observable<any[]>;
-  filteredMetricKeys$: Observable<any[]>;
-  filteredMetricIds$: Observable<any[]>;
+  filteredMetricClasses$: Observable<MetricOption[]>;
+  filteredMetricKeys$: Observable<MetricOption[]>;
+  filteredMetricIds$: Observable<MetricOption[]>;
 
   // BehaviorSubjects for source data
-  private readonly metricClassOptions$ = new BehaviorSubject<any[]>([]);
-  private readonly metricKeyOptions$ = new BehaviorSubject<any[]>([]);
-  private readonly metricIdOptions$ = new BehaviorSubject<any[]>([]);
+  private readonly metricClassOptions$ = new BehaviorSubject<MetricOption[]>([]);
+  private readonly metricKeyOptions$ = new BehaviorSubject<MetricOption[]>([]);
+  private readonly metricIdOptions$ = new BehaviorSubject<MetricOption[]>([]);
 
   // Track if user has selected a valid option from autocomplete (vs just typing)
   private readonly hasValidMetricClassSelection$ = new BehaviorSubject<boolean>(false);
@@ -161,13 +168,15 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   // Custom validator to ensure fields are selected from options (object) not typed (string)
-  private autocompleteSelectionValidator(control: any): { [key: string]: any } | null {
+  private autocompleteSelectionValidator(control: {
+    value: MetricFormControlValue;
+  }): { [key: string]: boolean } | null {
     const value = control.value;
     if (!value) {
       return null; // Let required validator handle empty values
     }
-    // Valid if it's an object (selected from autocomplete)
-    if (typeof value === 'object' && value !== null) {
+    // Valid if it's a MetricOption object (selected from autocomplete)
+    if (isMetricOption(value)) {
       return null;
     }
     // Invalid if it's a string (typed, not selected)
@@ -287,10 +296,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     );
   }
 
-  private findMetricObjects(
-    metrics: any[],
-    initialValues: MetricFormData
-  ): { classObject: any; keyObject: any; idObject: any } {
+  private findMetricObjects(metrics: MetricOption[], initialValues: MetricFormData): MetricObjectResult {
     const { metricType, metricClass, metricKey, metricId } = initialValues;
 
     if (metricType === METRIC_TYPE.REPEATABLE) {
@@ -306,18 +312,18 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   private findRepeatableMetricObjects(
-    metrics: any[],
+    metrics: MetricOption[],
     metricClass: string,
     metricKey: string,
     metricId: string
-  ): { classObject: any; keyObject: any; idObject: any } {
+  ): MetricObjectResult {
     const classObject = metrics.find((m) => m.key === metricClass) ?? null;
 
     if (!classObject?.children) {
       return { classObject, keyObject: null, idObject: null };
     }
 
-    const keyObject = classObject.children.find((k: any) => k.key === metricKey) ?? null;
+    const keyObject = classObject.children.find((k) => k.key === metricKey) ?? null;
 
     if (!keyObject) {
       return { classObject, keyObject: null, idObject: null };
@@ -325,7 +331,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
     // Find ID object in key's children, or use key itself if no children
     const idObject = keyObject.children?.length
-      ? keyObject.children.find((id: any) => id.key === metricId) ?? null
+      ? keyObject.children.find((id) => id.key === metricId) ?? null
       : keyObject;
 
     return { classObject, keyObject, idObject };
@@ -360,7 +366,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  private updateValidationState(metricObjects: { classObject: any; keyObject: any; idObject: any }): void {
+  private updateValidationState(metricObjects: MetricObjectResult): void {
     const { classObject, keyObject, idObject } = metricObjects;
 
     // Mark selections as valid based on found objects
@@ -375,7 +381,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  private initializeMetricTypeAndStatistics(idObject: any): void {
+  private initializeMetricTypeAndStatistics(idObject: MetricOption | null): void {
     this.detectMetricDataType(idObject);
     this.updateStatisticOptions();
     this.clearInvalidStatisticSelections();
@@ -491,9 +497,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     ]).pipe(map(([searchValue, options]) => this._filter(searchValue || '', options)));
   }
 
-  onMetricClassValueChange(selectedClass: any): void {
+  onMetricClassValueChange(selectedClass: MetricFormControlValue): void {
     // If user is typing (string value) after selecting an option, invalidate the selection
-    if (typeof selectedClass === 'string' && this.hasValidMetricClassSelection$.getValue()) {
+    if (!isMetricOption(selectedClass) && this.hasValidMetricClassSelection$.getValue()) {
       this.hasValidMetricClassSelection$.next(false);
       // Clear dependent fields when parent becomes invalid
       this.metricKeyOptions$.next([]);
@@ -516,8 +522,8 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  onMetricClassOptionSelected(selectedClass: any): void {
-    if (selectedClass && typeof selectedClass === 'object' && selectedClass.children) {
+  onMetricClassOptionSelected(selectedClass: MetricFormControlValue): void {
+    if (isMetricOption(selectedClass) && selectedClass.children) {
       this.hasValidMetricClassSelection$.next(true);
       const classChildren = Array.isArray(selectedClass.children) ? selectedClass.children : [];
       this.metricKeyOptions$.next(classChildren);
@@ -531,9 +537,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  onMetricKeyValueChange(selectedKey: any): void {
+  onMetricKeyValueChange(selectedKey: MetricFormControlValue): void {
     // If user is typing (string value) after selecting an option, invalidate the selection
-    if (typeof selectedKey === 'string' && this.hasValidMetricKeySelection$.getValue()) {
+    if (!isMetricOption(selectedKey) && this.hasValidMetricKeySelection$.getValue()) {
       this.hasValidMetricKeySelection$.next(false);
       // Clear dependent fields when parent becomes invalid
       this.metricIdOptions$.next([]);
@@ -550,8 +556,8 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  onMetricKeyOptionSelected(selectedKey: any): void {
-    if (selectedKey && typeof selectedKey === 'object') {
+  onMetricKeyOptionSelected(selectedKey: MetricFormControlValue): void {
+    if (isMetricOption(selectedKey)) {
       this.hasValidMetricKeySelection$.next(true);
 
       // Set metric IDs based on selected key's children
@@ -563,38 +569,41 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  displayFn = (option?: any): string => {
-    return option?.key || option || '';
+  displayFn = (option?: MetricFormControlValue): string => {
+    return isMetricOption(option) ? option.key : option || '';
   };
 
-  private extractKey(value: any): string {
-    return typeof value === 'object' ? value?.key || '' : value || '';
+  private extractKey(value: MetricFormControlValue): string {
+    return isMetricOption(value) ? value.key : value || '';
   }
 
-  private _filter(value: any, options: any[]): any[] {
+  private _filter(value: MetricFormControlValue, options: MetricOption[]): MetricOption[] {
     const filterValue = this.extractKey(value).toLowerCase();
-    return options.filter((option) => option.key?.toLowerCase().includes(filterValue));
+    return options.filter((option) => option.key.toLowerCase().includes(filterValue));
   }
 
-  private findOptionByKey(options: any[], key: string): any {
+  private findOptionByKey(options: MetricOption[], key: string): MetricOption | undefined {
     if (!options.length || !key) {
       return undefined;
     }
     return options.find((option) => option?.key === key);
   }
 
-  private resolveSelectedOption(controlValue: any, options: any[] = []): any {
+  private resolveSelectedOption(
+    controlValue: MetricFormControlValue,
+    options: MetricOption[] = []
+  ): MetricOption | undefined {
     if (!controlValue) {
       return undefined;
     }
-    if (typeof controlValue === 'object') {
+    if (isMetricOption(controlValue)) {
       return controlValue;
     }
     return this.findOptionByKey(options, this.extractKey(controlValue));
   }
 
-  private getMetricIdOptionsFromKey(selectedKey: any): any[] {
-    if (!selectedKey || typeof selectedKey !== 'object') {
+  private getMetricIdOptionsFromKey(selectedKey: MetricFormControlValue): MetricOption[] {
+    if (!isMetricOption(selectedKey)) {
       return [];
     }
 
@@ -605,7 +614,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     return [selectedKey];
   }
 
-  private filterMetricsByAssignmentContext(metrics: any[]): any[] {
+  private filterMetricsByAssignmentContext(metrics: MetricOption[]): MetricOption[] {
     if (!metrics?.length) {
       return [];
     }
@@ -627,14 +636,14 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     return metrics;
   }
 
-  private populateGlobalMetricOptions(metrics: any[]): void {
+  private populateGlobalMetricOptions(metrics: MetricOption[]): void {
     this.metricClassOptions$.next([]);
     this.metricKeyOptions$.next([]);
     const globalMetrics = metrics.filter((metric) => !metric.children || metric.children.length === 0);
     this.metricIdOptions$.next(globalMetrics);
   }
 
-  private populateRepeatableMetricOptions(metrics: any[]): void {
+  private populateRepeatableMetricOptions(metrics: MetricOption[]): void {
     const repeatableMetrics = metrics.filter((metric) => metric.children && metric.children.length > 0);
     this.metricClassOptions$.next(repeatableMetrics);
 
@@ -680,9 +689,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.updateFormValidators();
   }
 
-  onMetricIdValueChange(metricId: any): void {
+  onMetricIdValueChange(metricId: MetricFormControlValue): void {
     // If user is typing (string value) after selecting an option, invalidate the selection
-    if (typeof metricId === 'string' && this.hasValidMetricIdSelection$.getValue()) {
+    if (!isMetricOption(metricId) && this.hasValidMetricIdSelection$.getValue()) {
       this.hasValidMetricIdSelection$.next(false);
       this.metricDataType = null;
       this.hideStatisticDropdowns();
@@ -700,9 +709,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  onMetricIdOptionSelected(metricId: any): void {
+  onMetricIdOptionSelected(metricId: MetricFormControlValue): void {
     // This is called when user actually selects an option from autocomplete
-    if (metricId && typeof metricId === 'object') {
+    if (isMetricOption(metricId)) {
       this.hasValidMetricIdSelection$.next(true);
       this.detectMetricDataType(metricId);
       this.updateStatisticOptions();
@@ -712,7 +721,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  detectMetricDataType(metricId: any): void {
+  detectMetricDataType(metricId: MetricFormControlValue): void {
     const selectedMetric = this.findSelectedMetric(metricId);
 
     // Use metadata if available
@@ -725,20 +734,20 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.detectMetricTypeByHeuristic(metricId);
   }
 
-  private findSelectedMetric(metricId: any): any {
-    if (typeof metricId === 'object' && metricId.metadata) {
+  private findSelectedMetric(metricId: MetricFormControlValue): MetricOption | null {
+    if (isMetricOption(metricId) && metricId.metadata) {
       return metricId;
     }
 
     if (typeof metricId === 'string') {
       const currentOptions = this.metricIdOptions$.getValue();
-      return currentOptions.find((metric) => metric.key === metricId);
+      return currentOptions.find((metric) => metric.key === metricId) ?? null;
     }
 
     return null;
   }
 
-  private setMetricDataType(dataType: IMetricMetaData, selectedMetric?: any): void {
+  private setMetricDataType(dataType: IMetricMetaData, selectedMetric?: MetricOption): void {
     this.metricDataType = dataType;
 
     if (dataType === IMetricMetaData.CATEGORICAL) {
@@ -748,7 +757,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  private detectMetricTypeByHeuristic(metricId: any): void {
+  private detectMetricTypeByHeuristic(metricId: MetricFormControlValue): void {
     const metricKey = this.extractKey(metricId);
     const lowerMetricKey = metricKey.toLowerCase();
 
@@ -954,35 +963,35 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  private prepareMetricDataForBackend(formValue: any): ExperimentQueryDTO {
-    const { metricType, metricClass, metricKey: metricKeyValue, metricId } = formValue;
+  private prepareMetricDataForBackend(formValue: TypedMetricFormValue): ExperimentQueryDTO {
+    const { metricId, displayName, aggregateStatistic, comparison, compareValue } = formValue;
 
-    // Prepare metric key based on type
-    const metricKey =
-      metricType === METRIC_TYPE.GLOBAL
-        ? this.extractKey(metricId)
-        : `${this.extractKey(metricClass)}${METRICS_JOIN_TEXT}${this.extractKey(
-            metricKeyValue
-          )}${METRICS_JOIN_TEXT}${this.extractKey(metricId)}`;
+    // Prepare metric key based on type using type guards
+    const metricKey = isGlobalMetricFormValue(formValue)
+      ? this.extractKey(metricId)
+      : `${this.extractKey(formValue.metricClass)}${METRICS_JOIN_TEXT}${this.extractKey(
+          formValue.metricKey
+        )}${METRICS_JOIN_TEXT}${this.extractKey(metricId)}`;
 
     // Prepare query object
     const queryObj: ExperimentQueryDTO = {
-      name: formValue.displayName,
+      name: displayName,
       query: {
-        operationType: formValue.aggregateStatistic,
+        operationType: aggregateStatistic,
         // Add comparison for categorical metrics
         ...(this.metricDataType === IMetricMetaData.CATEGORICAL &&
-          formValue.comparison &&
-          formValue.compareValue && {
-            compareFn: formValue.comparison,
-            compareValue: formValue.compareValue,
+          comparison &&
+          compareValue && {
+            compareFn: comparison,
+            compareValue: compareValue,
           }),
       },
       metric: {
         key: metricKey,
       },
-      repeatedMeasure:
-        metricType === METRIC_TYPE.REPEATABLE ? formValue.individualStatistic : REPEATED_MEASURE.mostRecent,
+      repeatedMeasure: isRepeatableMetricFormValue(formValue)
+        ? (formValue.individualStatistic as REPEATED_MEASURE)
+        : REPEATED_MEASURE.mostRecent,
     };
 
     return queryObj;
