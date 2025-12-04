@@ -5,6 +5,7 @@
     [title]="'experiments.details.conditions.card.title.text' | translate"
     [subtitle]="'experiments.details.conditions.card.subtitle.text' | translate"
     [tableRowCount]="experiment.conditions?.length || 0"
+    [warningMessage]="weightWarningText$ | async"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->

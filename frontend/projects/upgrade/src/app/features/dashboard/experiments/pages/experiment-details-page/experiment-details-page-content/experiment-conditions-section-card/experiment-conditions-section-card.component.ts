@@ -6,13 +6,11 @@ import {
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { IMenuButtonItem } from 'upgrade_types';
 import { ExperimentConditionsTableComponent } from './experiment-conditions-table/experiment-conditions-table.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
-import { Observable, take } from 'rxjs';
+import { Observable, combineLatest, map, take } from 'rxjs';
 import {
   Experiment,
-  EXPERIMENT_BUTTON_ACTION,
   EXPERIMENT_ROW_ACTION,
   ExperimentCondition,
   ExperimentConditionRowActionEvent,
@@ -23,6 +21,8 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { ConditionWeightUpdate } from '../../../../modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
 import { ConditionHelperService } from '../../../../../../../core/experiments/condition-helper.service';
+import { selectConditionWeightsValid } from '../../../../../../../core/experiments/store/experiments.selectors';
+import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'app-experiment-conditions-section-card',
@@ -43,12 +43,20 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
 
   permissions$: Observable<UserPermission>;
   selectedExperiment$ = this.experimentService.selectedExperiment$;
+  conditionWeightsValid$ = this.store.select(selectConditionWeightsValid);
+  isLoadingExperiment$ = this.experimentService.isLoadingExperiment$;
+  weightWarningText$ = combineLatest([this.conditionWeightsValid$, this.isLoadingExperiment$]).pipe(
+    map(([valid, isLoading]) =>
+      !valid && !isLoading ? 'experiments.edit-condition-weights-modal.weights-sum-validation.text' : undefined
+    )
+  );
 
   constructor(
     private experimentService: ExperimentService,
     private authService: AuthService,
     private dialogService: DialogService,
-    private conditionHelperService: ConditionHelperService
+    private conditionHelperService: ConditionHelperService,
+    private store: Store
   ) {}
 
   ngOnInit() {
@@ -98,7 +106,7 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
 
   onEditWeights(conditions: ExperimentCondition[], experiment: ExperimentVM): void {
     this.dialogService
-      .openEditConditionWeightsModal(conditions)
+      .openEditConditionWeightsModal(conditions, experiment.weightingMethod)
       .subscribe((result: ConditionWeightUpdate[] | undefined) => {
         if (result) {
           // Update the experiment with new condition weights
