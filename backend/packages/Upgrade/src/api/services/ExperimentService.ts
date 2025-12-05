@@ -772,6 +772,7 @@ export class ExperimentService {
       await this.deleteAllListsFromExperiment(oldExperiment, user, logger, entityManager);
       includeListsToReturn = [];
       excludeListsToReturn = [];
+      experiment.filterMode = FILTER_MODE.EXCLUDE_ALL;
     }
 
     if (this.experimentSchedulerService) {
@@ -803,6 +804,7 @@ export class ExperimentService {
           experimentSegmentInclusion,
           ...expDoc
         } = experiment;
+        const newQueries = isChangingContext ? [] : queries;
 
         let experimentDoc: Experiment;
         try {
@@ -915,9 +917,9 @@ export class ExperimentService {
         // creating queries docs
         promiseArray = [];
         let queriesDocToSave =
-          (queries?.[0] &&
-            queries.length > 0 &&
-            queries.map((query: any) => {
+          (newQueries?.[0] &&
+            newQueries.length > 0 &&
+            newQueries.map((query: any) => {
               promiseArray.push(this.metricRepository.findOne({ where: { key: query.metric.key } }));
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
