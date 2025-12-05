@@ -28,6 +28,7 @@ import {
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MetricHelperService } from '../../../../../core/experiments/metric-helper.service';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
+import { NotificationService } from '../../../../../core/notifications/notification.service';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { ASSIGNMENT_UNIT, IMetricMetaData, METRIC_TYPE, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
 
@@ -100,6 +101,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   // Assignment unit and context for filtering
   private currentAssignmentUnit: ASSIGNMENT_UNIT | null = null;
   private currentContext: string[] | null = null;
+  private currentExperiment: Experiment | null = null;
 
   allowableDataKeys: string[] = [];
   comparisonOptions = [
@@ -141,6 +143,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     private readonly experimentService: ExperimentService,
     private readonly metricHelperService: MetricHelperService,
     private readonly analysisService: AnalysisService,
+    private readonly notificationService: NotificationService,
     private readonly cdr: ChangeDetectorRef,
     public readonly dialogRef: MatDialogRef<UpsertMetricModalComponent>
   ) {}
@@ -435,6 +438,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.experimentService.selectedExperiment$.subscribe((experiment) => {
         if (experiment) {
+          this.currentExperiment = experiment;
           this.currentAssignmentUnit = experiment.assignmentUnit;
           this.currentContext = experiment.context;
           this.updateMetricTypeAvailability();
@@ -448,6 +452,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
         this.experimentService.experiments$.subscribe((experiments) => {
           const experiment = experiments.find((exp) => exp.id === this.config.params.experimentId);
           if (experiment && !this.currentAssignmentUnit) {
+            this.currentExperiment = experiment;
             this.currentAssignmentUnit = experiment.assignmentUnit;
             this.currentContext = experiment.context;
             this.updateMetricTypeAvailability();
@@ -931,27 +936,40 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     const formValue = this.metricForm.value;
     const metricData = this.prepareMetricDataForBackend(formValue);
 
-    // Get current experiment and call helper service
-    this.experimentService.selectedExperiment$.pipe(take(1)).subscribe((experiment: Experiment) => {
-      if (!experiment) {
-        console.error('No experiment selected');
+    const experiment = this.currentExperiment;
+
+    if (experiment) {
+      this.executeMetricUpsert(experiment, metricData);
+      return;
+    }
+
+    this.experimentService.selectedExperiment$.pipe(take(1)).subscribe((selectedExperiment) => {
+      if (!selectedExperiment) {
+        this.notificationService.showError('Unable to load the selected experiment. Please refresh and try again.');
         return;
       }
 
-      if (this.config.params.action === UPSERT_EXPERIMENT_ACTION.ADD) {
-        this.metricHelperService.addMetric(experiment, metricData);
-      } else {
-        const sourceQuery = this.config.params.sourceQuery;
-        if (!sourceQuery) {
-          console.error('No source query for edit action');
-          return;
-        }
-
-        this.metricHelperService.updateMetric(experiment, sourceQuery, metricData);
-      }
-
-      this.closeModal();
+      const resolvedExperiment = selectedExperiment as Experiment;
+      this.currentExperiment = resolvedExperiment;
+      this.executeMetricUpsert(resolvedExperiment, metricData);
     });
+  }
+
+  private executeMetricUpsert(experiment: Experiment, metricData: ExperimentQueryDTO): void {
+    if (this.config.params.action === UPSERT_EXPERIMENT_ACTION.ADD) {
+      this.metricHelperService.addMetric(experiment, metricData);
+      this.closeModal();
+      return;
+    }
+
+    const sourceQuery = this.config.params.sourceQuery;
+    if (!sourceQuery) {
+      this.notificationService.showError('Unable to update the metric because required query details are missing.');
+      return;
+    }
+
+    this.metricHelperService.updateMetric(experiment, sourceQuery, metricData);
+    this.closeModal();
   }
 
   private prepareMetricDataForBackend(formValue: any): ExperimentQueryDTO {
