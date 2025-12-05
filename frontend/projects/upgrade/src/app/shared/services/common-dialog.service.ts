@@ -45,6 +45,7 @@ import {
   ExperimentCondition,
   ExperimentConditionPayload,
   ExperimentQueryDTO,
+  WeightingMethod,
 } from '../../core/experiments/store/experiments.model';
 import {
   ConditionWeightUpdate,
