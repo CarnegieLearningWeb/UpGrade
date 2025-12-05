@@ -29,19 +29,18 @@ import {
   MetricObjectResult,
   TypedMetricFormValue,
   isMetricOption,
-  isGlobalMetricFormValue,
-  isRepeatableMetricFormValue,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MetricHelperService } from '../../../../../core/experiments/metric-helper.service';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
-import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
-import { ASSIGNMENT_UNIT, IMetricMetaData, METRIC_TYPE, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
-
-interface StatisticOption {
-  value: string;
-  label: string;
-}
+import { ASSIGNMENT_UNIT, IMetricMetaData, METRIC_TYPE } from 'upgrade_types';
+import { MetricAutocompleteService, AutocompleteField } from './services/metric-autocomplete.service';
+import { MetricFormDataService } from './services/metric-form-data.service';
+import {
+  MetricTypeDetectionService,
+  StatisticOption,
+} from '../../../../../core/experiments/services/metric-type-detection.service';
+import { MetricFormStateManager } from './services/metric-form-state-manager.service';
 
 @Component({
   selector: 'upsert-metric-modal',
@@ -89,20 +88,15 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   allMetrics$ = this.analysisService.allMetrics$;
   allMetrics: MetricOption[] = [];
 
-  // Filtered autocomplete observables
-  filteredMetricClasses$: Observable<MetricOption[]>;
-  filteredMetricKeys$: Observable<MetricOption[]>;
-  filteredMetricIds$: Observable<MetricOption[]>;
+  // Autocomplete field managers
+  metricClassField!: AutocompleteField;
+  metricKeyField!: AutocompleteField;
+  metricIdField!: AutocompleteField;
 
-  // BehaviorSubjects for source data
-  private readonly metricClassOptions$ = new BehaviorSubject<MetricOption[]>([]);
-  private readonly metricKeyOptions$ = new BehaviorSubject<MetricOption[]>([]);
-  private readonly metricIdOptions$ = new BehaviorSubject<MetricOption[]>([]);
-
-  // Track if user has selected a valid option from autocomplete (vs just typing)
-  private readonly hasValidMetricClassSelection$ = new BehaviorSubject<boolean>(false);
-  private readonly hasValidMetricKeySelection$ = new BehaviorSubject<boolean>(false);
-  private readonly hasValidMetricIdSelection$ = new BehaviorSubject<boolean>(false);
+  // Filtered autocomplete observables (for template)
+  filteredMetricClasses$!: Observable<MetricOption[]>;
+  filteredMetricKeys$!: Observable<MetricOption[]>;
+  filteredMetricIds$!: Observable<MetricOption[]>;
 
   // Assignment unit and context for filtering
   private currentAssignmentUnit: ASSIGNMENT_UNIT | null = null;
@@ -114,33 +108,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     { value: '<>', label: 'Not equal' },
   ];
 
-  continuousAggregateOptions: StatisticOption[] = [
-    { value: OPERATION_TYPES.SUM, label: 'Sum' },
-    { value: OPERATION_TYPES.MIN, label: 'Min' },
-    { value: OPERATION_TYPES.MAX, label: 'Max' },
-    { value: OPERATION_TYPES.COUNT, label: 'Count' },
-    { value: OPERATION_TYPES.AVERAGE, label: 'Mean' },
-    { value: OPERATION_TYPES.MODE, label: 'Mode' },
-    { value: OPERATION_TYPES.MEDIAN, label: 'Median' },
-    { value: OPERATION_TYPES.STDEV, label: 'Standard Deviation' },
-  ];
-
-  continuousIndividualOptions: StatisticOption[] = [
-    { value: REPEATED_MEASURE.mean, label: 'Mean' },
-    { value: REPEATED_MEASURE.earliest, label: 'Earliest' },
-    { value: REPEATED_MEASURE.mostRecent, label: 'Most Recent' },
-  ];
-
-  categoricalAggregateOptions: StatisticOption[] = [
-    { value: OPERATION_TYPES.COUNT, label: 'Count' },
-    { value: OPERATION_TYPES.PERCENTAGE, label: 'Percentage' },
-  ];
-
-  categoricalIndividualOptions: StatisticOption[] = [
-    { value: REPEATED_MEASURE.earliest, label: 'Earliest' },
-    { value: REPEATED_MEASURE.mostRecent, label: 'Most Recent' },
-  ];
-
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public config: CommonModalConfig<UpsertMetricParams>,
@@ -149,7 +116,11 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     private readonly metricHelperService: MetricHelperService,
     private readonly analysisService: AnalysisService,
     private readonly cdr: ChangeDetectorRef,
-    public readonly dialogRef: MatDialogRef<UpsertMetricModalComponent>
+    public readonly dialogRef: MatDialogRef<UpsertMetricModalComponent>,
+    private readonly autocompleteService: MetricAutocompleteService,
+    private readonly formDataService: MetricFormDataService,
+    private readonly typeDetectionService: MetricTypeDetectionService,
+    private readonly stateManager: MetricFormStateManager
   ) {}
 
   ngOnInit(): void {
@@ -167,32 +138,21 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  // Custom validator to ensure fields are selected from options (object) not typed (string)
-  private autocompleteSelectionValidator(control: {
-    value: MetricFormControlValue;
-  }): { [key: string]: boolean } | null {
-    const value = control.value;
-    if (!value) {
-      return null; // Let required validator handle empty values
-    }
-    // Valid if it's a MetricOption object (selected from autocomplete)
-    if (isMetricOption(value)) {
-      return null;
-    }
-    // Invalid if it's a string (typed, not selected)
-    return { mustSelectFromOptions: true };
+  // Autocomplete validator using the helper service
+  private get autocompleteSelectionValidator() {
+    return CommonFormHelpersService.createAutocompleteSelectionValidator(isMetricOption);
   }
 
   createMetricForm(): void {
     const { sourceQuery, action } = this.config.params;
-    const initialValues = this.deriveInitialFormValues(sourceQuery, action);
+    const initialValues = this.formDataService.parseSourceQuery(sourceQuery, action);
 
     this.metricForm = this.formBuilder.group({
       metricType: [initialValues.metricType, Validators.required],
-      metricId: [initialValues.metricId, [Validators.required, this.autocompleteSelectionValidator.bind(this)]],
+      metricId: [initialValues.metricId, [Validators.required, this.autocompleteSelectionValidator]],
       displayName: [initialValues.displayName, Validators.required],
-      metricClass: [initialValues.metricClass, this.autocompleteSelectionValidator.bind(this)],
-      metricKey: [initialValues.metricKey, this.autocompleteSelectionValidator.bind(this)],
+      metricClass: [initialValues.metricClass, this.autocompleteSelectionValidator],
+      metricKey: [initialValues.metricKey, this.autocompleteSelectionValidator],
       aggregateStatistic: [initialValues.aggregateStatistic],
       individualStatistic: [initialValues.individualStatistic],
       comparison: [initialValues.comparison || '='],
@@ -201,6 +161,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
     this.allowableDataKeys = initialValues.allowableDataKeys || [];
     this.initialFormValues$.next(initialValues);
+
+    // Initialize autocomplete fields
+    this.initializeAutocompleteFields();
 
     // Set initial form visibility states - detect metric data type first if we have a metric ID
     if (initialValues.metricId) {
@@ -216,61 +179,27 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  deriveInitialFormValues(sourceQuery: any, action: UPSERT_EXPERIMENT_ACTION): MetricFormData {
-    if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceQuery) {
-      const metricKey = sourceQuery.metric?.key || '';
+  private initializeAutocompleteFields(): void {
+    // Create autocomplete field managers
+    this.metricClassField = this.autocompleteService.createField({
+      formGroup: this.metricForm,
+      controlName: 'metricClass',
+    });
 
-      // The correct way to determine if it's repeatable is by checking if the metric key contains METRICS_JOIN_TEXT
-      // NOT by checking if repeatedMeasure exists (global metrics can also have individual statistics)
-      const isRepeatable = metricKey.includes(METRICS_JOIN_TEXT);
+    this.metricKeyField = this.autocompleteService.createField({
+      formGroup: this.metricForm,
+      controlName: 'metricKey',
+    });
 
-      let metricClass = '';
-      let metricKeyValue = '';
-      let metricId = '';
+    this.metricIdField = this.autocompleteService.createField({
+      formGroup: this.metricForm,
+      controlName: 'metricId',
+    });
 
-      if (isRepeatable) {
-        // Parse combined key for repeatable metrics: "class@__@key@__@id"
-        const keyParts = metricKey.split(METRICS_JOIN_TEXT);
-        if (keyParts.length === 3) {
-          metricClass = keyParts[0];
-          metricKeyValue = keyParts[1];
-          metricId = keyParts[2];
-        } else {
-          // Fallback if format is unexpected
-          metricId = metricKey;
-        }
-      } else {
-        // Global metric: use the key as-is for metricId
-        metricId = metricKey;
-      }
-
-      return {
-        metricType: isRepeatable ? METRIC_TYPE.REPEATABLE : METRIC_TYPE.GLOBAL,
-        metricId,
-        displayName: sourceQuery.name || '',
-        metricClass,
-        metricKey: metricKeyValue,
-        aggregateStatistic: sourceQuery.query?.operationType || '',
-        individualStatistic: sourceQuery.repeatedMeasure || '',
-        comparison: sourceQuery.query?.compareFn || '=',
-        compareValue: sourceQuery.query?.compareValue || '',
-        allowableDataKeys: [],
-      };
-    }
-
-    // Default values for add mode
-    return {
-      metricType: METRIC_TYPE.GLOBAL,
-      metricId: '',
-      displayName: '',
-      metricClass: '',
-      metricKey: '',
-      aggregateStatistic: '',
-      individualStatistic: '',
-      comparison: '=',
-      compareValue: '',
-      allowableDataKeys: [],
-    };
+    // Expose filtered observables for template
+    this.filteredMetricClasses$ = this.metricClassField.filteredOptions$;
+    this.filteredMetricKeys$ = this.metricKeyField.filteredOptions$;
+    this.filteredMetricIds$ = this.metricIdField.filteredOptions$;
   }
 
   populateFormForEditMode(initialValues: MetricFormData): void {
@@ -282,7 +211,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
           take(1)
         )
         .subscribe((metrics) => {
-          const metricObjects = this.findMetricObjects(metrics, initialValues);
+          const metricObjects = this.formDataService.findMetricObjects(metrics, initialValues);
           this.updateFormWithMetricObjects(initialValues, metricObjects);
 
           // Only update validation state and initialize statistics if idObject exists
@@ -294,47 +223,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         })
     );
-  }
-
-  private findMetricObjects(metrics: MetricOption[], initialValues: MetricFormData): MetricObjectResult {
-    const { metricType, metricClass, metricKey, metricId } = initialValues;
-
-    if (metricType === METRIC_TYPE.REPEATABLE) {
-      return this.findRepeatableMetricObjects(metrics, metricClass, metricKey, metricId);
-    }
-
-    // Global metric: find the metric directly
-    return {
-      classObject: null,
-      keyObject: null,
-      idObject: metrics.find((m) => m.key === metricId) ?? null,
-    };
-  }
-
-  private findRepeatableMetricObjects(
-    metrics: MetricOption[],
-    metricClass: string,
-    metricKey: string,
-    metricId: string
-  ): MetricObjectResult {
-    const classObject = metrics.find((m) => m.key === metricClass) ?? null;
-
-    if (!classObject?.children) {
-      return { classObject, keyObject: null, idObject: null };
-    }
-
-    const keyObject = classObject.children.find((k) => k.key === metricKey) ?? null;
-
-    if (!keyObject) {
-      return { classObject, keyObject: null, idObject: null };
-    }
-
-    // Find ID object in key's children, or use key itself if no children
-    const idObject = keyObject.children?.length
-      ? keyObject.children.find((id) => id.key === metricId) ?? null
-      : keyObject;
-
-    return { classObject, keyObject, idObject };
   }
 
   private updateFormWithMetricObjects(
@@ -371,13 +259,13 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
     // Mark selections as valid based on found objects
     if (classObject) {
-      this.hasValidMetricClassSelection$.next(true);
+      this.metricClassField.markAsValid();
     }
     if (keyObject) {
-      this.hasValidMetricKeySelection$.next(true);
+      this.metricKeyField.markAsValid();
     }
     if (idObject) {
-      this.hasValidMetricIdSelection$.next(true);
+      this.metricIdField.markAsValid();
     }
   }
 
@@ -432,7 +320,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       this.allMetrics$.subscribe((metrics) => {
         this.allMetrics = metrics || [];
         this.populateOptions();
-        this.createFilteredObservables();
       })
     );
   }
@@ -470,7 +357,11 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
 
     const metricType = this.metricForm.get('metricType')?.value;
-    const filteredMetrics = this.filterMetricsByAssignmentContext(this.allMetrics || []);
+    const filteredMetrics = this.metricHelperService.filterMetricsByAssignmentContext(
+      this.allMetrics || [],
+      this.currentAssignmentUnit,
+      this.currentContext
+    );
 
     if (metricType === METRIC_TYPE.GLOBAL) {
       this.populateGlobalMetricOptions(filteredMetrics);
@@ -480,207 +371,84 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.populateRepeatableMetricOptions(filteredMetrics);
   }
 
-  createFilteredObservables(): void {
-    this.filteredMetricClasses$ = combineLatest([
-      this.metricForm.get('metricClass')?.valueChanges.pipe(startWith('')) || new BehaviorSubject(''),
-      this.metricClassOptions$,
-    ]).pipe(map(([searchValue, options]) => this._filter(searchValue || '', options)));
-
-    this.filteredMetricKeys$ = combineLatest([
-      this.metricForm.get('metricKey')?.valueChanges.pipe(startWith('')) || new BehaviorSubject(''),
-      this.metricKeyOptions$,
-    ]).pipe(map(([searchValue, options]) => this._filter(searchValue || '', options)));
-
-    this.filteredMetricIds$ = combineLatest([
-      this.metricForm.get('metricId')?.valueChanges.pipe(startWith('')) || new BehaviorSubject(''),
-      this.metricIdOptions$,
-    ]).pipe(map(([searchValue, options]) => this._filter(searchValue || '', options)));
-  }
-
   onMetricClassValueChange(selectedClass: MetricFormControlValue): void {
-    // If user is typing (string value) after selecting an option, invalidate the selection
-    if (!isMetricOption(selectedClass) && this.hasValidMetricClassSelection$.getValue()) {
-      this.hasValidMetricClassSelection$.next(false);
-      // Clear dependent fields when parent becomes invalid
-      this.metricKeyOptions$.next([]);
-      this.metricIdOptions$.next([]);
-      this.metricForm.get('metricKey')?.setValue('');
-      this.metricForm.get('metricId')?.setValue('');
-      this.hasValidMetricKeySelection$.next(false);
-      this.hasValidMetricIdSelection$.next(false);
-    }
-
-    // If field is cleared completely
-    if (!selectedClass) {
-      this.hasValidMetricClassSelection$.next(false);
-      this.metricKeyOptions$.next([]);
-      this.metricIdOptions$.next([]);
-      this.metricForm.get('metricKey')?.setValue('');
-      this.metricForm.get('metricId')?.setValue('');
-      this.hasValidMetricKeySelection$.next(false);
-      this.hasValidMetricIdSelection$.next(false);
-    }
+    this.autocompleteService.onValueChange(this.metricClassField, selectedClass, [
+      this.metricKeyField,
+      this.metricIdField,
+    ]);
   }
 
   onMetricClassOptionSelected(selectedClass: MetricFormControlValue): void {
-    if (isMetricOption(selectedClass) && selectedClass.children) {
-      this.hasValidMetricClassSelection$.next(true);
-      const classChildren = Array.isArray(selectedClass.children) ? selectedClass.children : [];
-      this.metricKeyOptions$.next(classChildren);
+    const children = this.autocompleteService.onOptionSelected(this.metricClassField, selectedClass, [
+      this.metricKeyField,
+      this.metricIdField,
+    ]);
 
-      // Reset dependent fields
-      this.metricForm.get('metricKey')?.setValue('');
-      this.metricForm.get('metricId')?.setValue('');
-      this.metricIdOptions$.next([]);
-      this.hasValidMetricKeySelection$.next(false);
-      this.hasValidMetricIdSelection$.next(false);
+    if (children.length > 0) {
+      this.metricKeyField.setOptions(children);
     }
   }
 
   onMetricKeyValueChange(selectedKey: MetricFormControlValue): void {
-    // If user is typing (string value) after selecting an option, invalidate the selection
-    if (!isMetricOption(selectedKey) && this.hasValidMetricKeySelection$.getValue()) {
-      this.hasValidMetricKeySelection$.next(false);
-      // Clear dependent fields when parent becomes invalid
-      this.metricIdOptions$.next([]);
-      this.metricForm.get('metricId')?.setValue('');
-      this.hasValidMetricIdSelection$.next(false);
-    }
-
-    // If field is cleared completely
-    if (!selectedKey) {
-      this.hasValidMetricKeySelection$.next(false);
-      this.metricIdOptions$.next([]);
-      this.metricForm.get('metricId')?.setValue('');
-      this.hasValidMetricIdSelection$.next(false);
-    }
+    this.autocompleteService.onValueChange(this.metricKeyField, selectedKey, [this.metricIdField]);
   }
 
   onMetricKeyOptionSelected(selectedKey: MetricFormControlValue): void {
-    if (isMetricOption(selectedKey)) {
-      this.hasValidMetricKeySelection$.next(true);
+    const children = this.autocompleteService.onOptionSelected(this.metricKeyField, selectedKey, [this.metricIdField]);
 
-      // Set metric IDs based on selected key's children
-      this.metricIdOptions$.next(this.getMetricIdOptionsFromKey(selectedKey));
-
-      // Reset ID field
-      this.metricForm.get('metricId')?.setValue('');
-      this.hasValidMetricIdSelection$.next(false);
+    if (children.length > 0) {
+      this.metricIdField.setOptions(children);
     }
   }
 
-  displayFn = (option?: MetricFormControlValue): string => {
-    return isMetricOption(option) ? option.key : option || '';
-  };
-
-  private extractKey(value: MetricFormControlValue): string {
-    return isMetricOption(value) ? value.key : value || '';
-  }
-
-  private _filter(value: MetricFormControlValue, options: MetricOption[]): MetricOption[] {
-    const filterValue = this.extractKey(value).toLowerCase();
-    return options.filter((option) => option.key.toLowerCase().includes(filterValue));
-  }
-
-  private findOptionByKey(options: MetricOption[], key: string): MetricOption | undefined {
-    if (!options.length || !key) {
-      return undefined;
-    }
-    return options.find((option) => option?.key === key);
-  }
-
-  private resolveSelectedOption(
-    controlValue: MetricFormControlValue,
-    options: MetricOption[] = []
-  ): MetricOption | undefined {
-    if (!controlValue) {
-      return undefined;
-    }
-    if (isMetricOption(controlValue)) {
-      return controlValue;
-    }
-    return this.findOptionByKey(options, this.extractKey(controlValue));
-  }
-
-  private getMetricIdOptionsFromKey(selectedKey: MetricFormControlValue): MetricOption[] {
-    if (!isMetricOption(selectedKey)) {
-      return [];
-    }
-
-    if (selectedKey.children && selectedKey.children.length > 0) {
-      return selectedKey.children;
-    }
-
-    return [selectedKey];
-  }
-
-  private filterMetricsByAssignmentContext(metrics: MetricOption[]): MetricOption[] {
-    if (!metrics?.length) {
-      return [];
-    }
-
-    if (this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-      const withinSubjectsMetrics = metrics.filter((metric) => metric.children && metric.children.length > 0);
-      return withinSubjectsMetrics.length > 0 ? withinSubjectsMetrics : metrics;
-    }
-
-    if (this.currentAssignmentUnit && this.currentContext?.length) {
-      const contextFilteredMetrics = metrics.filter(
-        (metric) => metric.context && this.currentContext?.some((ctx) => metric.context.includes(ctx))
-      );
-      if (contextFilteredMetrics.length > 0) {
-        return contextFilteredMetrics;
-      }
-    }
-
-    return metrics;
-  }
+  // Use autocomplete service's display function
+  displayFn = this.autocompleteService.displayFn;
 
   private populateGlobalMetricOptions(metrics: MetricOption[]): void {
-    this.metricClassOptions$.next([]);
-    this.metricKeyOptions$.next([]);
-    const globalMetrics = metrics.filter((metric) => !metric.children || metric.children.length === 0);
-    this.metricIdOptions$.next(globalMetrics);
+    this.metricClassField.setOptions([]);
+    this.metricKeyField.setOptions([]);
+    const globalMetrics = this.metricHelperService.getGlobalMetricOptions(metrics);
+    this.metricIdField.setOptions(globalMetrics);
   }
 
   private populateRepeatableMetricOptions(metrics: MetricOption[]): void {
-    const repeatableMetrics = metrics.filter((metric) => metric.children && metric.children.length > 0);
-    this.metricClassOptions$.next(repeatableMetrics);
+    const repeatableMetrics = this.metricHelperService.getRepeatableMetricOptions(metrics);
+    this.metricClassField.setOptions(repeatableMetrics);
 
-    const selectedClass = this.resolveSelectedOption(this.metricForm.get('metricClass')?.value, repeatableMetrics);
+    const selectedClass = this.metricHelperService.resolveOption(
+      this.metricForm.get('metricClass')?.value,
+      repeatableMetrics
+    );
     if (!selectedClass?.children?.length) {
-      this.metricKeyOptions$.next([]);
-      this.metricIdOptions$.next([]);
+      this.metricKeyField.setOptions([]);
+      this.metricIdField.setOptions([]);
       return;
     }
 
     const classChildren = Array.isArray(selectedClass.children) ? selectedClass.children : [];
-    this.metricKeyOptions$.next(classChildren);
+    this.metricKeyField.setOptions(classChildren);
 
-    const selectedKey = this.resolveSelectedOption(this.metricForm.get('metricKey')?.value, classChildren);
+    const selectedKey = this.metricHelperService.resolveOption(this.metricForm.get('metricKey')?.value, classChildren);
     if (!selectedKey) {
-      this.metricIdOptions$.next([]);
+      this.metricIdField.setOptions([]);
       return;
     }
 
-    this.metricIdOptions$.next(this.getMetricIdOptionsFromKey(selectedKey));
+    const children = this.autocompleteService.getChildrenFromOption(selectedKey);
+    this.metricIdField.setOptions(children);
   }
 
   onMetricTypeChange(): void {
     // Clear everything and repopulate
     this.metricDataType = null;
-    this.hasValidMetricClassSelection$.next(false);
-    this.hasValidMetricKeySelection$.next(false);
-    this.hasValidMetricIdSelection$.next(false);
+    this.metricClassField.clear();
+    this.metricKeyField.clear();
+    this.metricIdField.clear();
 
-    // Clear form fields
-    this.metricForm.get('metricClass')?.setValue('');
-    this.metricForm.get('metricKey')?.setValue('');
-    this.metricForm.get('metricId')?.setValue('');
-    this.metricForm.get('displayName')?.setValue(''); // Clear display name when metric type changes
+    // Clear display name when metric type changes
+    this.metricForm.get('displayName')?.setValue('');
 
     // Repopulate options based on new metric type
-    // BehaviorSubjects will automatically trigger observable re-emission
     this.populateOptions();
 
     // Update form state
@@ -691,8 +459,8 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
   onMetricIdValueChange(metricId: MetricFormControlValue): void {
     // If user is typing (string value) after selecting an option, invalidate the selection
-    if (!isMetricOption(metricId) && this.hasValidMetricIdSelection$.getValue()) {
-      this.hasValidMetricIdSelection$.next(false);
+    if (!isMetricOption(metricId) && this.metricIdField.hasValidSelection()) {
+      this.metricIdField.markAsInvalid();
       this.metricDataType = null;
       this.hideStatisticDropdowns();
       this.resetStatisticFields();
@@ -701,7 +469,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
     // If field is cleared completely
     if (!metricId) {
-      this.hasValidMetricIdSelection$.next(false);
+      this.metricIdField.markAsInvalid();
       this.metricDataType = null;
       this.hideStatisticDropdowns();
       this.resetStatisticFields();
@@ -712,7 +480,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   onMetricIdOptionSelected(metricId: MetricFormControlValue): void {
     // This is called when user actually selects an option from autocomplete
     if (isMetricOption(metricId)) {
-      this.hasValidMetricIdSelection$.next(true);
+      this.metricIdField.markAsValid();
       this.detectMetricDataType(metricId);
       this.updateStatisticOptions();
       this.clearInvalidStatisticSelections();
@@ -722,75 +490,25 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   detectMetricDataType(metricId: MetricFormControlValue): void {
-    const selectedMetric = this.findSelectedMetric(metricId);
+    const result = this.typeDetectionService.detectMetricDataType(metricId, this.metricIdField.getOptions());
 
-    // Use metadata if available
-    if (selectedMetric?.metadata?.type) {
-      this.setMetricDataType(selectedMetric.metadata.type, selectedMetric);
-      return;
-    }
-
-    // Fallback to heuristic detection
-    this.detectMetricTypeByHeuristic(metricId);
-  }
-
-  private findSelectedMetric(metricId: MetricFormControlValue): MetricOption | null {
-    if (isMetricOption(metricId) && metricId.metadata) {
-      return metricId;
-    }
-
-    if (typeof metricId === 'string') {
-      const currentOptions = this.metricIdOptions$.getValue();
-      return currentOptions.find((metric) => metric.key === metricId) ?? null;
-    }
-
-    return null;
-  }
-
-  private setMetricDataType(dataType: IMetricMetaData, selectedMetric?: MetricOption): void {
-    this.metricDataType = dataType;
-
-    if (dataType === IMetricMetaData.CATEGORICAL) {
-      this.allowableDataKeys = selectedMetric?.allowedData ? [...selectedMetric.allowedData] : [];
-    } else {
-      this.allowableDataKeys = [];
-    }
-  }
-
-  private detectMetricTypeByHeuristic(metricId: MetricFormControlValue): void {
-    const metricKey = this.extractKey(metricId);
-    const lowerMetricKey = metricKey.toLowerCase();
-
-    const continuousKeywords = ['time', 'count', 'score', 'number', 'seconds', 'minutes', 'duration'];
-    const categoricalKeywords = ['status', 'type', 'category', 'level', 'completion'];
-
-    if (continuousKeywords.some((keyword) => lowerMetricKey.includes(keyword))) {
-      this.setMetricDataType(IMetricMetaData.CONTINUOUS);
-    } else if (categoricalKeywords.some((keyword) => lowerMetricKey.includes(keyword))) {
-      this.setMetricDataType(IMetricMetaData.CATEGORICAL);
-    } else {
-      // Default to continuous for unknown types
-      this.setMetricDataType(IMetricMetaData.CONTINUOUS);
-    }
+    this.metricDataType = result.dataType;
+    this.allowableDataKeys = result.allowableDataKeys;
   }
 
   updateFormVisibility(): void {
     const metricType = this.metricForm.get('metricType')?.value;
+    const visibility = this.stateManager.calculateVisibility(
+      metricType,
+      this.metricIdField.hasValidSelection(),
+      this.metricDataType
+    );
 
-    // Base visibility for metric type
-    this.showMetricClass = metricType === METRIC_TYPE.REPEATABLE;
-    this.showMetricKey = metricType === METRIC_TYPE.REPEATABLE;
-
-    // Statistics only show when a valid metric ID option has been selected
-    if (this.hasValidMetricIdSelection$.getValue() && this.metricDataType) {
-      this.showAggregateStatistic = true;
-      this.showIndividualStatistic = metricType === METRIC_TYPE.REPEATABLE;
-      this.showComparison = this.metricDataType === IMetricMetaData.CATEGORICAL;
-    } else {
-      this.showAggregateStatistic = false;
-      this.showIndividualStatistic = false;
-      this.showComparison = false;
-    }
+    this.showMetricClass = visibility.showMetricClass;
+    this.showMetricKey = visibility.showMetricKey;
+    this.showAggregateStatistic = visibility.showAggregateStatistic;
+    this.showIndividualStatistic = visibility.showIndividualStatistic;
+    this.showComparison = visibility.showComparison;
 
     // Trigger change detection with OnPush strategy
     this.cdr.markForCheck();
@@ -809,36 +527,25 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   updateStatisticOptions(): void {
-    if (this.metricDataType === IMetricMetaData.CONTINUOUS) {
-      this.aggregateStatisticOptions = this.continuousAggregateOptions;
-      this.individualStatisticOptions = this.continuousIndividualOptions;
-    } else if (this.metricDataType === IMetricMetaData.CATEGORICAL) {
-      this.aggregateStatisticOptions = this.categoricalAggregateOptions;
-      this.individualStatisticOptions = this.categoricalIndividualOptions;
+    if (this.metricDataType) {
+      const options = this.typeDetectionService.getStatisticOptions(this.metricDataType);
+      this.aggregateStatisticOptions = options.aggregate;
+      this.individualStatisticOptions = options.individual;
     }
-    // Note: showComparison is handled in updateFormVisibility()
   }
 
   private clearInvalidStatisticSelections(): void {
-    if (!this.metricForm || !this.hasValidMetricIdSelection$.getValue()) {
+    if (!this.metricForm || !this.metricIdField.hasValidSelection()) {
       return;
     }
 
-    const aggregateControl = this.metricForm.get('aggregateStatistic');
-    const individualControl = this.metricForm.get('individualStatistic');
-
-    const validAggregateValues = this.aggregateStatisticOptions.map((option) => option.value);
-    const currentAggregateValue = aggregateControl?.value;
-
-    if (currentAggregateValue && !validAggregateValues.includes(currentAggregateValue)) {
-      aggregateControl?.setValue('', { emitEvent: false });
-    }
-
-    const validIndividualValues = this.individualStatisticOptions.map((option) => option.value);
-    const currentIndividualValue = individualControl?.value;
-
-    if (currentIndividualValue && !validIndividualValues.includes(currentIndividualValue)) {
-      individualControl?.setValue('', { emitEvent: false });
+    if (this.metricDataType) {
+      const options = this.typeDetectionService.getStatisticOptions(this.metricDataType);
+      this.stateManager.clearInvalidStatisticSelections(
+        this.metricForm,
+        this.metricIdField.hasValidSelection(),
+        options
+      );
     }
   }
 
@@ -849,57 +556,19 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   resetStatisticFields(): void {
-    this.metricForm.patchValue({
-      aggregateStatistic: '',
-      individualStatistic: '',
-      comparison: '=',
-      compareValue: '',
-    });
+    this.stateManager.resetStatisticFields(this.metricForm);
     this.allowableDataKeys = [];
   }
 
   updateFormValidators(): void {
     const metricType = this.metricForm.get('metricType')?.value;
-
-    // Update validators based on metric type
-    if (metricType === METRIC_TYPE.REPEATABLE) {
-      this.metricForm
-        .get('metricClass')
-        ?.setValidators([Validators.required, this.autocompleteSelectionValidator.bind(this)]);
-      this.metricForm
-        .get('metricKey')
-        ?.setValidators([Validators.required, this.autocompleteSelectionValidator.bind(this)]);
-      this.metricForm.get('individualStatistic')?.setValidators([Validators.required]);
-    } else {
-      this.metricForm.get('metricClass')?.clearValidators();
-      this.metricForm.get('metricKey')?.clearValidators();
-      this.metricForm.get('individualStatistic')?.clearValidators();
-    }
-
-    // Update aggregate statistic validator
-    if (this.showAggregateStatistic) {
-      this.metricForm.get('aggregateStatistic')?.setValidators([Validators.required]);
-    } else {
-      this.metricForm.get('aggregateStatistic')?.clearValidators();
-    }
-
-    // Update comparison validators for categorical metrics
-    if (this.showComparison) {
-      this.metricForm.get('comparison')?.setValidators([Validators.required]);
-      this.metricForm.get('compareValue')?.setValidators([Validators.required]);
-    } else {
-      this.metricForm.get('comparison')?.clearValidators();
-      this.metricForm.get('compareValue')?.clearValidators();
-    }
-
-    // Update all validators without emitting events to prevent recursion
-    for (const key of Object.keys(this.metricForm.controls)) {
-      this.metricForm.get(key)?.updateValueAndValidity({ emitEvent: false });
-    }
-
-    // Update the form's overall validity status WITH event emission
-    // This ensures the observable streams are updated for button state
-    this.metricForm.updateValueAndValidity({ emitEvent: true });
+    this.stateManager.updateValidators(
+      this.metricForm,
+      metricType,
+      this.showAggregateStatistic,
+      this.showComparison,
+      this.autocompleteSelectionValidator
+    );
   }
 
   listenForIsInitialFormValueChanged(): void {
@@ -917,7 +586,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
   listenForPrimaryButtonDisabled(): void {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertMetric$.pipe(
-      combineLatestWith(this.isInitialFormValueChanged$, this.hasValidMetricIdSelection$),
+      combineLatestWith(this.isInitialFormValueChanged$, this.metricIdField.hasValidSelection$),
       map(
         ([isLoading, isInitialFormValueChanged, hasValidMetricIdSelection]) =>
           isLoading ||
@@ -964,37 +633,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   private prepareMetricDataForBackend(formValue: TypedMetricFormValue): ExperimentQueryDTO {
-    const { metricId, displayName, aggregateStatistic, comparison, compareValue } = formValue;
-
-    // Prepare metric key based on type using type guards
-    const metricKey = isGlobalMetricFormValue(formValue)
-      ? this.extractKey(metricId)
-      : `${this.extractKey(formValue.metricClass)}${METRICS_JOIN_TEXT}${this.extractKey(
-          formValue.metricKey
-        )}${METRICS_JOIN_TEXT}${this.extractKey(metricId)}`;
-
-    // Prepare query object
-    const queryObj: ExperimentQueryDTO = {
-      name: displayName,
-      query: {
-        operationType: aggregateStatistic,
-        // Add comparison for categorical metrics
-        ...(this.metricDataType === IMetricMetaData.CATEGORICAL &&
-          comparison &&
-          compareValue && {
-            compareFn: comparison,
-            compareValue: compareValue,
-          }),
-      },
-      metric: {
-        key: metricKey,
-      },
-      repeatedMeasure: isRepeatableMetricFormValue(formValue)
-        ? (formValue.individualStatistic as REPEATED_MEASURE)
-        : REPEATED_MEASURE.mostRecent,
-    };
-
-    return queryObj;
+    return this.formDataService.prepareForBackend(formValue, this.metricDataType);
   }
 
   closeModal(): void {
