@@ -85,6 +85,11 @@ interface RepeatableMetricFormValue extends MetricFormValueBase {
 
 type MetricFormValue = GlobalMetricFormValue | RepeatableMetricFormValue;
 
+/**
+ * Presents the add/edit metric modal and normalizes form values for global and repeatable metrics.
+ * Centralizes the multi-step UX (autocomplete selections, validation, payload build) so callers only
+ * inject services and consume the resulting DTO sent back through the modal close.
+ */
 @Component({
   selector: 'upsert-metric-modal',
   imports: [
@@ -230,6 +235,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     };
   }
 
+  /**
+   * Bootstraps the reactive form, wiring together data sources, listeners, and initial state so the
+   * UI reflects the selected experiment context and metric being edited (if any).
+   */
   ngOnInit(): void {
     this.createMetricForm();
     this.setupFormChangeListeners();
@@ -259,6 +268,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     return { mustSelectFromOptions: true };
   }
 
+  /**
+   * Builds the reactive form with validators that reflect the current modal mode (add vs edit) and
+   * metric type (global vs repeatable). When editing, seeds controls with parsed source query values.
+   */
   createMetricForm(): void {
     const { sourceQuery, action } = this.config.params;
     const initialValues = this.deriveInitialFormValues(sourceQuery, action);
@@ -292,6 +305,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Translates the incoming query into form-ready values, handling both global and repeatable key formats.
+   */
   deriveInitialFormValues(sourceQuery: ExperimentQueryDTO | null, action: UPSERT_EXPERIMENT_ACTION): MetricFormData {
     if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceQuery) {
       const metricKey = sourceQuery.metric?.key || '';
@@ -352,6 +368,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     };
   }
 
+  /**
+   * When editing, waits for available metrics so the form can rehydrate selections with real node objects
+   * instead of raw strings, restoring validator state and statistic dropdowns accurately.
+   */
   populateFormForEditMode(initialValues: MetricFormData): void {
     // Wait for allMetrics to be loaded, then populate form with proper objects
     this.subscriptions.add(
@@ -1034,6 +1054,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.metricForm.updateValueAndValidity({ emitEvent: true });
   }
 
+  /**
+   * Emits whether the user has diverged from the original payload so the modal can toggle its action button.
+   */
   listenForIsInitialFormValueChanged(): void {
     this.isInitialFormValueChanged$ = this.metricForm.valueChanges.pipe(
       startWith(this.getCurrentFormValue()),
@@ -1043,6 +1066,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Combines form validity, loading status, and selection completeness to drive the primary button state.
+   */
   listenForPrimaryButtonDisabled(): void {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertMetric$.pipe(
       combineLatestWith(this.isInitialFormValueChanged$, this.hasValidMetricIdSelection$),
@@ -1064,6 +1090,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Resolves the target experiment and dispatches the normalized metric payload through the helper service.
+   */
   sendUpsertMetricRequest(): void {
     const formValue = this.getCurrentFormValue();
     const metricData = this.prepareMetricDataForBackend(formValue);
@@ -1104,6 +1133,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
     this.closeModal();
   }
 
+  /**
+   * Normalizes the form value into the backend DTO, joining repeatable keys and attaching categorical filters
+   * only when required by the selected metric metadata.
+   */
   private prepareMetricDataForBackend(formValue: MetricFormValue): ExperimentQueryDTO {
     const metricKey = this.isRepeatableFormValue(formValue)
       ? `${this.extractKey(formValue.metricClass)}${METRICS_JOIN_TEXT}${this.extractKey(
