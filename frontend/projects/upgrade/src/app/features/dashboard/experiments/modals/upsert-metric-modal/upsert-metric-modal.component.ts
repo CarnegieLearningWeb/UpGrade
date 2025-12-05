@@ -44,17 +44,13 @@ import {
   METRIC_TYPE,
   OPERATION_TYPES,
   REPEATED_MEASURE,
+  ExperimentQueryPayload,
+  ExperimentQueryComparator,
 } from 'upgrade_types';
 
 interface StatisticOption {
   value: string;
   label: string;
-}
-
-interface ExperimentQueryDetails {
-  operationType?: string;
-  compareFn?: string;
-  compareValue?: string;
 }
 
 type MetricNode = IMetricUnit;
@@ -73,9 +69,9 @@ interface MetricFormValueBase {
   displayName: string;
   metricClass: MetricControlValue;
   metricKey: MetricControlValue;
-  aggregateStatistic: string;
+  aggregateStatistic: OPERATION_TYPES | '';
   individualStatistic: REPEATED_MEASURE | '';
-  comparison: string;
+  comparison: ExperimentQueryComparator | '';
   compareValue: string;
 }
 
@@ -156,7 +152,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   private currentExperiment: Experiment | null = null;
 
   allowableDataKeys: string[] = [];
-  comparisonOptions = [
+  comparisonOptions: Array<{ value: ExperimentQueryComparator; label: string }> = [
     { value: '=', label: 'Equal' },
     { value: '<>', label: 'Not equal' },
   ];
@@ -228,7 +224,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       metricKey: this.extractKey(formValue.metricKey),
       aggregateStatistic: formValue.aggregateStatistic,
       individualStatistic: formValue.individualStatistic,
-      comparison: formValue.comparison,
+      comparison: formValue.comparison || undefined,
       compareValue: formValue.compareValue,
       allowableDataKeys,
     };
@@ -299,7 +295,9 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   deriveInitialFormValues(sourceQuery: ExperimentQueryDTO | null, action: UPSERT_EXPERIMENT_ACTION): MetricFormData {
     if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceQuery) {
       const metricKey = sourceQuery.metric?.key || '';
-      const queryDetails = (sourceQuery.query as ExperimentQueryDetails) || {};
+      const aggregateStatistic = sourceQuery.query?.operationType ?? '';
+      const comparison = sourceQuery.query?.compareFn ?? '=';
+      const compareValue = sourceQuery.query?.compareValue ?? '';
 
       // The correct way to determine if it's repeatable is by checking if the metric key contains METRICS_JOIN_TEXT
       // NOT by checking if repeatedMeasure exists (global metrics can also have individual statistics)
@@ -331,10 +329,10 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
         displayName: sourceQuery.name || '',
         metricClass,
         metricKey: metricKeyValue,
-        aggregateStatistic: queryDetails.operationType || '',
+        aggregateStatistic,
         individualStatistic: sourceQuery.repeatedMeasure || '',
-        comparison: queryDetails.compareFn || '=',
-        compareValue: queryDetails.compareValue || '',
+        comparison,
+        compareValue,
         allowableDataKeys: [],
       };
     }
@@ -1117,19 +1115,22 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       ? formValue.individualStatistic || REPEATED_MEASURE.mostRecent
       : REPEATED_MEASURE.mostRecent;
 
+    const operationType = formValue.aggregateStatistic as OPERATION_TYPES;
+
+    const queryPayload: ExperimentQueryPayload = {
+      operationType,
+      ...(this.metricDataType === IMetricMetaData.CATEGORICAL &&
+        formValue.comparison &&
+        formValue.compareValue && {
+          compareFn: formValue.comparison,
+          compareValue: formValue.compareValue,
+        }),
+    };
+
     // Prepare query object
     const queryObj: ExperimentQueryDTO = {
       name: formValue.displayName,
-      query: {
-        operationType: formValue.aggregateStatistic,
-        // Add comparison for categorical metrics
-        ...(this.metricDataType === IMetricMetaData.CATEGORICAL &&
-          formValue.comparison &&
-          formValue.compareValue && {
-            compareFn: formValue.comparison,
-            compareValue: formValue.compareValue,
-          }),
-      },
+      query: queryPayload,
       metric: {
         key: metricKey,
       },

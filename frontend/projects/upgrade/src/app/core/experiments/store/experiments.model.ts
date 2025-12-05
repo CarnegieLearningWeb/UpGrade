@@ -8,7 +8,6 @@ import {
   EXPERIMENT_SORT_KEY,
   SORT_AS_DIRECTION,
   EXPERIMENT_STATE,
-  IExperimentEnrollmentStats,
   IExperimentSearchParams,
   IExperimentSortParams,
   IExperimentEnrollmentDetailStats,
@@ -25,6 +24,8 @@ import {
   SEGMENT_TYPE,
   IEnrollmentCompleteCondition,
   METRIC_TYPE,
+  ExperimentQueryPayload,
+  ExperimentQueryComparator,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -43,7 +44,7 @@ export {
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
   METRIC_TYPE,
-};
+} from 'upgrade_types';
 
 export interface ExperimentConditionFilterOptions {
   code: string;
@@ -383,7 +384,7 @@ export interface MetricFormData {
   metricKey?: string; // For repeatable metrics only
   aggregateStatistic?: string;
   individualStatistic?: string; // For repeatable metrics only
-  comparison?: string;
+  comparison?: ExperimentQueryComparator;
   compareValue?: string;
   allowableDataKeys?: string[]; // For categorical metrics only
 }
@@ -431,7 +432,7 @@ export interface ExperimentConditionPayloadDTO {
 export interface ExperimentQueryDTO {
   id?: string;
   name: string;
-  query: object;
+  query: ExperimentQueryPayload;
   metric: {
     key: string;
   };

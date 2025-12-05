@@ -84,6 +84,8 @@ export {
   FeatureFlagDeletedData,
   ValidatedImportResponse,
   DuplicateSegmentNameError,
+  ExperimentQueryPayload,
+  ExperimentQueryComparator,
 } from './Experiment/interfaces';
 export {
   MoocletPolicyParametersDTO,
