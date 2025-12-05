@@ -121,7 +121,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         this.dialogService.openDeleteExperimentModal();
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT:
-        console.log('Edit experiment - TODO: Implement dialog service');
+        this.dialogService.openEditExperimentModal(experiment);
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.DUPLICATE:
         console.log('Duplicate experiment - TODO: Implement dialog service');
