@@ -1,12 +1,15 @@
-import { Component, ChangeDetectionStrategy, OnChanges, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnChanges, Input, forwardRef } from '@angular/core';
 import { ExperimentVM, ASSIGNMENT_UNIT } from '../../../../../core/experiments/store/experiments.model';
+import { TableRowComponent } from '../table-row/table-row.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'home-enrollment-point-partition-table',
+  selector: 'enrollment-point-partition-table',
   templateUrl: './enrollment-point-partition-table.component.html',
   styleUrls: ['./enrollment-point-partition-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  standalone: true,
+  imports: [forwardRef(() => TableRowComponent), CommonModule],
 })
 export class EnrollmentPointPartitionTableComponent implements OnChanges {
   @Input() partitionData: any[];

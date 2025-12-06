@@ -18,13 +18,12 @@ div {
     }
 
     mat-header-cell {
-      color: var(--grey-2);
+      background-color: var(--zircon);
     }
 
     .weight-column {
       justify-content: flex-end !important;
       max-width: 96px;
-      margin-right: 64px;
     }
 
     .mat-column-expandIcon {
