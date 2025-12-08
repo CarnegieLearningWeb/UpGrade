@@ -14,6 +14,7 @@ import { TableRowComponent } from '../table-row/table-row.component';
   selector: 'enrollment-condition-table',
   templateUrl: './enrollment-condition-table.component.html',
   styleUrls: ['./enrollment-condition-table.component.scss'],
+  standalone: true,
   imports: [CommonModule, TranslateModule, TableRowComponent],
 })
 export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
