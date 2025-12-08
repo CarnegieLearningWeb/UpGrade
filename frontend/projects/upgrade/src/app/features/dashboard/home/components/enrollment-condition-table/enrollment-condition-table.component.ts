@@ -68,7 +68,6 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
             partitions,
           };
           this.experimentData.push(experimentObj);
-          console.log('ED', this.experimentData);
         });
       }
     });
