@@ -1961,43 +1961,29 @@ export class ExperimentService {
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Segment> {
-    await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
+    const existingRecords = await this.getExistingInclusionExclusionSegments([segmentId], filterType);
+    if (existingRecords.length === 0) {
+      throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
+    }
+    await this.createDeleteListAuditLogs(existingRecords, filterType, currentUser);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return this.segmentService.deleteSegment(segmentId, logger);
   }
 
   async createDeleteListAuditLogs(
-    segmentIds: string[],
+    existingRecords: ExperimentSegmentInclusion[] | ExperimentSegmentExclusion[],
     filterType: LIST_FILTER_MODE,
     currentUser: UserDTO,
     entityManager?: EntityManager
   ): Promise<void> {
     const auditLogPromises = [];
-    for (const segmentId of segmentIds) {
-      let existingRecord: ExperimentSegmentInclusion | ExperimentSegmentExclusion;
-
-      if (filterType === LIST_FILTER_MODE.INCLUSION) {
-        existingRecord = await this.experimentSegmentInclusionRepository.findOne({
-          where: { segment: { id: segmentId } },
-          relations: ['experiment', 'segment'],
-        });
-      } else {
-        existingRecord = await this.experimentSegmentExclusionRepository.findOne({
-          where: { segment: { id: segmentId } },
-          relations: ['experiment', 'segment'],
-        });
-      }
-      // Handle if the record is not found
-      if (!existingRecord) {
-        throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
-      }
-
+    for (const existingRecord of existingRecords) {
       // Create the delete list audit log data
       const updateAuditLog = {
         experimentId: existingRecord.experiment.id,
         experimentName: existingRecord.experiment.name,
         list: {
-          listId: segmentId,
+          listId: existingRecord.segment.id,
           listName: existingRecord.segment.name,
           filterType: filterType,
           operation: EXPERIMENT_LIST_OPERATION.DELETED,
@@ -2016,6 +2002,20 @@ export class ExperimentService {
 
     // Use Promise.all to run all audit log saving operations concurrently
     await Promise.all(auditLogPromises);
+  }
+
+  async getExistingInclusionExclusionSegments(
+    segmentIds: string[],
+    listFilterMode: LIST_FILTER_MODE
+  ): Promise<ExperimentSegmentInclusion[] | ExperimentSegmentExclusion[]> {
+    const repo =
+      listFilterMode === LIST_FILTER_MODE.INCLUSION
+        ? this.experimentSegmentInclusionRepository
+        : this.experimentSegmentExclusionRepository;
+
+    const records = await repo.getExistingSegments(segmentIds);
+
+    return records;
   }
 
   public async updateList(
@@ -2388,14 +2388,32 @@ export class ExperimentService {
     const auditLogPromises = [];
 
     if (includeListIds.length) {
+      const existingInclusionRecords = await this.getExistingInclusionExclusionSegments(
+        includeListIds,
+        LIST_FILTER_MODE.INCLUSION
+      );
       auditLogPromises.push(
-        this.createDeleteListAuditLogs(includeListIds, LIST_FILTER_MODE.INCLUSION, user, transactionalEntityManager)
+        this.createDeleteListAuditLogs(
+          existingInclusionRecords,
+          LIST_FILTER_MODE.INCLUSION,
+          user,
+          transactionalEntityManager
+        )
       );
     }
 
     if (excludeListIds.length) {
+      const existingExclusionRecords = await this.getExistingInclusionExclusionSegments(
+        excludeListIds,
+        LIST_FILTER_MODE.EXCLUSION
+      );
       auditLogPromises.push(
-        this.createDeleteListAuditLogs(excludeListIds, LIST_FILTER_MODE.EXCLUSION, user, transactionalEntityManager)
+        this.createDeleteListAuditLogs(
+          existingExclusionRecords,
+          LIST_FILTER_MODE.EXCLUSION,
+          user,
+          transactionalEntityManager
+        )
       );
     }
 
@@ -2404,7 +2422,6 @@ export class ExperimentService {
     if (segmentIds.length) {
       await this.segmentRepository.deleteSegments(segmentIds, logger, transactionalEntityManager);
     }
-    // await Promise.all(auditLogPromises);
-    return;
+    await Promise.all(auditLogPromises);
   }
 }
