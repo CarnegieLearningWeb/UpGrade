@@ -77,6 +77,7 @@ export enum SERVER_ERROR {
   MISSING_HEADER_USER_ID = 'Missing `User-Id` header',
   SEGMENT_DUPLICATE_NAME = 'Segment with same name already exists for this app-context.',
   INVALID_APP_CONTEXT = 'Invalid app context',
+  MOOCLET_REWARD_ERROR = 'Error processing Mooclet reward',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {

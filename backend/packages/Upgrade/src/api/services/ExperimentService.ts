@@ -88,7 +88,6 @@ import { StratificationFactorRepository } from '../repositories/StratificationFa
 import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
 import { compare } from 'compare-versions';
 import { MetricService } from './MetricService';
-import { MoocletRewardsService } from './MoocletRewardsService';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 
 const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
@@ -131,8 +130,7 @@ export class ExperimentService {
     protected errorService: ErrorService,
     protected cacheService: CacheService,
     protected queryService: QueryService,
-    protected metricService: MetricService,
-    protected moocletRewardsService: MoocletRewardsService
+    protected metricService: MetricService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -459,10 +457,10 @@ export class ExperimentService {
         (result) => {
           const queryId = result.id;
           delete result.id;
-          const archivedStats: Partial<ArchivedStats> = {
+          const archivedStats: Omit<ArchivedStats, 'createdAt' | 'updatedAt' | 'versionNumber'> = {
             id: uuid(),
             result: result,
-            query: queryId,
+            query: { id: queryId } as Query,
           };
           return archivedStats;
         }
