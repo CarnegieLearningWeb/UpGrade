@@ -12,7 +12,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
 import { Observable } from 'rxjs';
-import { ExperimentSegmentListRequest } from '../segments/store/segments.model';
+import { ExperimentSegmentListRequest, SegmentFile } from '../segments/store/segments.model';
 import { LIST_FILTER_MODE } from 'upgrade_types';
 
 @Injectable()
@@ -176,8 +176,8 @@ export class ExperimentDataService {
     return this.updateExperiment(updatedExperiment);
   }
 
-  validateListsImport(segments: any[]) {
-    const url = this.environment.api.validateSegmentsImport;
+  validateListsImport(segments: SegmentFile[]) {
+    const url = this.environment.api.validateListsImport;
     return this.http.post(url, segments);
   }
 
