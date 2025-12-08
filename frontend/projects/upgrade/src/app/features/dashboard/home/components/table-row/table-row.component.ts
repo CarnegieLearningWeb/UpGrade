@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, OnDestroy, forwardRef } from '@angular/core';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
@@ -12,7 +12,13 @@ import { EnrollmentPointPartitionTableComponent } from '../enrollment-point-part
   templateUrl: './table-row.component.html',
   styleUrls: ['./table-row.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslateModule, CommonModule, MatTableModule, MatIconModule, EnrollmentPointPartitionTableComponent],
+  imports: [
+    TranslateModule,
+    CommonModule,
+    MatTableModule,
+    MatIconModule,
+    forwardRef(() => EnrollmentPointPartitionTableComponent),
+  ],
   standalone: true,
 })
 export class TableRowComponent implements OnDestroy {
