@@ -187,7 +187,7 @@ export class ExperimentEffects {
       this.actions$.pipe(
         ofType(experimentAction.actionUpsertExperimentSuccess),
         tap(({ experiment }) => {
-          if (!this.router.url.includes('/home/detail')) {
+          if (!this.router.url.includes(`/home/detail/${experiment.id}`)) {
             this.router.navigate(['/home', 'detail', experiment.id]);
           }
         })

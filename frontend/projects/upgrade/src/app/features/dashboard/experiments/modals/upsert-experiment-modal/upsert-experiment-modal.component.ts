@@ -267,7 +267,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }
 
   deriveInitialFormValues(sourceExperiment: Experiment, action: string): ExperimentFormData {
-    const name = action === UPSERT_EXPERIMENT_ACTION.EDIT ? sourceExperiment?.name : '';
+    const name =
+      action === UPSERT_EXPERIMENT_ACTION.EDIT || action === UPSERT_EXPERIMENT_ACTION.DUPLICATE
+        ? sourceExperiment?.name
+        : '';
     const description = sourceExperiment?.description || '';
     const appContext = sourceExperiment?.context?.[0] || '';
     const experimentType = sourceExperiment?.type === 'Factorial' ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
@@ -503,8 +506,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   sendRequest(action: UPSERT_EXPERIMENT_ACTION, sourceExperiment?: Experiment): void {
     const formData: ExperimentFormData = this.experimentForm.value;
-    if (action === UPSERT_EXPERIMENT_ACTION.ADD || action === UPSERT_EXPERIMENT_ACTION.DUPLICATE) {
+    if (action === UPSERT_EXPERIMENT_ACTION.ADD) {
       this.createAddRequest(formData);
+    } else if (action === UPSERT_EXPERIMENT_ACTION.DUPLICATE) {
+      this.createDuplicateRequest(formData, sourceExperiment);
     } else if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceExperiment) {
       this.createEditRequest(formData, sourceExperiment);
     } else {
@@ -559,7 +564,60 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       stateTimeLogs: undefined, // @IsOptional @IsArray - can be undefined
       backendVersion: undefined, // @IsOptional - can be undefined
       moocletPolicyParameters: undefined, // Conditional validation - can be undefined
-      rewardMetricKey: undefined, // Conditional validation - can be undefined
+    };
+
+    this.experimentService.createNewExperiment(experimentRequest);
+  }
+
+  createDuplicateRequest(
+    {
+      name,
+      description,
+      appContext,
+      experimentType,
+      unitOfAssignment,
+      consistencyRule,
+      conditionOrder,
+      assignmentAlgorithm,
+      stratificationFactor,
+      groupType,
+      tags,
+    }: ExperimentFormData,
+    sourceExperiment: Experiment
+  ): void {
+    const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
+    const experimentRequest: AddExperimentRequest = {
+      // Form data
+      name,
+      description: description || undefined, // @IsOptional - can be undefined
+      context: [appContext],
+      type: experimentType,
+      assignmentUnit: unitOfAssignment,
+      consistencyRule: unitOfAssignment !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? consistencyRule : undefined, // Conditional validation
+      conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined, // Conditional validation
+      assignmentAlgorithm: assignmentAlgorithm || undefined, // @IsOptional
+      stratificationFactor: stratificationFactorObj,
+      group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
+      tags,
+      state: EXPERIMENT_STATE.INACTIVE,
+      filterMode: sourceExperiment.filterMode || FILTER_MODE.EXCLUDE_ALL,
+
+      // Backend required fields with correct defaults
+      postExperimentRule: sourceExperiment.postExperimentRule || POST_EXPERIMENT_RULE.CONTINUE,
+      enrollmentCompleteCondition: undefined, // @IsOptional - can be undefined
+      startOn: undefined, // @IsOptional
+      endOn: undefined, // @IsOptional
+      revertTo: undefined, // @IsOptional
+      conditions: sourceExperiment.conditions, // @IsNotEmpty @IsArray - must be empty array, not undefined
+      partitions: sourceExperiment.partitions, // @IsNotEmpty @IsArray - must be empty array, not undefined
+      factors: sourceExperiment.factors, // @IsOptional @IsArray - can be undefined
+      conditionPayloads: sourceExperiment.conditionPayloads, // @IsOptional @IsArray - can be undefined
+      queries: this.isContextChanged ? undefined : sourceExperiment.queries, // @IsOptional @IsArray - can be undefined
+      experimentSegmentInclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentInclusion, // @IsOptional @IsArray - can be undefined
+      experimentSegmentExclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentExclusion, // @IsOptional @IsArray - can be undefined
+      stateTimeLogs: undefined, // @IsOptional @IsArray - can be undefined
+      backendVersion: sourceExperiment.backendVersion, // @IsOptional - can be undefined
+      moocletPolicyParameters: sourceExperiment.moocletPolicyParameters, // Conditional validation - can be undefined,
     };
 
     this.experimentService.createNewExperiment(experimentRequest);

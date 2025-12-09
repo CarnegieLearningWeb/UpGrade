@@ -130,6 +130,22 @@ export class DialogService {
     return this.openUpsertExperimentModal(commonModalConfig);
   }
 
+  openDuplicateExperimentModal(sourceExperiment: Experiment) {
+    const commonModalConfig: CommonModalConfig<UpsertExperimentParams> = {
+      title: 'Duplicate Experiment',
+      tagsLabel: 'experiments.upsert-experiment-modal.tags-label.text',
+      tagsPlaceholder: 'experiments.upsert-experiment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceExperiment: { ...sourceExperiment },
+        action: UPSERT_EXPERIMENT_ACTION.DUPLICATE,
+      },
+    };
+    return this.openUpsertExperimentModal(commonModalConfig);
+  }
+
   openUpsertExperimentModal(commonModalConfig: CommonModalConfig) {
     const config: MatDialogConfig = {
       data: commonModalConfig,
