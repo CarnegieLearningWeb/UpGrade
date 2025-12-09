@@ -1379,16 +1379,32 @@ export class ExperimentService {
         (conditionPayloads &&
           conditionPayloads.length > 0 &&
           conditionPayloads.map((conditionPayload) => {
+            const parentCondition = conditionPayload.parentCondition
+              ? conditionDocs.find(
+                  (doc) => doc.id === conditionIdMap.get(conditionPayload.parentCondition)
+                )
+              : undefined;
+            if (conditionPayload.parentCondition && !parentCondition) {
+              throw new Error(
+                `Parent condition not found for condition payload: ${conditionPayload.id}`
+              );
+            }
+            const decisionPoint = conditionPayload.decisionPoint
+              ? decisionPointDocs.find(
+                  (doc) => doc.id === decisionPointIdMap.get(conditionPayload.decisionPoint)
+                )
+              : undefined;
+            if (conditionPayload.decisionPoint && !decisionPoint) {
+              throw new Error(
+                `Decision point not found for condition payload: ${conditionPayload.id}`
+              );
+            }
             const conditionPayloadToReturn = {
               id: uuid(),
               payloadType: conditionPayload.payload.type,
               payloadValue: conditionPayload.payload.value,
-              parentCondition: conditionDocs.find(
-                (doc) => doc.id === conditionIdMap.get(conditionPayload.parentCondition)
-              ),
-              decisionPoint: decisionPointDocs.find(
-                (doc) => doc.id === decisionPointIdMap.get(conditionPayload?.decisionPoint)
-              ),
+              parentCondition,
+              decisionPoint,
             };
             return conditionPayloadToReturn;
           })) ||
