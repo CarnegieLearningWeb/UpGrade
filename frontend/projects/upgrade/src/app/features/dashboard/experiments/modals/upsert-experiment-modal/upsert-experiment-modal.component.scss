@@ -13,3 +13,31 @@
 .assignment-algorithm-section {
   padding: 4px 0;
 }
+
+.mooclet-policy-editor-section {
+  padding: 4px 0;
+  margin-bottom: 16px;
+
+  .section-label {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .json-editor-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    json-editor {
+      min-height: 200px;
+      max-height: 400px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 4px;
+    }
+
+    .validation-message {
+      color: #f44336;
+      min-height: 16px;
+    }
+  }
+}

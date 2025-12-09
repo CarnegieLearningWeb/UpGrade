@@ -537,6 +537,25 @@ export const EXPERIMENT_TRANSLATION_KEYS = {
   ENROLLMENT: 'experiments.global-enrollment.text',
 };
 
+export const EXPERIMENT_OVERVIEW_LABELS = {
+  DESCRIPTION: 'Description',
+  APP_CONTEXT: 'App Context',
+  EXPERIMENT_TYPE: 'Experiment Type',
+  UNIT_OF_ASSIGNMENT: 'Unit Of Assignment',
+  CONSISTENCY_RULE: 'Consistency Rule',
+  ASSIGNMENT_ALGORITHM: 'Assignment Algorithm',
+  ADAPTIVE_ALGORITHM_PARAMETERS: 'Adaptive Algorithm Parameters',
+  TAGS: 'Tags',
+} as const;
+
+export const TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS = {
+  BATCH_SIZE: 'Batch Size',
+  PRIOR_SUCCESS: 'Prior Success',
+  PRIOR_FAILURE: 'Prior Failure',
+  UNIFORM_THRESHOLD: 'Uniform Threshold',
+  TSPOSTDIFF_THRESH: 'TS Post Diff Threshold',
+};
+
 export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
 
 export interface ExperimentState extends EntityState<ExperimentVM> {

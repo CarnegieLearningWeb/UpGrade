@@ -1,16 +1,25 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { selectAll } from './experiments.reducer';
-import { EXPERIMENT_SEARCH_KEY, ExperimentState, Experiment, ExperimentVM } from './experiments.model';
+import {
+  EXPERIMENT_SEARCH_KEY,
+  ExperimentState,
+  Experiment,
+  ExperimentVM,
+  EXPERIMENT_OVERVIEW_LABELS,
+} from './experiments.model';
 import { selectRouterState } from '../../core.state';
 import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
 import {
   ASSIGNMENT_UNIT,
+  ASSIGNMENT_ALGORITHM,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
   CONDITION_ORDER_DISPLAY_MAP,
   CONSISTENCY_RULE_DISPLAY_MAP,
   ASSIGNMENT_UNIT_DISPLAY_MAP,
 } from 'upgrade_types';
 import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
+import { formatTSConfigurablePolicyParamDetails } from '../adaptive-algorithm-helper.service';
+import { KeyValueFormat } from '../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
 
@@ -180,16 +189,27 @@ export const selectExperimentOverviewDetails = createSelector(selectSelectedExpe
     return baseUnit;
   };
 
-  return {
-    ['Description']: experiment?.description,
-    ['App Context']: experiment?.context?.[0],
-    ['Experiment Type']: experiment?.type,
-    ['Unit Of Assignment']: formatUnitOfAssignment(),
-    ['Consistency Rule']: CONSISTENCY_RULE_DISPLAY_MAP[experiment?.consistencyRule] || experiment?.consistencyRule,
-    ['Assignment Algorithm']:
+  const details: KeyValueFormat = {
+    [EXPERIMENT_OVERVIEW_LABELS.DESCRIPTION]: experiment?.description,
+    [EXPERIMENT_OVERVIEW_LABELS.APP_CONTEXT]: experiment?.context?.[0],
+    [EXPERIMENT_OVERVIEW_LABELS.EXPERIMENT_TYPE]: experiment?.type,
+    [EXPERIMENT_OVERVIEW_LABELS.UNIT_OF_ASSIGNMENT]: formatUnitOfAssignment(),
+    [EXPERIMENT_OVERVIEW_LABELS.CONSISTENCY_RULE]:
+      CONSISTENCY_RULE_DISPLAY_MAP[experiment?.consistencyRule] || experiment?.consistencyRule,
+    [EXPERIMENT_OVERVIEW_LABELS.ASSIGNMENT_ALGORITHM]:
       ASSIGNMENT_ALGORITHM_DISPLAY_MAP[experiment?.assignmentAlgorithm] || experiment?.assignmentAlgorithm,
-    ['Tags']: experiment?.tags,
   };
+
+  // Add policy parameters if they exist
+  if (experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
+    details[EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS] =
+      formatTSConfigurablePolicyParamDetails(experiment);
+  }
+
+  // Always add tags at the end
+  details[EXPERIMENT_OVERVIEW_LABELS.TAGS] = experiment?.tags;
+
+  return details;
 });
 
 export const selectIsPollingExperimentDetailStats = createSelector(
