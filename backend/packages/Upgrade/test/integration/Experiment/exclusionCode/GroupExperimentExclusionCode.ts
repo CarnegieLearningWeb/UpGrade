@@ -88,6 +88,20 @@ export default async function testCase(): Promise<void> {
 
   let individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(1);
+  // EXCLUDED_DUE_TO_GROUP_LOGIC
+  experimentObject.state = EXPERIMENT_STATE.ENROLLING;
+  experimentObject.experimentSegmentExclusion = {
+    segment: {
+      id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
+      name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+      description: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
+      context: 'home',
+      type: 'private',
+      individualForSegment: [],
+      groupForSegment: [],
+      subSegments: [],
+    },
+  };
 
   await experimentService.deleteList(
     experimentObject.experimentSegmentExclusion[0].segment.id,

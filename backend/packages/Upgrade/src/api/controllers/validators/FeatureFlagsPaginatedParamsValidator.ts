@@ -26,6 +26,7 @@ export enum FLAG_SEARCH_KEY {
   STATUS = 'status',
   TAG = 'tag',
   CONTEXT = 'context',
+  ID = 'id',
 }
 
 class IFeatureFlagSortParamsValidator {

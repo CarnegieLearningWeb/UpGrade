@@ -55,8 +55,6 @@ import {
 } from 'upgrade_types';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { MetricService } from './MetricService';
-import { Metric } from '../models/Metric';
-import { MoocletRewardsService } from './MoocletRewardsService';
 import { env } from '../../env';
 import { ExperimentSchedulerService } from './ExperimentSchedulerService';
 
@@ -130,8 +128,7 @@ export class MoocletExperimentService extends ExperimentService {
     errorService: ErrorService,
     cacheService: CacheService,
     queryService: QueryService,
-    metricService: MetricService,
-    moocletRewardsService: MoocletRewardsService
+    metricService: MetricService
   ) {
     super(
       experimentRepository,
@@ -162,8 +159,7 @@ export class MoocletExperimentService extends ExperimentService {
       errorService,
       cacheService,
       queryService,
-      metricService,
-      moocletRewardsService
+      metricService
     );
   }
 
@@ -182,12 +178,9 @@ export class MoocletExperimentService extends ExperimentService {
   /**
    * handleCreateMoocletTransaction
    *
-   * 1. Create and save an experiment-specific reward metric for the experiment
-   * 2. Attach a percent-success reward metric query to the experimentDTO before saving
-   * 3. Save the upgrade experiment
-   * 4. Create and save the Mooclet experiment resources (outputs MoocletExperimentRef)
-   * 5. Assign the rewardMetricKey to the MoocletExperimentRef
-   * 6. Save the MoocletExperimentRef and VersionConditionMaps
+   * 1. Save the upgrade experiment
+   * 2. Create and save the Mooclet experiment resources (outputs MoocletExperimentRef)
+   * 3. Save the MoocletExperimentRef and VersionConditionMaps
    *
    * On any error, rollback the Mooclet resources and abort the transaction
    */
@@ -197,25 +190,7 @@ export class MoocletExperimentService extends ExperimentService {
     params: SyncCreateParams
   ): Promise<ExperimentDTO> {
     const logger = params.logger;
-    const { moocletPolicyParameters, queries, rewardMetricKey, context } = params.experimentDTO;
-
-    // create reward metric
-    try {
-      await this.moocletRewardsService.createAndSaveRewardMetric(rewardMetricKey, context[0], logger);
-    } catch (error) {
-      logger.error({
-        message: 'Failed to create reward metric',
-        error,
-        rewardMetricKey,
-      });
-      throw error;
-    }
-    if (!queries.some((query) => query?.metric?.key === rewardMetricKey)) {
-      // if it's not already present, append default reward metric query to existing experimentDTO queries before saving
-      const defaultRewardMetricQuery = this.moocletRewardsService.getRewardMetricQuery(rewardMetricKey);
-
-      queries.push(defaultRewardMetricQuery);
-    }
+    const { moocletPolicyParameters } = params.experimentDTO;
 
     // create Upgrade Experiment. If this fails, then mooclet resources will not be created, and the UpGrade experiment transaction will abort
     const experimentResponse = await this.createExperiment(manager, params);
@@ -226,8 +201,6 @@ export class MoocletExperimentService extends ExperimentService {
       moocletPolicyParameters,
       logger
     );
-
-    moocletExperimentRefResponse.rewardMetricKey = rewardMetricKey;
 
     logger.info({
       message: 'Mooclet experiment created successfully:',
@@ -766,7 +739,7 @@ export class MoocletExperimentService extends ExperimentService {
     const results = await Promise.allSettled(taskPromises);
 
     // Check if any tasks failed
-    const failures = results.filter((result) => result.status === 'rejected');
+    const failures = results.filter((result): result is PromiseRejectedResult => result.status === 'rejected');
 
     if (failures.length > 0) {
       // Log all the errors that occurred
@@ -1027,10 +1000,6 @@ export class MoocletExperimentService extends ExperimentService {
         existingEntityManager: manager,
       });
 
-      if (moocletExperimentRef.rewardMetricKey) {
-        await manager.getRepository(Metric).delete(moocletExperimentRef.rewardMetricKey);
-      }
-
       // delete the mooclet resources. If this fails, the transaction will abort and the upgrade experiment will not be deleted,
       // but the Mooclet resources may not be deleted either
       const removedResources = await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
@@ -1237,18 +1206,17 @@ export class MoocletExperimentService extends ExperimentService {
     }
   }
 
-  public async attachRewardKeyAndPolicyParamsToExperimentDTO(
+  public async attachPolicyParamsToExperimentDTO(
     experiment: ExperimentDTO,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO> {
     try {
       const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experiment.id);
-      const policyParamters = await this.moocletDataService.getPolicyParameters(
+      const policyParameters = await this.moocletDataService.getPolicyParameters(
         moocletExperimentRef.policyParametersId,
         logger
       );
-      experiment.rewardMetricKey = moocletExperimentRef.rewardMetricKey;
-      experiment.moocletPolicyParameters = policyParamters.parameters;
+      experiment.moocletPolicyParameters = policyParameters.parameters;
 
       return experiment;
     } catch (err) {

@@ -224,7 +224,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         }
 
         if (this.experimentInfo.assignmentAlgorithm in MOOCLET_POLICY_SCHEMA_MAP) {
-          this.overviewForm.get('experimentName').disable(); // disable due to rewardMetricKey naming convention using the experiment name, a complication we are just going to avoid
           this.overviewForm.get('assignmentAlgorithm').disable();
         }
         this.currentContext = this.experimentInfo.context[0];
