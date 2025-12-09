@@ -44,7 +44,6 @@ import {
 } from 'upgrade_types';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { MetricService } from '../../../src/api/services/MetricService';
-import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsService';
 import { ExperimentSchedulerService } from '../../../src/api/services/ExperimentSchedulerService';
 
 const mockDataSource = {
@@ -97,7 +96,6 @@ jest.mock('../../../src/api/services/ErrorService');
 jest.mock('../../../src/api/services/CacheService');
 jest.mock('../../../src/api/services/QueryService');
 jest.mock('../../../src/api/services/MetricService');
-jest.mock('../../../src/api/services/MoocletRewardsService');
 
 const mockTSConfigMoocletPolicyParameters = {
   assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
@@ -239,7 +237,6 @@ describe('#MoocletExperimentService', () => {
   let cacheService: CacheService;
   let queryService: QueryService;
   let metricService: MetricService;
-  let moocletRewardsService: MoocletRewardsService;
 
   beforeEach(() => {
     moocletDataService = {
@@ -252,11 +249,6 @@ describe('#MoocletExperimentService', () => {
       saveAllMetrics: jest.fn(),
       delete: jest.fn(),
     } as unknown as MetricService;
-
-    moocletRewardsService = {
-      createAndSaveRewardMetric: jest.fn(),
-      getRewardMetricQuery: jest.fn(),
-    } as unknown as MoocletRewardsService;
 
     // Create service with mocked dependencies
     moocletExperimentService = new MoocletExperimentService(
@@ -289,8 +281,7 @@ describe('#MoocletExperimentService', () => {
       errorService,
       cacheService,
       queryService,
-      metricService,
-      moocletRewardsService
+      metricService
     );
   });
 
@@ -334,7 +325,6 @@ describe('#MoocletExperimentService', () => {
         .spyOn(moocletExperimentService as any, 'createAndSaveVersionConditionMapEntities')
         .mockResolvedValue(undefined);
       jest.spyOn(moocletExperimentService as any, 'orchestrateDeleteMoocletResources').mockResolvedValue(undefined);
-      jest.spyOn(moocletRewardsService as any, 'createAndSaveRewardMetric').mockResolvedValue(undefined);
     });
 
     afterEach(() => {
@@ -366,7 +356,6 @@ describe('#MoocletExperimentService', () => {
       );
 
       expect(moocletExperimentService.orchestrateDeleteMoocletResources).not.toHaveBeenCalled();
-      expect(moocletRewardsService.createAndSaveRewardMetric).toHaveBeenCalled();
 
       // Verify the result
       expect(result).toEqual({

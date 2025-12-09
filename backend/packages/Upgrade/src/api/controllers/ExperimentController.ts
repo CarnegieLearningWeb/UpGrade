@@ -920,12 +920,10 @@ export class ExperimentController {
           'MoocletPolicyParameters are present in the experiment but Mooclet is not enabled in the environment'
         );
       } else {
-        experiment = await this.moocletExperimentService.attachRewardKeyAndPolicyParamsToExperimentDTO(
-          experiment,
-          request.logger
-        );
+        experiment = await this.moocletExperimentService.attachPolicyParamsToExperimentDTO(experiment, request.logger);
       }
     }
+
     return experiment;
   }
 

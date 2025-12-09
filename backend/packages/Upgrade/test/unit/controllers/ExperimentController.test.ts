@@ -118,7 +118,6 @@ describe('Experiment Controller Testing', () => {
     ...experimentData,
     id: uuid(),
     moocletPolicyParameters: tsConfigurablePolicyParameters,
-    rewardMetricKey: 'TEST_REWARD',
     assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
   };
 
