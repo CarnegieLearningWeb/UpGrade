@@ -1,0 +1,57 @@
+<div class="ts-configurable-params-section">
+  <span class="section-label ft-14-600">Mooclet Policy Parameters</span>
+
+  <form [formGroup]="policyForm" class="policy-form">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">Batch Size</mat-label>
+      <input matInput type="number" formControlName="batch_size" class="ft-14-400" min="1" step="1" />
+      <mat-hint class="form-hint ft-12-400">Number of samples per batch</mat-hint>
+      <mat-error *ngIf="policyForm.get('batch_size')?.hasError('required')">Batch size is required</mat-error>
+      <mat-error *ngIf="policyForm.get('batch_size')?.hasError('min')">Batch size must be at least 1</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">Uniform Threshold</mat-label>
+      <input matInput type="number" formControlName="uniform_threshold" class="ft-14-400" min="0" step="0.01" />
+      <mat-hint class="form-hint ft-12-400">Threshold for uniform sampling</mat-hint>
+      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('required')">
+        Uniform threshold is required
+      </mat-error>
+      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('min')">
+        Uniform threshold must be at least 0
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">TS Post Diff Threshold</mat-label>
+      <input matInput type="number" formControlName="tspostdiff_thresh" class="ft-14-400" min="0" step="0.01" />
+      <mat-hint class="form-hint ft-12-400">Thompson Sampling posterior difference threshold</mat-hint>
+      <mat-error *ngIf="policyForm.get('tspostdiff_thresh')?.hasError('required')">
+        TS Post Diff threshold is required
+      </mat-error>
+      <mat-error *ngIf="policyForm.get('tspostdiff_thresh')?.hasError('min')">
+        TS Post Diff threshold must be at least 0
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">Prior Success</mat-label>
+      <input matInput type="number" formControlName="prior_success" class="ft-14-400" min="0" step="0.1" />
+      <mat-hint class="form-hint ft-12-400">Prior success count for Beta distribution</mat-hint>
+      <mat-error *ngIf="policyForm.get('prior_success')?.hasError('required')">Prior success is required</mat-error>
+      <mat-error *ngIf="policyForm.get('prior_success')?.hasError('min')">
+        Prior success must be at least 0
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">Prior Failure</mat-label>
+      <input matInput type="number" formControlName="prior_failure" class="ft-14-400" min="0" step="0.1" />
+      <mat-hint class="form-hint ft-12-400">Prior failure count for Beta distribution</mat-hint>
+      <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('required')">Prior failure is required</mat-error>
+      <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('min')">
+        Prior failure must be at least 0
+      </mat-error>
+    </mat-form-field>
+  </form>
+</div>

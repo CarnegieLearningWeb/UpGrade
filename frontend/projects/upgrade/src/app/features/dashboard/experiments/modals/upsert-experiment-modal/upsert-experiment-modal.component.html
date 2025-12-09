@@ -156,20 +156,11 @@
       </mat-hint>
     </mat-form-field>
 
-    <div
+    <app-ts-configurable-policy-parameters-form
       *ngIf="assignmentAlgorithmValue === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE"
-      class="mooclet-policy-editor-section"
-    >
-      <span class="section-label ft-14-600">Mooclet Policy Parameters</span>
-      <div class="json-editor-container">
-        <json-editor #policyEditor [options]="jsonEditorOptions" [data]="defaultMoocletPolicyParameters"></json-editor>
-        <span
-          class="ft-12-400 validation-message"
-          *ngIf="moocletPolicyParametersErrors$ | async as errors"
-          [innerHTML]="errors"
-        ></span>
-      </div>
-    </div>
+      #tsConfigParamsForm
+      [initialParameters]="defaultMoocletPolicyParameters"
+    ></app-ts-configurable-policy-parameters-form>
 
     <app-common-tags-input
       formControlName="tags"

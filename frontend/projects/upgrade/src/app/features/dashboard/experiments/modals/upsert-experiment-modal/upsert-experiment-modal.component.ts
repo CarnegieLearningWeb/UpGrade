@@ -9,21 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { TranslateModule } from '@ngx-translate/core';
-import {
-  BehaviorSubject,
-  Observable,
-  Subscription,
-  combineLatestWith,
-  map,
-  startWith,
-  take,
-  Subject,
-  debounceTime,
-  switchMap,
-} from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, combineLatestWith, map, startWith, take } from 'rxjs';
 import { isEqual } from 'lodash';
-import { JsonEditorComponent, JsonEditorOptions, NgJsonEditorModule } from 'ang-jsoneditor';
-import { ValidationError } from 'class-validator';
 
 import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
 import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
@@ -58,6 +45,7 @@ import { CommonModalConfig } from '../../../../../shared-standalone-component-li
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 import { ENV, Environment } from '../../../../../../environments/environment-types';
 import { SharedModule } from '../../../../../shared/shared.module';
+import { TsConfigurablePolicyParametersFormComponent } from './ts-configurable-policy-parameters-form/ts-configurable-policy-parameters-form.component';
 
 @Component({
   selector: 'upsert-experiment-modal',
@@ -76,7 +64,7 @@ import { SharedModule } from '../../../../../shared/shared.module';
     AsyncPipe,
     NgIf,
     SharedModule,
-    NgJsonEditorModule,
+    TsConfigurablePolicyParametersFormComponent,
   ],
   templateUrl: './upsert-experiment-modal.component.html',
   styleUrl: './upsert-experiment-modal.component.scss',
@@ -107,13 +95,11 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   experimentForm: FormGroup;
   CommonTagInputType = CommonTagInputType;
 
-  // JSON Editor for mooclet policy parameters
-  @ViewChild('policyEditor', { static: false }) policyEditor: JsonEditorComponent;
-  jsonEditorOptions = new JsonEditorOptions();
+  // TS Configurable policy parameters form component
+  @ViewChild('tsConfigParamsForm', { static: false })
+  tsConfigParamsForm: TsConfigurablePolicyParametersFormComponent;
   defaultMoocletPolicyParameters: MoocletTSConfigurablePolicyParametersDTO;
   initialMoocletPolicyParameters: MoocletTSConfigurablePolicyParametersDTO | null = null;
-  moocletPolicyParametersErrors$ = new BehaviorSubject<ValidationError[]>([]);
-  editorValue$ = new Subject<any>();
 
   // Enum references for template
   UPSERT_EXPERIMENT_ACTION = UPSERT_EXPERIMENT_ACTION;
@@ -221,7 +207,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.stratificationFactorsService.fetchStratificationFactors(true);
     this.createExperimentForm();
     this.initializeMoocletPolicyParameters();
-    this.setupJsonEditor();
 
     // Set up subscriptions
     this.listenForContextMetaData();
@@ -415,33 +400,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  setupJsonEditor(): void {
-    this.jsonEditorOptions.mode = 'code';
-    this.jsonEditorOptions.statusBar = false;
-
-    // Set up value change listener for the editor value
-    this.jsonEditorOptions.onChange = () => {
-      try {
-        const value = this.policyEditor?.get();
-        if (value) {
-          this.editorValue$.next(value);
-        }
-      } catch {
-        // Invalid JSON in editor (The [x] icon will be displayed in the editor)
-      }
-    };
-
-    // Set up validation pipeline for feedback while typing
-    this.editorValue$
-      .pipe(
-        debounceTime(300),
-        switchMap((jsonValue) => this.adaptiveAlgorithmHelperService.validateTSConfigurablePolicyParameters(jsonValue))
-      )
-      .subscribe((errors) => {
-        this.moocletPolicyParametersErrors$.next(errors);
-      });
-  }
-
   handleAlgorithmChange(algorithm: ASSIGNMENT_ALGORITHM): void {
     if (this.adaptiveAlgorithmHelperService.isMoocletAlgorithm(algorithm)) {
       this.resetMoocletPolicyParameters();
@@ -461,10 +419,9 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
         this.adaptiveAlgorithmHelperService.createDefaultTSConfigurableParameters(outcomeVariableName);
     }
 
-    // Force editor to update with reset values
-    if (this.policyEditor) {
-      const jsonValue = JSON.parse(JSON.stringify(this.defaultMoocletPolicyParameters));
-      this.policyEditor.set(jsonValue);
+    // Update form component with reset values
+    if (this.tsConfigParamsForm) {
+      this.tsConfigParamsForm.patchValue(this.defaultMoocletPolicyParameters);
     }
   }
 
@@ -629,9 +586,9 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
 
     // Get mooclet policy parameters if ts_configurable is selected
-    const editorValue = this.policyEditor?.get();
+    const formValue = this.tsConfigParamsForm?.getValue();
     const moocletPolicyParameters = this.adaptiveAlgorithmHelperService.extractMoocletParametersFromEditor(
-      editorValue,
+      formValue,
       assignmentAlgorithm
     );
 
@@ -692,9 +649,9 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
 
     // Get mooclet policy parameters if ts_configurable is selected
-    const editorValue = this.policyEditor?.get();
+    const formValue = this.tsConfigParamsForm?.getValue();
     const moocletPolicyParameters = this.adaptiveAlgorithmHelperService.extractMoocletParametersFromEditor(
-      editorValue,
+      formValue,
       assignmentAlgorithm
     );
 

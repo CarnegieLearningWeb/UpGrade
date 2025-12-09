@@ -1,0 +1,18 @@
+.ts-configurable-params-section {
+  padding: 4px 0;
+
+  .section-label {
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .policy-form {
+    display: flex;
+    flex-direction: column;
+
+    mat-form-field {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+  }
+}
