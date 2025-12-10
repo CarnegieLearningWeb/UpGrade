@@ -2,11 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, from } from 'rxjs';
 import { validate, ValidationError } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import {
-  ASSIGNMENT_ALGORITHM,
-  MOOCLET_POLICY_SCHEMA_MAP,
-  MoocletTSConfigurablePolicyParametersDTO,
-} from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, MOOCLET_POLICY_SCHEMA_MAP } from 'upgrade_types';
 import { ExperimentVM, TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS } from './store/experiments.model';
 import { environment } from '../../../environments/environment';
 

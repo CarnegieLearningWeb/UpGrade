@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { TranslateModule } from '@ngx-translate/core';
 import {
   BehaviorSubject,
   debounceTime,
@@ -30,7 +31,7 @@ interface EditableTSConfigurablePolicyParameters {
 @Component({
   selector: 'app-ts-configurable-policy-parameters-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, TranslateModule],
   templateUrl: './ts-configurable-policy-parameters-form.component.html',
   styleUrl: './ts-configurable-policy-parameters-form.component.scss',
 })
@@ -39,6 +40,7 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   @Input() experimentNameValue?: string;
   @Output() parametersChange = new EventEmitter<MoocletTSConfigurablePolicyParametersDTO>();
   @Output() validationChange = new EventEmitter<boolean>();
+  @Output() formChanged = new EventEmitter<boolean>();
 
   private readonly formBuilder = inject(FormBuilder);
   private readonly adaptiveAlgorithmHelperService = inject(AdaptiveAlgorithmHelperService);
@@ -146,7 +148,11 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
         return !isEqual(currentValues, this.initialFormValue);
       })
     );
-    this.subscriptions.add(this.isInitialFormValueChanged$.subscribe());
+    this.subscriptions.add(
+      this.isInitialFormValueChanged$.subscribe((hasChanged) => {
+        this.formChanged.emit(hasChanged);
+      })
+    );
   }
 
   private validateParameters(formValue: EditableTSConfigurablePolicyParameters): Observable<ValidationError[]> {
@@ -156,7 +162,7 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
 
   private emitFormValueChanges(formValue: EditableTSConfigurablePolicyParameters): void {
     this.formValueChanges$.next(formValue);
-    this.parametersChange.emit(this.getFormValue());
+    this.parametersChange.emit(this.buildCompletePolicyParametersDTO(formValue));
   }
 
   private buildCompletePolicyParametersDTO(
@@ -180,42 +186,4 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
       min_rating: this.defaultParameters.min_rating,
     } as MoocletTSConfigurablePolicyParametersDTO;
   }
-
-  // Public API methods for parent component access
-
-  getFormValue(): MoocletTSConfigurablePolicyParametersDTO {
-    return this.buildCompletePolicyParametersDTO(this.policyForm.value);
-  }
-
-  getErrors(): ValidationError[] {
-    return this.validationErrors$.value;
-  }
-
-  isValid(): boolean {
-    return this.policyForm.valid && this.validationErrors$.value.length === 0;
-  }
-
-  reset(): void {
-    this.policyForm.patchValue({
-      batch_size: this.existingPolicyParams.batch_size,
-      uniform_threshold: this.existingPolicyParams.uniform_threshold,
-      tspostdiff_thresh: this.existingPolicyParams.tspostdiff_thresh,
-      prior_success: this.existingPolicyParams.prior?.success,
-      prior_failure: this.existingPolicyParams.prior?.failure,
-    });
-  }
-
-  // patchValue(params: MoocletTSConfigurablePolicyParametersDTO): void {
-  //   this.outcomeVariableName = params.outcome_variable_name || '';
-  //   this.maxRating = params.max_rating ?? 1;
-  //   this.minRating = params.min_rating ?? 0;
-
-  //   this.policyForm.patchValue({
-  //     batch_size: params.batch_size ?? 1,
-  //     uniform_threshold: params.uniform_threshold ?? 0,
-  //     tspostdiff_thresh: params.tspostdiff_thresh ?? 0,
-  //     prior_success: params.prior?.success ?? 1,
-  //     prior_failure: params.prior?.failure ?? 1,
-  //   });
-  // }
 }

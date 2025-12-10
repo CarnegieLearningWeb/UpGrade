@@ -16,7 +16,6 @@ import { CommonModalComponent } from '../../../../../shared-standalone-component
 import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { CommonTagsInputComponent } from '../../../../../shared-standalone-component-lib/components/common-tag-input/common-tag-input.component';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { AdaptiveAlgorithmHelperService } from '../../../../../core/experiments/adaptive-algorithm-helper.service';
 import {
   UPSERT_EXPERIMENT_ACTION,
   UpsertExperimentParams,
@@ -98,6 +97,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   // Mooclet policy parameters state (from child form events)
   moocletPolicyParameters: MoocletPolicyParametersDTO | null = null;
   isMoocletFormValid$ = new BehaviorSubject<boolean>(true);
+  isMoocletFormChanged$ = new BehaviorSubject<boolean>(false);
 
   // Enum references for template
   UPSERT_EXPERIMENT_ACTION = UPSERT_EXPERIMENT_ACTION;
@@ -348,10 +348,11 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   listenForPrimaryButtonDisabled() {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertExperiment$.pipe(
-      combineLatestWith(this.isInitialFormValueChanged$, this.isMoocletFormValid$),
-      map(([isLoading, isInitialFormValueChanged, isMoocletFormValid]) => {
-        // Disable if loading, no changes, form is invalid, or mooclet form is invalid
-        return isLoading || !isInitialFormValueChanged || !this.experimentForm.valid || !isMoocletFormValid;
+      combineLatestWith(this.isInitialFormValueChanged$, this.isMoocletFormValid$, this.isMoocletFormChanged$),
+      map(([isLoading, isInitialFormValueChanged, isMoocletFormValid, isMoocletFormChanged]) => {
+        // Disable if loading, no changes in either form, form is invalid, or mooclet form is invalid
+        const hasAnyChanges = isInitialFormValueChanged || isMoocletFormChanged;
+        return isLoading || !hasAnyChanges || !this.experimentForm.valid || !isMoocletFormValid;
       })
     );
     this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
@@ -499,11 +500,15 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   // Event handlers for mooclet algorithm child form
   onMoocletParametersChange(params: MoocletPolicyParametersDTO): void {
-    this.moocletPolicyParameters = params;
+    this.moocletPolicyParameters = { ...params, assignmentAlgorithm: this.assignmentAlgorithmValue };
   }
 
   onMoocletFormValidityChange(isValid: boolean): void {
     this.isMoocletFormValid$.next(isValid);
+  }
+
+  onMoocletFormChanged(hasChanged: boolean): void {
+    this.isMoocletFormChanged$.next(hasChanged);
   }
 
   setGroupTypes(contextMetaData?: IContextMetaData): void {
@@ -561,7 +566,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       consistencyRule: unitOfAssignment !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? consistencyRule : undefined, // Conditional validation
       conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined, // Conditional validation
       assignmentAlgorithm: assignmentAlgorithm || undefined, // @IsOptional
-      moocletPolicyParameters: { ...this.moocletPolicyParameters, assignmentAlgorithm }, // Include if ts_configurable is selected
       stratificationFactor: stratificationFactorObj,
       group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
       tags,
@@ -584,6 +588,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       stateTimeLogs: undefined, // @IsOptional @IsArray - can be undefined
       backendVersion: undefined, // @IsOptional - can be undefined
     };
+
+    if (this.moocletPolicyParameters) {
+      experimentRequest.moocletPolicyParameters = this.moocletPolicyParameters;
+    }
 
     this.experimentService.createNewExperiment(experimentRequest);
   }
@@ -648,6 +656,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       endOn: sourceExperiment.endOn,
       revertTo: sourceExperiment.revertTo,
     };
+
+    if (this.moocletPolicyParameters) {
+      experimentRequest.moocletPolicyParameters = this.moocletPolicyParameters;
+    }
 
     this.experimentService.updateExperiment(experimentRequest as unknown as ExperimentVM);
   }
