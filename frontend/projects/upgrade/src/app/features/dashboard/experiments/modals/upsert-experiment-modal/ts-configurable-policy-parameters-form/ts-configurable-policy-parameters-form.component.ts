@@ -5,7 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BehaviorSubject, debounceTime, from, Observable, Subject, Subscription, switchMap } from 'rxjs';
 import { ValidationError } from 'class-validator';
-import { MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
 import { AdaptiveAlgorithmHelperService } from '../../../../../../core/experiments/adaptive-algorithm-helper.service';
 
 @Component({
@@ -17,6 +17,7 @@ import { AdaptiveAlgorithmHelperService } from '../../../../../../core/experimen
 })
 export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDestroy {
   @Input() initialParameters?: MoocletTSConfigurablePolicyParametersDTO;
+  @Input() experimentNameValue?: string;
   @Output() parametersChange = new EventEmitter<MoocletTSConfigurablePolicyParametersDTO>();
   @Output() validationChange = new EventEmitter<boolean>();
 
@@ -27,11 +28,6 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   validationErrors$ = new BehaviorSubject<ValidationError[]>([]);
   private formValueChanges$ = new Subject<any>();
   private subscriptions = new Subscription();
-
-  // Store non-editable fields
-  private outcomeVariableName = '';
-  private maxRating = 1;
-  private minRating = 0;
 
   ngOnInit(): void {
     this.initializeFormValues();
@@ -45,10 +41,8 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   }
 
   private initializeFormValues(): void {
-    if (this.initialParameters) {
-      this.outcomeVariableName = this.initialParameters.outcome_variable_name || '';
-      this.maxRating = this.initialParameters.max_rating ?? 1;
-      this.minRating = this.initialParameters.min_rating ?? 0;
+    if (!this.initialParameters) {
+      this.initialParameters = new MoocletTSConfigurablePolicyParametersDTO();
     }
   }
 
@@ -56,11 +50,11 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
     const params = this.initialParameters;
 
     this.policyForm = this.formBuilder.group({
-      batch_size: [params?.batch_size ?? 1, [Validators.required, Validators.min(1)]],
-      uniform_threshold: [params?.uniform_threshold ?? 0, [Validators.required, Validators.min(0)]],
-      tspostdiff_thresh: [params?.tspostdiff_thresh ?? 0, [Validators.required, Validators.min(0)]],
-      prior_success: [params?.prior?.success ?? 1, [Validators.required, Validators.min(0)]],
-      prior_failure: [params?.prior?.failure ?? 1, [Validators.required, Validators.min(0)]],
+      batch_size: [params.batch_size, [Validators.required, Validators.min(1)]],
+      uniform_threshold: [params.uniform_threshold, [Validators.required, Validators.min(0)]],
+      tspostdiff_thresh: [params.tspostdiff_thresh, [Validators.required, Validators.min(0)]],
+      prior_success: [params.prior.success, [Validators.required, Validators.min(0)]],
+      prior_failure: [params.prior.failure, [Validators.required, Validators.min(0)]],
     });
   }
 
@@ -98,16 +92,21 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
 
   private buildCompleteParameters(formValue: any): MoocletTSConfigurablePolicyParametersDTO {
     return {
-      outcome_variable_name: this.outcomeVariableName,
+      // set configurable fields
       batch_size: formValue.batch_size,
-      max_rating: this.maxRating,
-      min_rating: this.minRating,
       uniform_threshold: formValue.uniform_threshold,
       tspostdiff_thresh: formValue.tspostdiff_thresh,
       prior: {
         success: formValue.prior_success,
         failure: formValue.prior_failure,
       },
+      // set non-configurable fields
+      assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+      outcome_variable_name: this.adaptiveAlgorithmHelperService.generateUniqueOutcomeVariableName(
+        this.experimentNameValue
+      ),
+      max_rating: this.initialParameters.max_rating,
+      min_rating: this.initialParameters.min_rating,
     } as MoocletTSConfigurablePolicyParametersDTO;
   }
 
@@ -126,28 +125,26 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   }
 
   reset(): void {
-    if (this.initialParameters) {
-      this.policyForm.patchValue({
-        batch_size: this.initialParameters.batch_size ?? 1,
-        uniform_threshold: this.initialParameters.uniform_threshold ?? 0,
-        tspostdiff_thresh: this.initialParameters.tspostdiff_thresh ?? 0,
-        prior_success: this.initialParameters.prior?.success ?? 1,
-        prior_failure: this.initialParameters.prior?.failure ?? 1,
-      });
-    }
-  }
-
-  patchValue(params: MoocletTSConfigurablePolicyParametersDTO): void {
-    this.outcomeVariableName = params.outcome_variable_name || '';
-    this.maxRating = params.max_rating ?? 1;
-    this.minRating = params.min_rating ?? 0;
-
     this.policyForm.patchValue({
-      batch_size: params.batch_size ?? 1,
-      uniform_threshold: params.uniform_threshold ?? 0,
-      tspostdiff_thresh: params.tspostdiff_thresh ?? 0,
-      prior_success: params.prior?.success ?? 1,
-      prior_failure: params.prior?.failure ?? 1,
+      batch_size: this.initialParameters.batch_size,
+      uniform_threshold: this.initialParameters.uniform_threshold,
+      tspostdiff_thresh: this.initialParameters.tspostdiff_thresh,
+      prior_success: this.initialParameters.prior?.success,
+      prior_failure: this.initialParameters.prior?.failure,
     });
   }
+
+  // patchValue(params: MoocletTSConfigurablePolicyParametersDTO): void {
+  //   this.outcomeVariableName = params.outcome_variable_name || '';
+  //   this.maxRating = params.max_rating ?? 1;
+  //   this.minRating = params.min_rating ?? 0;
+
+  //   this.policyForm.patchValue({
+  //     batch_size: params.batch_size ?? 1,
+  //     uniform_threshold: params.uniform_threshold ?? 0,
+  //     tspostdiff_thresh: params.tspostdiff_thresh ?? 0,
+  //     prior_success: params.prior?.success ?? 1,
+  //     prior_failure: params.prior?.failure ?? 1,
+  //   });
+  // }
 }

@@ -61,6 +61,19 @@ export class AdaptiveAlgorithmHelperService {
     return !!MOOCLET_POLICY_SCHEMA_MAP[algorithm];
   }
 
+  generateUniqueOutcomeVariableName(experimentName: string): string {
+    // first 10 chars of experiment name, sanitized
+    const baseName = experimentName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .substring(0, 10);
+
+    // append ISO date timestamp suffix to ensure uniqueness
+    const timestamp = new Date().toISOString();
+    return `${baseName}_${timestamp}_REWARD_VARIABLE`;
+  }
+
   /**
    * Validate mooclet policy parameters against the TS Configurable schema.
    * Returns an Observable of validation errors (empty array if valid).
@@ -73,37 +86,5 @@ export class AdaptiveAlgorithmHelperService {
     };
     const DTOInstance = plainToInstance(ValidatorClass, plainDTO);
     return from(validate(DTOInstance));
-  }
-
-  /**
-   * Extract mooclet policy parameters from JSON editor value.
-   * Adds the assignmentAlgorithm property for backend validation.
-   * Returns undefined if the editor value is invalid or algorithm is not TS_CONFIGURABLE.
-   */
-  extractMoocletParametersFromEditor(editorValue: any, algorithmType: ASSIGNMENT_ALGORITHM): any | undefined {
-    if (algorithmType !== ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
-      return undefined;
-    }
-
-    try {
-      // Add assignmentAlgorithm property for backend validation
-      return {
-        ...editorValue,
-        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
-      };
-    } catch {
-      // If extraction fails, return undefined (validation will catch it)
-      return undefined;
-    }
-  }
-
-  /**
-   * Create default TS Configurable policy parameters with the given outcome variable name.
-   * Used when creating a new experiment or resetting parameters.
-   */
-  createDefaultTSConfigurableParameters(outcomeVariableName: string): MoocletTSConfigurablePolicyParametersDTO {
-    const defaultParams = new MOOCLET_POLICY_SCHEMA_MAP[ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]();
-    defaultParams.outcome_variable_name = outcomeVariableName;
-    return defaultParams;
   }
 }
