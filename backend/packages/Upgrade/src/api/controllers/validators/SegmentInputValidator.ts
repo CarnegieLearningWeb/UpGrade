@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
-import { SegmentValidator } from 'src/api/DTO/ExperimentDTO';
+import { SegmentValidator } from '../../DTO/ExperimentDTO';
 import { SEGMENT_TYPE, IMPORT_COMPATIBILITY_TYPE } from 'upgrade_types';
 
 export class Group {

@@ -87,6 +87,26 @@ export namespace UpGradeClientInterfaces {
     aliases: IExperimentUserAliases;
   }
 
+  export interface ISendRewardResponse {
+    message: string;
+    request: {
+      rewardValue: 'SUCCESS' | 'FAILURE';
+      experimentId?: string;
+      context?: string;
+      decisionPoint?: {
+        site: string;
+        target: string;
+      };
+    };
+    reward: {
+      variable: string;
+      value: number;
+      mooclet: number;
+      version: number;
+      learner: string;
+    };
+  }
+
   export interface IHttpClientWrapperRequestConfig {
     headers?: {
       [key: string]: string | string[];

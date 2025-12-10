@@ -49,6 +49,26 @@ export class ExperimentSegmentExclusionRepository extends Repository<ExperimentS
       });
   }
 
+  public getExistingSegments(segmentIds: string[]): Promise<ExperimentSegmentExclusion[]> {
+    if (!segmentIds || segmentIds.length === 0) {
+      return Promise.resolve([]);
+    }
+    return this.createQueryBuilder('experimentSegmentExclusion')
+      .leftJoinAndSelect(`experimentSegmentExclusion.segment`, 'segment')
+      .leftJoinAndSelect(`experimentSegmentExclusion.experiment`, 'experiment')
+      .where('segment.id IN (:...segmentIds)', { segmentIds })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentSegmentExclusion',
+          'getExistingSegments',
+          { segmentIds },
+          errorMsg
+        );
+        throw errorMsgString;
+      });
+  }
+
   public async getExperimentSegmentExclusionDocBySegmentId(
     segmentId: string
   ): Promise<Partial<ExperimentSegmentExclusion[]>> {

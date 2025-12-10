@@ -29,7 +29,7 @@
               [class.active]="element.data[referenceId] === expandedId"
               (click)="toggleExpandableSymbol(element.data[referenceId])"
             >
-              play_arrow
+              chevron_right
             </mat-icon>
           </ng-template>
         </ng-template>
@@ -40,8 +40,8 @@
     <ng-container matColumnDef="expandedDetail">
       <mat-cell class="ft-12-600" *matCellDef="let element">
         <div *ngIf="element.data[referenceId] === expandedId" class="inner-table-container">
-          <home-enrollment-point-partition-table [partitionData]="element.partitions" [experiment]="experiment">
-          </home-enrollment-point-partition-table>
+          <enrollment-point-partition-table [partitionData]="element.partitions" [experiment]="experiment">
+          </enrollment-point-partition-table>
         </div>
       </mat-cell>
     </ng-container>

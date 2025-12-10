@@ -94,4 +94,5 @@ export class CommonSectionCardTitleHeaderComponent {
   @Input() updatedAt?: string;
   @Input() warningMessage?: string;
   @Input() chipClass?: STATUS_INDICATOR_CHIP_TYPE;
+  @Input() id?: string;
 }

@@ -39,7 +39,6 @@ import {
   SUPPORTED_MOOCLET_ALGORITHMS,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
   EXPERIMENT_TYPE,
-  MoocletTSConfigurablePolicyParametersDTO,
 } from 'upgrade_types';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
@@ -98,8 +97,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   // TS Configurable policy parameters form component
   @ViewChild('tsConfigParamsForm', { static: false })
   tsConfigParamsForm: TsConfigurablePolicyParametersFormComponent;
-  defaultMoocletPolicyParameters: MoocletTSConfigurablePolicyParametersDTO;
-  initialMoocletPolicyParameters: MoocletTSConfigurablePolicyParametersDTO | null = null;
 
   // Enum references for template
   UPSERT_EXPERIMENT_ACTION = UPSERT_EXPERIMENT_ACTION;
@@ -196,7 +193,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       supportedMoocletAlgorithms.forEach((algorithmName) => {
         this.assignmentAlgorithms.push({
           value: algorithmName,
-          description: `Mooclet algorithm: ${algorithmName}`,
+          description: `Adaptive Experiment Algorithm: ${algorithmName}`,
         });
       });
     }
@@ -206,7 +203,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.experimentService.fetchContextMetaData();
     this.stratificationFactorsService.fetchStratificationFactors(true);
     this.createExperimentForm();
-    this.initializeMoocletPolicyParameters();
 
     // Set up subscriptions
     this.listenForContextMetaData();
@@ -375,54 +371,8 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.experimentForm.get('assignmentAlgorithm')?.valueChanges.subscribe((algorithm) => {
         this.validateStratificationFactorSelection(algorithm);
-        this.handleAlgorithmChange(algorithm);
       })
     );
-  }
-
-  initializeMoocletPolicyParameters(): void {
-    const { sourceExperiment, action } = this.config.params;
-
-    if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceExperiment?.moocletPolicyParameters) {
-      // Edit mode: Load existing parameters, stripping out current_posteriors and assignmentAlgorithm
-      const existingParams = { ...sourceExperiment.moocletPolicyParameters };
-      delete existingParams.current_posteriors;
-      delete existingParams.assignmentAlgorithm;
-      this.initialMoocletPolicyParameters = existingParams;
-      this.defaultMoocletPolicyParameters = existingParams;
-    } else {
-      // Add mode: Generate defaults
-      const experimentName = this.experimentForm.get('name')?.value || '';
-      const outcomeVariableName = this.experimentService.getOutcomeVariableName(experimentName);
-      this.defaultMoocletPolicyParameters =
-        this.adaptiveAlgorithmHelperService.createDefaultTSConfigurableParameters(outcomeVariableName);
-      this.initialMoocletPolicyParameters = null;
-    }
-  }
-
-  handleAlgorithmChange(algorithm: ASSIGNMENT_ALGORITHM): void {
-    if (this.adaptiveAlgorithmHelperService.isMoocletAlgorithm(algorithm)) {
-      this.resetMoocletPolicyParameters();
-    }
-  }
-
-  resetMoocletPolicyParameters(): void {
-    // Reset to initial parameters (edit mode) or defaults (add mode)
-    if (this.initialMoocletPolicyParameters) {
-      // Edit mode: restore initial parameters
-      this.defaultMoocletPolicyParameters = { ...this.initialMoocletPolicyParameters };
-    } else {
-      // Add mode: regenerate defaults
-      const experimentName = this.experimentForm.get('name')?.value || '';
-      const outcomeVariableName = this.experimentService.getOutcomeVariableName(experimentName);
-      this.defaultMoocletPolicyParameters =
-        this.adaptiveAlgorithmHelperService.createDefaultTSConfigurableParameters(outcomeVariableName);
-    }
-
-    // Update form component with reset values
-    if (this.tsConfigParamsForm) {
-      this.tsConfigParamsForm.patchValue(this.defaultMoocletPolicyParameters);
-    }
   }
 
   listenOnUnitOfAssignment(): void {
@@ -532,6 +482,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     stratificationFactorControl?.updateValueAndValidity();
   }
 
+  get experimentNameValue() {
+    return this.experimentForm.get('name')?.value;
+  }
+
   get assignmentAlgorithmValue() {
     return this.experimentForm.get('assignmentAlgorithm')?.value;
   }
@@ -586,11 +540,8 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
 
     // Get mooclet policy parameters if ts_configurable is selected
-    const formValue = this.tsConfigParamsForm?.getValue();
-    const moocletPolicyParameters = this.adaptiveAlgorithmHelperService.extractMoocletParametersFromEditor(
-      formValue,
-      assignmentAlgorithm
-    );
+    const moocletPolicyParameters = this.tsConfigParamsForm?.getValue();
+    // HERE
 
     const experimentRequest: AddExperimentRequest = {
       // Form data
@@ -602,6 +553,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       consistencyRule: unitOfAssignment !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? consistencyRule : undefined, // Conditional validation
       conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined, // Conditional validation
       assignmentAlgorithm: assignmentAlgorithm || undefined, // @IsOptional
+      moocletPolicyParameters: { ...moocletPolicyParameters, assignmentAlgorithm }, // Include if ts_configurable is selected
       stratificationFactor: stratificationFactorObj,
       group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
       tags,
@@ -623,8 +575,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       experimentSegmentExclusion: undefined, // @IsOptional @IsArray - can be undefined
       stateTimeLogs: undefined, // @IsOptional @IsArray - can be undefined
       backendVersion: undefined, // @IsOptional - can be undefined
-      moocletPolicyParameters, // Include if ts_configurable is selected
-      rewardMetricKey: `test_${Date.now()}_REWARD`, // TODO DELETE ME WHEN REWARD KEY FIX IS BROUGHT IN
     };
 
     this.experimentService.createNewExperiment(experimentRequest);
@@ -649,11 +599,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
 
     // Get mooclet policy parameters if ts_configurable is selected
-    const formValue = this.tsConfigParamsForm?.getValue();
-    const moocletPolicyParameters = this.adaptiveAlgorithmHelperService.extractMoocletParametersFromEditor(
-      formValue,
-      assignmentAlgorithm
-    );
+    const moocletPolicyParameters = this.tsConfigParamsForm?.getValue();
 
     const experimentRequest: UpdateExperimentRequest = {
       // Spread existing experiment data first
@@ -668,6 +614,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       consistencyRule: unitOfAssignment !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? consistencyRule : undefined,
       conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined,
       assignmentAlgorithm: assignmentAlgorithm || undefined,
+      moocletPolicyParameters: moocletPolicyParameters,
       stratificationFactor: stratificationFactorObj,
       group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
       tags,
@@ -688,8 +635,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
       // Backend metadata
       backendVersion: sourceExperiment.backendVersion,
-      moocletPolicyParameters: moocletPolicyParameters || sourceExperiment.moocletPolicyParameters,
-      rewardMetricKey: sourceExperiment.rewardMetricKey,
 
       // Required backend fields with defaults if not present
       postExperimentRule: sourceExperiment.postExperimentRule || POST_EXPERIMENT_RULE.CONTINUE,

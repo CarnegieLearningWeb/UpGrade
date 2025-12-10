@@ -283,18 +283,6 @@ export class ExperimentService {
     return `${timestamp}_${truncatedExperimentName} + _REWARD_VAR`;
   }
 
-  getRewardMetricKey(experimentName: string) {
-    return `${this.formatExperimentName(experimentName)}_REWARD`;
-  }
-
-  getRewardMetricData(rewardMetricKey: string) {
-    return {
-      metric_Key: rewardMetricKey,
-      metric_Operation: 'Percentage (Success)',
-      metric_Name: 'Success Rate',
-    };
-  }
-
   addExperimentInclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
     this.store$.dispatch(experimentAction.actionAddExperimentInclusionList({ list }));
   }
