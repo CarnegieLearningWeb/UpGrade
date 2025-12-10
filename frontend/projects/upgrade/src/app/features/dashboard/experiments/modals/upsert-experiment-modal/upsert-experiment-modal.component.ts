@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AsyncPipe, NgIf, CommonModule } from '@angular/common';
@@ -39,6 +39,7 @@ import {
   SUPPORTED_MOOCLET_ALGORITHMS,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
   EXPERIMENT_TYPE,
+  MoocletPolicyParametersDTO,
 } from 'upgrade_types';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
@@ -94,9 +95,9 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   experimentForm: FormGroup;
   CommonTagInputType = CommonTagInputType;
 
-  // TS Configurable policy parameters form component
-  @ViewChild('tsConfigParamsForm', { static: false })
-  tsConfigParamsForm: TsConfigurablePolicyParametersFormComponent;
+  // Mooclet policy parameters state (from child form events)
+  moocletPolicyParameters: MoocletPolicyParametersDTO | null = null;
+  isMoocletFormValid$ = new BehaviorSubject<boolean>(true);
 
   // Enum references for template
   UPSERT_EXPERIMENT_ACTION = UPSERT_EXPERIMENT_ACTION;
@@ -177,7 +178,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     public dialog: MatDialog,
     private readonly formBuilder: FormBuilder,
     private readonly experimentService: ExperimentService,
-    private readonly adaptiveAlgorithmHelperService: AdaptiveAlgorithmHelperService,
     private readonly stratificationFactorsService: StratificationFactorsService,
     public dialogRef: MatDialogRef<UpsertExperimentModalComponent>,
     @Inject(ENV) private readonly environment: Environment
@@ -348,8 +348,11 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   listenForPrimaryButtonDisabled() {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertExperiment$.pipe(
-      combineLatestWith(this.isInitialFormValueChanged$),
-      map(([isLoading, isInitialFormValueChanged]) => isLoading || !isInitialFormValueChanged)
+      combineLatestWith(this.isInitialFormValueChanged$, this.isMoocletFormValid$),
+      map(([isLoading, isInitialFormValueChanged, isMoocletFormValid]) => {
+        // Disable if loading, no changes, form is invalid, or mooclet form is invalid
+        return isLoading || !isInitialFormValueChanged || !this.experimentForm.valid || !isMoocletFormValid;
+      })
     );
     this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
   }
@@ -494,6 +497,15 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     return this.experimentForm.get('unitOfAssignment')?.value;
   }
 
+  // Event handlers for mooclet algorithm child form
+  onMoocletParametersChange(params: MoocletPolicyParametersDTO): void {
+    this.moocletPolicyParameters = params;
+  }
+
+  onMoocletFormValidityChange(isValid: boolean): void {
+    this.isMoocletFormValid$.next(isValid);
+  }
+
   setGroupTypes(contextMetaData?: IContextMetaData): void {
     this.groupTypes = [];
     // We'll use the current subscription to get context metadata if not provided
@@ -539,10 +551,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }: ExperimentFormData): void {
     const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
 
-    // Get mooclet policy parameters if ts_configurable is selected
-    const moocletPolicyParameters = this.tsConfigParamsForm?.getValue();
-    // HERE
-
     const experimentRequest: AddExperimentRequest = {
       // Form data
       name,
@@ -553,7 +561,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       consistencyRule: unitOfAssignment !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? consistencyRule : undefined, // Conditional validation
       conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined, // Conditional validation
       assignmentAlgorithm: assignmentAlgorithm || undefined, // @IsOptional
-      moocletPolicyParameters: { ...moocletPolicyParameters, assignmentAlgorithm }, // Include if ts_configurable is selected
+      moocletPolicyParameters: { ...this.moocletPolicyParameters, assignmentAlgorithm }, // Include if ts_configurable is selected
       stratificationFactor: stratificationFactorObj,
       group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
       tags,
@@ -598,9 +606,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   ): void {
     const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
 
-    // Get mooclet policy parameters if ts_configurable is selected
-    const moocletPolicyParameters = this.tsConfigParamsForm?.getValue();
-
     const experimentRequest: UpdateExperimentRequest = {
       // Spread existing experiment data first
       ...sourceExperiment,
@@ -614,7 +619,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       consistencyRule: unitOfAssignment !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? consistencyRule : undefined,
       conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined,
       assignmentAlgorithm: assignmentAlgorithm || undefined,
-      moocletPolicyParameters: moocletPolicyParameters,
+      moocletPolicyParameters: { ...this.moocletPolicyParameters, assignmentAlgorithm },
       stratificationFactor: stratificationFactorObj,
       group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
       tags,

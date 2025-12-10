@@ -3,7 +3,12 @@
 
   .section-label {
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    color: var(--dark-grey);
+    font-family: 'Roboto' !important;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 600;
+    font-size: 14px;
   }
 
   .policy-form {

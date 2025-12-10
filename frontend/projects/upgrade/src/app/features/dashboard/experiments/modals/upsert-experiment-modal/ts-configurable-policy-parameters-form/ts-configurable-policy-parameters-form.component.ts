@@ -3,10 +3,29 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { BehaviorSubject, debounceTime, from, Observable, Subject, Subscription, switchMap } from 'rxjs';
+import {
+  BehaviorSubject,
+  debounceTime,
+  from,
+  map,
+  Observable,
+  startWith,
+  Subject,
+  Subscription,
+  switchMap,
+} from 'rxjs';
 import { ValidationError } from 'class-validator';
 import { ASSIGNMENT_ALGORITHM, MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
 import { AdaptiveAlgorithmHelperService } from '../../../../../../core/experiments/adaptive-algorithm-helper.service';
+import isEqual from 'lodash.isequal';
+
+interface EditableTSConfigurablePolicyParameters {
+  batch_size: number;
+  uniform_threshold: number;
+  tspostdiff_thresh: number;
+  prior_success: number;
+  prior_failure: number;
+}
 
 @Component({
   selector: 'app-ts-configurable-policy-parameters-form',
@@ -16,7 +35,7 @@ import { AdaptiveAlgorithmHelperService } from '../../../../../../core/experimen
   styleUrl: './ts-configurable-policy-parameters-form.component.scss',
 })
 export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDestroy {
-  @Input() initialParameters?: MoocletTSConfigurablePolicyParametersDTO;
+  @Input() existingPolicyParams?: MoocletTSConfigurablePolicyParametersDTO;
   @Input() experimentNameValue?: string;
   @Output() parametersChange = new EventEmitter<MoocletTSConfigurablePolicyParametersDTO>();
   @Output() validationChange = new EventEmitter<boolean>();
@@ -26,14 +45,18 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
 
   policyForm: FormGroup;
   validationErrors$ = new BehaviorSubject<ValidationError[]>([]);
-  private formValueChanges$ = new Subject<any>();
-  private subscriptions = new Subscription();
+  isInitialFormValueChanged$: Observable<boolean>;
+  defaultParameters: MoocletTSConfigurablePolicyParametersDTO;
+  initialFormValue: EditableTSConfigurablePolicyParameters;
+  formValueChanges$ = new Subject<EditableTSConfigurablePolicyParameters>();
+  subscriptions = new Subscription();
 
   ngOnInit(): void {
     this.initializeFormValues();
     this.createForm();
     this.setupValidation();
     this.listenToFormChanges();
+    this.listenForIsInitialFormValueChanged();
   }
 
   ngOnDestroy(): void {
@@ -41,20 +64,50 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   }
 
   private initializeFormValues(): void {
-    if (!this.initialParameters) {
-      this.initialParameters = new MoocletTSConfigurablePolicyParametersDTO();
+    this.defaultParameters = new MoocletTSConfigurablePolicyParametersDTO();
+
+    // when adding a new experiment
+    if (!this.existingPolicyParams) {
+      this.initialFormValue = {
+        batch_size: this.defaultParameters.batch_size,
+        uniform_threshold: this.defaultParameters.uniform_threshold,
+        tspostdiff_thresh: this.defaultParameters.tspostdiff_thresh,
+        prior_success: this.defaultParameters.prior?.success,
+        prior_failure: this.defaultParameters.prior?.failure,
+      };
+    } else {
+      // when editing an existing experiment
+      this.initialFormValue = {
+        batch_size: this.existingPolicyParams.batch_size,
+        uniform_threshold: this.existingPolicyParams.uniform_threshold,
+        tspostdiff_thresh: this.existingPolicyParams.tspostdiff_thresh,
+        prior_success: this.existingPolicyParams.prior?.success,
+        prior_failure: this.existingPolicyParams.prior?.failure,
+      };
     }
   }
 
   private createForm(): void {
-    const params = this.initialParameters;
+    const params = this.initialFormValue;
 
     this.policyForm = this.formBuilder.group({
-      batch_size: [params.batch_size, [Validators.required, Validators.min(1)]],
-      uniform_threshold: [params.uniform_threshold, [Validators.required, Validators.min(0)]],
-      tspostdiff_thresh: [params.tspostdiff_thresh, [Validators.required, Validators.min(0)]],
-      prior_success: [params.prior.success, [Validators.required, Validators.min(0)]],
-      prior_failure: [params.prior.failure, [Validators.required, Validators.min(0)]],
+      batch_size: [params.batch_size, [Validators.required, Validators.min(this.defaultParameters.batch_size)]],
+      uniform_threshold: [
+        params.uniform_threshold,
+        [Validators.required, Validators.min(this.defaultParameters.uniform_threshold)],
+      ],
+      tspostdiff_thresh: [
+        params.tspostdiff_thresh,
+        [Validators.required, Validators.min(this.defaultParameters.tspostdiff_thresh)],
+      ],
+      prior_success: [
+        params.prior_success,
+        [Validators.required, Validators.min(this.defaultParameters.prior.success)],
+      ],
+      prior_failure: [
+        params.prior_failure,
+        [Validators.required, Validators.min(this.defaultParameters.prior.failure)],
+      ],
     });
   }
 
@@ -75,22 +128,40 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
 
   private listenToFormChanges(): void {
     this.subscriptions.add(
-      this.policyForm.valueChanges.subscribe((value) => {
-        this.formValueChanges$.next(value);
-        this.parametersChange.emit(this.getValue());
+      this.policyForm.valueChanges.subscribe((formValue: EditableTSConfigurablePolicyParameters) => {
+        this.emitFormValueChanges(formValue);
       })
     );
 
     // Trigger initial validation
-    this.formValueChanges$.next(this.policyForm.value);
+    this.emitFormValueChanges(this.policyForm.value);
   }
 
-  private validateParameters(formValue: any): Observable<ValidationError[]> {
-    const completeParams = this.buildCompleteParameters(formValue);
+  private listenForIsInitialFormValueChanged() {
+    this.isInitialFormValueChanged$ = this.policyForm.valueChanges.pipe(
+      startWith(this.policyForm.value),
+      map(() => {
+        // Compare form values with initial parameters
+        const currentValues = this.policyForm.value;
+        return !isEqual(currentValues, this.initialFormValue);
+      })
+    );
+    this.subscriptions.add(this.isInitialFormValueChanged$.subscribe());
+  }
+
+  private validateParameters(formValue: EditableTSConfigurablePolicyParameters): Observable<ValidationError[]> {
+    const completeParams = this.buildCompletePolicyParametersDTO(formValue);
     return from(this.adaptiveAlgorithmHelperService.validateTSConfigurablePolicyParameters(completeParams));
   }
 
-  private buildCompleteParameters(formValue: any): MoocletTSConfigurablePolicyParametersDTO {
+  private emitFormValueChanges(formValue: EditableTSConfigurablePolicyParameters): void {
+    this.formValueChanges$.next(formValue);
+    this.parametersChange.emit(this.getFormValue());
+  }
+
+  private buildCompletePolicyParametersDTO(
+    formValue: EditableTSConfigurablePolicyParameters
+  ): MoocletTSConfigurablePolicyParametersDTO {
     return {
       // set configurable fields
       batch_size: formValue.batch_size,
@@ -105,15 +176,15 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
       outcome_variable_name: this.adaptiveAlgorithmHelperService.generateUniqueOutcomeVariableName(
         this.experimentNameValue
       ),
-      max_rating: this.initialParameters.max_rating,
-      min_rating: this.initialParameters.min_rating,
+      max_rating: this.defaultParameters.max_rating,
+      min_rating: this.defaultParameters.min_rating,
     } as MoocletTSConfigurablePolicyParametersDTO;
   }
 
   // Public API methods for parent component access
 
-  getValue(): MoocletTSConfigurablePolicyParametersDTO {
-    return this.buildCompleteParameters(this.policyForm.value);
+  getFormValue(): MoocletTSConfigurablePolicyParametersDTO {
+    return this.buildCompletePolicyParametersDTO(this.policyForm.value);
   }
 
   getErrors(): ValidationError[] {
@@ -126,11 +197,11 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
 
   reset(): void {
     this.policyForm.patchValue({
-      batch_size: this.initialParameters.batch_size,
-      uniform_threshold: this.initialParameters.uniform_threshold,
-      tspostdiff_thresh: this.initialParameters.tspostdiff_thresh,
-      prior_success: this.initialParameters.prior?.success,
-      prior_failure: this.initialParameters.prior?.failure,
+      batch_size: this.existingPolicyParams.batch_size,
+      uniform_threshold: this.existingPolicyParams.uniform_threshold,
+      tspostdiff_thresh: this.existingPolicyParams.tspostdiff_thresh,
+      prior_success: this.existingPolicyParams.prior?.success,
+      prior_failure: this.existingPolicyParams.prior?.failure,
     });
   }
 
