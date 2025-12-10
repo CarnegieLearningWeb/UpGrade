@@ -16,5 +16,9 @@
   </app-common-section-card-action-buttons>
 
   <!-- content -->
-  <app-experiment-enrollment-data content *ngIf="isSectionCardExpanded"></app-experiment-enrollment-data>
+  <app-experiment-enrollment-data
+    content
+    [experiment]="experiment"
+    *ngIf="isSectionCardExpanded"
+  ></app-experiment-enrollment-data>
 </app-common-section-card>

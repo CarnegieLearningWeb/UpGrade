@@ -92,6 +92,6 @@ export {
   MoocletTSConfigurablePolicyParametersDTO,
   MOOCLET_POLICY_SCHEMA_MAP,
   SUPPORTED_MOOCLET_ALGORITHMS,
-  BinaryRewardMetricAllowedValue,
-  BinaryRewardMetricValueMap,
+  BinaryRewardAllowedValue,
+  BinaryRewardValueMap,
 } from './Mooclet';

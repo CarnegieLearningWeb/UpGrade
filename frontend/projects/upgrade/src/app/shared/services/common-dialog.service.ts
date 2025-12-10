@@ -28,8 +28,8 @@ import { UpsertSegmentModalComponent } from '../../features/dashboard/segments/m
 import {
   EXPERIMENT_LIST_IMPORT_SERVICE,
   FEATURE_FLAG_IMPORT_SERVICE,
+  FEATURE_FLAG_LIST_IMPORT_SERVICE,
   ImportServiceAdapter,
-  LIST_IMPORT_SERVICE,
   SEGMENT_IMPORT_SERVICE,
   SEGMENT_LIST_IMPORT_SERVICE,
 } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
@@ -1039,7 +1039,7 @@ export class DialogService {
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        importTypeAdapterToken: LIST_IMPORT_SERVICE,
+        importTypeAdapterToken: FEATURE_FLAG_LIST_IMPORT_SERVICE,
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
         incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
@@ -1093,7 +1093,7 @@ export class DialogService {
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        importTypeAdapterToken: LIST_IMPORT_SERVICE,
+        importTypeAdapterToken: FEATURE_FLAG_LIST_IMPORT_SERVICE,
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
         incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',

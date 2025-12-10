@@ -19,6 +19,7 @@ const logger = new UpgradeLogger();
 describe('Query Service Testing', () => {
   let service: QueryService;
   let queryRepo: Repository<QueryRepository>;
+  let logRepo: LogRepository;
   let archivedStatsRepo: Repository<ArchivedStatsRepository>;
   let module: TestingModule;
   let dataSource: DataSource;
@@ -118,6 +119,7 @@ describe('Query Service Testing', () => {
 
     service = module.get<QueryService>(QueryService);
     queryRepo = module.get<Repository<QueryRepository>>(getRepositoryToken(QueryRepository));
+    logRepo = module.get<LogRepository>(getRepositoryToken(LogRepository));
     archivedStatsRepo = module.get<Repository<ArchivedStatsRepository>>(getRepositoryToken(ArchivedStatsRepository));
   });
 
@@ -168,7 +170,7 @@ describe('Query Service Testing', () => {
   });
 
   it('should log error when query fails', async () => {
-    queryRepo.find = jest.fn().mockResolvedValue(['nothing']);
+    logRepo.analysis = jest.fn().mockRejectedValue(new Error('Query Failed'));
     const response = await service.analyze(['id1'], logger);
     expect(response).toEqual([
       {

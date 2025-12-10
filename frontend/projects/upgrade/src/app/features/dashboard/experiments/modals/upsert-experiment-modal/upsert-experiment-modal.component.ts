@@ -617,7 +617,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       // Backend metadata
       backendVersion: sourceExperiment.backendVersion,
       moocletPolicyParameters: sourceExperiment.moocletPolicyParameters,
-      rewardMetricKey: sourceExperiment.rewardMetricKey,
 
       // Required backend fields with defaults if not present
       postExperimentRule: sourceExperiment.postExperimentRule || POST_EXPERIMENT_RULE.CONTINUE,

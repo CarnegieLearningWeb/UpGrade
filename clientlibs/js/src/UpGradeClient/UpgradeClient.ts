@@ -5,6 +5,7 @@ import {
   IExperimentAssignmentv5,
   MARKED_DECISION_POINT_STATUS,
   IUserAliases,
+  BinaryRewardAllowedValue,
 } from 'upgrade_types';
 import Assignment from '../Assignment/Assignment';
 import ApiService from '../ApiService/ApiService';
@@ -45,6 +46,10 @@ export default class UpgradeClient {
   // allow MARKED_DECISION_POINT_STATUS to be exposed on the client a la UpgradeClient.MARKED_DECISION_POINT_STATUS
   // this will allow js users who are not using the upgrade types package to use this enum for markExperimentPoint()
   public static MARKED_DECISION_POINT_STATUS = MARKED_DECISION_POINT_STATUS;
+
+  // allow BINARY_REWARD_VALUE to be exposed on the client a la UpgradeClient.BINARY_REWARD_VALUE
+  // this will allow js users who are not using the upgrade types package to use this enum for sendReward()
+  public static BINARY_REWARD_VALUE = BinaryRewardAllowedValue;
 
   /**
    * When constructing UpgradeClient, the user id, api host url, and "context" identifier are required.
@@ -558,5 +563,78 @@ export default class UpgradeClient {
    */
   async setAltUserIds(altUserIds: string[]): Promise<IUserAliases> {
     return await this.apiService.setAltUserIds(altUserIds);
+  }
+
+  /**
+   * Sends a binary reward signal for an adaptive experiment (Mooclet).
+   *
+   * This method allows sending reward feedback (SUCCESS or FAILURE) for adaptive experiments.
+   * The reward is used by the adaptive algorithm to update its learning model and improve future assignments.
+   *
+   * **Reward Values:**
+   * You can pass reward values in two ways:
+   * - As string literals: 'SUCCESS' or 'FAILURE'
+   * - Using the enum: UpgradeClient.BINARY_REWARD_VALUE.SUCCESS or UpgradeClient.BINARY_REWARD_VALUE.FAILURE
+   *
+   * **Lookup Methods:**
+   *
+   * The method supports two ways to identify the experiment:
+   *
+   * 1. **Direct Lookup** - Provide the `experimentId` directly
+   * 2. **Decision Point Lookup** - Provide `context` and `decisionPoint` (site and target) to look up the experiment
+   *
+   * At least one of these methods must be provided.
+   *
+   * @example
+   * ```ts
+   * // Example 1: Using string literals with experimentId
+   * const response = await upgradeClient.sendReward({
+   *   rewardValue: 'SUCCESS',
+   *   experimentId: 'exp_adaptive_123'
+   * });
+   * ```
+   *
+   * @example
+   * ```ts
+   * // Example 2: Using the enum with experimentId
+   * const response = await upgradeClient.sendReward({
+   *   rewardValue: UpgradeClient.BINARY_REWARD_VALUE.SUCCESS,
+   *   experimentId: 'exp_adaptive_123'
+   * });
+   * ```
+   *
+   * @example
+   * ```ts
+   * // Example 3: Using decision point lookup with string literals
+   * const response = await upgradeClient.sendReward({
+   *   rewardValue: 'FAILURE',
+   *   context: 'learning-module',
+   *   decisionPoint: {
+   *     site: 'math-course',
+   *     target: 'problem-set-1'
+   *   }
+   * });
+   * ```
+   *
+   * @example
+   * ```ts
+   * // Example 4: Using decision point lookup with enum
+   * const response = await upgradeClient.sendReward({
+   *   rewardValue: UpgradeClient.BINARY_REWARD_VALUE.FAILURE,
+   *   context: 'learning-module',
+   *   decisionPoint: {
+   *     site: 'math-course',
+   *     target: 'problem-set-1'
+   *   }
+   * });
+   * ```
+   */
+  async sendReward(params: {
+    rewardValue: 'SUCCESS' | 'FAILURE';
+    experimentId?: string;
+    context?: string;
+    decisionPoint?: { site: string; target: string };
+  }): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
+    return await this.apiService.sendReward(params);
   }
 }

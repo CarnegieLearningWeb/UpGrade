@@ -14,6 +14,7 @@ import { QueryService } from '../../../../src/api/services/QueryService';
 import { MetricService } from '../../../../src/api/services/MetricService';
 import { SettingService } from '../../../../src/api/services/SettingService';
 import { metrics } from '../../mockData/metric';
+import { AnalyticsQueryResult } from '../../../../src/api/repositories/LogRepository';
 
 export default async function MetricQueriesCheck(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
@@ -702,9 +703,9 @@ export default async function MetricQueriesCheck(): Promise<void> {
   );
 
   const allQuery = await queryService.find(new UpgradeLogger());
-  for (let i = 0; i < allQuery.length; i++) {
-    const query = allQuery[i];
+  for (const query of allQuery) {
     const queryResult = await queryService.analyze([query.id], new UpgradeLogger());
+    const mainEffect = queryResult[0].mainEffect as AnalyticsQueryResult[];
     let expectedValue;
     switch (query.query.operationType) {
       case OPERATION_TYPES.SUM: {
@@ -726,11 +727,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
 
-        const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === conditionId) {
-            return condition;
-          }
-        });
+        const condition = mainEffect.find((c) => c.conditionId === conditionId);
         const sum = parseInt(condition.result, 10);
         expect(sum).toEqual(expectedValue);
         break;
@@ -754,11 +751,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === conditionId) {
-            return condition;
-          }
-        });
+        const condition = mainEffect.find((c) => c.conditionId === conditionId);
         const minValue = parseInt(condition.result, 10);
 
         expect(minValue).toEqual(expectedValue);
@@ -783,11 +776,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === conditionId) {
-            return condition;
-          }
-        });
+        const condition = mainEffect.find((c) => c.conditionId === conditionId);
         const maxValue = parseInt(condition.result, 10);
         expect(maxValue).toEqual(expectedValue);
         break;
@@ -811,11 +800,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === conditionId) {
-            return condition;
-          }
-        });
+        const condition = mainEffect.find((c) => c.conditionId === conditionId);
         const meanValue = parseInt(condition.result, 10);
         expect(meanValue).toEqual(expectedValue);
         break;
@@ -839,11 +824,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === conditionId) {
-            return condition;
-          }
-        });
+        const condition = mainEffect.find((c) => c.conditionId === conditionId);
         const Mode = parseInt(condition.result, 10);
         expect(Mode).toEqual(expectedValue);
         break;
@@ -867,11 +848,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === conditionId) {
-            return condition;
-          }
-        });
+        const condition = mainEffect.find((c) => c.conditionId === conditionId);
         const Median = parseInt(condition.result, 10);
         expect(Median).toEqual(expectedValue);
         break;
@@ -895,11 +872,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === conditionId) {
-            return condition;
-          }
-        });
+        const condition = mainEffect.find((c) => c.conditionId === conditionId);
         const StdDev = parseInt(condition.result, 10);
         expect(StdDev).toEqual(expectedValue);
         break;
@@ -940,11 +913,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
           }
         }
 
-        const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === conditionId) {
-            return condition;
-          }
-        });
+        const condition = mainEffect.find((c) => c.conditionId === conditionId);
         const Count = parseInt(condition.result, 10);
         expect(Count).toEqual(expectedValue);
         break;
@@ -964,11 +933,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
             break;
           }
         }
-        const condition = queryResult[0].mainEffect.find((condition) => {
-          if (condition.conditionId === conditionId) {
-            return condition;
-          }
-        });
+        const condition = mainEffect.find((c) => c.conditionId === conditionId);
         const Percentage = parseInt(condition.result, 10);
         expect(Percentage).toEqual(expectedValue);
         break;

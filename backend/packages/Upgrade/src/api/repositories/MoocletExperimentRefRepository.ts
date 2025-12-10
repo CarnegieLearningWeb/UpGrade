@@ -12,4 +12,20 @@ export class MoocletExperimentRefRepository extends Repository<MoocletExperiment
       .where('experiment.state = :status', { status: EXPERIMENT_STATE.ENROLLING })
       .getMany();
   }
+
+  public async findActivelyEnrollingMoocletExperimentsByContextSiteTarget(
+    context: string,
+    site: string,
+    target: string
+  ): Promise<MoocletExperimentRef[]> {
+    return this.createQueryBuilder('moocletExperimentRef')
+      .leftJoinAndSelect('moocletExperimentRef.versionConditionMaps', 'versionConditionMaps')
+      .leftJoinAndSelect('moocletExperimentRef.experiment', 'experiment')
+      .leftJoinAndSelect('experiment.partitions', 'decisionPoint')
+      .where('experiment.state = :status', { status: EXPERIMENT_STATE.ENROLLING })
+      .andWhere(':context = ANY(experiment.context)', { context })
+      .andWhere('decisionPoint.site = :site', { site })
+      .andWhere('decisionPoint.target = :target', { target })
+      .getMany();
+  }
 }

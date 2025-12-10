@@ -71,16 +71,14 @@ export class SegmentImportAdapter implements ImportServiceAdapter {
 }
 
 @Injectable({ providedIn: 'root' })
-export class ListImportAdapter implements ImportServiceAdapter {
+export class FeatureFlagListImportAdapter implements ImportServiceAdapter {
   constructor(
     private featureFlagsDataService: FeatureFlagsDataService,
     private featureFlagsService: FeatureFlagsService
   ) {}
 
-  validateFiles(files: any[], params?: any): Observable<ValidatedImportResponse[]> {
-    return this.featureFlagsDataService.validateFeatureFlagList(files, params.flagId, params.filterType) as Observable<
-      ValidatedImportResponse[]
-    >;
+  validateFiles(files: any[]): Observable<ValidatedImportResponse[]> {
+    return this.featureFlagsDataService.validateListsImport(files) as Observable<ValidatedImportResponse[]>;
   }
 
   importFiles(files: any[], params?: any): Observable<ValidatedImportResponse[]> {
@@ -156,7 +154,9 @@ export class ExperimentListImportAdapter implements ImportServiceAdapter {
 
 export const FEATURE_FLAG_IMPORT_SERVICE = new InjectionToken<ImportServiceAdapter>('FEATURE_FLAG_IMPORT_SERVICE');
 export const SEGMENT_IMPORT_SERVICE = new InjectionToken<ImportServiceAdapter>('SEGMENT_IMPORT_SERVICE');
-export const LIST_IMPORT_SERVICE = new InjectionToken<ImportServiceAdapter>('LIST_IMPORT_SERVICE');
+export const FEATURE_FLAG_LIST_IMPORT_SERVICE = new InjectionToken<ImportServiceAdapter>(
+  'FEATURE_FLAG_LIST_IMPORT_SERVICE'
+);
 export const SEGMENT_LIST_IMPORT_SERVICE = new InjectionToken<ImportServiceAdapter>('SEGMENT_LIST_IMPORT_SERVICE');
 export const EXPERIMENT_LIST_IMPORT_SERVICE = new InjectionToken<ImportServiceAdapter>(
   'EXPERIMENT_LIST_IMPORT_SERVICE'
@@ -166,7 +166,7 @@ export function provideImportServiceTypeAdapters(): Provider[] {
   return [
     { provide: FEATURE_FLAG_IMPORT_SERVICE, useClass: FeatureFlagImportAdapter },
     { provide: SEGMENT_IMPORT_SERVICE, useClass: SegmentImportAdapter },
-    { provide: LIST_IMPORT_SERVICE, useClass: ListImportAdapter },
+    { provide: FEATURE_FLAG_LIST_IMPORT_SERVICE, useClass: FeatureFlagListImportAdapter },
     { provide: SEGMENT_LIST_IMPORT_SERVICE, useClass: SegmentListImportAdapter },
     { provide: EXPERIMENT_LIST_IMPORT_SERVICE, useClass: ExperimentListImportAdapter },
   ];

@@ -1,14 +1,25 @@
-import { Component, ChangeDetectionStrategy, Input, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, OnDestroy, forwardRef } from '@angular/core';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
+import { CommonModule } from '@angular/common';
+import { EnrollmentPointPartitionTableComponent } from '../enrollment-point-partition-table/enrollment-point-partition-table.component';
 
 @Component({
   selector: 'app-table-row',
   templateUrl: './table-row.component.html',
   styleUrls: ['./table-row.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    TranslateModule,
+    CommonModule,
+    MatTableModule,
+    MatIconModule,
+    forwardRef(() => EnrollmentPointPartitionTableComponent),
+  ],
+  standalone: true,
 })
 export class TableRowComponent implements OnDestroy {
   @Input() dataSource: any;
