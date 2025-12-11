@@ -278,9 +278,7 @@ export class ExperimentService {
   }
 
   getOutcomeVariableName(experimentName: string) {
-    const timestamp = new Date().getTime().toFixed(8);
-    const truncatedExperimentName = this.formatExperimentName(experimentName).substring(0, 8);
-    return `${timestamp}_${truncatedExperimentName} + _REWARD_VAR`;
+    return `${this.formatExperimentName(experimentName)}_REWARD_VARIABLE`;
   }
 
   addExperimentInclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
