@@ -1,0 +1,74 @@
+<div class="table-container">
+  <!-- Loading spinner -->
+  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading"></mat-progress-bar>
+
+  <!-- Table -->
+  <table mat-table [dataSource]="dataSource" [ngClass]="{ 'no-data': !dataSource?.length }">
+    <!-- Condition Column -->
+    <ng-container matColumnDef="conditionCode">
+      <th mat-header-cell *matHeaderCellDef class="condition-column ft-14-600">
+        {{ 'experiments.details.posteriors.condition.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="condition-column ft-14-400">
+        {{ row.conditionCode }}
+      </td>
+    </ng-container>
+
+    <!-- Successes Column -->
+    <ng-container matColumnDef="successes">
+      <th mat-header-cell *matHeaderCellDef class="number-column ft-14-600">
+        {{ 'experiments.details.posteriors.successes.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="number-column ft-14-400">
+        {{ row.successes }}
+      </td>
+    </ng-container>
+
+    <!-- Failures Column -->
+    <ng-container matColumnDef="failures">
+      <th mat-header-cell *matHeaderCellDef class="number-column ft-14-600">
+        {{ 'experiments.details.posteriors.failures.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="number-column ft-14-400">
+        {{ row.failures }}
+      </td>
+    </ng-container>
+
+    <!-- Success Rate Column -->
+    <ng-container matColumnDef="successRate">
+      <th mat-header-cell *matHeaderCellDef class="number-column ft-14-600">
+        {{ 'experiments.details.posteriors.successRate.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="number-column ft-14-400">{{ row.successRate | number : '1.1-1' }}%</td>
+    </ng-container>
+
+    <!-- Total Column -->
+    <ng-container matColumnDef="total">
+      <th mat-header-cell *matHeaderCellDef class="number-column ft-14-600">
+        {{ 'experiments.details.posteriors.total.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="number-column ft-14-400">
+        {{ row.total }}
+      </td>
+    </ng-container>
+
+    <!-- Percentage Column
+    <ng-container matColumnDef="percentage">
+      <th mat-header-cell *matHeaderCellDef class="number-column ft-14-600">
+        {{ 'experiments.details.posteriors.percentOfTotalRewards.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="number-column ft-14-400">{{ row.percentage | number : '1.1-1' }}%</td>
+    </ng-container> -->
+
+    <!-- Header and Row Definitions -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+    <!-- No Data Row -->
+    <tr *matNoDataRow>
+      <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
+        {{ 'experiments.details.posteriors.no-data-row.text' | translate }}
+      </td>
+    </tr>
+  </table>
+</div>

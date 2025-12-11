@@ -6,6 +6,7 @@ import {
   Experiment,
   ExperimentVM,
   EXPERIMENT_OVERVIEW_LABELS,
+  CurrentPosteriorsTableRow,
 } from './experiments.model';
 import { selectRouterState } from '../../core.state';
 import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
@@ -257,4 +258,45 @@ export const selectExperimentExclusions = createSelector(
 export const selectExperimentExclusionsLength = createSelector(
   selectExperimentExclusions,
   (exclusions) => exclusions.length
+);
+
+export const selectCurrentPosteriorsTableData = createSelector(
+  selectSelectedExperiment,
+  (experiment: ExperimentVM): CurrentPosteriorsTableRow[] => {
+    if (!experiment?.moocletPolicyParameters?.current_posteriors) {
+      return [];
+    }
+
+    const posteriors = experiment.moocletPolicyParameters.current_posteriors;
+    const rows: CurrentPosteriorsTableRow[] = [];
+
+    // Calculate grand total for percentage calculation
+    let grandTotalSuccesses = 0;
+    let grandTotalFailures = 0;
+
+    Object.values(posteriors).forEach((posterior) => {
+      grandTotalSuccesses += posterior.successes;
+      grandTotalFailures += posterior.failures;
+    });
+
+    const grandTotal = grandTotalSuccesses + grandTotalFailures;
+
+    // Create table rows
+    Object.entries(posteriors).forEach(([conditionCode, posterior]) => {
+      const total = posterior.successes + posterior.failures;
+      const successRate = total > 0 ? (posterior.successes / total) * 100 : 0;
+      const percentage = grandTotal > 0 ? (total / grandTotal) * 100 : 0;
+
+      rows.push({
+        conditionCode,
+        successes: posterior.successes,
+        failures: posterior.failures,
+        successRate,
+        total,
+        percentage,
+      });
+    });
+
+    return rows;
+  }
 );
