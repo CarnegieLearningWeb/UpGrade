@@ -44,7 +44,7 @@ import { StratificationFactorsService } from '../../../../../core/stratification
 import { ENV, Environment } from '../../../../../../environments/environment-types';
 import { SharedModule } from '../../../../../shared/shared.module';
 import { TsConfigurablePolicyParametersFormComponent } from './ts-configurable-policy-parameters-form/ts-configurable-policy-parameters-form.component';
-import { MoocletAlgorithmHelper } from '../../../../../core/experiments/adaptive-algorithm-helper.service';
+import { MoocletExperimentHelperService } from '../../../../../core/experiments/mooclet-helper.service';
 
 @Component({
   selector: 'upsert-experiment-modal',
@@ -179,7 +179,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     private readonly formBuilder: FormBuilder,
     private readonly experimentService: ExperimentService,
     private readonly stratificationFactorsService: StratificationFactorsService,
-    private readonly adaptiveAlgorithmHelperService: MoocletAlgorithmHelper,
+    private readonly moocletExperimentHelperService: MoocletExperimentHelperService,
     public dialogRef: MatDialogRef<UpsertExperimentModalComponent>,
     @Inject(ENV) private readonly environment: Environment
   ) {
@@ -190,7 +190,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       });
     }
     // Delegate to service to get supported mooclet algorithm options
-    const moocletAlgorithmOptions = this.adaptiveAlgorithmHelperService.getSupportedMoocletAlgorithmOptions();
+    const moocletAlgorithmOptions = this.moocletExperimentHelperService.getSupportedMoocletAlgorithmOptions();
     this.assignmentAlgorithms.push(...moocletAlgorithmOptions);
   }
 
@@ -457,7 +457,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   checkForMoocletAlgorithmChange(): void {
     // Reset mooclet policy parameters when assignment algorithm changes
-    if (!this.adaptiveAlgorithmHelperService.isMoocletAlgorithm(this.assignmentAlgorithmValue)) {
+    if (!this.moocletExperimentHelperService.isMoocletAlgorithm(this.assignmentAlgorithmValue)) {
       this.moocletPolicyParameters = null;
     }
   }

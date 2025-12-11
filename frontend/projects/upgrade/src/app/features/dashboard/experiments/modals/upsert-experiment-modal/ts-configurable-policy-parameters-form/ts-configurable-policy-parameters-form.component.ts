@@ -18,9 +18,9 @@ import {
 import { ValidationError } from 'class-validator';
 import { MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
 import {
-  MoocletAlgorithmHelper,
   EditableTSConfigurablePolicyParameters,
-} from '../../../../../../core/experiments/adaptive-algorithm-helper.service';
+  MoocletExperimentHelperService,
+} from '../../../../../../core/experiments/mooclet-helper.service';
 import isEqual from 'lodash.isequal';
 
 @Component({
@@ -38,7 +38,7 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   @Output() formChanged = new EventEmitter<boolean>();
 
   private readonly formBuilder = inject(FormBuilder);
-  private readonly adaptiveAlgorithmHelperService = inject(MoocletAlgorithmHelper);
+  private readonly moocletExperimentHelperService = inject(MoocletExperimentHelperService);
 
   policyForm: FormGroup;
   validationErrors$ = new BehaviorSubject<ValidationError[]>([]);
@@ -61,14 +61,14 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
 
   private initializeFormValues(): void {
     // Delegate to service to derive initial form values from existing or default parameters
-    this.initialFormValue = this.adaptiveAlgorithmHelperService.deriveEditableParametersForTSConfigurable(
+    this.initialFormValue = this.moocletExperimentHelperService.deriveEditableParametersForTSConfigurable(
       this.existingPolicyParams
     );
   }
 
   private createForm(): void {
     const params = this.initialFormValue;
-    const validators = this.adaptiveAlgorithmHelperService.getTSConfigurableFieldValidators();
+    const validators = this.moocletExperimentHelperService.getTSConfigurableFieldValidators();
 
     this.policyForm = this.formBuilder.group({
       batch_size: [params.batch_size, validators.batch_size],
@@ -123,7 +123,7 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
 
   private validateParameters(formValue: EditableTSConfigurablePolicyParameters): Observable<ValidationError[]> {
     const completeParams = this.buildCompletePolicyParametersDTO(formValue);
-    return from(this.adaptiveAlgorithmHelperService.validateTSConfigurablePolicyParameters(completeParams));
+    return from(this.moocletExperimentHelperService.validateTSConfigurablePolicyParameters(completeParams));
   }
 
   private emitFormValueChanges(formValue: EditableTSConfigurablePolicyParameters): void {
@@ -135,7 +135,7 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
     formValue: EditableTSConfigurablePolicyParameters
   ): MoocletTSConfigurablePolicyParametersDTO {
     // Delegate DTO assembly to service
-    return this.adaptiveAlgorithmHelperService.buildTSConfigurablePolicyParametersDTO(
+    return this.moocletExperimentHelperService.buildTSConfigurablePolicyParametersDTO(
       formValue,
       this.experimentNameValue
     );
