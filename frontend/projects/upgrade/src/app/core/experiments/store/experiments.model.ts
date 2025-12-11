@@ -660,3 +660,11 @@ export interface InteractionEffectGraphData {
 export interface ExperimentSegmentListResponse extends SegmentNew {
   experiment: Experiment;
 }
+
+export interface CurrentPosteriorsTableRow {
+  conditionCode: string;
+  successes: number;
+  failures: number;
+  total: number;
+  percentage: number;
+}

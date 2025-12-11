@@ -18,9 +18,9 @@ import {
 import { ValidationError } from 'class-validator';
 import { MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
 import {
-  MoocletAlgorithmHelper,
+  MoocletExperimentHelperService,
   EditableTSConfigurablePolicyParameters,
-} from '../../../../../../core/experiments/adaptive-algorithm-helper.service';
+} from '../../../../../../core/experiments/mooclet-helper.service';
 import isEqual from 'lodash.isequal';
 
 @Component({
@@ -38,7 +38,7 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   @Output() formChanged = new EventEmitter<boolean>();
 
   private readonly formBuilder = inject(FormBuilder);
-  private readonly adaptiveAlgorithmHelperService = inject(MoocletAlgorithmHelper);
+  private readonly adaptiveAlgorithmHelperService = inject(MoocletExperimentHelperService);
 
   policyForm: FormGroup;
   validationErrors$ = new BehaviorSubject<ValidationError[]>([]);

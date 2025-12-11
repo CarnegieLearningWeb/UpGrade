@@ -52,6 +52,12 @@
         section-card
       ></app-experiment-enrollment-data-section-card>
 
+      <app-experiment-reward-feedback-section-card
+        *ngIf="activeTabIndex === 1"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-reward-feedback-section-card>
+
       <app-experiment-metrics-data-section-card
         *ngIf="activeTabIndex === 1"
         [isSectionCardExpanded]="isSectionCardExpanded"
