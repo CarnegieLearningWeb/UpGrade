@@ -11,8 +11,13 @@ import {
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { filter } from 'rxjs/operators';
-import { MatCheckboxChange } from '@angular/material/checkbox';
+import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
 import { Subscription } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { MatSelectModule } from '@angular/material/select';
+import { TranslateModule } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
 
 // Used in EnrollmentOverTimeComponent
 enum ExperimentFilterType {
@@ -25,10 +30,11 @@ enum ExperimentFilterType {
 const INDIVIDUAL = 'individual';
 
 @Component({
-  selector: 'home-enrollment-over-time',
+  selector: 'enrollment-over-time',
   templateUrl: './enrollment-over-time.component.html',
   styleUrls: ['./enrollment-over-time.component.scss'],
-  standalone: false,
+  imports: [CommonModule, TranslateModule, MatSelectModule, NgxChartsModule, FormsModule, MatCheckboxModule],
+  standalone: true,
 })
 export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy {
   @Input() experiment: ExperimentVM;

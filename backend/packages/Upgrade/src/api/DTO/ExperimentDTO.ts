@@ -530,10 +530,6 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
     keepDiscriminatorProperty: true,
   })
   public moocletPolicyParameters?: MoocletPolicyParametersDTO;
-
-  @ValidateIf(isMoocletAssignmentAlgorithm)
-  @IsDefined()
-  public rewardMetricKey?: string;
 }
 
 export class OldExperimentDTO extends BaseExperimentWithoutPayload {

@@ -5,6 +5,11 @@
   width: 100%;
   min-height: 150px;
 
+  .title {
+    display: block;
+    margin-bottom: 20px;
+  }
+
   .spinner {
     display: flex;
     position: absolute;

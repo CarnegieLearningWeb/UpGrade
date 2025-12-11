@@ -36,7 +36,6 @@ import { UserStratificationFactorRepository } from '../../../src/api/repositorie
 import { configureLogger } from '../../utils/logger';
 import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import { factorialGroupExperiment, factorialIndividualExperiment } from '../mockdata/raw';
-import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
 import { FactorRepository } from '../../../src/api/repositories/FactorRepository';
@@ -72,7 +71,6 @@ describe('Experiment Assignment Service Test', () => {
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
   const cacheServiceMock = sinon.createStubInstance(CacheService);
   const moocletExperimentServiceMock = sinon.createStubInstance(MoocletExperimentService);
-  const moocletRewardsServiceMock = sinon.createStubInstance(MoocletRewardsService);
   experimentServiceMock.formattingConditionPayload.restore();
   experimentServiceMock.formattingPayload.restore();
 
@@ -131,8 +129,7 @@ describe('Experiment Assignment Service Test', () => {
       segmentServiceMock,
       experimentServiceMock,
       cacheServiceMock,
-      moocletExperimentServiceMock,
-      moocletRewardsServiceMock
+      moocletExperimentServiceMock
     );
 
     testedModule.cacheService.wrap.resolves([]);

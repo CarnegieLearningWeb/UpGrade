@@ -144,19 +144,4 @@
     padding-top: 8px;
     height: 64px;
   }
-
-  .reward-metric-container {
-    padding-top: 16px;
-
-    .reward-metric-description {
-      padding: 16px 8px 0;
-      color: var(--black-2);
-
-      .reward-metric-item {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-    }
-  }
 }

@@ -117,11 +117,17 @@
       </div>
 
       <div class="enrollment-statistic">
-        <div class="enrollment-statistic__unique">
+        <div class="enrollment-statistic__total">
           <span class="ft-16-600 title">
             {{ 'home.view-experiment.enrollment-over-time.user-enrollments-across-sites.text' | translate }}
           </span>
           <span class="ft-36-700 numbers">{{ totalMarkedUsers }}</span>
+        </div>
+        <div class="enrollment-statistic__unique">
+          <span class="ft-16-600 title">
+            {{ 'home.view-experiment.enrollment-over-time.unique-users-enrolled.text' | translate }}
+          </span>
+          <span class="ft-36-700 numbers">{{ experiment.stat.users }}</span>
         </div>
         <div class="enrollment-statistic__class" [ngClass]="{ 'group-enabled': selectedGroupFilter !== 'individual' }">
           <span class="ft-16-600 title">
