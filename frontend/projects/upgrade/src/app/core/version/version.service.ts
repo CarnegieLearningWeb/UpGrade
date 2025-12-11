@@ -1,15 +1,15 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ENV, Environment } from '../../../environments/environment-types';
+import { API_ENDPOINTS } from '../api-endpoints.constants';
 
 @Injectable({
   providedIn: 'root',
 })
 export class VersionService {
-  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
+  constructor(private http: HttpClient) {}
 
   getVersion() {
-    const url = this.environment.api.getVersion;
+    const url = API_ENDPOINTS.getVersion;
     return this.http.get(url).toPromise();
   }
 }

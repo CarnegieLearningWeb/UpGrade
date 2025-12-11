@@ -1,18 +1,18 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ENV, Environment } from '../../../environments/environment-types';
+import { API_ENDPOINTS } from '../api-endpoints.constants';
 
 @Injectable()
 export class AuthDataService {
-  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
+  constructor(private http: HttpClient) {}
 
   login(userInfo: any) {
-    const url = this.environment.api.loginUser;
+    const url = API_ENDPOINTS.loginUser;
     return this.http.post(url, userInfo);
   }
 
   getUserByEmail(email: string) {
-    const url = `${this.environment.api.users}/${email}`;
+    const url = `${API_ENDPOINTS.users}/${email}`;
     return this.http.get(url);
   }
 }

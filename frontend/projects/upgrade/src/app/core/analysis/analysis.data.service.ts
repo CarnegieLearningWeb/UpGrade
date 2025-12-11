@@ -1,29 +1,29 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { UpsertMetrics } from './store/analysis.models';
-import { ENV, Environment } from '../../../environments/environment-types';
+import { API_ENDPOINTS } from '../api-endpoints.constants';
 
 @Injectable()
 export class AnalysisDataService {
-  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
+  constructor(private http: HttpClient) {}
 
   fetchMetrics() {
-    const url = this.environment.api.metrics;
+    const url = API_ENDPOINTS.metrics;
     return this.http.get(url);
   }
 
   upsertMetrics(metrics: UpsertMetrics) {
-    const url = this.environment.api.metricsSave;
+    const url = API_ENDPOINTS.metricsSave;
     return this.http.post(url, metrics);
   }
 
   deleteMetric(key: string) {
-    const url = `${this.environment.api.metrics}/${key}`;
+    const url = `${API_ENDPOINTS.metrics}/${key}`;
     return this.http.delete(url);
   }
 
   executeQuery(queryIds: string[]) {
-    const url = this.environment.api.queryResult;
+    const url = API_ENDPOINTS.queryResult;
     return this.http.post(url, { queryIds });
   }
 }

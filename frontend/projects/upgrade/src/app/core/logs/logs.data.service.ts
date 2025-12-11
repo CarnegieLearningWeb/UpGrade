@@ -1,19 +1,19 @@
-import { Inject, Injectable } from '@angular/core';
-import { ENV, Environment } from '../../../environments/environment-types';
+import { Injectable } from '@angular/core';
 import { AuditLogParams, ErrorLogParams } from './store/logs.model';
 import { HttpClient } from '@angular/common/http';
+import { API_ENDPOINTS } from '../api-endpoints.constants';
 
 @Injectable()
 export class LogsDataService {
-  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
+  constructor(private http: HttpClient) {}
 
   getAllAuditLogs(params: AuditLogParams) {
-    const url = this.environment.api.getAllAuditLogs;
+    const url = API_ENDPOINTS.getAllAuditLogs;
     return this.http.post(url, params);
   }
 
   getAllErrorLogs(params: ErrorLogParams) {
-    const url = this.environment.api.getAllErrorLogs;
+    const url = API_ENDPOINTS.getAllErrorLogs;
     return this.http.post(url, params);
   }
 }
