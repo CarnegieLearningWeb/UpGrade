@@ -1,5 +1,5 @@
 import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -16,17 +16,12 @@ import {
   switchMap,
 } from 'rxjs';
 import { ValidationError } from 'class-validator';
-import { ASSIGNMENT_ALGORITHM, MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
-import { AdaptiveAlgorithmHelperService } from '../../../../../../core/experiments/adaptive-algorithm-helper.service';
+import { MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
+import {
+  MoocletAlgorithmHelper,
+  EditableTSConfigurablePolicyParameters,
+} from '../../../../../../core/experiments/adaptive-algorithm-helper.service';
 import isEqual from 'lodash.isequal';
-
-interface EditableTSConfigurablePolicyParameters {
-  batch_size: number;
-  uniform_threshold: number;
-  tspostdiff_thresh: number;
-  prior_success: number;
-  prior_failure: number;
-}
 
 @Component({
   selector: 'app-ts-configurable-policy-parameters-form',
@@ -43,12 +38,11 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   @Output() formChanged = new EventEmitter<boolean>();
 
   private readonly formBuilder = inject(FormBuilder);
-  private readonly adaptiveAlgorithmHelperService = inject(AdaptiveAlgorithmHelperService);
+  private readonly adaptiveAlgorithmHelperService = inject(MoocletAlgorithmHelper);
 
   policyForm: FormGroup;
   validationErrors$ = new BehaviorSubject<ValidationError[]>([]);
   isInitialFormValueChanged$: Observable<boolean>;
-  defaultParameters: MoocletTSConfigurablePolicyParametersDTO;
   initialFormValue: EditableTSConfigurablePolicyParameters;
   formValueChanges$ = new Subject<EditableTSConfigurablePolicyParameters>();
   subscriptions = new Subscription();
@@ -66,50 +60,22 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   }
 
   private initializeFormValues(): void {
-    this.defaultParameters = new MoocletTSConfigurablePolicyParametersDTO();
-
-    // when adding a new experiment
-    if (!this.existingPolicyParams) {
-      this.initialFormValue = {
-        batch_size: this.defaultParameters.batch_size,
-        uniform_threshold: this.defaultParameters.uniform_threshold,
-        tspostdiff_thresh: this.defaultParameters.tspostdiff_thresh,
-        prior_success: this.defaultParameters.prior?.success,
-        prior_failure: this.defaultParameters.prior?.failure,
-      };
-    } else {
-      // when editing an existing experiment
-      this.initialFormValue = {
-        batch_size: this.existingPolicyParams.batch_size,
-        uniform_threshold: this.existingPolicyParams.uniform_threshold,
-        tspostdiff_thresh: this.existingPolicyParams.tspostdiff_thresh,
-        prior_success: this.existingPolicyParams.prior?.success,
-        prior_failure: this.existingPolicyParams.prior?.failure,
-      };
-    }
+    // Delegate to service to derive initial form values from existing or default parameters
+    this.initialFormValue = this.adaptiveAlgorithmHelperService.deriveEditableParametersForTSConfigurable(
+      this.existingPolicyParams
+    );
   }
 
   private createForm(): void {
     const params = this.initialFormValue;
+    const validators = this.adaptiveAlgorithmHelperService.getTSConfigurableFieldValidators();
 
     this.policyForm = this.formBuilder.group({
-      batch_size: [params.batch_size, [Validators.required, Validators.min(this.defaultParameters.batch_size)]],
-      uniform_threshold: [
-        params.uniform_threshold,
-        [Validators.required, Validators.min(this.defaultParameters.uniform_threshold)],
-      ],
-      tspostdiff_thresh: [
-        params.tspostdiff_thresh,
-        [Validators.required, Validators.min(this.defaultParameters.tspostdiff_thresh)],
-      ],
-      prior_success: [
-        params.prior_success,
-        [Validators.required, Validators.min(this.defaultParameters.prior.success)],
-      ],
-      prior_failure: [
-        params.prior_failure,
-        [Validators.required, Validators.min(this.defaultParameters.prior.failure)],
-      ],
+      batch_size: [params.batch_size, validators.batch_size],
+      uniform_threshold: [params.uniform_threshold, validators.uniform_threshold],
+      tspostdiff_thresh: [params.tspostdiff_thresh, validators.tspostdiff_thresh],
+      prior_success: [params.prior_success, validators.prior_success],
+      prior_failure: [params.prior_failure, validators.prior_failure],
     });
   }
 
@@ -168,22 +134,10 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   private buildCompletePolicyParametersDTO(
     formValue: EditableTSConfigurablePolicyParameters
   ): MoocletTSConfigurablePolicyParametersDTO {
-    return {
-      // set configurable fields
-      batch_size: formValue.batch_size,
-      uniform_threshold: formValue.uniform_threshold,
-      tspostdiff_thresh: formValue.tspostdiff_thresh,
-      prior: {
-        success: formValue.prior_success,
-        failure: formValue.prior_failure,
-      },
-      // set non-configurable fields
-      assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
-      outcome_variable_name: this.adaptiveAlgorithmHelperService.generateUniqueOutcomeVariableName(
-        this.experimentNameValue
-      ),
-      max_rating: this.defaultParameters.max_rating,
-      min_rating: this.defaultParameters.min_rating,
-    } as MoocletTSConfigurablePolicyParametersDTO;
+    // Delegate DTO assembly to service
+    return this.adaptiveAlgorithmHelperService.buildTSConfigurablePolicyParametersDTO(
+      formValue,
+      this.experimentNameValue
+    );
   }
 }

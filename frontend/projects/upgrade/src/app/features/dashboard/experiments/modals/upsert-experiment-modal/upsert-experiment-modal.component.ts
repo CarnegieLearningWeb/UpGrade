@@ -35,7 +35,6 @@ import {
   EXPERIMENT_STATE,
   FILTER_MODE,
   POST_EXPERIMENT_RULE,
-  SUPPORTED_MOOCLET_ALGORITHMS,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
   EXPERIMENT_TYPE,
   MoocletPolicyParametersDTO,
@@ -45,6 +44,7 @@ import { StratificationFactorsService } from '../../../../../core/stratification
 import { ENV, Environment } from '../../../../../../environments/environment-types';
 import { SharedModule } from '../../../../../shared/shared.module';
 import { TsConfigurablePolicyParametersFormComponent } from './ts-configurable-policy-parameters-form/ts-configurable-policy-parameters-form.component';
+import { MoocletAlgorithmHelper } from '../../../../../core/experiments/adaptive-algorithm-helper.service';
 
 @Component({
   selector: 'upsert-experiment-modal',
@@ -179,6 +179,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     private readonly formBuilder: FormBuilder,
     private readonly experimentService: ExperimentService,
     private readonly stratificationFactorsService: StratificationFactorsService,
+    private readonly adaptiveAlgorithmHelperService: MoocletAlgorithmHelper,
     public dialogRef: MatDialogRef<UpsertExperimentModalComponent>,
     @Inject(ENV) private readonly environment: Environment
   ) {
@@ -188,15 +189,9 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
         description: 'Condition will be assigned within subjects (e.g., participant sees multiple conditions).',
       });
     }
-    if (this.environment.moocletToggle) {
-      const supportedMoocletAlgorithms = SUPPORTED_MOOCLET_ALGORITHMS as ASSIGNMENT_ALGORITHM[];
-      supportedMoocletAlgorithms.forEach((algorithmName) => {
-        this.assignmentAlgorithms.push({
-          value: algorithmName,
-          description: `Adaptive Experiment Algorithm: ${algorithmName}`,
-        });
-      });
-    }
+    // Delegate to service to get supported mooclet algorithm options
+    const moocletAlgorithmOptions = this.adaptiveAlgorithmHelperService.getSupportedMoocletAlgorithmOptions();
+    this.assignmentAlgorithms.push(...moocletAlgorithmOptions);
   }
 
   ngOnInit(): void {
@@ -350,7 +345,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertExperiment$.pipe(
       combineLatestWith(this.isInitialFormValueChanged$, this.isMoocletFormValid$, this.isMoocletFormChanged$),
       map(([isLoading, isInitialFormValueChanged, isMoocletFormValid, isMoocletFormChanged]) => {
-        // Disable if loading, no changes in either form, form is invalid, or mooclet form is invalid
         const hasAnyChanges = isInitialFormValueChanged || isMoocletFormChanged;
         return isLoading || !hasAnyChanges || !this.experimentForm.valid || !isMoocletFormValid;
       })
@@ -375,6 +369,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.experimentForm.get('assignmentAlgorithm')?.valueChanges.subscribe((algorithm) => {
         this.validateStratificationFactorSelection(algorithm);
+        this.checkForMoocletAlgorithmChange();
       })
     );
   }
@@ -458,6 +453,13 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
         conditionOrderControl?.updateValueAndValidity();
       })
     );
+  }
+
+  checkForMoocletAlgorithmChange(): void {
+    // Reset mooclet policy parameters when assignment algorithm changes
+    if (!this.adaptiveAlgorithmHelperService.isMoocletAlgorithm(this.assignmentAlgorithmValue)) {
+      this.moocletPolicyParameters = null;
+    }
   }
 
   updateAssignmentAlgorithms(): void {
