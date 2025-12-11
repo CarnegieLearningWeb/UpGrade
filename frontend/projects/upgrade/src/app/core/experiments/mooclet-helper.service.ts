@@ -74,7 +74,7 @@ export interface EditableTSConfigurablePolicyParameters {
 @Injectable({
   providedIn: 'root',
 })
-export class MoocletAlgorithmHelper {
+export class MoocletExperimentHelperService {
   // ============================================================================
   // General Mooclet Algorithm Helpers
   // ============================================================================

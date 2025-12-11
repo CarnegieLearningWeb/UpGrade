@@ -1,18 +1,18 @@
 import { Validators } from '@angular/forms';
 import {
-  MoocletAlgorithmHelper,
+  MoocletExperimentHelperService,
   EditableTSConfigurablePolicyParameters,
   formatTSConfigurablePolicyParamDetails,
-} from './adaptive-algorithm-helper.service';
+} from './mooclet-helper.service';
 import { ASSIGNMENT_ALGORITHM, MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
 import { ExperimentVM } from './store/experiments.model';
 import { environment } from '../../../environments/environment';
 
-describe('AdaptiveAlgorithmHelperService', () => {
-  let service: MoocletAlgorithmHelper;
+describe('MoocletAlgorithmHelperService', () => {
+  let service: MoocletExperimentHelperService;
 
   beforeEach(() => {
-    service = new MoocletAlgorithmHelper();
+    service = new MoocletExperimentHelperService();
   });
 
   // ============================================================================
