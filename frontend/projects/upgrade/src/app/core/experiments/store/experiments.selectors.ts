@@ -18,7 +18,7 @@ import {
   ASSIGNMENT_UNIT_DISPLAY_MAP,
 } from 'upgrade_types';
 import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
-import { formatTSConfigurablePolicyParamDetails } from '../adaptive-algorithm-helper.service';
+import { formatTSConfigurablePolicyParamDetails } from '../mooclet-helper.service';
 import { KeyValueFormat } from '../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
