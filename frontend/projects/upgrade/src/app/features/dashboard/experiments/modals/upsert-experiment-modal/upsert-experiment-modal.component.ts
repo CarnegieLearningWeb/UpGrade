@@ -340,8 +340,14 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   listenForPrimaryButtonDisabled() {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertExperiment$.pipe(
-      combineLatestWith(this.isInitialFormValueChanged$),
-      map(([isLoading, isInitialFormValueChanged]) => isLoading || !isInitialFormValueChanged)
+      combineLatestWith(
+        this.isInitialFormValueChanged$,
+        this.experimentForm.statusChanges.pipe(startWith(this.experimentForm.status))
+      ),
+      map(
+        ([isLoading, isInitialFormValueChanged, formStatus]) =>
+          isLoading || !isInitialFormValueChanged || formStatus !== 'VALID'
+      )
     );
     this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
   }
