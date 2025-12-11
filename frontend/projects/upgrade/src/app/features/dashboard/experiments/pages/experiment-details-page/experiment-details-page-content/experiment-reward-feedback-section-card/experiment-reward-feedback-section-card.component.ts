@@ -10,7 +10,7 @@ import { map } from 'rxjs';
 import { ExperimentVM } from '../../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
 import { MoocletExperimentHelperService } from '../../../../../../../core/experiments/mooclet-helper.service';
-import { CurrentPosteriorsTableComponent } from './current-posteriors-table/current-posteriors-table.component';
+import { TSConfigurableRewardCountTableComponent } from './ts-configurable-reward-count-table/ts-configurable-reward-count-table.component';
 import { AppState } from '../../../../../../../core/core.state';
 import { selectCurrentPosteriorsTableData } from '../../../../../../../core/experiments/store/experiments.selectors';
 
@@ -22,8 +22,8 @@ import { selectCurrentPosteriorsTableData } from '../../../../../../../core/expe
     CommonSectionCardComponent,
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
-    CurrentPosteriorsTableComponent,
     TranslateModule,
+    TSConfigurableRewardCountTableComponent,
   ],
   templateUrl: './experiment-reward-feedback-section-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

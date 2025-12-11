@@ -12,6 +12,7 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+    table-layout: fixed;
 
     th {
       background-color: var(--zircon);
@@ -46,15 +47,6 @@
 
     .hide-footer {
       display: none;
-    }
-
-    .condition-column {
-      width: 20%;
-    }
-
-    .number-column {
-      width: 20%;
-      text-align: center;
     }
   }
 

@@ -12,10 +12,10 @@
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   ></app-common-section-card-action-buttons>
 
-  <app-current-posteriors-table
+  <app-ts-configurable-reward-count-table
     content
     *ngIf="isSectionCardExpanded"
     [dataSource]="currentPosteriorsTableData$ | async"
     [isLoading]="false"
-  ></app-current-posteriors-table>
+  ></app-ts-configurable-reward-count-table>
 </app-common-section-card>

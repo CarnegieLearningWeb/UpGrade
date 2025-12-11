@@ -1216,6 +1216,27 @@ export class MoocletExperimentService extends ExperimentService {
         moocletExperimentRef.policyParametersId,
         logger
       );
+
+      // Transform current_posteriors keys from Mooclet version IDs to UpGrade condition codes
+      const tsConfigurableParams = policyParameters.parameters as MoocletTSConfigurablePolicyParametersDTO;
+      if (tsConfigurableParams.current_posteriors) {
+        const transformedPosteriors = {};
+        for (const [versionId, posteriorData] of Object.entries(tsConfigurableParams.current_posteriors)) {
+          const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
+            (map) => map.moocletVersionId === parseInt(versionId, 10)
+          );
+
+          if (versionConditionMap?.experimentCondition?.conditionCode) {
+            transformedPosteriors[versionConditionMap.experimentCondition.conditionCode] = posteriorData;
+          } else {
+            logger.warn({
+              message: `No condition mapping found for Mooclet version ${versionId} in experiment ${experiment.id}`,
+            });
+          }
+        }
+        tsConfigurableParams.current_posteriors = transformedPosteriors;
+      }
+
       experiment.moocletPolicyParameters = policyParameters.parameters;
 
       return experiment;

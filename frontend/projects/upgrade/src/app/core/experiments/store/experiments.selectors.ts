@@ -284,12 +284,14 @@ export const selectCurrentPosteriorsTableData = createSelector(
     // Create table rows
     Object.entries(posteriors).forEach(([conditionCode, posterior]) => {
       const total = posterior.successes + posterior.failures;
+      const successRate = total > 0 ? (posterior.successes / total) * 100 : 0;
       const percentage = grandTotal > 0 ? (total / grandTotal) * 100 : 0;
 
       rows.push({
         conditionCode,
         successes: posterior.successes,
         failures: posterior.failures,
+        successRate,
         total,
         percentage,
       });
