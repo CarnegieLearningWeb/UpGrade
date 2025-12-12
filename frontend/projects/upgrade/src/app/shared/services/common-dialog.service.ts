@@ -528,6 +528,7 @@ export class DialogService {
       panelClass: ['experiment-modal', 'modal-shadow'],
       hasBackdrop: true,
       autoFocus: false,
+      restoreFocus: false,
       backdropClass: 'modal-backdrop',
       width: ModalSize.STANDARD,
 
