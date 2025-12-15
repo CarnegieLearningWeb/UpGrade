@@ -118,7 +118,13 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to complete
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
+  const updatedExperiment = await experimentService.getSingleExperiment(experimentId);
 
+  await experimentService.update(
+    { ...updatedExperiment, revertTo: updatedExperiment.conditions[0].id } as any,
+    user,
+    new UpgradeLogger()
+  );
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
@@ -136,7 +142,7 @@ export default async function testCase(): Promise<void> {
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experimentObject.revertTo);
+  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experiments[0].revertTo);
 
   // mark experiment point for user 1
   markedExperimentPoint = await markExperimentPoint(
@@ -152,7 +158,7 @@ export default async function testCase(): Promise<void> {
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experimentObject.revertTo);
+  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experiments[0].revertTo);
 
   // mark experiment point for user 2
   markedExperimentPoint = await markExperimentPoint(
@@ -168,7 +174,7 @@ export default async function testCase(): Promise<void> {
   // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experimentObject.revertTo);
+  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experiments[0].revertTo);
 
   // mark experiment point for user 3
   markedExperimentPoint = await markExperimentPoint(

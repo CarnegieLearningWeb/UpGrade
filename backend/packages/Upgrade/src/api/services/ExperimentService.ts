@@ -35,6 +35,7 @@ import {
   IImportError,
   IMPORT_COMPATIBILITY_TYPE,
   PAYLOAD_TYPE,
+  POST_EXPERIMENT_RULE,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -291,26 +292,12 @@ export class ExperimentService {
     }
   ): Promise<ExperimentDTO> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
-    const { createType, existingEntityManager } = options || {};
+    const { existingEntityManager } = options || {};
     const entityManager = existingEntityManager || this.dataSource.manager;
 
     // order for condition
-    let newConditionId;
-    let newCondition;
     experiment.conditions.forEach((condition, index) => {
-      if (createType && createType === 'import') {
-        newConditionId = uuid();
-      } else {
-        newConditionId = condition.id || uuid();
-      }
-
-      // proper reference for post experiment rule condition:
-      if (experiment.postExperimentRule === 'assign') {
-        if (experiment.revertTo === condition.id) {
-          experiment.revertTo = newConditionId;
-        }
-      }
-      newCondition = { ...condition, id: newConditionId, order: index + 1 };
+      const newCondition = { ...condition, order: index + 1 };
       experiment.conditions[index] = newCondition;
     });
 
@@ -319,6 +306,7 @@ export class ExperimentService {
       const newDecisionPoint = { ...decisionPoint, order: index + 1 };
       experiment.partitions[index] = newDecisionPoint;
     });
+    experiment.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE;
     experiment.backendVersion = env.app.version;
 
     const createdExperiment = await this.addExperimentInDB(experiment, currentUser, logger, entityManager);
@@ -1378,29 +1366,21 @@ export class ExperimentService {
       if (!conditionPayloads) {
         experiment = { ...experiment, conditionPayloads: [] };
       }
-      const conditionPayloadDocToSave: Array<any> =
+      const conditionPayloadDocToSave: Array<Partial<ConditionPayload>> =
         (conditionPayloads &&
           conditionPayloads.length > 0 &&
           conditionPayloads.map((conditionPayload) => {
-            const parentCondition = conditionPayload.parentCondition
-              ? conditionDocs.find(
-                  (doc) => doc.id === conditionIdMap.get(conditionPayload.parentCondition)
-                )
-              : undefined;
+            const parentCondition = conditionDocs.find(
+              (doc) => doc.id === conditionIdMap.get(conditionPayload.parentCondition)
+            );
             if (conditionPayload.parentCondition && !parentCondition) {
-              throw new Error(
-                `Parent condition not found for condition payload: ${conditionPayload.id}`
-              );
+              throw new Error(`Parent condition not found for condition payload: ${conditionPayload.id}`);
             }
-            const decisionPoint = conditionPayload.decisionPoint
-              ? decisionPointDocs.find(
-                  (doc) => doc.id === decisionPointIdMap.get(conditionPayload.decisionPoint)
-                )
-              : undefined;
+            const decisionPoint = decisionPointDocs.find(
+              (doc) => doc.id === decisionPointIdMap.get(conditionPayload.decisionPoint)
+            );
             if (conditionPayload.decisionPoint && !decisionPoint) {
-              throw new Error(
-                `Decision point not found for condition payload: ${conditionPayload.id}`
-              );
+              throw new Error(`Decision point not found for condition payload: ${conditionPayload.id}`);
             }
             const conditionPayloadToReturn = {
               id: uuid(),
