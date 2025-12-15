@@ -53,6 +53,10 @@
       </mat-hint>
     </mat-form-field>
 
+    <div *ngIf="decisionPointForm.get('target')?.hasError('duplicateDecisionPoint')" class="duplicate-error-message ft-12-400">
+      {{ 'experiments.upsert-decision-point-modal.decision-point-warning.text' | translate }}
+    </div>
+
     <div class="exclude-if-reached-container dense-1">
       <mat-checkbox formControlName="excludeIfReached">
         <span class="checkbox-label ft-14-600">Exclude If Reached</span>
