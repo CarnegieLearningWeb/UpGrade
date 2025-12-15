@@ -8,7 +8,6 @@ import {
   EXPERIMENT_SORT_KEY,
   SORT_AS_DIRECTION,
   EXPERIMENT_STATE,
-  IExperimentEnrollmentStats,
   IExperimentSearchParams,
   IExperimentSortParams,
   IExperimentEnrollmentDetailStats,
@@ -24,6 +23,9 @@ import {
   REPEATED_MEASURE,
   SEGMENT_TYPE,
   IEnrollmentCompleteCondition,
+  METRIC_TYPE,
+  ExperimentQueryPayload,
+  ExperimentQueryComparator,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -41,7 +43,8 @@ export {
   IExperimentSortParams,
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
-};
+  METRIC_TYPE,
+} from 'upgrade_types';
 
 export interface ExperimentConditionFilterOptions {
   code: string;
@@ -326,8 +329,6 @@ export enum EXPERIMENT_BUTTON_ACTION {
   IMPORT_EXCLUDE_LIST = 'import exclude list',
   EXPORT_ALL_INCLUDE_LISTS = 'export all include lists',
   EXPORT_ALL_EXCLUDE_LISTS = 'export all exclude lists',
-  IMPORT_METRIC = 'import metric',
-  EXPORT_ALL_METRICS = 'export all metrics',
 }
 
 export interface UpsertExperimentParams {
@@ -374,6 +375,19 @@ export interface ConditionFormData {
   description: string;
 }
 
+export interface MetricFormData {
+  metricType: METRIC_TYPE;
+  metricId: string;
+  displayName: string;
+  metricClass?: string; // For repeatable metrics only
+  metricKey?: string; // For repeatable metrics only
+  aggregateStatistic?: string;
+  individualStatistic?: string; // For repeatable metrics only
+  comparison?: ExperimentQueryComparator;
+  compareValue?: string;
+  allowableDataKeys?: string[]; // For categorical metrics only
+}
+
 // Base interfaces matching backend DTO structure
 export interface ExperimentConditionDTO {
   id: string;
@@ -417,7 +431,7 @@ export interface ExperimentConditionPayloadDTO {
 export interface ExperimentQueryDTO {
   id?: string;
   name: string;
-  query: object;
+  query: ExperimentQueryPayload;
   metric: {
     key: string;
   };
@@ -516,6 +530,11 @@ export interface UpdateExperimentDecisionPointsRequest {
 export interface UpdateExperimentConditionsRequest {
   experiment: Experiment;
   conditions: ExperimentCondition[];
+}
+
+export interface UpdateExperimentMetricsRequest {
+  experiment: Experiment;
+  metrics: ExperimentQueryDTO[];
 }
 
 export const EXPERIMENT_ROOT_COLUMN_NAMES = {
@@ -626,6 +645,11 @@ export interface ExperimentPayloadRowActionEvent {
   payload: ExperimentConditionPayload;
 }
 
+export interface ExperimentQueryRowActionEvent {
+  action: EXPERIMENT_ROW_ACTION;
+  query: ExperimentQueryDTO;
+}
+
 export enum EXPERIMENT_PAYLOAD_DISPLAY_TYPE {
   UNIVERSAL = 'universal',
   SPECIFIC = 'specific',
@@ -640,4 +664,12 @@ export interface InteractionEffectGraphData {
 
 export interface ExperimentSegmentListResponse extends SegmentNew {
   experiment: Experiment;
+}
+
+export interface UpsertMetricParams {
+  sourceQuery: ExperimentQueryDTO | null;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
+  currentContext?: string;
+  experimentInfo?: ExperimentVM;
 }

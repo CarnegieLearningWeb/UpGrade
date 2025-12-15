@@ -273,6 +273,24 @@ export class ExperimentEffects {
     )
   );
 
+  updateExperimentMetrics$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentMetrics),
+      switchMap((action) => {
+        return this.experimentDataService.updateExperimentMetrics(action.updateExperimentMetricsRequest).pipe(
+          map((experiment) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.metrics.update-success.text'));
+            return experimentAction.actionUpdateExperimentMetricsSuccess({ experiment });
+          }),
+          catchError(() => {
+            this.notificationService.showError(this.translate.instant('experiments.metrics.update-error.text'));
+            return [experimentAction.actionUpdateExperimentMetricsFailure()];
+          })
+        );
+      })
+    )
+  );
+
   deleteExperiment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionDeleteExperiment),
