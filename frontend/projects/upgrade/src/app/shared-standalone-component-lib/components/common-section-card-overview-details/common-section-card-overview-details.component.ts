@@ -4,9 +4,14 @@ import { CommonTagListComponent } from '../common-tag-list/common-tag-list.compo
 import { EXPERIMENT_OVERVIEW_LABELS } from '../../../core/experiments/store/experiments.model';
 
 export interface KeyValueFormat {
-  [key: string]: string | string[];
+  [key: string]: string | string[] | BullettedListKeyValueFormat[];
   [EXPERIMENT_OVERVIEW_LABELS.TAGS]?: string[];
-  [EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS]?: string[];
+  [EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS]?: BullettedListKeyValueFormat[];
+}
+
+export interface BullettedListKeyValueFormat {
+  labelKey: string;
+  value: number;
 }
 
 /**

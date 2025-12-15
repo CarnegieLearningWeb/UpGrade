@@ -11,6 +11,7 @@ import {
 } from 'upgrade_types';
 import { ExperimentVM, TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS } from './store/experiments.model';
 import { environment } from '../../../environments/environment';
+import { BullettedListKeyValueFormat } from '../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 
 // ============================================================================
 // Pure Functions (exported for use in selectors and other pure contexts)
@@ -18,9 +19,11 @@ import { environment } from '../../../environments/environment';
 
 /**
  * Format TS Configurable policy parameters for display in the overview section.
- * Returns an array of formatted strings showing parameter labels and values.
+ * Returns an array of objects with translation keys and values for proper i18n support.
  */
-export function formatTSConfigurablePolicyParamDetails(experiment: ExperimentVM): string[] | undefined {
+export function formatTSConfigurablePolicyParamDetails(
+  experiment: ExperimentVM
+): BullettedListKeyValueFormat[] | undefined {
   if (
     !isMoocletEnabled() ||
     !isMoocletExperiment(experiment) ||
@@ -31,16 +34,31 @@ export function formatTSConfigurablePolicyParamDetails(experiment: ExperimentVM)
   }
 
   const params = experiment.moocletPolicyParameters;
-  const formattedParams: string[] = [];
+  const formattedParams: BullettedListKeyValueFormat[] = [];
 
   if (params.prior) {
-    formattedParams.push(`${TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.PRIOR_SUCCESS}: ${params.prior.success}`);
-    formattedParams.push(`${TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.PRIOR_FAILURE}: ${params.prior.failure}`);
+    formattedParams.push({
+      labelKey: TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.PRIOR_SUCCESS,
+      value: params.prior.success,
+    });
+    formattedParams.push({
+      labelKey: TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.PRIOR_FAILURE,
+      value: params.prior.failure,
+    });
   }
 
-  formattedParams.push(`${TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.BATCH_SIZE}: ${params.batch_size}`);
-  formattedParams.push(`${TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.UNIFORM_THRESHOLD}: ${params.uniform_threshold}`);
-  formattedParams.push(`${TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.TSPOSTDIFF_THRESH}: ${params.tspostdiff_thresh}`);
+  formattedParams.push({
+    labelKey: TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.BATCH_SIZE,
+    value: params.batch_size,
+  });
+  formattedParams.push({
+    labelKey: TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.UNIFORM_THRESHOLD,
+    value: params.uniform_threshold,
+  });
+  formattedParams.push({
+    labelKey: TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.TSPOSTDIFF_THRESH,
+    value: params.tspostdiff_thresh,
+  });
   return formattedParams;
 }
 
@@ -129,6 +147,10 @@ export class MoocletExperimentHelperService {
   // ============================================================================
   // ts_configurable Policy Parameters Helpers
   // ============================================================================
+
+  isTSConfigurable(algorithm: ASSIGNMENT_ALGORITHM): boolean {
+    return algorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE;
+  }
 
   /**
    * Get default TS Configurable parameters instance.

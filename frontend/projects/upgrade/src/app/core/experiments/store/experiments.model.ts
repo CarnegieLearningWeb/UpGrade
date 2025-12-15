@@ -567,11 +567,11 @@ export const EXPERIMENT_OVERVIEW_LABELS = {
 } as const;
 
 export const TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS = {
-  BATCH_SIZE: 'Batch Size',
-  PRIOR_SUCCESS: 'Prior Success',
-  PRIOR_FAILURE: 'Prior Failure',
-  UNIFORM_THRESHOLD: 'Uniform Threshold',
-  TSPOSTDIFF_THRESH: 'TS Post Diff Threshold',
+  BATCH_SIZE: 'home.new-experiment.design.ts-configurable-policy.batch-size.label.text',
+  PRIOR_SUCCESS: 'home.new-experiment.design.ts-configurable-policy.prior-success.label.text',
+  PRIOR_FAILURE: 'home.new-experiment.design.ts-configurable-policy.prior-failure.label.text',
+  UNIFORM_THRESHOLD: 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.label.text',
+  TSPOSTDIFF_THRESH: 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.label.text',
 };
 
 export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);

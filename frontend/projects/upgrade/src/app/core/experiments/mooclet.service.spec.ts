@@ -499,8 +499,8 @@ describe('formatTSConfigurablePolicyParamDetails (pure function)', () => {
 
     const result = formatTSConfigurablePolicyParamDetails(experiment);
 
-    expect(result.some((param) => param.includes('15'))).toBe(true);
-    expect(result.some((param) => param.includes('20'))).toBe(true);
+    expect(result.some((param) => param.value === 15)).toBe(true);
+    expect(result.some((param) => param.value === 20)).toBe(true);
   });
 
   it('should include all configurable parameters', () => {
@@ -516,12 +516,12 @@ describe('formatTSConfigurablePolicyParamDetails (pure function)', () => {
     });
 
     const result = formatTSConfigurablePolicyParamDetails(experiment);
-    const resultString = result.join(' ');
+    const values = result.map((param) => param.value);
 
-    expect(resultString).toContain('50');
-    expect(resultString).toContain('100');
-    expect(resultString).toContain('5');
-    expect(resultString).toContain('10');
+    expect(values).toContain(50);
+    expect(values).toContain(100);
+    expect(values).toContain(5);
+    expect(values).toContain(10);
   });
 });
 

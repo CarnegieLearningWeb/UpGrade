@@ -2,7 +2,7 @@
   <span class="section-label">
     {{ 'home.new-experiment.design.ts-configurable-policy.section-label.text' | translate }}
     <a
-      class="learn-more-link"
+      class="learn-more-link ft-12-400"
       href="https://upgrade-platform.gitbook.io/upgrade-documentation/creating-an-adaptive-experiment/thompson-sampling-configurable"
       target="_blank"
       rel="noopener noreferrer"
@@ -18,9 +18,6 @@
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.prior-success.hint.text' | translate
       }}</mat-hint>
-      <mat-error *ngIf="policyForm.get('prior_success')?.hasError('required')">{{
-        'home.new-experiment.design.ts-configurable-policy.prior-success.required-error.text' | translate
-      }}</mat-error>
       <mat-error *ngIf="policyForm.get('prior_success')?.hasError('min')">{{
         'home.new-experiment.design.ts-configurable-policy.prior-success.min-error.text' | translate
       }}</mat-error>
@@ -34,9 +31,6 @@
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.prior-failure.hint.text' | translate
       }}</mat-hint>
-      <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('required')">{{
-        'home.new-experiment.design.ts-configurable-policy.prior-failure.required-error.text' | translate
-      }}</mat-error>
       <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('min')">{{
         'home.new-experiment.design.ts-configurable-policy.prior-failure.min-error.text' | translate
       }}</mat-error>
@@ -50,9 +44,6 @@
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.batch-size.hint.text' | translate
       }}</mat-hint>
-      <mat-error *ngIf="policyForm.get('batch_size')?.hasError('required')">{{
-        'home.new-experiment.design.ts-configurable-policy.batch-size.required-error.text' | translate
-      }}</mat-error>
       <mat-error *ngIf="policyForm.get('batch_size')?.hasError('min')">{{
         'home.new-experiment.design.ts-configurable-policy.batch-size.min-error.text' | translate
       }}</mat-error>
@@ -66,9 +57,6 @@
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.uniform-threshold.hint.text' | translate
       }}</mat-hint>
-      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('required')">
-        {{ 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.required-error.text' | translate }}
-      </mat-error>
       <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('min')">
         {{ 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.min-error.text' | translate }}
       </mat-error>
@@ -90,10 +78,6 @@
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.hint.text' | translate
       }}</mat-hint>
-      <mat-error *ngIf="policyForm.get('tspostdiff_thresh')?.hasError('required')"
-        >`
-        {{ 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.required-error.text' | translate }}
-      </mat-error>
       <mat-error *ngIf="policyForm.get('tspostdiff_thresh')?.hasError('min')">
         {{ 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.min-error.text' | translate }}
       </mat-error>

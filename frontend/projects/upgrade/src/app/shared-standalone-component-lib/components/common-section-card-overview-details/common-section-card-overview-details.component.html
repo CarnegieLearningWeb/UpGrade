@@ -14,7 +14,9 @@
       <!-- Bulleted list display -->
       <ng-template #checkBulletedList>
         <ul *ngIf="bullettedListKeys.includes(item.key); else defaultValue" class="bulletted-list">
-          <li *ngFor="let param of item.value" class="ft-14-400">{{ param }}</li>
+          <li *ngFor="let param of item.value" class="ft-14-400">
+            {{ param.labelKey | translate }}: {{ param.value }}
+          </li>
         </ul>
       </ng-template>
 
