@@ -617,7 +617,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       experimentSegmentExclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentExclusion, // @IsOptional @IsArray - can be undefined
       stateTimeLogs: undefined, // @IsOptional @IsArray - can be undefined
       backendVersion: sourceExperiment.backendVersion, // @IsOptional - can be undefined
-      moocletPolicyParameters: sourceExperiment.moocletPolicyParameters // Conditional validation - can be undefined
+      moocletPolicyParameters: sourceExperiment.moocletPolicyParameters, // Conditional validation - can be undefined
     };
 
     this.experimentService.createNewExperiment(experimentRequest);
