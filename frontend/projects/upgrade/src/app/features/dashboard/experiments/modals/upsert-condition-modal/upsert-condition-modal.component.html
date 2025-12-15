@@ -22,7 +22,10 @@
           {{ condition }}
         </mat-option>
       </mat-autocomplete>
-      <mat-hint class="form-hint ft-12-400">
+      <mat-error *ngIf="conditionForm.get('condition')?.hasError('duplicateCondition')" class="ft-12-400">
+        {{ 'experiments.upsert-condition-modal.condition-warning.text' | translate }}
+      </mat-error>
+      <mat-hint *ngIf="!conditionForm.get('condition')?.hasError('duplicateCondition')" class="form-hint ft-12-400">
         {{ 'experiments.upsert-condition-modal.condition-hint.text' | translate }}
         <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
           Learn more
@@ -31,7 +34,7 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label class="ft-14-400">Description</mat-label>
+      <mat-label class="ft-14-400">Description (optional)</mat-label>
       <input
         matInput
         formControlName="description"

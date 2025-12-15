@@ -5,6 +5,7 @@ import {
   ExperimentPaginationParams,
   UpdateExperimentFilterModeRequest,
   UpdateExperimentDecisionPointsRequest,
+  UpdateExperimentMetricsRequest,
   ExperimentSegmentListResponse,
   UpdateExperimentConditionsRequest,
 } from './store/experiments.model';
@@ -195,5 +196,13 @@ export class ExperimentDataService {
   exportAllIncludeListsDesign(id: string) {
     const url = `${this.environment.api.exportAllExperimentIncludeLists}/${id}`;
     return this.http.get(url);
+  }
+
+  updateExperimentMetrics(params: UpdateExperimentMetricsRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      queries: params.metrics,
+    };
+    return this.updateExperiment(updatedExperiment);
   }
 }

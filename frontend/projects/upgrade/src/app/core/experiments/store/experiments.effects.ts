@@ -273,6 +273,24 @@ export class ExperimentEffects {
     )
   );
 
+  updateExperimentMetrics$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentMetrics),
+      switchMap((action) => {
+        return this.experimentDataService.updateExperimentMetrics(action.updateExperimentMetricsRequest).pipe(
+          map((experiment) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.metrics.update-success.text'));
+            return experimentAction.actionUpdateExperimentMetricsSuccess({ experiment });
+          }),
+          catchError(() => {
+            this.notificationService.showError(this.translate.instant('experiments.metrics.update-error.text'));
+            return [experimentAction.actionUpdateExperimentMetricsFailure()];
+          })
+        );
+      })
+    )
+  );
+
   deleteExperiment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionDeleteExperiment),
@@ -579,10 +597,14 @@ export class ExperimentEffects {
       switchMap((action) => {
         return this.experimentDataService.addInclusionList(action.list).pipe(
           map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.inclusions.add-success.text'));
             this.commonModalEvents.forceCloseModal();
             return experimentAction.actionAddExperimentInclusionListSuccess({ listResponse });
           }),
-          catchError((error) => of(experimentAction.actionAddExperimentInclusionListFailure({ error })))
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.inclusions.add-error.text'));
+            return of(experimentAction.actionAddExperimentInclusionListFailure({ error }));
+          })
         );
       })
     )
@@ -594,10 +616,14 @@ export class ExperimentEffects {
       switchMap((action) => {
         return this.experimentDataService.updateInclusionList(action.list).pipe(
           map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.inclusions.update-success.text'));
             this.commonModalEvents.forceCloseModal();
             return experimentAction.actionUpdateExperimentInclusionListSuccess({ listResponse });
           }),
-          catchError((error) => of(experimentAction.actionUpdateExperimentInclusionListFailure({ error })))
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.inclusions.update-error.text'));
+            return of(experimentAction.actionUpdateExperimentInclusionListFailure({ error }));
+          })
         );
       })
     )
@@ -609,8 +635,14 @@ export class ExperimentEffects {
       map((action) => action.segmentId),
       switchMap((segmentId) => {
         return this.experimentDataService.deleteInclusionList(segmentId).pipe(
-          map(() => experimentAction.actionDeleteExperimentInclusionListSuccess({ segmentId })),
-          catchError((error) => of(experimentAction.actionDeleteExperimentInclusionListFailure({ error })))
+          map(() => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.inclusions.delete-success.text'));
+            return experimentAction.actionDeleteExperimentInclusionListSuccess({ segmentId });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.inclusions.delete-error.text'));
+            return of(experimentAction.actionDeleteExperimentInclusionListFailure({ error }));
+          })
         );
       })
     )
@@ -622,10 +654,14 @@ export class ExperimentEffects {
       switchMap((action) => {
         return this.experimentDataService.addExclusionList(action.list).pipe(
           map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.exclusions.add-success.text'));
             this.commonModalEvents.forceCloseModal();
             return experimentAction.actionAddExperimentExclusionListSuccess({ listResponse });
           }),
-          catchError((error) => of(experimentAction.actionAddExperimentExclusionListFailure({ error })))
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.exclusions.add-error.text'));
+            return of(experimentAction.actionAddExperimentExclusionListFailure({ error }));
+          })
         );
       })
     )
@@ -637,10 +673,14 @@ export class ExperimentEffects {
       switchMap((action) => {
         return this.experimentDataService.updateExclusionList(action.list).pipe(
           map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.exclusions.update-success.text'));
             this.commonModalEvents.forceCloseModal();
             return experimentAction.actionUpdateExperimentExclusionListSuccess({ listResponse });
           }),
-          catchError((error) => of(experimentAction.actionUpdateExperimentExclusionListFailure({ error })))
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.exclusions.update-error.text'));
+            return of(experimentAction.actionUpdateExperimentExclusionListFailure({ error }));
+          })
         );
       })
     )
@@ -652,8 +692,14 @@ export class ExperimentEffects {
       map((action) => action.segmentId),
       switchMap((segmentId) => {
         return this.experimentDataService.deleteExclusionList(segmentId).pipe(
-          map(() => experimentAction.actionDeleteExperimentExclusionListSuccess({ segmentId })),
-          catchError((error) => of(experimentAction.actionDeleteExperimentExclusionListFailure({ error })))
+          map(() => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.exclusions.delete-success.text'));
+            return experimentAction.actionDeleteExperimentExclusionListSuccess({ segmentId });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.exclusions.delete-error.text'));
+            return of(experimentAction.actionDeleteExperimentExclusionListFailure({ error }));
+          })
         );
       })
     )
