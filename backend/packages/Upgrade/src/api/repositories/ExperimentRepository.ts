@@ -234,6 +234,24 @@ export class ExperimentRepository extends Repository<Experiment> {
     return experiment;
   }
 
+  public async getEnrollingExperimentsForContextAndDecisionPoint(
+    context: string,
+    site: string,
+    target: string
+  ): Promise<Experiment[]> {
+    const whereExperimentsClause =
+      'experiment.state = :enrolling AND :context ILIKE ANY (ARRAY[experiment.context]) AND partitions.site = :site AND partitions.target = :target';
+    const whereClauseParams = {
+      enrolling: 'enrolling',
+      assign: 'assign',
+      context,
+      site,
+      target,
+    };
+    const experiment = await this.createBaseQueryBuilder().where(whereExperimentsClause, whereClauseParams).getMany();
+    return experiment;
+  }
+
   public async getValidExperimentsWithPreview(context: string): Promise<Experiment[]> {
     const whereExperimentsClause =
       '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context])';

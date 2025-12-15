@@ -14,6 +14,7 @@ export {
   EXPERIMENT_LIST_OPERATION,
   SORT_AS_DIRECTION,
   UserRole,
+  METRIC_TYPE,
   OPERATION_TYPES,
   IMetricMetaData,
   DATE_RANGE,
@@ -83,12 +84,14 @@ export {
   FeatureFlagDeletedData,
   ValidatedImportResponse,
   DuplicateSegmentNameError,
+  ExperimentQueryPayload,
+  ExperimentQueryComparator,
 } from './Experiment/interfaces';
 export {
   MoocletPolicyParametersDTO,
   MoocletTSConfigurablePolicyParametersDTO,
   MOOCLET_POLICY_SCHEMA_MAP,
   SUPPORTED_MOOCLET_ALGORITHMS,
-  BinaryRewardMetricAllowedValue,
-  BinaryRewardMetricValueMap,
+  BinaryRewardAllowedValue,
+  BinaryRewardValueMap,
 } from './Mooclet';

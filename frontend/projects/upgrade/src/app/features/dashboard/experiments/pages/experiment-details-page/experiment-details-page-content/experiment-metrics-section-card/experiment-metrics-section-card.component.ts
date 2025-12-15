@@ -6,20 +6,22 @@ import {
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { IMenuButtonItem } from 'upgrade_types';
 import {
   ExperimentMetricsTableComponent,
   ExperimentQueryRowActionEvent,
 } from './experiment-metrics-table/experiment-metrics-table.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
+import { MetricHelperService } from '../../../../../../../core/experiments/metric-helper.service';
 import { Observable, map } from 'rxjs';
+import { take } from 'rxjs/operators';
 import {
   Experiment,
-  EXPERIMENT_BUTTON_ACTION,
   EXPERIMENT_ROW_ACTION,
+  ExperimentQueryDTO,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
+import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 
 @Component({
   selector: 'app-experiment-metrics-section-card',
@@ -50,43 +52,24 @@ export class ExperimentMetricsSectionCardComponent implements OnInit {
     return count;
   }
 
-  menuButtonItems: IMenuButtonItem[] = [
-    {
-      label: 'experiments.details.import-metric.menu-item.text',
-      action: EXPERIMENT_BUTTON_ACTION.IMPORT_METRIC,
-      disabled: false,
-    },
-    {
-      label: 'experiments.details.export-all-metrics.menu-item.text',
-      action: EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_METRICS,
-      disabled: false,
-    },
-  ];
-
-  constructor(private experimentService: ExperimentService, private authService: AuthService) {}
+  constructor(
+    private readonly experimentService: ExperimentService,
+    private readonly metricHelperService: MetricHelperService,
+    private readonly authService: AuthService,
+    private readonly dialogService: DialogService
+  ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
   }
 
   onAddMetricClick(): void {
-    // TODO: Implement add metric functionality when dialog service is available
-    console.log('Add metric clicked');
-  }
-
-  onMenuButtonItemClick(event: string, experiment: Experiment): void {
-    switch (event) {
-      case EXPERIMENT_BUTTON_ACTION.IMPORT_METRIC:
-        // TODO: Implement import functionality when dialog service is available
-        console.log('Import metric clicked for experiment:', experiment.id);
-        break;
-      case EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_METRICS:
-        // TODO: Implement export functionality when experiment service methods are available
-        console.log('Export all metrics clicked for experiment:', experiment.id);
-        break;
-      default:
-        console.log('Unknown action:', event);
-    }
+    // Get experiment ID from selected experiment
+    this.selectedExperiment$.pipe(take(1)).subscribe((experiment: Experiment) => {
+      if (experiment?.id) {
+        this.dialogService.openAddMetricModal(experiment.id);
+      }
+    });
   }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean): void {
@@ -99,20 +82,31 @@ export class ExperimentMetricsSectionCardComponent implements OnInit {
         this.onEditMetric(event.query, experimentId);
         break;
       case EXPERIMENT_ROW_ACTION.DELETE:
-        this.onDeleteMetric(event.query, experimentId);
+        this.onDeleteMetric(event.query);
         break;
       default:
         console.log('Unknown action:', event.action);
     }
   }
 
-  private onEditMetric(query: any, experimentId: string): void {
-    // TODO: Implement edit metric functionality when dialog service is available
-    console.log('Edit metric clicked for query:', query.id, 'in experiment:', experimentId);
+  private onEditMetric(query: ExperimentQueryDTO, experimentId: string): void {
+    this.dialogService.openEditMetricModal(query, experimentId);
   }
 
-  private onDeleteMetric(query: any, experimentId: string): void {
-    // TODO: Implement delete metric functionality when dialog service is available
-    console.log('Delete metric clicked for query:', query.id, 'in experiment:', experimentId);
+  private onDeleteMetric(query: ExperimentQueryDTO): void {
+    const metricDisplayName = query.name || `${query.metric?.key}`;
+
+    this.dialogService
+      .openDeleteMetricModal(metricDisplayName)
+      .afterClosed()
+      .subscribe((confirmClicked) => {
+        if (confirmClicked) {
+          this.selectedExperiment$.pipe(take(1)).subscribe((experiment: Experiment) => {
+            if (experiment) {
+              this.metricHelperService.deleteMetric(experiment, query);
+            }
+          });
+        }
+      });
   }
 }

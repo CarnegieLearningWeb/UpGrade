@@ -42,6 +42,7 @@ import {
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 import { ENV, Environment } from '../../../../../../environments/environment-types';
+import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
   selector: 'upsert-experiment-modal',
@@ -59,6 +60,7 @@ import { ENV, Environment } from '../../../../../../environments/environment-typ
     CommonTagsInputComponent,
     AsyncPipe,
     NgIf,
+    SharedModule,
   ],
   templateUrl: './upsert-experiment-modal.component.html',
   styleUrl: './upsert-experiment-modal.component.scss',
@@ -219,7 +221,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }
 
   disableRestrictedFields(): void {
-    this.experimentForm.get('name')?.disable();
     this.experimentForm.get('appContext')?.disable();
     this.experimentForm.get('experimentType')?.disable();
     this.experimentForm.get('unitOfAssignment')?.disable();
@@ -244,7 +245,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       conditionOrder: [initialValues.conditionOrder],
       assignmentAlgorithm: [initialValues.assignmentAlgorithm, Validators.required],
       stratificationFactor: [initialValues.stratificationFactor],
-      groupType: [initialValues.groupType],
+      groupType: [
+        initialValues.groupType,
+        ...(initialValues.unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? [Validators.required] : []),
+      ],
       tags: [initialValues.tags],
     });
 
@@ -534,7 +538,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined, // Conditional validation
       assignmentAlgorithm: assignmentAlgorithm || undefined, // @IsOptional
       stratificationFactor: stratificationFactorObj,
-      group: groupType || undefined,
+      group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
       tags,
       state: EXPERIMENT_STATE.INACTIVE,
       filterMode: FILTER_MODE.EXCLUDE_ALL,
@@ -593,7 +597,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined,
       assignmentAlgorithm: assignmentAlgorithm || undefined,
       stratificationFactor: stratificationFactorObj,
-      group: groupType || undefined,
+      group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
       tags,
 
       // Preserve existing state and structure
@@ -613,7 +617,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       // Backend metadata
       backendVersion: sourceExperiment.backendVersion,
       moocletPolicyParameters: sourceExperiment.moocletPolicyParameters,
-      rewardMetricKey: sourceExperiment.rewardMetricKey,
 
       // Required backend fields with defaults if not present
       postExperimentRule: sourceExperiment.postExperimentRule || POST_EXPERIMENT_RULE.CONTINUE,

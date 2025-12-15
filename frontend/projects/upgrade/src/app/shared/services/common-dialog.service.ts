@@ -28,8 +28,8 @@ import { UpsertSegmentModalComponent } from '../../features/dashboard/segments/m
 import {
   EXPERIMENT_LIST_IMPORT_SERVICE,
   FEATURE_FLAG_IMPORT_SERVICE,
+  FEATURE_FLAG_LIST_IMPORT_SERVICE,
   ImportServiceAdapter,
-  LIST_IMPORT_SERVICE,
   SEGMENT_IMPORT_SERVICE,
   SEGMENT_LIST_IMPORT_SERVICE,
 } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
@@ -38,13 +38,16 @@ import { DeleteSegmentModalComponent } from '../../features/dashboard/segments/m
 import { UpsertExperimentModalComponent } from '../../features/dashboard/experiments/modals/upsert-experiment-modal/upsert-experiment-modal.component';
 import { UpsertDecisionPointModalComponent } from '../../features/dashboard/experiments/modals/upsert-decision-point-modal/upsert-decision-point-modal.component';
 import { UpsertConditionModalComponent } from '../../features/dashboard/experiments/modals/upsert-condition-modal/upsert-condition-modal.component';
+import { UpsertMetricModalComponent } from '../../features/dashboard/experiments/modals/upsert-metric-modal/upsert-metric-modal.component';
 import {
   UPSERT_EXPERIMENT_ACTION,
   ExperimentDecisionPoint,
   ExperimentCondition,
   ExperimentConditionPayload,
+  ExperimentQueryDTO,
   Experiment,
-  ExperimentVM,
+  UpsertExperimentParams,
+  WeightingMethod,
 } from '../../core/experiments/store/experiments.model';
 import {
   ConditionWeightUpdate,
@@ -82,6 +85,12 @@ export interface UpsertConditionModalParams {
   context: string;
 }
 
+export interface UpsertMetricModalParams {
+  sourceQuery: ExperimentQueryDTO | null;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -106,8 +115,24 @@ export class DialogService {
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        sourceFlag: null,
+        sourceExperiment: null,
         action: UPSERT_EXPERIMENT_ACTION.ADD,
+      },
+    };
+    return this.openUpsertExperimentModal(commonModalConfig);
+  }
+
+  openEditExperimentModal(sourceExperiment: Experiment) {
+    const commonModalConfig: CommonModalConfig<UpsertExperimentParams> = {
+      title: 'Edit Experiment',
+      tagsLabel: 'experiments.upsert-experiment-modal.tags-label.text',
+      tagsPlaceholder: 'experiments.upsert-experiment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceExperiment: { ...sourceExperiment },
+        action: UPSERT_EXPERIMENT_ACTION.EDIT,
       },
     };
     return this.openUpsertExperimentModal(commonModalConfig);
@@ -226,6 +251,46 @@ export class DialogService {
     };
 
     return this.dialog.open(EditPayloadModalComponent, config);
+  }
+
+  openAddMetricModal(experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertMetricModalParams> = {
+      title: 'Add Metric',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceQuery: null,
+        action: UPSERT_EXPERIMENT_ACTION.ADD,
+        experimentId,
+      },
+    };
+    return this.openUpsertMetricModal(commonModalConfig);
+  }
+
+  openEditMetricModal(sourceQuery: ExperimentQueryDTO, experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertMetricModalParams> = {
+      title: 'Edit Metric',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceQuery: { ...sourceQuery },
+        action: UPSERT_EXPERIMENT_ACTION.EDIT,
+        experimentId,
+      },
+    };
+    return this.openUpsertMetricModal(commonModalConfig);
+  }
+
+  openUpsertMetricModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: false,
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertMetricModalComponent, config);
   }
 
   // feature flag modal ---------------------------------------- //
@@ -503,11 +568,15 @@ export class DialogService {
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openEditConditionWeightsModal(conditions: ExperimentCondition[]): Observable<ConditionWeightUpdate[]> {
+  openEditConditionWeightsModal(
+    conditions: ExperimentCondition[],
+    weightingMethod: WeightingMethod
+  ): Observable<ConditionWeightUpdate[]> {
     const dialogRef = this.dialog.open(EditConditionWeightsModalComponent, {
       panelClass: ['experiment-modal', 'modal-shadow'],
       hasBackdrop: true,
       autoFocus: false,
+      restoreFocus: false,
       backdropClass: 'modal-backdrop',
       width: ModalSize.STANDARD,
 
@@ -522,6 +591,7 @@ export class DialogService {
             conditionCode: condition.conditionCode,
             assignmentWeight: condition.assignmentWeight || 0,
           })),
+          weightingMethod,
         },
       },
     });
@@ -711,6 +781,20 @@ export class DialogService {
     };
 
     return this.openSimpleCommonConfirmationModal(deleteConditionModalConfig, ModalSize.SMALL);
+  }
+
+  openDeleteMetricModal(metricName: string) {
+    const deleteMetricModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Delete Metric',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete the metric "${metricName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(deleteMetricModalConfig, ModalSize.SMALL);
   }
 
   openDeleteSegmentModal() {
@@ -956,7 +1040,7 @@ export class DialogService {
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        importTypeAdapterToken: LIST_IMPORT_SERVICE,
+        importTypeAdapterToken: FEATURE_FLAG_LIST_IMPORT_SERVICE,
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
         incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
@@ -1010,7 +1094,7 @@ export class DialogService {
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        importTypeAdapterToken: LIST_IMPORT_SERVICE,
+        importTypeAdapterToken: FEATURE_FLAG_LIST_IMPORT_SERVICE,
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
         incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',

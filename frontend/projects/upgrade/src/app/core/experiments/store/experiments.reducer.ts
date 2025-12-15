@@ -4,12 +4,13 @@ import {
   EXPERIMENT_SEARCH_KEY,
   SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
+  ExperimentVM,
 } from './experiments.model';
 import { createReducer, on, Action } from '@ngrx/store';
 import * as experimentsAction from './experiments.actions';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 
-export const adapter: EntityAdapter<Experiment> = createEntityAdapter<Experiment>();
+export const adapter: EntityAdapter<ExperimentVM> = createEntityAdapter<ExperimentVM>();
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
@@ -124,6 +125,14 @@ const reducer = createReducer(
     adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
   ),
   on(experimentsAction.actionUpdateExperimentConditionsFailure, (state) => ({
+    ...state,
+    isLoadingExperiment: false,
+  })),
+  on(experimentsAction.actionUpdateExperimentMetrics, (state) => ({ ...state, isLoadingExperiment: true })),
+  on(experimentsAction.actionUpdateExperimentMetricsSuccess, (state, { experiment }) =>
+    adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
+  ),
+  on(experimentsAction.actionUpdateExperimentMetricsFailure, (state) => ({
     ...state,
     isLoadingExperiment: false,
   })),

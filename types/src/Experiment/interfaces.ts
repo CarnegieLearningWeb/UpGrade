@@ -15,6 +15,7 @@ import {
   IMPORT_COMPATIBILITY_TYPE,
   SERVER_ERROR,
   EXPERIMENT_LIST_OPERATION,
+  OPERATION_TYPES,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -146,6 +147,14 @@ export interface IMetricUnit {
   children?: IMetricUnit[];
   metadata?: { type: IMetricMetaData };
   allowedData?: string[];
+}
+
+export type ExperimentQueryComparator = '=' | '<>' | '!=';
+
+export interface ExperimentQueryPayload {
+  operationType: OPERATION_TYPES;
+  compareFn?: ExperimentQueryComparator;
+  compareValue?: string;
 }
 
 export interface IFlagVariation {
@@ -283,7 +292,7 @@ export interface IMenuButtonItem {
 
 export interface IFeatureFlagFile {
   fileName: string;
-  fileContent: string | ArrayBuffer;
+  fileContent: string;
 }
 
 export interface IImportError {

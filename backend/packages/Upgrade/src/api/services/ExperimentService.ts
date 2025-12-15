@@ -87,12 +87,11 @@ import { CacheService } from './CacheService';
 import { QueryService } from './QueryService';
 import { ArchivedStats } from '../models/ArchivedStats';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
-import { validate } from 'class-validator';
+import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
 import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
 import { MetricService } from './MetricService';
-import { MoocletRewardsService } from './MoocletRewardsService';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { SegmentRepository } from '../repositories/SegmentRepository';
@@ -139,8 +138,7 @@ export class ExperimentService {
     protected errorService: ErrorService,
     protected cacheService: CacheService,
     protected queryService: QueryService,
-    protected metricService: MetricService,
-    protected moocletRewardsService: MoocletRewardsService
+    protected metricService: MetricService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -223,7 +221,12 @@ export class ExperimentService {
         experiment.experimentSegmentInclusion
       );
     });
-    return [experimentData, count];
+    return [
+      experimentData.map((experiment) => {
+        return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
+      }),
+      count || 0,
+    ];
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
@@ -505,10 +508,10 @@ export class ExperimentService {
         (result) => {
           const queryId = result.id;
           delete result.id;
-          const archivedStats: Partial<ArchivedStats> = {
+          const archivedStats: Omit<ArchivedStats, 'createdAt' | 'updatedAt' | 'versionNumber'> = {
             id: uuid(),
             result: result,
-            query: queryId,
+            query: { id: queryId } as Query,
           };
           return archivedStats;
         }
@@ -772,6 +775,7 @@ export class ExperimentService {
       await this.deleteAllListsFromExperiment(oldExperiment, user, logger, entityManager);
       includeListsToReturn = [];
       excludeListsToReturn = [];
+      experiment.filterMode = FILTER_MODE.EXCLUDE_ALL;
     }
 
     if (this.experimentSchedulerService) {
@@ -803,6 +807,7 @@ export class ExperimentService {
           experimentSegmentInclusion,
           ...expDoc
         } = experiment;
+        const newQueries = isChangingContext ? [] : queries;
 
         let experimentDoc: Experiment;
         try {
@@ -915,9 +920,9 @@ export class ExperimentService {
         // creating queries docs
         promiseArray = [];
         let queriesDocToSave =
-          (queries?.[0] &&
-            queries.length > 0 &&
-            queries.map((query: any) => {
+          (newQueries?.[0] &&
+            newQueries.length > 0 &&
+            newQueries.map((query: any) => {
               promiseArray.push(this.metricRepository.findOne({ where: { key: query.metric.key } }));
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
@@ -1722,33 +1727,43 @@ export class ExperimentService {
   private paginatedSearchString(params: IExperimentSearchParams): string {
     const type = params.key;
     // escape % and ' characters
-    const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
-    const likeString = `ILIKE '%${serachString}%'`;
-    const searchString: string[] = [];
+    const searchString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    if (type === EXPERIMENT_SEARCH_KEY.ID && !isUUID(searchString)) {
+      return '';
+    }
+
+    const likeString = `ILIKE '%${searchString}%'`;
+    const searchArray: string[] = [];
     switch (type) {
       case EXPERIMENT_SEARCH_KEY.NAME:
-        searchString.push(`${type} ${likeString}`);
+        searchArray.push(`${type} ${likeString}`);
         break;
       case EXPERIMENT_SEARCH_KEY.STATUS:
-        searchString.push(`state::TEXT ${likeString}`);
+        searchArray.push(`state::TEXT ${likeString}`);
         break;
       case EXPERIMENT_SEARCH_KEY.CONTEXT:
-        searchString.push(`ARRAY_TO_STRING(${type}, ',') ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(${type}, ',') ${likeString}`);
         break;
       case EXPERIMENT_SEARCH_KEY.TAG:
-        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        break;
+      case EXPERIMENT_SEARCH_KEY.ID:
+        searchArray.push(`experiment.id = '${searchString}'`);
         break;
       default:
-        searchString.push(`name ${likeString}`);
-        searchString.push(`state::TEXT ${likeString}`);
-        searchString.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
-        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
-        searchString.push(`partitions.site ${likeString}`);
-        searchString.push(`partitions.target ${likeString}`);
+        searchArray.push(`name ${likeString}`);
+        searchArray.push(`state::TEXT ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        searchArray.push(`partitions.site ${likeString}`);
+        searchArray.push(`partitions.target ${likeString}`);
+        if (isUUID(searchString)) {
+          searchArray.push(`experiment.id = '${searchString}'`);
+        }
         break;
     }
 
-    const searchStringConcatenated = `(${searchString.join(' OR ')})`;
+    const searchStringConcatenated = `(${searchArray.join(' OR ')})`;
     return searchStringConcatenated;
   }
 
@@ -1959,43 +1974,29 @@ export class ExperimentService {
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Segment> {
-    await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
+    const existingRecords = await this.getExistingInclusionExclusionSegments([segmentId], filterType);
+    if (existingRecords.length === 0) {
+      throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
+    }
+    await this.createDeleteListAuditLogs(existingRecords, filterType, currentUser);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return this.segmentService.deleteSegment(segmentId, logger);
   }
 
   async createDeleteListAuditLogs(
-    segmentIds: string[],
+    existingRecords: ExperimentSegmentInclusion[] | ExperimentSegmentExclusion[],
     filterType: LIST_FILTER_MODE,
     currentUser: UserDTO,
     entityManager?: EntityManager
   ): Promise<void> {
     const auditLogPromises = [];
-    for (const segmentId of segmentIds) {
-      let existingRecord: ExperimentSegmentInclusion | ExperimentSegmentExclusion;
-
-      if (filterType === LIST_FILTER_MODE.INCLUSION) {
-        existingRecord = await this.experimentSegmentInclusionRepository.findOne({
-          where: { segment: { id: segmentId } },
-          relations: ['experiment', 'segment'],
-        });
-      } else {
-        existingRecord = await this.experimentSegmentExclusionRepository.findOne({
-          where: { segment: { id: segmentId } },
-          relations: ['experiment', 'segment'],
-        });
-      }
-      // Handle if the record is not found
-      if (!existingRecord) {
-        throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
-      }
-
+    for (const existingRecord of existingRecords) {
       // Create the delete list audit log data
       const updateAuditLog = {
         experimentId: existingRecord.experiment.id,
         experimentName: existingRecord.experiment.name,
         list: {
-          listId: segmentId,
+          listId: existingRecord.segment.id,
           listName: existingRecord.segment.name,
           filterType: filterType,
           operation: EXPERIMENT_LIST_OPERATION.DELETED,
@@ -2014,6 +2015,20 @@ export class ExperimentService {
 
     // Use Promise.all to run all audit log saving operations concurrently
     await Promise.all(auditLogPromises);
+  }
+
+  async getExistingInclusionExclusionSegments(
+    segmentIds: string[],
+    listFilterMode: LIST_FILTER_MODE
+  ): Promise<ExperimentSegmentInclusion[] | ExperimentSegmentExclusion[]> {
+    const repo =
+      listFilterMode === LIST_FILTER_MODE.INCLUSION
+        ? this.experimentSegmentInclusionRepository
+        : this.experimentSegmentExclusionRepository;
+
+    const records = await repo.getExistingSegments(segmentIds);
+
+    return records;
   }
 
   public async updateList(
@@ -2386,14 +2401,32 @@ export class ExperimentService {
     const auditLogPromises = [];
 
     if (includeListIds.length) {
+      const existingInclusionRecords = await this.getExistingInclusionExclusionSegments(
+        includeListIds,
+        LIST_FILTER_MODE.INCLUSION
+      );
       auditLogPromises.push(
-        this.createDeleteListAuditLogs(includeListIds, LIST_FILTER_MODE.INCLUSION, user, transactionalEntityManager)
+        this.createDeleteListAuditLogs(
+          existingInclusionRecords,
+          LIST_FILTER_MODE.INCLUSION,
+          user,
+          transactionalEntityManager
+        )
       );
     }
 
     if (excludeListIds.length) {
+      const existingExclusionRecords = await this.getExistingInclusionExclusionSegments(
+        excludeListIds,
+        LIST_FILTER_MODE.EXCLUSION
+      );
       auditLogPromises.push(
-        this.createDeleteListAuditLogs(excludeListIds, LIST_FILTER_MODE.EXCLUSION, user, transactionalEntityManager)
+        this.createDeleteListAuditLogs(
+          existingExclusionRecords,
+          LIST_FILTER_MODE.EXCLUSION,
+          user,
+          transactionalEntityManager
+        )
       );
     }
 
@@ -2402,7 +2435,6 @@ export class ExperimentService {
     if (segmentIds.length) {
       await this.segmentRepository.deleteSegments(segmentIds, logger, transactionalEntityManager);
     }
-    // await Promise.all(auditLogPromises);
-    return;
+    await Promise.all(auditLogPromises);
   }
 }

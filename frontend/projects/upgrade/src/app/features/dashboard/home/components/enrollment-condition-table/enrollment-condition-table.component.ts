@@ -6,12 +6,16 @@ import {
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Subscription } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
+import { TableRowComponent } from '../table-row/table-row.component';
 
 @Component({
-  selector: 'home-enrollment-condition-table',
+  selector: 'enrollment-condition-table',
   templateUrl: './enrollment-condition-table.component.html',
   styleUrls: ['./enrollment-condition-table.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule, TranslateModule, TableRowComponent],
 })
 export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
   @Input() experiment: ExperimentVM;

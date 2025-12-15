@@ -49,6 +49,26 @@ export class ExperimentSegmentInclusionRepository extends Repository<ExperimentS
       });
   }
 
+  public getExistingSegments(segmentIds: string[]): Promise<ExperimentSegmentInclusion[]> {
+    if (!segmentIds || segmentIds.length === 0) {
+      return Promise.resolve([]);
+    }
+    return this.createQueryBuilder('experimentSegmentInclusion')
+      .leftJoinAndSelect(`experimentSegmentInclusion.segment`, 'segment')
+      .leftJoinAndSelect(`experimentSegmentInclusion.experiment`, 'experiment')
+      .where('segment.id IN (:...segmentIds)', { segmentIds })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentSegmentInclusion',
+          'getExistingSegments',
+          { segmentIds },
+          errorMsg
+        );
+        throw errorMsgString;
+      });
+  }
+
   public async deleteData(
     segmentId: string,
     experimentId: string,

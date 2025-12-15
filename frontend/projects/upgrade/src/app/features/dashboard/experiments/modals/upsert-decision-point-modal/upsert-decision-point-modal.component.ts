@@ -1,6 +1,14 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+  AbstractControlOptions,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -23,6 +31,7 @@ import {
   ExperimentDecisionPoint,
   Experiment,
 } from '../../../../../core/experiments/store/experiments.model';
+import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
   selector: 'upsert-decision-point-modal',
@@ -35,6 +44,7 @@ import {
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    SharedModule,
   ],
   templateUrl: './upsert-decision-point-modal.component.html',
   styleUrl: './upsert-decision-point-modal.component.scss',
@@ -60,9 +70,9 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public config: CommonModalConfig<UpsertDecisionPointParams>,
-    private formBuilder: FormBuilder,
-    private experimentService: ExperimentService,
-    private decisionPointHelperService: DecisionPointHelperService,
+    private readonly formBuilder: FormBuilder,
+    private readonly experimentService: ExperimentService,
+    private readonly decisionPointHelperService: DecisionPointHelperService,
     public dialogRef: MatDialogRef<UpsertDecisionPointModalComponent>
   ) {}
 
@@ -90,11 +100,18 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
     const { sourceDecisionPoint, action } = this.config.params;
     const initialValues = this.deriveInitialFormValues(sourceDecisionPoint, action);
 
-    this.decisionPointForm = this.formBuilder.group({
-      site: [initialValues.site, [Validators.required]],
-      target: [initialValues.target, [Validators.required]],
-      excludeIfReached: [initialValues.excludeIfReached],
-    });
+    const options: AbstractControlOptions = {
+      validators: this.duplicateDecisionPointValidator.bind(this),
+    };
+
+    this.decisionPointForm = this.formBuilder.group(
+      {
+        site: [initialValues.site, [Validators.required]],
+        target: [initialValues.target, [Validators.required]],
+        excludeIfReached: [initialValues.excludeIfReached],
+      },
+      options
+    );
 
     this.initialFormValues$.next(this.decisionPointForm.value);
   }
@@ -131,11 +148,93 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
     }
 
     const contextData = metaData.contextMetadata[this.currentContext];
-    if (!contextData || !contextData[field]) {
+    if (!contextData?.[field]) {
       return [];
     }
 
     return contextData[field].filter((option) => option.toLowerCase().startsWith(filterValue));
+  }
+
+  private duplicateDecisionPointValidator(formGroup: AbstractControl): ValidationErrors | null {
+    const siteControl = formGroup.get('site');
+    const targetControl = formGroup.get('target');
+
+    if (!siteControl || !targetControl) {
+      return null;
+    }
+
+    const site = siteControl.value?.trim() || '';
+    const target = targetControl.value?.trim() || '';
+
+    // Don't validate if either field is empty (required validator will handle that)
+    if (!site || !target) {
+      // Clear any existing duplicate errors when fields are empty
+      this.clearDuplicateError(siteControl);
+      this.clearDuplicateError(targetControl);
+      return null;
+    }
+
+    let currentExperiment: Experiment = null;
+    this.experimentService.selectedExperiment$.pipe(take(1)).subscribe((experiment) => {
+      currentExperiment = experiment;
+    });
+
+    if (!currentExperiment?.partitions) {
+      this.clearDuplicateError(siteControl);
+      this.clearDuplicateError(targetControl);
+      return null;
+    }
+
+    // Check if this decision point already exists
+    const isDuplicate = currentExperiment.partitions.some((decisionPoint) => {
+      const isSameSite = decisionPoint.site?.trim() === site;
+      const isSameTarget = decisionPoint.target?.trim() === target;
+
+      // For edit action, exclude the current decision point being edited
+      if (this.config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT) {
+        const sourceDecisionPoint = this.config.params.sourceDecisionPoint;
+        if (sourceDecisionPoint) {
+          const isCurrentDecisionPoint =
+            decisionPoint.site?.trim() === sourceDecisionPoint.site?.trim() &&
+            decisionPoint.target?.trim() === sourceDecisionPoint.target?.trim();
+
+          // Skip validation if it's the same decision point being edited
+          if (isCurrentDecisionPoint) {
+            return false;
+          }
+        }
+      }
+
+      return isSameSite && isSameTarget;
+    });
+
+    if (isDuplicate) {
+      // Set error on BOTH controls to make both fields red
+      this.setDuplicateError(siteControl);
+      this.setDuplicateError(targetControl);
+      return { duplicateDecisionPoint: true };
+    } else {
+      // Clear duplicate errors from both controls
+      this.clearDuplicateError(siteControl);
+      this.clearDuplicateError(targetControl);
+      return null;
+    }
+  }
+
+  private setDuplicateError(control: AbstractControl): void {
+    const currentErrors = control.errors || {};
+    control.setErrors({ ...currentErrors, duplicateDecisionPoint: true });
+    control.markAsTouched(); // Make error visible immediately
+  }
+
+  private clearDuplicateError(control: AbstractControl): void {
+    if (!control.errors?.['duplicateDecisionPoint']) {
+      return; // No duplicate error to clear
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { duplicateDecisionPoint, ...otherErrors } = control.errors;
+    control.setErrors(Object.keys(otherErrors).length ? otherErrors : null);
   }
 
   listenForIsInitialFormValueChanged(): void {

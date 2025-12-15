@@ -32,7 +32,7 @@ enum ExperimentFilterType {
 const INDIVIDUAL = 'individual';
 
 @Component({
-  selector: 'home-enrollment-over-time',
+  selector: 'enrollment-over-time',
   templateUrl: './enrollment-over-time.component.html',
   imports: [
     CommonModule,
@@ -45,6 +45,7 @@ const INDIVIDUAL = 'individual';
     MatCheckboxModule,
   ],
   styleUrls: ['./enrollment-over-time.component.scss'],
+  standalone: true,
 })
 export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy {
   @Input() experiment: ExperimentVM;

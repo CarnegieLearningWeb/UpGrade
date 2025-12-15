@@ -54,7 +54,6 @@ export enum POST_EXPERIMENT_RULE {
 }
 
 export enum EXPERIMENT_STATE {
-  DRAFT = 'draft',
   INACTIVE = 'inactive',
   PREVIEW = 'preview',
   SCHEDULED = 'scheduled',
@@ -62,6 +61,7 @@ export enum EXPERIMENT_STATE {
   ENROLLMENT_COMPLETE = 'enrollmentComplete',
   CANCELLED = 'cancelled',
   ARCHIVED = 'archived',
+  DRAFT = 'draft',
 }
 
 export enum FEATURE_FLAG_STATUS {
@@ -95,6 +95,7 @@ export enum SERVER_ERROR {
   MISSING_HEADER_USER_ID = 'Missing `User-Id` header',
   SEGMENT_DUPLICATE_NAME = 'Segment with same name already exists for this app-context.',
   INVALID_APP_CONTEXT = 'Invalid app context',
+  MOOCLET_REWARD_ERROR = 'Error processing Mooclet reward',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {
@@ -164,6 +165,7 @@ export enum EXPERIMENT_SEARCH_KEY {
   STATUS = 'status',
   TAG = 'tag',
   CONTEXT = 'context',
+  ID = 'id',
 }
 
 export enum EXPERIMENT_SORT_KEY {
@@ -183,6 +185,11 @@ export enum UserRole {
   CREATOR = 'creator',
   USER_MANAGER = 'user manager',
   READER = 'reader',
+}
+
+export enum METRIC_TYPE {
+  GLOBAL = 'global',
+  REPEATABLE = 'repeatable',
 }
 
 export enum OPERATION_TYPES {
@@ -245,6 +252,7 @@ export enum SEGMENT_SEARCH_KEY {
   TAG = 'tag',
   STATUS = 'status',
   CONTEXT = 'context',
+  ID = 'id',
 }
 
 export enum SEGMENT_SORT_KEY {
@@ -259,6 +267,7 @@ export enum FLAG_SEARCH_KEY {
   STATUS = 'status',
   TAG = 'tag',
   CONTEXT = 'context',
+  ID = 'id',
 }
 
 export enum METRIC_SEARCH_KEY {

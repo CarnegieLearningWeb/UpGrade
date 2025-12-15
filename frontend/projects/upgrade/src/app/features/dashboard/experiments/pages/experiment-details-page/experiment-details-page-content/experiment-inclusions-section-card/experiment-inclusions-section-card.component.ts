@@ -46,6 +46,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
   experimentInclusions$ = this.experimentService.selectExperimentInclusions$;
   tableRowCount$ = this.experimentService.selectExperimentInclusionsLength$;
   subscriptions = new Subscription();
+  private previousFilterMode?: FILTER_MODE;
 
   menuButtonItems: IMenuButtonItem[] = [
     {
@@ -80,6 +81,22 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
+    // Expand section when include-all mode transitions back to exclude-all (e.g., after context change)
+    this.subscriptions.add(
+      this.selectedExperiment$.subscribe((experiment) => {
+        if (!experiment) {
+          this.previousFilterMode = undefined;
+          return;
+        }
+
+        const nextFilterMode = experiment.filterMode;
+        if (this.previousFilterMode === FILTER_MODE.INCLUDE_ALL && nextFilterMode === FILTER_MODE.EXCLUDE_ALL) {
+          this.isSectionCardExpanded = true;
+        }
+
+        this.previousFilterMode = nextFilterMode;
+      })
+    );
   }
 
   onAddIncludeListClick(appContext: string, experimentId: string): void {
@@ -123,13 +140,8 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
         experiment: experiment,
         filterMode: newFilterMode,
       });
-      this.updateSectionCardExpansion(newFilterMode);
     }
     // If user cancels, the toggle state is already reverted, so no action needed
-  }
-
-  updateSectionCardExpansion(newFilterMode: FILTER_MODE): void {
-    this.isSectionCardExpanded = newFilterMode !== FILTER_MODE.INCLUDE_ALL;
   }
 
   onMenuButtonItemClick(event: string, experiment: Experiment): void {

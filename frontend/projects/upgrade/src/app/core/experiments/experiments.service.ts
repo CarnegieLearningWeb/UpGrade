@@ -15,6 +15,7 @@ import {
   UpdateExperimentFilterModeRequest,
   UpdateExperimentDecisionPointsRequest,
   UpdateExperimentConditionsRequest,
+  UpdateExperimentMetricsRequest,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -208,6 +209,10 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionUpdateExperimentConditions({ updateExperimentConditionsRequest }));
   }
 
+  updateExperimentMetrics(updateExperimentMetricsRequest: UpdateExperimentMetricsRequest) {
+    this.store$.dispatch(experimentAction.actionUpdateExperimentMetrics({ updateExperimentMetricsRequest }));
+  }
+
   fetchContextMetaData() {
     this.store$.dispatch(experimentAction.actionFetchContextMetaData({ isLoadingContextMetaData: true }));
   }
@@ -302,18 +307,6 @@ export class ExperimentService {
 
   getOutcomeVariableName(experimentName: string) {
     return `${this.formatExperimentName(experimentName)}_REWARD_VARIABLE`;
-  }
-
-  getRewardMetricKey(experimentName: string) {
-    return `${this.formatExperimentName(experimentName)}_REWARD`;
-  }
-
-  getRewardMetricData(rewardMetricKey: string) {
-    return {
-      metric_Key: rewardMetricKey,
-      metric_Operation: 'Percentage (Success)',
-      metric_Name: 'Success Rate',
-    };
   }
 
   addExperimentInclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
