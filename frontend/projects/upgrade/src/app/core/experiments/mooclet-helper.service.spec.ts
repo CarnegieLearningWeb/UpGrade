@@ -304,12 +304,12 @@ describe('MoocletAlgorithmHelperService', () => {
       const validators = service.getTSConfigurableFieldValidators();
       const defaults = service.getTSConfigurableDefaults();
 
-      // Each field should have 2 validators: required and min
-      expect(validators.batch_size.length).toBe(2);
-      expect(validators.uniform_threshold.length).toBe(2);
-      expect(validators.tspostdiff_thresh.length).toBe(2);
-      expect(validators.prior_success.length).toBe(2);
-      expect(validators.prior_failure.length).toBe(2);
+      // Each field should have 3 validators: required, min, max
+      expect(validators.batch_size.length).toBe(3);
+      expect(validators.uniform_threshold.length).toBe(3);
+      expect(validators.tspostdiff_thresh.length).toBe(3);
+      expect(validators.prior_success.length).toBe(3);
+      expect(validators.prior_failure.length).toBe(3);
 
       // Test that min validator works correctly for batch_size
       const batchSizeMinValidator = validators.batch_size[1];
@@ -321,11 +321,11 @@ describe('MoocletAlgorithmHelperService', () => {
       expect(batchSizeMinValidator({ value: defaults.batch_size + 1 } as any)).toBeNull();
     });
 
-    it('should return exactly 2 validators per field (required + min)', () => {
+    it('should return exactly 3 validators per field (required + min)', () => {
       const validators = service.getTSConfigurableFieldValidators();
 
       Object.values(validators).forEach((fieldValidators) => {
-        expect(fieldValidators.length).toBe(2);
+        expect(fieldValidators.length).toBe(3);
       });
     });
   });
