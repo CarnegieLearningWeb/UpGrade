@@ -17,6 +17,8 @@ import { BullettedListKeyValueFormat } from '../../shared-standalone-component-l
 // Pure Functions (exported for use in selectors and other pure contexts)
 // ============================================================================
 
+const DEFAULT_MAX_NUMBER_INPUT = 1000000;
+
 /**
  * Format TS Configurable policy parameters for display in the overview section.
  * Returns an array of objects with translation keys and values for proper i18n support.
@@ -228,11 +230,23 @@ export class MoocletExperimentHelperService {
     const defaults = this.getTSConfigurableDefaults();
 
     return {
-      batch_size: [Validators.required, Validators.min(defaults.batch_size)],
-      uniform_threshold: [Validators.required, Validators.min(defaults.uniform_threshold)],
-      tspostdiff_thresh: [Validators.required, Validators.min(defaults.tspostdiff_thresh)],
-      prior_success: [Validators.required, Validators.min(defaults.prior.success)],
-      prior_failure: [Validators.required, Validators.min(defaults.prior.failure)],
+      batch_size: [Validators.required, Validators.min(defaults.batch_size), Validators.max(DEFAULT_MAX_NUMBER_INPUT)],
+      uniform_threshold: [
+        Validators.required,
+        Validators.min(defaults.uniform_threshold),
+        Validators.max(DEFAULT_MAX_NUMBER_INPUT),
+      ],
+      tspostdiff_thresh: [Validators.required, Validators.min(defaults.tspostdiff_thresh), Validators.max(1.0)],
+      prior_success: [
+        Validators.required,
+        Validators.min(defaults.prior.success),
+        Validators.max(DEFAULT_MAX_NUMBER_INPUT),
+      ],
+      prior_failure: [
+        Validators.required,
+        Validators.min(defaults.prior.failure),
+        Validators.max(DEFAULT_MAX_NUMBER_INPUT),
+      ],
     };
   }
 }

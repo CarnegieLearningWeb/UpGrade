@@ -89,9 +89,22 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
         )
         .subscribe((errors) => {
           this.validationErrors$.next(errors);
-          this.validationChange.emit(errors.length === 0);
+          this.emitValidationState(errors);
         })
     );
+
+    // Emit validation state immediately when Angular form validity changes
+    this.subscriptions.add(
+      this.policyForm.statusChanges.subscribe(() => {
+        this.emitValidationState(this.validationErrors$.value);
+      })
+    );
+  }
+
+  private emitValidationState(backendErrors: ValidationError[]): void {
+    // Form is valid only if both Angular validators pass AND backend validation passes
+    const isValid = this.policyForm.valid && backendErrors.length === 0;
+    this.validationChange.emit(isValid);
   }
 
   private listenToFormChanges(): void {
@@ -101,8 +114,10 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
       })
     );
 
-    // Trigger initial validation
+    // Trigger initial validation and emit initial form state
     this.emitFormValueChanges(this.policyForm.value);
+    // Emit initial validation state considering Angular form validity
+    this.emitValidationState(this.validationErrors$.value);
   }
 
   private listenForIsInitialFormValueChanged() {

@@ -21,6 +21,9 @@
       <mat-error *ngIf="policyForm.get('prior_success')?.hasError('min')">{{
         'home.new-experiment.design.ts-configurable-policy.prior-success.min-error.text' | translate
       }}</mat-error>
+      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('max')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
+      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -34,6 +37,9 @@
       <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('min')">{{
         'home.new-experiment.design.ts-configurable-policy.prior-failure.min-error.text' | translate
       }}</mat-error>
+      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('max')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
+      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -47,6 +53,9 @@
       <mat-error *ngIf="policyForm.get('batch_size')?.hasError('min')">{{
         'home.new-experiment.design.ts-configurable-policy.batch-size.min-error.text' | translate
       }}</mat-error>
+      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('max')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
+      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -59,6 +68,9 @@
       }}</mat-hint>
       <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('min')">
         {{ 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.min-error.text' | translate }}
+      </mat-error>
+      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('max')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
     </mat-form-field>
 
@@ -80,6 +92,9 @@
       }}</mat-hint>
       <mat-error *ngIf="policyForm.get('tspostdiff_thresh')?.hasError('min')">
         {{ 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.min-error.text' | translate }}
+      </mat-error>
+      <mat-error *ngIf="policyForm.get('tspostdiff_thresh')?.hasError('max')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.max-error.text' | translate }}
       </mat-error>
     </mat-form-field>
   </form>
