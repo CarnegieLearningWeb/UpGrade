@@ -68,6 +68,7 @@ export interface SyncCreateParams {
 export interface SyncEditParams {
   experimentDTO: ExperimentDTO;
   currentUser: UserDTO;
+  moocletRefToDelete?: MoocletExperimentRef;
   logger: UpgradeLogger;
 }
 
@@ -171,17 +172,37 @@ export class MoocletExperimentService extends ExperimentService {
     });
   }
 
-  public async syncUpdate(params: SyncCreateParams): Promise<ExperimentDTO> {
+  public async syncUpdate(params: SyncEditParams): Promise<ExperimentDTO> {
     return this.dataSource.transaction((manager) => this.handleEditMoocletTransaction(manager, params));
   }
 
-  public async syncUpdateWithNewMoocletResources(params: SyncCreateParams): Promise<ExperimentDTO> {
+  public async syncUpdateWithMoocletAlgorithmTransition(params: SyncEditParams): Promise<ExperimentDTO> {
     return this.dataSource.transaction(async (manager) => {
       const updatedExperiment = await this.updateUpgradeExperiment(manager, params);
-      params.experimentDTO = updatedExperiment;
-      return this.handleCreateMoocletTransaction(manager, params);
+
+      // when transitioning away from Mooclet, delete the old refs after successful experiment update
+      if (params.moocletRefToDelete) {
+        await this.moocletExperimentRefRepository.delete(params.moocletRefToDelete.id);
+      }
+
+      // when transitioning to Mooclet, create the Mooclet resources
+      if (this.isMoocletExperiment(updatedExperiment.assignmentAlgorithm)) {
+        params.experimentDTO = { ...updatedExperiment };
+        return await this.handleCreateMoocletTransaction(manager, params);
+      }
+
+      return updatedExperiment;
     });
   }
+
+  // public async syncUpdateTransitioningAwayFromMooclet(params: SyncEditParams): Promise<ExperimentDTO> {
+  //   return this.dataSource.transaction(async (manager) => {
+  //     if (params.moocletRefToDelete) {
+  //       await this.moocletExperimentRefRepository.delete(params.moocletRefToDelete.id);
+  //     }
+  //     return await this.updateUpgradeExperiment(manager, params);
+  //   });
+  // }
 
   public async syncDelete(params: SyncDeleteParams): Promise<Experiment> {
     return this.dataSource.transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
@@ -1422,16 +1443,18 @@ export class MoocletExperimentService extends ExperimentService {
     hasChanged: boolean;
     wasMooclet: boolean;
     isNowMooclet: boolean;
+    oldAlgorithm: ASSIGNMENT_ALGORITHM;
   }> {
     logger.info({ message: `Check for assignment algorithm change for experiment id => ${experiment.id}` });
     const oldExperiment = await this.findOne(experiment.id, logger);
-    const hasChanged = oldExperiment?.assignmentAlgorithm !== experiment.assignmentAlgorithm;
-    const wasMooclet = this.isMoocletExperiment(oldExperiment?.assignmentAlgorithm);
+    const hasChanged = oldExperiment.assignmentAlgorithm !== experiment.assignmentAlgorithm;
+    const wasMooclet = this.isMoocletExperiment(oldExperiment.assignmentAlgorithm);
     const isNowMooclet = this.isMoocletExperiment(experiment.assignmentAlgorithm);
     return {
       hasChanged,
       wasMooclet,
       isNowMooclet,
+      oldAlgorithm: oldExperiment.assignmentAlgorithm,
     };
   }
 
@@ -1440,10 +1463,11 @@ export class MoocletExperimentService extends ExperimentService {
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<ExperimentDTO> {
-    const { hasChanged, wasMooclet, isNowMooclet } = await this.checkForMoocletAssignmentAlgorithmChange(
+    const { hasChanged, wasMooclet, isNowMooclet, oldAlgorithm } = await this.checkForMoocletAssignmentAlgorithmChange(
       experiment,
       logger
     );
+    let moocletRefToDelete: MoocletExperimentRef | undefined;
 
     if (hasChanged) {
       if (experiment.state !== EXPERIMENT_STATE.INACTIVE) {
@@ -1452,8 +1476,7 @@ export class MoocletExperimentService extends ExperimentService {
         );
       }
 
-      // 1. Fetch old mooclet ref BEFORE update, but don't delete yet until after successful update
-      let moocletRefToDelete: MoocletExperimentRef | undefined;
+      // 1. Cache old mooclet ref BEFORE update, but don't delete stuff from mooclet db yet until after successful update in upgrade db
       if (wasMooclet) {
         moocletRefToDelete = await this.getMoocletExperimentRefByUpgradeExperimentId(experiment.id);
         logger.debug({
@@ -1463,32 +1486,26 @@ export class MoocletExperimentService extends ExperimentService {
         });
       }
 
-      // 2. Update experiment (and create new mooclet resources if transitioning to mooclet)
-      let updatedExperiment: ExperimentDTO;
-      if (isNowMooclet) {
-        // Non-mooclet → Mooclet OR Mooclet A → Mooclet B
-        logger.info({
-          message: '[Algorithm Change] Updating experiment and creating new mooclet resources',
-          experimentId: experiment.id,
-          newAlgorithm: experiment.assignmentAlgorithm,
-        });
-        updatedExperiment = await this.syncUpdateWithNewMoocletResources({
-          experimentDTO: experiment,
-          currentUser,
-          logger,
-        });
-      } else {
-        // Mooclet → Non-mooclet
-        logger.info({
-          message: '[Algorithm Change] Updating experiment (mooclet to non-mooclet)',
-          experimentId: experiment.id,
-          newAlgorithm: experiment.assignmentAlgorithm,
-        });
-        updatedExperiment = await super.update(experiment, currentUser, logger);
-      }
+      // 2. Update experiment with new assignment algorithm, creating new mooclet resources when "isNowMooclet"
+      let message = `[Algorithm Change] Assignment algorithm changed from ${oldAlgorithm} to ${experiment.assignmentAlgorithm}.`;
+      message += wasMooclet && 'Will delete old Mooclet resources after successful update.';
+      message += isNowMooclet && 'Will create new Mooclet resources as part of update.';
 
-      // 3. AFTER successful update, delete old mooclet resources
-      if (moocletRefToDelete) {
+      logger.info({
+        message,
+        experimentId: experiment.id,
+        newAlgorithm: experiment.assignmentAlgorithm,
+        moocletRefToDelete,
+      });
+      const updatedExperiment = await this.syncUpdateWithMoocletAlgorithmTransition({
+        experimentDTO: experiment,
+        currentUser,
+        logger,
+        moocletRefToDelete,
+      });
+
+      // 3. AFTER successful update, delete old mooclet resources when "wasMooclet"
+      if (wasMooclet && moocletRefToDelete) {
         try {
           logger.info({
             message: '[Algorithm Change] Deleting old mooclet resources after successful update',

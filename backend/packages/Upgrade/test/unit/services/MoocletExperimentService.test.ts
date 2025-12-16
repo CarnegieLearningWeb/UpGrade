@@ -49,6 +49,7 @@ import { ExperimentSchedulerService } from '../../../src/api/services/Experiment
 const mockDataSource = {
   initialize: jest.fn(),
   destroy: jest.fn(),
+  transaction: jest.fn((callback) => callback(mockDataSource.manager)),
   manager: {
     transaction: jest.fn(),
     save: jest.fn(),
@@ -259,6 +260,11 @@ describe('#MoocletExperimentService', () => {
       findOne: jest.fn(),
       save: jest.fn(),
     } as unknown as ExperimentRepository;
+
+    moocletExperimentRefRepository = {
+      findOne: jest.fn(),
+      delete: jest.fn().mockResolvedValue(undefined),
+    } as unknown as MoocletExperimentRefRepository;
 
     // Create service with mocked dependencies
     moocletExperimentService = new MoocletExperimentService(
@@ -557,6 +563,7 @@ describe('#MoocletExperimentService', () => {
           hasChanged: true,
           wasMooclet: true,
           isNowMooclet: true,
+          oldAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
         });
 
         // Mock getMoocletExperimentRefByUpgradeExperimentId (should be called to fetch old ref)
@@ -565,7 +572,9 @@ describe('#MoocletExperimentService', () => {
           .mockResolvedValue(mockMoocletExperimentRef);
 
         // Mock syncUpdateWithNewMoocletResources (should be called to update + create new)
-        jest.spyOn(moocletExperimentService, 'syncUpdateWithNewMoocletResources').mockResolvedValue(updatedExperiment);
+        jest
+          .spyOn(moocletExperimentService, 'syncUpdateWithMoocletAlgorithmTransition')
+          .mockResolvedValue(updatedExperiment);
 
         // Mock orchestrateDeleteMoocletResources (should be called AFTER update)
         jest.spyOn(moocletExperimentService, 'orchestrateDeleteMoocletResources').mockResolvedValue(true);
@@ -580,10 +589,11 @@ describe('#MoocletExperimentService', () => {
         expect(moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId).toHaveBeenCalledWith(
           experiment.id
         );
-        expect(moocletExperimentService.syncUpdateWithNewMoocletResources).toHaveBeenCalledWith({
+        expect(moocletExperimentService.syncUpdateWithMoocletAlgorithmTransition).toHaveBeenCalledWith({
           experimentDTO: experiment,
           currentUser,
           logger,
+          moocletRefToDelete: mockMoocletExperimentRef,
         });
         expect(moocletExperimentService.orchestrateDeleteMoocletResources).toHaveBeenCalledWith(
           mockMoocletExperimentRef,
@@ -593,7 +603,7 @@ describe('#MoocletExperimentService', () => {
         // Verify order: fetch called before update, update called before delete
         const fetchOrder = (moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId as jest.Mock).mock
           .invocationCallOrder[0];
-        const updateOrder = (moocletExperimentService.syncUpdateWithNewMoocletResources as jest.Mock).mock
+        const updateOrder = (moocletExperimentService.syncUpdateWithMoocletAlgorithmTransition as jest.Mock).mock
           .invocationCallOrder[0];
         const deleteOrder = (moocletExperimentService.orchestrateDeleteMoocletResources as jest.Mock).mock
           .invocationCallOrder[0];
@@ -615,6 +625,7 @@ describe('#MoocletExperimentService', () => {
           hasChanged: true,
           wasMooclet: true,
           isNowMooclet: false,
+          oldAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
         });
 
         jest
@@ -636,7 +647,7 @@ describe('#MoocletExperimentService', () => {
         expect(moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId).toHaveBeenCalledWith(
           experiment.id
         );
-        expect(updateSpy).toHaveBeenCalledWith(experiment, currentUser, logger);
+        expect(updateSpy).toHaveBeenCalledWith(experiment, currentUser, logger, mockDataSource.manager);
         expect(moocletExperimentService.orchestrateDeleteMoocletResources).toHaveBeenCalledWith(
           mockMoocletExperimentRef,
           logger
@@ -659,9 +670,12 @@ describe('#MoocletExperimentService', () => {
           hasChanged: true,
           wasMooclet: false,
           isNowMooclet: true,
+          oldAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
         });
 
-        jest.spyOn(moocletExperimentService, 'syncUpdateWithNewMoocletResources').mockResolvedValue(updatedExperiment);
+        jest
+          .spyOn(moocletExperimentService, 'syncUpdateWithMoocletAlgorithmTransition')
+          .mockResolvedValue(updatedExperiment);
 
         jest.spyOn(moocletExperimentService, 'getMoocletExperimentRefByUpgradeExperimentId');
         jest.spyOn(moocletExperimentService, 'orchestrateDeleteMoocletResources');
@@ -675,10 +689,11 @@ describe('#MoocletExperimentService', () => {
         // Verify no fetch since wasMooclet is false
         expect(moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId).not.toHaveBeenCalled();
 
-        expect(moocletExperimentService.syncUpdateWithNewMoocletResources).toHaveBeenCalledWith({
+        expect(moocletExperimentService.syncUpdateWithMoocletAlgorithmTransition).toHaveBeenCalledWith({
           experimentDTO: experiment,
           currentUser,
           logger,
+          moocletRefToDelete: undefined,
         });
 
         // Verify no delete since nothing to delete
@@ -698,6 +713,7 @@ describe('#MoocletExperimentService', () => {
           hasChanged: true,
           wasMooclet: true,
           isNowMooclet: false,
+          oldAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
         });
 
         await expect(
@@ -718,6 +734,7 @@ describe('#MoocletExperimentService', () => {
           hasChanged: true,
           wasMooclet: true,
           isNowMooclet: false,
+          oldAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
         });
 
         jest
@@ -760,14 +777,16 @@ describe('#MoocletExperimentService', () => {
           hasChanged: true,
           wasMooclet: true,
           isNowMooclet: false,
+          oldAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
         });
 
         jest
           .spyOn(moocletExperimentService, 'getMoocletExperimentRefByUpgradeExperimentId')
           .mockResolvedValue(mockMoocletExperimentRef);
 
-        // Mock experimentRepository to fail on findOneExperiment (simulating database error)
-        (experimentRepository.findOneExperiment as jest.Mock).mockRejectedValue(updateError);
+        // Mock the update method to fail
+        const updateSpy = jest.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(moocletExperimentService)), 'update');
+        updateSpy.mockRejectedValue(updateError);
 
         jest.spyOn(moocletExperimentService, 'orchestrateDeleteMoocletResources');
 
@@ -777,6 +796,8 @@ describe('#MoocletExperimentService', () => {
 
         // Verify deletion was NOT called since update failed
         expect(moocletExperimentService.orchestrateDeleteMoocletResources).not.toHaveBeenCalled();
+
+        updateSpy.mockRestore();
       });
     });
 
@@ -792,6 +813,7 @@ describe('#MoocletExperimentService', () => {
           hasChanged: false,
           wasMooclet: true,
           isNowMooclet: true,
+          oldAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
         });
 
         jest.spyOn(moocletExperimentService, 'syncUpdate').mockResolvedValue(updatedExperiment);
@@ -823,6 +845,7 @@ describe('#MoocletExperimentService', () => {
           hasChanged: true,
           wasMooclet: false,
           isNowMooclet: false,
+          oldAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
         });
 
         await expect(
@@ -841,6 +864,7 @@ describe('#MoocletExperimentService', () => {
           hasChanged: false,
           wasMooclet: false,
           isNowMooclet: false,
+          oldAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
         });
 
         const result = await moocletExperimentService.handlePotentialMoocletAssignmentAlgorithmChange(
