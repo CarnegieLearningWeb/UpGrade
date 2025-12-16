@@ -56,7 +56,6 @@ import { MoocletPolicyEditorComponent } from './components/experiment-design/moo
     ImportExperimentComponent,
     QueriesModalComponent,
     CreateQueryComponent,
-    ExperimentQueryResultComponent,
     ExperimentEndCriteriaComponent,
     RepeatedMeasurePipe,
     StateTimeLogsComponent,
