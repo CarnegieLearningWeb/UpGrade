@@ -164,11 +164,23 @@ export class MoocletExperimentService extends ExperimentService {
   }
 
   public async syncCreate(params: SyncCreateParams): Promise<ExperimentDTO> {
-    return this.dataSource.transaction((manager) => this.handleCreateMoocletTransaction(manager, params));
+    return this.dataSource.transaction(async (manager) => {
+      const experimentResponse = await this.createUpgradeExperiment(manager, params);
+      params.experimentDTO = experimentResponse;
+      return this.handleCreateMoocletTransaction(manager, params);
+    });
   }
 
   public async syncUpdate(params: SyncCreateParams): Promise<ExperimentDTO> {
     return this.dataSource.transaction((manager) => this.handleEditMoocletTransaction(manager, params));
+  }
+
+  public async syncUpdateWithNewMoocletResources(params: SyncCreateParams): Promise<ExperimentDTO> {
+    return this.dataSource.transaction(async (manager) => {
+      const updatedExperiment = await this.updateUpgradeExperiment(manager, params);
+      params.experimentDTO = updatedExperiment;
+      return this.handleCreateMoocletTransaction(manager, params);
+    });
   }
 
   public async syncDelete(params: SyncDeleteParams): Promise<Experiment> {
@@ -191,13 +203,11 @@ export class MoocletExperimentService extends ExperimentService {
   ): Promise<ExperimentDTO> {
     const logger = params.logger;
     const { moocletPolicyParameters } = params.experimentDTO;
-
-    // create Upgrade Experiment. If this fails, then mooclet resources will not be created, and the UpGrade experiment transaction will abort
-    const experimentResponse = await this.createExperiment(manager, params);
+    const experiment = params.experimentDTO;
 
     // create Mooclet resources. If this fails, it will internally rollback any mooclet resources created, and the UpGrade experiment transaction will abort
     const moocletExperimentRefResponse = await this.orchestrateMoocletCreation(
-      experimentResponse,
+      experiment,
       moocletPolicyParameters,
       logger
     );
@@ -218,21 +228,26 @@ export class MoocletExperimentService extends ExperimentService {
         logger
       );
 
-      experimentResponse.moocletPolicyParameters = moocletPolicyParameters;
+      experiment.moocletPolicyParameters = moocletPolicyParameters;
 
-      return experimentResponse;
+      return experiment;
     } catch (error) {
       await this.orchestrateDeleteMoocletResources(moocletExperimentRefResponse, logger);
       throw error;
     }
   }
 
-  private async createExperiment(manager: EntityManager, params: SyncCreateParams): Promise<ExperimentDTO> {
+  private async createUpgradeExperiment(manager: EntityManager, params: SyncCreateParams): Promise<ExperimentDTO> {
     const { experimentDTO, currentUser, createType, logger } = params;
     return await super.create(experimentDTO, currentUser, logger, {
       existingEntityManager: manager,
       createType,
     });
+  }
+
+  private async updateUpgradeExperiment(manager: EntityManager, params: SyncEditParams): Promise<ExperimentDTO> {
+    const { experimentDTO, currentUser, logger } = params;
+    return await super.update(experimentDTO, currentUser, logger, manager);
   }
 
   private async saveMoocletExperimentRef(
@@ -1002,14 +1017,7 @@ export class MoocletExperimentService extends ExperimentService {
 
       // delete the mooclet resources. If this fails, the transaction will abort and the upgrade experiment will not be deleted,
       // but the Mooclet resources may not be deleted either
-      const removedResources = await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
-      const deleteMessage = removedResources
-        ? 'Upgrade and Mooclet experiment resources deleted successfully'
-        : 'Mooclet resources deletion failed, but upgrade experiment deleted successfully';
-      logger.debug({
-        message: deleteMessage,
-        deleteResponse,
-      });
+      await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
 
       return deleteResponse;
     } catch (error) {
@@ -1020,6 +1028,17 @@ export class MoocletExperimentService extends ExperimentService {
         user: currentUser,
       });
       throw error;
+    }
+  }
+
+  async handleRemoveAnyMoocletResources(experimentId: string, logger: UpgradeLogger): Promise<void> {
+    const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
+    if (moocletExperimentRef) {
+      this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
+    } else {
+      logger.info({
+        message: `No MoocletExperimentRef found for experiment ${experimentId}, skipping Mooclet resource deletion.`,
+      });
     }
   }
 
@@ -1394,6 +1413,67 @@ export class MoocletExperimentService extends ExperimentService {
 
   public isMoocletExperiment(assignmentAlgorithm: ASSIGNMENT_ALGORITHM): boolean {
     return SUPPORTED_MOOCLET_ALGORITHMS.includes(assignmentAlgorithm);
+  }
+
+  public async checkForMoocletAssignmentAlgorithmChange(
+    experiment: ExperimentDTO,
+    logger: UpgradeLogger
+  ): Promise<{
+    hasChanged: boolean;
+    wasMooclet: boolean;
+    isNowMooclet: boolean;
+  }> {
+    logger.info({ message: `Check for assignment algorithm change for experiment id => ${experiment.id}` });
+    const oldExperiment = await this.findOne(experiment.id, logger);
+    const hasChanged = oldExperiment?.assignmentAlgorithm !== experiment.assignmentAlgorithm;
+    const wasMooclet = this.isMoocletExperiment(oldExperiment?.assignmentAlgorithm);
+    const isNowMooclet = this.isMoocletExperiment(experiment.assignmentAlgorithm);
+    return {
+      hasChanged,
+      wasMooclet,
+      isNowMooclet,
+    };
+  }
+
+  public async handlePotentialMoocletAssignmentAlgorithmChange(
+    experiment: ExperimentDTO,
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<ExperimentDTO> {
+    const { hasChanged, wasMooclet, isNowMooclet } = await this.checkForMoocletAssignmentAlgorithmChange(
+      experiment,
+      logger
+    );
+
+    if (hasChanged) {
+      if (experiment.state !== EXPERIMENT_STATE.INACTIVE && (wasMooclet || isNowMooclet)) {
+        throw new Error(
+          `Experiment state is ${experiment.state} and must be inactive to change to or from Mooclet assignment algorithm.`
+        );
+      }
+
+      if (wasMooclet) {
+        await this.handleRemoveAnyMoocletResources(experiment.id, logger);
+      }
+
+      if (isNowMooclet) {
+        return await this.syncUpdateWithNewMoocletResources({
+          experimentDTO: experiment,
+          currentUser,
+          logger,
+        });
+      }
+    }
+
+    if (!hasChanged && isNowMooclet) {
+      return await this.syncUpdate({
+        experimentDTO: experiment,
+        currentUser,
+        logger,
+      });
+    }
+
+    return Promise.resolve(null);
   }
 
   public async handleEnrollCondition(
