@@ -589,13 +589,13 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     const experimentRequest: AddExperimentRequest = {
       // Form data
       name,
-      description: description || undefined, // @IsOptional - can be undefined
+      description: description,
       context: [appContext],
       type: experimentType,
       assignmentUnit: unitOfAssignment,
       consistencyRule: unitOfAssignment !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? consistencyRule : undefined, // Conditional validation
       conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined, // Conditional validation
-      assignmentAlgorithm: assignmentAlgorithm || undefined, // @IsOptional
+      assignmentAlgorithm: assignmentAlgorithm,
       stratificationFactor: stratificationFactorObj,
       group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
       tags,
@@ -604,20 +604,15 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
       // Backend required fields with correct defaults
       postExperimentRule: sourceExperiment.postExperimentRule || POST_EXPERIMENT_RULE.CONTINUE,
-      enrollmentCompleteCondition: undefined, // @IsOptional - can be undefined
-      startOn: undefined, // @IsOptional
-      endOn: undefined, // @IsOptional
-      revertTo: undefined, // @IsOptional
-      conditions: sourceExperiment.conditions, // @IsNotEmpty @IsArray - must be empty array, not undefined
-      partitions: sourceExperiment.partitions, // @IsNotEmpty @IsArray - must be empty array, not undefined
-      factors: sourceExperiment.factors, // @IsOptional @IsArray - can be undefined
-      conditionPayloads: sourceExperiment.conditionPayloads, // @IsOptional @IsArray - can be undefined
-      queries: this.isContextChanged ? undefined : sourceExperiment.queries, // @IsOptional @IsArray - can be undefined
-      experimentSegmentInclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentInclusion, // @IsOptional @IsArray - can be undefined
-      experimentSegmentExclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentExclusion, // @IsOptional @IsArray - can be undefined
-      stateTimeLogs: undefined, // @IsOptional @IsArray - can be undefined
-      backendVersion: sourceExperiment.backendVersion, // @IsOptional - can be undefined
-      moocletPolicyParameters: sourceExperiment.moocletPolicyParameters, // Conditional validation - can be undefined
+      conditions: sourceExperiment.conditions,
+      partitions: sourceExperiment.partitions,
+      factors: sourceExperiment.factors,
+      conditionPayloads: sourceExperiment.conditionPayloads,
+      queries: this.isContextChanged ? undefined : sourceExperiment.queries,
+      experimentSegmentInclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentInclusion,
+      experimentSegmentExclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentExclusion,
+      backendVersion: sourceExperiment.backendVersion,
+      moocletPolicyParameters: sourceExperiment.moocletPolicyParameters,
     };
 
     this.experimentService.createNewExperiment(experimentRequest);
