@@ -13,11 +13,13 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { filter } from 'rxjs/operators';
 import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
 import { Subscription } from 'rxjs';
-import { FormsModule } from '@angular/forms';
-import { NgxChartsModule } from '@swimlane/ngx-charts';
-import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
 
 // Used in EnrollmentOverTimeComponent
 enum ExperimentFilterType {
@@ -32,8 +34,17 @@ const INDIVIDUAL = 'individual';
 @Component({
   selector: 'enrollment-over-time',
   templateUrl: './enrollment-over-time.component.html',
+  imports: [
+    CommonModule,
+    TranslateModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    NgxChartsModule,
+    MatInputModule,
+    FormsModule,
+    MatCheckboxModule,
+  ],
   styleUrls: ['./enrollment-over-time.component.scss'],
-  imports: [CommonModule, TranslateModule, MatSelectModule, NgxChartsModule, FormsModule, MatCheckboxModule],
   standalone: true,
 })
 export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy {
@@ -43,14 +54,18 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   partitionsFilterOptions: ExperimentPartitionFilterOptions[] = [];
   dateFilterOptions: ExperimentDateFilterOptions[] = [
     { value: DATE_RANGE.LAST_SEVEN_DAYS, viewValue: 'Last 7 days' },
+    { value: DATE_RANGE.LAST_TWO_WEEKS, viewValue: 'Last 2 weeks' },
+    { value: DATE_RANGE.LAST_ONE_MONTH, viewValue: 'Last 1 month' },
     { value: DATE_RANGE.LAST_THREE_MONTHS, viewValue: 'Last 3 months' },
     { value: DATE_RANGE.LAST_SIX_MONTHS, viewValue: 'Last 6 months' },
     { value: DATE_RANGE.LAST_TWELVE_MONTHS, viewValue: 'Last 12 months' },
+    { value: DATE_RANGE.TOTAL, viewValue: 'Total' },
   ];
   selectedGroupFilter: string = INDIVIDUAL;
   selectedCondition: string[] = [];
   selectedPartition: string[] = [];
-  selectedDateFilter: DATE_RANGE = DATE_RANGE.LAST_SEVEN_DAYS;
+  selectedDateFilter: DATE_RANGE = DATE_RANGE.TOTAL;
+  effectiveDateFilter: DATE_RANGE;
   graphData = [];
   copyGraphData: IEnrollmentStatByDate[] = [];
   isInitialLoad = true;
@@ -140,16 +155,24 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
         this.copyGraphData = graphInfo;
         this.populateGraphData(graphInfo);
       });
-    // Used to fetch last 7 days graph data
-    this.experimentService.setGraphRange(this.selectedDateFilter, this.experiment.id, -new Date().getTimezoneOffset());
+    this.setEffectiveDateFilter();
+
+    // Used to fetch graph data for the whole date range initially
+    this.experimentService.setGraphRange(this.effectiveDateFilter, this.experiment.id, -new Date().getTimezoneOffset());
   }
 
   // remove empty series data labels
   formateXAxisLabel(value) {
-    if (this.selectedDateFilter === DATE_RANGE.LAST_SEVEN_DAYS) {
-      return !isNaN(value) ? '' : value.substring(0, 5);
+    if (
+      this.effectiveDateFilter === DATE_RANGE.LAST_SEVEN_DAYS ||
+      this.effectiveDateFilter === DATE_RANGE.LAST_TWO_WEEKS ||
+      this.effectiveDateFilter === DATE_RANGE.LAST_ONE_MONTH
+    ) {
+      return typeof value === 'string' ? value.substring(0, 5) : '';
+    } else if (this.effectiveDateFilter === DATE_RANGE.TOTAL) {
+      return typeof value === 'string' ? value.substring(0, 4) : '';
     }
-    return !isNaN(value) ? '' : value.substring(0, 3);
+    return typeof value === 'string' ? value.substring(0, 3) : '';
   }
 
   formateYAxisLabel(value) {
@@ -158,9 +181,12 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
 
   populateGraphData(graphData: IEnrollmentStatByDate[]) {
     this.graphData = this.setDataInGraphFormat(graphData);
-    switch (this.selectedDateFilter) {
+    switch (this.effectiveDateFilter) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
         this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(5)];
+        break;
+      case DATE_RANGE.LAST_TWO_WEEKS:
+        this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(1)];
         break;
       case DATE_RANGE.LAST_THREE_MONTHS:
         this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(9)];
@@ -168,7 +194,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       case DATE_RANGE.LAST_SIX_MONTHS:
         this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(6)];
         break;
-      case DATE_RANGE.LAST_TWELVE_MONTHS:
+      default:
         this.graphData = [...this.graphData];
         break;
     }
@@ -229,8 +255,12 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
 
       return {
         name:
-          this.selectedDateFilter === DATE_RANGE.LAST_SEVEN_DAYS
+          this.effectiveDateFilter === DATE_RANGE.LAST_SEVEN_DAYS ||
+          this.effectiveDateFilter === DATE_RANGE.LAST_TWO_WEEKS ||
+          this.effectiveDateFilter === DATE_RANGE.LAST_ONE_MONTH
             ? this.dateToString(new Date(graphData.date), days)
+            : this.effectiveDateFilter === DATE_RANGE.TOTAL
+            ? new Date(graphData.date).getFullYear().toString()
             : months[new Date(graphData.date).getMonth()],
         series,
       };
@@ -240,14 +270,34 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   applyExperimentFilter(type: ExperimentFilterType) {
     switch (type) {
       case ExperimentFilterType.DATE_FILTER:
+        this.setEffectiveDateFilter();
         this.experimentService.setGraphRange(
-          this.selectedDateFilter,
+          this.effectiveDateFilter,
           this.experiment.id,
           -new Date().getTimezoneOffset()
         );
         break;
       default:
         this.populateGraphData(this.copyGraphData);
+    }
+  }
+
+  setEffectiveDateFilter() {
+    const now = new Date();
+    const createdAt = new Date(this.experiment.createdAt);
+    const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+
+    if (this.selectedDateFilter === DATE_RANGE.TOTAL) {
+      if (createdAt > monthAgo) {
+        this.effectiveDateFilter = DATE_RANGE.LAST_ONE_MONTH;
+      } else if (createdAt > yearAgo) {
+        this.effectiveDateFilter = DATE_RANGE.LAST_TWELVE_MONTHS;
+      } else {
+        this.effectiveDateFilter = DATE_RANGE.TOTAL;
+      }
+    } else {
+      this.effectiveDateFilter = this.selectedDateFilter;
     }
   }
 
