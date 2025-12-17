@@ -17,7 +17,7 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
-  const experimentObject: any = JSON.parse(JSON.stringify(payloadConditionExperiment));
+  const experimentObject: any = structuredClone(payloadConditionExperiment);
 
   // remove 1 condition
   experimentObject.conditions.sort((a, b) => {

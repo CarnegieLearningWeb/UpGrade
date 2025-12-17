@@ -20,7 +20,7 @@ export default async function IndividualExclusionSegmentIndividualConsistency():
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // group experiment object
-  const experimentObject = JSON.parse(JSON.stringify(individualAssignmentExperiment));
+  const experimentObject: any = structuredClone(individualAssignmentExperiment);
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());

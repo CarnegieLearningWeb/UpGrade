@@ -23,7 +23,7 @@ export default async function testCase(): Promise<void> {
   const context2 = 'add';
 
   // experiment object
-  const experimentObject1 = JSON.parse(JSON.stringify(individualAssignmentExperiment));
+  const experimentObject1 = structuredClone(individualAssignmentExperiment);
   experimentObject1.context = [context1];
 
   // create experiment 1
@@ -47,7 +47,7 @@ export default async function testCase(): Promise<void> {
   const experimentPoint1 = firstExperiment.partitions[0].site;
   const condition1 = firstExperiment.conditions[0].conditionCode;
 
-  const experimentObject2 = JSON.parse(JSON.stringify(secondExperiment));
+  const experimentObject2 = structuredClone(secondExperiment);
   experimentObject2.context = [context2];
 
   // create experiment 2

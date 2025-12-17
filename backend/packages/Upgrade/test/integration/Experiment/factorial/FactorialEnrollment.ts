@@ -13,7 +13,7 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
 
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
-  const experimentObject = JSON.parse(JSON.stringify(firstFactorialExperiment));
+  const experimentObject = structuredClone(firstFactorialExperiment);
   const userService = Container.get<UserService>(UserService);
 
   // creating new user

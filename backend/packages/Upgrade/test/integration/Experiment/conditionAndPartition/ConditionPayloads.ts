@@ -14,7 +14,7 @@ export default async function ConditionPayload(): Promise<void> {
   const entityManager = tteContainer.getDataSource().manager;
 
   // experiment object
-  const experimentObject = JSON.parse(JSON.stringify(payloadConditionExperiment));
+  const experimentObject = structuredClone(payloadConditionExperiment);
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
