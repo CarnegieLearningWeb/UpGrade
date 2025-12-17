@@ -52,14 +52,6 @@
       </td>
     </ng-container>
 
-    <!-- Percentage Column
-    <ng-container matColumnDef="percentage">
-      <th mat-header-cell *matHeaderCellDef class="number-column ft-14-600">
-        {{ 'experiments.details.posteriors.percentOfTotalRewards.text' | translate }}
-      </th>
-      <td mat-cell *matCellDef="let row" class="number-column ft-14-400">{{ row.percentage | number : '1.1-1' }}%</td>
-    </ng-container> -->
-
     <!-- Header and Row Definitions -->
     <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>

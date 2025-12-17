@@ -21,7 +21,7 @@
       <mat-error *ngIf="policyForm.get('prior_success')?.hasError('min')">{{
         'home.new-experiment.design.ts-configurable-policy.prior-success.min-error.text' | translate
       }}</mat-error>
-      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('max')">
+      <mat-error *ngIf="policyForm.get('prior_success')?.hasError('max')">
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
     </mat-form-field>
@@ -37,7 +37,7 @@
       <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('min')">{{
         'home.new-experiment.design.ts-configurable-policy.prior-failure.min-error.text' | translate
       }}</mat-error>
-      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('max')">
+      <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('max')">
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
     </mat-form-field>
@@ -53,7 +53,7 @@
       <mat-error *ngIf="policyForm.get('batch_size')?.hasError('min')">{{
         'home.new-experiment.design.ts-configurable-policy.batch-size.min-error.text' | translate
       }}</mat-error>
-      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('max')">
+      <mat-error *ngIf="policyForm.get('batch_size')?.hasError('max')">
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
     </mat-form-field>
