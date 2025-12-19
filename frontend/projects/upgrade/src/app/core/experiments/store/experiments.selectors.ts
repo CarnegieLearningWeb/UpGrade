@@ -1,6 +1,15 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { selectAll } from './experiments.reducer';
-import { EXPERIMENT_SEARCH_KEY, ExperimentState, Experiment, ExperimentVM } from './experiments.model';
+import {
+  EXPERIMENT_SEARCH_KEY,
+  ExperimentState,
+  Experiment,
+  ExperimentVM,
+  StartExperimentValidation,
+  EXPERIMENT_STATE,
+  ExperimentActionButton,
+  EXPERIMENT_ACTION_BUTTON_TYPE,
+} from './experiments.model';
 import { selectRouterState } from '../../core.state';
 import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
 import {
@@ -237,4 +246,99 @@ export const selectExperimentExclusions = createSelector(
 export const selectExperimentExclusionsLength = createSelector(
   selectExperimentExclusions,
   (exclusions) => exclusions.length
+);
+
+export const selectExperimentStartValidation = createSelector(
+  selectSelectedExperiment,
+  (experiment): StartExperimentValidation => {
+    if (!experiment) {
+      return { isValid: false, reasons: [] };
+    }
+
+    const reasons: string[] = [];
+
+    // Check for at least 1 decision point
+    if (!experiment.partitions || experiment.partitions.length < 1) {
+      reasons.push('decision-points-required');
+    }
+
+    // Check for at least 1 condition
+    if (!experiment.conditions || experiment.conditions.length < 1) {
+      reasons.push('conditions-required');
+    }
+
+    // Check if condition weights sum to 100% (using established validation logic)
+    if (!isWeightSumValid(experiment.conditions)) {
+      reasons.push('weights-must-total-100');
+    }
+
+    return {
+      isValid: reasons.length === 0,
+      reasons,
+    };
+  }
+);
+
+export const selectExperimentActionButtons = createSelector(
+  selectSelectedExperiment,
+  selectExperimentStartValidation,
+  (experiment, validation): ExperimentActionButton[] => {
+    if (!experiment) {
+      return [];
+    }
+
+    const buttons: ExperimentActionButton[] = [];
+
+    switch (experiment.state) {
+      case EXPERIMENT_STATE.INACTIVE:
+        buttons.push({
+          action: EXPERIMENT_ACTION_BUTTON_TYPE.START,
+          icon: 'play_arrow',
+          disabled: !validation.isValid,
+          disabledReasons: validation.isValid ? undefined : validation.reasons,
+          translationKey: 'experiments.details.start-experiment.button.text',
+        });
+        break;
+
+      case EXPERIMENT_STATE.ENROLLING:
+        buttons.push(
+          {
+            action: EXPERIMENT_ACTION_BUTTON_TYPE.PAUSE,
+            icon: 'pause',
+            disabled: false,
+            translationKey: 'experiments.details.pause-experiment.button.text',
+          },
+          {
+            action: EXPERIMENT_ACTION_BUTTON_TYPE.STOP,
+            icon: 'stop',
+            disabled: false,
+            translationKey: 'experiments.details.stop-experiment.button.text',
+          }
+        );
+        break;
+
+      case EXPERIMENT_STATE.ENROLLMENT_COMPLETE:
+        buttons.push(
+          {
+            action: EXPERIMENT_ACTION_BUTTON_TYPE.RESUME,
+            icon: 'play_arrow',
+            disabled: false,
+            translationKey: 'experiments.details.resume-experiment.button.text',
+          },
+          {
+            action: EXPERIMENT_ACTION_BUTTON_TYPE.STOP,
+            icon: 'stop',
+            disabled: false,
+            translationKey: 'experiments.details.stop-experiment.button.text',
+          }
+        );
+        break;
+
+      case EXPERIMENT_STATE.CANCELLED:
+        // No action buttons for completed state
+        break;
+    }
+
+    return buttons;
+  }
 );

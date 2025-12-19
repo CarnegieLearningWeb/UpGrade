@@ -9,6 +9,19 @@
     column-gap: 34px;
     padding: 0 16px;
 
+    > div {
+      display: inline-block;
+    }
+
+    button {
+      mat-icon {
+        margin-right: 4px;
+        font-size: 20px;
+        height: 20px;
+        width: 20px;
+      }
+    }
+
     .primary-button-text {
       padding: 0 8px;
     }

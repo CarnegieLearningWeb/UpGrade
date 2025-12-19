@@ -12,9 +12,11 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
+    [actionButtons]="actionButtons$ | async"
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems$ | async"
     [isSectionCardExpanded]="isSectionCardExpanded"
+    (actionButtonClick)="onActionButtonClick($event)"
     (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   ></app-common-section-card-action-buttons>

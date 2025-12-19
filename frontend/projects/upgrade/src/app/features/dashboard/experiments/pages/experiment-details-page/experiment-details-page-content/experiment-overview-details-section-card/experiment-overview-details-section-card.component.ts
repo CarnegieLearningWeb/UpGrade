@@ -5,17 +5,24 @@ import {
   CommonSectionCardTitleHeaderComponent,
   CommonSectionCardOverviewDetailsComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
+import { ActionButton } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-action-buttons/common-section-card-action-buttons.component';
 import { ExperimentOverviewDetailsFooterComponent } from './experiment-overview-details-footer/experiment-overview-details-footer.component';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IMenuButtonItem, EXPERIMENT_SEARCH_KEY } from 'upgrade_types';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
-import { combineLatest, map, Observable, Subscription } from 'rxjs';
-import { Experiment } from '../../../../../../../core/experiments/store/experiments.model';
+import { combineLatest, map, Observable, Subscription, take } from 'rxjs';
+import {
+  Experiment,
+  EXPERIMENT_STATE,
+  ExperimentStateInfo,
+  EXPERIMENT_ACTION_BUTTON_TYPE,
+} from '../../../../../../../core/experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 export enum EXPERIMENT_DETAILS_PAGE_ACTIONS {
   EDIT = 'edit',
@@ -36,6 +43,7 @@ export enum EXPERIMENT_DETAILS_PAGE_ACTIONS {
     CommonSectionCardOverviewDetailsComponent,
     ExperimentOverviewDetailsFooterComponent,
     TranslateModule,
+    MatTooltipModule,
   ],
   templateUrl: './experiment-overview-details-section-card.component.html',
   styleUrl: './experiment-overview-details-section-card.component.scss',
@@ -56,11 +64,26 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   subscriptions = new Subscription();
   emailId = '';
 
+  // Action buttons - maps ExperimentActionButton[] to ActionButton[]
+  actionButtons$: Observable<ActionButton[]> = this.experimentService.experimentActionButtons$.pipe(
+    map((buttons) =>
+      buttons.map((button) => ({
+        action: button.action,
+        icon: button.icon,
+        disabled: button.disabled,
+        tooltip: button.disabledReasons ? this.formatTooltip(button.disabledReasons) : undefined,
+        tooltipClass: button.disabledReasons ? 'start-button-tooltip' : undefined,
+        translationKey: button.translationKey,
+      }))
+    )
+  );
+
   constructor(
     private readonly experimentService: ExperimentService,
     private readonly dialogService: DialogService,
     private readonly router: Router,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly translate: TranslateService
   ) {}
 
   filterExperimentByChips(tagValue: string) {
@@ -72,7 +95,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
     this.subscriptions.add(this.experimentService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
 
     this.menuButtonItems$ = this.experimentAndPermissions$.pipe(
-      map(({ experiment, permissions }) => [
+      map(({ permissions }) => [
         {
           label: 'experiments.details.edit-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT,
@@ -166,6 +189,56 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
           }
         })
     );
+  }
+
+  onActionButtonClick(action: EXPERIMENT_ACTION_BUTTON_TYPE): void {
+    this.subscriptions.add(
+      this.experiment$.pipe(take(1)).subscribe((experiment) => {
+        if (!experiment) return;
+
+        switch (action) {
+          case EXPERIMENT_ACTION_BUTTON_TYPE.START:
+            this.handleStartExperiment(experiment);
+            break;
+          case EXPERIMENT_ACTION_BUTTON_TYPE.PAUSE:
+            // TODO: Implement pause functionality
+            console.log('Pause experiment - TODO');
+            break;
+          case EXPERIMENT_ACTION_BUTTON_TYPE.STOP:
+            // TODO: Implement stop functionality
+            console.log('Stop experiment - TODO');
+            break;
+          case EXPERIMENT_ACTION_BUTTON_TYPE.RESUME:
+            // TODO: Implement resume functionality
+            console.log('Resume experiment - TODO');
+            break;
+        }
+      })
+    );
+  }
+
+  private handleStartExperiment(experiment: Experiment): void {
+    this.subscriptions.add(
+      this.dialogService
+        .openStartExperimentModal(experiment.name)
+        .afterClosed()
+        .subscribe((confirmed: boolean) => {
+          if (confirmed) {
+            const experimentStateInfo: ExperimentStateInfo = {
+              newStatus: EXPERIMENT_STATE.ENROLLING,
+            };
+            this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
+          }
+        })
+    );
+  }
+
+  private formatTooltip(reasons: string[]): string {
+    const header = this.translate.instant('experiments.details.start-experiment.validation.header.text');
+    const messages = reasons.map((key) =>
+      this.translate.instant(`experiments.details.start-experiment.validation.${key}.text`)
+    );
+    return `${header}\n${messages.join('\n')}`;
   }
 
   ngOnDestroy(): void {
