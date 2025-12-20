@@ -40,6 +40,11 @@ import { UpsertDecisionPointModalComponent } from '../../features/dashboard/expe
 import { UpsertConditionModalComponent } from '../../features/dashboard/experiments/modals/upsert-condition-modal/upsert-condition-modal.component';
 import { UpsertMetricModalComponent } from '../../features/dashboard/experiments/modals/upsert-metric-modal/upsert-metric-modal.component';
 import {
+  PauseExperimentModalComponent,
+  PauseExperimentModalParams,
+  PauseExperimentModalResult,
+} from '../../features/dashboard/experiments/modals/pause-experiment-modal/pause-experiment-modal.component';
+import {
   UPSERT_EXPERIMENT_ACTION,
   ExperimentDecisionPoint,
   ExperimentCondition,
@@ -768,6 +773,31 @@ export class DialogService {
       },
     };
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openPauseExperimentModal(
+    experimentName: string,
+    conditions: ExperimentCondition[]
+  ): MatDialogRef<PauseExperimentModalComponent, PauseExperimentModalResult> {
+    const commonModalConfig: CommonModalConfig<PauseExperimentModalParams> = {
+      title: 'Pause Experiment',
+      primaryActionBtnLabel: 'Pause',
+      primaryActionBtnColor: 'primary', // Color overridden in modal SCSS
+      cancelBtnLabel: 'Cancel',
+      params: {
+        experimentName,
+        conditions,
+      },
+    };
+
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.MEDIUM,
+      autoFocus: 'first-heading',
+      disableClose: true,
+    };
+
+    return this.dialog.open(PauseExperimentModalComponent, config);
   }
 
   openDeleteDecisionPointModal(decisionPointName: string) {

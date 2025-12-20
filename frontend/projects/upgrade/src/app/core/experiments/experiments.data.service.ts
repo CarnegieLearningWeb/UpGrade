@@ -61,6 +61,7 @@ export class ExperimentDataService {
       experimentId,
       state: experimentStateInfo.newStatus,
       scheduleDate: experimentStateInfo.scheduleDate,
+      revertTo: experimentStateInfo.revertTo,
     });
   }
 

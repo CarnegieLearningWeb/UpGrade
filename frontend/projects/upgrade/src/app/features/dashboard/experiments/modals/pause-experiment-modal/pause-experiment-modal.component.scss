@@ -1,0 +1,22 @@
+.pause-confirm {
+  color: var(--dark-grey);
+}
+
+.pause-info {
+  color: var(--blue);
+  white-space: pre-line;
+}
+
+.pause-behavior-section {
+  padding: 4px 0;
+  margin-bottom: 16px;
+}
+
+.condition-dropdown {
+  margin-top: -16px;
+}
+
+// Override primary button color to use paused status color
+::ng-deep .mat-mdc-dialog-container .mdc-button.mat-primary {
+  --mdc-filled-button-container-color: var(--status-paused);
+}

@@ -201,8 +201,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
             this.handleStartExperiment(experiment);
             break;
           case EXPERIMENT_ACTION_BUTTON_TYPE.PAUSE:
-            // TODO: Implement pause functionality
-            console.log('Pause experiment - TODO');
+            this.handlePauseExperiment(experiment);
             break;
           case EXPERIMENT_ACTION_BUTTON_TYPE.STOP:
             // TODO: Implement stop functionality
@@ -226,6 +225,23 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
           if (confirmed) {
             const experimentStateInfo: ExperimentStateInfo = {
               newStatus: EXPERIMENT_STATE.ENROLLING,
+            };
+            this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
+          }
+        })
+    );
+  }
+
+  private handlePauseExperiment(experiment: Experiment): void {
+    this.subscriptions.add(
+      this.dialogService
+        .openPauseExperimentModal(experiment.name, experiment.conditions)
+        .afterClosed()
+        .subscribe((result) => {
+          if (result) {
+            const experimentStateInfo: ExperimentStateInfo = {
+              newStatus: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+              revertTo: result.revertTo,
             };
             this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
           }
