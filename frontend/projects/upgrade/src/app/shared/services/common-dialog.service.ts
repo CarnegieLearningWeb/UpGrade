@@ -815,6 +815,22 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
+  openStopExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Stop Experiment',
+      primaryActionBtnLabel: 'Stop',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to stop "${experimentName}"?`,
+        subMessage:
+          '* After stopping, you cannot restart the experiment. No participants will receive experiment conditions. You can still export the experiment data and design.',
+        subMessageClass: 'warn',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
   openDeleteDecisionPointModal(decisionPointName: string) {
     const deleteDecisionPointModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
       title: 'Delete Decision Point',

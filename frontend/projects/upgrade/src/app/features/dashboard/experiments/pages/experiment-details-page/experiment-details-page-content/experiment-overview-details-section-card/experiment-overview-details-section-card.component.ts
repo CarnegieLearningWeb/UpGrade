@@ -74,6 +74,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         tooltip: button.disabledReasons ? this.formatTooltip(button.disabledReasons) : undefined,
         tooltipClass: button.disabledReasons ? 'start-button-tooltip' : undefined,
         translationKey: button.translationKey,
+        colorClass: `button-${button.action}`, // Maps to CSS classes: button-start, button-pause, etc.
       }))
     )
   );
@@ -204,8 +205,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
             this.handlePauseExperiment(experiment);
             break;
           case EXPERIMENT_ACTION_BUTTON_TYPE.STOP:
-            // TODO: Implement stop functionality
-            console.log('Stop experiment - TODO');
+            this.handleStopExperiment(experiment);
             break;
           case EXPERIMENT_ACTION_BUTTON_TYPE.RESUME:
             this.handleResumeExperiment(experiment);
@@ -257,6 +257,22 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
           if (confirmed) {
             const experimentStateInfo: ExperimentStateInfo = {
               newStatus: EXPERIMENT_STATE.ENROLLING,
+            };
+            this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
+          }
+        })
+    );
+  }
+
+  private handleStopExperiment(experiment: Experiment): void {
+    this.subscriptions.add(
+      this.dialogService
+        .openStopExperimentModal(experiment.name)
+        .afterClosed()
+        .subscribe((confirmed: boolean) => {
+          if (confirmed) {
+            const experimentStateInfo: ExperimentStateInfo = {
+              newStatus: EXPERIMENT_STATE.CANCELLED,
             };
             this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
           }

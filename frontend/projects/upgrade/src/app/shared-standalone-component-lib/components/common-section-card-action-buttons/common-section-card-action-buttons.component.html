@@ -20,12 +20,12 @@
       >
         <button
           mat-flat-button
-          color="primary"
+          [ngClass]="button.colorClass || ''"
           [disabled]="button.disabled"
           (click)="onActionButtonClick(button.action)"
         >
           <mat-icon *ngIf="button.icon">{{ button.icon }}</mat-icon>
-          <span class="primary-button-text">{{ button.translationKey | translate }}</span>
+          <span>{{ button.translationKey | translate }}</span>
         </button>
       </div>
     </ng-container>
@@ -44,7 +44,7 @@
         (click)="onPrimaryButtonClick()"
       >
         <mat-icon *ngIf="primaryButtonIcon">{{ primaryButtonIcon }}</mat-icon>
-        <span class="primary-button-text">{{ primaryButtonText }}</span>
+        <span>{{ primaryButtonText }}</span>
       </button>
     </div>
   </div>

@@ -15,6 +15,7 @@ export interface ActionButton {
   tooltip?: string;
   tooltipClass?: string;
   translationKey: string;
+  colorClass?: string; // CSS class for button color styling
 }
 
 /**
