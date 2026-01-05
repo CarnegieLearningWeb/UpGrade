@@ -417,6 +417,8 @@
   "experiments.pause-modal.assign-option-label.text": "Assign",
   "experiments.pause-modal.assign-option-description.text": "All students will receive a specified condition moving forward.",
   "experiments.pause-modal.select-condition-label.text": "Condition",
+  "experiments.details.resume-experiment.button.text": "Resume",
+  "experiments.details.stop-experiment.button.text": "Stop",
   "experiments.details.edit-experiment.menu-item.text": "Edit Experiment",
   "experiments.details.duplicate-experiment.menu-item.text": "Duplicate Experiment",
   "experiments.details.export-experiment-design.menu-item.text": "Export Experiment Design",

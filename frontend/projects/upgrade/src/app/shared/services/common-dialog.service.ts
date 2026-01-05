@@ -800,6 +800,21 @@ export class DialogService {
     return this.dialog.open(PauseExperimentModalComponent, config);
   }
 
+  openResumeExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Resume Experiment',
+      primaryActionBtnLabel: 'Resume',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to resume "${experimentName}"?`,
+        subMessage: '* While the experiment is running, decision points and conditions cannot be edited.',
+        subMessageClass: 'info',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
   openDeleteDecisionPointModal(decisionPointName: string) {
     const deleteDecisionPointModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
       title: 'Delete Decision Point',

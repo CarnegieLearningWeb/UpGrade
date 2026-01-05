@@ -208,8 +208,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
             console.log('Stop experiment - TODO');
             break;
           case EXPERIMENT_ACTION_BUTTON_TYPE.RESUME:
-            // TODO: Implement resume functionality
-            console.log('Resume experiment - TODO');
+            this.handleResumeExperiment(experiment);
             break;
         }
       })
@@ -242,6 +241,22 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
             const experimentStateInfo: ExperimentStateInfo = {
               newStatus: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
               revertTo: result.revertTo,
+            };
+            this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
+          }
+        })
+    );
+  }
+
+  private handleResumeExperiment(experiment: Experiment): void {
+    this.subscriptions.add(
+      this.dialogService
+        .openResumeExperimentModal(experiment.name)
+        .afterClosed()
+        .subscribe((confirmed: boolean) => {
+          if (confirmed) {
+            const experimentStateInfo: ExperimentStateInfo = {
+              newStatus: EXPERIMENT_STATE.ENROLLING,
             };
             this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
           }
