@@ -2387,7 +2387,7 @@ export class ExperimentService {
       ...segmentToAdd,
       id: list.segment.id,
       name: list.segment.name || list.segment.id + ' Segment',
-      description: list.segment.description || list.segment.id + ' Segment',
+      description: list.segment.description || '',
       context: context[0],
       type: SEGMENT_TYPE.PRIVATE,
     };
