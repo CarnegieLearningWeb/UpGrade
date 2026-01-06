@@ -285,7 +285,14 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }
 
   deriveInitialFormValues(sourceExperiment: Experiment, action: string): ExperimentFormData {
-    const name = action === UPSERT_EXPERIMENT_ACTION.EDIT ? sourceExperiment?.name : '';
+    let name = '';
+    if (action === UPSERT_EXPERIMENT_ACTION.DUPLICATE) {
+      name = `${sourceExperiment?.name} (COPY)`;
+    }
+
+    if (action === UPSERT_EXPERIMENT_ACTION.EDIT) {
+      name = sourceExperiment?.name;
+    }
     const description = sourceExperiment?.description || '';
     const appContext = sourceExperiment?.context?.[0] || '';
     const experimentType = sourceExperiment?.type === 'Factorial' ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
@@ -356,12 +363,19 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.subscriptions.add(this.isInitialFormValueChanged$.subscribe());
   }
 
+  // Button is disabled if:
+  // 1. Currently loading, OR
+  // 2. Changes are required and none detected in primary or mooclet form, OR
+  // 3. Either primary or mooclet form is invalid
   listenForPrimaryButtonDisabled() {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertExperiment$.pipe(
       combineLatestWith(this.isInitialFormValueChanged$, this.isMoocletFormValid$, this.isMoocletFormChanged$),
       map(([isLoading, isInitialFormValueChanged, isMoocletFormValid, isMoocletFormChanged]) => {
-        const hasAnyChanges = isInitialFormValueChanged || isMoocletFormChanged;
-        return isLoading || !hasAnyChanges || !this.experimentForm.valid || !isMoocletFormValid;
+        const changesRequiredToAllowSubmit = this.config.params.action !== UPSERT_EXPERIMENT_ACTION.DUPLICATE;
+        const hasChanges = isInitialFormValueChanged || isMoocletFormChanged;
+        const allFormsValid = this.experimentForm.valid && isMoocletFormValid;
+
+        return isLoading || (changesRequiredToAllowSubmit && !hasChanges) || !allFormsValid;
       })
     );
     this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
@@ -569,8 +583,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   sendRequest(action: UPSERT_EXPERIMENT_ACTION, sourceExperiment?: Experiment): void {
     const formData: ExperimentFormData = this.experimentForm.value;
-    if (action === UPSERT_EXPERIMENT_ACTION.ADD || action === UPSERT_EXPERIMENT_ACTION.DUPLICATE) {
+    if (action === UPSERT_EXPERIMENT_ACTION.ADD) {
       this.createAddRequest(formData);
+    } else if (action === UPSERT_EXPERIMENT_ACTION.DUPLICATE) {
+      this.createDuplicateRequest(formData, sourceExperiment);
     } else if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceExperiment) {
       this.createEditRequest(formData, sourceExperiment);
     } else {
@@ -624,6 +640,56 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       experimentSegmentExclusion: undefined, // @IsOptional @IsArray - can be undefined
       stateTimeLogs: undefined, // @IsOptional @IsArray - can be undefined
       backendVersion: undefined, // @IsOptional - can be undefined
+      moocletPolicyParameters: undefined, // Conditional validation - can be undefined
+    };
+
+    this.experimentService.createNewExperiment(experimentRequest);
+  }
+
+  createDuplicateRequest(
+    {
+      name,
+      description,
+      appContext,
+      experimentType,
+      unitOfAssignment,
+      consistencyRule,
+      conditionOrder,
+      assignmentAlgorithm,
+      stratificationFactor,
+      groupType,
+      tags,
+    }: ExperimentFormData,
+    sourceExperiment: Experiment
+  ): void {
+    const stratificationFactorObj = stratificationFactor ? { stratificationFactorName: stratificationFactor } : null;
+    const experimentRequest: AddExperimentRequest = {
+      // Form data
+      name,
+      description: description,
+      context: [appContext],
+      type: experimentType,
+      assignmentUnit: unitOfAssignment,
+      consistencyRule: unitOfAssignment !== ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? consistencyRule : undefined, // Conditional validation
+      conditionOrder: unitOfAssignment === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? conditionOrder : undefined, // Conditional validation
+      assignmentAlgorithm: assignmentAlgorithm,
+      stratificationFactor: stratificationFactorObj,
+      group: unitOfAssignment === ASSIGNMENT_UNIT.GROUP ? groupType : null,
+      tags,
+      state: EXPERIMENT_STATE.INACTIVE,
+      filterMode: sourceExperiment.filterMode || FILTER_MODE.EXCLUDE_ALL,
+
+      // Backend required fields with correct defaults
+      postExperimentRule: sourceExperiment.postExperimentRule || POST_EXPERIMENT_RULE.CONTINUE,
+      conditions: sourceExperiment.conditions,
+      partitions: sourceExperiment.partitions,
+      factors: sourceExperiment.factors,
+      conditionPayloads: sourceExperiment.conditionPayloads,
+      queries: this.isContextChanged ? undefined : sourceExperiment.queries,
+      experimentSegmentInclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentInclusion,
+      experimentSegmentExclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentExclusion,
+      backendVersion: sourceExperiment.backendVersion,
+      moocletPolicyParameters: sourceExperiment.moocletPolicyParameters,
     };
 
     if (this.moocletPolicyParametersFormValue) {
