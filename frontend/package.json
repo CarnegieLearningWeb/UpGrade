@@ -48,7 +48,7 @@
     "@angular/platform-browser": "^20.3.15",
     "@angular/platform-browser-dynamic": "^20.3.15",
     "@angular/router": "^20.3.15",
-    "@danielmoncada/angular-datetime-picker": "^19.1.0",
+    "@danielmoncada/angular-datetime-picker": "^20.0.1",
     "@ngrx/effects": "^19.0.0",
     "@ngrx/entity": "^19.0.0",
     "@ngrx/router-store": "^19.0.0",
