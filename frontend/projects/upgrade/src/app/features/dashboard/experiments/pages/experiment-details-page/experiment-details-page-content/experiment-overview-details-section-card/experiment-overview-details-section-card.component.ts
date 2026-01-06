@@ -65,9 +65,6 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   subscriptions = new Subscription();
   emailId = '';
 
-  // Expose enums to template
-  EXPERIMENT_STATE = EXPERIMENT_STATE;
-
   // Action buttons - maps ExperimentActionButton[] to ActionButton[]
   actionButtons$: Observable<ActionButton[]> = this.experimentService.experimentActionButtons$.pipe(
     map((buttons) =>
@@ -324,6 +321,11 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
           }
         })
     );
+  }
+
+  // Expose enums to template
+  get EXPERIMENT_STATE() {
+    return EXPERIMENT_STATE;
   }
 
   ngOnDestroy(): void {
