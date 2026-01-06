@@ -211,7 +211,7 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
 
   showNotification(importResult: ValidatedImportResponse[]) {
     const importSuccessFiles = importResult
-      .filter((data) => data.error == null || data.error.startsWith('warning'))
+      .filter((data) => data.error == null || data.error.toLowerCase().startsWith('warning'))
       .map((data) => data.fileName);
 
     let importSuccessMsg = '';
@@ -224,7 +224,9 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
 
     this.notificationService.showSuccess(importSuccessMsg);
 
-    const importFailedFiles = importResult.filter((data) => data.error != null && !data.error.startsWith('warning'));
+    const importFailedFiles = importResult.filter(
+      (data) => data.error != null && !data.error.toLowerCase().startsWith('warning')
+    );
     importFailedFiles.forEach((data) => {
       this.notificationService.showError(`Failed to import ${data.fileName}: ${data.error}`);
     });

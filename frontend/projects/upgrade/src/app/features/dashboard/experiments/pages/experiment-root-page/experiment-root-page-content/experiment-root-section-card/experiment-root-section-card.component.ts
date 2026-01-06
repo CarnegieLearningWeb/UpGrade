@@ -107,7 +107,7 @@ export class ExperimentRootSectionCardComponent {
 
   onMenuButtonItemClick(action: string) {
     if (action === EXPERIMENT_BUTTON_ACTION.IMPORT) {
-      // this.dialogService.openImportExperimentModal();
+      this.dialogService.openImportExperimentModal();
     }
   }
 

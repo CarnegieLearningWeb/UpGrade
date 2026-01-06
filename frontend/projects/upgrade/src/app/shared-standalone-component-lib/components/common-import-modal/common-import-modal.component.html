@@ -73,12 +73,12 @@
                 <div class="ft-14-500" *ngIf="expandedRows.has(rowIndex)" class="compatibility-details-container">
                   <div *ngIf="element.compatibilityType === 'incompatible'">
                     <span *ngIf="config.params.incompatibleMessageKey">
-                      {{ config.params.incompatibleMessageKey | translate }}
+                      {{ element.error || (config.params.incompatibleMessageKey | translate) }}
                     </span>
                   </div>
                   <div *ngIf="element.compatibilityType === 'warning'">
                     <span *ngIf="config.params.warningMessageKey">
-                      {{ config.params.warningMessageKey | translate }}
+                      {{ element.error || (config.params.warningMessageKey | translate) }}
                     </span>
                   </div>
                 </div>

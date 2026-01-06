@@ -365,6 +365,7 @@
   "experiments.no-matching-experiments.text": "No matching experiments found.",
   "experiments.add-experiment.text": "Add Experiment",
   "experiments.import-experiment.text": "Import Experiment",
+  "experiments.import-experiment.message.text": "The Experiment JSON file should include the required properties for it to be imported.",
   "experiments.export-all-experiments.text": "Export All Experiment Designs",
   "experiments.upsert-experiment-modal.name-hint.text": "The name for this experiment.",
   "experiments.upsert-experiment-modal.app-context-hint.text": "The App Context indicates where the experiment will run, known to UpGrade.",
