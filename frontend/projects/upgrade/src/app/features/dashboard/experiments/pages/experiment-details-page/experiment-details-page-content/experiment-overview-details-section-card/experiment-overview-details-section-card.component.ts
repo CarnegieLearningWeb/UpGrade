@@ -17,6 +17,7 @@ import {
   EXPERIMENT_STATE,
   ExperimentStateInfo,
   EXPERIMENT_ACTION_BUTTON_TYPE,
+  POST_EXPERIMENT_RULE,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
@@ -63,6 +64,9 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   menuButtonItems$: Observable<IMenuButtonItem[]>;
   subscriptions = new Subscription();
   emailId = '';
+
+  // Expose enums to template
+  EXPERIMENT_STATE = EXPERIMENT_STATE;
 
   // Action buttons - maps ExperimentActionButton[] to ActionButton[]
   actionButtons$: Observable<ActionButton[]> = this.experimentService.experimentActionButtons$.pipe(
@@ -238,11 +242,14 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         .afterClosed()
         .subscribe((result) => {
           if (result) {
-            const experimentStateInfo: ExperimentStateInfo = {
-              newStatus: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+            // Update experiment with new state and pause behavior
+            const updatedExperiment = {
+              ...experiment,
+              state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+              postExperimentRule: result.postExperimentRule,
               revertTo: result.revertTo,
             };
-            this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
+            this.experimentService.updateExperiment(updatedExperiment);
           }
         })
     );
@@ -286,6 +293,37 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
       this.translate.instant(`experiments.details.start-experiment.validation.${key}.text`)
     );
     return `${header}\n${messages.join('\n')}`;
+  }
+
+  getPauseBehaviorText(experiment: Experiment): string {
+    if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
+      return this.translate.instant('experiments.details.pause-behavior-continue.text');
+    } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN) {
+      // Find the condition name from revertTo ID
+      const condition = experiment.conditions.find((c) => c.id === experiment.revertTo);
+      const conditionName = condition ? condition.conditionCode : 'Unknown';
+      return this.translate.instant('experiments.details.pause-behavior-assign.text', { conditionName });
+    }
+    return '';
+  }
+
+  handlePauseBehaviorClick(experiment: Experiment): void {
+    this.subscriptions.add(
+      this.dialogService
+        .openUpdatePauseBehaviorModal(experiment.postExperimentRule, experiment.revertTo, experiment.conditions)
+        .afterClosed()
+        .subscribe((result) => {
+          if (result) {
+            // Update the experiment with new pause behavior
+            const updatedExperiment = {
+              ...experiment,
+              postExperimentRule: result.postExperimentRule,
+              revertTo: result.revertTo,
+            };
+            this.experimentService.updateExperiment(updatedExperiment);
+          }
+        })
+    );
   }
 
   ngOnDestroy(): void {

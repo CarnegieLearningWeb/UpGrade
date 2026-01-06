@@ -121,7 +121,6 @@ export enum ExperimentLocalStorageKeys {
 export interface ExperimentStateInfo {
   newStatus: EXPERIMENT_STATE;
   scheduleDate?: string;
-  revertTo?: string; // Condition ID for post-experiment rule
 }
 
 export interface StartExperimentValidation {

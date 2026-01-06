@@ -7,6 +7,8 @@
     [updatedAt]="experiment.updatedAt"
     [versionNumber]="experiment.versionNumber"
     [chipClass]="experiment.state"
+    [pauseBehaviorText]="experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE ? getPauseBehaviorText(experiment) : undefined"
+    (pauseBehaviorClick)="handlePauseBehaviorClick(experiment)"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->

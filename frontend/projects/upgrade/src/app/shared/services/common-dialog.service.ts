@@ -45,6 +45,11 @@ import {
   PauseExperimentModalResult,
 } from '../../features/dashboard/experiments/modals/pause-experiment-modal/pause-experiment-modal.component';
 import {
+  UpdatePauseBehaviorModalComponent,
+  UpdatePauseBehaviorModalParams,
+  UpdatePauseBehaviorModalResult,
+} from '../../features/dashboard/experiments/modals/update-pause-behavior-modal/update-pause-behavior-modal.component';
+import {
   UPSERT_EXPERIMENT_ACTION,
   ExperimentDecisionPoint,
   ExperimentCondition,
@@ -53,6 +58,7 @@ import {
   Experiment,
   UpsertExperimentParams,
   WeightingMethod,
+  POST_EXPERIMENT_RULE,
 } from '../../core/experiments/store/experiments.model';
 import {
   ConditionWeightUpdate,
@@ -798,6 +804,33 @@ export class DialogService {
     };
 
     return this.dialog.open(PauseExperimentModalComponent, config);
+  }
+
+  openUpdatePauseBehaviorModal(
+    currentPostExperimentRule: POST_EXPERIMENT_RULE,
+    currentRevertTo: string | undefined,
+    conditions: ExperimentCondition[]
+  ): MatDialogRef<UpdatePauseBehaviorModalComponent, UpdatePauseBehaviorModalResult> {
+    const commonModalConfig: CommonModalConfig<UpdatePauseBehaviorModalParams> = {
+      title: 'Update Pause Behavior',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        currentPostExperimentRule,
+        currentRevertTo,
+        conditions,
+      },
+    };
+
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.MEDIUM,
+      autoFocus: 'first-heading',
+      disableClose: true,
+    };
+
+    return this.dialog.open(UpdatePauseBehaviorModalComponent, config);
   }
 
   openResumeExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
