@@ -1018,32 +1018,32 @@ const simpleExperimentDecisionPoint = {
 };
 
 export function getRevertToExperiment() {
-  return JSON.parse(JSON.stringify(revertToExperiment));
+  return structuredClone(revertToExperiment);
 }
 export function getSimpleIndividualExperiment() {
-  return JSON.parse(JSON.stringify(simpleIndividualExperiment));
+  return structuredClone(simpleIndividualExperiment);
 }
 
 export function getSimpleGroupExperiment() {
-  return JSON.parse(JSON.stringify(simpleGroupExperiment));
+  return structuredClone(simpleGroupExperiment);
 }
 
 export function getFactorialIndividualExperiment() {
-  return JSON.parse(JSON.stringify(factorialIndividualExperiment));
+  return structuredClone(factorialIndividualExperiment);
 }
 
 export function getFactorialGroupExperiment() {
-  return JSON.parse(JSON.stringify(factorialGroupExperiment));
+  return structuredClone(factorialGroupExperiment);
 }
 
 export function getSimpleDPExperiment() {
-  return JSON.parse(JSON.stringify(simpleDPExperiment));
+  return structuredClone(simpleDPExperiment);
 }
 
 export function getSimpleExperimentDecisionPoint() {
-  return JSON.parse(JSON.stringify(simpleExperimentDecisionPoint));
+  return structuredClone(simpleExperimentDecisionPoint);
 }
 
 export function getWithinSubjectDPExperiment() {
-  return JSON.parse(JSON.stringify(withinSubjectDPExperiment));
+  return structuredClone(withinSubjectDPExperiment);
 }

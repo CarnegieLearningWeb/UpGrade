@@ -20,7 +20,7 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // group experiment object
-  const experimentObject = JSON.parse(JSON.stringify(groupAssignmentWithGroupConsistencyExperiment));
+  const experimentObject = structuredClone(groupAssignmentWithGroupConsistencyExperiment);
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());

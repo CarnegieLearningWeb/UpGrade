@@ -35,6 +35,7 @@ import {
   IImportError,
   IMPORT_COMPATIBILITY_TYPE,
   PAYLOAD_TYPE,
+  POST_EXPERIMENT_RULE,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -291,26 +292,12 @@ export class ExperimentService {
     }
   ): Promise<ExperimentDTO> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
-    const { createType, existingEntityManager } = options || {};
+    const { existingEntityManager } = options || {};
     const entityManager = existingEntityManager || this.dataSource.manager;
 
     // order for condition
-    let newConditionId;
-    let newCondition;
     experiment.conditions.forEach((condition, index) => {
-      if (createType && createType === 'import') {
-        newConditionId = uuid();
-      } else {
-        newConditionId = condition.id || uuid();
-      }
-
-      // proper reference for post experiment rule condition:
-      if (experiment.postExperimentRule === 'assign') {
-        if (experiment.revertTo === condition.id) {
-          experiment.revertTo = newConditionId;
-        }
-      }
-      newCondition = { ...condition, id: newConditionId, order: index + 1 };
+      const newCondition = { ...condition, order: index + 1 };
       experiment.conditions[index] = newCondition;
     });
 
@@ -319,6 +306,7 @@ export class ExperimentService {
       const newDecisionPoint = { ...decisionPoint, order: index + 1 };
       experiment.partitions[index] = newDecisionPoint;
     });
+    experiment.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE;
     experiment.backendVersion = env.app.version;
 
     const createdExperiment = await this.addExperimentInDB(experiment, currentUser, logger, entityManager);
@@ -1286,41 +1274,29 @@ export class ExperimentService {
       }
 
       // creating condition docs
+      const conditionIdMap = new Map<string, string>();
       const conditionDocsToSave: Array<Partial<Omit<ExperimentCondition, 'levelCombinationElements'>>> =
         conditions && conditions.length > 0
           ? conditions.map((condition: ConditionValidator) => {
-              condition.id = condition.id || uuid();
+              const newId = uuid();
+              conditionIdMap.set(condition.id, newId);
+              condition.id = newId;
               return { ...condition, experiment: experimentDoc };
             })
           : [];
 
       // creating decision point docs
+      const decisionPointIdMap = new Map<string, string>();
       const decisionPointDocsToSave: Array<Partial<DecisionPoint>> =
         partitions && partitions.length > 0
           ? partitions.map((decisionPoint) => {
-              decisionPoint.id = decisionPoint.id || uuid();
+              const newId = uuid();
+              decisionPointIdMap.set(decisionPoint.id, newId);
+              decisionPoint.id = newId;
               decisionPoint.description = decisionPoint.description || '';
               return { ...decisionPoint, experiment: experimentDoc };
             })
           : [];
-
-      if (!conditionPayloads) {
-        experiment = { ...experiment, conditionPayloads: [] };
-      }
-      const conditionPayloadDocToSave: Array<Partial<Omit<ConditionPayload, 'parentCondition' | 'decisionPoint'>>> =
-        (conditionPayloads &&
-          conditionPayloads.length > 0 &&
-          conditionPayloads.map((conditionPayload) => {
-            const conditionPayloadToReturn = {
-              id: conditionPayload.id,
-              payloadType: conditionPayload.payload.type,
-              payloadValue: conditionPayload.payload.value,
-              parentCondition: conditions.find((doc) => doc.id === conditionPayload.parentCondition),
-              decisionPoint: partitions.find((doc) => doc.id === conditionPayload?.decisionPoint),
-            };
-            return conditionPayloadToReturn;
-          })) ||
-        [];
 
       // creating queries docs
       const promiseArray = [];
@@ -1333,7 +1309,7 @@ export class ExperimentService {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
             rest.experiment = experimentDoc;
-            rest.id = rest.id || uuid();
+            rest.id = uuid();
             return rest;
           })) ||
         [];
@@ -1367,6 +1343,56 @@ export class ExperimentService {
           : Promise.resolve([]);
       };
 
+      const createQueriesPromise = () => {
+        return queryDocsToSave.length > 0
+          ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
+          : Promise.resolve([]);
+      };
+
+      try {
+        [conditionDocs, decisionPointDocs, queryDocs] = await Promise.all([
+          createConditionsPromise(),
+          createDecisionPointsPromise(),
+          createQueriesPromise(),
+        ]);
+      } catch (err) {
+        const error = err as Error;
+        error.message = `Error in creating conditions, decision points, conditionPayloads and queries "addExperimentInDB"`;
+        logger.error(error);
+        throw error;
+      }
+
+      // creating condition payload docs after getting conditionDocs and decisionPointDocs
+      if (!conditionPayloads) {
+        experiment = { ...experiment, conditionPayloads: [] };
+      }
+      const conditionPayloadDocToSave: Array<Partial<ConditionPayload>> =
+        (conditionPayloads &&
+          conditionPayloads.length > 0 &&
+          conditionPayloads.map((conditionPayload) => {
+            const parentCondition = conditionDocs.find(
+              (doc) => doc.id === conditionIdMap.get(conditionPayload.parentCondition)
+            );
+            if (conditionPayload.parentCondition && !parentCondition) {
+              throw new Error(`Parent condition not found for condition payload: ${conditionPayload.id}`);
+            }
+            const decisionPoint = decisionPointDocs.find(
+              (doc) => doc.id === decisionPointIdMap.get(conditionPayload.decisionPoint)
+            );
+            if (conditionPayload.decisionPoint && !decisionPoint) {
+              throw new Error(`Decision point not found for condition payload: ${conditionPayload.id}`);
+            }
+            const conditionPayloadToReturn = {
+              id: uuid(),
+              payloadType: conditionPayload.payload.type,
+              payloadValue: conditionPayload.payload.value,
+              parentCondition,
+              decisionPoint,
+            };
+            return conditionPayloadToReturn;
+          })) ||
+        [];
+
       const createConditionPayloadsPromise = () => {
         return conditionPayloadDocToSave.length > 0
           ? this.conditionPayloadRepository.insertConditionPayload(
@@ -1376,22 +1402,11 @@ export class ExperimentService {
           : Promise.resolve([]);
       };
 
-      const createQueriesPromise = () => {
-        return queryDocsToSave.length > 0
-          ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
-          : Promise.resolve([]);
-      };
-
       try {
-        [conditionDocs, decisionPointDocs, conditionPayloadDoc, queryDocs] = await Promise.all([
-          createConditionsPromise(),
-          createDecisionPointsPromise(),
-          createConditionPayloadsPromise(),
-          createQueriesPromise(),
-        ]);
+        conditionPayloadDoc = await createConditionPayloadsPromise();
       } catch (err) {
         const error = err as Error;
-        error.message = `Error in creating conditions, decision points, conditionPayloads and queries "addExperimentInDB"`;
+        error.message = `Error in creating conditionPayloads "addExperimentInDB"`;
         logger.error(error);
         throw error;
       }
@@ -1636,14 +1651,15 @@ export class ExperimentService {
       });
       delete result.conditionAliases;
     }
-    result.conditionPayloads.forEach((conditionPayload) => {
-      conditionPayload.id = uuid();
-      conditionPayload.parentCondition = this.allIdMap[conditionPayload.parentCondition];
-      if (conditionPayload.decisionPoint) {
-        conditionPayload.decisionPoint = this.allIdMap[conditionPayload.decisionPoint];
-      }
-    });
-
+    if (result.conditionPayloads) {
+      result.conditionPayloads.forEach((conditionPayload) => {
+        conditionPayload.id = uuid();
+        conditionPayload.parentCondition = this.allIdMap[conditionPayload.parentCondition];
+        if (conditionPayload.decisionPoint) {
+          conditionPayload.decisionPoint = this.allIdMap[conditionPayload.decisionPoint];
+        }
+      });
+    }
     return result;
   }
 
@@ -2371,7 +2387,7 @@ export class ExperimentService {
       ...segmentToAdd,
       id: list.segment.id,
       name: list.segment.name || list.segment.id + ' Segment',
-      description: list.segment.description || list.segment.id + ' Segment',
+      description: list.segment.description || '',
       context: context[0],
       type: SEGMENT_TYPE.PRIVATE,
     };

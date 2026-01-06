@@ -10,7 +10,7 @@ export default async function FactorialExperimentCRUD(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
-  const experimentObject = firstFactorialExperiment;
+  const experimentObject = structuredClone(firstFactorialExperiment);
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
