@@ -195,15 +195,6 @@ export class MoocletExperimentService extends ExperimentService {
     });
   }
 
-  // public async syncUpdateTransitioningAwayFromMooclet(params: SyncEditParams): Promise<ExperimentDTO> {
-  //   return this.dataSource.transaction(async (manager) => {
-  //     if (params.moocletRefToDelete) {
-  //       await this.moocletExperimentRefRepository.delete(params.moocletRefToDelete.id);
-  //     }
-  //     return await this.updateUpgradeExperiment(manager, params);
-  //   });
-  // }
-
   public async syncDelete(params: SyncDeleteParams): Promise<Experiment> {
     return this.dataSource.transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
   }
@@ -1488,8 +1479,8 @@ export class MoocletExperimentService extends ExperimentService {
 
       // 2. Update experiment with new assignment algorithm, creating new mooclet resources when "isNowMooclet"
       let message = `[Algorithm Change] Assignment algorithm changed from ${oldAlgorithm} to ${experiment.assignmentAlgorithm}.`;
-      message += wasMooclet && 'Will delete old Mooclet resources after successful update.';
-      message += isNowMooclet && 'Will create new Mooclet resources as part of update.';
+      if (wasMooclet) message += ' Will delete old Mooclet resources after successful update.';
+      if (isNowMooclet) message += ' Will create new Mooclet resources as part of update.';
 
       logger.info({
         message,
