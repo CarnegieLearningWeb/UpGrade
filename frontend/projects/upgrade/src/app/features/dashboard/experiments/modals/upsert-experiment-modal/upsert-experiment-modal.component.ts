@@ -267,10 +267,14 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }
 
   deriveInitialFormValues(sourceExperiment: Experiment, action: string): ExperimentFormData {
-    const name =
-      action === UPSERT_EXPERIMENT_ACTION.EDIT || action === UPSERT_EXPERIMENT_ACTION.DUPLICATE
-        ? sourceExperiment?.name
-        : '';
+    let name = '';
+    if (action === UPSERT_EXPERIMENT_ACTION.DUPLICATE) {
+      name = `${sourceExperiment?.name} (COPY)`;
+    }
+
+    if (action === UPSERT_EXPERIMENT_ACTION.EDIT) {
+      name = sourceExperiment?.name;
+    }
     const description = sourceExperiment?.description || '';
     const appContext = sourceExperiment?.context?.[0] || '';
     const experimentType = sourceExperiment?.type === 'Factorial' ? EXPERIMENT_TYPE.FACTORIAL : EXPERIMENT_TYPE.SIMPLE;
@@ -344,7 +348,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   listenForPrimaryButtonDisabled() {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertExperiment$.pipe(
       combineLatestWith(this.isInitialFormValueChanged$),
-      map(([isLoading, isInitialFormValueChanged]) => isLoading || !isInitialFormValueChanged)
+      map(
+        ([isLoading, isInitialFormValueChanged]) =>
+          isLoading || (!isInitialFormValueChanged && this.config.params.action !== UPSERT_EXPERIMENT_ACTION.DUPLICATE)
+      )
     );
     this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
   }
