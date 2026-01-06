@@ -365,6 +365,8 @@
   "experiments.no-matching-experiments.text": "No matching experiments found.",
   "experiments.add-experiment.text": "Add Experiment",
   "experiments.import-experiment.text": "Import Experiment",
+  "experiments.import-experiment-modal.compatibility-description.incompatible.text": "This JSON file cannot be imported because it lacks required properties or it incorrectly formatted for the experiment. Please ensure it is the correct file.",
+  "experiments.import-experiment-modal.compatibility-description.warning.text": "This JSON file can be imported, but it may contain outdated or missing properties/features. Please review the experiment details post-import.",
   "experiments.import-experiment.message.text": "The Experiment JSON file should include the required properties for it to be imported.",
   "experiments.export-all-experiments.text": "Export All Experiment Designs",
   "experiments.upsert-experiment-modal.name-hint.text": "The name for this experiment.",
