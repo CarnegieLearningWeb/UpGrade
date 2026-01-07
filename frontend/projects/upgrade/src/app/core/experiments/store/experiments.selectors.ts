@@ -356,6 +356,9 @@ export const selectExperimentActionButtons = createSelector(
     }
 
     return buttons;
+  }
+);
+
 export const selectCurrentPosteriorsTableData = createSelector(
   selectSelectedExperiment,
   (experiment: ExperimentVM): CurrentPosteriorsTableRow[] => {
