@@ -7,7 +7,6 @@ import {
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentEnrollmentDataComponent } from './experiment-enrollment-data/experiment-enrollment-data.component';
-import { EnrollmentOverTimeComponent } from '../../../../../home/components/enrollment-over-time/enrollment-over-time.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
@@ -19,7 +18,6 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
     ExperimentEnrollmentDataComponent,
-    EnrollmentOverTimeComponent,
     TranslateModule,
   ],
   templateUrl: './experiment-enrollment-data-section-card.component.html',

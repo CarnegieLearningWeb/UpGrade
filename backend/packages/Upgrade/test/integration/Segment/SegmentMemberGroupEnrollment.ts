@@ -24,7 +24,7 @@ export default async function SegmentMemberGroupEnrollment(): Promise<void> {
   await segmentService.upsertSegment(segmentObject, logger);
 
   // experiment object
-  const experimentObject = JSON.parse(JSON.stringify(individualAssignmentExperiment));
+  const experimentObject = structuredClone(individualAssignmentExperiment);
   experimentObject.experimentSegmentInclusion = { ...experimentObject.experimentSegmentInclusion };
   const context = experimentObject.context[0];
 

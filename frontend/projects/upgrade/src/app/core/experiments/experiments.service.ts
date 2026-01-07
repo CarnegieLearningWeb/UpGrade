@@ -158,29 +158,6 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionDeleteExperiment({ experimentId }));
   }
 
-  // forExperimentWithPayloadObj(experiment): Experiment {
-  //   if (experiment.type === 'Factorial') {
-  //     const factorsWithPayloadObj = experiment.factors?.map((factor) => {
-  //       const levelsWithPayloadObj = factor.levels.map((level) => {
-  //         return { ...level, payload: { type: PAYLOAD_TYPE.STRING, value: level.payload } };
-  //       });
-  //       return { ...factor, levels: levelsWithPayloadObj };
-  //     });
-
-  //     const conditionPayloadWithPayloadObj = experiment.conditionPayloads.map((conditionPayload) => {
-  //       return { ...conditionPayload, payload: { type: PAYLOAD_TYPE.STRING, value: conditionPayload.payload } };
-  //     });
-
-  //     return { ...experiment, factors: factorsWithPayloadObj, conditionPayloads: conditionPayloadWithPayloadObj };
-  //   } else {
-  //     const conditionPayloadWithPayloadObj = experiment.conditionPayloads.map((conditionPayload) => {
-  //       return { ...conditionPayload, payload: { type: PAYLOAD_TYPE.STRING, value: conditionPayload.payload } };
-  //     });
-
-  //     return { ...experiment, conditionPayloads: conditionPayloadWithPayloadObj };
-  //   }
-  // }
-
   selectExperimentById(experimentId: string) {
     return this.store$.pipe(select(selectExperimentById, { experimentId })).pipe(
       tap((experiment) => {

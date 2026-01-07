@@ -14,6 +14,7 @@ import { ExperimentService } from '../../../../../../../core/experiments/experim
 import { combineLatest, map, Observable, Subscription, take } from 'rxjs';
 import {
   Experiment,
+  EXPERIMENT_OVERVIEW_LABELS,
   EXPERIMENT_STATE,
   ExperimentStateInfo,
   EXPERIMENT_ACTION_BUTTON_TYPE,
@@ -64,6 +65,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   menuButtonItems$: Observable<IMenuButtonItem[]>;
   subscriptions = new Subscription();
   emailId = '';
+  bullettedListKeys = [EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS];
 
   // Action buttons - maps ExperimentActionButton[] to ActionButton[]
   actionButtons$: Observable<ActionButton[]> = this.experimentService.experimentActionButtons$.pipe(
@@ -149,7 +151,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         this.dialogService.openEditExperimentModal(experiment);
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.DUPLICATE:
-        console.log('Duplicate experiment - TODO: Implement dialog service');
+        this.dialogService.openDuplicateExperimentModal(experiment);
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE:
         console.log('Archive experiment - TODO: Implement');

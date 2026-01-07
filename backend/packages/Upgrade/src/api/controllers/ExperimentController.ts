@@ -1257,7 +1257,7 @@ export class ExperimentController {
    *         description: invalid input syntax for type uuid, Error in experiment scheduler (user is not authorized), Insert Error in database
    */
   @Put('/:id')
-  public update(
+  public async update(
     @Params({ validate: true }) { id }: ExperimentIdValidator,
     @Body({ validate: true })
     experiment: ExperimentDTO,
@@ -1271,21 +1271,28 @@ export class ExperimentController {
       throw new BadRequestError(contextValidationError);
     }
 
-    // TODO: there is a story to refactor these duplicate warnings, adding here same way as others for now
-    if ('moocletPolicyParameters' in experiment) {
-      if (!env.mooclets?.enabled) {
-        throw new BadRequestError(
-          'Failed to edit Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
-        );
-      } else {
-        return this.moocletExperimentService.syncUpdate({
-          experimentDTO: { ...experiment, id },
+    if (env.mooclets.enabled) {
+      // if mooclet is enabled, we must check for potential assignment algorithm changes in all experiments
+      const updatedMoocletExperiment =
+        await this.moocletExperimentService.handlePotentialMoocletAssignmentAlgorithmChange(
+          { ...experiment, id },
           currentUser,
-          logger: request.logger,
-        });
+          request.logger
+        );
+
+      if (updatedMoocletExperiment) {
+        return updatedMoocletExperiment;
+      }
+    } else {
+      // if mooclet is not enabled, but experiment has mooclet params, throw error
+      if ('moocletPolicyParameters' in experiment) {
+        throw new BadRequestError(
+          'Failed to update Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
+        );
       }
     }
 
+    // else, if mooclet is not involved, we can do a normal update
     return this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
   }
 

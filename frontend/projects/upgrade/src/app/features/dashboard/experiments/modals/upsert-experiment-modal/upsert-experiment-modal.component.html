@@ -32,7 +32,13 @@
         <mat-option *ngFor="let context of allContexts" [value]="context" class="ft-14-400">{{ context }}</mat-option>
       </mat-select>
       <mat-hint
-        *ngIf="!(config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT && isContextChanged)"
+        *ngIf="
+          !(
+            (config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT ||
+              config.params.action === UPSERT_EXPERIMENT_ACTION.DUPLICATE) &&
+            isContextChanged
+          )
+        "
         class="form-hint ft-12-400"
       >
         {{ 'experiments.upsert-experiment-modal.app-context-hint.text' | translate }}
@@ -41,7 +47,11 @@
         </a>
       </mat-hint>
       <mat-hint
-        *ngIf="config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT && isContextChanged"
+        *ngIf="
+          (config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT ||
+            config.params.action === UPSERT_EXPERIMENT_ACTION.DUPLICATE) &&
+          isContextChanged
+        "
         class="form-hint ft-12-400 warning-hint"
       >
         {{ 'experiments.upsert-experiment-modal.app-context-warning.text' | translate }}
@@ -155,6 +165,16 @@
         {{ 'experiments.upsert-experiment-modal.stratification-factor-hint.text' | translate }}
       </mat-hint>
     </mat-form-field>
+
+    <!-- each mooclet algorithm's form component would go here -->
+    <app-ts-configurable-policy-parameters-form
+      *ngIf="assignmentAlgorithmValue === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE"
+      [experimentNameValue]="experimentNameValue || ''"
+      [existingPolicyParams]="(selectedExperiment$ | async)?.moocletPolicyParameters"
+      (parametersChange)="onMoocletParametersChange($event)"
+      (validationChange)="onMoocletFormValidityChange($event)"
+      (formChanged)="onMoocletFormChanged($event)"
+    ></app-ts-configurable-policy-parameters-form>
 
     <app-common-tags-input
       formControlName="tags"
