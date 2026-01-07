@@ -640,8 +640,11 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       experimentSegmentExclusion: undefined, // @IsOptional @IsArray - can be undefined
       stateTimeLogs: undefined, // @IsOptional @IsArray - can be undefined
       backendVersion: undefined, // @IsOptional - can be undefined
-      moocletPolicyParameters: undefined, // Conditional validation - can be undefined
     };
+
+    if (this.moocletPolicyParametersFormValue) {
+      experimentRequest.moocletPolicyParameters = this.moocletPolicyParametersFormValue;
+    }
 
     this.experimentService.createNewExperiment(experimentRequest);
   }
@@ -689,7 +692,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       experimentSegmentInclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentInclusion,
       experimentSegmentExclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentExclusion,
       backendVersion: sourceExperiment.backendVersion,
-      moocletPolicyParameters: sourceExperiment.moocletPolicyParameters,
     };
 
     if (this.moocletPolicyParametersFormValue) {
