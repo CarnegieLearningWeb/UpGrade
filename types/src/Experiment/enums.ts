@@ -53,6 +53,12 @@ export enum POST_EXPERIMENT_RULE {
   ASSIGN = 'assign',
 }
 
+export enum PAUSE_BEHAVIOR {
+  KEEP_CONDITIONS = 'keep-conditions',
+  NO_CONDITION = 'no-condition',
+  ASSIGN = 'assign',
+}
+
 export enum EXPERIMENT_STATE {
   INACTIVE = 'inactive',
   PREVIEW = 'preview',

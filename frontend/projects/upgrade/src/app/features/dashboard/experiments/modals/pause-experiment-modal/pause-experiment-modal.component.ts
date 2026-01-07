@@ -10,6 +10,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { POST_EXPERIMENT_RULE, ExperimentCondition } from '../../../../../core/experiments/store/experiments.model';
+import { PAUSE_BEHAVIOR } from 'upgrade_types';
 
 export interface PauseExperimentModalParams {
   experimentName: string;
@@ -40,8 +41,9 @@ export class PauseExperimentModalComponent implements OnInit, OnDestroy {
   pauseForm: FormGroup;
   subscriptions = new Subscription();
 
-  // Expose enum to template
+  // Expose enums to template
   POST_EXPERIMENT_RULE = POST_EXPERIMENT_RULE;
+  PAUSE_BEHAVIOR = PAUSE_BEHAVIOR;
 
   // Track if user has selected Assign
   isAssignSelected$ = new BehaviorSubject<boolean>(false);
@@ -56,7 +58,7 @@ export class PauseExperimentModalComponent implements OnInit, OnDestroy {
     public dialogRef: MatDialogRef<PauseExperimentModalComponent, PauseExperimentModalResult>
   ) {
     this.pauseForm = this.fb.group({
-      postExperimentRule: [POST_EXPERIMENT_RULE.CONTINUE, Validators.required],
+      pauseBehavior: [PAUSE_BEHAVIOR.KEEP_CONDITIONS, Validators.required],
       revertTo: [''], // Condition ID - will add conditional validation
     });
   }
@@ -72,15 +74,15 @@ export class PauseExperimentModalComponent implements OnInit, OnDestroy {
   }
 
   private setupConditionalValidation(): void {
-    const postExperimentRuleControl = this.pauseForm.get('postExperimentRule');
-    if (!postExperimentRuleControl) return;
+    const pauseBehaviorControl = this.pauseForm.get('pauseBehavior');
+    if (!pauseBehaviorControl) return;
 
     this.subscriptions.add(
-      postExperimentRuleControl.valueChanges.subscribe((value) => {
+      pauseBehaviorControl.valueChanges.subscribe((value) => {
         const revertToControl = this.pauseForm.get('revertTo');
         if (!revertToControl) return;
 
-        if (value === POST_EXPERIMENT_RULE.ASSIGN) {
+        if (value === PAUSE_BEHAVIOR.ASSIGN) {
           this.isAssignSelected$.next(true);
           revertToControl.setValidators([Validators.required]);
         } else {
@@ -104,9 +106,18 @@ export class PauseExperimentModalComponent implements OnInit, OnDestroy {
   onPrimaryActionBtnClicked(): void {
     if (this.pauseForm.valid) {
       const formValue = this.pauseForm.value;
+
+      // Map PAUSE_BEHAVIOR to POST_EXPERIMENT_RULE and revertTo
+      const postExperimentRule =
+        formValue.pauseBehavior === PAUSE_BEHAVIOR.KEEP_CONDITIONS
+          ? POST_EXPERIMENT_RULE.CONTINUE
+          : POST_EXPERIMENT_RULE.ASSIGN;
+
+      const revertTo = formValue.pauseBehavior === PAUSE_BEHAVIOR.ASSIGN ? formValue.revertTo : undefined;
+
       const result: PauseExperimentModalResult = {
-        postExperimentRule: formValue.postExperimentRule,
-        revertTo: formValue.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN ? formValue.revertTo : undefined,
+        postExperimentRule,
+        revertTo,
       };
 
       this.dialogRef.close(result);
