@@ -17,7 +17,7 @@ import {
   EditPrivateSegmentListRequest,
   SegmentFile,
 } from '../segments/store/segments.model';
-import { LIST_FILTER_MODE, IFeatureFlagFile } from 'upgrade_types';
+import { LIST_FILTER_MODE, IImportFile } from 'upgrade_types';
 
 @Injectable()
 export class FeatureFlagsDataService {
@@ -49,7 +49,7 @@ export class FeatureFlagsDataService {
     return this.http.put<FeatureFlag>(url, flag);
   }
 
-  validateFeatureFlag(featureFlags: { files: IFeatureFlagFile[] }) {
+  validateFeatureFlag(featureFlags: { files: IImportFile[] }) {
     const url = this.environment.api.validateFeatureFlag;
     return this.http.post(url, featureFlags);
   }
@@ -59,12 +59,12 @@ export class FeatureFlagsDataService {
     return this.http.post(url, segments);
   }
 
-  importFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
+  importFeatureFlag(featureFlag: { files: IImportFile[] }) {
     const url = this.environment.api.importFeatureFlag;
     return this.http.post(url, featureFlag);
   }
 
-  importFeatureFlagList(files: IFeatureFlagFile[], flagId: string, filterType: LIST_FILTER_MODE) {
+  importFeatureFlagList(files: IImportFile[], flagId: string, filterType: LIST_FILTER_MODE) {
     const lists = { files: files, filterType: filterType, flagId: flagId };
     const url = this.environment.api.importFeatureFlagList;
     return this.http.post(url, lists);

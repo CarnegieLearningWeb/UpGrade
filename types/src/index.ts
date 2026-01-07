@@ -75,7 +75,7 @@ export {
   ILogMetrics,
   ILogGroupMetrics,
   IMenuButtonItem,
-  IFeatureFlagFile,
+  IImportFile,
   IImportError,
   ListOperationsData,
   FeatureFlagCreatedData,
