@@ -350,8 +350,7 @@ export const selectExperimentActionButtons = createSelector(
         );
         break;
 
-      case EXPERIMENT_STATE.CANCELLED:
-        // No action buttons for completed state
+      default:
         break;
     }
 
