@@ -294,7 +294,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
 
   getPauseBehaviorText(experiment: Experiment): string {
     if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
-      return this.translate.instant('experiments.details.pause-behavior-continue.text');
+      return this.translate.instant('experiments.details.pause-behavior-keep-conditions.text');
     } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN) {
       // Find the condition name from revertTo ID
       const condition = experiment.conditions.find((c) => c.id === experiment.revertTo);
