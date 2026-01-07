@@ -11,7 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IMenuButtonItem, EXPERIMENT_SEARCH_KEY } from 'upgrade_types';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
 import { combineLatest, map, Observable, Subscription } from 'rxjs';
-import { Experiment } from '../../../../../../../core/experiments/store/experiments.model';
+import { Experiment, EXPERIMENT_OVERVIEW_LABELS } from '../../../../../../../core/experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
@@ -55,6 +55,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   menuButtonItems$: Observable<IMenuButtonItem[]>;
   subscriptions = new Subscription();
   emailId = '';
+  bullettedListKeys = [EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS];
 
   constructor(
     private readonly experimentService: ExperimentService,

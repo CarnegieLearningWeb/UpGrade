@@ -557,6 +557,25 @@ export const EXPERIMENT_TRANSLATION_KEYS = {
   ENROLLMENT: 'experiments.global-enrollment.text',
 };
 
+export const EXPERIMENT_OVERVIEW_LABELS = {
+  DESCRIPTION: 'Description',
+  APP_CONTEXT: 'App Context',
+  EXPERIMENT_TYPE: 'Experiment Type',
+  UNIT_OF_ASSIGNMENT: 'Unit Of Assignment',
+  CONSISTENCY_RULE: 'Consistency Rule',
+  ASSIGNMENT_ALGORITHM: 'Assignment Algorithm',
+  ADAPTIVE_ALGORITHM_PARAMETERS: 'Adaptive Algorithm Parameters',
+  TAGS: 'Tags',
+} as const;
+
+export const TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS = {
+  BATCH_SIZE: 'home.new-experiment.design.ts-configurable-policy.batch-size.label.text',
+  PRIOR_SUCCESS: 'home.new-experiment.design.ts-configurable-policy.prior-success.label.text',
+  PRIOR_FAILURE: 'home.new-experiment.design.ts-configurable-policy.prior-failure.label.text',
+  UNIFORM_THRESHOLD: 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.label.text',
+  TSPOSTDIFF_THRESH: 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.label.text',
+};
+
 export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
 
 export interface ExperimentState extends EntityState<ExperimentVM> {
@@ -666,6 +685,15 @@ export interface InteractionEffectGraphData {
 
 export interface ExperimentSegmentListResponse extends SegmentNew {
   experiment: Experiment;
+}
+
+export interface CurrentPosteriorsTableRow {
+  conditionCode: string;
+  successes: number;
+  failures: number;
+  successRate: number;
+  total: number;
+  percentage: number;
 }
 
 export interface UpsertMetricParams {

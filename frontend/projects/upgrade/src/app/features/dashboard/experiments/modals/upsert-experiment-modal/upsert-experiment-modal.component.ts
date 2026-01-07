@@ -35,14 +35,16 @@ import {
   EXPERIMENT_STATE,
   FILTER_MODE,
   POST_EXPERIMENT_RULE,
-  SUPPORTED_MOOCLET_ALGORITHMS,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
   EXPERIMENT_TYPE,
+  MoocletPolicyParametersDTO,
 } from 'upgrade_types';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 import { ENV, Environment } from '../../../../../../environments/environment-types';
 import { SharedModule } from '../../../../../shared/shared.module';
+import { TsConfigurablePolicyParametersFormComponent } from './ts-configurable-policy-parameters-form/ts-configurable-policy-parameters-form.component';
+import { MoocletExperimentHelperService } from '../../../../../core/experiments/mooclet-helper.service';
 
 @Component({
   selector: 'upsert-experiment-modal',
@@ -61,6 +63,7 @@ import { SharedModule } from '../../../../../shared/shared.module';
     AsyncPipe,
     NgIf,
     SharedModule,
+    TsConfigurablePolicyParametersFormComponent,
   ],
   templateUrl: './upsert-experiment-modal.component.html',
   styleUrl: './upsert-experiment-modal.component.scss',
@@ -90,6 +93,21 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   experimentForm: FormGroup;
   CommonTagInputType = CommonTagInputType;
+
+  /**
+   * Mooclet policy parameters state management
+   *
+   * This property holds the current mooclet policy parameters and is updated in several scenarios:
+   * 1. EDIT mode initialization: Set from sourceExperiment.moocletPolicyParameters if present
+   * 2. Algorithm changes: Set to defaults when switching TO a mooclet algorithm (if not already set)
+   * 3. Algorithm changes: Cleared when switching FROM mooclet to non-mooclet algorithm
+   * 4. Child form events: Updated when user modifies parameters in the child form
+   *
+   * The child form receives existing params via async pipe but emits updates through event handlers.
+   */
+  moocletPolicyParametersFormValue: MoocletPolicyParametersDTO;
+  isMoocletFormValid$ = new BehaviorSubject<boolean>(true);
+  isMoocletFormChanged$ = new BehaviorSubject<boolean>(false);
 
   // Enum references for template
   UPSERT_EXPERIMENT_ACTION = UPSERT_EXPERIMENT_ACTION;
@@ -171,6 +189,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     private readonly formBuilder: FormBuilder,
     private readonly experimentService: ExperimentService,
     private readonly stratificationFactorsService: StratificationFactorsService,
+    private readonly moocletExperimentHelperService: MoocletExperimentHelperService,
     public dialogRef: MatDialogRef<UpsertExperimentModalComponent>,
     @Inject(ENV) private readonly environment: Environment
   ) {
@@ -180,15 +199,9 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
         description: 'Condition will be assigned within subjects (e.g., participant sees multiple conditions).',
       });
     }
-    if (this.environment.moocletToggle) {
-      const supportedMoocletAlgorithms = SUPPORTED_MOOCLET_ALGORITHMS as ASSIGNMENT_ALGORITHM[];
-      supportedMoocletAlgorithms.forEach((algorithmName) => {
-        this.assignmentAlgorithms.push({
-          value: algorithmName,
-          description: `Mooclet algorithm: ${algorithmName}`,
-        });
-      });
-    }
+    // Delegate to service to get supported mooclet algorithm options
+    const moocletAlgorithmOptions = this.moocletExperimentHelperService.getSupportedMoocletAlgorithmOptions();
+    this.assignmentAlgorithms.push(...moocletAlgorithmOptions);
   }
 
   ngOnInit(): void {
@@ -254,6 +267,11 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
     // Initialize consistency rules state based on initial unit of assignment
     this.initializeConsistencyRules(initialValues.unitOfAssignment);
+
+    // Initialize moocletPolicyParameters in EDIT mode to preserve existing values
+    if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceExperiment?.moocletPolicyParameters) {
+      this.moocletPolicyParametersFormValue = sourceExperiment.moocletPolicyParameters;
+    }
 
     this.initialFormValues$.next(this.experimentForm.value);
   }
@@ -345,13 +363,20 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.subscriptions.add(this.isInitialFormValueChanged$.subscribe());
   }
 
+  // Button is disabled if:
+  // 1. Currently loading, OR
+  // 2. Changes are required and none detected in primary or mooclet form, OR
+  // 3. Either primary or mooclet form is invalid
   listenForPrimaryButtonDisabled() {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertExperiment$.pipe(
-      combineLatestWith(this.isInitialFormValueChanged$),
-      map(
-        ([isLoading, isInitialFormValueChanged]) =>
-          isLoading || (!isInitialFormValueChanged && this.config.params.action !== UPSERT_EXPERIMENT_ACTION.DUPLICATE)
-      )
+      combineLatestWith(this.isInitialFormValueChanged$, this.isMoocletFormValid$, this.isMoocletFormChanged$),
+      map(([isLoading, isInitialFormValueChanged, isMoocletFormValid, isMoocletFormChanged]) => {
+        const changesRequiredToAllowSubmit = this.config.params.action !== UPSERT_EXPERIMENT_ACTION.DUPLICATE;
+        const hasChanges = isInitialFormValueChanged || isMoocletFormChanged;
+        const allFormsValid = this.experimentForm.valid && isMoocletFormValid;
+
+        return isLoading || (changesRequiredToAllowSubmit && !hasChanges) || !allFormsValid;
+      })
     );
     this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
   }
@@ -373,6 +398,8 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.experimentForm.get('assignmentAlgorithm')?.valueChanges.subscribe((algorithm) => {
         this.validateStratificationFactorSelection(algorithm);
+        // Always check for mooclet algorithm changes to handle both TO and FROM mooclet transitions
+        this.checkForMoocletAlgorithmChange();
       })
     );
   }
@@ -458,6 +485,23 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     );
   }
 
+  checkForMoocletAlgorithmChange(): void {
+    const algorithm = this.assignmentAlgorithmValue;
+
+    if (!this.moocletExperimentHelperService.isMoocletAlgorithm(algorithm)) {
+      // Clear params when switching to non-mooclet algorithm
+      this.moocletPolicyParametersFormValue = undefined;
+    } else if (this.moocletExperimentHelperService.isTSConfigurable(algorithm)) {
+      // Only set defaults if we don't already have params
+      // This preserves existing values in EDIT mode or after user has made changes
+      if (!this.moocletPolicyParametersFormValue) {
+        this.moocletPolicyParametersFormValue = this.moocletExperimentHelperService.getTSConfigurableDefaults();
+      }
+    } else {
+      throw new Error(`Unsupported mooclet algorithm selected: ${algorithm}`);
+    }
+  }
+
   updateAssignmentAlgorithms(): void {
     // Disable stratified random sampling if no stratification factors are available
     const stratifiedAlgorithm = this.assignmentAlgorithms.find(
@@ -484,6 +528,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     stratificationFactorControl?.updateValueAndValidity();
   }
 
+  get experimentNameValue() {
+    return this.experimentForm.get('name')?.value;
+  }
+
   get assignmentAlgorithmValue() {
     return this.experimentForm.get('assignmentAlgorithm')?.value;
   }
@@ -491,6 +539,28 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   get unitOfAssignmentValue() {
     return this.experimentForm.get('unitOfAssignment')?.value;
   }
+
+  /**
+   * Event handlers for mooclet policy parameters child form
+   *
+   * These handlers receive events from the child form and update parent state:
+   * - onMoocletParametersChange: Updates moocletPolicyParameters with user changes
+   * - onMoocletFormValidityChange: Updates validation state for button disable logic
+   * - onMoocletFormChanged: Tracks if user has modified the form (for save button enable)
+   */
+  onMoocletParametersChange(params: MoocletPolicyParametersDTO): void {
+    this.moocletPolicyParametersFormValue = { ...params, assignmentAlgorithm: this.assignmentAlgorithmValue };
+  }
+
+  onMoocletFormValidityChange(isValid: boolean): void {
+    this.isMoocletFormValid$.next(isValid);
+  }
+
+  onMoocletFormChanged(hasChanged: boolean): void {
+    this.isMoocletFormChanged$.next(hasChanged);
+  }
+
+  // ---------------------------------------------------------------------------
 
   setGroupTypes(contextMetaData?: IContextMetaData): void {
     this.groupTypes = [];
@@ -565,13 +635,16 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       partitions: [], // @IsNotEmpty @IsArray - must be empty array, not undefined
       factors: undefined, // @IsOptional @IsArray - can be undefined
       conditionPayloads: undefined, // @IsOptional @IsArray - can be undefined
-      queries: undefined, // @IsOptional @IsArray - can be undefined
+      queries: [], // @IsOptional @IsArray - can be undefined
       experimentSegmentInclusion: undefined, // @IsOptional @IsArray - can be undefined
       experimentSegmentExclusion: undefined, // @IsOptional @IsArray - can be undefined
       stateTimeLogs: undefined, // @IsOptional @IsArray - can be undefined
       backendVersion: undefined, // @IsOptional - can be undefined
-      moocletPolicyParameters: undefined, // Conditional validation - can be undefined
     };
+
+    if (this.moocletPolicyParametersFormValue) {
+      experimentRequest.moocletPolicyParameters = this.moocletPolicyParametersFormValue;
+    }
 
     this.experimentService.createNewExperiment(experimentRequest);
   }
@@ -619,8 +692,11 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       experimentSegmentInclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentInclusion,
       experimentSegmentExclusion: this.isContextChanged ? undefined : sourceExperiment.experimentSegmentExclusion,
       backendVersion: sourceExperiment.backendVersion,
-      moocletPolicyParameters: sourceExperiment.moocletPolicyParameters,
     };
+
+    if (this.moocletPolicyParametersFormValue) {
+      experimentRequest.moocletPolicyParameters = this.moocletPolicyParametersFormValue;
+    }
 
     this.experimentService.createNewExperiment(experimentRequest);
   }
@@ -676,7 +752,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
       // Backend metadata
       backendVersion: sourceExperiment.backendVersion,
-      moocletPolicyParameters: sourceExperiment.moocletPolicyParameters,
 
       // Required backend fields with defaults if not present
       postExperimentRule: sourceExperiment.postExperimentRule || POST_EXPERIMENT_RULE.CONTINUE,
@@ -685,6 +760,12 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       endOn: sourceExperiment.endOn,
       revertTo: sourceExperiment.revertTo,
     };
+
+    if (this.moocletExperimentHelperService.isMoocletAlgorithm(assignmentAlgorithm)) {
+      experimentRequest.moocletPolicyParameters = this.moocletPolicyParametersFormValue;
+    } else {
+      experimentRequest.moocletPolicyParameters = undefined;
+    }
 
     this.experimentService.updateExperiment(experimentRequest as unknown as ExperimentVM);
   }
