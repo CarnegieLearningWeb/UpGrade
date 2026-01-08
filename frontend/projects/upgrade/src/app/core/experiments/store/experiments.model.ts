@@ -123,6 +123,31 @@ export interface ExperimentStateInfo {
   scheduleDate?: string;
 }
 
+export interface StartExperimentValidation {
+  isValid: boolean;
+  reasons: string[];
+}
+
+export enum EXPERIMENT_ACTION_BUTTON_TYPE {
+  START = 'start',
+  PAUSE = 'pause',
+  STOP = 'stop',
+  RESUME = 'resume',
+}
+
+export enum PAUSE_BEHAVIOR_MODAL_MODE {
+  PAUSE = 'pause',
+  UPDATE = 'update',
+}
+
+export interface ExperimentActionButton {
+  action: EXPERIMENT_ACTION_BUTTON_TYPE;
+  icon: string;
+  disabled: boolean;
+  disabledReasons?: string[]; // Translation keys for tooltip
+  translationKey: string;
+}
+
 export interface EnrollmentCompleteCondition {
   userCount: number;
   groupCount: number;

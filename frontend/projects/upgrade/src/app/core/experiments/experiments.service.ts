@@ -16,6 +16,7 @@ import {
   UpdateExperimentDecisionPointsRequest,
   UpdateExperimentConditionsRequest,
   UpdateExperimentMetricsRequest,
+  ExperimentActionButton,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -49,6 +50,7 @@ import {
   selectExperimentExclusions,
   selectExperimentExclusionsLength,
   selectIsLoadingExperimentDelete,
+  selectExperimentActionButtons,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -106,6 +108,9 @@ export class ExperimentService {
   pollingEnabled: boolean = this.environment.pollingEnabled;
   currentContextMetaDataConditions$ = this.store$.pipe(select(selectCurrentContextMetaDataConditions));
   isLoadingExperimentDelete$ = this.store$.pipe(select(selectIsLoadingExperimentDelete));
+  experimentActionButtons$: Observable<ExperimentActionButton[]> = this.store$.pipe(
+    select(selectExperimentActionButtons)
+  );
 
   selectSearchExperimentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(

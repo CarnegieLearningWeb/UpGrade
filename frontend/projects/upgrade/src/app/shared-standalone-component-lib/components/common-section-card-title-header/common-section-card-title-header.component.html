@@ -26,10 +26,15 @@
       <span class="ft-14-400">
         {{
           ('common-section-card-title-header.details-updated-at.text' | translate) +
-            (updatedAt | date : 'MMM d, y, h:mm a') +
-            '.'
+            (updatedAt | date : 'MMM d, y, h:mm a')
         }}
       </span>
+      <ng-container *ngIf="pauseBehaviorText">
+        <span class="ft-14-400"> | {{ 'experiments.details.pause-behavior-label.text' | translate }}: </span>
+        <button class="pause-behavior-link ft-14-400" (click)="pauseBehaviorClick.emit()">
+          {{ pauseBehaviorText }}
+        </button>
+      </ng-container>
     </ng-container>
   </p>
   <ng-container *ngIf="id">
