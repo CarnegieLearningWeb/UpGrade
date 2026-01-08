@@ -43,7 +43,7 @@
                   (click)="toggleExpand(rowIndex)"
                 >
                   <mat-icon>{{
-                    element.compatibilityType === 'compatible' || !isDescriptionExpanded
+                    element.compatibilityType === 'compatible' || !expandedRows.has(rowIndex)
                       ? 'chevron_right'
                       : 'expand_more'
                   }}</mat-icon>
