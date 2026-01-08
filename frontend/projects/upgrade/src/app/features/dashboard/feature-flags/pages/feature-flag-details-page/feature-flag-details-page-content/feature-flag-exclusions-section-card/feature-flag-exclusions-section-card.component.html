@@ -10,9 +10,9 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="(permissions$ | async)?.featureFlags.update"
+    [showPrimaryButton]="(permissions$ | async)?.segments.update"
     [primaryButtonText]="'feature-flags.details.add-exclude-list.button.text' | translate"
-    [showMenuButton]="(permissions$ | async)?.featureFlags.update"
+    [showMenuButton]="(permissions$ | async)?.segments.update"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddExcludeListClick(flag.context[0], flag.id)"
@@ -25,7 +25,7 @@
   <app-feature-flag-exclusions-table
     content
     *ngIf="isSectionCardExpanded"
-    [actionsDisabled]="!(permissions$ | async)?.featureFlags.update"
+    [actionsDisabled]="!(permissions$ | async)?.segments.update"
     (rowAction)="onRowAction($event, flag.id)"
   ></app-feature-flag-exclusions-table>
 </app-common-section-card>
