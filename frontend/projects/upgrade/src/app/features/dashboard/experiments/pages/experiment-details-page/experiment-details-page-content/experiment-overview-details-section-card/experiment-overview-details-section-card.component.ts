@@ -19,6 +19,7 @@ import {
   ExperimentStateInfo,
   EXPERIMENT_ACTION_BUTTON_TYPE,
   POST_EXPERIMENT_RULE,
+  PAUSE_BEHAVIOR_MODAL_MODE,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
@@ -237,7 +238,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   private handlePauseExperiment(experiment: Experiment): void {
     this.subscriptions.add(
       this.dialogService
-        .openPauseExperimentModal(experiment.name, experiment.conditions)
+        .openPauseExperimentModal(experiment.conditions, PAUSE_BEHAVIOR_MODAL_MODE.PAUSE, experiment.name)
         .afterClosed()
         .subscribe((result) => {
           if (result) {
@@ -311,7 +312,13 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   handlePauseBehaviorClick(experiment: Experiment): void {
     this.subscriptions.add(
       this.dialogService
-        .openUpdatePauseBehaviorModal(experiment.postExperimentRule, experiment.revertTo, experiment.conditions)
+        .openPauseExperimentModal(
+          experiment.conditions,
+          PAUSE_BEHAVIOR_MODAL_MODE.UPDATE,
+          undefined,
+          experiment.postExperimentRule,
+          experiment.revertTo
+        )
         .afterClosed()
         .subscribe((result) => {
           if (result) {

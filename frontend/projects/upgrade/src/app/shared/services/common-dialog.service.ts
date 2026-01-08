@@ -45,11 +45,6 @@ import {
   PauseExperimentModalResult,
 } from '../../features/dashboard/experiments/modals/pause-experiment-modal/pause-experiment-modal.component';
 import {
-  UpdatePauseBehaviorModalComponent,
-  UpdatePauseBehaviorModalParams,
-  UpdatePauseBehaviorModalResult,
-} from '../../features/dashboard/experiments/modals/update-pause-behavior-modal/update-pause-behavior-modal.component';
-import {
   UPSERT_EXPERIMENT_ACTION,
   ExperimentDecisionPoint,
   ExperimentCondition,
@@ -59,6 +54,7 @@ import {
   UpsertExperimentParams,
   WeightingMethod,
   POST_EXPERIMENT_RULE,
+  PAUSE_BEHAVIOR_MODAL_MODE,
 } from '../../core/experiments/store/experiments.model';
 import {
   ConditionWeightUpdate,
@@ -798,17 +794,23 @@ export class DialogService {
   }
 
   openPauseExperimentModal(
-    experimentName: string,
-    conditions: ExperimentCondition[]
+    conditions: ExperimentCondition[],
+    mode: PAUSE_BEHAVIOR_MODAL_MODE = PAUSE_BEHAVIOR_MODAL_MODE.PAUSE,
+    experimentName?: string,
+    currentPostExperimentRule?: POST_EXPERIMENT_RULE,
+    currentRevertTo?: string
   ): MatDialogRef<PauseExperimentModalComponent, PauseExperimentModalResult> {
     const commonModalConfig: CommonModalConfig<PauseExperimentModalParams> = {
-      title: 'Pause Experiment',
-      primaryActionBtnLabel: 'Pause',
-      primaryActionBtnColor: 'primary', // Color overridden in modal SCSS
+      title: mode === PAUSE_BEHAVIOR_MODAL_MODE.PAUSE ? 'Pause Experiment' : 'Update Pause Behavior',
+      primaryActionBtnLabel: mode === PAUSE_BEHAVIOR_MODAL_MODE.PAUSE ? 'Pause' : 'Save',
+      primaryActionBtnColor: 'primary', // Color overridden in modal SCSS for pause mode
       cancelBtnLabel: 'Cancel',
       params: {
+        mode,
         experimentName,
         conditions,
+        currentPostExperimentRule,
+        currentRevertTo,
       },
     };
 
@@ -820,33 +822,6 @@ export class DialogService {
     };
 
     return this.dialog.open(PauseExperimentModalComponent, config);
-  }
-
-  openUpdatePauseBehaviorModal(
-    currentPostExperimentRule: POST_EXPERIMENT_RULE,
-    currentRevertTo: string | undefined,
-    conditions: ExperimentCondition[]
-  ): MatDialogRef<UpdatePauseBehaviorModalComponent, UpdatePauseBehaviorModalResult> {
-    const commonModalConfig: CommonModalConfig<UpdatePauseBehaviorModalParams> = {
-      title: 'Update Pause Behavior',
-      primaryActionBtnLabel: 'Save',
-      primaryActionBtnColor: 'primary',
-      cancelBtnLabel: 'Cancel',
-      params: {
-        currentPostExperimentRule,
-        currentRevertTo,
-        conditions,
-      },
-    };
-
-    const config: MatDialogConfig = {
-      data: commonModalConfig,
-      width: ModalSize.MEDIUM,
-      autoFocus: 'first-heading',
-      disableClose: true,
-    };
-
-    return this.dialog.open(UpdatePauseBehaviorModalComponent, config);
   }
 
   openResumeExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {

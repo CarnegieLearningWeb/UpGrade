@@ -7,17 +7,20 @@
   (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
 >
   <form [formGroup]="pauseForm" class="form-standard dense-3">
-    <!-- Confirmation message -->
-    <div class="pause-confirm ft-16-400">
-      <span>{{ 'experiments.pause-experiment-modal.message.text' | translate: { experimentName: data.params.experimentName } }}</span>
-    </div>
+    <!-- Show intro text only in pause mode -->
+    <ng-container *ngIf="data.params?.mode === PAUSE_BEHAVIOR_MODAL_MODE.PAUSE">
+      <!-- Confirmation message -->
+      <div class="pause-confirm ft-16-400">
+        <span>{{ 'experiments.pause-experiment-modal.message.text' | translate: { experimentName: data.params?.experimentName } }}</span>
+      </div>
 
       <!-- Info text -->
       <div class="pause-info ft-14-400">
         <span>{{ 'experiments.pause-experiment-modal.info.text' | translate }}</span>
       </div>
+    </ng-container>
 
-      <!-- Pause Behavior Section -->
+    <!-- Pause Behavior Section -->
       <div class="pause-behavior-section dense-1">
         <mat-radio-group formControlName="pauseBehavior">
           <span class="section-label ft-14-600">
