@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { EnrollmentConditionTableComponent } from '../../../../../../home/components/enrollment-condition-table/enrollment-condition-table.component';
-import { EnrollmentOverTimeComponent } from '../../../../../../home/components/enrollment-over-time/enrollment-over-time.component';
+import { EnrollmentConditionTableComponent } from '../enrollment-condition-table/enrollment-condition-table.component';
+import { EnrollmentOverTimeComponent } from '../enrollment-over-time/enrollment-over-time.component';
 import { ExperimentVM } from '../../../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../../../core/experiments/experiments.service';
 

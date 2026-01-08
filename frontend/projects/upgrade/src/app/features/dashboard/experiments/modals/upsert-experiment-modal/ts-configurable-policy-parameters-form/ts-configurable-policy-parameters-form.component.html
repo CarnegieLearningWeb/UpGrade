@@ -1,0 +1,101 @@
+<div class="ts-configurable-params-section">
+  <span class="section-label">
+    {{ 'home.new-experiment.design.ts-configurable-policy.section-label.text' | translate }}
+    <a
+      class="learn-more-link ft-12-400"
+      href="https://upgrade-platform.gitbook.io/upgrade-documentation/creating-an-adaptive-experiment/thompson-sampling-configurable"
+      target="_blank"
+      rel="noopener noreferrer"
+      >Learn more</a
+    >
+  </span>
+  <form [formGroup]="policyForm" class="policy-form">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">{{
+        'home.new-experiment.design.ts-configurable-policy.prior-success.label.text' | translate
+      }}</mat-label>
+      <input matInput type="number" formControlName="prior_success" class="ft-14-400" min="0" step="1" />
+      <mat-hint class="form-hint ft-12-400">{{
+        'home.new-experiment.design.ts-configurable-policy.prior-success.hint.text' | translate
+      }}</mat-hint>
+      <mat-error *ngIf="policyForm.get('prior_success')?.hasError('min')">{{
+        'home.new-experiment.design.ts-configurable-policy.prior-success.min-error.text' | translate
+      }}</mat-error>
+      <mat-error *ngIf="policyForm.get('prior_success')?.hasError('max')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">{{
+        'home.new-experiment.design.ts-configurable-policy.prior-failure.label.text' | translate
+      }}</mat-label>
+      <input matInput type="number" formControlName="prior_failure" class="ft-14-400" min="0" step="1" />
+      <mat-hint class="form-hint ft-12-400">{{
+        'home.new-experiment.design.ts-configurable-policy.prior-failure.hint.text' | translate
+      }}</mat-hint>
+      <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('min')">{{
+        'home.new-experiment.design.ts-configurable-policy.prior-failure.min-error.text' | translate
+      }}</mat-error>
+      <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('max')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">{{
+        'home.new-experiment.design.ts-configurable-policy.batch-size.label.text' | translate
+      }}</mat-label>
+      <input matInput type="number" formControlName="batch_size" class="ft-14-400" min="1" step="1" />
+      <mat-hint class="form-hint ft-12-400">{{
+        'home.new-experiment.design.ts-configurable-policy.batch-size.hint.text' | translate
+      }}</mat-hint>
+      <mat-error *ngIf="policyForm.get('batch_size')?.hasError('min')">{{
+        'home.new-experiment.design.ts-configurable-policy.batch-size.min-error.text' | translate
+      }}</mat-error>
+      <mat-error *ngIf="policyForm.get('batch_size')?.hasError('max')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">{{
+        'home.new-experiment.design.ts-configurable-policy.uniform-threshold.label.text' | translate
+      }}</mat-label>
+      <input matInput type="number" formControlName="uniform_threshold" class="ft-14-400" min="0" step="1" />
+      <mat-hint class="form-hint ft-12-400">{{
+        'home.new-experiment.design.ts-configurable-policy.uniform-threshold.hint.text' | translate
+      }}</mat-hint>
+      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('min')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.min-error.text' | translate }}
+      </mat-error>
+      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('max')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">{{
+        'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.label.text' | translate
+      }}</mat-label>
+      <input
+        matInput
+        type="number"
+        formControlName="tspostdiff_thresh"
+        class="ft-14-400"
+        min="0.0"
+        max="1.0"
+        step="0.1"
+      />
+      <mat-hint class="form-hint ft-12-400">{{
+        'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.hint.text' | translate
+      }}</mat-hint>
+      <mat-error *ngIf="policyForm.get('tspostdiff_thresh')?.hasError('min')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.min-error.text' | translate }}
+      </mat-error>
+      <mat-error *ngIf="policyForm.get('tspostdiff_thresh')?.hasError('max')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.max-error.text' | translate }}
+      </mat-error>
+    </mat-form-field>
+  </form>
+</div>

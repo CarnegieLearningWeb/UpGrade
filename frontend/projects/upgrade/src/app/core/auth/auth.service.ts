@@ -1,8 +1,8 @@
-import { ElementRef, Inject, Injectable, NgZone } from '@angular/core';
+import { ElementRef, Inject, Injectable, NgZone, DOCUMENT } from '@angular/core';
 import { AppState, LocalStorageService } from '../core.module';
 import { Store, select, Action } from '@ngrx/store';
 import * as AuthActions from './store/auth.actions';
-import { DOCUMENT } from '@angular/common';
+
 import {
   selectIsLoggedIn,
   selectIsAuthenticating,

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonStatusIndicatorChipComponent } from '../common-status-indicator-chip/common-status-indicator-chip.component';
 import { STATUS_INDICATOR_CHIP_TYPE } from 'upgrade_types';
@@ -95,4 +95,6 @@ export class CommonSectionCardTitleHeaderComponent {
   @Input() warningMessage?: string;
   @Input() chipClass?: STATUS_INDICATOR_CHIP_TYPE;
   @Input() id?: string;
+  @Input() pauseBehaviorText?: string; // The pause behavior value (e.g., "Continue" or "Assign (ConditionName)") - displayed as clickable link
+  @Output() pauseBehaviorClick = new EventEmitter<void>(); // Emits when pause behavior text is clicked
 }

@@ -16,6 +16,7 @@ import {
   UpdateExperimentDecisionPointsRequest,
   UpdateExperimentConditionsRequest,
   UpdateExperimentMetricsRequest,
+  ExperimentActionButton,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -50,6 +51,7 @@ import {
   selectExperimentExclusionsLength,
   selectIsLoadingExperimentDelete,
   selectIsLoadingImportExperiment,
+  selectExperimentActionButtons,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -108,6 +110,9 @@ export class ExperimentService {
   currentContextMetaDataConditions$ = this.store$.pipe(select(selectCurrentContextMetaDataConditions));
   isLoadingExperimentDelete$ = this.store$.pipe(select(selectIsLoadingExperimentDelete));
   isLoadingImportExperiment$ = this.store$.pipe(select(selectIsLoadingImportExperiment));
+  experimentActionButtons$: Observable<ExperimentActionButton[]> = this.store$.pipe(
+    select(selectExperimentActionButtons)
+  );
 
   selectSearchExperimentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
@@ -154,29 +159,6 @@ export class ExperimentService {
   deleteExperiment(experimentId) {
     this.store$.dispatch(experimentAction.actionDeleteExperiment({ experimentId }));
   }
-
-  // forExperimentWithPayloadObj(experiment): Experiment {
-  //   if (experiment.type === 'Factorial') {
-  //     const factorsWithPayloadObj = experiment.factors?.map((factor) => {
-  //       const levelsWithPayloadObj = factor.levels.map((level) => {
-  //         return { ...level, payload: { type: PAYLOAD_TYPE.STRING, value: level.payload } };
-  //       });
-  //       return { ...factor, levels: levelsWithPayloadObj };
-  //     });
-
-  //     const conditionPayloadWithPayloadObj = experiment.conditionPayloads.map((conditionPayload) => {
-  //       return { ...conditionPayload, payload: { type: PAYLOAD_TYPE.STRING, value: conditionPayload.payload } };
-  //     });
-
-  //     return { ...experiment, factors: factorsWithPayloadObj, conditionPayloads: conditionPayloadWithPayloadObj };
-  //   } else {
-  //     const conditionPayloadWithPayloadObj = experiment.conditionPayloads.map((conditionPayload) => {
-  //       return { ...conditionPayload, payload: { type: PAYLOAD_TYPE.STRING, value: conditionPayload.payload } };
-  //     });
-
-  //     return { ...experiment, conditionPayloads: conditionPayloadWithPayloadObj };
-  //   }
-  // }
 
   selectExperimentById(experimentId: string) {
     return this.store$.pipe(select(selectExperimentById, { experimentId })).pipe(

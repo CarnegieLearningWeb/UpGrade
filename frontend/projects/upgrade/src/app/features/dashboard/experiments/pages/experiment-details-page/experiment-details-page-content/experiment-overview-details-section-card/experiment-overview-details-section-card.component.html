@@ -7,14 +7,18 @@
     [updatedAt]="experiment.updatedAt"
     [versionNumber]="experiment.versionNumber"
     [chipClass]="experiment.state"
+    [pauseBehaviorText]="experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE ? getPauseBehaviorText(experiment) : undefined"
+    (pauseBehaviorClick)="handlePauseBehaviorClick(experiment)"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
+    [actionButtons]="actionButtons$ | async"
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems$ | async"
     [isSectionCardExpanded]="isSectionCardExpanded"
+    (actionButtonClick)="onActionButtonClick($event)"
     (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   ></app-common-section-card-action-buttons>
@@ -23,6 +27,7 @@
   <ng-container content>
     <app-common-section-card-overview-details
       [data]="experimentOverviewDetails$ | async"
+      [bullettedListKeys]="bullettedListKeys"
       (tagItemClick)="filterExperimentByChips($event)"
     ></app-common-section-card-overview-details>
   </ng-container>

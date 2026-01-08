@@ -41,6 +41,11 @@ import { UpsertDecisionPointModalComponent } from '../../features/dashboard/expe
 import { UpsertConditionModalComponent } from '../../features/dashboard/experiments/modals/upsert-condition-modal/upsert-condition-modal.component';
 import { UpsertMetricModalComponent } from '../../features/dashboard/experiments/modals/upsert-metric-modal/upsert-metric-modal.component';
 import {
+  PauseExperimentModalComponent,
+  PauseExperimentModalParams,
+  PauseExperimentModalResult,
+} from '../../features/dashboard/experiments/modals/pause-experiment-modal/pause-experiment-modal.component';
+import {
   UPSERT_EXPERIMENT_ACTION,
   ExperimentDecisionPoint,
   ExperimentCondition,
@@ -49,6 +54,8 @@ import {
   Experiment,
   UpsertExperimentParams,
   WeightingMethod,
+  POST_EXPERIMENT_RULE,
+  PAUSE_BEHAVIOR_MODAL_MODE,
 } from '../../core/experiments/store/experiments.model';
 import {
   ConditionWeightUpdate,
@@ -770,6 +777,83 @@ export class DialogService {
       disableClose: true,
     };
     return this.dialog.open(DeleteExperimentModalComponent, config);
+  }
+
+  openStartExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Start Experiment',
+      primaryActionBtnLabel: 'Start',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to start "${experimentName}"?`,
+        subMessage: '* While the experiment is running, decision points and conditions cannot be edited.',
+        subMessageClass: 'info',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openPauseExperimentModal(
+    conditions: ExperimentCondition[],
+    mode: PAUSE_BEHAVIOR_MODAL_MODE = PAUSE_BEHAVIOR_MODAL_MODE.PAUSE,
+    experimentName?: string,
+    currentPostExperimentRule?: POST_EXPERIMENT_RULE,
+    currentRevertTo?: string
+  ): MatDialogRef<PauseExperimentModalComponent, PauseExperimentModalResult> {
+    const commonModalConfig: CommonModalConfig<PauseExperimentModalParams> = {
+      title: mode === PAUSE_BEHAVIOR_MODAL_MODE.PAUSE ? 'Pause Experiment' : 'Update Pause Behavior',
+      primaryActionBtnLabel: mode === PAUSE_BEHAVIOR_MODAL_MODE.PAUSE ? 'Pause' : 'Save',
+      primaryActionBtnColor: 'primary', // Color overridden in modal SCSS for pause mode
+      cancelBtnLabel: 'Cancel',
+      params: {
+        mode,
+        experimentName,
+        conditions,
+        currentPostExperimentRule,
+        currentRevertTo,
+      },
+    };
+
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.MEDIUM,
+      autoFocus: 'first-heading',
+      disableClose: true,
+    };
+
+    return this.dialog.open(PauseExperimentModalComponent, config);
+  }
+
+  openResumeExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Resume Experiment',
+      primaryActionBtnLabel: 'Resume',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to resume "${experimentName}"?`,
+        subMessage: '* While the experiment is running, decision points and conditions cannot be edited.',
+        subMessageClass: 'info',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openStopExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Stop Experiment',
+      primaryActionBtnLabel: 'Stop',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to stop "${experimentName}"?`,
+        subMessage:
+          '* After stopping, you cannot restart the experiment. No participants will receive experiment conditions. You can still export the experiment data and design.',
+        subMessageClass: 'warn',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
   openDeleteDecisionPointModal(decisionPointName: string) {

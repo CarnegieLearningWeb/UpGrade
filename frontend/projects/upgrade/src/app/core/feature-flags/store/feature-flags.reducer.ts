@@ -15,7 +15,6 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingImportFeatureFlag: false,
   isLoadingFeatureFlags: false,
   isLoadingUpdateFeatureFlagStatus: false,
-  isLoadingFeatureFlagDetail: false,
   isLoadingFeatureFlagDelete: false,
   isLoadingSelectedFeatureFlag: false,
   isLoadingUpsertPrivateSegmentList: false,

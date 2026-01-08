@@ -166,6 +166,16 @@
       </mat-hint>
     </mat-form-field>
 
+    <!-- each mooclet algorithm's form component would go here -->
+    <app-ts-configurable-policy-parameters-form
+      *ngIf="assignmentAlgorithmValue === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE"
+      [experimentNameValue]="experimentNameValue || ''"
+      [existingPolicyParams]="(selectedExperiment$ | async)?.moocletPolicyParameters"
+      (parametersChange)="onMoocletParametersChange($event)"
+      (validationChange)="onMoocletFormValidityChange($event)"
+      (formChanged)="onMoocletFormChanged($event)"
+    ></app-ts-configurable-policy-parameters-form>
+
     <app-common-tags-input
       formControlName="tags"
       [inputType]="CommonTagInputType.TAGS"

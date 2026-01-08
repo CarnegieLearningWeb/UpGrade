@@ -1,0 +1,23 @@
+.ts-configurable-params-section {
+  padding: 4px 0;
+
+  .section-label {
+    display: block;
+    margin-bottom: 16px;
+    color: var(--dark-grey);
+    font-family: 'Roboto' !important;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .policy-form {
+    display: flex;
+    flex-direction: column;
+
+    mat-form-field {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+  }
+}

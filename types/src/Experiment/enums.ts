@@ -43,13 +43,19 @@ export enum ASSIGNMENT_ALGORITHM {
 export const ASSIGNMENT_ALGORITHM_DISPLAY_MAP = {
   [ASSIGNMENT_ALGORITHM.RANDOM]: 'Random',
   [ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING]: 'Stratified Random Sampling',
-  [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: 'TS Configurable',
+  [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: 'Thompson Sampling (Configurable)',
 };
 
 export enum POST_EXPERIMENT_RULE {
   CONTINUE = 'continue',
   // TO DO : Remove revert when frontend and backend integrated with assign
   REVERT = 'revert',
+  ASSIGN = 'assign',
+}
+
+export enum PAUSE_BEHAVIOR {
+  KEEP_CONDITIONS = 'keep-conditions',
+  NO_CONDITION = 'no-condition',
   ASSIGN = 'assign',
 }
 
