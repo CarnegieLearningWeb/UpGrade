@@ -10,15 +10,43 @@
       {{ slideToggleText }}
     </mat-slide-toggle>
 
-    <button
-      *ngIf="showPrimaryButton"
-      mat-flat-button
-      color="primary"
-      [disabled]="primaryActionBtnDisabled"
-      (click)="onPrimaryButtonClick()"
+    <!-- New: Support for multiple action buttons -->
+    <ng-container *ngIf="actionButtons && actionButtons.length > 0">
+      <div
+        *ngFor="let button of actionButtons"
+        [matTooltip]="button.tooltip || ''"
+        [matTooltipClass]="button.tooltipClass || ''"
+        matTooltipPosition="below"
+      >
+        <button
+          mat-flat-button
+          [ngClass]="button.colorClass || ''"
+          [disabled]="button.disabled"
+          (click)="onActionButtonClick(button.action)"
+        >
+          <mat-icon *ngIf="button.icon">{{ button.icon }}</mat-icon>
+          <span>{{ button.translationKey | translate }}</span>
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Legacy: Single primary button (for backward compatibility) -->
+    <div
+      *ngIf="showPrimaryButton && (!actionButtons || actionButtons.length === 0)"
+      [matTooltip]="primaryButtonTooltip || ''"
+      [matTooltipClass]="primaryButtonTooltipClass || ''"
+      [matTooltipPosition]="primaryButtonTooltipPosition"
     >
-      <span class="primary-button-text">{{ primaryButtonText }}</span>
-    </button>
+      <button
+        mat-flat-button
+        color="primary"
+        [disabled]="primaryActionBtnDisabled"
+        (click)="onPrimaryButtonClick()"
+      >
+        <mat-icon *ngIf="primaryButtonIcon">{{ primaryButtonIcon }}</mat-icon>
+        <span>{{ primaryButtonText }}</span>
+      </button>
+    </div>
   </div>
 
   <div class="options-container dense-2">

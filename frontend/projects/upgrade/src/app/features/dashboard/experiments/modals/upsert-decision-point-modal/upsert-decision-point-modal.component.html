@@ -53,7 +53,10 @@
       </mat-hint>
     </mat-form-field>
 
-    <div *ngIf="decisionPointForm.get('target')?.hasError('duplicateDecisionPoint')" class="duplicate-error-message ft-12-400">
+    <div
+      *ngIf="decisionPointForm.get('target')?.hasError('duplicateDecisionPoint')"
+      class="duplicate-error-message ft-12-400"
+    >
       {{ 'experiments.upsert-decision-point-modal.decision-point-warning.text' | translate }}
     </div>
 

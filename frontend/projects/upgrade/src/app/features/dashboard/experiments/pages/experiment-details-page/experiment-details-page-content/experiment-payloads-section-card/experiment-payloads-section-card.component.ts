@@ -29,7 +29,6 @@ import { ExperimentPayloadsTableComponent } from './experiment-payloads-table/ex
     TranslateModule,
   ],
   templateUrl: './experiment-payloads-section-card.component.html',
-  styleUrl: './experiment-payloads-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperimentPayloadsSectionCardComponent implements OnInit {

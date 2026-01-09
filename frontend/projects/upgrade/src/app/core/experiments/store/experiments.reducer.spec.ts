@@ -204,6 +204,8 @@ describe('ExperimentsReducer', () => {
     const previousState = { ...initialState };
     previousState.graphInfo = {
       [DATE_RANGE.LAST_SEVEN_DAYS]: [],
+      [DATE_RANGE.LAST_TWO_WEEKS]: [],
+      [DATE_RANGE.LAST_ONE_MONTH]: [],
       [DATE_RANGE.LAST_THREE_MONTHS]: [],
       [DATE_RANGE.LAST_SIX_MONTHS]: [],
       [DATE_RANGE.LAST_TWELVE_MONTHS]: [],

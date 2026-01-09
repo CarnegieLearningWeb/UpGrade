@@ -16,7 +16,6 @@ import {
   IExperimentEnrollmentStats,
 } from 'upgrade_types';
 import { AnalyticsRepository, ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
-import { Experiment } from '../models/Experiment';
 import ObjectsToCsv from 'objects-to-csv';
 import fs from 'fs';
 import { env } from '../../env';
@@ -70,10 +69,37 @@ export class AnalyticsService {
     dateRange: DATE_RANGE,
     clientOffset: number
   ): Promise<IEnrollmentStatByDate[]> {
+    const experiment = await this.experimentRepository.findOne({
+      where: { id: experimentId },
+      relations: ['conditions', 'partitions'],
+    });
+
+    const experimentAge = dayjs().year() - dayjs(experiment.createdAt).year();
+
+    const [individualEnrollmentConditionAndDecisionPoint, groupEnrollmentConditionAndDecisionPoint] =
+      await this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange, clientOffset);
     const keyToReturn = {};
     switch (dateRange) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
         for (let i = 0; i < 7; i++) {
+          const date = new Date();
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
+          date.setDate(date.getDate() - i);
+          const newDate = date.toDateString();
+          keyToReturn[newDate] = {};
+        }
+        break;
+      case DATE_RANGE.LAST_TWO_WEEKS:
+        for (let i = 0; i < 14; i++) {
+          const date = new Date();
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
+          date.setDate(date.getDate() - i);
+          const newDate = date.toDateString();
+          keyToReturn[newDate] = {};
+        }
+        break;
+      case DATE_RANGE.LAST_ONE_MONTH:
+        for (let i = 0; i < 30; i++) {
           const date = new Date();
           date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(date.getDate() - i);
@@ -101,7 +127,7 @@ export class AnalyticsService {
           keyToReturn[newDate] = {};
         }
         break;
-      default:
+      case DATE_RANGE.LAST_TWELVE_MONTHS:
         for (let i = 0; i < 12; i++) {
           const date = new Date();
           date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
@@ -111,16 +137,19 @@ export class AnalyticsService {
           keyToReturn[newDate] = {};
         }
         break;
+      default:
+        for (let i = 0; i < experimentAge + 1; i++) {
+          const date = new Date();
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
+          date.setDate(1);
+          date.setFullYear(date.getFullYear() - i);
+          date.setMonth(0);
+          const newDate = date.toDateString();
+          keyToReturn[newDate] = {};
+        }
+
+        break;
     }
-
-    const promiseArray = await Promise.all([
-      this.experimentRepository.findOne({ where: { id: experimentId }, relations: ['conditions', 'partitions'] }),
-      this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange, clientOffset),
-    ]);
-
-    const experiment: Experiment = promiseArray[0];
-    const [individualEnrollmentConditionAndDecisionPoint, groupEnrollmentConditionAndDecisionPoint] = promiseArray[1];
-
     return Object.keys(keyToReturn).map((date) => {
       const stats: IExperimentEnrollmentDetailDateStats = {
         id: experimentId,

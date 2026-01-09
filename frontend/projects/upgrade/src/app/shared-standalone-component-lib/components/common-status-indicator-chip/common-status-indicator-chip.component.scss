@@ -4,85 +4,85 @@
 
   .status-indicator {
     pointer-events: none;
-    --mdc-chip-container-shape-radius: 4px;
+    --mat-chip-container-shape-radius: 4px;
 
     &.disabled {
-      --mdc-chip-label-text-color: var(--status-disabled);
+      --mat-chip-label-text-color: var(--status-disabled);
       border: 1px solid var(--status-disabled);
       background-color: var(--status-disabled-alpha);
     }
 
     &.enabled {
-      --mdc-chip-label-text-color: var(--status-enabled);
+      --mat-chip-label-text-color: var(--status-enabled);
       border: 1px solid var(--status-enabled);
       background-color: var(--status-enabled-alpha);
     }
 
     &.draft {
-      --mdc-chip-label-text-color: var(--status-draft);
+      --mat-chip-label-text-color: var(--status-draft);
       border: 1px solid var(--status-draft);
       background-color: var(--status-draft-alpha);
     }
 
     &.inactive,
     &.warning {
-      --mdc-chip-label-text-color: var(--status-inactive);
+      --mat-chip-label-text-color: var(--status-inactive);
       border: 1px solid var(--status-inactive);
       background-color: var(--status-inactive-alpha);
     }
 
     &.enrolling {
-      --mdc-chip-label-text-color: var(--status-enrolling);
+      --mat-chip-label-text-color: var(--status-enrolling);
       border: 1px solid var(--status-enrolling);
       background-color: var(--status-enrolling-alpha);
     }
 
     &.scheduled {
-      --mdc-chip-label-text-color: var(--status-scheduled);
+      --mat-chip-label-text-color: var(--status-scheduled);
       border: 1px solid var(--status-scheduled);
       background-color: var(--status-scheduled-alpha);
     }
 
     &.preview {
-      --mdc-chip-label-text-color: var(--status-preview);
+      --mat-chip-label-text-color: var(--status-preview);
       border: 1px solid var(--status-preview);
       background-color: var(--status-preview-alpha);
     }
 
     &.enrollmentComplete,
     &.compatible {
-      --mdc-chip-label-text-color: var(--status-enrollment-complete);
+      --mat-chip-label-text-color: var(--status-enrollment-complete);
       border: 1px solid var(--status-enrollment-complete);
       background-color: var(--status-enrollment-complete-alpha);
     }
 
     &.cancelled,
     &.incompatible {
-      --mdc-chip-label-text-color: var(--status-cancelled);
+      --mat-chip-label-text-color: var(--status-cancelled);
       border: 1px solid var(--status-cancelled);
       background-color: var(--status-cancelled-alpha);
     }
 
     &.archived {
-      --mdc-chip-label-text-color: var(--status-archived);
+      --mat-chip-label-text-color: var(--status-archived);
       border: 1px solid var(--status-archived);
       background-color: var(--status-archived-alpha);
     }
 
     &.excluded {
-      --mdc-chip-label-text-color: var(--status-excluded);
+      --mat-chip-label-text-color: var(--status-excluded);
       border: 1px solid var(--status-excluded);
       background-color: var(--status-excluded-alpha);
     }
 
     &.unused {
-      --mdc-chip-label-text-color: var(--status-unused);
+      --mat-chip-label-text-color: var(--status-unused);
       border: 1px solid var(--status-unused);
       background-color: var(--status-unused-alpha);
     }
 
     &.used {
-      --mdc-chip-label-text-color: var(--status-used);
+      --mat-chip-label-text-color: var(--status-used);
       border: 1px solid var(--status-used);
       background-color: var(--status-used-alpha);
     }

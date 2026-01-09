@@ -1,16 +1,30 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { selectAll } from './experiments.reducer';
-import { EXPERIMENT_SEARCH_KEY, ExperimentState, Experiment, ExperimentVM } from './experiments.model';
+import {
+  EXPERIMENT_SEARCH_KEY,
+  ExperimentState,
+  Experiment,
+  ExperimentVM,
+  StartExperimentValidation,
+  EXPERIMENT_STATE,
+  ExperimentActionButton,
+  EXPERIMENT_ACTION_BUTTON_TYPE,
+  EXPERIMENT_OVERVIEW_LABELS,
+  CurrentPosteriorsTableRow,
+} from './experiments.model';
 import { selectRouterState } from '../../core.state';
 import { ParticipantListTableRow } from '../../feature-flags/store/feature-flags.model';
 import {
   ASSIGNMENT_UNIT,
+  ASSIGNMENT_ALGORITHM,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
   CONDITION_ORDER_DISPLAY_MAP,
   CONSISTENCY_RULE_DISPLAY_MAP,
   ASSIGNMENT_UNIT_DISPLAY_MAP,
 } from 'upgrade_types';
 import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
+import { formatTSConfigurablePolicyParamDetails } from '../mooclet-helper.service';
+import { KeyValueFormat } from '../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
 
@@ -180,16 +194,27 @@ export const selectExperimentOverviewDetails = createSelector(selectSelectedExpe
     return baseUnit;
   };
 
-  return {
-    ['Description']: experiment?.description,
-    ['App Context']: experiment?.context?.[0],
-    ['Experiment Type']: experiment?.type,
-    ['Unit Of Assignment']: formatUnitOfAssignment(),
-    ['Consistency Rule']: CONSISTENCY_RULE_DISPLAY_MAP[experiment?.consistencyRule] || experiment?.consistencyRule,
-    ['Assignment Algorithm']:
+  const details: KeyValueFormat = {
+    [EXPERIMENT_OVERVIEW_LABELS.DESCRIPTION]: experiment?.description,
+    [EXPERIMENT_OVERVIEW_LABELS.APP_CONTEXT]: experiment?.context?.[0],
+    [EXPERIMENT_OVERVIEW_LABELS.EXPERIMENT_TYPE]: experiment?.type,
+    [EXPERIMENT_OVERVIEW_LABELS.UNIT_OF_ASSIGNMENT]: formatUnitOfAssignment(),
+    [EXPERIMENT_OVERVIEW_LABELS.CONSISTENCY_RULE]:
+      CONSISTENCY_RULE_DISPLAY_MAP[experiment?.consistencyRule] || experiment?.consistencyRule,
+    [EXPERIMENT_OVERVIEW_LABELS.ASSIGNMENT_ALGORITHM]:
       ASSIGNMENT_ALGORITHM_DISPLAY_MAP[experiment?.assignmentAlgorithm] || experiment?.assignmentAlgorithm,
-    ['Tags']: experiment?.tags,
   };
+
+  // Add policy parameters if they exist
+  if (experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
+    details[EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS] =
+      formatTSConfigurablePolicyParamDetails(experiment);
+  }
+
+  // Always add tags at the end
+  details[EXPERIMENT_OVERVIEW_LABELS.TAGS] = experiment?.tags;
+
+  return details;
 });
 
 export const selectIsPollingExperimentDetailStats = createSelector(
@@ -237,4 +262,139 @@ export const selectExperimentExclusions = createSelector(
 export const selectExperimentExclusionsLength = createSelector(
   selectExperimentExclusions,
   (exclusions) => exclusions.length
+);
+
+export const selectExperimentStartValidation = createSelector(
+  selectSelectedExperiment,
+  (experiment): StartExperimentValidation => {
+    if (!experiment) {
+      return { isValid: false, reasons: [] };
+    }
+
+    const reasons: string[] = [];
+
+    // Check for at least 1 decision point
+    if (!experiment.partitions || experiment.partitions.length < 1) {
+      reasons.push('decision-points-required');
+    }
+
+    // Check for at least 1 condition
+    if (!experiment.conditions || experiment.conditions.length < 1) {
+      reasons.push('conditions-required');
+    }
+
+    // Check if condition weights sum to 100% (using established validation logic)
+    if (!isWeightSumValid(experiment.conditions)) {
+      reasons.push('weights-must-total-100');
+    }
+
+    return {
+      isValid: reasons.length === 0,
+      reasons,
+    };
+  }
+);
+
+export const selectExperimentActionButtons = createSelector(
+  selectSelectedExperiment,
+  selectExperimentStartValidation,
+  (experiment, validation): ExperimentActionButton[] => {
+    if (!experiment) {
+      return [];
+    }
+
+    const buttons: ExperimentActionButton[] = [];
+
+    switch (experiment.state) {
+      case EXPERIMENT_STATE.INACTIVE:
+        buttons.push({
+          action: EXPERIMENT_ACTION_BUTTON_TYPE.START,
+          icon: 'play_arrow',
+          disabled: !validation.isValid,
+          disabledReasons: validation.isValid ? undefined : validation.reasons,
+          translationKey: 'experiments.details.start-experiment.button.text',
+        });
+        break;
+
+      case EXPERIMENT_STATE.ENROLLING:
+        buttons.push(
+          {
+            action: EXPERIMENT_ACTION_BUTTON_TYPE.PAUSE,
+            icon: 'pause',
+            disabled: false,
+            translationKey: 'experiments.details.pause-experiment.button.text',
+          },
+          {
+            action: EXPERIMENT_ACTION_BUTTON_TYPE.STOP,
+            icon: 'stop',
+            disabled: false,
+            translationKey: 'experiments.details.stop-experiment.button.text',
+          }
+        );
+        break;
+
+      case EXPERIMENT_STATE.ENROLLMENT_COMPLETE:
+        buttons.push(
+          {
+            action: EXPERIMENT_ACTION_BUTTON_TYPE.RESUME,
+            icon: 'play_arrow',
+            disabled: false,
+            translationKey: 'experiments.details.resume-experiment.button.text',
+          },
+          {
+            action: EXPERIMENT_ACTION_BUTTON_TYPE.STOP,
+            icon: 'stop',
+            disabled: false,
+            translationKey: 'experiments.details.stop-experiment.button.text',
+          }
+        );
+        break;
+
+      default:
+        break;
+    }
+
+    return buttons;
+  }
+);
+
+export const selectCurrentPosteriorsTableData = createSelector(
+  selectSelectedExperiment,
+  (experiment: ExperimentVM): CurrentPosteriorsTableRow[] => {
+    if (!experiment?.moocletPolicyParameters?.current_posteriors) {
+      return [];
+    }
+
+    const posteriors = experiment.moocletPolicyParameters.current_posteriors;
+    const rows: CurrentPosteriorsTableRow[] = [];
+
+    // Calculate grand total for percentage calculation
+    let grandTotalSuccesses = 0;
+    let grandTotalFailures = 0;
+
+    Object.values(posteriors).forEach((posterior) => {
+      grandTotalSuccesses += posterior.successes;
+      grandTotalFailures += posterior.failures;
+    });
+
+    const grandTotal = grandTotalSuccesses + grandTotalFailures;
+
+    // Create table rows
+    Object.entries(posteriors).forEach(([conditionCode, posterior]) => {
+      const total = posterior.successes + posterior.failures;
+      const successRate = total > 0 ? (posterior.successes / total) * 100 : 0;
+      const percentage = grandTotal > 0 ? (total / grandTotal) * 100 : 0;
+
+      rows.push({
+        conditionCode,
+        successes: posterior.successes,
+        failures: posterior.failures,
+        successRate,
+        total,
+        percentage,
+      });
+    });
+
+    return rows;
+  }
 );

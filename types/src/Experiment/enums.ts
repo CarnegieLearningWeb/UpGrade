@@ -43,13 +43,19 @@ export enum ASSIGNMENT_ALGORITHM {
 export const ASSIGNMENT_ALGORITHM_DISPLAY_MAP = {
   [ASSIGNMENT_ALGORITHM.RANDOM]: 'Random',
   [ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING]: 'Stratified Random Sampling',
-  [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: 'TS Configurable',
+  [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: 'Thompson Sampling (Configurable)',
 };
 
 export enum POST_EXPERIMENT_RULE {
   CONTINUE = 'continue',
   // TO DO : Remove revert when frontend and backend integrated with assign
   REVERT = 'revert',
+  ASSIGN = 'assign',
+}
+
+export enum PAUSE_BEHAVIOR {
+  KEEP_CONDITIONS = 'keep-conditions',
+  NO_CONDITION = 'no-condition',
   ASSIGN = 'assign',
 }
 
@@ -211,9 +217,12 @@ export enum IMetricMetaData {
 
 export enum DATE_RANGE {
   LAST_SEVEN_DAYS = 'last_seven_days',
+  LAST_TWO_WEEKS = 'last_two_weeks',
+  LAST_ONE_MONTH = 'last_one_month',
   LAST_THREE_MONTHS = 'last_three_months',
   LAST_SIX_MONTHS = 'last_six_months',
   LAST_TWELVE_MONTHS = 'last_twelve_months',
+  TOTAL = 'total',
 }
 
 export enum REPEATED_MEASURE {
