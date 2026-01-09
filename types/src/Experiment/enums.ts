@@ -61,13 +61,12 @@ export enum PAUSE_BEHAVIOR {
 
 export enum EXPERIMENT_STATE {
   INACTIVE = 'inactive',
-  PREVIEW = 'preview',
   SCHEDULED = 'scheduled',
-  ENROLLING = 'enrolling',
-  ENROLLMENT_COMPLETE = 'enrollmentComplete',
-  CANCELLED = 'cancelled',
+  PREVIEW = 'preview',
+  ENROLLING = 'enrolling', // New design: Running
+  ENROLLMENT_COMPLETE = 'enrollmentComplete', // New design: Paused
+  CANCELLED = 'cancelled', // New design: Completed
   ARCHIVED = 'archived',
-  DRAFT = 'draft',
 }
 
 export enum FEATURE_FLAG_STATUS {
@@ -325,21 +324,21 @@ export enum CACHE_PREFIX {
 }
 
 export enum STATUS_INDICATOR_CHIP_TYPE {
-  EXCLUDED = 'excluded',
-  USED = 'used',
-  UNUSED = 'unused',
-  ENABLED = 'enabled',
-  DISABLED = 'disabled',
-  DRAFT = 'draft',
-  ARCHIVED = 'archived',
   INACTIVE = 'inactive',
-  ENROLLING = 'enrolling',
-  ENROLLMENT_COMPLETE = 'enrollmentComplete',
-  CANCELLED = 'cancelled',
   SCHEDULED = 'scheduled',
-  COMPATIBLE = 'compatible',
+  PREVIEW = 'preview',
+  ENROLLING = 'enrolling', // New design: Running
+  ENROLLMENT_COMPLETE = 'enrollmentComplete', // New design: Paused
+  CANCELLED = 'cancelled', // New design: Completed
+  ARCHIVED = 'archived',
+  DISABLED = 'disabled',
+  ENABLED = 'enabled',
+  EXCLUDED = 'excluded',
+  UNUSED = 'unused',
+  USED = 'used',
   INCOMPATIBLE = 'incompatible',
   WARNING = 'warning',
+  COMPATIBLE = 'compatible',
 }
 
 export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {
