@@ -25,7 +25,7 @@
     <!-- Weight Edit Column -->
     <ng-container matColumnDef="weightEdit">
       <th mat-header-cell *matHeaderCellDef class="weight-edit-column ft-14-600 dense-2">
-        <button mat-icon-button class="weight-edit-button" (click)="onEditWeightsClick()">
+        <button mat-icon-button class="weight-edit-button" [disabled]="actionsDisabled" (click)="onEditWeightsClick()">
           <mat-icon>edit</mat-icon>
         </button>
       </th>

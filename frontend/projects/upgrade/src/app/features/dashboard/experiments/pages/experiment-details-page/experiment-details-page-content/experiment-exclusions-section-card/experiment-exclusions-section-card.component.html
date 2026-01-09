@@ -10,9 +10,9 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="(permissions$ | async)?.experiments.update"
+    [showPrimaryButton]="(permissions$ | async)?.segments.update"
     [primaryButtonText]="'experiments.details.add-exclude-list.button.text' | translate"
-    [showMenuButton]="(permissions$ | async)?.experiments.update"
+    [showMenuButton]="(permissions$ | async)?.segments.update"
     [menuButtonItems]="menuButtonItems"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddExcludeListClick(experiment.context[0], experiment.id)"
@@ -25,7 +25,7 @@
   <app-experiment-exclusions-table
     content
     *ngIf="isSectionCardExpanded"
-    [actionsDisabled]="!(permissions$ | async)?.experiments.update"
+    [actionsDisabled]="!(permissions$ | async)?.segments.update"
     (rowAction)="onRowAction($event, experiment.id)"
   ></app-experiment-exclusions-table>
 </app-common-section-card>

@@ -83,10 +83,9 @@
             opacity: 0.5;
           }
         }
-
-        &:has(.weight-edit-button:disabled) {
-          cursor: not-allowed;
-        }
+      }
+      &:has(.weight-edit-button[disabled]) {
+        cursor: not-allowed;
       }
     }
 
