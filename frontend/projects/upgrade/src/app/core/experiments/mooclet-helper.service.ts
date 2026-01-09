@@ -173,7 +173,8 @@ export class MoocletExperimentHelperService {
       ...jsonValue,
     };
     const DTOInstance = plainToInstance(ValidatorClass, plainDTO);
-    return from(validate(DTOInstance));
+    // allowing unknown values until we can use nested validation properly
+    return from(validate(DTOInstance, { forbidUnknownValues: false }));
   }
 
   /**
