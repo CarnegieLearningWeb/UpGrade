@@ -26,6 +26,7 @@ import {
 import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { UpsertSegmentModalComponent } from '../../features/dashboard/segments/modals/upsert-segment-modal/upsert-segment-modal.component';
 import {
+  EXPERIMENT_IMPORT_SERVICE,
   EXPERIMENT_LIST_IMPORT_SERVICE,
   FEATURE_FLAG_IMPORT_SERVICE,
   FEATURE_FLAG_LIST_IMPORT_SERVICE,
@@ -1128,6 +1129,22 @@ export class DialogService {
         messageKey: 'feature-flags.import-feature-flag.message.text',
         warningMessageKey: 'feature-flags.import-flag-modal.compatibility-description.warning.text',
         incompatibleMessageKey: 'feature-flags.import-flag-modal.compatibility-description.incompatible.text',
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportExperimentModal() {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'experiments.import-experiment.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: EXPERIMENT_IMPORT_SERVICE,
+        messageKey: 'experiments.import-experiment.message.text',
+        warningMessageKey: 'experiments.import-experiment-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'experiments.import-experiment-modal.compatibility-description.incompatible.text',
       },
     };
     return this.openCommonImportModal(commonModalConfig);

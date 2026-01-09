@@ -98,7 +98,7 @@ import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { NotFoundException } from '@nestjs/common/exceptions';
 
-const errorRemovePart = 'instance of ExperimentDTO has failed the validation:\n - ';
+const errorRemovePart = 'An instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
   'Import Stratification Factor from Participants Menu > Stratification before using it';
 const oldVersionErrorMessage =
@@ -1491,13 +1491,21 @@ export class ExperimentService {
         try {
           experiment = JSON.parse(experimentFile.fileContent);
         } catch (error) {
-          return { fileName: experimentFile.fileName, error: 'Invalid JSON' };
+          return {
+            fileName: experimentFile.fileName,
+            error: 'Invalid JSON',
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          };
         }
 
         const newExperiment = plainToClass(ExperimentDTO, experiment);
 
         if (!(newExperiment instanceof ExperimentDTO)) {
-          return { fileName: experimentFile.fileName, error: 'Invalid JSON' };
+          return {
+            fileName: experimentFile.fileName,
+            error: 'Invalid JSON',
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          };
         }
         const experimentJSONValidationError = await this.validateExperimentJSON(newExperiment);
         const fileName = experimentFile.fileName;
@@ -1506,6 +1514,7 @@ export class ExperimentService {
           return {
             fileName,
             error: 'moocletPolicyParameters was provided but mooclets are not enabled on backend.',
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
           };
         }
 
@@ -1520,16 +1529,28 @@ export class ExperimentService {
 
           if (experimentJSONValidationError !== '') {
             // If JSON is not valid, return error message
-            return { fileName: fileName, error: experimentJSONValidationError };
+            return {
+              fileName: fileName,
+              error: experimentJSONValidationError,
+              compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+            };
           } else if (versionStatus !== 0) {
             // If version is different, return appropriate warning message
             const versionErrorMessage = versionStatus === 1 ? newVersionErrorMessage : oldVersionErrorMessage;
-            return { fileName: fileName, error: versionErrorMessage };
+            return {
+              fileName: fileName,
+              error: versionErrorMessage,
+              compatibilityType: IMPORT_COMPATIBILITY_TYPE.WARNING,
+            };
           }
           // If JSON is valid and version is the same, return null for no error
-          return { fileName: fileName, error: null };
+          return { fileName: fileName, error: null, compatibilityType: IMPORT_COMPATIBILITY_TYPE.COMPATIBLE };
         } catch (error: any) {
-          return { fileName: fileName, error: experimentJSONValidationError };
+          return {
+            fileName: fileName,
+            error: experimentJSONValidationError,
+            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
+          };
         }
       })
     );

@@ -22,7 +22,7 @@ import {
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
   SEGMENT_TYPE,
-  IFeatureFlagFile,
+  IImportFile,
   IImportError,
   LOG_TYPE,
   FeatureFlagDeletedData,
@@ -881,7 +881,7 @@ export class FeatureFlagService {
   }
 
   public async importFeatureFlags(
-    featureFlagFiles: IFeatureFlagFile[],
+    featureFlagFiles: IImportFile[],
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<IImportError[]> {
@@ -1058,7 +1058,7 @@ export class FeatureFlagService {
   }
 
   public async validateImportFeatureFlags(
-    featureFlagFiles: IFeatureFlagFile[],
+    featureFlagFiles: IImportFile[],
     logger: UpgradeLogger
   ): Promise<ValidatedImportResponse[]> {
     logger.info({ message: 'Validate feature flags' });

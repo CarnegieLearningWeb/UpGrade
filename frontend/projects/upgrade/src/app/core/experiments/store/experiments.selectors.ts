@@ -180,6 +180,11 @@ export const selectIsLoadingExperimentDelete = createSelector(
   (state) => state.isLoadingExperimentDelete
 );
 
+export const selectIsLoadingImportExperiment = createSelector(
+  selectExperimentState,
+  (state) => state.isLoadingImportExperiment
+);
+
 export const selectExperimentOverviewDetails = createSelector(selectSelectedExperiment, (experiment) => {
   // Format Unit of Assignment based on the assignment unit type
   const formatUnitOfAssignment = (): string => {

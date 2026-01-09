@@ -290,9 +290,9 @@ export interface IMenuButtonItem {
   disabled: boolean;
 }
 
-export interface IFeatureFlagFile {
+export interface IImportFile {
   fileName: string;
-  fileContent: string;
+  fileContent: string | ArrayBuffer;
 }
 
 export interface IImportError {

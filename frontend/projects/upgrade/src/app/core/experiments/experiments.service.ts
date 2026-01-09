@@ -50,6 +50,7 @@ import {
   selectExperimentExclusions,
   selectExperimentExclusionsLength,
   selectIsLoadingExperimentDelete,
+  selectIsLoadingImportExperiment,
   selectExperimentActionButtons,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
@@ -108,6 +109,7 @@ export class ExperimentService {
   pollingEnabled: boolean = this.environment.pollingEnabled;
   currentContextMetaDataConditions$ = this.store$.pipe(select(selectCurrentContextMetaDataConditions));
   isLoadingExperimentDelete$ = this.store$.pipe(select(selectIsLoadingExperimentDelete));
+  isLoadingImportExperiment$ = this.store$.pipe(select(selectIsLoadingImportExperiment));
   experimentActionButtons$: Observable<ExperimentActionButton[]> = this.store$.pipe(
     select(selectExperimentActionButtons)
   );
