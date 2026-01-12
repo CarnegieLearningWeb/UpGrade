@@ -326,6 +326,7 @@ export class MoocletExperimentService extends ExperimentService {
         EXPERIMENT_STATE.PREVIEW,
         EXPERIMENT_STATE.SCHEDULED,
         EXPERIMENT_STATE.ENROLLING,
+        EXPERIMENT_STATE.ENROLLMENT_COMPLETE, // 'paused"
       ].includes(incomingExperiment.state)
     ) {
       const error = {
@@ -337,9 +338,9 @@ export class MoocletExperimentService extends ExperimentService {
     }
 
     // NOTE: Currently allowed states for updating mooclet resources:
-    // conditions (versions): PREVIEW, SCHEDULED, INACTIVE
-    // outcome variable name: PREVIEW, SCHEDULED, INACTIVE
-    // policy parameters: ENROLLING, PREVIEW, SCHEDULED, INACTIVE
+    // conditions (versions): PREVIEW, SCHEDULED, INACTIVE, ENROLLMENT_COMPLETE
+    // outcome variable name: PREVIEW, SCHEDULED, INACTIVE, ENROLLMENT_COMPLETE
+    // policy parameters: ENROLLING, PREVIEW, SCHEDULED, INACTIVE, ENROLLMENT_COMPLETE
 
     try {
       // ---------- fetch current resources for comparison to incoming -------------------------------
