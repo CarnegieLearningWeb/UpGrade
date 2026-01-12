@@ -14,6 +14,11 @@
       "node-lite": "./dist/node-lite/index.js",
       "types": "./index.d.ts"
     },
+    "./lite": {
+      "browser": "./dist/browser-lite/index.js",
+      "node": "./dist/node-lite/index.js",
+      "types": "./index.d.ts"
+    },
     "./dist/browser": {
       "default": "./dist/browser/index.js",
       "types": "./dist/browser/index.d.ts"
