@@ -1,8 +1,6 @@
 projectBuilderV5 (
     buildAgent:[
-        image: "467155500999.dkr.ecr.us-east-1.amazonaws.com/jenkins-agent:default",
-        cpu: 2048,
-        memory: 4096
+        taskDefinitionOverride: "upgrade-ci"
     ],
 
     projects: [
@@ -102,7 +100,7 @@ projectBuilderV5 (
                     log: '${projectName}-npm-ci.log'
                 ],
                 [
-                    script: 'npm run test:upgrade-unit',
+                    script: 'npm run test:upgrade',
                     githubCheck: '${projectName} test',
                     log: '${projectName}-test.log'
                 ]

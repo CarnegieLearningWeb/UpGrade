@@ -43,7 +43,7 @@ import { ExperimentAssignmentService } from './ExperimentAssignmentService';
 import { SegmentService } from './SegmentService';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
-import { validate } from 'class-validator';
+import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import {
   FeatureFlagImportDataValidation,
@@ -804,31 +804,40 @@ export class FeatureFlagService {
   private paginatedSearchString(params: IFeatureFlagSearchParams): string {
     const type = params.key;
     // escape % and ' characters
-    const serachString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
-    const likeString = `ILIKE '%${serachString}%'`;
-    const searchString: string[] = [];
+    const searchString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    if (type === FLAG_SEARCH_KEY.ID && !isUUID(searchString)) {
+      return '';
+    }
+    const likeString = `ILIKE '%${searchString}%'`;
+    const searchArray: string[] = [];
     switch (type) {
       case FLAG_SEARCH_KEY.NAME:
-        searchString.push(`${type} ${likeString}`);
+        searchArray.push(`${type} ${likeString}`);
         break;
       case FLAG_SEARCH_KEY.STATUS:
-        searchString.push(`status::TEXT ${likeString}`);
+        searchArray.push(`status::TEXT ${likeString}`);
         break;
       case FLAG_SEARCH_KEY.CONTEXT:
-        searchString.push(`ARRAY_TO_STRING(${type}, ',') ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(${type}, ',') ${likeString}`);
         break;
       case FLAG_SEARCH_KEY.TAG:
-        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        break;
+      case FLAG_SEARCH_KEY.ID:
+        searchArray.push(`feature_flag.id = '${searchString}'`);
         break;
       default:
-        searchString.push(`name ${likeString}`);
-        searchString.push(`status::TEXT ${likeString}`);
-        searchString.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
-        searchString.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        searchArray.push(`name ${likeString}`);
+        searchArray.push(`status::TEXT ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
+        searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        if (isUUID(searchString)) {
+          searchArray.push(`feature_flag.id = '${searchString}'`);
+        }
         break;
     }
 
-    const searchStringConcatenated = `(${searchString.join(' OR ')})`;
+    const searchStringConcatenated = `(${searchArray.join(' OR ')})`;
     return searchStringConcatenated;
   }
 

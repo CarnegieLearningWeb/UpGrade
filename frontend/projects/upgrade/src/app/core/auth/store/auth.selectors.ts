@@ -14,6 +14,8 @@ export const selectCurrentUser = createSelector(selectAuthState, (state: AuthSta
 
 export const selectUserIsAdmin = createSelector(selectCurrentUser, (user: User) => user.role === UserRole.ADMIN);
 
+export const selectUserIsReader = createSelector(selectCurrentUser, (user: User) => user.role === UserRole.READER);
+
 export const selectCurrentUserEmail = createSelector(selectAuthState, (state) => state.user?.email || '');
 
 export const selectRedirectUrl = createSelector(selectAuthState, (state: AuthState) =>

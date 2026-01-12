@@ -270,6 +270,16 @@ Resources:
       ServiceName: !Sub ${appName}-${environment}-${cluster}
       Cluster: 
         Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-ecsClusterName
+      CapacityProviderStrategy:
+        - CapacityProvider: FARGATE
+          Base: 2
+          Weight: 1
+        - !If
+          - IsProd
+          - !Ref AWS::NoValue
+          - CapacityProvider: FARGATE_SPOT
+            Base: 0
+            Weight: 1
       DesiredCount: !If [IsProd, 2, 1]
       EnableECSManagedTags: 'true'
       HealthCheckGracePeriodSeconds: 60
