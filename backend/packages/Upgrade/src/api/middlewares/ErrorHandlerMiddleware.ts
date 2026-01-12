@@ -87,6 +87,10 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
         type = SERVER_ERROR.MOOCLET_REWARD_ERROR;
         message = errorMessage;
         break;
+      case SERVER_ERROR.CLIENT_REQUEST_TIMEOUT:
+        type = SERVER_ERROR.CLIENT_REQUEST_TIMEOUT;
+        message = errorMessage;
+        break;
       default:
         switch (error.httpCode) {
           case 400:

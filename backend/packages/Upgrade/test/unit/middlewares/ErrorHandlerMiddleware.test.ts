@@ -200,6 +200,18 @@ describe('ErrorHandler Middleware tests', () => {
     expect(mockResponse.body).toBe(error.message);
   });
 
+  test('Client request timeout error test', async () => {
+    const error = {
+      type: SERVER_ERROR.CLIENT_REQUEST_TIMEOUT,
+      message: 'Client SDK request timeout exceeded',
+      httpCode: 504,
+    };
+
+    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    expect(mockResponse.statusCode).toBe(error.httpCode);
+    expect(mockResponse.body).toBe(error.message);
+  });
+
   test('Default error test', async () => {
     const error = {};
 

@@ -42,6 +42,7 @@ export const env = {
       interceptors: getOsPaths('INTERCEPTORS'),
     },
     demo: toBool(getOsEnvOptional('APP_DEMO')) || false,
+    requestTimeoutMs: toNumber(getOsEnvOptional('CLIENT_SDK_REQUEST_TIMEOUT_MS')) || 5000,
   },
   log: {
     level: getOsEnv('LOG_LEVEL'),

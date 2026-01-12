@@ -20,6 +20,7 @@ import { UpdateWorkingGroupValidatorv6 } from './validators/UpdateWorkingGroupVa
 import { IExperimentAssignmentv5, IGroupMembership, IUserAliases, IWorkingGroup } from 'upgrade_types';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
+import { TimeoutMiddleware } from '../middlewares/TimeoutMiddleware';
 import { LogValidatorv6 } from './validators/LogValidator';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidatorv6 } from './validators/ExperimentUserAliasesValidator';
@@ -90,6 +91,7 @@ interface IMonitoredDecisionPoint {
 
 @JsonController('/v6/')
 @UseBefore(ClientLibMiddleware)
+@UseBefore(TimeoutMiddleware)
 @UseBefore(UserCheckMiddleware)
 export class ExperimentClientController {
   constructor(
