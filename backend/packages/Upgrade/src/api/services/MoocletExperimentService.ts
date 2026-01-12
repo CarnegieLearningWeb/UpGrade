@@ -1439,6 +1439,11 @@ export class MoocletExperimentService extends ExperimentService {
   }> {
     logger.info({ message: `Check for assignment algorithm change for experiment id => ${experiment.id}` });
     const oldExperiment = await this.findOne(experiment.id, logger);
+
+    if (!oldExperiment) {
+      throw new Error(`Experiment unexpectedly not found for id ${experiment.id}`);
+    }
+
     const hasChanged = oldExperiment.assignmentAlgorithm !== experiment.assignmentAlgorithm;
     const wasMooclet = this.isMoocletExperiment(oldExperiment.assignmentAlgorithm);
     const isNowMooclet = this.isMoocletExperiment(experiment.assignmentAlgorithm);
