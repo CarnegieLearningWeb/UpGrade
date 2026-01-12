@@ -30,7 +30,7 @@ import { CommonWarningIconComponent } from '../common-warning-icon/common-warnin
  * ```
  *
  * Example usage to show a warning icon next to the title with message in tooltip:
- * Use "warningMessage"
+ * Use "warningMessageKeys"
  *
  * ```html
  * <app-common-section-card-title-header
@@ -39,7 +39,7 @@ import { CommonWarningIconComponent } from '../common-warning-icon/common-warnin
  *   [subtitle]="subtitle"
  *   [createdAt]="createdAt"
  *   [updatedAt]="updatedAt"
- *   [warningMessage]="warningMessage"
+ *   [warningMessageKeys]="['feature-flags.warning.no-enabled-inclusions.text']"
  * ></app-common-section-card-title-header>
  * ```
  *
@@ -58,7 +58,7 @@ import { CommonWarningIconComponent } from '../common-warning-icon/common-warnin
  * ```
  *
  *  Example usage to show a status with warning icon
- *  Use chipClass + warningMessage
+ *  Use chipClass + warningMessageKeys
  *
  * ```html
  * <app-common-section-card-title-header
@@ -68,7 +68,7 @@ import { CommonWarningIconComponent } from '../common-warning-icon/common-warnin
  *   [createdAt]="createdAt"
  *   [updatedAt]="updatedAt"
  *   [chipClass]="STATUS_INDICATOR_CHIP_TYPE.ENROLLMENT_COMPLETE"
- *   [warningMessage]="warningMessage"
+ *   [warningMessageKeys]="['feature-flags.warning.no-enabled-inclusions.text']"
  * ></app-common-section-card-title-header>
  * ```
  */
@@ -92,7 +92,7 @@ export class CommonSectionCardTitleHeaderComponent {
   @Input() subtitle?: string;
   @Input() createdAt?: string;
   @Input() updatedAt?: string;
-  @Input() warningMessage?: string;
+  @Input() warningMessageKeys: string[] = [];
   @Input() chipClass?: STATUS_INDICATOR_CHIP_TYPE;
   @Input() id?: string;
   @Input() pauseBehaviorText?: string; // The pause behavior value (e.g., "Continue" or "Assign (ConditionName)") - displayed as clickable link

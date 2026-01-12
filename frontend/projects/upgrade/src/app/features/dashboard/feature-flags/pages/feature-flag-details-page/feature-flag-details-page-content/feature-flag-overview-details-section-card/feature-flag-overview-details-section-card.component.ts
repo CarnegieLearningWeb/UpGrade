@@ -49,7 +49,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
 
   subscriptions = new Subscription();
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
-  shouldShowWarning$ = this.featureFlagService.shouldShowWarningForSelectedFlag$;
+  warningKeysForSelectedFlag$ = this.featureFlagService.warningKeysForSelectedFlag$;
   confirmStatusChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
   menuButtonItems$: Observable<IMenuButtonItem[]>;
   isSectionCardExpanded = true;
