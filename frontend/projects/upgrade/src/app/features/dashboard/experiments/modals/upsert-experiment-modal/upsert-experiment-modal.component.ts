@@ -273,7 +273,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       this.moocletPolicyParametersFormValue = sourceExperiment.moocletPolicyParameters;
     }
 
-    this.initialFormValues$.next(this.experimentForm.value);
+    this.initialFormValues$.next(this.experimentForm.getRawValue() as ExperimentFormData);
   }
 
   initializeConsistencyRules(unitOfAssignment: ASSIGNMENT_UNIT): void {
@@ -357,8 +357,8 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   listenForIsInitialFormValueChanged() {
     this.isInitialFormValueChanged$ = this.experimentForm.valueChanges.pipe(
-      startWith(this.experimentForm.value),
-      map(() => !isEqual(this.experimentForm.value, this.initialFormValues$.value))
+      startWith(this.experimentForm.getRawValue()),
+      map(() => !isEqual(this.experimentForm.getRawValue(), this.initialFormValues$.value))
     );
     this.subscriptions.add(this.isInitialFormValueChanged$.subscribe());
   }
@@ -582,7 +582,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }
 
   sendRequest(action: UPSERT_EXPERIMENT_ACTION, sourceExperiment?: Experiment): void {
-    const formData: ExperimentFormData = this.experimentForm.value;
+    const formData = this.experimentForm.getRawValue() as ExperimentFormData;
     if (action === UPSERT_EXPERIMENT_ACTION.ADD) {
       this.createAddRequest(formData);
     } else if (action === UPSERT_EXPERIMENT_ACTION.DUPLICATE) {
