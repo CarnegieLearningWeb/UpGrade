@@ -109,8 +109,9 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   }
 
   private emitValidationState(backendErrors: ValidationError[]): void {
-    // Form is valid only if both Angular validators pass AND backend validation passes
-    const isValid = this.policyForm.valid && backendErrors.length === 0;
+    // Treat disabled form as valid; otherwise require Angular + backend validation to pass
+    const formDisabled = this.policyForm.disabled;
+    const isValid = formDisabled || (this.policyForm.valid && backendErrors.length === 0);
     this.validationChange.emit(isValid);
   }
 
