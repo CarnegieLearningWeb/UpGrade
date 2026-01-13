@@ -1,30 +1,37 @@
-<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
-  <!-- header-left -->
-  <app-common-section-card-title-header
-    header-left
-    [title]="'experiments.details.decision-points.card.title.text' | translate"
-    [subtitle]="'experiments.details.decision-points.card.subtitle.text' | translate"
-    [tableRowCount]="experiment.partitions?.length || 0"
-  ></app-common-section-card-title-header>
+@if (vm$ | async; as vm) {
+  <app-common-section-card>
+    <!-- header-left -->
+    <app-common-section-card-title-header
+      header-left
+      [title]="'experiments.details.decision-points.card.title.text' | translate"
+      [subtitle]="'experiments.details.decision-points.card.subtitle.text' | translate"
+      [tableRowCount]="vm.experiment.partitions?.length || 0"
+    ></app-common-section-card-title-header>
 
-  <!-- header-right -->
-  <app-common-section-card-action-buttons
-    header-right
-    [showPrimaryButton]="(permissions$ | async)?.experiments.update"
-    [primaryButtonText]="'experiments.details.add-decision-point.button.text' | translate"
-    [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="onAddDecisionPointClick(experiment.id, experiment.context[0])"
-    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
-  >
-  </app-common-section-card-action-buttons>
+    <!-- header-right -->
+    <app-common-section-card-action-buttons
+      header-right
+      [showPrimaryButton]="vm.permissions?.experiments.update"
+      [primaryButtonText]="'experiments.details.add-decision-point.button.text' | translate"
+      [primaryActionBtnDisabled]="vm.restriction.isDisabled"
+      [primaryButtonTooltip]="vm.restriction.tooltipKey | translate"
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      (primaryButtonClick)="onAddDecisionPointClick(vm.experiment.id, vm.experiment.context[0])"
+      (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+    >
+    </app-common-section-card-action-buttons>
 
-  <!-- content -->
-  <app-experiment-decision-points-table
-    content
-    *ngIf="isSectionCardExpanded"
-    [decisionPoints]="experiment.partitions"
-    [isLoading$]="experimentService.isLoadingSelectedExperiment$"
-    [actionsDisabled]="!(permissions$ | async)?.experiments.update"
-    (rowAction)="onRowAction($event, experiment.id, experiment.context[0])"
-  ></app-experiment-decision-points-table>
-</app-common-section-card>
+    <!-- content -->
+    @if (isSectionCardExpanded) {
+      <app-experiment-decision-points-table
+        content
+        [decisionPoints]="vm.experiment.partitions || []"
+        [isLoading$]="experimentService.isLoadingSelectedExperiment$"
+        [showActions]="vm.permissions?.experiments.update"
+        [actionsDisabled]="vm.restriction.isDisabled"
+        [actionsDisabledTooltipKey]="vm.restriction.tooltipKey | translate"
+        (rowAction)="onRowAction($event, vm.experiment.id, vm.experiment.context[0])"
+      ></app-experiment-decision-points-table>
+    }
+  </app-common-section-card>
+}

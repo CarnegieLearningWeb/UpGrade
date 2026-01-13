@@ -1,33 +1,39 @@
-<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
-  <!-- header-left -->
-  <app-common-section-card-title-header
-    header-left
-    [title]="'experiments.details.conditions.card.title.text' | translate"
-    [subtitle]="'experiments.details.conditions.card.subtitle.text' | translate"
-    [tableRowCount]="experiment.conditions?.length || 0"
-    [warningMessage]="weightWarningText$ | async"
-  ></app-common-section-card-title-header>
+@if (vm$ | async; as vm) {
+  <app-common-section-card>
+    <!-- header-left -->
+    <app-common-section-card-title-header
+      header-left
+      [title]="'experiments.details.conditions.card.title.text' | translate"
+      [subtitle]="'experiments.details.conditions.card.subtitle.text' | translate"
+      [tableRowCount]="vm.experiment.conditions?.length || 0"
+      [warningMessage]="weightWarningText$ | async"
+    ></app-common-section-card-title-header>
 
-  <!-- header-right -->
-  <app-common-section-card-action-buttons
-    header-right
-    [showPrimaryButton]="(permissions$ | async)?.experiments.update"
-    [primaryButtonText]="'experiments.details.add-condition.button.text' | translate"
-    [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="onAddConditionClick(experiment.context[0], experiment.id)"
-    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
-  >
-  </app-common-section-card-action-buttons>
+    <!-- header-right -->
+    <app-common-section-card-action-buttons
+      header-right
+      [showPrimaryButton]="vm.permissions?.experiments.update"
+      [primaryButtonText]="'experiments.details.add-condition.button.text' | translate"
+      [primaryActionBtnDisabled]="vm.restriction.isDisabled"
+      [primaryButtonTooltip]="vm.restriction.tooltipKey | translate"
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      (primaryButtonClick)="onAddConditionClick(vm.experiment.context[0], vm.experiment.id)"
+      (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+    >
+    </app-common-section-card-action-buttons>
 
-  <!-- content -->
-  <app-experiment-conditions-table
-    content
-    *ngIf="isSectionCardExpanded"
-    [conditions]="experiment.conditions || []"
-    [conditionPayloads]="experiment.conditionPayloads || []"
-    [isLoading$]="experimentService.isLoadingSelectedExperiment$"
-    [actionsDisabled]="!(permissions$ | async)?.experiments.update"
-    (rowAction)="onRowAction($event, experiment.id, experiment.context[0])"
-    (editWeights)="onEditWeights($event, experiment)"
-  ></app-experiment-conditions-table>
-</app-common-section-card>
+    <!-- content -->
+    @if (isSectionCardExpanded) {
+      <app-experiment-conditions-table
+        content
+        [conditions]="vm.experiment.conditions || []"
+        [isLoading$]="experimentService.isLoadingSelectedExperiment$"
+        [showActions]="vm.permissions?.experiments.update"
+        [actionsDisabled]="vm.restriction.isDisabled"
+        [actionsDisabledTooltipKey]="vm.restriction.tooltipKey | translate"
+        (rowAction)="onRowAction($event, vm.experiment.id, vm.experiment.context[0])"
+        (editWeights)="onEditWeights($event, vm.experiment)"
+      ></app-experiment-conditions-table>
+    }
+  </app-common-section-card>
+}

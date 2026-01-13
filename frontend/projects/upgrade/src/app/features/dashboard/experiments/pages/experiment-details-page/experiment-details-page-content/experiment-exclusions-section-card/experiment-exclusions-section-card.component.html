@@ -1,31 +1,38 @@
-<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
-  <!-- header-left -->
-  <app-common-section-card-title-header
-    header-left
-    [title]="'experiments.details.exclusions.card.title.text' | translate"
-    [subtitle]="'experiments.details.exclusions.card.subtitle.text' | translate"
-    [tableRowCount]="tableRowCount$ | async"
-  ></app-common-section-card-title-header>
+@if (vm$ | async; as vm) {
+  <app-common-section-card>
+    <!-- header-left -->
+    <app-common-section-card-title-header
+      header-left
+      [title]="'experiments.details.exclusions.card.title.text' | translate"
+      [subtitle]="'experiments.details.exclusions.card.subtitle.text' | translate"
+      [tableRowCount]="tableRowCount$ | async"
+    ></app-common-section-card-title-header>
 
-  <!-- header-right -->
-  <app-common-section-card-action-buttons
-    header-right
-    [showPrimaryButton]="(permissions$ | async)?.segments.update"
-    [primaryButtonText]="'experiments.details.add-exclude-list.button.text' | translate"
-    [showMenuButton]="(permissions$ | async)?.segments.update"
-    [menuButtonItems]="menuButtonItems"
-    [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="onAddExcludeListClick(experiment.context[0], experiment.id)"
-    (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
-    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
-  >
-  </app-common-section-card-action-buttons>
+    <!-- header-right -->
+    <app-common-section-card-action-buttons
+      header-right
+      [showPrimaryButton]="vm.permissions?.segments.update"
+      [primaryButtonText]="'experiments.details.add-exclude-list.button.text' | translate"
+      [primaryActionBtnDisabled]="vm.restriction.isDisabled"
+      [primaryButtonTooltip]="vm.restriction.tooltipKey | translate"
+      [showMenuButton]="true"
+      [menuButtonItems]="menuButtonItems$ | async"
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      (primaryButtonClick)="onAddExcludeListClick(vm.experiment.context[0], vm.experiment.id)"
+      (menuButtonItemClick)="onMenuButtonItemClick($event, vm.experiment)"
+      (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+    >
+    </app-common-section-card-action-buttons>
 
-  <!-- content -->
-  <app-experiment-exclusions-table
-    content
-    *ngIf="isSectionCardExpanded"
-    [actionsDisabled]="!(permissions$ | async)?.segments.update"
-    (rowAction)="onRowAction($event, experiment.id)"
-  ></app-experiment-exclusions-table>
-</app-common-section-card>
+    <!-- content -->
+    @if (isSectionCardExpanded) {
+      <app-experiment-exclusions-table
+        content
+        [showActions]="vm.permissions?.segments.update"
+        [actionsDisabled]="vm.restriction.isDisabled"
+        [actionsDisabledTooltipKey]="vm.restriction.tooltipKey | translate"
+        (rowAction)="onRowAction($event, vm.experiment.id)"
+      ></app-experiment-exclusions-table>
+    }
+  </app-common-section-card>
+}

@@ -20,21 +20,14 @@ import {
   EXPERIMENT_ACTION_BUTTON_TYPE,
   POST_EXPERIMENT_RULE,
   PAUSE_BEHAVIOR_MODAL_MODE,
+  EXPERIMENT_DETAILS_PAGE_ACTIONS,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
-export enum EXPERIMENT_DETAILS_PAGE_ACTIONS {
-  EDIT = 'edit',
-  DUPLICATE = 'duplicate',
-  EXPORT_DESIGN = 'exportDesign',
-  EMAIL_DATA = 'emailData',
-  ARCHIVE = 'archive',
-  DELETE = 'delete',
-}
+import { isMenuItemDisabled } from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'app-experiment-overview-details-section-card',
@@ -100,40 +93,47 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
     this.subscriptions.add(this.experimentService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
 
     this.menuButtonItems$ = this.experimentAndPermissions$.pipe(
-      map(({ permissions }) => [
+      map(({ experiment, permissions }) => [
         {
           label: 'experiments.details.edit-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT,
-          disabled: !permissions?.experiments.update,
+          disabled:
+            !permissions?.experiments.update ||
+            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT, experiment?.state),
         },
         {
           label: 'experiments.details.duplicate-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.DUPLICATE,
-          disabled: !permissions?.experiments.create,
+          disabled:
+            !permissions?.experiments.create ||
+            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.DUPLICATE, experiment?.state),
         },
         {
           label: 'experiments.details.export-experiment-design.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
-          disabled: false,
+          disabled: isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN, experiment?.state),
         },
         {
           label: 'experiments.details.email-experiment-data.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
-          disabled: false,
+          disabled: isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA, experiment?.state),
         },
         {
           label: 'experiments.details.archive-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE,
-          disabled: true, // TODO: Implement archive functionality
+          disabled: isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE, experiment?.state),
         },
         {
           label: 'experiments.details.delete-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE,
-          disabled: !permissions?.experiments.delete, // TODO: check state to allow delete?
+          disabled:
+            !permissions?.experiments.delete ||
+            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE, experiment?.state),
         },
       ])
     );
   }
+
   onSectionCardExpandChange(expanded: boolean): void {
     this.isSectionCardExpanded = expanded;
     this.sectionCardExpandChange.emit(expanded);

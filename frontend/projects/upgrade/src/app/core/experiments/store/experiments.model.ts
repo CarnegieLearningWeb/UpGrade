@@ -140,6 +140,32 @@ export enum PAUSE_BEHAVIOR_MODAL_MODE {
   UPDATE = 'update',
 }
 
+/**
+ * Section card types for experiment details page.
+ * Used for determining which section card actions should be restricted based on experiment status.
+ */
+export enum EXPERIMENT_SECTION_CARD_TYPE {
+  DECISION_POINTS = 'decision-points',
+  CONDITIONS = 'conditions',
+  INCLUSIONS = 'inclusions',
+  EXCLUSIONS = 'exclusions',
+  METRICS = 'metrics',
+  PAYLOADS = 'payloads',
+}
+
+/**
+ * Menu actions available in experiment details overview section card.
+ * Used for determining menu item visibility based on experiment status.
+ */
+export enum EXPERIMENT_DETAILS_PAGE_ACTIONS {
+  EDIT = 'edit',
+  DUPLICATE = 'duplicate',
+  EXPORT_DESIGN = 'exportDesign',
+  EMAIL_DATA = 'emailData',
+  ARCHIVE = 'archive',
+  DELETE = 'delete',
+}
+
 export interface ExperimentActionButton {
   action: EXPERIMENT_ACTION_BUTTON_TYPE;
   icon: string;

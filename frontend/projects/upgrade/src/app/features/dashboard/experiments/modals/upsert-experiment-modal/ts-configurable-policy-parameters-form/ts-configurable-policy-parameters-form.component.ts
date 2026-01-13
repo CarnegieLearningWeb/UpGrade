@@ -33,6 +33,7 @@ import isEqual from 'lodash.isequal';
 export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDestroy {
   @Input() existingPolicyParams?: MoocletTSConfigurablePolicyParametersDTO;
   @Input() experimentNameValue?: string;
+  @Input() disabled = false; // Disable all form fields when true
   @Output() parametersChange = new EventEmitter<MoocletTSConfigurablePolicyParametersDTO>();
   @Output() validationChange = new EventEmitter<boolean>();
   @Output() formChanged = new EventEmitter<boolean>();
@@ -50,6 +51,12 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   ngOnInit(): void {
     this.initializeFormValues();
     this.createForm();
+
+    // Disable form if disabled input is true
+    if (this.disabled) {
+      this.policyForm.disable();
+    }
+
     this.setupValidation();
     this.listenToFormChanges();
     this.listenForIsInitialFormValueChanged();

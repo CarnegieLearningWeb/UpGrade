@@ -6,21 +6,24 @@ import {
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { IMenuButtonItem } from 'upgrade_types';
 import { ExperimentDecisionPointsTableComponent } from './experiment-decision-points-table/experiment-decision-points-table.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
 import { DecisionPointHelperService } from '../../../../../../../core/experiments/decision-point-helper.service';
-import { Observable, take } from 'rxjs';
+import { combineLatest, Observable, take, map } from 'rxjs';
 import {
-  EXPERIMENT_BUTTON_ACTION,
   EXPERIMENT_ROW_ACTION,
   ExperimentDecisionPoint,
   ExperimentDecisionPointRowActionEvent,
   Experiment,
+  EXPERIMENT_SECTION_CARD_TYPE,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
+import {
+  getSectionCardRestriction,
+  SectionCardRestriction,
+} from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'app-experiment-decision-points-section-card',
@@ -39,18 +42,24 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
 export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
   @Input() isSectionCardExpanded = true;
 
-  permissions$: Observable<UserPermission>;
   selectedExperiment$ = this.experimentService.selectedExperiment$;
+  vm$: Observable<{ experiment: Experiment; permissions: UserPermission; restriction: SectionCardRestriction }>;
 
   constructor(
-    public experimentService: ExperimentService,
-    private authService: AuthService,
-    private dialogService: DialogService,
-    private decisionPointHelperService: DecisionPointHelperService
+    readonly experimentService: ExperimentService,
+    private readonly authService: AuthService,
+    private readonly dialogService: DialogService,
+    private readonly decisionPointHelperService: DecisionPointHelperService
   ) {}
 
   ngOnInit() {
-    this.permissions$ = this.authService.userPermissions$;
+    this.vm$ = combineLatest([this.selectedExperiment$, this.authService.userPermissions$]).pipe(
+      map(([experiment, permissions]) => ({
+        experiment,
+        permissions,
+        restriction: getSectionCardRestriction(EXPERIMENT_SECTION_CARD_TYPE.DECISION_POINTS, experiment?.state),
+      }))
+    );
   }
 
   onAddDecisionPointClick(experimentId: string, appContext: string): void {
