@@ -30,7 +30,7 @@
         content
         [showActions]="vm.permissions?.segments.update"
         [actionsDisabled]="vm.restriction.isDisabled"
-        [actionsDisabledTooltipKey]="vm.restriction.tooltipKey | translate"
+        [actionsTooltip]="vm.restriction.tooltipKey | translate"
         (rowAction)="onRowAction($event, vm.experiment.id)"
       ></app-experiment-exclusions-table>
     }

@@ -57,7 +57,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
   vm$: Observable<{
     experiment: Experiment;
     permissions: UserPermission;
-    restriction: SectionCardRestriction & { isIncludeAll?: boolean };
+    restriction: SectionCardRestriction & { isIncludeAll?: boolean; slideToggleTooltipKey?: string };
   }>;
   menuButtonItems$: Observable<IMenuButtonItem[]>;
 
@@ -92,8 +92,11 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
             ...baseRestriction,
             isIncludeAll,
             ...(isIncludeAll && {
-              tooltipKey: 'experiments.details.restrictions.include-all.text',
+              tooltipKey: 'experiments.details.restrictions.include-all-enabled.text',
             }),
+            slideToggleTooltipKey: permissions?.segments.update
+              ? baseRestriction.tooltipKey
+              : 'experiments.details.restrictions.include-all-read-only.text',
           },
         };
       })

@@ -39,7 +39,9 @@ export interface ExperimentQueryRowActionEvent {
 export class ExperimentMetricsTableComponent {
   @Input() queries: ExperimentQueryDTO[] = [];
   @Input() isLoading$: Observable<boolean>;
+  @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
+  @Input() actionsTooltip?: string = '';
   @Output() rowAction = new EventEmitter<ExperimentQueryRowActionEvent>();
 
   displayedColumns: string[] = ['metric', 'statistic', 'displayName', 'actions'];

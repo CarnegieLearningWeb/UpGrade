@@ -92,9 +92,6 @@
             }
           }
         }
-        &:has(.action-button:disabled) {
-          cursor: not-allowed;
-        }
       }
     }
   }

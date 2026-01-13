@@ -353,18 +353,13 @@ button[mat-icon-button] {
 
 .mat-mdc-slide-toggle {
   &:has(.mdc-switch--disabled) {
-    cursor: not-allowed;
-
     .mdc-label {
       margin-left: 5px;
       color: var(--dark-grey) !important;
-      cursor: not-allowed;
     }
   }
 
   .mdc-switch--disabled {
-    cursor: not-allowed !important;
-
     &.mdc-switch--unselected {
       .mdc-switch__track {
         opacity: 1 !important;

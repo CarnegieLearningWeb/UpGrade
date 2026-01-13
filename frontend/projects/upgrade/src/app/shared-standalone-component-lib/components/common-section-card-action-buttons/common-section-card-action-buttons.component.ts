@@ -62,6 +62,7 @@ export class CommonSectionCardActionButtonsComponent {
   @Input() slideToggleText?: string;
   @Input() slideToggleChecked?: boolean = false;
   @Input() slideToggleDisabled?: boolean = false;
+  @Input() slideToggleTooltip?: string = '';
   // New: Support for multiple action buttons
   @Input() actionButtons?: ActionButton[] = [];
   // Legacy: Single primary button (for backward compatibility)
@@ -69,13 +70,14 @@ export class CommonSectionCardActionButtonsComponent {
   @Input() primaryButtonText?: string;
   @Input() primaryButtonIcon?: string;
   @Input() primaryButtonTooltip?: string;
-  @Input() primaryButtonTooltipClass?: string;
-  @Input() primaryButtonTooltipPosition?: string = 'below';
   @Input() showMenuButton?: boolean = false;
   @Input() menuButtonItems?: IMenuButtonItem[] = [];
+  @Input() menuButtonDisabled?: boolean = false;
+  @Input() menuButtonTooltip?: string;
   @Input() isSectionCardExpanded?: boolean = true;
   @Input() primaryActionBtnDisabled?: boolean = false;
   @Input() sectionCardExpandBtnDisabled?: boolean = false;
+  @Input() sectionCardExpandBtnTooltip?: string;
   @Output() slideToggleChange = new EventEmitter<MatSlideToggleChange>();
   @Output() primaryButtonClick = new EventEmitter<void>();
   @Output() actionButtonClick = new EventEmitter<string>(); // Emits action type

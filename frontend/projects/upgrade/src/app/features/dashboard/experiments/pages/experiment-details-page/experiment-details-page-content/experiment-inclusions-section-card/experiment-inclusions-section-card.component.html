@@ -11,10 +11,11 @@
     <!-- header-right -->
     <app-common-section-card-action-buttons
       header-right
-      [showSlideToggle]="true"
+      [showSlideToggle]="vm.permissions?.segments.update || vm.restriction.isIncludeAll"
       [slideToggleText]="'experiments.details.inclusions.include-all.toggle.text' | translate"
       [slideToggleChecked]="vm.restriction.isIncludeAll"
       [slideToggleDisabled]="!vm.permissions?.segments.update || vm.restriction.isDisabled"
+      [slideToggleTooltip]="vm.restriction.slideToggleTooltipKey | translate"
       [showPrimaryButton]="vm.permissions?.segments.update"
       [primaryButtonText]="'experiments.details.add-include-list.button.text' | translate"
       [primaryActionBtnDisabled]="vm.restriction.isDisabled || vm.restriction.isIncludeAll"
@@ -39,7 +40,7 @@
         content
         [showActions]="vm.permissions?.segments.update"
         [actionsDisabled]="vm.restriction.isDisabled"
-        [actionsDisabledTooltipKey]="vm.restriction.tooltipKey | translate"
+        [actionsTooltip]="vm.restriction.tooltipKey | translate"
         (rowAction)="onRowAction($event, vm.experiment.id)"
       ></app-experiment-inclusions-table>
     }

@@ -75,17 +75,18 @@
       width: 15%;
       text-align: left;
 
-      .weight-edit-button {
-        color: var(--dark-grey);
+      .button-wrapper {
+        display: inline-block;
 
-        &[disabled] {
-          .mat-icon {
-            opacity: 0.5;
+        .weight-edit-button {
+          color: var(--dark-grey);
+
+          &[disabled] {
+            .mat-icon {
+              opacity: 0.5;
+            }
           }
         }
-      }
-      &:has(.weight-edit-button[disabled]) {
-        cursor: not-allowed;
       }
     }
 
@@ -101,6 +102,7 @@
 
       .button-wrapper {
         display: inline-block;
+
         .action-button {
           color: var(--dark-grey);
 
@@ -109,9 +111,6 @@
               opacity: 0.5;
             }
           }
-        }
-        &:has(.action-button:disabled) {
-          cursor: not-allowed;
         }
       }
     }

@@ -26,7 +26,7 @@
         [isLoading$]="experimentService.isLoadingSelectedExperiment$"
         [showActions]="vm.permissions?.experiments.update"
         [actionsDisabled]="vm.restriction.isDisabled"
-        [actionsDisabledTooltipKey]="vm.restriction.tooltipKey | translate"
+        [actionsTooltip]="vm.restriction.tooltipKey | translate"
         (rowAction)="onRowAction($event)"
       ></app-experiment-payloads-table>
     }

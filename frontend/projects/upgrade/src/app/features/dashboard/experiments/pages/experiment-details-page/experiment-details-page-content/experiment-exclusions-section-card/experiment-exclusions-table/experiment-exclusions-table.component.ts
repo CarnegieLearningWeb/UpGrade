@@ -14,7 +14,9 @@ import { CommonDetailsParticipantListTableComponent } from '../../../../../../..
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperimentExclusionsTableComponent {
+  @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
+  @Input() actionsTooltip?: string = '';
   tableType = LIST_FILTER_MODE.EXCLUSION;
   dataSource$ = this.experimentService.selectExperimentExclusions$;
   isLoading$ = this.experimentService.isLoadingExperiment$;

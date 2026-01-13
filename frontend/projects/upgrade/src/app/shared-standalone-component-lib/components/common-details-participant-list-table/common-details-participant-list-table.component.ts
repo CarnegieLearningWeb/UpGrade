@@ -55,7 +55,9 @@ export class CommonDetailsParticipantListTableComponent {
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
   @Input() slideToggleDisabled?: boolean = false;
+  @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
+  @Input() actionsTooltip?: string = '';
   @Input() isLoading: boolean;
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
 

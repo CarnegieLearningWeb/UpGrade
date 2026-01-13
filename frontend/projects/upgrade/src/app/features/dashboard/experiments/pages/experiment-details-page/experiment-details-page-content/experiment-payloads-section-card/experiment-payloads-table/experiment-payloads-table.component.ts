@@ -5,6 +5,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Observable } from 'rxjs';
 import {
   ExperimentConditionPayload,
@@ -24,6 +25,7 @@ import { SharedModule } from '../../../../../../../../shared/shared.module';
     MatIconModule,
     MatButtonModule,
     MatProgressBarModule,
+    MatTooltipModule,
     SharedModule,
   ],
   templateUrl: './experiment-payloads-table.component.html',
@@ -35,7 +37,9 @@ export class ExperimentPayloadsTableComponent {
   @Input() conditions: ExperimentCondition[] = [];
   @Input() partitions: ExperimentDecisionPoint[] = [];
   @Input() isLoading$: Observable<boolean>;
+  @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
+  @Input() actionsTooltip?: string = '';
   @Output() rowAction = new EventEmitter<ExperimentPayloadRowActionEvent>();
 
   displayedColumns: string[] = ['decisionPoint', 'condition', 'payload', 'actions'];

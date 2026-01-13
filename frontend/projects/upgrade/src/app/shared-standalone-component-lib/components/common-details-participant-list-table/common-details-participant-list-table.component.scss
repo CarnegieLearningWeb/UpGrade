@@ -95,12 +95,9 @@
 
           &[disabled] {
             .mat-icon {
-              opacity: 1; /* Placeholder for potential later change */
+              opacity: 0.5;
             }
           }
-        }
-        &:has(.action-button:disabled) {
-          cursor: not-allowed;
         }
       }
     }
