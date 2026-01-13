@@ -12,6 +12,7 @@ import { CommonSectionCardOverviewDetailsComponent } from './common-section-card
 import { CommonTagsInputComponent } from './common-tag-input/common-tag-input.component';
 import { CommonTagComponent } from './common-tag/common-tag.component';
 import { CommonTagListComponent } from './common-tag-list/common-tag-list.component';
+import { CommonLearnMoreLinkComponent } from './common-learn-more-link/common-learn-more-link.component';
 
 export {
   CommonPageComponent,
@@ -28,4 +29,5 @@ export {
   CommonTagsInputComponent,
   CommonTagComponent,
   CommonTagListComponent,
+  CommonLearnMoreLinkComponent,
 };

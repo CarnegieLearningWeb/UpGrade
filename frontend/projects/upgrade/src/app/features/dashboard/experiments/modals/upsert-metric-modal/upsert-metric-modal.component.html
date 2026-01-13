@@ -167,14 +167,7 @@
         </mat-select>
         <mat-hint class="form-hint ft-12-400">
           {{ 'experiments.upsert-metric-modal.individual-statistic-hint.text' | translate }}
-          <a
-            class="learn-more-link"
-            [href]="learnMoreLinks['guide.metrics'].url"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn more
-          </a>
+          <app-common-learn-more-link learnMoreLinkKey="guide.metrics"></app-common-learn-more-link>
         </mat-hint>
       </mat-form-field>
     </ng-container>
@@ -190,14 +183,7 @@
         </mat-select>
         <mat-hint class="form-hint ft-12-400">
           {{ 'experiments.upsert-metric-modal.aggregate-statistic-hint.text' | translate }}
-          <a
-            class="learn-more-link"
-            [href]="learnMoreLinks['guide.metrics'].url"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn more
-          </a>
+          <app-common-learn-more-link learnMoreLinkKey="guide.metrics"></app-common-learn-more-link>
         </mat-hint>
       </mat-form-field>
     </ng-container>

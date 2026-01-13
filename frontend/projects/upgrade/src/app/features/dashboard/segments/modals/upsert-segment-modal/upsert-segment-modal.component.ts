@@ -30,12 +30,13 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { DuplicateSegmentNameError, SEGMENT_TYPE } from 'upgrade_types';
 import isEqual from 'lodash.isequal';
 import { SharedModule } from '../../../../../shared/shared.module';
-import { LEARN_MORE_LINKS } from '../../../../../shared/constants/learn-more-links.constants';
+import { CommonLearnMoreLinkComponent } from '../../../../../shared-standalone-component-lib/components';
 
 @Component({
   selector: 'upsert-add-segment-modal',
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
@@ -57,8 +58,6 @@ export class UpsertSegmentModalComponent {
   isPrimaryButtonDisabled$: Observable<boolean>;
   appContexts$ = this.segmentService.appContexts$;
   CommonTagInputType = CommonTagInputType;
-
-  readonly learnMoreLinks = LEARN_MORE_LINKS;
 
   initialFormValues$ = new BehaviorSubject<SegmentFormData>(null);
   subscriptions = new Subscription();

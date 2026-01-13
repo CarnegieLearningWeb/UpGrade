@@ -12,7 +12,7 @@ import { CommonModalConfig } from '../common-modal/common-modal.types';
 import { IMPORT_COMPATIBILITY_TYPE, ValidatedImportResponse } from 'upgrade_types';
 import { ImportServiceAdapter } from './common-import-type-adapters';
 import { ImportModalParams } from '../../../shared/services/common-dialog.service';
-import { LEARN_MORE_LINKS } from '../../../shared/constants/learn-more-links.constants';
+import { CommonLearnMoreLinkComponent } from '../common-learn-more-link/common-learn-more-link.component';
 
 /**
  * CommonImportModalComponent
@@ -84,6 +84,7 @@ import { LEARN_MORE_LINKS } from '../../../shared/constants/learn-more-links.con
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     CommonModule,
     SharedModule,
     CommonImportContainerComponent,
@@ -104,7 +105,6 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
   validationResponse$ = new BehaviorSubject<ValidatedImportResponse[]>([]);
   importableFiles$ = new BehaviorSubject<{ fileName: string; fileContent: string | ArrayBuffer }[]>([]);
   mixedCompatibilityMessage$: Observable<string>;
-  learnMoreLinks = LEARN_MORE_LINKS;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public config: CommonModalConfig<ImportModalParams>,

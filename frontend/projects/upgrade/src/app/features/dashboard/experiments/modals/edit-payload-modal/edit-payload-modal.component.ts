@@ -10,13 +10,15 @@ import { BehaviorSubject, Observable, Subscription, combineLatestWith, map, star
 import isEqual from 'lodash.isequal';
 import { take } from 'rxjs/operators';
 
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import {
+  CommonModalComponent,
+  CommonLearnMoreLinkComponent,
+} from '../../../../../shared-standalone-component-lib/components';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { ExperimentConditionPayload } from '../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../shared/shared.module';
-import { LEARN_MORE_LINKS } from '../../../../../shared/constants/learn-more-links.constants';
 
 export interface EditPayloadModalParams {
   payload: ExperimentConditionPayload;
@@ -26,6 +28,7 @@ export interface EditPayloadModalParams {
   selector: 'edit-payload-modal',
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     MatFormFieldModule,
     MatInputModule,
     TextFieldModule,
@@ -40,8 +43,6 @@ export interface EditPayloadModalParams {
 })
 export class EditPayloadModalComponent implements OnInit, OnDestroy {
   isLoadingUpdate$ = this.experimentService.isLoadingExperiment$;
-
-  readonly learnMoreLinks = LEARN_MORE_LINKS;
 
   subscriptions = new Subscription();
   isPrimaryButtonDisabled$: Observable<boolean>;

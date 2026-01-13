@@ -12,6 +12,7 @@ import { CommonTagInputType } from '../../../core/feature-flags/store/feature-fl
 import { CommonImportContainerComponent } from '../common-import-container/common-import-container.component';
 import { BehaviorSubject, from, mergeMap, Observable, reduce } from 'rxjs';
 import { SharedModule } from '../../../shared/shared.module';
+import { CommonLearnMoreLinkComponent } from '../common-learn-more-link/common-learn-more-link.component';
 
 // This Component is made to manage a list of tags using mat-chips.
 // It uses ControlValueAccessor which implements methods to synchronize the component's value with the parent form control.
@@ -56,6 +57,7 @@ import { SharedModule } from '../../../shared/shared.module';
     MatInputModule,
     TranslateModule,
     CommonImportContainerComponent,
+    CommonLearnMoreLinkComponent,
     SharedModule,
   ],
 })

@@ -18,7 +18,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, Observable, Subscription, combineLatestWith, map, of, startWith, take } from 'rxjs';
 import isEqual from 'lodash.isequal';
 
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import {
+  CommonModalComponent,
+  CommonLearnMoreLinkComponent,
+} from '../../../../../shared-standalone-component-lib/components';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { ConditionHelperService } from '../../../../../core/experiments/condition-helper.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
@@ -32,12 +35,12 @@ import {
   Experiment,
 } from '../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../shared/shared.module';
-import { LEARN_MORE_LINKS } from '../../../../../shared/constants/learn-more-links.constants';
 
 @Component({
   selector: 'upsert-condition-modal',
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     MatFormFieldModule,
     MatInputModule,
     MatAutocompleteModule,
@@ -53,8 +56,6 @@ import { LEARN_MORE_LINKS } from '../../../../../shared/constants/learn-more-lin
 export class UpsertConditionModalComponent implements OnInit, OnDestroy {
   isLoadingUpsertCondition$ = this.experimentService.isLoadingExperiment$;
   contextMetaData$ = this.experimentService.contextMetaData$;
-
-  readonly learnMoreLinks = LEARN_MORE_LINKS;
 
   subscriptions = new Subscription();
   isPrimaryButtonDisabled$: Observable<boolean>;

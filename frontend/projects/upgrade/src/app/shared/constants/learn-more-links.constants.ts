@@ -5,7 +5,7 @@
 
 export interface LearnMoreLink {
   url: string;
-  description?: string; // For documentation purposes
+  description: string;
 }
 
 /**

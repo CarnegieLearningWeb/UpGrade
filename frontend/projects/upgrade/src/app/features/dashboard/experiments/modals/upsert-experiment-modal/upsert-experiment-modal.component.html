@@ -42,14 +42,7 @@
         class="form-hint ft-12-400"
       >
         {{ 'experiments.upsert-experiment-modal.app-context-hint.text' | translate }}
-        <a
-          class="learn-more-link"
-          [href]="learnMoreLinks['glossary.context'].url"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn more
-        </a>
+        <app-common-learn-more-link learnMoreLinkKey="glossary.context"></app-common-learn-more-link>
       </mat-hint>
       <mat-hint
         *ngIf="

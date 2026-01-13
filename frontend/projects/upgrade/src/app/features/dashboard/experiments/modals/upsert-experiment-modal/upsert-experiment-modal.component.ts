@@ -45,12 +45,13 @@ import { ENV, Environment } from '../../../../../../environments/environment-typ
 import { SharedModule } from '../../../../../shared/shared.module';
 import { TsConfigurablePolicyParametersFormComponent } from './ts-configurable-policy-parameters-form/ts-configurable-policy-parameters-form.component';
 import { MoocletExperimentHelperService } from '../../../../../core/experiments/mooclet-helper.service';
-import { LEARN_MORE_LINKS } from '../../../../../shared/constants/learn-more-links.constants';
+import { CommonLearnMoreLinkComponent } from '../../../../../shared-standalone-component-lib/components';
 
 @Component({
   selector: 'upsert-experiment-modal',
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
@@ -75,8 +76,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   selectedExperiment$ = this.experimentService.selectedExperiment$;
   contextMetaData$ = this.experimentService.contextMetaData$;
   allContexts: string[] = [];
-
-  readonly learnMoreLinks = LEARN_MORE_LINKS;
 
   // Group types
   groupTypes: Array<{ value: string }> = [];
