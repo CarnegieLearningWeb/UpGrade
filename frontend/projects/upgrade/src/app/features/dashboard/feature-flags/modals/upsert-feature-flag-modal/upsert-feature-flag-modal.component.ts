@@ -30,6 +30,7 @@ import { CommonTextHelpersService } from '../../../../../shared/services/common-
 import isEqual from 'lodash.isequal';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { SharedModule } from '../../../../../shared/shared.module';
+import { LEARN_MORE_LINKS } from '../../../../../shared/constants/learn-more-links.constants';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',
@@ -55,6 +56,8 @@ export class UpsertFeatureFlagModalComponent {
   selectedFlag$ = this.featureFlagsService.selectedFeatureFlag$;
   appContexts$ = this.featureFlagsService.appContexts$;
   isDuplicateKeyFound$ = this.featureFlagsService.isDuplicateKeyFound$;
+
+  readonly learnMoreLinks = LEARN_MORE_LINKS;
 
   subscriptions = new Subscription();
   isContextChanged = false;

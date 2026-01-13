@@ -32,6 +32,7 @@ import {
   Experiment,
 } from '../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../shared/shared.module';
+import { LEARN_MORE_LINKS } from '../../../../../shared/constants/learn-more-links.constants';
 
 @Component({
   selector: 'upsert-decision-point-modal',
@@ -53,6 +54,8 @@ import { SharedModule } from '../../../../../shared/shared.module';
 export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
   isLoadingUpsertDecisionPoint$ = this.experimentService.isLoadingExperiment$;
   contextMetaData$ = this.experimentService.contextMetaData$;
+
+  readonly learnMoreLinks = LEARN_MORE_LINKS;
 
   subscriptions = new Subscription();
   isPrimaryButtonDisabled$: Observable<boolean>;

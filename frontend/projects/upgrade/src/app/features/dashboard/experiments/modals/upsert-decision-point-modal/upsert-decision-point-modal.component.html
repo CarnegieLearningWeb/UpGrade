@@ -24,7 +24,12 @@
       </mat-autocomplete>
       <mat-hint class="form-hint ft-12-400">
         {{ 'experiments.upsert-decision-point-modal.site-hint.text' | translate }}
-        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+        <a
+          class="learn-more-link"
+          [href]="learnMoreLinks['glossary.decisionPoint'].url"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Learn more
         </a>
       </mat-hint>
@@ -47,7 +52,12 @@
       </mat-autocomplete>
       <mat-hint class="form-hint ft-12-400">
         {{ 'experiments.upsert-decision-point-modal.target-hint.text' | translate }}
-        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+        <a
+          class="learn-more-link"
+          [href]="learnMoreLinks['glossary.decisionPoint'].url"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Learn more
         </a>
       </mat-hint>
@@ -65,7 +75,12 @@
         <span class="checkbox-label ft-14-600">Exclude If Reached</span>
         <span class="form-hint ft-12-400" style="display: block; user-select: none">
           {{ 'experiments.upsert-decision-point-modal.exclude-if-reached-hint.text' | translate }}
-          <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+          <a
+            class="learn-more-link"
+            [href]="learnMoreLinks['glossary.excludeIfReached'].url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Learn more
           </a>
         </span>

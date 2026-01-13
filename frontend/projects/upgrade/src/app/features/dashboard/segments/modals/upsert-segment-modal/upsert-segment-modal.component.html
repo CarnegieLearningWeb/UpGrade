@@ -44,7 +44,12 @@
         class="form-hint ft-12-400"
       >
         {{ 'segments.upsert-segment-modal.app-context-hint.text' | translate }}
-        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
+        <a
+          class="learn-more-link"
+          [href]="learnMoreLinks['glossary.context'].url"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Learn more
         </a>
       </mat-hint>

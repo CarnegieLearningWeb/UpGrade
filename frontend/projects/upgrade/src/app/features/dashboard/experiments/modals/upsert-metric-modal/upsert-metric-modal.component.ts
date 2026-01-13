@@ -37,6 +37,7 @@ import { MetricHelperService } from '../../../../../core/experiments/metric-help
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { NotificationService } from '../../../../../core/notifications/notification.service';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
+import { LEARN_MORE_LINKS } from '../../../../../shared/constants/learn-more-links.constants';
 import {
   ASSIGNMENT_UNIT,
   IMetricMetaData,
@@ -112,6 +113,8 @@ type MetricFormValue = GlobalMetricFormValue | RepeatableMetricFormValue;
 })
 export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   isLoadingUpsertMetric$ = this.experimentService.isLoadingExperiment$;
+
+  readonly learnMoreLinks = LEARN_MORE_LINKS;
 
   subscriptions = new Subscription();
   isPrimaryButtonDisabled$: Observable<boolean>;
