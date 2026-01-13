@@ -121,7 +121,9 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         {
           label: 'experiments.details.archive-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE,
-          disabled: isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE, experiment?.state),
+          disabled:
+            !permissions?.experiments.update ||
+            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE, experiment?.state),
         },
         {
           label: 'experiments.details.delete-experiment.menu-item.text',
