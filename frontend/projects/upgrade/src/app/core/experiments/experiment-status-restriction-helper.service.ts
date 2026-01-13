@@ -30,6 +30,7 @@ export function isMenuItemDisabled(action: EXPERIMENT_DETAILS_PAGE_ACTIONS, stat
     EXPERIMENT_STATE.ENROLLING,
     EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
     EXPERIMENT_STATE.CANCELLED,
+    EXPERIMENT_STATE.ARCHIVED,
   ];
 
   return !enabledStates.includes(state);
@@ -55,7 +56,7 @@ export function getDisabledFields(state?: EXPERIMENT_STATE): string[] {
     return baseRestrictedFields;
   }
 
-  if (state === EXPERIMENT_STATE.CANCELLED) {
+  if ([EXPERIMENT_STATE.CANCELLED, EXPERIMENT_STATE.ARCHIVED].includes(state)) {
     return [...baseRestrictedFields, 'moocletPolicyParameters'];
   }
 
