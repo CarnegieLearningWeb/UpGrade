@@ -1,8 +1,10 @@
 <div class="experiment-queries-result">
-  <span class="ft-18-700 main-effect-data-text">{{
-    'home.experiment-query-result.main-effect.title.text' | translate
-  }}</span>
-  <br />
+  <div *ngIf="experimentType === 'Factorial'">
+    <span class="ft-18-700 main-effect-data-text">{{
+      'home.experiment-query-result.main-effect.title.text' | translate
+    }}</span>
+    <br />
+  </div>
   <div *ngFor="let query of experiment.queries">
     <span class="ft-16-700 main-effect-data-text">
       {{ query.name }}
