@@ -42,22 +42,25 @@
 
     ::ng-deep tbody {
       tr.mat-mdc-row {
-        height: auto;
-        min-height: 56px;
+        height: 56px;
 
         td {
           min-width: 96px;
           padding-left: 0;
-          padding-top: 16px;
-          padding-bottom: 8px;
           color: var(--black-2);
-          vertical-align: top;
+
+          &.multi-statistic {
+            padding-top: 16px;
+            padding-bottom: 16px;
+            vertical-align: top;
+          }
         }
       }
 
       tr.mat-mdc-no-data-row {
+        height: 48px;
+
         td {
-          height: 48px;
           text-align: center;
           border: 1.5px dashed var(--light-grey-2);
           color: var(--dark-grey);
@@ -99,10 +102,14 @@
       min-width: 96px;
       text-align: center;
       padding-right: 16px;
-      padding-top: 8px;
 
       .button-wrapper {
         display: inline-block;
+
+        &.multi-statistic {
+          margin-top: -8px;
+        }
+
         .action-button {
           color: var(--dark-grey);
 

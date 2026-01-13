@@ -64,8 +64,9 @@
       }
 
       tr.mat-mdc-no-data-row {
+        height: 48px;
+
         td {
-          height: 48px;
           text-align: center;
           border: 1.5px dashed var(--light-grey-2);
           color: var(--dark-grey);

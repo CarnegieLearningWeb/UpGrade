@@ -42,20 +42,22 @@
 
     ::ng-deep tbody {
       tr.mat-mdc-row {
-        height: 64px;
+        height: 56px;
 
         td {
-          vertical-align: top;
-          padding-top: 10px;
-          min-width: 100%;
+          min-width: 96px;
           padding-left: 0;
           color: var(--black-2);
+          padding-top: 16px;
+          padding-bottom: 16px;
+          vertical-align: top;
         }
       }
 
       tr.mat-mdc-no-data-row {
+        height: 48px;
+
         td {
-          height: 48px;
           text-align: center;
           border: 1.5px dashed var(--light-grey-2);
           color: var(--dark-grey);
@@ -73,7 +75,7 @@
     }
 
     .payload-column {
-      width: 50%;
+      width: 40%;
     }
 
     td.decision-point-column {
@@ -85,16 +87,13 @@
     }
 
     td.payload-column {
-      &.mat-mdc-cell {
+      .payload-text {
         display: -webkit-box;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
         line-clamp: 2;
-        line-height: 20px;
-        max-height: 50px;
         overflow: hidden;
         word-break: break-word;
-        text-overflow: ellipsis;
       }
     }
 
@@ -106,6 +105,7 @@
 
       .button-wrapper {
         display: inline-block;
+        margin-top: -8px;
 
         .action-button {
           color: var(--dark-grey);
