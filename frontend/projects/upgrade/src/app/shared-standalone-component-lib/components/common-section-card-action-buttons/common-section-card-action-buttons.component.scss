@@ -14,20 +14,20 @@
     }
 
     button {
-      --mdc-filled-button-label-text-color: white;
+      --mat-button-filled-label-text-color: white;
 
       // Experiment action button colors
       &.button-start,
       &.button-resume {
-        --mdc-filled-button-container-color: var(--status-enrolling);
+        --mat-button-filled-container-color: var(--status-running);
       }
 
       &.button-pause {
-        --mdc-filled-button-container-color: var(--status-paused);
+        --mat-button-filled-container-color: var(--status-paused);
       }
 
       &.button-stop {
-        --mdc-filled-button-container-color: var(--status-cancelled);
+        --mat-button-filled-container-color: var(--red-2);
       }
     }
   }
