@@ -17,22 +17,26 @@
     th {
       background-color: var(--zircon);
       height: 48px;
+      border: 0;
       text-align: left;
-      padding: 0 16px;
+      padding-left: 32px;
+      padding-right: 16px;
+      color: var(--darker-grey);
 
       &:first-child {
-        border-radius: 8px 0 0 0;
+        border-top-left-radius: 4px;
       }
 
       &:last-child {
-        border-radius: 0 8px 0 0;
+        border-top-right-radius: 4px;
       }
     }
 
     td {
       height: 56px;
-      padding: 0 16px;
       text-align: left;
+      padding-left: 32px;
+      padding-right: 16px;
       border-bottom: 1px solid var(--light-grey-2);
     }
 
