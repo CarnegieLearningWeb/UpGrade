@@ -1616,8 +1616,9 @@ export class ExperimentService {
 
   private deduceExperimentDetails(experiment: Experiment): Experiment {
     experiment.id = uuid();
-    // delete createdAt date to let typeorm handle it and initialize versionNumber as fresh experiment version to detect updates
+    // delete createdAt and updatedAt dates to let typeorm handle them and initialize versionNumber as fresh experiment version to detect updates
     delete experiment.createdAt;
+    delete experiment.updatedAt;
     delete experiment.versionNumber;
     this.deduceFactors(experiment);
     this.deduceConditions(experiment);

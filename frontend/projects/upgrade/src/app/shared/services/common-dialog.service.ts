@@ -856,6 +856,21 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
+  openArchiveExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Archive Experiment',
+      primaryActionBtnLabel: 'Archive',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to archive "${experimentName}"?`,
+        subMessage: 'experiments.archive.archiving-info.text',
+        subMessageClass: 'warn',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
   openDeleteDecisionPointModal(decisionPointName: string) {
     const deleteDecisionPointModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
       title: 'Delete Decision Point',
