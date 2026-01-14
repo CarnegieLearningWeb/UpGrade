@@ -12,7 +12,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { EXPERIMENT_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import { Observable, map } from 'rxjs';
+import { Observable, map, combineLatest } from 'rxjs';
 import { EXPERIMENT_BUTTON_ACTION, Experiment } from '../../../../../../../core/experiments/store/experiments.model';
 import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
 import {
@@ -89,8 +89,17 @@ export class ExperimentRootSectionCardComponent {
   }
 
   ngAfterViewInit() {
-    this.dataSource$ = this.experimentService.selectRootTableState$.pipe(
-      map((tableState: TableState<Experiment>) => {
+    this.dataSource$ = combineLatest([
+      this.experimentService.selectRootTableState$,
+      this.experimentService.selectSearchKey$,
+    ]).pipe(
+      map(([tableState, searchKey]: [TableState<Experiment>, EXPERIMENT_SEARCH_KEY]) => {
+        // Filter out archived experiments unless STATUS filter is selected
+        if (searchKey !== EXPERIMENT_SEARCH_KEY.STATUS) {
+          const filteredData = tableState.tableData.filter((experiment) => experiment.state !== 'archived');
+          const filteredTableState = { ...tableState, tableData: filteredData };
+          return this.tableHelpersService.mapTableStateToDataSource<Experiment>(filteredTableState);
+        }
         return this.tableHelpersService.mapTableStateToDataSource<Experiment>(tableState);
       })
     );
