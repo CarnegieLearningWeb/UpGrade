@@ -1,0 +1,30 @@
+{
+  "name": "upgrade_client_lib_lite_node",
+  "version": "6.2.5",
+  "description": "UpGrade client library for Node.js (axios externalized)",
+  "main": "dist/node-lite/index.js",
+  "types": "dist/node-lite/index.d.ts",
+  "files": [
+    "dist/node-lite/**/*"
+  ],
+  "dependencies": {
+    "uuid": "^8.3.2"
+  },
+  "peerDependencies": {
+    "axios": "^1.4.0"
+  },
+  "keywords": [
+    "upgrade",
+    "a/b testing",
+    "experimentation",
+    "nodejs",
+    "node"
+  ],
+  "author": "",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CarnegieLearningWeb/UpGrade.git",
+    "directory": "clientlibs/js"
+  }
+}
