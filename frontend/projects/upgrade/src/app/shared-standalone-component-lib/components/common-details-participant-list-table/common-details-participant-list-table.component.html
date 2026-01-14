@@ -45,17 +45,18 @@
           <a
             [routerLink]="['/segments', 'detail', rowData.segment.subSegments[0].id]"
             class="segment-name"
-            [appTextOverflowTooltip]="rowData.segment?.name"
+            [matTooltip]="rowData.segment?.subSegments?.[0]?.description"
             matTooltipPosition="above"
+            matTooltipClass="text-overflow-tooltip"
           >
             {{ rowData.segment?.name }}
           </a>
         </ng-container>
         <ng-template #plainText>
           <span
-            class="segment-name"
-            [appTextOverflowTooltip]="rowData.segment?.name"
+            [matTooltip]="rowData.segment?.description"
             matTooltipPosition="above"
+            matTooltipClass="text-overflow-tooltip"
           >
             {{ rowData.segment?.name }}
           </span>
