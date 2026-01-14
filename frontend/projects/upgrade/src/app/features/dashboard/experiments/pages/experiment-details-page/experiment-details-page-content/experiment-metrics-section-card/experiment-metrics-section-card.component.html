@@ -1,4 +1,7 @@
 @if (vm$ | async; as vm) {
+  @let canShowActions = vm.permissions?.experiments.update && !vm.restriction.shouldHideActions;
+  @let restrictionTooltip = vm.restriction.tooltipKey | translate;
+
   <app-common-section-card>
     <!-- header-left -->
     <app-common-section-card-title-header
@@ -11,10 +14,10 @@
     <!-- header-right -->
     <app-common-section-card-action-buttons
       header-right
-      [showPrimaryButton]="vm.permissions?.experiments.update"
+      [showPrimaryButton]="canShowActions"
       [primaryButtonText]="'experiments.details.add-metric.button.text' | translate"
       [primaryActionBtnDisabled]="vm.restriction.isDisabled"
-      [primaryButtonTooltip]="vm.restriction.tooltipKey | translate"
+      [primaryButtonTooltip]="restrictionTooltip"
       [isSectionCardExpanded]="isSectionCardExpanded"
       (primaryButtonClick)="onAddMetricClick()"
       (sectionCardExpandChange)="onSectionCardExpandChange($event)"
@@ -27,9 +30,9 @@
         content
         [queries]="vm.experiment.queries || []"
         [isLoading$]="experimentService.isLoadingExperiment$"
-        [showActions]="vm.permissions?.experiments.update"
+        [showActions]="canShowActions"
         [actionsDisabled]="vm.restriction.isDisabled"
-        [actionsTooltip]="vm.restriction.tooltipKey | translate"
+        [actionsTooltip]="restrictionTooltip"
         (rowAction)="onRowAction($event, vm.experiment.id)"
       ></app-experiment-metrics-table>
     }

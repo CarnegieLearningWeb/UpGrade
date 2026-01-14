@@ -11,6 +11,7 @@ import {
 export interface SectionCardRestriction {
   isDisabled: boolean;
   tooltipKey?: string;
+  shouldHideActions?: boolean;
 }
 
 // Check if menu item should be disabled based on experiment state
@@ -70,6 +71,15 @@ export function getSectionCardRestriction(
 ): SectionCardRestriction {
   if (!state || state === EXPERIMENT_STATE.INACTIVE) {
     return { isDisabled: false };
+  }
+
+  // Archived: Hide all actions
+  if (state === EXPERIMENT_STATE.ARCHIVED) {
+    return {
+      isDisabled: true,
+      shouldHideActions: true,
+      tooltipKey: 'experiments.details.restrictions.experiment-archived.text',
+    };
   }
 
   // Completed: All cards disabled

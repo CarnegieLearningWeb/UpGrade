@@ -1,4 +1,8 @@
 @if (vm$ | async; as vm) {
+  @let canShowSegmentActions = vm.permissions?.segments.update && !vm.restriction.shouldHideActions;
+  @let restrictionTooltip = vm.restriction.tooltipKey | translate;
+  @let appContext = vm.experiment.context[0];
+
   <app-common-section-card>
     <!-- header-left -->
     <app-common-section-card-title-header
@@ -11,14 +15,14 @@
     <!-- header-right -->
     <app-common-section-card-action-buttons
       header-right
-      [showPrimaryButton]="vm.permissions?.segments.update"
+      [showPrimaryButton]="canShowSegmentActions"
       [primaryButtonText]="'experiments.details.add-exclude-list.button.text' | translate"
       [primaryActionBtnDisabled]="vm.restriction.isDisabled"
-      [primaryButtonTooltip]="vm.restriction.tooltipKey | translate"
+      [primaryButtonTooltip]="restrictionTooltip"
       [showMenuButton]="true"
       [menuButtonItems]="menuButtonItems$ | async"
       [isSectionCardExpanded]="isSectionCardExpanded"
-      (primaryButtonClick)="onAddExcludeListClick(vm.experiment.context[0], vm.experiment.id)"
+      (primaryButtonClick)="onAddExcludeListClick(appContext, vm.experiment.id)"
       (menuButtonItemClick)="onMenuButtonItemClick($event, vm.experiment)"
       (sectionCardExpandChange)="onSectionCardExpandChange($event)"
     >
@@ -28,9 +32,9 @@
     @if (isSectionCardExpanded) {
       <app-experiment-exclusions-table
         content
-        [showActions]="vm.permissions?.segments.update"
+        [showActions]="canShowSegmentActions"
         [actionsDisabled]="vm.restriction.isDisabled"
-        [actionsTooltip]="vm.restriction.tooltipKey | translate"
+        [actionsTooltip]="restrictionTooltip"
         (rowAction)="onRowAction($event, vm.experiment.id)"
       ></app-experiment-exclusions-table>
     }

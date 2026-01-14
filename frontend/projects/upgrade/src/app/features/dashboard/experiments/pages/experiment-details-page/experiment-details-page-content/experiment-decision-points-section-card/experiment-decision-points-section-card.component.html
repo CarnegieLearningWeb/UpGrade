@@ -1,4 +1,8 @@
 @if (vm$ | async; as vm) {
+  @let canShowActions = vm.permissions?.experiments.update && !vm.restriction.shouldHideActions;
+  @let restrictionTooltip = vm.restriction.tooltipKey | translate;
+  @let appContext = vm.experiment.context[0];
+
   <app-common-section-card>
     <!-- header-left -->
     <app-common-section-card-title-header
@@ -11,12 +15,12 @@
     <!-- header-right -->
     <app-common-section-card-action-buttons
       header-right
-      [showPrimaryButton]="vm.permissions?.experiments.update"
+      [showPrimaryButton]="canShowActions"
       [primaryButtonText]="'experiments.details.add-decision-point.button.text' | translate"
       [primaryActionBtnDisabled]="vm.restriction.isDisabled"
-      [primaryButtonTooltip]="vm.restriction.tooltipKey | translate"
+      [primaryButtonTooltip]="restrictionTooltip"
       [isSectionCardExpanded]="isSectionCardExpanded"
-      (primaryButtonClick)="onAddDecisionPointClick(vm.experiment.id, vm.experiment.context[0])"
+      (primaryButtonClick)="onAddDecisionPointClick(vm.experiment.id, appContext)"
       (sectionCardExpandChange)="onSectionCardExpandChange($event)"
     >
     </app-common-section-card-action-buttons>
@@ -27,10 +31,10 @@
         content
         [decisionPoints]="vm.experiment.partitions || []"
         [isLoading$]="experimentService.isLoadingSelectedExperiment$"
-        [showActions]="vm.permissions?.experiments.update"
+        [showActions]="canShowActions"
         [actionsDisabled]="vm.restriction.isDisabled"
-        [actionsTooltip]="vm.restriction.tooltipKey | translate"
-        (rowAction)="onRowAction($event, vm.experiment.id, vm.experiment.context[0])"
+        [actionsTooltip]="restrictionTooltip"
+        (rowAction)="onRowAction($event, vm.experiment.id, appContext)"
       ></app-experiment-decision-points-table>
     }
   </app-common-section-card>

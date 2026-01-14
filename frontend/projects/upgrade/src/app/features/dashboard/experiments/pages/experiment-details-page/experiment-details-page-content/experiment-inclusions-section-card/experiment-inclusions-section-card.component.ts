@@ -107,7 +107,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
         {
           label: 'experiments.details.import-include-list.menu-item.text',
           action: EXPERIMENT_BUTTON_ACTION.IMPORT_INCLUDE_LIST,
-          disabled: !vm.permissions?.segments.update || vm.restriction.isDisabled,
+          disabled: !vm.permissions?.segments.update || vm.restriction.isDisabled || vm.restriction.shouldHideActions,
         },
         {
           label: 'experiments.details.export-all-include-lists.menu-item.text',

@@ -24,7 +24,7 @@
         [conditions]="vm.experiment.conditions || []"
         [partitions]="vm.experiment.partitions || []"
         [isLoading$]="experimentService.isLoadingSelectedExperiment$"
-        [showActions]="vm.permissions?.experiments.update"
+        [showActions]="vm.permissions?.experiments.update && !vm.restriction.shouldHideActions"
         [actionsDisabled]="vm.restriction.isDisabled"
         [actionsTooltip]="vm.restriction.tooltipKey | translate"
         (rowAction)="onRowAction($event)"

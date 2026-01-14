@@ -521,6 +521,7 @@
   "experiments.details.metrics.actions.text": "Actions",
   "experiments.details.metrics.card.no-data-row.text": "No metrics defined. No metrics will be monitored in the experiment.",
   "experiments.details.restrictions.experiment-completed.text": "Experiment design cannot be modified after completion",
+  "experiments.details.restrictions.experiment-archived.text": "Experiment design cannot be modified after completion",
   "experiments.details.restrictions.decision-points-running.text": "Decision Points cannot be modified while the experiment is running",
   "experiments.details.restrictions.decision-points-paused.text": "Decision Points cannot be modified while the experiment is paused",
   "experiments.details.restrictions.conditions-running.text": "Conditions cannot be modified while the experiment is running",

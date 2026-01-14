@@ -1,4 +1,9 @@
 @if (vm$ | async; as vm) {
+  @let canShowSegmentActions = vm.permissions?.segments.update && !vm.restriction.shouldHideActions;
+  @let restrictionTooltip = vm.restriction.tooltipKey | translate;
+  @let slideToggleTooltip = vm.restriction.slideToggleTooltipKey | translate;
+  @let appContext = vm.experiment.context[0];
+
   <app-common-section-card>
     <!-- header-left -->
     <app-common-section-card-title-header
@@ -11,23 +16,23 @@
     <!-- header-right -->
     <app-common-section-card-action-buttons
       header-right
-      [showSlideToggle]="vm.permissions?.segments.update || vm.restriction.isIncludeAll"
+      [showSlideToggle]="canShowSegmentActions || vm.restriction.isIncludeAll"
       [slideToggleText]="'experiments.details.inclusions.include-all.toggle.text' | translate"
       [slideToggleChecked]="vm.restriction.isIncludeAll"
       [slideToggleDisabled]="!vm.permissions?.segments.update || vm.restriction.isDisabled"
-      [slideToggleTooltip]="vm.restriction.slideToggleTooltipKey | translate"
-      [showPrimaryButton]="vm.permissions?.segments.update"
+      [slideToggleTooltip]="slideToggleTooltip"
+      [showPrimaryButton]="canShowSegmentActions"
       [primaryButtonText]="'experiments.details.add-include-list.button.text' | translate"
       [primaryActionBtnDisabled]="vm.restriction.isDisabled || vm.restriction.isIncludeAll"
-      [primaryButtonTooltip]="vm.restriction.tooltipKey | translate"
+      [primaryButtonTooltip]="restrictionTooltip"
       [showMenuButton]="true"
       [menuButtonItems]="menuButtonItems$ | async"
       [menuButtonDisabled]="vm.restriction.isIncludeAll"
-      [menuButtonTooltip]="vm.restriction.tooltipKey | translate"
+      [menuButtonTooltip]="restrictionTooltip"
       [isSectionCardExpanded]="isSectionCardExpanded && !vm.restriction.isIncludeAll"
       [sectionCardExpandBtnDisabled]="vm.restriction.isIncludeAll"
-      [sectionCardExpandBtnTooltip]="vm.restriction.tooltipKey | translate"
-      (primaryButtonClick)="onAddIncludeListClick(vm.experiment.context[0], vm.experiment.id)"
+      [sectionCardExpandBtnTooltip]="restrictionTooltip"
+      (primaryButtonClick)="onAddIncludeListClick(appContext, vm.experiment.id)"
       (menuButtonItemClick)="onMenuButtonItemClick($event, vm.experiment)"
       (slideToggleChange)="onSlideToggleChange($event, vm.experiment)"
       (sectionCardExpandChange)="onSectionCardExpandChange($event)"
@@ -38,9 +43,9 @@
     @if (isSectionCardExpanded && !vm.restriction.isIncludeAll) {
       <app-experiment-inclusions-table
         content
-        [showActions]="vm.permissions?.segments.update"
+        [showActions]="canShowSegmentActions"
         [actionsDisabled]="vm.restriction.isDisabled"
-        [actionsTooltip]="vm.restriction.tooltipKey | translate"
+        [actionsTooltip]="restrictionTooltip"
         (rowAction)="onRowAction($event, vm.experiment.id)"
       ></app-experiment-inclusions-table>
     }
