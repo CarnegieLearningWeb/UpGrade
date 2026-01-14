@@ -106,6 +106,24 @@ export class CommonDetailsParticipantListTableComponent {
     }
   }
 
+  getValuesTooltipText(rowData: ParticipantListTableRow): string {
+    const listType = rowData.listType;
+    let values: string[];
+
+    if (listType?.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
+      values = rowData.segment.individualForSegment?.map((item) => item.userId) || [];
+    } else {
+      values = rowData.segment.groupForSegment?.map((item) => item.groupId) || [];
+    }
+
+    // Show only first 10 values if there are more
+    if (values.length > 10) {
+      return values.slice(0, 10).join(', ') + '...';
+    }
+
+    return values.join(', ');
+  }
+
   getFormattedListType(rowData: ParticipantListTableRow): string {
     const listType = rowData.listType;
 

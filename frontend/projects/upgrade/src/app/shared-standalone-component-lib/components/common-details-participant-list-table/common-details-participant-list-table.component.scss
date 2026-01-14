@@ -114,3 +114,13 @@
     width: 45%;
   }
 }
+
+// Values tooltip custom styling
+::ng-deep .values-tooltip .mdc-tooltip__surface {
+  max-width: 500px;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-line;
+  word-break: break-word;
+  line-height: 1.5;
+}

@@ -22,7 +22,16 @@
         {{ PARTICIPANT_LIST_TRANSLATION_KEYS.VALUES | translate }}
       </th>
       <td mat-cell *matCellDef="let rowData" class="values-column ft-14-400">
-        <ng-container *ngIf="rowData?.segment && rowData.listType?.toLowerCase() !== memberTypes.SEGMENT.toLowerCase()"> {{ getValuesText(rowData) }} </ng-container>
+        <ng-container *ngIf="rowData?.segment && rowData.listType?.toLowerCase() !== memberTypes.SEGMENT.toLowerCase()">
+          <span
+            [matTooltip]="getValuesTooltipText(rowData)"
+            [matTooltipDisabled]="!getValuesText(rowData)"
+            matTooltipPosition="above"
+            matTooltipClass="values-tooltip"
+          >
+            {{ getValuesText(rowData) }}
+          </span>
+        </ng-container>
       </td>
     </ng-container>
 
