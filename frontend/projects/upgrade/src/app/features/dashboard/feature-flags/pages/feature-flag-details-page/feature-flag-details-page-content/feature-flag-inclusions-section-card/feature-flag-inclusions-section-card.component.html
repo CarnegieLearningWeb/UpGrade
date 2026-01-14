@@ -25,7 +25,7 @@
       [primaryActionBtnDisabled]="isIncludeAll"
       [primaryButtonTooltip]="'feature-flags.details.restrictions.include-all-enabled.text' | translate"
       [showMenuButton]="true"
-      [menuButtonItems]="menuButtonItems"
+      [menuButtonItems]="menuButtonItems$ | async"
       [menuButtonDisabled]="isIncludeAll"
       [menuButtonTooltip]="'feature-flags.details.restrictions.include-all-enabled.text' | translate"
       [isSectionCardExpanded]="isSectionCardExpanded && !isIncludeAll"

@@ -17,7 +17,7 @@
       [showPrimaryButton]="canShowSegmentActions"
       [primaryButtonText]="buttonText | translate"
       [showMenuButton]="true"
-      [menuButtonItems]="menuButtonItems"
+      [menuButtonItems]="menuButtonItems$ | async"
       [isSectionCardExpanded]="isSectionCardExpanded"
       (primaryButtonClick)="onAddListClick(appContext, segment.id, segment.type)"
       (menuButtonItemClick)="onMenuButtonItemClick($event, segment)"

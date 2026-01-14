@@ -17,7 +17,7 @@
       [showPrimaryButton]="canShowSegmentActions"
       [primaryButtonText]="'feature-flags.details.add-exclude-list.button.text' | translate"
       [showMenuButton]="true"
-      [menuButtonItems]="menuButtonItems"
+      [menuButtonItems]="menuButtonItems$ | async"
       [isSectionCardExpanded]="isSectionCardExpanded"
       (primaryButtonClick)="onAddExcludeListClick(appContext, flag.id)"
       (menuButtonItemClick)="onMenuButtonItemClick($event, flag)"
