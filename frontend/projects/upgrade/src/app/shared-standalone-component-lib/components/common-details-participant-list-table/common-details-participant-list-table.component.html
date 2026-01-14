@@ -70,13 +70,19 @@
         {{ PARTICIPANT_LIST_TRANSLATION_KEYS.ENABLE | translate }}
       </th>
       <td mat-cell *matCellDef="let rowData" class="enable-column ft-14-400">
-        <mat-slide-toggle
-          color="primary"
-          [checked]="rowData.enabled"
-          [disabled]="slideToggleDisabled"
-          (change)="onSlideToggleChange($event, rowData)"
+        <div
+          [matTooltip]="slideToggleTooltip"
+          [matTooltipDisabled]="!slideToggleDisabled"
+          matTooltipPosition="above"
         >
-        </mat-slide-toggle>
+          <mat-slide-toggle
+            color="primary"
+            [checked]="rowData.enabled"
+            [disabled]="slideToggleDisabled"
+            (change)="onSlideToggleChange($event, rowData)"
+          >
+          </mat-slide-toggle>
+        </div>
       </td>
     </ng-container>
 

@@ -14,7 +14,7 @@ import { LIST_FILTER_MODE } from 'upgrade_types';
   imports: [CommonDetailsParticipantListTableComponent, CommonModule, TranslateModule],
 })
 export class SegmentListsTableComponent {
-  @Input() actionsDisabled?: boolean = false;
+  @Input() showActions?: boolean = false;
   tableType = LIST_FILTER_MODE.EXCLUSION;
   dataSource$ = this.segmentsService.selectSegmentLists$;
   isLoading$ = this.segmentsService.isLoadingSegments$;

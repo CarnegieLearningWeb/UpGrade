@@ -14,7 +14,7 @@ import { LIST_FILTER_MODE } from 'upgrade_types';
   imports: [CommonDetailsParticipantListTableComponent, CommonModule, TranslateModule],
 })
 export class FeatureFlagExclusionsTableComponent {
-  @Input() actionsDisabled?: boolean = false;
+  @Input() showActions?: boolean = false;
   tableType = LIST_FILTER_MODE.EXCLUSION;
   dataSource$ = this.featureFlagService.selectFeatureFlagExclusions$;
   isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
