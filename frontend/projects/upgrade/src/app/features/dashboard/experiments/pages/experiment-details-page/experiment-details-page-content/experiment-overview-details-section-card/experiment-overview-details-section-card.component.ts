@@ -62,9 +62,16 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   bullettedListKeys = [EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS];
 
   // Action buttons - maps ExperimentActionButton[] to ActionButton[]
-  actionButtons$: Observable<ActionButton[]> = this.experimentService.experimentActionButtons$.pipe(
-    map((buttons) =>
-      buttons.map((button) => ({
+  // Only shown when user has update permission
+  actionButtons$: Observable<ActionButton[]> = combineLatest([
+    this.experimentService.experimentActionButtons$,
+    this.permissions$,
+  ]).pipe(
+    map(([buttons, permissions]) => {
+      if (!permissions?.experiments.update) {
+        return [];
+      }
+      return buttons.map((button) => ({
         action: button.action,
         icon: button.icon,
         disabled: button.disabled,
@@ -72,8 +79,8 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         tooltipClass: button.disabledReasons ? 'start-button-tooltip' : undefined,
         translationKey: button.translationKey,
         colorClass: `button-${button.action}`, // Maps to CSS classes: button-start, button-pause, etc.
-      }))
-    )
+      }));
+    })
   );
 
   constructor(
