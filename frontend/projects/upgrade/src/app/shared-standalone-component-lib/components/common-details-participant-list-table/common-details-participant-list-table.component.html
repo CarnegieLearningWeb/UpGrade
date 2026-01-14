@@ -36,18 +36,19 @@
           <a
             [routerLink]="['/segments', 'detail', rowData.segment.subSegments[0].id]"
             class="segment-name"
-            [matTooltip]="rowData.segment.name?.length > 24 ? rowData.segment.name : null"
-            matTooltipPosition="right"
+            [appTextOverflowTooltip]="rowData.segment?.name"
+            matTooltipPosition="above"
           >
-            {{ rowData.segment.name | truncate : 24 }}
+            {{ rowData.segment?.name }}
           </a>
         </ng-container>
         <ng-template #plainText>
           <span
-            [matTooltip]="rowData.segment?.name?.length > 24 ? rowData.segment?.name : null"
-            matTooltipPosition="right"
+            class="segment-name"
+            [appTextOverflowTooltip]="rowData.segment?.name"
+            matTooltipPosition="above"
           >
-            {{ rowData.segment?.name | truncate : 24 }}
+            {{ rowData.segment?.name }}
           </span>
         </ng-template>
       </td>

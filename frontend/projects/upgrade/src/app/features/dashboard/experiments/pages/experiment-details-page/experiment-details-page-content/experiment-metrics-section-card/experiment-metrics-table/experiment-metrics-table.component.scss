@@ -68,10 +68,8 @@
       }
     }
 
-    .metric-column {
-      width: 30%;
-      padding-left: 32px;
-
+    .metric-column,
+    .statistic-column {
       .multi-line-cell {
         display: flex;
         flex-direction: column;
@@ -79,14 +77,13 @@
       }
     }
 
+    .metric-column {
+      width: 30%;
+      padding-left: 32px;
+    }
+
     .statistic-column {
       width: 17%;
-
-      .multi-line-cell {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
     }
 
     .display-name-column {
@@ -95,10 +92,15 @@
       .display-name-text {
         display: -webkit-box;
         -webkit-box-orient: vertical;
-        -webkit-line-clamp: 3;
-        line-clamp: 3;
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
         overflow: hidden;
         word-break: break-word;
+      }
+
+      &.multi-statistic .display-name-text {
+        -webkit-line-clamp: 4;
+        line-clamp: 4;
       }
     }
 

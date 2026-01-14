@@ -572,3 +572,13 @@ button[mat-icon-button] {
     }
   }
 }
+
+// Text overflow tooltip custom styling
+.text-overflow-tooltip .mdc-tooltip__surface {
+  max-width: 500px;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+}

@@ -38,7 +38,11 @@
         {{ PAYLOAD_TRANSLATION_KEYS.PAYLOAD | translate }}
       </th>
       <td mat-cell *matCellDef="let payload" class="payload-column ft-14-400">
-        <span class="payload-text">
+        <span
+          class="payload-text"
+          [appTextOverflowTooltip]="payload.payload?.value"
+          matTooltipPosition="above"
+        >
           {{ payload.payload?.value || '' }}
         </span>
       </td>
