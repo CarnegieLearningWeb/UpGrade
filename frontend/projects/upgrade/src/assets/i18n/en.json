@@ -495,7 +495,7 @@
   "experiments.details.payloads.condition.text": "Condition",
   "experiments.details.payloads.payload.text": "Payload",
   "experiments.details.payloads.actions.text": "Actions",
-  "experiments.details.payloads.card.no-data-row.text": "No payloads defined.",
+  "experiments.details.payloads.card.no-data-row.text": "Payloads can be set once the decision points and conditions are defined.",
   "experiments.edit-payload-modal.payload-hint.text": "The payload value that will be used by the client application.",
   "experiments.details.inclusions.card.title.text": "Include Lists",
   "experiments.details.inclusions.include-all.toggle.text": "Include All",
