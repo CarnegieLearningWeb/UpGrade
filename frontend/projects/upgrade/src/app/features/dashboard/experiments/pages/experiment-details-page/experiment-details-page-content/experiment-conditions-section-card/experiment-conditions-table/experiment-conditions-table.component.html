@@ -51,7 +51,9 @@
         {{ CONDITION_TRANSLATION_KEYS.DESCRIPTION | translate }}
       </th>
       <td mat-cell *matCellDef="let condition" class="description-column ft-14-400">
-        {{ condition.description }}
+        <span class="description-text">
+          {{ condition.description }}
+        </span>
       </td>
     </ng-container>
 
