@@ -98,7 +98,6 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   }
   ngOnInit(): void {
     this.subscriptions.add(this.experimentService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
-
     this.menuButtonItems$ = this.experimentAndPermissions$.pipe(
       map(({ experiment, permissions }) => [
         {
@@ -123,7 +122,9 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         {
           label: 'experiments.details.email-experiment-data.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
-          disabled: isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA, experiment?.state),
+          disabled:
+            !permissions?.experiments.update ||
+            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA, experiment?.state),
         },
         {
           label: 'experiments.details.archive-experiment.menu-item.text',

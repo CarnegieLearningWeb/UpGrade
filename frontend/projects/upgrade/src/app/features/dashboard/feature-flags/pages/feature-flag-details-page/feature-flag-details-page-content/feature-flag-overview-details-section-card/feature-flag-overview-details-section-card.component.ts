@@ -56,15 +56,14 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   emailId = '';
 
   constructor(
-    private dialogService: DialogService,
-    private featureFlagService: FeatureFlagsService,
-    private router: Router,
-    private authService: AuthService
+    private readonly dialogService: DialogService,
+    private readonly featureFlagService: FeatureFlagsService,
+    private readonly router: Router,
+    private readonly authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.subscriptions.add(this.featureFlagService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
-
     this.menuButtonItems$ = this.flagAndPermissions$.pipe(
       map(({ flag, permissions }) => [
         {
