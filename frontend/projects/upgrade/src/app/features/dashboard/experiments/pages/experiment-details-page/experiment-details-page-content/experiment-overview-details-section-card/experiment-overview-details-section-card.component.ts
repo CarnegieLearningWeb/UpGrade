@@ -155,7 +155,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         this.dialogService.openDuplicateExperimentModal(experiment);
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE:
-        console.log('Archive experiment - TODO: Implement');
+        this.openConfirmArchiveModal(experiment.id, experiment.name);
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN:
         this.openConfirmExportDesignModal(experiment.id);
@@ -176,6 +176,22 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         .subscribe((isExportClicked: boolean) => {
           if (isExportClicked) {
             this.experimentService.exportExperimentDesign([id]);
+          }
+        })
+    );
+  }
+
+  openConfirmArchiveModal(id: string, name: string) {
+    this.subscriptions.add(
+      this.dialogService
+        .openArchiveExperimentModal(name)
+        .afterClosed()
+        .subscribe((confirmed: boolean) => {
+          if (confirmed) {
+            const experimentStateInfo: ExperimentStateInfo = {
+              newStatus: EXPERIMENT_STATE.ARCHIVED,
+            };
+            this.experimentService.updateExperimentState(id, experimentStateInfo);
           }
         })
     );

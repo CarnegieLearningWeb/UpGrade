@@ -449,6 +449,7 @@
   "experiments.update-pause-behavior-modal.assign-option-label.text": "Assign",
   "experiments.update-pause-behavior-modal.assign-option-description.text": "All students will receive a specified condition while the experiment is paused.",
   "experiments.update-pause-behavior-modal.select-condition-label.text": "Condition",
+  "experiments.archive.archiving-info.text": "* Archived experiments are hidden from the experiment list and can be found by explicitly searching for 'Archived' experiments.",
   "experiments.details.pause-behavior-label.text": "Pause Behavior",
   "experiments.details.pause-behavior-keep-conditions.text": "Keep Conditions",
   "experiments.details.pause-behavior-no-condition.text": "No Condition",
