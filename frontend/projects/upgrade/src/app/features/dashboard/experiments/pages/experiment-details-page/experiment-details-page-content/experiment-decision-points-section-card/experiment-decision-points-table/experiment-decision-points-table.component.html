@@ -15,7 +15,13 @@
         {{ DECISION_POINT_TRANSLATION_KEYS.SITE | translate }}
       </th>
       <td mat-cell *matCellDef="let decisionPoint" class="site-column ft-14-400">
-        {{ decisionPoint.site }}
+        <span
+          [appTextOverflowTooltip]="decisionPoint.site"
+          matTooltipPosition="above"
+          class="line-clamp-1"
+        >
+          {{ decisionPoint.site }}
+        </span>
       </td>
     </ng-container>
 
@@ -25,7 +31,13 @@
         {{ DECISION_POINT_TRANSLATION_KEYS.TARGET | translate }}
       </th>
       <td mat-cell *matCellDef="let decisionPoint" class="target-column ft-14-400">
-        {{ decisionPoint.target }}
+        <span
+          [appTextOverflowTooltip]="decisionPoint.target"
+          matTooltipPosition="above"
+          class="line-clamp-1"
+        >
+          {{ decisionPoint.target }}
+        </span>
       </td>
     </ng-container>
 

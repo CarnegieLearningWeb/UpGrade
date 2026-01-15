@@ -16,8 +16,20 @@
       </th>
       <td mat-cell *matCellDef="let payload" class="decision-point-column ft-14-400">
         <div class="stacked-content">
-          <div>{{ getSite(payload.decisionPoint) }}</div>
-          <div>{{ getTarget(payload.decisionPoint) }}</div>
+          <span
+            [appTextOverflowTooltip]="getSite(payload.decisionPoint)"
+            matTooltipPosition="above"
+            class="line-clamp-1"
+          >
+            {{ getSite(payload.decisionPoint) }}
+          </span>
+          <span
+            [appTextOverflowTooltip]="getTarget(payload.decisionPoint)"
+            matTooltipPosition="above"
+            class="line-clamp-1"
+          >
+            {{ getTarget(payload.decisionPoint) }}
+          </span>
         </div>
       </td>
     </ng-container>
@@ -28,7 +40,13 @@
         {{ PAYLOAD_TRANSLATION_KEYS.CONDITION | translate }}
       </th>
       <td mat-cell *matCellDef="let payload" class="condition-column ft-14-400">
-        {{ getConditionName(payload.parentCondition) }}
+        <span
+          [appTextOverflowTooltip]="getConditionName(payload.parentCondition)"
+          matTooltipPosition="above"
+          class="line-clamp-1"
+        >
+          {{ getConditionName(payload.parentCondition) }}
+        </span>
       </td>
     </ng-container>
 
@@ -39,9 +57,9 @@
       </th>
       <td mat-cell *matCellDef="let payload" class="payload-column ft-14-400">
         <span
-          class="line-clamp-3"
           [appTextOverflowTooltip]="payload.payload?.value"
           matTooltipPosition="above"
+          class="line-clamp-3"
         >
           {{ payload.payload?.value || '' }}
         </span>

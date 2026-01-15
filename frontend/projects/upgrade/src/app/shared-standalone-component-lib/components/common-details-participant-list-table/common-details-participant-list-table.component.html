@@ -12,7 +12,13 @@
         {{ PARTICIPANT_LIST_TRANSLATION_KEYS.TYPE | translate }}
       </th>
       <td mat-cell *matCellDef="let rowData" class="type-column ft-14-400">
-        {{ getFormattedListType(rowData) }}
+        <span
+          [appTextOverflowTooltip]="getFormattedListType(rowData)"
+          matTooltipPosition="above"
+          class="line-clamp-1"
+        >
+          {{ getFormattedListType(rowData) }}
+        </span>
       </td>
     </ng-container>
 
