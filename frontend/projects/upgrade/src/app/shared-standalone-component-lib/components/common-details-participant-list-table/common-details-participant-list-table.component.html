@@ -43,22 +43,37 @@
       <td mat-cell *matCellDef="let rowData" class="name-column ft-14-400">
         <ng-container *ngIf="isPublicSegment(rowData); else plainText">
           <a
-            [routerLink]="['/segments', 'detail', rowData.segment.subSegments[0].id]"
-            class="segment-name"
-            [matTooltip]="rowData.segment?.subSegments?.[0]?.description"
+            [routerLink]="['/segments', 'detail', rowData.segment?.subSegments?.[0]?.id]"
+            [appTextOverflowTooltip]="rowData.segment?.name"
             matTooltipPosition="above"
-            matTooltipClass="text-overflow-tooltip"
+            class="segment-name line-clamp-1"
           >
             {{ rowData.segment?.name }}
           </a>
+          <span
+            *ngIf="rowData.segment?.subSegments?.[0]?.description"
+            [appTextOverflowTooltip]="rowData.segment?.subSegments?.[0]?.description"
+            matTooltipPosition="below"
+            class="segment-description ft-10-400 line-clamp-1"
+          >
+            {{ rowData.segment?.subSegments?.[0]?.description }}
+          </span>
         </ng-container>
         <ng-template #plainText>
           <span
-            [matTooltip]="rowData.segment?.description"
+            [appTextOverflowTooltip]="rowData.segment?.name"
             matTooltipPosition="above"
-            matTooltipClass="text-overflow-tooltip"
+            class="segment-name line-clamp-1"
           >
             {{ rowData.segment?.name }}
+          </span>
+          <span
+            *ngIf="rowData.segment?.description"
+            [appTextOverflowTooltip]="rowData.segment?.description"
+            matTooltipPosition="below"
+            class="segment-description ft-10-400 line-clamp-1"
+          >
+            {{ rowData.segment?.description }}
           </span>
         </ng-template>
       </td>
