@@ -14,7 +14,7 @@ import {
   Segment,
   SEGMENT_LIST_ACTIONS,
 } from '../../../../../../../core/segments/store/segments.model';
-import { Observable, Subscription, map } from 'rxjs';
+import { Observable, Subscription, map, combineLatest } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import {
@@ -83,8 +83,8 @@ export class SegmentListsSectionCardComponent {
     this.title = config.title;
     this.subtitle = config.subtitle;
     this.buttonText = config.buttonText;
-    this.menuButtonItems$ = this.permissions$.pipe(
-      map((permissions) => [
+    this.menuButtonItems$ = combineLatest([this.permissions$, this.tableRowCount$]).pipe(
+      map(([permissions, tableRowCount]) => [
         {
           label: config.importLabel,
           action: SEGMENT_LIST_ACTIONS.IMPORT,
@@ -93,7 +93,7 @@ export class SegmentListsSectionCardComponent {
         {
           label: config.exportLabel,
           action: SEGMENT_LIST_ACTIONS.EXPORT_ALL,
-          disabled: false,
+          disabled: tableRowCount === 0,
         },
       ])
     );

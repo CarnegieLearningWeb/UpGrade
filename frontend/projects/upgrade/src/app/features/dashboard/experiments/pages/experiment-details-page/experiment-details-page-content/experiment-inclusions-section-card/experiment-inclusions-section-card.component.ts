@@ -102,8 +102,8 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
       })
     );
 
-    this.menuButtonItems$ = this.vm$.pipe(
-      map((vm) => [
+    this.menuButtonItems$ = combineLatest([this.vm$, this.tableRowCount$]).pipe(
+      map(([vm, tableRowCount]) => [
         {
           label: 'experiments.details.import-include-list.menu-item.text',
           action: EXPERIMENT_BUTTON_ACTION.IMPORT_INCLUDE_LIST,
@@ -112,7 +112,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
         {
           label: 'experiments.details.export-all-include-lists.menu-item.text',
           action: EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS,
-          disabled: false,
+          disabled: tableRowCount === 0,
         },
       ])
     );

@@ -72,8 +72,8 @@ export class FeatureFlagInclusionsSectionCardComponent {
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.menuButtonItems$ = this.permissions$.pipe(
-      map((permissions) => [
+    this.menuButtonItems$ = combineLatest([this.permissions$, this.tableRowCount$]).pipe(
+      map(([permissions, tableRowCount]) => [
         {
           label: 'feature-flags.details.inclusions-modal.import-list.menu-item.text',
           action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST,
@@ -82,7 +82,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
         {
           label: 'feature-flags.details.inclusions-modal.export-lists.menu-item.text',
           action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS,
-          disabled: false,
+          disabled: tableRowCount === 0,
         },
       ])
     );

@@ -19,7 +19,7 @@ import {
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { Segment } from '../../../../../../../core/segments/store/segments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
-import { Observable, map } from 'rxjs';
+import { Observable, map, combineLatest } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
@@ -52,8 +52,8 @@ export class FeatureFlagExclusionsSectionCardComponent {
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.menuButtonItems$ = this.permissions$.pipe(
-      map((permissions) => [
+    this.menuButtonItems$ = combineLatest([this.permissions$, this.tableRowCount$]).pipe(
+      map(([permissions, tableRowCount]) => [
         {
           label: 'feature-flags.details.exclusions-modal.import-list.menu-item.text',
           action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_EXCLUDE_LIST,
@@ -62,7 +62,7 @@ export class FeatureFlagExclusionsSectionCardComponent {
         {
           label: 'feature-flags.details.exclusions-modal.export-lists.menu-item.text',
           action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS,
-          disabled: false,
+          disabled: tableRowCount === 0,
         },
       ])
     );

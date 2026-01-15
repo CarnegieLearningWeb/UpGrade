@@ -65,8 +65,8 @@ export class ExperimentExclusionsSectionCardComponent implements OnInit {
       }))
     );
 
-    this.menuButtonItems$ = this.vm$.pipe(
-      map((vm) => [
+    this.menuButtonItems$ = combineLatest([this.vm$, this.tableRowCount$]).pipe(
+      map(([vm, tableRowCount]) => [
         {
           label: 'experiments.details.import-exclude-list.menu-item.text',
           action: EXPERIMENT_BUTTON_ACTION.IMPORT_EXCLUDE_LIST,
@@ -75,7 +75,7 @@ export class ExperimentExclusionsSectionCardComponent implements OnInit {
         {
           label: 'experiments.details.export-all-exclude-lists.menu-item.text',
           action: EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS,
-          disabled: false,
+          disabled: tableRowCount === 0,
         },
       ])
     );
