@@ -81,6 +81,8 @@ export class CommonDetailsParticipantListTableComponent {
     ACTIONS: 'segments.global-actions.text',
   };
 
+  private readonly MAX_TOOLTIP_VALUES = 10;
+
   ngOnInit() {
     this.displayedColumns =
       this.tableType === LIST_FILTER_MODE.INCLUSION
@@ -118,8 +120,8 @@ export class CommonDetailsParticipantListTableComponent {
     }
 
     // Show only first 10 values if there are more
-    if (values.length > 10) {
-      return values.slice(0, 10).join(', ') + '...';
+    if (values.length > this.MAX_TOOLTIP_VALUES) {
+      return values.slice(0, this.MAX_TOOLTIP_VALUES).join(', ') + '...';
     }
 
     return values.join(', ');
