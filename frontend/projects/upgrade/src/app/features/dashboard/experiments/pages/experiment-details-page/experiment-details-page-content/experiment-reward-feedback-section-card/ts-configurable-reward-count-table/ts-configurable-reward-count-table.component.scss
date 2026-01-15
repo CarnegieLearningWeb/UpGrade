@@ -1,6 +1,8 @@
 .table-container {
-  padding: 32px;
   position: relative;
+  overflow: auto;
+  width: 100%;
+  padding: 32px;
 
   .spinner {
     position: sticky;
@@ -8,66 +10,72 @@
     z-index: 1111;
   }
 
-  table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    table-layout: fixed;
-
-    th {
-      background-color: var(--zircon);
-      height: 48px;
-      border: 0;
-      text-align: left;
-      padding-left: 32px;
-      padding-right: 16px;
-      color: var(--darker-grey);
-
-      &:first-child {
-        border-top-left-radius: 4px;
-      }
-
-      &:last-child {
-        border-top-right-radius: 4px;
-      }
-    }
-
-    td {
-      height: 56px;
-      text-align: left;
-      padding-left: 32px;
-      padding-right: 16px;
-      border-bottom: 1px solid var(--light-grey-2);
-    }
-
-    tr.mat-mdc-footer-row {
-      td {
-        border-top: 1px solid var(--light-grey-2);
-        border-bottom: none;
-        background-color: var(--zircon-lighter);
-        height: 56px;
-      }
-    }
-
-    .hide-footer {
-      display: none;
-    }
-  }
-
+  /* Add gap between header and body when no data exists */
   ::ng-deep .no-data tbody:before {
     display: block;
     line-height: 8px;
     content: '\200C';
   }
 
-  tr.mat-mdc-no-data-row {
-    height: 48px;
+  table {
+    ::ng-deep thead {
+      background-color: var(--zircon);
 
-    td {
-      height: 48px;
-      text-align: center;
-      border: 1.5px dashed var(--light-grey-2);
-      color: var(--dark-grey);
+      tr.mat-mdc-header-row {
+        height: 48px;
+        border: 0;
+
+        th {
+          padding-left: 0;
+          color: var(--darker-grey);
+
+          &:first-child {
+            border-top-left-radius: 4px;
+          }
+
+          &:last-child {
+            border-top-right-radius: 4px;
+          }
+        }
+      }
+    }
+
+    ::ng-deep tbody {
+      tr.mat-mdc-row {
+        height: 56px;
+
+        td {
+          min-width: 96px;
+          padding-left: 0;
+          color: var(--black-2);
+        }
+      }
+
+      tr.mat-mdc-no-data-row {
+        height: 48px;
+
+        td {
+          text-align: center;
+          border: 1.5px dashed var(--light-grey-2);
+          color: var(--dark-grey);
+        }
+      }
+    }
+
+    .condition-column,
+    .successes-column,
+    .failures-column,
+    .total-column,
+    .success-rate-column {
+      width: 20%;
+    }
+
+    .condition-column {
+      padding-left: 32px;
+    }
+
+    .success-rate-column {
+      padding-right: 16px;
     }
   }
 }
