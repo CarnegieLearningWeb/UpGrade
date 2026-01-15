@@ -104,10 +104,9 @@
           <span
             class="enrollment-info"
             *ngIf="experiment.stat?.users"
-            [innerHTML]="
-              'home.experiments-table.students.text' | translate : { noOfStudents: experiment.stat?.users }
-            "
-          ></span>
+          >
+            {{ experiment.stat?.users }}
+          </span>
           <span class="enrollment-info" *ngIf="experiment.stat?.groups">
             {{ 'home.experiments-table.classes.text' | translate : { noOfClasses: experiment.stat?.groups } }}
             <span *ngIf="experiment.stat?.groups < 2; else groupTypePlural">
@@ -120,8 +119,9 @@
           <span
             class="enrollment-info"
             *ngIf="!experiment.stat?.groups && !experiment.stat?.users"
-            [innerHTML]="'home.experiments-table.students.text' | translate : { noOfStudents: 0 }"
-          ></span>
+          >
+            0
+          </span>
         </ng-container>
         <ng-template #skeletonTemplate>
           <ngx-skeleton-loader
