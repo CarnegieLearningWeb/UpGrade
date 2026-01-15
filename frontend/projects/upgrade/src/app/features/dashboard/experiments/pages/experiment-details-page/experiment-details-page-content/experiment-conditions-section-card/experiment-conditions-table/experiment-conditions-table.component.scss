@@ -93,15 +93,6 @@
 
     .description-column {
       width: 40%;
-
-      .description-text {
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 1;
-        line-clamp: 1;
-        overflow: hidden;
-        word-break: break-word;
-      }
     }
 
     .actions-column {

@@ -18,19 +18,18 @@
       <td mat-cell *matCellDef="let segment" class="name-column ft-14-400">
         <a
           [routerLink]="['/segments', 'detail', segment.id]"
-          [matTooltip]="segment.name.length > 24 ? segment.name : null"
+          [appTextOverflowTooltip]="segment.name"
           matTooltipPosition="right"
-          class="segment-name"
+          class="segment-name line-clamp-1"
         >
-          {{ segment.name | truncate : 24 }}
+          {{ segment.name }}
         </a>
-        <br />
         <span
-          [matTooltip]="segment.description?.length > 35 ? segment.description : null"
+          [appTextOverflowTooltip]="segment.description"
           matTooltipPosition="right"
-          class="segment-description ft-10-400"
+          class="segment-description ft-10-400 line-clamp-1"
         >
-          {{ segment.description | truncate : 35 }}
+          {{ segment.description }}
         </span>
       </td>
     </ng-container>

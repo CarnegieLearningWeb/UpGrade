@@ -89,16 +89,8 @@
     .display-name-column {
       width: 40%;
 
-      .display-name-text {
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 1;
-        line-clamp: 1;
-        overflow: hidden;
-        word-break: break-word;
-      }
-
       &.multi-statistic .display-name-text {
+        /* Override line-clamp-1 with line-clamp-4 for multi-statistic rows */
         -webkit-line-clamp: 4;
         line-clamp: 4;
       }

@@ -51,7 +51,7 @@
       </th>
       <td mat-cell *matCellDef="let row" class="display-name-column ft-14-400" [class.multi-statistic]="getStatisticOperations(row).length > 1">
         <span
-          class="display-name-text"
+          class="display-name-text line-clamp-1"
           [appTextOverflowTooltip]="row.name"
           matTooltipPosition="above"
         >

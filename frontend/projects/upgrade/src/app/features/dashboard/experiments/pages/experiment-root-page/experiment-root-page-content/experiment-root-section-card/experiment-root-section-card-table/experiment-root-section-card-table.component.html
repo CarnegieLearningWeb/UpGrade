@@ -18,19 +18,18 @@
       <td mat-cell *matCellDef="let experiment" class="name-column ft-14-400">
         <a
           [routerLink]="['/home', 'detail', experiment.id]"
-          [matTooltip]="experiment.name.length > 24 ? experiment.name : null"
+          [appTextOverflowTooltip]="experiment.name"
           matTooltipPosition="right"
-          class="experiment-name"
+          class="experiment-name line-clamp-1"
         >
-          {{ experiment.name | truncate : 24 }}
+          {{ experiment.name }}
         </a>
-        <br />
         <span
-          [matTooltip]="experiment.description?.length > 35 ? experiment.description : null"
+          [appTextOverflowTooltip]="experiment.description"
           matTooltipPosition="right"
-          class="experiment-description ft-10-400"
+          class="experiment-description ft-10-400 line-clamp-1"
         >
-          {{ experiment.description | truncate : 35 }}
+          {{ experiment.description }}
         </span>
       </td>
     </ng-container>
