@@ -248,7 +248,7 @@ export const selectSegmentPaginationParams = createSelector(
 
 export const selectListSegmentOptionsByContext = (context: string) => {
   return createSelector(selectSegmentsState, (segmentState: SegmentState) => {
-    if (!segmentState || !segmentState.listSegmentOptions) {
+    if (!segmentState?.listSegmentOptions) {
       return [];
     }
     // filter by context and sort alphabetically by name
@@ -267,12 +267,13 @@ function processExperimentSegments(
   if (!segmentData) return;
 
   segmentData.forEach((item) => {
-    if (item.segment && item.segment.subSegments) {
+    if (item.segment?.subSegments) {
       item.segment.subSegments.forEach((subSegment) => {
         if (subSegment.id === segmentId) {
           if (!resultMap.has(item.experimentId)) {
             resultMap.set(item.experimentId, {
               name: item.experiment.name,
+              description: item.experiment.description,
               type: USED_BY_TYPE.EXPERIMENT,
               status: item.experiment.state,
               updatedAt: item.updatedAt,
@@ -293,12 +294,13 @@ function processFeatureFlagSegments(
   if (!segmentData) return;
 
   segmentData.forEach((item) => {
-    if (item.segment && item.segment.subSegments) {
+    if (item.segment?.subSegments) {
       item.segment.subSegments.forEach((subSegment) => {
         if (subSegment.id === segmentId) {
           if (!resultMap.has(item.featureFlagId)) {
             resultMap.set(item.featureFlagId, {
               name: item.featureFlag.name,
+              description: item.featureFlag.description,
               type: USED_BY_TYPE.FEATURE_FLAG,
               status: item.featureFlag.status,
               updatedAt: item.updatedAt,
@@ -322,6 +324,7 @@ function processParentSegments(segmentData: Segment[], segmentId: string, result
           if (!resultMap.has(item.id)) {
             resultMap.set(item.id, {
               name: item.name,
+              description: item.description,
               type: USED_BY_TYPE.SEGMENT,
               status: item.status,
               updatedAt: item.updatedAt,

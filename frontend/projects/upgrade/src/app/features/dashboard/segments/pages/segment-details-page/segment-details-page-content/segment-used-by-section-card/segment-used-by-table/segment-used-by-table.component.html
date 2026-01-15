@@ -12,7 +12,22 @@
         {{ USED_BY_TRANSLATION_KEYS.NAME | translate }}
       </th>
       <td mat-cell *matCellDef="let item" class="name-column ft-14-400">
-        <a [routerLink]="item.link" class="item-name">{{ item.name }}</a>
+        <a
+          [routerLink]="item.link"
+          [appTextOverflowTooltip]="item.name"
+          matTooltipPosition="right"
+          class="item-name line-clamp-1"
+        >
+          {{ item.name }}
+        </a>
+        <span
+          *ngIf="item.description"
+          [appTextOverflowTooltip]="item.description"
+          matTooltipPosition="right"
+          class="item-description ft-10-400 line-clamp-1"
+        >
+          {{ item.description }}
+        </span>
       </td>
     </ng-container>
 

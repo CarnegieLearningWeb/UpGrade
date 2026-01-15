@@ -25,6 +25,7 @@
           {{ segment.name }}
         </a>
         <span
+          *ngIf="segment.description"
           [appTextOverflowTooltip]="segment.description"
           matTooltipPosition="right"
           class="segment-description ft-10-400 line-clamp-1"

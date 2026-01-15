@@ -25,6 +25,7 @@
           {{ flag.name }}
         </a>
         <span
+          *ngIf="flag.description"
           [appTextOverflowTooltip]="flag.description"
           matTooltipPosition="right"
           class="flag-description ft-10-400 line-clamp-1"

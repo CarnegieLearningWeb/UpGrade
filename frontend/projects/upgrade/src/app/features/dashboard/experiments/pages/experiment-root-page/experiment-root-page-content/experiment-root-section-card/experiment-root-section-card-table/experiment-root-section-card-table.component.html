@@ -25,6 +25,7 @@
           {{ experiment.name }}
         </a>
         <span
+          *ngIf="experiment.description"
           [appTextOverflowTooltip]="experiment.description"
           matTooltipPosition="right"
           class="experiment-description ft-10-400 line-clamp-1"
