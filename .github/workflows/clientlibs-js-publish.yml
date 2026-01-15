@@ -28,35 +28,8 @@ jobs:
         uses: ./.github/actions/generic-npm-build
         with:
           working_directory: clientlibs/js
-
-      # Publish main package (backward compatibility)
-      - name: Publish upgrade_client_lib
+      - name: Publish Client Libs js Package
         uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
           package: clientlibs/js/package.json
-
-      # Publish specialized packages
-      - name: Publish upgrade_client_lib_full_browser
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: clientlibs/js/packages/full-browser/package.json
-
-      - name: Publish upgrade_client_lib_full_node
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: clientlibs/js/packages/full-node/package.json
-
-      - name: Publish upgrade_client_lib_lite_browser
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: clientlibs/js/packages/lite-browser/package.json
-
-      - name: Publish upgrade_client_lib_lite_node
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: clientlibs/js/packages/lite-node/package.json

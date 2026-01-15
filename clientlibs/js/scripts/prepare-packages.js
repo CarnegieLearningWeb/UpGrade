@@ -40,8 +40,7 @@ console.log('\n📦 Preparing packages for publishing...\n');
 const packages = [
   { name: 'full-browser', bundle: 'browser' },
   { name: 'full-node', bundle: 'node' },
-  { name: 'lite-browser', bundle: 'browser-lite' },
-  { name: 'lite-node', bundle: 'node-lite' }
+  { name: 'lite', bundle: 'lite' }
 ];
 
 let allSuccess = true;

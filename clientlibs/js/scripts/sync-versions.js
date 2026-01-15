@@ -16,7 +16,7 @@ const mainVersion = mainPackage.version;
 console.log(`\nSynchronizing version to: ${mainVersion}\n`);
 
 // List of specialized packages to update
-const packages = ['full-browser', 'full-node', 'lite-browser', 'lite-node'];
+const packages = ['full-browser', 'full-node', 'lite'];
 
 let allSuccess = true;
 

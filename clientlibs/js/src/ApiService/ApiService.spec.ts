@@ -40,7 +40,6 @@ describe('ApiService', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/init`;
     const expectedOptions = {
       headers: {
-        'Client-source': 'browser',
         'Content-Type': 'application/json',
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
@@ -106,7 +105,6 @@ describe('ApiService', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/groupmembership`;
     const expectedOptions = {
       headers: {
-        'Client-source': 'browser',
         'Content-Type': 'application/json',
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
@@ -135,7 +133,6 @@ describe('ApiService', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/workinggroup`;
     const expectedOptions = {
       headers: {
-        'Client-source': 'browser',
         'Content-Type': 'application/json',
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
@@ -163,7 +160,6 @@ describe('ApiService', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/useraliases`;
     const expectedOptions = {
       headers: {
-        'Client-source': 'browser',
         'Content-Type': 'application/json',
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
@@ -189,7 +185,6 @@ describe('ApiService', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/assign`;
     const expectedOptions = {
       headers: {
-        'Client-source': 'browser',
         'Content-Type': 'application/json',
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
@@ -214,7 +209,6 @@ describe('ApiService', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/log`;
     const expectedOptions = {
       headers: {
-        'Client-source': 'browser',
         'Content-Type': 'application/json',
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
@@ -328,7 +322,6 @@ describe('ApiService', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/log/caliper`;
     const expectedOptions = {
       headers: {
-        'Client-source': 'browser',
         'Content-Type': 'application/json',
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
