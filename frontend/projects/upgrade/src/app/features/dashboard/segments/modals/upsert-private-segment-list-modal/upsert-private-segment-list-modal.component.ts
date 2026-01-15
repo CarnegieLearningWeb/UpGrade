@@ -103,6 +103,7 @@ export class UpsertPrivateSegmentListModalComponent {
 
     this.initializeListeners();
     this.populateFormForEdit();
+    this.sortValues();
   }
 
   ngAfterViewInit() {
