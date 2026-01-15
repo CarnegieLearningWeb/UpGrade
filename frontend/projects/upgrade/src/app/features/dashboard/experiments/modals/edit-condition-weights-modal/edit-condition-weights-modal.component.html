@@ -46,7 +46,13 @@
         Condition
       </th>
       <td mat-cell *matCellDef="let condition" class="condition-column ft-14-400">
-        {{ condition.conditionCode }}
+        <span
+          [appTextOverflowTooltip]="condition.conditionCode"
+          matTooltipPosition="above"
+          class="line-clamp-1"
+        >
+          {{ condition.conditionCode }}
+        </span>
       </td>
       <!-- Summary row for condition column -->
       <td mat-footer-cell *matFooterCellDef class="condition-column ft-14-400 summary-row">

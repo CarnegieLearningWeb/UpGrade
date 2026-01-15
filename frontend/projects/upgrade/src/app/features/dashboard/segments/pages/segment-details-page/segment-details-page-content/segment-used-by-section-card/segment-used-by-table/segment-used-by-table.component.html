@@ -37,7 +37,13 @@
         {{ USED_BY_TRANSLATION_KEYS.TYPE | translate }}
       </th>
       <td mat-cell *matCellDef="let item" class="type-column ft-14-400">
-        {{ item.type }}
+        <span
+          [appTextOverflowTooltip]="item.type"
+          matTooltipPosition="above"
+          class="line-clamp-1"
+        >
+          {{ item.type }}
+        </span>
       </td>
     </ng-container>
 
@@ -57,7 +63,13 @@
         {{ USED_BY_TRANSLATION_KEYS.UPDATED_AT | translate }}
       </th>
       <td mat-cell *matCellDef="let item" class="updated-at-column ft-14-400">
-        {{ item.updatedAt | date : 'MMM d, y, h:mm a' }}
+        <span
+          [appTextOverflowTooltip]="item.updatedAt | date : 'MMM d, y, h:mm a'"
+          matTooltipPosition="above"
+          class="line-clamp-1"
+        >
+          {{ item.updatedAt | date : 'MMM d, y, h:mm a' }}
+        </span>
       </td>
     </ng-container>
 
