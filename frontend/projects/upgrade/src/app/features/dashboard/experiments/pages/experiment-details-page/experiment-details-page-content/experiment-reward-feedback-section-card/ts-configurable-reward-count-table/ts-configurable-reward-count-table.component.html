@@ -52,6 +52,12 @@
       <td mat-cell *matCellDef="let row" class="success-rate-column ft-14-400">{{ row.successRate | number : '1.1-1' }}%</td>
     </ng-container>
 
+    <!-- Spacer Column -->
+    <ng-container matColumnDef="spacer">
+      <th mat-header-cell *matHeaderCellDef class="spacer-column"></th>
+      <td mat-cell *matCellDef="let row" class="spacer-column"></td>
+    </ng-container>
+
     <!-- Header and Row Definitions -->
     <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
