@@ -326,7 +326,7 @@ function processParentSegments(segmentData: Segment[], segmentId: string, result
               name: item.name,
               description: item.description,
               type: USED_BY_TYPE.SEGMENT,
-              status: item.status,
+              status: item.status.toLowerCase(),
               updatedAt: item.updatedAt,
               link: `/segments/detail/${item.id}`,
             });
