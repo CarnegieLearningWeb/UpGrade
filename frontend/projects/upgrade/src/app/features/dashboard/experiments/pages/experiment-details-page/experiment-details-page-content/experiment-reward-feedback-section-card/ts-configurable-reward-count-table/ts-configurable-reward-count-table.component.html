@@ -10,7 +10,13 @@
         {{ 'experiments.details.posteriors.condition.text' | translate }}
       </th>
       <td mat-cell *matCellDef="let row" class="condition-column ft-14-400">
-        {{ row.conditionCode }}
+        <span
+          [appTextOverflowTooltip]="row.conditionCode"
+          matTooltipPosition="above"
+          class="line-clamp-1"
+        >
+          {{ row.conditionCode }}
+        </span>
       </td>
     </ng-container>
 
