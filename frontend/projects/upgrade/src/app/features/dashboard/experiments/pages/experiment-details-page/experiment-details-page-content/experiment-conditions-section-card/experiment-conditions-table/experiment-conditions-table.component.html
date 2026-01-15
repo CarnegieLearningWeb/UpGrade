@@ -33,14 +33,14 @@
       <th mat-header-cell *matHeaderCellDef class="weight-edit-column ft-14-600 dense-2">
         <div class="button-wrapper"
           *ngIf="showActions"
-          [matTooltip]="actionsTooltip"
-          [matTooltipDisabled]="!actionsDisabled"
+          [matTooltip]="(actionsDisabled ? actionsTooltip : 'experiments.details.conditions.weight-disabled-tooltip.text') | translate"
+          [matTooltipDisabled]="!actionsDisabled && conditions?.length > 0"
           matTooltipPosition="above"
         >
           <button
             mat-icon-button
             class="weight-edit-button"
-            [disabled]="actionsDisabled"
+            [disabled]="actionsDisabled || !conditions?.length"
             (click)="onEditWeightsClick()">
             <mat-icon>edit</mat-icon>
           </button>
