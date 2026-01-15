@@ -21,14 +21,14 @@ Use this if you want flexibility to choose your bundle at import time (see [Impo
 
 Install only the specific package you need for your environment and use case:
 
+**For any environment with externalized axios (universal):**
+```bash
+npm install upgrade_client_lib_lite axios
+```
+
 **For browser environments with bundled axios:**
 ```bash
 npm install upgrade_client_lib_full_browser
-```
-
-**For browser environments with externalized axios (smaller, if you already use axios):**
-```bash
-npm install upgrade_client_lib_lite_browser axios
 ```
 
 **For Node.js environments with bundled axios:**
@@ -36,20 +36,14 @@ npm install upgrade_client_lib_lite_browser axios
 npm install upgrade_client_lib_full_node
 ```
 
-**For Node.js environments with externalized axios (smaller, if you already use axios):**
-```bash
-npm install upgrade_client_lib_lite_node axios
-```
-
 ### Which Package Should I Use?
 
+- **Already use axios (any environment):** `upgrade_client_lib_lite` (~450 KB, universal)
 - **Browser + want simplicity:** `upgrade_client_lib_full_browser` (~489 KB)
-- **Browser + already use axios:** `upgrade_client_lib_lite_browser` (~454 KB, smaller bundle)
 - **Node.js + want simplicity:** `upgrade_client_lib_full_node` (~684 KB)
-- **Node.js + already use axios:** `upgrade_client_lib_lite_node` (~449 KB, smaller bundle)
 - **Need flexibility or multiple environments:** `upgrade_client_lib` (all bundles included)
 
-The **lite** variants externalize the axios dependency, making them smaller if you already use axios in your project. This avoids bundling axios twice and gives you control over the axios version.
+The **lite** variant externalizes the axios dependency, making it smaller if you already use axios in your project. This avoids bundling axios twice and gives you control over the axios version. The new unified lite package works in both browser and Node.js environments.
 
 ## Import
 
@@ -57,14 +51,14 @@ The **lite** variants externalize the axios dependency, making them smaller if y
 
 If you installed a specialized package, simply import directly:
 
+**For lite (universal - works in browser and Node.js):**
+```typescript
+import UpgradeClient from 'upgrade_client_lib_lite';
+```
+
 **For browser (full):**
 ```typescript
 import UpgradeClient from 'upgrade_client_lib_full_browser';
-```
-
-**For browser (lite):**
-```typescript
-import UpgradeClient from 'upgrade_client_lib_lite_browser';
 ```
 
 **For Node.js (full):**
@@ -74,14 +68,9 @@ import UpgradeClient from 'upgrade_client_lib_full_node';
 const UpgradeClient = require('upgrade_client_lib_full_node');
 ```
 
-**For Node.js (lite):**
-```typescript
-import UpgradeClient from 'upgrade_client_lib_lite_node';
-```
-
 **Import with additional types:**
 ```typescript
-import UpgradeClient, { Assignment, MARKED_DECISION_POINT_STATUS } from 'upgrade_client_lib_full_browser';
+import UpgradeClient, { Assignment, MARKED_DECISION_POINT_STATUS } from 'upgrade_client_lib_lite';
 ```
 
 ### Using the All-in-One Package

@@ -49,14 +49,8 @@ jobs:
           token: ${{ secrets.NPM_TOKEN }}
           package: clientlibs/js/packages/full-node/package.json
 
-      - name: Publish upgrade_client_lib_lite_browser
+      - name: Publish upgrade_client_lib_lite
         uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
-          package: clientlibs/js/packages/lite-browser/package.json
-
-      - name: Publish upgrade_client_lib_lite_node
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: clientlibs/js/packages/lite-node/package.json
+          package: clientlibs/js/packages/lite/package.json

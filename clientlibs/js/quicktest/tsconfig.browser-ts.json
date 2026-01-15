@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "None",
+    "lib": ["ES2018", "DOM"],
+    "outDir": "./browser-ts",
+    "sourceMap": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["browser-ts/**/*.ts"],
+  "exclude": ["node_modules", "shared/**/*.ts"]
+}

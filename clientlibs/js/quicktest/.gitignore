@@ -1,0 +1,13 @@
+# Compiled TypeScript output from browser-ts
+browser-ts/**/*.js
+browser-ts/**/*.js.map
+
+# Source maps
+*.map
+
+# Keep shared compiled JS (needed for browser-js)
+!shared/test-functions.js
+!shared/test-functions.js.map
+
+# Node test HTML results
+node/test-results.html

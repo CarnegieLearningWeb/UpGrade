@@ -9,31 +9,24 @@
   "exports": {
     ".": {
       "browser": "./dist/browser/index.js",
-      "browser-lite": "./dist/browser-lite/index.js",
       "node": "./dist/node/index.js",
-      "node-lite": "./dist/node-lite/index.js",
       "types": "./index.d.ts"
     },
     "./lite": {
-      "browser": "./dist/browser-lite/index.js",
-      "node": "./dist/node-lite/index.js",
-      "types": "./index.d.ts"
+      "default": "./dist/lite/index.js",
+      "types": "./dist/lite/index.d.ts"
     },
     "./dist/browser": {
       "default": "./dist/browser/index.js",
       "types": "./dist/browser/index.d.ts"
     },
-    "./dist/browser-lite": {
-      "default": "./dist/browser-lite/index.js",
-      "types": "./dist/browser-lite/index.d.ts"
-    },
     "./dist/node": {
       "default": "./dist/node/index.js",
       "types": "./dist/node/index.d.ts"
     },
-    "./dist/node-lite": {
-      "default": "./dist/node-lite/index.js",
-      "types": "./dist/node-lite/index.d.ts"
+    "./dist/lite": {
+      "default": "./dist/lite/index.js",
+      "types": "./dist/lite/index.d.ts"
     }
   },
   "scripts": {
@@ -42,8 +35,7 @@
     "build:types-default": "./node_modules/.bin/dts-bundle-generator -o ./index.d.ts src/index.ts",
     "build:types-browser": "./node_modules/.bin/dts-bundle-generator -o dist/browser/index.d.ts src/index.ts",
     "build:types-node": "./node_modules/.bin/dts-bundle-generator -o dist/node/index.d.ts src/index.ts",
-    "build:types-browser-lite": "./node_modules/.bin/dts-bundle-generator -o dist/browser-lite/index.d.ts src/index.ts",
-    "build:types-node-lite": "./node_modules/.bin/dts-bundle-generator -o dist/node-lite/index.d.ts src/index.ts",
+    "build:types-lite": "./node_modules/.bin/dts-bundle-generator -o dist/lite/index.d.ts src/index.ts",
     "version:sync": "node scripts/sync-versions.js",
     "prepare:packages": "node scripts/prepare-packages.js",
     "build": "npm run clean && npm run build:bundler && npm run build:types && npm run version:sync && npm run prepare:packages",
@@ -56,7 +48,13 @@
     "docs:markdown": "typedoc --options typedoc.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "quicktest": "ts-node quickTest.ts"
+    "quicktest": "npm run quicktest:node",
+    "quicktest:all": "concurrently \"npm run quicktest:node\" \"npm run quicktest:browser-js\" \"npm run quicktest:browser-ts\"",
+    "quicktest:node": "ts-node quicktest/node/index.ts",
+    "quicktest:browser-js": "npm run quicktest:build-shared && open quicktest/browser-js/index.html",
+    "quicktest:browser-ts": "npm run quicktest:browser-ts:build && (lsof -ti:8080 > /dev/null || (npx serve -l 8080 > /dev/null 2>&1 & sleep 2)) && open http://localhost:8080/quicktest/browser-ts/",
+    "quicktest:browser-ts:build": "./node_modules/.bin/tsc -p quicktest/tsconfig.browser-ts.json",
+    "quicktest:build-shared": "./node_modules/.bin/tsc -p quicktest/tsconfig.shared.json"
   },
   "keywords": [],
   "author": "",

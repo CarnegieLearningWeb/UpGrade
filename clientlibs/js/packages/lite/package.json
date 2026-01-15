@@ -1,11 +1,11 @@
 {
-  "name": "upgrade_client_lib_lite_node",
+  "name": "upgrade_client_lib_lite",
   "version": "6.2.5",
-  "description": "UpGrade client library for Node.js (axios externalized)",
-  "main": "dist/node-lite/index.js",
-  "types": "dist/node-lite/index.d.ts",
+  "description": "UpGrade client library with externalized axios - works in both browser and Node.js",
+  "main": "dist/lite/index.js",
+  "types": "dist/lite/index.d.ts",
   "files": [
-    "dist/node-lite/**/*"
+    "dist/lite/**/*"
   ],
   "dependencies": {
     "uuid": "^8.3.2"
@@ -17,6 +17,8 @@
     "upgrade",
     "a/b testing",
     "experimentation",
+    "universal",
+    "browser",
     "nodejs",
     "node"
   ],

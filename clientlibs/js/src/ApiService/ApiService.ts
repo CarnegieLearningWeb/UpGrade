@@ -7,7 +7,6 @@ import { IMarkDecisionPointParams } from 'UpGradeClient/UpGradeClient.types';
 
 // this variable is used by webpack to replace the value of USE_CUSTOM_HTTP_CLIENT with true or false to create two different builds
 declare const USE_CUSTOM_HTTP_CLIENT: boolean;
-declare const IS_BROWSER: boolean;
 
 export default class ApiService {
   private context: string;
@@ -93,7 +92,6 @@ export default class ApiService {
       headers: {
         'Content-Type': 'application/json',
         'Session-Id': this.clientSessionId,
-        'Client-source': IS_BROWSER ? 'browser' : 'node',
         URL: url,
         'User-Id': this.userId,
       },

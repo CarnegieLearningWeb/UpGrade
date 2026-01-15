@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "CommonJS",
+    "lib": ["ES2018", "DOM"],
+    "outDir": "./shared",
+    "sourceMap": true,
+    "declaration": false,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node"
+  },
+  "include": ["shared/test-functions.ts"],
+  "exclude": ["node_modules", "shared/test-functions.js"]
+}

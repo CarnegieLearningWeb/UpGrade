@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UpGrade Client - Browser QuickTest (TypeScript)</title>
+    <link rel="stylesheet" href="../shared/shared-styles.css">
+</head>
+<body>
+    <h1 class="browser-ts">UpGrade Client - Browser QuickTest (TypeScript)</h1>
+    <div class="info">
+        <strong>Version:</strong> TypeScript (requires compilation)<br>
+        <strong>Location:</strong> quicktest/browser-ts/<br>
+        <strong>Note:</strong> Open browser DevTools (F12) to see detailed console output. Results also display below.
+    </div>
+
+    <div id="status" class="status running">
+        Running tests...
+    </div>
+
+    <div id="output" class="output">
+        <div class="log-entry log-header">Starting UpGrade Client Browser Tests (TypeScript)...</div>
+    </div>
+
+    <!-- Load UpGrade Client browser bundle -->
+    <script src="../../dist/browser/index.js"></script>
+
+    <!-- CommonJS shim for browser (allows test-functions.js to work with exports) -->
+    <script>
+        // Create global exports and module objects for CommonJS compatibility
+        window.exports = {};
+        window.module = { exports: window.exports };
+    </script>
+
+    <!-- Load shared test functions (compiled from TypeScript) -->
+    <script src="../shared/test-functions.js"></script>
+
+    <!-- Load configuration -->
+    <script src="./config.js"></script>
+
+    <!-- Load and run test entry point -->
+    <script src="./index.js"></script>
+</body>
+</html>
