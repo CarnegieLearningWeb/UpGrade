@@ -1,5 +1,4 @@
 import { UpGradeClientEnums, UpGradeClientInterfaces, UpGradeClientRequests } from '../types';
-import { DefaultHttpClient } from '../DefaultHttpClient/DefaultHttpClient';
 import { CaliperEnvelope, IExperimentAssignmentv5, ILogInput, IUserAliases, ILogRequestBody } from 'upgrade_types';
 import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
@@ -68,6 +67,10 @@ export default class ApiService {
     }
 
     if (!USE_CUSTOM_HTTP_CLIENT && !httpClient) {
+      // Dynamic import ensures DefaultHttpClient (and its axios dependency)
+      // is only included in non-lite builds
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { DefaultHttpClient } = require('../DefaultHttpClient/DefaultHttpClient');
       return new DefaultHttpClient();
     }
   }

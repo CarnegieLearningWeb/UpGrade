@@ -10,9 +10,6 @@
   "dependencies": {
     "uuid": "^8.3.2"
   },
-  "peerDependencies": {
-    "axios": "^1.4.0"
-  },
   "keywords": [
     "upgrade",
     "a/b testing",

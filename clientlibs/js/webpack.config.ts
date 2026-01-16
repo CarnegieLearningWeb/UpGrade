@@ -29,12 +29,7 @@ const generalConfiguration = {
   ],
 };
 
-const createConfig = (
-  target: string,
-  outputPath: string,
-  useCustomHttpClient: boolean,
-  externals = {}
-) => ({
+const createConfig = (target: string, outputPath: string, useCustomHttpClient: boolean, externals = {}) => ({
   ...generalConfiguration,
   target,
   output: {
@@ -57,5 +52,5 @@ const createConfig = (
 module.exports = [
   createConfig(undefined, 'dist/browser', false),
   createConfig('node', 'dist/node', false),
-  createConfig(undefined, 'dist/lite', true, { axios: 'axios' }),
+  createConfig(undefined, 'dist/lite', true),
 ];
