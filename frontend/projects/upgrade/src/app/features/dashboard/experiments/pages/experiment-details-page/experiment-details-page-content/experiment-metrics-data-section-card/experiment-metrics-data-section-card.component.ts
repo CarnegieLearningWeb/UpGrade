@@ -6,7 +6,7 @@ import {
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { ExperimentMetricsDataComponent } from './experiment-metrics-data/experiment-metrics-data.component';
+import { ExperimentQueryResultComponent } from './experiment-query-result/experiment-query-result.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
@@ -17,7 +17,7 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
     CommonSectionCardComponent,
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
-    ExperimentMetricsDataComponent,
+    ExperimentQueryResultComponent,
     TranslateModule,
   ],
   templateUrl: './experiment-metrics-data-section-card.component.html',

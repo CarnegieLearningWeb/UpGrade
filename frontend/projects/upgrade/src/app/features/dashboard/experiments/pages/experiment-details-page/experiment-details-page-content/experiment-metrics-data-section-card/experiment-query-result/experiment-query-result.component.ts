@@ -9,15 +9,17 @@ import {
   LevelsMap,
   MainEffectGraphData,
   QueryResult,
-} from '../../../../../core/experiments/store/experiments.model';
-import { AnalysisService } from '../../../../../core/analysis/analysis.service';
+} from '../../../../../../../../core/experiments/store/experiments.model';
+import { AnalysisService } from '../../../../../../../../core/analysis/analysis.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { EXPERIMENT_STATE, EXPERIMENT_TYPE } from 'upgrade_types';
-import { ExperimentFactorData } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import { ExperimentFactorData } from '../../../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { MatTableModule } from '@angular/material/table';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 interface FactorColumnDef {
   name: string;
@@ -34,11 +36,10 @@ interface RowData {
 }
 
 @Component({
-  selector: 'experiment-query-result',
+  selector: 'app-experiment-query-result',
   templateUrl: './experiment-query-result.component.html',
   styleUrls: ['./experiment-query-result.component.scss'],
-  standalone: true,
-  imports: [CommonModule, TranslateModule, NgxChartsModule],
+  imports: [CommonModule, TranslateModule, NgxChartsModule, MatTableModule, MatProgressSpinnerModule],
 })
 export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   @Input() experiment: ExperimentVM;
