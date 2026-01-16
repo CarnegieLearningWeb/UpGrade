@@ -20,6 +20,8 @@ typings/
 
 # Dist #
 dist/
+# Generated dist files in package directories (created by prepare:packages script)
+packages/*/dist/
 
 # IDE #
 .idea/

@@ -5,15 +5,77 @@ Please see https://upgrade-platform.gitbook.io/docs/developer-guide/reference/cl
 
 ## Installation
 
-Install the UpGrade client library using npm:
+The UpGrade client library is available in multiple packages optimized for different environments and use cases.
+
+### Option 1: All-in-One Package (Original)
+
+Install the main package that includes all bundle variants:
 
 ```bash
 npm install upgrade_client_lib
 ```
 
+Use this if you want flexibility to choose your bundle at import time (see [Import](#import) section below).
+
+### Option 2: Specialized Packages (Recommended)
+
+Install only the specific package you need for your environment and use case:
+
+**For any environment with externalized axios (universal):**
+```bash
+npm install upgrade_client_lib_lite axios
+```
+
+**For browser environments with bundled axios:**
+```bash
+npm install upgrade_client_lib_full_browser
+```
+
+**For Node.js environments with bundled axios:**
+```bash
+npm install upgrade_client_lib_full_node
+```
+
+### Which Package Should I Use?
+
+- **Already use axios (any environment):** `upgrade_client_lib_lite` (~450 KB, universal)
+- **Browser + want simplicity:** `upgrade_client_lib_full_browser` (~489 KB)
+- **Node.js + want simplicity:** `upgrade_client_lib_full_node` (~684 KB)
+- **Need flexibility or multiple environments:** `upgrade_client_lib` (all bundles included)
+
+The **lite** variant externalizes the axios dependency, making it smaller if you already use axios in your project. This avoids bundling axios twice and gives you control over the axios version. The new unified lite package works in both browser and Node.js environments.
+
 ## Import
 
-The library provides different builds for different environments:
+### Using Specialized Packages (Simpler)
+
+If you installed a specialized package, simply import directly:
+
+**For lite (universal - works in browser and Node.js):**
+```typescript
+import UpgradeClient from 'upgrade_client_lib_lite';
+```
+
+**For browser (full):**
+```typescript
+import UpgradeClient from 'upgrade_client_lib_full_browser';
+```
+
+**For Node.js (full):**
+```typescript
+import UpgradeClient from 'upgrade_client_lib_full_node';
+// or CommonJS:
+const UpgradeClient = require('upgrade_client_lib_full_node');
+```
+
+**Import with additional types:**
+```typescript
+import UpgradeClient, { Assignment, MARKED_DECISION_POINT_STATUS } from 'upgrade_client_lib_lite';
+```
+
+### Using the All-in-One Package
+
+If you installed `upgrade_client_lib`, you can choose your bundle at import time:
 
 **For Browser environments:**
 ```typescript
