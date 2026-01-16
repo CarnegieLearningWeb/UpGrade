@@ -29,13 +29,7 @@ const generalConfiguration = {
   ],
 };
 
-const createConfig = (
-  target: string,
-  outputPath: string,
-  useCustomHttpClient: boolean,
-  isBrowser: boolean,
-  externals = {}
-) => ({
+const createConfig = (target: string, outputPath: string, useCustomHttpClient: boolean, externals = {}) => ({
   ...generalConfiguration,
   target,
   output: {
@@ -51,14 +45,12 @@ const createConfig = (
     new webpack.DefinePlugin({
       API_VERSION: version,
       USE_CUSTOM_HTTP_CLIENT: JSON.stringify(useCustomHttpClient),
-      IS_BROWSER: JSON.stringify(isBrowser),
     }),
   ],
 });
 
 module.exports = [
-  createConfig(undefined, 'dist/browser', false, true),
-  createConfig('node', 'dist/node', false, false),
-  createConfig(undefined, 'dist/browser-lite', true, true, { axios: 'axios' }),
-  createConfig('node', 'dist/node-lite', true, false, { axios: 'axios' }),
+  createConfig(undefined, 'dist/browser', false),
+  createConfig('node', 'dist/node', false),
+  createConfig(undefined, 'dist/lite', true),
 ];
