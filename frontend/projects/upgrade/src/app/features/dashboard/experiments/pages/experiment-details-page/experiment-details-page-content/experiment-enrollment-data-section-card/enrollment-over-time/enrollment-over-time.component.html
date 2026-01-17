@@ -1,5 +1,5 @@
 <div class="enrollment-over-time">
-  <span class="ft-18-700 title">{{ 'home.view-experiment.enrollments-by-decision-point.title.text' | translate }}</span>
+  <h6 class="ft-16-700 heading">{{ 'home.view-experiment.enrollments-by-decision-point.title.text' | translate }}</h6>
   <div class="enrollment-filters">
     <mat-form-field class="dense-2 sites" appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400 dropdown-label">
@@ -118,22 +118,28 @@
 
       <div class="enrollment-statistic">
         <div class="enrollment-statistic__total">
-          <span class="ft-16-600 title">
+          <span class="ft-14-600 title">
             {{ 'home.view-experiment.enrollment-over-time.user-enrollments-across-sites.text' | translate }}
           </span>
-          <span class="ft-36-700 numbers">{{ totalMarkedUsers }}</span>
+          <span class="ft-30-700 numbers">{{ totalMarkedUsers }}</span>
         </div>
         <div class="enrollment-statistic__unique">
-          <span class="ft-16-600 title">
+          <span class="ft-14-600 title">
             {{ 'home.view-experiment.enrollment-over-time.unique-users-enrolled.text' | translate }}
           </span>
-          <span class="ft-36-700 numbers">{{ experiment.stat.users }}</span>
+          <span class="ft-30-700 numbers">{{ experiment.stat?.users }}</span>
         </div>
         <div class="enrollment-statistic__class" [ngClass]="{ 'group-enabled': selectedGroupFilter !== 'individual' }">
-          <span class="ft-16-600 title">
+          <span class="ft-14-600 title">
             {{ 'home.view-experiment.enrollment-over-time.group-enrollments-across-sites.text' | translate }}
           </span>
-          <span class="ft-36-700 numbers">{{ totalMarkedGroups }}</span>
+          <span class="ft-30-700 numbers">{{ totalMarkedGroups }}</span>
+        </div>
+        <div class="enrollment-statistic__unique-groups" [ngClass]="{ 'group-enabled': selectedGroupFilter !== 'individual' }">
+          <span class="ft-14-600 title">
+            {{ 'home.view-experiment.enrollment-over-time.unique-groups-enrolled.text' | translate }}
+          </span>
+          <span class="ft-30-700 numbers">{{ experiment.stat?.groups }}</span>
         </div>
       </div>
     </div>

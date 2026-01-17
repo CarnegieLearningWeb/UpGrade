@@ -1,15 +1,16 @@
 .enrollment-over-time {
-  padding: 0 34px 34px;
+  padding: 0 32px 32px;
 
-  .title {
+  .heading {
     display: block;
-    margin-bottom: 20px;
+    margin-top: -8px;
   }
 
   .enrollment-filters {
     display: flex;
     justify-content: space-between;
-    column-gap: 20px;
+    column-gap: 32px;
+    padding-top: 16px;
 
     .sites {
       width: 250px;
@@ -29,13 +30,10 @@
     .condition-container {
       display: flex;
       flex-direction: column;
-      margin-bottom: 20px;
-      padding-left: 15px;
 
       .condition {
         display: flex;
         align-items: center;
-        margin-right: 30px;
 
         .color-box {
           display: inline-block;
@@ -68,24 +66,33 @@
     .enrollment-statistic {
       display: flex;
       flex-direction: column;
-      margin-left: 30px;
-      width: 225px;
+      margin-left: 32px;
+      width: 200px;
       text-align: center;
 
       &__total {
-        padding-bottom: 28px;
+        padding-bottom: 16px;
       }
 
       &__unique {
-        padding-bottom: 28px;
         border-top: 1px solid var(--grey);
-        padding-top: 28px;
+        padding: 16px 0;
       }
 
       &__class {
         visibility: hidden;
         border-top: 1px solid var(--grey);
-        padding-top: 28px;
+        padding: 16px 0;
+
+        &.group-enabled {
+          visibility: visible;
+        }
+      }
+
+      &__unique-groups {
+        visibility: hidden;
+        border-top: 1px solid var(--grey);
+        padding: 16px 0;
 
         &.group-enabled {
           visibility: visible;
@@ -99,7 +106,7 @@
 
       .numbers {
         display: block;
-        margin-top: 10px;
+        margin-bottom: -8px;
         color: var(--blue);
       }
     }
