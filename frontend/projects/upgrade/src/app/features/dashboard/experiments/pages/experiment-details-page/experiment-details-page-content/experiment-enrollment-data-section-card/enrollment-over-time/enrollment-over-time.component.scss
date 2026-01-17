@@ -115,11 +115,17 @@
   ::ng-deep .ngx-charts {
     ::ng-deep text {
       font-family: 'Open Sans';
-      font-weight: 600;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
     }
   }
 }
 
 .mat-mdc-checkbox {
   padding-left: 4px;
+}
+
+/* Adjust ngx-charts x-axis label vertical spacing (SVG) */
+:host ::ng-deep ngx-charts-bar-vertical-stacked .x.axis text {
+  baseline-shift: -0.8em;
 }
