@@ -180,24 +180,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   }
 
   populateGraphData(graphData: IEnrollmentStatByDate[]) {
-    this.graphData = this.setDataInGraphFormat(graphData);
-    switch (this.effectiveDateFilter) {
-      case DATE_RANGE.LAST_SEVEN_DAYS:
-        this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(5)];
-        break;
-      case DATE_RANGE.LAST_TWO_WEEKS:
-        this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(1)];
-        break;
-      case DATE_RANGE.LAST_THREE_MONTHS:
-        this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(9)];
-        break;
-      case DATE_RANGE.LAST_SIX_MONTHS:
-        this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(6)];
-        break;
-      default:
-        this.graphData = [...this.graphData];
-        break;
-    }
+    this.graphData = [...this.setDataInGraphFormat(graphData)];
   }
 
   setDataInGraphFormat(data: IEnrollmentStatByDate[]) {
@@ -306,18 +289,6 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       (acc, condition) => (acc = condition.id === conditionId ? condition.conditionCode : acc),
       ''
     );
-  }
-
-  // Used to form empty series data to keep graph bar width same different value of time filter
-  formEmptyGraphSeriesData(limit: number) {
-    const emptySeries = [];
-    for (let i = 0; i < limit; i++) {
-      emptySeries.push({
-        name: i,
-        series: [{ name: '', value: 0 }],
-      });
-    }
-    return emptySeries;
   }
 
   // For maintaining checkbox Select All in condition and partition filter
