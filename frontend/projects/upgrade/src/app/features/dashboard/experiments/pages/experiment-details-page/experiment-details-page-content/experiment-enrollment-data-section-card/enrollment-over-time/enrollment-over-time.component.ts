@@ -53,13 +53,13 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   conditionsFilterOptions: ExperimentConditionFilterOptions[] = [];
   partitionsFilterOptions: ExperimentPartitionFilterOptions[] = [];
   dateFilterOptions: ExperimentDateFilterOptions[] = [
+    { value: DATE_RANGE.TOTAL, viewValue: 'Total' },
     { value: DATE_RANGE.LAST_SEVEN_DAYS, viewValue: 'Last 7 days' },
     { value: DATE_RANGE.LAST_TWO_WEEKS, viewValue: 'Last 2 weeks' },
     { value: DATE_RANGE.LAST_ONE_MONTH, viewValue: 'Last 1 month' },
     { value: DATE_RANGE.LAST_THREE_MONTHS, viewValue: 'Last 3 months' },
     { value: DATE_RANGE.LAST_SIX_MONTHS, viewValue: 'Last 6 months' },
     { value: DATE_RANGE.LAST_TWELVE_MONTHS, viewValue: 'Last 12 months' },
-    { value: DATE_RANGE.TOTAL, viewValue: 'Total' },
   ];
   selectedGroupFilter: string = INDIVIDUAL;
   selectedCondition: string[] = [];
