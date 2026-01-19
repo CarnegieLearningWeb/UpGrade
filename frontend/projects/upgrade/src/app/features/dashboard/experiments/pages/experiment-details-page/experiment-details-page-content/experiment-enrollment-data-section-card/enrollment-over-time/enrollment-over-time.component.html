@@ -110,6 +110,13 @@
           [xAxisTickFormatting]="formateXAxisLabel"
           [yAxisTickFormatting]="formateYAxisLabel"
         >
+          <ng-template #tooltipTemplate let-model="model">
+            <div class="custom-tooltip-content">
+              <span>{{ model.name }}</span>
+              <br />
+              <span>{{ model.value }}</span>
+            </div>
+          </ng-template>
         </ngx-charts-bar-vertical-stacked>
         <div class="spinner" *ngIf="isGraphLoading$ | async">
           <mat-spinner diameter="60"></mat-spinner>
