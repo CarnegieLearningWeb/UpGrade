@@ -8,6 +8,7 @@ import {
   ExperimentPartitionFilterOptions,
   ExperimentDateFilterOptions,
   ExperimentCondition,
+  EXPERIMENT_STATE,
 } from '../../../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../../../core/experiments/experiments.service';
 import { filter } from 'rxjs/operators';
@@ -96,6 +97,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
 
   graphInfoSub: Subscription;
   isGraphLoading$ = this.experimentService.isGraphLoading$;
+  private readonly sinceDateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
 
   constructor(private experimentService: ExperimentService) {
     this.formateXAxisLabel = this.formateXAxisLabel.bind(this);
@@ -137,6 +139,11 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
           ? [INDIVIDUAL]
           : [INDIVIDUAL, this.experiment.group];
     }
+
+    if (changes.experiment) {
+      this.setTotalDateLabel();
+    }
+
     if (this.totalMarkedUsers > 0) {
       this.showLabelOfxAxis = true;
     } else {
@@ -266,22 +273,76 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   }
 
   setEffectiveDateFilter() {
-    const now = new Date();
-    const createdAt = new Date(this.experiment.createdAt);
-    const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-    const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-
     if (this.selectedDateFilter === DATE_RANGE.TOTAL) {
-      if (createdAt > monthAgo) {
-        this.effectiveDateFilter = DATE_RANGE.LAST_ONE_MONTH;
-      } else if (createdAt > yearAgo) {
-        this.effectiveDateFilter = DATE_RANGE.LAST_TWELVE_MONTHS;
-      } else {
-        this.effectiveDateFilter = DATE_RANGE.TOTAL;
-      }
-    } else {
-      this.effectiveDateFilter = this.selectedDateFilter;
+      this.effectiveDateFilter = this.getDynamicTotalRange();
+      return;
     }
+
+    this.effectiveDateFilter = this.selectedDateFilter;
+  }
+
+  private setTotalDateLabel(): void {
+    const totalOption = this.dateFilterOptions.find((option) => option.value === DATE_RANGE.TOTAL);
+    if (!totalOption) {
+      return;
+    }
+
+    const earliestEnrollment = this.getEarliestEnrollmentStartDate();
+    const label = earliestEnrollment ? `Total (Since ${this.sinceDateFormatter.format(earliestEnrollment)})` : 'Total';
+
+    if (totalOption.viewValue !== label) {
+      totalOption.viewValue = label;
+    }
+  }
+
+  private getDynamicTotalRange(): DATE_RANGE {
+    const earliestEnrollment = this.getEarliestEnrollmentStartDate();
+
+    if (!earliestEnrollment) {
+      return DATE_RANGE.LAST_SEVEN_DAYS;
+    }
+
+    const now = new Date();
+    const effectiveStart = earliestEnrollment > now ? now : earliestEnrollment;
+    const rangeBoundaries = [
+      { range: DATE_RANGE.LAST_SEVEN_DAYS, cutoff: this.subtractDays(now, 7) },
+      { range: DATE_RANGE.LAST_TWO_WEEKS, cutoff: this.subtractDays(now, 14) },
+      { range: DATE_RANGE.LAST_ONE_MONTH, cutoff: this.subtractMonths(now, 1) },
+      { range: DATE_RANGE.LAST_THREE_MONTHS, cutoff: this.subtractMonths(now, 3) },
+      { range: DATE_RANGE.LAST_SIX_MONTHS, cutoff: this.subtractMonths(now, 6) },
+      { range: DATE_RANGE.LAST_TWELVE_MONTHS, cutoff: this.subtractMonths(now, 12) },
+    ];
+
+    const matchedWindow = rangeBoundaries.find(({ cutoff }) => effectiveStart >= cutoff);
+    return matchedWindow ? matchedWindow.range : DATE_RANGE.TOTAL;
+  }
+
+  private getEarliestEnrollmentStartDate(): Date | null {
+    if (!this.experiment) {
+      return null;
+    }
+
+    const enrollmentLog = (this.experiment.stateTimeLogs || [])
+      .filter((log) => log.toState === EXPERIMENT_STATE.ENROLLING)
+      .sort((a, b) => new Date(a.timeLog).getTime() - new Date(b.timeLog).getTime())[0];
+
+    if (!enrollmentLog?.timeLog) {
+      return null;
+    }
+
+    return new Date(enrollmentLog.timeLog);
+  }
+
+  private subtractDays(baseDate: Date, days: number): Date {
+    const date = new Date(baseDate);
+    date.setDate(date.getDate() - days);
+    return date;
+  }
+
+  private subtractMonths(baseDate: Date, months: number): Date {
+    const date = new Date(baseDate);
+    date.setMonth(date.getMonth() - months);
+    return date;
   }
 
   getConditionCode(conditionId: string): string {
