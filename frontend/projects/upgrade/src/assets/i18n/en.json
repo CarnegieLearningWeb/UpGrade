@@ -45,7 +45,7 @@
   "global.no-monitored-metrics-tabs.text": "No Monitored Metrics",
   "global.group-type-singular.text": "Group ({{groupType}})",
   "global.group-type-plural.text": "Groups ({{groupType}})",
-  "global.no-participants-included-warning.text": "No participants are currently included.",
+  "global.no-participants-included-warning.text": "No participants are currently included",
   "app-header.title.login": "Login",
   "app-header.title.experiments": "Experiments",
   "app-header.title.experiment-dashboard": "Experiment Dashboard",
