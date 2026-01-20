@@ -258,7 +258,7 @@
   "home.view-experiment.enrollment-time-logs.text": "Time Logs",
   "home.view-experiment.enrollments-over-time.text": "Enrollment by Decision Point",
   "home.view-experiment.enrollment-over-time.choose-date-range.text": "Choose a range",
-  "home.view-experiment.enrollment-over-time.user-enrollments-across-sites.text": "PARTICIPANT ENROLLMENTS ACROSS DECISION POINTS",
+  "home.view-experiment.enrollment-over-time.user-enrollments-across-sites.text": "USER ENROLLMENTS ACROSS DECISION POINTS",
   "home.view-experiment.enrollment-over-time.unique-users-enrolled.text": "UNIQUE USERS ENROLLED",
   "home.view-experiment.enrollment-over-time.unique-groups-enrolled.text": "UNIQUE GROUPS ENROLLED",
   "home.view-experiment.enrollment-over-time.group-enrollments-across-sites.text": "GROUP ENROLLMENTS ACROSS DECISION POINTS",
