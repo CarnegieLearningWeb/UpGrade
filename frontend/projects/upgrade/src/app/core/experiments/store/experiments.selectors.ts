@@ -443,5 +443,14 @@ export const selectWarningKeysForAllExperiments = createSelector(
       warningMap[experiment.id] = getWarningKeysForExperiment(experiment);
     });
     return warningMap;
+
+export const selectHasExperimentStarted = createSelector(
+  selectSelectedExperiment,
+  (experiment: ExperimentVM | undefined): boolean => {
+    if (!experiment?.stateTimeLogs?.length) {
+      return false;
+    }
+
+    return experiment.stateTimeLogs.some((log) => log.toState === EXPERIMENT_STATE.ENROLLING);
   }
 );

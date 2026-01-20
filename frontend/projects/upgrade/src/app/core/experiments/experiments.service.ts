@@ -54,6 +54,7 @@ import {
   selectExperimentActionButtons,
   selectWarningKeysForSelectedExperiment,
   selectWarningKeysForAllExperiments,
+  selectHasExperimentStarted,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -117,6 +118,7 @@ export class ExperimentService {
   );
   warningKeysForSelectedExperiment$ = this.store$.pipe(select(selectWarningKeysForSelectedExperiment));
   warningKeysForAllExperiments$ = this.store$.pipe(select(selectWarningKeysForAllExperiments));
+  hasExperimentStarted$ = this.store$.pipe(select(selectHasExperimentStarted));
 
   selectSearchExperimentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(

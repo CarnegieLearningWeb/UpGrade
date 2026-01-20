@@ -27,9 +27,7 @@
       </mat-error>
       <mat-hint *ngIf="!conditionForm.get('condition')?.hasError('duplicateCondition')" class="form-hint ft-12-400">
         {{ 'experiments.upsert-condition-modal.condition-hint.text' | translate }}
-        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
-          Learn more
-        </a>
+        <app-common-learn-more-link learnMoreLinkKey="glossary.condition"></app-common-learn-more-link>
       </mat-hint>
     </mat-form-field>
 

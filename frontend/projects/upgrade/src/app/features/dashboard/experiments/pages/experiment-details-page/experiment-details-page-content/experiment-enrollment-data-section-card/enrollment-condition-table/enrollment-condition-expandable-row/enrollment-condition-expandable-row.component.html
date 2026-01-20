@@ -4,8 +4,8 @@
     <ng-container *ngFor="let key of displayedColumns" [matColumnDef]="key">
       <mat-header-cell
         [ngClass]="{ 'weight-column': key === 'weight' }"
-        style="justify-content: left; padding-left: 15px"
-        class="ft-12-700"
+        style="justify-content: left; padding-left: 16px;"
+        class="ft-14-600"
         *matHeaderCellDef
       >
         {{ key.includes('Icon') ? '' : columnHeaders[key] }}
@@ -14,7 +14,7 @@
       <mat-cell
         [ngClass]="{ 'weight-column': key === 'weight' }"
         style="justify-content: left"
-        class="ft-12-600"
+        class="ft-14-400"
         *matCellDef="let element; let i = dataIndex"
       >
         <!-- Special handling for weight column when experiment has moocletPolicyParameters -->

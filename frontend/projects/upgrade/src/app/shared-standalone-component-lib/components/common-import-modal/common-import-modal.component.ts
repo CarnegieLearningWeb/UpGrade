@@ -12,6 +12,7 @@ import { CommonModalConfig } from '../common-modal/common-modal.types';
 import { IMPORT_COMPATIBILITY_TYPE, ValidatedImportResponse } from 'upgrade_types';
 import { ImportServiceAdapter } from './common-import-type-adapters';
 import { ImportModalParams } from '../../../shared/services/common-dialog.service';
+import { CommonLearnMoreLinkComponent } from '../common-learn-more-link/common-learn-more-link.component';
 
 /**
  * CommonImportModalComponent
@@ -83,6 +84,7 @@ import { ImportModalParams } from '../../../shared/services/common-dialog.servic
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     CommonModule,
     SharedModule,
     CommonImportContainerComponent,

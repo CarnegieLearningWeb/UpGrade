@@ -8,6 +8,7 @@ import {
   ExperimentPartitionFilterOptions,
   ExperimentDateFilterOptions,
   ExperimentCondition,
+  EXPERIMENT_STATE,
 } from '../../../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../../../core/experiments/experiments.service';
 import { filter } from 'rxjs/operators';
@@ -53,13 +54,13 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   conditionsFilterOptions: ExperimentConditionFilterOptions[] = [];
   partitionsFilterOptions: ExperimentPartitionFilterOptions[] = [];
   dateFilterOptions: ExperimentDateFilterOptions[] = [
+    { value: DATE_RANGE.TOTAL, viewValue: 'Total' },
     { value: DATE_RANGE.LAST_SEVEN_DAYS, viewValue: 'Last 7 days' },
     { value: DATE_RANGE.LAST_TWO_WEEKS, viewValue: 'Last 2 weeks' },
     { value: DATE_RANGE.LAST_ONE_MONTH, viewValue: 'Last 1 month' },
     { value: DATE_RANGE.LAST_THREE_MONTHS, viewValue: 'Last 3 months' },
     { value: DATE_RANGE.LAST_SIX_MONTHS, viewValue: 'Last 6 months' },
     { value: DATE_RANGE.LAST_TWELVE_MONTHS, viewValue: 'Last 12 months' },
-    { value: DATE_RANGE.TOTAL, viewValue: 'Total' },
   ];
   selectedGroupFilter: string = INDIVIDUAL;
   selectedCondition: string[] = [];
@@ -93,11 +94,13 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   };
   totalMarkedUsers = 0;
   totalMarkedGroups = 0;
+  yScaleMax: number | undefined;
 
   graphInfoSub: Subscription;
   isGraphLoading$ = this.experimentService.isGraphLoading$;
+  private readonly sinceDateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
 
-  constructor(private experimentService: ExperimentService) {
+  constructor(private readonly experimentService: ExperimentService) {
     this.formateXAxisLabel = this.formateXAxisLabel.bind(this);
   }
 
@@ -137,10 +140,9 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
           ? [INDIVIDUAL]
           : [INDIVIDUAL, this.experiment.group];
     }
-    if (this.totalMarkedUsers > 0) {
-      this.showLabelOfxAxis = true;
-    } else {
-      this.showLabelOfxAxis = false;
+
+    if (changes.experiment) {
+      this.setTotalDateLabel();
     }
   }
 
@@ -180,24 +182,10 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   }
 
   populateGraphData(graphData: IEnrollmentStatByDate[]) {
-    this.graphData = this.setDataInGraphFormat(graphData);
-    switch (this.effectiveDateFilter) {
-      case DATE_RANGE.LAST_SEVEN_DAYS:
-        this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(5)];
-        break;
-      case DATE_RANGE.LAST_TWO_WEEKS:
-        this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(1)];
-        break;
-      case DATE_RANGE.LAST_THREE_MONTHS:
-        this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(9)];
-        break;
-      case DATE_RANGE.LAST_SIX_MONTHS:
-        this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(6)];
-        break;
-      default:
-        this.graphData = [...this.graphData];
-        break;
-    }
+    this.graphData = [...this.setDataInGraphFormat(graphData)];
+
+    // Set y-axis max to 1 when there's no enrollment data to show proper grid lines
+    this.yScaleMax = this.totalMarkedUsers === 0 && this.totalMarkedGroups === 0 ? 1 : undefined;
   }
 
   setDataInGraphFormat(data: IEnrollmentStatByDate[]) {
@@ -283,22 +271,76 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   }
 
   setEffectiveDateFilter() {
-    const now = new Date();
-    const createdAt = new Date(this.experiment.createdAt);
-    const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-    const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-
     if (this.selectedDateFilter === DATE_RANGE.TOTAL) {
-      if (createdAt > monthAgo) {
-        this.effectiveDateFilter = DATE_RANGE.LAST_ONE_MONTH;
-      } else if (createdAt > yearAgo) {
-        this.effectiveDateFilter = DATE_RANGE.LAST_TWELVE_MONTHS;
-      } else {
-        this.effectiveDateFilter = DATE_RANGE.TOTAL;
-      }
-    } else {
-      this.effectiveDateFilter = this.selectedDateFilter;
+      this.effectiveDateFilter = this.getDynamicTotalRange();
+      return;
     }
+
+    this.effectiveDateFilter = this.selectedDateFilter;
+  }
+
+  private setTotalDateLabel(): void {
+    const totalOption = this.dateFilterOptions.find((option) => option.value === DATE_RANGE.TOTAL);
+    if (!totalOption) {
+      return;
+    }
+
+    const earliestEnrollment = this.getEarliestEnrollmentStartDate();
+    const label = earliestEnrollment ? `Total (Since ${this.sinceDateFormatter.format(earliestEnrollment)})` : 'Total';
+
+    if (totalOption.viewValue !== label) {
+      totalOption.viewValue = label;
+    }
+  }
+
+  private getDynamicTotalRange(): DATE_RANGE {
+    const earliestEnrollment = this.getEarliestEnrollmentStartDate();
+
+    if (!earliestEnrollment) {
+      return DATE_RANGE.LAST_SEVEN_DAYS;
+    }
+
+    const now = new Date();
+    const effectiveStart = earliestEnrollment > now ? now : earliestEnrollment;
+    const rangeBoundaries = [
+      { range: DATE_RANGE.LAST_SEVEN_DAYS, cutoff: this.subtractDays(now, 7) },
+      { range: DATE_RANGE.LAST_TWO_WEEKS, cutoff: this.subtractDays(now, 14) },
+      { range: DATE_RANGE.LAST_ONE_MONTH, cutoff: this.subtractMonths(now, 1) },
+      { range: DATE_RANGE.LAST_THREE_MONTHS, cutoff: this.subtractMonths(now, 3) },
+      { range: DATE_RANGE.LAST_SIX_MONTHS, cutoff: this.subtractMonths(now, 6) },
+      { range: DATE_RANGE.LAST_TWELVE_MONTHS, cutoff: this.subtractMonths(now, 12) },
+    ];
+
+    const matchedWindow = rangeBoundaries.find(({ cutoff }) => effectiveStart >= cutoff);
+    return matchedWindow ? matchedWindow.range : DATE_RANGE.TOTAL;
+  }
+
+  private getEarliestEnrollmentStartDate(): Date | null {
+    if (!this.experiment) {
+      return null;
+    }
+
+    const enrollmentLog = (this.experiment.stateTimeLogs || [])
+      .filter((log) => log.toState === EXPERIMENT_STATE.ENROLLING)
+      .sort((a, b) => new Date(a.timeLog).getTime() - new Date(b.timeLog).getTime())[0];
+
+    if (!enrollmentLog?.timeLog) {
+      return null;
+    }
+
+    return new Date(enrollmentLog.timeLog);
+  }
+
+  private subtractDays(baseDate: Date, days: number): Date {
+    const date = new Date(baseDate);
+    date.setDate(date.getDate() - days);
+    return date;
+  }
+
+  private subtractMonths(baseDate: Date, months: number): Date {
+    const date = new Date(baseDate);
+    date.setMonth(date.getMonth() - months);
+    return date;
   }
 
   getConditionCode(conditionId: string): string {
@@ -306,18 +348,6 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       (acc, condition) => (acc = condition.id === conditionId ? condition.conditionCode : acc),
       ''
     );
-  }
-
-  // Used to form empty series data to keep graph bar width same different value of time filter
-  formEmptyGraphSeriesData(limit: number) {
-    const emptySeries = [];
-    for (let i = 0; i < limit; i++) {
-      emptySeries.push({
-        name: i,
-        series: [{ name: '', value: 0 }],
-      });
-    }
-    return emptySeries;
   }
 
   // For maintaining checkbox Select All in condition and partition filter

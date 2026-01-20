@@ -10,7 +10,10 @@ import { BehaviorSubject, Observable, Subscription, combineLatestWith, map, star
 import isEqual from 'lodash.isequal';
 import { take } from 'rxjs/operators';
 
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import {
+  CommonModalComponent,
+  CommonLearnMoreLinkComponent,
+} from '../../../../../shared-standalone-component-lib/components';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
@@ -25,6 +28,7 @@ export interface EditPayloadModalParams {
   selector: 'edit-payload-modal',
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     MatFormFieldModule,
     MatInputModule,
     TextFieldModule,

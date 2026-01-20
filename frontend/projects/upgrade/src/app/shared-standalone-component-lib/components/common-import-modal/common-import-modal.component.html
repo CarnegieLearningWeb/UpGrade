@@ -19,9 +19,7 @@
           <span *ngIf="config.params.messageKey">
             {{ config.params.messageKey | translate }}
           </span>
-          <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer"
-            >Learn more</a
-          >
+          <app-common-learn-more-link learnMoreLinkKey="guide.importing-entities"></app-common-learn-more-link>
         </p>
       </ng-container>
       <ng-template #validationTable>
