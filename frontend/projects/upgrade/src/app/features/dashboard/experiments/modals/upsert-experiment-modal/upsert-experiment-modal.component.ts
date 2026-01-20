@@ -46,6 +46,7 @@ import { SharedModule } from '../../../../../shared/shared.module';
 import { TsConfigurablePolicyParametersFormComponent } from './ts-configurable-policy-parameters-form/ts-configurable-policy-parameters-form.component';
 import { MoocletExperimentHelperService } from '../../../../../core/experiments/mooclet-helper.service';
 import { CommonLearnMoreLinkComponent } from '../../../../../shared-standalone-component-lib/components';
+import { getDisabledFields } from '../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'upsert-experiment-modal',
@@ -110,6 +111,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   moocletPolicyParametersFormValue: MoocletPolicyParametersDTO;
   isMoocletFormValid$ = new BehaviorSubject<boolean>(true);
   isMoocletFormChanged$ = new BehaviorSubject<boolean>(false);
+  isMoocletFormDisabled = false; // Set to true when experiment is in CANCELLED state
 
   // Enum references for template
   UPSERT_EXPERIMENT_ACTION = UPSERT_EXPERIMENT_ACTION;
@@ -215,8 +217,8 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.listenForContextMetaData();
     this.listenForStratificationFactors();
 
-    // Disable restricted fields if editing
-    if (this.isDisabled()) {
+    // Disable restricted fields if editing (based on experiment state)
+    if (this.config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT) {
       this.disableRestrictedFields();
     }
 
@@ -228,21 +230,19 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.listenOnUnitOfAssignment();
   }
 
-  isDisabled() {
-    return (
-      this.config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT &&
-      this.config.params.sourceExperiment?.state === EXPERIMENT_STATE.ENROLLING
-    );
-  }
-
   disableRestrictedFields(): void {
-    this.experimentForm.get('appContext')?.disable();
-    this.experimentForm.get('experimentType')?.disable();
-    this.experimentForm.get('unitOfAssignment')?.disable();
-    this.experimentForm.get('consistencyRule')?.disable();
-    this.experimentForm.get('conditionOrder')?.disable();
-    this.experimentForm.get('assignmentAlgorithm')?.disable();
-    this.experimentForm.get('groupType')?.disable();
+    const state = this.config.params.sourceExperiment?.state;
+    const fieldsToDisable = getDisabledFields(state);
+
+    // Disable all fields returned by the helper
+    fieldsToDisable.forEach((fieldName) => {
+      this.experimentForm.get(fieldName)?.disable();
+    });
+
+    // Handle moocletPolicyParameters separately (it's a child form component)
+    if (fieldsToDisable.includes('moocletPolicyParameters')) {
+      this.isMoocletFormDisabled = true;
+    }
   }
 
   createExperimentForm(): void {
@@ -275,7 +275,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       this.moocletPolicyParametersFormValue = sourceExperiment.moocletPolicyParameters;
     }
 
-    this.initialFormValues$.next(this.experimentForm.value);
+    this.initialFormValues$.next(this.experimentForm.getRawValue() as ExperimentFormData);
   }
 
   initializeConsistencyRules(unitOfAssignment: ASSIGNMENT_UNIT): void {
@@ -359,8 +359,8 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   listenForIsInitialFormValueChanged() {
     this.isInitialFormValueChanged$ = this.experimentForm.valueChanges.pipe(
-      startWith(this.experimentForm.value),
-      map(() => !isEqual(this.experimentForm.value, this.initialFormValues$.value))
+      startWith(this.experimentForm.getRawValue()),
+      map(() => !isEqual(this.experimentForm.getRawValue(), this.initialFormValues$.value))
     );
     this.subscriptions.add(this.isInitialFormValueChanged$.subscribe());
   }
@@ -584,7 +584,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }
 
   sendRequest(action: UPSERT_EXPERIMENT_ACTION, sourceExperiment?: Experiment): void {
-    const formData: ExperimentFormData = this.experimentForm.value;
+    const formData = this.experimentForm.getRawValue() as ExperimentFormData;
     if (action === UPSERT_EXPERIMENT_ACTION.ADD) {
       this.createAddRequest(formData);
     } else if (action === UPSERT_EXPERIMENT_ACTION.DUPLICATE) {

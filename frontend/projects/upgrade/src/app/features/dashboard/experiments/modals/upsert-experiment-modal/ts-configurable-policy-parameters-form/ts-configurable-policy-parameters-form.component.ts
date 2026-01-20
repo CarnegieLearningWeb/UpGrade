@@ -33,6 +33,7 @@ import isEqual from 'lodash.isequal';
 export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDestroy {
   @Input() existingPolicyParams?: MoocletTSConfigurablePolicyParametersDTO;
   @Input() experimentNameValue?: string;
+  @Input() disabled = false; // Disable all form fields when true
   @Output() parametersChange = new EventEmitter<MoocletTSConfigurablePolicyParametersDTO>();
   @Output() validationChange = new EventEmitter<boolean>();
   @Output() formChanged = new EventEmitter<boolean>();
@@ -50,6 +51,12 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   ngOnInit(): void {
     this.initializeFormValues();
     this.createForm();
+
+    // Disable form if disabled input is true
+    if (this.disabled) {
+      this.policyForm.disable();
+    }
+
     this.setupValidation();
     this.listenToFormChanges();
     this.listenForIsInitialFormValueChanged();
@@ -102,8 +109,9 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   }
 
   private emitValidationState(backendErrors: ValidationError[]): void {
-    // Form is valid only if both Angular validators pass AND backend validation passes
-    const isValid = this.policyForm.valid && backendErrors.length === 0;
+    // Treat disabled form as valid; otherwise require Angular + backend validation to pass
+    const formDisabled = this.policyForm.disabled;
+    const isValid = formDisabled || (this.policyForm.valid && backendErrors.length === 0);
     this.validationChange.emit(isValid);
   }
 

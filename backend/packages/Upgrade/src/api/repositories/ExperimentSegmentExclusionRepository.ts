@@ -39,6 +39,7 @@ export class ExperimentSegmentExclusionRepository extends Repository<ExperimentS
       .leftJoin('experimentSegmentExclusion.segment', 'segment')
       .leftJoinAndSelect('segment.subSegments', 'subSegments')
       .addSelect('experiment.name')
+      .addSelect('experiment.description')
       .addSelect('experiment.state')
       .addSelect('experiment.context')
       .addSelect('segment.id')

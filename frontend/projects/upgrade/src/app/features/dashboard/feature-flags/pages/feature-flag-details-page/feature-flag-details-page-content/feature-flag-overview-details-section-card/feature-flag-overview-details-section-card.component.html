@@ -6,9 +6,7 @@
     [createdAt]="flag.createdAt"
     [updatedAt]="flag.updatedAt"
     [chipClass]="flag.status"
-    [warningMessage]="
-      (shouldShowWarning$ | async) ? ('feature-flags.global-status-warning-tooltip.text' | translate) : ''
-    "
+    [warningMessageKeys]="warningKeysForSelectedFlag$ | async"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
@@ -17,7 +15,7 @@
     [showSlideToggle]="(permissions$ | async)?.featureFlags.update"
     [slideToggleChecked]="flag.status === FEATURE_FLAG_STATUS.ENABLED"
     [slideToggleText]="'feature-flags.enable.text' | translate"
-    [showMenuButton]="!(isUserReader$ | async)"
+    [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems$ | async"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (slideToggleChange)="onSlideToggleChange($event, flag)"

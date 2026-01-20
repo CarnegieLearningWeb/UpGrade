@@ -20,21 +20,14 @@ import {
   EXPERIMENT_ACTION_BUTTON_TYPE,
   POST_EXPERIMENT_RULE,
   PAUSE_BEHAVIOR_MODAL_MODE,
+  EXPERIMENT_DETAILS_PAGE_ACTIONS,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
-export enum EXPERIMENT_DETAILS_PAGE_ACTIONS {
-  EDIT = 'edit',
-  DUPLICATE = 'duplicate',
-  EXPORT_DESIGN = 'exportDesign',
-  EMAIL_DATA = 'emailData',
-  ARCHIVE = 'archive',
-  DELETE = 'delete',
-}
+import { isMenuItemDisabled } from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'app-experiment-overview-details-section-card',
@@ -69,9 +62,16 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   bullettedListKeys = [EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS];
 
   // Action buttons - maps ExperimentActionButton[] to ActionButton[]
-  actionButtons$: Observable<ActionButton[]> = this.experimentService.experimentActionButtons$.pipe(
-    map((buttons) =>
-      buttons.map((button) => ({
+  // Only shown when user has update permission
+  actionButtons$: Observable<ActionButton[]> = combineLatest([
+    this.experimentService.experimentActionButtons$,
+    this.permissions$,
+  ]).pipe(
+    map(([buttons, permissions]) => {
+      if (!permissions?.experiments.update) {
+        return [];
+      }
+      return buttons.map((button) => ({
         action: button.action,
         icon: button.icon,
         disabled: button.disabled,
@@ -79,8 +79,8 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         tooltipClass: button.disabledReasons ? 'start-button-tooltip' : undefined,
         translationKey: button.translationKey,
         colorClass: `button-${button.action}`, // Maps to CSS classes: button-start, button-pause, etc.
-      }))
-    )
+      }));
+    })
   );
 
   constructor(
@@ -98,42 +98,52 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   }
   ngOnInit(): void {
     this.subscriptions.add(this.experimentService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
-
     this.menuButtonItems$ = this.experimentAndPermissions$.pipe(
-      map(({ permissions }) => [
+      map(({ experiment, permissions }) => [
         {
           label: 'experiments.details.edit-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT,
-          disabled: !permissions?.experiments.update,
+          disabled:
+            !permissions?.experiments.update ||
+            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT, experiment?.state),
         },
         {
           label: 'experiments.details.duplicate-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.DUPLICATE,
-          disabled: !permissions?.experiments.create,
+          disabled:
+            !permissions?.experiments.create ||
+            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.DUPLICATE, experiment?.state),
         },
         {
           label: 'experiments.details.export-experiment-design.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
-          disabled: false,
+          disabled: isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN, experiment?.state),
         },
         {
           label: 'experiments.details.email-experiment-data.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
-          disabled: false,
+          disabled:
+            !permissions?.experiments.update ||
+            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA, experiment?.state),
         },
         {
           label: 'experiments.details.archive-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE,
-          disabled: true, // TODO: Implement archive functionality
+          disabled:
+            !permissions?.experiments.update ||
+            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE, experiment?.state),
         },
         {
           label: 'experiments.details.delete-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE,
-          disabled: !permissions?.experiments.delete, // TODO: check state to allow delete?
+          disabled:
+            !permissions?.experiments.delete ||
+            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE, experiment?.state),
         },
       ])
     );
   }
+
   onSectionCardExpandChange(expanded: boolean): void {
     this.isSectionCardExpanded = expanded;
     this.sectionCardExpandChange.emit(expanded);
@@ -155,7 +165,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         this.dialogService.openDuplicateExperimentModal(experiment);
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE:
-        console.log('Archive experiment - TODO: Implement');
+        this.openConfirmArchiveModal(experiment.id, experiment.name);
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN:
         this.openConfirmExportDesignModal(experiment.id);
@@ -176,6 +186,22 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         .subscribe((isExportClicked: boolean) => {
           if (isExportClicked) {
             this.experimentService.exportExperimentDesign([id]);
+          }
+        })
+    );
+  }
+
+  openConfirmArchiveModal(id: string, name: string) {
+    this.subscriptions.add(
+      this.dialogService
+        .openArchiveExperimentModal(name)
+        .afterClosed()
+        .subscribe((confirmed: boolean) => {
+          if (confirmed) {
+            const experimentStateInfo: ExperimentStateInfo = {
+              newStatus: EXPERIMENT_STATE.ARCHIVED,
+            };
+            this.experimentService.updateExperimentState(id, experimentStateInfo);
           }
         })
     );
