@@ -43,6 +43,7 @@
       <td mat-cell *matCellDef="let experiment" class="status-column ft-14-400">
         <app-common-status-indicator-chip
           [chipClass]="experiment.state"
+          [warningMessageKeys]="(warningKeysForAllExperiments$ | async)[experiment.id] || []"
         ></app-common-status-indicator-chip>
       </td>
     </ng-container>

@@ -572,6 +572,7 @@
   "experiments.edit-condition-weights-modal.equal-assignment-weights.description.text": "Equally distribute weight percentages across all conditions.",
   "experiments.edit-condition-weights-modal.custom-percentages.label.text": "Custom Percentages",
   "experiments.edit-condition-weights-modal.custom-percentages.description.text": "Define a custom weight percentage for each condition.",
+  "experiments.warning.no-inclusions.text": "No participants lists included",
   "feature-flags.global-name.text": "Name",
   "feature-flags.global-status.text": "Status",
   "feature-flags.warning.no-enabled-inclusions.text": "No include lists enabled",
