@@ -1,10 +1,11 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany, Index } from 'typeorm';
 import { IsNotEmpty, IsAlphanumeric, IsNumber } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
 import { ConditionPayload } from './ConditionPayload';
 
 @Entity()
+@Index('idx_decision_point_experiment', ['experiment'])
 export class DecisionPoint extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;

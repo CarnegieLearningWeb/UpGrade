@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany, Index } from 'typeorm';
 import { IsNotEmpty, IsNumber, IsAlphanumeric } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
@@ -6,6 +6,7 @@ import { ConditionPayload } from './ConditionPayload';
 import { LevelCombinationElement } from './LevelCombinationElement';
 
 @Entity()
+@Index('idx_experiment_condition_experiment', ['experiment'])
 export class ExperimentCondition extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;

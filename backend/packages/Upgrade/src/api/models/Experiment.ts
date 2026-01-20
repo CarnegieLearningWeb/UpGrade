@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, OneToMany, ManyToOne } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany, ManyToOne, Index } from 'typeorm';
 import { IsNotEmpty, ValidateNested, ValidateIf } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { DecisionPoint } from './DecisionPoint';
@@ -37,6 +37,9 @@ export {
 };
 
 @Entity()
+@Index('idx_experiment_updated_at', ['updatedAt'])
+@Index('idx_experiment_state', ['state'])
+@Index('idx_experiment_name', ['name'])
 export class Experiment extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;
