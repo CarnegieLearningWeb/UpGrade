@@ -6,10 +6,7 @@
     [createdAt]="flag.createdAt"
     [updatedAt]="flag.updatedAt"
     [chipClass]="flag.status"
-    [id]="flag.id"
-    [warningMessage]="
-      (shouldShowWarning$ | async) ? ('feature-flags.global-status-warning-tooltip.text' | translate) : ''
-    "
+    [warningMessageKeys]="warningKeysForSelectedFlag$ | async"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
