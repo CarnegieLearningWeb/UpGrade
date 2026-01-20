@@ -536,6 +536,7 @@
   "experiments.upsert-metric-modal.display-name-hint.text": "The display name is used to refer to this metric in the experiment UI.",
   "experiments.details.enrollment-data.card.title.text": "Enrollment Data",
   "experiments.details.enrollment-data.card.subtitle.text": "Enrollments reflect participants who have started the experiment.",
+  "experiments.details.enrollment-data.card.not-started-label.text": "Experiment hasn’t started yet",
   "experiments.details.export-enrollment-data.menu-item.text": "Export Enrollment Data",
   "experiments.details.metrics-data.card.title.text": "Metrics Data",
   "experiments.details.metrics-data.card.subtitle.text": "Metrics reflect participants who have provided data on the relevant metric.",

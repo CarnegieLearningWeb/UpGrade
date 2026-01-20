@@ -52,6 +52,7 @@ import {
   selectIsLoadingExperimentDelete,
   selectIsLoadingImportExperiment,
   selectExperimentActionButtons,
+  selectHasExperimentStarted,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -113,6 +114,7 @@ export class ExperimentService {
   experimentActionButtons$: Observable<ExperimentActionButton[]> = this.store$.pipe(
     select(selectExperimentActionButtons)
   );
+  hasExperimentStarted$ = this.store$.pipe(select(selectHasExperimentStarted));
 
   selectSearchExperimentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(

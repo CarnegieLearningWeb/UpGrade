@@ -1,6 +1,4 @@
 .enrollment-over-time {
-  padding: 0 32px 32px;
-
   .heading {
     display: block;
   }
@@ -16,12 +14,12 @@
     }
 
     .conditions {
-      width: 40%;
+      width: 35%;
     }
 
     .type,
     .time {
-      width: 17.5%;
+      width: 20%;
     }
   }
 
@@ -131,9 +129,4 @@
 
 .mat-mdc-checkbox {
   padding-left: 4px;
-}
-
-/* Adjust ngx-charts x-axis label vertical spacing (SVG) */
-:host ::ng-deep ngx-charts-bar-vertical-stacked .x.axis text {
-  baseline-shift: -0.8em;
 }
