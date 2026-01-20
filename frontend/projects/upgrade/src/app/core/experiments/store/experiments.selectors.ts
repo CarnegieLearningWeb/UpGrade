@@ -419,7 +419,7 @@ const getWarningKeysForExperiment = (experiment: Experiment): string[] => {
 
   // Check each warning type (in future more types can be added here)
   if (hasNoInclusionsWarning(experiment)) {
-    warnings.push('experiments.warning.no-inclusions.text');
+    warnings.push('global.no-participants-included-warning.text');
   }
 
   return warnings;

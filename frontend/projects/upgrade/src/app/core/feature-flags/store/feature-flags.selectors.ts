@@ -196,7 +196,7 @@ const getWarningKeysForFlag = (flag: FeatureFlag): string[] => {
 
   // Check each warning type (in future more types can be added here)
   if (hasNoEnabledInclusionsWarning(flag)) {
-    warnings.push('feature-flags.warning.no-enabled-inclusions.text');
+    warnings.push('global.no-participants-included-warning.text');
   }
 
   return warnings;

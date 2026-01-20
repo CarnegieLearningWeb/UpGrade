@@ -77,7 +77,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         icon: button.icon,
         disabled: button.disabled,
         tooltip: button.disabledReasons ? this.formatTooltip(button.disabledReasons) : undefined,
-        tooltipClass: button.disabledReasons ? 'start-button-tooltip' : undefined,
+        tooltipClass: button.disabledReasons ? 'multiline-tooltip' : undefined,
         translationKey: button.translationKey,
         colorClass: `button-${button.action}`, // Maps to CSS classes: button-start, button-pause, etc.
       }));
