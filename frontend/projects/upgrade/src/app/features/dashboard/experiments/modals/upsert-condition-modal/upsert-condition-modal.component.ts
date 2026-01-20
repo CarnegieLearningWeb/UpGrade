@@ -18,7 +18,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, Observable, Subscription, combineLatestWith, map, of, startWith, take } from 'rxjs';
 import isEqual from 'lodash.isequal';
 
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import {
+  CommonModalComponent,
+  CommonLearnMoreLinkComponent,
+} from '../../../../../shared-standalone-component-lib/components';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { ConditionHelperService } from '../../../../../core/experiments/condition-helper.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
@@ -37,6 +40,7 @@ import { SharedModule } from '../../../../../shared/shared.module';
   selector: 'upsert-condition-modal',
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     MatFormFieldModule,
     MatInputModule,
     MatAutocompleteModule,

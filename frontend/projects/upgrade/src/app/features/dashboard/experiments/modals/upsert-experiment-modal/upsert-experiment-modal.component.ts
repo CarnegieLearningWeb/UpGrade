@@ -45,12 +45,14 @@ import { ENV, Environment } from '../../../../../../environments/environment-typ
 import { SharedModule } from '../../../../../shared/shared.module';
 import { TsConfigurablePolicyParametersFormComponent } from './ts-configurable-policy-parameters-form/ts-configurable-policy-parameters-form.component';
 import { MoocletExperimentHelperService } from '../../../../../core/experiments/mooclet-helper.service';
+import { CommonLearnMoreLinkComponent } from '../../../../../shared-standalone-component-lib/components';
 import { getDisabledFields } from '../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'upsert-experiment-modal',
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,

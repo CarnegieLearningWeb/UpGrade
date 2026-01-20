@@ -32,11 +32,13 @@ import {
   Experiment,
 } from '../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../shared/shared.module';
+import { CommonLearnMoreLinkComponent } from '../../../../../shared-standalone-component-lib/components';
 
 @Component({
   selector: 'upsert-decision-point-modal',
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     MatFormFieldModule,
     MatInputModule,
     MatCheckboxModule,
