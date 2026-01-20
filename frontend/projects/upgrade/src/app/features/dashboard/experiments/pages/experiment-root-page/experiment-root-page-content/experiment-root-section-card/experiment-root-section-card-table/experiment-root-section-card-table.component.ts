@@ -54,6 +54,7 @@ export class ExperimentRootSectionCardTableComponent implements OnInit {
   @Output() tagsExpanded = new EventEmitter<{ experimentId: string; expanded: boolean }>();
   experimentSortKey$ = this.experimentService.selectExperimentSortKey$;
   experimentSortAs$ = this.experimentService.selectExperimentSortAs$;
+  warningKeysForAllExperiments$ = this.experimentService.warningKeysForAllExperiments$;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild('tableContainer') tableContainer: ElementRef;

@@ -21,6 +21,7 @@ import {
   CONDITION_ORDER_DISPLAY_MAP,
   CONSISTENCY_RULE_DISPLAY_MAP,
   ASSIGNMENT_UNIT_DISPLAY_MAP,
+  FILTER_MODE,
 } from 'upgrade_types';
 import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
 import { formatTSConfigurablePolicyParamDetails } from '../mooclet-helper.service';
@@ -401,6 +402,47 @@ export const selectCurrentPosteriorsTableData = createSelector(
     });
 
     return rows;
+  }
+);
+
+// Warning logic for experiments
+const hasNoInclusionsWarning = (experiment: Experiment): boolean => {
+  return (
+    experiment?.state === EXPERIMENT_STATE.ENROLLING &&
+    experiment?.filterMode !== FILTER_MODE.INCLUDE_ALL &&
+    (!experiment?.experimentSegmentInclusion || experiment.experimentSegmentInclusion.length === 0)
+  );
+};
+
+const getWarningKeysForExperiment = (experiment: Experiment): string[] => {
+  const warnings: string[] = [];
+
+  // Check each warning type (in future more types can be added here)
+  if (hasNoInclusionsWarning(experiment)) {
+    warnings.push('global.no-participants-included-warning.text');
+  }
+
+  return warnings;
+};
+
+export const selectWarningKeysForSelectedExperiment = createSelector(
+  selectSelectedExperiment,
+  (experiment): string[] => {
+    if (!experiment) {
+      return [];
+    }
+    return getWarningKeysForExperiment(experiment);
+  }
+);
+
+export const selectWarningKeysForAllExperiments = createSelector(
+  selectAllExperiment,
+  (experiments): Record<string, string[]> => {
+    const warningMap: Record<string, string[]> = {};
+    experiments.forEach((experiment) => {
+      warningMap[experiment.id] = getWarningKeysForExperiment(experiment);
+    });
+    return warningMap;
   }
 );
 

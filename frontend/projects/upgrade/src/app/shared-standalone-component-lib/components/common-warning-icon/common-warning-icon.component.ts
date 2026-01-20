@@ -52,9 +52,8 @@ export class CommonWarningIconComponent implements OnInit, OnChanges {
 
     if (translatedMessages.length === 1) {
       this.formattedWarningMessage = translatedMessages[0];
-      return;
     } else {
-      this.formattedWarningMessage = '• ' + translatedMessages.join('\n• ');
+      this.formattedWarningMessage = `• ${translatedMessages.join('\n• ')}`;
     }
   }
 }

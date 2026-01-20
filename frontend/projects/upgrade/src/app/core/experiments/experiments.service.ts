@@ -52,6 +52,8 @@ import {
   selectIsLoadingExperimentDelete,
   selectIsLoadingImportExperiment,
   selectExperimentActionButtons,
+  selectWarningKeysForSelectedExperiment,
+  selectWarningKeysForAllExperiments,
   selectHasExperimentStarted,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
@@ -114,6 +116,8 @@ export class ExperimentService {
   experimentActionButtons$: Observable<ExperimentActionButton[]> = this.store$.pipe(
     select(selectExperimentActionButtons)
   );
+  warningKeysForSelectedExperiment$ = this.store$.pipe(select(selectWarningKeysForSelectedExperiment));
+  warningKeysForAllExperiments$ = this.store$.pipe(select(selectWarningKeysForAllExperiments));
   hasExperimentStarted$ = this.store$.pipe(select(selectHasExperimentStarted));
 
   selectSearchExperimentParams(): Observable<Record<string, unknown>> {

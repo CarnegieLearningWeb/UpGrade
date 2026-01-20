@@ -581,6 +581,13 @@ button[mat-icon-button] {
   line-height: 1.5;
 }
 
+// Multi-line tooltip styling for tooltips with newline characters
+.multiline-tooltip .mdc-tooltip__surface {
+  white-space: pre-line;
+  line-height: 1.5;
+  max-width: 500px;
+}
+
 // Line clamp utility classes for text truncation
 .line-clamp-1,
 .line-clamp-2,
