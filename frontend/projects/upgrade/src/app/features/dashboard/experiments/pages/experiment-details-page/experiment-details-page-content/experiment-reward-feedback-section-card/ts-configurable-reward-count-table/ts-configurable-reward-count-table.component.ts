@@ -17,5 +17,5 @@ export class TSConfigurableRewardCountTableComponent {
   @Input() dataSource: CurrentPosteriorsTableRow[] = [];
   @Input() isLoading = false;
 
-  displayedColumns = ['conditionCode', 'successes', 'failures', 'total', 'successRate'];
+  displayedColumns = ['conditionCode', 'successes', 'failures', 'total', 'successRate', 'spacer'];
 }

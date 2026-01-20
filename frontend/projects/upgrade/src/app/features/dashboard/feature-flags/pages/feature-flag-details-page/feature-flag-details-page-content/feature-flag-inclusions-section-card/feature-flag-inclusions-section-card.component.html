@@ -1,39 +1,52 @@
-<app-common-section-card *ngIf="selectedFlag$ | async as flag">
-  <!-- header-left -->
-  <app-common-section-card-title-header
-    header-left
-    [title]="'feature-flags.details.inclusions.card.title.text' | translate"
-    [subtitle]="'feature-flags.details.inclusions.card.subtitle.text' | translate"
-    [tableRowCount]="rowCountWithInclude$ | async"
-  ></app-common-section-card-title-header>
+@if (selectedFlag$ | async; as flag) {
+  @let canShowSegmentActions = (permissions$ | async)?.segments.update;
+  @let appContext = flag.context[0];
+  @let isIncludeAll = flag.filterMode === FILTER_MODE.INCLUDE_ALL;
 
-  <!-- header-right -->
-  <app-common-section-card-action-buttons
-    header-right
-    [showSlideToggle]="true"
-    [slideToggleText]="'feature-flags.details.inclusions.include-all.toggle.text' | translate"
-    [slideToggleChecked]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
-    [slideToggleDisabled]="!(permissions$ | async)?.segments.update"
-    [showPrimaryButton]="(permissions$ | async)?.segments.update"
-    [primaryButtonText]="'feature-flags.details.add-include-list.button.text' | translate"
-    [showMenuButton]="(permissions$ | async)?.segments.update"
-    [menuButtonItems]="menuButtonItems"
-    [isSectionCardExpanded]="isSectionCardExpanded && flag.filterMode !== FILTER_MODE.INCLUDE_ALL"
-    [primaryActionBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
-    [sectionCardExpandBtnDisabled]="flag.filterMode === FILTER_MODE.INCLUDE_ALL"
-    (primaryButtonClick)="onAddIncludeListClick(flag.context[0], flag.id)"
-    (menuButtonItemClick)="onMenuButtonItemClick($event, flag)"
-    (slideToggleChange)="onSlideToggleChange($event, flag.id)"
-    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
-  >
-  </app-common-section-card-action-buttons>
+  <app-common-section-card>
+    <!-- header-left -->
+    <app-common-section-card-title-header
+      header-left
+      [title]="'feature-flags.details.inclusions.card.title.text' | translate"
+      [subtitle]="'feature-flags.details.inclusions.card.subtitle.text' | translate"
+      [tableRowCount]="rowCountWithInclude$ | async"
+    ></app-common-section-card-title-header>
 
-  <!-- content -->
-  <app-feature-flag-inclusions-table
-    content
-    *ngIf="isSectionCardExpanded && flag.filterMode !== FILTER_MODE.INCLUDE_ALL"
-    [slideToggleDisabled]="!(permissions$ | async)?.segments.update"
-    [actionsDisabled]="!(permissions$ | async)?.segments.update"
-    (rowAction)="onRowAction($event, flag.id)"
-  ></app-feature-flag-inclusions-table>
-</app-common-section-card>
+    <!-- header-right -->
+    <app-common-section-card-action-buttons
+      header-right
+      [showSlideToggle]="canShowSegmentActions || isIncludeAll"
+      [slideToggleText]="'feature-flags.details.inclusions.include-all.toggle.text' | translate"
+      [slideToggleChecked]="isIncludeAll"
+      [slideToggleDisabled]="!canShowSegmentActions"
+      [slideToggleTooltip]="'feature-flags.details.restrictions.include-all-read-only.text' | translate"
+      [showPrimaryButton]="canShowSegmentActions"
+      [primaryButtonText]="'feature-flags.details.add-include-list.button.text' | translate"
+      [primaryActionBtnDisabled]="isIncludeAll"
+      [primaryButtonTooltip]="'feature-flags.details.restrictions.include-all-enabled.text' | translate"
+      [showMenuButton]="true"
+      [menuButtonItems]="menuButtonItems$ | async"
+      [menuButtonDisabled]="isIncludeAll"
+      [menuButtonTooltip]="'feature-flags.details.restrictions.include-all-enabled.text' | translate"
+      [isSectionCardExpanded]="isSectionCardExpanded && !isIncludeAll"
+      [sectionCardExpandBtnDisabled]="isIncludeAll"
+      [sectionCardExpandBtnTooltip]="'feature-flags.details.restrictions.include-all-enabled.text' | translate"
+      (primaryButtonClick)="onAddIncludeListClick(appContext, flag.id)"
+      (menuButtonItemClick)="onMenuButtonItemClick($event, flag)"
+      (slideToggleChange)="onSlideToggleChange($event, flag.id)"
+      (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+    >
+    </app-common-section-card-action-buttons>
+
+    <!-- content -->
+    @if (isSectionCardExpanded && !isIncludeAll) {
+      <app-feature-flag-inclusions-table
+        content
+        [slideToggleDisabled]="!canShowSegmentActions"
+        [slideToggleTooltip]="'feature-flags.details.restrictions.enable-read-only.text' | translate"
+        [showActions]="canShowSegmentActions"
+        (rowAction)="onRowAction($event, flag.id)"
+      ></app-feature-flag-inclusions-table>
+    }
+  </app-common-section-card>
+}

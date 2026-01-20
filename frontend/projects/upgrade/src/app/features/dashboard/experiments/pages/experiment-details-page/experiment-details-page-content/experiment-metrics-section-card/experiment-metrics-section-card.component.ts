@@ -12,16 +12,21 @@ import {
 } from './experiment-metrics-table/experiment-metrics-table.component';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
 import { MetricHelperService } from '../../../../../../../core/experiments/metric-helper.service';
-import { Observable, map } from 'rxjs';
+import { Observable, map, combineLatest } from 'rxjs';
 import { take } from 'rxjs/operators';
 import {
   Experiment,
   EXPERIMENT_ROW_ACTION,
   ExperimentQueryDTO,
+  EXPERIMENT_SECTION_CARD_TYPE,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
+import {
+  getSectionCardRestriction,
+  SectionCardRestriction,
+} from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'app-experiment-metrics-section-card',
@@ -40,27 +45,24 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
 export class ExperimentMetricsSectionCardComponent implements OnInit {
   @Input() isSectionCardExpanded = true;
 
-  permissions$: Observable<UserPermission>;
   selectedExperiment$ = this.experimentService.selectedExperiment$;
-  isLoadingExperiment$ = this.experimentService.isLoadingExperiment$;
-
-  tableRowCount$ = this.selectedExperiment$.pipe(map((experiment) => experiment?.queries?.length || 0));
-
-  get tableRowCount(): number {
-    let count = 0;
-    this.tableRowCount$.subscribe((val) => (count = val));
-    return count;
-  }
+  vm$: Observable<{ experiment: Experiment; permissions: UserPermission; restriction: SectionCardRestriction }>;
 
   constructor(
-    private readonly experimentService: ExperimentService,
+    readonly experimentService: ExperimentService,
     private readonly metricHelperService: MetricHelperService,
     private readonly authService: AuthService,
     private readonly dialogService: DialogService
   ) {}
 
   ngOnInit() {
-    this.permissions$ = this.authService.userPermissions$;
+    this.vm$ = combineLatest([this.selectedExperiment$, this.authService.userPermissions$]).pipe(
+      map(([experiment, permissions]) => ({
+        experiment,
+        permissions,
+        restriction: getSectionCardRestriction(EXPERIMENT_SECTION_CARD_TYPE.METRICS, experiment?.state),
+      }))
+    );
   }
 
   onAddMetricClick(): void {

@@ -50,6 +50,7 @@ export interface experimentSegmentInclusionExclusionData {
   versionNumber: number;
   experiment: {
     name: string;
+    description?: string;
     context: any[];
     state: string;
   };
@@ -66,6 +67,7 @@ export interface featureFlagSegmentInclusionExclusionData {
   versionNumber: number;
   featureFlag: {
     name: string;
+    description?: string;
     context: any[];
     status: string;
   };
@@ -174,6 +176,7 @@ export interface ParticipantListTableRow {
 
 export interface UsedByTableRow {
   name: string;
+  description?: string;
   link?: string;
   type: string;
   status: string;

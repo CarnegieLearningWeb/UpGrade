@@ -1,29 +1,34 @@
-<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
-  <!-- header-left -->
-  <app-common-section-card-title-header
-    header-left
-    [title]="'experiments.details.payloads.card.title.text' | translate"
-    [subtitle]="'experiments.details.payloads.card.subtitle.text' | translate"
-    [tableRowCount]="experiment.conditionPayloads?.length || 0"
-  ></app-common-section-card-title-header>
+@if (vm$ | async; as vm) {
+  <app-common-section-card>
+    <!-- header-left -->
+    <app-common-section-card-title-header
+      header-left
+      [title]="'experiments.details.payloads.card.title.text' | translate"
+      [subtitle]="'experiments.details.payloads.card.subtitle.text' | translate"
+      [tableRowCount]="vm.experiment.conditionPayloads?.length || 0"
+    ></app-common-section-card-title-header>
 
-  <!-- header-right -->
-  <app-common-section-card-action-buttons
-    header-right
-    [isSectionCardExpanded]="isSectionCardExpanded"
-    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
-  >
-  </app-common-section-card-action-buttons>
+    <!-- header-right -->
+    <app-common-section-card-action-buttons
+      header-right
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+    >
+    </app-common-section-card-action-buttons>
 
-  <!-- content -->
-  <app-experiment-payloads-table
-    content
-    *ngIf="isSectionCardExpanded"
-    [conditionPayloads]="experiment.conditionPayloads || []"
-    [conditions]="experiment.conditions || []"
-    [partitions]="experiment.partitions || []"
-    [isLoading$]="experimentService.isLoadingSelectedExperiment$"
-    [actionsDisabled]="!(permissions$ | async)?.experiments.update"
-    (rowAction)="onRowAction($event)"
-  ></app-experiment-payloads-table>
-</app-common-section-card>
+    <!-- content -->
+    @if (isSectionCardExpanded) {
+      <app-experiment-payloads-table
+        content
+        [conditionPayloads]="vm.experiment.conditionPayloads || []"
+        [conditions]="vm.experiment.conditions || []"
+        [partitions]="vm.experiment.partitions || []"
+        [isLoading$]="experimentService.isLoadingSelectedExperiment$"
+        [showActions]="vm.permissions?.experiments.update && !vm.restriction.shouldHideActions"
+        [actionsDisabled]="vm.restriction.isDisabled"
+        [actionsTooltip]="vm.restriction.tooltipKey | translate"
+        (rowAction)="onRowAction($event)"
+      ></app-experiment-payloads-table>
+    }
+  </app-common-section-card>
+}

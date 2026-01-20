@@ -55,7 +55,10 @@ export class CommonDetailsParticipantListTableComponent {
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
   @Input() slideToggleDisabled?: boolean = false;
+  @Input() slideToggleTooltip?: string = '';
+  @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
+  @Input() actionsTooltip?: string = '';
   @Input() isLoading: boolean;
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
 
@@ -77,6 +80,8 @@ export class CommonDetailsParticipantListTableComponent {
     ENABLE: 'segments.global-enable.text',
     ACTIONS: 'segments.global-actions.text',
   };
+
+  private readonly MAX_TOOLTIP_VALUES = 10;
 
   ngOnInit() {
     this.displayedColumns =
@@ -102,6 +107,24 @@ export class CommonDetailsParticipantListTableComponent {
     } else {
       return `${count} Values`;
     }
+  }
+
+  getValuesTooltipText(rowData: ParticipantListTableRow): string {
+    const listType = rowData.listType;
+    let values: string[];
+
+    if (listType?.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
+      values = rowData.segment.individualForSegment?.map((item) => item.userId) || [];
+    } else {
+      values = rowData.segment.groupForSegment?.map((item) => item.groupId) || [];
+    }
+
+    // Show only first 10 values if there are more
+    if (values.length > this.MAX_TOOLTIP_VALUES) {
+      return values.slice(0, this.MAX_TOOLTIP_VALUES).join(', ') + '...';
+    }
+
+    return values.join(', ');
   }
 
   getFormattedListType(rowData: ParticipantListTableRow): string {

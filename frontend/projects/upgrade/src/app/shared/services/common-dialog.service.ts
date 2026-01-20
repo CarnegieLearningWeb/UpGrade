@@ -1167,7 +1167,7 @@ export class DialogService {
 
   openImportFeatureFlagExcludeListModal(flagId: string) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'feature-flags.import-flag-list-modal.title.text',
+      title: 'feature-flags.import-flag-exclude-list-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -1185,7 +1185,7 @@ export class DialogService {
 
   openImportExperimentExcludeListModal(experimentId: string) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'experiments.import-experiment-list-modal.title.text',
+      title: 'experiments.import-experiment-exclude-list-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -1203,7 +1203,7 @@ export class DialogService {
 
   openImportExperimentIncludeListModal(experimentId: string) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'experiments.import-experiment-list-modal.title.text',
+      title: 'experiments.import-experiment-include-list-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -1221,7 +1221,7 @@ export class DialogService {
 
   openImportFeatureFlagIncludeListModal(flagId: string) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'feature-flags.import-flag-list-modal.title.text',
+      title: 'feature-flags.import-flag-include-list-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
