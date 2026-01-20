@@ -443,6 +443,8 @@ export const selectWarningKeysForAllExperiments = createSelector(
       warningMap[experiment.id] = getWarningKeysForExperiment(experiment);
     });
     return warningMap;
+  }
+);
 
 export const selectHasExperimentStarted = createSelector(
   selectSelectedExperiment,
