@@ -15,6 +15,7 @@ import {
   ExperimentCondition,
   ExperimentConditionRowActionEvent,
   ExperimentVM,
+  EXPERIMENT_SECTION_CARD_TYPE,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
@@ -23,6 +24,10 @@ import { ConditionWeightUpdate } from '../../../../modals/edit-condition-weights
 import { ConditionHelperService } from '../../../../../../../core/experiments/condition-helper.service';
 import { selectConditionWeightsValid } from '../../../../../../../core/experiments/store/experiments.selectors';
 import { Store } from '@ngrx/store';
+import {
+  getSectionCardRestriction,
+  SectionCardRestriction,
+} from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'app-experiment-conditions-section-card',
@@ -41,7 +46,6 @@ import { Store } from '@ngrx/store';
 export class ExperimentConditionsSectionCardComponent implements OnInit {
   @Input() isSectionCardExpanded = true;
 
-  permissions$: Observable<UserPermission>;
   selectedExperiment$ = this.experimentService.selectedExperiment$;
   conditionWeightsValid$ = this.store.select(selectConditionWeightsValid);
   isLoadingExperiment$ = this.experimentService.isLoadingExperiment$;
@@ -51,16 +55,24 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
     )
   );
 
+  vm$: Observable<{ experiment: Experiment; permissions: UserPermission; restriction: SectionCardRestriction }>;
+
   constructor(
-    private experimentService: ExperimentService,
-    private authService: AuthService,
-    private dialogService: DialogService,
-    private conditionHelperService: ConditionHelperService,
-    private store: Store
+    readonly experimentService: ExperimentService,
+    private readonly authService: AuthService,
+    private readonly dialogService: DialogService,
+    private readonly conditionHelperService: ConditionHelperService,
+    private readonly store: Store
   ) {}
 
   ngOnInit() {
-    this.permissions$ = this.authService.userPermissions$;
+    this.vm$ = combineLatest([this.selectedExperiment$, this.authService.userPermissions$]).pipe(
+      map(([experiment, permissions]) => ({
+        experiment,
+        permissions,
+        restriction: getSectionCardRestriction(EXPERIMENT_SECTION_CARD_TYPE.CONDITIONS, experiment?.state),
+      }))
+    );
   }
 
   onAddConditionClick(appContext: string, experimentId: string): void {

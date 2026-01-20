@@ -14,7 +14,9 @@ import { CommonDetailsParticipantListTableComponent } from '../../../../../../..
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperimentInclusionsTableComponent {
+  @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
+  @Input() actionsTooltip?: string = '';
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
 
   tableType = LIST_FILTER_MODE.EXCLUSION; // Use EXCLUSION to hide enable column for experiments

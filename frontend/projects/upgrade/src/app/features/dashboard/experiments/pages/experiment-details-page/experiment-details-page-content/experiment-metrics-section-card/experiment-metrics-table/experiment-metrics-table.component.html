@@ -14,13 +14,22 @@
       <th mat-header-cell *matHeaderCellDef class="metric-column ft-14-600">
         {{ METRIC_TRANSLATION_KEYS.METRIC | translate }}
       </th>
-      <td mat-cell *matCellDef="let row" class="metric-column ft-14-400">
-        <div class="multi-line-cell" *ngIf="getMetricKeys(row).length > 0">
-          <div *ngFor="let key of getMetricKeys(row)" class="metric-key">
-            {{ key }}
+      <ng-template matCellDef let-row>
+        @let statisticOperations = getStatisticOperations(row);
+        @let metricKeys = getMetricKeys(row);
+        <td mat-cell class="metric-column ft-14-400" [class.multi-statistic]="statisticOperations.length > 1">
+          <div class="multi-line-cell">
+            <span
+              *ngFor="let key of metricKeys"
+              [appTextOverflowTooltip]="key"
+              matTooltipPosition="above"
+              class="line-clamp-1"
+            >
+              {{ key }}
+            </span>
           </div>
-        </div>
-      </td>
+        </td>
+      </ng-template>
     </ng-container>
 
     <!-- Statistic Column -->
@@ -28,13 +37,21 @@
       <th mat-header-cell *matHeaderCellDef class="statistic-column ft-14-600">
         {{ METRIC_TRANSLATION_KEYS.STATISTIC | translate }}
       </th>
-      <td mat-cell *matCellDef="let row" class="statistic-column ft-14-400">
-        <div class="multi-line-cell" *ngIf="getStatisticOperations(row).length > 0">
-          <div *ngFor="let operation of getStatisticOperations(row)" class="statistic-operation">
-            {{ operation | titlecase }}
+      <ng-template matCellDef let-row>
+        @let statisticOperations = getStatisticOperations(row);
+        <td mat-cell class="statistic-column ft-14-400" [class.multi-statistic]="statisticOperations.length > 1">
+          <div class="multi-line-cell">
+            <span
+              *ngFor="let operation of statisticOperations"
+              [appTextOverflowTooltip]="operation | titlecase"
+              matTooltipPosition="above"
+              class="line-clamp-1"
+            >
+              {{ operation | titlecase }}
+            </span>
           </div>
-        </div>
-      </td>
+        </td>
+      </ng-template>
     </ng-container>
 
     <!-- Display Name Column -->
@@ -42,12 +59,13 @@
       <th mat-header-cell *matHeaderCellDef class="display-name-column ft-14-600">
         {{ METRIC_TRANSLATION_KEYS.DISPLAY_NAME | translate }}
       </th>
-      <td mat-cell *matCellDef="let row" class="display-name-column ft-14-400">
-        <span *ngIf="row.name && row.name?.length <= 50">
+      <td mat-cell *matCellDef="let row" class="display-name-column ft-14-400" [class.multi-statistic]="getStatisticOperations(row).length > 1">
+        <span
+          [appTextOverflowTooltip]="row.name"
+          matTooltipPosition="above"
+          class="display-name-text line-clamp-1"
+        >
           {{ row.name }}
-        </span>
-        <span *ngIf="row.name && row.name?.length > 50" [matTooltip]="row.name" matTooltipPosition="above">
-          {{ row.name | truncate : 50 }}
         </span>
       </td>
     </ng-container>
@@ -55,28 +73,46 @@
     <!-- Actions Column -->
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef class="actions-column ft-14-600">
-        {{ METRIC_TRANSLATION_KEYS.ACTIONS | translate }}
+        @if (showActions) {
+          {{ METRIC_TRANSLATION_KEYS.ACTIONS | translate }}
+        }
       </th>
-      <td mat-cell *matCellDef="let row" class="actions-column ft-14-400 dense-2">
-        <div class="button-wrapper">
-          <button
-            mat-icon-button
-            class="action-button"
-            [disabled]="actionsDisabled"
-            (click)="onEditButtonClick(row)">
-            <mat-icon>edit</mat-icon>
-          </button>
-        </div>
-        <div class="button-wrapper">
-          <button
-            mat-icon-button
-            class="action-button"
-            [disabled]="actionsDisabled"
-            (click)="onDeleteButtonClick(row)">
-            <mat-icon>delete_outline</mat-icon>
-          </button>
-        </div>
-      </td>
+      <ng-template matCellDef let-row>
+        @let statisticOperations = getStatisticOperations(row);
+        @let hasMultipleStatistics = statisticOperations.length > 1;
+        <td mat-cell class="actions-column ft-14-400 dense-2" [class.multi-statistic]="hasMultipleStatistics">
+          <div class="button-wrapper"
+            [class.multi-statistic]="hasMultipleStatistics"
+            *ngIf="showActions"
+            [matTooltip]="actionsTooltip"
+            [matTooltipDisabled]="!actionsDisabled"
+            matTooltipPosition="above"
+          >
+            <button
+              mat-icon-button
+              class="action-button"
+              [disabled]="actionsDisabled"
+              (click)="onEditButtonClick(row)">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+          <div class="button-wrapper"
+            [class.multi-statistic]="hasMultipleStatistics"
+            *ngIf="showActions"
+            [matTooltip]="actionsTooltip"
+            [matTooltipDisabled]="!actionsDisabled"
+            matTooltipPosition="above"
+          >
+            <button
+              mat-icon-button
+              class="action-button"
+              [disabled]="actionsDisabled"
+              (click)="onDeleteButtonClick(row)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-template>
     </ng-container>
 
     <!-- Header and Row Definitions -->

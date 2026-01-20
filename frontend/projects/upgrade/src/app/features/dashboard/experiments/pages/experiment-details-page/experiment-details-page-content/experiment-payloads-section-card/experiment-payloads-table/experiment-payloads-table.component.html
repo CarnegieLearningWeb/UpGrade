@@ -16,8 +16,20 @@
       </th>
       <td mat-cell *matCellDef="let payload" class="decision-point-column ft-14-400">
         <div class="stacked-content">
-          <div>{{ getSite(payload.decisionPoint) }}</div>
-          <div>{{ getTarget(payload.decisionPoint) }}</div>
+          <span
+            [appTextOverflowTooltip]="getSite(payload.decisionPoint)"
+            matTooltipPosition="above"
+            class="line-clamp-1"
+          >
+            {{ getSite(payload.decisionPoint) }}
+          </span>
+          <span
+            [appTextOverflowTooltip]="getTarget(payload.decisionPoint)"
+            matTooltipPosition="above"
+            class="line-clamp-1"
+          >
+            {{ getTarget(payload.decisionPoint) }}
+          </span>
         </div>
       </td>
     </ng-container>
@@ -28,7 +40,13 @@
         {{ PAYLOAD_TRANSLATION_KEYS.CONDITION | translate }}
       </th>
       <td mat-cell *matCellDef="let payload" class="condition-column ft-14-400">
-        {{ getConditionName(payload.parentCondition) }}
+        <span
+          [appTextOverflowTooltip]="getConditionName(payload.parentCondition)"
+          matTooltipPosition="above"
+          class="line-clamp-1"
+        >
+          {{ getConditionName(payload.parentCondition) }}
+        </span>
       </td>
     </ng-container>
 
@@ -38,17 +56,30 @@
         {{ PAYLOAD_TRANSLATION_KEYS.PAYLOAD | translate }}
       </th>
       <td mat-cell *matCellDef="let payload" class="payload-column ft-14-400">
-        {{ payload.payload?.value || '' }}
+        <span
+          [appTextOverflowTooltip]="payload.payload?.value"
+          matTooltipPosition="above"
+          class="line-clamp-3"
+        >
+          {{ payload.payload?.value || '' }}
+        </span>
       </td>
     </ng-container>
 
     <!-- Actions Column (Edit only) -->
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef class="actions-column ft-14-600">
-        {{ PAYLOAD_TRANSLATION_KEYS.ACTIONS | translate }}
+        @if (showActions) {
+          {{ PAYLOAD_TRANSLATION_KEYS.ACTIONS | translate }}
+        }
       </th>
       <td mat-cell *matCellDef="let payload" class="actions-column ft-14-400 dense-2">
-        <div class="button-wrapper">
+        <div class="button-wrapper"
+          *ngIf="showActions"
+          [matTooltip]="actionsTooltip"
+          [matTooltipDisabled]="!actionsDisabled"
+          matTooltipPosition="above"
+        >
           <button
             mat-icon-button
             class="action-button"

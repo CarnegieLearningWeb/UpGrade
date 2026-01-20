@@ -123,7 +123,7 @@ describe('ExperimentSegmentExclusionRepository Testing', () => {
 
     expect(mock.leftJoin).toHaveBeenCalledTimes(2);
     expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(1);
-    expect(mock.addSelect).toHaveBeenCalledTimes(4);
+    expect(mock.addSelect).toHaveBeenCalledTimes(5);
     expect(mock.getMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual([segment]);
@@ -140,7 +140,7 @@ describe('ExperimentSegmentExclusionRepository Testing', () => {
 
     expect(mock.leftJoin).toHaveBeenCalledTimes(2);
     expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(1);
-    expect(mock.addSelect).toHaveBeenCalledTimes(4);
+    expect(mock.addSelect).toHaveBeenCalledTimes(5);
     expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
 });
