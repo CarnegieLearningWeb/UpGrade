@@ -49,6 +49,12 @@ export class CommonWarningIconComponent implements OnInit, OnChanges {
       return;
     }
     const translatedMessages = this.warningMessageKeys.map((key) => this.translateService.instant(key));
-    this.formattedWarningMessage = '• ' + translatedMessages.join('\n• ');
+
+    if (translatedMessages.length === 1) {
+      this.formattedWarningMessage = translatedMessages[0];
+      return;
+    } else {
+      this.formattedWarningMessage = '• ' + translatedMessages.join('\n• ');
+    }
   }
 }
