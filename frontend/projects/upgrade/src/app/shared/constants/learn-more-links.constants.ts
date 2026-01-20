@@ -14,8 +14,12 @@ export interface LearnMoreLink {
  */
 export const LEARN_MORE_LINKS = {
   'glossary.context': {
-    url: 'https://upgrade-platform.gitbook.io/upgrade-documentation/glossary#context',
+    url: 'https://upgrade-platform.gitbook.io/upgrade-documentation/glossary#app-context',
     description: 'Glossary definition of app context',
+  },
+  'glossary.condition': {
+    url: 'https://upgrade-platform.gitbook.io/upgrade-documentation/glossary#condition',
+    description: 'Glossary definition of condition',
   },
   'glossary.decisionPoint': {
     url: 'https://upgrade-platform.gitbook.io/upgrade-documentation/glossary#decision-point',
@@ -30,7 +34,7 @@ export const LEARN_MORE_LINKS = {
     description: 'Glossary definition of payloads',
   },
   'guide.add-lists': {
-    url: 'https://https://upgrade-platform.gitbook.io/upgrade-documentation/working-with-segments#add-lists',
+    url: 'https://upgrade-platform.gitbook.io/upgrade-documentation/working-with-segments#add-lists',
     description: 'Add list section of the segments guide',
   },
   'guide.metrics': {
