@@ -15,6 +15,7 @@ import { ExperimentService } from '../../../../../../../../core/experiments/expe
 })
 export class ExperimentEnrollmentDataComponent implements OnInit {
   @Input() experiment: ExperimentVM;
+  hasExperimentStarted$ = this.experimentsService.hasExperimentStarted$;
 
   constructor(private experimentsService: ExperimentService) {}
   ngOnInit(): void {
