@@ -23,6 +23,7 @@ import { CommonFormHelpersService } from '../../../../../shared/services/common-
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { WeightingMethod, WEIGHTING_METHOD } from '../../../../../core/experiments/store/experiments.model';
 import { distributeWeightsEqually, WEIGHT_CONFIG } from '../../../../../core/experiments/condition-helper.service';
+import { SharedModule } from '../../../../../shared/shared.module';
 
 export interface ConditionWeightUpdate {
   conditionId: string;
@@ -41,6 +42,7 @@ export interface ConditionWeightUpdate {
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    SharedModule,
   ],
   templateUrl: './edit-condition-weights-modal.component.html',
   styleUrl: './edit-condition-weights-modal.component.scss',

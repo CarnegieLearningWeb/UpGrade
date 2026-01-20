@@ -52,8 +52,9 @@
       }
 
       tr.mat-mdc-no-data-row {
+        height: 48px;
+
         td {
-          height: 48px;
           text-align: center;
           border: 1.5px dashed var(--light-grey-2);
           color: var(--dark-grey);
@@ -62,16 +63,16 @@
     }
 
     .site-column {
-      width: 35%;
+      width: 36%;
       padding-left: 32px;
     }
 
     .target-column {
-      width: 30%;
+      width: 34%;
     }
 
     .exclude-if-reached-column {
-      width: 25%;
+      width: 20%;
       text-align: center;
     }
 
@@ -91,9 +92,6 @@
               opacity: 0.5;
             }
           }
-        }
-        &:has(.action-button:disabled) {
-          cursor: not-allowed;
         }
       }
     }

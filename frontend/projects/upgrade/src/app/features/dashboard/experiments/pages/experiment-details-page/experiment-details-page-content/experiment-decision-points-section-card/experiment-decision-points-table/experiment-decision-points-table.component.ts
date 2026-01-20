@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Observable } from 'rxjs';
 import {
   ExperimentDecisionPoint,
@@ -24,6 +25,7 @@ import { SharedModule } from '../../../../../../../../shared/shared.module';
     MatButtonModule,
     MatCheckboxModule,
     MatProgressBarModule,
+    MatTooltipModule,
     SharedModule,
   ],
   templateUrl: './experiment-decision-points-table.component.html',
@@ -33,7 +35,9 @@ import { SharedModule } from '../../../../../../../../shared/shared.module';
 export class ExperimentDecisionPointsTableComponent {
   @Input() decisionPoints: ExperimentDecisionPoint[] = [];
   @Input() isLoading$: Observable<boolean>;
+  @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
+  @Input() actionsTooltip?: string = '';
   @Output() rowAction = new EventEmitter<ExperimentDecisionPointRowActionEvent>();
 
   displayedColumns: string[] = ['site', 'target', 'excludeIfReached', 'actions'];

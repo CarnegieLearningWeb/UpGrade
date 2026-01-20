@@ -42,22 +42,25 @@
 
     ::ng-deep tbody {
       tr.mat-mdc-row {
-        height: auto;
-        min-height: 56px;
+        height: 56px;
 
         td {
           min-width: 96px;
           padding-left: 0;
-          padding-top: 16px;
-          padding-bottom: 8px;
           color: var(--black-2);
-          vertical-align: top;
+
+          &.multi-statistic {
+            padding-top: 16px;
+            padding-bottom: 16px;
+            vertical-align: top;
+          }
         }
       }
 
       tr.mat-mdc-no-data-row {
+        height: 48px;
+
         td {
-          height: 48px;
           text-align: center;
           border: 1.5px dashed var(--light-grey-2);
           color: var(--dark-grey);
@@ -65,10 +68,8 @@
       }
     }
 
-    .metric-column {
-      width: 25%;
-      padding-left: 32px;
-
+    .metric-column,
+    .statistic-column {
       .multi-line-cell {
         display: flex;
         flex-direction: column;
@@ -76,21 +77,22 @@
       }
     }
 
-    .statistic-column {
-      width: 25%;
+    .metric-column {
+      width: 32%;
+      padding-left: 32px;
+    }
 
-      .multi-line-cell {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
+    .statistic-column {
+      width: 18%;
     }
 
     .display-name-column {
       width: 40%;
 
-      span {
-        word-break: break-word;
+      &.multi-statistic .display-name-text {
+        /* Override line-clamp-1 with line-clamp-4 for multi-statistic rows */
+        -webkit-line-clamp: 4;
+        line-clamp: 4;
       }
     }
 
@@ -99,10 +101,14 @@
       min-width: 96px;
       text-align: center;
       padding-right: 16px;
-      padding-top: 8px;
 
       .button-wrapper {
         display: inline-block;
+
+        &.multi-statistic {
+          margin-top: -8px;
+        }
+
         .action-button {
           color: var(--dark-grey);
 
@@ -111,9 +117,6 @@
               opacity: 0.5;
             }
           }
-        }
-        &:has(.action-button:disabled) {
-          cursor: not-allowed;
         }
       }
     }

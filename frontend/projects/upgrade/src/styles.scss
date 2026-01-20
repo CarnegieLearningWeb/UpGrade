@@ -351,18 +351,13 @@ button[mat-icon-button] {
 
 .mat-mdc-slide-toggle {
   &:has(.mdc-switch--disabled) {
-    cursor: not-allowed;
-
     .mdc-label {
       margin-left: 5px;
       color: var(--dark-grey) !important;
-      cursor: not-allowed;
     }
   }
 
   .mdc-switch--disabled {
-    cursor: not-allowed !important;
-
     &.mdc-switch--unselected {
       .mdc-switch__track {
         opacity: 1 !important;
@@ -574,4 +569,45 @@ button[mat-icon-button] {
       background-color: transparent;
     }
   }
+}
+
+// Text overflow tooltip custom styling
+.text-overflow-tooltip .mdc-tooltip__surface {
+  max-width: 500px;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+// Line clamp utility classes for text truncation
+.line-clamp-1,
+.line-clamp-2,
+.line-clamp-3,
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.line-clamp-1 {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.line-clamp-4 {
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
 }
