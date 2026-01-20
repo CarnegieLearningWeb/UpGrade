@@ -56,7 +56,7 @@
     "@ngrx/store-devtools": "^20.1.0",
     "@ngx-translate/core": "^15.0.0",
     "@ngx-translate/http-loader": "^8.0.0",
-    "@swimlane/ngx-charts": "^20.5.0",
+    "@swimlane/ngx-charts": "^23.1.0",
     "ang-jsoneditor": "^3.1.1",
     "angular2-notifications": "^16.0.1",
     "ansi-to-html": "^0.7.2",

@@ -27,7 +27,6 @@ import { QueriesModalComponent } from './components/modal/queries-modal/queries-
 import { CreateQueryComponent } from './components/create-query/create-query.component';
 import { OperationPipe } from '../../../shared/pipes/operation.pipe';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { ExperimentQueryResultComponent } from './components/experiment-query-result/experiment-query-result.component';
 import { ExperimentEndCriteriaComponent } from './components/modal/experiment-end-criteria/experiment-end-criteria.component';
 import { RepeatedMeasurePipe } from './pipes/repeated-measure.pipe';
 import { ImportExperimentComponent } from './components/modal/import-experiment/import-experiment.component';
@@ -56,7 +55,6 @@ import { MoocletPolicyEditorComponent } from './components/experiment-design/moo
     ImportExperimentComponent,
     QueriesModalComponent,
     CreateQueryComponent,
-    ExperimentQueryResultComponent,
     ExperimentEndCriteriaComponent,
     RepeatedMeasurePipe,
     StateTimeLogsComponent,
