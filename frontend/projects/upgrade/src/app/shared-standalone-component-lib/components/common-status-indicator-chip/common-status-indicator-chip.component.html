@@ -5,8 +5,8 @@
     </span>
   </mat-chip>
   <app-common-warning-icon
-    *ngIf="warningMessage"
-    [warningMessage]="warningMessage"
+    *ngIf="warningMessageKeys.length > 0"
+    [warningMessageKeys]="warningMessageKeys"
     class="warning-icon"
   ></app-common-warning-icon>
 </div>

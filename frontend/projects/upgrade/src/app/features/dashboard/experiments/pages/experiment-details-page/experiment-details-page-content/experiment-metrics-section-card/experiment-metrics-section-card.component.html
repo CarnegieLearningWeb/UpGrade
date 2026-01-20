@@ -1,17 +1,22 @@
-<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
+@if (vm$ | async; as vm) { @let canShowActions = vm.permissions?.experiments.update &&
+!vm.restriction.shouldHideActions; @let restrictionTooltip = vm.restriction.tooltipKey | translate;
+
+<app-common-section-card>
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
     [title]="'experiments.details.metrics.card.title.text' | translate"
     [subtitle]="'experiments.details.metrics.card.subtitle.text' | translate"
-    [tableRowCount]="tableRowCount"
+    [tableRowCount]="vm.experiment.queries?.length || 0"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="(permissions$ | async)?.experiments.update"
+    [showPrimaryButton]="canShowActions"
     [primaryButtonText]="'experiments.details.add-metric.button.text' | translate"
+    [primaryActionBtnDisabled]="vm.restriction.isDisabled"
+    [primaryButtonTooltip]="restrictionTooltip"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddMetricClick()"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
@@ -19,12 +24,16 @@
   </app-common-section-card-action-buttons>
 
   <!-- content -->
+  @if (isSectionCardExpanded) {
   <app-experiment-metrics-table
     content
-    *ngIf="isSectionCardExpanded"
-    [queries]="experiment.queries || []"
-    [isLoading$]="isLoadingExperiment$"
-    [actionsDisabled]="!(permissions$ | async)?.experiments.update"
-    (rowAction)="onRowAction($event, experiment.id)"
+    [queries]="vm.experiment.queries || []"
+    [isLoading$]="experimentService.isLoadingExperiment$"
+    [showActions]="canShowActions"
+    [actionsDisabled]="vm.restriction.isDisabled"
+    [actionsTooltip]="restrictionTooltip"
+    (rowAction)="onRowAction($event, vm.experiment.id)"
   ></app-experiment-metrics-table>
+  }
 </app-common-section-card>
+}

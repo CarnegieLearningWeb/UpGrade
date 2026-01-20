@@ -1,4 +1,8 @@
-<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
+@if (vm$ | async; as vm) { @let canShowSegmentActions = vm.permissions?.segments.update &&
+!vm.restriction.shouldHideActions; @let restrictionTooltip = vm.restriction.tooltipKey | translate; @let appContext =
+vm.experiment.context[0];
+
+<app-common-section-card>
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
@@ -10,22 +14,28 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="(permissions$ | async)?.segments.update"
+    [showPrimaryButton]="canShowSegmentActions"
     [primaryButtonText]="'experiments.details.add-exclude-list.button.text' | translate"
-    [showMenuButton]="(permissions$ | async)?.segments.update"
-    [menuButtonItems]="menuButtonItems"
+    [primaryActionBtnDisabled]="vm.restriction.isDisabled"
+    [primaryButtonTooltip]="restrictionTooltip"
+    [showMenuButton]="true"
+    [menuButtonItems]="menuButtonItems$ | async"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="onAddExcludeListClick(experiment.context[0], experiment.id)"
-    (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
+    (primaryButtonClick)="onAddExcludeListClick(appContext, vm.experiment.id)"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, vm.experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
 
   <!-- content -->
+  @if (isSectionCardExpanded) {
   <app-experiment-exclusions-table
     content
-    *ngIf="isSectionCardExpanded"
-    [actionsDisabled]="!(permissions$ | async)?.segments.update"
-    (rowAction)="onRowAction($event, experiment.id)"
+    [showActions]="canShowSegmentActions"
+    [actionsDisabled]="vm.restriction.isDisabled"
+    [actionsTooltip]="restrictionTooltip"
+    (rowAction)="onRowAction($event, vm.experiment.id)"
   ></app-experiment-exclusions-table>
+  }
 </app-common-section-card>
+}

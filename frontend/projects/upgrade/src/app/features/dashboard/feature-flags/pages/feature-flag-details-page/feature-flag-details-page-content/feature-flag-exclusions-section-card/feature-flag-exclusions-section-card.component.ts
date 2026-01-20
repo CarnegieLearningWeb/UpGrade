@@ -19,7 +19,7 @@ import {
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { Segment } from '../../../../../../../core/segments/store/segments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
-import { Observable } from 'rxjs';
+import { Observable, map, combineLatest } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
 @Component({
@@ -42,27 +42,30 @@ export class FeatureFlagExclusionsSectionCardComponent {
   tableRowCount$ = this.featureFlagService.selectFeatureFlagExclusionsLength$;
   selectedFlag$ = this.featureFlagService.selectedFeatureFlag$;
 
-  menuButtonItems: IMenuButtonItem[] = [
-    {
-      label: 'feature-flags.details.exclusions-modal.import-list.menu-item.text',
-      action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_EXCLUDE_LIST,
-      disabled: false,
-    },
-    {
-      label: 'feature-flags.details.exclusions-modal.export-lists.menu-item.text',
-      action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS,
-      disabled: false,
-    },
-  ];
+  menuButtonItems$: Observable<IMenuButtonItem[]>;
 
   constructor(
-    private featureFlagService: FeatureFlagsService,
-    private dialogService: DialogService,
-    private authService: AuthService
+    private readonly featureFlagService: FeatureFlagsService,
+    private readonly dialogService: DialogService,
+    private readonly authService: AuthService
   ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
+    this.menuButtonItems$ = combineLatest([this.permissions$, this.tableRowCount$]).pipe(
+      map(([permissions, tableRowCount]) => [
+        {
+          label: 'feature-flags.details.exclusions-modal.import-list.menu-item.text',
+          action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_EXCLUDE_LIST,
+          disabled: !permissions?.segments.update,
+        },
+        {
+          label: 'feature-flags.details.exclusions-modal.export-lists.menu-item.text',
+          action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS,
+          disabled: tableRowCount === 0,
+        },
+      ])
+    );
   }
 
   onAddExcludeListClick(appContext: string, flagId: string) {

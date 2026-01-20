@@ -17,13 +17,13 @@ import { CommonWarningIconComponent } from '../common-warning-icon/common-warnin
  * ></app-common-status-indicator-chip>
  * ```
  *
- * Providing warning message will make a warning icon next to the chip.
- * The message will be shown as a tooltip when hovered over the icon.
+ * Providing warning message keys will make a warning icon next to the chip.
+ * The messages will be translated and shown as a tooltip when hovered over the icon.
  *
  * ```html
  * <app-common-status-indicator-chip
  *  [chipClass]="STATUS_INDICATOR_CHIP_TYPE.ENROLLMENT_COMPLETE"
- *  [warningMessage]="'feature-flags.global-status-warning-tooltip.text' | translate"
+ *  [warningMessageKeys]="['feature-flags.warning.no-enabled-inclusions.text']"
  * ></app-common-status-indicator-chip>
  * ```
  */
@@ -37,7 +37,7 @@ import { CommonWarningIconComponent } from '../common-warning-icon/common-warnin
 })
 export class CommonStatusIndicatorChipComponent {
   @Input() chipClass!: STATUS_INDICATOR_CHIP_TYPE;
-  @Input() warningMessage?: string;
+  @Input() warningMessageKeys: string[] = [];
   chipText = '';
 
   private readonly DISPLAY_NAME_OVERRIDES: Record<string, string> = {

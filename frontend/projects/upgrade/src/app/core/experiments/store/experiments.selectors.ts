@@ -403,3 +403,14 @@ export const selectCurrentPosteriorsTableData = createSelector(
     return rows;
   }
 );
+
+export const selectHasExperimentStarted = createSelector(
+  selectSelectedExperiment,
+  (experiment: ExperimentVM | undefined): boolean => {
+    if (!experiment?.stateTimeLogs?.length) {
+      return false;
+    }
+
+    return experiment.stateTimeLogs.some((log) => log.toState === EXPERIMENT_STATE.ENROLLING);
+  }
+);

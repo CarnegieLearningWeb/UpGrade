@@ -13,7 +13,11 @@ import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CommonSimpleConfirmationModalComponent } from '../../../../../../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 import { Observable, map, Subscription, combineLatest, take } from 'rxjs';
-import { Experiment, EXPERIMENT_BUTTON_ACTION } from '../../../../../../../core/experiments/store/experiments.model';
+import {
+  Experiment,
+  EXPERIMENT_BUTTON_ACTION,
+  EXPERIMENT_SECTION_CARD_TYPE,
+} from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import {
@@ -23,6 +27,10 @@ import {
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { Segment } from '../../../../../../../core/segments/store/segments.model';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
+import {
+  getSectionCardRestriction,
+  SectionCardRestriction,
+} from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'app-experiment-inclusions-section-card',
@@ -41,25 +49,17 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
 export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestroy {
   @Input() isSectionCardExpanded = true;
 
-  permissions$: Observable<UserPermission>;
   selectedExperiment$ = this.experimentService.selectedExperiment$;
   experimentInclusions$ = this.experimentService.selectExperimentInclusions$;
   tableRowCount$ = this.experimentService.selectExperimentInclusionsLength$;
   subscriptions = new Subscription();
   private previousFilterMode?: FILTER_MODE;
-
-  menuButtonItems: IMenuButtonItem[] = [
-    {
-      label: 'experiments.details.import-include-list.menu-item.text',
-      action: EXPERIMENT_BUTTON_ACTION.IMPORT_INCLUDE_LIST,
-      disabled: false,
-    },
-    {
-      label: 'experiments.details.export-all-include-lists.menu-item.text',
-      action: EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS,
-      disabled: false,
-    },
-  ];
+  vm$: Observable<{
+    experiment: Experiment;
+    permissions: UserPermission;
+    restriction: SectionCardRestriction & { isIncludeAll?: boolean; slideToggleTooltipKey?: string };
+  }>;
+  menuButtonItems$: Observable<IMenuButtonItem[]>;
 
   rowCountWithInclude$: Observable<number> = combineLatest([this.tableRowCount$, this.selectedExperiment$]).pipe(
     map(([tableRowCount, selectedExperiment]) =>
@@ -72,15 +72,51 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
   }
 
   constructor(
-    private experimentService: ExperimentService,
-    private authService: AuthService,
-    private dialogService: DialogService
+    readonly experimentService: ExperimentService,
+    private readonly authService: AuthService,
+    private readonly dialogService: DialogService
   ) {}
 
   confirmIncludeAllChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
 
   ngOnInit() {
-    this.permissions$ = this.authService.userPermissions$;
+    this.vm$ = combineLatest([this.selectedExperiment$, this.authService.userPermissions$]).pipe(
+      map(([experiment, permissions]) => {
+        const isIncludeAll = experiment?.filterMode === FILTER_MODE.INCLUDE_ALL;
+        const baseRestriction = getSectionCardRestriction(EXPERIMENT_SECTION_CARD_TYPE.INCLUSIONS, experiment?.state);
+
+        return {
+          experiment,
+          permissions,
+          restriction: {
+            ...baseRestriction,
+            isIncludeAll,
+            ...(isIncludeAll && {
+              tooltipKey: 'experiments.details.restrictions.include-all-enabled.text',
+            }),
+            slideToggleTooltipKey: permissions?.segments.update
+              ? baseRestriction.tooltipKey
+              : 'experiments.details.restrictions.include-all-read-only.text',
+          },
+        };
+      })
+    );
+
+    this.menuButtonItems$ = combineLatest([this.vm$, this.tableRowCount$]).pipe(
+      map(([vm, tableRowCount]) => [
+        {
+          label: 'experiments.details.import-include-list.menu-item.text',
+          action: EXPERIMENT_BUTTON_ACTION.IMPORT_INCLUDE_LIST,
+          disabled: !vm.permissions?.segments.update || vm.restriction.isDisabled || vm.restriction.shouldHideActions,
+        },
+        {
+          label: 'experiments.details.export-all-include-lists.menu-item.text',
+          action: EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS,
+          disabled: tableRowCount === 0,
+        },
+      ])
+    );
+
     // Expand section when include-all mode transitions back to exclude-all (e.g., after context change)
     this.subscriptions.add(
       this.selectedExperiment$.subscribe((experiment) => {

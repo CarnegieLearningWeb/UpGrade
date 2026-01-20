@@ -10,7 +10,9 @@
         {{ CONDITION_TRANSLATION_KEYS.CONDITION | translate }}
       </th>
       <td mat-cell *matCellDef="let condition" class="condition-column ft-14-400">
-        {{ condition.conditionCode }}
+        <span [appTextOverflowTooltip]="condition.conditionCode" matTooltipPosition="above" class="line-clamp-1">
+          {{ condition.conditionCode }}
+        </span>
       </td>
     </ng-container>
 
@@ -25,9 +27,25 @@
     <!-- Weight Edit Column -->
     <ng-container matColumnDef="weightEdit">
       <th mat-header-cell *matHeaderCellDef class="weight-edit-column ft-14-600 dense-2">
-        <button mat-icon-button class="weight-edit-button" [disabled]="actionsDisabled" (click)="onEditWeightsClick()">
-          <mat-icon>edit</mat-icon>
-        </button>
+        <div
+          class="button-wrapper"
+          *ngIf="showActions"
+          [matTooltip]="
+            (actionsDisabled ? actionsTooltip : 'experiments.details.conditions.weight-disabled-tooltip.text')
+              | translate
+          "
+          [matTooltipDisabled]="!actionsDisabled && conditions?.length > 0"
+          matTooltipPosition="above"
+        >
+          <button
+            mat-icon-button
+            class="weight-edit-button"
+            [disabled]="actionsDisabled || !conditions?.length"
+            (click)="onEditWeightsClick()"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
       </th>
       <td mat-cell *matCellDef="let condition" class="weight-edit-column ft-14-400">
         <!-- Empty cell for alignment -->
@@ -40,17 +58,27 @@
         {{ CONDITION_TRANSLATION_KEYS.DESCRIPTION | translate }}
       </th>
       <td mat-cell *matCellDef="let condition" class="description-column ft-14-400">
-        {{ condition.description }}
+        <span [appTextOverflowTooltip]="condition.description" matTooltipPosition="above" class="line-clamp-1">
+          {{ condition.description }}
+        </span>
       </td>
     </ng-container>
 
     <!-- Actions Column -->
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef class="actions-column ft-14-600">
+        @if (showActions) {
         {{ CONDITION_TRANSLATION_KEYS.ACTIONS | translate }}
+        }
       </th>
       <td mat-cell *matCellDef="let condition" class="actions-column ft-14-400 dense-2">
-        <div class="button-wrapper">
+        <div
+          class="button-wrapper"
+          *ngIf="showActions"
+          [matTooltip]="actionsTooltip"
+          [matTooltipDisabled]="!actionsDisabled"
+          matTooltipPosition="above"
+        >
           <button
             mat-icon-button
             class="action-button"
@@ -60,7 +88,13 @@
             <mat-icon>edit</mat-icon>
           </button>
         </div>
-        <div class="button-wrapper">
+        <div
+          class="button-wrapper"
+          *ngIf="showActions"
+          [matTooltip]="actionsTooltip"
+          [matTooltipDisabled]="!actionsDisabled"
+          matTooltipPosition="above"
+        >
           <button
             mat-icon-button
             class="action-button"

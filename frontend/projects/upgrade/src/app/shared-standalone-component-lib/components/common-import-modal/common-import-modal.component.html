@@ -52,7 +52,11 @@
             <!-- File Name Column -->
             <ng-container matColumnDef="fileName">
               <th mat-header-cell class="ft-14-600" *matHeaderCellDef>File Name</th>
-              <td mat-cell class="ft-14-500" *matCellDef="let element">{{ element.fileName }}</td>
+              <td mat-cell class="ft-14-500" *matCellDef="let element">
+                <span [appTextOverflowTooltip]="element.fileName" matTooltipPosition="above" class="line-clamp-1">
+                  {{ element.fileName }}
+                </span>
+              </td>
             </ng-container>
 
             <!-- Compatibility Type Column -->

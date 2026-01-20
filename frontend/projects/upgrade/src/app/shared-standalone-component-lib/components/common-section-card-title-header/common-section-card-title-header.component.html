@@ -4,12 +4,12 @@
     <app-common-status-indicator-chip
       *ngIf="chipClass"
       [chipClass]="chipClass"
-      [warningMessage]="warningMessage | translate"
+      [warningMessageKeys]="warningMessageKeys"
       class="status-chip"
     ></app-common-status-indicator-chip>
     <app-common-warning-icon
-      *ngIf="!chipClass && warningMessage"
-      [warningMessage]="warningMessage | translate"
+      *ngIf="!chipClass && warningMessageKeys.length > 0"
+      [warningMessageKeys]="warningMessageKeys"
       class="warning-icon"
     ></app-common-warning-icon>
   </h5>

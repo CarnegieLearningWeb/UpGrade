@@ -1,6 +1,6 @@
 .weight-input {
   width: 90px;
-  
+
   .mat-mdc-form-field-subscript-wrapper {
     display: none;
   }
@@ -19,16 +19,16 @@
   }
   .conditions-table {
     /* Remove arrows/spinners from input type number */
-    input[type="number"] {
+    input[type='number'] {
       -webkit-appearance: textfield;
       -moz-appearance: textfield;
-      
+
       &::-webkit-outer-spin-button,
       &::-webkit-inner-spin-button {
         -webkit-appearance: none;
         margin: 0;
       }
-    } 
+    }
 
     ::ng-deep thead {
       background-color: var(--zircon);
@@ -64,8 +64,9 @@
       }
 
       tr.mat-mdc-no-data-row {
+        height: 48px;
+
         td {
-          height: 48px;
           text-align: center;
           border: 1.5px dashed var(--light-grey-2);
           color: var(--dark-grey);
@@ -101,7 +102,6 @@
             color: #f44336;
             font-weight: 500;
           }
-
         }
       }
     }
@@ -115,7 +115,7 @@
       width: 35%;
       text-align: right;
       padding-right: 32px;
-      
+
       .weight-input {
         width: 90px;
         flex-direction: row;
@@ -123,8 +123,7 @@
         input {
           text-align: right;
         }
-        
-        
+
         .mat-mdc-form-field-subscript-wrapper {
           display: none;
         }
@@ -139,22 +138,22 @@
   .section-label {
     display: block;
   }
-  
+
   mat-radio-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
   }
-  
+
   .radio-content {
     display: flex;
     flex-direction: column;
-    
+
     .radio-description {
       color: var(--dark-grey);
     }
   }
-  
+
   .disabled-text {
     opacity: 0.6;
   }

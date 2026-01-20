@@ -1,13 +1,6 @@
 .condition-table-container {
-  display: flex;
-  flex-direction: column;
-  padding: 0 34px 14px 34px;
-  width: 100%;
-  min-height: 150px;
-
-  .title {
+  .heading {
     display: block;
-    margin-bottom: 20px;
   }
 
   .spinner {
@@ -20,6 +13,7 @@
   }
 
   .data {
+    padding-top: 16px;
     display: flex;
 
     .enrollment-condition-table-container {
@@ -29,19 +23,17 @@
     .enrollment-statistic {
       display: flex;
       flex-direction: column;
-      margin-left: 30px;
-      padding-top: 16px;
+      margin-left: 32px;
       width: 200px;
+      text-align: center;
 
       &__unique {
-        padding-bottom: 25px;
-        text-align: center;
+        padding-bottom: 16px;
       }
 
       &__class {
         border-top: 1px solid var(--grey);
-        padding: 25px 0;
-        text-align: center;
+        padding: 16px 0;
       }
 
       .title {
@@ -50,7 +42,8 @@
       }
 
       .numbers {
-        align-self: center;
+        display: block;
+        margin-bottom: -8px;
         color: var(--blue);
       }
     }

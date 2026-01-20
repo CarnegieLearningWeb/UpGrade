@@ -169,6 +169,7 @@
       *ngIf="assignmentAlgorithmValue === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE"
       [experimentNameValue]="experimentNameValue || ''"
       [existingPolicyParams]="(selectedExperiment$ | async)?.moocletPolicyParameters"
+      [disabled]="isMoocletFormDisabled"
       (parametersChange)="onMoocletParametersChange($event)"
       (validationChange)="onMoocletFormValidityChange($event)"
       (formChanged)="onMoocletFormChanged($event)"

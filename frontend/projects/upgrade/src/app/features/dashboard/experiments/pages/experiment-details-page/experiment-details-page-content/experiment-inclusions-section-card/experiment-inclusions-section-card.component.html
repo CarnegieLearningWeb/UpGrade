@@ -1,4 +1,8 @@
-<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
+@if (vm$ | async; as vm) { @let canShowSegmentActions = vm.permissions?.segments.update &&
+!vm.restriction.shouldHideActions; @let restrictionTooltip = vm.restriction.tooltipKey | translate; @let
+slideToggleTooltip = vm.restriction.slideToggleTooltipKey | translate; @let appContext = vm.experiment.context[0];
+
+<app-common-section-card>
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
@@ -10,30 +14,38 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showSlideToggle]="true"
+    [showSlideToggle]="canShowSegmentActions || vm.restriction.isIncludeAll"
     [slideToggleText]="'experiments.details.inclusions.include-all.toggle.text' | translate"
-    [slideToggleChecked]="experiment.filterMode === FILTER_MODE.INCLUDE_ALL"
-    [slideToggleDisabled]="!(permissions$ | async)?.segments.update"
-    [showPrimaryButton]="(permissions$ | async)?.segments.update"
+    [slideToggleChecked]="vm.restriction.isIncludeAll"
+    [slideToggleDisabled]="!vm.permissions?.segments.update || vm.restriction.isDisabled"
+    [slideToggleTooltip]="slideToggleTooltip"
+    [showPrimaryButton]="canShowSegmentActions"
     [primaryButtonText]="'experiments.details.add-include-list.button.text' | translate"
-    [showMenuButton]="(permissions$ | async)?.segments.update"
-    [menuButtonItems]="menuButtonItems"
-    [isSectionCardExpanded]="isSectionCardExpanded && experiment.filterMode !== FILTER_MODE.INCLUDE_ALL"
-    [primaryActionBtnDisabled]="experiment.filterMode === FILTER_MODE.INCLUDE_ALL"
-    [sectionCardExpandBtnDisabled]="experiment.filterMode === FILTER_MODE.INCLUDE_ALL"
-    (primaryButtonClick)="onAddIncludeListClick(experiment.context[0], experiment.id)"
-    (menuButtonItemClick)="onMenuButtonItemClick($event, experiment)"
-    (slideToggleChange)="onSlideToggleChange($event, experiment)"
+    [primaryActionBtnDisabled]="vm.restriction.isDisabled || vm.restriction.isIncludeAll"
+    [primaryButtonTooltip]="restrictionTooltip"
+    [showMenuButton]="true"
+    [menuButtonItems]="menuButtonItems$ | async"
+    [menuButtonDisabled]="vm.restriction.isIncludeAll"
+    [menuButtonTooltip]="restrictionTooltip"
+    [isSectionCardExpanded]="isSectionCardExpanded && !vm.restriction.isIncludeAll"
+    [sectionCardExpandBtnDisabled]="vm.restriction.isIncludeAll"
+    [sectionCardExpandBtnTooltip]="restrictionTooltip"
+    (primaryButtonClick)="onAddIncludeListClick(appContext, vm.experiment.id)"
+    (menuButtonItemClick)="onMenuButtonItemClick($event, vm.experiment)"
+    (slideToggleChange)="onSlideToggleChange($event, vm.experiment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
 
   <!-- content -->
+  @if (isSectionCardExpanded && !vm.restriction.isIncludeAll) {
   <app-experiment-inclusions-table
     content
-    *ngIf="isSectionCardExpanded && experiment.filterMode !== FILTER_MODE.INCLUDE_ALL"
-    [slideToggleDisabled]="!(permissions$ | async)?.segments.update"
-    [actionsDisabled]="!(permissions$ | async)?.segments.update"
-    (rowAction)="onRowAction($event, experiment.id)"
+    [showActions]="canShowSegmentActions"
+    [actionsDisabled]="vm.restriction.isDisabled"
+    [actionsTooltip]="restrictionTooltip"
+    (rowAction)="onRowAction($event, vm.experiment.id)"
   ></app-experiment-inclusions-table>
+  }
 </app-common-section-card>
+}

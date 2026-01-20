@@ -15,7 +15,8 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class FeatureFlagInclusionsTableComponent {
   @Input() slideToggleDisabled?: boolean = false;
-  @Input() actionsDisabled?: boolean = false;
+  @Input() slideToggleTooltip?: string = '';
+  @Input() showActions?: boolean = false;
   tableType = LIST_FILTER_MODE.INCLUSION;
   dataSource$ = this.featureFlagService.selectFeatureFlagInclusions$;
   isLoading$ = this.featureFlagService.isLoadingSelectedFeatureFlag$;
