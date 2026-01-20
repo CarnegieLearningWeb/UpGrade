@@ -164,7 +164,6 @@ export class ExperimentService {
     searchParams?: IExperimentSearchParams,
     sortParams?: IExperimentSortParams
   ): Promise<[Experiment[], number]> {
-    const startTime = Date.now();
     logger.info({ message: `Find paginated experiments` });
 
     let paginatedParentSubQuery = this.experimentRepository
@@ -197,9 +196,6 @@ export class ExperimentService {
     }
 
     const [experimentData, count] = await Promise.all([queryBuilderToReturn.getMany(), countQuery.getCount()]);
-
-    const endTime = Date.now();
-    logger.info({ message: `Paginated query completed in ${endTime - startTime}ms` });
 
     return [experimentData, count || 0];
   }
