@@ -280,7 +280,7 @@ Resources:
           - CapacityProvider: FARGATE_SPOT
             Base: 0
             Weight: 1
-      DesiredCount: !If [IsProd, 2, 1]
+      DesiredCount: !If [IsProd, 4, 2]
       EnableECSManagedTags: 'true'
       HealthCheckGracePeriodSeconds: 60
       LoadBalancers:
@@ -322,8 +322,8 @@ Resources:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     DependsOn: ecsService
     Properties:
-      MaxCapacity: !If [IsStaging, 50, !If [IsProd, 75, 2]]
-      MinCapacity: !If [IsQA, 1, 4]
+      MaxCapacity: !If [IsStaging, 50, !If [IsProd, 75, 20]]
+      MinCapacity: !If [IsQA, 2, 4]
       ResourceId: !Join [ '/', [ 'service', Fn::ImportValue: !Sub '${sharedResourcesPrefix}-${environment}-ecsClusterName', !GetAtt 'ecsService.Name' ]]
       RoleARN: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService
       ScalableDimension: ecs:service:DesiredCount
