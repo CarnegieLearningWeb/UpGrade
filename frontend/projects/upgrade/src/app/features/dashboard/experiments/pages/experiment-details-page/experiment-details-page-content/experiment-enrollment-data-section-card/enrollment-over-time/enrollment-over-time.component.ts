@@ -94,12 +94,13 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   };
   totalMarkedUsers = 0;
   totalMarkedGroups = 0;
+  yScaleMax: number | undefined;
 
   graphInfoSub: Subscription;
   isGraphLoading$ = this.experimentService.isGraphLoading$;
   private readonly sinceDateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
 
-  constructor(private experimentService: ExperimentService) {
+  constructor(private readonly experimentService: ExperimentService) {
     this.formateXAxisLabel = this.formateXAxisLabel.bind(this);
   }
 
@@ -143,12 +144,6 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     if (changes.experiment) {
       this.setTotalDateLabel();
     }
-
-    if (this.totalMarkedUsers > 0) {
-      this.showLabelOfxAxis = true;
-    } else {
-      this.showLabelOfxAxis = false;
-    }
   }
 
   ngOnInit() {
@@ -188,6 +183,9 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
 
   populateGraphData(graphData: IEnrollmentStatByDate[]) {
     this.graphData = [...this.setDataInGraphFormat(graphData)];
+
+    // Set y-axis max to 1 when there's no enrollment data to show proper grid lines
+    this.yScaleMax = this.totalMarkedUsers === 0 && this.totalMarkedGroups === 0 ? 1 : undefined;
   }
 
   setDataInGraphFormat(data: IEnrollmentStatByDate[]) {
