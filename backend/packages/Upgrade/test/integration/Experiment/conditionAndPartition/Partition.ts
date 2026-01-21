@@ -58,6 +58,7 @@ export default async function NoPartitionPoint(): Promise<void> {
         target: 'W3',
         description: 'Decision Point on Workspace 3',
         twoCharacterId: 'W3',
+        id: '328dcb72-6fe4-4beb-9660-9f13bca1081f',
       },
     ],
   };

@@ -1065,6 +1065,14 @@ export class ExperimentService {
           where: { id: In(conditionPayloadDocs.map((conditionPayload) => conditionPayload.id)) },
         });
 
+        // sort the payloads by decision point order and condition order
+        conditionPayloadDocToReturn.sort((a, b) => {
+          if (a.decisionPoint.order === b.decisionPoint.order) {
+            return a.parentCondition.order - b.parentCondition.order;
+          }
+          return a.decisionPoint.order - b.decisionPoint.order;
+        });
+
         let factorDocToReturn = [];
         if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
           const [factorDoc, levelDoc, levelCombinationElementDoc] = await this.addFactorialDataInDB(
@@ -1826,6 +1834,7 @@ export class ExperimentService {
       const conditionPayloadData = partition.conditionPayloads;
       delete partition.conditionPayloads;
 
+      conditionPayloadData.sort((a, b) => a.parentCondition.order - b.parentCondition.order);
       conditionPayloadData.forEach((x) => {
         if (x && conditions.filter((con) => con.id === x.parentCondition.id).length > 0) {
           conditionPayload.push({ ...x, decisionPoint: partition });
