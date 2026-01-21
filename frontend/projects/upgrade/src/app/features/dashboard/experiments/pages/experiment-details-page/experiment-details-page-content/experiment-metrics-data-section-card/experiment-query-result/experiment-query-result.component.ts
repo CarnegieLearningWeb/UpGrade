@@ -352,6 +352,31 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     return false;
   }
 
+  hasData(queryId: string): boolean {
+    const result = this.queryResults[queryId];
+    if (!result) {
+      return false;
+    }
+    const filteredResult = result.filter((res) => typeof res.name === 'string');
+    return filteredResult.some((item) => item.value > 0);
+  }
+
+  hasFactorData(factorIndex: number, queryId: string): boolean {
+    const result = this.queryFactorResults[factorIndex]?.[queryId];
+    if (!result) {
+      return false;
+    }
+    return result.some((item) => item.value > 0);
+  }
+
+  hasInteractionData(factorIndex: number, queryId: string): boolean {
+    const result = this.interactionEffectQueryFactorResults[factorIndex]?.[queryId];
+    if (!result) {
+      return false;
+    }
+    return result.some((series) => series.series && series.series.length > 0);
+  }
+
   getConditionCode(conditionId: string) {
     return this.experiment.conditions.reduce(
       (acc, condition) => (condition.id === conditionId ? (acc = condition.conditionCode as any) : acc),

@@ -1,11 +1,12 @@
 <div class="experiment-queries-result">
+  <ng-container *ngIf="experiment.queries?.length > 0; else noMetricsTemplate">
   <div *ngIf="experimentType === 'Factorial'">
     <span class="ft-18-700 main-effect-data-text">{{
       'home.experiment-query-result.main-effect.title.text' | translate
     }}</span>
     <br />
   </div>
-  <div *ngFor="let query of experiment.queries">
+  <div *ngFor="let query of experiment.queries; let isLast = last">
     <span class="ft-16-700 main-effect-data-text">
       {{ query.name }}
     </span>
@@ -21,6 +22,7 @@
                   <td class="ft-14-600 factor-name-main">{{ factor | uppercase }}</td>
                 </tr>
               </table>
+              <div *ngIf="hasFactorData(i, query?.id); else factorialNoData">
               <ngx-charts-bar-vertical
                 [view]="[300, 250]"
                 [scheme]="colorScheme"
@@ -36,13 +38,23 @@
                 [rotateXAxisTicks]="false"
               >
                 <ng-template #tooltipTemplate let-model="model">
+                  <div class="custom-tooltip-content">
                   <span>{{ model.name }}</span>
                   <br />
                   <span>{{ model.value }}</span>
                   <br />
                   <span>( n = {{ model.extra }} )</span>
+                  </div>
                 </ng-template>
               </ngx-charts-bar-vertical>
+              </div>
+              <ng-template #factorialNoData>
+                <div class="no-data-message" [class.has-spacing]="experiment.queries.length > 1 && !isLast">
+                  <span class="ft-14-400">
+                    {{ 'experiments.details.metrics-data.card.no-data-label.text' | translate }}
+                  </span>
+                </div>
+              </ng-template>
               <br />
             </div>
           </div>
@@ -52,7 +64,7 @@
     <div *ngIf="experimentType === 'Simple'">
       <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
         <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
-          <div style="height: 250px; width: 30%">
+          <div *ngIf="hasData(query?.id); else simpleNoData" style="height: 250px; width: 30%">
             <ngx-charts-bar-vertical
               [view]="[400, 250]"
               [scheme]="colorScheme"
@@ -68,26 +80,35 @@
               [rotateXAxisTicks]="false"
             >
               <ng-template #tooltipTemplate let-model="model">
+                <div class="custom-tooltip-content">
                 <span>{{ model.name }}</span>
                 <br />
                 <span>{{ model.value }}</span>
                 <br />
                 <span>( n = {{ model.extra }} )</span>
+                </div>
               </ng-template>
             </ngx-charts-bar-vertical>
           </div>
+          <ng-template #simpleNoData>
+            <div class="no-data-message" [class.has-spacing]="experiment.queries.length > 1 && !isLast">
+              <span class="ft-14-400">
+                {{ 'experiments.details.metrics-data.card.no-data-label.text' | translate }}
+              </span>
+            </div>
+          </ng-template>
         </ng-container>
       </ng-container>
     </div>
   </div>
-  <br />
+
   <!-- Interaction Section -->
   <div *ngIf="experimentType === 'Factorial'">
     <span class="ft-18-700 interaction-effect-data-text">{{
       'home.experiment-query-result.interaction-effect.title.text' | translate
     }}</span>
     <div *ngIf="factors?.length === 2">
-      <div *ngFor="let query of experiment.queries">
+      <div *ngFor="let query of experiment.queries; let isLast = last">
         <br />
         <span class="ft-16-700 interaction-effect-data-text">
           {{ query.name }}
@@ -117,6 +138,7 @@
                   *ngFor="let factor of factors; let i = index"
                   style="margin-left: 30px; margin-right: 180px; height: 320px; width: 30%"
                 >
+                  <div *ngIf="hasInteractionData(i, query?.id); else interactionNoData">
                   <ngx-charts-line-chart
                     [view]="[270, 250]"
                     [scheme]="colorScheme"
@@ -131,13 +153,23 @@
                     [legendPosition]="'below'"
                   >
                     <ng-template #tooltipTemplate let-model="model">
+                      <div class="custom-tooltip-content">
                       <span>{{ model.series }}</span>
                       <br />
                       <span>{{ model.value }}</span>
                       <br />
                       <span>( n = {{ model.participantsLogged }} )</span>
+                      </div>
                     </ng-template>
                   </ngx-charts-line-chart>
+                  </div>
+                  <ng-template #interactionNoData>
+                    <div class="no-data-message" [class.has-spacing]="experiment.queries.length > 1 && !isLast">
+                      <span class="ft-14-400">
+                        {{ 'experiments.details.metrics-data.card.no-data-label.text' | translate }}
+                      </span>
+                    </div>
+                  </ng-template>
                 </div>
               </div>
             </div>
@@ -171,6 +203,16 @@
     </div>
     <br />
   </div>
+  </ng-container>
+
+  <ng-template #noMetricsTemplate>
+    <div class="no-data-message">
+      <span class="ft-14-400">
+        {{ 'experiments.details.metrics-data.card.no-metrics-label.text' | translate }}
+      </span>
+    </div>
+  </ng-template>
+
   <ng-template #noResultTemplate>
     <span class="zero-state" [innerHTML]="'query.result.empty-result.text' | translate"> </span>
   </ng-template>
