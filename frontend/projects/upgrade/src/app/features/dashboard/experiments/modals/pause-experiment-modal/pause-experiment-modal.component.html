@@ -1,0 +1,82 @@
+<app-common-dialog
+  [title]="data.title"
+  [cancelBtnLabel]="data.cancelBtnLabel"
+  [primaryActionBtnLabel]="data.primaryActionBtnLabel"
+  [primaryActionBtnColor]="data.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
+  (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+>
+  <form [formGroup]="pauseForm" class="form-standard dense-3">
+    <!-- Show intro text only in pause mode -->
+    <ng-container *ngIf="data.params?.mode === PAUSE_BEHAVIOR_MODAL_MODE.PAUSE">
+      <!-- Confirmation message -->
+      <div class="pause-confirm ft-16-400">
+        <span>{{
+          'experiments.pause-experiment-modal.message.text'
+            | translate : { experimentName: data.params?.experimentName }
+        }}</span>
+      </div>
+
+      <!-- Info text -->
+      <div class="pause-info ft-14-400">
+        <span>{{ 'experiments.pause-experiment-modal.info.text' | translate }}</span>
+      </div>
+    </ng-container>
+
+    <!-- Pause Behavior Section -->
+    <div class="pause-behavior-section dense-1">
+      <mat-radio-group formControlName="pauseBehavior">
+        <span class="section-label ft-14-600">
+          {{ 'experiments.pause-experiment-modal.pause-behavior-label.text' | translate }}
+        </span>
+        <!-- Keep Conditions Option -->
+        <mat-radio-button [value]="PAUSE_BEHAVIOR.KEEP_CONDITIONS">
+          <div class="radio-content">
+            <span class="radio-label ft-14-600">
+              {{ 'experiments.pause-experiment-modal.keep-conditions-option-label.text' | translate }}
+            </span>
+            <span class="radio-description ft-12-400">
+              {{ 'experiments.pause-experiment-modal.keep-conditions-option-description.text' | translate }}
+            </span>
+          </div>
+        </mat-radio-button>
+
+        <!-- No Condition Option -->
+        <mat-radio-button [value]="PAUSE_BEHAVIOR.NO_CONDITION">
+          <div class="radio-content">
+            <span class="radio-label ft-14-600">
+              {{ 'experiments.pause-experiment-modal.no-condition-option-label.text' | translate }}
+            </span>
+            <span class="radio-description ft-12-400">
+              {{ 'experiments.pause-experiment-modal.no-condition-option-description.text' | translate }}
+            </span>
+          </div>
+        </mat-radio-button>
+
+        <!-- Assign Option -->
+        <mat-radio-button [value]="PAUSE_BEHAVIOR.ASSIGN">
+          <div class="radio-content">
+            <span class="radio-label ft-14-600">
+              {{ 'experiments.pause-experiment-modal.assign-option-label.text' | translate }}
+            </span>
+            <span class="radio-description ft-12-400">
+              {{ 'experiments.pause-experiment-modal.assign-option-description.text' | translate }}
+            </span>
+          </div>
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <!-- Conditional Condition Dropdown -->
+    <mat-form-field *ngIf="isAssignSelected$ | async" appearance="outline" class="condition-dropdown">
+      <mat-label class="ft-14-400">
+        {{ 'experiments.pause-experiment-modal.select-condition-label.text' | translate }}
+      </mat-label>
+      <mat-select formControlName="revertTo" placeholder="Select condition" class="ft-14-400">
+        <mat-option *ngFor="let condition of conditions" [value]="condition.id" class="ft-14-400">
+          {{ condition.conditionCode }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+</app-common-dialog>

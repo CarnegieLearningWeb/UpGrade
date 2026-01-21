@@ -6,21 +6,39 @@
   .main-container {
     display: flex;
     align-items: center;
-    column-gap: 34px;
+    column-gap: 20px;
     padding: 0 16px;
 
-    .primary-button-text {
-      padding: 0 8px;
+    mat-slide-toggle {
+      margin-right: 16px;
+
+      &:has(button:disabled) {
+        opacity: 0.5;
+      }
+    }
+
+    button {
+      --mat-button-filled-label-text-color: white;
+
+      // Experiment action button colors
+      &.button-start,
+      &.button-resume {
+        --mat-button-filled-container-color: var(--status-running);
+      }
+
+      &.button-pause {
+        --mat-button-filled-container-color: var(--status-paused);
+      }
+
+      &.button-stop {
+        --mat-button-filled-container-color: var(--red-2);
+      }
     }
   }
 
   .options-container {
     display: flex;
     column-gap: 4px;
-    cursor: not-allowed;
-
-    .mat-mdc-icon-button:not(.mat-mdc-button-disabled) .mat-icon {
-      color: var(--dark-grey);
-    }
+    color: var(--dark-grey);
   }
 }

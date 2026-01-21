@@ -5,7 +5,8 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800&display=swap');
 @import 'jsoneditor/dist/jsoneditor.min.css';
 @include mat.all-component-typographies();
-@include mat.core();
+@include mat.elevation-classes();
+@include mat.app-background();
 
 @import './styles/variables.scss';
 @import './themes/light-theme';
@@ -36,7 +37,6 @@
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
 @import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
-@import './app/features/dashboard/home/components/experiment-query-result/experiment-query-result.theme.scss';
 @import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
 @import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
@@ -71,7 +71,6 @@
   @include queries-modal-component-theme($theme);
   @include query-result-component-theme($theme);
   @include metrics-component-theme($theme);
-  @include experiment-query-result-component-theme($theme);
   @include experiment-ending-criteria-component-theme($theme);
   @include import-experiment-component-theme($theme);
   @include state-time-logs-modal-component-theme($theme);
@@ -315,42 +314,60 @@ button[mat-icon-button] {
   background-color: white !important;
 }
 
-.mat-mdc-radio-button {
-  .mdc-radio {
-    margin-left: -10px;
+.mat-mdc-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  user-select: none;
+
+  .section-label,
+  .radio-label,
+  .radio-description {
+    font-family: 'Roboto' !important;
+    -webkit-font-smoothing: antialiased;
   }
 
-  .radio-button-label {
-    margin-left: -6px;
-    color: var(--black-2);
-    user-select: none;
+  .section-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--dark-grey);
+  }
+
+  .mat-mdc-radio-button {
+    .radio-content {
+      display: flex;
+      flex-direction: column;
+
+      .radio-label {
+        color: var(--light-black);
+      }
+
+      .radio-description {
+        color: var(--dark-grey);
+      }
+    }
   }
 }
 
 .mat-mdc-slide-toggle {
   &:has(.mdc-switch--disabled) {
-    cursor: not-allowed;
-
     .mdc-label {
       margin-left: 5px;
       color: var(--dark-grey) !important;
-      cursor: not-allowed;
     }
   }
 
   .mdc-switch--disabled {
-    cursor: not-allowed !important;
-
     &.mdc-switch--unselected {
       .mdc-switch__track {
         opacity: 1 !important;
         &::before {
-          background: var(--mdc-switch-unselected-track-color) !important;
+          background: var(--mat-slide-toggle-unselected-track-color) !important;
         }
       }
 
       .mdc-switch__shadow {
-        background: var(--mdc-switch-unselected-handle-color) !important;
+        background: var(--mat-slide-toggle-unselected-handle-color) !important;
       }
 
       .mdc-switch__icons {
@@ -362,12 +379,12 @@ button[mat-icon-button] {
       .mdc-switch__track {
         opacity: 1 !important;
         &::after {
-          background: var(--mdc-switch-selected-track-color) !important;
+          background: var(--mat-slide-toggle-selected-track-color) !important;
         }
       }
 
       .mdc-switch__shadow {
-        background: var(--mdc-switch-selected-handle-color) !important;
+        background: var(--mat-slide-toggle-selected-handle-color) !important;
       }
 
       .mdc-switch__icons {
@@ -552,4 +569,52 @@ button[mat-icon-button] {
       background-color: transparent;
     }
   }
+}
+
+// Text overflow tooltip custom styling
+.text-overflow-tooltip .mdc-tooltip__surface {
+  max-width: 500px;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+// Multi-line tooltip styling for tooltips with newline characters
+.multiline-tooltip .mdc-tooltip__surface {
+  white-space: pre-line;
+  line-height: 1.5;
+  max-width: 500px;
+}
+
+// Line clamp utility classes for text truncation
+.line-clamp-1,
+.line-clamp-2,
+.line-clamp-3,
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.line-clamp-1 {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.line-clamp-4 {
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
 }

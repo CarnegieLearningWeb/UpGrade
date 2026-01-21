@@ -1,0 +1,16 @@
+.data-container {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  row-gap: 32px;
+}
+
+.not-started-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border: 1.5px dashed var(--light-grey-2);
+  color: var(--dark-grey);
+  opacity: 0.75;
+}

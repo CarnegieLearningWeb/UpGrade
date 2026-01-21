@@ -310,6 +310,10 @@ class SegmentValidator {
   @IsString()
   @IsEnum(SEGMENT_TYPE)
   public type: SEGMENT_TYPE;
+
+  @IsOptional()
+  @IsString()
+  public listType?: string;
 }
 export class ParticipantsValidator {
   @IsNotEmpty()
@@ -452,15 +456,17 @@ abstract class BaseExperimentWithoutPayload {
   @Type(() => StateTimeLogValidator)
   public stateTimeLogs?: StateTimeLogValidator[];
 
-  @IsNotEmpty()
-  @ValidateNested()
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => ParticipantsValidator)
-  public experimentSegmentInclusion: ParticipantsValidator;
+  public experimentSegmentInclusion: ParticipantsValidator[];
 
-  @IsNotEmpty()
-  @ValidateNested()
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => ParticipantsValidator)
-  public experimentSegmentExclusion: ParticipantsValidator;
+  public experimentSegmentExclusion: ParticipantsValidator[];
 
   @IsOptional()
   @IsString()

@@ -41,11 +41,13 @@ import {
   selectIsPollingExperimentDetailStats,
   selectExperimentGraphRange,
 } from './experiments.selectors';
-import { interval } from 'rxjs';
+import { interval, of } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { ENV, Environment } from '../../../../environments/environment-types';
 import JSZip from 'jszip';
 import { TranslateService } from '@ngx-translate/core';
+import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
+import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
 @Injectable()
 export class ExperimentEffects {
   constructor(
@@ -55,6 +57,8 @@ export class ExperimentEffects {
     private router: Router,
     private translate: TranslateService,
     private notificationService: NotificationService,
+    private commonModalEvents: CommonModalEventsService,
+    private commonExportHelpersService: CommonExportHelpersService,
     @Inject(ENV) private environment: Environment
   ) {}
 
@@ -110,11 +114,7 @@ export class ExperimentEffects {
 
             return [
               ...actions,
-              experimentAction.actionGetExperimentsSuccess({
-                experiments,
-                totalExperiments: data.total,
-                totalFilteredExperiments: data.filtered,
-              }),
+              experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
               experimentAction.actionFetchExperimentStats({ experimentIds }),
             ];
           }),
@@ -163,6 +163,7 @@ export class ExperimentEffects {
               switchMap((experimentStat: IExperimentEnrollmentStats) => {
                 const stats = { ...experimentStats, [data.id]: experimentStat[0] };
                 this.notificationService.showSuccess(this.translate.instant('global.save-confirmation.message.text'));
+                this.commonModalEvents.forceCloseModal();
                 return [
                   experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
@@ -186,7 +187,7 @@ export class ExperimentEffects {
       this.actions$.pipe(
         ofType(experimentAction.actionUpsertExperimentSuccess),
         tap(({ experiment }) => {
-          if (!this.router.url.includes('/home/detail')) {
+          if (!this.router.url.includes(`/home/detail/${experiment.id}`)) {
             this.router.navigate(['/home', 'detail', experiment.id]);
           }
         })
@@ -213,6 +214,80 @@ export class ExperimentEffects {
           })
         )
       )
+    )
+  );
+
+  updateExperimentFilterMode$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentFilterMode),
+      switchMap((action) => {
+        return this.experimentDataService.updateFilterMode(action.updateExperimentFilterModeRequest).pipe(
+          map((experiment) => {
+            return experimentAction.actionUpdateExperimentFilterModeSuccess({ experiment });
+          }),
+          catchError(() => [experimentAction.actionUpdateExperimentFilterModeFailure()])
+        );
+      })
+    )
+  );
+
+  updateExperimentDecisionPoints$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentDecisionPoints),
+      switchMap((action) => {
+        return this.experimentDataService
+          .updateExperimentDecisionPoints(action.updateExperimentDecisionPointsRequest)
+          .pipe(
+            map((experiment) => {
+              this.notificationService.showSuccess(
+                this.translate.instant('experiments.decision-points.update-success.text')
+              );
+              return experimentAction.actionUpdateExperimentDecisionPointsSuccess({ experiment });
+            }),
+            catchError(() => {
+              this.notificationService.showError(
+                this.translate.instant('experiments.decision-points.update-error.text')
+              );
+              return [experimentAction.actionUpdateExperimentDecisionPointsFailure()];
+            })
+          );
+      })
+    )
+  );
+
+  updateExperimentConditions$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentConditions),
+      switchMap((action) => {
+        return this.experimentDataService.updateExperimentConditions(action.updateExperimentConditionsRequest).pipe(
+          map((experiment) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.conditions.update-success.text'));
+            return experimentAction.actionUpdateExperimentConditionsSuccess({ experiment });
+          }),
+          catchError(() => {
+            this.notificationService.showError(this.translate.instant('experiments.conditions.update-error.text'));
+            return [experimentAction.actionUpdateExperimentConditionsFailure()];
+          })
+        );
+      })
+    )
+  );
+
+  updateExperimentMetrics$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentMetrics),
+      switchMap((action) => {
+        return this.experimentDataService.updateExperimentMetrics(action.updateExperimentMetricsRequest).pipe(
+          map((experiment) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.metrics.update-success.text'));
+            return experimentAction.actionUpdateExperimentMetricsSuccess({ experiment });
+          }),
+          catchError(() => {
+            this.notificationService.showError(this.translate.instant('experiments.metrics.update-error.text'));
+            return [experimentAction.actionUpdateExperimentMetricsFailure()];
+          })
+        );
+      })
     )
   );
 
@@ -513,6 +588,164 @@ export class ExperimentEffects {
           catchError(() => [experimentAction.actionExportExperimentDesignFailure()])
         );
       })
+    )
+  );
+
+  addExperimentInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionAddExperimentInclusionList),
+      switchMap((action) => {
+        return this.experimentDataService.addInclusionList(action.list).pipe(
+          map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.inclusions.add-success.text'));
+            this.commonModalEvents.forceCloseModal();
+            return experimentAction.actionAddExperimentInclusionListSuccess({ listResponse });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.inclusions.add-error.text'));
+            return of(experimentAction.actionAddExperimentInclusionListFailure({ error }));
+          })
+        );
+      })
+    )
+  );
+
+  updateExperimentInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentInclusionList),
+      switchMap((action) => {
+        return this.experimentDataService.updateInclusionList(action.list).pipe(
+          map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.inclusions.update-success.text'));
+            this.commonModalEvents.forceCloseModal();
+            return experimentAction.actionUpdateExperimentInclusionListSuccess({ listResponse });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.inclusions.update-error.text'));
+            return of(experimentAction.actionUpdateExperimentInclusionListFailure({ error }));
+          })
+        );
+      })
+    )
+  );
+
+  deleteExperimentInclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionDeleteExperimentInclusionList),
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.experimentDataService.deleteInclusionList(segmentId).pipe(
+          map(() => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.inclusions.delete-success.text'));
+            return experimentAction.actionDeleteExperimentInclusionListSuccess({ segmentId });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.inclusions.delete-error.text'));
+            return of(experimentAction.actionDeleteExperimentInclusionListFailure({ error }));
+          })
+        );
+      })
+    )
+  );
+
+  addExperimentExclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionAddExperimentExclusionList),
+      switchMap((action) => {
+        return this.experimentDataService.addExclusionList(action.list).pipe(
+          map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.exclusions.add-success.text'));
+            this.commonModalEvents.forceCloseModal();
+            return experimentAction.actionAddExperimentExclusionListSuccess({ listResponse });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.exclusions.add-error.text'));
+            return of(experimentAction.actionAddExperimentExclusionListFailure({ error }));
+          })
+        );
+      })
+    )
+  );
+
+  updateExperimentExclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentExclusionList),
+      switchMap((action) => {
+        return this.experimentDataService.updateExclusionList(action.list).pipe(
+          map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.exclusions.update-success.text'));
+            this.commonModalEvents.forceCloseModal();
+            return experimentAction.actionUpdateExperimentExclusionListSuccess({ listResponse });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.exclusions.update-error.text'));
+            return of(experimentAction.actionUpdateExperimentExclusionListFailure({ error }));
+          })
+        );
+      })
+    )
+  );
+
+  deleteExperimentExclusionList$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionDeleteExperimentExclusionList),
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.experimentDataService.deleteExclusionList(segmentId).pipe(
+          map(() => {
+            this.notificationService.showSuccess(this.translate.instant('experiments.exclusions.delete-success.text'));
+            return experimentAction.actionDeleteExperimentExclusionListSuccess({ segmentId });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('experiments.exclusions.delete-error.text'));
+            return of(experimentAction.actionDeleteExperimentExclusionListFailure({ error }));
+          })
+        );
+      })
+    )
+  );
+
+  exportAllExcludeListsDesign$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionExportAllExcludeListsDesign),
+      map((action) => ({ experimentId: action.experimentId })),
+      switchMap(({ experimentId }) =>
+        this.experimentDataService.exportAllExcludeListsDesign(experimentId).pipe(
+          map((exportedAllListsDesign: any[]) => {
+            if (exportedAllListsDesign) {
+              this.commonExportHelpersService.convertDataToDownload(exportedAllListsDesign, 'Lists');
+              this.notificationService.showSuccess('Experiment exclude lists JSON downloaded!');
+            }
+            return experimentAction.actionExportAllExcludeListsDesignSuccess();
+          }),
+          catchError((error) => {
+            this.notificationService.showError('Failed to export all exclude lists design');
+            return of(experimentAction.actionExportAllExcludeListsDesignFailure());
+          })
+        )
+      )
+    )
+  );
+
+  exportAllIncludeListsDesign$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionExportAllIncludeListsDesign),
+      map((action) => ({ experimentId: action.experimentId })),
+      switchMap(({ experimentId }) =>
+        this.experimentDataService.exportAllIncludeListsDesign(experimentId).pipe(
+          map((exportedAllListsDesign: any[]) => {
+            if (exportedAllListsDesign) {
+              this.commonExportHelpersService.convertDataToDownload(exportedAllListsDesign, 'Lists');
+              this.notificationService.showSuccess('Experiment include lists JSON downloaded!');
+            }
+            return experimentAction.actionExportAllIncludeListsDesignSuccess();
+          }),
+          catchError((error) => {
+            this.notificationService.showError('Failed to export all include lists design');
+            return of(experimentAction.actionExportAllIncludeListsDesignFailure());
+          })
+        )
+      )
     )
   );
 

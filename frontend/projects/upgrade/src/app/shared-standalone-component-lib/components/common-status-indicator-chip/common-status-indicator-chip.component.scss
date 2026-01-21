@@ -4,83 +4,108 @@
 
   .status-indicator {
     pointer-events: none;
-    --mdc-chip-container-shape-radius: 4px;
+    --mat-chip-container-shape-radius: 4px;
 
+    // experiment statuses
+    &.inactive {
+      --mat-chip-label-text-color: var(--status-inactive);
+      border: 1px solid var(--status-inactive);
+      background-color: var(--status-inactive-alpha);
+    }
+
+    &.scheduled {
+      --mat-chip-label-text-color: var(--status-scheduled);
+      border: 1px solid var(--status-scheduled);
+      background-color: var(--status-scheduled-alpha);
+    }
+
+    &.preview {
+      --mat-chip-label-text-color: var(--status-preview);
+      border: 1px solid var(--status-preview);
+      background-color: var(--status-preview-alpha);
+    }
+
+    &.enrolling,
+    &.running {
+      --mat-chip-label-text-color: var(--status-running);
+      border: 1px solid var(--status-running);
+      background-color: var(--status-running-alpha);
+    }
+
+    &.enrollmentComplete,
+    &.paused {
+      --mat-chip-label-text-color: var(--status-paused);
+      border: 1px solid var(--status-paused);
+      background-color: var(--status-paused-alpha);
+    }
+
+    &.cancelled,
+    &.completed {
+      --mat-chip-label-text-color: var(--status-completed);
+      border: 1px solid var(--status-completed);
+      background-color: var(--status-completed-alpha);
+    }
+
+    &.archived {
+      --mat-chip-label-text-color: var(--status-archived);
+      border: 1px solid var(--status-archived);
+      background-color: var(--status-archived-alpha);
+    }
+
+    // feature flag statuses
     &.disabled {
-      --mdc-chip-label-text-color: var(--status-disabled);
+      --mat-chip-label-text-color: var(--status-disabled);
       border: 1px solid var(--status-disabled);
       background-color: var(--status-disabled-alpha);
     }
 
     &.enabled {
-      --mdc-chip-label-text-color: var(--status-enabled);
+      --mat-chip-label-text-color: var(--status-enabled);
       border: 1px solid var(--status-enabled);
       background-color: var(--status-enabled-alpha);
     }
 
-    &.draft {
-      --mdc-chip-label-text-color: var(--status-draft);
-      border: 1px solid var(--status-draft);
-      background-color: var(--status-draft-alpha);
-    }
-
-    &.inactive,
-    &.warning {
-      --mdc-chip-label-text-color: var(--status-inactive);
-      border: 1px solid var(--status-inactive);
-      background-color: var(--status-inactive-alpha);
-    }
-
-    &.enrolling {
-      --mdc-chip-label-text-color: var(--status-enrolling);
-      border: 1px solid var(--status-enrolling);
-      background-color: var(--status-enrolling-alpha);
-    }
-
-    &.enrollment-complete,
-    &.compatible {
-      --mdc-chip-label-text-color: var(--status-enrollment-complete);
-      border: 1px solid var(--status-enrollment-complete);
-      background-color: var(--status-enrollment-complete-alpha);
-    }
-
-    &.cancelled,
-    &.incompatible {
-      --mdc-chip-label-text-color: var(--status-cancelled);
-      border: 1px solid var(--status-cancelled);
-      background-color: var(--status-cancelled-alpha);
-    }
-
-    &.archived {
-      --mdc-chip-label-text-color: var(--status-archived);
-      border: 1px solid var(--status-archived);
-      background-color: var(--status-archived-alpha);
-    }
-
+    // segment statuses
     &.excluded {
-      --mdc-chip-label-text-color: var(--status-excluded);
+      --mat-chip-label-text-color: var(--status-excluded);
       border: 1px solid var(--status-excluded);
       background-color: var(--status-excluded-alpha);
     }
 
     &.unused {
-      --mdc-chip-label-text-color: var(--status-unused);
+      --mat-chip-label-text-color: var(--status-unused);
       border: 1px solid var(--status-unused);
       background-color: var(--status-unused-alpha);
     }
 
     &.used {
-      --mdc-chip-label-text-color: var(--status-used);
+      --mat-chip-label-text-color: var(--status-used);
       border: 1px solid var(--status-used);
       background-color: var(--status-used-alpha);
+    }
+
+    // import compatibility statuses
+    &.incompatible {
+      --mat-chip-label-text-color: var(--status-incompatible);
+      border: 1px solid var(--status-incompatible);
+      background-color: var(--status-incompatible-alpha);
+    }
+
+    &.warning {
+      --mat-chip-label-text-color: var(--status-warning);
+      border: 1px solid var(--status-warning);
+      background-color: var(--status-warning-alpha);
+    }
+
+    &.compatible {
+      --mat-chip-label-text-color: var(--status-compatible);
+      border: 1px solid var(--status-compatible);
+      background-color: var(--status-compatible-alpha);
     }
   }
 
   .warning-icon {
+    margin-top: 6px;
     margin-left: 6px;
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-    color: var(--status-disabled);
   }
 }

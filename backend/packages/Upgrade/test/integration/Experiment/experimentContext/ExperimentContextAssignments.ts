@@ -23,12 +23,8 @@ export default async function testCase(): Promise<void> {
   const context2 = 'add';
 
   // experiment object
-  const experimentObject1 = JSON.parse(JSON.stringify(individualAssignmentExperiment));
+  const experimentObject1 = structuredClone(individualAssignmentExperiment);
   experimentObject1.context = [context1];
-
-  const experimentName1 = experimentObject1.partitions[0].target;
-  const experimentPoint1 = experimentObject1.partitions[0].site;
-  const condition1 = experimentObject1.conditions[0].conditionCode;
 
   // create experiment 1
   await experimentService.create(experimentObject1 as any, user, new UpgradeLogger());
@@ -46,12 +42,14 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  const experimentObject2 = JSON.parse(JSON.stringify(secondExperiment));
+  const firstExperiment = experiments[0];
+  const experimentName1 = firstExperiment.partitions[0].target;
+  const experimentPoint1 = firstExperiment.partitions[0].site;
+  const condition1 = firstExperiment.conditions[0].conditionCode;
+
+  const experimentObject2 = structuredClone(secondExperiment);
   experimentObject2.context = [context2];
 
-  const experimentName2 = experimentObject2.partitions[0].target;
-  const experimentPoint2 = experimentObject2.partitions[0].site;
-  const condition2 = experimentObject2.conditions[0].conditionCode;
   // create experiment 2
   await experimentService.create(experimentObject2 as any, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
@@ -68,10 +66,18 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
+  const secondExperimentCreated = experiments.find((exp) => exp.id !== firstExperiment.id)!;
+  const experimentName2 = secondExperimentCreated.partitions[0].target;
+  const experimentPoint2 = secondExperimentCreated.partitions[0].site;
+  const condition2 = secondExperimentCreated.conditions[0].conditionCode;
   // change experiment status to Enrolling
-  const [experiment1, experiment2] = experiments;
-  await experimentService.updateState(experiment1.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
-  await experimentService.updateState(experiment2.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(firstExperiment.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(
+    secondExperimentCreated.id,
+    EXPERIMENT_STATE.ENROLLING,
+    user,
+    new UpgradeLogger()
+  );
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -112,7 +118,7 @@ export default async function testCase(): Promise<void> {
     experimentName1,
     experimentPoint1,
     condition1,
-    experiment1.id,
+    firstExperiment.id,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName1, experimentPoint1);
@@ -134,7 +140,7 @@ export default async function testCase(): Promise<void> {
     experimentName2,
     experimentPoint2,
     condition2,
-    experiment2.id,
+    secondExperimentCreated.id,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName2, experimentPoint2);

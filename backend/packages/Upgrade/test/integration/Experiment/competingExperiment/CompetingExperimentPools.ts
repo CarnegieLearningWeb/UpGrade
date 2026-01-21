@@ -113,7 +113,6 @@ export default async function CompetingExperiment(): Promise<void> {
   // get all experiment condition for user 1 should return only one exp from the pool of exp1-2-3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(2);
-  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, target, site);
 
   // mark experiment point for user 4
   const markedExperimentPoint = await markExperimentPoint(

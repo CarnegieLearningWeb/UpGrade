@@ -82,19 +82,23 @@ describe('ExperimentService', () => {
     status: SEGMENT_STATUS.UNUSED,
   };
 
-  const dummyInclusionData: SegmentNew = {
-    updatedAt: '2022-06-20T13:14:52.900Z',
-    createdAt: '2022-06-20T13:14:52.900Z',
-    versionNumber: 1,
-    segment: segmentData,
-  };
+  const dummyInclusionData: SegmentNew[] = [
+    {
+      updatedAt: '2022-06-20T13:14:52.900Z',
+      createdAt: '2022-06-20T13:14:52.900Z',
+      versionNumber: 1,
+      segment: segmentData,
+    },
+  ];
 
-  const dummyExclusionData: SegmentNew = {
-    updatedAt: '2022-06-20T13:14:52.900Z',
-    createdAt: '2022-06-20T13:14:52.900Z',
-    versionNumber: 1,
-    segment: segmentData,
-  };
+  const dummyExclusionData: SegmentNew[] = [
+    {
+      updatedAt: '2022-06-20T13:14:52.900Z',
+      createdAt: '2022-06-20T13:14:52.900Z',
+      versionNumber: 1,
+      segment: segmentData,
+    },
+  ];
 
   const mockExperiment = {
     id: 'abc123',
@@ -145,23 +149,23 @@ describe('ExperimentService', () => {
     service = new ExperimentService(mockStore, mockLocalStorageService, mockEnvironment);
   });
 
-  // describe('#experiments$', () => {
-  //   it('should emit sorted list of entities', fakeAsync(() => {
-  //     ExperimentSelectors.selectAllExperiment.setResult(mockExperimentsList);
+  describe('#experiments$', () => {
+    it('should emit sorted list of entities', fakeAsync(() => {
+      ExperimentSelectors.selectAllExperiment.setResult(mockExperimentsList);
 
-  //     mockStore.next('thisValueIsMeaningless');
+      mockStore.next('thisValueIsMeaningless');
 
-  //     service.experiments$.subscribe((val) => {
-  //       tick(0);
-  //       expect(val).toEqual([
-  //         { id: 'first', createdAt: '04/25/17 04:34:22 +0000' },
-  //         { id: 'second', createdAt: '04/24/17 04:34:22 +0000' },
-  //         { id: 'third', createdAt: '04/24/17 04:34:22 +0000' },
-  //         { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000' },
-  //       ]);
-  //     });
-  //   }));
-  // });
+      service.experiments$.subscribe((val) => {
+        tick(0);
+        expect(val).toEqual([
+          { id: 'first', createdAt: '04/25/17 04:34:22 +0000' },
+          { id: 'second', createdAt: '04/24/17 04:34:22 +0000' },
+          { id: 'third', createdAt: '04/24/17 04:34:22 +0000' },
+          { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000' },
+        ]);
+      });
+    }));
+  });
 
   describe('#experimentStatById$', () => {
     it('should ', () => {
@@ -298,24 +302,21 @@ describe('ExperimentService', () => {
         expectedValue: false,
         skipExperiments: 0,
         totalExperiments: 1,
-        totalFilteredExperiments: 1,
       },
       {
         whenCondition: 'skip does equal total',
         expectedValue: true,
         skipExperiments: 1,
         totalExperiments: 1,
-        totalFilteredExperiments: 1,
       },
     ];
 
     testCases.forEach((testCase) => {
-      const { whenCondition, expectedValue, skipExperiments, totalExperiments, totalFilteredExperiments } = testCase;
+      const { whenCondition, expectedValue, skipExperiments, totalExperiments } = testCase;
 
       it(`WHEN ${whenCondition}, THEN ${expectedValue}:`, fakeAsync(() => {
         ExperimentSelectors.selectSkipExperiment.setResult(skipExperiments);
         ExperimentSelectors.selectTotalExperiment.setResult(totalExperiments);
-        ExperimentSelectors.selectTotalFilteredExperiment.setResult(totalFilteredExperiments);
 
         service.isAllExperimentsFetched().subscribe((val) => {
           tick(0);

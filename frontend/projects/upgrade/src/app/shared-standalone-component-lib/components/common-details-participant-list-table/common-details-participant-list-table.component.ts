@@ -14,7 +14,7 @@ import {
   ParticipantListTableRow,
 } from '../../../core/feature-flags/store/feature-flags.model';
 import { MemberTypes } from '../../../core/segments/store/segments.model';
-import { FEATURE_FLAG_LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { SharedModule } from '../../../shared/shared.module';
 
 /**
@@ -51,11 +51,14 @@ import { SharedModule } from '../../../shared/shared.module';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonDetailsParticipantListTableComponent {
-  @Input() tableType: FEATURE_FLAG_LIST_FILTER_MODE;
+  @Input() tableType: LIST_FILTER_MODE;
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
   @Input() slideToggleDisabled?: boolean = false;
+  @Input() slideToggleTooltip?: string = '';
+  @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
+  @Input() actionsTooltip?: string = '';
   @Input() isLoading: boolean;
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
 
@@ -78,9 +81,11 @@ export class CommonDetailsParticipantListTableComponent {
     ACTIONS: 'segments.global-actions.text',
   };
 
+  private readonly MAX_TOOLTIP_VALUES = 10;
+
   ngOnInit() {
     this.displayedColumns =
-      this.tableType === FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION
+      this.tableType === LIST_FILTER_MODE.INCLUSION
         ? ['type', 'values', 'name', 'enable', 'actions']
         : ['type', 'values', 'name', 'actions'];
   }
@@ -89,7 +94,7 @@ export class CommonDetailsParticipantListTableComponent {
     const listType = rowData.listType;
     let count: number;
 
-    if (listType === this.memberTypes.INDIVIDUAL) {
+    if (listType?.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
       count = rowData.segment.individualForSegment?.length || 0;
     } else {
       count = rowData.segment.groupForSegment?.length || 0;
@@ -104,9 +109,47 @@ export class CommonDetailsParticipantListTableComponent {
     }
   }
 
+  getValuesTooltipText(rowData: ParticipantListTableRow): string {
+    const listType = rowData.listType;
+    let values: string[];
+
+    if (listType?.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
+      values = rowData.segment.individualForSegment?.map((item) => item.userId) || [];
+    } else {
+      values = rowData.segment.groupForSegment?.map((item) => item.groupId) || [];
+    }
+
+    // Show only first 10 values if there are more
+    if (values.length > this.MAX_TOOLTIP_VALUES) {
+      return values.slice(0, this.MAX_TOOLTIP_VALUES).join(', ') + '...';
+    }
+
+    return values.join(', ');
+  }
+
+  getFormattedListType(rowData: ParticipantListTableRow): string {
+    const listType = rowData.listType;
+
+    if (!listType) {
+      return '';
+    }
+
+    // For standard types (Individual, Segment), apply title case
+    if (listType.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
+      return this.memberTypes.INDIVIDUAL;
+    }
+
+    if (listType.toLowerCase() === this.memberTypes.SEGMENT.toLowerCase()) {
+      return this.memberTypes.SEGMENT;
+    }
+
+    return listType;
+  }
+
   isPublicSegment(rowData: ParticipantListTableRow): boolean {
     return (
-      rowData.listType === this.memberTypes.SEGMENT && rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC
+      rowData.listType?.toLowerCase() === this.memberTypes.SEGMENT.toLowerCase() &&
+      rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC
     );
   }
 

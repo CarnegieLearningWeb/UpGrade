@@ -1,0 +1,12 @@
+<div class="table-container">
+  <app-common-details-participant-list-table
+    [tableType]="tableType"
+    [dataSource]="dataSource$ | async"
+    [showActions]="showActions"
+    [actionsDisabled]="actionsDisabled"
+    [actionsTooltip]="actionsTooltip"
+    [isLoading]="isLoading$ | async"
+    noDataRowText="experiments.details.inclusions.card.no-data-row.text"
+    (rowAction)="onRowAction($event)"
+  ></app-common-details-participant-list-table>
+</div>

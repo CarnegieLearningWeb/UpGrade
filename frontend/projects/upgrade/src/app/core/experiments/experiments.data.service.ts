@@ -1,8 +1,20 @@
 import { Inject, Injectable } from '@angular/core';
-import { Experiment, ExperimentStateInfo, ExperimentPaginationParams } from './store/experiments.model';
+import {
+  Experiment,
+  ExperimentStateInfo,
+  ExperimentPaginationParams,
+  UpdateExperimentFilterModeRequest,
+  UpdateExperimentDecisionPointsRequest,
+  UpdateExperimentMetricsRequest,
+  ExperimentSegmentListResponse,
+  UpdateExperimentConditionsRequest,
+} from './store/experiments.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
+import { Observable } from 'rxjs';
+import { ExperimentSegmentListRequest, SegmentFile } from '../segments/store/segments.model';
+import { LIST_FILTER_MODE } from 'upgrade_types';
 
 @Injectable()
 export class ExperimentDataService {
@@ -38,9 +50,9 @@ export class ExperimentDataService {
     return this.http.post(url, experiments);
   }
 
-  updateExperiment(experiment: Experiment) {
+  updateExperiment(experiment: Experiment): Observable<Experiment> {
     const url = `${this.environment.api.updateExperiments}/${experiment.id}`;
-    return this.http.put(url, { ...experiment });
+    return this.http.put<Experiment>(url, { ...experiment });
   }
 
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {
@@ -57,9 +69,9 @@ export class ExperimentDataService {
     return this.http.delete(url);
   }
 
-  getExperimentById(experimentId: string) {
+  getExperimentById(experimentId: string): Observable<Experiment> {
     const url = `${this.environment.api.getExperimentById}/${experimentId}`;
-    return this.http.get(url);
+    return this.http.get<Experiment>(url);
   }
 
   fetchAllPartitions() {
@@ -101,6 +113,36 @@ export class ExperimentDataService {
     return this.http.post(url, params);
   }
 
+  addInclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = this.environment.api.addExperimentInclusionList;
+    return this.http.post<ExperimentSegmentListResponse>(url, list);
+  }
+
+  updateInclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = `${this.environment.api.addExperimentInclusionList}/${list.list.id}`;
+    return this.http.put<ExperimentSegmentListResponse>(url, list);
+  }
+
+  deleteInclusionList(segmentId: string) {
+    const url = `${this.environment.api.addExperimentInclusionList}/${segmentId}`;
+    return this.http.delete(url);
+  }
+
+  addExclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = this.environment.api.addExperimentExclusionList;
+    return this.http.post<ExperimentSegmentListResponse>(url, list);
+  }
+
+  updateExclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = `${this.environment.api.addExperimentExclusionList}/${list.list.id}`;
+    return this.http.put<ExperimentSegmentListResponse>(url, list);
+  }
+
+  deleteExclusionList(segmentId: string) {
+    const url = `${this.environment.api.addExperimentExclusionList}/${segmentId}`;
+    return this.http.delete(url);
+  }
+
   fetchContextMetaData() {
     const url = this.environment.api.contextMetaData;
     return this.http.get(url);
@@ -109,5 +151,58 @@ export class ExperimentDataService {
   fetchGroupAssignmentStatus(experimentId: string) {
     const url = `${this.environment.api.getGroupAssignmentStatus}/${experimentId}`;
     return this.http.get(url);
+  }
+
+  updateFilterMode(params: UpdateExperimentFilterModeRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      filterMode: params.filterMode,
+    };
+    return this.updateExperiment(updatedExperiment);
+  }
+
+  updateExperimentDecisionPoints(params: UpdateExperimentDecisionPointsRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      partitions: params.decisionPoints,
+    };
+    return this.updateExperiment(updatedExperiment);
+  }
+
+  updateExperimentConditions(params: UpdateExperimentConditionsRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      conditions: params.conditions,
+    };
+    return this.updateExperiment(updatedExperiment);
+  }
+
+  validateListsImport(segments: SegmentFile[]) {
+    const url = this.environment.api.validateListsImport;
+    return this.http.post(url, segments);
+  }
+
+  importExperimentList(files: any[], experimentId: string, filterType: LIST_FILTER_MODE) {
+    const lists = { files: files, filterType: filterType, experimentId: experimentId };
+    const url = this.environment.api.importExperimentList;
+    return this.http.post(url, lists);
+  }
+
+  exportAllExcludeListsDesign(id: string) {
+    const url = `${this.environment.api.exportAllExperimentExcludeLists}/${id}`;
+    return this.http.get(url);
+  }
+
+  exportAllIncludeListsDesign(id: string) {
+    const url = `${this.environment.api.exportAllExperimentIncludeLists}/${id}`;
+    return this.http.get(url);
+  }
+
+  updateExperimentMetrics(params: UpdateExperimentMetricsRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      queries: params.metrics,
+    };
+    return this.updateExperiment(updatedExperiment);
   }
 }
