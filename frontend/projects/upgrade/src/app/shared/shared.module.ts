@@ -35,6 +35,7 @@ import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
 import { FormatDatePipe } from './pipes/format-date.pipe';
 import { ScrollDirective } from './directives/scroll.directive';
 import { TrimInputDirective } from './directives/trim-input.directive';
+import { TextOverflowTooltipDirective } from './directives/text-overflow-tooltip.directive';
 import { OperationPipe } from './pipes/operation.pipe';
 import { SegmentStatusPipe } from './pipes/segment-status.pipe';
 import { QueryResultComponent } from './components/query-result/query-result.component';
@@ -78,6 +79,7 @@ import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-c
     ExperimentStatePipe,
     ScrollDirective,
     TrimInputDirective,
+    TextOverflowTooltipDirective,
     FormatDatePipe,
     OperationPipe,
     QueryResultComponent,
@@ -121,6 +123,7 @@ import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-c
     FormatDatePipe,
     ScrollDirective,
     TrimInputDirective,
+    TextOverflowTooltipDirective,
     OperationPipe,
     QueryResultComponent,
     DeleteComponent,

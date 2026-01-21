@@ -12,6 +12,7 @@ import { CommonModalConfig } from '../common-modal/common-modal.types';
 import { IMPORT_COMPATIBILITY_TYPE, ValidatedImportResponse } from 'upgrade_types';
 import { ImportServiceAdapter } from './common-import-type-adapters';
 import { ImportModalParams } from '../../../shared/services/common-dialog.service';
+import { CommonLearnMoreLinkComponent } from '../common-learn-more-link/common-learn-more-link.component';
 
 /**
  * CommonImportModalComponent
@@ -67,7 +68,7 @@ import { ImportModalParams } from '../../../shared/services/common-dialog.servic
  *   warningMessageKey: string;       // Translation key for warning message
  *   incompatibleMessageKey: string;  // Translation key for incompatible message
  *   flagId?: string;                 // Optional: for feature flag list import
- *   listType?: FEATURE_FLAG_LIST_FILTER_MODE; // Optional: for feature flag list import
+ *   filterType?: LIST_FILTER_MODE; // Optional: for list import
  * }
  * ```
  *
@@ -83,6 +84,7 @@ import { ImportModalParams } from '../../../shared/services/common-dialog.servic
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     CommonModule,
     SharedModule,
     CommonImportContainerComponent,
@@ -211,7 +213,9 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
 
   showNotification(importResult: ValidatedImportResponse[]) {
     const importSuccessFiles = importResult
-      .filter((data) => data.error == null || data.error.startsWith('warning'))
+      .filter(
+        (data) => !data.error || (typeof data.error === 'string' && data.error.toLowerCase().startsWith('warning'))
+      )
       .map((data) => data.fileName);
 
     let importSuccessMsg = '';
@@ -224,7 +228,9 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
 
     this.notificationService.showSuccess(importSuccessMsg);
 
-    const importFailedFiles = importResult.filter((data) => data.error != null && !data.error.startsWith('warning'));
+    const importFailedFiles = importResult.filter(
+      (data) => data.error && !(typeof data.error === 'string' && data.error.toLowerCase().startsWith('warning'))
+    );
     importFailedFiles.forEach((data) => {
       this.notificationService.showError(`Failed to import ${data.fileName}: ${data.error}`);
     });

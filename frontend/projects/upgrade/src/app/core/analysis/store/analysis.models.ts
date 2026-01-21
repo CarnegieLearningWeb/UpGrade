@@ -1,7 +1,8 @@
 import { AppState } from '../../core.module';
-import { OPERATION_TYPES, IMetricMetaData, IMetricUnit, REPEATED_MEASURE } from 'upgrade_types';
+import { IMetricUnit, ExperimentQueryPayload } from 'upgrade_types';
+import type { REPEATED_MEASURE } from 'upgrade_types';
 
-export { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE };
+export { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE } from 'upgrade_types';
 
 export const METRICS_JOIN_TEXT = '@__@';
 
@@ -17,7 +18,7 @@ export interface UpsertMetrics {
 
 export interface Query {
   name: string;
-  query: any;
+  query: ExperimentQueryPayload;
   metric: {
     key: string;
   };

@@ -34,6 +34,7 @@ export const segmentThird = {
   description: 'excluded group',
   context: 'home',
   type: SEGMENT_TYPE.PRIVATE,
+  listType: 'group',
   userIds: [],
   groups: [{ groupId: '1', type: 'teacher' }],
   subSegmentIds: [],
@@ -45,7 +46,8 @@ export const segmentFourth = {
   description: 'included users',
   context: 'home',
   type: SEGMENT_TYPE.PRIVATE,
-  userId: 'student1',
+  userIds: ['student1'],
+  listType: 'individual',
   groups: [],
   subSegmentIds: [],
 };

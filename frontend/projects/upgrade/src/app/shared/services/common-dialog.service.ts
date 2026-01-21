@@ -15,7 +15,6 @@ import {
   FeatureFlag,
   ParticipantListTableRow,
   UPSERT_FEATURE_FLAG_ACTION,
-  UPSERT_FEATURE_FLAG_LIST_ACTION,
   UpsertFeatureFlagParams,
 } from '../../core/feature-flags/store/feature-flags.model';
 import { CommonSimpleConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
@@ -24,17 +23,50 @@ import {
   ModalSize,
   SimpleConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
-import { FEATURE_FLAG_LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { UpsertSegmentModalComponent } from '../../features/dashboard/segments/modals/upsert-segment-modal/upsert-segment-modal.component';
 import {
+  EXPERIMENT_IMPORT_SERVICE,
+  EXPERIMENT_LIST_IMPORT_SERVICE,
   FEATURE_FLAG_IMPORT_SERVICE,
+  FEATURE_FLAG_LIST_IMPORT_SERVICE,
   ImportServiceAdapter,
-  LIST_IMPORT_SERVICE,
   SEGMENT_IMPORT_SERVICE,
   SEGMENT_LIST_IMPORT_SERVICE,
 } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
 import { CommonImportModalComponent } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-modal.component';
 import { DeleteSegmentModalComponent } from '../../features/dashboard/segments/modals/delete-segment-modal/delete-segment-modal.component';
+import { UpsertExperimentModalComponent } from '../../features/dashboard/experiments/modals/upsert-experiment-modal/upsert-experiment-modal.component';
+import { UpsertDecisionPointModalComponent } from '../../features/dashboard/experiments/modals/upsert-decision-point-modal/upsert-decision-point-modal.component';
+import { UpsertConditionModalComponent } from '../../features/dashboard/experiments/modals/upsert-condition-modal/upsert-condition-modal.component';
+import { UpsertMetricModalComponent } from '../../features/dashboard/experiments/modals/upsert-metric-modal/upsert-metric-modal.component';
+import {
+  PauseExperimentModalComponent,
+  PauseExperimentModalParams,
+  PauseExperimentModalResult,
+} from '../../features/dashboard/experiments/modals/pause-experiment-modal/pause-experiment-modal.component';
+import {
+  UPSERT_EXPERIMENT_ACTION,
+  ExperimentDecisionPoint,
+  ExperimentCondition,
+  ExperimentConditionPayload,
+  ExperimentQueryDTO,
+  Experiment,
+  UpsertExperimentParams,
+  WeightingMethod,
+  POST_EXPERIMENT_RULE,
+  PAUSE_BEHAVIOR_MODAL_MODE,
+} from '../../core/experiments/store/experiments.model';
+import {
+  ConditionWeightUpdate,
+  EditConditionWeightsModalComponent,
+} from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
+import {
+  EditPayloadModalComponent,
+  EditPayloadModalParams,
+} from '../../features/dashboard/experiments/modals/edit-payload-modal/edit-payload-modal.component';
+import { Observable } from 'rxjs';
+import { DeleteExperimentModalComponent } from '../../features/dashboard/experiments/modals/delete-experiment-modal/delete-experiment-modal.component';
 
 export interface ImportModalParams {
   importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
@@ -42,8 +74,29 @@ export interface ImportModalParams {
   warningMessageKey: string; // Translation key for warning message
   incompatibleMessageKey: string; // Translation key for incompatible message
   flagId?: string; // for feature flag list import
+  experimentId?: string; // for experiment list import
   segmentId?: string; // for segment list import
-  listType?: FEATURE_FLAG_LIST_FILTER_MODE; // for feature flag list import
+  filterType?: LIST_FILTER_MODE; // for list import (specifies filter mode)
+}
+
+export interface UpsertDecisionPointModalParams {
+  sourceDecisionPoint: ExperimentDecisionPoint | null;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
+  context: string;
+}
+
+export interface UpsertConditionModalParams {
+  sourceCondition: ExperimentCondition | null;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
+  context: string;
+}
+
+export interface UpsertMetricModalParams {
+  sourceQuery: ExperimentQueryDTO | null;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
 }
 
 @Injectable({
@@ -60,6 +113,210 @@ export class DialogService {
     });
   }
 
+  // experiment modal ---------------------------------------- //
+  openAddExperimentModal() {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Add Experiment',
+      tagsLabel: 'experiments.upsert-experiment-modal.tags-label.text',
+      tagsPlaceholder: 'experiments.upsert-experiment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceExperiment: null,
+        action: UPSERT_EXPERIMENT_ACTION.ADD,
+      },
+    };
+    return this.openUpsertExperimentModal(commonModalConfig);
+  }
+
+  openEditExperimentModal(sourceExperiment: Experiment) {
+    const commonModalConfig: CommonModalConfig<UpsertExperimentParams> = {
+      title: 'Edit Experiment',
+      tagsLabel: 'experiments.upsert-experiment-modal.tags-label.text',
+      tagsPlaceholder: 'experiments.upsert-experiment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceExperiment: { ...sourceExperiment },
+        action: UPSERT_EXPERIMENT_ACTION.EDIT,
+      },
+    };
+    return this.openUpsertExperimentModal(commonModalConfig);
+  }
+
+  openDuplicateExperimentModal(sourceExperiment: Experiment) {
+    const commonModalConfig: CommonModalConfig<UpsertExperimentParams> = {
+      title: 'Duplicate Experiment',
+      tagsLabel: 'experiments.upsert-experiment-modal.tags-label.text',
+      tagsPlaceholder: 'experiments.upsert-experiment-modal.tags-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceExperiment: { ...sourceExperiment },
+        action: UPSERT_EXPERIMENT_ACTION.DUPLICATE,
+      },
+    };
+    return this.openUpsertExperimentModal(commonModalConfig);
+  }
+
+  openUpsertExperimentModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: 'input',
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertExperimentModalComponent, config);
+  }
+
+  openAddDecisionPointModal(experimentId: string, context: string) {
+    const commonModalConfig: CommonModalConfig<UpsertDecisionPointModalParams> = {
+      title: 'Add Decision Point',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceDecisionPoint: null,
+        action: UPSERT_EXPERIMENT_ACTION.ADD,
+        experimentId,
+        context,
+      },
+    };
+    return this.openUpsertDecisionPointModal(commonModalConfig);
+  }
+
+  openEditDecisionPointModal(sourceDecisionPoint: ExperimentDecisionPoint, experimentId: string, context: string) {
+    const commonModalConfig: CommonModalConfig<UpsertDecisionPointModalParams> = {
+      title: 'Edit Decision Point',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceDecisionPoint: { ...sourceDecisionPoint },
+        action: UPSERT_EXPERIMENT_ACTION.EDIT,
+        experimentId,
+        context,
+      },
+    };
+    return this.openUpsertDecisionPointModal(commonModalConfig);
+  }
+
+  openUpsertDecisionPointModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: false,
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertDecisionPointModalComponent, config);
+  }
+
+  openAddConditionModal(experimentId: string, context: string) {
+    const commonModalConfig: CommonModalConfig<UpsertConditionModalParams> = {
+      title: 'Add Condition',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceCondition: null,
+        action: UPSERT_EXPERIMENT_ACTION.ADD,
+        experimentId,
+        context,
+      },
+    };
+    return this.openUpsertConditionModal(commonModalConfig);
+  }
+
+  openEditConditionModal(sourceCondition: ExperimentCondition, experimentId: string, context: string) {
+    const commonModalConfig: CommonModalConfig<UpsertConditionModalParams> = {
+      title: 'Edit Condition',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceCondition: { ...sourceCondition },
+        action: UPSERT_EXPERIMENT_ACTION.EDIT,
+        experimentId,
+        context,
+      },
+    };
+    return this.openUpsertConditionModal(commonModalConfig);
+  }
+
+  openUpsertConditionModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: false,
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertConditionModalComponent, config);
+  }
+
+  openEditPayloadModal(payload: ExperimentConditionPayload): MatDialogRef<EditPayloadModalComponent> {
+    const commonModalConfig: CommonModalConfig<EditPayloadModalParams> = {
+      title: 'Edit Payload',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        payload: { ...payload },
+      },
+    };
+
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: 'input',
+      disableClose: true,
+    };
+
+    return this.dialog.open(EditPayloadModalComponent, config);
+  }
+
+  openAddMetricModal(experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertMetricModalParams> = {
+      title: 'Add Metric',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceQuery: null,
+        action: UPSERT_EXPERIMENT_ACTION.ADD,
+        experimentId,
+      },
+    };
+    return this.openUpsertMetricModal(commonModalConfig);
+  }
+
+  openEditMetricModal(sourceQuery: ExperimentQueryDTO, experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertMetricModalParams> = {
+      title: 'Edit Metric',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceQuery: { ...sourceQuery },
+        action: UPSERT_EXPERIMENT_ACTION.EDIT,
+        experimentId,
+      },
+    };
+    return this.openUpsertMetricModal(commonModalConfig);
+  }
+
+  openUpsertMetricModal(commonModalConfig: CommonModalConfig) {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.STANDARD,
+      autoFocus: false,
+      disableClose: true,
+    };
+    return this.dialog.open(UpsertMetricModalComponent, config);
+  }
+
   // feature flag modal ---------------------------------------- //
   openAddFeatureFlagModal() {
     const commonModalConfig: CommonModalConfig = {
@@ -71,7 +328,7 @@ export class DialogService {
       cancelBtnLabel: 'Cancel',
       params: {
         sourceFlag: null,
-        action: UPSERT_FEATURE_FLAG_LIST_ACTION.ADD,
+        action: UPSERT_FEATURE_FLAG_ACTION.ADD,
       },
     };
     return this.openUpsertFeatureFlagModal(commonModalConfig);
@@ -183,7 +440,7 @@ export class DialogService {
     return this.dialog.open(UpsertFeatureFlagModalComponent, config);
   }
 
-  openAddIncludeListModal(appContext: string, flagId: string) {
+  openFeatureFlagAddIncludeListModal(appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Include List',
       nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
@@ -202,7 +459,7 @@ export class DialogService {
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openEditIncludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
+  openFeatureFlagEditIncludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Edit Include List',
       nameHint: 'feature-flags.upsert-include-list-modal.name-hint.text',
@@ -221,7 +478,7 @@ export class DialogService {
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openAddExcludeListModal(appContext: string, flagId: string) {
+  openFeatureFlagAddExcludeListModal(appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Add Exclude List',
       nameHint: 'feature-flags.upsert-exclude-list-modal.name-hint.text',
@@ -240,7 +497,7 @@ export class DialogService {
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
   }
 
-  openEditExcludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
+  openFeatureFlagEditExcludeListModal(sourceList: ParticipantListTableRow, appContext: string, flagId: string) {
     const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
       title: 'Edit Exclude List',
       nameHint: 'feature-flags.upsert-exclude-list-modal.name-hint.text',
@@ -257,6 +514,113 @@ export class DialogService {
       },
     };
     return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openExperimentAddIncludeListModal(appContext: string, experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Add Include List',
+      nameHint: 'experiments.upsert-include-list-modal.name-hint.text',
+      valuesLabel: 'experiments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'experiments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList: null,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_EXPERIMENT_INCLUDE_LIST,
+        id: experimentId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openExperimentEditIncludeListModal(sourceList: ParticipantListTableRow, appContext: string, experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Edit Include List',
+      nameHint: 'experiments.upsert-include-list-modal.name-hint.text',
+      valuesLabel: 'experiments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'experiments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_INCLUDE_LIST,
+        id: experimentId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openExperimentAddExcludeListModal(appContext: string, experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Add Exclude List',
+      nameHint: 'experiments.upsert-exclude-list-modal.name-hint.text',
+      valuesLabel: 'experiments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'experiments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Create',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList: null,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_EXPERIMENT_EXCLUDE_LIST,
+        id: experimentId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openExperimentEditExcludeListModal(sourceList: ParticipantListTableRow, appContext: string, experimentId: string) {
+    const commonModalConfig: CommonModalConfig<UpsertPrivateSegmentListParams> = {
+      title: 'Edit Exclude List',
+      nameHint: 'experiments.upsert-exclude-list-modal.name-hint.text',
+      valuesLabel: 'experiments.upsert-list-modal.values-label.text',
+      valuesPlaceholder: 'experiments.upsert-list-modal.values-placeholder.text',
+      primaryActionBtnLabel: 'Save',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        sourceList,
+        sourceAppContext: appContext,
+        action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_EXCLUDE_LIST,
+        id: experimentId,
+      },
+    };
+    return this.openUpsertPrivateSegmentListModal(commonModalConfig);
+  }
+
+  openEditConditionWeightsModal(
+    conditions: ExperimentCondition[],
+    weightingMethod: WeightingMethod
+  ): Observable<ConditionWeightUpdate[]> {
+    const dialogRef = this.dialog.open(EditConditionWeightsModalComponent, {
+      panelClass: ['experiment-modal', 'modal-shadow'],
+      hasBackdrop: true,
+      autoFocus: false,
+      restoreFocus: false,
+      backdropClass: 'modal-backdrop',
+      width: ModalSize.STANDARD,
+
+      data: {
+        title: 'experiments.edit-condition-weights-modal.title.text',
+        primaryActionBtnLabel: 'Save',
+        primaryActionBtnColor: 'primary',
+        cancelBtnLabel: 'Cancel',
+        params: {
+          experimentWeightsArray: conditions.map((condition) => ({
+            conditionId: condition.id,
+            conditionCode: condition.conditionCode,
+            assignmentWeight: condition.assignmentWeight || 0,
+          })),
+          weightingMethod,
+        },
+      },
+    });
+
+    return dialogRef.afterClosed();
   }
 
   openAddListModal(appContext: string, segmentId: string, segmentType: SEGMENT_TYPE) {
@@ -399,6 +763,156 @@ export class DialogService {
     return this.dialog.open(DeleteFeatureFlagModalComponent, config);
   }
 
+  openDeleteExperimentModal() {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Delete Experiment',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+    };
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.SMALL,
+      autoFocus: 'input',
+      disableClose: true,
+    };
+    return this.dialog.open(DeleteExperimentModalComponent, config);
+  }
+
+  openStartExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Start Experiment',
+      primaryActionBtnLabel: 'Start',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to start "${experimentName}"?`,
+        subMessage: '* While the experiment is running, decision points and conditions cannot be edited.',
+        subMessageClass: 'info',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openPauseExperimentModal(
+    conditions: ExperimentCondition[],
+    mode: PAUSE_BEHAVIOR_MODAL_MODE = PAUSE_BEHAVIOR_MODAL_MODE.PAUSE,
+    experimentName?: string,
+    currentPostExperimentRule?: POST_EXPERIMENT_RULE,
+    currentRevertTo?: string
+  ): MatDialogRef<PauseExperimentModalComponent, PauseExperimentModalResult> {
+    const commonModalConfig: CommonModalConfig<PauseExperimentModalParams> = {
+      title: mode === PAUSE_BEHAVIOR_MODAL_MODE.PAUSE ? 'Pause Experiment' : 'Update Pause Behavior',
+      primaryActionBtnLabel: mode === PAUSE_BEHAVIOR_MODAL_MODE.PAUSE ? 'Pause' : 'Save',
+      primaryActionBtnColor: 'primary', // Color overridden in modal SCSS for pause mode
+      cancelBtnLabel: 'Cancel',
+      params: {
+        mode,
+        experimentName,
+        conditions,
+        currentPostExperimentRule,
+        currentRevertTo,
+      },
+    };
+
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: ModalSize.MEDIUM,
+      autoFocus: 'first-heading',
+      disableClose: true,
+    };
+
+    return this.dialog.open(PauseExperimentModalComponent, config);
+  }
+
+  openResumeExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Resume Experiment',
+      primaryActionBtnLabel: 'Resume',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to resume "${experimentName}"?`,
+        subMessage: '* While the experiment is running, decision points and conditions cannot be edited.',
+        subMessageClass: 'info',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openStopExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Stop Experiment',
+      primaryActionBtnLabel: 'Stop',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to stop "${experimentName}"?`,
+        subMessage:
+          '* After stopping, you cannot restart the experiment. No participants will receive experiment conditions. You can still export the experiment data and design.',
+        subMessageClass: 'warn',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openArchiveExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Archive Experiment',
+      primaryActionBtnLabel: 'Archive',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to archive "${experimentName}"?`,
+        subMessage: 'experiments.archive.archiving-info.text',
+        subMessageClass: 'warn',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openDeleteDecisionPointModal(decisionPointName: string) {
+    const deleteDecisionPointModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Delete Decision Point',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete decision point "${decisionPointName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(deleteDecisionPointModalConfig, ModalSize.SMALL);
+  }
+
+  openDeleteConditionModal(conditionName: string) {
+    const deleteConditionModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Delete Condition',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete the condition "${conditionName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(deleteConditionModalConfig, ModalSize.SMALL);
+  }
+
+  openDeleteMetricModal(metricName: string) {
+    const deleteMetricModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+      title: 'Delete Metric',
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete the metric "${metricName}"?`,
+      },
+    };
+
+    return this.openSimpleCommonConfirmationModal(deleteMetricModalConfig, ModalSize.SMALL);
+  }
+
   openDeleteSegmentModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Delete Segment',
@@ -423,6 +937,19 @@ export class DialogService {
       cancelBtnLabel: 'Cancel',
       params: {
         message: 'feature-flags.export-feature-flag-design.confirmation-text.text',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openExportExperimentDesignModal(): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Export Experiment',
+      primaryActionBtnLabel: 'Export',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: 'experiments.export-experiment-design.confirmation-text.text',
       },
     };
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
@@ -501,6 +1028,24 @@ export class DialogService {
   ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
     const commonModalConfig: CommonModalConfig = {
       title: 'Email Feature Flag Data',
+      primaryActionBtnLabel: 'Email',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: warning,
+        subMessage: subtext,
+        subMessageClass: 'info',
+      },
+    };
+    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+  }
+
+  openEmailExperimentDataModal(
+    warning: string,
+    subtext: string
+  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig = {
+      title: 'Email Experiment Data',
       primaryActionBtnLabel: 'Email',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
@@ -604,19 +1149,71 @@ export class DialogService {
     return this.openCommonImportModal(commonModalConfig);
   }
 
-  openImportFeatureFlagExcludeListModal(flagId: string) {
+  openImportExperimentModal() {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'feature-flags.import-flag-list-modal.title.text',
+      title: 'experiments.import-experiment.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        importTypeAdapterToken: LIST_IMPORT_SERVICE,
+        importTypeAdapterToken: EXPERIMENT_IMPORT_SERVICE,
+        messageKey: 'experiments.import-experiment.message.text',
+        warningMessageKey: 'experiments.import-experiment-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'experiments.import-experiment-modal.compatibility-description.incompatible.text',
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportFeatureFlagExcludeListModal(flagId: string) {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'feature-flags.import-flag-exclude-list-modal.title.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: FEATURE_FLAG_LIST_IMPORT_SERVICE,
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
         incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
-        listType: FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
+        filterType: LIST_FILTER_MODE.EXCLUSION,
         flagId,
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportExperimentExcludeListModal(experimentId: string) {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'experiments.import-experiment-exclude-list-modal.title.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: EXPERIMENT_LIST_IMPORT_SERVICE,
+        messageKey: 'segments.import-list.message.text',
+        warningMessageKey: 'segments.import-list-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'segments.import-list-modal.compatibility-description.incompatible.text',
+        filterType: LIST_FILTER_MODE.EXCLUSION,
+        experimentId,
+      },
+    };
+    return this.openCommonImportModal(commonModalConfig);
+  }
+
+  openImportExperimentIncludeListModal(experimentId: string) {
+    const commonModalConfig: CommonModalConfig<ImportModalParams> = {
+      title: 'experiments.import-experiment-include-list-modal.title.text',
+      primaryActionBtnLabel: 'Import',
+      primaryActionBtnColor: 'primary',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        importTypeAdapterToken: EXPERIMENT_LIST_IMPORT_SERVICE,
+        messageKey: 'segments.import-list.message.text',
+        warningMessageKey: 'segments.import-list-modal.compatibility-description.warning.text',
+        incompatibleMessageKey: 'segments.import-list-modal.compatibility-description.incompatible.text',
+        filterType: LIST_FILTER_MODE.INCLUSION,
+        experimentId,
       },
     };
     return this.openCommonImportModal(commonModalConfig);
@@ -624,16 +1221,16 @@ export class DialogService {
 
   openImportFeatureFlagIncludeListModal(flagId: string) {
     const commonModalConfig: CommonModalConfig<ImportModalParams> = {
-      title: 'feature-flags.import-flag-list-modal.title.text',
+      title: 'feature-flags.import-flag-include-list-modal.title.text',
       primaryActionBtnLabel: 'Import',
       primaryActionBtnColor: 'primary',
       cancelBtnLabel: 'Cancel',
       params: {
-        importTypeAdapterToken: LIST_IMPORT_SERVICE,
+        importTypeAdapterToken: FEATURE_FLAG_LIST_IMPORT_SERVICE,
         messageKey: 'feature-flags.import-feature-flag-list.message.text',
         warningMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.warning.text',
         incompatibleMessageKey: 'feature-flags.import-flag-list-modal.compatibility-description.incompatible.text',
-        listType: FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
+        filterType: LIST_FILTER_MODE.INCLUSION,
         flagId,
       },
     };

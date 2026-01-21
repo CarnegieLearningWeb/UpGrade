@@ -12,7 +12,6 @@ import {
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { FeatureFlagCoreValidation } from './FeatureFlagValidator';
-import { SegmentInputValidator } from './SegmentInputValidator';
 
 class IndividualValidator {
   @IsNotEmpty()
@@ -100,15 +99,6 @@ export class FeatureFlagListImportValidator {
   @ValidateNested()
   @Type(() => SegmentImportValidator)
   public segment: SegmentImportValidator;
-}
-
-export class ImportFeatureFlagListValidator {
-  @IsNotEmpty()
-  public listType: string;
-
-  @ValidateNested()
-  @Type(() => SegmentInputValidator)
-  public segment: SegmentInputValidator;
 }
 
 export class FeatureFlagImportDataValidation extends FeatureFlagCoreValidation {

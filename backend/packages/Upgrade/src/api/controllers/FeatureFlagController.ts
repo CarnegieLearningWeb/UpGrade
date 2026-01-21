@@ -21,7 +21,7 @@ import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatus
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFilterModeUpdateValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-import { IImportError, ValidatedImportResponse, FEATURE_FLAG_LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
+import { IImportError, ValidatedImportResponse, LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
 import {
   FeatureFlagImportValidation,
   FeatureFlagListImportValidation,
@@ -30,11 +30,11 @@ import {
 } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { FeatureFlagListValidator } from '../controllers/validators/FeatureFlagListValidator';
-import { Segment } from 'src/api/models/Segment';
+import { Segment } from '../models/Segment';
 import { Response } from 'express';
 import { UserDTO } from '../DTO/UserDTO';
-import { ImportFeatureFlagListValidator } from './validators/FeatureFlagImportValidator';
 import { NotFoundException } from '@nestjs/common/exceptions';
+import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -131,14 +131,14 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
  *   FeatureFlagListImportObject:
  *    required:
  *      - files
- *      - listType
+ *      - filterType
  *      - flagId
  *    properties:
  *      files:
  *        type: object
- *      listType:
+ *      filterType:
  *        type: string
- *        enum: [featureFlagSegmentInclusion, featureFlagSegmentExclusion]
+ *        enum: [inclusion, exclusion]
  *      flagId:
  *        type: string
  */
@@ -502,12 +502,7 @@ export class FeatureFlagsController {
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentInclusion> {
     return (
-      await this.featureFlagService.addList(
-        [inclusionList],
-        FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
-        currentUser,
-        request.logger
-      )
+      await this.featureFlagService.addList([inclusionList], LIST_FILTER_MODE.INCLUSION, currentUser, request.logger)
     )[0];
   }
 
@@ -540,12 +535,7 @@ export class FeatureFlagsController {
     @Req() request: AppRequest
   ): Promise<FeatureFlagSegmentExclusion> {
     return (
-      await this.featureFlagService.addList(
-        [exclusionList],
-        FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
-        currentUser,
-        request.logger
-      )
+      await this.featureFlagService.addList([exclusionList], LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger)
     )[0];
   }
 
@@ -591,12 +581,7 @@ export class FeatureFlagsController {
         )
       );
     }
-    return this.featureFlagService.updateList(
-      exclusionList,
-      FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
-      currentUser,
-      request.logger
-    );
+    return this.featureFlagService.updateList(exclusionList, LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
   }
 
   /**
@@ -641,12 +626,7 @@ export class FeatureFlagsController {
         )
       );
     }
-    return this.featureFlagService.updateList(
-      inclusionList,
-      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
-      currentUser,
-      request.logger
-    );
+    return this.featureFlagService.updateList(inclusionList, LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
   }
 
   /**
@@ -677,7 +657,7 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.featureFlagService.deleteList(id, FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
+    return this.featureFlagService.deleteList(id, LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
   }
 
   /**
@@ -708,7 +688,7 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.featureFlagService.deleteList(id, FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
+    return this.featureFlagService.deleteList(id, LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
   }
 
   /**
@@ -861,51 +841,6 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags/lists/import/validation:
-   *    post:
-   *       description: Validating Feature Flag List
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: body
-   *           name: lists
-   *           description: Import FeatureFlag List Files
-   *           required: true
-   *           schema:
-   *             type: object
-   *             $ref: '#/definitions/FeatureFlagListImportObject'
-   *       tags:
-   *         - Feature Flags
-   *       produces:
-   *         - application/json
-   *       responses:
-   *         '200':
-   *           description: Validations are completed
-   *           schema:
-   *            type: array
-   *            items:
-   *              type: object
-   *              properties:
-   *                fileName:
-   *                  type: string
-   *                compatibilityType:
-   *                  type: string
-   *                  enum: [compatible, warning, incompatible]
-   *         '401':
-   *           description: AuthorizationRequiredError
-   *         '500':
-   *           description: Internal Server Error
-   */
-  @Post('/lists/import/validation')
-  public async validateImportFeatureFlagList(
-    @Body({ validate: true }) lists: FeatureFlagListImportValidation,
-    @Req() request: AppRequest
-  ): Promise<ValidatedImportResponse[]> {
-    return await this.featureFlagService.validateImportFeatureFlagLists(lists.files, lists.flagId, request.logger);
-  }
-
-  /**
-   * @swagger
    * /flags/lists/import:
    *    post:
    *       description: Importing Feature Flag List
@@ -920,7 +855,7 @@ export class FeatureFlagsController {
    *             type: object
    *             $ref: '#/definitions/FeatureFlagListImportObject'
    *       tags:
-   *         - Feature Flag Lists
+   *         - Feature Flags
    *       produces:
    *         - application/json
    *       responses:
@@ -940,7 +875,7 @@ export class FeatureFlagsController {
     return await this.featureFlagService.importFeatureFlagLists(
       lists.files,
       lists.flagId,
-      lists.listType,
+      lists.filterType,
       currentUser,
       request.logger
     );
@@ -979,16 +914,12 @@ export class FeatureFlagsController {
     @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest,
     @Res() response: Response
-  ): Promise<ImportFeatureFlagListValidator[]> {
-    const lists = await this.featureFlagService.exportAllLists(
-      id,
-      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
-      request.logger
-    );
+  ): Promise<SegmentInputValidator[]> {
+    const lists = await this.featureFlagService.exportAllLists(id, LIST_FILTER_MODE.INCLUSION, request.logger);
     if (lists?.length) {
       // download JSON file with appropriate headers to response body;
       if (lists.length === 1) {
-        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
+        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].name}.json"`);
       } else {
         response.setHeader('Content-Disposition', `attachment; filename="lists.zip"`);
       }
@@ -1033,16 +964,12 @@ export class FeatureFlagsController {
     @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest,
     @Res() response: Response
-  ): Promise<ImportFeatureFlagListValidator[]> {
-    const lists = await this.featureFlagService.exportAllLists(
-      id,
-      FEATURE_FLAG_LIST_FILTER_MODE.EXCLUSION,
-      request.logger
-    );
+  ): Promise<SegmentInputValidator[]> {
+    const lists = await this.featureFlagService.exportAllLists(id, LIST_FILTER_MODE.EXCLUSION, request.logger);
     if (lists?.length) {
       // download JSON file with appropriate headers to response body;
       if (lists.length === 1) {
-        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].segment.name}.json"`);
+        response.setHeader('Content-Disposition', `attachment; filename="${lists[0].name}.json"`);
       } else {
         response.setHeader('Content-Disposition', `attachment; filename="lists.zip"`);
       }

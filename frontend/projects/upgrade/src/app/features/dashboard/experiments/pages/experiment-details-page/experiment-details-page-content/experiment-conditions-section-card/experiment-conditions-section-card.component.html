@@ -1,0 +1,42 @@
+@if (vm$ | async; as vm) { @let canShowActions = vm.permissions?.experiments.update &&
+!vm.restriction.shouldHideActions; @let restrictionTooltip = vm.restriction.tooltipKey | translate; @let appContext =
+vm.experiment.context[0];
+
+<app-common-section-card>
+  <!-- header-left -->
+  <app-common-section-card-title-header
+    header-left
+    [title]="'experiments.details.conditions.card.title.text' | translate"
+    [subtitle]="'experiments.details.conditions.card.subtitle.text' | translate"
+    [tableRowCount]="vm.experiment.conditions?.length || 0"
+    [warningMessage]="weightWarningText$ | async"
+  ></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="canShowActions"
+    [primaryButtonText]="'experiments.details.add-condition.button.text' | translate"
+    [primaryActionBtnDisabled]="vm.restriction.isDisabled"
+    [primaryButtonTooltip]="restrictionTooltip"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (primaryButtonClick)="onAddConditionClick(appContext, vm.experiment.id)"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  @if (isSectionCardExpanded) {
+  <app-experiment-conditions-table
+    content
+    [conditions]="vm.experiment.conditions || []"
+    [isLoading$]="experimentService.isLoadingSelectedExperiment$"
+    [showActions]="canShowActions"
+    [actionsDisabled]="vm.restriction.isDisabled"
+    [actionsTooltip]="restrictionTooltip"
+    (rowAction)="onRowAction($event, vm.experiment.id, appContext)"
+    (editWeights)="onEditWeights($event, vm.experiment)"
+  ></app-experiment-conditions-table>
+  }
+</app-common-section-card>
+}

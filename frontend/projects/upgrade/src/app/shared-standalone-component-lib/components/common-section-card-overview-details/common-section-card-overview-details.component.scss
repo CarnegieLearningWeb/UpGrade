@@ -14,5 +14,22 @@
     .chips-container {
       margin-top: -4px;
     }
+
+    &.bulletted-list-container {
+      flex-direction: column;
+      align-items: flex-start;
+      column-gap: 0;
+      padding-bottom: 6px;
+    }
+
+    .bulletted-list {
+      margin: 4px 0 0 20px;
+      padding-left: 20px;
+      color: var(--dark-grey);
+
+      li {
+        margin-bottom: 4px;
+      }
+    }
   }
 }

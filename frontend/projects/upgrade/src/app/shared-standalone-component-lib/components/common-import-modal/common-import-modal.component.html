@@ -19,9 +19,7 @@
           <span *ngIf="config.params.messageKey">
             {{ config.params.messageKey | translate }}
           </span>
-          <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer"
-            >Learn more</a
-          >
+          <app-common-learn-more-link learnMoreLinkKey="guide.importing-entities"></app-common-learn-more-link>
         </p>
       </ng-container>
       <ng-template #validationTable>
@@ -43,7 +41,7 @@
                   (click)="toggleExpand(rowIndex)"
                 >
                   <mat-icon>{{
-                    element.compatibilityType === 'compatible' || !isDescriptionExpanded
+                    element.compatibilityType === 'compatible' || !expandedRows.has(rowIndex)
                       ? 'chevron_right'
                       : 'expand_more'
                   }}</mat-icon>
@@ -54,7 +52,11 @@
             <!-- File Name Column -->
             <ng-container matColumnDef="fileName">
               <th mat-header-cell class="ft-14-600" *matHeaderCellDef>File Name</th>
-              <td mat-cell class="ft-14-500" *matCellDef="let element">{{ element.fileName }}</td>
+              <td mat-cell class="ft-14-500" *matCellDef="let element">
+                <span [appTextOverflowTooltip]="element.fileName" matTooltipPosition="above" class="line-clamp-1">
+                  {{ element.fileName }}
+                </span>
+              </td>
             </ng-container>
 
             <!-- Compatibility Type Column -->
@@ -73,12 +75,12 @@
                 <div class="ft-14-500" *ngIf="expandedRows.has(rowIndex)" class="compatibility-details-container">
                   <div *ngIf="element.compatibilityType === 'incompatible'">
                     <span *ngIf="config.params.incompatibleMessageKey">
-                      {{ config.params.incompatibleMessageKey | translate }}
+                      {{ element.error || (config.params.incompatibleMessageKey | translate) }}
                     </span>
                   </div>
                   <div *ngIf="element.compatibilityType === 'warning'">
                     <span *ngIf="config.params.warningMessageKey">
-                      {{ config.params.warningMessageKey | translate }}
+                      {{ element.error || (config.params.warningMessageKey | translate) }}
                     </span>
                   </div>
                 </div>

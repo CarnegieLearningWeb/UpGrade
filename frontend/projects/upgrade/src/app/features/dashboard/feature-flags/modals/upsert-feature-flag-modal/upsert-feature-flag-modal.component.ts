@@ -30,11 +30,13 @@ import { CommonTextHelpersService } from '../../../../../shared/services/common-
 import isEqual from 'lodash.isequal';
 import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { SharedModule } from '../../../../../shared/shared.module';
+import { CommonLearnMoreLinkComponent } from '../../../../../shared-standalone-component-lib/components';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',
   imports: [
     CommonModalComponent,
+    CommonLearnMoreLinkComponent,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,

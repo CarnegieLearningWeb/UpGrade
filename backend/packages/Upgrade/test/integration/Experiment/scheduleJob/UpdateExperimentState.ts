@@ -19,7 +19,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
-  const experimentObject = scheduleJobUpdateExperiment;
+  const experimentObject = structuredClone(scheduleJobUpdateExperiment);
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());

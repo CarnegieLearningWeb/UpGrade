@@ -1,20 +1,29 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, SimpleChanges } from '@angular/core';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatIcon } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { STATUS_INDICATOR_CHIP_TYPE } from 'upgrade_types';
+import { CommonWarningIconComponent } from '../common-warning-icon/common-warning-icon.component';
 
 /**
  * The `app-common-status-indicator-chip` component provides a common component for status indicator inside mat-chip.
- * It contains a chipText which will be used to choose chip's border and font color as well.
+ *
+ *
  * Example usage:
  *
- * ```
+ * ```html
  * <app-common-status-indicator-chip
  *  [chipClass]="STATUS_INDICATOR_CHIP_TYPE.ENROLLMENT_COMPLETE"
- *  [showWarning]="false"
+ * ></app-common-status-indicator-chip>
+ * ```
+ *
+ * Providing warning message keys will make a warning icon next to the chip.
+ * The messages will be translated and shown as a tooltip when hovered over the icon.
+ *
+ * ```html
+ * <app-common-status-indicator-chip
+ *  [chipClass]="STATUS_INDICATOR_CHIP_TYPE.ENROLLMENT_COMPLETE"
+ *  [warningMessageKeys]="['feature-flags.warning.no-enabled-inclusions.text']"
  * ></app-common-status-indicator-chip>
  * ```
  */
@@ -23,28 +32,37 @@ import { STATUS_INDICATOR_CHIP_TYPE } from 'upgrade_types';
   selector: 'app-common-status-indicator-chip',
   templateUrl: './common-status-indicator-chip.component.html',
   styleUrls: ['./common-status-indicator-chip.component.scss'],
-  imports: [CommonModule, TranslateModule, MatChipsModule, MatIcon, MatTooltipModule],
+  imports: [CommonModule, TranslateModule, MatChipsModule, CommonWarningIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonStatusIndicatorChipComponent {
   @Input() chipClass!: STATUS_INDICATOR_CHIP_TYPE;
-  @Input() showWarning!: boolean;
+  @Input() warningMessageKeys: string[] = [];
   chipText = '';
 
+  private readonly DISPLAY_NAME_OVERRIDES: Record<string, string> = {
+    [STATUS_INDICATOR_CHIP_TYPE.ENROLLING]: 'Running',
+    [STATUS_INDICATOR_CHIP_TYPE.ENROLLMENT_COMPLETE]: 'Paused',
+    [STATUS_INDICATOR_CHIP_TYPE.CANCELLED]: 'Completed',
+  };
+
   ngOnInit() {
-    this.chipText = this.convertKebabToTitleCase(this.chipClass);
+    this.chipText = this.convertToTitleCase(this.chipClass);
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.chipClass && changes.chipClass.currentValue) {
-      this.chipText = this.convertKebabToTitleCase(changes.chipClass.currentValue);
+    if (changes.chipClass?.currentValue) {
+      this.chipText = this.convertToTitleCase(changes.chipClass.currentValue);
     }
   }
 
-  convertKebabToTitleCase(kebabCaseStr: STATUS_INDICATOR_CHIP_TYPE): string {
-    return kebabCaseStr
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+  convertToTitleCase(value: STATUS_INDICATOR_CHIP_TYPE): string {
+    // Check for special display name overrides first
+    if (this.DISPLAY_NAME_OVERRIDES[value]) {
+      return this.DISPLAY_NAME_OVERRIDES[value];
+    }
+
+    // For all other cases, just capitalize the first letter
+    return value.charAt(0).toUpperCase() + value.slice(1);
   }
 }

@@ -12,8 +12,11 @@ import { SEGMENT_TYPE } from 'upgrade_types';
 })
 export class SegmentOverviewDetailsFooterComponent implements OnInit {
   @Input() segment: Segment;
-  tabLabels = ['Lists', 'Used By'];
   selectedIndex = 0;
+  tabLabels = [
+    { label: 'Lists', disabled: false },
+    { label: 'Used By', disabled: false },
+  ];
   @Output() tabChange = new EventEmitter<number>();
 
   ngOnInit(): void {
@@ -26,9 +29,7 @@ export class SegmentOverviewDetailsFooterComponent implements OnInit {
 
   private resetTabs(): void {
     if (this.segment?.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-      this.tabLabels = ['Exclude Lists'];
-    } else {
-      this.tabLabels = ['Lists', 'Used By'];
+      this.tabLabels = [{ label: 'Exclude Lists', disabled: false }];
     }
     // Reset the selected index to the first tab
     this.onSelectedTabChange(0);

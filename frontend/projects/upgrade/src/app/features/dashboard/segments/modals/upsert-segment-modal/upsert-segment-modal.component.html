@@ -44,9 +44,7 @@
         class="form-hint ft-12-400"
       >
         {{ 'segments.upsert-segment-modal.app-context-hint.text' | translate }}
-        <a class="learn-more-link" href="https://www.upgradeplatform.org/" target="_blank" rel="noopener noreferrer">
-          Learn more
-        </a>
+        <app-common-learn-more-link learnMoreLinkKey="glossary.context"></app-common-learn-more-link>
       </mat-hint>
       <mat-hint
         *ngIf="config.params.action === UPSERT_SEGMENT_ACTION.EDIT && isContextChanged"
