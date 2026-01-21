@@ -11,9 +11,14 @@ import {
   UpdateFilterModeRequest,
 } from './store/feature-flags.model';
 import { Observable, delay, of } from 'rxjs';
-import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
-import { FEATURE_FLAG_LIST_FILTER_MODE, IFeatureFlagFile } from 'upgrade_types';
+
+import {
+  AddPrivateSegmentListRequest,
+  EditPrivateSegmentListRequest,
+  SegmentFile,
+} from '../segments/store/segments.model';
 import { API_ENDPOINTS } from '../api-endpoints.constants';
+import { IImportFile, LIST_FILTER_MODE } from 'upgrade_types';
 
 @Injectable()
 export class FeatureFlagsDataService {
@@ -45,24 +50,23 @@ export class FeatureFlagsDataService {
     return this.http.put<FeatureFlag>(url, flag);
   }
 
-  validateFeatureFlag(featureFlags: { files: IFeatureFlagFile[] }) {
+  validateFeatureFlag(featureFlags: { files: IImportFile[] }) {
     const url = API_ENDPOINTS.validateFeatureFlag;
     return this.http.post(url, featureFlags);
   }
 
-  validateFeatureFlagList(files: IFeatureFlagFile[], flagId: string, listType: FEATURE_FLAG_LIST_FILTER_MODE) {
-    const lists = { files: files, listType: listType, flagId: flagId };
-    const url = API_ENDPOINTS.validateFeatureFlagList;
-    return this.http.post(url, lists);
+  validateListsImport(segments: SegmentFile[]) {
+    const url = API_ENDPOINTS.validateListsImport;
+    return this.http.post(url, segments);
   }
 
-  importFeatureFlag(featureFlag: { files: IFeatureFlagFile[] }) {
+  importFeatureFlag(featureFlag: { files: IImportFile[] }) {
     const url = API_ENDPOINTS.importFeatureFlag;
     return this.http.post(url, featureFlag);
   }
 
-  importFeatureFlagList(files: IFeatureFlagFile[], flagId: string, listType: FEATURE_FLAG_LIST_FILTER_MODE) {
-    const lists = { files: files, listType: listType, flagId: flagId };
+  importFeatureFlagList(files: IImportFile[], flagId: string, filterType: LIST_FILTER_MODE) {
+    const lists = { files: files, filterType: filterType, flagId: flagId };
     const url = API_ENDPOINTS.importFeatureFlagList;
     return this.http.post(url, lists);
   }

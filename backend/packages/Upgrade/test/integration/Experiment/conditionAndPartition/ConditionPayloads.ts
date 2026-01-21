@@ -14,7 +14,7 @@ export default async function ConditionPayload(): Promise<void> {
   const entityManager = tteContainer.getDataSource().manager;
 
   // experiment object
-  const experimentObject = payloadConditionExperiment;
+  const experimentObject = structuredClone(payloadConditionExperiment);
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
@@ -33,14 +33,12 @@ export default async function ConditionPayload(): Promise<void> {
   expect(experiments.conditionPayloads).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: '9d753b90-1111-44b5-8acc-2483c0507ea0',
         payload: {
           value: 'ConditionA_W1',
           type: PAYLOAD_TYPE.STRING,
         },
       }),
       expect.objectContaining({
-        id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
         payload: {
           value: 'ConditionA_W2',
           type: PAYLOAD_TYPE.STRING,
@@ -66,8 +64,8 @@ export default async function ConditionPayload(): Promise<void> {
           value: 'ConditionB_W2',
           type: PAYLOAD_TYPE.STRING,
         },
-        parentCondition: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
-        decisionPoint: 'e22467b1-f0e9-4444-9517-cc03037bc079',
+        parentCondition: experiments.conditions.find((cond) => cond.name === 'Condition B').id,
+        decisionPoint: experiments.partitions.find((part) => part.target === 'W2').id,
       },
     ],
   };
@@ -77,14 +75,12 @@ export default async function ConditionPayload(): Promise<void> {
   expect(updatedExperimentDoc.conditionPayloads).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: '9d753b90-1111-44b5-8acc-2483c0507ea2',
         payload: {
           value: 'ConditionB_W2',
           type: PAYLOAD_TYPE.STRING,
         },
       }),
       expect.objectContaining({
-        id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
         payload: {
           value: 'ConditionA_W2_updated',
           type: PAYLOAD_TYPE.STRING,
@@ -93,6 +89,8 @@ export default async function ConditionPayload(): Promise<void> {
     ])
   );
 
+  // # of conditionPayloads should be # of partitions (3) * # of conditions (2): 6
+  expect(updatedExperimentDoc.conditionPayloads.length).toEqual(6);
   // delete first condition payload
   updatedExperimentDoc.conditions.sort((a, b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
@@ -105,7 +103,8 @@ export default async function ConditionPayload(): Promise<void> {
     new UpgradeLogger()
   );
 
-  expect(updatedExperimentDoc.conditionPayloads.length).toEqual(1);
+  // # of conditionPayloads should be # of partitions (3) * # of conditions (1): 3
+  expect(updatedExperimentDoc.conditionPayloads.length).toEqual(3);
   expect(updatedExperimentDoc.conditionPayloads).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -129,5 +128,6 @@ export default async function ConditionPayload(): Promise<void> {
     updatedExperimentDoc.id as any,
     new UpgradeLogger()
   );
-  expect(updatedExperimentDoc.conditionPayloads.length).toEqual(0);
+  // # of conditionPayloads should be # of partitions (2) * # of conditions (1): 2
+  expect(updatedExperimentDoc.conditionPayloads.length).toEqual(2);
 }

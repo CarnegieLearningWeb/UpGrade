@@ -1,30 +1,67 @@
 <div class="action-buttons">
   <div class="main-container">
-    <mat-slide-toggle
+    <div
       *ngIf="showSlideToggle"
-      color="primary"
-      [checked]="slideToggleChecked"
-      [disabled]="slideToggleDisabled"
-      (change)="onSlideToggleChange($event)"
+      [matTooltip]="slideToggleTooltip"
+      [matTooltipDisabled]="!slideToggleDisabled"
+      matTooltipPosition="above"
     >
-      {{ slideToggleText }}
-    </mat-slide-toggle>
+      <mat-slide-toggle
+        color="primary"
+        [checked]="slideToggleChecked"
+        [disabled]="slideToggleDisabled"
+        (change)="onSlideToggleChange($event)"
+      >
+        {{ slideToggleText }}
+      </mat-slide-toggle>
+    </div>
 
-    <button
+    <!-- New: Support for multiple action buttons -->
+    <ng-container *ngIf="actionButtons && actionButtons.length > 0">
+      <div
+        *ngFor="let button of actionButtons"
+        [matTooltip]="button.tooltip"
+        [matTooltipDisabled]="!button.disabled"
+        [matTooltipClass]="button.tooltipClass"
+        matTooltipPosition="above"
+      >
+        <button
+          mat-flat-button
+          [ngClass]="button.colorClass"
+          [disabled]="button.disabled"
+          (click)="onActionButtonClick(button.action)"
+        >
+          <mat-icon *ngIf="button.icon">{{ button.icon }}</mat-icon>
+          <span>{{ button.translationKey | translate }}</span>
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Legacy: Single primary button (for backward compatibility) -->
+    <div
       *ngIf="showPrimaryButton"
-      mat-flat-button
-      color="primary"
-      [disabled]="primaryActionBtnDisabled"
-      (click)="onPrimaryButtonClick()"
+      [matTooltip]="primaryButtonTooltip"
+      [matTooltipDisabled]="!primaryActionBtnDisabled"
+      matTooltipPosition="above"
     >
-      <span class="primary-button-text">{{ primaryButtonText }}</span>
-    </button>
+      <button mat-flat-button color="primary" [disabled]="primaryActionBtnDisabled" (click)="onPrimaryButtonClick()">
+        <mat-icon *ngIf="primaryButtonIcon">{{ primaryButtonIcon }}</mat-icon>
+        <span>{{ primaryButtonText }}</span>
+      </button>
+    </div>
   </div>
 
   <div class="options-container dense-2">
-    <button *ngIf="showMenuButton" mat-icon-button [matMenuTriggerFor]="menu" [disabled]="!menuButtonItems?.length">
-      <mat-icon>more_vert</mat-icon>
-    </button>
+    <div
+      *ngIf="showMenuButton"
+      [matTooltip]="menuButtonTooltip"
+      [matTooltipDisabled]="!menuButtonDisabled"
+      matTooltipPosition="above"
+    >
+      <button mat-icon-button [matMenuTriggerFor]="menu" [disabled]="menuButtonDisabled">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+    </div>
     <mat-menu #menu="matMenu">
       <ng-container *ngFor="let item of menuButtonItems">
         <button *ngIf="!item.disabled" mat-menu-item (click)="onMenuButtonItemClick(item.action)">
@@ -33,8 +70,14 @@
       </ng-container>
     </mat-menu>
 
-    <button mat-icon-button [disabled]="sectionCardExpandBtnDisabled" (click)="onSectionCardExpandChange()">
-      <mat-icon>{{ isSectionCardExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-    </button>
+    <div
+      [matTooltip]="sectionCardExpandBtnTooltip"
+      [matTooltipDisabled]="!sectionCardExpandBtnDisabled"
+      matTooltipPosition="above"
+    >
+      <button mat-icon-button [disabled]="sectionCardExpandBtnDisabled" (click)="onSectionCardExpandChange()">
+        <mat-icon>{{ isSectionCardExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </button>
+    </div>
   </div>
 </div>

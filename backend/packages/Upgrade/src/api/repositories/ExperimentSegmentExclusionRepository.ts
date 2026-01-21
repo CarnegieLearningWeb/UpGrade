@@ -7,10 +7,10 @@ import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion
 @EntityRepository(ExperimentSegmentExclusion)
 export class ExperimentSegmentExclusionRepository extends Repository<ExperimentSegmentExclusion> {
   public async insertData(
-    data: Partial<ExperimentSegmentExclusion>,
+    data: Partial<ExperimentSegmentExclusion>[],
     logger: UpgradeLogger,
     entityManager: EntityManager
-  ): Promise<ExperimentSegmentExclusion> {
+  ): Promise<ExperimentSegmentExclusion[]> {
     const result = await entityManager
       .createQueryBuilder()
       .insert()
@@ -39,12 +39,33 @@ export class ExperimentSegmentExclusionRepository extends Repository<ExperimentS
       .leftJoin('experimentSegmentExclusion.segment', 'segment')
       .leftJoinAndSelect('segment.subSegments', 'subSegments')
       .addSelect('experiment.name')
+      .addSelect('experiment.description')
       .addSelect('experiment.state')
       .addSelect('experiment.context')
       .addSelect('segment.id')
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentSegmentExclusion', 'getdata', {}, errorMsg);
+        throw errorMsgString;
+      });
+  }
+
+  public getExistingSegments(segmentIds: string[]): Promise<ExperimentSegmentExclusion[]> {
+    if (!segmentIds || segmentIds.length === 0) {
+      return Promise.resolve([]);
+    }
+    return this.createQueryBuilder('experimentSegmentExclusion')
+      .leftJoinAndSelect(`experimentSegmentExclusion.segment`, 'segment')
+      .leftJoinAndSelect(`experimentSegmentExclusion.experiment`, 'experiment')
+      .where('segment.id IN (:...segmentIds)', { segmentIds })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentSegmentExclusion',
+          'getExistingSegments',
+          { segmentIds },
+          errorMsg
+        );
         throw errorMsgString;
       });
   }

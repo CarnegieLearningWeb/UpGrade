@@ -1,8 +1,20 @@
-import { Injectable } from '@angular/core';
-import { Experiment, ExperimentStateInfo, ExperimentPaginationParams } from './store/experiments.model';
+import { Inject, Injectable } from '@angular/core';
+import {
+  Experiment,
+  ExperimentStateInfo,
+  ExperimentPaginationParams,
+  UpdateExperimentFilterModeRequest,
+  UpdateExperimentDecisionPointsRequest,
+  UpdateExperimentMetricsRequest,
+  ExperimentSegmentListResponse,
+  UpdateExperimentConditionsRequest,
+} from './store/experiments.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
 import { API_ENDPOINTS } from '../api-endpoints.constants';
+import { Observable } from 'rxjs';
+import { ExperimentSegmentListRequest, SegmentFile } from '../segments/store/segments.model';
+import { LIST_FILTER_MODE } from 'upgrade_types';
 
 @Injectable()
 export class ExperimentDataService {
@@ -40,12 +52,12 @@ export class ExperimentDataService {
 
   updateExperiment(experiment: Experiment) {
     const url = `${API_ENDPOINTS.updateExperiments}/${experiment.id}`;
-    return this.http.put(url, { ...experiment });
+    return this.http.put<Experiment>(url, { ...experiment });
   }
 
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {
     const url = API_ENDPOINTS.updateExperimentState;
-    return this.http.post(url, {
+    return this.http.post<Experiment>(url, {
       experimentId,
       state: experimentStateInfo.newStatus,
       scheduleDate: experimentStateInfo.scheduleDate,
@@ -101,6 +113,36 @@ export class ExperimentDataService {
     return this.http.post(url, params);
   }
 
+  addInclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = API_ENDPOINTS.addExperimentInclusionList;
+    return this.http.post<ExperimentSegmentListResponse>(url, list);
+  }
+
+  updateInclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = `${API_ENDPOINTS.addExperimentInclusionList}/${list.list.id}`;
+    return this.http.put<ExperimentSegmentListResponse>(url, list);
+  }
+
+  deleteInclusionList(segmentId: string) {
+    const url = `${API_ENDPOINTS.addExperimentInclusionList}/${segmentId}`;
+    return this.http.delete(url);
+  }
+
+  addExclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = API_ENDPOINTS.addExperimentExclusionList;
+    return this.http.post<ExperimentSegmentListResponse>(url, list);
+  }
+
+  updateExclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
+    const url = `${API_ENDPOINTS.addExperimentExclusionList}/${list.list.id}`;
+    return this.http.put<ExperimentSegmentListResponse>(url, list);
+  }
+
+  deleteExclusionList(segmentId: string) {
+    const url = `${API_ENDPOINTS.addExperimentExclusionList}/${segmentId}`;
+    return this.http.delete(url);
+  }
+
   fetchContextMetaData() {
     const url = API_ENDPOINTS.contextMetaData;
     return this.http.get(url);
@@ -109,5 +151,58 @@ export class ExperimentDataService {
   fetchGroupAssignmentStatus(experimentId: string) {
     const url = `${API_ENDPOINTS.getGroupAssignmentStatus}/${experimentId}`;
     return this.http.get(url);
+  }
+
+  updateFilterMode(params: UpdateExperimentFilterModeRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      filterMode: params.filterMode,
+    };
+    return this.updateExperiment(updatedExperiment);
+  }
+
+  updateExperimentDecisionPoints(params: UpdateExperimentDecisionPointsRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      partitions: params.decisionPoints,
+    };
+    return this.updateExperiment(updatedExperiment);
+  }
+
+  updateExperimentConditions(params: UpdateExperimentConditionsRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      conditions: params.conditions,
+    };
+    return this.updateExperiment(updatedExperiment);
+  }
+
+  validateListsImport(segments: SegmentFile[]) {
+    const url = API_ENDPOINTS.validateListsImport;
+    return this.http.post(url, segments);
+  }
+
+  importExperimentList(files: any[], experimentId: string, filterType: LIST_FILTER_MODE) {
+    const lists = { files: files, filterType: filterType, experimentId: experimentId };
+    const url = API_ENDPOINTS.importExperimentList;
+    return this.http.post(url, lists);
+  }
+
+  exportAllExcludeListsDesign(id: string) {
+    const url = `${API_ENDPOINTS.exportAllExperimentExcludeLists}/${id}`;
+    return this.http.get(url);
+  }
+
+  exportAllIncludeListsDesign(id: string) {
+    const url = `${API_ENDPOINTS.exportAllExperimentIncludeLists}/${id}`;
+    return this.http.get(url);
+  }
+
+  updateExperimentMetrics(params: UpdateExperimentMetricsRequest): Observable<Experiment> {
+    const updatedExperiment = {
+      ...params.experiment,
+      queries: params.metrics,
+    };
+    return this.updateExperiment(updatedExperiment);
   }
 }

@@ -73,11 +73,6 @@ export interface UpsertFeatureFlagParams {
   action: UPSERT_FEATURE_FLAG_ACTION;
 }
 
-export enum UPSERT_FEATURE_FLAG_LIST_ACTION {
-  ADD = 'add',
-  EDIT = 'edit',
-}
-
 export interface ValidateFeatureFlagError {
   fileName: string;
   compatibilityType: string;

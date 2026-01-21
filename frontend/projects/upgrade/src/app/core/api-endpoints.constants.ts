@@ -1,8 +1,10 @@
+import { APIEndpoints } from '../../environments/environment-types';
+
 /**
  * API endpoint paths used throughout the application.
  * These are relative paths that will be prepended with the environment's apiBaseUrl by the HTTP interceptor.
  */
-export const API_ENDPOINTS = {
+export const API_ENDPOINTS: APIEndpoints = {
   getAllExperiments: '/experiments/paginated',
   createNewExperiments: '/experiments',
   validateExperiment: '/experiments/validation',
@@ -61,4 +63,9 @@ export const API_ENDPOINTS = {
   exportSegmentCSV: '/segments/export/csv',
   addSegmentList: '/segments/list',
   getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
+  addExperimentInclusionList: '/experiments/inclusionList',
+  addExperimentExclusionList: '/experiments/exclusionList',
+  exportAllExperimentIncludeLists: '/experiments/export/includeLists',
+  exportAllExperimentExcludeLists: '/experiments/export/excludeLists',
+  importExperimentList: '/experiments/lists/import',
 } as const;

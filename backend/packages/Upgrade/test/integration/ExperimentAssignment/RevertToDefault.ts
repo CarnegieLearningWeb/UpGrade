@@ -1,7 +1,7 @@
 import { Container } from 'typedi';
 import { revertToDefault } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, POST_EXPERIMENT_RULE } from 'upgrade_types';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
@@ -121,6 +121,12 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   // change experiment status to complete
+  const updatedExperiment = await experimentService.getSingleExperiment(experimentId);
+  await experimentService.update(
+    { ...updatedExperiment, postExperimentRule: POST_EXPERIMENT_RULE.ASSIGN } as any,
+    user,
+    new UpgradeLogger()
+  );
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
 
   // fetch experiment
@@ -130,7 +136,7 @@ export default async function testCase(): Promise<void> {
       expect.objectContaining({
         name: experimentObject.name,
         state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
-        postExperimentRule: experimentObject.postExperimentRule,
+        postExperimentRule: POST_EXPERIMENT_RULE.ASSIGN,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
       }),

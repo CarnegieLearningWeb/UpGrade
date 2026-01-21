@@ -3,7 +3,7 @@ import { BaseModel } from './base/BaseModel';
 import { Metric } from './Metric';
 import { Experiment } from './Experiment';
 import { IsDefined } from 'class-validator';
-import { REPEATED_MEASURE } from 'upgrade_types';
+import { ExperimentQueryPayload, REPEATED_MEASURE } from 'upgrade_types';
 import { ArchivedStats } from './ArchivedStats';
 import { Type } from 'class-transformer';
 
@@ -17,7 +17,7 @@ export class Query extends BaseModel {
   public name: string;
 
   @Column('jsonb')
-  public query: any;
+  public query: ExperimentQueryPayload;
 
   @ManyToOne(() => Metric, (metric) => metric.key, { onDelete: 'CASCADE' })
   public metric: Metric;

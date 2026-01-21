@@ -37,7 +37,7 @@ export default async function testCase(): Promise<void> {
   const experimentName2 = experimentObject2.partitions[0].target;
   const experimentPoint2 = experimentObject2.partitions[0].site;
   const condition = experimentObject2.conditions[0].conditionCode;
-  await experimentService.create(experimentObject2 as any, user, new UpgradeLogger());
+  const createdExperiment2 = await experimentService.create(experimentObject2 as any, user, new UpgradeLogger());
 
   let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
@@ -98,7 +98,7 @@ export default async function testCase(): Promise<void> {
     experimentName2,
     experimentPoint2,
     condition,
-    experiment2.id,
+    createdExperiment2.id,
     new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName2, experimentPoint2);

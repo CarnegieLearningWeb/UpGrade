@@ -15,6 +15,9 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { EXPERIMENT_STATE, EXPERIMENT_TYPE } from 'upgrade_types';
 import { ExperimentFactorData } from '../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 interface FactorColumnDef {
   name: string;
@@ -31,10 +34,11 @@ interface RowData {
 }
 
 @Component({
-  selector: 'home-experiment-query-result',
+  selector: 'experiment-query-result',
   templateUrl: './experiment-query-result.component.html',
   styleUrls: ['./experiment-query-result.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule, TranslateModule, NgxChartsModule],
 })
 export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   @Input() experiment: ExperimentVM;

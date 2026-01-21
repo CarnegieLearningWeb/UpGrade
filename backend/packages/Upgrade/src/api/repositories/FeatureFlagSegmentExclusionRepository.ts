@@ -38,6 +38,7 @@ export class FeatureFlagSegmentExclusionRepository extends Repository<FeatureFla
       .leftJoin('featureFlagSegmentExclusion.segment', 'segment')
       .leftJoinAndSelect('segment.subSegments', 'subSegments')
       .addSelect('featureFlag.name')
+      .addSelect('featureFlag.description')
       .addSelect('featureFlag.status')
       .addSelect('featureFlag.context')
       .addSelect('segment.id')

@@ -11,7 +11,7 @@ import { LogDateFormatPipe } from './pipes/logs-date-format.pipe';
 import { ExperimentActionMessage } from './pipes/experiment-action-message.pipe';
 import { LogsComponent } from './root/logs.component';
 import { LogsRoutingModule } from './logs-routing.module';
-import { FeatureFlagListOperationsMessage } from './pipes/feature-flag-list-operation-message.pipe';
+import { ListOperationsMessage } from './pipes/list-operation-message.pipe';
 
 @NgModule({
   declarations: [
@@ -22,7 +22,7 @@ import { FeatureFlagListOperationsMessage } from './pipes/feature-flag-list-oper
     ErrorLogPipe,
     LogDateFormatPipe,
     ExperimentActionMessage,
-    FeatureFlagListOperationsMessage,
+    ListOperationsMessage,
   ],
   imports: [CommonModule, SharedModule, LogsRoutingModule],
 })

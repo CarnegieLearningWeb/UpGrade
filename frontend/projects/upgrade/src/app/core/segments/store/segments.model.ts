@@ -1,14 +1,6 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
-import {
-  SEGMENT_TYPE,
-  SEGMENT_STATUS,
-  SEGMENT_SEARCH_KEY,
-  SORT_AS_DIRECTION,
-  SEGMENT_SORT_KEY,
-  FILTER_MODE,
-  FEATURE_FLAG_LIST_FILTER_MODE,
-} from 'upgrade_types';
+import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 export { SEGMENT_STATUS };
 
 export enum NewSegmentDialogEvents {
@@ -58,6 +50,7 @@ export interface experimentSegmentInclusionExclusionData {
   versionNumber: number;
   experiment: {
     name: string;
+    description?: string;
     context: any[];
     state: string;
   };
@@ -74,6 +67,7 @@ export interface featureFlagSegmentInclusionExclusionData {
   versionNumber: number;
   featureFlag: {
     name: string;
+    description?: string;
     context: any[];
     status: string;
   };
@@ -182,6 +176,7 @@ export interface ParticipantListTableRow {
 
 export interface UsedByTableRow {
   name: string;
+  description?: string;
   link?: string;
   type: string;
   status: string;
@@ -288,6 +283,10 @@ export enum UPSERT_PRIVATE_SEGMENT_LIST_ACTION {
   EDIT_FLAG_INCLUDE_LIST = 'edit_flag_include',
   ADD_FLAG_EXCLUDE_LIST = 'add_flag_exclude',
   EDIT_FLAG_EXCLUDE_LIST = 'edit_flag_exclude',
+  ADD_EXPERIMENT_INCLUDE_LIST = 'add_experiment_include',
+  EDIT_EXPERIMENT_INCLUDE_LIST = 'edit_experiment_include',
+  ADD_EXPERIMENT_EXCLUDE_LIST = 'add_experiment_exclude',
+  EDIT_EXPERIMENT_EXCLUDE_LIST = 'edit_experiment_exclude',
   ADD_SEGMENT_LIST = 'add_segment_list',
   EDIT_SEGMENT_LIST = 'edit_segment_list',
 }
@@ -336,6 +335,7 @@ export interface PrivateSegmentListRequestBase {
   userIds: string[];
   groups: Group[];
   subSegmentIds: string[];
+  listType?: string;
 }
 
 export type AddPrivateSegmentListRequestDetails = PrivateSegmentListRequestBase;
@@ -343,11 +343,21 @@ export interface EditPrivateSegmentListDetails extends PrivateSegmentListRequest
   id: string;
 }
 
+export interface ExperimentSegmentListDetails extends PrivateSegmentListRequestBase {
+  id?: string;
+  listType: string;
+}
+
 export interface PrivateSegmentListRequest {
   id: string;
   enabled: boolean;
   listType: string;
   segment: AddPrivateSegmentListRequestDetails | EditPrivateSegmentListDetails;
+}
+
+export interface ExperimentSegmentListRequest {
+  experimentId: string;
+  list: ExperimentSegmentListDetails;
 }
 
 export interface AddPrivateSegmentListRequest extends PrivateSegmentListRequest {
