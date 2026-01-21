@@ -44,4 +44,14 @@ export namespace UpGradeClientRequests {
     uniquifier?: string;
     clientError?: string;
   }
+
+  export interface ISendRewardRequestBody {
+    rewardValue: 'SUCCESS' | 'FAILURE';
+    experimentId?: string;
+    context?: string;
+    decisionPoint?: {
+      site: string;
+      target: string;
+    };
+  }
 }

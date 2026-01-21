@@ -16,4 +16,5 @@ export interface IEndpoints {
   log: string;
   logCaliper: string;
   altUserIds: string;
+  reward: string;
 }

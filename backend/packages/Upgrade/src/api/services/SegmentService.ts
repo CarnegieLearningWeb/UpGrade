@@ -517,7 +517,7 @@ export class SegmentService {
     return validatedSegments.importErrors;
   }
 
-  public async importLists(lists: SegmentListImportValidation, logger: UpgradeLogger): Promise<any> {
+  public async importLists(lists: SegmentListImportValidation, logger: UpgradeLogger): Promise<SegmentImportError[]> {
     const listImport = true;
     const validatedLists = await this.checkSegmentsValidity(lists.files, listImport);
 
@@ -599,7 +599,7 @@ export class SegmentService {
     return validatedSegments;
   }
 
-  convertJSONStringToSegInputValFormat(segmentDetails: string): SegmentInputValidator {
+  public convertJSONStringToSegInputValFormat(segmentDetails: string): SegmentInputValidator {
     let segmentInfo;
     try {
       segmentInfo = JSON.parse(segmentDetails);
@@ -633,7 +633,10 @@ export class SegmentService {
       }
       return segment;
     };
-    segmentInfo = addSegmentMembers(segmentInfo);
+    const segmentData: SegmentInputValidator = segmentInfo.segment
+      ? { ...segmentInfo.segment, listType: segmentInfo.listType || segmentInfo.segment.listType }
+      : segmentInfo;
+    segmentInfo = addSegmentMembers(segmentData);
     return segmentInfo;
   }
 
@@ -670,7 +673,7 @@ export class SegmentService {
         segmentsData.flatMap((segmentData) =>
           [segmentData.segment.id].concat([
             ...segmentData.segment.subSegmentIds,
-            ...segmentData.segment.subSegments.flatMap((subSegment) =>
+            ...(segmentData.segment.subSegments || []).flatMap((subSegment) =>
               [subSegment.id].concat(subSegment.subSegments?.map((subSubSegment) => subSubSegment.id))
             ),
           ])
@@ -702,7 +705,7 @@ export class SegmentService {
           ' not found. Please import subSegment with same context and link in segment.';
         compatibilityType = IMPORT_COMPATIBILITY_TYPE.WARNING;
       }
-      if (segment.subSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE)) {
+      if (segment.subSegments?.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE)) {
         const subErrors = await Promise.all(
           segment.subSegments.map(async (subSegment) => {
             const subErrors = await collectErrors(
@@ -890,7 +893,7 @@ export class SegmentService {
     // create/update segment document
     segment.id = segment.id || uuid();
     const { id, name, description, context, type, listType, tags } = segment;
-    const segmentsById = await this.getSegmentByIds(segment.subSegmentIds);
+    const segmentsById = await this.getSegmentByIds(segment.subSegmentIds || []);
     const allSegments = [...segmentsById, ...(segment.subSegments || [])];
     // If there are private subsegments, they are lists - so we need to clone the data
     const isListData = allSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
@@ -910,21 +913,22 @@ export class SegmentService {
         })
       );
     } else {
-      subSegmentData = segment.subSegmentIds
-        .map((subSegmentId) => {
-          const subSegment = segmentsById.find((segment) => subSegmentId === segment.id);
-          if (subSegment) {
-            return subSegment;
-          } else {
-            const error = new Error(
-              'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
-            );
-            (error as any).type = SERVER_ERROR.QUERY_FAILED;
-            logger.error(error);
-            return null;
-          }
-        })
-        .filter((subSegment) => subSegment !== null);
+      subSegmentData =
+        segment.subSegmentIds
+          ?.map((subSegmentId) => {
+            const subSegment = allSegments.find((segment) => subSegmentId === segment.id);
+            if (subSegment) {
+              return subSegment;
+            } else {
+              const error = new Error(
+                'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
+              );
+              (error as any).type = SERVER_ERROR.QUERY_FAILED;
+              logger.error(error);
+              return null;
+            }
+          })
+          ?.filter((subSegment) => subSegment !== null) || []; // filter out null values
     }
     try {
       segmentDoc = await transactionalEntityManager.getRepository(Segment).save({
@@ -945,22 +949,24 @@ export class SegmentService {
       throw error;
     }
 
-    const individualForSegmentDocsToSave = segment.userIds.map((userId) => {
-      const trimmedId = this.trimAndRemoveHiddenChars(userId);
-      return {
-        userId: trimmedId,
-        segment: segmentDoc,
-      };
-    });
+    const individualForSegmentDocsToSave =
+      segment.userIds?.map((userId) => {
+        const trimmedId = this.trimAndRemoveHiddenChars(userId);
+        return {
+          userId: trimmedId,
+          segment: segmentDoc,
+        };
+      }) || [];
 
-    const groupForSegmentDocsToSave = segment.groups.map((group) => {
-      group.groupId = this.trimAndRemoveHiddenChars(group.groupId);
+    const groupForSegmentDocsToSave =
+      segment.groups?.map((group) => {
+        group.groupId = this.trimAndRemoveHiddenChars(group.groupId);
 
-      return {
-        ...group,
-        segment: segmentDoc,
-      };
-    });
+        return {
+          ...group,
+          segment: segmentDoc,
+        };
+      }) || [];
 
     try {
       await Promise.all([

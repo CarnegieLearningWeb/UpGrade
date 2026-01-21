@@ -218,15 +218,8 @@
               >
                 <mat-icon
                   class="remove-icon"
-                  [class.remove-icon--disabled]="isRewardMetric(queryIndex)"
-                  [attr.aria-disabled]="isRewardMetric(queryIndex)"
-                  [attr.tabindex]="isRewardMetric(queryIndex) ? -1 : 0"
-                  (click)="!isRewardMetric(queryIndex) && removeMetric(queryIndex)"
-                  (keydown)="
-                    $event.key === 'Enter' || $event.key === ' '
-                      ? !isRewardMetric(queryIndex) && removeMetric(queryIndex)
-                      : null
-                  "
+                  (click)="removeMetric(queryIndex)"
+                  (keydown)="$event.key === 'Enter' || $event.key === ' ' ? removeMetric(queryIndex) : null"
                 >
                   delete_outline
                 </mat-icon>
@@ -281,39 +274,6 @@
           ></span>
         </div>
       </ng-template>
-
-      <!-- Reward Metric Section -->
-      <div class="reward-metric-container" *ngIf="isMoocletExperimentDesign$ | async">
-        <span class="title">{{ 'home.new-experiment.metrics.reward-metric.text' | translate }}</span>
-        <div class="reward-metric-description" *ngIf="rewardMetricDataSource | async as rewardMetricData">
-          <div class="reward-metric-item" *ngFor="let row of rewardMetricData">
-            <span>
-              <span class="ft-14-600">Key:</span>
-              <span class="ft-14-400"> "{{ row.metric_Key }}"</span>
-            </span>
-            <span>
-              <span class="ft-14-600">Allowed Values:</span>
-              <span class="ft-14-400"> ["SUCCESS", "FAILURE"]</span>
-            </span>
-            <span class="ft-12-400">
-              Adaptive experiments require "reward" feedback to be logged from enrolled users, which will tilt the
-              probability of experimental assignments towards conditions that receive more successful feedback. Use this
-              key when logging metrics as a simple metric value.
-            </span>
-            <span class="ft-12-600" *ngIf="!experimentInfo">
-              UpGrade automatically creates this metric for your experiment when created, and a metric query for success
-              rate will also be automatically applied.
-              <a
-                class="learn-more-link"
-                href="https://www.upgradeplatform.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Learn more</a
-              >
-            </span>
-          </div>
-        </div>
-      </div>
     </form>
   </section>
 

@@ -6,7 +6,6 @@ import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
   NewExperimentPaths,
-  RewardMetricData,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Component, OnInit, OnDestroy, Input, EventEmitter, Output } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
@@ -67,10 +66,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   controlTitles = ['Type', 'Key', 'Metric']; // Used to show different titles in grouped metrics
 
   metricsDataSource = new BehaviorSubject<AbstractControl[]>([]);
-  rewardMetricDataSource = new BehaviorSubject<RewardMetricData[]>([]);
 
   metricsDisplayedColumns = ['keys', 'operationType', 'queryName', 'removeMetric'];
-  rewardMetricDisplayedColumns = ['metricsKey', 'metricsOperation', 'metricsName'];
   queryIndex = 0;
   editMode = false;
 
@@ -83,7 +80,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   currentAssignmentUnit: ASSIGNMENT_UNIT;
   currentExperimentName$ = this.experimentDesignStepperService.currentExperimentName$;
   isMoocletExperimentDesign$ = this.experimentDesignStepperService.isMoocletExperimentDesign$;
-  private rewardMetricSubscription: Subscription;
 
   constructor(
     private analysisService: AnalysisService,
@@ -108,32 +104,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           : this.allMetrics.filter((metric) =>
               metric.context?.includes(this.currentContext || this.experimentInfo?.context)
             );
-      this.filterOutRewardMetricKeysFromOtherExperiments();
-    });
-  }
-
-  /**
-   * No *_REWARD metric keys should be shown on Add Experiment flow.
-   * Only the current experiment's reward metric key should be shown on Edit Experiment flow.
-   * This function will work regardless of whether mooclet is enabled or not.
-   */
-  filterOutRewardMetricKeysFromOtherExperiments() {
-    // Filter out reward metric keys from other experiments
-    this.options = this.options.filter((option) => {
-      if (option.key.endsWith('_REWARD')) {
-        const isAddMode = !this.experimentInfo?.name;
-        if (isAddMode) {
-          // Exclude all reward keys if in add mode
-          return false;
-        } else {
-          // Else, exclude all reward keys except the current experiment's reward key
-          const isCurrentExperimentRewardKey =
-            option.key === this.experimentService.getRewardMetricKey(this.experimentInfo.name);
-          return isCurrentExperimentRewardKey;
-        }
-      } else {
-        return true;
-      }
     });
   }
 
@@ -157,21 +127,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           repeatedMeasure: [null, Validators.required],
         }),
       ]),
-    });
-
-    // Subscribe to experiment name changes for reward metric
-    this.rewardMetricSubscription = combineLatest([
-      this.isMoocletExperimentDesign$,
-      this.currentExperimentName$,
-    ]).subscribe(([isMooclet, experimentName]) => {
-      // If mooclet and name is non-empty, set the reward metric
-      if (isMooclet && experimentName) {
-        const rewardMetricKey = this.experimentService.getRewardMetricKey(experimentName);
-        this.rewardMetricDataSource.next([this.experimentService.getRewardMetricData(rewardMetricKey)]);
-      } else {
-        // If not mooclet or no name, clear out the reward metric
-        this.rewardMetricDataSource.next([]);
-      }
     });
 
     // Bind predefined values of metrics from backend env file for auto complete:
@@ -764,13 +719,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.queryMetricDropDownError.length === 0 &&
       this.queryNameError.length === 0
     ) {
-      const rewardMetricData = this.rewardMetricDataSource.getValue();
-
-      // If rewardMetricDataSource has data, include the rewardMetricKey
-      if (rewardMetricData.length > 0) {
-        monitoredMetricsFormData.rewardMetricKey = rewardMetricData[0].metric_Key;
-      }
-
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: monitoredMetricsFormData,
@@ -795,9 +743,5 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy() {
     this.allMetricsSub.unsubscribe();
-
-    if (this.rewardMetricSubscription) {
-      this.rewardMetricSubscription.unsubscribe();
-    }
   }
 }

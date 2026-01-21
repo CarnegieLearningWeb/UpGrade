@@ -1,0 +1,386 @@
+import { Component, Input, OnChanges, SimpleChanges, OnInit, OnDestroy } from '@angular/core';
+import { ASSIGNMENT_UNIT } from 'upgrade_types';
+import {
+  ExperimentVM,
+  DATE_RANGE,
+  IEnrollmentStatByDate,
+  ExperimentConditionFilterOptions,
+  ExperimentPartitionFilterOptions,
+  ExperimentDateFilterOptions,
+  ExperimentCondition,
+  EXPERIMENT_STATE,
+} from '../../../../../../../../core/experiments/store/experiments.model';
+import { ExperimentService } from '../../../../../../../../core/experiments/experiments.service';
+import { filter } from 'rxjs/operators';
+import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
+import { Subscription } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+
+// Used in EnrollmentOverTimeComponent
+enum ExperimentFilterType {
+  GROUP_FILTER = 'Group filter',
+  CONDITION_FILTER = 'Condition filter',
+  PARTITION_FILTER = 'Partition filter',
+  DATE_FILTER = 'Date filter',
+}
+
+const INDIVIDUAL = 'individual';
+
+@Component({
+  selector: 'app-enrollment-over-time',
+  templateUrl: './enrollment-over-time.component.html',
+  imports: [
+    CommonModule,
+    TranslateModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    NgxChartsModule,
+    MatInputModule,
+    FormsModule,
+    MatCheckboxModule,
+  ],
+  styleUrls: ['./enrollment-over-time.component.scss'],
+  standalone: true,
+})
+export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy {
+  @Input() experiment: ExperimentVM;
+  groupFiltersOptions: string[] = [];
+  conditionsFilterOptions: ExperimentConditionFilterOptions[] = [];
+  partitionsFilterOptions: ExperimentPartitionFilterOptions[] = [];
+  dateFilterOptions: ExperimentDateFilterOptions[] = [
+    { value: DATE_RANGE.TOTAL, viewValue: 'Total' },
+    { value: DATE_RANGE.LAST_SEVEN_DAYS, viewValue: 'Last 7 days' },
+    { value: DATE_RANGE.LAST_TWO_WEEKS, viewValue: 'Last 2 weeks' },
+    { value: DATE_RANGE.LAST_ONE_MONTH, viewValue: 'Last 1 month' },
+    { value: DATE_RANGE.LAST_THREE_MONTHS, viewValue: 'Last 3 months' },
+    { value: DATE_RANGE.LAST_SIX_MONTHS, viewValue: 'Last 6 months' },
+    { value: DATE_RANGE.LAST_TWELVE_MONTHS, viewValue: 'Last 12 months' },
+  ];
+  selectedGroupFilter: string = INDIVIDUAL;
+  selectedCondition: string[] = [];
+  selectedPartition: string[] = [];
+  selectedDateFilter: DATE_RANGE = DATE_RANGE.TOTAL;
+  effectiveDateFilter: DATE_RANGE;
+  graphData = [];
+  copyGraphData: IEnrollmentStatByDate[] = [];
+  isInitialLoad = true;
+  showLabelOfxAxis = true;
+  graphColorIndicators: ExperimentCondition[] = [];
+
+  colors = [
+    '#31e8dd',
+    '#7dc7fb',
+    '#fedb64',
+    '#51ed8f',
+    '#ddaaf8',
+    '#fd9099',
+    '#14c9be',
+    '#57ff6d',
+    '#3dffec',
+    '#fedb64',
+    '#0a6de6',
+    '#da0766',
+    '#cd8014',
+    '#fa59a1',
+  ];
+  colorScheme = {
+    domain: this.colors,
+  };
+  totalMarkedUsers = 0;
+  totalMarkedGroups = 0;
+  yScaleMax: number | undefined;
+
+  graphInfoSub: Subscription;
+  isGraphLoading$ = this.experimentService.isGraphLoading$;
+  private readonly sinceDateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
+
+  constructor(private readonly experimentService: ExperimentService) {
+    this.formateXAxisLabel = this.formateXAxisLabel.bind(this);
+  }
+
+  // Getters
+  get ExperimentFilter() {
+    return ExperimentFilterType;
+  }
+
+  get AssignmentUnit() {
+    return ASSIGNMENT_UNIT;
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.experiment && this.isInitialLoad) {
+      this.isInitialLoad = false;
+      this.conditionsFilterOptions = [];
+      this.selectedCondition = [];
+      this.experiment.conditions.forEach((condition) => {
+        this.conditionsFilterOptions.push({ code: condition.conditionCode, id: condition.id });
+        this.selectedCondition.push(condition.id);
+      });
+      this.conditionsFilterOptions.sort((a, b) => a.code.localeCompare(b.code));
+
+      this.partitionsFilterOptions = [];
+      this.selectedPartition = [];
+      this.experiment.partitions.forEach((partition) => {
+        this.partitionsFilterOptions.push({
+          point: partition.site,
+          id: partition.id,
+          twoCharacterId: partition.twoCharacterId,
+        });
+        this.selectedPartition.push(partition.id);
+      });
+
+      this.groupFiltersOptions =
+        this.experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
+          ? [INDIVIDUAL]
+          : [INDIVIDUAL, this.experiment.group];
+    }
+
+    if (changes.experiment) {
+      this.setTotalDateLabel();
+    }
+  }
+
+  ngOnInit() {
+    // Creating a new array with experiment conditionCode for the condition colour indicator to align with sorted graphData
+    this.graphColorIndicators = [...this.experiment.conditions];
+    this.graphColorIndicators.sort((a, b) => a.conditionCode.localeCompare(b.conditionCode));
+
+    this.graphInfoSub = this.experimentService.selectExperimentGraphInfo$
+      .pipe(filter((info) => !!info))
+      .subscribe((graphInfo: IEnrollmentStatByDate[]) => {
+        this.copyGraphData = graphInfo;
+        this.populateGraphData(graphInfo);
+      });
+    this.setEffectiveDateFilter();
+
+    // Used to fetch graph data for the whole date range initially
+    this.experimentService.setGraphRange(this.effectiveDateFilter, this.experiment.id, -new Date().getTimezoneOffset());
+  }
+
+  // remove empty series data labels
+  formateXAxisLabel(value) {
+    if (
+      this.effectiveDateFilter === DATE_RANGE.LAST_SEVEN_DAYS ||
+      this.effectiveDateFilter === DATE_RANGE.LAST_TWO_WEEKS ||
+      this.effectiveDateFilter === DATE_RANGE.LAST_ONE_MONTH
+    ) {
+      return typeof value === 'string' ? value.substring(0, 5) : '';
+    } else if (this.effectiveDateFilter === DATE_RANGE.TOTAL) {
+      return typeof value === 'string' ? value.substring(0, 4) : '';
+    }
+    return typeof value === 'string' ? value.substring(0, 3) : '';
+  }
+
+  formateYAxisLabel(value) {
+    return value % 1 !== 0 ? '' : value;
+  }
+
+  populateGraphData(graphData: IEnrollmentStatByDate[]) {
+    this.graphData = [...this.setDataInGraphFormat(graphData)];
+
+    // Set y-axis max to 1 when there's no enrollment data to show proper grid lines
+    this.yScaleMax = this.totalMarkedUsers === 0 && this.totalMarkedGroups === 0 ? 1 : undefined;
+  }
+
+  setDataInGraphFormat(data: IEnrollmentStatByDate[]) {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    this.totalMarkedUsers = 0;
+    this.totalMarkedGroups = 0;
+
+    let series = [];
+    return data.map((graphData) => {
+      series = [];
+      const graphInfoConditions = graphData.stats.conditions;
+      this.experiment.conditions.map((condition) => {
+        if (this.selectedCondition.includes(condition.id)) {
+          let users = 0;
+          let groups = 0;
+          // Find index based on experiment conditions from graphInfoConditions to maintain colors
+          const index = graphInfoConditions.findIndex((graphCondition) => graphCondition.id === condition.id);
+          graphInfoConditions[index]?.partitions.map((partition) => {
+            if (this.selectedPartition.includes(partition.id)) {
+              users += partition.users;
+              groups += partition.groups;
+            }
+          });
+          series.push({
+            name: this.getConditionCode(condition.id),
+            value: this.selectedGroupFilter === INDIVIDUAL ? users : groups,
+          });
+          this.totalMarkedUsers += users;
+          this.totalMarkedGroups += groups;
+        } else {
+          series.push({
+            name: this.getConditionCode(condition.id),
+            value: 0,
+          });
+        }
+      });
+
+      // Sort the series array alphabetically based on the condition names.
+      // This ensures consistent ordering of conditions in the resulting graph.
+      series.sort((a, b) => a.name.localeCompare(b.name));
+
+      return {
+        name:
+          this.effectiveDateFilter === DATE_RANGE.LAST_SEVEN_DAYS ||
+          this.effectiveDateFilter === DATE_RANGE.LAST_TWO_WEEKS ||
+          this.effectiveDateFilter === DATE_RANGE.LAST_ONE_MONTH
+            ? this.dateToString(new Date(graphData.date), days)
+            : this.effectiveDateFilter === DATE_RANGE.TOTAL
+            ? new Date(graphData.date).getFullYear().toString()
+            : months[new Date(graphData.date).getMonth()],
+        series,
+      };
+    });
+  }
+
+  applyExperimentFilter(type: ExperimentFilterType) {
+    switch (type) {
+      case ExperimentFilterType.DATE_FILTER:
+        this.setEffectiveDateFilter();
+        this.experimentService.setGraphRange(
+          this.effectiveDateFilter,
+          this.experiment.id,
+          -new Date().getTimezoneOffset()
+        );
+        break;
+      default:
+        this.populateGraphData(this.copyGraphData);
+    }
+  }
+
+  setEffectiveDateFilter() {
+    if (this.selectedDateFilter === DATE_RANGE.TOTAL) {
+      this.effectiveDateFilter = this.getDynamicTotalRange();
+      return;
+    }
+
+    this.effectiveDateFilter = this.selectedDateFilter;
+  }
+
+  private setTotalDateLabel(): void {
+    const totalOption = this.dateFilterOptions.find((option) => option.value === DATE_RANGE.TOTAL);
+    if (!totalOption) {
+      return;
+    }
+
+    const earliestEnrollment = this.getEarliestEnrollmentStartDate();
+    const label = earliestEnrollment ? `Total (Since ${this.sinceDateFormatter.format(earliestEnrollment)})` : 'Total';
+
+    if (totalOption.viewValue !== label) {
+      totalOption.viewValue = label;
+    }
+  }
+
+  private getDynamicTotalRange(): DATE_RANGE {
+    const earliestEnrollment = this.getEarliestEnrollmentStartDate();
+
+    if (!earliestEnrollment) {
+      return DATE_RANGE.LAST_SEVEN_DAYS;
+    }
+
+    const now = new Date();
+    const effectiveStart = earliestEnrollment > now ? now : earliestEnrollment;
+    const rangeBoundaries = [
+      { range: DATE_RANGE.LAST_SEVEN_DAYS, cutoff: this.subtractDays(now, 7) },
+      { range: DATE_RANGE.LAST_TWO_WEEKS, cutoff: this.subtractDays(now, 14) },
+      { range: DATE_RANGE.LAST_ONE_MONTH, cutoff: this.subtractMonths(now, 1) },
+      { range: DATE_RANGE.LAST_THREE_MONTHS, cutoff: this.subtractMonths(now, 3) },
+      { range: DATE_RANGE.LAST_SIX_MONTHS, cutoff: this.subtractMonths(now, 6) },
+      { range: DATE_RANGE.LAST_TWELVE_MONTHS, cutoff: this.subtractMonths(now, 12) },
+    ];
+
+    const matchedWindow = rangeBoundaries.find(({ cutoff }) => effectiveStart >= cutoff);
+    return matchedWindow ? matchedWindow.range : DATE_RANGE.TOTAL;
+  }
+
+  private getEarliestEnrollmentStartDate(): Date | null {
+    if (!this.experiment) {
+      return null;
+    }
+
+    const enrollmentLog = (this.experiment.stateTimeLogs || [])
+      .filter((log) => log.toState === EXPERIMENT_STATE.ENROLLING)
+      .sort((a, b) => new Date(a.timeLog).getTime() - new Date(b.timeLog).getTime())[0];
+
+    if (!enrollmentLog?.timeLog) {
+      return null;
+    }
+
+    return new Date(enrollmentLog.timeLog);
+  }
+
+  private subtractDays(baseDate: Date, days: number): Date {
+    const date = new Date(baseDate);
+    date.setDate(date.getDate() - days);
+    return date;
+  }
+
+  private subtractMonths(baseDate: Date, months: number): Date {
+    const date = new Date(baseDate);
+    date.setMonth(date.getMonth() - months);
+    return date;
+  }
+
+  getConditionCode(conditionId: string): string {
+    return this.experiment.conditions.reduce(
+      (acc, condition) => (acc = condition.id === conditionId ? condition.conditionCode : acc),
+      ''
+    );
+  }
+
+  // For maintaining checkbox Select All in condition and partition filter
+  isChecked(type: string): boolean {
+    const selectedType = type === 'conditions' ? this.selectedCondition : this.selectedPartition;
+    const filterOptions = type === 'conditions' ? this.conditionsFilterOptions : this.partitionsFilterOptions;
+    return selectedType.length && filterOptions.length && selectedType.length === filterOptions.length;
+  }
+
+  isIndeterminate(type: string): boolean {
+    const selectedType = type === 'conditions' ? this.selectedCondition : this.selectedPartition;
+    const filterOptions = type === 'conditions' ? this.conditionsFilterOptions : this.partitionsFilterOptions;
+    return selectedType && filterOptions.length && selectedType.length && selectedType.length < filterOptions.length;
+  }
+
+  toggleSelection(change: MatCheckboxChange, type: string): void {
+    const selectedType = type === 'conditions' ? 'selectedCondition' : 'selectedPartition';
+    const filterOptions = type === 'conditions' ? 'conditionsFilterOptions' : 'partitionsFilterOptions';
+    this[selectedType] = change.checked ? this[filterOptions].map((data) => data.id) : [];
+    this.populateGraphData(this.copyGraphData);
+  }
+
+  dateToString(date: Date, days: string[]) {
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yy = date.getFullYear();
+    const day = days[date.getDay()].substring(0, 3);
+    const newDate = mm + '/' + dd + '/' + yy + '-' + day;
+    return newDate;
+  }
+
+  ngOnDestroy() {
+    this.experimentService.setGraphRange(null, this.experiment.id, -new Date().getTimezoneOffset());
+    this.graphInfoSub.unsubscribe();
+  }
+}

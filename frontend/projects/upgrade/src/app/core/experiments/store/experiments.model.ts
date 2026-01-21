@@ -8,7 +8,6 @@ import {
   EXPERIMENT_SORT_KEY,
   SORT_AS_DIRECTION,
   EXPERIMENT_STATE,
-  IExperimentEnrollmentStats,
   IExperimentSearchParams,
   IExperimentSortParams,
   IExperimentEnrollmentDetailStats,
@@ -20,6 +19,13 @@ import {
   CONDITION_ORDER,
   ASSIGNMENT_ALGORITHM,
   MoocletTSConfigurablePolicyParametersDTO,
+  MoocletPolicyParametersDTO,
+  REPEATED_MEASURE,
+  SEGMENT_TYPE,
+  IEnrollmentCompleteCondition,
+  METRIC_TYPE,
+  ExperimentQueryPayload,
+  ExperimentQueryComparator,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -37,7 +43,8 @@ export {
   IExperimentSortParams,
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
-};
+  METRIC_TYPE,
+} from 'upgrade_types';
 
 export interface ExperimentConditionFilterOptions {
   code: string;
@@ -74,11 +81,6 @@ export enum NewExperimentPaths {
   MONITORED_METRIC = 'Monitored Metric',
   EXPERIMENT_SCHEDULE = 'Experiment Schedule',
   POST_EXPERIMENT_RULE = 'Post Experiment Rule',
-}
-
-export enum ExperimentDesignTypes {
-  SIMPLE = 'Simple',
-  FACTORIAL = 'Factorial',
 }
 
 export enum OverviewFormWarningStatus {
@@ -119,6 +121,57 @@ export enum ExperimentLocalStorageKeys {
 export interface ExperimentStateInfo {
   newStatus: EXPERIMENT_STATE;
   scheduleDate?: string;
+}
+
+export interface StartExperimentValidation {
+  isValid: boolean;
+  reasons: string[];
+}
+
+export enum EXPERIMENT_ACTION_BUTTON_TYPE {
+  START = 'start',
+  PAUSE = 'pause',
+  STOP = 'stop',
+  RESUME = 'resume',
+}
+
+export enum PAUSE_BEHAVIOR_MODAL_MODE {
+  PAUSE = 'pause',
+  UPDATE = 'update',
+}
+
+/**
+ * Section card types for experiment details page.
+ * Used for determining which section card actions should be restricted based on experiment status.
+ */
+export enum EXPERIMENT_SECTION_CARD_TYPE {
+  DECISION_POINTS = 'decision-points',
+  CONDITIONS = 'conditions',
+  INCLUSIONS = 'inclusions',
+  EXCLUSIONS = 'exclusions',
+  METRICS = 'metrics',
+  PAYLOADS = 'payloads',
+}
+
+/**
+ * Menu actions available in experiment details overview section card.
+ * Used for determining menu item visibility based on experiment status.
+ */
+export enum EXPERIMENT_DETAILS_PAGE_ACTIONS {
+  EDIT = 'edit',
+  DUPLICATE = 'duplicate',
+  EXPORT_DESIGN = 'exportDesign',
+  EMAIL_DATA = 'emailData',
+  ARCHIVE = 'archive',
+  DELETE = 'delete',
+}
+
+export interface ExperimentActionButton {
+  action: EXPERIMENT_ACTION_BUTTON_TYPE;
+  icon: string;
+  disabled: boolean;
+  disabledReasons?: string[]; // Translation keys for tooltip
+  translationKey: string;
 }
 
 export interface EnrollmentCompleteCondition {
@@ -253,12 +306,11 @@ export interface Experiment {
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   filterMode: FILTER_MODE;
-  experimentSegmentInclusion: SegmentNew;
-  experimentSegmentExclusion: SegmentNew;
+  experimentSegmentInclusion: SegmentNew[];
+  experimentSegmentExclusion: SegmentNew[];
   groupSatisfied?: number;
   backendVersion: string;
   moocletPolicyParameters?: MoocletTSConfigurablePolicyParametersDTO;
-  rewardMetricKey?: string;
 }
 
 export interface ParticipantsMember {
@@ -298,23 +350,292 @@ export interface IContextMetaData {
 
 export interface IExperimentGraphInfo {
   [DATE_RANGE.LAST_SEVEN_DAYS]: IEnrollmentStatByDate[];
+  [DATE_RANGE.LAST_TWO_WEEKS]: IEnrollmentStatByDate[];
+  [DATE_RANGE.LAST_ONE_MONTH]: IEnrollmentStatByDate[];
   [DATE_RANGE.LAST_THREE_MONTHS]: IEnrollmentStatByDate[];
   [DATE_RANGE.LAST_SIX_MONTHS]: IEnrollmentStatByDate[];
   [DATE_RANGE.LAST_TWELVE_MONTHS]: IEnrollmentStatByDate[];
 }
 
 export interface ExperimentVM extends Experiment {
-  stat: IExperimentEnrollmentDetailStats;
+  stat?: IExperimentEnrollmentDetailStats;
+  weightingMethod?: WeightingMethod;
 }
 
-export interface ExperimentState extends EntityState<Experiment> {
+export type WeightingMethod = 'equal' | 'custom';
+
+export const WEIGHTING_METHOD = {
+  EQUAL: 'equal' as WeightingMethod,
+  CUSTOM: 'custom' as WeightingMethod,
+} as const;
+
+export enum UPSERT_EXPERIMENT_ACTION {
+  ADD = 'add',
+  EDIT = 'edit',
+  DUPLICATE = 'duplicate',
+}
+
+export enum EXPERIMENT_BUTTON_ACTION {
+  IMPORT = 'import experiment',
+  EXPORT_ALL = 'export all experiments',
+  IMPORT_INCLUDE_LIST = 'import include list',
+  IMPORT_EXCLUDE_LIST = 'import exclude list',
+  EXPORT_ALL_INCLUDE_LISTS = 'export all include lists',
+  EXPORT_ALL_EXCLUDE_LISTS = 'export all exclude lists',
+}
+
+export interface UpsertExperimentParams {
+  sourceExperiment: Experiment;
+  action: UPSERT_EXPERIMENT_ACTION;
+}
+
+export interface UpsertDecisionPointParams {
+  sourceDecisionPoint: ExperimentDecisionPoint;
+  context: string;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
+}
+
+export interface UpsertConditionParams {
+  sourceCondition: ExperimentCondition | null;
+  context: string;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
+}
+
+export interface ExperimentFormData {
+  name: string;
+  description: string;
+  appContext: string;
+  experimentType: EXPERIMENT_TYPE;
+  unitOfAssignment: ASSIGNMENT_UNIT;
+  consistencyRule: CONSISTENCY_RULE;
+  conditionOrder?: CONDITION_ORDER;
+  assignmentAlgorithm: ASSIGNMENT_ALGORITHM;
+  stratificationFactor?: string;
+  groupType?: string;
+  tags: string[];
+}
+
+export interface DecisionPointFormData {
+  site: string;
+  target: string;
+  excludeIfReached: boolean;
+}
+
+export interface ConditionFormData {
+  conditionCode: string;
+  description: string;
+}
+
+export interface MetricFormData {
+  metricType: METRIC_TYPE;
+  metricId: string;
+  displayName: string;
+  metricClass?: string; // For repeatable metrics only
+  metricKey?: string; // For repeatable metrics only
+  aggregateStatistic?: string;
+  individualStatistic?: string; // For repeatable metrics only
+  comparison?: ExperimentQueryComparator;
+  compareValue?: string;
+  allowableDataKeys?: string[]; // For categorical metrics only
+}
+
+// Base interfaces matching backend DTO structure
+export interface ExperimentConditionDTO {
+  id: string;
+  name?: string;
+  description?: string;
+  conditionCode: string;
+  assignmentWeight: number;
+  order: number;
+  twoCharacterId?: string;
+  levelCombinationElements?: LevelCombinationElement[];
+}
+
+export interface ExperimentPartitionDTO {
+  id: string;
+  site: string;
+  target?: string;
+  description?: string;
+  order: number;
+  excludeIfReached: boolean;
+  twoCharacterId?: string;
+}
+
+export interface ExperimentFactorDTO {
+  id?: string;
+  name: string;
+  description?: string;
+  order: number;
+  levels: ExperimentLevel[];
+}
+
+export interface ExperimentConditionPayloadDTO {
+  id?: string;
+  payload: {
+    type: PAYLOAD_TYPE;
+    value: string;
+  };
+  parentCondition: string;
+  decisionPoint: string;
+}
+
+export interface ExperimentQueryDTO {
+  id?: string;
+  name: string;
+  query: ExperimentQueryPayload;
+  metric: {
+    key: string;
+  };
+  repeatedMeasure: REPEATED_MEASURE;
+}
+
+export interface ExperimentSegmentDTO {
+  segment: {
+    id?: string;
+    name?: string;
+    description?: string;
+    context?: string;
+    type: SEGMENT_TYPE;
+    listType?: string;
+    individualForSegment?: Array<{ userId: string }>;
+    groupForSegment?: Array<{ groupId: string; type: string }>;
+    subSegments?: Array<{ id: string }>;
+  };
+}
+
+export interface ExperimentStateTimeLogDTO {
+  id: string;
+  fromState: EXPERIMENT_STATE;
+  toState: EXPERIMENT_STATE;
+  timeLog: string;
+}
+
+// Progressive typing for different experiment creation stages
+export interface DraftExperimentRequest {
+  // Minimum required for saving a draft
+  name: string;
+  description?: string;
+  context: string[];
+  type: EXPERIMENT_TYPE;
+  assignmentUnit: ASSIGNMENT_UNIT;
+  state: EXPERIMENT_STATE;
+  filterMode: FILTER_MODE;
+  tags: string[];
+
+  // Optional fields that can be filled later
+  consistencyRule?: CONSISTENCY_RULE;
+  conditionOrder?: CONDITION_ORDER;
+  assignmentAlgorithm?: ASSIGNMENT_ALGORITHM;
+  stratificationFactor?: { stratificationFactorName: string } | null;
+  group?: string;
+  postExperimentRule?: POST_EXPERIMENT_RULE;
+  enrollmentCompleteCondition?: Partial<IEnrollmentCompleteCondition>;
+  startOn?: string;
+  endOn?: string;
+  revertTo?: string;
+  backendVersion?: string;
+  moocletPolicyParameters?: MoocletPolicyParametersDTO;
+  rewardMetricKey?: string;
+
+  // Arrays that can be empty for drafts
+  conditions?: ExperimentConditionDTO[];
+  partitions?: ExperimentPartitionDTO[];
+  factors?: ExperimentFactorDTO[];
+  conditionPayloads?: ExperimentConditionPayloadDTO[];
+  queries?: ExperimentQueryDTO[];
+  experimentSegmentInclusion?: ExperimentSegmentDTO[];
+  experimentSegmentExclusion?: ExperimentSegmentDTO[];
+  stateTimeLogs?: ExperimentStateTimeLogDTO[];
+}
+
+export interface CompleteExperimentRequest extends DraftExperimentRequest {
+  // Required fields for a complete experiment that can be activated
+  consistencyRule: CONSISTENCY_RULE; // Required for non-WITHIN_SUBJECTS
+  postExperimentRule: POST_EXPERIMENT_RULE;
+  conditions: ExperimentConditionDTO[]; // Must have at least one condition
+  partitions: ExperimentPartitionDTO[]; // Must have at least one partition
+}
+
+// Legacy type alias for backwards compatibility - consider migrating to CompleteExperimentRequest
+export type AddExperimentRequest = CompleteExperimentRequest;
+
+// UpdateExperimentRequest should extend CompleteExperimentRequest but add id and handle segment differences
+export interface UpdateExperimentRequest
+  extends Omit<CompleteExperimentRequest, 'experimentSegmentInclusion' | 'experimentSegmentExclusion'> {
+  readonly id: string;
+  // These fields might have different structure in updates vs creates
+  experimentSegmentInclusion?: SegmentNew[];
+  experimentSegmentExclusion?: SegmentNew[];
+}
+
+export interface UpdateExperimentFilterModeRequest {
+  experiment: Experiment;
+  filterMode: FILTER_MODE;
+}
+
+export interface UpdateExperimentDecisionPointsRequest {
+  experiment: Experiment;
+  decisionPoints: ExperimentDecisionPoint[];
+}
+
+export interface UpdateExperimentConditionsRequest {
+  experiment: Experiment;
+  conditions: ExperimentCondition[];
+}
+
+export interface UpdateExperimentMetricsRequest {
+  experiment: Experiment;
+  metrics: ExperimentQueryDTO[];
+}
+
+export const EXPERIMENT_ROOT_COLUMN_NAMES = {
+  NAME: 'name',
+  STATUS: 'state',
+  UPDATED_AT: 'updatedAt',
+  APP_CONTEXT: 'appContext',
+  TAGS: 'tags',
+  ENROLLMENT: 'enrollment',
+};
+
+export const EXPERIMENT_TRANSLATION_KEYS = {
+  NAME: 'experiments.global-name.text',
+  STATUS: 'experiments.global-status.text',
+  UPDATED_AT: 'experiments.global-updated-at.text',
+  APP_CONTEXT: 'experiments.global-app-context.text',
+  TAGS: 'experiments.global-tags.text',
+  ENROLLMENT: 'experiments.global-enrollment.text',
+};
+
+export const EXPERIMENT_OVERVIEW_LABELS = {
+  DESCRIPTION: 'Description',
+  APP_CONTEXT: 'App Context',
+  EXPERIMENT_TYPE: 'Experiment Type',
+  UNIT_OF_ASSIGNMENT: 'Unit Of Assignment',
+  CONSISTENCY_RULE: 'Consistency Rule',
+  ASSIGNMENT_ALGORITHM: 'Assignment Algorithm',
+  ADAPTIVE_ALGORITHM_PARAMETERS: 'Adaptive Algorithm Parameters',
+  TAGS: 'Tags',
+} as const;
+
+export const TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS = {
+  BATCH_SIZE: 'home.new-experiment.design.ts-configurable-policy.batch-size.label.text',
+  PRIOR_SUCCESS: 'home.new-experiment.design.ts-configurable-policy.prior-success.label.text',
+  PRIOR_FAILURE: 'home.new-experiment.design.ts-configurable-policy.prior-failure.label.text',
+  UNIFORM_THRESHOLD: 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.label.text',
+  TSPOSTDIFF_THRESH: 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.label.text',
+};
+
+export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
+
+export interface ExperimentState extends EntityState<ExperimentVM> {
   isLoadingExperiment: boolean;
   isLoadingExperimentDetailStats: boolean;
   isPollingExperimentDetailStats: boolean;
   isLoadingExperimentExport: boolean;
   skipExperiment: number;
   totalExperiments: number;
-  totalFilteredExperiments: number;
   searchKey: EXPERIMENT_SEARCH_KEY;
   searchString: string;
   sortKey: EXPERIMENT_SORT_KEY;
@@ -329,6 +650,8 @@ export interface ExperimentState extends EntityState<Experiment> {
   isLoadingContextMetaData: boolean;
   currentUserSelectedContext: ISingleContextMetadata;
   updatedStat?: IExperimentEnrollmentDetailStats;
+  isLoadingExperimentDelete: boolean;
+  isLoadingImportExperiment: boolean;
 }
 
 export interface State extends AppState {
@@ -375,14 +698,60 @@ export interface InteractionEffectLineChartSeriesData {
   participantsLogged: number;
 }
 
+export enum EXPERIMENT_ROW_ACTION {
+  EDIT = 'edit',
+  DELETE = 'delete',
+}
+
+export interface ExperimentDecisionPointRowActionEvent {
+  action: EXPERIMENT_ROW_ACTION;
+  decisionPoint: ExperimentDecisionPoint;
+}
+
+export interface ExperimentConditionRowActionEvent {
+  action: EXPERIMENT_ROW_ACTION;
+  condition: ExperimentCondition;
+}
+
+export interface ExperimentPayloadRowActionEvent {
+  action: EXPERIMENT_ROW_ACTION;
+  payload: ExperimentConditionPayload;
+}
+
+export interface ExperimentQueryRowActionEvent {
+  action: EXPERIMENT_ROW_ACTION;
+  query: ExperimentQueryDTO;
+}
+
+export enum EXPERIMENT_PAYLOAD_DISPLAY_TYPE {
+  UNIVERSAL = 'universal',
+  SPECIFIC = 'specific',
+  NONE = 'none',
+}
+
 export interface InteractionEffectGraphData {
   name: string;
   series: InteractionEffectLineChartSeriesData[];
   dot: boolean;
 }
 
-export interface RewardMetricData {
-  metric_Key: string;
-  metric_Operation: string;
-  metric_Name: string;
+export interface ExperimentSegmentListResponse extends SegmentNew {
+  experiment: Experiment;
+}
+
+export interface CurrentPosteriorsTableRow {
+  conditionCode: string;
+  successes: number;
+  failures: number;
+  successRate: number;
+  total: number;
+  percentage: number;
+}
+
+export interface UpsertMetricParams {
+  sourceQuery: ExperimentQueryDTO | null;
+  action: UPSERT_EXPERIMENT_ACTION;
+  experimentId: string;
+  currentContext?: string;
+  experimentInfo?: ExperimentVM;
 }

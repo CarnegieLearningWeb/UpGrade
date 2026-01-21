@@ -190,24 +190,38 @@ export const selectFeatureFlagPaginationParams = createSelector(
   })
 );
 
-// Helper function to determine if warning should be shown for a given flag
-const shouldShowWarningForFlag = (flag: FeatureFlag) =>
-  flag?.status === FEATURE_FLAG_STATUS.ENABLED &&
-  flag?.filterMode !== FILTER_MODE.INCLUDE_ALL &&
-  !flag?.featureFlagSegmentInclusion?.some((inclusion) => inclusion.enabled);
+// Helper function returns array of translation keys (extensible for future warning types)
+const getWarningKeysForFlag = (flag: FeatureFlag): string[] => {
+  const warnings: string[] = [];
 
-// Selector for the selected feature flag
-export const selectShouldShowWarningForSelectedFlag = createSelector(selectSelectedFeatureFlag, (flag: FeatureFlag) =>
-  shouldShowWarningForFlag(flag)
+  // Check each warning type (in future more types can be added here)
+  if (hasNoEnabledInclusionsWarning(flag)) {
+    warnings.push('global.no-participants-included-warning.text');
+  }
+
+  return warnings;
+};
+
+const hasNoEnabledInclusionsWarning = (flag: FeatureFlag): boolean => {
+  return (
+    flag?.status === FEATURE_FLAG_STATUS.ENABLED &&
+    flag?.filterMode !== FILTER_MODE.INCLUDE_ALL &&
+    !flag?.featureFlagSegmentInclusion?.some((inclusion) => inclusion.enabled)
+  );
+};
+
+// Selector for selected flag - returns array of translation keys
+export const selectWarningKeysForSelectedFlag = createSelector(selectSelectedFeatureFlag, (flag: FeatureFlag) =>
+  getWarningKeysForFlag(flag)
 );
 
-// Selector for all feature flags
-export const selectWarningStatusForAllFlags = createSelector(selectFeatureFlagsState, (state: FeatureFlagState) => {
-  const warningStatus = {};
+// Selector for all flags - returns map of flagId to translation key arrays
+export const selectWarningKeysForAllFlags = createSelector(selectFeatureFlagsState, (state: FeatureFlagState) => {
+  const warningKeys: { [flagId: string]: string[] } = {};
   Object.values(state.entities).forEach((flag) => {
     if (flag) {
-      warningStatus[flag.id] = shouldShowWarningForFlag(flag);
+      warningKeys[flag.id] = getWarningKeysForFlag(flag);
     }
   });
-  return warningStatus;
+  return warningKeys;
 });

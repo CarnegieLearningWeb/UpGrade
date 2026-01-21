@@ -13,14 +13,14 @@ const MOOCLET_POLICY_SCHEMA_MAP = {
 
 const SUPPORTED_MOOCLET_ALGORITHMS = Object.keys(MOOCLET_POLICY_SCHEMA_MAP);
 
-enum BinaryRewardMetricAllowedValue {
+enum BinaryRewardAllowedValue {
   SUCCESS = 'SUCCESS',
   FAILURE = 'FAILURE',
 }
 
-const BinaryRewardMetricValueMap = {
-  [BinaryRewardMetricAllowedValue.SUCCESS]: 1,
-  [BinaryRewardMetricAllowedValue.FAILURE]: 0,
+const BinaryRewardValueMap = {
+  [BinaryRewardAllowedValue.SUCCESS]: 1,
+  [BinaryRewardAllowedValue.FAILURE]: 0,
 };
 
 export {
@@ -30,6 +30,6 @@ export {
   CurrentPosteriors,
   MoocletPolicyParametersDTO,
   MoocletTSConfigurablePolicyParametersDTO,
-  BinaryRewardMetricAllowedValue,
-  BinaryRewardMetricValueMap,
+  BinaryRewardAllowedValue,
+  BinaryRewardValueMap,
 };

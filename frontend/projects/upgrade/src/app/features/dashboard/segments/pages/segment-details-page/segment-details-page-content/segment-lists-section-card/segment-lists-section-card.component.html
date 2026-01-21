@@ -1,4 +1,7 @@
-<app-common-section-card *ngIf="selectedSegment$ | async as segment">
+@if (selectedSegment$ | async; as segment) { @let canShowSegmentActions = (permissions$ | async)?.segments.update; @let
+appContext = segment.context;
+
+<app-common-section-card>
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
@@ -10,22 +13,24 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="(permissions$ | async)?.segments.update"
+    [showPrimaryButton]="canShowSegmentActions"
     [primaryButtonText]="buttonText | translate"
-    [showMenuButton]="(permissions$ | async)?.segments.update"
-    [menuButtonItems]="menuButtonItems"
+    [showMenuButton]="true"
+    [menuButtonItems]="menuButtonItems$ | async"
     [isSectionCardExpanded]="isSectionCardExpanded"
-    (primaryButtonClick)="onAddListClick(segment.context, segment.id, segment.type)"
+    (primaryButtonClick)="onAddListClick(appContext, segment.id, segment.type)"
     (menuButtonItemClick)="onMenuButtonItemClick($event, segment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
 
   <!-- content -->
+  @if (isSectionCardExpanded) {
   <app-segment-lists-table
     content
-    *ngIf="isSectionCardExpanded"
-    [actionsDisabled]="!(permissions$ | async)?.segments.update"
+    [showActions]="canShowSegmentActions"
     (rowAction)="onRowAction($event, segment.id)"
   ></app-segment-lists-table>
+  }
 </app-common-section-card>
+}

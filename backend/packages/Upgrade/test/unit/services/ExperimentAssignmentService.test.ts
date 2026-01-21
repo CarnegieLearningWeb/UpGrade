@@ -36,7 +36,6 @@ import { UserStratificationFactorRepository } from '../../../src/api/repositorie
 import { configureLogger } from '../../utils/logger';
 import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import { factorialGroupExperiment, factorialIndividualExperiment } from '../mockdata/raw';
-import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
 import { FactorRepository } from '../../../src/api/repositories/FactorRepository';
@@ -72,7 +71,6 @@ describe('Experiment Assignment Service Test', () => {
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
   const cacheServiceMock = sinon.createStubInstance(CacheService);
   const moocletExperimentServiceMock = sinon.createStubInstance(MoocletExperimentService);
-  const moocletRewardsServiceMock = sinon.createStubInstance(MoocletRewardsService);
   experimentServiceMock.formattingConditionPayload.restore();
   experimentServiceMock.formattingPayload.restore();
 
@@ -131,8 +129,7 @@ describe('Experiment Assignment Service Test', () => {
       segmentServiceMock,
       experimentServiceMock,
       cacheServiceMock,
-      moocletExperimentServiceMock,
-      moocletRewardsServiceMock
+      moocletExperimentServiceMock
     );
 
     testedModule.cacheService.wrap.resolves([]);
@@ -218,7 +215,7 @@ describe('Experiment Assignment Service Test', () => {
   it('should return the assigned condition for a simple individual experiment', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
-    const exp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
 
     const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
     testedModule.cacheService.wrap = sandbox.stub().resolves([exp]);
@@ -238,7 +235,7 @@ describe('Experiment Assignment Service Test', () => {
   it('should return the assigned condition for a factorial individual experiment', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
-    const exp = JSON.parse(JSON.stringify(factorialIndividualAssignmentExperiment));
+    const exp = structuredClone(factorialIndividualAssignmentExperiment);
 
     const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
@@ -272,7 +269,7 @@ describe('Experiment Assignment Service Test', () => {
   it('should return the assigned condition for a simple within-subject ordered round-robin experiment', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
-    const exp = JSON.parse(JSON.stringify(simpleWithinSubjectOrderedRoundRobinExperiment));
+    const exp = structuredClone(simpleWithinSubjectOrderedRoundRobinExperiment);
 
     const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
     const repeatedEnrollmentRepositoryMock = {
@@ -309,7 +306,7 @@ describe('Experiment Assignment Service Test', () => {
   it('should return the assigned condition for a simple group experiment', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } };
-    const exp = JSON.parse(JSON.stringify(simpleGroupAssignmentExperiment));
+    const exp: any = structuredClone(simpleGroupAssignmentExperiment);
     const groupEnrollment = new GroupEnrollment();
     groupEnrollment.experiment = exp;
     groupEnrollment.condition = exp.conditions[0];
@@ -354,7 +351,7 @@ describe('Experiment Assignment Service Test', () => {
   it('should return the assigned condition for a factorial group experiment', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } };
-    const exp = JSON.parse(JSON.stringify(factorialGroupAssignmentExperiment));
+    const exp: any = structuredClone(factorialGroupAssignmentExperiment);
     const factor = {
       Color: {
         level: 'Red',
@@ -526,7 +523,7 @@ describe('Experiment Assignment Service Test', () => {
 
   it('[filterAndProcessGroupExperiments] should return the experiment if it is not a group experiment', async () => {
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} }; // Invalid group
-    const exp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
     testedModule.getInvalidGroupNotEnrolledExperiments = sandbox.stub().resolves([]);
 
     const expResult = await testedModule.filterAndProcessGroupExperiments([exp], userDoc);
@@ -548,7 +545,7 @@ describe('Experiment Assignment Service Test', () => {
 
   it('[experimentLevelExclusionInclusion] should return an empty exclusion reason if no user or userGroup is globally excluded', async () => {
     const userDoc = { id: 'user1', group: { schoolId: ['school1'] }, workingGroup: {} };
-    const exp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
     // stub the exclusion segment with empty individualForSegment and groupForSegment
     testedModule.segmentService.getSegmentByIds.resolves([
       { id: 'd958bf52-7066-4594-ad8a-baf2e75324cf', subSegments: [], individualForSegment: [], groupForSegment: [] },
@@ -563,7 +560,7 @@ describe('Experiment Assignment Service Test', () => {
 
   it('[experimentLevelExclusionInclusion] should return an exclusion reason if a user or userGroup is on exclusion list', async () => {
     const userDoc = { id: 'user2', group: { teacher: ['teacher1'] }, workingGroup: {} };
-    const exp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
     const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
     expect(exclusionReason.length).toEqual(1);
     expect(exclusionReason[0].matchedGroup).toEqual(true);
@@ -577,8 +574,8 @@ describe('Experiment Assignment Service Test', () => {
   });
 
   it('[createExperimentPool] should return pool of experiments with same decision points', async () => {
-    const exp1 = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
-    const exp2 = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment2));
+    const exp1 = structuredClone(simpleIndividualAssignmentExperiment);
+    const exp2 = structuredClone(simpleIndividualAssignmentExperiment2);
 
     const expResult = await testedModule.createExperimentPool([exp1, exp2]);
     expect(expResult).toEqual([[exp1, exp2]]);
@@ -609,8 +606,8 @@ describe('Experiment Assignment Service Test', () => {
 
   it('[processExperimentPools] should return a selected seed random experiment from the pool of experiments', async () => {
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
-    const exp1 = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
-    const exp2 = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment2));
+    const exp1: any = structuredClone(simpleIndividualAssignmentExperiment);
+    const exp2: any = structuredClone(simpleIndividualAssignmentExperiment2);
     const experimentIds = [exp1.id, exp2.id];
 
     testedModule.createExperimentPool = sandbox.stub().returns([[exp1, exp2]]);
@@ -651,7 +648,7 @@ describe('Experiment Assignment Service Test', () => {
       experimentId: enrolledExperiment.id,
       userId: experimentUser.id,
       condition: enrolledExperiment.conditions[0],
-    } as IndividualEnrollment;
+    } as unknown as IndividualEnrollment;
 
     const individualEnrollments = [enrollment];
 
@@ -1531,7 +1528,7 @@ describe('Experiment Assignment Service Test', () => {
         { id: 'user1', group: { schoolId: ['school1'] }, workingGroup: {} },
         { id: 'user2', group: { schoolId: ['school1'] }, workingGroup: {} },
       ];
-      const exp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
 
       testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([exp]);
 
@@ -1556,7 +1553,7 @@ describe('Experiment Assignment Service Test', () => {
         { id: 'user1', group: { schoolId: ['school1'] }, workingGroup: {} },
         { id: 'user2', group: { schoolId: ['school1'] }, workingGroup: {} },
       ];
-      const exp = JSON.parse(JSON.stringify(factorialIndividualAssignmentExperiment));
+      const exp = structuredClone(factorialIndividualAssignmentExperiment);
 
       testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([exp]);
 
@@ -1582,7 +1579,7 @@ describe('Experiment Assignment Service Test', () => {
         { id: 'user1', group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } },
         { id: 'user2', group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } },
       ];
-      const exp = JSON.parse(JSON.stringify(simpleGroupAssignmentExperiment));
+      const exp: any = structuredClone(simpleGroupAssignmentExperiment);
 
       const groupEnrollment = new GroupEnrollment();
       groupEnrollment.experiment = exp;
@@ -1626,7 +1623,7 @@ describe('Experiment Assignment Service Test', () => {
         { id: 'user1', group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } },
         { id: 'user2', group: { teacher: ['teacher1'] }, workingGroup: { teacher: 'teacher1' } },
       ];
-      const exp = JSON.parse(JSON.stringify(simpleGroupAssignmentExperiment));
+      const exp = structuredClone(simpleGroupAssignmentExperiment);
 
       testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([exp]);
 
@@ -1646,7 +1643,7 @@ describe('Experiment Assignment Service Test', () => {
         { id: 'user1', group: { schoolId: ['school1'] }, workingGroup: {} },
         { id: 'user5', group: { schoolId: ['school1'] }, workingGroup: {} }, // This user will be globally excluded
       ];
-      const exp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
 
       // Stub the global exclusion segment with user `user5` in individualForSegment
       testedModule.segmentService.getSegmentByIds.withArgs(['77777777-7777-7777-7777-777777777777']).resolves([
@@ -1694,9 +1691,9 @@ describe('Experiment Assignment Service Test', () => {
       const userDocs = [{ id: 'user1', group: { schoolId: ['school1'] }, workingGroup: {} }];
 
       // Multiple experiment types
-      const regularIndividualExp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
-      const factorialExp = JSON.parse(JSON.stringify(factorialIndividualAssignmentExperiment));
-      const withinSubjectExp = JSON.parse(JSON.stringify(simpleWithinSubjectOrderedRoundRobinExperiment));
+      const regularIndividualExp = structuredClone(simpleIndividualAssignmentExperiment);
+      const factorialExp = structuredClone(factorialIndividualAssignmentExperiment);
+      const withinSubjectExp = structuredClone(simpleWithinSubjectOrderedRoundRobinExperiment);
 
       withinSubjectExp.id = 'within-subject-exp'; // Ensure it has a unique ID
 
@@ -1720,7 +1717,7 @@ describe('Experiment Assignment Service Test', () => {
       const userDocs = [
         { id: 'user1', requestedUserId: 'requested1', group: { schoolId: ['school1'] }, workingGroup: {} },
       ];
-      const exp = JSON.parse(JSON.stringify(simpleIndividualAssignmentExperiment));
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
 
       testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([exp]);
 

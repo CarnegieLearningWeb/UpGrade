@@ -33,8 +33,5 @@ export class MoocletExperimentRef {
   variableId?: number;
 
   @Column({ nullable: true })
-  rewardMetricKey?: string;
-
-  @Column({ nullable: true })
   outcomeVariableName?: string;
 }

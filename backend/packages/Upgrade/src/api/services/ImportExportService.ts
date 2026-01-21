@@ -111,10 +111,10 @@ export class ImportExportService {
           this.experimentService.formattingPayload(this.experimentService.formattingConditionPayload(experiment))
         );
 
-        // If it's a mooclet experiment, attach reward key and policy parameters
+        // If it's a mooclet experiment, policy parameters
         if (SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment.assignmentAlgorithm)) {
           try {
-            experimentRecord = await this.moocletExperimentService.attachRewardKeyAndPolicyParamsToExperimentDTO(
+            experimentRecord = await this.moocletExperimentService.attachPolicyParamsToExperimentDTO(
               experimentRecord,
               logger
             );

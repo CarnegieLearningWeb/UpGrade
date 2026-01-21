@@ -1,23 +1,21 @@
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { REPEATED_MEASURE, IMetricMetaData, ILogInput } from 'upgrade_types';
+import { EXPERIMENT_STATE, SERVER_ERROR, BinaryRewardValueMap } from 'upgrade_types';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
-import { Metric } from '../models/Metric';
 import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
-import { v4 as uuid } from 'uuid';
-import { MetricService } from './MetricService';
 import { MoocletDataService } from './MoocletDataService';
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 import { IndividualEnrollment } from '../models/IndividualEnrollment';
 import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
 import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
+import { HttpError } from 'routing-controllers';
+import { MoocletValueRequestBody } from '../../types/Mooclet';
+import { RewardValidator } from '../controllers/validators/RewardValidator';
 
-import { QueryValidator } from '../DTO/ExperimentDTO';
-import { BinaryRewardMetricAllowedValue, BinaryRewardMetricValueMap } from 'upgrade_types';
-
-export interface ValidRewardMetricType {
-  key: string;
-  value: BinaryRewardMetricAllowedValue;
+export interface IRewardResponse {
+  message: string;
+  request: RewardValidator;
+  reward: MoocletValueRequestBody;
 }
 
 @Service()
@@ -27,201 +25,193 @@ export class MoocletRewardsService {
     private moocletExperimentRefRepository: MoocletExperimentRefRepository,
     @InjectRepository()
     private individualEnrollmentRepository: IndividualEnrollmentRepository,
-    private metricService: MetricService,
     private moocletDataService: MoocletDataService
   ) {}
 
-  public getRewardMetricQuery(rewardMetricKey: string): QueryValidator {
-    return {
-      id: uuid(),
-      name: 'Success Rate',
-      query: {
-        operationType: 'percentage',
-        compareFn: '=',
-        compareValue: BinaryRewardMetricAllowedValue.SUCCESS,
-      },
-      metric: {
-        key: rewardMetricKey,
-      },
-      repeatedMeasure: REPEATED_MEASURE.mostRecent,
-    };
-  }
-
-  public async createAndSaveRewardMetric(
-    rewardMetricKey: string,
-    context: string,
-    logger: UpgradeLogger
-  ): Promise<Metric[]> {
-    const metric = {
-      id: uuid(),
-      metric: rewardMetricKey,
-      datatype: IMetricMetaData.CATEGORICAL,
-      allowedValues: [BinaryRewardMetricAllowedValue.SUCCESS, BinaryRewardMetricAllowedValue.FAILURE],
-    };
-
-    return this.metricService.saveAllMetrics([metric], [context], logger);
-  }
-
-  public async parseLogsAndSendPotentialRewards(
+  /**
+   * Attempt to send a reward to the external mooclet API.
+   * This is intended to be a "fire-and-forget" operation; we do not wait for
+   * confirmation that the reward was received successfully.
+   *
+   * Several criteria must be met to validate that a reward can be sent:
+   *
+   * 1. Mooclets feature must be currently enabled
+   *
+   * 2. The unique experiment must be ascertained before sending a reward.
+   * `experimentId` is preferred, but if not provided, `context`, `site`, and `target` can
+   * be used to identify the experiment.
+   *
+   * 3. A complete synced Mooclet experiment reference must exist.
+   *
+   * 4. The user must have marked and have a unique enrollment.
+   *
+   * 5. The condition enrolled must match a `version` in the mooclet experiment ref.
+   *
+   * - If any of these criteria are not met, a 409 data-conflict error is thrown.
+   */
+  public async sendReward(
     user: RequestedExperimentUser,
-    logs: ILogInput[],
+    request: RewardValidator,
     logger: UpgradeLogger
-  ): Promise<void> {
-    // First see if any simple metrics have valid reward values
-    const validSimpleMetricAttributes = this.gatherValidRewardMetrics(logs);
-
-    if (!validSimpleMetricAttributes.length) {
-      // no need to log anything here, just quit early as this is the most common case
-      return;
-    }
+  ): Promise<IRewardResponse> {
+    const { experimentId, context, decisionPoint, rewardValue } = request;
 
     try {
-      // If we have valid metric rewards, only then check for active mooclet experiment refs
-      const moocletExperimentRefs = await this.getAllActiveMoocletExperimentRefs(logger);
+      // Find the mooclet experiment ref by ID or decision point
+      const moocletExperimentRef = experimentId
+        ? await this.findMoocletExperimentRefById(experimentId, request, logger)
+        : await this.findMoocletExperimentRefByDecisionPoint(context, decisionPoint, request, logger);
 
-      if (!moocletExperimentRefs.length) {
-        logger.warn({
-          message: 'No active mooclet experiment refs found',
-          user,
-        });
-        return;
+      // Find user's enrollment
+      const enrollments = await this.individualEnrollmentRepository.findEnrollments(user.id, [
+        moocletExperimentRef.experimentId,
+      ]);
+
+      if (!enrollments.length || enrollments.length > 1) {
+        this.throwConflictError(
+          `Could not find unique user enrollment for experiment (userId: ${user.id}, enrollments: ${enrollments}), no reward sent.`,
+          request,
+          logger
+        );
       }
 
-      // Find each experiment match by reward metric key
-      const experimentsMatchingLoggedRewardKey = this.findExperimentByRewardMetricKey(
-        moocletExperimentRefs,
-        validSimpleMetricAttributes
+      // Get version ID for the user's condition
+      const enrollment = enrollments[0];
+      const versionId = this.getVersionIdByConditionId(enrollment, moocletExperimentRef, request, logger);
+
+      if (!versionId) {
+        this.throwConflictError(
+          `Could not find version id for user enrollment (userId: ${user.id}, experimentId: ${moocletExperimentRef.experimentId}, conditionId: ${enrollment.conditionId}).`,
+          request,
+          logger
+        );
+      }
+
+      // Prepare and send reward
+      const reward: MoocletValueRequestBody = {
+        variable: moocletExperimentRef.outcomeVariableName,
+        value: BinaryRewardValueMap[rewardValue],
+        mooclet: moocletExperimentRef.moocletId,
+        version: versionId,
+        learner: user.id,
+      };
+
+      logger.info({ message: 'Sending reward to mooclet', reward, user });
+
+      // Fire-and-forget operation
+      // NOTE: in the future we may want to batch these, the mooclet API technically supports it by adding "/create_many" to an endpoint but it's not documented
+      this.moocletDataService.postNewReward(reward, logger);
+
+      return { message: `Reward sent to mooclet successfully.`, request, reward };
+    } catch (error) {
+      if (error instanceof HttpError) {
+        throw error;
+      }
+
+      // Log and wrap unexpected errors
+      this.throwConflictError(
+        `Failed to process reward request due to unexpected error (userId: ${user.id}, experimentId: ${
+          experimentId || 'not provided'
+        }, rewardValue: ${rewardValue}).`,
+        request,
+        logger
+      );
+    }
+  }
+
+  /**
+   * Finds mooclet experiment ref by experiment ID
+   */
+  private async findMoocletExperimentRefById(
+    experimentId: string,
+    request: RewardValidator,
+    logger: UpgradeLogger
+  ): Promise<MoocletExperimentRef> {
+    const moocletExperimentRef = await this.moocletExperimentRefRepository.findOne({
+      where: { experimentId },
+      relations: ['versionConditionMaps', 'versionConditionMaps.experimentCondition', 'experiment'],
+    });
+
+    if (!moocletExperimentRef) {
+      this.throwConflictError(
+        `No active mooclet experiment ref found for experiment id: ${experimentId}, could not send reward.`,
+        request,
+        logger
+      );
+    }
+
+    if (moocletExperimentRef.experiment.state !== EXPERIMENT_STATE.ENROLLING) {
+      this.throwConflictError(
+        `Experiment with id: ${experimentId} is not actively enrolling (current state: ${moocletExperimentRef.experiment.state}), could not send reward.`,
+        request,
+        logger
+      );
+    }
+
+    return moocletExperimentRef;
+  }
+
+  /**
+   * Finds mooclet experiment ref by decision point
+   */
+  private async findMoocletExperimentRefByDecisionPoint(
+    context: string,
+    decisionPoint: { site: string; target: string },
+    request: RewardValidator,
+    logger: UpgradeLogger
+  ): Promise<MoocletExperimentRef> {
+    const { site, target } = decisionPoint;
+    const moocletExperimentRefs =
+      await this.moocletExperimentRefRepository.findActivelyEnrollingMoocletExperimentsByContextSiteTarget(
+        context,
+        site,
+        target
       );
 
-      if (!experimentsMatchingLoggedRewardKey.length) {
-        logger.warn({
-          message: 'Reward metrics were logged, but no active experiments matched the rewardMetricKeys',
-          moocletExperimentRefs,
-          validSimpleMetricAttributes,
-        });
-        return;
-      }
-
-      const experimentIds = experimentsMatchingLoggedRewardKey.map((pair) => pair.moocletExperimentRef.experimentId);
-      const enrollments = await this.individualEnrollmentRepository.findEnrollments(user.id, experimentIds);
-
-      // For each match, find the user's condition, map to version id, and create reward object
-      await Promise.all(
-        experimentsMatchingLoggedRewardKey.map(async ({ moocletExperimentRef, rewardMetricValue }) => {
-          const enrollment = enrollments.find(
-            (enrollment) => enrollment.experimentId === moocletExperimentRef.experimentId
-          );
-
-          // not sure if this even possible in reality, but should be handled
-          if (!enrollment) {
-            logger.error({
-              message: 'Could not find user enrollment for experiment.',
-              user,
-              moocletExperimentRef,
-            });
-            return;
-          }
-
-          const versionId = this.getVersionIdByConditionId(enrollment, moocletExperimentRef, logger);
-
-          if (!versionId) {
-            logger.error({
-              message: 'Could not find version id for user enrollment.',
-              enrollment,
-              moocletExperimentRef,
-            });
-            return;
-          }
-
-          const reward = {
-            variable: moocletExperimentRef.outcomeVariableName,
-            value: BinaryRewardMetricValueMap[rewardMetricValue],
-            mooclet: moocletExperimentRef.moocletId,
-            version: versionId,
-            learner: user.id,
-          };
-          logger.info({
-            message: 'Sending reward to mooclet',
-            reward,
-            user,
-          });
-          // NOTE: in the future we may want to batch these, the mooclet API technically supports it by adding "/create_many" to an endpoint but it's not documented
-          await this.moocletDataService.postNewReward(reward, logger);
-        })
+    if (moocletExperimentRefs.length === 0) {
+      this.throwConflictError(
+        `No active experiment found for decision point (context: ${context}, site: ${site}, target: ${target}), could not send reward.`,
+        request,
+        logger
       );
-    } catch (error) {
-      logger.error({
-        message: 'Failure processing and sending rewards',
-        error,
-        logs,
-      });
-    }
-  }
-
-  private async getAllActiveMoocletExperimentRefs(logger: UpgradeLogger): Promise<MoocletExperimentRef[]> {
-    // cache this? would be complex to invalidate, and our TTL is usually in the order of seconds...
-    try {
-      return this.moocletExperimentRefRepository.getRefsForActivelyEnrollingExperiments();
-    } catch (error) {
-      logger.error({ message: 'Failed to fetch active mooclet refs ', error });
-      return Promise.resolve([]);
-    }
-  }
-
-  private gatherValidRewardMetrics(logs: ILogInput[]): ValidRewardMetricType[] {
-    return logs.reduce((acc, log) => {
-      const simpleMetrics = log.metrics.attributes;
-
-      for (const key in simpleMetrics) {
-        if (this.isBinaryRewardMetricAllowedValue(simpleMetrics[key])) {
-          acc.push({ key, value: simpleMetrics[key] });
-        }
-      }
-
-      return acc;
-    }, [] as ValidRewardMetricType[]);
-  }
-
-  // type guard to allow for type checking of binary reward metric value
-  private isBinaryRewardMetricAllowedValue(value: any): value is BinaryRewardMetricAllowedValue {
-    return Object.values(BinaryRewardMetricAllowedValue).includes(value);
-  }
-
-  private findExperimentByRewardMetricKey(
-    moocletExperimentRefs: MoocletExperimentRef[],
-    rewardMetricKeys: ValidRewardMetricType[]
-  ): { moocletExperimentRef: MoocletExperimentRef; rewardMetricValue: BinaryRewardMetricAllowedValue }[] {
-    const moocletExperimentRefMatches = [];
-
-    for (const rewardMetric of rewardMetricKeys) {
-      const matchedMoocletRef = moocletExperimentRefs.find((ref) => ref.rewardMetricKey === rewardMetric.key);
-
-      if (matchedMoocletRef) {
-        moocletExperimentRefMatches.push({
-          moocletExperimentRef: matchedMoocletRef,
-          rewardMetricValue: rewardMetric.value,
-        });
-      }
     }
 
-    return moocletExperimentRefMatches;
+    // TODO: this is a spot where we want to use shared-decision-point pooling logic,
+    // but for now if there are competing experiments, it will be required to use experimentId
+    if (moocletExperimentRefs.length > 1) {
+      this.throwConflictError(
+        `Multiple active experiments found for decision point (context: ${context}, site: ${site}, target: ${target}), cannot determine which to send reward to.`,
+        request,
+        logger
+      );
+    }
+
+    return moocletExperimentRefs[0];
   }
 
   private getVersionIdByConditionId(
     enrollment: IndividualEnrollment,
     moocletExperimentRef: MoocletExperimentRef,
+    request: RewardValidator,
     logger: UpgradeLogger
   ): number | null {
     const map = moocletExperimentRef.versionConditionMaps.find(
       (map) => enrollment.conditionId === map.experimentConditionId
     );
     if (!map) {
-      logger.error({
-        message: 'Could not find a version for the user enrollment.',
-        versionConditionMaps: moocletExperimentRef.versionConditionMaps,
-      });
-      return null;
+      this.throwConflictError(`Version-condition mapping not found, no reward sent.`, request, logger);
     }
     return map.moocletVersionId;
+  }
+
+  /**
+   * Throws a 409 data-conflict error for most unexpected cases
+   */
+  private throwConflictError(message: string, request: RewardValidator, logger: UpgradeLogger): never {
+    logger.error({ message, request });
+
+    const error = new HttpError(409, message);
+    (error as any).type = SERVER_ERROR.MOOCLET_REWARD_ERROR;
+    throw error;
   }
 }

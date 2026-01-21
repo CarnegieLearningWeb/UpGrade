@@ -73,7 +73,6 @@ import { RequestedExperimentUser } from '../controllers/validators/ExperimentUse
 import { In } from 'typeorm';
 import { env } from '../../env';
 import { MoocletExperimentService } from './MoocletExperimentService';
-import { MoocletRewardsService } from './MoocletRewardsService';
 
 export interface FactorialConditionResult {
   factorialCondition: Omit<ExperimentCondition, 'levelCombinationElements' | 'conditionPayloads'>;
@@ -125,8 +124,7 @@ export class ExperimentAssignmentService {
     public segmentService: SegmentService,
     public experimentService: ExperimentService,
     public cacheService: CacheService,
-    public moocletExperimentService: MoocletExperimentService,
-    public moocletRewardsService: MoocletRewardsService
+    public moocletExperimentService: MoocletExperimentService
   ) {}
 
   private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
@@ -142,12 +140,8 @@ export class ExperimentAssignmentService {
           'experiment.conditions',
           'experiment.conditions.conditionPayloads',
           'experiment.partitions',
-          'experiment.experimentSegmentInclusion',
-          'experiment.experimentSegmentExclusion',
           'experiment.experimentSegmentInclusion.segment',
           'experiment.experimentSegmentExclusion.segment',
-          'experiment.experimentSegmentInclusion.segment.subSegments',
-          'experiment.experimentSegmentExclusion.segment.subSegments',
         ],
       })
     );
@@ -1147,10 +1141,6 @@ export class ExperimentAssignmentService {
     logger.info({ message: `Add data log userId ${userId}`, details: jsonLog });
     const keyUniqueArray: { key: string; uniquifier: string }[] = [];
 
-    if (env.mooclets.enabled) {
-      this.moocletRewardsService.parseLogsAndSendPotentialRewards(userDoc, jsonLog, logger);
-    }
-
     // extract the array value
     const promise = jsonLog.map(async (individualMetrics) => {
       return this.createLog(individualMetrics, keyUniqueArray, userDoc, logger);
@@ -2114,15 +2104,15 @@ export class ExperimentAssignmentService {
     // creates segment Object for all experiments
     experiments.forEach((exp) => {
       if (!experimentsEnrolledIds.includes(exp.id)) {
-        const includeId = exp.experimentSegmentInclusion.segment.id;
-        const excludeId = exp.experimentSegmentExclusion.segment.id;
+        const includeIds = exp.experimentSegmentInclusion?.map((segmentInclusion) => segmentInclusion.segment.id) || [];
+        const excludeIds = exp.experimentSegmentExclusion?.map((segmentExclusion) => segmentExclusion.segment.id) || [];
 
         segmentObj[exp.id] = {
-          segmentIdsQueue: [includeId, excludeId],
-          currentIncludedSegmentIds: [includeId],
-          currentExcludedSegmentIds: [excludeId],
-          allIncludedSegmentIds: [includeId],
-          allExcludedSegmentIds: [excludeId],
+          segmentIdsQueue: [...includeIds, ...excludeIds],
+          currentIncludedSegmentIds: includeIds,
+          currentExcludedSegmentIds: excludeIds,
+          allIncludedSegmentIds: includeIds,
+          allExcludedSegmentIds: excludeIds,
         };
       }
     });

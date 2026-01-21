@@ -8,6 +8,7 @@ import {
   Delete,
   Patch,
   Authorized,
+  BadRequestError,
 } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
@@ -27,6 +28,9 @@ import { MarkExperimentValidatorv6 } from './validators/MarkExperimentValidator.
 import { Log } from '../models/Log';
 import { ExperimentUserValidatorv6 } from './validators/ExperimentUserValidator';
 import { UserCheckMiddleware } from '../middlewares/UserCheckMiddleware';
+import { RewardValidator } from './validators/RewardValidator';
+import { IRewardResponse, MoocletRewardsService } from '../services/MoocletRewardsService';
+import { env } from '../../env';
 
 interface IMonitoredDecisionPoint {
   id: string;
@@ -93,7 +97,8 @@ export class ExperimentClientController {
     public experimentAssignmentService: ExperimentAssignmentService,
     public experimentUserService: ExperimentUserService,
     public featureFlagService: FeatureFlagService,
-    public metricService: MetricService
+    public metricService: MetricService,
+    public moocletRewardsService: MoocletRewardsService
   ) {}
 
   /**
@@ -815,6 +820,144 @@ export class ExperimentClientController {
   ): Promise<IUserAliases> {
     const experimentUserDoc = request.userDoc;
     return this.experimentUserService.setAliasesForUser(experimentUserDoc, user.aliases, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /v6/reward:
+   *    post:
+   *       description: |
+   *         Send a reward signal for an adaptive experiment (Mooclet).
+   *
+   *         This endpoint allows sending binary reward feedback (SUCCESS or FAILURE) for adaptive experiments.
+   *         The reward is used by the adaptive algorithm to update its learning model and improve future assignments.
+   *
+   *         **Lookup Methods:**
+   *
+   *         The endpoint supports two methods to identify the experiment:
+   *
+   *         1. **Direct Lookup** - Provide the `experimentId` directly
+   *         2. **Decision Point Lookup** - Provide `context` and `decisionPoint` (site and target) to look up the experiment
+   *
+   *         At least one of these methods must be provided.
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: header
+   *           name: User-Id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           example: user123
+   *           description: The unique identifier for the user
+   *         - in: body
+   *           name: rewardData
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - rewardValue
+   *             properties:
+   *               rewardValue:
+   *                 type: string
+   *                 enum: [SUCCESS, FAILURE]
+   *                 example: SUCCESS
+   *                 description: The binary reward value indicating success or failure of the assigned condition
+   *               experimentId:
+   *                 type: string
+   *                 example: uuid-of-adaptive-experiment
+   *                 description: The ID of the adaptive experiment. Required if context and decisionPoint are not provided.
+   *               context:
+   *                 type: string
+   *                 example: upgrade-internal
+   *                 description: The context for the decision point. Required with decisionPoint if experimentId is not provided.
+   *               decisionPoint:
+   *                 type: object
+   *                 properties:
+   *                   site:
+   *                     type: string
+   *                     example: fakesite
+   *                     description: The site of the decision point
+   *                   target:
+   *                     type: string
+   *                     example: faketarget
+   *                     description: The target of the decision point
+   *                 description: The decision point information. Required with context if experimentId is not provided.
+   *           description: Reward data for the adaptive experiment
+   *           examples:
+   *             direct_lookup:
+   *               summary: Direct Lookup - Using experimentId
+   *               description: Send reward using the experiment ID directly
+   *               value:
+   *                 rewardValue: SUCCESS
+   *                 experimentId: uuid-of-adaptive-experiment
+   *             decision_point_lookup:
+   *               summary: Decision Point Lookup - Using context and decisionPoint
+   *               description: Send reward by identifying the experiment through decision point
+   *               value:
+   *                 rewardValue: FAILURE
+   *                 context: upgrade-internal
+   *                 decisionPoint:
+   *                   site: fakesite
+   *                   target: faketarget
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Reward successfully sent to the adaptive experiment
+   *            schema:
+   *              type: object
+   *              properties:
+   *                message:
+   *                  type: string
+   *                  example: Reward sent successfully
+   *                  description: Success message
+   *                request:
+   *                  type: object
+   *                  description: Echo of the original request data
+   *                  properties:
+   *                    rewardValue:
+   *                      type: string
+   *                      enum: [SUCCESS, FAILURE]
+   *                    experimentId:
+   *                      type: string
+   *                    context:
+   *                      type: string
+   *                    decisionPoint:
+   *                      type: object
+   *                      properties:
+   *                        site:
+   *                          type: string
+   *                        target:
+   *                          type: string
+   *                reward:
+   *                  type: object
+   *                  description: The reward data that was sent to the Mooclet API
+   *          '400':
+   *            description: BadRequestError - Invalid parameters (e.g., missing required fields, invalid rewardValue)
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '409':
+   *            description: Conflict - Data conflict (e.g., site or target not found, enrollment data not found, etc)
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Post('reward')
+  public async sendReward(
+    @Req()
+    request: AppRequest,
+    @Body({ validate: true })
+    rewardData: RewardValidator
+  ): Promise<IRewardResponse> {
+    request.logger.info({ message: 'Starting the sendReward call for user' });
+    if (!env.mooclets?.enabled) {
+      throw new BadRequestError('Failed to send reward: mooclet is not currently enabled on backend.');
+    }
+
+    const experimentUserDoc = request.userDoc;
+    return this.moocletRewardsService.sendReward(experimentUserDoc, rewardData, request.logger);
   }
 
   /**

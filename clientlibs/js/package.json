@@ -3,11 +3,38 @@
   "version": "6.3.0",
   "description": "Client library to communicate with the Upgrade server",
   "files": [
-    "dist/*"
+    "dist/*",
+    "index.d.ts"
   ],
+  "exports": {
+    ".": {
+      "browser": "./dist/browser/index.js",
+      "browser-lite": "./dist/browser-lite/index.js",
+      "node": "./dist/node/index.js",
+      "node-lite": "./dist/node-lite/index.js",
+      "types": "./index.d.ts"
+    },
+    "./dist/browser": {
+      "default": "./dist/browser/index.js",
+      "types": "./dist/browser/index.d.ts"
+    },
+    "./dist/browser-lite": {
+      "default": "./dist/browser-lite/index.js",
+      "types": "./dist/browser-lite/index.d.ts"
+    },
+    "./dist/node": {
+      "default": "./dist/node/index.js",
+      "types": "./dist/node/index.d.ts"
+    },
+    "./dist/node-lite": {
+      "default": "./dist/node-lite/index.js",
+      "types": "./dist/node-lite/index.d.ts"
+    }
+  },
   "scripts": {
     "build:bundler": "webpack",
     "build:types": "concurrently \"npm:build:types-*\"",
+    "build:types-default": "./node_modules/.bin/dts-bundle-generator -o ./index.d.ts src/index.ts",
     "build:types-browser": "./node_modules/.bin/dts-bundle-generator -o dist/browser/index.d.ts src/index.ts",
     "build:types-node": "./node_modules/.bin/dts-bundle-generator -o dist/node/index.d.ts src/index.ts",
     "build:types-browser-lite": "./node_modules/.bin/dts-bundle-generator -o dist/browser-lite/index.d.ts src/index.ts",

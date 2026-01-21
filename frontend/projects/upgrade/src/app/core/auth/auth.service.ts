@@ -1,8 +1,8 @@
-import { ElementRef, Inject, Injectable, NgZone } from '@angular/core';
+import { ElementRef, Inject, Injectable, NgZone, DOCUMENT } from '@angular/core';
 import { AppState, LocalStorageService } from '../core.module';
 import { Store, select, Action } from '@ngrx/store';
 import * as AuthActions from './store/auth.actions';
-import { DOCUMENT } from '@angular/common';
+
 import {
   selectIsLoggedIn,
   selectIsAuthenticating,
@@ -211,7 +211,7 @@ export class AuthService {
           manageRoles: { create: false, read: true, update: false, delete: false },
           featureFlags: { create: false, read: true, update: false, delete: false },
           metrics: { create: false, read: true, update: false, delete: false },
-          segments: { create: false, read: true, update: false, delete: false },
+          segments: { create: false, read: true, update: true, delete: false },
         });
         break;
       case UserRole.READER:

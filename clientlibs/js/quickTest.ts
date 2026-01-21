@@ -1,5 +1,6 @@
 // to run: npx ts-node clientlibs/js/quickTest.ts
 
+import { AxiosError } from 'axios';
 import UpgradeClient, { MARKED_DECISION_POINT_STATUS, UpGradeClientInterfaces } from './dist/node';
 
 const URL = {
@@ -10,7 +11,7 @@ const URL = {
   ECS_STAGING: 'https://apps.qa-cli.com/upgrade-service',
 };
 
-const userId = 'qwerty6';
+const userId = 'quicktest_user_' + new Date().getTime();
 const useEphemeralGroups = false;
 const group = { classId: ['STORED_USER_GROUP'] };
 const workingGroup = 'STORED_USER_GROUP';
@@ -18,11 +19,18 @@ const groupsForSession = { classId: ['EPHEMERAL_USER_GROUP'] };
 const includeStoredUserGroups = true; // true to merge with stored user groups, false for session-only groups
 const alias = 'alias' + userId;
 const hostUrl = URL.LOCAL;
-const context = 'mathstream';
-const site = 'SelectSection';
-const target = 'absolute_value_plot_equality';
+const context = 'upgrade-internal';
+const site = 'asdf';
+const target = 'fssfs';
 const status = MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED;
 const featureFlagKey = 'TEST_FEATURE_FLAG';
+
+// reward testing variables ----- //
+const experimentId = 'f9c3927c-b786-45f5-a96c-dd9262e3b4b6'; // needed for reward testing
+const rewardSite = site; // if using decision point for reward
+const rewardTarget = target; // if using decision point for reward
+const rewardValue = 'SUCCESS'; // or 'FAILURE' or use an UpgradeClient.BINARY_REWARD_VALUE enum
+// ---------------------------- //
 
 const options: UpGradeClientInterfaces.IConfigOptions = {
   featureFlagUserGroupsForSession: useEphemeralGroups
@@ -74,17 +82,19 @@ async function quickTest() {
   await doGroupMembership(client);
   await doWorkingGroupMembership(client);
   await doAliases(client);
-  await doAssign(client);
-  await doAssignIgnoreCache(client);
-  await doAssign(client);
-
+  // await doAssign(client);
+  // await doAssignIgnoreCache(client);
+  // await doAssign(client);
   const condition = await doGetDecisionPointAssignment(client);
-  doSetFeatureFlagUserGroupsForSession(client, options);
-  await doFeatureFlags(client);
-  await doFeatureFlagsIgnoreCache(client);
-  await doHasFeatureFlag(client);
-  await doHasFeatureFlag(client);
-  // await doMark(client, condition);
+  // doSetFeatureFlagUserGroupsForSession(client, options);
+  // await doFeatureFlags(client);
+  // await doFeatureFlagsIgnoreCache(client);
+  // await doHasFeatureFlag(client);
+  // await doHasFeatureFlag(client);
+  await doMark(client, condition);
+  // Use the created experiment ID for reward testing (optional)
+  // await doSendRewardByExperimentId(client);
+  await doSendRewardByDecisionPoint(client);
   // await doLog(client);
 }
 
@@ -95,7 +105,7 @@ async function doInit(client: UpgradeClient) {
     const response = await client.init();
     console.log('\n[Init response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('\n[Init error]:', error);
+    logAxiosError('Init', error);
   }
 }
 
@@ -106,7 +116,7 @@ async function doGroupMembership(client: UpgradeClient) {
     const response = await client.setGroupMembership(groupRequest);
     console.log('\n[Group response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('\n[Group error]:', error);
+    logAxiosError('Group', error);
   }
 }
 
@@ -116,7 +126,7 @@ async function doWorkingGroupMembership(client: UpgradeClient) {
     const response = await client.setWorkingGroup(workingGroupRequest);
     console.log('\n[Working Group response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('\n[Working Group error]:', error);
+    logAxiosError('Working Group', error);
   }
 }
 
@@ -126,7 +136,7 @@ async function doAliases(client: UpgradeClient) {
     const response = await client.setAltUserIds(aliasRequest);
     console.log('\n[Aliases response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('\n[Aliases error]:', error);
+    logAxiosError('Aliases', error);
   }
 }
 
@@ -135,7 +145,7 @@ async function doAssign(client: UpgradeClient) {
     const response = await client.getAllExperimentConditions();
     console.log('\n[Assign response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('\n[Assign error]:', error);
+    logAxiosError('Assign', error);
   }
 }
 
@@ -144,7 +154,7 @@ async function doAssignIgnoreCache(client: UpgradeClient) {
     const response = await client.getAllExperimentConditions({ ignoreCache: true });
     console.log('\n[Assign response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('\n[Assign error]:', error);
+    logAxiosError('Assign', error);
   }
 }
 
@@ -166,7 +176,7 @@ async function doGetDecisionPointAssignment(client: UpgradeClient): Promise<stri
     console.log('\n[payloadValue]:', JSON.stringify(payloadValue));
     return condition;
   } catch (error) {
-    console.error('\n[Decision Point Assignment error]:', error);
+    logAxiosError('Decision Point Assignment', error);
     return null;
   }
 }
@@ -184,7 +194,7 @@ async function doFeatureFlags(client: UpgradeClient) {
     const response = await client.getAllFeatureFlags();
     console.log('\n[Feature Flag response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('\n[Feature Flag error]:', error);
+    logAxiosError('Feature Flag', error);
   }
 }
 
@@ -193,7 +203,7 @@ async function doFeatureFlagsIgnoreCache(client: UpgradeClient) {
     const response = await client.getAllFeatureFlags({ ignoreCache: true });
     console.log('\n[Feature Flag response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('\n[Feature Flag error]:', error);
+    logAxiosError('Feature Flag', error);
   }
 }
 
@@ -202,7 +212,7 @@ async function doHasFeatureFlag(client: UpgradeClient) {
     const response = await client.hasFeatureFlag(featureFlagKey);
     console.log('\n[Has Feature Flag response]:', response);
   } catch (error) {
-    console.error('\n[Has Feature Flag error]:', error);
+    logAxiosError('Has Feature Flag', error);
   }
 }
 
@@ -211,7 +221,7 @@ async function doMark(client: UpgradeClient, condition: string | null) {
     const response = await client.markDecisionPoint(site, target, condition, status);
     console.log('\n[Mark response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('\n[Mark error]:', error);
+    logAxiosError('Mark', error);
   }
 }
 
@@ -220,6 +230,52 @@ async function doLog(client: UpgradeClient) {
     const response = await client.log(logRequest);
     console.log('\n[Log response]:', JSON.stringify(response));
   } catch (error) {
-    console.error('\n[Log error]:', error);
+    logAxiosError('Log', error);
+  }
+}
+
+async function doSendRewardByExperimentId(client: UpgradeClient) {
+  try {
+    const response = await client.sendReward({
+      rewardValue,
+      experimentId,
+    });
+    console.log('\n[Send Reward by ExperimentId response]:', JSON.stringify(response));
+  } catch (error) {
+    logAxiosError('Send Reward by ExperimentId', error);
+  }
+}
+
+async function doSendRewardByDecisionPoint(client: UpgradeClient) {
+  try {
+    const response = await client.sendReward({
+      rewardValue,
+      context,
+      decisionPoint: {
+        site: rewardSite,
+        target: rewardTarget,
+      },
+    });
+    console.log('\n[Send Reward by Decision Point response]:', JSON.stringify(response));
+  } catch (error) {
+    logAxiosError('Send Reward by Decision Point', error);
+  }
+}
+
+/** utility functions *******************************************************************************/
+
+function logAxiosError(functionContext: string, error: unknown) {
+  const axiosError = error as AxiosError;
+  try {
+    const parsedError = JSON.parse(axiosError.message);
+
+    console.error(`\n[${functionContext} error]:`, {
+      status: parsedError.status,
+      request: parsedError.config.data,
+      message: parsedError.message,
+      stack: parsedError.stack,
+    });
+  } catch {
+    console.error(`\n[${functionContext} error]:`, error);
   }
 }

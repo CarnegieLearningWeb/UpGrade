@@ -6,7 +6,7 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { segmentFourth } from '../mockData/segment';
 import { systemUser } from '../mockData/user/index';
 import { individualAssignmentExperiment } from '../mockData/experiment/index';
-import { ENROLLMENT_CODE, EXPERIMENT_STATE } from 'upgrade_types';
+import { ENROLLMENT_CODE, EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { checkMarkExperimentPointForUser } from '../utils/index';
@@ -20,7 +20,7 @@ export default async function IndividualExclusionSegmentIndividualConsistency():
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // group experiment object
-  const experimentObject = JSON.parse(JSON.stringify(individualAssignmentExperiment));
+  const experimentObject: any = structuredClone(individualAssignmentExperiment);
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -128,10 +128,9 @@ export default async function IndividualExclusionSegmentIndividualConsistency():
   // );
 
   experimentObject.state = 'enrolling';
-  experimentObject.experimentSegmentExclusion.segment.individualForSegment = [segmentObject];
-
-  // update experiment with the above segment Object:
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
+
+  await experimentService.addList(segmentObject, experimentId, LIST_FILTER_MODE.EXCLUSION, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());

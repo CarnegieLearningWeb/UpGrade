@@ -1,0 +1,11 @@
+.duplicate-error-message {
+  color: var(--red);
+}
+
+.exclude-if-reached-container {
+  margin-bottom: 16px;
+
+  .checkbox-label {
+    margin-left: 0;
+  }
+}
