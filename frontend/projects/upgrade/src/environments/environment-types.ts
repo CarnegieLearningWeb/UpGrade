@@ -81,7 +81,6 @@ export interface Environment {
   pollingEnabled: boolean;
   pollingInterval: number;
   pollingLimit: number;
-  api: APIEndpoints;
   segmentsRefreshToggle: boolean;
   errorLogsToggle: boolean;
   withinSubjectExperimentSupportToggle: boolean;

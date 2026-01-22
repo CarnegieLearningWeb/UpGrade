@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   AddPrivateSegmentListRequest,
   AddSegmentRequest,
@@ -11,55 +11,55 @@ import {
 } from './store/segments.model';
 import { map, Observable } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { ENV, Environment } from '../../../environments/environment-types';
 import { FeatureFlagSegmentListDetails } from '../feature-flags/store/feature-flags.model';
+import { API_ENDPOINTS } from '../api-endpoints.constants';
 
 @Injectable()
 export class SegmentsDataService {
-  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
+  constructor(private http: HttpClient) {}
 
   fetchAllSegments() {
-    const url = this.environment.api.segments;
+    const url = API_ENDPOINTS.segments;
     return this.http.get(url);
   }
 
   fetchSegmentsPaginated(params: SegmentsPaginationParams): Observable<SegmentsPaginationInfo> {
-    const url = this.environment.api.getPaginatedSegments;
+    const url = API_ENDPOINTS.getPaginatedSegments;
     return this.http.post<SegmentsPaginationInfo>(url, params);
   }
 
   fetchGlobalSegments() {
-    const url = this.environment.api.globalSegments;
+    const url = API_ENDPOINTS.globalSegments;
     return this.http.get(url);
   }
 
   createNewSegment(segment: SegmentInput) {
-    const url = this.environment.api.segments;
+    const url = API_ENDPOINTS.segments;
     return this.http.post(url, segment);
   }
 
   addSegment(segment: AddSegmentRequest) {
-    const url = this.environment.api.segments;
+    const url = API_ENDPOINTS.segments;
     return this.http.post(url, segment);
   }
 
   getSegmentById(id: string) {
-    const url = `${this.environment.api.segments}/status/${id}`;
+    const url = `${API_ENDPOINTS.segments}/status/${id}`;
     return this.http.get(url);
   }
 
   deleteSegment(id: string) {
-    const url = `${this.environment.api.segments}/${id}`;
+    const url = `${API_ENDPOINTS.segments}/${id}`;
     return this.http.delete(url);
   }
 
   updateSegment(segment: SegmentInput) {
-    const url = this.environment.api.segments;
+    const url = API_ENDPOINTS.segments;
     return this.http.post(url, segment);
   }
 
   modifySegment(segment: AddSegmentRequest) {
-    const url = this.environment.api.segments;
+    const url = API_ENDPOINTS.segments;
     return this.http.post(url, segment);
   }
 
@@ -69,7 +69,7 @@ export class SegmentsDataService {
       ids = ids.append('ids', id.toString());
     });
 
-    const url = this.environment.api.exportSegments;
+    const url = API_ENDPOINTS.exportSegments;
     return this.http.get(url, { params: ids });
   }
 
@@ -79,40 +79,40 @@ export class SegmentsDataService {
       ids = ids.append('ids', id.toString());
     });
 
-    const url = this.environment.api.exportSegmentCSV;
+    const url = API_ENDPOINTS.exportSegmentCSV;
     return this.http.get(url, { params: ids });
   }
 
   importSegments(segments: SegmentFile[]) {
-    const url = this.environment.api.importSegments;
+    const url = API_ENDPOINTS.importSegments;
     return this.http.post(url, segments);
   }
 
   // "legacy" import method for segment feature import
   validateSegments(segments: SegmentFile[]) {
-    const url = this.environment.api.validateSegments;
+    const url = API_ENDPOINTS.validateSegments;
     return this.http.post(url, segments);
   }
 
   // new import method for common modal
   validateSegmentsImport(segments: SegmentFile[]) {
-    const url = this.environment.api.validateSegmentsImport;
+    const url = API_ENDPOINTS.validateSegmentsImport;
     return this.http.post(url, segments);
   }
 
   validateListsImport(segments: SegmentFile[]) {
-    const url = this.environment.api.validateListsImport;
+    const url = API_ENDPOINTS.validateListsImport;
     return this.http.post(url, segments);
   }
 
   importSegmentList(files: any[], segmentId: string) {
     const lists = { files: files, parentSegmentId: segmentId };
-    const url = this.environment.api.importSegmentList;
+    const url = API_ENDPOINTS.importSegmentList;
     return this.http.post(url, lists);
   }
 
   addSegmentList(list: AddPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
-    const url = this.environment.api.addSegmentList;
+    const url = API_ENDPOINTS.addSegmentList;
 
     // Transform AddPrivateSegmentListRequest to ListInputValidator format
     const transformedList = {
@@ -142,7 +142,7 @@ export class SegmentsDataService {
   }
 
   updateSegmentList(list: EditPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
-    const url = this.environment.api.segments;
+    const url = API_ENDPOINTS.segments;
 
     // Transform EditPrivateSegmentListRequest to SegmentInputValidator format
     const transformedList = {
@@ -172,7 +172,7 @@ export class SegmentsDataService {
   }
 
   deleteSegmentList(segmentId: string, parentSegmentId: string) {
-    const url = `${this.environment.api.addSegmentList}/${segmentId}`;
+    const url = `${API_ENDPOINTS.addSegmentList}/${segmentId}`;
     return this.http.delete(url, { body: { parentSegmentId } });
   }
 }

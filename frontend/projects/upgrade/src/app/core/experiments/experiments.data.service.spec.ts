@@ -8,10 +8,9 @@ import {
   SEGMENT_TYPE,
   SEGMENT_STATUS,
 } from 'upgrade_types';
-import { environment } from '../../../environments/environment';
-import { Environment } from '../../../environments/environment-types';
 import { Segment } from '../segments/store/segments.model';
 import { ExperimentDataService } from './experiments.data.service';
+import { API_ENDPOINTS } from '../api-endpoints.constants';
 import {
   ASSIGNMENT_UNIT,
   CONSISTENCY_RULE,
@@ -33,7 +32,6 @@ class MockHTTPClient {
 
 describe('ExperimentDataService', () => {
   let mockHttpClient: any;
-  let mockEnvironment: Environment;
   let service: ExperimentDataService;
   let mockExperiment: Experiment;
   let mockExperimentId: string;
@@ -43,8 +41,7 @@ describe('ExperimentDataService', () => {
 
   beforeEach(() => {
     mockHttpClient = new MockHTTPClient();
-    mockEnvironment = { ...environment };
-    service = new ExperimentDataService(mockHttpClient as HttpClient, mockEnvironment);
+    service = new ExperimentDataService(mockHttpClient as HttpClient);
     mockEmail = 'test@testmail.com';
     mockParams = {
       skip: 0,
@@ -121,7 +118,7 @@ describe('ExperimentDataService', () => {
 
   describe('#getAllExperiment', () => {
     it('should get the getAllExperiment http observable', () => {
-      const expectedUrl = mockEnvironment.api.getAllExperiments;
+      const expectedUrl = API_ENDPOINTS.getAllExperiments;
       const params = { ...mockParams };
 
       service.getAllExperiment(params);
@@ -132,7 +129,7 @@ describe('ExperimentDataService', () => {
 
   describe('#getAllExperimentsStats', () => {
     it('should get the getAllExperimentsStats http observable', () => {
-      const expectedUrl = mockEnvironment.api.experimentsStats;
+      const expectedUrl = API_ENDPOINTS.experimentsStats;
       const experimentIds = [...mockExperimentIds];
 
       service.getAllExperimentsStats(experimentIds);
@@ -143,7 +140,7 @@ describe('ExperimentDataService', () => {
 
   describe('#getExperimentDetailStat', () => {
     it('should get the getExperimentDetailStat http observable', () => {
-      const expectedUrl = mockEnvironment.api.experimentDetailStat;
+      const expectedUrl = API_ENDPOINTS.experimentDetailStat;
       const experimentId = mockExperimentId;
 
       service.getExperimentDetailStat(experimentId);
@@ -154,7 +151,7 @@ describe('ExperimentDataService', () => {
 
   describe('#createNewExperiment', () => {
     it('should get the createNewExperiment http observable', () => {
-      const expectedUrl = mockEnvironment.api.createNewExperiments;
+      const expectedUrl = API_ENDPOINTS.createNewExperiments;
       const experiment = { ...mockExperiment };
 
       service.createNewExperiment(experiment);
@@ -165,7 +162,7 @@ describe('ExperimentDataService', () => {
 
   describe('#importExperiment', () => {
     it('should get the importExperiment http observable', () => {
-      const mockUrl = mockEnvironment.api.importExperiment;
+      const mockUrl = API_ENDPOINTS.importExperiment;
       const experiment = { ...mockExperiment };
 
       const experimentFile: ExperimentFile = { fileName: 'test.json', fileContent: JSON.stringify(experiment) };
@@ -178,7 +175,7 @@ describe('ExperimentDataService', () => {
   describe('#updateExperiment', () => {
     it('should get the deleteExcludedGroup http observable', () => {
       const experiment = { ...mockExperiment };
-      const expectedUrl = `${mockEnvironment.api.updateExperiments}/${experiment.id}`;
+      const expectedUrl = `${API_ENDPOINTS.updateExperiments}/${experiment.id}`;
 
       service.updateExperiment(experiment);
 
@@ -188,7 +185,7 @@ describe('ExperimentDataService', () => {
 
   describe('#updateExperimentState', () => {
     it('should get the getAllExperiment http observable', () => {
-      const expectedUrl = mockEnvironment.api.updateExperimentState;
+      const expectedUrl = API_ENDPOINTS.updateExperimentState;
       const experimentId = mockExperimentId;
       const experimentStateInfo: ExperimentStateInfo = {
         newStatus: EXPERIMENT_STATE.INACTIVE,
@@ -208,7 +205,7 @@ describe('ExperimentDataService', () => {
   describe('#deleteExperiment', () => {
     it('should get the deleteExperiment http observable', () => {
       const experimentId = mockExperimentId;
-      const expectedUrl = `${mockEnvironment.api.updateExperiments}/${experimentId}`;
+      const expectedUrl = `${API_ENDPOINTS.updateExperiments}/${experimentId}`;
 
       service.deleteExperiment(experimentId);
 
@@ -219,7 +216,7 @@ describe('ExperimentDataService', () => {
   describe('#getExperimentById', () => {
     it('should get the getExperimentById http observable', () => {
       const experimentId = mockExperimentId;
-      const expectedUrl = `${mockEnvironment.api.getExperimentById}/${experimentId}`;
+      const expectedUrl = `${API_ENDPOINTS.getExperimentById}/${experimentId}`;
 
       service.getExperimentById(experimentId);
 
@@ -229,7 +226,7 @@ describe('ExperimentDataService', () => {
 
   describe('#fetchAllPartitions', () => {
     it('should get the fetchAllPartitions http observable', () => {
-      const expectedUrl = mockEnvironment.api.allPartitions;
+      const expectedUrl = API_ENDPOINTS.allPartitions;
 
       service.fetchAllPartitions();
 
@@ -239,7 +236,7 @@ describe('ExperimentDataService', () => {
 
   describe('#fetchAllExperimentNames', () => {
     it('should get the fetchAllExperimentNames http observable', () => {
-      const expectedUrl = mockEnvironment.api.allExperimentNames;
+      const expectedUrl = API_ENDPOINTS.allExperimentNames;
 
       service.fetchAllExperimentNames();
 
@@ -251,7 +248,7 @@ describe('ExperimentDataService', () => {
     it('should get the exportExperimentInfo http observable', () => {
       const experimentId = mockExperimentId;
       const email = mockEmail;
-      const expectedUrl = mockEnvironment.api.generateCsv;
+      const expectedUrl = API_ENDPOINTS.generateCsv;
       let experimentInfoParams = new HttpParams();
       experimentInfoParams = experimentInfoParams.append('experimentId', experimentId.toString());
       experimentInfoParams = experimentInfoParams.append('email', email.toString());
@@ -270,7 +267,7 @@ describe('ExperimentDataService', () => {
         ids = ids.append('ids', id.toString());
       });
 
-      const expectedUrl = `${mockEnvironment.api.exportExperiment}`;
+      const expectedUrl = `${API_ENDPOINTS.exportExperiment}`;
 
       service.exportExperimentDesign(experimentIds);
 
@@ -281,7 +278,7 @@ describe('ExperimentDataService', () => {
   describe('#fetchExperimentGraphInfo', () => {
     it('should get the fetchExperimentGraphInfo http observable', () => {
       const params = { ...mockParams };
-      const expectedUrl = mockEnvironment.api.experimentGraphInfo;
+      const expectedUrl = API_ENDPOINTS.experimentGraphInfo;
 
       service.fetchExperimentGraphInfo(params);
 
@@ -291,7 +288,7 @@ describe('ExperimentDataService', () => {
 
   describe('#fetchContextMetaData', () => {
     it('should get the fetchContextMetaData http observable', () => {
-      const expectedUrl = mockEnvironment.api.contextMetaData;
+      const expectedUrl = API_ENDPOINTS.contextMetaData;
 
       service.fetchContextMetaData();
 
