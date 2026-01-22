@@ -18,6 +18,8 @@ import { Observable, Subscription, combineLatest } from 'rxjs';
 import { map, filter, startWith } from 'rxjs/operators';
 import { Experiment } from '../../../../../../core/experiments/store/experiments.model';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
+import { MoocletExperimentHelperService } from '../../../../../../core/experiments/mooclet-helper.service';
+import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
 
 @Component({
   selector: 'app-experiment-details-page-content',
@@ -45,12 +47,14 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
   activeTabIndex = 0; // 0 for Design, 1 for Data
   experiment$: Observable<Experiment>;
   experimentIdSub: Subscription;
+  shouldShowRewardFeedback$: Observable<boolean>;
 
   constructor(
-    private experimentsService: ExperimentService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private segmentService: SegmentsService
+    private readonly experimentsService: ExperimentService,
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly segmentService: SegmentsService,
+    private readonly moocletHelperService: MoocletExperimentHelperService
   ) {}
 
   ngOnInit() {
@@ -78,6 +82,19 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
 
     this.experiment$ = this.experimentsService.selectedExperiment$;
     this.segmentService.fetchAllSegmentListOptions();
+
+    // Determine if reward feedback card should be shown
+    this.shouldShowRewardFeedback$ = this.experiment$.pipe(
+      map((experiment) => {
+        if (!experiment) {
+          return false;
+        }
+        const isMoocletEnabled = this.moocletHelperService.isMoocletEnabled();
+        const hasMoocletPolicyParameters = !!experiment.moocletPolicyParameters;
+        const isTSConfigurable = experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE;
+        return isMoocletEnabled && hasMoocletPolicyParameters && isTSConfigurable;
+      })
+    );
   }
 
   onSectionCardExpandChange(expanded: boolean): void {

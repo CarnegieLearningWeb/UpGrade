@@ -53,7 +53,7 @@
       ></app-experiment-enrollment-data-section-card>
 
       <app-experiment-reward-feedback-section-card
-        *ngIf="activeTabIndex === 1"
+        *ngIf="activeTabIndex === 1 && (shouldShowRewardFeedback$ | async)"
         [isSectionCardExpanded]="isSectionCardExpanded"
         section-card
       ></app-experiment-reward-feedback-section-card>
