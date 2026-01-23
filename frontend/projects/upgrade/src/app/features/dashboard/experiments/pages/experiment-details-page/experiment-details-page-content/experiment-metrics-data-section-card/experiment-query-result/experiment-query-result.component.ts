@@ -357,8 +357,8 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     if (!result) {
       return false;
     }
-    const filteredResult = result.filter((res) => typeof res.name === 'string');
-    return filteredResult.some((item) => item.value > 0);
+    const filteredResult = result.filter((data) => typeof data.name === 'string');
+    return filteredResult.some((data) => data.value > 0);
   }
 
   hasFactorData(factorIndex: number, queryId: string): boolean {
@@ -366,7 +366,8 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     if (!result) {
       return false;
     }
-    return result.some((item) => item.value > 0);
+    const filteredResult = result.filter((data) => typeof data.name === 'string');
+    return filteredResult.some((data) => data.value > 0);
   }
 
   hasInteractionData(factorIndex: number, queryId: string): boolean {
@@ -374,7 +375,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     if (!result) {
       return false;
     }
-    return result.some((series) => series.series && series.series.length > 0);
+    return result.some((graphData) => graphData.series?.some((point) => point.value > 0));
   }
 
   getConditionCode(conditionId: string) {
