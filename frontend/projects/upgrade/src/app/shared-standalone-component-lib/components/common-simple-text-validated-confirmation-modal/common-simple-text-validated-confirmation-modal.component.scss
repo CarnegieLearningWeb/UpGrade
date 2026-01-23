@@ -1,0 +1,19 @@
+.validation-modal-content {
+  display: flex;
+  flex-direction: column;
+  row-gap: 16px;
+  padding: 32px 32px 16px;
+
+  &-text {
+    color: var(--dark-grey);
+    margin-bottom: 0;
+
+    &.info {
+      color: var(--blue);
+    }
+
+    &.warn {
+      color: var(--red-2);
+    }
+  }
+}

@@ -157,7 +157,16 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   onMenuButtonItemClick(action: EXPERIMENT_DETAILS_PAGE_ACTIONS, experiment: Experiment): void {
     switch (action) {
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE:
-        this.dialogService.openDeleteExperimentModal();
+        this.subscriptions.add(
+          this.dialogService
+            .openDeleteExperimentModal(experiment.name, this.experimentService.isLoadingExperimentDelete$)
+            .afterClosed()
+            .subscribe((confirmed: boolean) => {
+              if (confirmed) {
+                this.experimentService.deleteExperiment(experiment.id);
+              }
+            })
+        );
         break;
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT:
         this.dialogService.openEditExperimentModal(experiment);
@@ -301,7 +310,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   private handleStopExperiment(experiment: Experiment): void {
     this.subscriptions.add(
       this.dialogService
-        .openStopExperimentModal(experiment.name)
+        .openStopExperimentModal(experiment.name, this.experimentService.isLoadingExperimentDelete$)
         .afterClosed()
         .subscribe((confirmed: boolean) => {
           if (confirmed) {

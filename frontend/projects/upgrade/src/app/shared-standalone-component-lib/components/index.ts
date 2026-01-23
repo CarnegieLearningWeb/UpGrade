@@ -13,6 +13,7 @@ import { CommonTagsInputComponent } from './common-tag-input/common-tag-input.co
 import { CommonTagComponent } from './common-tag/common-tag.component';
 import { CommonTagListComponent } from './common-tag-list/common-tag-list.component';
 import { CommonLearnMoreLinkComponent } from './common-learn-more-link/common-learn-more-link.component';
+import { CommonSimpleTextValidatedConfirmationModalComponent } from './common-simple-text-validated-confirmation-modal/common-simple-text-validated-confirmation-modal.component';
 
 export {
   CommonPageComponent,
@@ -30,4 +31,5 @@ export {
   CommonTagComponent,
   CommonTagListComponent,
   CommonLearnMoreLinkComponent,
+  CommonSimpleTextValidatedConfirmationModalComponent,
 };

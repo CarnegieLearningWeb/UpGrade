@@ -152,7 +152,16 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   onMenuButtonItemClick(event: FEATURE_FLAG_DETAILS_PAGE_ACTIONS, flag: FeatureFlag) {
     switch (event) {
       case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE:
-        this.dialogService.openDeleteFeatureFlagModal();
+        this.subscriptions.add(
+          this.dialogService
+            .openDeleteFeatureFlagModal(flag.name, this.featureFlagService.isLoadingFeatureFlagDelete$)
+            .afterClosed()
+            .subscribe((confirmed: boolean) => {
+              if (confirmed) {
+                this.featureFlagService.deleteFeatureFlag(flag.id);
+              }
+            })
+        );
         break;
       case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT:
         this.dialogService.openEditFeatureFlagModal(flag);

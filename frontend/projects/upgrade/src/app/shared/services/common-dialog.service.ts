@@ -1,7 +1,6 @@
 import { Injectable, InjectionToken } from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
-import { DeleteFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/delete-feature-flag-modal/delete-feature-flag-modal.component';
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
@@ -18,10 +17,12 @@ import {
   UpsertFeatureFlagParams,
 } from '../../core/feature-flags/store/feature-flags.model';
 import { CommonSimpleConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
+import { CommonSimpleTextValidatedConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-text-validated-confirmation-modal/common-simple-text-validated-confirmation-modal.component';
 import {
   CommonModalConfig,
   ModalSize,
   SimpleConfirmationModalParams,
+  TextValidatedConfirmationModalParams,
 } from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
 import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { UpsertSegmentModalComponent } from '../../features/dashboard/segments/modals/upsert-segment-modal/upsert-segment-modal.component';
@@ -66,7 +67,6 @@ import {
   EditPayloadModalParams,
 } from '../../features/dashboard/experiments/modals/edit-payload-modal/edit-payload-modal.component';
 import { Observable } from 'rxjs';
-import { DeleteExperimentModalComponent } from '../../features/dashboard/experiments/modals/delete-experiment-modal/delete-experiment-modal.component';
 
 export interface ImportModalParams {
   importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
@@ -747,36 +747,42 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(deleteListModalConfig, ModalSize.SMALL);
   }
 
-  openDeleteFeatureFlagModal() {
-    const commonModalConfig: CommonModalConfig = {
+  openDeleteFeatureFlagModal(
+    flagName: string,
+    isLoading$: Observable<boolean>
+  ): MatDialogRef<CommonSimpleTextValidatedConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<TextValidatedConfirmationModalParams> = {
       title: 'Delete Feature Flag',
       primaryActionBtnLabel: 'Delete',
       primaryActionBtnColor: 'warn',
       cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete "${flagName}"?`,
+        validationKeyword: 'delete',
+        validationPlaceholder: 'Type delete',
+        isLoading$,
+      },
     };
-    const config: MatDialogConfig = {
-      data: commonModalConfig,
-      width: ModalSize.SMALL,
-      autoFocus: 'input',
-      disableClose: true,
-    };
-    return this.dialog.open(DeleteFeatureFlagModalComponent, config);
+    return this.openTextValidatedConfirmationModal(commonModalConfig, ModalSize.SMALL);
   }
 
-  openDeleteExperimentModal() {
-    const commonModalConfig: CommonModalConfig = {
+  openDeleteExperimentModal(
+    experimentName: string,
+    isLoading$: Observable<boolean>
+  ): MatDialogRef<CommonSimpleTextValidatedConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<TextValidatedConfirmationModalParams> = {
       title: 'Delete Experiment',
       primaryActionBtnLabel: 'Delete',
       primaryActionBtnColor: 'warn',
       cancelBtnLabel: 'Cancel',
+      params: {
+        message: `Are you sure you want to delete "${experimentName}"?`,
+        validationKeyword: 'delete',
+        validationPlaceholder: 'Type delete',
+        isLoading$,
+      },
     };
-    const config: MatDialogConfig = {
-      data: commonModalConfig,
-      width: ModalSize.SMALL,
-      autoFocus: 'input',
-      disableClose: true,
-    };
-    return this.dialog.open(DeleteExperimentModalComponent, config);
+    return this.openTextValidatedConfirmationModal(commonModalConfig, ModalSize.SMALL);
   }
 
   openStartExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
@@ -840,8 +846,11 @@ export class DialogService {
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
   }
 
-  openStopExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
-    const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
+  openStopExperimentModal(
+    experimentName: string,
+    isLoading$?: Observable<boolean>
+  ): MatDialogRef<CommonSimpleTextValidatedConfirmationModalComponent, boolean> {
+    const commonModalConfig: CommonModalConfig<TextValidatedConfirmationModalParams> = {
       title: 'Stop Experiment',
       primaryActionBtnLabel: 'Stop',
       primaryActionBtnColor: 'warn',
@@ -851,9 +860,12 @@ export class DialogService {
         subMessage:
           '* After stopping, you cannot restart the experiment. No participants will receive experiment conditions. You can still export the experiment data and design.',
         subMessageClass: 'warn',
+        validationKeyword: 'stop',
+        validationPlaceholder: 'Type stop',
+        isLoading$,
       },
     };
-    return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);
+    return this.openTextValidatedConfirmationModal(commonModalConfig);
   }
 
   openArchiveExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
@@ -1279,5 +1291,19 @@ export class DialogService {
     };
 
     return this.dialog.open(CommonSimpleConfirmationModalComponent, config);
+  }
+
+  openTextValidatedConfirmationModal(
+    commonModalConfig: CommonModalConfig<TextValidatedConfirmationModalParams>,
+    modalSize: ModalSize = ModalSize.MEDIUM
+  ): MatDialogRef<CommonSimpleTextValidatedConfirmationModalComponent, boolean> {
+    const config: MatDialogConfig = {
+      data: commonModalConfig,
+      width: modalSize,
+      autoFocus: 'input',
+      disableClose: true,
+    };
+
+    return this.dialog.open(CommonSimpleTextValidatedConfirmationModalComponent, config);
   }
 }

@@ -1,4 +1,5 @@
 import { MatDialogConfig } from '@angular/material/dialog';
+import { Observable } from 'rxjs';
 
 export interface CommonModalConfig<ParamsType = unknown> {
   title: string;
@@ -22,6 +23,15 @@ export interface SimpleConfirmationModalParams {
   message: string;
   subMessage?: string;
   subMessageClass?: 'info' | 'warn';
+}
+
+export interface TextValidatedConfirmationModalParams {
+  message: string;
+  subMessage?: string;
+  subMessageClass?: 'info' | 'warn';
+  validationKeyword: string;
+  validationPlaceholder?: string;
+  isLoading$?: Observable<boolean>;
 }
 
 export enum ModalSize {
