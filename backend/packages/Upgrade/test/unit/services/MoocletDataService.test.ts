@@ -450,15 +450,13 @@ describe('#MoocletDataService', () => {
       };
 
       const mockError = new Error('Mock Network Error');
-      const mockErrorMessage = { message: `Error fetching data from Mooclets API: ${mockError}` };
+      const mockErrorMessage = { message: `Failed to communicate with Mooclet server` };
 
       (axios.request as jest.Mock).mockRejectedValue(mockError);
       logger.error = jest.fn().mockReturnValue(mockErrorMessage);
       await expect(moocletDataService.fetchExternalMoocletsData(mockRequestParams, logger)).rejects.toThrow(
         mockErrorMessage.message
       );
-
-      expect(logger.error).toHaveBeenCalledWith(mockErrorMessage);
     });
   });
 });

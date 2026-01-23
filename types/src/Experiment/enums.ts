@@ -102,6 +102,7 @@ export enum SERVER_ERROR {
   SEGMENT_DUPLICATE_NAME = 'Segment with same name already exists for this app-context.',
   INVALID_APP_CONTEXT = 'Invalid app context',
   MOOCLET_REWARD_ERROR = 'Error processing Mooclet reward',
+  MOOCLET_ERROR = 'Mooclet synchronization error',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {

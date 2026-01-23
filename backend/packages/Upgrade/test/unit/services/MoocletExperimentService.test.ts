@@ -533,6 +533,116 @@ describe('#MoocletExperimentService', () => {
     });
   });
 
+  describe('#handleDeleteMoocletTransaction', () => {
+    const mockExperiment = {
+      id: 'test-exp-123',
+      name: 'Test Experiment',
+      conditions: [],
+    };
+
+    const mockMoocletExperimentRef = new MoocletExperimentRef();
+    mockMoocletExperimentRef.moocletId = 1;
+    mockMoocletExperimentRef.policyParametersId = 2;
+    mockMoocletExperimentRef.variableId = 3;
+    mockMoocletExperimentRef.id = 'mockMoocletExperimentRef123';
+    mockMoocletExperimentRef.experimentId = 'test-exp-123';
+    mockMoocletExperimentRef.versionConditionMaps = [];
+
+    const mockUser = {
+      id: 'user-123',
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@test.com',
+    } as UserDTO;
+
+    const mockDeleteParams = {
+      moocletExperimentRef: mockMoocletExperimentRef,
+      experimentId: 'test-exp-123',
+      currentUser: mockUser,
+      logger,
+    };
+
+    const mockManager = mockDataSource.manager as EntityManager;
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should rollback upgrade experiment deletion when mooclet deletion fails', async () => {
+      // Mock the parent class delete method
+      const deleteSpy = jest
+        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(moocletExperimentService)), 'delete')
+        .mockResolvedValue(mockExperiment);
+
+      // Mock orchestrateDeleteMoocletResources to fail (return false)
+      const orchestrateSpy = jest
+        .spyOn(moocletExperimentService, 'orchestrateDeleteMoocletResources')
+        .mockResolvedValue(false);
+
+      // Call the private method directly
+      await expect(
+        (moocletExperimentService as any).handleDeleteMoocletTransaction(mockManager, mockDeleteParams)
+      ).rejects.toThrow(/Failed to delete Mooclet resources, aborting transaction to preserve upgrade experiment/);
+
+      // Verify that upgrade deletion was attempted first
+      expect(deleteSpy).toHaveBeenCalledWith('test-exp-123', mockUser, {
+        existingEntityManager: mockManager,
+      });
+
+      // Verify that mooclet deletion was attempted
+      expect(orchestrateSpy).toHaveBeenCalledWith(mockMoocletExperimentRef, logger);
+    });
+
+    it('should successfully delete both resources when mooclet deletion succeeds', async () => {
+      // Mock the parent class delete method
+      const deleteSpy = jest
+        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(moocletExperimentService)), 'delete')
+        .mockResolvedValue(mockExperiment);
+
+      // Mock orchestrateDeleteMoocletResources to succeed (return true)
+      const orchestrateSpy = jest
+        .spyOn(moocletExperimentService, 'orchestrateDeleteMoocletResources')
+        .mockResolvedValue(true);
+
+      // Call the private method directly
+      const result = await (moocletExperimentService as any).handleDeleteMoocletTransaction(
+        mockManager,
+        mockDeleteParams
+      );
+
+      expect(result).toEqual(mockExperiment);
+      expect(deleteSpy).toHaveBeenCalledWith('test-exp-123', mockUser, {
+        existingEntityManager: mockManager,
+      });
+      expect(orchestrateSpy).toHaveBeenCalledWith(mockMoocletExperimentRef, logger);
+    });
+
+    it('should throw error if upgrade experiment deletion fails (before mooclet deletion)', async () => {
+      const deleteError = new Error('Database error: cannot delete experiment');
+
+      // Mock the parent class delete method to fail
+      const deleteSpy = jest
+        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(moocletExperimentService)), 'delete')
+        .mockRejectedValue(deleteError);
+
+      // Mock orchestrateDeleteMoocletResources (should not be called)
+      const orchestrateSpy = jest.spyOn(moocletExperimentService, 'orchestrateDeleteMoocletResources');
+
+      // Call the private method directly
+      await expect(
+        (moocletExperimentService as any).handleDeleteMoocletTransaction(mockManager, mockDeleteParams)
+      ).rejects.toThrow(deleteError);
+
+      // Verify upgrade deletion was attempted
+      expect(deleteSpy).toHaveBeenCalledWith('test-exp-123', mockUser, {
+        existingEntityManager: mockManager,
+      });
+
+      // Mooclet deletion should not be attempted if upgrade deletion fails
+      expect(orchestrateSpy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('#handlePotentialMoocletAssignmentAlgorithmChange', () => {
     const currentUser = {
       id: 'user-123',

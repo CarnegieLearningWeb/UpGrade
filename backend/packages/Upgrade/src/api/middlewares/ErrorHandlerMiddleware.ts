@@ -18,12 +18,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
 
   constructor(public errorService: ErrorService) {}
 
-  public async error(
-    error: any,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): Promise<void> {
+  public async error(error: any, req: express.Request, res: express.Response): Promise<void> {
     // It seems like some decorators handle setting the response (i.e. class-validators)
     let message: string;
     let type: SERVER_ERROR;
@@ -87,6 +82,10 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
         type = SERVER_ERROR.MOOCLET_REWARD_ERROR;
         message = errorMessage;
         break;
+      case SERVER_ERROR.MOOCLET_ERROR:
+        type = SERVER_ERROR.MOOCLET_ERROR;
+        message = errorMessage;
+        break;
       default:
         switch (error.httpCode) {
           case 400:
@@ -121,7 +120,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     experimentError.name = error.name;
     experimentError.message = message;
     experimentError.endPoint = req.originalUrl;
-    experimentError.errorCode = error.httpCode;
+    experimentError.errorCode = error.httpCode || error.status || 500;
     experimentError.type = type;
 
     // #1042 send request in logging output, don't need to put into database
@@ -133,8 +132,8 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     // experimentError.type ? await this.errorService.create(experimentError, req.logger) : await Promise.resolve(error);
     if (!res.headersSent) {
       res.statusCode = error.httpCode || error.status || 500;
-      res.json(error);
-      next(error);
+      // Send a properly structured error response instead of the raw error object
+      res.json(experimentError);
     }
   }
 }
