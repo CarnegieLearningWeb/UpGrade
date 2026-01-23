@@ -550,6 +550,8 @@
   "experiments.details.export-enrollment-data.menu-item.text": "Export Enrollment Data",
   "experiments.details.metrics-data.card.title.text": "Metrics Data",
   "experiments.details.metrics-data.card.subtitle.text": "Metrics reflect participants who have provided data on the relevant metric.",
+  "experiments.details.metrics-data.card.no-metrics-label.text": "No metrics defined",
+  "experiments.details.metrics-data.card.no-data-label.text": "No data available",
   "experiments.details.export-metrics-data.menu-item.text": "Export Metrics Data",
   "experiments.details.posteriors.condition.text": "Condition",
   "experiments.details.posteriors.successes.text": "Successes",

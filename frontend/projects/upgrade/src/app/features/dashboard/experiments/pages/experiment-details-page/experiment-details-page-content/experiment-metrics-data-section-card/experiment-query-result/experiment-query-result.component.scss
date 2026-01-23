@@ -60,11 +60,16 @@
   }
 
   ::ng-deep .ngx-charts {
+    margin-left: -45px; // align charts to left
+
     ::ng-deep text {
       font-family: 'Open Sans';
-      font-weight: 600;
-      display: flex;
-      flex-grow: 1;
+      font-weight: 400;
+      fill: var(--black-2);
+    }
+
+    .gridline-path.gridline-path-vertical {
+      display: none; // hide vertical grid lines
     }
   }
 
@@ -79,12 +84,6 @@
     }
   }
 
-  // ::ng-deep{
-  //   .legend-label-text{
-  //     color: white;
-  //   }
-  // }
-
   .loading-container {
     display: flex;
     flex-grow: 1;
@@ -92,7 +91,25 @@
     justify-content: center;
   }
 
+  .no-data-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    border: 1.5px dashed var(--light-grey-2);
+    color: var(--dark-grey);
+    opacity: 0.75;
+
+    &.has-spacing {
+      margin-bottom: 32px;
+    }
+  }
+
   ::ng-deep .mat-expansion-panel-body {
     padding: 0 0 16px;
   }
+}
+
+.custom-tooltip-content {
+  padding: 6px 0;
 }
