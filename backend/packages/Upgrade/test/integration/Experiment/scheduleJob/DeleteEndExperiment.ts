@@ -53,7 +53,7 @@ export default async function DeleteEndExperiment(): Promise<void> {
 
   // const updatedExperiment = {
   //   ...experiments[0],
-  //   state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+  //   state: EXPERIMENT_STATE.PAUSED,
   // };
 
   // await experimentService.update(updatedExperiment, user);
@@ -62,7 +62,7 @@ export default async function DeleteEndExperiment(): Promise<void> {
   //   expect.arrayContaining([
   //     expect.objectContaining({
   //       name: experimentObject.name,
-  //       state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+  //       state: EXPERIMENT_STATE.PAUSED,
   //       postExperimentRule: experimentObject.postExperimentRule,
   //       assignmentUnit: experimentObject.assignmentUnit,
   //       consistencyRule: experimentObject.consistencyRule,

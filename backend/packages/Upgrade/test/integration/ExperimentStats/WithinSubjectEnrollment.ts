@@ -83,7 +83,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // change experiment state to enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // user 2 logs in experiment
   // get all experiment condition for user 2

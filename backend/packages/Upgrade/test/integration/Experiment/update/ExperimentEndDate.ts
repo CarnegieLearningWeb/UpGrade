@@ -34,8 +34,8 @@ export default async function ExperimentEndDate(): Promise<void> {
 
   expect(experiments[0].stateTimeLogs).toHaveLength(0);
 
-  const experiment = { ...experiments[0], state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE };
-  await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  const experiment = { ...experiments[0], state: EXPERIMENT_STATE.PAUSED };
+  await experimentService.updateState(experiment.id, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
   await experimentService.updateState(experiment.id, experiment.state, user, new UpgradeLogger());
 
   experiments = await experimentService.find(new UpgradeLogger());
@@ -55,8 +55,8 @@ export default async function ExperimentEndDate(): Promise<void> {
 
   expect(experiments[0].stateTimeLogs).toHaveLength(0);
 
-  await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
-  await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
+  await experimentService.updateState(experiment.id, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
+  await experimentService.updateState(experiment.id, EXPERIMENT_STATE.PAUSED, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
 
   expect(experiments[0].stateTimeLogs).toHaveLength(2);
@@ -67,8 +67,8 @@ export default async function ExperimentEndDate(): Promise<void> {
   ).toHaveLength(1);
 
   // with second entry
-  await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
-  await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
+  await experimentService.updateState(experiment.id, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
+  await experimentService.updateState(experiment.id, EXPERIMENT_STATE.PAUSED, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
 
   expect(experiments[0].stateTimeLogs).toHaveLength(4);

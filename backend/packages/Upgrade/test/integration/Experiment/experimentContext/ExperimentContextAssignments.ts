@@ -71,13 +71,8 @@ export default async function testCase(): Promise<void> {
   const experimentPoint2 = secondExperimentCreated.partitions[0].site;
   const condition2 = secondExperimentCreated.conditions[0].conditionCode;
   // change experiment status to Enrolling
-  await experimentService.updateState(firstExperiment.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
-  await experimentService.updateState(
-    secondExperimentCreated.id,
-    EXPERIMENT_STATE.ENROLLING,
-    user,
-    new UpgradeLogger()
-  );
+  await experimentService.updateState(firstExperiment.id, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
+  await experimentService.updateState(secondExperimentCreated.id, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -85,7 +80,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject1.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject1.postExperimentRule,
         assignmentUnit: experimentObject1.assignmentUnit,
         consistencyRule: experimentObject1.consistencyRule,
@@ -93,7 +88,7 @@ export default async function testCase(): Promise<void> {
       }),
       expect.objectContaining({
         name: experimentObject2.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject2.postExperimentRule,
         assignmentUnit: experimentObject2.assignmentUnit,
         consistencyRule: experimentObject2.consistencyRule,

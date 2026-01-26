@@ -59,7 +59,7 @@ export default async function EndExperiment(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+        state: EXPERIMENT_STATE.PAUSED,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -72,7 +72,7 @@ export default async function EndExperiment(): Promise<void> {
   expect(auditLog[0].user).toEqual(expect.objectContaining(systemUserDoc));
 
   experiments = await experimentService.find(new UpgradeLogger());
-  await experimentService.updateState(experiments[0].id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experiments[0].id, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   experiments = await experimentService.find(new UpgradeLogger());
   // change to enrolling
@@ -80,7 +80,7 @@ export default async function EndExperiment(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,

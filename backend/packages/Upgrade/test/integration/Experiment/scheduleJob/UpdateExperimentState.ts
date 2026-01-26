@@ -62,7 +62,7 @@ export default async function UpdateExperimentState(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   await new Promise((r) => setTimeout(r, 1000));
 
@@ -72,7 +72,7 @@ export default async function UpdateExperimentState(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -98,7 +98,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   );
 
   // change experiment status to Enrollment Complete
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.PAUSED, user, new UpgradeLogger());
 
   await new Promise((r) => setTimeout(r, 1000));
   // fetch experiment
@@ -107,7 +107,7 @@ export default async function UpdateExperimentState(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+        state: EXPERIMENT_STATE.PAUSED,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,

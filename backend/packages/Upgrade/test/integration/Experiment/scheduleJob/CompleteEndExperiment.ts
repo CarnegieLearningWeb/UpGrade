@@ -49,7 +49,7 @@ export default async function CompleteEndExperiment(): Promise<void> {
 
   const updatedExperiment = {
     ...experiments[0],
-    state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+    state: EXPERIMENT_STATE.PAUSED,
   };
 
   await experimentService.update(updatedExperiment, user, new UpgradeLogger());
@@ -58,7 +58,7 @@ export default async function CompleteEndExperiment(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+        state: EXPERIMENT_STATE.PAUSED,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,

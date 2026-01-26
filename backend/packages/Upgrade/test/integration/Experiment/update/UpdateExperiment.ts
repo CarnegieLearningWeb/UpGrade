@@ -168,11 +168,6 @@ export default async function UpdateExperiment(): Promise<void> {
   expect(experimentDecisionPoints.length).toEqual(updatedExperimentDoc.partitions.length);
 
   // update the experiment state
-  await experimentService.updateState(
-    updatedExperimentDoc.id,
-    EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
-    user,
-    new UpgradeLogger()
-  );
+  await experimentService.updateState(updatedExperimentDoc.id, EXPERIMENT_STATE.PAUSED, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
 }

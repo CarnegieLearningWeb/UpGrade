@@ -126,7 +126,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // change experiment state to enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
@@ -263,7 +263,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // change experiment state to enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.PAUSED, user, new UpgradeLogger());
 
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(

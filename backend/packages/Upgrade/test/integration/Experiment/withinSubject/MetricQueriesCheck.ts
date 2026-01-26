@@ -424,7 +424,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
   const experimentPoint = experimentObject.partitions[0].site;
 
   // change experiment status to Enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
   const condition = experimentObject.conditions[0].conditionCode;
   const conditionId = experimentObject.conditions[0].id;
 
