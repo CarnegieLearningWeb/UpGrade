@@ -25,7 +25,6 @@
 @import './app/features/dashboard/segments-legacy/components/modal/new-segment/new-segment.theme.scss';
 @import './app/features/dashboard/segments-legacy/components/segment-members/segment-members.theme.scss';
 @import './app/features/dashboard/segments-legacy/pages/view-segment/view-segment.theme.scss';
-@import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
 @import './app/features/dashboard/segments-legacy/components/modal/import-segment/import-segment.theme.scss';
 @import './app/features/dashboard/experiment-users/components/stratification-factor-list/import-stratifications/import-stratifications.theme.scss';
@@ -46,7 +45,6 @@
   @include segments-list-component-theme($theme);
   @include new-segment-component-theme($theme);
   @include segment-members-component-theme($theme);
-  @include query-result-component-theme($theme);
   @include metrics-component-theme($theme);
   @include import-segment-component-theme($theme);
   @include import-stratifications-component-theme($theme);

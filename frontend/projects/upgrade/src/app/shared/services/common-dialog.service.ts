@@ -1,6 +1,5 @@
 import { Injectable, InjectionToken } from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
-import { MatConfirmDialogComponent } from '../components/mat-confirm-dialog/mat-confirm-dialog.component';
 import { UpsertFeatureFlagModalComponent } from '../../features/dashboard/feature-flags/modals/upsert-feature-flag-modal/upsert-feature-flag-modal.component';
 import { UpsertPrivateSegmentListModalComponent } from '../../features/dashboard/segments/modals/upsert-private-segment-list-modal/upsert-private-segment-list-modal.component';
 import {
@@ -105,15 +104,6 @@ export interface UpsertMetricModalParams {
 export class DialogService {
   constructor(private dialog: MatDialog) {}
 
-  // This method is used in the older ui
-  openConfirmDialog() {
-    return this.dialog.open(MatConfirmDialogComponent, {
-      width: 'auto',
-      disableClose: true,
-    });
-  }
-
-  // experiment modal ---------------------------------------- //
   openAddExperimentModal() {
     const commonModalConfig: CommonModalConfig = {
       title: 'Add Experiment',

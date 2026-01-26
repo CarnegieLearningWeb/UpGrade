@@ -32,15 +32,11 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
 import { TruncatePipe } from './pipes/truncate.pipe';
 import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
-import { FormatDatePipe } from './pipes/format-date.pipe';
 import { ScrollDirective } from './directives/scroll.directive';
 import { TrimInputDirective } from './directives/trim-input.directive';
 import { TextOverflowTooltipDirective } from './directives/text-overflow-tooltip.directive';
-import { OperationPipe } from './pipes/operation.pipe';
 import { SegmentStatusPipe } from './pipes/segment-status.pipe';
-import { QueryResultComponent } from './components/query-result/query-result.component';
 import { DeleteComponent } from './components/delete/delete.component';
-import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-confirm-dialog.component';
 
 @NgModule({
   imports: [
@@ -80,12 +76,8 @@ import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-c
     ScrollDirective,
     TrimInputDirective,
     TextOverflowTooltipDirective,
-    FormatDatePipe,
-    OperationPipe,
-    QueryResultComponent,
     DeleteComponent,
     SegmentStatusPipe,
-    MatConfirmDialogComponent,
   ],
   exports: [
     CommonModule,
@@ -120,15 +112,11 @@ import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-c
     SharedIconsComponent,
     TruncatePipe,
     ExperimentStatePipe,
-    FormatDatePipe,
     ScrollDirective,
     TrimInputDirective,
     TextOverflowTooltipDirective,
-    OperationPipe,
-    QueryResultComponent,
     DeleteComponent,
     SegmentStatusPipe,
-    MatConfirmDialogComponent,
   ],
 })
 export class SharedModule {}
