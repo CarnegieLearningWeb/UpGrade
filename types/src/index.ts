@@ -46,6 +46,7 @@ export {
   STATUS_INDICATOR_CHIP_TYPE,
   FILE_TYPE,
   IMPORT_COMPATIBILITY_TYPE,
+  EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,

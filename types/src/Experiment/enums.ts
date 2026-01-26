@@ -64,11 +64,20 @@ export enum EXPERIMENT_STATE {
   SCHEDULED = 'scheduled',
   PREVIEW = 'preview',
   ENROLLING = 'enrolling', // New design: Running
+  RUNNING = 'running',
   ENROLLMENT_COMPLETE = 'enrollmentComplete', // New design: Paused
+  PAUSED = 'paused',
   CANCELLED = 'cancelled', // New design: Completed
+  COMPLETED = 'completed',
   ARCHIVED = 'archived',
   DRAFT = 'draft',
 }
+
+export const EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES: Record<string, EXPERIMENT_STATE> = {
+  [EXPERIMENT_STATE.ENROLLING]: EXPERIMENT_STATE.RUNNING,
+  [EXPERIMENT_STATE.ENROLLMENT_COMPLETE]: EXPERIMENT_STATE.PAUSED,
+  [EXPERIMENT_STATE.CANCELLED]: EXPERIMENT_STATE.COMPLETED,
+};
 
 export enum FEATURE_FLAG_STATUS {
   ENABLED = 'enabled',

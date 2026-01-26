@@ -248,8 +248,8 @@ export class FactorialExperimentDesignComponent implements OnInit, OnChanges, On
       this.experimentDesignStepperService.updateFactorialDesignData(this.factorialExperimentDesignForm.value);
 
       this.isExperimentEditable =
-        this.experimentInfo.state !== this.ExperimentState.ENROLLING &&
-        this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE &&
+        this.experimentInfo.state !== this.ExperimentState.RUNNING &&
+        this.experimentInfo.state !== this.ExperimentState.PAUSED &&
         !(this.experimentInfo.assignmentAlgorithm in MOOCLET_POLICY_SCHEMA_MAP);
 
       // disable control on edit:

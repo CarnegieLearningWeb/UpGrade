@@ -322,7 +322,7 @@ export const selectExperimentActionButtons = createSelector(
         });
         break;
 
-      case EXPERIMENT_STATE.ENROLLING:
+      case EXPERIMENT_STATE.RUNNING:
         buttons.push(
           {
             action: EXPERIMENT_ACTION_BUTTON_TYPE.PAUSE,
@@ -339,7 +339,7 @@ export const selectExperimentActionButtons = createSelector(
         );
         break;
 
-      case EXPERIMENT_STATE.ENROLLMENT_COMPLETE:
+      case EXPERIMENT_STATE.PAUSED:
         buttons.push(
           {
             action: EXPERIMENT_ACTION_BUTTON_TYPE.RESUME,
@@ -408,7 +408,7 @@ export const selectCurrentPosteriorsTableData = createSelector(
 // Warning logic for experiments
 const hasNoInclusionsWarning = (experiment: Experiment): boolean => {
   return (
-    experiment?.state === EXPERIMENT_STATE.ENROLLING &&
+    experiment?.state === EXPERIMENT_STATE.RUNNING &&
     experiment?.filterMode !== FILTER_MODE.INCLUDE_ALL &&
     (!experiment?.experimentSegmentInclusion || experiment.experimentSegmentInclusion.length === 0)
   );
@@ -453,6 +453,6 @@ export const selectHasExperimentStarted = createSelector(
       return false;
     }
 
-    return experiment.stateTimeLogs.some((log) => log.toState === EXPERIMENT_STATE.ENROLLING);
+    return experiment.stateTimeLogs.some((log) => log.toState === EXPERIMENT_STATE.RUNNING);
   }
 );

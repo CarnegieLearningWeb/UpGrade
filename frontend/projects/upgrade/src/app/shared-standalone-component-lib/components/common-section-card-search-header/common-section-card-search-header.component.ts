@@ -16,7 +16,18 @@ import { TranslateModule } from '@ngx-translate/core';
  *
  * ```
  * <app-common-section-card-search-header
- *   [filterOptions]="['Name', 'Status', 'Context']"
+ *   [filterOptions]="[{ value: 'Name' }, { value: 'Status' }, { value: 'Context' }]"
+ *   [searchString]="'Experiment 1'"
+ *   [searchKey]="'Name'"
+ *   (search)="onSearch($event)"
+ * ></app-common-section-card-search-header>
+ * ```
+ *
+ *  * Example usage with dropdown:
+ *
+ * ```
+ * <app-common-section-card-search-header
+ *   [filterOptions]="[{ value: 'Name', type: 'dropdown', valueOptions: ['Option1', 'Option2'] }, { value: 'Status' }, { value: 'Context' }]"
  *   [searchString]="'Experiment 1'"
  *   [searchKey]="'Name'"
  *   (search)="onSearch($event)"
@@ -27,6 +38,12 @@ import { TranslateModule } from '@ngx-translate/core';
 export interface CommonSearchWidgetSearchParams<SearchKeyType> {
   searchKey: SearchKeyType | string;
   searchString: string;
+}
+
+export interface FilterOption {
+  value: string;
+  type?: string;
+  valueOptions?: string[];
 }
 
 @Component({
@@ -45,7 +62,7 @@ export interface CommonSearchWidgetSearchParams<SearchKeyType> {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonSectionCardSearchHeaderComponent {
-  @Input() filterOptions: string[];
+  @Input() filterOptions: FilterOption[];
   @Input() searchString: string;
   @Input() searchKey: string;
   @Output() search = new EventEmitter<CommonSearchWidgetSearchParams<string>>();
@@ -55,5 +72,17 @@ export class CommonSectionCardSearchHeaderComponent {
       searchKey: this.searchKey,
       searchString: this.searchString,
     });
+  }
+
+  get filterOptionss(): string[] {
+    return this.filterOptions.map((option) => option.value);
+  }
+
+  get filteredStatusOptions(): string[] {
+    return this.filterOptions.find((option) => option.value === this.searchKey).valueOptions || [];
+  }
+
+  get isDropdown(): boolean {
+    return this.filterOptions.find((option) => option.value === this.searchKey).type === 'dropdown';
   }
 }

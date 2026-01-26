@@ -20,17 +20,17 @@ export function isMenuItemDisabled(action: EXPERIMENT_DETAILS_PAGE_ACTIONS, stat
     return true; // No state = disabled
   }
 
-  // Archive only enabled when CANCELLED
+  // Archive only enabled when COMPLETED
   if (action === EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE) {
-    return state !== EXPERIMENT_STATE.CANCELLED;
+    return state !== EXPERIMENT_STATE.COMPLETED;
   }
 
   // All other menu items enabled in these states
   const enabledStates = [
     EXPERIMENT_STATE.INACTIVE,
-    EXPERIMENT_STATE.ENROLLING,
-    EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
-    EXPERIMENT_STATE.CANCELLED,
+    EXPERIMENT_STATE.RUNNING,
+    EXPERIMENT_STATE.PAUSED,
+    EXPERIMENT_STATE.COMPLETED,
     EXPERIMENT_STATE.ARCHIVED,
   ];
 
@@ -53,11 +53,11 @@ export function getDisabledFields(state?: EXPERIMENT_STATE): string[] {
     'groupType',
   ];
 
-  if ([EXPERIMENT_STATE.ENROLLING, EXPERIMENT_STATE.ENROLLMENT_COMPLETE].includes(state)) {
+  if ([EXPERIMENT_STATE.RUNNING, EXPERIMENT_STATE.PAUSED].includes(state)) {
     return baseRestrictedFields;
   }
 
-  if ([EXPERIMENT_STATE.CANCELLED, EXPERIMENT_STATE.ARCHIVED].includes(state)) {
+  if ([EXPERIMENT_STATE.COMPLETED, EXPERIMENT_STATE.ARCHIVED].includes(state)) {
     return [...baseRestrictedFields, 'moocletPolicyParameters'];
   }
 
@@ -83,7 +83,7 @@ export function getSectionCardRestriction(
   }
 
   // Completed: All cards disabled
-  if (state === EXPERIMENT_STATE.CANCELLED) {
+  if (state === EXPERIMENT_STATE.COMPLETED) {
     return {
       isDisabled: true,
       tooltipKey: 'experiments.details.restrictions.experiment-completed.text',
@@ -91,14 +91,14 @@ export function getSectionCardRestriction(
   }
 
   // Running/Paused: Only Decision Points & Conditions disabled
-  if ([EXPERIMENT_STATE.ENROLLING, EXPERIMENT_STATE.ENROLLMENT_COMPLETE].includes(state)) {
+  if ([EXPERIMENT_STATE.RUNNING, EXPERIMENT_STATE.PAUSED].includes(state)) {
     const isRestrictedCard = [
       EXPERIMENT_SECTION_CARD_TYPE.DECISION_POINTS,
       EXPERIMENT_SECTION_CARD_TYPE.CONDITIONS,
     ].includes(cardType);
 
     if (isRestrictedCard) {
-      const statusSuffix = state === EXPERIMENT_STATE.ENROLLING ? 'running' : 'paused';
+      const statusSuffix = state === EXPERIMENT_STATE.RUNNING ? 'running' : 'paused';
       return {
         isDisabled: true,
         tooltipKey: `experiments.details.restrictions.${cardType}-${statusSuffix}.text`,

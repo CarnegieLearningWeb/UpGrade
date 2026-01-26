@@ -263,7 +263,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         .subscribe((confirmed: boolean) => {
           if (confirmed) {
             const experimentStateInfo: ExperimentStateInfo = {
-              newStatus: EXPERIMENT_STATE.ENROLLING,
+              newStatus: EXPERIMENT_STATE.RUNNING,
             };
             this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
           }
@@ -281,7 +281,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
             // Update experiment with new state and pause behavior
             const updatedExperiment = {
               ...experiment,
-              state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+              state: EXPERIMENT_STATE.PAUSED,
               postExperimentRule: result.postExperimentRule,
               revertTo: result.revertTo,
             };
@@ -299,7 +299,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         .subscribe((confirmed: boolean) => {
           if (confirmed) {
             const experimentStateInfo: ExperimentStateInfo = {
-              newStatus: EXPERIMENT_STATE.ENROLLING,
+              newStatus: EXPERIMENT_STATE.RUNNING,
             };
             this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
           }
@@ -315,7 +315,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         .subscribe((confirmed: boolean) => {
           if (confirmed) {
             const experimentStateInfo: ExperimentStateInfo = {
-              newStatus: EXPERIMENT_STATE.CANCELLED,
+              newStatus: EXPERIMENT_STATE.COMPLETED,
             };
             this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
           }
