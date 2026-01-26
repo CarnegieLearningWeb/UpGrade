@@ -174,6 +174,12 @@ export interface ExperimentActionButton {
   translationKey: string;
 }
 
+export interface SectionCardRestriction {
+  isDisabled: boolean;
+  tooltipKey?: string;
+  shouldHideActions?: boolean;
+}
+
 export interface EnrollmentCompleteCondition {
   userCount: number;
   groupCount: number;

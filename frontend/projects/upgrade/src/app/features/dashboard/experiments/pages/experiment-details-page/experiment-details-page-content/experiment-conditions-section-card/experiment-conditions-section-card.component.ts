@@ -16,6 +16,7 @@ import {
   ExperimentConditionRowActionEvent,
   ExperimentVM,
   EXPERIMENT_SECTION_CARD_TYPE,
+  SectionCardRestriction,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
@@ -24,10 +25,6 @@ import { ConditionWeightUpdate } from '../../../../modals/edit-condition-weights
 import { ConditionHelperService } from '../../../../../../../core/experiments/condition-helper.service';
 import { selectConditionWeightsValid } from '../../../../../../../core/experiments/store/experiments.selectors';
 import { Store } from '@ngrx/store';
-import {
-  getSectionCardRestriction,
-  SectionCardRestriction,
-} from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'app-experiment-conditions-section-card',
@@ -66,11 +63,15 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.vm$ = combineLatest([this.selectedExperiment$, this.authService.userPermissions$]).pipe(
-      map(([experiment, permissions]) => ({
+    this.vm$ = combineLatest([
+      this.selectedExperiment$,
+      this.authService.userPermissions$,
+      this.experimentService.sectionCardRestriction$(EXPERIMENT_SECTION_CARD_TYPE.CONDITIONS),
+    ]).pipe(
+      map(([experiment, permissions, restriction]) => ({
         experiment,
         permissions,
-        restriction: getSectionCardRestriction(EXPERIMENT_SECTION_CARD_TYPE.CONDITIONS, experiment?.state),
+        restriction,
       }))
     );
   }

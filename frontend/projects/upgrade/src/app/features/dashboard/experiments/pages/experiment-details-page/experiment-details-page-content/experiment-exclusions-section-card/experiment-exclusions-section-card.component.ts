@@ -14,6 +14,7 @@ import {
   EXPERIMENT_BUTTON_ACTION,
   Experiment,
   EXPERIMENT_SECTION_CARD_TYPE,
+  SectionCardRestriction,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import {
   PARTICIPANT_LIST_ROW_ACTION,
@@ -24,10 +25,6 @@ import { Segment } from '../../../../../../../core/segments/store/segments.model
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { Observable, take, combineLatest, map } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
-import {
-  getSectionCardRestriction,
-  SectionCardRestriction,
-} from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'app-experiment-exclusions-section-card',
@@ -57,11 +54,15 @@ export class ExperimentExclusionsSectionCardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.vm$ = combineLatest([this.selectedExperiment$, this.authService.userPermissions$]).pipe(
-      map(([experiment, permissions]) => ({
+    this.vm$ = combineLatest([
+      this.selectedExperiment$,
+      this.authService.userPermissions$,
+      this.experimentService.sectionCardRestriction$(EXPERIMENT_SECTION_CARD_TYPE.EXCLUSIONS),
+    ]).pipe(
+      map(([experiment, permissions, restriction]) => ({
         experiment,
         permissions,
-        restriction: getSectionCardRestriction(EXPERIMENT_SECTION_CARD_TYPE.EXCLUSIONS, experiment?.state),
+        restriction,
       }))
     );
 
