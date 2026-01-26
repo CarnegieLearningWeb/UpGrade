@@ -14,7 +14,6 @@ import { AnalysisService } from '../../../../../../../../core/analysis/analysis.
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { EXPERIMENT_STATE, EXPERIMENT_TYPE } from 'upgrade_types';
-import { ExperimentFactorData } from '../../../../../../../../core/experiment-design-stepper/store/experiment-design-stepper.model';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
@@ -428,7 +427,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     return [...data, ...emptyBars];
   }
 
-  factorDataToConditions(factorsData: ExperimentFactorData[], levelsCombinationData: any[] = []) {
+  factorDataToConditions(factorsData: ExperimentFactor[], levelsCombinationData: any[] = []) {
     // return if no data in factors
     if (factorsData.length === 0) {
       return [levelsCombinationData];
