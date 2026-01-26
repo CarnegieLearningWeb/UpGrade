@@ -268,19 +268,6 @@ export const actionSetCurrentContext = createAction(
   props<{ context: string }>()
 );
 
-export const actionFetchGroupAssignmentStatus = createAction(
-  '[Experiment] Fetch group counts having met ending criteria',
-  props<{ experimentId: string }>()
-);
-
-export const actionFetchGroupAssignmentStatusSuccess = createAction(
-  '[Experiment] Fetch group counts having met ending criteria Success',
-  props<{ experiment: Experiment }>()
-);
-
-export const actionFetchGroupAssignmentStatusFailure = createAction(
-  '[Experiment] Fetch group counts having met ending criteria Failure'
-);
 export const actionBeginExperimentDetailStatsPolling = createAction(
   '[Experiment] Begin polling every n seconds for details stats',
   props<{ experimentId: string }>()
