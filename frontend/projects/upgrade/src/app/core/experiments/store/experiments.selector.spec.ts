@@ -25,7 +25,6 @@ import {
   selectIsGraphLoading,
   selectIsLoadingExperiment,
   selectIsLoadingExperimentDetailStats,
-  selectIsPollingExperimentDetailStats,
   selectSearchKey,
   selectSearchString,
   selectSelectedExperiment,
@@ -212,7 +211,6 @@ describe('Experiments Selectors', () => {
     },
     isLoadingExperiment: false,
     isLoadingExperimentDetailStats: false,
-    isPollingExperimentDetailStats: false,
     skipExperiment: 0,
     totalExperiments: null,
     searchKey: null,
@@ -820,18 +818,6 @@ describe('Experiments Selectors', () => {
       const result = selectContextMetaData.projector(state);
 
       expect(result).toEqual(state.contextMetaData);
-    });
-  });
-
-  describe('#selectIsPollingExperimentDetailStats', () => {
-    it('should return isPollingExperimentDetailStats', () => {
-      const state = {
-        ...mockState,
-      };
-
-      const result = selectIsPollingExperimentDetailStats.projector(state);
-
-      expect(result).toEqual(state.isPollingExperimentDetailStats);
     });
   });
 });

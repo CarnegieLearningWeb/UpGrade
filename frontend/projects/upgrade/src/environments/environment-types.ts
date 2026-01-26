@@ -78,9 +78,6 @@ export interface Environment {
   useHashRouting: boolean;
   googleClientId: string;
   domainName: string;
-  pollingEnabled: boolean;
-  pollingInterval: number;
-  pollingLimit: number;
   segmentsRefreshToggle: boolean;
   errorLogsToggle: boolean;
   withinSubjectExperimentSupportToggle: boolean;

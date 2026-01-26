@@ -37,7 +37,6 @@ export class LocalStorageService {
       entities: {},
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,
-      isPollingExperimentDetailStats: false,
       isLoadingExperimentExport: false,
       skipExperiment: 0,
       totalExperiments: null,

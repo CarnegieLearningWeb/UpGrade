@@ -196,11 +196,6 @@ export const selectExperimentOverviewDetails = createSelector(selectSelectedExpe
   return details;
 });
 
-export const selectIsPollingExperimentDetailStats = createSelector(
-  selectExperimentState,
-  (state) => state.isPollingExperimentDetailStats
-);
-
 export const selectExperimentInclusions = createSelector(
   selectSelectedExperiment,
   (experiment: Experiment): ParticipantListTableRow[] => {

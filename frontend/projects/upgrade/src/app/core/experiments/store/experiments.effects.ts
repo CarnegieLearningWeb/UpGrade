@@ -3,18 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import * as analysisActions from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
-import {
-  map,
-  filter,
-  switchMap,
-  catchError,
-  tap,
-  withLatestFrom,
-  first,
-  mergeMap,
-  takeWhile,
-  take,
-} from 'rxjs/operators';
+import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap } from 'rxjs/operators';
 import {
   UpsertExperimentType,
   IExperimentEnrollmentStats,
@@ -37,11 +26,8 @@ import {
   selectSearchString,
   selectExperimentGraphInfo,
   selectContextMetaData,
-  selectExperimentById,
-  selectIsPollingExperimentDetailStats,
-  selectExperimentGraphRange,
 } from './experiments.selectors';
-import { interval, of } from 'rxjs';
+import { of } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { ENV, Environment } from '../../../../environments/environment-types';
 import JSZip from 'jszip';
@@ -346,30 +332,6 @@ export class ExperimentEffects {
             experimentAction.actionFetchExperimentDetailStatSuccess({ stat: data })
           ),
           catchError(() => [experimentAction.actionFetchExperimentDetailStatFailure()])
-        )
-      )
-    )
-  );
-
-  beginExperimentDetailStatsPolling$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(experimentAction.actionBeginExperimentDetailStatsPolling),
-      map((action) => action.experimentId),
-      filter((experimentId) => !!experimentId),
-      switchMap((experimentId) =>
-        interval(this.environment.pollingInterval).pipe(
-          switchMap(() => this.store$.pipe(select(selectIsPollingExperimentDetailStats))),
-          takeWhile((isPolling) => isPolling),
-          take(this.environment.pollingLimit),
-          switchMap(() => this.store$.pipe(select(selectExperimentGraphRange))),
-          switchMap((graphRange) => [
-            experimentAction.actionFetchExperimentDetailStat({ experimentId }),
-            experimentAction.actionFetchExperimentGraphInfo({
-              experimentId,
-              range: graphRange,
-              clientOffset: -new Date().getTimezoneOffset(),
-            }),
-          ])
         )
       )
     )

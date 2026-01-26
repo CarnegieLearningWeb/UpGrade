@@ -601,7 +601,6 @@ export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_C
 export interface ExperimentState extends EntityState<ExperimentVM> {
   isLoadingExperiment: boolean;
   isLoadingExperimentDetailStats: boolean;
-  isPollingExperimentDetailStats: boolean;
   isLoadingExperimentExport: boolean;
   skipExperiment: number;
   totalExperiments: number;

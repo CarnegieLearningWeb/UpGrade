@@ -26,7 +26,6 @@ import {
   actionFetchExperimentDetailStat,
   actionGetExperimentsSuccess,
   actionSetSkipExperiment,
-  actionBeginExperimentDetailStatsPolling,
   actionFetchExperimentGraphInfo,
   actionUpsertExperiment,
   actionUpsertExperimentFailure,
@@ -673,79 +672,6 @@ describe('ExperimentEffects', () => {
       tick(0);
 
       expect(experimentDataService.getExperimentDetailStat).toHaveBeenCalled();
-    }));
-  });
-
-  describe('#beginExperimentDetailStatsPolling$', () => {
-    it('should not emit anything if no experimentId is given', fakeAsync(() => {
-      let neverEmitted = true;
-
-      service.beginExperimentDetailStatsPolling$.subscribe(() => {
-        neverEmitted = false;
-      });
-
-      actions$.next(actionBeginExperimentDetailStatsPolling({ experimentId: '' }));
-
-      tick(0);
-
-      expect(neverEmitted).toBeTruthy();
-    }));
-
-    it('should not emit anything if pollingLimit is surpassed', fakeAsync(() => {
-      let neverEmitted = true;
-      mockEnvironment.pollingLimit = 0;
-
-      service.beginExperimentDetailStatsPolling$.subscribe(() => {
-        neverEmitted = false;
-      });
-
-      actions$.next(actionBeginExperimentDetailStatsPolling({ experimentId: 'test1' }));
-
-      tick(0);
-
-      expect(neverEmitted).toBeTruthy();
-    }));
-
-    it('should not emit anything if isPolling is false', fakeAsync(() => {
-      let neverEmitted = true;
-      mockEnvironment.pollingInterval = 2;
-      Selectors.selectIsPollingExperimentDetailStats.setResult(false);
-
-      service.beginExperimentDetailStatsPolling$.subscribe(() => {
-        neverEmitted = false;
-      });
-
-      actions$.next(actionBeginExperimentDetailStatsPolling({ experimentId: 'test1' }));
-
-      tick(10);
-
-      expect(neverEmitted).toBeTruthy();
-    }));
-
-    it('should dispatch actionFetchExperimentDetailStat and actionFetchExperimentGraphInfo when polling', fakeAsync(() => {
-      mockEnvironment.pollingInterval = 2;
-      const experimentId = 'test1';
-      const graphInfo = {
-        experimentId,
-        range: DATE_RANGE.LAST_SEVEN_DAYS,
-        clientOffset: -new Date().getTimezoneOffset(),
-      };
-
-      Selectors.selectIsPollingExperimentDetailStats.setResult(true);
-      Selectors.selectExperimentGraphRange.setResult(graphInfo.range);
-
-      service.beginExperimentDetailStatsPolling$.pipe(take(2), pairwise()).subscribe((result) => {
-        const fetchStatsAction = actionFetchExperimentDetailStat({ experimentId });
-        const fetchGraphInfoAction = actionFetchExperimentGraphInfo(graphInfo);
-
-        expect(result).toEqual([fetchStatsAction, fetchGraphInfoAction]);
-      });
-
-      actions$.next(actionBeginExperimentDetailStatsPolling({ experimentId }));
-
-      tick(4);
-
-      Selectors.selectIsPollingExperimentDetailStats.setResult(false);
     }));
   });
 

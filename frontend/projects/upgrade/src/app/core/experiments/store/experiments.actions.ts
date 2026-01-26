@@ -17,7 +17,7 @@ import {
   ExperimentSegmentListResponse,
   UpdateExperimentConditionsRequest,
 } from './experiments.model';
-import { ExperimentSegmentListRequest, ExperimentSegmentListDetails } from '../../segments/store/segments.model';
+import { ExperimentSegmentListRequest } from '../../segments/store/segments.model';
 
 export const actionGetExperiments = createAction('[Experiment] Get Experiments', props<{ fromStarting?: boolean }>());
 
@@ -267,13 +267,6 @@ export const actionSetCurrentContext = createAction(
   '[Experiment] Set User-Selected Context',
   props<{ context: string }>()
 );
-
-export const actionBeginExperimentDetailStatsPolling = createAction(
-  '[Experiment] Begin polling every n seconds for details stats',
-  props<{ experimentId: string }>()
-);
-
-export const actionEndExperimentDetailStatsPolling = createAction('[Experiment] End polling for detail stats');
 
 export const actionAddExperimentInclusionList = createAction(
   '[Experiment] Add Experiment Inclusion List',
