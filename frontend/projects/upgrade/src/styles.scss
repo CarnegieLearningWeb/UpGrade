@@ -104,20 +104,13 @@ button[mat-icon-button] {
 }
 
 .delete-modal,
-.import-experiment-modal,
 .import-segment-modal,
 .import-stratification-modal,
-.experiment-general-modal,
-.new-experiment-modal,
-.new-flag-modal,
 .new-segment-modal,
 .new-user-modal,
-.queries-modal,
 .export-modal,
-.query-result,
 .add-metric-modal,
-.duplicate-segment-modal,
-.experiment-ending-criteria {
+.duplicate-segment-modal {
   @include custom-components-theme($light-theme);
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
@@ -143,8 +136,7 @@ button[mat-icon-button] {
   }
 }
 
-.segment-experiment-list-modal,
-.state-time-logs-modal {
+.segment-experiment-list-modal {
   border-radius: 7px;
 
   .mat-mdc-dialog-container {
@@ -171,33 +163,17 @@ button[mat-icon-button] {
 }
 
 .import-segment-modal,
-.import-experiment-modal,
 .import-stratification-modal {
   width: 500px;
 }
 
-.experiment-general-modal,
 .add-metric-modal {
   width: 804px;
   min-height: 294px;
 }
 
-.experiment-ending-criteria {
-  width: 600px;
-  min-height: 400px;
-}
-
 .segment-experiment-list-modal {
   width: 700px;
-}
-
-.state-time-logs-modal {
-  width: 400px;
-}
-
-.query-result {
-  width: 600px;
-  min-height: 300px;
 }
 
 .new-experiment-modal {
@@ -205,16 +181,8 @@ button[mat-icon-button] {
   width: 1000px;
 }
 
-.queries-modal {
-  width: 1000px;
-}
-
 .export-modal {
   width: 700px;
-}
-
-.new-flag-modal {
-  width: 844px;
 }
 
 .new-segment-modal {
