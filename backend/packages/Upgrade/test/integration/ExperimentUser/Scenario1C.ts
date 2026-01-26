@@ -149,13 +149,13 @@ export default async function ExcludeGroupsC(): Promise<void> {
     user,
     new UpgradeLogger()
   );
-  // check stats
+  // check stats - should be unchanged
   stats = await analyticsService.getDetailEnrollment(experimentId);
   expect(stats).toEqual(
     expect.objectContaining({
-      users: 0,
-      groups: 0,
-      usersExcluded: 1,
+      users: 1,
+      groups: 1,
+      usersExcluded: 0,
       groupsExcluded: 0,
       id: experimentId,
     })

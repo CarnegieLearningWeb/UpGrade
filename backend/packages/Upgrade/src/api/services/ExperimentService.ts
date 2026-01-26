@@ -1986,21 +1986,6 @@ export class ExperimentService {
         currentUser,
         transactionalEntityManager
       );
-
-      // Update exclusions/Enrollments if the filterType is EXCLUSION
-      if (filterType === LIST_FILTER_MODE.EXCLUSION) {
-        let newUsers = [];
-        let newGroups = [];
-        if (newSegment.listType === 'individual') {
-          newUsers = newSegment.individualForSegment.map((ifs) => ifs.userId);
-        } else if (newSegment.listType !== 'segment') {
-          newGroups = newSegment.groupForSegment.map((gfs) => {
-            return { groupId: gfs.groupId, type: gfs.type };
-          });
-        }
-
-        await this.segmentService.updateEnrollmentAndExclusionDocuments(experiment, newUsers, newGroups);
-      }
       return experimentSegmentInclusionOrExclusion;
     };
 
