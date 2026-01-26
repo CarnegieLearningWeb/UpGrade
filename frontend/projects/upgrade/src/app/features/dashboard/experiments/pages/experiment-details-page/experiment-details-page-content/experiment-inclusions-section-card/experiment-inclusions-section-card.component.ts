@@ -57,6 +57,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
     restriction: SectionCardRestriction & { isIncludeAll?: boolean; slideToggleTooltipKey?: string };
   }>;
   menuButtonItems$: Observable<IMenuButtonItem[]>;
+  menuButtonDisabled$: Observable<boolean>;
 
   rowCountWithInclude$: Observable<number> = combineLatest([this.tableRowCount$, this.selectedExperiment$]).pipe(
     map(([tableRowCount, selectedExperiment]) =>
@@ -115,6 +116,10 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
           disabled: tableRowCount === 0,
         },
       ])
+    );
+
+    this.menuButtonDisabled$ = combineLatest([this.vm$, this.menuButtonItems$]).pipe(
+      map(([vm, items]) => vm.restriction.isIncludeAll || items.every((item) => item.disabled))
     );
 
     // Expand section when include-all mode transitions back to exclude-all (e.g., after context change)

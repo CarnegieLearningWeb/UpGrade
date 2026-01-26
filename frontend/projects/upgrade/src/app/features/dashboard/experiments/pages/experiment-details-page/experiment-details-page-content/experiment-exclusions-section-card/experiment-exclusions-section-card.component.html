@@ -20,6 +20,8 @@ vm.experiment.context[0];
     [primaryButtonTooltip]="restrictionTooltip"
     [showMenuButton]="true"
     [menuButtonItems]="menuButtonItems$ | async"
+    [menuButtonDisabled]="menuButtonDisabled$ | async"
+    [menuButtonTooltip]="restrictionTooltip"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddExcludeListClick(appContext, vm.experiment.id)"
     (menuButtonItemClick)="onMenuButtonItemClick($event, vm.experiment)"

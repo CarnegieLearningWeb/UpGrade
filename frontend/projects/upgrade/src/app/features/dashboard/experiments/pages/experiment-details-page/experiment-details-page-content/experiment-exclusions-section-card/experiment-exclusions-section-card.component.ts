@@ -46,6 +46,7 @@ export class ExperimentExclusionsSectionCardComponent implements OnInit {
   selectedExperiment$ = this.experimentService.selectedExperiment$;
   vm$: Observable<{ experiment: Experiment; permissions: UserPermission; restriction: SectionCardRestriction }>;
   menuButtonItems$: Observable<IMenuButtonItem[]>;
+  menuButtonDisabled$: Observable<boolean>;
 
   constructor(
     readonly experimentService: ExperimentService,
@@ -80,6 +81,8 @@ export class ExperimentExclusionsSectionCardComponent implements OnInit {
         },
       ])
     );
+
+    this.menuButtonDisabled$ = this.menuButtonItems$.pipe(map((items) => items.every((item) => item.disabled)));
   }
 
   onAddExcludeListClick(appContext: string, experimentId: string): void {
