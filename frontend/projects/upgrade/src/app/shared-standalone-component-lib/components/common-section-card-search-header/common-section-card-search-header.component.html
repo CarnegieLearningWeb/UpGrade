@@ -1,7 +1,7 @@
 <div class="search-header">
   <mat-form-field class="dense-3 filter-options" subscriptSizing="dynamic">
     <mat-select class="ft-14-400" [(ngModel)]="searchKey" (selectionChange)="onSearch()">
-      <mat-option class="ft-14-400" *ngFor="let filterOption of filterOptionss" [value]="filterOption">
+      <mat-option class="ft-14-400" *ngFor="let filterOption of filterOptionsValues" [value]="filterOption">
         {{ filterOption | titlecase }}
       </mat-option>
     </mat-select>

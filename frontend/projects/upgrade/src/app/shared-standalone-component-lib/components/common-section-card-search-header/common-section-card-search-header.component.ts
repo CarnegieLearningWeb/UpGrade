@@ -74,15 +74,15 @@ export class CommonSectionCardSearchHeaderComponent {
     });
   }
 
-  get filterOptionss(): string[] {
+  get filterOptionsValues(): string[] {
     return this.filterOptions.map((option) => option.value);
   }
 
   get filteredStatusOptions(): string[] {
-    return this.filterOptions.find((option) => option.value === this.searchKey).valueOptions || [];
+    return this.filterOptions.find((option) => option.value === this.searchKey)?.valueOptions || [];
   }
 
   get isDropdown(): boolean {
-    return this.filterOptions.find((option) => option.value === this.searchKey).type === 'dropdown';
+    return this.filterOptions.find((option) => option.value === this.searchKey)?.type === 'dropdown';
   }
 }

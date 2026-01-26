@@ -38,7 +38,6 @@ export default async function ExperimentEndDate(): Promise<void> {
   await experimentService.updateState(experiment.id, experiment.state, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
 
-  console.log('experiments', experiments[0].stateTimeLogs);
   expect(experiments[0].stateTimeLogs).toHaveLength(1);
   expect(
     experiments[0].stateTimeLogs
