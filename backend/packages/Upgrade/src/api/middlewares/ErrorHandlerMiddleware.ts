@@ -5,7 +5,7 @@ import { env } from '../../env';
 import { ErrorService } from '../services/ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { SERVER_ERROR } from 'upgrade_types';
-import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 interface ErrorWithRequest extends ExperimentError {
   request?: {
