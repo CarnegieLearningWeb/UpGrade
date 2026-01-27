@@ -37,6 +37,7 @@ import {
   PAYLOAD_TYPE,
   POST_EXPERIMENT_RULE,
   EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
+  EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -487,7 +488,7 @@ export class ExperimentService {
         return { site: partition.site, target: partition.target };
       })
     );
-    state = this.mapStatusStrings(state);
+    state = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[state] || state;
 
     // Exclude the user only when the experiment is enrolling. For Preview state we don't need to exclude the user. The client need to provide explicit assignment for preview user to work correctly.
     if (state === EXPERIMENT_STATE.ENROLLING && oldExperiment.state !== EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
@@ -748,11 +749,11 @@ export class ExperimentService {
         return { site: partition.site, target: partition.target };
       })
     );
-    experiment.state = this.mapStatusStrings(experiment.state);
+    experiment.state = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[experiment.state] || experiment.state;
 
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id, logger);
-    oldExperiment.state = this.mapStatusStrings(oldExperiment.state);
+    oldExperiment.state = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[oldExperiment.state] || oldExperiment.state;
 
     const oldConditions = oldExperiment.conditions;
     const oldDecisionPoints = oldExperiment.partitions;
@@ -1885,20 +1886,10 @@ export class ExperimentService {
     return { ...experiment, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
   }
 
-  private mapStatusStrings(statusString: string): EXPERIMENT_STATE {
+  private mapStatusStrings(statusString: string): string {
     const status = statusString.toLowerCase();
-    const state =
-      status === 'running'
-        ? EXPERIMENT_STATE.ENROLLING
-        : status === 'paused'
-        ? EXPERIMENT_STATE.ENROLLMENT_COMPLETE
-        : status === 'completed'
-        ? EXPERIMENT_STATE.CANCELLED
-        : status === 'inactive'
-        ? EXPERIMENT_STATE.INACTIVE
-        : (statusString as EXPERIMENT_STATE);
 
-    return state;
+    return EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[status] || status;
   }
 
   private inferListTypesForExperimentListForExperimentRedesignDataChange(
