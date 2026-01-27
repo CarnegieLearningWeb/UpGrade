@@ -78,7 +78,11 @@ export class FeatureFlagExclusionsSectionCardComponent {
         this.dialogService
           .openImportFeatureFlagExcludeListModal(flag.id)
           .afterClosed()
-          .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
+          .subscribe((didImport) => {
+            if (didImport) {
+              this.featureFlagService.fetchFeatureFlagById(flag.id);
+            }
+          });
         break;
       case FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS:
         if (flag.featureFlagSegmentExclusion.length) {

@@ -140,7 +140,11 @@ export class FeatureFlagInclusionsSectionCardComponent {
         this.dialogService
           .openImportFeatureFlagIncludeListModal(flag.id)
           .afterClosed()
-          .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
+          .subscribe((didImport) => {
+            if (didImport) {
+              this.featureFlagService.fetchFeatureFlagById(flag.id);
+            }
+          });
         break;
       case FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS:
         if (flag.featureFlagSegmentInclusion.length) {

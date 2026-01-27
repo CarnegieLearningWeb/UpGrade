@@ -187,7 +187,11 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
           .openImportExperimentIncludeListModal(experiment.id)
           .afterClosed()
           .pipe(take(1))
-          .subscribe(() => this.experimentService.fetchExperimentById(experiment.id));
+          .subscribe((didImport) => {
+            if (didImport) {
+              this.experimentService.fetchExperimentById(experiment.id);
+            }
+          });
         break;
       case EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS:
         if (experiment.experimentSegmentInclusion.length) {

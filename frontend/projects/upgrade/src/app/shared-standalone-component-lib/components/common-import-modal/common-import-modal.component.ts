@@ -235,11 +235,11 @@ export class CommonImportModalComponent implements OnInit, OnDestroy {
       this.notificationService.showError(`Failed to import ${data.fileName}: ${data.error}`);
     });
 
-    this.closeModal();
+    this.closeModal(true);
   }
 
-  closeModal() {
-    this.dialogRef.close();
+  closeModal(didImport = false) {
+    this.dialogRef.close(didImport);
   }
 
   ngOnDestroy() {

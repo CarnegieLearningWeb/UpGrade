@@ -92,7 +92,11 @@ export class ExperimentExclusionsSectionCardComponent implements OnInit {
           .openImportExperimentExcludeListModal(experiment.id)
           .afterClosed()
           .pipe(take(1))
-          .subscribe(() => this.experimentService.fetchExperimentById(experiment.id));
+          .subscribe((didImport) => {
+            if (didImport) {
+              this.experimentService.fetchExperimentById(experiment.id);
+            }
+          });
         break;
       case EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS:
         if (experiment.experimentSegmentExclusion.length) {
