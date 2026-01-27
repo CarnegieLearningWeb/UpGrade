@@ -47,6 +47,7 @@ import { isMenuItemDisabled } from '../../../../../../../core/experiments/experi
 })
 export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, OnDestroy {
   @Input() isSectionCardExpanded = true;
+  @Input() activeTabIndex = 0;
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
   @Output() tabChange = new EventEmitter<number>();
   permissions$: Observable<UserPermission> = this.authService.userPermissions$;

@@ -2,6 +2,7 @@
   <ng-container *ngIf="experiment$ | async as experiment; else loading">
     <app-common-section-card-list class="common-section-card-list">
       <app-experiment-overview-details-section-card
+        [activeTabIndex]="activeTabIndex"
         [isSectionCardExpanded]="isSectionCardExpanded"
         (sectionCardExpandChange)="onSectionCardExpandChange($event)"
         (tabChange)="onTabChange($event)"

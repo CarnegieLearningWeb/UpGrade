@@ -16,7 +16,7 @@ import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { Observable, Subscription, combineLatest } from 'rxjs';
 import { map, filter, startWith } from 'rxjs/operators';
-import { Experiment } from '../../../../../../core/experiments/store/experiments.model';
+import { Experiment, EXPERIMENT_STATE } from '../../../../../../core/experiments/store/experiments.model';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
 import { MoocletExperimentHelperService } from '../../../../../../core/experiments/mooclet-helper.service';
 import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
@@ -47,7 +47,14 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
   activeTabIndex = 0; // 0 for Design, 1 for Data
   experiment$: Observable<Experiment>;
   experimentIdSub: Subscription;
+  experimentStateSub: Subscription;
   shouldShowRewardFeedback$: Observable<boolean>;
+  private lastExperimentId?: string;
+  private readonly dataTabStates = new Set<EXPERIMENT_STATE>([
+    EXPERIMENT_STATE.ENROLLING,
+    EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+    EXPERIMENT_STATE.CANCELLED,
+  ]);
 
   constructor(
     private readonly experimentsService: ExperimentService,
@@ -81,6 +88,15 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
     });
 
     this.experiment$ = this.experimentsService.selectedExperiment$;
+    this.experimentStateSub = this.experiment$
+      .pipe(filter((experiment): experiment is Experiment => !!experiment))
+      .subscribe((experiment) => {
+        // Default the tab based on experiment state only when switching to a new experiment
+        if (this.lastExperimentId !== experiment.id) {
+          this.lastExperimentId = experiment.id;
+          this.activeTabIndex = this.dataTabStates.has(experiment.state) ? 1 : 0;
+        }
+      });
     this.segmentService.fetchAllSegmentListOptions();
 
     // Determine if reward feedback card should be shown
@@ -107,5 +123,6 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
 
   ngOnDestroy() {
     this.experimentIdSub.unsubscribe();
+    this.experimentStateSub.unsubscribe();
   }
 }

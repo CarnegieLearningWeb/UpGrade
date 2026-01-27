@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Input, Output } from '@angular/core';
 import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
 
 @Component({
@@ -9,6 +9,7 @@ import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../../
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperimentOverviewDetailsFooterComponent implements OnInit {
+  @Input() selectedIndex = 0;
   @Output() tabChange = new EventEmitter<number>();
 
   tabLabels = [

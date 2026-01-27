@@ -101,12 +101,13 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
     } else {
       this.setConditionCount();
     }
-    this.queryResults = this.experiment.queries.map((query) => {
-      queryIds.push(query.id);
-      return {
-        [query.id]: [],
-      };
-    });
+    this.queryResults =
+      this.experiment?.queries?.map((query) => {
+        queryIds.push(query.id);
+        return {
+          [query.id]: [],
+        };
+      }) ?? [];
 
     this.analysisSub = this.analysisService.experimentQueryResult$(this.experiment.id).subscribe((queryResults) => {
       if (queryResults && queryResults.length) {
@@ -327,7 +328,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   }
 
   setConditionCount() {
-    this.maxLevelCount = this.experiment.conditions.length;
+    this.maxLevelCount = this.experiment?.conditions?.length ?? 0;
   }
 
   getFactorIndex(levelId: string): number {

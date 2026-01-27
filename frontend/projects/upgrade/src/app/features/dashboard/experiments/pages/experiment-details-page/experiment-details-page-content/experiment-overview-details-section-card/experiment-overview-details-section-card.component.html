@@ -39,6 +39,7 @@
   <!-- footer -->
   <app-experiment-overview-details-footer
     footer
+    [selectedIndex]="activeTabIndex"
     (tabChange)="onSelectedTabChange($event)"
   ></app-experiment-overview-details-footer>
 </app-common-section-card>
