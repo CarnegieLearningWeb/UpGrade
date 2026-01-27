@@ -10,16 +10,13 @@ import {
   SERVER_ERROR,
   SEGMENT_STATUS,
   CACHE_PREFIX,
-  CONSISTENCY_RULE,
-  ASSIGNMENT_UNIT,
-  EXCLUSION_CODE,
   IMPORT_COMPATIBILITY_TYPE,
   ValidatedImportResponse,
   SEGMENT_SEARCH_KEY,
   DuplicateSegmentNameError,
   EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
 } from 'upgrade_types';
-import { In, Not } from 'typeorm';
+import { Not } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
 import Papa from 'papaparse';
 import { env } from '../../env';
@@ -42,16 +39,9 @@ import { CacheService } from './CacheService';
 import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import path from 'path';
-import { GroupEnrollmentRepository } from '../repositories/GroupEnrollmentRepository';
-import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
-import { GroupExclusion } from '../models/GroupExclusion';
-import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
-import { IndividualExclusion } from '../models/IndividualExclusion';
-import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
 import { ISegmentSearchParams, ISegmentSortParams } from '../controllers/validators/SegmentPaginatedParamsValidator';
-import { Experiment } from '../models/Experiment';
 import { ExperimentSegmentExclusion } from 'src/api/models/ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from 'src/api/models/ExperimentSegmentInclusion';
 
@@ -88,14 +78,6 @@ export class SegmentService {
     private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
     @InjectRepository()
     private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
-    @InjectRepository()
-    private individualEnrollmentRepository: IndividualEnrollmentRepository,
-    @InjectRepository()
-    private groupEnrollmentRepository: GroupEnrollmentRepository,
-    @InjectRepository()
-    private individualExclusionRepository: IndividualExclusionRepository,
-    @InjectRepository()
-    private groupExclusionRepository: GroupExclusionRepository,
     @InjectRepository()
     private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
     @InjectRepository()
@@ -396,13 +378,6 @@ export class SegmentService {
 
   public async getFeatureFlagSegmentInclusionData() {
     const queryBuilder = await this.featureFlagSegmentInclusionRepository.getFeatureFlagSegmentInclusionData();
-    return queryBuilder;
-  }
-
-  public async getExperimentSegmentExclusionDocBySegmentId(segmentId: string) {
-    const queryBuilder = await this.experimentSegmentExclusionRepository.getExperimentSegmentExclusionDocBySegmentId(
-      segmentId
-    );
     return queryBuilder;
   }
 
@@ -1026,119 +1001,6 @@ export class SegmentService {
 
   private trimAndRemoveHiddenChars(value: string): string {
     return value.replace(/[\r\n\t]/g, '').trim();
-  }
-
-  public async updateEnrollmentAndExclusionDocuments(
-    experiment: Experiment,
-    newUsers: string[],
-    newGroups: { groupId: string; type: string }[]
-  ) {
-    const userGroups = newGroups.map((group) => group.groupId);
-
-    // Scenario 1: Group Exclusion
-    if (newGroups.length) {
-      // Case 1: Individual Consistency
-      if (experiment.consistencyRule == CONSISTENCY_RULE.INDIVIDUAL) {
-        // Don't remove users enrollment
-
-        //IncludeSegment.individualForSegment in assign/mark call
-
-        // Check IndividualEnrollment Doc is present In mark call
-
-        // Delete Group Enrollment Doc
-        if (experiment.assignmentUnit == ASSIGNMENT_UNIT.GROUP) {
-          await this.groupEnrollmentRepository.delete({
-            experiment: { id: experiment.id },
-            groupId: In(userGroups),
-          });
-        }
-      }
-      // Case 2: Group Consistency
-      else if (experiment.consistencyRule == CONSISTENCY_RULE.GROUP) {
-        // find all users enrolled in the experiment
-        const enrolledUsersData = await this.individualEnrollmentRepository.find({
-          where: {
-            experiment: { id: experiment.id },
-            groupId: In(userGroups),
-          },
-          relations: ['user'],
-        });
-        const enrolledUsers = enrolledUsersData.map((data) => data.user);
-
-        // individual exclusion doc
-        const individualExclusionDocs: Array<
-          Omit<IndividualExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>
-        > = enrolledUsers.map((user) => {
-          return {
-            user,
-            experiment,
-            groupId: user?.workingGroup?.[experiment.group],
-            exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
-          };
-        });
-
-        // Delete Individual Enrollment Doc
-        await Promise.all([
-          this.individualExclusionRepository.saveRawJson(individualExclusionDocs),
-          this.individualEnrollmentRepository.delete({
-            experiment: { id: experiment.id },
-            groupId: In(userGroups),
-          }),
-        ]);
-
-        // Delete Group Enrollment
-        if (experiment.assignmentUnit == ASSIGNMENT_UNIT.GROUP) {
-          await this.groupEnrollmentRepository.delete({
-            experiment: { id: experiment.id },
-            groupId: In(userGroups),
-          });
-        }
-      }
-    }
-    if (newUsers.length) {
-      // Case 1: User already visited
-      const excludedUsers = await this.individualEnrollmentRepository.find({
-        where: { experiment: { id: experiment.id }, user: In(newUsers) },
-      });
-
-      const excludedUsersGroups = Array.from(
-        new Set(excludedUsers.map((enrollment) => enrollment.groupId).filter((groupId) => groupId != null))
-      );
-
-      // Delete individual enrollment of users
-      await this.individualEnrollmentRepository.delete({
-        experiment: { id: experiment.id },
-        user: { id: In(newUsers) },
-      });
-
-      if (experiment.consistencyRule == CONSISTENCY_RULE.GROUP) {
-        // Delete Individual Enrollment Doc for users belongs to excludedUsersGroups
-        await this.individualEnrollmentRepository.delete({
-          experiment: { id: experiment.id },
-          groupId: In(excludedUsersGroups),
-        });
-      }
-
-      // Delete group enrollment of all groups
-      if (experiment.assignmentUnit == ASSIGNMENT_UNIT.GROUP) {
-        await this.groupEnrollmentRepository.delete({
-          experiment: { id: experiment.id },
-          groupId: In(excludedUsersGroups),
-        });
-
-        // group exclusion doc
-        const groupExclusionDocs: Array<Omit<GroupExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>> = [
-          ...excludedUsersGroups,
-        ].map((groupId) => {
-          return {
-            experiment,
-            groupId,
-            exclusionCode: EXCLUSION_CODE.EXCLUDED_DUE_TO_GROUP_LOGIC,
-          };
-        });
-        await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
-      }
-    }
   }
 
   async checkIsDuplicateSegmentName(

@@ -396,9 +396,7 @@ describe('ExperimentService Testing', () => {
         },
         {
           provide: SegmentService,
-          useValue: {
-            updateEnrollmentAndExclusionDocuments: jest.fn().mockResolvedValue(undefined),
-          },
+          useValue: {},
         },
         {
           provide: ExperimentSchedulerService,

@@ -187,28 +187,7 @@ export class ExperimentService {
 
     let queryBuilderToReturn = this.experimentRepository
       .createQueryBuilder('experiment')
-      .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('experiment.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels')
-      .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
-      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
-      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
-      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
-      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
-      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('levelCombinationElements.level', 'level')
-      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
-      .leftJoinAndSelect('partitions.conditionPayloads', 'ConditionPayloadsArray')
-      .leftJoinAndSelect('ConditionPayloadsArray.parentCondition', 'parentCondition')
       .where(`experiment.id IN ${paginatedParentSubQuery.getQuery()}`);
 
     if (sortParams) {
@@ -217,21 +196,7 @@ export class ExperimentService {
       queryBuilderToReturn = queryBuilderToReturn.addOrderBy('experiment.updatedAt', 'DESC');
     }
     const [experimentData, count] = await Promise.all([queryBuilderToReturn.getMany(), countQuery.getCount()]);
-    experimentData.forEach((experiment) => {
-      experiment.experimentSegmentExclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
-        experiment.experimentSegmentExclusion
-      );
-      experiment.experimentSegmentInclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
-        experiment.experimentSegmentInclusion
-      );
-    });
-    return [
-      experimentData.map((experiment) => {
-        experiment.state = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state;
-        return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
-      }),
-      count || 0,
-    ];
+    return [experimentData, count || 0];
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
@@ -2002,21 +1967,6 @@ export class ExperimentService {
         currentUser,
         transactionalEntityManager
       );
-
-      // Update exclusions/Enrollments if the filterType is EXCLUSION
-      if (filterType === LIST_FILTER_MODE.EXCLUSION) {
-        let newUsers = [];
-        let newGroups = [];
-        if (newSegment.listType === 'individual') {
-          newUsers = newSegment.individualForSegment.map((ifs) => ifs.userId);
-        } else if (newSegment.listType !== 'segment') {
-          newGroups = newSegment.groupForSegment.map((gfs) => {
-            return { groupId: gfs.groupId, type: gfs.type };
-          });
-        }
-
-        await this.segmentService.updateEnrollmentAndExclusionDocuments(experiment, newUsers, newGroups);
-      }
       return experimentSegmentInclusionOrExclusion;
     };
 
