@@ -75,10 +75,7 @@ export class FeatureFlagExclusionsSectionCardComponent {
   onMenuButtonItemClick(event, flag: FeatureFlag) {
     switch (event) {
       case FEATURE_FLAG_BUTTON_ACTION.IMPORT_EXCLUDE_LIST:
-        this.dialogService
-          .openImportFeatureFlagExcludeListModal(flag.id)
-          .afterClosed()
-          .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
+        this.dialogService.openImportFeatureFlagExcludeListModal(flag.id);
         break;
       case FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS:
         if (flag.featureFlagSegmentExclusion.length) {

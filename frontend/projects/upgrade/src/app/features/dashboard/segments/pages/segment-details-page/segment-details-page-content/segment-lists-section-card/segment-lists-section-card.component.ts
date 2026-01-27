@@ -117,10 +117,7 @@ export class SegmentListsSectionCardComponent {
   }
 
   onImportList(segmentId: string) {
-    this.dialogService
-      .openImportSegmentListModal(segmentId, this.data.type)
-      .afterClosed()
-      .subscribe(() => this.segmentsService.fetchSegmentById(segmentId));
+    this.dialogService.openImportSegmentListModal(segmentId, this.data.type);
   }
 
   onExportAllLists(segment: Segment) {

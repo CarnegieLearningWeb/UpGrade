@@ -88,11 +88,7 @@ export class ExperimentExclusionsSectionCardComponent implements OnInit {
   onMenuButtonItemClick(event: string, experiment: Experiment): void {
     switch (event) {
       case EXPERIMENT_BUTTON_ACTION.IMPORT_EXCLUDE_LIST:
-        this.dialogService
-          .openImportExperimentExcludeListModal(experiment.id)
-          .afterClosed()
-          .pipe(take(1))
-          .subscribe(() => this.experimentService.fetchExperimentById(experiment.id));
+        this.dialogService.openImportExperimentExcludeListModal(experiment.id);
         break;
       case EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_EXCLUDE_LISTS:
         if (experiment.experimentSegmentExclusion.length) {

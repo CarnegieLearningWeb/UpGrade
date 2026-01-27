@@ -58,7 +58,7 @@ import {
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
-import { map, filter, tap } from 'rxjs/operators';
+import { map, filter, tap, take } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { ExperimentSegmentListRequest } from '../segments/store/segments.model';
@@ -179,6 +179,14 @@ export class ExperimentService {
 
   fetchExperimentById(experimentId: string) {
     this.store$.dispatch(experimentAction.actionGetExperimentById({ experimentId }));
+  }
+
+  refetchCurrentSelectedExperiment() {
+    this.selectedExperiment$.pipe(take(1)).subscribe((experiment) => {
+      if (experiment) {
+        this.fetchExperimentById(experiment.id);
+      }
+    });
   }
 
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {
