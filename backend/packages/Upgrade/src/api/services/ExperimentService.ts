@@ -196,7 +196,15 @@ export class ExperimentService {
       queryBuilderToReturn = queryBuilderToReturn.addOrderBy('experiment.updatedAt', 'DESC');
     }
     const [experimentData, count] = await Promise.all([queryBuilderToReturn.getMany(), countQuery.getCount()]);
-    return [experimentData, count || 0];
+    return [
+      experimentData.map((experiment) => {
+        return {
+          ...experiment,
+          state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state,
+        };
+      }),
+      count || 0,
+    ];
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
