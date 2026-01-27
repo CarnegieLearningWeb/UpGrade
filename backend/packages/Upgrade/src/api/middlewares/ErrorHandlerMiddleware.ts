@@ -5,6 +5,7 @@ import { env } from '../../env';
 import { ErrorService } from '../services/ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { SERVER_ERROR } from 'upgrade_types';
+import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 
 interface ErrorWithRequest extends ExperimentError {
   request?: {
@@ -120,6 +121,13 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
 
     if (req.logger) {
       req.logger.error(experimentError);
+    } else {
+      const fallbackLogger = new UpgradeLogger();
+      fallbackLogger.error({
+        ...experimentError,
+        warning:
+          'req.logger was undefined so custom logger used - error occurred before LogMiddleware loaded, likely a CORS issue',
+      });
     }
 
     // #1040
