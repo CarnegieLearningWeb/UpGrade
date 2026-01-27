@@ -18,7 +18,7 @@ vm.experiment.context[0];
     [primaryButtonText]="'experiments.details.add-exclude-list.button.text' | translate"
     [primaryActionBtnDisabled]="vm.restriction.isDisabled"
     [primaryButtonTooltip]="restrictionTooltip"
-    [showMenuButton]="true"
+    [showMenuButton]="canShowSegmentActions || !(menuButtonDisabled$ | async)"
     [menuButtonItems]="menuButtonItems$ | async"
     [menuButtonDisabled]="menuButtonDisabled$ | async"
     [menuButtonTooltip]="restrictionTooltip"
