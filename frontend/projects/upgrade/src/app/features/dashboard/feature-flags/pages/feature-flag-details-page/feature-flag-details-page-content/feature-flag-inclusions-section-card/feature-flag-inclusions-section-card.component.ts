@@ -137,10 +137,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
   onMenuButtonItemClick(event, flag: FeatureFlag) {
     switch (event) {
       case FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST:
-        this.dialogService
-          .openImportFeatureFlagIncludeListModal(flag.id)
-          .afterClosed()
-          .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
+        this.dialogService.openImportFeatureFlagIncludeListModal(flag.id);
         break;
       case FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS:
         if (flag.featureFlagSegmentInclusion.length) {
