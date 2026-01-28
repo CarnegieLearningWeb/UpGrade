@@ -100,7 +100,7 @@ export class ExperimentEffects {
 
             return [
               ...actions,
-              experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
+              experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total, fromStarting }),
               experimentAction.actionFetchExperimentStats({ experimentIds }),
             ];
           }),

@@ -334,7 +334,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
       return this.translate.instant('experiments.details.pause-behavior-no-condition.text');
     } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN && experiment.revertTo) {
       // Find the condition name from revertTo ID
-      const condition = experiment.conditions.find((c) => c.id === experiment.revertTo);
+      const condition = experiment.conditions?.find((c) => c.id === experiment.revertTo);
       const conditionName = condition ? condition.conditionCode : 'Unknown';
       return this.translate.instant('experiments.details.pause-behavior-assign.text', { conditionName });
     }
