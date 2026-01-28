@@ -1153,7 +1153,7 @@ export class ExperimentService {
       .then(async ({ updatedExperiment }) => {
         return {
           ...updatedExperiment,
-          StateTimeLogs: this.transformStateTimeLogs(updatedExperiment.stateTimeLogs),
+          stateTimeLogs: this.transformStateTimeLogs(updatedExperiment.stateTimeLogs),
           state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[updatedExperiment.state] || updatedExperiment.state,
           experimentSegmentExclusion: excludeListsToReturn,
           experimentSegmentInclusion: includeListsToReturn,
