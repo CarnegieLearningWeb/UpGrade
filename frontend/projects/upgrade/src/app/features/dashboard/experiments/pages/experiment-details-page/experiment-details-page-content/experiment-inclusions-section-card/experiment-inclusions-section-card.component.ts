@@ -188,11 +188,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
   onMenuButtonItemClick(event: string, experiment: Experiment): void {
     switch (event) {
       case EXPERIMENT_BUTTON_ACTION.IMPORT_INCLUDE_LIST:
-        this.dialogService
-          .openImportExperimentIncludeListModal(experiment.id)
-          .afterClosed()
-          .pipe(take(1))
-          .subscribe(() => this.experimentService.fetchExperimentById(experiment.id));
+        this.dialogService.openImportExperimentIncludeListModal(experiment.id);
         break;
       case EXPERIMENT_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS:
         if (experiment.experimentSegmentInclusion.length) {

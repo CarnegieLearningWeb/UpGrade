@@ -120,7 +120,7 @@ export class FeatureFlagListImportAdapter implements ImportServiceAdapter {
   }
 
   fetchData(): void {
-    this.featureFlagsService.fetchFeatureFlags(true);
+    this.featureFlagsService.refetchCurrentSelectedFeatureFlag();
   }
 }
 
@@ -145,7 +145,7 @@ export class SegmentListImportAdapter implements ImportServiceAdapter {
   }
 
   fetchData(): void {
-    this.segmentService.fetchSegmentsPaginated(true);
+    this.segmentService.refetchCurrentSelectedSegment();
   }
 }
 
@@ -172,7 +172,7 @@ export class ExperimentListImportAdapter implements ImportServiceAdapter {
   }
 
   fetchData(): void {
-    this.experimentService.loadExperiments();
+    this.experimentService.refetchCurrentSelectedExperiment();
   }
 }
 
