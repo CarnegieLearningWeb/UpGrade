@@ -20,7 +20,7 @@ export default async function testCase(): Promise<void> {
 
   // First excluding a group to check "EXCLUDED_DUE_TO_GROUP_LOGIC"
   // within subject experiment object
-  const experimentObject = JSON.parse(JSON.stringify(withinSubjectExclusionExperiment));
+  const experimentObject: any = structuredClone(withinSubjectExclusionExperiment);
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());

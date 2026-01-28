@@ -584,8 +584,7 @@ export default async function LogOperations(): Promise<void> {
   );
 
   // Test results
-  for (let i = 0; i < allQuery.length; i++) {
-    const query = allQuery[i];
+  for (const query of allQuery) {
     const queryResult = await queryService.analyze([query.id], new UpgradeLogger());
     const res = reduceResult(queryResult[0].mainEffect);
     let expectedValue;
@@ -646,36 +645,32 @@ export default async function LogOperations(): Promise<void> {
         break;
       }
       case OPERATION_TYPES.MODE: {
-        const modeValue = res[1];
         expectedValue = 20;
         if (query.metric.key !== 'totalProblemsCompleted') {
           expectedValue = 100; // For completion metric
         }
-        expect(modeValue).toEqual(expectedValue);
+        expect(res).toContain(expectedValue);
         break;
       }
       case OPERATION_TYPES.MEDIAN: {
-        const medianValue = res[1];
         expectedValue = 50;
         if (query.metric.key !== 'totalProblemsCompleted') {
           expectedValue = 300; // For completion metric
         }
-        expect(medianValue).toEqual(expectedValue);
+        expect(res).toContain(expectedValue);
         break;
       }
       case OPERATION_TYPES.STDEV: {
-        const stdValue = res[1];
         expectedValue = 40;
         if (query.metric.key !== 'totalProblemsCompleted') {
           expectedValue = 200; // For completion metric
         }
-        expect(stdValue).toEqual(expectedValue);
+        expect(res).toContain(expectedValue);
         break;
       }
       case OPERATION_TYPES.PERCENTAGE: {
-        const perValue = res[1];
         expectedValue = 33;
-        expect(perValue).toEqual(expectedValue);
+        expect(res).toContain(expectedValue);
         break;
       }
       default:

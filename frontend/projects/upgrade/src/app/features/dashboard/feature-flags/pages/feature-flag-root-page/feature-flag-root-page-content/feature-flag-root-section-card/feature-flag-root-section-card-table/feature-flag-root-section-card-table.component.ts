@@ -53,7 +53,7 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
   @Output() tagsExpanded = new EventEmitter<{ flagId: string; expanded: boolean }>();
   flagSortKey$ = this.featureFlagsService.sortKey$;
   flagSortAs$ = this.featureFlagsService.sortAs$;
-  warningStatusForAllFlags$ = this.featureFlagsService.warningStatusForAllFlags$;
+  warningKeysForAllFlags$ = this.featureFlagsService.warningKeysForAllFlags$;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild('tableContainer') tableContainer: ElementRef;

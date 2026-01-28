@@ -45,25 +45,25 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
     this.featureFlag$,
     this.permissions$,
   ]).pipe(map(([flag, permissions]) => ({ flag, permissions })));
+  isUserReader$ = this.authService.isUserReader$;
 
   subscriptions = new Subscription();
   flagOverviewDetails$ = this.featureFlagService.selectedFlagOverviewDetails;
-  shouldShowWarning$ = this.featureFlagService.shouldShowWarningForSelectedFlag$;
+  warningKeysForSelectedFlag$ = this.featureFlagService.warningKeysForSelectedFlag$;
   confirmStatusChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
   menuButtonItems$: Observable<IMenuButtonItem[]>;
   isSectionCardExpanded = true;
   emailId = '';
 
   constructor(
-    private dialogService: DialogService,
-    private featureFlagService: FeatureFlagsService,
-    private router: Router,
-    private authService: AuthService
+    private readonly dialogService: DialogService,
+    private readonly featureFlagService: FeatureFlagsService,
+    private readonly router: Router,
+    private readonly authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.subscriptions.add(this.featureFlagService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
-
     this.menuButtonItems$ = this.flagAndPermissions$.pipe(
       map(({ flag, permissions }) => [
         {
@@ -152,7 +152,16 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   onMenuButtonItemClick(event: FEATURE_FLAG_DETAILS_PAGE_ACTIONS, flag: FeatureFlag) {
     switch (event) {
       case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.DELETE:
-        this.dialogService.openDeleteFeatureFlagModal();
+        this.subscriptions.add(
+          this.dialogService
+            .openDeleteFeatureFlagModal(flag.name, this.featureFlagService.isLoadingFeatureFlagDelete$)
+            .afterClosed()
+            .subscribe((confirmed: boolean) => {
+              if (confirmed) {
+                this.featureFlagService.deleteFeatureFlag(flag.id);
+              }
+            })
+        );
         break;
       case FEATURE_FLAG_DETAILS_PAGE_ACTIONS.EDIT:
         this.dialogService.openEditFeatureFlagModal(flag);

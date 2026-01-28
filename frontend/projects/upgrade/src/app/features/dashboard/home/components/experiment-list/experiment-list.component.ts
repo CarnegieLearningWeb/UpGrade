@@ -33,6 +33,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   experimentFilterOptions = [
     EXPERIMENT_SEARCH_KEY.ALL,
     EXPERIMENT_SEARCH_KEY.NAME,
+    EXPERIMENT_SEARCH_KEY.ID,
     EXPERIMENT_SEARCH_KEY.STATUS,
     EXPERIMENT_SEARCH_KEY.TAG,
     EXPERIMENT_SEARCH_KEY.CONTEXT,
@@ -126,7 +127,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
               data.state.toLocaleLowerCase().includes(filter) ||
               !!data.tags.filter((tags) => tags.toLocaleLowerCase().includes(filter)).length ||
               this.isPartitionFound(data, filter) ||
-              !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length
+              !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length ||
+              data.id.toLowerCase() === filter
             );
           case EXPERIMENT_SEARCH_KEY.NAME:
             return data.name.toLocaleLowerCase().includes(filter);
@@ -134,6 +136,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
             return !!data.tags.filter((tags) => tags.toLocaleLowerCase().includes(filter)).length;
           case EXPERIMENT_SEARCH_KEY.CONTEXT:
             return !!data.context.filter((context) => context.toLocaleLowerCase().includes(filter)).length;
+          case EXPERIMENT_SEARCH_KEY.ID:
+            return data.id.toLowerCase() === filter;
         }
       };
     }

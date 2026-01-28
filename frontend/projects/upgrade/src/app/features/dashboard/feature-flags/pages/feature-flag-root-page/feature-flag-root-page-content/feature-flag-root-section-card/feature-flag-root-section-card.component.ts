@@ -59,6 +59,7 @@ export class FeatureFlagRootSectionCardComponent {
   featureFlagFilterOption = [
     FLAG_SEARCH_KEY.ALL,
     FLAG_SEARCH_KEY.NAME,
+    FLAG_SEARCH_KEY.ID,
     FLAG_SEARCH_KEY.STATUS,
     FLAG_SEARCH_KEY.CONTEXT,
     FLAG_SEARCH_KEY.TAG,

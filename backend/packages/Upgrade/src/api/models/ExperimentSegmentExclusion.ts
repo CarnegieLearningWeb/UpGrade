@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { Experiment } from './Experiment';
 import { Segment } from './Segment';
@@ -15,7 +15,7 @@ export class ExperimentSegmentExclusion extends BaseModel {
   @PrimaryColumn()
   public experimentId: string;
 
-  @OneToOne(() => Experiment, (experiment) => experiment.experimentSegmentExclusion, {
+  @ManyToOne(() => Experiment, (experiment) => experiment.experimentSegmentExclusion, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'experimentId' })

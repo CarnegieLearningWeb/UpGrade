@@ -1,0 +1,7 @@
+// Uses standard form styles from parent
+
+textarea {
+  max-height: calc(1.5em * 12); // 12 rows with line-height
+  overflow-y: auto;
+  resize: none;
+}

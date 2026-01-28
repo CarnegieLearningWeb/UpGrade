@@ -462,7 +462,7 @@ describe('LogRepository Testing', () => {
     q.query = {
       operationType: OPERATION_TYPES.AVERAGE,
       compareFn: '=',
-      compareValue: 10,
+      compareValue: '10',
     };
     q.repeatedMeasure = REPEATED_MEASURE.mostRecent;
 

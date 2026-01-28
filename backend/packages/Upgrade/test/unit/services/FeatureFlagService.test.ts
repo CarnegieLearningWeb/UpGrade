@@ -15,7 +15,7 @@ import {
   FLAG_SORT_KEY,
 } from '../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import {
-  FEATURE_FLAG_LIST_FILTER_MODE,
+  LIST_FILTER_MODE,
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
   IMPORT_COMPATIBILITY_TYPE,
@@ -446,18 +446,13 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should add an include list', async () => {
-    const result = await service.addList([mockList], FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
+    const result = await service.addList([mockList], LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
 
     expect(result).toBeTruthy();
   });
 
   it('should delete an include list', async () => {
-    const result = await service.deleteList(
-      mockList.segment.id,
-      FEATURE_FLAG_LIST_FILTER_MODE.INCLUSION,
-      mockUser1,
-      logger
-    );
+    const result = await service.deleteList(mockList.segment.id, LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
 
     expect(result).toBeTruthy();
   });

@@ -13,7 +13,7 @@ import {
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
 
 /* Explanation:
 A user1 in mark in an experiment with Group Assignment and Group Consistency
@@ -135,23 +135,27 @@ export default async function ExcludeGroupsC(): Promise<void> {
   experimentObject = {
     ...experimentObject,
     state: EXPERIMENT_STATE.ENROLLING,
-    experimentSegmentExclusion: {
-      ...experimentObject.experimentSegmentExclusion,
-      segment: {
-        ...experimentObject.experimentSegmentExclusion.segment,
-        groupForSegment: [{ groupId: '1', type: 'teacher' }],
-      },
-    },
   };
   await experimentService.update(experimentObject, user, new UpgradeLogger());
+  await experimentService.addList(
+    {
+      ...experimentObject.experimentSegmentExclusion[0].segment,
+      listType: 'group',
+      groups: [{ groupId: '1', type: 'teacher' }],
+    },
 
-  // check stats
+    experimentObject.id,
+    LIST_FILTER_MODE.EXCLUSION,
+    user,
+    new UpgradeLogger()
+  );
+  // check stats - should be unchanged
   stats = await analyticsService.getDetailEnrollment(experimentId);
   expect(stats).toEqual(
     expect.objectContaining({
-      users: 0,
-      groups: 0,
-      usersExcluded: 1,
+      users: 1,
+      groups: 1,
+      usersExcluded: 0,
       groupsExcluded: 0,
       id: experimentId,
     })

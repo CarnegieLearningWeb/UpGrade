@@ -1,8 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
-import { environment } from '../../../environments/environment';
 import { StratificationFactorsDataService } from './stratification-factors.data.service';
-import { Environment } from '../../../environments/environment-types';
+import { API_ENDPOINTS } from '../api-endpoints.constants';
 
 class MockHTTPClient {
   get = jest.fn().mockReturnValue(of());
@@ -15,19 +14,17 @@ describe('StratificationFactorsDataService', () => {
   let mockHttpClient: any;
   let service: StratificationFactorsDataService;
   let mockStratificationFactorId: string;
-  let mockEnvironment: Environment;
 
   beforeEach(() => {
     mockHttpClient = new MockHTTPClient();
-    mockEnvironment = { ...environment };
-    service = new StratificationFactorsDataService(mockHttpClient as HttpClient, mockEnvironment);
+    service = new StratificationFactorsDataService(mockHttpClient as HttpClient);
 
     mockStratificationFactorId = 'stratificationFactorId1';
   });
 
   describe('#fetchStratificationFactors', () => {
     it('should get the fetchStratificationFactors http observable', () => {
-      const expectedUrl = mockEnvironment.api.stratification;
+      const expectedUrl = API_ENDPOINTS.stratification;
 
       service.fetchStratificationFactors();
 
@@ -38,7 +35,7 @@ describe('StratificationFactorsDataService', () => {
   describe('#importStratificationFactors', () => {
     it('should post the importStratificationFactors http observable', () => {
       const mockStratificationFactors = [{ name: 'factor1' }, { name: 'factor2' }];
-      const expectedUrl = mockEnvironment.api.stratification;
+      const expectedUrl = API_ENDPOINTS.stratification;
       service.importStratificationFactors(mockStratificationFactors);
       expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, { files: mockStratificationFactors });
     });
@@ -47,7 +44,7 @@ describe('StratificationFactorsDataService', () => {
   describe('#deleteStratificationFactor', () => {
     it('should get the deleteStratificationFactor http observable', () => {
       const stratificationFactorId = mockStratificationFactorId;
-      const expectedUrl = `${mockEnvironment.api.stratification}/${stratificationFactorId}`;
+      const expectedUrl = `${API_ENDPOINTS.stratification}/${stratificationFactorId}`;
 
       service.deleteStratificationFactor(stratificationFactorId);
 
@@ -58,7 +55,7 @@ describe('StratificationFactorsDataService', () => {
   describe('#exportStratificationFactor', () => {
     it('should get the exportStratificationFactor http observable with responseType text', () => {
       const stratificationFactorId = mockStratificationFactorId;
-      const expectedUrl = `${mockEnvironment.api.stratification}/download/${stratificationFactorId}`;
+      const expectedUrl = `${API_ENDPOINTS.stratification}/download/${stratificationFactorId}`;
 
       service.exportStratificationFactor(stratificationFactorId);
 

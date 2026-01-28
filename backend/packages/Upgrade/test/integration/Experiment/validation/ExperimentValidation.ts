@@ -66,22 +66,26 @@ export default async function testExperimentValidation(): Promise<void> {
         order: 1,
       },
     ],
-    experimentSegmentInclusion: {
-      segment: {
-        individualForSegment: [],
-        groupForSegment: [],
-        subSegments: [],
-        type: SEGMENT_TYPE.PRIVATE,
+    experimentSegmentInclusion: [
+      {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
       },
-    },
-    experimentSegmentExclusion: {
-      segment: {
-        individualForSegment: [],
-        groupForSegment: [],
-        subSegments: [],
-        type: SEGMENT_TYPE.PRIVATE,
+    ],
+    experimentSegmentExclusion: [
+      {
+        segment: {
+          individualForSegment: [],
+          groupForSegment: [],
+          subSegments: [],
+          type: SEGMENT_TYPE.PRIVATE,
+        },
       },
-    },
+    ],
   });
 
   // Test 1: INDIVIDUAL assignmentUnit with group defined should fail
