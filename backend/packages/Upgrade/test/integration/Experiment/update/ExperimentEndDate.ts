@@ -43,7 +43,7 @@ export default async function ExperimentEndDate(): Promise<void> {
   expect(experiments[0].stateTimeLogs).toHaveLength(2);
   expect(
     experiments[0].stateTimeLogs
-      .filter((state) => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE)
+      .filter((state) => state.toState === EXPERIMENT_STATE.PAUSED)
       .map((timelogs) => timelogs.timeLog)
   ).toHaveLength(1);
 
@@ -62,7 +62,7 @@ export default async function ExperimentEndDate(): Promise<void> {
   expect(experiments[0].stateTimeLogs).toHaveLength(2);
   expect(
     experiments[0].stateTimeLogs
-      .filter((state) => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE)
+      .filter((state) => state.toState === EXPERIMENT_STATE.PAUSED)
       .map((timelogs) => timelogs.timeLog)
   ).toHaveLength(1);
 
@@ -74,7 +74,7 @@ export default async function ExperimentEndDate(): Promise<void> {
   expect(experiments[0].stateTimeLogs).toHaveLength(4);
   expect(
     experiments[0].stateTimeLogs
-      .filter((state) => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE)
+      .filter((state) => state.toState === EXPERIMENT_STATE.PAUSED)
       .map((timelogs) => timelogs.timeLog)
   ).toHaveLength(2);
 }

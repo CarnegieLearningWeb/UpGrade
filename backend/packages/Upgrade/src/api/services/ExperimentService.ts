@@ -151,6 +151,7 @@ export class ExperimentService {
     const experiments = await this.experimentRepository.findAllExperiments();
     return experiments.map((experiment) => {
       experiment.state = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state;
+      experiment.stateTimeLogs = this.transformStateTimeLogs(experiment.stateTimeLogs);
       return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
     });
   }
@@ -201,6 +202,7 @@ export class ExperimentService {
         return {
           ...experiment,
           state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state,
+          stateTimeLogs: this.transformStateTimeLogs(experiment.stateTimeLogs),
         };
       }),
       count || 0,
@@ -230,6 +232,7 @@ export class ExperimentService {
         experiment.experimentSegmentInclusion
       );
       experiment.state = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state;
+      experiment.stateTimeLogs = this.transformStateTimeLogs(experiment.stateTimeLogs);
       return this.formattingConditionPayload(experiment);
     } else {
       return undefined;
@@ -515,7 +518,10 @@ export class ExperimentService {
       ...oldExperiment,
       state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[updatedState[0].state] || updatedState[0].state,
       startOn: updatedState[0].startOn,
-      stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog],
+      stateTimeLogs: [
+        ...this.transformStateTimeLogs(oldExperiment.stateTimeLogs),
+        this.transformStateTimeLogs([updatedStateTimeLog]),
+      ].flat(),
     };
   }
 
@@ -1147,6 +1153,7 @@ export class ExperimentService {
       .then(async ({ updatedExperiment }) => {
         return {
           ...updatedExperiment,
+          StateTimeLogs: this.transformStateTimeLogs(updatedExperiment.stateTimeLogs),
           state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[updatedExperiment.state] || updatedExperiment.state,
           experimentSegmentExclusion: excludeListsToReturn,
           experimentSegmentInclusion: includeListsToReturn,
@@ -2457,5 +2464,16 @@ export class ExperimentService {
       await this.segmentRepository.deleteSegments(segmentIds, logger, transactionalEntityManager);
     }
     await Promise.all(auditLogPromises);
+  }
+  private transformStateTimeLogs(stateTimeLogs: StateTimeLog[]): StateTimeLog[] {
+    return (
+      stateTimeLogs?.map((log) => {
+        return {
+          ...log,
+          fromState: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[log.fromState] || log.fromState,
+          toState: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[log.toState] || log.toState,
+        };
+      }) || []
+    );
   }
 }
