@@ -83,7 +83,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const queryIds = [];
-    this.experimentType = this.experiment.type;
+    this.experimentType = this.experiment?.type;
 
     if (this.experimentType === EXPERIMENT_TYPE.FACTORIAL) {
       this.setMaxLevelsCount();
@@ -108,6 +108,8 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
           [query.id]: [],
         };
       }) ?? [];
+
+    if (!this.experiment?.id) return;
 
     this.analysisSub = this.analysisService.experimentQueryResult$(this.experiment.id).subscribe((queryResults) => {
       if (queryResults && queryResults.length) {
