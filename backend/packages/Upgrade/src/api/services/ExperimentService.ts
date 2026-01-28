@@ -189,6 +189,7 @@ export class ExperimentService {
     let queryBuilderToReturn = this.experimentRepository
       .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .where(`experiment.id IN ${paginatedParentSubQuery.getQuery()}`);
 
     if (sortParams) {
