@@ -17,6 +17,7 @@ import {
   Experiment,
   EXPERIMENT_BUTTON_ACTION,
   EXPERIMENT_SECTION_CARD_TYPE,
+  SectionCardRestriction,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
@@ -27,10 +28,6 @@ import {
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { Segment } from '../../../../../../../core/segments/store/segments.model';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import {
-  getSectionCardRestriction,
-  SectionCardRestriction,
-} from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'app-experiment-inclusions-section-card',
@@ -60,6 +57,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
     restriction: SectionCardRestriction & { isIncludeAll?: boolean; slideToggleTooltipKey?: string };
   }>;
   menuButtonItems$: Observable<IMenuButtonItem[]>;
+  menuButtonDisabled$: Observable<boolean>;
 
   rowCountWithInclude$: Observable<number> = combineLatest([this.tableRowCount$, this.selectedExperiment$]).pipe(
     map(([tableRowCount, selectedExperiment]) =>
@@ -80,10 +78,13 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
   confirmIncludeAllChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
 
   ngOnInit() {
-    this.vm$ = combineLatest([this.selectedExperiment$, this.authService.userPermissions$]).pipe(
-      map(([experiment, permissions]) => {
+    this.vm$ = combineLatest([
+      this.selectedExperiment$,
+      this.authService.userPermissions$,
+      this.experimentService.sectionCardRestriction$(EXPERIMENT_SECTION_CARD_TYPE.INCLUSIONS),
+    ]).pipe(
+      map(([experiment, permissions, baseRestriction]) => {
         const isIncludeAll = experiment?.filterMode === FILTER_MODE.INCLUDE_ALL;
-        const baseRestriction = getSectionCardRestriction(EXPERIMENT_SECTION_CARD_TYPE.INCLUSIONS, experiment?.state);
 
         return {
           experiment,
@@ -115,6 +116,10 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
           disabled: tableRowCount === 0,
         },
       ])
+    );
+
+    this.menuButtonDisabled$ = combineLatest([this.vm$, this.menuButtonItems$]).pipe(
+      map(([vm, items]) => vm.restriction.isIncludeAll || items.every((item) => item.disabled))
     );
 
     // Expand section when include-all mode transitions back to exclude-all (e.g., after context change)
