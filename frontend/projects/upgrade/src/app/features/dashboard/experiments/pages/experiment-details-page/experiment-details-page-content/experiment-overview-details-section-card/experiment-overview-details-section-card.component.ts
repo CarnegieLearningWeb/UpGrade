@@ -27,7 +27,6 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { isMenuItemDisabled } from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'app-experiment-overview-details-section-card',
@@ -51,12 +50,9 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   @Output() tabChange = new EventEmitter<number>();
   permissions$: Observable<UserPermission> = this.authService.userPermissions$;
   experiment$: Observable<Experiment> = this.experimentService.selectedExperiment$;
-  experimentAndPermissions$: Observable<{ experiment: Experiment; permissions: UserPermission }> = combineLatest([
-    this.experiment$,
-    this.permissions$,
-  ]).pipe(map(([experiment, permissions]) => ({ experiment, permissions })));
   experimentOverviewDetails$ = this.experimentService.selectedExperimentOverviewDetails$;
   warningKeysForSelectedExperiment$ = this.experimentService.warningKeysForSelectedExperiment$;
+  experimentMenuItems$ = this.experimentService.experimentMenuItems$;
   menuButtonItems$: Observable<IMenuButtonItem[]>;
   subscriptions = new Subscription();
   emailId = '';
@@ -99,47 +95,47 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   }
   ngOnInit(): void {
     this.subscriptions.add(this.experimentService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
-    this.menuButtonItems$ = this.experimentAndPermissions$.pipe(
-      map(({ experiment, permissions }) => [
+    this.menuButtonItems$ = combineLatest([this.experimentMenuItems$, this.permissions$]).pipe(
+      map(([menuItems, permissions]) => [
         {
           label: 'experiments.details.edit-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT,
           disabled:
             !permissions?.experiments.update ||
-            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT, experiment?.state),
+            menuItems.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT)?.disabled,
         },
         {
           label: 'experiments.details.duplicate-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.DUPLICATE,
           disabled:
             !permissions?.experiments.create ||
-            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.DUPLICATE, experiment?.state),
+            menuItems.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.DUPLICATE)?.disabled,
         },
         {
           label: 'experiments.details.export-experiment-design.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
-          disabled: isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN, experiment?.state),
+          disabled: menuItems.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN)?.disabled,
         },
         {
           label: 'experiments.details.email-experiment-data.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
           disabled:
             !permissions?.experiments.update ||
-            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA, experiment?.state),
+            menuItems.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA)?.disabled,
         },
         {
           label: 'experiments.details.archive-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE,
           disabled:
             !permissions?.experiments.update ||
-            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE, experiment?.state),
+            menuItems.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE)?.disabled,
         },
         {
           label: 'experiments.details.delete-experiment.menu-item.text',
           action: EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE,
           disabled:
             !permissions?.experiments.delete ||
-            isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE, experiment?.state),
+            menuItems.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE)?.disabled,
         },
       ])
     );
@@ -263,7 +259,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         .subscribe((confirmed: boolean) => {
           if (confirmed) {
             const experimentStateInfo: ExperimentStateInfo = {
-              newStatus: EXPERIMENT_STATE.ENROLLING,
+              newStatus: EXPERIMENT_STATE.RUNNING,
             };
             this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
           }
@@ -281,7 +277,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
             // Update experiment with new state and pause behavior
             const updatedExperiment = {
               ...experiment,
-              state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+              state: EXPERIMENT_STATE.PAUSED,
               postExperimentRule: result.postExperimentRule,
               revertTo: result.revertTo,
             };
@@ -299,7 +295,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         .subscribe((confirmed: boolean) => {
           if (confirmed) {
             const experimentStateInfo: ExperimentStateInfo = {
-              newStatus: EXPERIMENT_STATE.ENROLLING,
+              newStatus: EXPERIMENT_STATE.RUNNING,
             };
             this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
           }
@@ -315,7 +311,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
         .subscribe((confirmed: boolean) => {
           if (confirmed) {
             const experimentStateInfo: ExperimentStateInfo = {
-              newStatus: EXPERIMENT_STATE.CANCELLED,
+              newStatus: EXPERIMENT_STATE.COMPLETED,
             };
             this.experimentService.updateExperimentState(experiment.id, experimentStateInfo);
           }

@@ -38,7 +38,7 @@ import {
   UpdateSegmentRequest,
   UpsertSegmentType,
 } from './store/segments.model';
-import { filter, map } from 'rxjs/operators';
+import { filter, map, take } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
 import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY, DuplicateSegmentNameError } from 'upgrade_types';
@@ -128,6 +128,14 @@ export class SegmentsService {
 
   fetchSegmentById(segmentId: string) {
     this.store$.dispatch(SegmentsActions.actionGetSegmentById({ segmentId }));
+  }
+
+  refetchCurrentSelectedSegment() {
+    this.selectedSegment$.pipe(take(1)).subscribe((segment) => {
+      if (segment) {
+        this.fetchSegmentById(segment.id);
+      }
+    });
   }
 
   fetchContextMetaData() {

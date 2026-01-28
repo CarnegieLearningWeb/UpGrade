@@ -16,6 +16,7 @@ import {
   UpdateExperimentConditionsRequest,
   UpdateExperimentMetricsRequest,
   ExperimentActionButton,
+  EXPERIMENT_SECTION_CARD_TYPE,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -47,10 +48,13 @@ import {
   selectWarningKeysForSelectedExperiment,
   selectWarningKeysForAllExperiments,
   selectHasExperimentStarted,
+  selectExperimentMenuItems,
+  selectDisabledExperimentFields,
+  selectSectionCardRestriction,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
-import { map, tap } from 'rxjs/operators';
+import { map, take, tap } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { ExperimentSegmentListRequest } from '../segments/store/segments.model';
 import { ConditionWeightUpdate } from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
@@ -97,6 +101,10 @@ export class ExperimentService {
   warningKeysForSelectedExperiment$ = this.store$.pipe(select(selectWarningKeysForSelectedExperiment));
   warningKeysForAllExperiments$ = this.store$.pipe(select(selectWarningKeysForAllExperiments));
   hasExperimentStarted$ = this.store$.pipe(select(selectHasExperimentStarted));
+  experimentMenuItems$ = this.store$.pipe(select(selectExperimentMenuItems));
+  disabledExperimentFields$ = this.store$.pipe(select(selectDisabledExperimentFields));
+  sectionCardRestriction$ = (cardType: EXPERIMENT_SECTION_CARD_TYPE) =>
+    this.store$.pipe(select(selectSectionCardRestriction(cardType)));
 
   haveInitialExperimentsLoaded() {
     return combineLatest([this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$]).pipe(
@@ -148,6 +156,14 @@ export class ExperimentService {
 
   fetchExperimentById(experimentId: string) {
     this.store$.dispatch(experimentAction.actionGetExperimentById({ experimentId }));
+  }
+
+  refetchCurrentSelectedExperiment() {
+    this.selectedExperiment$.pipe(take(1)).subscribe((experiment) => {
+      if (experiment) {
+        this.fetchExperimentById(experiment.id);
+      }
+    });
   }
 
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {

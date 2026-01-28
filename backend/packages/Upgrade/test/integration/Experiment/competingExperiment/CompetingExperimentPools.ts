@@ -48,7 +48,7 @@ export default async function CompetingExperiment(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -56,7 +56,7 @@ export default async function CompetingExperiment(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject1.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject1.postExperimentRule,
         assignmentUnit: experimentObject1.assignmentUnit,
         consistencyRule: experimentObject1.consistencyRule,
@@ -79,7 +79,7 @@ export default async function CompetingExperiment(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject2.name,
-        state: experimentObject2.state,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject2.postExperimentRule,
         assignmentUnit: experimentObject2.assignmentUnit,
         consistencyRule: experimentObject2.consistencyRule,
@@ -102,7 +102,7 @@ export default async function CompetingExperiment(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject3.name,
-        state: experimentObject3.state,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject3.postExperimentRule,
         assignmentUnit: experimentObject3.assignmentUnit,
         consistencyRule: experimentObject3.consistencyRule,

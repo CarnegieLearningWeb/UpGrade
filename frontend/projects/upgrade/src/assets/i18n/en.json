@@ -403,7 +403,7 @@
   "experiments.upsert-experiment-modal.condition-order-random-description.text": "Conditions are presented in randomized order with no fixed pattern or sequence.",
   "experiments.upsert-experiment-modal.condition-order-random-round-robin-description.text": "Conditions are presented in a different randomized sequence each round.",
   "experiments.upsert-experiment-modal.condition-order-ordered-round-robin-description.text": "Conditions are presented in the same fixed sequence each round.",
-  "experiments.upsert-experiment-modal.assignment-algorithm-random-description.text": "Each participant has an equal chance of being assigned to any condition.",
+  "experiments.upsert-experiment-modal.assignment-algorithm-random-description.text": "Random assignment according to the configured condition weights.",
   "experiments.upsert-experiment-modal.assignment-algorithm-stratified-random-sampling-description.text": "Random assignment within balanced subgroups to ensure representation.",
   "experiments.upsert-experiment-modal.stratification-factor-hint.text": "Select a stratification factor for balanced random assignment.",
   "experiments.upsert-experiment-modal.tags-label.text": "Tags (optional)",

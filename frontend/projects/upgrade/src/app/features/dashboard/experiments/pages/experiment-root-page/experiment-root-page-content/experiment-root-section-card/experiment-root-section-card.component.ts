@@ -52,11 +52,15 @@ export class ExperimentRootSectionCardComponent {
   expandedTagsMap = new Map<string, boolean>();
 
   experimentFilterOption = [
-    EXPERIMENT_SEARCH_KEY.ALL,
-    EXPERIMENT_SEARCH_KEY.NAME,
-    EXPERIMENT_SEARCH_KEY.STATUS,
-    EXPERIMENT_SEARCH_KEY.CONTEXT,
-    EXPERIMENT_SEARCH_KEY.TAG,
+    { value: EXPERIMENT_SEARCH_KEY.ALL, type: 'text' },
+    { value: EXPERIMENT_SEARCH_KEY.NAME, type: 'text' },
+    {
+      value: EXPERIMENT_SEARCH_KEY.STATUS,
+      type: 'dropdown',
+      valueOptions: ['Inactive', 'Archived', 'Running', 'Completed', 'Paused'],
+    },
+    { value: EXPERIMENT_SEARCH_KEY.CONTEXT, type: 'text' },
+    { value: EXPERIMENT_SEARCH_KEY.TAG, type: 'text' },
   ];
   isSectionCardExpanded = true;
 
@@ -106,7 +110,7 @@ export class ExperimentRootSectionCardComponent {
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<EXPERIMENT_SEARCH_KEY>) {
-    this.experimentService.setSearchString(params.searchString?.trim());
+    this.experimentService.setSearchString(params.searchString?.trim() || '');
     this.experimentService.setSearchKey(params.searchKey as EXPERIMENT_SEARCH_KEY);
   }
 

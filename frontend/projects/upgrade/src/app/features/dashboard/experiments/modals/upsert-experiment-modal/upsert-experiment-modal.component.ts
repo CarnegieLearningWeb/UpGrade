@@ -11,8 +11,10 @@ import { MatRadioModule } from '@angular/material/radio';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, Observable, Subscription, combineLatestWith, map, startWith, take } from 'rxjs';
 import { isEqual } from 'lodash';
-
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import {
+  CommonModalComponent,
+  CommonLearnMoreLinkComponent,
+} from '../../../../../shared-standalone-component-lib/components';
 import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { CommonTagsInputComponent } from '../../../../../shared-standalone-component-lib/components/common-tag-input/common-tag-input.component';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -45,8 +47,6 @@ import { ENV, Environment } from '../../../../../../environments/environment-typ
 import { SharedModule } from '../../../../../shared/shared.module';
 import { TsConfigurablePolicyParametersFormComponent } from './ts-configurable-policy-parameters-form/ts-configurable-policy-parameters-form.component';
 import { MoocletExperimentHelperService } from '../../../../../core/experiments/mooclet-helper.service';
-import { CommonLearnMoreLinkComponent } from '../../../../../shared-standalone-component-lib/components';
-import { getDisabledFields } from '../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'upsert-experiment-modal',
@@ -231,18 +231,20 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }
 
   disableRestrictedFields(): void {
-    const state = this.config.params.sourceExperiment?.state;
-    const fieldsToDisable = getDisabledFields(state);
+    // Subscribe to disabled fields selector
+    this.subscriptions.add(
+      this.experimentService.disabledExperimentFields$.pipe(take(1)).subscribe((fieldsToDisable) => {
+        // Disable all fields returned by the selector
+        fieldsToDisable.forEach((fieldName) => {
+          this.experimentForm.get(fieldName)?.disable();
+        });
 
-    // Disable all fields returned by the helper
-    fieldsToDisable.forEach((fieldName) => {
-      this.experimentForm.get(fieldName)?.disable();
-    });
-
-    // Handle moocletPolicyParameters separately (it's a child form component)
-    if (fieldsToDisable.includes('moocletPolicyParameters')) {
-      this.isMoocletFormDisabled = true;
-    }
+        // Handle moocletPolicyParameters separately (it's a child form component)
+        if (fieldsToDisable.includes('moocletPolicyParameters')) {
+          this.isMoocletFormDisabled = true;
+        }
+      })
+    );
   }
 
   createExperimentForm(): void {

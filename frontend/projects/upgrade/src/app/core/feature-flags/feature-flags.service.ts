@@ -38,7 +38,7 @@ import {
   UpdateFeatureFlagStatusRequest,
   FeatureFlagLocalStorageKeys,
 } from './store/feature-flags.model';
-import { map } from 'rxjs';
+import { map, take } from 'rxjs';
 import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
 import { LocalStorageService } from '../local-storage/local-storage.service';
@@ -89,6 +89,14 @@ export class FeatureFlagsService {
 
   fetchFeatureFlagById(featureFlagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlagById({ featureFlagId }));
+  }
+
+  refetchCurrentSelectedFeatureFlag() {
+    this.selectedFeatureFlag$.pipe(take(1)).subscribe((flag) => {
+      if (flag) {
+        this.fetchFeatureFlagById(flag.id);
+      }
+    });
   }
 
   fetchContextMetaData() {

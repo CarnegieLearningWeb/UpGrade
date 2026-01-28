@@ -50,7 +50,7 @@ export default async function SubSegmentEnrollment(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, userIn, logger);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, userIn, logger);
 
   // fetch experiment
   experiments = await experimentService.find(logger);
@@ -58,7 +58,7 @@ export default async function SubSegmentEnrollment(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,

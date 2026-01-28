@@ -53,11 +53,11 @@ export class SegmentRootSectionCardComponent {
   expandedTagsMap = new Map<string, boolean>();
 
   segmentFilterOptions = [
-    SEGMENT_SEARCH_KEY.ALL,
-    SEGMENT_SEARCH_KEY.NAME,
-    SEGMENT_SEARCH_KEY.ID,
-    SEGMENT_SEARCH_KEY.CONTEXT,
-    SEGMENT_SEARCH_KEY.TAG,
+    { value: SEGMENT_SEARCH_KEY.ALL },
+    { value: SEGMENT_SEARCH_KEY.NAME },
+    { value: SEGMENT_SEARCH_KEY.ID },
+    { value: SEGMENT_SEARCH_KEY.CONTEXT },
+    { value: SEGMENT_SEARCH_KEY.TAG },
   ];
   isSectionCardExpanded = true;
 
