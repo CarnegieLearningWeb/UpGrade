@@ -45,13 +45,15 @@ const reducer = createReducer(
   on(experimentsAction.actionGetExperiments, (state) => ({
     ...state,
   })),
-  on(experimentsAction.actionGetExperimentsSuccess, (state, { experiments, totalExperiments }) => {
+  on(experimentsAction.actionGetExperimentsSuccess, (state, { experiments, totalExperiments, fromStarting }) => {
     const newState = {
       ...state,
       totalExperiments,
       skipExperiment: state.skipExperiment + experiments.length,
     };
-    return adapter.upsertMany(experiments, { ...newState, isLoadingExperiment: false });
+    return fromStarting
+      ? adapter.setAll(experiments, { ...newState, isLoadingExperiment: false })
+      : adapter.upsertMany(experiments, { ...newState, isLoadingExperiment: false });
   }),
   on(
     experimentsAction.actionGetExperimentsFailure,

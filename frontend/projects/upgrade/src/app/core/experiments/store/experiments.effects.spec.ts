@@ -217,6 +217,7 @@ describe('ExperimentEffects', () => {
           const skipAction = actionSetSkipExperiment({ skipExperiment: 0 });
           const successAction = actionGetExperimentsSuccess({
             experiments,
+            fromStarting: true,
             totalExperiments,
           });
           const fetchAction = actionFetchExperimentStats({ experimentIds });
