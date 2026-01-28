@@ -106,7 +106,7 @@ describe('Segment Service Testing', () => {
     Container.setDataSource('default', dataSource);
 
     exp.id = 'exp1';
-    exp.state = EXPERIMENT_STATE.ENROLLING;
+    exp.state = EXPERIMENT_STATE.RUNNING;
     ff.id = 'ff1';
     ff.status = FEATURE_FLAG_STATUS.ENABLED;
     seg2.subSegments = [];
@@ -385,7 +385,7 @@ describe('Segment Service Testing', () => {
   });
 
   it('should return all segments with status for not enrolling experiments and feature flags', async () => {
-    exp.state = EXPERIMENT_STATE.ENROLLMENT_COMPLETE;
+    exp.state = EXPERIMENT_STATE.PAUSED;
     const res = {
       segmentsData: [
         {

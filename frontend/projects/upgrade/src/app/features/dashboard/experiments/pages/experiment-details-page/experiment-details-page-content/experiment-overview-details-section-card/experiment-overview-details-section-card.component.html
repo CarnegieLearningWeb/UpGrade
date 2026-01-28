@@ -8,9 +8,7 @@
     [versionNumber]="experiment.versionNumber"
     [chipClass]="experiment.state"
     [id]="experiment.id"
-    [pauseBehaviorText]="
-      experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE ? getPauseBehaviorText(experiment) : undefined
-    "
+    [pauseBehaviorText]="experiment.state === EXPERIMENT_STATE.PAUSED ? getPauseBehaviorText(experiment) : undefined"
     [warningMessageKeys]="warningKeysForSelectedExperiment$ | async"
     (pauseBehaviorClick)="handlePauseBehaviorClick(experiment)"
   ></app-common-section-card-title-header>

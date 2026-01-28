@@ -61,8 +61,8 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to Enrolling
   const [experiment1, experiment2] = experiments;
-  await experimentService.updateState(experiment1.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
-  await experimentService.updateState(experiment2.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experiment1.id, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
+  await experimentService.updateState(experiment2.id, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -70,14 +70,14 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject1.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject1.postExperimentRule,
         assignmentUnit: experimentObject1.assignmentUnit,
         consistencyRule: experimentObject1.consistencyRule,
       }),
       expect.objectContaining({
         name: experimentObject2.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject2.postExperimentRule,
         assignmentUnit: experimentObject2.assignmentUnit,
         consistencyRule: experimentObject2.consistencyRule,
@@ -122,13 +122,13 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  await experimentService.updateState(experimentObject3.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentObject3.id, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject3.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject3.postExperimentRule,
         assignmentUnit: experimentObject3.assignmentUnit,
         consistencyRule: experimentObject3.consistencyRule,

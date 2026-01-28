@@ -99,7 +99,7 @@ export default async function ExcludeGroupsC(): Promise<void> {
   expect(experimentUser).toEqual(objectToCheck);
 
   // change experiment state to enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // get all experiment condition for user
   let experimentConditionAssignment = await getAllExperimentCondition(experimentUser.id, new UpgradeLogger());
@@ -131,7 +131,7 @@ export default async function ExcludeGroupsC(): Promise<void> {
   // update exclusion list of experiment
   experimentObject = {
     ...experimentObject,
-    state: EXPERIMENT_STATE.ENROLLING,
+    state: EXPERIMENT_STATE.RUNNING,
   };
   await experimentService.addList(
     {

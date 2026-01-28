@@ -67,7 +67,7 @@ export default async function GroupUserCount(): Promise<void> {
 
   // change experiment status to Enrolling
 
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   let testingNumberOfGroupSatisfied: number;
 
@@ -84,7 +84,7 @@ export default async function GroupUserCount(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -118,7 +118,7 @@ export default async function GroupUserCount(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -167,7 +167,7 @@ export default async function GroupUserCount(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -195,7 +195,7 @@ export default async function GroupUserCount(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -230,7 +230,7 @@ export default async function GroupUserCount(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+        state: EXPERIMENT_STATE.PAUSED,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,

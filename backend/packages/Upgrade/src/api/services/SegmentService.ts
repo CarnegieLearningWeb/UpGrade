@@ -14,6 +14,7 @@ import {
   ValidatedImportResponse,
   SEGMENT_SEARCH_KEY,
   DuplicateSegmentNameError,
+  EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
 } from 'upgrade_types';
 import { Not } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
@@ -41,6 +42,8 @@ import path from 'path';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
 import { ISegmentSearchParams, ISegmentSortParams } from '../controllers/validators/SegmentPaginatedParamsValidator';
+import { ExperimentSegmentExclusion } from 'src/api/models/ExperimentSegmentExclusion';
+import { ExperimentSegmentInclusion } from 'src/api/models/ExperimentSegmentInclusion';
 
 interface IsSegmentValidWithError {
   missingProperty: string;
@@ -360,12 +363,12 @@ export class SegmentService {
 
   public async getExperimentSegmentExclusionData() {
     const queryBuilder = await this.experimentSegmentExclusionRepository.getExperimentSegmentExclusionData();
-    return queryBuilder;
+    return this.mapExperimentStates(queryBuilder);
   }
 
   public async getExperimentSegmentInclusionData() {
     const queryBuilder = await this.experimentSegmentInclusionRepository.getExperimentSegmentInclusionData();
-    return queryBuilder;
+    return this.mapExperimentStates(queryBuilder);
   }
 
   public async getFeatureFlagSegmentExclusionData() {
@@ -1041,5 +1044,19 @@ export class SegmentService {
 
   private async getParentSegments(): Promise<Segment[]> {
     return await this.segmentRepository.getAllParentSegments();
+  }
+
+  private mapExperimentStates(
+    list: Partial<ExperimentSegmentExclusion>[] | Partial<ExperimentSegmentInclusion>[]
+  ): Partial<ExperimentSegmentExclusion>[] | Partial<ExperimentSegmentInclusion>[] {
+    return list.map((item) => {
+      return {
+        ...item,
+        experiment: {
+          ...item.experiment,
+          state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[item.experiment.state] || item.experiment.state,
+        },
+      };
+    });
   }
 }

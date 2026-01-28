@@ -36,6 +36,8 @@ import {
   IMPORT_COMPATIBILITY_TYPE,
   PAYLOAD_TYPE,
   POST_EXPERIMENT_RULE,
+  EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
+  EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -148,6 +150,7 @@ export class ExperimentService {
     }
     const experiments = await this.experimentRepository.findAllExperiments();
     return experiments.map((experiment) => {
+      experiment.state = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state;
       return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
     });
   }
@@ -193,7 +196,15 @@ export class ExperimentService {
       queryBuilderToReturn = queryBuilderToReturn.addOrderBy('experiment.updatedAt', 'DESC');
     }
     const [experimentData, count] = await Promise.all([queryBuilderToReturn.getMany(), countQuery.getCount()]);
-    return [experimentData, count || 0];
+    return [
+      experimentData.map((experiment) => {
+        return {
+          ...experiment,
+          state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state,
+        };
+      }),
+      count || 0,
+    ];
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
@@ -218,6 +229,7 @@ export class ExperimentService {
       experiment.experimentSegmentInclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
         experiment.experimentSegmentInclusion
       );
+      experiment.state = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state;
       return this.formattingConditionPayload(experiment);
     } else {
       return undefined;
@@ -449,6 +461,7 @@ export class ExperimentService {
         return { site: partition.site, target: partition.target };
       })
     );
+    state = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[state] || state;
 
     // Exclude the user only when the experiment is enrolling. For Preview state we don't need to exclude the user. The client need to provide explicit assignment for preview user to work correctly.
     if (state === EXPERIMENT_STATE.ENROLLING && oldExperiment.state !== EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
@@ -500,7 +513,7 @@ export class ExperimentService {
 
     return {
       ...oldExperiment,
-      state: updatedState[0].state,
+      state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[updatedState[0].state] || updatedState[0].state,
       startOn: updatedState[0].startOn,
       stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog],
     };
@@ -709,9 +722,12 @@ export class ExperimentService {
         return { site: partition.site, target: partition.target };
       })
     );
+    experiment.state = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[experiment.state] || experiment.state;
 
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id, logger);
+    oldExperiment.state = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[oldExperiment.state] || oldExperiment.state;
+
     const oldConditions = oldExperiment.conditions;
     const oldDecisionPoints = oldExperiment.partitions;
     const oldQueries = oldExperiment.queries;
@@ -1131,6 +1147,7 @@ export class ExperimentService {
       .then(async ({ updatedExperiment }) => {
         return {
           ...updatedExperiment,
+          state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[updatedExperiment.state] || updatedExperiment.state,
           experimentSegmentExclusion: excludeListsToReturn,
           experimentSegmentInclusion: includeListsToReturn,
         };
@@ -1751,7 +1768,7 @@ export class ExperimentService {
         searchArray.push(`${type} ${likeString}`);
         break;
       case EXPERIMENT_SEARCH_KEY.STATUS:
-        searchArray.push(`state::TEXT ${likeString}`);
+        searchArray.push(`state::TEXT = '${this.mapStatusStrings(searchString)}'`);
         break;
       case EXPERIMENT_SEARCH_KEY.CONTEXT:
         searchArray.push(`ARRAY_TO_STRING(${type}, ',') ${likeString}`);
@@ -1764,7 +1781,7 @@ export class ExperimentService {
         break;
       default:
         searchArray.push(`name ${likeString}`);
-        searchArray.push(`state::TEXT ${likeString}`);
+        searchArray.push(`state::TEXT = '${this.mapStatusStrings(searchString)}'`);
         searchArray.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
         searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         searchArray.push(`partitions.site ${likeString}`);
@@ -1840,6 +1857,12 @@ export class ExperimentService {
     });
 
     return { ...experiment, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
+  }
+
+  private mapStatusStrings(statusString: string): string {
+    const status = statusString.toLowerCase();
+
+    return EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[status] || status;
   }
 
   private inferListTypesForExperimentListForExperimentRedesignDataChange(
