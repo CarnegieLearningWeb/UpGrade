@@ -127,11 +127,6 @@ export const selectIsGraphLoading = createSelector(selectExperimentState, (state
 
 export const selectExperimentGraphRange = createSelector(selectExperimentState, (state) => state.graphRange);
 
-export const selectExperimentsExportLoading = createSelector(
-  selectExperimentState,
-  (state) => state.isLoadingExperimentExport
-);
-
 export const selectExperimentGraphInfo = createSelector(
   selectExperimentState,
   selectExperimentGraphRange,
@@ -149,28 +144,6 @@ export const selectExperimentStatById = createSelector(
 );
 
 export const selectContextMetaData = createSelector(selectExperimentState, (state) => state.contextMetaData);
-
-export const selectCurrentContextMetaData = createSelector(
-  selectExperimentState,
-  (state) => state.currentUserSelectedContext
-);
-
-export const selectIsLoadingContextMetaData = createSelector(
-  selectExperimentState,
-  (state) => state.isLoadingContextMetaData
-);
-
-export const selectCurrentContextMetaDataConditions = createSelector(
-  selectExperimentState,
-  (state) => state.currentUserSelectedContext?.CONDITIONS || []
-);
-
-export const selectGroupAssignmentStatus = createSelector(selectExperimentState, (state, { experimentId }) => {
-  if (state.entities[experimentId]) {
-    return state.entities[experimentId].groupSatisfied;
-  }
-  return null;
-});
 
 export const selectExperimentQueries = createSelector(selectExperimentState, (state, { experimentId }) => {
   if (state.entities[experimentId]) {
@@ -225,11 +198,6 @@ export const selectExperimentOverviewDetails = createSelector(selectSelectedExpe
 
   return details;
 });
-
-export const selectIsPollingExperimentDetailStats = createSelector(
-  selectExperimentState,
-  (state) => state.isPollingExperimentDetailStats
-);
 
 export const selectExperimentInclusions = createSelector(
   selectSelectedExperiment,
