@@ -202,7 +202,8 @@ export class MoocletExperimentHelperService {
    */
   buildTSConfigurablePolicyParametersDTO(
     editableParams: EditableTSConfigurablePolicyParameters,
-    experimentName: string
+    experimentName: string,
+    existingOutcomeVariableName?: string
   ): MoocletTSConfigurablePolicyParametersDTO {
     const defaults = this.getTSConfigurableDefaults();
 
@@ -217,7 +218,7 @@ export class MoocletExperimentHelperService {
       },
       // System-managed fields
       assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
-      outcome_variable_name: this.generateUniqueOutcomeVariableName(experimentName),
+      outcome_variable_name: existingOutcomeVariableName ?? this.generateUniqueOutcomeVariableName(experimentName),
       max_rating: defaults.max_rating,
       min_rating: defaults.min_rating,
     } as MoocletTSConfigurablePolicyParametersDTO;
