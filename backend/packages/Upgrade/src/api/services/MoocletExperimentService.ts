@@ -294,7 +294,7 @@ export class MoocletExperimentService extends ExperimentService {
    * Handles a transaction to edit Mooclet experiment resources with rollback capability.
    *
    * The function performs the following sequential operations:
-   * 1. Validates experiment state eligibility (INACTIVE, PREVIEW, SCHEDULED, or ENROLLING)
+   * 1. Validates experiment state eligibility (INACTIVE, PREVIEW, SCHEDULED, or RUNNING)
    * 2. Fetches current resources for comparison with incoming changes
    * 3. Detects experiment design changes that affect Mooclet resources and validates if they're allowed in current state
    * 4. Updates the base experiment via parent class
@@ -326,8 +326,8 @@ export class MoocletExperimentService extends ExperimentService {
         EXPERIMENT_STATE.INACTIVE,
         EXPERIMENT_STATE.PREVIEW,
         EXPERIMENT_STATE.SCHEDULED,
-        EXPERIMENT_STATE.ENROLLING,
-        EXPERIMENT_STATE.ENROLLMENT_COMPLETE, // 'paused"
+        EXPERIMENT_STATE.RUNNING,
+        EXPERIMENT_STATE.PAUSED,
       ].includes(incomingExperiment.state)
     ) {
       logger.error({
@@ -338,9 +338,9 @@ export class MoocletExperimentService extends ExperimentService {
     }
 
     // NOTE: Currently allowed states for updating mooclet resources:
-    // conditions (versions): PREVIEW, SCHEDULED, INACTIVE, ENROLLMENT_COMPLETE
-    // outcome variable name: PREVIEW, SCHEDULED, INACTIVE, ENROLLMENT_COMPLETE
-    // policy parameters: ENROLLING, PREVIEW, SCHEDULED, INACTIVE, ENROLLMENT_COMPLETE
+    // conditions (versions): PREVIEW, SCHEDULED, INACTIVE, PAUSED
+    // outcome variable name: PREVIEW, SCHEDULED, INACTIVE, PAUSED
+    // policy parameters: RUNNING, PREVIEW, SCHEDULED, INACTIVE, PAUSED
 
     try {
       // ---------- fetch current resources for comparison to incoming -------------------------------
@@ -357,8 +357,8 @@ export class MoocletExperimentService extends ExperimentService {
         currentOutcomeVariableResponse.name
       );
 
-      // bail if disallowed changes are detected for enrolling experiments
-      if (versionOrVariableEdits && EXPERIMENT_STATE.ENROLLING === incomingExperiment.state) {
+      // bail if disallowed changes are detected for running experiments
+      if (versionOrVariableEdits && EXPERIMENT_STATE.RUNNING === incomingExperiment.state) {
         logger.error({
           message: '[Mooclet Edit] Ineligible version or variable edits detected for an active Mooclet experiment',
           changes: versionOrVariableEdits,
@@ -383,7 +383,7 @@ export class MoocletExperimentService extends ExperimentService {
       // ---------- update policy parameters ------------------------------------------
       // NOTE: the rollbackRef is mutated within these methods and will be used to revert changes if any step fails
 
-      // go ahead and PUT policy parameters (these are allowed when enrolling and not really worth checking for changes)
+      // go ahead and PUT policy parameters (these are allowed when running and not really worth checking for changes)
       const policyParameterResponse = await this.doRevertablePolicyParameterChange({
         incomingExperiment,
         currentMoocletExperimentRef,
