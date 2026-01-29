@@ -1,20 +1,34 @@
 <div class="search-header">
   <mat-form-field class="dense-3 filter-options" subscriptSizing="dynamic">
     <mat-select class="ft-14-400" [(ngModel)]="searchKey" (selectionChange)="onSearch()">
-      <mat-option class="ft-14-400" *ngFor="let filterOption of filterOptions" [value]="filterOption">
+      <mat-option class="ft-14-400" *ngFor="let filterOption of filterOptionsValues" [value]="filterOption">
         {{ filterOption | titlecase }}
       </mat-option>
     </mat-select>
   </mat-form-field>
   <mat-form-field class="dense-3 search-input" subscriptSizing="dynamic">
-    <input
-      class="ft-14-400"
-      matInput
-      #searchInput
-      [(ngModel)]="searchString"
-      (keyup)="onSearch()"
-      [placeholder]="'global.search.text' | translate"
-    />
+    <div *ngIf="!isDropdown">
+      <input
+        class="ft-14-400"
+        matInput
+        #searchInput
+        [(ngModel)]="searchString"
+        (keyup)="onSearch()"
+        [placeholder]="'global.search.text' | translate"
+      />
+    </div>
+    <div *ngIf="isDropdown">
+      <mat-select
+        class="ft-14-400"
+        [(ngModel)]="searchString"
+        (selectionChange)="onSearch()"
+        [placeholder]="'global.search.text' | translate"
+      >
+        <mat-option class="ft-14-400" *ngFor="let filterOption of filteredStatusOptions" [value]="filterOption">
+          {{ filterOption | titlecase }}
+        </mat-option>
+      </mat-select>
+    </div>
     <mat-icon (click)="onSearch()" class="search-icon" matSuffix>search</mat-icon>
   </mat-form-field>
 </div>

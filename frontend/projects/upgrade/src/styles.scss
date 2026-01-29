@@ -13,15 +13,6 @@
 @import './styles/utility.scss';
 @import './styles/shared-modal.scss';
 @import './app/features/dashboard/dashboard-root/dashboard-root.theme.scss';
-@import './app/features/dashboard/home/root/home.theme.scss';
-@import './app/features/dashboard/home/components/experiment-list/experiment-list.theme.scss';
-@import './app/features/dashboard/home/pages/view-experiment/view-experiment.theme.scss';
-@import './app/features/dashboard/home/components/modal/experiment-status/experiment-status.theme.scss';
-@import './app/features/dashboard/home/components/modal/post-experiment-rule/post-experiment-rule.theme.scss';
-@import './app/features/dashboard/home/components/experiment-design/experiment-design.theme.scss';
-@import './app/features/dashboard/home/components/experiment-design/payloads-table/payloads-table.theme.scss';
-@import './app/features/dashboard/home/components/enrollment-over-time/enrollment-over-time.theme.scss';
-@import './app/features/dashboard/home/components/modal/new-experiment/new-experiment.theme.scss';
 @import './app/features/dashboard/profile/components/profile-info/profile-info.theme.scss';
 @import './app/features/dashboard/profile/components/modals/new-user/new-user.theme.scss';
 @import './app/features/dashboard/experiment-users/components/experiment-users/experiment-users.theme.scss';
@@ -34,12 +25,7 @@
 @import './app/features/dashboard/segments-legacy/components/modal/new-segment/new-segment.theme.scss';
 @import './app/features/dashboard/segments-legacy/components/segment-members/segment-members.theme.scss';
 @import './app/features/dashboard/segments-legacy/pages/view-segment/view-segment.theme.scss';
-@import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
-@import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
-@import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
-@import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
-@import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
 @import './app/features/dashboard/segments-legacy/components/modal/import-segment/import-segment.theme.scss';
 @import './app/features/dashboard/experiment-users/components/stratification-factor-list/import-stratifications/import-stratifications.theme.scss';
 @import './app/features/dashboard/experiment-users/components/stratification-factor-list/delete-stratification/delete-stratification.theme.scss';
@@ -47,15 +33,6 @@
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
-  @include home-component-theme($theme);
-  @include experiment-list-component-theme($theme);
-  @include view-experiment-component-theme($theme);
-  @include experiment-status-component-theme($theme);
-  @include post-experiment-rule-component-theme($theme);
-  @include experiment-design-component-theme($theme);
-  @include payloads-table-component-theme($theme);
-  @include enrollment-over-time-component-theme($theme);
-  @include new-experiment-component-theme($theme);
   @include experiment-users-component-theme($theme);
   @include profile-info-component-theme($theme);
   @include new-user-component-theme($theme);
@@ -68,12 +45,7 @@
   @include segments-list-component-theme($theme);
   @include new-segment-component-theme($theme);
   @include segment-members-component-theme($theme);
-  @include queries-modal-component-theme($theme);
-  @include query-result-component-theme($theme);
   @include metrics-component-theme($theme);
-  @include experiment-ending-criteria-component-theme($theme);
-  @include import-experiment-component-theme($theme);
-  @include state-time-logs-modal-component-theme($theme);
   @include import-segment-component-theme($theme);
   @include import-stratifications-component-theme($theme);
   @include delete-stratifications-component-theme($theme);
@@ -132,20 +104,13 @@ button[mat-icon-button] {
 }
 
 .delete-modal,
-.import-experiment-modal,
 .import-segment-modal,
 .import-stratification-modal,
-.experiment-general-modal,
-.new-experiment-modal,
-.new-flag-modal,
 .new-segment-modal,
 .new-user-modal,
-.queries-modal,
 .export-modal,
-.query-result,
 .add-metric-modal,
-.duplicate-segment-modal,
-.experiment-ending-criteria {
+.duplicate-segment-modal {
   @include custom-components-theme($light-theme);
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
@@ -171,8 +136,7 @@ button[mat-icon-button] {
   }
 }
 
-.segment-experiment-list-modal,
-.state-time-logs-modal {
+.segment-experiment-list-modal {
   border-radius: 7px;
 
   .mat-mdc-dialog-container {
@@ -199,33 +163,17 @@ button[mat-icon-button] {
 }
 
 .import-segment-modal,
-.import-experiment-modal,
 .import-stratification-modal {
   width: 500px;
 }
 
-.experiment-general-modal,
 .add-metric-modal {
   width: 804px;
   min-height: 294px;
 }
 
-.experiment-ending-criteria {
-  width: 600px;
-  min-height: 400px;
-}
-
 .segment-experiment-list-modal {
   width: 700px;
-}
-
-.state-time-logs-modal {
-  width: 400px;
-}
-
-.query-result {
-  width: 600px;
-  min-height: 300px;
 }
 
 .new-experiment-modal {
@@ -233,16 +181,8 @@ button[mat-icon-button] {
   width: 1000px;
 }
 
-.queries-modal {
-  width: 1000px;
-}
-
 .export-modal {
   width: 700px;
-}
-
-.new-flag-modal {
-  width: 844px;
 }
 
 .new-segment-modal {

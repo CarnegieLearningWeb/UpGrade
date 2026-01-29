@@ -1,6 +1,5 @@
 import {
   ExperimentState,
-  Experiment,
   EXPERIMENT_SEARCH_KEY,
   SORT_AS_DIRECTION,
   EXPERIMENT_SORT_KEY,
@@ -17,7 +16,6 @@ export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.get
 export const initialState: ExperimentState = adapter.getInitialState({
   isLoadingExperiment: false,
   isLoadingExperimentDetailStats: false,
-  isPollingExperimentDetailStats: false,
   isLoadingExperimentExport: false,
   skipExperiment: 0,
   totalExperiments: null,
@@ -45,13 +43,15 @@ const reducer = createReducer(
   on(experimentsAction.actionGetExperiments, (state) => ({
     ...state,
   })),
-  on(experimentsAction.actionGetExperimentsSuccess, (state, { experiments, totalExperiments }) => {
+  on(experimentsAction.actionGetExperimentsSuccess, (state, { experiments, totalExperiments, fromStarting }) => {
     const newState = {
       ...state,
       totalExperiments,
       skipExperiment: state.skipExperiment + experiments.length,
     };
-    return adapter.upsertMany(experiments, { ...newState, isLoadingExperiment: false });
+    return fromStarting
+      ? adapter.setAll(experiments, { ...newState, isLoadingExperiment: false })
+      : adapter.upsertMany(experiments, { ...newState, isLoadingExperiment: false });
   }),
   on(
     experimentsAction.actionGetExperimentsFailure,
@@ -169,9 +169,6 @@ const reducer = createReducer(
     ...state,
     currentUserSelectedContext: state.contextMetaData.contextMetadata[context],
   })),
-  on(experimentsAction.actionFetchGroupAssignmentStatusSuccess, (state, { experiment }) =>
-    adapter.upsertOne(experiment, state)
-  ),
   on(experimentsAction.actionFetchExperimentDetailStat, (state) => ({
     ...state,
     isLoadingExperimentDetailStats: true,
@@ -189,14 +186,6 @@ const reducer = createReducer(
       isLoadingExperimentDetailStats: false,
     };
   }),
-  on(experimentsAction.actionBeginExperimentDetailStatsPolling, (state) => ({
-    ...state,
-    isPollingExperimentDetailStats: true,
-  })),
-  on(experimentsAction.actionEndExperimentDetailStatsPolling, (state) => ({
-    ...state,
-    isPollingExperimentDetailStats: false,
-  })),
   on(experimentsAction.actionExportExperimentDesign, (state) => ({
     ...state,
     isLoadingExperimentExport: true,

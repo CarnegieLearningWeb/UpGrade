@@ -19,14 +19,11 @@ import {
   EXPERIMENT_ROW_ACTION,
   ExperimentQueryDTO,
   EXPERIMENT_SECTION_CARD_TYPE,
+  SectionCardRestriction,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import {
-  getSectionCardRestriction,
-  SectionCardRestriction,
-} from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
 
 @Component({
   selector: 'app-experiment-metrics-section-card',
@@ -56,11 +53,15 @@ export class ExperimentMetricsSectionCardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.vm$ = combineLatest([this.selectedExperiment$, this.authService.userPermissions$]).pipe(
-      map(([experiment, permissions]) => ({
+    this.vm$ = combineLatest([
+      this.selectedExperiment$,
+      this.authService.userPermissions$,
+      this.experimentService.sectionCardRestriction$(EXPERIMENT_SECTION_CARD_TYPE.METRICS),
+    ]).pipe(
+      map(([experiment, permissions, restriction]) => ({
         experiment,
         permissions,
-        restriction: getSectionCardRestriction(EXPERIMENT_SECTION_CARD_TYPE.METRICS, experiment?.state),
+        restriction,
       }))
     );
   }

@@ -321,7 +321,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     }
 
     const enrollmentLog = (this.experiment.stateTimeLogs || [])
-      .filter((log) => log.toState === EXPERIMENT_STATE.ENROLLING)
+      .filter((log) => log.toState === EXPERIMENT_STATE.RUNNING)
       .sort((a, b) => new Date(a.timeLog).getTime() - new Date(b.timeLog).getTime())[0];
 
     if (!enrollmentLog?.timeLog) {

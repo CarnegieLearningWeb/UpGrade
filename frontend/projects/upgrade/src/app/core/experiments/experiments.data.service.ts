@@ -10,11 +10,10 @@ import {
   UpdateExperimentConditionsRequest,
 } from './store/experiments.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { ExperimentFile } from '../../features/dashboard/home/components/modal/import-experiment/import-experiment.component';
 import { API_ENDPOINTS } from '../api-endpoints.constants';
 import { Observable } from 'rxjs';
 import { ExperimentSegmentListRequest, SegmentFile } from '../segments/store/segments.model';
-import { LIST_FILTER_MODE } from 'upgrade_types';
+import { IImportFile, LIST_FILTER_MODE } from 'upgrade_types';
 
 @Injectable()
 export class ExperimentDataService {
@@ -40,12 +39,12 @@ export class ExperimentDataService {
     return this.http.post(url, { ...experiment });
   }
 
-  validateExperiment(experiments: ExperimentFile[]) {
+  validateExperiment(experiments: IImportFile[]) {
     const url = API_ENDPOINTS.validateExperiment;
     return this.http.post(url, experiments);
   }
 
-  importExperiment(experiments: ExperimentFile[]) {
+  importExperiment(experiments: IImportFile[]) {
     const url = API_ENDPOINTS.importExperiment;
     return this.http.post(url, experiments);
   }

@@ -78,14 +78,15 @@ export interface Environment {
   useHashRouting: boolean;
   googleClientId: string;
   domainName: string;
-  pollingEnabled: boolean;
-  pollingInterval: number;
-  pollingLimit: number;
   segmentsRefreshToggle: boolean;
   errorLogsToggle: boolean;
   withinSubjectExperimentSupportToggle: boolean;
   metricAnalyticsExperimentDisplayToggle: boolean;
   moocletToggle: boolean;
+  // these have been removed but optional to prevent annoyance switching between branches
+  pollingEnabled?: boolean;
+  pollingInterval?: number;
+  pollingLimit?: number;
 }
 
 export interface RuntimeEnvironmentConfig {

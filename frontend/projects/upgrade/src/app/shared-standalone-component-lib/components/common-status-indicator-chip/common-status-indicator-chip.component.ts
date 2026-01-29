@@ -40,12 +40,6 @@ export class CommonStatusIndicatorChipComponent {
   @Input() warningMessageKeys: string[] = [];
   chipText = '';
 
-  private readonly DISPLAY_NAME_OVERRIDES: Record<string, string> = {
-    [STATUS_INDICATOR_CHIP_TYPE.ENROLLING]: 'Running',
-    [STATUS_INDICATOR_CHIP_TYPE.ENROLLMENT_COMPLETE]: 'Paused',
-    [STATUS_INDICATOR_CHIP_TYPE.CANCELLED]: 'Completed',
-  };
-
   ngOnInit() {
     this.chipText = this.convertToTitleCase(this.chipClass);
   }
@@ -57,12 +51,7 @@ export class CommonStatusIndicatorChipComponent {
   }
 
   convertToTitleCase(value: STATUS_INDICATOR_CHIP_TYPE): string {
-    // Check for special display name overrides first
-    if (this.DISPLAY_NAME_OVERRIDES[value]) {
-      return this.DISPLAY_NAME_OVERRIDES[value];
-    }
-
-    // For all other cases, just capitalize the first letter
+    // capitalize the first letter
     return value.charAt(0).toUpperCase() + value.slice(1);
   }
 }

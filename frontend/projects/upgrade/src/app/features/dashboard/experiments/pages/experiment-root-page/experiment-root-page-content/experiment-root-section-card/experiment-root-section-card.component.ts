@@ -15,10 +15,7 @@ import { DialogService } from '../../../../../../../shared/services/common-dialo
 import { Observable, map, combineLatest } from 'rxjs';
 import { EXPERIMENT_BUTTON_ACTION, Experiment } from '../../../../../../../core/experiments/store/experiments.model';
 import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
-import {
-  CommonTableHelpersService,
-  TableState,
-} from '../../../../../../../shared/services/common-table-helpers.service';
+import { TableState } from '../../../../../../../shared/services/common-table-helpers.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { StratificationFactorsService } from '../../../../../../../core/stratification-factors/stratification-factors.service';
@@ -52,11 +49,15 @@ export class ExperimentRootSectionCardComponent {
   expandedTagsMap = new Map<string, boolean>();
 
   experimentFilterOption = [
-    EXPERIMENT_SEARCH_KEY.ALL,
-    EXPERIMENT_SEARCH_KEY.NAME,
-    EXPERIMENT_SEARCH_KEY.STATUS,
-    EXPERIMENT_SEARCH_KEY.CONTEXT,
-    EXPERIMENT_SEARCH_KEY.TAG,
+    { value: EXPERIMENT_SEARCH_KEY.ALL, type: 'text' },
+    { value: EXPERIMENT_SEARCH_KEY.NAME, type: 'text' },
+    {
+      value: EXPERIMENT_SEARCH_KEY.STATUS,
+      type: 'dropdown',
+      valueOptions: ['Inactive', 'Archived', 'Running', 'Completed', 'Paused'],
+    },
+    { value: EXPERIMENT_SEARCH_KEY.CONTEXT, type: 'text' },
+    { value: EXPERIMENT_SEARCH_KEY.TAG, type: 'text' },
   ];
   isSectionCardExpanded = true;
 
@@ -77,7 +78,6 @@ export class ExperimentRootSectionCardComponent {
     private experimentService: ExperimentService,
     private stratificationFactorsService: StratificationFactorsService,
     private dialogService: DialogService,
-    private tableHelpersService: CommonTableHelpersService,
     private authService: AuthService
   ) {}
 
@@ -97,16 +97,15 @@ export class ExperimentRootSectionCardComponent {
         // Filter out archived experiments unless STATUS filter is selected
         if (searchKey !== EXPERIMENT_SEARCH_KEY.STATUS) {
           const filteredData = tableState.tableData.filter((experiment) => experiment.state !== 'archived');
-          const filteredTableState = { ...tableState, tableData: filteredData };
-          return this.tableHelpersService.mapTableStateToDataSource<Experiment>(filteredTableState);
+          return new MatTableDataSource<Experiment>(filteredData);
         }
-        return this.tableHelpersService.mapTableStateToDataSource<Experiment>(tableState);
+        return new MatTableDataSource<Experiment>(tableState.tableData);
       })
     );
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<EXPERIMENT_SEARCH_KEY>) {
-    this.experimentService.setSearchString(params.searchString?.trim());
+    this.experimentService.setSearchString(params.searchString?.trim() || '');
     this.experimentService.setSearchKey(params.searchKey as EXPERIMENT_SEARCH_KEY);
   }
 

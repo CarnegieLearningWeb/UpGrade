@@ -36,6 +36,8 @@ import {
   IMPORT_COMPATIBILITY_TYPE,
   PAYLOAD_TYPE,
   POST_EXPERIMENT_RULE,
+  EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
+  EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -148,6 +150,8 @@ export class ExperimentService {
     }
     const experiments = await this.experimentRepository.findAllExperiments();
     return experiments.map((experiment) => {
+      experiment.state = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state;
+      experiment.stateTimeLogs = this.transformStateTimeLogs(experiment.stateTimeLogs);
       return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
     });
   }
@@ -184,28 +188,8 @@ export class ExperimentService {
 
     let queryBuilderToReturn = this.experimentRepository
       .createQueryBuilder('experiment')
-      .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('experiment.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels')
-      .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
-      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
-      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
-      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
-      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('levelCombinationElements.level', 'level')
-      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
-      .leftJoinAndSelect('partitions.conditionPayloads', 'ConditionPayloadsArray')
-      .leftJoinAndSelect('ConditionPayloadsArray.parentCondition', 'parentCondition')
       .where(`experiment.id IN ${paginatedParentSubQuery.getQuery()}`);
 
     if (sortParams) {
@@ -214,17 +198,13 @@ export class ExperimentService {
       queryBuilderToReturn = queryBuilderToReturn.addOrderBy('experiment.updatedAt', 'DESC');
     }
     const [experimentData, count] = await Promise.all([queryBuilderToReturn.getMany(), countQuery.getCount()]);
-    experimentData.forEach((experiment) => {
-      experiment.experimentSegmentExclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
-        experiment.experimentSegmentExclusion
-      );
-      experiment.experimentSegmentInclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
-        experiment.experimentSegmentInclusion
-      );
-    });
     return [
       experimentData.map((experiment) => {
-        return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(experiment)));
+        return {
+          ...experiment,
+          state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state,
+          stateTimeLogs: this.transformStateTimeLogs(experiment.stateTimeLogs),
+        };
       }),
       count || 0,
     ];
@@ -252,6 +232,8 @@ export class ExperimentService {
       experiment.experimentSegmentInclusion = this.inferListTypesForExperimentListForExperimentRedesignDataChange(
         experiment.experimentSegmentInclusion
       );
+      experiment.state = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state;
+      experiment.stateTimeLogs = this.transformStateTimeLogs(experiment.stateTimeLogs);
       return this.formattingConditionPayload(experiment);
     } else {
       return undefined;
@@ -483,6 +465,7 @@ export class ExperimentService {
         return { site: partition.site, target: partition.target };
       })
     );
+    state = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[state] || state;
 
     // Exclude the user only when the experiment is enrolling. For Preview state we don't need to exclude the user. The client need to provide explicit assignment for preview user to work correctly.
     if (state === EXPERIMENT_STATE.ENROLLING && oldExperiment.state !== EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
@@ -534,9 +517,12 @@ export class ExperimentService {
 
     return {
       ...oldExperiment,
-      state: updatedState[0].state,
+      state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[updatedState[0].state] || updatedState[0].state,
       startOn: updatedState[0].startOn,
-      stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog],
+      stateTimeLogs: [
+        ...this.transformStateTimeLogs(oldExperiment.stateTimeLogs),
+        this.transformStateTimeLogs([updatedStateTimeLog]),
+      ].flat(),
     };
   }
 
@@ -743,9 +729,12 @@ export class ExperimentService {
         return { site: partition.site, target: partition.target };
       })
     );
+    experiment.state = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[experiment.state] || experiment.state;
 
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id, logger);
+    oldExperiment.state = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[oldExperiment.state] || oldExperiment.state;
+
     const oldConditions = oldExperiment.conditions;
     const oldDecisionPoints = oldExperiment.partitions;
     const oldQueries = oldExperiment.queries;
@@ -1165,6 +1154,8 @@ export class ExperimentService {
       .then(async ({ updatedExperiment }) => {
         return {
           ...updatedExperiment,
+          stateTimeLogs: this.transformStateTimeLogs(updatedExperiment.stateTimeLogs),
+          state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[updatedExperiment.state] || updatedExperiment.state,
           experimentSegmentExclusion: excludeListsToReturn,
           experimentSegmentInclusion: includeListsToReturn,
         };
@@ -1785,7 +1776,7 @@ export class ExperimentService {
         searchArray.push(`${type} ${likeString}`);
         break;
       case EXPERIMENT_SEARCH_KEY.STATUS:
-        searchArray.push(`state::TEXT ${likeString}`);
+        searchArray.push(`state::TEXT = '${this.mapStatusStrings(searchString)}'`);
         break;
       case EXPERIMENT_SEARCH_KEY.CONTEXT:
         searchArray.push(`ARRAY_TO_STRING(${type}, ',') ${likeString}`);
@@ -1798,7 +1789,7 @@ export class ExperimentService {
         break;
       default:
         searchArray.push(`name ${likeString}`);
-        searchArray.push(`state::TEXT ${likeString}`);
+        searchArray.push(`state::TEXT = '${this.mapStatusStrings(searchString)}'`);
         searchArray.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
         searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         searchArray.push(`partitions.site ${likeString}`);
@@ -1874,6 +1865,12 @@ export class ExperimentService {
     });
 
     return { ...experiment, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
+  }
+
+  private mapStatusStrings(statusString: string): string {
+    const status = statusString.toLowerCase();
+
+    return EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[status] || status;
   }
 
   private inferListTypesForExperimentListForExperimentRedesignDataChange(
@@ -1986,21 +1983,6 @@ export class ExperimentService {
         currentUser,
         transactionalEntityManager
       );
-
-      // Update exclusions/Enrollments if the filterType is EXCLUSION
-      if (filterType === LIST_FILTER_MODE.EXCLUSION) {
-        let newUsers = [];
-        let newGroups = [];
-        if (newSegment.listType === 'individual') {
-          newUsers = newSegment.individualForSegment.map((ifs) => ifs.userId);
-        } else if (newSegment.listType !== 'segment') {
-          newGroups = newSegment.groupForSegment.map((gfs) => {
-            return { groupId: gfs.groupId, type: gfs.type };
-          });
-        }
-
-        await this.segmentService.updateEnrollmentAndExclusionDocuments(experiment, newUsers, newGroups);
-      }
       return experimentSegmentInclusionOrExclusion;
     };
 
@@ -2483,5 +2465,16 @@ export class ExperimentService {
       await this.segmentRepository.deleteSegments(segmentIds, logger, transactionalEntityManager);
     }
     await Promise.all(auditLogPromises);
+  }
+  private transformStateTimeLogs(stateTimeLogs: StateTimeLog[]): StateTimeLog[] {
+    return (
+      stateTimeLogs?.map((log) => {
+        return {
+          ...log,
+          fromState: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[log.fromState] || log.fromState,
+          toState: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[log.toState] || log.toState,
+        };
+      }) || []
+    );
   }
 }

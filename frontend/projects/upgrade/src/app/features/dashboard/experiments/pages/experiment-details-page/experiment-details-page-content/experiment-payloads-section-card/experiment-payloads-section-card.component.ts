@@ -17,11 +17,8 @@ import {
   ExperimentPayloadRowActionEvent,
   EXPERIMENT_ROW_ACTION,
   EXPERIMENT_SECTION_CARD_TYPE,
-} from '../../../../../../../core/experiments/store/experiments.model';
-import {
-  getSectionCardRestriction,
   SectionCardRestriction,
-} from '../../../../../../../core/experiments/experiment-status-restriction-helper.service';
+} from '../../../../../../../core/experiments/store/experiments.model';
 import { ExperimentPayloadsTableComponent } from './experiment-payloads-table/experiment-payloads-table.component';
 
 @Component({
@@ -50,11 +47,15 @@ export class ExperimentPayloadsSectionCardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.vm$ = combineLatest([this.selectedExperiment$, this.authService.userPermissions$]).pipe(
-      map(([experiment, permissions]) => ({
+    this.vm$ = combineLatest([
+      this.selectedExperiment$,
+      this.authService.userPermissions$,
+      this.experimentService.sectionCardRestriction$(EXPERIMENT_SECTION_CARD_TYPE.PAYLOADS),
+    ]).pipe(
+      map(([experiment, permissions, restriction]) => ({
         experiment,
         permissions,
-        restriction: getSectionCardRestriction(EXPERIMENT_SECTION_CARD_TYPE.PAYLOADS, experiment?.state),
+        restriction,
       }))
     );
   }

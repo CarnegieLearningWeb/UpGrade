@@ -1,9 +1,7 @@
 import { initialState, experimentsReducer } from './experiments.reducer';
 import { Action } from '@ngrx/store';
 import {
-  actionBeginExperimentDetailStatsPolling,
   actionDeleteExperimentSuccess,
-  actionEndExperimentDetailStatsPolling,
   actionFetchAllExperimentNamesSuccess,
   actionFetchAllDecisionPointsSuccess,
   actionFetchContextMetaDataSuccess,
@@ -683,29 +681,5 @@ describe('ExperimentsReducer', () => {
 
     expect(newState).not.toBe(previousState);
     expect(newState.stats['1'].users).toEqual(11);
-  });
-
-  it('action "actionBeginExperimentDetailStatsPolling" should set polling to true', () => {
-    const previousState = { ...initialState };
-    previousState.isPollingExperimentDetailStats = false;
-
-    const testAction: Action = actionBeginExperimentDetailStatsPolling({} as any);
-
-    const newState = experimentsReducer(previousState, testAction);
-
-    expect(newState).not.toBe(previousState);
-    expect(newState.isPollingExperimentDetailStats).toEqual(true);
-  });
-
-  it('action "actionEndExperimentDetailStatsPolling" should set polling to false', () => {
-    const previousState = { ...initialState };
-    previousState.isPollingExperimentDetailStats = true;
-
-    const testAction: Action = actionEndExperimentDetailStatsPolling();
-
-    const newState = experimentsReducer(previousState, testAction);
-
-    expect(newState).not.toBe(previousState);
-    expect(newState.isLoadingExperimentDetailStats).toEqual(false);
   });
 });

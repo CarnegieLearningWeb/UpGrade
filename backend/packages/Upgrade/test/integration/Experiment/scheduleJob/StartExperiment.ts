@@ -83,7 +83,7 @@ export default async function StartExperiment(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,

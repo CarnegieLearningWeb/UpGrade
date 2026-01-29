@@ -74,41 +74,10 @@ export enum NewExperimentDialogEvents {
   SAVE_DATA = 'Save Data',
 }
 
-export enum NewExperimentPaths {
-  EXPERIMENT_OVERVIEW = 'Experiment Overview',
-  EXPERIMENT_DESIGN = 'Experiment Design',
-  EXPERIMENT_PARTICIPANTS = 'Experiment Participants',
-  MONITORED_METRIC = 'Monitored Metric',
-  EXPERIMENT_SCHEDULE = 'Experiment Schedule',
-  POST_EXPERIMENT_RULE = 'Post Experiment Rule',
-}
-
-export enum OverviewFormWarningStatus {
-  NO_WARNING = 'no warning',
-  CONTEXT_CHANGED = 'context changed',
-  DESIGN_TYPE_CHANGED = 'design type changed',
-}
-
-export interface NewExperimentDialogData {
-  type: NewExperimentDialogEvents;
-  formData?: any;
-  path?: NewExperimentPaths;
-}
-
-export enum DateType {
-  MEDIUM_DATE = 'medium date',
-  SHORT_DATE = 'short date',
-}
-
 export enum UpsertExperimentType {
   CREATE_NEW_EXPERIMENT = 'Create new experiment',
   UPDATE_EXPERIMENT = 'Update experiment',
   IMPORT_EXPERIMENT = 'Import experiment',
-}
-
-export enum EndExperimentCondition {
-  END_ON_DATE = 'End on Date',
-  END_CRITERIA = 'End Criteria',
 }
 
 export enum ExperimentLocalStorageKeys {
@@ -172,6 +141,12 @@ export interface ExperimentActionButton {
   disabled: boolean;
   disabledReasons?: string[]; // Translation keys for tooltip
   translationKey: string;
+}
+
+export interface SectionCardRestriction {
+  isDisabled: boolean;
+  tooltipKey?: string;
+  shouldHideActions?: boolean;
 }
 
 export interface EnrollmentCompleteCondition {
@@ -632,7 +607,6 @@ export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_C
 export interface ExperimentState extends EntityState<ExperimentVM> {
   isLoadingExperiment: boolean;
   isLoadingExperimentDetailStats: boolean;
-  isPollingExperimentDetailStats: boolean;
   isLoadingExperimentExport: boolean;
   skipExperiment: number;
   totalExperiments: number;

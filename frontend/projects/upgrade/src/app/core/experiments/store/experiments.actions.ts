@@ -17,13 +17,13 @@ import {
   ExperimentSegmentListResponse,
   UpdateExperimentConditionsRequest,
 } from './experiments.model';
-import { ExperimentSegmentListRequest, ExperimentSegmentListDetails } from '../../segments/store/segments.model';
+import { ExperimentSegmentListRequest } from '../../segments/store/segments.model';
 
 export const actionGetExperiments = createAction('[Experiment] Get Experiments', props<{ fromStarting?: boolean }>());
 
 export const actionGetExperimentsSuccess = createAction(
   '[Experiment] Get Experiments Success',
-  props<{ experiments: Experiment[]; totalExperiments: number }>()
+  props<{ experiments: Experiment[]; totalExperiments: number; fromStarting?: boolean }>()
 );
 
 export const actionGetExperimentsFailure = createAction('[Experiment] Get Experiment Failure', props<{ error: any }>());
@@ -267,26 +267,6 @@ export const actionSetCurrentContext = createAction(
   '[Experiment] Set User-Selected Context',
   props<{ context: string }>()
 );
-
-export const actionFetchGroupAssignmentStatus = createAction(
-  '[Experiment] Fetch group counts having met ending criteria',
-  props<{ experimentId: string }>()
-);
-
-export const actionFetchGroupAssignmentStatusSuccess = createAction(
-  '[Experiment] Fetch group counts having met ending criteria Success',
-  props<{ experiment: Experiment }>()
-);
-
-export const actionFetchGroupAssignmentStatusFailure = createAction(
-  '[Experiment] Fetch group counts having met ending criteria Failure'
-);
-export const actionBeginExperimentDetailStatsPolling = createAction(
-  '[Experiment] Begin polling every n seconds for details stats',
-  props<{ experimentId: string }>()
-);
-
-export const actionEndExperimentDetailStatsPolling = createAction('[Experiment] End polling for detail stats');
 
 export const actionAddExperimentInclusionList = createAction(
   '[Experiment] Add Experiment Inclusion List',

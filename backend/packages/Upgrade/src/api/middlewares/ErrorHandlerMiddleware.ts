@@ -5,6 +5,7 @@ import { env } from '../../env';
 import { ErrorService } from '../services/ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { SERVER_ERROR } from 'upgrade_types';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 interface ErrorWithRequest extends ExperimentError {
   request?: {
@@ -18,7 +19,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
 
   constructor(public errorService: ErrorService) {}
 
-  public async error(error: any, req: express.Request, res: express.Response): Promise<void> {
+  public error(error: any, req: express.Request, res: express.Response): void {
     // It seems like some decorators handle setting the response (i.e. class-validators)
     let message: string;
     let type: SERVER_ERROR;
@@ -126,7 +127,16 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     // #1042 send request in logging output, don't need to put into database
     experimentError.request = req.body;
 
-    req.logger.error(experimentError);
+    if (req.logger) {
+      req.logger.error(experimentError);
+    } else {
+      const fallbackLogger = new UpgradeLogger();
+      fallbackLogger.error({
+        ...experimentError,
+        warning:
+          'req.logger was undefined so custom logger used - error occurred before LogMiddleware loaded, likely a CORS issue',
+      });
+    }
 
     // #1040
     // experimentError.type ? await this.errorService.create(experimentError, req.logger) : await Promise.resolve(error);

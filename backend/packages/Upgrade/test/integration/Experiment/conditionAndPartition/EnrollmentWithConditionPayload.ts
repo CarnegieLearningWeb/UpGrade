@@ -46,7 +46,7 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -54,7 +54,7 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
