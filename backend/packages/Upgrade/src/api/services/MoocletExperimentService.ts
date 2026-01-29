@@ -325,8 +325,8 @@ export class MoocletExperimentService extends ExperimentService {
         EXPERIMENT_STATE.INACTIVE,
         EXPERIMENT_STATE.PREVIEW,
         EXPERIMENT_STATE.SCHEDULED,
-        EXPERIMENT_STATE.ENROLLING,
-        EXPERIMENT_STATE.ENROLLMENT_COMPLETE, // 'paused"
+        EXPERIMENT_STATE.RUNNING,
+        EXPERIMENT_STATE.PAUSED,
       ].includes(incomingExperiment.state)
     ) {
       const error = {
