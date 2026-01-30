@@ -58,4 +58,21 @@ export class CommonFormHelpersService {
     control?.setValidators(validators);
     control?.updateValueAndValidity({ emitEvent: false });
   }
+
+  /**
+   * Custom validator to ensure the value is an integer.
+   * Returns an error if the value is not a whole number.
+   */
+  public static integerValidator(): ValidatorFn {
+    return (control) => {
+      if (!control.value) {
+        return null; // Don't validate empty values, this clobbers the 'required' validator
+      }
+      const value = Number(control.value);
+      if (isNaN(value) || !Number.isInteger(value)) {
+        return { integer: { value: control.value } };
+      }
+      return null;
+    };
+  }
 }

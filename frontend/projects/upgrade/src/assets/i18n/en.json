@@ -203,6 +203,7 @@
   "home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.min-error.text": "TS Post Diff threshold must be 0.0 or higher.",
   "home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.max-error.text": "TS Post Diff threshold must be 1.0 or lower.",
   "home.new-experiment.design.ts-configurable-policy.general.max-error.text": "Please enter a value less than 1,000,000.",
+  "home.new-experiment.design.ts-configurable-policy.general.integer-error.text": "Please enter a whole number (integer) value.",
   "home.new-experiment.metrics.text": "Metrics",
   "home.new-experiment.metrics.metric.placeholder.text": "Metric",
   "home.new-experiment.metrics.key.placeholder.text": "Key",
