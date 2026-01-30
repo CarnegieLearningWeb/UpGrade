@@ -24,6 +24,9 @@
       <mat-error *ngIf="policyForm.get('prior_success')?.hasError('max')">
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
+      <mat-error *ngIf="policyForm.get('prior_success')?.hasError('integer')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
+      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -39,6 +42,9 @@
       }}</mat-error>
       <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('max')">
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
+      </mat-error>
+      <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('integer')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
       </mat-error>
     </mat-form-field>
 
@@ -56,6 +62,9 @@
       <mat-error *ngIf="policyForm.get('batch_size')?.hasError('max')">
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
+      <mat-error *ngIf="policyForm.get('batch_size')?.hasError('integer')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
+      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -71,6 +80,9 @@
       </mat-error>
       <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('max')">
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
+      </mat-error>
+      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('integer')">
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
       </mat-error>
     </mat-form-field>
 

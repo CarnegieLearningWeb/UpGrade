@@ -12,6 +12,7 @@ import {
 import { ExperimentVM, TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS } from './store/experiments.model';
 import { environment } from '../../../environments/environment';
 import { BullettedListKeyValueFormat } from '../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
+import { CommonFormHelpersService } from '../../shared/services/common-form-helpers.service';
 
 // ============================================================================
 // Pure Functions (exported for use in selectors and other pure contexts)
@@ -232,22 +233,30 @@ export class MoocletExperimentHelperService {
     const defaults = this.getTSConfigurableDefaults();
 
     return {
-      batch_size: [Validators.required, Validators.min(defaults.batch_size), Validators.max(DEFAULT_MAX_NUMBER_INPUT)],
+      batch_size: [
+        Validators.required,
+        Validators.min(defaults.batch_size),
+        Validators.max(DEFAULT_MAX_NUMBER_INPUT),
+        CommonFormHelpersService.integerValidator(),
+      ],
       uniform_threshold: [
         Validators.required,
         Validators.min(defaults.uniform_threshold),
         Validators.max(DEFAULT_MAX_NUMBER_INPUT),
+        CommonFormHelpersService.integerValidator(),
       ],
       tspostdiff_thresh: [Validators.required, Validators.min(defaults.tspostdiff_thresh), Validators.max(1.0)],
       prior_success: [
         Validators.required,
         Validators.min(defaults.prior.success),
         Validators.max(DEFAULT_MAX_NUMBER_INPUT),
+        CommonFormHelpersService.integerValidator(),
       ],
       prior_failure: [
         Validators.required,
         Validators.min(defaults.prior.failure),
         Validators.max(DEFAULT_MAX_NUMBER_INPUT),
+        CommonFormHelpersService.integerValidator(),
       ],
     };
   }
