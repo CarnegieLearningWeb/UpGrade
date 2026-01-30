@@ -772,14 +772,15 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
       filteredMetrics = metrics.filter((metric) => metric.children && metric.children.length > 0);
     }
 
-    // Then, apply context filtering if context is available
-    if (this.currentContext?.length) {
-      filteredMetrics = filteredMetrics.filter(
-        (metric) => metric.context && this.currentContext?.some((ctx) => metric.context.includes(ctx))
-      );
+    // Context is required - if not available, return empty array
+    if (!this.currentContext?.length) {
+      return [];
     }
 
-    return filteredMetrics;
+    // Apply context filtering
+    return filteredMetrics.filter(
+      (metric) => metric.context && this.currentContext?.some((ctx) => metric.context.includes(ctx))
+    );
   }
 
   private populateGlobalMetricOptions(metrics: MetricNode[]): void {
