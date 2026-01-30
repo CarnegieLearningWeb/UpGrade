@@ -9,7 +9,7 @@ vm.experiment.context[0];
     [title]="'experiments.details.conditions.card.title.text' | translate"
     [subtitle]="'experiments.details.conditions.card.subtitle.text' | translate"
     [tableRowCount]="vm.experiment.conditions?.length || 0"
-    [warningMessage]="weightWarningText$ | async"
+    [warningMessageKeys]="weightWarningText$ | async"
   ></app-common-section-card-title-header>
 
   <!-- header-right -->
