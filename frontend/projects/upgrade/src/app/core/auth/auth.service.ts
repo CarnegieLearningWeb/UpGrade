@@ -211,7 +211,7 @@ export class AuthService {
           manageRoles: { create: false, read: true, update: false, delete: false },
           featureFlags: { create: false, read: true, update: false, delete: false },
           metrics: { create: false, read: true, update: false, delete: false },
-          segments: { create: false, read: true, update: true, delete: false },
+          segments: { create: false, read: true, update: true, delete: true },
         });
         break;
       case UserRole.READER:
