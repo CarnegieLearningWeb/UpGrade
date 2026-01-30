@@ -48,7 +48,7 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
   isLoadingExperiment$ = this.experimentService.isLoadingExperiment$;
   weightWarningText$ = combineLatest([this.conditionWeightsValid$, this.isLoadingExperiment$]).pipe(
     map(([valid, isLoading]) =>
-      !valid && !isLoading ? 'experiments.edit-condition-weights-modal.weights-sum-validation.text' : undefined
+      !valid && !isLoading ? ['experiments.edit-condition-weights-modal.weights-sum-validation.text'] : []
     )
   );
 
