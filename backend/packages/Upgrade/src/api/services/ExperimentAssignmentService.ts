@@ -140,12 +140,8 @@ export class ExperimentAssignmentService {
           'experiment.conditions',
           'experiment.conditions.conditionPayloads',
           'experiment.partitions',
-          'experiment.experimentSegmentInclusion',
-          'experiment.experimentSegmentExclusion',
           'experiment.experimentSegmentInclusion.segment',
           'experiment.experimentSegmentExclusion.segment',
-          'experiment.experimentSegmentInclusion.segment.subSegments',
-          'experiment.experimentSegmentExclusion.segment.subSegments',
         ],
       })
     );
@@ -287,9 +283,10 @@ export class ExperimentAssignmentService {
     }
 
     // 6. Storing new/updated monitored decision point document
-    const assignmentUnit = experiments
-      ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0]?.assignmentUnit
-      : null;
+    const assignmentUnit =
+      experiments?.length > 0
+        ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0].assignmentUnit
+        : null;
     monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
       id: monitoredDocument?.id || uuid(),
       experimentId: experimentId,
@@ -2107,15 +2104,15 @@ export class ExperimentAssignmentService {
     // creates segment Object for all experiments
     experiments.forEach((exp) => {
       if (!experimentsEnrolledIds.includes(exp.id)) {
-        const includeId = exp.experimentSegmentInclusion.segment.id;
-        const excludeId = exp.experimentSegmentExclusion.segment.id;
+        const includeIds = exp.experimentSegmentInclusion?.map((segmentInclusion) => segmentInclusion.segment.id) || [];
+        const excludeIds = exp.experimentSegmentExclusion?.map((segmentExclusion) => segmentExclusion.segment.id) || [];
 
         segmentObj[exp.id] = {
-          segmentIdsQueue: [includeId, excludeId],
-          currentIncludedSegmentIds: [includeId],
-          currentExcludedSegmentIds: [excludeId],
-          allIncludedSegmentIds: [includeId],
-          allExcludedSegmentIds: [excludeId],
+          segmentIdsQueue: [...includeIds, ...excludeIds],
+          currentIncludedSegmentIds: includeIds,
+          currentExcludedSegmentIds: excludeIds,
+          allIncludedSegmentIds: includeIds,
+          allExcludedSegmentIds: excludeIds,
         };
       }
     });
@@ -2225,8 +2222,7 @@ export class ExperimentAssignmentService {
     const explicitGroupInclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
     const explicitGroupExclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
 
-    const userGroups = [],
-      indirectExcludedExperiments = [];
+    const userGroups = [];
     if (experimentUser.group) {
       Object.keys(experimentUser.group).forEach((type) => {
         experimentUser.group[type].forEach((groupId) => {
@@ -2333,9 +2329,6 @@ export class ExperimentAssignmentService {
               reason: 'group',
               matchedGroup, // matchedExcludedGroup === experiment.group
             });
-            if (!matchedGroup) {
-              indirectExcludedExperiments.push(entity.id);
-            }
           }
         }
       } else {
@@ -2368,20 +2361,6 @@ export class ExperimentAssignmentService {
         }
       }
     });
-    if (indirectExcludedExperiments?.length > 0) {
-      const userWorkingGroupIds = [];
-      if (experimentUser.workingGroup) {
-        Object.keys(experimentUser.workingGroup).forEach((type) => {
-          userWorkingGroupIds.push(experimentUser.workingGroup[type]);
-        });
-      }
-      if (userWorkingGroupIds.length > 0) {
-        await this.groupEnrollmentRepository.delete({
-          experiment: { id: In(indirectExcludedExperiments) },
-          groupId: In(userWorkingGroupIds),
-        });
-      }
-    }
 
     return [userIncludedEntities, userExcludedEntities];
   }

@@ -13,7 +13,7 @@ import {
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
 
 /* Explanation:
 A user1 in mark in an experiment with Individual Assignment and Individual Consistency
@@ -101,7 +101,7 @@ export default async function ExcludeIndividualsA(): Promise<void> {
   expect(experimentUser).toEqual(objectToCheck);
 
   // change experiment state to enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // get all experiment condition for user
   let experimentConditionAssignment = await getAllExperimentCondition(experimentUser.id, new UpgradeLogger());
@@ -132,22 +132,26 @@ export default async function ExcludeIndividualsA(): Promise<void> {
   // update exclusion list of experiment
   experimentObject = {
     ...experimentObject,
-    state: EXPERIMENT_STATE.ENROLLING,
-    experimentSegmentExclusion: {
-      ...experimentObject.experimentSegmentExclusion,
-      segment: {
-        ...experimentObject.experimentSegmentExclusion.segment,
-        individualForSegment: [{ userId: 'student1' }],
-      },
-    },
+    state: EXPERIMENT_STATE.RUNNING,
   };
   await experimentService.update(experimentObject, user, new UpgradeLogger());
+  await experimentService.addList(
+    {
+      ...experimentObject.experimentSegmentExclusion[0].segment,
+      listType: 'individual',
+      userIds: ['student1'],
+    },
 
-  // check stats
+    experimentObject.id,
+    LIST_FILTER_MODE.EXCLUSION,
+    user,
+    new UpgradeLogger()
+  );
+  // check stats - should be unchanged
   stats = await analyticsService.getDetailEnrollment(experimentId);
   expect(stats).toEqual(
     expect.objectContaining({
-      users: 0,
+      users: 1,
       usersExcluded: 0,
       groupsExcluded: 0,
       id: experimentId,

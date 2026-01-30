@@ -1,14 +1,15 @@
-import { ElementRef, Inject, Injectable, NgZone } from '@angular/core';
+import { ElementRef, Inject, Injectable, NgZone, DOCUMENT } from '@angular/core';
 import { AppState, LocalStorageService } from '../core.module';
 import { Store, select, Action } from '@ngrx/store';
 import * as AuthActions from './store/auth.actions';
-import { DOCUMENT } from '@angular/common';
+
 import {
   selectIsLoggedIn,
   selectIsAuthenticating,
   selectCurrentUser,
   selectGoogleCredential,
   selectUserIsAdmin,
+  selectUserIsReader,
 } from './store/auth.selectors';
 import { UserPermission } from './store/auth.models';
 import { BehaviorSubject, filter, take } from 'rxjs';
@@ -23,6 +24,7 @@ export class AuthService {
   isLoggedIn$ = this.store$.pipe(select(selectIsLoggedIn));
   isAuthenticating$ = this.store$.pipe(select(selectIsAuthenticating));
   isUserAdmin$ = this.store$.pipe(select(selectUserIsAdmin));
+  isUserReader$ = this.store$.pipe(select(selectUserIsReader));
   currentUser$ = this.store$.pipe(select(selectCurrentUser));
   getGoogleCredential$ = this.store$.pipe(select(selectGoogleCredential));
   userPermissions$ = new BehaviorSubject<UserPermission>(null);
@@ -209,7 +211,7 @@ export class AuthService {
           manageRoles: { create: false, read: true, update: false, delete: false },
           featureFlags: { create: false, read: true, update: false, delete: false },
           metrics: { create: false, read: true, update: false, delete: false },
-          segments: { create: false, read: true, update: false, delete: false },
+          segments: { create: false, read: true, update: true, delete: false },
         });
         break;
       case UserRole.READER:

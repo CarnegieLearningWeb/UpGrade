@@ -13,7 +13,7 @@ import {
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
 
 /* Explanation:
 A user1 in mark in an experiment with Group Assignment and Individual Consistency
@@ -22,7 +22,7 @@ As the experiment was Individual Consistency, the user will not get excluded as 
 As the experiment was Group Assignment, the group will be excluded
 
 A new user from same group as user1 is created
-On assign the user will not be assigned to the experiment as the group is excluded
+On assign the user will be assigned to the experiment as the group is still enrolled
 */
 export default async function ExcludeGroupsB(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -99,7 +99,7 @@ export default async function ExcludeGroupsB(): Promise<void> {
   expect(experimentUser).toEqual(objectToCheck);
 
   // change experiment state to enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // get all experiment condition for user
   let experimentConditionAssignment = await getAllExperimentCondition(experimentUser.id, new UpgradeLogger());
@@ -131,25 +131,29 @@ export default async function ExcludeGroupsB(): Promise<void> {
   // update exclusion list of experiment
   experimentObject = {
     ...experimentObject,
-    state: EXPERIMENT_STATE.ENROLLING,
-    experimentSegmentExclusion: {
-      ...experimentObject.experimentSegmentExclusion,
-      segment: {
-        ...experimentObject.experimentSegmentExclusion.segment,
-        individualForSegment: [{ userId: 'student1' }],
-      },
-    },
+    state: EXPERIMENT_STATE.RUNNING,
   };
   await experimentService.update(experimentObject, user, new UpgradeLogger());
+  await experimentService.addList(
+    {
+      ...experimentObject.experimentSegmentExclusion[0].segment,
+      listType: 'individual',
+      userIds: ['student1'],
+    },
 
-  // check stats
+    experimentObject.id,
+    LIST_FILTER_MODE.EXCLUSION,
+    user,
+    new UpgradeLogger()
+  );
+  // check stats - should be unchanged
   stats = await analyticsService.getDetailEnrollment(experimentId);
   expect(stats).toEqual(
     expect.objectContaining({
-      users: 0,
-      groups: 0,
+      users: 1,
+      groups: 1,
       usersExcluded: 0,
-      groupsExcluded: 1,
+      groupsExcluded: 0,
       id: experimentId,
     })
   );
@@ -159,8 +163,8 @@ export default async function ExcludeGroupsB(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         id: experimentId,
-        users: 0,
-        groups: 0,
+        users: 1,
+        groups: 1,
       }),
     ])
   );
@@ -183,5 +187,5 @@ export default async function ExcludeGroupsB(): Promise<void> {
 
   // get all experiment condition for user2
   experimentConditionAssignment = await getAllExperimentCondition(updatedExperimentUser2.id, new UpgradeLogger());
-  expect(experimentConditionAssignment.length).toEqual(0);
+  expect(experimentConditionAssignment.length).toEqual(3);
 }

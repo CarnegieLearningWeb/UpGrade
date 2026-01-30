@@ -1,6 +1,5 @@
 import { fakeAsync, tick } from '@angular/core/testing';
-import { BehaviorSubject, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 import { LocalStorageService } from '../core.module';
 import { ExperimentService } from './experiments.service';
 import {
@@ -34,8 +33,6 @@ import {
   actionUpdateExperimentState,
   actionUpsertExperiment,
 } from './store/experiments.actions';
-import { Environment } from '../../../environments/environment-types';
-import { environment } from '../../../environments/environment';
 import {
   ASSIGNMENT_ALGORITHM,
   CONDITION_ORDER,
@@ -57,7 +54,6 @@ class MockLocalStorageService extends LocalStorageService {
 describe('ExperimentService', () => {
   let mockStore: any;
   let mockLocalStorageService: LocalStorageService;
-  let mockEnvironment: Environment;
   let service: ExperimentService;
   const mockExperimentsList: any = [
     { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000' },
@@ -82,19 +78,23 @@ describe('ExperimentService', () => {
     status: SEGMENT_STATUS.UNUSED,
   };
 
-  const dummyInclusionData: SegmentNew = {
-    updatedAt: '2022-06-20T13:14:52.900Z',
-    createdAt: '2022-06-20T13:14:52.900Z',
-    versionNumber: 1,
-    segment: segmentData,
-  };
+  const dummyInclusionData: SegmentNew[] = [
+    {
+      updatedAt: '2022-06-20T13:14:52.900Z',
+      createdAt: '2022-06-20T13:14:52.900Z',
+      versionNumber: 1,
+      segment: segmentData,
+    },
+  ];
 
-  const dummyExclusionData: SegmentNew = {
-    updatedAt: '2022-06-20T13:14:52.900Z',
-    createdAt: '2022-06-20T13:14:52.900Z',
-    versionNumber: 1,
-    segment: segmentData,
-  };
+  const dummyExclusionData: SegmentNew[] = [
+    {
+      updatedAt: '2022-06-20T13:14:52.900Z',
+      createdAt: '2022-06-20T13:14:52.900Z',
+      versionNumber: 1,
+      segment: segmentData,
+    },
+  ];
 
   const mockExperiment = {
     id: 'abc123',
@@ -141,27 +141,26 @@ describe('ExperimentService', () => {
   beforeEach(() => {
     mockStore = MockStateStore$;
     mockLocalStorageService = new MockLocalStorageService();
-    mockEnvironment = { ...environment };
-    service = new ExperimentService(mockStore, mockLocalStorageService, mockEnvironment);
+    service = new ExperimentService(mockStore, mockLocalStorageService);
   });
 
-  // describe('#experiments$', () => {
-  //   it('should emit sorted list of entities', fakeAsync(() => {
-  //     ExperimentSelectors.selectAllExperiment.setResult(mockExperimentsList);
+  describe('#experiments$', () => {
+    it('should emit sorted list of entities', fakeAsync(() => {
+      ExperimentSelectors.selectAllExperiment.setResult(mockExperimentsList);
 
-  //     mockStore.next('thisValueIsMeaningless');
+      mockStore.next('thisValueIsMeaningless');
 
-  //     service.experiments$.subscribe((val) => {
-  //       tick(0);
-  //       expect(val).toEqual([
-  //         { id: 'first', createdAt: '04/25/17 04:34:22 +0000' },
-  //         { id: 'second', createdAt: '04/24/17 04:34:22 +0000' },
-  //         { id: 'third', createdAt: '04/24/17 04:34:22 +0000' },
-  //         { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000' },
-  //       ]);
-  //     });
-  //   }));
-  // });
+      service.experiments$.subscribe((val) => {
+        tick(0);
+        expect(val).toEqual([
+          { id: 'first', createdAt: '04/25/17 04:34:22 +0000' },
+          { id: 'second', createdAt: '04/24/17 04:34:22 +0000' },
+          { id: 'third', createdAt: '04/24/17 04:34:22 +0000' },
+          { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000' },
+        ]);
+      });
+    }));
+  });
 
   describe('#experimentStatById$', () => {
     it('should ', () => {
@@ -171,78 +170,6 @@ describe('ExperimentService', () => {
       service.experimentStatById$(mockId);
 
       expect(pipeSpy).toHaveBeenCalled();
-    });
-  });
-
-  describe('#selectSearchExperimentParams', () => {
-    it('should emit a new object from the combined last values of searchkey and searchstring', fakeAsync(() => {
-      service.selectSearchKey$ = of(EXPERIMENT_SEARCH_KEY.ALL);
-      service.selectSearchString$ = of('test');
-      const expectedResult = {
-        searchKey: EXPERIMENT_SEARCH_KEY.ALL,
-        searchString: 'test',
-      };
-
-      service.selectSearchExperimentParams().subscribe((val) => {
-        tick(0);
-        expect(val).toEqual(expectedResult);
-      });
-    }));
-
-    describe('should throw error if one or both of the values is falsey:', () => {
-      const expectedError = 'no elements in sequence';
-      const testCases = [
-        {
-          searchKey: null,
-          searchString: 'test',
-          description: 'searchKey is null',
-        },
-        {
-          searchKey: undefined,
-          searchString: 'test',
-          description: 'searchKey is undefined',
-        },
-        {
-          searchKey: '',
-          searchString: 'test',
-          description: 'searchKey is empty string',
-        },
-        {
-          searchKey: null,
-          searchString: 'test',
-          description: 'searchString is null',
-        },
-        {
-          searchKey: undefined,
-          searchString: 'test',
-          description: 'searchString is undefined',
-        },
-        {
-          searchKey: '',
-          searchString: 'test',
-          description: 'searchString is empty string',
-        },
-        {
-          searchKey: null,
-          searchString: '',
-          description: 'Both are falsey',
-        },
-      ];
-
-      testCases.forEach((testCase) => {
-        it(`${testCase.description}`, fakeAsync(() => {
-          (service.selectSearchKey$ as any) = of(testCase.searchKey);
-          service.selectSearchString$ = of(testCase.searchString);
-
-          service
-            .selectSearchExperimentParams()
-            .pipe(catchError((err) => of(err)))
-            .subscribe((err: Error) => {
-              tick(0);
-              expect(err.message).toBe(expectedError);
-            });
-        }));
-      });
     });
   });
 
@@ -298,24 +225,21 @@ describe('ExperimentService', () => {
         expectedValue: false,
         skipExperiments: 0,
         totalExperiments: 1,
-        totalFilteredExperiments: 1,
       },
       {
         whenCondition: 'skip does equal total',
         expectedValue: true,
         skipExperiments: 1,
         totalExperiments: 1,
-        totalFilteredExperiments: 1,
       },
     ];
 
     testCases.forEach((testCase) => {
-      const { whenCondition, expectedValue, skipExperiments, totalExperiments, totalFilteredExperiments } = testCase;
+      const { whenCondition, expectedValue, skipExperiments, totalExperiments } = testCase;
 
       it(`WHEN ${whenCondition}, THEN ${expectedValue}:`, fakeAsync(() => {
         ExperimentSelectors.selectSkipExperiment.setResult(skipExperiments);
         ExperimentSelectors.selectTotalExperiment.setResult(totalExperiments);
-        ExperimentSelectors.selectTotalFilteredExperiment.setResult(totalFilteredExperiments);
 
         service.isAllExperimentsFetched().subscribe((val) => {
           tick(0);
@@ -354,20 +278,6 @@ describe('ExperimentService', () => {
       const experiment = { ...mockExperiment };
 
       service.createNewExperiment(experiment);
-
-      expect(mockStore.dispatch).toHaveBeenCalledWith(
-        actionUpsertExperiment({
-          experiment,
-          actionType: UpsertExperimentType.CREATE_NEW_EXPERIMENT,
-        })
-      );
-    });
-  });
-
-  describe('#importExperiment', () => {
-    it('should dispatch actionUpsertExperiment with the given input', () => {
-      const experiment = { ...mockExperiment };
-      service.importExperiment([experiment]);
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
         actionUpsertExperiment({

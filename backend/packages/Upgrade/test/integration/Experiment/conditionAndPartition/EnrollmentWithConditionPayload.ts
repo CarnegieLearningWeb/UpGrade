@@ -17,17 +17,13 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
-  const experimentObject: any = payloadConditionExperiment;
+  const experimentObject: any = structuredClone(payloadConditionExperiment);
 
   // remove 1 condition
   experimentObject.conditions.sort((a, b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
   });
   experimentObject.conditions.pop();
-
-  const experimentName = experimentObject.partitions[0].target;
-  const experimentPoint = experimentObject.partitions[0].site;
-  const payloadCondition = experimentObject.conditionPayloads[0].payload.value;
 
   // create experiment 1
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -43,10 +39,14 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
       }),
     ])
   );
+  const createdExperiment = experiments.find((exp) => exp.name === experimentObject.name);
+  const experimentName = createdExperiment.partitions[0].target;
+  const experimentPoint = createdExperiment.partitions[0].site;
+  const payloadCondition = createdExperiment.conditionPayloads[0].payload.value;
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -54,7 +54,7 @@ export default async function EnrollmentWithConditionPayload(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,

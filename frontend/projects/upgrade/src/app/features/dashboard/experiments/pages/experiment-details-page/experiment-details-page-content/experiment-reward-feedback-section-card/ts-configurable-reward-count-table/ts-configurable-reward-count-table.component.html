@@ -1,0 +1,76 @@
+<div class="table-container">
+  <!-- Loading spinner -->
+  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading"></mat-progress-bar>
+
+  <!-- Table -->
+  <table mat-table [dataSource]="dataSource" [ngClass]="{ 'no-data': !dataSource?.length }">
+    <!-- Condition Column -->
+    <ng-container matColumnDef="conditionCode">
+      <th mat-header-cell *matHeaderCellDef class="condition-column ft-14-600">
+        {{ 'experiments.details.posteriors.condition.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="condition-column ft-14-400">
+        <span [appTextOverflowTooltip]="row.conditionCode" matTooltipPosition="above" class="line-clamp-1">
+          {{ row.conditionCode }}
+        </span>
+      </td>
+    </ng-container>
+
+    <!-- Successes Column -->
+    <ng-container matColumnDef="successes">
+      <th mat-header-cell *matHeaderCellDef class="successes-column ft-14-600">
+        {{ 'experiments.details.posteriors.successes.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="successes-column ft-14-400">
+        {{ row.successes }}
+      </td>
+    </ng-container>
+
+    <!-- Failures Column -->
+    <ng-container matColumnDef="failures">
+      <th mat-header-cell *matHeaderCellDef class="failures-column ft-14-600">
+        {{ 'experiments.details.posteriors.failures.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="failures-column ft-14-400">
+        {{ row.failures }}
+      </td>
+    </ng-container>
+
+    <!-- Total Column -->
+    <ng-container matColumnDef="total">
+      <th mat-header-cell *matHeaderCellDef class="total-column ft-14-600">
+        {{ 'experiments.details.posteriors.total.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="total-column ft-14-400">
+        {{ row.total }}
+      </td>
+    </ng-container>
+
+    <!-- Success Rate Column -->
+    <ng-container matColumnDef="successRate">
+      <th mat-header-cell *matHeaderCellDef class="success-rate-column ft-14-600">
+        {{ 'experiments.details.posteriors.successRate.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="success-rate-column ft-14-400">
+        {{ row.successRate | number : '1.1-1' }}%
+      </td>
+    </ng-container>
+
+    <!-- Spacer Column -->
+    <ng-container matColumnDef="spacer">
+      <th mat-header-cell *matHeaderCellDef class="spacer-column"></th>
+      <td mat-cell *matCellDef="let row" class="spacer-column"></td>
+    </ng-container>
+
+    <!-- Header and Row Definitions -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+    <!-- No Data Row -->
+    <tr *matNoDataRow>
+      <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
+        {{ 'experiments.details.posteriors.no-data-row.text' | translate }}
+      </td>
+    </tr>
+  </table>
+</div>

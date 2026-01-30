@@ -7,6 +7,7 @@ export interface APIEndpoints {
   createNewExperiments: string;
   validateExperiment: string;
   importExperiment: string;
+  importExperimentList: string;
   exportExperiment: string;
   exportAllExperiment: string;
   updateExperiments: string;
@@ -42,6 +43,10 @@ export interface APIEndpoints {
   emailFlagData: string;
   addFlagInclusionList: string;
   addFlagExclusionList: string;
+  addExperimentInclusionList: string;
+  addExperimentExclusionList: string;
+  exportAllExperimentIncludeLists: string;
+  exportAllExperimentExcludeLists: string;
   setting: string;
   metrics: string;
   metricsSave: string;
@@ -73,15 +78,15 @@ export interface Environment {
   useHashRouting: boolean;
   googleClientId: string;
   domainName: string;
-  pollingEnabled: boolean;
-  pollingInterval: number;
-  pollingLimit: number;
-  api: APIEndpoints;
   segmentsRefreshToggle: boolean;
   errorLogsToggle: boolean;
   withinSubjectExperimentSupportToggle: boolean;
   metricAnalyticsExperimentDisplayToggle: boolean;
   moocletToggle: boolean;
+  // these have been removed but optional to prevent annoyance switching between branches
+  pollingEnabled?: boolean;
+  pollingInterval?: number;
+  pollingLimit?: number;
 }
 
 export interface RuntimeEnvironmentConfig {

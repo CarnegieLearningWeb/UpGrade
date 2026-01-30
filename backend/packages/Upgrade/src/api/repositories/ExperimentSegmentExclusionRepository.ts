@@ -7,10 +7,10 @@ import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion
 @EntityRepository(ExperimentSegmentExclusion)
 export class ExperimentSegmentExclusionRepository extends Repository<ExperimentSegmentExclusion> {
   public async insertData(
-    data: Partial<ExperimentSegmentExclusion>,
+    data: Partial<ExperimentSegmentExclusion>[],
     logger: UpgradeLogger,
     entityManager: EntityManager
-  ): Promise<ExperimentSegmentExclusion> {
+  ): Promise<ExperimentSegmentExclusion[]> {
     const result = await entityManager
       .createQueryBuilder()
       .insert()
@@ -39,6 +39,7 @@ export class ExperimentSegmentExclusionRepository extends Repository<ExperimentS
       .leftJoin('experimentSegmentExclusion.segment', 'segment')
       .leftJoinAndSelect('segment.subSegments', 'subSegments')
       .addSelect('experiment.name')
+      .addSelect('experiment.description')
       .addSelect('experiment.state')
       .addSelect('experiment.context')
       .addSelect('segment.id')
@@ -49,26 +50,20 @@ export class ExperimentSegmentExclusionRepository extends Repository<ExperimentS
       });
   }
 
-  public async getExperimentSegmentExclusionDocBySegmentId(
-    segmentId: string
-  ): Promise<Partial<ExperimentSegmentExclusion[]>> {
+  public getExistingSegments(segmentIds: string[]): Promise<ExperimentSegmentExclusion[]> {
+    if (!segmentIds || segmentIds.length === 0) {
+      return Promise.resolve([]);
+    }
     return this.createQueryBuilder('experimentSegmentExclusion')
-      .leftJoin('experimentSegmentExclusion.experiment', 'experiment')
-      .leftJoin('experimentSegmentExclusion.segment', 'segment')
-      .leftJoinAndSelect('segment.subSegments', 'subSegments')
-      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
-      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
-      .addSelect('experiment.assignmentUnit')
-      .addSelect('experiment.consistencyRule')
-      .addSelect('experiment.id')
-      .addSelect('experiment.group')
-      .where('"segment"."id" = :id', { id: segmentId })
+      .leftJoinAndSelect(`experimentSegmentExclusion.segment`, 'segment')
+      .leftJoinAndSelect(`experimentSegmentExclusion.experiment`, 'experiment')
+      .where('segment.id IN (:...segmentIds)', { segmentIds })
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'ExperimentSegmentExclusion',
-          'getExclusionSegmentUpdateDoc',
-          {},
+          'getExistingSegments',
+          { segmentIds },
           errorMsg
         );
         throw errorMsgString;

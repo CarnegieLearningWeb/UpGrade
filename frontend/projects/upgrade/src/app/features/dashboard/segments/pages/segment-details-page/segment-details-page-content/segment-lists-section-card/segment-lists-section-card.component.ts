@@ -14,7 +14,7 @@ import {
   Segment,
   SEGMENT_LIST_ACTIONS,
 } from '../../../../../../../core/segments/store/segments.model';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, map, combineLatest } from 'rxjs';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import {
@@ -48,26 +48,15 @@ export class SegmentListsSectionCardComponent {
   subtitle = '';
   buttonText = '';
 
-  menuButtonItems: IMenuButtonItem[] = [
-    {
-      label: '',
-      action: SEGMENT_LIST_ACTIONS.IMPORT,
-      disabled: false,
-    },
-    {
-      label: '',
-      action: SEGMENT_LIST_ACTIONS.EXPORT_ALL,
-      disabled: false,
-    },
-  ];
+  menuButtonItems$: Observable<IMenuButtonItem[]>;
 
   constructor(
-    private segmentsService: SegmentsService,
-    private dialogService: DialogService,
-    private authService: AuthService
+    private readonly segmentsService: SegmentsService,
+    private readonly dialogService: DialogService,
+    private readonly authService: AuthService
   ) {}
 
-  private segmentTypeConfig = {
+  private readonly segmentTypeConfig = {
     [SEGMENT_TYPE.GLOBAL_EXCLUDE]: {
       title: 'segments.details.lists.card.title.global-excludes.text',
       subtitle: 'segments.details.lists.card.subtitle.global-excludes.text',
@@ -94,8 +83,20 @@ export class SegmentListsSectionCardComponent {
     this.title = config.title;
     this.subtitle = config.subtitle;
     this.buttonText = config.buttonText;
-    this.menuButtonItems[0].label = config.importLabel;
-    this.menuButtonItems[1].label = config.exportLabel;
+    this.menuButtonItems$ = combineLatest([this.permissions$, this.tableRowCount$]).pipe(
+      map(([permissions, tableRowCount]) => [
+        {
+          label: config.importLabel,
+          action: SEGMENT_LIST_ACTIONS.IMPORT,
+          disabled: !permissions?.segments.update,
+        },
+        {
+          label: config.exportLabel,
+          action: SEGMENT_LIST_ACTIONS.EXPORT_ALL,
+          disabled: tableRowCount === 0,
+        },
+      ])
+    );
   }
 
   onAddListClick(appContext: string, segmentId: string) {
@@ -116,10 +117,7 @@ export class SegmentListsSectionCardComponent {
   }
 
   onImportList(segmentId: string) {
-    this.dialogService
-      .openImportSegmentListModal(segmentId, this.data.type)
-      .afterClosed()
-      .subscribe(() => this.segmentsService.fetchSegmentById(segmentId));
+    this.dialogService.openImportSegmentListModal(segmentId, this.data.type);
   }
 
   onExportAllLists(segment: Segment) {
@@ -148,6 +146,8 @@ export class SegmentListsSectionCardComponent {
       case PARTICIPANT_LIST_ROW_ACTION.DELETE:
         this.onDeleteList(event.rowData.segment);
         break;
+      default:
+        console.log('Unknown action');
     }
   }
 

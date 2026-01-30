@@ -25,7 +25,6 @@ import {
   selectIsGraphLoading,
   selectIsLoadingExperiment,
   selectIsLoadingExperimentDetailStats,
-  selectIsPollingExperimentDetailStats,
   selectSearchKey,
   selectSearchString,
   selectSelectedExperiment,
@@ -61,46 +60,50 @@ describe('Experiments Selectors', () => {
         group: 'schoolId',
         filterMode: FILTER_MODE.INCLUDE_ALL,
         backendVersion: '1.0.0',
-        experimentSegmentInclusion: {
-          updatedAt: '2022-06-20T13:14:52.900Z',
-          createdAt: '2022-06-20T13:14:52.900Z',
-          versionNumber: 1,
-          segment: {
-            id: 'segment-id',
-            name: 'segment-name',
-            description: 'segment-description',
-            createdAt: '04/23/17 04:34:22 +0000',
-            updatedAt: '04/23/17 04:34:22 +0000',
+        experimentSegmentInclusion: [
+          {
+            updatedAt: '2022-06-20T13:14:52.900Z',
+            createdAt: '2022-06-20T13:14:52.900Z',
             versionNumber: 1,
-            context: 'segment-context',
-            tags: [],
-            individualForSegment: [],
-            groupForSegment: [],
-            subSegments: [],
-            type: SEGMENT_TYPE.PUBLIC,
-            status: SEGMENT_STATUS.UNUSED,
+            segment: {
+              id: 'segment-id',
+              name: 'segment-name',
+              description: 'segment-description',
+              createdAt: '04/23/17 04:34:22 +0000',
+              updatedAt: '04/23/17 04:34:22 +0000',
+              versionNumber: 1,
+              context: 'segment-context',
+              tags: [],
+              individualForSegment: [],
+              groupForSegment: [],
+              subSegments: [],
+              type: SEGMENT_TYPE.PUBLIC,
+              status: SEGMENT_STATUS.UNUSED,
+            },
           },
-        },
-        experimentSegmentExclusion: {
-          updatedAt: '2022-06-20T13:14:52.900Z',
-          createdAt: '2022-06-20T13:14:52.900Z',
-          versionNumber: 1,
-          segment: {
-            id: 'segment-id',
-            name: 'segment-name',
-            description: 'segment-description',
-            createdAt: '04/23/17 04:34:22 +0000',
-            updatedAt: '04/23/17 04:34:22 +0000',
+        ],
+        experimentSegmentExclusion: [
+          {
+            updatedAt: '2022-06-20T13:14:52.900Z',
+            createdAt: '2022-06-20T13:14:52.900Z',
             versionNumber: 1,
-            context: 'segment-context',
-            tags: [],
-            individualForSegment: [],
-            groupForSegment: [],
-            subSegments: [],
-            type: SEGMENT_TYPE.PUBLIC,
-            status: SEGMENT_STATUS.UNUSED,
+            segment: {
+              id: 'segment-id',
+              name: 'segment-name',
+              description: 'segment-description',
+              createdAt: '04/23/17 04:34:22 +0000',
+              updatedAt: '04/23/17 04:34:22 +0000',
+              versionNumber: 1,
+              context: 'segment-context',
+              tags: [],
+              individualForSegment: [],
+              groupForSegment: [],
+              subSegments: [],
+              type: SEGMENT_TYPE.PUBLIC,
+              status: SEGMENT_STATUS.UNUSED,
+            },
           },
-        },
+        ],
         conditions: [
           {
             createdAt: '2022-04-05T21:22:16.770Z',
@@ -202,11 +205,12 @@ describe('Experiments Selectors', () => {
         ],
         type: EXPERIMENT_TYPE.SIMPLE,
         assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+        stat: null,
+        weightingMethod: 'equal',
       },
     },
     isLoadingExperiment: false,
     isLoadingExperimentDetailStats: false,
-    isPollingExperimentDetailStats: false,
     skipExperiment: 0,
     totalExperiments: null,
     searchKey: null,
@@ -450,6 +454,8 @@ describe('Experiments Selectors', () => {
       [DATE_RANGE.LAST_SIX_MONTHS]: null,
       [DATE_RANGE.LAST_THREE_MONTHS]: null,
       [DATE_RANGE.LAST_TWELVE_MONTHS]: null,
+      [DATE_RANGE.LAST_ONE_MONTH]: null,
+      [DATE_RANGE.LAST_TWO_WEEKS]: null,
     },
     graphRange: DATE_RANGE.LAST_SEVEN_DAYS,
     isGraphInfoLoading: false,
@@ -812,18 +818,6 @@ describe('Experiments Selectors', () => {
       const result = selectContextMetaData.projector(state);
 
       expect(result).toEqual(state.contextMetaData);
-    });
-  });
-
-  describe('#selectIsPollingExperimentDetailStats', () => {
-    it('should return isPollingExperimentDetailStats', () => {
-      const state = {
-        ...mockState,
-      };
-
-      const result = selectIsPollingExperimentDetailStats.projector(state);
-
-      expect(result).toEqual(state.isPollingExperimentDetailStats);
     });
   });
 });

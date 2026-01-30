@@ -24,8 +24,8 @@ import {
   selectAppContexts,
   selectIsLoadingImportFeatureFlag,
   selectFeatureFlagIds,
-  selectShouldShowWarningForSelectedFlag,
-  selectWarningStatusForAllFlags,
+  selectWarningKeysForSelectedFlag,
+  selectWarningKeysForAllFlags,
   selectDuplicateKeyFound,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
@@ -38,7 +38,7 @@ import {
   UpdateFeatureFlagStatusRequest,
   FeatureFlagLocalStorageKeys,
 } from './store/feature-flags.model';
-import { map } from 'rxjs';
+import { map, take } from 'rxjs';
 import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
 import { LocalStorageService } from '../local-storage/local-storage.service';
@@ -65,8 +65,8 @@ export class FeatureFlagsService {
   searchKey$ = this.store$.pipe(select(selectSearchKey));
   sortKey$ = this.store$.pipe(select(selectSortKey));
   sortAs$ = this.store$.pipe(select(selectSortAs));
-  shouldShowWarningForSelectedFlag$ = this.store$.pipe(select(selectShouldShowWarningForSelectedFlag));
-  warningStatusForAllFlags$ = this.store$.pipe(select(selectWarningStatusForAllFlags));
+  warningKeysForSelectedFlag$ = this.store$.pipe(select(selectWarningKeysForSelectedFlag));
+  warningKeysForAllFlags$ = this.store$.pipe(select(selectWarningKeysForAllFlags));
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
@@ -89,6 +89,14 @@ export class FeatureFlagsService {
 
   fetchFeatureFlagById(featureFlagId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlagById({ featureFlagId }));
+  }
+
+  refetchCurrentSelectedFeatureFlag() {
+    this.selectedFeatureFlag$.pipe(take(1)).subscribe((flag) => {
+      if (flag) {
+        this.fetchFeatureFlagById(flag.id);
+      }
+    });
   }
 
   fetchContextMetaData() {

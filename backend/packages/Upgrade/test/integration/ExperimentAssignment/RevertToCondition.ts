@@ -2,7 +2,7 @@ import { Container } from 'typedi';
 import { revertToCondition } from '../mockData/experiment';
 import { systemUser } from '../mockData/user';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, POST_EXPERIMENT_RULE } from 'upgrade_types';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
 import { UserService } from '../../../src/api/services/UserService';
@@ -55,7 +55,7 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to Enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -63,7 +63,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -117,7 +117,18 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   // change experiment status to complete
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
+  const updatedExperiment = await experimentService.getSingleExperiment(experimentId);
+
+  await experimentService.update(
+    {
+      ...updatedExperiment,
+      revertTo: updatedExperiment.conditions[0].id,
+      postExperimentRule: POST_EXPERIMENT_RULE.ASSIGN,
+    } as any,
+    user,
+    new UpgradeLogger()
+  );
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.PAUSED, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -125,8 +136,8 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
-        postExperimentRule: experimentObject.postExperimentRule,
+        state: EXPERIMENT_STATE.PAUSED,
+        postExperimentRule: POST_EXPERIMENT_RULE.ASSIGN,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
       }),
@@ -136,7 +147,7 @@ export default async function testCase(): Promise<void> {
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experimentObject.revertTo);
+  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experiments[0].revertTo);
 
   // mark experiment point for user 1
   markedExperimentPoint = await markExperimentPoint(
@@ -152,7 +163,7 @@ export default async function testCase(): Promise<void> {
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experimentObject.revertTo);
+  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experiments[0].revertTo);
 
   // mark experiment point for user 2
   markedExperimentPoint = await markExperimentPoint(
@@ -168,7 +179,7 @@ export default async function testCase(): Promise<void> {
   // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experimentObject.revertTo);
+  checkConditionAssigned(experimentConditionAssignments, experimentName, experimentPoint, experiments[0].revertTo);
 
   // mark experiment point for user 3
   markedExperimentPoint = await markExperimentPoint(

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable, combineLatest } from 'rxjs';
 import {
   Experiment,
@@ -10,15 +10,22 @@ import {
   SORT_AS_DIRECTION,
   DATE_RANGE,
   ExperimentLocalStorageKeys,
-  EXPERIMENT_STATE,
+  AddExperimentRequest,
+  UpdateExperimentFilterModeRequest,
+  UpdateExperimentDecisionPointsRequest,
+  UpdateExperimentConditionsRequest,
+  UpdateExperimentMetricsRequest,
+  ExperimentActionButton,
+  EXPERIMENT_SECTION_CARD_TYPE,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
   selectAllExperiment,
   selectIsLoadingExperiment,
-  selectIsLoadingExperimentDetailStats,
   selectSelectedExperiment,
-  selectAllDecisionPoints,
+  selectExperimentOverviewDetails,
+  selectSearchExperimentParams,
+  selectRootTableState,
   selectAllExperimentNames,
   selectExperimentById,
   selectSearchString,
@@ -31,26 +38,31 @@ import {
   selectSortKey,
   selectSortAs,
   selectContextMetaData,
-  selectGroupAssignmentStatus,
-  selectIsPollingExperimentDetailStats,
-  selectCurrentContextMetaDataConditions,
-  selectIsLoadingContextMetaData,
-  selectExperimentsExportLoading,
-  selectTotalFilteredExperiment,
+  selectExperimentInclusions,
+  selectExperimentInclusionsLength,
+  selectExperimentExclusions,
+  selectExperimentExclusionsLength,
+  selectIsLoadingExperimentDelete,
+  selectIsLoadingImportExperiment,
+  selectExperimentActionButtons,
+  selectWarningKeysForSelectedExperiment,
+  selectWarningKeysForAllExperiments,
+  selectHasExperimentStarted,
+  selectExperimentMenuItems,
+  selectDisabledExperimentFields,
+  selectSectionCardRestriction,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
-import { map, filter, tap } from 'rxjs/operators';
+import { map, take, tap } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
-import { ENV, Environment } from '../../../environments/environment-types';
+import { ExperimentSegmentListRequest } from '../segments/store/segments.model';
+import { ConditionWeightUpdate } from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
+import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 
 @Injectable()
 export class ExperimentService {
-  constructor(
-    private store$: Store<AppState>,
-    private localStorageService: LocalStorageService,
-    @Inject(ENV) private environment: Environment
-  ) {}
+  constructor(private store$: Store<AppState>, private localStorageService: LocalStorageService) {}
 
   experiments$: Observable<Experiment[]> = this.store$.pipe(
     select(selectAllExperiment),
@@ -62,13 +74,12 @@ export class ExperimentService {
       })
     )
   );
-  totalExperiments$ = this.store$.pipe(select(selectTotalExperiment));
+  currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
-  isLoadingExperimentDetailStats$ = this.store$.pipe(select(selectIsLoadingExperimentDetailStats));
-  isPollingExperimentDetailStats$ = this.store$.pipe(select(selectIsPollingExperimentDetailStats));
-  isExperimentsExportLoading$ = this.store$.pipe(select(selectExperimentsExportLoading));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
-  allDecisionPoints$ = this.store$.pipe(select(selectAllDecisionPoints));
+  selectedExperimentOverviewDetails$ = this.store$.pipe(select(selectExperimentOverviewDetails));
+  searchParams$ = this.store$.pipe(select(selectSearchExperimentParams));
+  selectRootTableState$ = this.store$.pipe(select(selectRootTableState));
   allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
@@ -76,19 +87,24 @@ export class ExperimentService {
   selectExperimentSortAs$ = this.store$.pipe(select(selectSortAs));
   selectExperimentGraphInfo$ = this.store$.pipe(select(selectExperimentGraphInfo));
   isGraphLoading$ = this.store$.pipe(select(selectIsGraphLoading));
+  selectExperimentInclusions$ = this.store$.pipe(select(selectExperimentInclusions));
+  selectExperimentInclusionsLength$ = this.store$.pipe(select(selectExperimentInclusionsLength));
+  selectExperimentExclusions$ = this.store$.pipe(select(selectExperimentExclusions));
+  selectExperimentExclusionsLength$ = this.store$.pipe(select(selectExperimentExclusionsLength));
   experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
   contextMetaData$ = this.store$.pipe(select(selectContextMetaData));
-  isLoadingContextMetaData$ = this.store$.pipe(select(selectIsLoadingContextMetaData));
-  groupSatisfied$ = (experimentId) => this.store$.pipe(select(selectGroupAssignmentStatus, { experimentId }));
-  pollingEnabled: boolean = this.environment.pollingEnabled;
-  currentContextMetaDataConditions$ = this.store$.pipe(select(selectCurrentContextMetaDataConditions));
-
-  selectSearchExperimentParams(): Observable<Record<string, unknown>> {
-    return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
-      filter(([searchKey, searchString]) => !!searchKey && !!searchString),
-      map(([searchKey, searchString]) => ({ searchKey, searchString }))
-    );
-  }
+  isLoadingExperimentDelete$ = this.store$.pipe(select(selectIsLoadingExperimentDelete));
+  isLoadingImportExperiment$ = this.store$.pipe(select(selectIsLoadingImportExperiment));
+  experimentActionButtons$: Observable<ExperimentActionButton[]> = this.store$.pipe(
+    select(selectExperimentActionButtons)
+  );
+  warningKeysForSelectedExperiment$ = this.store$.pipe(select(selectWarningKeysForSelectedExperiment));
+  warningKeysForAllExperiments$ = this.store$.pipe(select(selectWarningKeysForAllExperiments));
+  hasExperimentStarted$ = this.store$.pipe(select(selectHasExperimentStarted));
+  experimentMenuItems$ = this.store$.pipe(select(selectExperimentMenuItems));
+  disabledExperimentFields$ = this.store$.pipe(select(selectDisabledExperimentFields));
+  sectionCardRestriction$ = (cardType: EXPERIMENT_SECTION_CARD_TYPE) =>
+    this.store$.pipe(select(selectSectionCardRestriction(cardType)));
 
   haveInitialExperimentsLoaded() {
     return combineLatest([this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$]).pipe(
@@ -99,19 +115,18 @@ export class ExperimentService {
   isAllExperimentsFetched() {
     return combineLatest([
       this.store$.pipe(select(selectSkipExperiment)),
-      this.store$.pipe(select(selectTotalFilteredExperiment)),
-    ]).pipe(map(([skipExperiments, totalFilteredExperiments]) => skipExperiments === totalFilteredExperiments));
+      this.store$.pipe(select(selectTotalExperiment)),
+    ]).pipe(map(([skipExperiments, totalExperiments]) => skipExperiments === totalExperiments));
   }
 
   loadExperiments(fromStarting?: boolean) {
     return this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting }));
   }
 
-  createNewExperiment(experiment: Experiment) {
-    //const experiment = this.forExperimentWithPayloadObj(experimentWithPayloadAsString);
+  createNewExperiment(experiment: AddExperimentRequest) {
     this.store$.dispatch(
       experimentAction.actionUpsertExperiment({
-        experiment,
+        experiment: experiment as unknown as Experiment,
         actionType: UpsertExperimentType.CREATE_NEW_EXPERIMENT,
       })
     );
@@ -119,7 +134,6 @@ export class ExperimentService {
 
   updateExperiment(experiment: ExperimentVM) {
     delete experiment.stat;
-    //const experiment = this.forExperimentWithPayloadObj(experimentWithPayloadAsString);
     this.store$.dispatch(
       experimentAction.actionUpsertExperiment({ experiment, actionType: UpsertExperimentType.UPDATE_EXPERIMENT })
     );
@@ -128,29 +142,6 @@ export class ExperimentService {
   deleteExperiment(experimentId) {
     this.store$.dispatch(experimentAction.actionDeleteExperiment({ experimentId }));
   }
-
-  // forExperimentWithPayloadObj(experiment): Experiment {
-  //   if (experiment.type === 'Factorial') {
-  //     const factorsWithPayloadObj = experiment.factors?.map((factor) => {
-  //       const levelsWithPayloadObj = factor.levels.map((level) => {
-  //         return { ...level, payload: { type: PAYLOAD_TYPE.STRING, value: level.payload } };
-  //       });
-  //       return { ...factor, levels: levelsWithPayloadObj };
-  //     });
-
-  //     const conditionPayloadWithPayloadObj = experiment.conditionPayloads.map((conditionPayload) => {
-  //       return { ...conditionPayload, payload: { type: PAYLOAD_TYPE.STRING, value: conditionPayload.payload } };
-  //     });
-
-  //     return { ...experiment, factors: factorsWithPayloadObj, conditionPayloads: conditionPayloadWithPayloadObj };
-  //   } else {
-  //     const conditionPayloadWithPayloadObj = experiment.conditionPayloads.map((conditionPayload) => {
-  //       return { ...conditionPayload, payload: { type: PAYLOAD_TYPE.STRING, value: conditionPayload.payload } };
-  //     });
-
-  //     return { ...experiment, conditionPayloads: conditionPayloadWithPayloadObj };
-  //   }
-  // }
 
   selectExperimentById(experimentId: string) {
     return this.store$.pipe(select(selectExperimentById, { experimentId })).pipe(
@@ -167,8 +158,34 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionGetExperimentById({ experimentId }));
   }
 
+  refetchCurrentSelectedExperiment() {
+    this.selectedExperiment$.pipe(take(1)).subscribe((experiment) => {
+      if (experiment) {
+        this.fetchExperimentById(experiment.id);
+      }
+    });
+  }
+
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {
     this.store$.dispatch(experimentAction.actionUpdateExperimentState({ experimentId, experimentStateInfo }));
+  }
+
+  updateFilterMode(updateExperimentFilterModeRequest: UpdateExperimentFilterModeRequest) {
+    this.store$.dispatch(experimentAction.actionUpdateExperimentFilterMode({ updateExperimentFilterModeRequest }));
+  }
+
+  updateExperimentDecisionPoints(updateExperimentDecisionPointsRequest: UpdateExperimentDecisionPointsRequest) {
+    this.store$.dispatch(
+      experimentAction.actionUpdateExperimentDecisionPoints({ updateExperimentDecisionPointsRequest })
+    );
+  }
+
+  updateExperimentConditions(updateExperimentConditionsRequest: UpdateExperimentConditionsRequest) {
+    this.store$.dispatch(experimentAction.actionUpdateExperimentConditions({ updateExperimentConditionsRequest }));
+  }
+
+  updateExperimentMetrics(updateExperimentMetricsRequest: UpdateExperimentMetricsRequest) {
+    this.store$.dispatch(experimentAction.actionUpdateExperimentMetrics({ updateExperimentMetricsRequest }));
   }
 
   fetchContextMetaData() {
@@ -211,14 +228,6 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionExportExperimentDesign({ experimentIds, exportAll: false }));
   }
 
-  exportAllExperimentDesign() {
-    this.store$.dispatch(experimentAction.actionExportExperimentDesign({ experimentIds: [], exportAll: true }));
-  }
-
-  importExperiment(experiments: Experiment[]) {
-    this.store$.dispatch(experimentAction.actionImportExperiment({ experiments }));
-  }
-
   setGraphRange(range: DATE_RANGE, experimentId: string, clientOffset: number) {
     this.store$.dispatch(experimentAction.actionSetGraphRange({ range, experimentId, clientOffset }));
   }
@@ -227,35 +236,64 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionFetchExperimentDetailStat({ experimentId }));
   }
 
-  fetchGroupAssignmentStatus(experimentId: string) {
-    this.store$.dispatch(experimentAction.actionFetchGroupAssignmentStatus({ experimentId }));
+  exportAllExcludeListsData(experimentId: string) {
+    this.store$.dispatch(experimentAction.actionExportAllExcludeListsDesign({ experimentId }));
   }
 
-  toggleDetailsPolling(experiment: Experiment, isPolling: boolean) {
-    if (!isPolling && experiment.state === EXPERIMENT_STATE.ENROLLING) {
-      this.beginDetailStatsPolling(experiment.id);
-    }
-
-    if (isPolling && experiment.state !== EXPERIMENT_STATE.ENROLLING) {
-      this.endDetailStatsPolling();
-    }
+  exportAllIncludeListsData(experimentId: string) {
+    this.store$.dispatch(experimentAction.actionExportAllIncludeListsDesign({ experimentId }));
   }
 
-  beginDetailStatsPolling(experimentId: string) {
-    if (this.pollingEnabled) {
-      this.store$.dispatch(experimentAction.actionBeginExperimentDetailStatsPolling({ experimentId }));
-    }
+  addExperimentInclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
+    this.store$.dispatch(experimentAction.actionAddExperimentInclusionList({ list }));
   }
 
-  endDetailStatsPolling() {
-    this.store$.dispatch(experimentAction.actionEndExperimentDetailStatsPolling());
+  updateExperimentInclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
+    this.store$.dispatch(experimentAction.actionUpdateExperimentInclusionList({ list }));
   }
 
-  formatExperimentName(experimentName: string) {
-    return experimentName.trim().toUpperCase().replace(/ /g, '_');
+  deleteExperimentInclusionPrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(experimentAction.actionDeleteExperimentInclusionList({ segmentId }));
   }
 
-  getOutcomeVariableName(experimentName: string) {
-    return `${this.formatExperimentName(experimentName)}_REWARD_VARIABLE`;
+  addExperimentExclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
+    this.store$.dispatch(experimentAction.actionAddExperimentExclusionList({ list }));
+  }
+
+  updateExperimentExclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
+    this.store$.dispatch(experimentAction.actionUpdateExperimentExclusionList({ list }));
+  }
+
+  deleteExperimentExclusionPrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(experimentAction.actionDeleteExperimentExclusionList({ segmentId }));
+  }
+
+  updateExperimentConditionWeights(experiment: ExperimentVM, weightUpdates: ConditionWeightUpdate[]): void {
+    // Create updated experiment with new condition weights
+    const updatedExperiment: ExperimentVM = {
+      ...experiment,
+      conditions: experiment.conditions.map((condition) => {
+        const weightUpdate = weightUpdates.find((update) => update.conditionId === condition.id);
+
+        return weightUpdate
+          ? {
+              ...condition,
+              assignmentWeight: weightUpdate.assignmentWeight,
+            }
+          : condition;
+      }),
+    };
+
+    // Dispatch the update action
+    this.store$.dispatch(
+      experimentAction.actionUpsertExperiment({
+        experiment: updatedExperiment,
+        actionType: UpsertExperimentType.UPDATE_EXPERIMENT,
+      })
+    );
+  }
+
+  setIsLoadingImportExperiment(isLoadingImportExperiment: boolean) {
+    this.store$.dispatch(experimentAction.actionSetIsLoadingImportExperiment({ isLoadingImportExperiment }));
   }
 }

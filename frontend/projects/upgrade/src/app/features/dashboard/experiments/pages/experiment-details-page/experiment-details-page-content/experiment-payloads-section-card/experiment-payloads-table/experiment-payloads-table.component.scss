@@ -1,0 +1,114 @@
+.table-container {
+  position: relative;
+  overflow: auto;
+  width: 100%;
+  padding: 32px;
+
+  .spinner {
+    position: sticky;
+    top: 0;
+    z-index: 1111;
+  }
+
+  /* Add gap between header and body when no data exists */
+  ::ng-deep .no-data tbody:before {
+    display: block;
+    line-height: 8px;
+    content: '\200C';
+  }
+
+  .payloads-table {
+    ::ng-deep thead {
+      background-color: var(--zircon);
+
+      tr.mat-mdc-header-row {
+        height: 48px;
+        border: 0;
+
+        th {
+          padding-left: 0;
+          color: var(--darker-grey);
+
+          &:first-child {
+            border-top-left-radius: 4px;
+          }
+
+          &:last-child {
+            border-top-right-radius: 4px;
+          }
+        }
+      }
+    }
+
+    ::ng-deep tbody {
+      tr.mat-mdc-row {
+        height: 56px;
+
+        td {
+          min-width: 96px;
+          padding-left: 0;
+          color: var(--black-2);
+          padding-top: 16px;
+          padding-bottom: 16px;
+          vertical-align: top;
+        }
+      }
+
+      tr.mat-mdc-no-data-row {
+        height: 48px;
+
+        td {
+          text-align: center;
+          border: 1.5px dashed var(--light-grey-2);
+          color: var(--dark-grey);
+          padding-top: 0;
+          padding-bottom: 0;
+          vertical-align: middle;
+        }
+      }
+    }
+
+    .decision-point-column {
+      width: 27%;
+      padding-left: 32px;
+    }
+
+    .condition-column {
+      width: 28%;
+    }
+
+    .payload-column {
+      width: 35%;
+    }
+
+    td.decision-point-column {
+      .stacked-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+    }
+
+    .actions-column {
+      width: 10%;
+      min-width: 96px;
+      text-align: center;
+      padding-right: 16px;
+
+      .button-wrapper {
+        display: inline-block;
+        margin-top: -8px;
+
+        .action-button {
+          color: var(--dark-grey);
+
+          &[disabled] {
+            .mat-icon {
+              opacity: 0.5;
+            }
+          }
+        }
+      }
+    }
+  }
+}

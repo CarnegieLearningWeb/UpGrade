@@ -25,11 +25,9 @@ describe('LocalStorageService', () => {
       entities: {},
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,
-      isPollingExperimentDetailStats: false,
       isLoadingExperimentExport: false,
       skipExperiment: 0,
       totalExperiments: null,
-      totalFilteredExperiments: null,
       searchKey: EXPERIMENT_SEARCH_KEY.ALL,
       searchString: 'test',
       sortKey: EXPERIMENT_SORT_KEY.STATUS,
@@ -45,17 +43,17 @@ describe('LocalStorageService', () => {
       },
       isLoadingContextMetaData: false,
       currentUserSelectedContext: null,
+      isLoadingExperimentDelete: false,
+      isLoadingImportExperiment: false,
     };
     const expectedStateWithDefaults: ExperimentState = {
       ids: [],
       entities: {},
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,
-      isPollingExperimentDetailStats: false,
       isLoadingExperimentExport: false,
       skipExperiment: 0,
       totalExperiments: null,
-      totalFilteredExperiments: null,
       searchKey: EXPERIMENT_SEARCH_KEY.ALL,
       searchString: null,
       sortKey: EXPERIMENT_SORT_KEY.NAME,
@@ -71,6 +69,8 @@ describe('LocalStorageService', () => {
       },
       isLoadingContextMetaData: false,
       currentUserSelectedContext: null,
+      isLoadingExperimentDelete: false,
+      isLoadingImportExperiment: false,
     };
 
     const testCases = [

@@ -1,9 +1,7 @@
 import { initialState, experimentsReducer } from './experiments.reducer';
 import { Action } from '@ngrx/store';
 import {
-  actionBeginExperimentDetailStatsPolling,
   actionDeleteExperimentSuccess,
-  actionEndExperimentDetailStatsPolling,
   actionFetchAllExperimentNamesSuccess,
   actionFetchAllDecisionPointsSuccess,
   actionFetchContextMetaDataSuccess,
@@ -84,7 +82,6 @@ describe('ExperimentsReducer', () => {
         } as ExperimentVM,
       ],
       totalExperiments: 1,
-      totalFilteredExperiments: null,
     };
 
     const testAction: Action = actionGetExperimentsSuccess(testProps);
@@ -205,6 +202,8 @@ describe('ExperimentsReducer', () => {
     const previousState = { ...initialState };
     previousState.graphInfo = {
       [DATE_RANGE.LAST_SEVEN_DAYS]: [],
+      [DATE_RANGE.LAST_TWO_WEEKS]: [],
+      [DATE_RANGE.LAST_ONE_MONTH]: [],
       [DATE_RANGE.LAST_THREE_MONTHS]: [],
       [DATE_RANGE.LAST_SIX_MONTHS]: [],
       [DATE_RANGE.LAST_TWELVE_MONTHS]: [],
@@ -682,29 +681,5 @@ describe('ExperimentsReducer', () => {
 
     expect(newState).not.toBe(previousState);
     expect(newState.stats['1'].users).toEqual(11);
-  });
-
-  it('action "actionBeginExperimentDetailStatsPolling" should set polling to true', () => {
-    const previousState = { ...initialState };
-    previousState.isPollingExperimentDetailStats = false;
-
-    const testAction: Action = actionBeginExperimentDetailStatsPolling({} as any);
-
-    const newState = experimentsReducer(previousState, testAction);
-
-    expect(newState).not.toBe(previousState);
-    expect(newState.isPollingExperimentDetailStats).toEqual(true);
-  });
-
-  it('action "actionEndExperimentDetailStatsPolling" should set polling to false', () => {
-    const previousState = { ...initialState };
-    previousState.isPollingExperimentDetailStats = true;
-
-    const testAction: Action = actionEndExperimentDetailStatsPolling();
-
-    const newState = experimentsReducer(previousState, testAction);
-
-    expect(newState).not.toBe(previousState);
-    expect(newState.isLoadingExperimentDetailStats).toEqual(false);
   });
 });

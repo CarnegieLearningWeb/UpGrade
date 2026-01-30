@@ -1,0 +1,93 @@
+.table-container {
+  position: relative;
+  overflow: auto;
+  width: 100%;
+  padding: 32px;
+
+  .spinner {
+    position: sticky;
+    top: 0;
+    z-index: 1111;
+  }
+
+  /* Add gap between header and body when no data exists */
+  ::ng-deep .no-data tbody:before {
+    display: block;
+    line-height: 8px;
+    content: '\200C';
+  }
+
+  table {
+    ::ng-deep thead {
+      background-color: var(--zircon);
+
+      tr.mat-mdc-header-row {
+        height: 48px;
+        border: 0;
+
+        th {
+          padding-left: 0;
+          color: var(--darker-grey);
+
+          &:first-child {
+            border-top-left-radius: 4px;
+          }
+
+          &:last-child {
+            border-top-right-radius: 4px;
+          }
+        }
+      }
+    }
+
+    ::ng-deep tbody {
+      tr.mat-mdc-row {
+        height: 56px;
+
+        td {
+          min-width: 96px;
+          padding-left: 0;
+          color: var(--black-2);
+        }
+      }
+
+      tr.mat-mdc-no-data-row {
+        height: 48px;
+
+        td {
+          text-align: center;
+          border: 1.5px dashed var(--light-grey-2);
+          color: var(--dark-grey);
+        }
+      }
+    }
+
+    .condition-column {
+      width: 350px;
+      text-align: left;
+      padding-left: 32px;
+    }
+
+    .successes-column,
+    .failures-column,
+    .total-column,
+    .success-rate-column,
+    .spacer-column {
+      width: auto;
+      text-align: right;
+      padding-right: 16px;
+    }
+
+    &.no-data .condition-column {
+      width: auto;
+    }
+
+    .successes-column {
+      width: 64px;
+    }
+
+    .spacer-column {
+      min-width: 64px;
+    }
+  }
+}

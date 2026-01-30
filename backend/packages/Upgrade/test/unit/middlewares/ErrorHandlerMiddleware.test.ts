@@ -36,174 +36,197 @@ describe('ErrorHandler Middleware tests', () => {
     };
   });
 
-  test('Incorrect param error test', async () => {
+  test('Incorrect param error test', () => {
     const error = {
       type: SERVER_ERROR.INCORRECT_PARAM_FORMAT,
       message: 'Incorrect Parameters',
       httpCode: 500,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Missing param error test', async () => {
+  test('Missing param error test', () => {
     const error = {
       type: SERVER_ERROR.MISSING_PARAMS,
       message: 'Missing Parameters',
       httpCode: 500,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Query failed error test', async () => {
+  test('Query failed error test', () => {
     const error = {
       type: SERVER_ERROR.QUERY_FAILED,
       message: 'Query failed',
       httpCode: 500,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Experiment user not defined error test', async () => {
+  test('Experiment user not defined error test', () => {
     const error = {
       type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
       message: 'Experiment user not defined',
       httpCode: 404,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Experiment user group not defined error test', async () => {
+  test('Experiment user group not defined error test', () => {
     const error = {
       type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
       message: 'Experiment user group not defined',
       httpCode: 404,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Assignment error test', async () => {
+  test('Assignment error test', () => {
     const error = {
       type: SERVER_ERROR.ASSIGNMENT_ERROR,
       message: 'Assignment error',
       httpCode: 500,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Working group not subset of group error test', async () => {
+  test('Working group not subset of group error test', () => {
     const error = {
       type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
       message: 'Working group not subset of group error',
       httpCode: 500,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Invalid token error test', async () => {
+  test('Invalid token error test', () => {
     const error = {
       type: SERVER_ERROR.INVALID_TOKEN,
       message: 'Invalid token error',
       httpCode: 500,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Token not present error test', async () => {
+  test('Token not present error test', () => {
     const error = {
       type: SERVER_ERROR.TOKEN_NOT_PRESENT,
       message: 'Token not present error',
       httpCode: 500,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Condition not found error test', async () => {
+  test('Condition not found error test', () => {
     const error = {
       type: SERVER_ERROR.CONDITION_NOT_FOUND,
       message: 'Condition not found error',
       httpCode: 500,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Email send error test', async () => {
+  test('Email send error test', () => {
     const error = {
       type: SERVER_ERROR.EMAIL_SEND_ERROR,
       message: 'Email send error',
       httpCode: 500,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Incorrect param format error test', async () => {
+  test('Incorrect param format error test', () => {
     const error = {
       message: 'Incorrect param format error',
       httpCode: 400,
     };
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('User not found error test', async () => {
+  test('User not found error test', () => {
     const error = {
       message: 'User not found errors',
       httpCode: 401,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Query failed error test', async () => {
+  test('Query failed error test', () => {
     const error = {
       message: 'Query failed error',
       httpCode: 404,
     };
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
 
-  test('Default error test', async () => {
+  test('Default error test', () => {
     const error = {};
 
-    await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
     expect(mockResponse.statusCode).toBe(500);
+  });
+
+  test('Error handler should not crash when logger is undefined', () => {
+    const mockRequestWithoutLogger: any = {
+      header: jest.fn(),
+      body: { test: 'data' },
+      originalUrl: '/test/endpoint',
+    };
+
+    const error = {
+      type: SERVER_ERROR.QUERY_FAILED,
+      message: 'Query failed',
+      httpCode: 500,
+      name: 'TestError',
+    };
+
+    // This should not throw an error even though logger is undefined
+    expect(() => {
+      errorhandler.error(error, mockRequestWithoutLogger, mockResponse as Response, nextFunction);
+    }).not.toThrow();
+
+    expect(mockResponse.statusCode).toBe(error.httpCode);
+    expect(mockResponse.body).toBe(error.message);
   });
 });

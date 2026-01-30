@@ -6,7 +6,7 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { segmentThird } from '../mockData/segment';
 import { systemUser } from '../mockData/user/index';
 import { groupAssignmentWithGroupConsistencyExperiment } from '../mockData/experiment/index';
-import { ENROLLMENT_CODE, EXPERIMENT_STATE } from 'upgrade_types';
+import { ENROLLMENT_CODE, EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { checkMarkExperimentPointForUser } from '../utils/index';
@@ -20,7 +20,7 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // group experiment object
-  const experimentObject = JSON.parse(JSON.stringify(groupAssignmentWithGroupConsistencyExperiment));
+  const experimentObject = structuredClone(groupAssignmentWithGroupConsistencyExperiment);
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -43,7 +43,7 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -51,7 +51,7 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -127,11 +127,10 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
   //   ])
   // );
 
-  experimentObject.state = 'enrolling';
-  experimentObject.experimentSegmentExclusion = segmentObject;
+  await experimentService.addList(segmentObject, experimentId, LIST_FILTER_MODE.EXCLUSION, user, new UpgradeLogger());
 
   // update experiment with the above segment Object:
-  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -157,6 +156,7 @@ export default async function GroupExclusionSegmentGroupConsistency(): Promise<v
   individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(1);
 
+  // User should be both in exclusion and assignment list for group consistency
   individualAssignments = await checkService.getAllIndividualAssignment();
-  expect(individualAssignments.length).toEqual(0);
+  expect(individualAssignments.length).toEqual(1);
 }

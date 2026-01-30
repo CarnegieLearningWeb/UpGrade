@@ -5,22 +5,14 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800&display=swap');
 @import 'jsoneditor/dist/jsoneditor.min.css';
 @include mat.all-component-typographies();
-@include mat.core();
+@include mat.elevation-classes();
+@include mat.app-background();
 
 @import './styles/variables.scss';
 @import './themes/light-theme';
 @import './styles/utility.scss';
 @import './styles/shared-modal.scss';
 @import './app/features/dashboard/dashboard-root/dashboard-root.theme.scss';
-@import './app/features/dashboard/home/root/home.theme.scss';
-@import './app/features/dashboard/home/components/experiment-list/experiment-list.theme.scss';
-@import './app/features/dashboard/home/pages/view-experiment/view-experiment.theme.scss';
-@import './app/features/dashboard/home/components/modal/experiment-status/experiment-status.theme.scss';
-@import './app/features/dashboard/home/components/modal/post-experiment-rule/post-experiment-rule.theme.scss';
-@import './app/features/dashboard/home/components/experiment-design/experiment-design.theme.scss';
-@import './app/features/dashboard/home/components/experiment-design/payloads-table/payloads-table.theme.scss';
-@import './app/features/dashboard/home/components/enrollment-over-time/enrollment-over-time.theme.scss';
-@import './app/features/dashboard/home/components/modal/new-experiment/new-experiment.theme.scss';
 @import './app/features/dashboard/profile/components/profile-info/profile-info.theme.scss';
 @import './app/features/dashboard/profile/components/modals/new-user/new-user.theme.scss';
 @import './app/features/dashboard/experiment-users/components/experiment-users/experiment-users.theme.scss';
@@ -33,13 +25,7 @@
 @import './app/features/dashboard/segments-legacy/components/modal/new-segment/new-segment.theme.scss';
 @import './app/features/dashboard/segments-legacy/components/segment-members/segment-members.theme.scss';
 @import './app/features/dashboard/segments-legacy/pages/view-segment/view-segment.theme.scss';
-@import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
-@import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
-@import './app/features/dashboard/home/components/experiment-query-result/experiment-query-result.theme.scss';
-@import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
-@import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
-@import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
 @import './app/features/dashboard/segments-legacy/components/modal/import-segment/import-segment.theme.scss';
 @import './app/features/dashboard/experiment-users/components/stratification-factor-list/import-stratifications/import-stratifications.theme.scss';
 @import './app/features/dashboard/experiment-users/components/stratification-factor-list/delete-stratification/delete-stratification.theme.scss';
@@ -47,15 +33,6 @@
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
-  @include home-component-theme($theme);
-  @include experiment-list-component-theme($theme);
-  @include view-experiment-component-theme($theme);
-  @include experiment-status-component-theme($theme);
-  @include post-experiment-rule-component-theme($theme);
-  @include experiment-design-component-theme($theme);
-  @include payloads-table-component-theme($theme);
-  @include enrollment-over-time-component-theme($theme);
-  @include new-experiment-component-theme($theme);
   @include experiment-users-component-theme($theme);
   @include profile-info-component-theme($theme);
   @include new-user-component-theme($theme);
@@ -68,13 +45,7 @@
   @include segments-list-component-theme($theme);
   @include new-segment-component-theme($theme);
   @include segment-members-component-theme($theme);
-  @include queries-modal-component-theme($theme);
-  @include query-result-component-theme($theme);
   @include metrics-component-theme($theme);
-  @include experiment-query-result-component-theme($theme);
-  @include experiment-ending-criteria-component-theme($theme);
-  @include import-experiment-component-theme($theme);
-  @include state-time-logs-modal-component-theme($theme);
   @include import-segment-component-theme($theme);
   @include import-stratifications-component-theme($theme);
   @include delete-stratifications-component-theme($theme);
@@ -133,20 +104,13 @@ button[mat-icon-button] {
 }
 
 .delete-modal,
-.import-experiment-modal,
 .import-segment-modal,
 .import-stratification-modal,
-.experiment-general-modal,
-.new-experiment-modal,
-.new-flag-modal,
 .new-segment-modal,
 .new-user-modal,
-.queries-modal,
 .export-modal,
-.query-result,
 .add-metric-modal,
-.duplicate-segment-modal,
-.experiment-ending-criteria {
+.duplicate-segment-modal {
   @include custom-components-theme($light-theme);
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
@@ -172,8 +136,7 @@ button[mat-icon-button] {
   }
 }
 
-.segment-experiment-list-modal,
-.state-time-logs-modal {
+.segment-experiment-list-modal {
   border-radius: 7px;
 
   .mat-mdc-dialog-container {
@@ -200,33 +163,17 @@ button[mat-icon-button] {
 }
 
 .import-segment-modal,
-.import-experiment-modal,
 .import-stratification-modal {
   width: 500px;
 }
 
-.experiment-general-modal,
 .add-metric-modal {
   width: 804px;
   min-height: 294px;
 }
 
-.experiment-ending-criteria {
-  width: 600px;
-  min-height: 400px;
-}
-
 .segment-experiment-list-modal {
   width: 700px;
-}
-
-.state-time-logs-modal {
-  width: 400px;
-}
-
-.query-result {
-  width: 600px;
-  min-height: 300px;
 }
 
 .new-experiment-modal {
@@ -234,16 +181,8 @@ button[mat-icon-button] {
   width: 1000px;
 }
 
-.queries-modal {
-  width: 1000px;
-}
-
 .export-modal {
   width: 700px;
-}
-
-.new-flag-modal {
-  width: 844px;
 }
 
 .new-segment-modal {
@@ -315,42 +254,60 @@ button[mat-icon-button] {
   background-color: white !important;
 }
 
-.mat-mdc-radio-button {
-  .mdc-radio {
-    margin-left: -10px;
+.mat-mdc-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  user-select: none;
+
+  .section-label,
+  .radio-label,
+  .radio-description {
+    font-family: 'Roboto' !important;
+    -webkit-font-smoothing: antialiased;
   }
 
-  .radio-button-label {
-    margin-left: -6px;
-    color: var(--black-2);
-    user-select: none;
+  .section-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--dark-grey);
+  }
+
+  .mat-mdc-radio-button {
+    .radio-content {
+      display: flex;
+      flex-direction: column;
+
+      .radio-label {
+        color: var(--light-black);
+      }
+
+      .radio-description {
+        color: var(--dark-grey);
+      }
+    }
   }
 }
 
 .mat-mdc-slide-toggle {
   &:has(.mdc-switch--disabled) {
-    cursor: not-allowed;
-
     .mdc-label {
       margin-left: 5px;
       color: var(--dark-grey) !important;
-      cursor: not-allowed;
     }
   }
 
   .mdc-switch--disabled {
-    cursor: not-allowed !important;
-
     &.mdc-switch--unselected {
       .mdc-switch__track {
         opacity: 1 !important;
         &::before {
-          background: var(--mdc-switch-unselected-track-color) !important;
+          background: var(--mat-slide-toggle-unselected-track-color) !important;
         }
       }
 
       .mdc-switch__shadow {
-        background: var(--mdc-switch-unselected-handle-color) !important;
+        background: var(--mat-slide-toggle-unselected-handle-color) !important;
       }
 
       .mdc-switch__icons {
@@ -362,12 +319,12 @@ button[mat-icon-button] {
       .mdc-switch__track {
         opacity: 1 !important;
         &::after {
-          background: var(--mdc-switch-selected-track-color) !important;
+          background: var(--mat-slide-toggle-selected-track-color) !important;
         }
       }
 
       .mdc-switch__shadow {
-        background: var(--mdc-switch-selected-handle-color) !important;
+        background: var(--mat-slide-toggle-selected-handle-color) !important;
       }
 
       .mdc-switch__icons {
@@ -552,4 +509,52 @@ button[mat-icon-button] {
       background-color: transparent;
     }
   }
+}
+
+// Text overflow tooltip custom styling
+.text-overflow-tooltip .mdc-tooltip__surface {
+  max-width: 500px;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+// Multi-line tooltip styling for tooltips with newline characters
+.multiline-tooltip .mdc-tooltip__surface {
+  white-space: pre-line;
+  line-height: 1.5;
+  max-width: 500px;
+}
+
+// Line clamp utility classes for text truncation
+.line-clamp-1,
+.line-clamp-2,
+.line-clamp-3,
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.line-clamp-1 {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.line-clamp-4 {
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
 }

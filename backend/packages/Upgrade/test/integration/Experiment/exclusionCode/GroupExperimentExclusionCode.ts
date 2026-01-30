@@ -7,7 +7,7 @@ import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { checkMarkExperimentPointForUser } from '../../utils/index';
 import { CheckService } from '../../../../src/api/services/CheckService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import { EXCLUSION_CODE, EXPERIMENT_STATE } from 'upgrade_types';
+import { EXCLUSION_CODE, EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
@@ -20,7 +20,7 @@ export default async function testCase(): Promise<void> {
 
   // First excluding a group to check "EXCLUDED_DUE_TO_GROUP_LOGIC"
   // group experiment object
-  const experimentObject = JSON.parse(JSON.stringify(groupLevelExclusionExperiment));
+  const experimentObject = structuredClone(groupLevelExclusionExperiment);
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -43,7 +43,7 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -51,7 +51,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -89,8 +89,8 @@ export default async function testCase(): Promise<void> {
   let individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(1);
   // EXCLUDED_DUE_TO_GROUP_LOGIC
-  experimentObject.state = EXPERIMENT_STATE.ENROLLING;
-  experimentObject.experimentSegmentExclusion = {
+  experimentObject.state = EXPERIMENT_STATE.RUNNING;
+  experimentObject.experimentSegmentExclusion.push({
     segment: {
       id: '1b0c0200-7a15-4e19-8688-f9ac283f18aa',
       name: '8b0e562a-029e-4680-836c-7de6b2ef6ac9 Exclusion Segment',
@@ -101,9 +101,15 @@ export default async function testCase(): Promise<void> {
       groupForSegment: [],
       subSegments: [],
     },
-  };
+  });
 
-  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
+  await experimentService.deleteList(
+    experimentObject.experimentSegmentExclusion[0].segment.id,
+    LIST_FILTER_MODE.EXCLUSION,
+    user,
+    new UpgradeLogger()
+  );
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // get all experiment condition for user 4
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id, new UpgradeLogger());

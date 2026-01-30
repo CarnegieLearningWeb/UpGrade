@@ -50,18 +50,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
   selectedFlag$ = this.featureFlagService.selectedFeatureFlag$;
 
   subscriptions = new Subscription();
-  menuButtonItems: IMenuButtonItem[] = [
-    {
-      label: 'feature-flags.details.inclusions-modal.import-list.menu-item.text',
-      action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST,
-      disabled: false,
-    },
-    {
-      label: 'feature-flags.details.inclusions-modal.export-lists.menu-item.text',
-      action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS,
-      disabled: false,
-    },
-  ];
+  menuButtonItems$: Observable<IMenuButtonItem[]>;
 
   rowCountWithInclude$: Observable<number> = combineLatest([this.tableRowCount$, this.selectedFlag$]).pipe(
     map(([tableRowCount, selectedFeatureFlag]) =>
@@ -74,19 +63,33 @@ export class FeatureFlagInclusionsSectionCardComponent {
   }
 
   constructor(
-    private featureFlagService: FeatureFlagsService,
-    private dialogService: DialogService,
-    private authService: AuthService
+    private readonly featureFlagService: FeatureFlagsService,
+    private readonly dialogService: DialogService,
+    private readonly authService: AuthService
   ) {}
 
   confirmIncludeAllChangeDialogRef: MatDialogRef<CommonSimpleConfirmationModalComponent>;
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
+    this.menuButtonItems$ = combineLatest([this.permissions$, this.tableRowCount$]).pipe(
+      map(([permissions, tableRowCount]) => [
+        {
+          label: 'feature-flags.details.inclusions-modal.import-list.menu-item.text',
+          action: FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST,
+          disabled: !permissions?.segments.update,
+        },
+        {
+          label: 'feature-flags.details.inclusions-modal.export-lists.menu-item.text',
+          action: FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS,
+          disabled: tableRowCount === 0,
+        },
+      ])
+    );
   }
 
   onAddIncludeListClick(appContext: string, flagId: string) {
-    this.dialogService.openAddIncludeListModal(appContext, flagId);
+    this.dialogService.openFeatureFlagAddIncludeListModal(appContext, flagId);
   }
 
   onSlideToggleChange(event: MatSlideToggleChange, flagId: string): void {
@@ -134,10 +137,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
   onMenuButtonItemClick(event, flag: FeatureFlag) {
     switch (event) {
       case FEATURE_FLAG_BUTTON_ACTION.IMPORT_INCLUDE_LIST:
-        this.dialogService
-          .openImportFeatureFlagIncludeListModal(flag.id)
-          .afterClosed()
-          .subscribe(() => this.featureFlagService.fetchFeatureFlagById(flag.id));
+        this.dialogService.openImportFeatureFlagIncludeListModal(flag.id);
         break;
       case FEATURE_FLAG_BUTTON_ACTION.EXPORT_ALL_INCLUDE_LISTS:
         if (flag.featureFlagSegmentInclusion.length) {
@@ -201,7 +201,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
   }
 
   onEditIncludeList(rowData: ParticipantListTableRow, flagId: string): void {
-    this.dialogService.openEditIncludeListModal(rowData, rowData.segment.context, flagId);
+    this.dialogService.openFeatureFlagEditIncludeListModal(rowData, rowData.segment.context, flagId);
   }
 
   sendUpdateIncludeListRequest(flagId: string, enabled: boolean, listType: string, segment: Segment): void {

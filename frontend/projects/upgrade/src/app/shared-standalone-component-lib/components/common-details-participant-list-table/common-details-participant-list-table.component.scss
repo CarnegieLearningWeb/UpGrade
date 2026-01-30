@@ -51,8 +51,9 @@
       }
 
       tr.mat-mdc-no-data-row {
+        height: 48px;
+
         td {
-          height: 48px;
           text-align: center;
           border: 1.5px dashed var(--light-grey-2);
           color: var(--dark-grey);
@@ -75,11 +76,21 @@
       .segment-name {
         color: var(--black-2);
       }
+
+      .segment-description {
+        color: var(--grey-3);
+      }
     }
 
     .enable-column {
       width: 20%;
       text-align: center;
+
+      mat-slide-toggle {
+        &:has(button:disabled) {
+          opacity: 0.5;
+        }
+      }
     }
 
     .actions-column {
@@ -95,12 +106,9 @@
 
           &[disabled] {
             .mat-icon {
-              opacity: 1; /* Placeholder for potential later change */
+              opacity: 0.5;
             }
           }
-        }
-        &:has(.action-button:disabled) {
-          cursor: not-allowed;
         }
       }
     }
@@ -109,4 +117,14 @@
   .no-enable-column .name-column {
     width: 45%;
   }
+}
+
+// Values tooltip custom styling
+::ng-deep .values-tooltip .mdc-tooltip__surface {
+  max-width: 500px;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-line;
+  word-break: break-word;
+  line-height: 1.5;
 }

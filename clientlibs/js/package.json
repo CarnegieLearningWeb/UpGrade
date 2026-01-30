@@ -1,6 +1,6 @@
 {
   "name": "upgrade_client_lib",
-  "version": "6.2.6",
+  "version": "6.3.0",
   "description": "Client library to communicate with the Upgrade server",
   "files": [
     "dist/*",
@@ -9,26 +9,26 @@
   "exports": {
     ".": {
       "browser": "./dist/browser/index.js",
+      "browser-lite": "./dist/browser-lite/index.js",
       "node": "./dist/node/index.js",
-      "browser-lite": "./dist/lite/index.js",
-      "node_lite": "./dist/lite/index.js",
-      "types": "./index.d.ts"
-    },
-    "./lite": {
-      "default": "./dist/lite/index.js",
+      "node-lite": "./dist/node-lite/index.js",
       "types": "./index.d.ts"
     },
     "./dist/browser": {
       "default": "./dist/browser/index.js",
       "types": "./dist/browser/index.d.ts"
     },
+    "./dist/browser-lite": {
+      "default": "./dist/browser-lite/index.js",
+      "types": "./dist/browser-lite/index.d.ts"
+    },
     "./dist/node": {
       "default": "./dist/node/index.js",
       "types": "./dist/node/index.d.ts"
     },
-    "./dist/lite": {
-      "default": "./dist/lite/index.js",
-      "types": "./dist/lite/index.d.ts"
+    "./dist/node-lite": {
+      "default": "./dist/node-lite/index.js",
+      "types": "./dist/node-lite/index.d.ts"
     }
   },
   "scripts": {

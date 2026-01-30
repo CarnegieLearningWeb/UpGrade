@@ -26,7 +26,6 @@ import {
   actionFetchExperimentDetailStat,
   actionGetExperimentsSuccess,
   actionSetSkipExperiment,
-  actionBeginExperimentDetailStatsPolling,
   actionFetchExperimentGraphInfo,
   actionUpsertExperiment,
   actionUpsertExperimentFailure,
@@ -73,7 +72,9 @@ describe('ExperimentEffects', () => {
   let router: any;
   let notificationService: any;
   let translate: any;
+  let commonModalEventsService: any;
   let mockEnvironment: Environment;
+  let commonExportHelpersService: any;
 
   beforeEach(() => {
     actions$ = new ActionsSubject();
@@ -92,6 +93,10 @@ describe('ExperimentEffects', () => {
       instant: jest.fn(),
     };
     mockEnvironment = { ...environment };
+    commonModalEventsService = {
+      forceCloseModal: jest.fn(),
+      emitCloseModalEvent: jest.fn(),
+    };
     service = new ExperimentEffects(
       actions$,
       store$,
@@ -99,6 +104,8 @@ describe('ExperimentEffects', () => {
       router,
       translate,
       notificationService,
+      commonModalEventsService,
+      commonExportHelpersService,
       mockEnvironment
     );
   });
@@ -153,11 +160,8 @@ describe('ExperimentEffects', () => {
 
       const experimentIds = ['test1'];
       const totalExperiments = 1;
-      const totalFilteredExperiments = 1;
 
-      experimentDataService.getAllExperiment = jest
-        .fn()
-        .mockReturnValue(of({ nodes: experiments, total: 1, filtered: 1 }));
+      experimentDataService.getAllExperiment = jest.fn().mockReturnValue(of({ nodes: experiments, total: 1 }));
       Selectors.selectSkipExperiment.setResult(0);
       Selectors.selectTotalExperiment.setResult(1);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
@@ -168,7 +172,7 @@ describe('ExperimentEffects', () => {
       service.getPaginatedExperiment$.pipe(take(2), pairwise()).subscribe((result: any) => {
         tick(0);
 
-        const successAction = actionGetExperimentsSuccess({ experiments, totalExperiments, totalFilteredExperiments });
+        const successAction = actionGetExperimentsSuccess({ experiments, totalExperiments });
         const fetchAction = actionFetchExperimentStats({ experimentIds });
 
         expect(result).toEqual([successAction, fetchAction]);
@@ -187,14 +191,10 @@ describe('ExperimentEffects', () => {
 
       const experimentIds = ['test1'];
       const totalExperiments = 1;
-      const totalFilteredExperiments = 1;
 
-      experimentDataService.getAllExperiment = jest
-        .fn()
-        .mockReturnValue(of({ nodes: experiments, total: 1, filtered: 1 }));
+      experimentDataService.getAllExperiment = jest.fn().mockReturnValue(of({ nodes: experiments, total: 1 }));
       Selectors.selectSkipExperiment.setResult(2);
       Selectors.selectTotalExperiment.setResult(1);
-      Selectors.selectTotalFilteredExperiment.setResult(1);
       Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
       Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
       Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
@@ -216,8 +216,8 @@ describe('ExperimentEffects', () => {
           const skipAction = actionSetSkipExperiment({ skipExperiment: 0 });
           const successAction = actionGetExperimentsSuccess({
             experiments,
+            fromStarting: true,
             totalExperiments,
-            totalFilteredExperiments,
           });
           const fetchAction = actionFetchExperimentStats({ experimentIds });
 
@@ -673,79 +673,6 @@ describe('ExperimentEffects', () => {
       tick(0);
 
       expect(experimentDataService.getExperimentDetailStat).toHaveBeenCalled();
-    }));
-  });
-
-  describe('#beginExperimentDetailStatsPolling$', () => {
-    it('should not emit anything if no experimentId is given', fakeAsync(() => {
-      let neverEmitted = true;
-
-      service.beginExperimentDetailStatsPolling$.subscribe(() => {
-        neverEmitted = false;
-      });
-
-      actions$.next(actionBeginExperimentDetailStatsPolling({ experimentId: '' }));
-
-      tick(0);
-
-      expect(neverEmitted).toBeTruthy();
-    }));
-
-    it('should not emit anything if pollingLimit is surpassed', fakeAsync(() => {
-      let neverEmitted = true;
-      mockEnvironment.pollingLimit = 0;
-
-      service.beginExperimentDetailStatsPolling$.subscribe(() => {
-        neverEmitted = false;
-      });
-
-      actions$.next(actionBeginExperimentDetailStatsPolling({ experimentId: 'test1' }));
-
-      tick(0);
-
-      expect(neverEmitted).toBeTruthy();
-    }));
-
-    it('should not emit anything if isPolling is false', fakeAsync(() => {
-      let neverEmitted = true;
-      mockEnvironment.pollingInterval = 2;
-      Selectors.selectIsPollingExperimentDetailStats.setResult(false);
-
-      service.beginExperimentDetailStatsPolling$.subscribe(() => {
-        neverEmitted = false;
-      });
-
-      actions$.next(actionBeginExperimentDetailStatsPolling({ experimentId: 'test1' }));
-
-      tick(10);
-
-      expect(neverEmitted).toBeTruthy();
-    }));
-
-    it('should dispatch actionFetchExperimentDetailStat and actionFetchExperimentGraphInfo when polling', fakeAsync(() => {
-      mockEnvironment.pollingInterval = 2;
-      const experimentId = 'test1';
-      const graphInfo = {
-        experimentId,
-        range: DATE_RANGE.LAST_SEVEN_DAYS,
-        clientOffset: -new Date().getTimezoneOffset(),
-      };
-
-      Selectors.selectIsPollingExperimentDetailStats.setResult(true);
-      Selectors.selectExperimentGraphRange.setResult(graphInfo.range);
-
-      service.beginExperimentDetailStatsPolling$.pipe(take(2), pairwise()).subscribe((result) => {
-        const fetchStatsAction = actionFetchExperimentDetailStat({ experimentId });
-        const fetchGraphInfoAction = actionFetchExperimentGraphInfo(graphInfo);
-
-        expect(result).toEqual([fetchStatsAction, fetchGraphInfoAction]);
-      });
-
-      actions$.next(actionBeginExperimentDetailStatsPolling({ experimentId }));
-
-      tick(4);
-
-      Selectors.selectIsPollingExperimentDetailStats.setResult(false);
     }));
   });
 

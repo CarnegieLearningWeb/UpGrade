@@ -57,11 +57,12 @@ export class FeatureFlagRootSectionCardComponent {
   expandedTagsMap = new Map<string, boolean>();
 
   featureFlagFilterOption = [
-    FLAG_SEARCH_KEY.ALL,
-    FLAG_SEARCH_KEY.NAME,
-    FLAG_SEARCH_KEY.STATUS,
-    FLAG_SEARCH_KEY.CONTEXT,
-    FLAG_SEARCH_KEY.TAG,
+    { value: FLAG_SEARCH_KEY.ALL },
+    { value: FLAG_SEARCH_KEY.NAME },
+    { value: FLAG_SEARCH_KEY.ID },
+    { value: FLAG_SEARCH_KEY.STATUS },
+    { value: FLAG_SEARCH_KEY.CONTEXT },
+    { value: FLAG_SEARCH_KEY.TAG },
   ];
   isSectionCardExpanded = true;
 

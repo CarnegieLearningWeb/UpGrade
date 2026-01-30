@@ -47,15 +47,17 @@ export default async function RamdomRoundRobinAlgoCheck(): Promise<void> {
   );
 
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
+  const createdConditions = experiments[0].conditions;
 
+  // verify if conditions are created properly
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -72,10 +74,10 @@ export default async function RamdomRoundRobinAlgoCheck(): Promise<void> {
   const totalConditionsPair = Math.ceil(100 / conditions.length);
   expect(experimentConditionAssignments[0].assignedCondition.length).toEqual(totalConditionsPair * conditions.length);
 
-  const tempConditionArray = [...conditions];
+  const tempConditionArray = [...createdConditions];
   let allConditionIndludedFlag = true;
   let conditionIndex = -1;
-  for (let i = 0; i < conditions.length; i++) {
+  for (let i = 0; i < createdConditions.length; i++) {
     for (let j = 0; j < tempConditionArray.length; j++) {
       if (experimentConditionAssignments[0].assignedCondition[i].id === tempConditionArray[j].id) {
         conditionIndex = j;

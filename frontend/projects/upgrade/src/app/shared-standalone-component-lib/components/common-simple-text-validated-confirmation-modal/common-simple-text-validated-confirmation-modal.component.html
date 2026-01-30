@@ -1,0 +1,34 @@
+<app-common-dialog
+  [title]="data.title"
+  [cancelBtnLabel]="data.cancelBtnLabel"
+  [primaryActionBtnLabel]="data.primaryActionBtnLabel"
+  [primaryActionBtnColor]="data.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isPrimaryActionDisabled$ | async"
+  (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+>
+  <div class="validation-modal-content">
+    <p class="validation-modal-content-text ft-16-400">
+      {{ data.params.message }}
+    </p>
+    <p
+      class="validation-modal-content-text ft-14-400"
+      [ngClass]="data.params.subMessageClass"
+      *ngIf="data.params.subMessage"
+    >
+      {{ data.params.subMessage }}
+    </p>
+    <div class="validation-modal-content-text ft-16-600">
+      {{ validationPrompt }}
+    </div>
+    <mat-form-field class="dense-2" appearance="outline">
+      <input
+        class="ft-14-400"
+        matInput
+        [placeholder]="validationPlaceholder"
+        [(ngModel)]="inputValue"
+        (ngModelChange)="onInputChange($event)"
+        appTrimInput
+      />
+    </mat-form-field>
+  </div>
+</app-common-dialog>

@@ -20,7 +20,7 @@ export default async function GroupExclusionSegmentIndividualConsistency(): Prom
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // group experiment object
-  const experimentObject = JSON.parse(JSON.stringify(groupAssignmentWithIndividualConsistencyExperiment));
+  const experimentObject: any = structuredClone(groupAssignmentWithIndividualConsistencyExperiment);
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
@@ -43,7 +43,7 @@ export default async function GroupExclusionSegmentIndividualConsistency(): Prom
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -51,7 +51,7 @@ export default async function GroupExclusionSegmentIndividualConsistency(): Prom
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -128,30 +128,22 @@ export default async function GroupExclusionSegmentIndividualConsistency(): Prom
   // );
 
   experimentObject.state = 'enrolling';
-  console.log('exc segments: ', segmentObject);
-  experimentObject.experimentSegmentExclusion = segmentObject;
+  experimentObject.experimentSegmentExclusion = [segmentObject];
 
   // update experiment with the above segment Object:
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   // create segment to include above users who already reached before
   const segmentObject1 = segmentFourth;
-  // await segmentService.upsertSegment(segmentObject, new UpgradeLogger(), "include");
-  // segments = await segmentService.getAllSegments(new UpgradeLogger());
-  // expect(segments.length).toEqual(3);
-  console.log('inc segments: ', segmentObject1);
   experimentObject.state = 'enrolling';
-  experimentObject.experimentSegmentInclusion.segment.groupForSegment = [];
-  experimentObject.experimentSegmentInclusion.segment.individualForSegment = [segmentObject1];
-  console.log('experimentObject: ', experimentObject);
+  experimentObject.experimentSegmentInclusion[0].segment.groupForSegment = [];
+  experimentObject.experimentSegmentInclusion[0].segment.individualForSegment = [segmentObject1];
   // update experiment with the above segment Object:
   await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   // fetch experiment
 
   experiments = await experimentService.find(new UpgradeLogger());
-  console.log('exc: ', experiments[0].experimentSegmentExclusion);
-  console.log('inc: ', experiments[0].experimentSegmentInclusion);
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(3);

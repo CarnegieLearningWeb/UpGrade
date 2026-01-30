@@ -1,0 +1,21 @@
+<app-common-section-card>
+  <app-common-section-card-title-header
+    header-left
+    [title]="'Reward Feedback'"
+    [subtitle]="'Thompson Sampling (Configurable) rewards received per condition.'"
+  ></app-common-section-card-title-header>
+
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="false"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  ></app-common-section-card-action-buttons>
+
+  <app-ts-configurable-reward-count-table
+    content
+    *ngIf="isSectionCardExpanded"
+    [dataSource]="currentPosteriorsTableData$ | async"
+    [isLoading]="false"
+  ></app-ts-configurable-reward-count-table>
+</app-common-section-card>

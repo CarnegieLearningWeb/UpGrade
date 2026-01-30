@@ -91,6 +91,7 @@ export default async function UpdateExperiment(): Promise<void> {
         target: 'W3',
         description: 'Decision Point on Workspace 3',
         twoCharacterId: 'W3',
+        id: '328dcb72-6fe4-4beb-9660-9f13bca1081f',
       },
     ],
   };
@@ -167,11 +168,6 @@ export default async function UpdateExperiment(): Promise<void> {
   expect(experimentDecisionPoints.length).toEqual(updatedExperimentDoc.partitions.length);
 
   // update the experiment state
-  await experimentService.updateState(
-    updatedExperimentDoc.id,
-    EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
-    user,
-    new UpgradeLogger()
-  );
+  await experimentService.updateState(updatedExperimentDoc.id, EXPERIMENT_STATE.PAUSED, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
 }

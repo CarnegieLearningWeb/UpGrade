@@ -1,0 +1,51 @@
+.condition-table-container {
+  .heading {
+    display: block;
+  }
+
+  .spinner {
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 150px;
+  }
+
+  .data {
+    padding-top: 16px;
+    display: flex;
+
+    .enrollment-condition-table-container {
+      flex-grow: 1;
+    }
+
+    .enrollment-statistic {
+      display: flex;
+      flex-direction: column;
+      margin-left: 32px;
+      width: 200px;
+      text-align: center;
+
+      &__unique {
+        padding-bottom: 16px;
+      }
+
+      &__class {
+        border-top: 1px solid var(--grey);
+        padding: 16px 0;
+      }
+
+      .title {
+        display: block;
+        color: var(--grey-5);
+      }
+
+      .numbers {
+        display: block;
+        margin-bottom: -8px;
+        color: var(--blue);
+      }
+    }
+  }
+}

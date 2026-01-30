@@ -1,9 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { Environment } from '../../../environments/environment-types';
 import { UserRole } from './store/users.model';
 import { UsersDataService } from './users.data.service';
+import { API_ENDPOINTS } from '../api-endpoints.constants';
 
 class MockHTTPClient {
   get = jest.fn().mockReturnValue(of());
@@ -14,22 +13,20 @@ class MockHTTPClient {
 
 describe('SettingsDataService', () => {
   let mockHttpClient: any;
-  let mockEnvironment: Environment;
   let service: UsersDataService;
   let mockParams: any;
   let mockRole: UserRole;
 
   beforeEach(() => {
     mockHttpClient = new MockHTTPClient();
-    mockEnvironment = { ...environment };
-    service = new UsersDataService(mockHttpClient as HttpClient, mockEnvironment);
+    service = new UsersDataService(mockHttpClient as HttpClient);
     mockParams = {};
     mockRole = UserRole.ADMIN;
   });
 
   describe('#fetchUsers', () => {
     it('should get the fetchUsers http observable', () => {
-      const expectedUrl = mockEnvironment.api.getAllUsers;
+      const expectedUrl = API_ENDPOINTS.getAllUsers;
       const params = { ...mockParams };
 
       service.fetchUsers(params);
@@ -40,7 +37,7 @@ describe('SettingsDataService', () => {
 
   describe('#updateUserDetails', () => {
     it('should get the updateUserDetails http observable', () => {
-      const expectedUrl = mockEnvironment.api.userDetails;
+      const expectedUrl = API_ENDPOINTS.userDetails;
       const { firstName, lastName, email } = mockParams;
       const role = mockRole;
 
@@ -52,7 +49,7 @@ describe('SettingsDataService', () => {
 
   describe('#createNewUser', () => {
     it('should get the createNewUser http observable', () => {
-      const expectedUrl = mockEnvironment.api.users;
+      const expectedUrl = API_ENDPOINTS.users;
       const { firstName, lastName, email } = mockParams;
       const role = mockRole;
 
@@ -65,7 +62,7 @@ describe('SettingsDataService', () => {
   describe('#deleteUser', () => {
     it('should get the deleteUser http observable', () => {
       const email = mockParams;
-      const expectedUrl = `${mockEnvironment.api.users}/${email}`;
+      const expectedUrl = `${API_ENDPOINTS.users}/${email}`;
 
       service.deleteUser(email);
 

@@ -19,10 +19,6 @@ export default async function testCase(): Promise<void> {
   // experiment object
   const experimentObject = individualAssignmentExperimentConsistencyRuleExperiment;
 
-  const experimentName = experimentObject.partitions[0].target;
-  const experimentPoint = experimentObject.partitions[0].site;
-  const condition = experimentObject.conditions[0].conditionCode;
-
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
   let experiments = await experimentService.find(new UpgradeLogger());
@@ -37,6 +33,10 @@ export default async function testCase(): Promise<void> {
       }),
     ])
   );
+
+  let experimentName = experiments[0].partitions[0].target;
+  let experimentPoint = experiments[0].partitions[0].site;
+  let condition = experiments[0].conditions[0].conditionCode;
 
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
@@ -55,7 +55,7 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to Enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -63,7 +63,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -71,6 +71,9 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
+  experimentName = experiments[0].partitions[0].target;
+  experimentPoint = experiments[0].partitions[0].site;
+  condition = experiments[0].conditions[0].conditionCode;
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
@@ -117,7 +120,13 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   // change experiment status to complete
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.PAUSED, user, new UpgradeLogger());
+  const updatedExperiment = await experimentService.getSingleExperiment(experimentId);
+  await experimentService.update(
+    { ...updatedExperiment, revertTo: updatedExperiment.conditions[0].id } as any,
+    user,
+    new UpgradeLogger()
+  );
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -125,13 +134,16 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+        state: EXPERIMENT_STATE.PAUSED,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
       }),
     ])
   );
+  experimentName = experiments[0].partitions[0].target;
+  experimentPoint = experiments[0].partitions[0].site;
+  condition = experiments[0].conditions[0].conditionCode;
 
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());

@@ -4,17 +4,35 @@ export enum CONSISTENCY_RULE {
   GROUP = 'group',
 }
 
+export const CONSISTENCY_RULE_DISPLAY_MAP = {
+  [CONSISTENCY_RULE.INDIVIDUAL]: 'Individual',
+  [CONSISTENCY_RULE.EXPERIMENT]: 'Experiment',
+  [CONSISTENCY_RULE.GROUP]: 'Group',
+};
+
 export enum ASSIGNMENT_UNIT {
   INDIVIDUAL = 'individual',
   GROUP = 'group',
   WITHIN_SUBJECTS = 'within-subjects',
 }
 
+export const ASSIGNMENT_UNIT_DISPLAY_MAP = {
+  [ASSIGNMENT_UNIT.INDIVIDUAL]: 'Individual',
+  [ASSIGNMENT_UNIT.GROUP]: 'Group',
+  [ASSIGNMENT_UNIT.WITHIN_SUBJECTS]: 'Within-subjects',
+};
+
 export enum CONDITION_ORDER {
   RANDOM = 'random',
   RANDOM_ROUND_ROBIN = 'random round robin',
   ORDERED_ROUND_ROBIN = 'ordered round robin',
 }
+
+export const CONDITION_ORDER_DISPLAY_MAP = {
+  [CONDITION_ORDER.RANDOM]: 'Random',
+  [CONDITION_ORDER.RANDOM_ROUND_ROBIN]: 'Random Round Robin',
+  [CONDITION_ORDER.ORDERED_ROUND_ROBIN]: 'Ordered Round Robin',
+};
 
 export enum ASSIGNMENT_ALGORITHM {
   RANDOM = 'random',
@@ -25,7 +43,7 @@ export enum ASSIGNMENT_ALGORITHM {
 export const ASSIGNMENT_ALGORITHM_DISPLAY_MAP = {
   [ASSIGNMENT_ALGORITHM.RANDOM]: 'Random',
   [ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING]: 'Stratified Random Sampling',
-  [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: 'TS Configurable',
+  [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: 'Thompson Sampling (Configurable)',
 };
 
 export enum POST_EXPERIMENT_RULE {
@@ -35,16 +53,37 @@ export enum POST_EXPERIMENT_RULE {
   ASSIGN = 'assign',
 }
 
+export enum PAUSE_BEHAVIOR {
+  KEEP_CONDITIONS = 'keep-conditions',
+  NO_CONDITION = 'no-condition',
+  ASSIGN = 'assign',
+}
+
 export enum EXPERIMENT_STATE {
   INACTIVE = 'inactive',
-  PREVIEW = 'preview',
   SCHEDULED = 'scheduled',
-  ENROLLING = 'enrolling',
-  ENROLLMENT_COMPLETE = 'enrollmentComplete',
-  CANCELLED = 'cancelled',
+  PREVIEW = 'preview',
+  ENROLLING = 'enrolling', // New design: Running
+  RUNNING = 'running',
+  ENROLLMENT_COMPLETE = 'enrollmentComplete', // New design: Paused
+  PAUSED = 'paused',
+  CANCELLED = 'cancelled', // New design: Completed
+  COMPLETED = 'completed',
   ARCHIVED = 'archived',
   DRAFT = 'draft',
 }
+
+export const EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES: Record<string, EXPERIMENT_STATE> = {
+  [EXPERIMENT_STATE.ENROLLING]: EXPERIMENT_STATE.RUNNING,
+  [EXPERIMENT_STATE.ENROLLMENT_COMPLETE]: EXPERIMENT_STATE.PAUSED,
+  [EXPERIMENT_STATE.CANCELLED]: EXPERIMENT_STATE.COMPLETED,
+};
+
+export const EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES: Record<string, EXPERIMENT_STATE> = {
+  [EXPERIMENT_STATE.RUNNING]: EXPERIMENT_STATE.ENROLLING,
+  [EXPERIMENT_STATE.PAUSED]: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+  [EXPERIMENT_STATE.COMPLETED]: EXPERIMENT_STATE.CANCELLED,
+};
 
 export enum FEATURE_FLAG_STATUS {
   ENABLED = 'enabled',
@@ -130,9 +169,15 @@ export enum FEATURE_FLAG_LIST_OPERATION {
   STATUS_CHANGED = 'statusChanged',
 }
 
-export enum FEATURE_FLAG_LIST_FILTER_MODE {
+export enum LIST_FILTER_MODE {
   INCLUSION = 'inclusion',
   EXCLUSION = 'exclusion',
+}
+
+export enum EXPERIMENT_LIST_OPERATION {
+  CREATED = 'created',
+  UPDATED = 'updated',
+  DELETED = 'deleted',
 }
 
 export enum EXPERIMENT_SEARCH_KEY {
@@ -141,6 +186,7 @@ export enum EXPERIMENT_SEARCH_KEY {
   STATUS = 'status',
   TAG = 'tag',
   CONTEXT = 'context',
+  ID = 'id',
 }
 
 export enum EXPERIMENT_SORT_KEY {
@@ -162,6 +208,11 @@ export enum UserRole {
   READER = 'reader',
 }
 
+export enum METRIC_TYPE {
+  GLOBAL = 'global',
+  REPEATABLE = 'repeatable',
+}
+
 export enum OPERATION_TYPES {
   SUM = 'sum',
   COUNT = 'count',
@@ -181,9 +232,12 @@ export enum IMetricMetaData {
 
 export enum DATE_RANGE {
   LAST_SEVEN_DAYS = 'last_seven_days',
+  LAST_TWO_WEEKS = 'last_two_weeks',
+  LAST_ONE_MONTH = 'last_one_month',
   LAST_THREE_MONTHS = 'last_three_months',
   LAST_SIX_MONTHS = 'last_six_months',
   LAST_TWELVE_MONTHS = 'last_twelve_months',
+  TOTAL = 'total',
 }
 
 export enum REPEATED_MEASURE {
@@ -219,6 +273,7 @@ export enum SEGMENT_SEARCH_KEY {
   TAG = 'tag',
   STATUS = 'status',
   CONTEXT = 'context',
+  ID = 'id',
 }
 
 export enum SEGMENT_SORT_KEY {
@@ -233,6 +288,7 @@ export enum FLAG_SEARCH_KEY {
   STATUS = 'status',
   TAG = 'tag',
   CONTEXT = 'context',
+  ID = 'id',
 }
 
 export enum METRIC_SEARCH_KEY {
@@ -284,21 +340,21 @@ export enum CACHE_PREFIX {
 }
 
 export enum STATUS_INDICATOR_CHIP_TYPE {
-  EXCLUDED = 'excluded',
-  USED = 'used',
-  UNUSED = 'unused',
-  ENABLED = 'enabled',
-  DISABLED = 'disabled',
-  DRAFT = 'draft',
-  ARCHIVED = 'archived',
   INACTIVE = 'inactive',
-  ENROLLING = 'enrolling',
-  ENROLLMENT_COMPLETE = 'enrollment-complete',
-  CANCELLED = 'cancelled',
   SCHEDULED = 'scheduled',
-  COMPATIBLE = 'compatible',
+  PREVIEW = 'preview',
+  ENROLLING = 'enrolling', // New design: Running
+  ENROLLMENT_COMPLETE = 'enrollmentComplete', // New design: Paused
+  CANCELLED = 'cancelled', // New design: Completed
+  ARCHIVED = 'archived',
+  DISABLED = 'disabled',
+  ENABLED = 'enabled',
+  EXCLUDED = 'excluded',
+  UNUSED = 'unused',
+  USED = 'used',
   INCOMPATIBLE = 'incompatible',
   WARNING = 'warning',
+  COMPATIBLE = 'compatible',
 }
 
 export enum FEATURE_FLAG_PARTICIPANT_LIST_KEY {

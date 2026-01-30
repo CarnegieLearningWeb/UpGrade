@@ -13,18 +13,13 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
 
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
-  const experimentObject = firstFactorialExperiment;
+  const experimentObject = structuredClone(firstFactorialExperiment);
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
-  const experimentTarget = experimentObject.partitions[0].target;
-  const experimentSite = experimentObject.partitions[0].site;
   const conditions = experimentObject.conditions;
-  const experimentID = experimentObject.id;
-  const context = experimentObject.context[0];
-  const experimentConditionPayload = experimentObject.conditionPayloads[0];
 
   // setting condition-1 weight as 100%
   conditions.sort((a, b) => (a.order > b.order ? 1 : b.order > a.order ? -1 : 0));
@@ -51,8 +46,13 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
     ])
   );
 
+  const experimentTarget = experiments[0].partitions[0].target;
+  const experimentSite = experiments[0].partitions[0].site;
+  const experimentID = experiments[0].id;
+  const context = experiments[0].context[0];
+  const experimentConditionPayload = experiments[0].conditionPayloads[0];
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -60,7 +60,7 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -84,7 +84,7 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
         site: experimentSite,
         assignedCondition: expect.arrayContaining([
           expect.objectContaining({
-            id: experimentConditionPayload.parentCondition,
+            id: experiments[0].conditionPayloads[0].parentCondition,
             conditionCode: 'Color=Red; Shape=Circle',
             payload: { type: 'string', value: experimentConditionPayload.payload.value },
           }),
@@ -98,7 +98,7 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
     experimentUsers[0].id,
     experimentTarget,
     experimentSite,
-    experimentConditionPayload.payload.value,
+    experimentConditionAssignments[0].assignedCondition[0].conditionCode,
     experimentID,
     new UpgradeLogger()
   );
@@ -137,7 +137,7 @@ export default async function FactorialExperimentEnrollment(): Promise<void> {
     experimentUsers[1].id,
     experimentTarget,
     experimentSite,
-    experimentConditionPayload.payload.value,
+    experimentConditionAssignments[0].assignedCondition[0].conditionCode,
     experimentID,
     new UpgradeLogger()
   );

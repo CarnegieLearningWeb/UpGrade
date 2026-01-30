@@ -13,7 +13,7 @@ import {
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
 
 /* Explanation:
 A user1 in mark in an experiment with Group Assignment and Individual Consistency
@@ -102,7 +102,7 @@ export default async function ExcludeGroupsB(): Promise<void> {
   expect(experimentUser).toEqual(objectToCheck);
 
   // change experiment state to enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, user, new UpgradeLogger());
 
   // get all experiment condition for user
   let experimentConditionAssignment = await getAllExperimentCondition(experimentUser.id, new UpgradeLogger());
@@ -134,23 +134,29 @@ export default async function ExcludeGroupsB(): Promise<void> {
   // update exclusion list of experiment
   experimentObject = {
     ...experimentObject,
-    state: EXPERIMENT_STATE.ENROLLING,
-    experimentSegmentExclusion: {
-      ...experimentObject.experimentSegmentExclusion,
-      segment: {
-        ...experimentObject.experimentSegmentExclusion.segment,
-        groupForSegment: [{ groupId: '1', type: 'teacher' }],
-      },
-    },
+    state: EXPERIMENT_STATE.RUNNING,
   };
   await experimentService.update(experimentObject, user, new UpgradeLogger());
 
-  // check stats
+  await experimentService.addList(
+    {
+      ...experimentObject.experimentSegmentExclusion[0].segment,
+      listType: 'group',
+      groups: [{ groupId: '1', type: 'teacher' }],
+    },
+
+    experimentObject.id,
+    LIST_FILTER_MODE.EXCLUSION,
+    user,
+    new UpgradeLogger()
+  );
+
+  // check stats - should be unchanged
   stats = await analyticsService.getDetailEnrollment(experimentId);
   expect(stats).toEqual(
     expect.objectContaining({
-      users: 0,
-      groups: 0,
+      users: 1,
+      groups: 1,
       usersExcluded: 0,
       groupsExcluded: 0,
       id: experimentId,
@@ -163,7 +169,7 @@ export default async function ExcludeGroupsB(): Promise<void> {
       expect.objectContaining({
         id: experimentId,
         users: 1,
-        groups: 0,
+        groups: 1,
       }),
     ])
   );

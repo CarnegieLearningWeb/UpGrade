@@ -24,7 +24,7 @@ export default async function SegmentMemberGroupEnrollment(): Promise<void> {
   await segmentService.upsertSegment(segmentObject, logger);
 
   // experiment object
-  const experimentObject = JSON.parse(JSON.stringify(individualAssignmentExperiment));
+  const experimentObject = structuredClone(individualAssignmentExperiment);
   experimentObject.experimentSegmentInclusion = { ...experimentObject.experimentSegmentInclusion };
   const context = experimentObject.context[0];
 
@@ -45,7 +45,7 @@ export default async function SegmentMemberGroupEnrollment(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, userIn, logger);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.RUNNING, userIn, logger);
 
   // fetch experiment
   experiments = await experimentService.find(logger);
@@ -53,7 +53,7 @@ export default async function SegmentMemberGroupEnrollment(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.RUNNING,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,

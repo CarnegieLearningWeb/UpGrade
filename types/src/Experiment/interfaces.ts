@@ -11,9 +11,11 @@ import {
   FEATURE_FLAG_LIST_OPERATION,
   FEATURE_FLAG_STATUS,
   FILTER_MODE,
-  FEATURE_FLAG_LIST_FILTER_MODE,
+  LIST_FILTER_MODE,
   IMPORT_COMPATIBILITY_TYPE,
   SERVER_ERROR,
+  EXPERIMENT_LIST_OPERATION,
+  OPERATION_TYPES,
 } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
@@ -102,8 +104,8 @@ export interface FeatureFlagUpdatedData {
 export interface ListOperationsData {
   listId: string;
   listName: string;
-  filterType: FEATURE_FLAG_LIST_FILTER_MODE;
-  operation: FEATURE_FLAG_LIST_OPERATION;
+  filterType: LIST_FILTER_MODE;
+  operation: FEATURE_FLAG_LIST_OPERATION | EXPERIMENT_LIST_OPERATION;
   enabled?: boolean;
   diff?: string;
 }
@@ -145,6 +147,14 @@ export interface IMetricUnit {
   children?: IMetricUnit[];
   metadata?: { type: IMetricMetaData };
   allowedData?: string[];
+}
+
+export type ExperimentQueryComparator = '=' | '<>' | '!=';
+
+export interface ExperimentQueryPayload {
+  operationType: OPERATION_TYPES;
+  compareFn?: ExperimentQueryComparator;
+  compareValue?: string;
 }
 
 export interface IFlagVariation {
@@ -280,7 +290,7 @@ export interface IMenuButtonItem {
   disabled: boolean;
 }
 
-export interface IFeatureFlagFile {
+export interface IImportFile {
   fileName: string;
   fileContent: string | ArrayBuffer;
 }

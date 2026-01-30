@@ -37,11 +37,9 @@ export class LocalStorageService {
       entities: {},
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,
-      isPollingExperimentDetailStats: false,
       isLoadingExperimentExport: false,
       skipExperiment: 0,
       totalExperiments: null,
-      totalFilteredExperiments: null,
       searchKey: (experimentSearchKey as EXPERIMENT_SEARCH_KEY) || EXPERIMENT_SEARCH_KEY.ALL,
       searchString: experimentSearchString || null,
       sortKey: (experimentSortKey as EXPERIMENT_SORT_KEY) || EXPERIMENT_SORT_KEY.NAME,
@@ -57,6 +55,8 @@ export class LocalStorageService {
       },
       isLoadingContextMetaData: false,
       currentUserSelectedContext: null,
+      isLoadingExperimentDelete: false,
+      isLoadingImportExperiment: false,
     };
 
     const featureFlagState: FeatureFlagState = {
