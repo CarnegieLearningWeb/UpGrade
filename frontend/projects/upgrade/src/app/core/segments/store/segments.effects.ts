@@ -3,7 +3,8 @@ import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
 import { catchError, concatMap, filter, first, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
-import { AppState } from '../../core.module';
+import { AppState, NotificationService } from '../../core.module';
+import { TranslateService } from '@ngx-translate/core';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
 import { NUMBER_OF_SEGMENTS, Segment, SegmentsPaginationParams, UpsertSegmentType } from './segments.model';
@@ -27,6 +28,8 @@ export class SegmentsEffects {
     private segmentsDataService: SegmentsDataService,
     private segmentsService: SegmentsService,
     private router: Router,
+    private notificationService: NotificationService,
+    private translate: TranslateService,
     private commonModalEventService: CommonModalEventsService
   ) {}
 
@@ -318,10 +321,14 @@ export class SegmentsEffects {
       switchMap((action) => {
         return this.segmentsDataService.addSegmentList(action.list).pipe(
           map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('segments.lists.add-success.text'));
             this.commonModalEventService.forceCloseModal();
             return SegmentsActions.actionAddSegmentListSuccess({ listResponse });
           }),
-          catchError((error) => of(SegmentsActions.actionAddSegmentListFailure({ error })))
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('segments.lists.add-error.text'));
+            return of(SegmentsActions.actionAddSegmentListFailure({ error }));
+          })
         );
       })
     )
@@ -333,10 +340,14 @@ export class SegmentsEffects {
       switchMap((action) => {
         return this.segmentsDataService.updateSegmentList(action.list).pipe(
           map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('segments.lists.update-success.text'));
             this.commonModalEventService.forceCloseModal();
             return SegmentsActions.actionUpdateSegmentListSuccess({ listResponse });
           }),
-          catchError((error) => of(SegmentsActions.actionUpdateSegmentListFailure({ error })))
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('segments.lists.update-error.text'));
+            return of(SegmentsActions.actionUpdateSegmentListFailure({ error }));
+          })
         );
       })
     )
@@ -347,8 +358,14 @@ export class SegmentsEffects {
       ofType(SegmentsActions.actionDeleteSegmentList),
       switchMap(({ segmentId, parentSegmentId }) => {
         return this.segmentsDataService.deleteSegmentList(segmentId, parentSegmentId).pipe(
-          map(() => SegmentsActions.actionDeleteSegmentListSuccess({ segmentId })),
-          catchError((error) => of(SegmentsActions.actionDeleteSegmentListFailure({ error })))
+          map(() => {
+            this.notificationService.showSuccess(this.translate.instant('segments.lists.delete-success.text'));
+            return SegmentsActions.actionDeleteSegmentListSuccess({ segmentId });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('segments.lists.delete-error.text'));
+            return of(SegmentsActions.actionDeleteSegmentListFailure({ error }));
+          })
         );
       })
     )
