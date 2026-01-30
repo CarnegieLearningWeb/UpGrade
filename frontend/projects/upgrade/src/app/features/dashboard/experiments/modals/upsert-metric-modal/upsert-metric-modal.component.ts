@@ -761,7 +761,7 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   private filterMetricsByAssignmentContext(metrics: MetricNode[]): MetricNode[] {
-    if (!metrics?.length) {
+    if (!metrics?.length || !this.currentContext?.length) {
       return [];
     }
 
@@ -770,11 +770,6 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
 
     if (this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
       filteredMetrics = metrics.filter((metric) => metric.children && metric.children.length > 0);
-    }
-
-    // Context is required - if not available, return empty array
-    if (!this.currentContext?.length) {
-      return [];
     }
 
     // Apply context filtering
