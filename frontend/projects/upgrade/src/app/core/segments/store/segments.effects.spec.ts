@@ -14,6 +14,8 @@ describe('SegmentsEffects', () => {
   let segmentsDataService: any;
   let segmentService: any;
   let router: any;
+  let notificationService: any;
+  let translate: any;
   let commonModalEventService: any;
   let service: SegmentsEffects;
   const mockSegment: Segment = {
@@ -51,6 +53,13 @@ describe('SegmentsEffects', () => {
     store$ = new BehaviorSubject({});
     store$.dispatch = jest.fn();
     segmentsDataService = {};
+    notificationService = {
+      showSuccess: jest.fn(),
+      showError: jest.fn(),
+    };
+    translate = {
+      instant: jest.fn((key) => key),
+    };
     commonModalEventService = {
       forceCloseModal: jest.fn(),
     };
@@ -64,6 +73,8 @@ describe('SegmentsEffects', () => {
       segmentsDataService,
       segmentService,
       router,
+      notificationService,
+      translate,
       commonModalEventService
     );
   });
