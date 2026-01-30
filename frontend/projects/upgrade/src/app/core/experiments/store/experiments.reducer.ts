@@ -57,6 +57,8 @@ const reducer = createReducer(
     experimentsAction.actionGetExperimentsFailure,
     experimentsAction.actionGetExperimentByIdFailure,
     experimentsAction.actionUpsertExperimentFailure,
+    experimentsAction.actionUpdateExperimentFilterModeFailure,
+    experimentsAction.actionUpdateExperimentStateFailure,
     (state) => ({ ...state, isLoadingExperiment: false })
   ),
   on(experimentsAction.actionUpsertExperimentSuccess, (state, { experiment }) =>
