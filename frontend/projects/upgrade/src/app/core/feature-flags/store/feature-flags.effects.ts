@@ -7,6 +7,7 @@ import { FeatureFlag, FeatureFlagsPaginationParams, NUMBER_OF_FLAGS } from './fe
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState, NotificationService } from '../../core.module';
+import { TranslateService } from '@ngx-translate/core';
 import {
   selectTotalFlags,
   selectSearchKey,
@@ -31,6 +32,7 @@ export class FeatureFlagsEffects {
     private featureFlagsDataService: FeatureFlagsDataService,
     private router: Router,
     private notificationService: NotificationService,
+    private translate: TranslateService,
     private commonExportHelpersService: CommonExportHelpersService,
     private commonModalEvents: CommonModalEventsService
   ) {}
@@ -193,10 +195,14 @@ export class FeatureFlagsEffects {
       switchMap((action) => {
         return this.featureFlagsDataService.addInclusionList(action.list).pipe(
           map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('feature-flags.inclusions.add-success.text'));
             this.commonModalEvents.forceCloseModal();
             return FeatureFlagsActions.actionAddFeatureFlagInclusionListSuccess({ listResponse });
           }),
-          catchError((error) => of(FeatureFlagsActions.actionAddFeatureFlagInclusionListFailure({ error })))
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('feature-flags.inclusions.add-error.text'));
+            return of(FeatureFlagsActions.actionAddFeatureFlagInclusionListFailure({ error }));
+          })
         );
       })
     )
@@ -208,10 +214,16 @@ export class FeatureFlagsEffects {
       switchMap((action) => {
         return this.featureFlagsDataService.updateInclusionList(action.list).pipe(
           map((listResponse) => {
+            this.notificationService.showSuccess(
+              this.translate.instant('feature-flags.inclusions.update-success.text')
+            );
             this.commonModalEvents.forceCloseModal();
             return FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess({ listResponse });
           }),
-          catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListFailure({ error })))
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('feature-flags.inclusions.update-error.text'));
+            return of(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListFailure({ error }));
+          })
         );
       })
     )
@@ -223,8 +235,16 @@ export class FeatureFlagsEffects {
       map((action) => action.segmentId),
       switchMap((segmentId) => {
         return this.featureFlagsDataService.deleteInclusionList(segmentId).pipe(
-          map(() => FeatureFlagsActions.actionDeleteFeatureFlagInclusionListSuccess({ segmentId })),
-          catchError((error) => of(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListFailure({ error })))
+          map(() => {
+            this.notificationService.showSuccess(
+              this.translate.instant('feature-flags.inclusions.delete-success.text')
+            );
+            return FeatureFlagsActions.actionDeleteFeatureFlagInclusionListSuccess({ segmentId });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('feature-flags.inclusions.delete-error.text'));
+            return of(FeatureFlagsActions.actionDeleteFeatureFlagInclusionListFailure({ error }));
+          })
         );
       })
     )
@@ -236,10 +256,14 @@ export class FeatureFlagsEffects {
       switchMap((action) => {
         return this.featureFlagsDataService.addExclusionList(action.list).pipe(
           map((listResponse) => {
+            this.notificationService.showSuccess(this.translate.instant('feature-flags.exclusions.add-success.text'));
             this.commonModalEvents.forceCloseModal();
             return FeatureFlagsActions.actionAddFeatureFlagExclusionListSuccess({ listResponse });
           }),
-          catchError((error) => of(FeatureFlagsActions.actionAddFeatureFlagExclusionListFailure({ error })))
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('feature-flags.exclusions.add-error.text'));
+            return of(FeatureFlagsActions.actionAddFeatureFlagExclusionListFailure({ error }));
+          })
         );
       })
     )
@@ -251,10 +275,16 @@ export class FeatureFlagsEffects {
       switchMap((action) => {
         return this.featureFlagsDataService.updateExclusionList(action.list).pipe(
           map((listResponse) => {
+            this.notificationService.showSuccess(
+              this.translate.instant('feature-flags.exclusions.update-success.text')
+            );
             this.commonModalEvents.forceCloseModal();
             return FeatureFlagsActions.actionUpdateFeatureFlagExclusionListSuccess({ listResponse });
           }),
-          catchError((error) => of(FeatureFlagsActions.actionUpdateFeatureFlagExclusionListFailure({ error })))
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('feature-flags.exclusions.update-error.text'));
+            return of(FeatureFlagsActions.actionUpdateFeatureFlagExclusionListFailure({ error }));
+          })
         );
       })
     )
@@ -266,8 +296,16 @@ export class FeatureFlagsEffects {
       map((action) => action.segmentId),
       switchMap((segmentId) => {
         return this.featureFlagsDataService.deleteExclusionList(segmentId).pipe(
-          map(() => FeatureFlagsActions.actionDeleteFeatureFlagExclusionListSuccess({ segmentId })),
-          catchError((error) => of(FeatureFlagsActions.actionDeleteFeatureFlagExclusionListFailure({ error })))
+          map(() => {
+            this.notificationService.showSuccess(
+              this.translate.instant('feature-flags.exclusions.delete-success.text')
+            );
+            return FeatureFlagsActions.actionDeleteFeatureFlagExclusionListSuccess({ segmentId });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('feature-flags.exclusions.delete-error.text'));
+            return of(FeatureFlagsActions.actionDeleteFeatureFlagExclusionListFailure({ error }));
+          })
         );
       })
     )
