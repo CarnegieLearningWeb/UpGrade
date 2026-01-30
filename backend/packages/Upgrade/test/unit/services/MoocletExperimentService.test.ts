@@ -1603,7 +1603,7 @@ describe('#MoocletExperimentService', () => {
       });
 
       await expect((moocletExperimentService as any).handleEditMoocletTransaction(manager, params)).rejects.toThrow(
-        /Ineligible version or variable edits/
+        '[Mooclet Edit] Ineligible experiment state for Mooclet edits'
       );
     });
 
