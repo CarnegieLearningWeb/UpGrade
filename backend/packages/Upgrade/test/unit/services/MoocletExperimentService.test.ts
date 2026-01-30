@@ -2,6 +2,9 @@ import 'reflect-metadata';
 import { ExperimentDTO } from '../../../../Upgrade/src/api/DTO/ExperimentDTO';
 import { UserDTO } from '../../../../Upgrade/src/api/DTO/UserDTO';
 import { MoocletExperimentRef } from '../../../src/api/models/MoocletExperimentRef';
+import { MoocletVersionConditionMap } from '../../../src/api/models/MoocletVersionConditionMap';
+import { Experiment } from '../../../src/api/models/Experiment';
+import { ExperimentCondition } from '../../../src/api/models/ExperimentCondition';
 import { ArchivedStatsRepository } from '../../../src/api/repositories/ArchivedStatsRepository';
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
 import { DecisionPointRepository } from '../../../src/api/repositories/DecisionPointRepository';
@@ -26,7 +29,12 @@ import { StratificationFactorRepository } from '../../../src/api/repositories/St
 import { CacheService } from '../../../src/api/services/CacheService';
 import { ErrorService } from '../../../src/api/services/ErrorService';
 import { MoocletDataService } from '../../../src/api/services/MoocletDataService';
-import { MoocletExperimentService, SyncCreateParams } from '../../../src/api/services/MoocletExperimentService';
+import {
+  MoocletExperimentService,
+  SyncCreateParams,
+  SyncEditParams,
+  SyncDeleteParams,
+} from '../../../src/api/services/MoocletExperimentService';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { QueryService } from '../../../src/api/services/QueryService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
@@ -97,6 +105,23 @@ jest.mock('../../../src/api/services/ErrorService');
 jest.mock('../../../src/api/services/CacheService');
 jest.mock('../../../src/api/services/QueryService');
 jest.mock('../../../src/api/services/MetricService');
+
+jest.mock('../../../src/env', () => ({
+  env: {
+    mooclets: {
+      enabled: true,
+    },
+    aws: {
+      region: 'us-east-1',
+      accessKeyId: 'test',
+      secretAccessKey: 'test',
+      s3BucketName: 'test',
+    },
+    app: {
+      version: '1.0.0-test',
+    },
+  },
+}));
 
 const mockTSConfigMoocletPolicyParameters = {
   assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
@@ -244,6 +269,9 @@ describe('#MoocletExperimentService', () => {
       deleteMooclet: jest.fn(),
       deletePolicyParameters: jest.fn(),
       deleteVariable: jest.fn(),
+      getPolicyParameters: jest.fn(),
+      getVersionForNewLearner: jest.fn(),
+      getVariable: jest.fn(),
     } as unknown as MoocletDataService;
 
     metricService = {
@@ -519,17 +547,134 @@ describe('#MoocletExperimentService', () => {
       );
       expect(moocletDataService.deleteVariable).toHaveBeenCalledWith(mockMoocletExperimentRef.variableId, logger);
     });
-    it('should handle errors and log them', async () => {
-      jest.spyOn(moocletDataService, 'deleteMooclet').mockRejectedValue(new Error('Failed to delete mooclet'));
+    it('should handle errors, log them, and return false', async () => {
+      const mockError = new Error('Failed to delete mooclet');
+      jest.spyOn(moocletDataService, 'deleteMooclet').mockRejectedValue(mockError);
       jest.spyOn(moocletExperimentService as any, 'deleteMoocletVersions').mockResolvedValue(undefined);
       jest.spyOn(moocletDataService, 'deletePolicyParameters').mockResolvedValue(undefined);
       jest.spyOn(moocletDataService, 'deleteVariable').mockResolvedValue(undefined);
 
-      await moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef, logger);
+      const result = await moocletExperimentService.orchestrateDeleteMoocletResources(mockMoocletExperimentRef, logger);
 
+      expect(result).toBe(false);
       expect(moocletDataService.deleteMooclet).toHaveBeenCalledWith(mockMoocletExperimentRef.moocletId, logger);
-      expect(moocletDataService.deletePolicyParameters).not.toHaveBeenCalled();
-      expect(moocletDataService.deleteVariable).not.toHaveBeenCalled();
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('Failed to delete Mooclet resources'),
+          error: mockError,
+          moocletExperimentRef: mockMoocletExperimentRef,
+        })
+      );
+    });
+  });
+
+  describe('#handleDeleteMoocletTransaction', () => {
+    const mockExperiment = {
+      id: 'test-exp-123',
+      name: 'Test Experiment',
+      conditions: [],
+    };
+
+    const mockMoocletExperimentRef = new MoocletExperimentRef();
+    mockMoocletExperimentRef.moocletId = 1;
+    mockMoocletExperimentRef.policyParametersId = 2;
+    mockMoocletExperimentRef.variableId = 3;
+    mockMoocletExperimentRef.id = 'mockMoocletExperimentRef123';
+    mockMoocletExperimentRef.experimentId = 'test-exp-123';
+    mockMoocletExperimentRef.versionConditionMaps = [];
+
+    const mockUser = {
+      id: 'user-123',
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@test.com',
+    } as UserDTO;
+
+    const mockDeleteParams = {
+      moocletExperimentRef: mockMoocletExperimentRef,
+      experimentId: 'test-exp-123',
+      currentUser: mockUser,
+      logger,
+    };
+
+    const mockManager = mockDataSource.manager as EntityManager;
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should rollback upgrade experiment deletion when mooclet deletion fails', async () => {
+      // Mock the parent class delete method
+      const deleteSpy = jest
+        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(moocletExperimentService)), 'delete')
+        .mockResolvedValue(mockExperiment);
+
+      // Mock orchestrateDeleteMoocletResources to fail (return false)
+      const orchestrateSpy = jest
+        .spyOn(moocletExperimentService, 'orchestrateDeleteMoocletResources')
+        .mockResolvedValue(false);
+
+      // Call the private method directly
+      await expect(
+        (moocletExperimentService as any).handleDeleteMoocletTransaction(mockManager, mockDeleteParams)
+      ).rejects.toThrow(/Failed to delete Mooclet resources, aborting transaction to preserve upgrade experiment/);
+
+      // Verify that upgrade deletion was attempted first
+      expect(deleteSpy).toHaveBeenCalledWith('test-exp-123', mockUser, {
+        existingEntityManager: mockManager,
+      });
+
+      // Verify that mooclet deletion was attempted
+      expect(orchestrateSpy).toHaveBeenCalledWith(mockMoocletExperimentRef, logger);
+    });
+
+    it('should successfully delete both resources when mooclet deletion succeeds', async () => {
+      // Mock the parent class delete method
+      const deleteSpy = jest
+        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(moocletExperimentService)), 'delete')
+        .mockResolvedValue(mockExperiment);
+
+      // Mock orchestrateDeleteMoocletResources to succeed (return true)
+      const orchestrateSpy = jest
+        .spyOn(moocletExperimentService, 'orchestrateDeleteMoocletResources')
+        .mockResolvedValue(true);
+
+      // Call the private method directly
+      const result = await (moocletExperimentService as any).handleDeleteMoocletTransaction(
+        mockManager,
+        mockDeleteParams
+      );
+
+      expect(result).toEqual(mockExperiment);
+      expect(deleteSpy).toHaveBeenCalledWith('test-exp-123', mockUser, {
+        existingEntityManager: mockManager,
+      });
+      expect(orchestrateSpy).toHaveBeenCalledWith(mockMoocletExperimentRef, logger);
+    });
+
+    it('should throw error if upgrade experiment deletion fails (before mooclet deletion)', async () => {
+      const deleteError = new Error('Database error: cannot delete experiment');
+
+      // Mock the parent class delete method to fail
+      const deleteSpy = jest
+        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(moocletExperimentService)), 'delete')
+        .mockRejectedValue(deleteError);
+
+      // Mock orchestrateDeleteMoocletResources (should not be called)
+      const orchestrateSpy = jest.spyOn(moocletExperimentService, 'orchestrateDeleteMoocletResources');
+
+      // Call the private method directly
+      await expect(
+        (moocletExperimentService as any).handleDeleteMoocletTransaction(mockManager, mockDeleteParams)
+      ).rejects.toThrow(deleteError);
+
+      // Verify upgrade deletion was attempted
+      expect(deleteSpy).toHaveBeenCalledWith('test-exp-123', mockUser, {
+        existingEntityManager: mockManager,
+      });
+
+      // Mooclet deletion should not be attempted if upgrade deletion fails
+      expect(orchestrateSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -875,6 +1020,682 @@ describe('#MoocletExperimentService', () => {
 
         expect(result).toBeNull();
       });
+    });
+  });
+
+  describe('#syncCreate', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should create experiment and mooclet resources in a transaction', async () => {
+      const experimentDTO = { ...moocletExperimentDataTSConfigurable } as ExperimentDTO;
+      const currentUser = { id: 'user-123' } as any as UserDTO;
+      const params: SyncCreateParams = { experimentDTO, currentUser, logger };
+
+      const createdExperiment = { ...experimentDTO, id: 'new-exp-id' };
+      jest.spyOn(moocletExperimentService as any, 'createUpgradeExperiment').mockResolvedValue(createdExperiment);
+      jest
+        .spyOn(moocletExperimentService as any, 'handleCreateMoocletTransaction')
+        .mockResolvedValue(createdExperiment);
+
+      const result = await moocletExperimentService.syncCreate(params);
+
+      expect(result).toEqual(createdExperiment);
+    });
+  });
+
+  describe('#syncUpdate', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should update experiment and mooclet resources in a transaction', async () => {
+      const experimentDTO = { ...moocletExperimentDataTSConfigurable } as ExperimentDTO;
+      const currentUser = { id: 'user-123' } as any as UserDTO;
+      const params: SyncEditParams = { experimentDTO, currentUser, logger };
+
+      const updatedExperiment = { ...experimentDTO, name: 'Updated' };
+      jest.spyOn(moocletExperimentService as any, 'handleEditMoocletTransaction').mockResolvedValue(updatedExperiment);
+
+      const result = await moocletExperimentService.syncUpdate(params);
+
+      expect(result).toEqual(updatedExperiment);
+    });
+  });
+
+  describe('#syncUpdateWithMoocletAlgorithmTransition', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should update experiment and create new mooclet resources when transitioning to mooclet', async () => {
+      const experimentDTO = {
+        ...moocletExperimentDataTSConfigurable,
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+      } as ExperimentDTO;
+      const currentUser = { id: 'user-123' } as any as UserDTO;
+      const params: SyncEditParams = { experimentDTO, currentUser, logger };
+
+      const updatedExperiment = { ...experimentDTO };
+      jest.spyOn(moocletExperimentService as any, 'updateUpgradeExperiment').mockResolvedValue(updatedExperiment);
+      jest
+        .spyOn(moocletExperimentService as any, 'handleCreateMoocletTransaction')
+        .mockResolvedValue(updatedExperiment);
+      jest.spyOn(moocletExperimentService, 'isMoocletExperiment').mockReturnValue(true);
+
+      const result = await moocletExperimentService.syncUpdateWithMoocletAlgorithmTransition(params);
+
+      expect(result).toEqual(updatedExperiment);
+      expect(moocletExperimentService['updateUpgradeExperiment']).toHaveBeenCalled();
+      expect(moocletExperimentService['handleCreateMoocletTransaction']).toHaveBeenCalled();
+    });
+
+    it('should update experiment and delete old mooclet ref when transitioning away from mooclet', async () => {
+      const mockMoocletRef = new MoocletExperimentRef();
+      mockMoocletRef.id = 'ref-123';
+
+      const experimentDTO = {
+        ...moocletExperimentDataTSConfigurable,
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+      } as ExperimentDTO;
+      const currentUser = { id: 'user-123' } as any as UserDTO;
+      const params: SyncEditParams = { experimentDTO, currentUser, logger, moocletRefToDelete: mockMoocletRef };
+
+      const updatedExperiment = { ...experimentDTO };
+      jest.spyOn(moocletExperimentService as any, 'updateUpgradeExperiment').mockResolvedValue(updatedExperiment);
+      jest.spyOn(moocletExperimentService, 'isMoocletExperiment').mockReturnValue(false);
+      jest.spyOn(moocletExperimentRefRepository, 'delete').mockResolvedValue(undefined);
+
+      const result = await moocletExperimentService.syncUpdateWithMoocletAlgorithmTransition(params);
+
+      expect(result).toEqual(updatedExperiment);
+      expect(moocletExperimentRefRepository.delete).toHaveBeenCalledWith(mockMoocletRef.id);
+    });
+  });
+
+  describe('#syncDelete', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should delete experiment and mooclet resources in a transaction', async () => {
+      const mockMoocletRef = new MoocletExperimentRef();
+      mockMoocletRef.id = 'ref-123';
+
+      const currentUser = { id: 'user-123' } as any as UserDTO;
+      const params: SyncDeleteParams = {
+        moocletExperimentRef: mockMoocletRef,
+        experimentId: 'exp-123',
+        currentUser,
+        logger,
+      };
+
+      const deletedExperiment = { id: 'exp-123' } as any as Experiment;
+      jest
+        .spyOn(moocletExperimentService as any, 'handleDeleteMoocletTransaction')
+        .mockResolvedValue(deletedExperiment);
+
+      const result = await moocletExperimentService.syncDelete(params);
+
+      expect(result).toEqual(deletedExperiment);
+    });
+  });
+
+  describe('#isMoocletExperiment', () => {
+    it('should return true for mooclet algorithms', () => {
+      expect(moocletExperimentService.isMoocletExperiment(ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE)).toBe(true);
+    });
+
+    it('should return false for non-mooclet algorithms', () => {
+      expect(moocletExperimentService.isMoocletExperiment(ASSIGNMENT_ALGORITHM.RANDOM)).toBe(false);
+      expect(moocletExperimentService.isMoocletExperiment(ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING)).toBe(false);
+    });
+  });
+
+  describe('#checkForMoocletAssignmentAlgorithmChange', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should detect algorithm change from mooclet to non-mooclet', async () => {
+      const oldExperiment = {
+        id: 'exp-123',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+      };
+      const newExperiment = {
+        id: 'exp-123',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+      } as ExperimentDTO;
+
+      jest.spyOn(moocletExperimentService, 'findOne').mockResolvedValue(oldExperiment as any);
+
+      const result = await moocletExperimentService.checkForMoocletAssignmentAlgorithmChange(newExperiment, logger);
+
+      expect(result).toEqual({
+        hasChanged: true,
+        wasMooclet: true,
+        isNowMooclet: false,
+        oldAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+      });
+    });
+
+    it('should detect no change when algorithm stays the same', async () => {
+      const oldExperiment = {
+        id: 'exp-123',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+      };
+      const newExperiment = {
+        id: 'exp-123',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+      } as ExperimentDTO;
+
+      jest.spyOn(moocletExperimentService, 'findOne').mockResolvedValue(oldExperiment as any);
+
+      const result = await moocletExperimentService.checkForMoocletAssignmentAlgorithmChange(newExperiment, logger);
+
+      expect(result).toEqual({
+        hasChanged: false,
+        wasMooclet: false,
+        isNowMooclet: false,
+        oldAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+      });
+    });
+
+    it('should throw error when experiment not found', async () => {
+      const newExperiment = { id: 'exp-123', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM } as ExperimentDTO;
+
+      jest.spyOn(moocletExperimentService, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        moocletExperimentService.checkForMoocletAssignmentAlgorithmChange(newExperiment, logger)
+      ).rejects.toThrow(/Experiment unexpectedly not found/);
+    });
+  });
+
+  describe('#attachPolicyParamsToExperimentDTO', () => {
+    const mockMoocletExperimentRef = new MoocletExperimentRef();
+    mockMoocletExperimentRef.policyParametersId = 123;
+    mockMoocletExperimentRef.versionConditionMaps = [
+      {
+        moocletVersionId: 1,
+        experimentCondition: { conditionCode: 'control' } as any,
+      } as MoocletVersionConditionMap,
+      {
+        moocletVersionId: 2,
+        experimentCondition: { conditionCode: 'treatment' } as any,
+      } as MoocletVersionConditionMap,
+    ];
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should attach policy parameters to experiment DTO', async () => {
+      const experiment = { id: 'exp-123' } as ExperimentDTO;
+      const mockPolicyParams = {
+        parameters: {
+          assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+          prior: { success: 1, failure: 1 },
+        },
+      };
+
+      jest
+        .spyOn(moocletExperimentService, 'getMoocletExperimentRefByUpgradeExperimentId')
+        .mockResolvedValue(mockMoocletExperimentRef);
+      jest.spyOn(moocletDataService, 'getPolicyParameters').mockResolvedValue(mockPolicyParams as any);
+
+      const result = await moocletExperimentService.attachPolicyParamsToExperimentDTO(experiment, logger);
+
+      expect(result.moocletPolicyParameters).toEqual(mockPolicyParams.parameters);
+    });
+
+    it('should transform current_posteriors from version IDs to condition codes', async () => {
+      const experiment = { id: 'exp-123' } as ExperimentDTO;
+      const mockPolicyParams = {
+        parameters: {
+          assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+          current_posteriors: {
+            '1': { success: 5, failure: 2 },
+            '2': { success: 3, failure: 4 },
+          },
+        },
+      };
+
+      jest
+        .spyOn(moocletExperimentService, 'getMoocletExperimentRefByUpgradeExperimentId')
+        .mockResolvedValue(mockMoocletExperimentRef);
+      jest.spyOn(moocletDataService, 'getPolicyParameters').mockResolvedValue(mockPolicyParams as any);
+
+      const result = await moocletExperimentService.attachPolicyParamsToExperimentDTO(experiment, logger);
+
+      expect(result.moocletPolicyParameters['current_posteriors']).toEqual({
+        control: { success: 5, failure: 2 },
+        treatment: { success: 3, failure: 4 },
+      });
+    });
+
+    it('should throw error if policy parameters cannot be fetched', async () => {
+      const experiment = { id: 'exp-123' } as ExperimentDTO;
+
+      jest
+        .spyOn(moocletExperimentService, 'getMoocletExperimentRefByUpgradeExperimentId')
+        .mockResolvedValue(mockMoocletExperimentRef);
+      jest.spyOn(moocletDataService, 'getPolicyParameters').mockRejectedValue(new Error('API error'));
+
+      await expect(moocletExperimentService.attachPolicyParamsToExperimentDTO(experiment, logger)).rejects.toThrow(
+        /Failed to get Mooclet policy parameters/
+      );
+    });
+  });
+
+  describe('#getConditionFromMoocletProxy', () => {
+    const mockExperiment = { id: 'exp-123' } as Experiment;
+    const mockUserId = 'user-456';
+    const mockMoocletExperimentRef = new MoocletExperimentRef();
+    mockMoocletExperimentRef.moocletId = 1;
+    mockMoocletExperimentRef.versionConditionMaps = [
+      {
+        moocletVersionId: 10,
+        experimentCondition: { id: 'cond-1', conditionCode: 'control' } as ExperimentCondition,
+      } as MoocletVersionConditionMap,
+    ];
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should get condition from mooclet proxy', async () => {
+      const mockVersionResponse = { id: 10, name: 'control' };
+
+      jest
+        .spyOn(moocletExperimentService, 'getMoocletExperimentRefByUpgradeExperimentId')
+        .mockResolvedValue(mockMoocletExperimentRef);
+      jest.spyOn(moocletDataService, 'getVersionForNewLearner').mockResolvedValue(mockVersionResponse as any);
+
+      const result = await moocletExperimentService.getConditionFromMoocletProxy(mockExperiment, mockUserId, logger);
+
+      expect(result).toEqual(mockMoocletExperimentRef.versionConditionMaps[0].experimentCondition);
+      expect(moocletDataService.getVersionForNewLearner).toHaveBeenCalledWith(
+        mockMoocletExperimentRef.moocletId,
+        mockUserId,
+        logger
+      );
+    });
+
+    it('should throw error if version not found in maps', async () => {
+      const mockVersionResponse = { id: 999, name: 'unknown' };
+
+      jest
+        .spyOn(moocletExperimentService, 'getMoocletExperimentRefByUpgradeExperimentId')
+        .mockResolvedValue(mockMoocletExperimentRef);
+      jest.spyOn(moocletDataService, 'getVersionForNewLearner').mockResolvedValue(mockVersionResponse as any);
+
+      await expect(
+        moocletExperimentService.getConditionFromMoocletProxy(mockExperiment, mockUserId, logger)
+      ).rejects.toThrow(/Version ID not found in version condition maps/);
+    });
+  });
+
+  describe('#handleEnrollCondition', () => {
+    const mockExperimentId = 'exp-123';
+    const mockConditionCode = 'control';
+    const mockMoocletExperimentRef = new MoocletExperimentRef();
+    mockMoocletExperimentRef.versionConditionMaps = [
+      {
+        experimentCondition: { id: 'cond-1', conditionCode: 'control' } as ExperimentCondition,
+      } as MoocletVersionConditionMap,
+    ];
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return experiment condition for valid condition code', async () => {
+      jest
+        .spyOn(moocletExperimentService, 'getMoocletExperimentRefByUpgradeExperimentId')
+        .mockResolvedValue(mockMoocletExperimentRef);
+
+      const result = await moocletExperimentService.handleEnrollCondition(mockExperimentId, mockConditionCode, logger);
+
+      expect(result).toEqual(mockMoocletExperimentRef.versionConditionMaps[0].experimentCondition);
+    });
+
+    it('should throw error if mooclet experiment ref not found', async () => {
+      jest.spyOn(moocletExperimentService, 'getMoocletExperimentRefByUpgradeExperimentId').mockResolvedValue(null);
+
+      await expect(
+        moocletExperimentService.handleEnrollCondition(mockExperimentId, mockConditionCode, logger)
+      ).rejects.toThrow(/No MoocletExperimentRef found/);
+    });
+
+    it('should throw error if condition code not found in version maps', async () => {
+      jest
+        .spyOn(moocletExperimentService, 'getMoocletExperimentRefByUpgradeExperimentId')
+        .mockResolvedValue(mockMoocletExperimentRef);
+
+      await expect(
+        moocletExperimentService.handleEnrollCondition(mockExperimentId, 'unknown-condition', logger)
+      ).rejects.toThrow(/No version found for condition/);
+    });
+  });
+
+  describe('Detection methods', () => {
+    const mockMoocletExperimentRef = new MoocletExperimentRef();
+    mockMoocletExperimentRef.versionConditionMaps = [
+      {
+        experimentConditionId: 'cond-1',
+        experimentCondition: { id: 'cond-1', conditionCode: 'control' } as any as ExperimentCondition,
+      } as any as MoocletVersionConditionMap,
+    ];
+
+    describe('#detectNewOutcomeVariableName', () => {
+      it('should detect changed outcome variable name', () => {
+        const experimentDTO = {
+          moocletPolicyParameters: { outcome_variable_name: 'new_variable' },
+        } as any as ExperimentDTO;
+
+        const result = moocletExperimentService['detectNewOutcomeVariableName'](experimentDTO, 'old_variable');
+
+        expect(result).toBe('new_variable');
+      });
+
+      it('should return null if outcome variable name unchanged', () => {
+        const experimentDTO = {
+          moocletPolicyParameters: { outcome_variable_name: 'same_variable' },
+        } as any as ExperimentDTO;
+
+        const result = moocletExperimentService['detectNewOutcomeVariableName'](experimentDTO, 'same_variable');
+
+        expect(result).toBeNull();
+      });
+    });
+
+    describe('#detectNewConditions', () => {
+      it('should detect new conditions', () => {
+        const experimentDTO = {
+          conditions: [
+            { id: 'cond-1', conditionCode: 'control' },
+            { id: 'cond-2', conditionCode: 'treatment' },
+          ],
+        } as ExperimentDTO;
+
+        const result = moocletExperimentService['detectNewConditions'](experimentDTO, mockMoocletExperimentRef);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].id).toBe('cond-2');
+      });
+
+      it('should return null if no new conditions', () => {
+        const experimentDTO = {
+          conditions: [{ id: 'cond-1', conditionCode: 'control' }],
+        } as ExperimentDTO;
+
+        const result = moocletExperimentService['detectNewConditions'](experimentDTO, mockMoocletExperimentRef);
+
+        expect(result).toBeNull();
+      });
+    });
+
+    describe('#detectRemovedConditions', () => {
+      it('should detect removed conditions', () => {
+        const experimentDTO = {
+          conditions: [],
+        } as ExperimentDTO;
+
+        const result = moocletExperimentService['detectRemovedConditions'](experimentDTO, mockMoocletExperimentRef);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].experimentConditionId).toBe('cond-1');
+      });
+
+      it('should return null if no conditions removed', () => {
+        const experimentDTO = {
+          conditions: [{ id: 'cond-1', conditionCode: 'control' }],
+        } as ExperimentDTO;
+
+        const result = moocletExperimentService['detectRemovedConditions'](experimentDTO, mockMoocletExperimentRef);
+
+        expect(result).toBeNull();
+      });
+    });
+
+    describe('#detectModifiedConditions', () => {
+      it('should detect modified condition codes', () => {
+        const experimentDTO = {
+          conditions: [{ id: 'cond-1', conditionCode: 'modified_control' }],
+        } as ExperimentDTO;
+
+        const result = moocletExperimentService['detectModifiedConditions'](experimentDTO, mockMoocletExperimentRef);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].experimentConditionId).toBe('cond-1');
+      });
+
+      it('should return null if no conditions modified', () => {
+        const experimentDTO = {
+          conditions: [{ id: 'cond-1', conditionCode: 'control' }],
+        } as ExperimentDTO;
+
+        const result = moocletExperimentService['detectModifiedConditions'](experimentDTO, mockMoocletExperimentRef);
+
+        expect(result).toBeNull();
+      });
+    });
+
+    describe('#detectExperimentDesignChanges', () => {
+      it('should detect multiple changes', () => {
+        const experimentDTO = {
+          moocletPolicyParameters: { outcome_variable_name: 'new_variable' },
+          conditions: [
+            { id: 'cond-1', conditionCode: 'modified_control' },
+            { id: 'cond-2', conditionCode: 'treatment' },
+          ],
+        } as any as ExperimentDTO;
+
+        const result = moocletExperimentService['detectExperimentDesignChanges'](
+          experimentDTO,
+          mockMoocletExperimentRef,
+          'old_variable'
+        );
+
+        expect(result.newOutcomeVariableName).toBe('new_variable');
+        expect(result.addedConditions).toHaveLength(1);
+        expect(result.modifiedConditions).toHaveLength(1);
+      });
+
+      it('should return null if no changes detected', () => {
+        const experimentDTO = {
+          moocletPolicyParameters: { outcome_variable_name: 'same_variable' },
+          conditions: [{ id: 'cond-1', conditionCode: 'control' }],
+        } as any as ExperimentDTO;
+
+        const result = moocletExperimentService['detectExperimentDesignChanges'](
+          experimentDTO,
+          mockMoocletExperimentRef,
+          'same_variable'
+        );
+
+        expect(result).toBeNull();
+      });
+    });
+  });
+
+  describe('#handleEditMoocletTransaction', () => {
+    const mockMoocletExperimentRef = new MoocletExperimentRef();
+    mockMoocletExperimentRef.id = 'ref-123';
+    mockMoocletExperimentRef.policyParametersId = 1;
+    mockMoocletExperimentRef.variableId = 2;
+    mockMoocletExperimentRef.versionConditionMaps = [];
+
+    const mockExperiment = {
+      id: 'exp-123',
+      state: EXPERIMENT_STATE.INACTIVE,
+      conditions: [],
+      moocletPolicyParameters: mockTSConfigMoocletPolicyParameters,
+    } as any as ExperimentDTO;
+
+    const mockCurrentExperiment = {
+      id: 'exp-123',
+      conditions: [],
+    } as any as Experiment;
+
+    const mockCurrentUser = { id: 'user-123' } as any as UserDTO;
+    const manager = mockDataSource.manager as EntityManager;
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should throw error for ineligible experiment state', async () => {
+      const ineligibleExperiment = { ...mockExperiment, state: EXPERIMENT_STATE.CANCELLED };
+      const params = { experimentDTO: ineligibleExperiment, currentUser: mockCurrentUser, logger };
+
+      await expect((moocletExperimentService as any).handleEditMoocletTransaction(manager, params)).rejects.toThrow(
+        /Ineligible experiment state/
+      );
+    });
+
+    it('should update experiment without version/variable edits when no changes detected', async () => {
+      const params = { experimentDTO: mockExperiment, currentUser: mockCurrentUser, logger };
+      const updatedExperiment = { ...mockExperiment };
+
+      jest.spyOn(moocletExperimentService as any, 'fetchCurrentResources').mockResolvedValue({
+        currentMoocletExperimentRef: mockMoocletExperimentRef,
+        currentOutcomeVariableResponse: { name: mockExperiment.moocletPolicyParameters['outcome_variable_name'] },
+        currentPolicyParametersResponse: { parameters: mockExperiment.moocletPolicyParameters },
+        currentExperiment: mockCurrentExperiment,
+      });
+
+      jest.spyOn(moocletExperimentService as any, 'detectExperimentDesignChanges').mockReturnValue(null);
+
+      const updateSpy = jest.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(moocletExperimentService)), 'update');
+      updateSpy.mockResolvedValue(updatedExperiment);
+
+      jest.spyOn(moocletExperimentService as any, 'doRevertablePolicyParameterChange').mockResolvedValue({
+        parameters: mockExperiment.moocletPolicyParameters,
+      });
+
+      const result = await (moocletExperimentService as any).handleEditMoocletTransaction(manager, params);
+
+      expect(result).toEqual(updatedExperiment);
+      expect(updateSpy).toHaveBeenCalled();
+
+      updateSpy.mockRestore();
+    });
+
+    it('should throw error when version/variable edits attempted on enrolling experiment', async () => {
+      const enrollingExperiment = { ...mockExperiment, state: EXPERIMENT_STATE.ENROLLING };
+      const params = { experimentDTO: enrollingExperiment, currentUser: mockCurrentUser, logger };
+
+      jest.spyOn(moocletExperimentService as any, 'fetchCurrentResources').mockResolvedValue({
+        currentMoocletExperimentRef: mockMoocletExperimentRef,
+        currentOutcomeVariableResponse: { name: 'old_variable' },
+        currentPolicyParametersResponse: { parameters: mockExperiment.moocletPolicyParameters },
+        currentExperiment: mockCurrentExperiment,
+      });
+
+      jest.spyOn(moocletExperimentService as any, 'detectExperimentDesignChanges').mockReturnValue({
+        newOutcomeVariableName: 'new_variable',
+        addedConditions: false,
+        removedConditions: false,
+        modifiedConditions: false,
+      });
+
+      await expect((moocletExperimentService as any).handleEditMoocletTransaction(manager, params)).rejects.toThrow(
+        '[Mooclet Edit] Ineligible experiment state for Mooclet edits'
+      );
+    });
+
+    it('should rollback on error', async () => {
+      const params = { experimentDTO: mockExperiment, currentUser: mockCurrentUser, logger };
+      const mockError = new Error('Update failed');
+
+      jest.spyOn(moocletExperimentService as any, 'fetchCurrentResources').mockRejectedValue(mockError);
+      jest.spyOn(moocletExperimentService as any, 'rollbackMoocletEdits').mockResolvedValue(undefined);
+
+      await expect((moocletExperimentService as any).handleEditMoocletTransaction(manager, params)).rejects.toThrow(
+        mockError
+      );
+
+      expect(moocletExperimentService['rollbackMoocletEdits']).toHaveBeenCalled();
+    });
+  });
+
+  describe('#rollbackMoocletEdits', () => {
+    const mockMoocletExperimentRef = new MoocletExperimentRef();
+    mockMoocletExperimentRef.id = 'ref-123';
+
+    const mockCurrentExperiment = {
+      id: 'exp-123',
+      conditions: [{ id: 'cond-1', conditionCode: 'old_code' }],
+    } as any as Experiment;
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should rollback policy parameters', async () => {
+      const rollbackRef = {
+        revertPolicyParameters: mockTSConfigMoocletPolicyParameters,
+        revertOutcomeVariableName: null,
+        restoreVersions: null,
+        revertVersionModifications: null,
+        removeVersions: null,
+        currentMoocletExperimentRef: mockMoocletExperimentRef,
+        currentExperiment: mockCurrentExperiment,
+      };
+
+      jest.spyOn(moocletExperimentService as any, 'handleUpdatePolicyParameters').mockResolvedValue({});
+
+      await (moocletExperimentService as any).rollbackMoocletEdits(rollbackRef, logger);
+
+      expect(moocletExperimentService['handleUpdatePolicyParameters']).toHaveBeenCalledWith(
+        mockTSConfigMoocletPolicyParameters,
+        mockMoocletExperimentRef,
+        logger
+      );
+    });
+
+    it('should rollback outcome variable name', async () => {
+      const rollbackRef = {
+        revertPolicyParameters: null,
+        revertOutcomeVariableName: 'old_variable',
+        restoreVersions: null,
+        revertVersionModifications: null,
+        removeVersions: null,
+        currentMoocletExperimentRef: mockMoocletExperimentRef,
+        currentExperiment: mockCurrentExperiment,
+      };
+
+      jest.spyOn(moocletExperimentService as any, 'handleUpdateOutcomeVariableName').mockResolvedValue({});
+
+      await (moocletExperimentService as any).rollbackMoocletEdits(rollbackRef, logger);
+
+      expect(moocletExperimentService['handleUpdateOutcomeVariableName']).toHaveBeenCalledWith(
+        'old_variable',
+        mockMoocletExperimentRef,
+        logger
+      );
+    });
+
+    it('should throw error if rollback itself fails', async () => {
+      const rollbackRef = {
+        revertPolicyParameters: mockTSConfigMoocletPolicyParameters,
+        revertOutcomeVariableName: null,
+        restoreVersions: null,
+        revertVersionModifications: null,
+        removeVersions: null,
+        currentMoocletExperimentRef: mockMoocletExperimentRef,
+        currentExperiment: mockCurrentExperiment,
+      };
+
+      const rollbackError = new Error('Rollback failed');
+      jest.spyOn(moocletExperimentService as any, 'handleUpdatePolicyParameters').mockRejectedValue(rollbackError);
+
+      await expect((moocletExperimentService as any).rollbackMoocletEdits(rollbackRef, logger)).rejects.toThrow(
+        /Error during rollback/
+      );
     });
   });
 });

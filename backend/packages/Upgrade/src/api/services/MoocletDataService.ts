@@ -18,6 +18,7 @@ import {
   MoocletValueResponseDetails,
 } from '../../types/Mooclet';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { MoocletError } from '../errors/MoocletError';
 
 @Service()
 export class MoocletDataService {
@@ -351,8 +352,8 @@ export class MoocletDataService {
           };
         }
       } catch (err) {
-        logger.error({ message: `Error fetching data from Mooclets API: ${err}` });
-        throw new Error(`Error fetching data from Mooclets API: ${err}`);
+        logger.error({ message: 'Error fetching data from Mooclets API', url, method });
+        throw new MoocletError('Failed to communicate with Mooclet server');
       }
     }
   }

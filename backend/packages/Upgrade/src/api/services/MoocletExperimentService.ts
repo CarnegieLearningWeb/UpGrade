@@ -11,6 +11,7 @@ import {
   MoocletVersionResponseDetails,
 } from '../../types/Mooclet';
 import { ExperimentService } from './ExperimentService';
+import { MoocletError } from '../errors/MoocletError';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { InjectRepository, InjectDataSource } from '../../typeorm-typedi-extensions';
@@ -329,12 +330,11 @@ export class MoocletExperimentService extends ExperimentService {
         EXPERIMENT_STATE.PAUSED,
       ].includes(incomingExperiment.state)
     ) {
-      const error = {
+      logger.error({
         message: '[Mooclet Edit] Ineligible experiment state for Mooclet edits',
         state: incomingExperiment.state,
-      };
-      logger.error({ error: JSON.stringify(error) });
-      throw new Error(JSON.stringify(error));
+      });
+      throw new MoocletError('[Mooclet Edit] Ineligible experiment state for Mooclet edits', 400);
     }
 
     // NOTE: Currently allowed states for updating mooclet resources:
@@ -359,12 +359,14 @@ export class MoocletExperimentService extends ExperimentService {
 
       // bail if disallowed changes are detected for running experiments
       if (versionOrVariableEdits && EXPERIMENT_STATE.RUNNING === incomingExperiment.state) {
-        const error = {
-          message: '[Mooclet Edit] Ineligible version or variable edits detected for an active Mooclet experiment.',
+        logger.error({
+          message: '[Mooclet Edit] Ineligible version or variable edits detected for an active Mooclet experiment',
           changes: versionOrVariableEdits,
-        };
-        logger.error({ error: JSON.stringify(error) });
-        throw new Error(JSON.stringify(error));
+        });
+        throw new MoocletError(
+          '[Mooclet Edit] Ineligible version or variable edits detected for an active Mooclet experiment',
+          400
+        );
       }
 
       logger.debug({
@@ -1007,14 +1009,15 @@ export class MoocletExperimentService extends ExperimentService {
         await this.handleRemoveConditions(removeVersions, logger);
       }
     } catch (rollbackError) {
-      const error = {
+      logger.error({
         message:
-          '[Mooclet Edit] Error during rollback, Mooclet resources are likely out of sync for this experiment! Check the resources noted in the rollback ref.',
+          '[Mooclet Edit] Error during rollback, Mooclet resources are likely out of sync for this experiment! Check the resources noted in the rollback ref',
         error: rollbackError,
         rollbackRef,
-      };
-      logger.error(error);
-      throw new Error(JSON.stringify(error));
+      });
+      throw new MoocletError(
+        '[Mooclet Edit] Error during rollback, Mooclet resources are likely out of sync for this experiment'
+      );
     }
   }
 
@@ -1031,13 +1034,16 @@ export class MoocletExperimentService extends ExperimentService {
       // delete the mooclet resources. If this fails, the transaction will abort and the upgrade experiment will not be deleted,
       // but the Mooclet resources may not be deleted either
       const removedResources = await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
-      const deleteMessage = removedResources
-        ? 'Upgrade and Mooclet experiment resources deleted successfully'
-        : 'Mooclet resources deletion failed, but upgrade experiment deleted successfully';
-      logger.debug({
-        message: deleteMessage,
-        deleteResponse,
-      });
+      if (!removedResources) {
+        logger.error({
+          message: 'Failed to delete Mooclet resources, aborting transaction to preserve upgrade experiment',
+          experimentId: params.experimentId,
+          moocletExperimentRef,
+        });
+        throw new MoocletError(
+          'Failed to delete Mooclet resources, aborting transaction to preserve upgrade experiment'
+        );
+      }
 
       return deleteResponse;
     } catch (error) {
@@ -1169,7 +1175,8 @@ export class MoocletExperimentService extends ExperimentService {
   ): Promise<boolean> {
     try {
       if (!moocletExperimentRef) {
-        throw new Error(`MoocletExperimentRef not defined`);
+        logger.error({ message: 'MoocletExperimentRef not defined for deletion' });
+        throw new MoocletError('MoocletExperimentRef not defined');
       }
 
       logger.debug({ message: '[Mooclet Deletion]: Starting deletion of Mooclet resources', moocletExperimentRef });
@@ -1241,7 +1248,8 @@ export class MoocletExperimentService extends ExperimentService {
     try {
       return await this.moocletDataService.getMoocletIdByName(assignmentAlgorithm, logger);
     } catch (err) {
-      throw new Error(`Failed to get Mooclet policy: ${err}`);
+      logger.error({ message: 'Failed to get Mooclet policy', error: err, assignmentAlgorithm });
+      throw new MoocletError('Failed to get Mooclet policy');
     }
   }
 
@@ -1280,7 +1288,8 @@ export class MoocletExperimentService extends ExperimentService {
 
       return experiment;
     } catch (err) {
-      throw new Error(`Failed to get Mooclet policy parameters: ${err}`);
+      logger.error({ message: 'Failed to get Mooclet policy parameters', error: err, experimentId: experiment.id });
+      throw new MoocletError('Failed to get Mooclet policy parameters');
     }
   }
 
@@ -1291,7 +1300,8 @@ export class MoocletExperimentService extends ExperimentService {
     try {
       return await this.moocletDataService.postNewMooclet(newMoocletRequest, logger);
     } catch (err) {
-      throw new Error(`Failed to create Mooclet: ${err}`);
+      logger.error({ message: 'Failed to create Mooclet', error: err, newMoocletRequest });
+      throw new MoocletError('Failed to create Mooclet');
     }
   }
 
@@ -1307,7 +1317,8 @@ export class MoocletExperimentService extends ExperimentService {
         experiment.conditions.map(async (condition) => this.createNewVersion(condition, moocletResponse.id, logger))
       );
     } catch (err) {
-      throw new Error(`Failed to create Mooclet versions: ${err}`);
+      logger.error({ message: 'Failed to create Mooclet versions', error: err, experimentId: experiment.id });
+      throw new MoocletError('Failed to create Mooclet versions');
     }
   }
 
@@ -1325,7 +1336,8 @@ export class MoocletExperimentService extends ExperimentService {
     try {
       return await this.moocletDataService.postNewVersion(newVersionRequest, logger);
     } catch (err) {
-      throw new Error(`Failed to create new version for Mooclet: ${err}`);
+      logger.error({ message: 'Failed to create new version for Mooclet', error: err, newVersionRequest });
+      throw new MoocletError('Failed to create new version for Mooclet');
     }
   }
 
@@ -1345,7 +1357,8 @@ export class MoocletExperimentService extends ExperimentService {
     try {
       return await this.moocletDataService.postNewPolicyParameters(policyParametersRequest, logger);
     } catch (err) {
-      throw new Error(`Failed to create Mooclet policy parameters: ${err}`);
+      logger.error({ message: 'Failed to create Mooclet policy parameters', error: err, policyParametersRequest });
+      throw new MoocletError('Failed to create Mooclet policy parameters');
     }
   }
 
@@ -1365,8 +1378,8 @@ export class MoocletExperimentService extends ExperimentService {
     try {
       return await this.moocletDataService.postNewVariable(variableRequest, logger);
     } catch (err) {
-      logger.error({ message: 'Failed to create Mooclet variable' });
-      throw new Error(`Failed to create variable: ${err}`);
+      logger.error({ message: 'Failed to create Mooclet variable', error: err, variableRequest });
+      throw new MoocletError('Failed to create variable');
     }
   }
 
@@ -1406,26 +1419,24 @@ export class MoocletExperimentService extends ExperimentService {
     );
 
     if (!versionConditionMap) {
-      const error = {
+      logger.error({
         message: 'Version ID not found in version condition maps',
         version: versionResponse,
         versionConditionMaps: moocletExperimentRef.versionConditionMaps,
-      };
-      logger.error(error);
-      throw new Error(JSON.stringify(error));
+      });
+      throw new MoocletError('Version ID not found in version condition maps');
     }
 
     // Get the experiment condition from the versionConditionMap
     const experimentCondition = versionConditionMap.experimentCondition;
 
     if (!experimentCondition) {
-      const error = {
+      logger.error({
         message: 'Experiment condition not found in version condition map',
         version: versionResponse,
         versionConditionMap,
-      };
-      logger.error(error);
-      throw new Error(JSON.stringify(error));
+      });
+      throw new MoocletError('Experiment condition not found in version condition map');
     }
 
     return experimentCondition;
@@ -1448,7 +1459,8 @@ export class MoocletExperimentService extends ExperimentService {
     const oldExperiment = await this.findOne(experiment.id, logger);
 
     if (!oldExperiment) {
-      throw new Error(`Experiment unexpectedly not found for id ${experiment.id}`);
+      logger.error({ message: 'Experiment unexpectedly not found', experimentId: experiment.id });
+      throw new MoocletError(`Experiment unexpectedly not found for id ${experiment.id}`);
     }
 
     const hasChanged = oldExperiment.assignmentAlgorithm !== experiment.assignmentAlgorithm;
@@ -1475,8 +1487,14 @@ export class MoocletExperimentService extends ExperimentService {
 
     if (hasChanged) {
       if (experiment.state !== EXPERIMENT_STATE.INACTIVE) {
-        throw new Error(
-          `Experiment state is ${experiment.state}. Can only edit assignment algorithm for experiments yet to begin (INACTIVE state).`
+        logger.error({
+          message: 'Cannot edit assignment algorithm for non-INACTIVE experiment',
+          experimentId: experiment.id,
+          state: experiment.state,
+        });
+        throw new MoocletError(
+          `Experiment state is ${experiment.state}. Can only edit assignment algorithm for experiments yet to begin (INACTIVE state)`,
+          400
         );
       }
 
@@ -1574,23 +1592,25 @@ export class MoocletExperimentService extends ExperimentService {
       const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experimentId);
 
       if (!moocletExperimentRef) {
-        const error = {
-          message: `[Mooclet Mark Condition] No MoocletExperimentRef found for experiment id ${experimentId}`,
-        };
-        logger.error(error);
-        throw new Error(JSON.stringify(error));
+        logger.error({
+          message: '[Mooclet Mark Condition] No MoocletExperimentRef found for experiment',
+          experimentId,
+        });
+        throw new MoocletError(
+          `[Mooclet Mark Condition] No MoocletExperimentRef found for experiment id ${experimentId}`
+        );
       }
       const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
         (expCondition) => expCondition.experimentCondition.conditionCode === condition
       );
 
       if (!versionConditionMap) {
-        const error = {
-          message: `[Mooclet Mark Condition] No version found for condition ${condition}`,
+        logger.error({
+          message: '[Mooclet Mark Condition] No version found for condition',
+          condition,
           moocletExperimentRef,
-        };
-        logger.error(error);
-        throw new Error(JSON.stringify(error));
+        });
+        throw new MoocletError(`[Mooclet Mark Condition] No version found for condition ${condition}`);
       }
       return versionConditionMap.experimentCondition;
     } catch (err) {

@@ -1,4 +1,4 @@
-import { NextFunction, Response } from 'express';
+import { Response } from 'express';
 import { ErrorHandlerMiddleware } from '../../../src/api/middlewares/ErrorHandlerMiddleware';
 import { SERVER_ERROR } from 'upgrade_types';
 
@@ -10,7 +10,6 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 describe('ErrorHandler Middleware tests', () => {
   let mockRequest: any;
   let mockResponse: any;
-  const nextFunction: NextFunction = jest.fn();
   let errorhandler: ErrorHandlerMiddleware;
 
   let mockjson: any;
@@ -43,7 +42,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 500,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -55,7 +54,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 500,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -67,7 +66,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 500,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -79,7 +78,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 404,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -91,7 +90,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 404,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -103,7 +102,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 500,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -115,7 +114,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 500,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -127,7 +126,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 500,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -139,7 +138,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 500,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -151,7 +150,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 500,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -163,7 +162,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 500,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -173,7 +172,7 @@ describe('ErrorHandler Middleware tests', () => {
       message: 'Incorrect param format error',
       httpCode: 400,
     };
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -184,7 +183,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 401,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -195,7 +194,7 @@ describe('ErrorHandler Middleware tests', () => {
       httpCode: 404,
     };
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(error.httpCode);
     expect(mockResponse.body).toBe(error.message);
   });
@@ -203,7 +202,7 @@ describe('ErrorHandler Middleware tests', () => {
   test('Default error test', () => {
     const error = {};
 
-    errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
+    errorhandler.error(error, mockRequest, mockResponse as Response);
     expect(mockResponse.statusCode).toBe(500);
   });
 
@@ -223,7 +222,7 @@ describe('ErrorHandler Middleware tests', () => {
 
     // This should not throw an error even though logger is undefined
     expect(() => {
-      errorhandler.error(error, mockRequestWithoutLogger, mockResponse as Response, nextFunction);
+      errorhandler.error(error, mockRequestWithoutLogger, mockResponse as Response);
     }).not.toThrow();
 
     expect(mockResponse.statusCode).toBe(error.httpCode);
