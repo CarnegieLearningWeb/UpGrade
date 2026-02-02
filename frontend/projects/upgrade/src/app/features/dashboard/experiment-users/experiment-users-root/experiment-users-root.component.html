@@ -10,22 +10,15 @@
       disableRipple
       (selectedTabChange)="selectedTabChange($event)"
     >
+      <!-- Disabling preview users for now until reevaluated https://github.com/CarnegieLearningWeb/UpGrade/issues/2913 -->
       <!-- <mat-tab>
-        <ng-template mat-tab-label>
-          <span class="ft-22-600 tab-label">
-              {{ 'users.experiment-users-title.text' | translate }}
-          </span>
-        </ng-template>
-        <users-experiment-users></users-experiment-users>
-      </mat-tab> -->
-      <mat-tab>
         <ng-template mat-tab-label>
           <span class="ft-22-600 tab-label">
             {{ 'users.preview-users-title.text' | translate }}
           </span>
         </ng-template>
         <users-preview-user></users-preview-user>
-      </mat-tab>
+      </mat-tab> -->
       <mat-tab>
         <ng-template mat-tab-label>
           <span class="ft-22-600 tab-label">
