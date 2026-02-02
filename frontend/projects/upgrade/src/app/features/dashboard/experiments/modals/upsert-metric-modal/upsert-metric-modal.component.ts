@@ -761,25 +761,21 @@ export class UpsertMetricModalComponent implements OnInit, OnDestroy {
   }
 
   private filterMetricsByAssignmentContext(metrics: MetricNode[]): MetricNode[] {
-    if (!metrics?.length) {
+    if (!metrics?.length || !this.currentContext?.length) {
       return [];
     }
 
+    // First, filter by assignment unit type
+    let filteredMetrics = metrics;
+
     if (this.currentAssignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-      const withinSubjectsMetrics = metrics.filter((metric) => metric.children && metric.children.length > 0);
-      return withinSubjectsMetrics.length > 0 ? withinSubjectsMetrics : metrics;
+      filteredMetrics = metrics.filter((metric) => metric.children && metric.children.length > 0);
     }
 
-    if (this.currentAssignmentUnit && this.currentContext?.length) {
-      const contextFilteredMetrics = metrics.filter(
-        (metric) => metric.context && this.currentContext?.some((ctx) => metric.context.includes(ctx))
-      );
-      if (contextFilteredMetrics.length > 0) {
-        return contextFilteredMetrics;
-      }
-    }
-
-    return metrics;
+    // Apply context filtering
+    return filteredMetrics.filter(
+      (metric) => metric.context && this.currentContext?.some((ctx) => metric.context.includes(ctx))
+    );
   }
 
   private populateGlobalMetricOptions(metrics: MetricNode[]): void {
