@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { ExperimentService } from '../../../../core/experiments/experiments.service';
 import { PreviewUsersService } from '../../../../core/preview-users/preview-users.service';
 import { StratificationFactorsService } from '../../../../core/stratification-factors/stratification-factors.service';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-user-root',
@@ -17,7 +18,9 @@ export class ExperimentUsersRootComponent {
   ) {}
 
   ngOnInit() {
-    this.selectedTabChange({ index: 0 });
+    // Temporarily index 1 while Preview Users tab is disabled
+    // Change back to index 0 when re-enabling Preview Users tab
+    this.selectedTabChange({ index: 1 });
   }
 
   selectedTabChange(event) {
@@ -25,7 +28,15 @@ export class ExperimentUsersRootComponent {
       this.experimentService.fetchAllExperimentNames();
       this.previewUsersService.fetchPreviewUsers(true);
     } else if (event.index === 1) {
-      this.stratificationFactorsService.fetchStratificationFactors(true);
+      this.experimentService.fetchAllExperimentNames();
+      this.experimentService.allExperimentNames$
+        .pipe(
+          filter((names) => names?.length > 0),
+          take(1)
+        )
+        .subscribe(() => {
+          this.stratificationFactorsService.fetchStratificationFactors(true);
+        });
     }
   }
 }
