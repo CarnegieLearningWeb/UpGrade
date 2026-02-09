@@ -83,7 +83,7 @@ describe('MonitoredDecisionPointRepository Testing', () => {
     expect(mock.returning).toHaveBeenCalledWith('*');
     expect(mock.execute).toHaveBeenCalledTimes(1);
 
-    expect(res).toEqual({});
+    expect(res).toEqual(null);
   });
 
   it('should throw an error when insert fails', async () => {

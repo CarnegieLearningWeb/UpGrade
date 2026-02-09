@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import { ExperimentDTO } from '../../../../Upgrade/src/api/DTO/ExperimentDTO';
-import { UserDTO } from '../../../../Upgrade/src/api/DTO/UserDTO';
+import { ExperimentDTO } from '../../../src/api/DTO/ExperimentDTO';
+import { UserDTO } from '../../../src/api/DTO/UserDTO';
 import { MoocletExperimentRef } from '../../../src/api/models/MoocletExperimentRef';
 import { MoocletVersionConditionMap } from '../../../src/api/models/MoocletVersionConditionMap';
 import { Experiment } from '../../../src/api/models/Experiment';

@@ -8,5 +8,5 @@ cd packages/frontend
 npm run typecheck
 
 # Typecheck Backend Upgrade
-cd packages/backend
+cd ../backend
 npm start typecheck

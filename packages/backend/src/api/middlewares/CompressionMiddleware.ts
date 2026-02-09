@@ -5,6 +5,6 @@ import compression from 'compression';
 @Middleware({ type: 'before' })
 export class CompressionMiddleware implements ExpressMiddlewareInterface {
   public use(req: express.Request, res: express.Response, next: express.NextFunction): any {
-    return compression()(req, res, next);
+    return compression()(req as any, res as any, next);
   }
 }

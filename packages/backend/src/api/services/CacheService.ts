@@ -22,11 +22,15 @@ export class CacheService {
     });
   }
 
-  public setCache<T>(id: string, value: T): Promise<T> {
+  public async setCache<T>(id: string, value: T): Promise<T> {
     if (value === null || value === undefined) {
       return Promise.resolve(null);
     }
-    return this.memoryCache ? this.memoryCache.set(id, value) : Promise.resolve(null);
+    if (this.memoryCache) {
+      await this.memoryCache.set(id, value);
+      return value;
+    }
+    return Promise.resolve(null);
   }
 
   public getCache<T>(id: string): Promise<T> {

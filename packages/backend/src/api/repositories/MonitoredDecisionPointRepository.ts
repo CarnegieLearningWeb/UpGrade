@@ -23,7 +23,7 @@ export class MonitoredDecisionPointRepository extends Repository<MonitoredDecisi
         throw errorMsgString;
       });
 
-    return result.raw.length > 0 ? result.raw[0] : {};
+    return result.raw.length > 0 ? result.raw[0] : null;
   }
 
   public async deleteByExperimentId(ids: string[], entityManager: EntityManager): Promise<MonitoredDecisionPoint[]> {

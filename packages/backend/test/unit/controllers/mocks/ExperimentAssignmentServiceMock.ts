@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { IExperimentAssignmentv5 } from 'types/src';
+import { IExperimentAssignmentv5 } from 'upgrade_types';
 import { ILogInput } from 'upgrade_types';
 import { v4 as uuid } from 'uuid';
 

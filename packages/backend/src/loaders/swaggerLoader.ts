@@ -30,6 +30,6 @@ export const swaggerLoader: MicroframeworkLoader = (settings: MicroframeworkSett
       res.setHeader('Content-Type', 'application/json');
       res.send(swaggerDocs);
     });
-    expressApp.use(env.swagger.route, swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+    expressApp.use(env.swagger.route, swaggerUi.serve as any, swaggerUi.setup(swaggerDocs) as any);
   }
 };
