@@ -19,8 +19,6 @@ import jwt_decode from 'jwt-decode';
 import { NavigationEnd, NavigationSkipped, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 
-declare var google: any;
-
 @Injectable()
 export class AuthService {
   isLoggedIn$ = this.store$.pipe(select(selectIsLoggedIn));
