@@ -3,6 +3,15 @@
   "version": "6.4.0",
   "description": "This is a combined repository for UpGrade, an open-source platform to support large-scale A/B testing in educational applications.  Learn more at www.upgradeplatform.org",
   "main": "index.js",
+  "workspaces": [
+    "packages/*"
+  ],
+  "overrides": {
+    "ab-testing": {
+      "typescript": "~5.5.4"
+    }
+  },
+  "private": true,
   "devDependencies": {
     "@angular-eslint/eslint-plugin": "^14.1.2",
     "@typescript-eslint/eslint-plugin": "^5.42.0",

@@ -4,9 +4,9 @@
 npx lint-staged
 
 # Typecheck Frontend
-cd frontend
+cd packages/frontend
 npm run typecheck
 
 # Typecheck Backend Upgrade
-cd ../backend/packages/Upgrade
+cd packages/backend
 npm start typecheck
