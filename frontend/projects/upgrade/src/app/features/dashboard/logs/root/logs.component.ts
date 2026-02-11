@@ -66,7 +66,9 @@ export class LogsComponent implements OnInit, OnDestroy {
     this.selectedTabIndex = 0;
 
     this.logsService.fetchAuditLogs(true);
-    this.logsService.fetchErrorLogs(true);
+    if (this.environment.errorLogsToggle) {
+      this.logsService.fetchErrorLogs(true);
+    }
   }
 
   selectedIndexChange(tabIndex: number) {
