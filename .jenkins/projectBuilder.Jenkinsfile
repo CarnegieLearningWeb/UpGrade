@@ -128,6 +128,10 @@ projectBuilderV5 (
            "lint": [
              buildScripts: [
                [
+                 script: 'npm install -g yarn',
+                 log: "install-yarn.log"
+               ],
+               [
                  script: 'yarn',
                  log: 'yarn.log'
                ],
