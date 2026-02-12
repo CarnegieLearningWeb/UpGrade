@@ -70,6 +70,9 @@ projectBuilderV5 (
             projectDir: ".",
             runInProjectDir: true,
             skipArtifactUpload: true,
+            fileFilter: [
+                include: ["packages/backend/.*"]
+            ],
             buildScripts: [
                 [
                     script: 'yarn',
