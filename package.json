@@ -29,26 +29,26 @@
   },
   "scripts": {
     "prepare": "is-ci || husky install",
-    "lint": "eslint --quiet -c .eslintrc.js --ext .ts './{frontend,backend,types,clientlibs}/**/*.ts'",
-    "prettier:write": "prettier --config .prettierrc './{frontend,backend,types,clientlibs}/**/*.{ts,js,html,json,scss}' --write",
-    "prettier:check": "prettier --config .prettierrc './{frontend,backend,types,clientlibs}/**/*.{ts,js,html,json,scss}' --check"
+    "lint": "eslint --quiet -c .eslintrc.js --ext .ts './packages/{frontend,backend,types}/**/*.ts'",
+    "prettier:write": "prettier --config .prettierrc './packages/{frontend,backend,types}/**/*.{ts,js,html,json,scss}' --write",
+    "prettier:check": "prettier --config .prettierrc './packages/{frontend,backend,types}/**/*.{ts,js,html,json,scss}' --check"
   },
   "lint-staged": {
-    "./frontend/projects/upgrade/src/**/*.{ts,js,html,json,scss}": [
+    "./packages/frontend/projects/upgrade/src/**/*.{ts,js,html,json,scss}": [
       "prettier --config .prettierrc --write"
     ],
-    "./frontend/projects/upgrade/src/**/*.ts": [
+    "./packages/frontend/projects/upgrade/src/**/*.ts": [
       "eslint -c .eslintrc.js --ext .ts"
     ],
     "./clientlibs/js/{src, test}/**/*.ts": [
       "prettier --config .prettierrc --write",
       "eslint -c .eslintrc.js --ext .ts"
     ],
-    "./types/**/*.ts": [
+    "./packages/types/**/*.ts": [
       "prettier --config .prettierrc --write",
       "eslint -c .eslintrc.js --ext .ts"
     ],
-    "./backend/packages/Upgrade/{src, test}/**/*.ts": [
+    "./packages/backend/{src, test}/**/*.ts": [
       "prettier --config .prettierrc --write",
       "eslint -c .eslintrc.js --ext .ts"
     ]

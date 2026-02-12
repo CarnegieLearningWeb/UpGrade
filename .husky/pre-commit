@@ -4,9 +4,7 @@
 npx lint-staged
 
 # Typecheck Frontend
-cd packages/frontend
-npm run typecheck
+yarn workspace ab-testing typecheck
 
 # Typecheck Backend Upgrade
-cd ../backend
-npm start typecheck
+yarn workspace ab_testing_backend typecheck
