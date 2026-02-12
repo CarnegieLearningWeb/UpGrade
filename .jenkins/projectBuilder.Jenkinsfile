@@ -122,26 +122,5 @@ projectBuilderV5 (
                 ]
             ]
         ],
-    ],
-    prChecks: [
-        "checks": [
-           "lint": [
-             buildScripts: [
-               [
-                 script: 'npm install -g yarn',
-                 log: "install-yarn.log"
-               ],
-               [
-                 script: 'yarn',
-                 log: 'yarn.log'
-               ],
-               [
-                 script: 'yarn lint',
-                 githubCheck: 'lint',
-                 log: 'lint.log'
-               ]
-             ]
-           ]
-        ]
     ]
 )
