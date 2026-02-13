@@ -27,7 +27,7 @@ export interface PauseExperimentModalParams {
 
 export interface PauseExperimentModalResult {
   postExperimentRule: POST_EXPERIMENT_RULE;
-  revertTo: string;
+  revertTo: string | null;
 }
 
 @Component({
@@ -183,7 +183,7 @@ export class PauseExperimentModalComponent implements OnInit, OnDestroy {
           ? POST_EXPERIMENT_RULE.CONTINUE
           : POST_EXPERIMENT_RULE.ASSIGN;
 
-      const revertTo = formValue.pauseBehavior === PAUSE_BEHAVIOR.ASSIGN ? formValue.revertTo : undefined;
+      const revertTo = formValue.pauseBehavior === PAUSE_BEHAVIOR.ASSIGN ? formValue.revertTo : null;
 
       const result: PauseExperimentModalResult = {
         postExperimentRule,
