@@ -293,7 +293,7 @@ export class ExperimentClientController {
       request.logger.error({
         details: 'update unexpectedly returned empty object',
       });
-      throw new InternalServerError('set group membership failed.');
+      throw new InternalServerError('set group membership failed');
     }
 
     return { id: experimentUserDoc.id, group: experimentUser.group };
