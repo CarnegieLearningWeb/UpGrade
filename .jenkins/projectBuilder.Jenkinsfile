@@ -34,6 +34,10 @@ projectBuilderV5 (
             oneArtifactPerEnvironment: true,
             buildScripts: [
                 [
+                    script: 'corepack enable',
+                    log: '${projectName}-corepack-enable.log'
+                ],
+                [
                     script: 'yarn',
                     githubCheck: '${projectName} yarn',
                     log: '${projectName}-yarn.log'
@@ -74,6 +78,10 @@ projectBuilderV5 (
                 include: ["packages/backend/.*"]
             ],
             buildScripts: [
+                [
+                    script: 'corepack enable',
+                    log: '${projectName}-corepack-enable.log'
+                ],
                 [
                     script: 'yarn',
                     log: '${projectName}-yarn.log'
