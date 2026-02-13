@@ -32,6 +32,9 @@ projectBuilderV5 (
             artifactPrefix: "upgrade",
             versioning: 'branch',
             oneArtifactPerEnvironment: true,
+            fileFilter: [
+                include: ["packages/frontend/.*"]
+            ],
             buildScripts: [
                 [
                     script: 'npx yarn',
@@ -125,5 +128,22 @@ projectBuilderV5 (
                 ]
             ]
         ],
+    ],
+    prChecks: [
+        "checks": [
+           "lint": [
+             buildScripts: [
+               [
+                 script: 'npx yarn',
+                 log: 'yarn.log'
+               ],
+               [
+                 script: 'npx yarn lint',
+                 githubCheck: 'lint',
+                 log: 'lint.log'
+               ]
+             ]
+           ]
+        ]
     ]
 )
