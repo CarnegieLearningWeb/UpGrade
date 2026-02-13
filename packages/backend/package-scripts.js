@@ -145,12 +145,12 @@ module.exports = {
           'nps banner.seed',
           'nps db.drop',
           'nps config',
-          runFast('./node_modules/typeorm-seeding/dist/cli.js seed')
+          runFast('./node_modules/.bin/typeorm-seeding seed')
         ),
         description: 'Seeds generated records into the database',
       },
       drop: {
-        script: runFast('./node_modules/typeorm/cli.js schema:drop'),
+        script: runFast('./node_modules/.bin/typeorm schema:drop'),
         description: 'Drops the schema of the database',
       },
     },
