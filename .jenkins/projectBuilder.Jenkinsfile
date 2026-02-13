@@ -37,9 +37,6 @@ projectBuilderV5 (
             artifactPrefix: "upgrade",
             versioning: 'branch',
             oneArtifactPerEnvironment: true,
-            fileFilter: [
-                include: ["packages/frontend/.*"]
-            ],
             buildScripts: [
                 [
                     script: 'npx yarn workspace ab-testing test',
