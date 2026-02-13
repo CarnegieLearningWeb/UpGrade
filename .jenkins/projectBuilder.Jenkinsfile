@@ -34,25 +34,21 @@ projectBuilderV5 (
             oneArtifactPerEnvironment: true,
             buildScripts: [
                 [
-                    script: 'corepack enable',
-                    log: '${projectName}-corepack-enable.log'
-                ],
-                [
-                    script: 'yarn',
+                    script: 'npx yarn',
                     githubCheck: '${projectName} yarn',
                     log: '${projectName}-yarn.log'
                 ],
                 [
-                    script: 'yarn workspace ab-testing test',
+                    script: 'npx yarn workspace ab-testing test',
                     githubCheck: "upgrade-frontend-test",
                     log: "upgrade-frontend-test.log"
                 ],
                 [
-                    script: 'yarn workspace ab-testing prebuild:project',
+                    script: 'npx yarn workspace ab-testing prebuild:project',
                     log: 'env-pre-build.log',
                 ],
                 [
-                    script: 'yarn workspace ab-testing build:project',
+                    script: 'npx yarn workspace ab-testing build:project',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
                 ]
@@ -79,15 +75,11 @@ projectBuilderV5 (
             ],
             buildScripts: [
                 [
-                    script: 'corepack enable',
-                    log: '${projectName}-corepack-enable.log'
-                ],
-                [
-                    script: 'yarn',
+                    script: 'npx yarn',
                     log: '${projectName}-yarn.log'
                 ],
                 [
-                    script: 'yarn workspace ab_testing_backend test',
+                    script: 'npx yarn workspace ab_testing_backend test',
                     githubCheck: '${projectName} test',
                     log: '${projectName}-test.log'
                 ]
