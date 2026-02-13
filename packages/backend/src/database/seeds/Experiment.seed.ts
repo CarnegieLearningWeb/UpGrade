@@ -1,12 +1,12 @@
 import { Factory, Seeder, times } from 'typeorm-seeding';
-import { Connection } from 'typeorm/connection/Connection';
+import { DataSource } from 'typeorm';
 import { Experiment } from '../../api/models/Experiment';
 import { ExperimentCondition } from '../../api/models/ExperimentCondition';
 import { DecisionPoint } from '../../api/models/DecisionPoint';
 import { POST_EXPERIMENT_RULE } from 'upgrade_types';
 
 export class CreateExperiments implements Seeder {
-  public async run(factory: Factory, connection: Connection): Promise<any> {
+  public async run(factory: Factory, connection: DataSource): Promise<any> {
     const em = connection.createEntityManager();
     await times(10, async () => {
       // create and save experiment here
