@@ -2,7 +2,12 @@ projectBuilderV5 (
     buildAgent:[
         taskDefinitionOverride: "upgrade-ci"
     ],
-
+    initScripts: [
+        [
+            script: 'npx yarn',
+            log: 'yarn-install.log'
+        ]
+    ],
     projects: [
         "upgrade-service":[
             artifactType: "ecr",
@@ -36,11 +41,6 @@ projectBuilderV5 (
                 include: ["packages/frontend/.*"]
             ],
             buildScripts: [
-                [
-                    script: 'npx yarn',
-                    githubCheck: '${projectName} yarn',
-                    log: '${projectName}-yarn.log'
-                ],
                 [
                     script: 'npx yarn workspace ab-testing test',
                     githubCheck: "upgrade-frontend-test",
@@ -77,10 +77,6 @@ projectBuilderV5 (
                 include: ["packages/backend/.*"]
             ],
             buildScripts: [
-                [
-                    script: 'npx yarn',
-                    log: '${projectName}-yarn.log'
-                ],
                 [
                     script: 'npx yarn workspace ab_testing_backend test',
                     githubCheck: '${projectName} test',
@@ -133,10 +129,6 @@ projectBuilderV5 (
         "checks": [
            "lint": [
              buildScripts: [
-               [
-                 script: 'npx yarn',
-                 log: 'yarn.log'
-               ],
                [
                  script: 'npx yarn lint',
                  githubCheck: 'lint',
