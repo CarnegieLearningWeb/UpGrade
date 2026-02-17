@@ -115,11 +115,5 @@
         "uuid": "^9.0.1",
         "winston": "^3.2.1",
         "winston-splunk-httplogger": "^3.1.0"
-    },
-    "overrides": {
-        "class-validator": "$class-validator",
-        "typeorm": "$typeorm",
-        "typedi": "$typedi",
-        "@types/babel__traverse": "7.0.6"
     }
 }
