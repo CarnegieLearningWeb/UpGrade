@@ -1,0 +1,1117 @@
+{
+  "info": {
+    "name": "Platform API",
+    "description": "Platform/Admin API collection for all UpGrade controllers with happy-path CRUD operations. Uses consistent test data across all endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3030/api",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "testuser123",
+      "type": "string"
+    },
+    {
+      "key": "userEmail",
+      "value": "admin@example.com",
+      "type": "string"
+    },
+    {
+      "key": "context",
+      "value": "upgrade-internal",
+      "type": "string"
+    },
+    {
+      "key": "site",
+      "value": "fakesite",
+      "type": "string"
+    },
+    {
+      "key": "target",
+      "value": "faketarget",
+      "type": "string"
+    },
+    {
+      "key": "experimentId",
+      "value": "",
+      "type": "string",
+      "description": "Will be populated after creating an experiment"
+    },
+    {
+      "key": "featureFlagId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "flagId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "segmentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "metricKey",
+      "value": "totalTimeSeconds",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Experiments",
+      "description": "Complete CRUD operations for UpGrade Experiments",
+      "item": [
+        {
+          "name": "Create Experiment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Math Problem Solving Experiment\",\n  \"description\": \"Testing different problem-solving approaches in math tutoring\",\n  \"context\": [\"upgrade-internal\"],\n  \"state\": \"inactive\",\n  \"consistencyRule\": \"individual\",\n  \"assignmentUnit\": \"individual\",\n  \"postExperimentRule\": \"continue\",\n  \"tags\": [\"math\", \"problem-solving\"],\n  \"filterMode\": \"includeAll\",\n  \"type\": \"Simple\",\n  \"conditions\": [\n    {\n      \"id\": \"cond-control\",\n      \"conditionCode\": \"control\",\n      \"assignmentWeight\": 50,\n      \"order\": 1\n    },\n    {\n      \"id\": \"cond-variant\",\n      \"conditionCode\": \"variant\",\n      \"assignmentWeight\": 50,\n      \"order\": 2\n    }\n  ],\n  \"partitions\": [\n    {\n      \"id\": \"partition-001\",\n      \"site\": \"fakesite\",\n      \"target\": \"faketarget\",\n      \"description\": \"Main decision point\",\n      \"order\": 1,\n      \"excludeIfReached\": false\n    }\n  ],\n  \"experimentSegmentInclusion\": [],\n  \"experimentSegmentExclusion\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/experiments",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments"]
+            },
+            "description": "Create a new experiment with conditions and decision points (partitions)."
+          }
+        },
+        {
+          "name": "Get All Experiments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/experiments",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments"]
+            },
+            "description": "Retrieve all experiments in the system."
+          }
+        },
+        {
+          "name": "Get Experiment Names",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/experiments/names",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments", "names"]
+            },
+            "description": "Get a list of experiment IDs and names."
+          }
+        },
+        {
+          "name": "Get Paginated Experiments",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skip\": 0,\n  \"take\": 10,\n  \"searchParams\": {\n    \"key\": \"all\",\n    \"string\": \"\"\n  },\n  \"sortParams\": {\n    \"key\": \"name\",\n    \"sortAs\": \"ASC\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/experiments/paginated",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments", "paginated"]
+            },
+            "description": "Get paginated experiments with optional search and sort parameters."
+          }
+        },
+        {
+          "name": "Get Single Experiment",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/experiments/single/{{experimentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments", "single", "{{experimentId}}"]
+            },
+            "description": "Get a single experiment by ID."
+          }
+        },
+        {
+          "name": "Get Experiment Conditions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/experiments/conditions/{{experimentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments", "conditions", "{{experimentId}}"]
+            },
+            "description": "Get all conditions for a specific experiment."
+          }
+        },
+        {
+          "name": "Get Context Metadata",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/experiments/contextMetaData",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments", "contextMetaData"]
+            },
+            "description": "Get app context, decision points, experiment IDs, and group types."
+          }
+        },
+        {
+          "name": "Get All Partitions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/experiments/partitions",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments", "partitions"]
+            },
+            "description": "Get all experiment partitions (decision points)."
+          }
+        },
+        {
+          "name": "Update Experiment",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{experimentId}}\",\n  \"name\": \"Updated Math Experiment\",\n  \"description\": \"Updated description for problem-solving approaches\",\n  \"context\": [\"upgrade-internal\"],\n  \"state\": \"enrolling\",\n  \"consistencyRule\": \"individual\",\n  \"assignmentUnit\": \"individual\",\n  \"postExperimentRule\": \"continue\",\n  \"tags\": [\"math\", \"problem-solving\", \"updated\"],\n  \"filterMode\": \"includeAll\",\n  \"type\": \"Simple\",\n  \"conditions\": [\n    {\n      \"id\": \"cond-control\",\n      \"conditionCode\": \"control\",\n      \"assignmentWeight\": 50,\n      \"order\": 1\n    },\n    {\n      \"id\": \"cond-variant\",\n      \"conditionCode\": \"variant\",\n      \"assignmentWeight\": 50,\n      \"order\": 2\n    }\n  ],\n  \"partitions\": [\n    {\n      \"id\": \"partition-001\",\n      \"site\": \"fakesite\",\n      \"target\": \"faketarget\",\n      \"description\": \"Main decision point\",\n      \"order\": 1,\n      \"excludeIfReached\": false\n    }\n  ],\n  \"experimentSegmentInclusion\": [],\n  \"experimentSegmentExclusion\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/experiments/{{experimentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments", "{{experimentId}}"]
+            },
+            "description": "Update an existing experiment by ID."
+          }
+        },
+        {
+          "name": "Update Experiment State",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"experimentId\": \"{{experimentId}}\",\n  \"state\": \"enrolling\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/experiments/state",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments", "state"]
+            },
+            "description": "Update the state of an experiment. States: inactive, demo, scheduled, enrolling, enrollmentComplete, cancelled."
+          }
+        },
+        {
+          "name": "Add Inclusion List",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"experimentId\": \"{{experimentId}}\",\n  \"list\": {\n    \"name\": \"Math Teachers Group\",\n    \"description\": \"Teachers from school-001\",\n    \"context\": \"upgrade-internal\",\n    \"type\": \"private\",\n    \"userIds\": [\"teacher-001\", \"teacher-002\"],\n    \"groups\": [\n      {\n        \"groupId\": \"school-001\",\n        \"type\": \"schoolId\"\n      },\n      {\n        \"groupId\": \"class-advanced-math\",\n        \"type\": \"classId\"\n      }\n    ],\n    \"subSegmentIds\": []\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/experiments/inclusionList",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments", "inclusionList"]
+            },
+            "description": "Add an inclusion list (segment) to an experiment."
+          }
+        },
+        {
+          "name": "Add Exclusion List",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"experimentId\": \"{{experimentId}}\",\n  \"list\": {\n    \"name\": \"Excluded Students\",\n    \"description\": \"Students who opted out\",\n    \"context\": \"upgrade-internal\",\n    \"type\": \"private\",\n    \"userIds\": [\"student-999\"],\n    \"groups\": [],\n    \"subSegmentIds\": []\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/experiments/exclusionList",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments", "exclusionList"]
+            },
+            "description": "Add an exclusion list (segment) to an experiment."
+          }
+        },
+        {
+          "name": "Delete Experiment",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/experiments/{{experimentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["experiments", "{{experimentId}}"]
+            },
+            "description": "Delete an experiment by ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feature Flags",
+      "description": "Complete CRUD operations for UpGrade Feature Flags",
+      "item": [
+        {
+          "name": "Create Feature Flag",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Advanced Analytics Dashboard\",\n  \"description\": \"Enables the new analytics dashboard for instructors\",\n  \"key\": \"ADVANCED_ANALYTICS\",\n  \"status\": \"enabled\",\n  \"context\": [\"upgrade-internal\"],\n  \"filterMode\": \"includeAll\",\n  \"tags\": [\"analytics\", \"dashboard\"],\n  \"featureFlagSegmentInclusion\": [],\n  \"featureFlagSegmentExclusion\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flags",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags"]
+            },
+            "description": "Create a new feature flag. Status can be: enabled, disabled, or archived."
+          }
+        },
+        {
+          "name": "Get All Feature Flags",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/flags",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags"]
+            },
+            "description": "Retrieve all feature flags in the system."
+          }
+        },
+        {
+          "name": "Get Feature Flag by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/flags/{{flagId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "{{flagId}}"]
+            },
+            "description": "Get a single feature flag by ID."
+          }
+        },
+        {
+          "name": "Get Paginated Feature Flags",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skip\": 0,\n  \"take\": 10,\n  \"searchParams\": {\n    \"key\": \"all\",\n    \"string\": \"\"\n  },\n  \"sortParams\": {\n    \"key\": \"name\",\n    \"sortAs\": \"ASC\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flags/paginated",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "paginated"]
+            },
+            "description": "Get paginated feature flags with optional search (all, name, key, status, tag, context, id) and sort (name, key, status, updatedAt)."
+          }
+        },
+        {
+          "name": "Update Feature Flag",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{flagId}}\",\n  \"name\": \"Updated Analytics Dashboard\",\n  \"description\": \"Updated description for analytics dashboard\",\n  \"key\": \"ADVANCED_ANALYTICS\",\n  \"status\": \"enabled\",\n  \"context\": [\"upgrade-internal\"],\n  \"filterMode\": \"includeAll\",\n  \"tags\": [\"analytics\", \"dashboard\", \"updated\"],\n  \"featureFlagSegmentInclusion\": [],\n  \"featureFlagSegmentExclusion\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flags/{{flagId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "{{flagId}}"]
+            },
+            "description": "Update an existing feature flag by ID."
+          }
+        },
+        {
+          "name": "Update Feature Flag Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flagId\": \"{{flagId}}\",\n  \"status\": \"disabled\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flags/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "status"]
+            },
+            "description": "Update only the status of a feature flag. Status options: enabled, disabled, archived."
+          }
+        },
+        {
+          "name": "Update Feature Flag Filter Mode",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flagId\": \"{{flagId}}\",\n  \"filterMode\": \"excludeAll\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flags/filterMode",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "filterMode"]
+            },
+            "description": "Update the filter mode of a feature flag. Filter mode options: includeAll, excludeAll."
+          }
+        },
+        {
+          "name": "Add Inclusion List",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flagId\": \"{{flagId}}\",\n  \"enabled\": true,\n  \"listType\": \"instructor\",\n  \"segment\": {\n    \"name\": \"Beta Testers\",\n    \"description\": \"Instructors testing new features\",\n    \"context\": \"upgrade-internal\",\n    \"type\": \"private\",\n    \"userIds\": [\"instructor-john\", \"instructor-jane\"],\n    \"groups\": [\n      {\n        \"groupId\": \"school-001\",\n        \"type\": \"schoolId\"\n      },\n      {\n        \"groupId\": \"instructor-john\",\n        \"type\": \"instructorId\"\n      }\n    ],\n    \"subSegmentIds\": []\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flags/inclusionList",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "inclusionList"]
+            },
+            "description": "Add an inclusion list (segment) to a feature flag to control who can access it."
+          }
+        },
+        {
+          "name": "Add Exclusion List",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flagId\": \"{{flagId}}\",\n  \"enabled\": true,\n  \"listType\": \"student\",\n  \"segment\": {\n    \"name\": \"Blocked Users\",\n    \"description\": \"Users excluded from feature\",\n    \"context\": \"upgrade-internal\",\n    \"type\": \"private\",\n    \"userIds\": [\"student-blocked-001\"],\n    \"groups\": [],\n    \"subSegmentIds\": []\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flags/exclusionList",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "exclusionList"]
+            },
+            "description": "Add an exclusion list (segment) to a feature flag to block specific users from accessing it."
+          }
+        },
+        {
+          "name": "Update Inclusion List",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flagId\": \"{{flagId}}\",\n  \"enabled\": true,\n  \"listType\": \"instructor\",\n  \"segment\": {\n    \"id\": \"segment-001\",\n    \"name\": \"Updated Beta Testers\",\n    \"description\": \"Updated instructor group\",\n    \"context\": \"upgrade-internal\",\n    \"type\": \"private\",\n    \"userIds\": [\"instructor-john\", \"instructor-jane\", \"instructor-new\"],\n    \"groups\": [\n      {\n        \"groupId\": \"school-001\",\n        \"type\": \"schoolId\"\n      }\n    ],\n    \"subSegmentIds\": []\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flags/inclusionList/segment-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "inclusionList", "segment-001"]
+            },
+            "description": "Update an existing inclusion list for a feature flag."
+          }
+        },
+        {
+          "name": "Delete Feature Flag",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/flags/{{flagId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "{{flagId}}"]
+            },
+            "description": "Delete a feature flag by ID."
+          }
+        },
+        {
+          "name": "Delete Inclusion List",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/flags/inclusionList/segment-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "inclusionList", "segment-001"]
+            },
+            "description": "Delete an inclusion list from a feature flag."
+          }
+        },
+        {
+          "name": "Delete Exclusion List",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/flags/exclusionList/segment-002",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "exclusionList", "segment-002"]
+            },
+            "description": "Delete an exclusion list from a feature flag."
+          }
+        },
+        {
+          "name": "Export Feature Flag",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/flags/export/{{flagId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["flags", "export", "{{flagId}}"]
+            },
+            "description": "Export a feature flag as JSON."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Segments",
+      "description": "Complete CRUD operations for UpGrade Segments",
+      "item": [
+        {
+          "name": "Create Segment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Advanced Math Students\",\n  \"description\": \"Students enrolled in advanced mathematics courses\",\n  \"context\": \"upgrade-internal\",\n  \"type\": \"private\",\n  \"userIds\": [\"student-001\", \"student-002\", \"student-003\"],\n  \"tags\": [\"math\", \"advanced\"],\n  \"groups\": [\n    {\n      \"groupId\": \"school-001\",\n      \"type\": \"schoolId\"\n    },\n    {\n      \"groupId\": \"class-advanced-math\",\n      \"type\": \"classId\"\n    },\n    {\n      \"groupId\": \"instructor-john\",\n      \"type\": \"instructorId\"\n    }\n  ],\n  \"subSegmentIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/segments",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments"]
+            },
+            "description": "Create a new segment. Type can be: private or public."
+          }
+        },
+        {
+          "name": "Get All Segments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/segments",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments"]
+            },
+            "description": "Retrieve all segments with their status information."
+          }
+        },
+        {
+          "name": "Get Global Segments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/segments/global",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments", "global"]
+            },
+            "description": "Get all global (excluded) segments."
+          }
+        },
+        {
+          "name": "Get Segment by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/segments/{{segmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments", "{{segmentId}}"]
+            },
+            "description": "Get a single segment by ID."
+          }
+        },
+        {
+          "name": "Get Segment with Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/segments/status/{{segmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments", "status", "{{segmentId}}"]
+            },
+            "description": "Get a segment by ID with additional status information."
+          }
+        },
+        {
+          "name": "Get Paginated Segments",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skip\": 0,\n  \"take\": 10,\n  \"searchParams\": {\n    \"key\": \"all\",\n    \"string\": \"\"\n  },\n  \"sortParams\": {\n    \"key\": \"name\",\n    \"sortAs\": \"ASC\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/segments/paginated",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments", "paginated"]
+            },
+            "description": "Get paginated segments with optional search (all, name, tag, context, id) and sort (name, updatedAt)."
+          }
+        },
+        {
+          "name": "Update Segment (Upsert)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{segmentId}}\",\n  \"name\": \"Updated Advanced Math Students\",\n  \"description\": \"Updated description for advanced math students\",\n  \"context\": \"upgrade-internal\",\n  \"type\": \"private\",\n  \"userIds\": [\"student-001\", \"student-002\", \"student-003\", \"student-004\"],\n  \"tags\": [\"math\", \"advanced\", \"updated\"],\n  \"groups\": [\n    {\n      \"groupId\": \"school-001\",\n      \"type\": \"schoolId\"\n    },\n    {\n      \"groupId\": \"class-advanced-math\",\n      \"type\": \"classId\"\n    },\n    {\n      \"groupId\": \"instructor-john\",\n      \"type\": \"instructorId\"\n    }\n  ],\n  \"subSegmentIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/segments",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments"]
+            },
+            "description": "Update an existing segment (upsert). If ID exists, updates; otherwise creates new."
+          }
+        },
+        {
+          "name": "Create Sub-Segment (List)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parentSegmentId\": \"{{segmentId}}\",\n  \"name\": \"Top Performers\",\n  \"description\": \"Students with high completion rates\",\n  \"context\": \"upgrade-internal\",\n  \"type\": \"private\",\n  \"userIds\": [\"student-001\"],\n  \"tags\": [\"high-performer\"],\n  \"groups\": [\n    {\n      \"groupId\": \"school-001\",\n      \"type\": \"schoolId\"\n    },\n    {\n      \"groupId\": \"class-advanced-math\",\n      \"type\": \"classId\"\n    }\n  ],\n  \"subSegmentIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/segments/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments", "list"]
+            },
+            "description": "Create a sub-segment (list) under a parent segment."
+          }
+        },
+        {
+          "name": "Delete Segment",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/segments/{{segmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments", "{{segmentId}}"]
+            },
+            "description": "Delete a segment by ID."
+          }
+        },
+        {
+          "name": "Delete Sub-Segment (List)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/segments/list/subsegment-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments", "list", "subsegment-001"]
+            },
+            "description": "Delete a sub-segment (list) from a parent segment."
+          }
+        },
+        {
+          "name": "Export Segments as JSON",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/segments/export/json?ids={{segmentId}}&ids=segment-002",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments", "export", "json"],
+              "query": [
+                { "key": "ids", "value": "{{segmentId}}" },
+                { "key": "ids", "value": "segment-002" }
+              ]
+            },
+            "description": "Export one or more segments as JSON. Pass multiple segment IDs as query parameters."
+          }
+        },
+        {
+          "name": "Export Segments as CSV",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/segments/export/csv?ids={{segmentId}}&ids=segment-002",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments", "export", "csv"],
+              "query": [
+                { "key": "ids", "value": "{{segmentId}}" },
+                { "key": "ids", "value": "segment-002" }
+              ]
+            },
+            "description": "Export one or more segments as CSV. Pass multiple segment IDs as query parameters."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Metric Controller",
+      "description": "CRUD operations for metrics",
+      "item": [
+        {
+          "name": "Get All Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/metric",
+              "host": ["{{baseUrl}}"],
+              "path": ["metric"]
+            }
+          }
+        },
+        {
+          "name": "Get Metrics by Context",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/metric/{{context}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["metric", "{{context}}"]
+            }
+          }
+        },
+        {
+          "name": "Create/Update Metrics",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metricUnit\": [\n    {\n      \"metric\": \"totalTimeSeconds\",\n      \"datatype\": \"continuous\"\n    },\n    {\n      \"metric\": \"totalMasteryWorkspacesCompleted\",\n      \"datatype\": \"continuous\"\n    },\n    {\n      \"metric\": \"totalConceptBuildersCompleted\",\n      \"datatype\": \"continuous\"\n    },\n    {\n      \"metric\": \"workspaceCompletionStatus\",\n      \"datatype\": \"categorical\",\n      \"allowedValues\": [\"GRADUATED\", \"INCOMPLETE\", \"IN_PROGRESS\"]\n    }\n  ],\n  \"context\": [\"{{context}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/metric/save",
+              "host": ["{{baseUrl}}"],
+              "path": ["metric", "save"]
+            }
+          }
+        },
+        {
+          "name": "Delete Metric",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/metric/{{metricKey}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["metric", "{{metricKey}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Controller",
+      "description": "CRUD operations for users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"role\": \"admin\",\n  \"imageUrl\": \"https://example.com/avatar.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Get Paginated Users",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skip\": 0,\n  \"take\": 10,\n  \"searchParams\": {\n    \"key\": \"all\"\n  },\n  \"sortParams\": {\n    \"key\": \"email\",\n    \"sortAs\": \"ASC\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/paginated",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "paginated"]
+            }
+          }
+        },
+        {
+          "name": "Get User by Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userEmail}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userEmail}}"]
+            }
+          }
+        },
+        {
+          "name": "Update User Details",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"firstName\": \"Updated Test\",\n  \"lastName\": \"Updated User\",\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/details",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "details"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/testuser@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "testuser@example.com"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics Controller",
+      "description": "Analytics and reporting endpoints",
+      "item": [
+        {
+          "name": "Get Enrollment Analytics",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"experimentIds\": [\"{{experimentId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stats/enrollment",
+              "host": ["{{baseUrl}}"],
+              "path": ["stats", "enrollment"]
+            }
+          }
+        },
+        {
+          "name": "Get Enrollment Detail",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"experimentId\": \"{{experimentId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stats/enrollment/detail",
+              "host": ["{{baseUrl}}"],
+              "path": ["stats", "enrollment", "detail"]
+            }
+          }
+        },
+        {
+          "name": "Get Enrollment by Date",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"experimentId\": \"{{experimentId}}\",\n  \"dateEnum\": \"last_seven_days\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stats/enrollment/date",
+              "host": ["{{baseUrl}}"],
+              "path": ["stats", "enrollment", "date"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Query Controller",
+      "description": "Data analysis queries",
+      "item": [
+        {
+          "name": "Analyze Data",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"queryIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/query/analyse",
+              "host": ["{{baseUrl}}"],
+              "path": ["query", "analyse"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Log Controller",
+      "description": "Audit and error logs",
+      "item": [
+        {
+          "name": "Get Audit Logs",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skip\": 0,\n  \"take\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/audit",
+              "host": ["{{baseUrl}}"],
+              "path": ["audit"]
+            }
+          }
+        },
+        {
+          "name": "Get Error Logs",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skip\": 0,\n  \"take\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/error",
+              "host": ["{{baseUrl}}"],
+              "path": ["error"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Setting Controller",
+      "description": "Project settings management",
+      "item": [
+        {
+          "name": "Get Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/setting",
+              "host": ["{{baseUrl}}"],
+              "path": ["setting"]
+            }
+          }
+        },
+        {
+          "name": "Update Settings",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toCheckAuth\": true,\n  \"toFilterMetric\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/setting",
+              "host": ["{{baseUrl}}"],
+              "path": ["setting"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Batch Assign Controller",
+      "description": "Batch assignment operations",
+      "item": [
+        {
+          "name": "Get Batch Assignments",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"context\": \"{{context}}\",\n  \"assignments\": [\n    {\n      \"userId\": \"student1\",\n      \"group\": {\n        \"schoolId\": [\"school-001\"],\n        \"classId\": [\"class-001\"],\n        \"instructorId\": [\"instructor-001\"]\n      }\n    },\n    {\n      \"userId\": \"student2\",\n      \"group\": {\n        \"schoolId\": [\"school-001\"],\n        \"classId\": [\"class-001\"],\n        \"instructorId\": [\"instructor-001\"]\n      }\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/batch-assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["batch-assign"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Scheduled Jobs Controller",
+      "description": "Automated job endpoints (Note: requires special middleware auth)",
+      "item": [
+        {
+          "name": "Start Experiment Enrollment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/scheduledJobs/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["scheduledJobs", "start"]
+            }
+          }
+        },
+        {
+          "name": "End Experiment Enrollment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/scheduledJobs/end",
+              "host": ["{{baseUrl}}"],
+              "path": ["scheduledJobs", "end"]
+            }
+          }
+        },
+        {
+          "name": "Clear Logs",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/scheduledJobs/clearLogs",
+              "host": ["{{baseUrl}}"],
+              "path": ["scheduledJobs", "clearLogs"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stratification Controller",
+      "description": "Stratification factor management",
+      "item": [
+        {
+          "name": "Get All Stratification Factors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/stratification",
+              "host": ["{{baseUrl}}"],
+              "path": ["stratification"]
+            }
+          }
+        },
+        {
+          "name": "Create Stratification (CSV)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stratification",
+              "host": ["{{baseUrl}}"],
+              "path": ["stratification"]
+            },
+            "description": "Upload CSV file with stratification data. File should have columns: userId, factorName, factorValue"
+          }
+        },
+        {
+          "name": "Download Stratification CSV",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/stratification/download/testFactor",
+              "host": ["{{baseUrl}}"],
+              "path": ["stratification", "download", "testFactor"]
+            }
+          }
+        },
+        {
+          "name": "Delete Stratification",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/stratification/testFactor",
+              "host": ["{{baseUrl}}"],
+              "path": ["stratification", "testFactor"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Utilities",
+      "description": "Utility endpoints",
+      "item": [
+        {
+          "name": "Clear Database (Demo)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clearDB",
+              "host": ["{{baseUrl}}"],
+              "path": ["clearDB"]
+            },
+            "description": "Clear the database (demo mode only)"
+          }
+        }
+      ]
+    }
+  ]
+}
