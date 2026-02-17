@@ -21,7 +21,7 @@ projectBuilderV5 (
                 [file: "cloudformation/backend/app-infrastructure.yml"]
             ],
             s3Context: [
-                glob: "packages/backend/**/*,packages/types/**/*,*.json"
+                glob: "packages/backend/**/*,packages/types/**/*,*.json,yarn.lock",
             ],
             dockerConfig: [
                 dockerFile: "packages/backend/cl.Dockerfile",
