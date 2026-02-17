@@ -2,7 +2,11 @@ ARG IMAGE_REPO
 
 FROM ${IMAGE_REPO}node:22.14-alpine3.21 AS build
 WORKDIR /usr/src/app
-COPY . .
+COPY ./packages/backend ./packages/backend
+COPY ./packages/frontend/package.json ./packages/frontend/package.json
+COPY ./packages/types ./packages/types
+COPY ./package.json ./package.json
+COPY ./yarn.lock ./yarn.lock
 RUN yarn
 
 # ARG CODEARTIFACT_AUTH_TOKEN
