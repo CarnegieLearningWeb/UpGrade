@@ -61,8 +61,24 @@
       "key": "metricKey",
       "value": "totalTimeSeconds",
       "type": "string"
+    },
+    {
+      "key": "bearerToken",
+      "value": "",
+      "type": "string",
+      "description": "Bearer token for API authentication (optional)"
     }
   ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}",
+        "type": "string"
+      }
+    ]
+  },
   "item": [
     {
       "name": "Experiments",
