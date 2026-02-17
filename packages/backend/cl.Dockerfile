@@ -3,10 +3,7 @@ ARG IMAGE_REPO
 FROM ${IMAGE_REPO}node:22.14-alpine3.21 AS build
 WORKDIR /usr/src/app
 COPY . .
-
-# Ensure consistent yarn behavior - clear any cached config
-RUN yarn config set ignore-engines true
-RUN yarn install --frozen-lockfile --ignore-optional
+RUN yarn
 
 # ARG CODEARTIFACT_AUTH_TOKEN
 # ARG CODEARTIFACT_REGISTRY="//cli-467155500999.d.codeartifact.us-east-1.amazonaws.com/npm/cli-npm-artifacts/"

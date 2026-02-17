@@ -20,7 +20,9 @@ projectBuilderV5 (
             appInfrastructure: [
                 [file: "cloudformation/backend/app-infrastructure.yml"]
             ],
-            disableS3Context: true,
+            s3Context: [
+                glob: "packages/**/*,*.json,yarn.lock,.yarn*",
+            ],
             dockerConfig: [
                 dockerFile: "packages/backend/cl.Dockerfile",
                 requiresCodeArtifactToken: true,
