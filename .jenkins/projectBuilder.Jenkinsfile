@@ -26,7 +26,7 @@ projectBuilderV5 (
             ],
             dockerConfig: [
                 cpu: 2048,
-                memory: 4096,
+                memory: 8192,
                 dockerFile: "packages/backend/cl.Dockerfile",
                 requiresCodeArtifactToken: true,
             ],
