@@ -24,6 +24,8 @@ projectBuilderV5 (
                 glob: "packages/backend/**/*,packages/types/**/*,packages/frontend/package.json,*.json,yarn.lock,.yarn*",
             ],
             dockerConfig: [
+                cpu: 2048,
+                memory: 4096,
                 dockerFile: "packages/backend/cl.Dockerfile",
                 requiresCodeArtifactToken: true,
             ],
