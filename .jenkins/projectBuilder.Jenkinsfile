@@ -22,6 +22,7 @@ projectBuilderV5 (
             ],
             s3Context: [
                 glob: "packages/backend/**/*,packages/types/**/*,packages/frontend/package.json,*.json,yarn.lock,.yarn*",
+                exclude: "**/node_modules,**/node_modules/**,**/*.log,.git"
             ],
             dockerConfig: [
                 cpu: 2048,
@@ -75,9 +76,6 @@ projectBuilderV5 (
             projectDir: ".",
             runInProjectDir: true,
             skipArtifactUpload: true,
-            fileFilter: [
-                include: ["packages/backend/.*"]
-            ],
             buildScripts: [
                 [
                     script: 'npx yarn workspace ab_testing_backend test',
