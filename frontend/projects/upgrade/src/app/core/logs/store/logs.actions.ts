@@ -4,6 +4,11 @@ import { SERVER_ERROR, LOG_TYPE } from 'upgrade_types';
 
 export const actionGetAuditLogs = createAction('[Logs] Get Audit Logs', props<{ fromStart?: boolean }>());
 
+export const actionGetAuditLogsForExperiment = createAction(
+  '[Logs] Get Audit Logs For Experiment',
+  props<{ experimentId: string; fromStart?: boolean }>()
+);
+
 export const actionGetAuditLogsSuccess = createAction(
   '[Logs] Get Audit Logs Success',
   props<{ auditLogs: AuditLogs[]; totalAuditLogs: number }>()
@@ -39,4 +44,30 @@ export const actionSetAuditLogFilter = createAction('[Logs] Set Audit Log Filter
 export const actionSetErrorLogFilter = createAction(
   '[Logs] Set Error Log Filter',
   props<{ filterType: SERVER_ERROR }>()
+);
+
+// Experiment-specific log actions
+export const actionGetExperimentLogs = createAction(
+  '[Logs] Get Experiment Logs',
+  props<{ experimentId: string; fromStart?: boolean }>()
+);
+
+export const actionGetExperimentLogsSuccess = createAction(
+  '[Logs] Get Experiment Logs Success',
+  props<{ experimentId: string; auditLogs: AuditLogs[]; totalAuditLogs: number; fromStart: boolean }>()
+);
+
+export const actionGetExperimentLogsFailure = createAction(
+  '[Logs] Get Experiment Logs Failure',
+  props<{ experimentId: string }>()
+);
+
+export const actionSetExperimentLogFilter = createAction(
+  '[Logs] Set Experiment Log Filter',
+  props<{ experimentId: string; filterType: LOG_TYPE }>()
+);
+
+export const actionClearExperimentLogs = createAction(
+  '[Logs] Clear Experiment Logs',
+  props<{ experimentId: string }>()
 );

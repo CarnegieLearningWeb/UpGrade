@@ -12,6 +12,7 @@ import { ExperimentEnrollmentDataSectionCardComponent } from './experiment-enrol
 import { ExperimentMetricsDataSectionCardComponent } from './experiment-metrics-data-section-card/experiment-metrics-data-section-card.component';
 import { ExperimentPayloadsSectionCardComponent } from './experiment-payloads-section-card/experiment-payloads-section-card.component';
 import { ExperimentRewardFeedbackSectionCardComponent } from './experiment-reward-feedback-section-card/experiment-reward-feedback-section-card.component';
+import { ExperimentLogSectionCardComponent } from './experiment-log-section-card/experiment-log-section-card.component';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { Observable, Subscription, combineLatest } from 'rxjs';
@@ -37,6 +38,7 @@ import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
     ExperimentEnrollmentDataSectionCardComponent,
     ExperimentRewardFeedbackSectionCardComponent,
     ExperimentMetricsDataSectionCardComponent,
+    ExperimentLogSectionCardComponent,
   ],
   templateUrl: './experiment-details-page-content.component.html',
   styleUrl: './experiment-details-page-content.component.scss',
@@ -44,7 +46,7 @@ import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
 })
 export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy {
   isSectionCardExpanded = true;
-  activeTabIndex = 0; // 0 for Design, 1 for Data
+  activeTabIndex = 0; // 0 for Design, 1 for Data, 2 for Logs
   experiment$: Observable<Experiment>;
   experimentIdSub: Subscription;
   shouldShowRewardFeedback$: Observable<boolean>;

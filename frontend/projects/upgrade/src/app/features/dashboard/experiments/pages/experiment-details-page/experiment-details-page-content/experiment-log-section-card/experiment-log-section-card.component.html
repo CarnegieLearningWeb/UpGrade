@@ -1,0 +1,20 @@
+<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
+  <!-- header-left -->
+  <app-common-section-card-title-header header-left [title]="'Experiment Logs'"></app-common-section-card-title-header>
+
+  <!-- header-right -->
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="false"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  >
+  </app-common-section-card-action-buttons>
+
+  <!-- content -->
+  <ng-container content *ngIf="isSectionCardExpanded">
+    <div class="table-container">
+      <app-experiment-log-section-card-table [experimentId]="experiment.id"></app-experiment-log-section-card-table>
+    </div>
+  </ng-container>
+</app-common-section-card>

@@ -63,6 +63,13 @@
         [isSectionCardExpanded]="isSectionCardExpanded"
         section-card
       ></app-experiment-metrics-data-section-card>
+
+      <!-- Logs Tab -->
+      <app-experiment-log-section-card
+        *ngIf="activeTabIndex === 2"
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        section-card
+      ></app-experiment-log-section-card>
     </app-common-section-card-list>
   </ng-container>
 

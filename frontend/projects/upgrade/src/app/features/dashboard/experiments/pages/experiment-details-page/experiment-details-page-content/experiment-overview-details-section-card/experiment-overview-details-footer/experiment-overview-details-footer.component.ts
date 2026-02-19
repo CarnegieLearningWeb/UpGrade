@@ -14,6 +14,7 @@ export class ExperimentOverviewDetailsFooterComponent implements OnInit {
   tabLabels = [
     { label: 'Design', disabled: false },
     { label: 'Data', disabled: false },
+    { label: 'Logs', disabled: false },
   ];
 
   onSelectedTabChange(selectedTabIndex: number): void {

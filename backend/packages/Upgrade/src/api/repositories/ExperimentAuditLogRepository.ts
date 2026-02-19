@@ -7,7 +7,12 @@ import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExperimentAuditLog)
 export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog> {
-  public async paginatedFind(limit: number, offset: number, filter: LOG_TYPE): Promise<ExperimentAuditLog[]> {
+  public async paginatedFind(
+    limit: number,
+    offset: number,
+    filter: LOG_TYPE,
+    experimentId?: string
+  ): Promise<ExperimentAuditLog[]> {
     let queryBuilder = this.createQueryBuilder('audit')
       .offset(offset)
       .limit(limit)
@@ -17,20 +22,43 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
     if (filter) {
       queryBuilder = queryBuilder.where('audit.type = :filter', { filter });
     }
+
+    if (experimentId) {
+      const experimentIdCondition = "(audit.data->>'experimentId' = :experimentId)";
+      queryBuilder = filter
+        ? queryBuilder.andWhere(experimentIdCondition, { experimentId })
+        : queryBuilder.where(experimentIdCondition, { experimentId });
+    }
+
     return queryBuilder.getMany().catch((error: any) => {
-      const errorMsg = repositoryError('ExperimentAuditLogRepository', 'paginatedFind', { limit, offset }, error);
+      const errorMsg = repositoryError(
+        'ExperimentAuditLogRepository',
+        'paginatedFind',
+        { limit, offset, filter, experimentId },
+        error
+      );
       throw errorMsg;
     });
   }
 
-  public getTotalLogs(filter: LOG_TYPE): Promise<number> {
-    return this.createQueryBuilder('audit')
-      .where('audit.type = :filter', { filter })
-      .getCount()
-      .catch((error: any) => {
-        const errorMsg = repositoryError('ExperimentAuditLogRepository', 'paginatedFind', { filter }, error);
-        throw errorMsg;
-      });
+  public getTotalLogs(filter: LOG_TYPE, experimentId?: string): Promise<number> {
+    let queryBuilder = this.createQueryBuilder('audit');
+
+    if (filter) {
+      queryBuilder = queryBuilder.where('audit.type = :filter', { filter });
+    }
+
+    if (experimentId) {
+      const experimentIdCondition = "(audit.data->>'experimentId' = :experimentId)";
+      queryBuilder = filter
+        ? queryBuilder.andWhere(experimentIdCondition, { experimentId })
+        : queryBuilder.where(experimentIdCondition, { experimentId });
+    }
+
+    return queryBuilder.getCount().catch((error: any) => {
+      const errorMsg = repositoryError('ExperimentAuditLogRepository', 'getTotalLogs', { filter, experimentId }, error);
+      throw errorMsg;
+    });
   }
 
   public async saveRawJson(

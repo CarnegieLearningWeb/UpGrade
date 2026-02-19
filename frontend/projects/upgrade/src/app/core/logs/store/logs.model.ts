@@ -18,6 +18,7 @@ export interface AuditLogParams {
   skip: number;
   take: number;
   filter?: LOG_TYPE;
+  experimentId?: string;
 }
 
 export interface ErrorLogParams {
@@ -47,6 +48,14 @@ export interface ErrorLogs {
   name: string;
 }
 
+export interface ExperimentLogsMetadata {
+  logs: AuditLogs[];
+  skip: number;
+  total: number;
+  isLoading: boolean;
+  filter: LOG_TYPE | null;
+}
+
 export interface LogState extends EntityState<AuditLogs | ErrorLogs> {
   isAuditLogLoading: boolean;
   isErrorLogLoading: boolean;
@@ -56,6 +65,7 @@ export interface LogState extends EntityState<AuditLogs | ErrorLogs> {
   totalErrorLogs: number;
   auditLogFilter: LOG_TYPE;
   errorLogFilter: SERVER_ERROR;
+  experimentLogs: Record<string, ExperimentLogsMetadata>;
 }
 
 export interface State extends AppState {

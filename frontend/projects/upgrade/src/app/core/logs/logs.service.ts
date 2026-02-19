@@ -11,6 +11,9 @@ import {
   selectTotalAuditLogs,
   selectTotalErrorLogs,
   selectSkipErrorLog,
+  selectExperimentLogsFiltered,
+  selectIsExperimentLogsLoading,
+  selectIsAllExperimentLogsFetched,
 } from './store/logs.selectors';
 import { combineLatest } from 'rxjs';
 import { selectAllExperiment } from '../experiments/store/experiments.selectors';
@@ -103,6 +106,10 @@ export class LogsService {
     this.store$.dispatch(logsActions.actionGetAuditLogs({ fromStart }));
   }
 
+  fetchAuditLogsForExperiment(experimentId: string, fromStart?: boolean) {
+    this.store$.dispatch(logsActions.actionGetAuditLogsForExperiment({ experimentId, fromStart }));
+  }
+
   fetchErrorLogs(fromStart?: boolean) {
     this.store$.dispatch(logsActions.actionGetErrorLogs({ fromStart }));
   }
@@ -113,5 +120,66 @@ export class LogsService {
 
   setErrorLogFilter(filterType: SERVER_ERROR) {
     this.store$.dispatch(logsActions.actionSetErrorLogFilter({ filterType }));
+  }
+
+  // Experiment-specific log methods
+  getExperimentLogs(experimentId: string) {
+    return combineLatest([
+      this.store$.pipe(select(selectExperimentLogsFiltered, { experimentId })),
+      this.store$.pipe(select(selectAllExperiment)),
+      this.store$.pipe(select(selectAllFeatureFlags)),
+    ]).pipe(
+      map(([auditLogs, experiments, featureFlags]) =>
+        auditLogs.map((log: AuditLogs) => {
+          const clonedLog = { ...log };
+
+          if (log.data.experimentId && this.isExperimentType(log.type)) {
+            const result = experiments.find((experiment) => experiment.id === log.data.experimentId);
+            clonedLog.data = result
+              ? {
+                  ...log.data,
+                  isExperimentExist: true,
+                }
+              : { ...log.data, isExperimentExist: false };
+          } else if (!log.data.experimentId || this.isExperimentLogTypeWithoutId(log.type)) {
+            clonedLog.data = { ...log.data, isExperimentExist: false };
+          }
+
+          if (log.data.flagId && this.isFeatureFlagType(log.type)) {
+            const result = featureFlags.find((featureFlag) => featureFlag.id === log.data.flagId);
+            clonedLog.data = result
+              ? {
+                  ...log.data,
+                  isFlagExist: true,
+                }
+              : { ...log.data, isFlagExist: false };
+          } else if (!log.data.flagId && this.isFeatureFlagLogTypeWithoutId(log.type)) {
+            clonedLog.data = { ...log.data, isFlagExist: false };
+          }
+
+          return clonedLog;
+        })
+      )
+    );
+  }
+
+  getExperimentLogsLoadingState(experimentId: string) {
+    return this.store$.pipe(select(selectIsExperimentLogsLoading, { experimentId }));
+  }
+
+  isAllExperimentLogsFetched(experimentId: string) {
+    return this.store$.pipe(select(selectIsAllExperimentLogsFetched, { experimentId }));
+  }
+
+  fetchExperimentLogs(experimentId: string, fromStart?: boolean) {
+    this.store$.dispatch(logsActions.actionGetExperimentLogs({ experimentId, fromStart }));
+  }
+
+  setExperimentLogFilter(experimentId: string, filterType: LOG_TYPE) {
+    this.store$.dispatch(logsActions.actionSetExperimentLogFilter({ experimentId, filterType }));
+  }
+
+  clearExperimentLogs(experimentId: string) {
+    this.store$.dispatch(logsActions.actionClearExperimentLogs({ experimentId }));
   }
 }
