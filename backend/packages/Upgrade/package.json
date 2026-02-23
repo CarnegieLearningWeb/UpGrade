@@ -56,11 +56,11 @@
         "typeorm-seeding": "^1.6.1"
     },
     "dependencies": {
-        "@aws-sdk/client-s3": "^3.633.0",
-        "@aws-sdk/client-ses": "^3.632.0",
-        "@aws-sdk/client-sfn": "^3.632.0",
+        "@aws-sdk/client-s3": "^3.995.0",
+        "@aws-sdk/client-ses": "^3.995.0",
+        "@aws-sdk/client-sfn": "^3.995.0",
         "@aws-sdk/lib-storage": "^3.485.0",
-        "@aws-sdk/s3-request-presigner": "^3.485.0",
+        "@aws-sdk/s3-request-presigner": "^3.995.0",
         "@golevelup/ts-jest": "^0.4.0",
         "@nestjs/common": "^11.0.16",
         "@nestjs/testing": "^11.0.16",
