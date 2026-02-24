@@ -10,7 +10,6 @@ import {
 import Assignment from '../Assignment/Assignment';
 import ApiService from '../ApiService/ApiService';
 import { DataService } from '../DataService/DataService';
-import { v4 as uuidv4 } from 'uuid';
 
 declare const API_VERSION: string;
 
@@ -121,7 +120,7 @@ export default class UpgradeClient {
       userId: userId,
       hostURL: hostUrl,
       context: context,
-      clientSessionId: options?.clientSessionId || uuidv4(),
+      clientSessionId: options?.clientSessionId || crypto.randomUUID(),
       token: options?.token,
       httpClient: options?.httpClient,
       featureFlagUserGroupsForSession: options?.featureFlagUserGroupsForSession ?? null,
