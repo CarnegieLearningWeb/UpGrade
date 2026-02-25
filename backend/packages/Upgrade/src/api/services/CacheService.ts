@@ -17,7 +17,7 @@ export class CacheService {
 
   private async initializeMemoryCache() {
     this.memoryCache = await caching('memory', {
-      max: 100,
+      max: 500,
       ttl: this.ttl * 1000 /*milliseconds*/,
     });
   }
