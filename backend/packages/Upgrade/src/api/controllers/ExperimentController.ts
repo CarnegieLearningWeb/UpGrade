@@ -38,6 +38,7 @@ import { SegmentInputValidator } from '../controllers/validators/SegmentInputVal
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { IdValidator } from '../controllers/validators/ExperimentUserValidator';
 import { Segment } from '../models/Segment';
+import { CacheService } from '../services/CacheService';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
@@ -656,7 +657,8 @@ export class ExperimentController {
     public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService,
     public moocletExperimentService: MoocletExperimentService,
-    public importExportService: ImportExportService
+    public importExportService: ImportExportService,
+    public cacheService: CacheService
   ) {}
 
   /**
@@ -689,6 +691,49 @@ export class ExperimentController {
   @Get('/names')
   public findName(@Req() request: AppRequest): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
     return this.experimentService.findAllName(request.logger);
+  }
+
+  // Add this temporary debugging endpoint
+  @Get('/cache')
+  async debugCache(): Promise<any> {
+    const prefixes = {
+      experiments: 'validExperiments-',
+      segments: 'segments-',
+      marks: 'markExperiments-',
+      featureFlags: 'featureFlags-',
+    };
+
+    // Get all keys from cache
+    const allKeys = (await (this.cacheService as any).memoryCache?.store?.keys()) || [];
+
+    // Build summary for each prefix
+    const summary = {};
+
+    for (const [name, prefix] of Object.entries(prefixes)) {
+      const keys = allKeys.filter((key: string) => key.startsWith(prefix));
+      const data = await Promise.all(
+        keys.map(async (key: string) => {
+          const cachedData = await this.cacheService.getCache(key);
+          return {
+            key,
+            data: cachedData,
+          };
+        })
+      );
+
+      summary[name] = {
+        prefix,
+        count: keys.length,
+        keys,
+        data,
+      };
+    }
+
+    return {
+      totalKeysInCache: allKeys.length,
+      allKeys,
+      summary,
+    };
   }
 
   /**

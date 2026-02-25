@@ -55,12 +55,17 @@ export class CacheService {
   public async wrapFunction<T>(prefix: CACHE_PREFIX, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
     const keysWithPrefix = keys.map((key) => prefix + key);
     const cachedData = this.memoryCache ? await this.memoryCache.store.mget(...keysWithPrefix) : [];
-
+    console.log(`[cache] Cache check for ${keys.length} keys:`);
+    cachedData.forEach((cached, i) => {
+      console.log(`[cache] ${keys[i]}: ${cached ? '✓ HIT' : '✗ MISS'}`);
+    });
     const allCachedFound = cachedData.every((cached) => !!cached);
     if (allCachedFound && env.caching.enabled) {
+      console.log('[cache] ✓ All cached - returning from cache');
       return cachedData as T[];
     }
 
+    console.log('[cache] ✗ Some missing - re-fetching ALL');
     const data = await functionToCall();
 
     // creata an array of array containing key and data and then set it in cache

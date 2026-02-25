@@ -148,7 +148,10 @@ export class SegmentService {
   }
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
+    console.log(`[cache] Requesting ${ids.length} segments:`, ids);
     return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
+      console.log(`[cache] ❌ CACHE MISS - Re-fetching ALL ${ids.length} segments from database`);
+
       if (!ids.length) {
         return [];
       }
