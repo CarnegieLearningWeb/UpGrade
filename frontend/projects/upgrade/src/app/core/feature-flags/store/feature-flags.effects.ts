@@ -8,16 +8,7 @@ import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState, NotificationService } from '../../core.module';
 import { TranslateService } from '@ngx-translate/core';
-import {
-  selectTotalFlags,
-  selectSearchKey,
-  selectSkipFlags,
-  selectSortKey,
-  selectSortAs,
-  selectSearchString,
-  selectIsAllFlagsFetched,
-  selectFeatureFlagPaginationParams,
-} from './feature-flags.selectors';
+import { selectSearchString, selectFeatureFlagPaginationParams } from './feature-flags.selectors';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
 import { of } from 'rxjs';

@@ -20,7 +20,6 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingUpsertPrivateSegmentList: false,
   hasInitialFeatureFlagsDataLoaded: false,
   duplicateKeyFound: false,
-  activeDetailsTabIndex: 0,
   skipFlags: 0,
   totalFlags: null,
   searchKey: FLAG_SEARCH_KEY.ALL,
@@ -129,10 +128,6 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchValue: searchString })),
   on(FeatureFlagsActions.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
   on(FeatureFlagsActions.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
-  on(FeatureFlagsActions.actionSetActiveDetailsTabIndex, (state, { activeDetailsTabIndex }) => ({
-    ...state,
-    activeDetailsTabIndex,
-  })),
 
   // Feature Flag Inclusion List Add Actions
   on(FeatureFlagsActions.actionAddFeatureFlagInclusionList, (state) => ({

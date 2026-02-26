@@ -144,11 +144,6 @@ export const actionSetSortingType = createAction(
   props<{ sortingType: SORT_AS_DIRECTION }>()
 );
 
-export const actionSetActiveDetailsTabIndex = createAction(
-  '[Feature Flags] Set Active Details Tab Index',
-  props<{ activeDetailsTabIndex: number }>()
-);
-
 export const actionUpdateFeatureFlagStatus = createAction(
   '[Feature Flags] Update Feature Flag Status',
   props<{ updateFeatureFlagStatusRequest: UpdateFeatureFlagStatusRequest }>()

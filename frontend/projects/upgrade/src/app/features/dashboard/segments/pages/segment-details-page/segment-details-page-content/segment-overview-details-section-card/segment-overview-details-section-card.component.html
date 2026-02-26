@@ -31,7 +31,7 @@
   <!-- footer -->
   <app-common-tabbed-section-card-footer
     footer
-    [tabLabels]="tabLabels$ | async"
+    [tabLabels]="(tabLabels$ | async) || []"
     (selectedTabChange)="onSelectedTabChange($event)"
   ></app-common-tabbed-section-card-footer>
 </app-common-section-card>
