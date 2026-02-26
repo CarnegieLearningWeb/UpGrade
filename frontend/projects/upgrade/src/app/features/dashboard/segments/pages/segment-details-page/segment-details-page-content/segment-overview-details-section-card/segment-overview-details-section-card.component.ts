@@ -5,11 +5,11 @@ import {
   CommonSectionCardTitleHeaderComponent,
   CommonSectionCardOverviewDetailsComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
+import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../shared-standalone-component-lib/components/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
 import { Segment, SEGMENT_DETAILS_PAGE_ACTIONS } from '../../../../../../../core/segments/store/segments.model';
 import { SEGMENT_STATUS, SEGMENT_SEARCH_KEY, IMenuButtonItem, SEGMENT_TYPE } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { SegmentOverviewDetailsFooterComponent } from './segment-overview-details-footer/segment-overview-details-footer.component';
 import { Router } from '@angular/router';
 import { combineLatest, map, Observable, Subscription } from 'rxjs';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
@@ -25,7 +25,7 @@ import { SegmentsService } from '../../../../../../../core/segments/segments.ser
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
     CommonSectionCardOverviewDetailsComponent,
-    SegmentOverviewDetailsFooterComponent,
+    CommonTabbedSectionCardFooterComponent,
     TranslateModule,
   ],
   templateUrl: './segment-overview-details-section-card.component.html',
@@ -37,6 +37,17 @@ export class SegmentOverviewDetailsSectionCardComponent implements OnInit, OnDes
   @Output() tabChange = new EventEmitter<number>();
   permissions$: Observable<UserPermission> = this.authService.userPermissions$;
   segment$ = this.segmentsService.selectedSegment$;
+  tabLabels$: Observable<{ label: string; disabled?: boolean }[]> = this.segment$.pipe(
+    map((segment) => {
+      if (segment?.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+        return [{ label: 'Exclude Lists', disabled: false }];
+      }
+      return [
+        { label: 'Lists', disabled: false },
+        { label: 'Used By', disabled: false },
+      ];
+    })
+  );
   segmentAndPermissions$: Observable<{ segment: Segment; permissions: UserPermission }> = combineLatest([
     this.segment$,
     this.permissions$,

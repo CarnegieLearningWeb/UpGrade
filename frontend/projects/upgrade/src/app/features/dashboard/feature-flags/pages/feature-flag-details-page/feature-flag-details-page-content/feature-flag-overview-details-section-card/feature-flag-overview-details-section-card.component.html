@@ -32,5 +32,9 @@
   </ng-container>
 
   <!-- footer -->
-  <app-feature-flag-overview-details-footer footer></app-feature-flag-overview-details-footer>
+  <app-common-tabbed-section-card-footer
+    footer
+    [tabLabels]="tabLabels"
+    (selectedTabChange)="onSelectedTabChange($event)"
+  ></app-common-tabbed-section-card-footer>
 </app-common-section-card>

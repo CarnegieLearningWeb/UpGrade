@@ -6,7 +6,7 @@ import {
   CommonSectionCardOverviewDetailsComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { ActionButton } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-action-buttons/common-section-card-action-buttons.component';
-import { ExperimentOverviewDetailsFooterComponent } from './experiment-overview-details-footer/experiment-overview-details-footer.component';
+import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../shared-standalone-component-lib/components/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IMenuButtonItem, EXPERIMENT_SEARCH_KEY } from 'upgrade_types';
@@ -36,7 +36,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
     CommonSectionCardOverviewDetailsComponent,
-    ExperimentOverviewDetailsFooterComponent,
+    CommonTabbedSectionCardFooterComponent,
     TranslateModule,
     MatTooltipModule,
   ],
@@ -57,6 +57,10 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   subscriptions = new Subscription();
   emailId = '';
   bullettedListKeys = [EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS];
+  tabLabels = [
+    { label: 'Design', disabled: false },
+    { label: 'Data', disabled: false },
+  ];
 
   // Action buttons - maps ExperimentActionButton[] to ActionButton[]
   // Only shown when user has update permission

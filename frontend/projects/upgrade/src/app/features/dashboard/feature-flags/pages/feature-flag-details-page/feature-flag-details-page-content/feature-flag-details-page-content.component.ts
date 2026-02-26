@@ -30,7 +30,7 @@ import { filter, map, startWith } from 'rxjs/operators';
 })
 export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy {
   isSectionCardExpanded = true;
-  activeTabIndex$ = this.featureFlagsService.activeDetailsTabIndex$;
+  activeTabIndex = 0;
   featureFlag$: Observable<FeatureFlag>;
 
   featureFlagIdSub: Subscription;
@@ -69,6 +69,10 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
 
   onSectionCardExpandChange(expanded: boolean) {
     this.isSectionCardExpanded = expanded;
+  }
+
+  onTabChange(tabIndex: number): void {
+    this.activeTabIndex = tabIndex;
   }
 
   ngOnDestroy() {

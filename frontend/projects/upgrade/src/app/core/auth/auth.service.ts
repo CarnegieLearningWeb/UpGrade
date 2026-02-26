@@ -65,7 +65,7 @@ export class AuthService {
     } else {
       originalDestinationUrl = this.environment.useHashRouting
         ? this.DOMref.location.hash.substring(1) || 'home'
-        : this.DOMref.location.pathname;
+        : this.DOMref.location.pathname + this.DOMref.location.search;
     }
 
     this.setRedirectionUrl(originalDestinationUrl);

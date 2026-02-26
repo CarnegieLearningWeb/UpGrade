@@ -5,12 +5,13 @@
         [data]="featureFlag"
         [isSectionCardExpanded]="isSectionCardExpanded"
         (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+        (tabChange)="onTabChange($event)"
         section-card
       ></app-feature-flag-overview-details-section-card>
       <app-feature-flag-inclusions-section-card
         [data]="featureFlag"
         [isSectionCardExpanded]="isSectionCardExpanded"
-        *ngIf="(activeTabIndex$ | async) === 0"
+        *ngIf="activeTabIndex === 0"
         section-card
       >
         inclusions-card
@@ -18,7 +19,7 @@
       <app-feature-flag-exclusions-section-card
         [data]="featureFlag"
         [isSectionCardExpanded]="isSectionCardExpanded"
-        *ngIf="(activeTabIndex$ | async) === 0"
+        *ngIf="activeTabIndex === 0"
         section-card
       >
         exclusions-card
@@ -26,7 +27,7 @@
       <app-feature-flag-exposures-section-card
         [data]="featureFlag"
         [isSectionCardExpanded]="isSectionCardExpanded"
-        *ngIf="(activeTabIndex$ | async) === 1"
+        *ngIf="activeTabIndex === 1"
         section-card
       >
         exposures-card
