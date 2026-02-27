@@ -68,16 +68,16 @@ export class LogsEffects {
       map(([action, experimentLogsState]) => ({
         experimentId: action.experimentId,
         fromStart: action.fromStart || false,
-        metadata: experimentLogsState[action.experimentId],
+        existingLogs: experimentLogsState[action.experimentId],
       })),
-      filter(({ metadata, fromStart }) => {
+      filter(({ existingLogs, fromStart }) => {
         if (fromStart) return true;
-        if (!metadata || metadata.total === null) return true;
-        return metadata.skip < metadata.total;
+        if (!existingLogs || existingLogs.total === null) return true;
+        return existingLogs.skip < existingLogs.total;
       }),
-      mergeMap(({ experimentId, fromStart, metadata }) => {
-        const skip = fromStart ? 0 : metadata?.skip || 0;
-        const filter = metadata?.filter || null;
+      mergeMap(({ experimentId, fromStart, existingLogs: existingLogs }) => {
+        const skip = fromStart ? 0 : existingLogs?.skip || 0;
+        const filter = existingLogs?.filter || null;
 
         let params: AuditLogParams = {
           skip,

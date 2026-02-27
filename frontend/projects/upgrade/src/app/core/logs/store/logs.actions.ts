@@ -66,8 +66,3 @@ export const actionSetExperimentLogFilter = createAction(
   '[Logs] Set Experiment Log Filter',
   props<{ experimentId: string; filterType: LOG_TYPE }>()
 );
-
-export const actionClearExperimentLogs = createAction(
-  '[Logs] Clear Experiment Logs',
-  props<{ experimentId: string }>()
-);

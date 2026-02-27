@@ -125,11 +125,6 @@ const reducer = createReducer(
         },
       },
     };
-  }),
-  on(logsActions.actionClearExperimentLogs, (state, { experimentId }) => {
-    const experimentLogs = { ...state.experimentLogs };
-    delete experimentLogs[experimentId];
-    return { ...state, experimentLogs };
   })
 );
 

@@ -1,10 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 /**
@@ -44,6 +53,7 @@ export interface FilterOption {
   value: string;
   type?: string;
   valueOptions?: string[];
+  group?: string;
 }
 
 @Component({
@@ -55,17 +65,27 @@ export interface FilterOption {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatOptionModule,
     MatIconModule,
     FormsModule,
     TranslateModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommonSectionCardSearchHeaderComponent {
-  @Input() filterOptions: FilterOption[];
+export class CommonSectionCardSearchHeaderComponent implements OnChanges {
+  @Input() filterOptions: FilterOption[] = [];
   @Input() searchString: string;
   @Input() searchKey: string;
   @Output() search = new EventEmitter<CommonSearchWidgetSearchParams<string>>();
+
+  standaloneOptions: FilterOption[] = [];
+  groupedOptions: { groupName: string; options: FilterOption[] }[] = [];
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['filterOptions']) {
+      this.buidOptions();
+    }
+  }
 
   onSearch(): void {
     this.search.emit({
@@ -84,5 +104,27 @@ export class CommonSectionCardSearchHeaderComponent {
 
   get isDropdown(): boolean {
     return this.filterOptions.find((option) => option.value === this.searchKey)?.type === 'dropdown';
+  }
+
+  private buidOptions(): void {
+    // Cache standalone options
+    this.standaloneOptions = this.filterOptions.filter((option) => !option.group && option.type !== 'group');
+
+    // Cache grouped options
+    const groups = new Map<string, FilterOption[]>();
+
+    this.filterOptions.forEach((option) => {
+      if (option.group) {
+        if (!groups.has(option.group)) {
+          groups.set(option.group, []);
+        }
+        const groupOptions = groups.get(option.group);
+        if (groupOptions) {
+          groupOptions.push(option);
+        }
+      }
+    });
+
+    this.groupedOptions = Array.from(groups.entries()).map(([groupName, options]) => ({ groupName, options }));
   }
 }

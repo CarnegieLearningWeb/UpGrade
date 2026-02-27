@@ -34,6 +34,12 @@ export interface AuditLogs {
   versionNumber: number;
   type: LOG_TYPE;
   data: any;
+  user?: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    imageUrl?: string;
+  };
 }
 
 export interface ErrorLogs {

@@ -1,8 +1,15 @@
 <app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
-  <!-- header-left -->
-  <app-common-section-card-title-header header-left [title]="'Experiment Logs'"></app-common-section-card-title-header>
+  <!-- Search Widget -->
+  <app-common-section-card-search-header
+    header-left
+    [filterOptions]="(filterOptions$ | async) || []"
+    [searchString]="(searchString$ | async) || ''"
+    [searchKey]="(searchKey$ | async) || 'All'"
+    (search)="onSearch($event)"
+  >
+  </app-common-section-card-search-header>
 
-  <!-- header-right -->
+  <!-- Action Buttons -->
   <app-common-section-card-action-buttons
     header-right
     [showPrimaryButton]="false"
@@ -11,10 +18,34 @@
   >
   </app-common-section-card-action-buttons>
 
-  <!-- content -->
+  <!-- Timeline Content -->
   <ng-container content *ngIf="isSectionCardExpanded">
-    <div class="table-container">
-      <app-experiment-log-section-card-table [experimentId]="experiment.id"></app-experiment-log-section-card-table>
+    <div class="logs-container" scroll (scrolled)="fetchLogsOnScroll()">
+      <!-- Loading State -->
+      <div *ngIf="isLoading$ | async" class="loading-spinner">
+        <mat-spinner diameter="50"></mat-spinner>
+      </div>
+
+      <!-- Grouped Logs Timeline -->
+      <ng-container *ngIf="timelineDataSource$ | async as logs">
+        <div *ngFor="let date of logs.dates" class="timeline-section">
+          <!-- Date on the left -->
+          <div class="date-column">
+            <span class="date-info">{{ date | logDateFormat : LogDateFormatType.DATE_MONTH }}</span>
+            <span class="day-info">{{ date | logDateFormat : LogDateFormatType.YEAR_DAY }}</span>
+          </div>
+
+          <!-- Timeline on the right -->
+          <div class="timeline-column">
+            <app-experiment-logs-timeline [logData]="logs.dateGroups[date]"> </app-experiment-logs-timeline>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Empty State, should be impossible! -->
+      <div *ngIf="(experimentLogs$ | async)?.length === 0 && !(isLoading$ | async)" class="empty-state">
+        <p>No logs found</p>
+      </div>
     </div>
   </ng-container>
 </app-common-section-card>

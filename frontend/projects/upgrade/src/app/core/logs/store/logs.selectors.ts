@@ -49,13 +49,6 @@ export const selectExperimentLogsMetadata = createSelector(
 
 export const selectExperimentLogs = createSelector(selectExperimentLogsMetadata, (metadata) => metadata?.logs || []);
 
-export const selectExperimentLogsFiltered = createSelector(selectExperimentLogsMetadata, (metadata) => {
-  if (!metadata) return [];
-  const { logs, filter } = metadata;
-  if (!filter) return logs;
-  return logs.filter((log) => log.type === filter);
-});
-
 export const selectIsExperimentLogsLoading = createSelector(
   selectExperimentLogsMetadata,
   (metadata) => metadata?.isLoading || false
