@@ -4,11 +4,6 @@ import { SERVER_ERROR, LOG_TYPE } from 'upgrade_types';
 
 export const actionGetAuditLogs = createAction('[Logs] Get Audit Logs', props<{ fromStart?: boolean }>());
 
-export const actionGetAuditLogsForExperiment = createAction(
-  '[Logs] Get Audit Logs For Experiment',
-  props<{ experimentId: string; fromStart?: boolean }>()
-);
-
 export const actionGetAuditLogsSuccess = createAction(
   '[Logs] Get Audit Logs Success',
   props<{ auditLogs: AuditLogs[]; totalAuditLogs: number }>()

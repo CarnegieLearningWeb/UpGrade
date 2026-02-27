@@ -27,9 +27,9 @@ import Convert from 'ansi-to-html';
     MatExpansionModule,
     MatTooltipModule,
     TranslateModule,
+    ExperimentLogDiffDisplayComponent,
     ExperimentLogMessagePipe,
     ListOperationMessagePipe,
-    ExperimentLogDiffDisplayComponent,
   ],
 })
 export class ExperimentLogsTimelineComponent {
@@ -45,65 +45,29 @@ export class ExperimentLogsTimelineComponent {
     return EXPERIMENT_LIST_OPERATION;
   }
 
-  /**
-   * Get formatted action message for a log entry
-   */
-  getActionMessage(log: AuditLogs): string {
-    const baseMessage = this.getTranslatedMessage(log.type);
+  logTypeMessageMap = {
+    [LOG_TYPE.EXPERIMENT_CREATED]: 'logs.audit-log-experiment-created.text',
+    [LOG_TYPE.EXPERIMENT_DELETED]: 'logs.audit-log-experiment-deleted.text',
+    [LOG_TYPE.EXPERIMENT_STATE_CHANGED]: 'logs.audit-log-experiment-state-changed.text',
+    [LOG_TYPE.EXPERIMENT_UPDATED]: 'logs.audit-log-experiment-updated.text',
+    [LOG_TYPE.EXPERIMENT_DATA_EXPORTED]: 'logs.audit-log-experiment-data-exported.text',
+    [LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED]: 'logs.audit-log-experiment-design-exported.text',
+    [LOG_TYPE.FEATURE_FLAG_CREATED]: 'logs.audit-log-feature-flag-created.text',
+    [LOG_TYPE.FEATURE_FLAG_DELETED]: 'logs.audit-log-feature-flag-deleted.text',
+    [LOG_TYPE.FEATURE_FLAG_STATUS_CHANGED]: 'logs.audit-log-feature-flag-state-changed.text',
+    [LOG_TYPE.FEATURE_FLAG_UPDATED]: 'logs.audit-log-feature-flag-updated.text',
+    [LOG_TYPE.FEATURE_FLAG_DATA_EXPORTED]: 'logs.audit-log-feature-flag-data-exported.text',
+    [LOG_TYPE.FEATURE_FLAG_DESIGN_EXPORTED]: 'logs.audit-log-feature-flag-design-exported.text',
+  };
 
-    if (log.type === LOG_TYPE.EXPERIMENT_UPDATED && log.data?.list) {
-      const listOperation = this.getTranslatedListOperation(log.data.list.operation);
-      const filterType = log.data.list.filterType === 'inclusion' ? 'include' : 'exclude';
-      return `${baseMessage} - ${listOperation} (${filterType}: ${log.data.list.listName})`;
-    }
+  listOperationMessageMap = {
+    [EXPERIMENT_LIST_OPERATION.CREATED]: 'logs.audit-log-list-created.text',
+    [EXPERIMENT_LIST_OPERATION.DELETED]: 'logs.audit-log-list-deleted.text',
+    [EXPERIMENT_LIST_OPERATION.UPDATED]: 'logs.audit-log-list-updated.text',
+  };
 
-    if (log.type === LOG_TYPE.EXPERIMENT_STATE_CHANGED) {
-      const previousState = log.data?.previousState || '';
-      const newState = log.data?.newState || '';
-      return `${baseMessage} from ${previousState} to ${newState}`;
-    }
-
-    return baseMessage;
-  }
-
-  /**
-   * Check if log has a diff to display
-   */
   hasDiff(log: AuditLogs): boolean {
     return !!(log.data?.diff || log.data?.list?.diff);
-  }
-
-  private getTranslatedMessage(logType: LOG_TYPE): string {
-    // These will be translated by the pipe in the template
-    switch (logType) {
-      case LOG_TYPE.EXPERIMENT_CREATED:
-        return 'Created experiment';
-      case LOG_TYPE.EXPERIMENT_DELETED:
-        return 'Deleted experiment';
-      case LOG_TYPE.EXPERIMENT_STATE_CHANGED:
-        return 'Changed state';
-      case LOG_TYPE.EXPERIMENT_UPDATED:
-        return 'Updated experiment';
-      case LOG_TYPE.EXPERIMENT_DATA_EXPORTED:
-        return 'Exported experiment data';
-      case LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED:
-        return 'Exported experiment design';
-      default:
-        return logType;
-    }
-  }
-
-  private getTranslatedListOperation(operation: EXPERIMENT_LIST_OPERATION): string {
-    switch (operation) {
-      case EXPERIMENT_LIST_OPERATION.CREATED:
-        return 'Created list';
-      case EXPERIMENT_LIST_OPERATION.DELETED:
-        return 'Deleted list';
-      case EXPERIMENT_LIST_OPERATION.UPDATED:
-        return 'Updated list';
-      default:
-        return operation;
-    }
   }
 
   getHtmlFormedLogData(id: string, diff) {

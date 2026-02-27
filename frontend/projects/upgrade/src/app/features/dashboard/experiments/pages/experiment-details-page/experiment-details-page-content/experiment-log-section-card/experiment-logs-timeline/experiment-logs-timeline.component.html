@@ -49,14 +49,21 @@
         <!-- Log Messages by Type -->
         <ng-container [ngSwitch]="log.type">
           <!-- Simple logs without diffs: DELETED, DATA_EXPORTED, DESIGN_EXPORTED -->
-          <span
-            *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED"
-            ||
-            ExperimentLogType.EXPERIMENT_DATA_EXPORTED
-            ||
-            ExperimentLogType.EXPERIMENT_DESIGN_EXPORTED
-            class="log-text"
-          >
+          <span *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED" class="log-text">
+            <span class="ft-16-600 action action-msg">
+              {{ log.type | experimentLogMessage | translate }}
+            </span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+          </span>
+
+          <span *ngSwitchCase="ExperimentLogType.EXPERIMENT_DATA_EXPORTED" class="log-text">
+            <span class="ft-16-600 action action-msg">
+              {{ log.type | experimentLogMessage | translate }}
+            </span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+          </span>
+
+          <span *ngSwitchCase="ExperimentLogType.EXPERIMENT_DESIGN_EXPORTED" class="log-text">
             <span class="ft-16-600 action action-msg">
               {{ log.type | experimentLogMessage | translate }}
             </span>
@@ -111,8 +118,7 @@
                     {{ log.type | experimentLogMessage | translate }}
                     -
                     {{
-                      log.data.list.operation
-                        | listOperationMessage
+                      listOperationMessageMap[log.data.list.operation]
                         | translate
                           : {
                               listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
@@ -130,17 +136,10 @@
                       <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                         <mat-panel-title>
                           <span class="ft-16-600 action-msg">
-                            {{ log.type | experimentActionMessage | translate }}
-                            <a
-                              class="link"
-                              *ngIf="log.data.isExperimentExist; else experimentNotExist"
-                              [routerLink]="['/home', 'detail', log.data.experimentId]"
-                              >{{ log.data.experimentName }}</a
-                            >
+                            {{ logTypeMessageMap[log.type] | translate }}
                             -
                             {{
-                              log.data.list.operation
-                                | listOperationsMessage
+                              listOperationMessageMap[log.data.list.operation]
                                 | translate
                                   : {
                                       listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
@@ -174,7 +173,7 @@
                 [logData]="log.data"
                 [logType]="log.type"
                 [createdAt]="log.createdAt"
-                [actionMessage]="log.type | experimentLogMessage | translate"
+                [actionMessage]="logTypeMessageMap[log.type] | translate"
               ></app-experiment-log-diff-display>
             </ng-template>
           </div>

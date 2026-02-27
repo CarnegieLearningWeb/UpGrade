@@ -57,7 +57,7 @@ export interface ErrorLogs {
 export interface ExperimentLogsMetadata {
   logs: AuditLogs[];
   skip: number;
-  total: number;
+  total: number | null;
   isLoading: boolean;
   filter: LOG_TYPE | null;
 }

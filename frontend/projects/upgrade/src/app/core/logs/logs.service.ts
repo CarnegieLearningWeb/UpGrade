@@ -106,10 +106,6 @@ export class LogsService {
     this.store$.dispatch(logsActions.actionGetAuditLogs({ fromStart }));
   }
 
-  fetchAuditLogsForExperiment(experimentId: string, fromStart?: boolean) {
-    this.store$.dispatch(logsActions.actionGetAuditLogsForExperiment({ experimentId, fromStart }));
-  }
-
   fetchErrorLogs(fromStart?: boolean) {
     this.store$.dispatch(logsActions.actionGetErrorLogs({ fromStart }));
   }
@@ -122,7 +118,7 @@ export class LogsService {
     this.store$.dispatch(logsActions.actionSetErrorLogFilter({ filterType }));
   }
 
-  getExperimentLogsById(experimentId: string) {
+  fetchExperimentLogsById(experimentId: string) {
     return this.store$.pipe(select(selectExperimentLogs, { experimentId }));
   }
 

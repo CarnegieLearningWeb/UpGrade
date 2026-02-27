@@ -87,7 +87,7 @@ export class ExperimentLogSectionCardComponent implements OnInit, OnDestroy {
     // Get raw logs observable
     this.experimentLogs$ = this.selectedExperiment$.pipe(
       filter((exp): exp is Experiment => !!exp),
-      switchMap((exp) => this.logsService.getExperimentLogsById(exp.id)),
+      switchMap((exp) => this.logsService.fetchExperimentLogsById(exp.id)),
       tap((logs) => {
         this.buildFilterOptions(logs);
       }),
