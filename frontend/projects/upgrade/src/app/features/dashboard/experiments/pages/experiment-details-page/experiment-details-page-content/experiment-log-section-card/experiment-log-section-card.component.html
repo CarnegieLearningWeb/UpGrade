@@ -20,32 +20,12 @@
 
   <!-- Timeline Content -->
   <ng-container content *ngIf="isSectionCardExpanded">
-    <div class="logs-container" scroll (scrolled)="fetchLogsOnScroll()">
-      <!-- Loading State -->
-      <div *ngIf="isLoading$ | async" class="loading-spinner">
-        <mat-spinner diameter="50"></mat-spinner>
-      </div>
-
-      <!-- Grouped Logs Timeline -->
-      <ng-container *ngIf="timelineDataSource$ | async as logs">
-        <div *ngFor="let date of logs.dates" class="timeline-section">
-          <!-- Date on the left -->
-          <div class="date-column">
-            <span class="date-info">{{ date | logDateFormat : LogDateFormatType.DATE_MONTH }}</span>
-            <span class="day-info">{{ date | logDateFormat : LogDateFormatType.YEAR_DAY }}</span>
-          </div>
-
-          <!-- Timeline on the right -->
-          <div class="timeline-column">
-            <app-experiment-logs-timeline [logData]="logs.dateGroups[date]"> </app-experiment-logs-timeline>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- Empty State, should be impossible! -->
-      <div *ngIf="(experimentLogs$ | async)?.length === 0 && !(isLoading$ | async)" class="empty-state">
-        <p>No logs found</p>
-      </div>
-    </div>
+    <app-experiment-logs-timeline
+      [groupedLogs]="timelineDataSource$ | async"
+      [isLoading]="isLoading$ | async"
+      [isEmpty]="(experimentLogs$ | async)?.length === 0"
+      (scrolledToBottom)="fetchLogsOnScroll()"
+    >
+    </app-experiment-logs-timeline>
   </ng-container>
 </app-common-section-card>

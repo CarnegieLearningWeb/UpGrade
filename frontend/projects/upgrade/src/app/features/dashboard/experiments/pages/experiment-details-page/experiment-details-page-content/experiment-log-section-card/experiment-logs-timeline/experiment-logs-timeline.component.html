@@ -1,108 +1,104 @@
-<div class="timeline">
-  <ng-container *ngFor="let log of logData; let index = index">
-    <div class="timeline-container">
-      <!-- User Icon -->
-      <app-shared-icons
-        *ngIf="isSystemUser(log.user)"
-        class="icon icon--black"
-        [iconType]="'dark-setting'"
-      ></app-shared-icons>
+<div class="logs-container" scroll (scrolled)="onScrolledToBottom()">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-spinner">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
 
-      <img
-        *ngIf="!isSystemUser(log.user) && hasUserImage(log.user)"
-        [src]="log.user.imageUrl"
-        class="icon"
-        [alt]="getUserFullName(log.user)"
-      />
+  <!-- Grouped Logs Timeline -->
+  <ng-container *ngIf="groupedLogs && groupedLogs.dates.length > 0">
+    <div *ngFor="let date of groupedLogs.dates" class="timeline-section">
+      <!-- Date Column -->
+      <div class="date-column">
+        <span class="date-info">{{ date | logDateFormatPipe : LogDateFormatType.DATE_MONTH }}</span>
+        <span class="day-info">{{ date | logDateFormatPipe : LogDateFormatType.YEAR_DAY }}</span>
+      </div>
 
-      <app-shared-icons
-        *ngIf="!isSystemUser(log.user) && !hasUserImage(log.user)"
-        class="icon icon--light-blue"
-        [iconType]="'user-1'"
-      ></app-shared-icons>
+      <!-- Timeline Column -->
+      <div class="timeline-column">
+        <div class="timeline">
+          <ng-container *ngFor="let log of groupedLogs.dateGroups[date]; let index = index">
+            <div class="timeline-container">
+              <!-- User Icon -->
+              <app-shared-icons
+                *ngIf="isSystemUser(log.user)"
+                class="icon icon--black"
+                [iconType]="'dark-setting'"
+              ></app-shared-icons>
 
-      <!-- Log Content -->
-      <div class="content">
-        <!-- User Name -->
-        <span class="ft-16-600 user-name">
-          <ng-container *ngIf="getUserFullName(log.user); else unknownUserTemplate">
-            <span *ngIf="!shouldTruncateUserName(log.user); else userNameEllipsis">
-              {{ getUserFullName(log.user) }}
-            </span>
-            <ng-template #userNameEllipsis>
-              <span [matTooltip]="getUserFullName(log.user)" matTooltipPosition="above">
-                {{ getUserFullName(log.user) | truncate : 30 }}
-              </span>
-            </ng-template>
-          </ng-container>
-          <ng-template #unknownUserTemplate>
-            <span class="unknown-user">Unknown User</span>
-          </ng-template>
-        </span>
+              <img
+                *ngIf="!isSystemUser(log.user) && hasUserImage(log.user)"
+                [src]="log.user.imageUrl"
+                class="icon"
+                [alt]="getUserFullName(log.user)"
+              />
 
-        <!-- Log Messages by Type -->
-        <!-- Simple logs without diffs: DELETED, DATA_EXPORTED, DESIGN_EXPORTED -->
-        <span *ngIf="isSimpleLogType(log.type)" class="log-text">
-          <span class="ft-16-600 action action-msg">
-            {{ logTypeMessageMap[log.type] | translate }}
-          </span>
-          <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-        </span>
+              <app-shared-icons
+                *ngIf="!isSystemUser(log.user) && !hasUserImage(log.user)"
+                class="icon icon--light-blue"
+                [iconType]="'user-1'"
+              ></app-shared-icons>
 
-        <!-- CREATED and STATE_CHANGED logs -->
-        <span *ngIf="isStateChangeOrCreated(log.type)" class="log-text">
-          <span class="ft-16-600 action action-msg">
-            <ng-container *ngIf="log.type === ExperimentLogType.EXPERIMENT_STATE_CHANGED">
-              {{
-                logTypeMessageMap[log.type]
-                  | translate
-                    : {
-                        previousState: log.data.previousState | titlecase,
-                        newState: log.data.newState | titlecase
-                      }
-              }}
-            </ng-container>
-            <ng-container *ngIf="log.type === ExperimentLogType.EXPERIMENT_CREATED">
-              {{ logTypeMessageMap[log.type] | translate }}
-            </ng-container>
-          </span>
-          <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-        </span>
+              <!-- Log Content -->
+              <div class="content">
+                <!-- User Name -->
+                <span class="ft-16-600 user-name">
+                  <ng-container *ngIf="getUserFullName(log.user); else unknownUserTemplate">
+                    <span *ngIf="!shouldTruncateUserName(log.user); else userNameEllipsis">
+                      {{ getUserFullName(log.user) }}
+                    </span>
+                    <ng-template #userNameEllipsis>
+                      <span [matTooltip]="getUserFullName(log.user)" matTooltipPosition="above">
+                        {{ getUserFullName(log.user) | truncate : 30 }}
+                      </span>
+                    </ng-template>
+                  </ng-container>
+                  <ng-template #unknownUserTemplate>
+                    <span class="unknown-user">Unknown User</span>
+                  </ng-template>
+                </span>
 
-        <!-- UPDATED logs with potential diffs -->
-        <div class="full-width" *ngIf="log.type === ExperimentLogType.EXPERIMENT_UPDATED">
-          <!-- List operation update -->
-          <ng-container *ngIf="log.data.list; else experimentPropertiesUpdated">
-            <!-- CREATED or DELETED list operations (no diff) -->
-            <div
-              class="log-text"
-              *ngIf="
-                log.data.list.operation === EXPERIMENT_LIST_OPERATION.CREATED ||
-                log.data.list.operation === EXPERIMENT_LIST_OPERATION.DELETED
-              "
-            >
-              <span class="ft-16-600 action action-msg">
-                {{ logTypeMessageMap[log.type] | translate }}
-                -
-                {{
-                  listOperationMessageMap[log.data.list.operation]
-                    | translate
-                      : {
-                          listTableType: getListTableType(log.data.list.filterType),
-                          listName: log.data.list.listName
-                        }
-                }}
-              </span>
-              <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-            </div>
+                <!-- Log Messages by Type -->
+                <!-- Simple logs without diffs: DELETED, DATA_EXPORTED, DESIGN_EXPORTED -->
+                <span *ngIf="isSimpleLogType(log.type)" class="log-text">
+                  <span class="ft-16-600 action action-msg">
+                    {{ logTypeMessageMap[log.type] | translate }}
+                  </span>
+                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+                </span>
 
-            <!-- UPDATED list operation (with diff) -->
-            <div class="log-text" *ngIf="log.data.list.operation === EXPERIMENT_LIST_OPERATION.UPDATED">
-              <mat-accordion class="accordion">
-                <mat-expansion-panel hideToggle="true">
-                  <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
-                    <mat-panel-title>
-                      <span class="ft-16-600 action-msg">
+                <!-- CREATED and STATE_CHANGED logs -->
+                <span *ngIf="isStateChangeOrCreated(log.type)" class="log-text">
+                  <span class="ft-16-600 action action-msg">
+                    <ng-container *ngIf="log.type === ExperimentLogType.EXPERIMENT_STATE_CHANGED">
+                      {{
+                        logTypeMessageMap[log.type]
+                          | translate
+                            : {
+                                previousState: log.data.previousState | titlecase,
+                                newState: log.data.newState | titlecase
+                              }
+                      }}
+                    </ng-container>
+                    <ng-container *ngIf="log.type === ExperimentLogType.EXPERIMENT_CREATED">
+                      {{ logTypeMessageMap[log.type] | translate }}
+                    </ng-container>
+                  </span>
+                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+                </span>
+
+                <!-- UPDATED logs with potential diffs -->
+                <div class="full-width" *ngIf="log.type === ExperimentLogType.EXPERIMENT_UPDATED">
+                  <!-- List operation update -->
+                  <ng-container *ngIf="log.data.list; else experimentPropertiesUpdated">
+                    <!-- CREATED or DELETED list operations (no diff) -->
+                    <div
+                      class="log-text"
+                      *ngIf="
+                        log.data.list.operation === EXPERIMENT_LIST_OPERATION.CREATED ||
+                        log.data.list.operation === EXPERIMENT_LIST_OPERATION.DELETED
+                      "
+                    >
+                      <span class="ft-16-600 action action-msg">
                         {{ logTypeMessageMap[log.type] | translate }}
                         -
                         {{
@@ -114,30 +110,60 @@
                                 }
                         }}
                       </span>
-                      <span
-                        class="ft-12-600 view-diff"
-                        [innerHTML]="'logs-global.log-view-diff.text' | translate"
-                      ></span>
-                    </mat-panel-title>
-                    <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-                  </mat-expansion-panel-header>
-                </mat-expansion-panel>
-              </mat-accordion>
+                      <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+                    </div>
+
+                    <!-- UPDATED list operation (with diff) -->
+                    <div class="log-text" *ngIf="log.data.list.operation === EXPERIMENT_LIST_OPERATION.UPDATED">
+                      <mat-accordion class="accordion">
+                        <mat-expansion-panel hideToggle="true">
+                          <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
+                            <mat-panel-title>
+                              <span class="ft-16-600 action-msg">
+                                {{ logTypeMessageMap[log.type] | translate }}
+                                -
+                                {{
+                                  listOperationMessageMap[log.data.list.operation]
+                                    | translate
+                                      : {
+                                          listTableType: getListTableType(log.data.list.filterType),
+                                          listName: log.data.list.listName
+                                        }
+                                }}
+                              </span>
+                              <span
+                                class="ft-12-600 view-diff"
+                                [innerHTML]="'logs-global.log-view-diff.text' | translate"
+                              ></span>
+                            </mat-panel-title>
+                            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+                          </mat-expansion-panel-header>
+                        </mat-expansion-panel>
+                      </mat-accordion>
+                    </div>
+                  </ng-container>
+
+                  <!-- General experiment properties updated (with diff) -->
+                  <ng-template #experimentPropertiesUpdated>
+                    <app-experiment-log-diff-display
+                      [logId]="log.id"
+                      [logData]="log.data"
+                      [logType]="log.type"
+                      [createdAt]="log.createdAt"
+                      [actionMessage]="logTypeMessageMap[log.type] | translate"
+                    ></app-experiment-log-diff-display>
+                  </ng-template>
+                </div>
+              </div>
             </div>
           </ng-container>
-
-          <!-- General experiment properties updated (with diff) -->
-          <ng-template #experimentPropertiesUpdated>
-            <app-experiment-log-diff-display
-              [logId]="log.id"
-              [logData]="log.data"
-              [logType]="log.type"
-              [createdAt]="log.createdAt"
-              [actionMessage]="logTypeMessageMap[log.type] | translate"
-            ></app-experiment-log-diff-display>
-          </ng-template>
         </div>
       </div>
     </div>
   </ng-container>
+
+  <!-- Empty State -->
+  <div *ngIf="isEmpty && !isLoading" class="empty-state">
+    <p>No logs found</p>
+  </div>
 </div>

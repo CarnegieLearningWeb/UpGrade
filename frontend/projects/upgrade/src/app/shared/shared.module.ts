@@ -37,6 +37,7 @@ import { TrimInputDirective } from './directives/trim-input.directive';
 import { TextOverflowTooltipDirective } from './directives/text-overflow-tooltip.directive';
 import { SegmentStatusPipe } from './pipes/segment-status.pipe';
 import { DeleteComponent } from './components/delete/delete.component';
+import { LogDateFormatPipe } from './pipes/logs-date-format.pipe';
 
 @NgModule({
   imports: [
@@ -78,6 +79,7 @@ import { DeleteComponent } from './components/delete/delete.component';
     TextOverflowTooltipDirective,
     DeleteComponent,
     SegmentStatusPipe,
+    LogDateFormatPipe,
   ],
   exports: [
     CommonModule,
@@ -112,6 +114,7 @@ import { DeleteComponent } from './components/delete/delete.component';
     SharedIconsComponent,
     TruncatePipe,
     ExperimentStatePipe,
+    LogDateFormatPipe,
     ScrollDirective,
     TrimInputDirective,
     TextOverflowTooltipDirective,

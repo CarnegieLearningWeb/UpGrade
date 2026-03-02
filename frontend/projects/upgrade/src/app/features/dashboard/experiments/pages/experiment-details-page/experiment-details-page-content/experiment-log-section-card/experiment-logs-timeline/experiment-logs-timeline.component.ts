@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -6,8 +6,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { LOG_TYPE, EXPERIMENT_LIST_OPERATION } from 'upgrade_types';
 import { ExperimentLogDiffDisplayComponent } from '../experiment-log-diff-display/experiment-log-diff-display.component';
-import { AuditLogs } from '../../../../../../../../core/logs/store/logs.model';
 import { User } from '../../../../../../../../core/users/store/users.model';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SharedModule } from '../../../../../../../../shared/shared.module';
+import { AuditLogs, LogDateFormatType } from '../../../../../../../../core/logs/store/logs.model';
 
 /**
  * Timeline component for displaying experiment-specific audit logs.
@@ -23,14 +25,20 @@ import { User } from '../../../../../../../../core/users/store/users.model';
     RouterModule,
     MatExpansionModule,
     MatTooltipModule,
+    MatProgressSpinnerModule,
     TranslateModule,
     ExperimentLogDiffDisplayComponent,
+    SharedModule,
   ],
 })
 export class ExperimentLogsTimelineComponent {
-  @Input() logData: AuditLogs[];
+  @Input() groupedLogs: { dates: string[]; dateGroups: Record<string, AuditLogs[]> };
+  @Input() isLoading = false;
+  @Input() isEmpty = false;
+  @Output() scrolledToBottom = new EventEmitter<void>();
 
   systemUserEmail = 'system@gmail.com';
+  LogDateFormatType = LogDateFormatType;
 
   get ExperimentLogType() {
     return LOG_TYPE;
@@ -97,5 +105,9 @@ export class ExperimentLogsTimelineComponent {
 
   getListTableType(filterType: string): string {
     return filterType === 'inclusion' ? 'include' : 'exclude';
+  }
+
+  onScrolledToBottom(): void {
+    this.scrolledToBottom.emit();
   }
 }
