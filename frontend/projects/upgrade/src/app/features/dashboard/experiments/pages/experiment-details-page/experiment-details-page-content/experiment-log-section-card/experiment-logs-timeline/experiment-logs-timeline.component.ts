@@ -5,15 +5,12 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { LOG_TYPE, EXPERIMENT_LIST_OPERATION } from 'upgrade_types';
-import { ExperimentLogMessagePipe } from '../pipes/experiment-log-message.pipe';
-import { ListOperationMessagePipe } from '../pipes/list-operation-message.pipe';
 import { ExperimentLogDiffDisplayComponent } from '../experiment-log-diff-display/experiment-log-diff-display.component';
 import { AuditLogs } from '../../../../../../../../core/logs/store/logs.model';
-import Convert from 'ansi-to-html';
+import { User } from '../../../../../../../../core/users/store/users.model';
 
 /**
  * Timeline component for displaying experiment-specific audit logs.
- * Simplified version that removes redundant experiment references since we're viewing a specific experiment.
  */
 @Component({
   selector: 'app-experiment-logs-timeline',
@@ -28,8 +25,6 @@ import Convert from 'ansi-to-html';
     MatTooltipModule,
     TranslateModule,
     ExperimentLogDiffDisplayComponent,
-    ExperimentLogMessagePipe,
-    ListOperationMessagePipe,
   ],
 })
 export class ExperimentLogsTimelineComponent {
@@ -70,14 +65,37 @@ export class ExperimentLogsTimelineComponent {
     return !!(log.data?.diff || log.data?.list?.diff);
   }
 
-  getHtmlFormedLogData(id: string, diff) {
-    const convert = new Convert();
-    let convertedToHtml = convert.toHtml(diff);
-    convertedToHtml = convertedToHtml.split('color:#FFF').join('color: grey');
-    const diffNode = document.getElementById(id);
-    const html = new DOMParser().parseFromString(convertedToHtml, 'text/html');
-    if (diffNode) {
-      diffNode.innerHTML = html.body.innerHTML;
-    }
+  // User-related helpers
+  getUserFullName(user: User): string {
+    if (!user?.firstName && !user?.lastName) return '';
+    return `${user.firstName || ''} ${user.lastName || ''}`.trim();
+  }
+
+  isSystemUser(user: User): boolean {
+    return user?.email === this.systemUserEmail;
+  }
+
+  hasUserImage(user: User): boolean {
+    return !!user?.imageUrl;
+  }
+
+  shouldTruncateUserName(user: User): boolean {
+    return this.getUserFullName(user).length >= 30;
+  }
+
+  isSimpleLogType(type: LOG_TYPE): boolean {
+    return [
+      LOG_TYPE.EXPERIMENT_DELETED,
+      LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
+      LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
+    ].includes(type);
+  }
+
+  isStateChangeOrCreated(type: LOG_TYPE): boolean {
+    return type === LOG_TYPE.EXPERIMENT_STATE_CHANGED || type === LOG_TYPE.EXPERIMENT_CREATED;
+  }
+
+  getListTableType(filterType: string): string {
+    return filterType === 'inclusion' ? 'include' : 'exclude';
   }
 }

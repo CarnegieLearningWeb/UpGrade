@@ -15,7 +15,6 @@ import { Experiment } from '../../../../../../../core/experiments/store/experime
 import { LogsService } from '../../../../../../../core/logs/logs.service';
 import { SharedModule } from '../../../../../../../shared/shared.module';
 import { ExperimentLogsTimelineComponent } from './experiment-logs-timeline/experiment-logs-timeline.component';
-import { LogDateFormatPipe } from './pipes/log-date-format.pipe';
 import { AuditLogs, LogDateFormatType } from '../../../../../../../core/logs/store/logs.model';
 import { LOG_TYPE } from 'upgrade_types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -41,9 +40,9 @@ import { groupBy } from 'lodash';
     TranslateModule,
     SharedModule,
     ExperimentLogsTimelineComponent,
-    LogDateFormatPipe,
     MatProgressSpinnerModule,
   ],
+  standalone: true,
   templateUrl: './experiment-log-section-card.component.html',
   styleUrl: './experiment-log-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -96,12 +95,14 @@ export class ExperimentLogSectionCardComponent implements OnInit, OnDestroy {
 
     // Get loading state
     this.isLoading$ = this.selectedExperiment$.pipe(
+      filter((exp): exp is Experiment => !!exp),
       switchMap((exp) => this.logsService.getExperimentLogsLoadingState(exp.id)),
       takeUntil(this.destroy$)
     );
 
     // Get pagination state
     this.allLogsFetched$ = this.selectedExperiment$.pipe(
+      filter((exp): exp is Experiment => !!exp),
       switchMap((exp) => this.logsService.isAllExperimentLogsFetched(exp.id)),
       takeUntil(this.destroy$)
     );
