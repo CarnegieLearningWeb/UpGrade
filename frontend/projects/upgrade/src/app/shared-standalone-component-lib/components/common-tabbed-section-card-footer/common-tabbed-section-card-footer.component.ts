@@ -46,13 +46,13 @@ export class CommonTabbedSectionCardFooterComponent implements OnInit {
   }
 
   onSelectedTabChange(event: MatTabChangeEvent) {
-    this.selectedTabChange.emit(event.index);
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { tab: event.index },
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
+    this.selectedTabChange.emit(event.index);
   }
 
   setSelectedTabFromQueryParams() {
