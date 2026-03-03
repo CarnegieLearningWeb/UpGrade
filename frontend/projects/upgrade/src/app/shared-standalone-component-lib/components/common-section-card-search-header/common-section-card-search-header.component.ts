@@ -15,6 +15,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { TranslateModule } from '@ngx-translate/core';
+import isEqual from 'lodash.isequal';
 
 /**
  * The `app-common-section-card-search-header` component provides a common header with search and filter options for search functionality.
@@ -81,9 +82,13 @@ export class CommonSectionCardSearchHeaderComponent implements OnChanges {
   standaloneOptions: FilterOption[] = [];
   groupedOptions: { groupName: string; options: FilterOption[] }[] = [];
 
+  // if filterOptions have changed, rebuild the options
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['filterOptions']) {
-      this.buidOptions();
+    const filterOptionsChange = changes['filterOptions'];
+    if (filterOptionsChange && !filterOptionsChange.firstChange) {
+      if (!isEqual(filterOptionsChange.previousValue, filterOptionsChange.currentValue)) {
+        this.rebuildOptions();
+      }
     }
   }
 
@@ -106,7 +111,7 @@ export class CommonSectionCardSearchHeaderComponent implements OnChanges {
     return this.filterOptions.find((option) => option.value === this.searchKey)?.type === 'dropdown';
   }
 
-  private buidOptions(): void {
+  private rebuildOptions(): void {
     // Cache standalone options
     this.standaloneOptions = this.filterOptions.filter((option) => !option.group && option.type !== 'group');
 

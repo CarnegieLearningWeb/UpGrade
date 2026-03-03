@@ -15,6 +15,6 @@ export class AuditLogParamsValidator {
 
   @IsOptional()
   @IsString()
-  @IsUUID('4')
+  @IsUUID()
   public experimentId?: string;
 }

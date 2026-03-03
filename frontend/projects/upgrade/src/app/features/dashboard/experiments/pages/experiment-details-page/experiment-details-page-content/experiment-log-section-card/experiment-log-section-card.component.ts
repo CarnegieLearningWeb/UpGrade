@@ -14,13 +14,15 @@ import { ExperimentService } from '../../../../../../../core/experiments/experim
 import { Experiment } from '../../../../../../../core/experiments/store/experiments.model';
 import { LogsService } from '../../../../../../../core/logs/logs.service';
 import { SharedModule } from '../../../../../../../shared/shared.module';
-import { ExperimentLogsTimelineComponent } from './experiment-logs-timeline/experiment-logs-timeline.component';
+import { CommonAuditLogTimelineComponent } from '../../../../../../../shared-standalone-component-lib/components/common-audit-log-timeline/common-audit-log-timeline.component';
 import { AuditLogs, LogDateFormatType } from '../../../../../../../core/logs/store/logs.model';
 import { LOG_TYPE } from 'upgrade_types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { combineLatest, Subject, Observable, BehaviorSubject } from 'rxjs';
 import { map, filter, takeUntil, switchMap, tap, take } from 'rxjs/operators';
 import { groupBy } from 'lodash';
+import { AuditLogTimelineConfig } from '../../../../../../../shared-standalone-component-lib/components/common-audit-log-timeline/common-audit-log-timeline-config.model';
+import { EXPERIMENT_TIMELINE_LOG_TYPE_CONFIG } from '../../../../../../../shared-standalone-component-lib/components/common-audit-log-timeline/configs/experiment-timeline.config';
 
 /**
  * Section card component for displaying experiment-specific audit logs in a timeline format.
@@ -39,12 +41,11 @@ import { groupBy } from 'lodash';
     CommonSectionCardSearchHeaderComponent,
     TranslateModule,
     SharedModule,
-    ExperimentLogsTimelineComponent,
+    CommonAuditLogTimelineComponent,
     MatProgressSpinnerModule,
   ],
   standalone: true,
   templateUrl: './experiment-log-section-card.component.html',
-  styleUrl: './experiment-log-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperimentLogSectionCardComponent implements OnInit, OnDestroy {
@@ -67,6 +68,7 @@ export class ExperimentLogSectionCardComponent implements OnInit, OnDestroy {
   private currentExperimentId: string | null = null;
 
   LogDateFormatType = LogDateFormatType;
+  timelineConfig: AuditLogTimelineConfig = EXPERIMENT_TIMELINE_LOG_TYPE_CONFIG;
 
   constructor(private readonly experimentService: ExperimentService, private readonly logsService: LogsService) {}
 
@@ -86,7 +88,7 @@ export class ExperimentLogSectionCardComponent implements OnInit, OnDestroy {
     // Get raw logs observable
     this.experimentLogs$ = this.selectedExperiment$.pipe(
       filter((exp): exp is Experiment => !!exp),
-      switchMap((exp) => this.logsService.fetchExperimentLogsById(exp.id)),
+      switchMap((exp) => this.logsService.getExperimentLogsById(exp.id)),
       tap((logs) => {
         this.buildFilterOptions(logs);
       }),
@@ -141,11 +143,11 @@ export class ExperimentLogSectionCardComponent implements OnInit, OnDestroy {
   fetchLogsOnScroll(): void {
     if (!this.currentExperimentId) return;
 
-    // Check if all logs are fetched and fetch if needed
-    this.allLogsFetched$
+    // Check if all logs are fetched and if not currently loading
+    combineLatest([this.allLogsFetched$, this.isLoading$])
       .pipe(
         take(1),
-        filter((allFetched) => !allFetched),
+        filter(([allFetched, isLoading]) => !allFetched && !isLoading),
         takeUntil(this.destroy$)
       )
       .subscribe(() => {

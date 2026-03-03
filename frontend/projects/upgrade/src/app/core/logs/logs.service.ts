@@ -118,7 +118,7 @@ export class LogsService {
     this.store$.dispatch(logsActions.actionSetErrorLogFilter({ filterType }));
   }
 
-  fetchExperimentLogsById(experimentId: string) {
+  getExperimentLogsById(experimentId: string) {
     return this.store$.pipe(select(selectExperimentLogs, { experimentId }));
   }
 

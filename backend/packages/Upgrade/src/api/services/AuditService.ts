@@ -11,10 +11,15 @@ export class AuditService {
     private experimentAuditLogRepository: ExperimentAuditLogRepository
   ) {}
 
-  public getTotalLogs(filter: LOG_TYPE, experimentId?: string): Promise<number> {
-    if (filter || experimentId) {
+  public getTotalLogs(filter?: LOG_TYPE, experimentId?: string): Promise<number> {
+    if (filter) {
       return this.experimentAuditLogRepository.getTotalLogs(filter, experimentId);
     }
+
+    if (experimentId) {
+      return this.experimentAuditLogRepository.count({ where: { id: experimentId } });
+    }
+
     return this.experimentAuditLogRepository.count();
   }
 

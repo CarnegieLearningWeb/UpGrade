@@ -10,7 +10,7 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
   public async paginatedFind(
     limit: number,
     offset: number,
-    filter: LOG_TYPE,
+    filter?: LOG_TYPE,
     experimentId?: string
   ): Promise<ExperimentAuditLog[]> {
     let queryBuilder = this.createQueryBuilder('audit')
@@ -41,7 +41,7 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
     });
   }
 
-  public getTotalLogs(filter: LOG_TYPE, experimentId?: string): Promise<number> {
+  public getTotalLogs(filter?: LOG_TYPE, experimentId?: string): Promise<number> {
     let queryBuilder = this.createQueryBuilder('audit');
 
     if (filter) {

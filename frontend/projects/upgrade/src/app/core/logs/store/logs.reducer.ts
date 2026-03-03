@@ -1,13 +1,13 @@
 import { createReducer, on, Action } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
-import { AuditLogs, LogState, ErrorLogs, ExperimentLogsMetadata } from './logs.model';
+import { AuditLogs, LogState, ErrorLogs, AuditLogsMetadata } from './logs.model';
 import * as logsActions from './logs.actions';
 
 export const adapter: EntityAdapter<AuditLogs | ErrorLogs> = createEntityAdapter<AuditLogs | ErrorLogs>();
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
-const initialExperimentLogsMetadata: ExperimentLogsMetadata = {
+const initialAuditLogsMetadata: AuditLogsMetadata = {
   logs: [],
   skip: 0,
   total: null,
@@ -24,7 +24,7 @@ export const initialState: LogState = adapter.getInitialState({
   totalErrorLogs: null,
   auditLogFilter: null,
   errorLogFilter: null,
-  experimentLogs: {},
+  experimentAuditLogs: {},
 });
 
 const reducer = createReducer(
@@ -67,11 +67,11 @@ const reducer = createReducer(
   on(logsActions.actionSetErrorLogFilter, (state, { filterType }) => ({ ...state, errorLogFilter: filterType })),
   // Experiment-specific log handlers
   on(logsActions.actionGetExperimentLogs, (state, { experimentId, fromStart }) => {
-    const experimentLog = state.experimentLogs[experimentId] || initialExperimentLogsMetadata;
+    const experimentLog = state.experimentAuditLogs[experimentId] || initialAuditLogsMetadata;
     return {
       ...state,
-      experimentLogs: {
-        ...state.experimentLogs,
+      experimentAuditLogs: {
+        ...state.experimentAuditLogs,
         [experimentId]: {
           ...experimentLog,
           isLoading: true,
@@ -81,13 +81,13 @@ const reducer = createReducer(
     };
   }),
   on(logsActions.actionGetExperimentLogsSuccess, (state, { experimentId, auditLogs, totalAuditLogs, fromStart }) => {
-    const experimentLog = state.experimentLogs[experimentId] || initialExperimentLogsMetadata;
+    const experimentLog = state.experimentAuditLogs[experimentId] || initialAuditLogsMetadata;
     const updatedLogs = fromStart ? auditLogs : [...experimentLog.logs, ...auditLogs];
 
     return {
       ...state,
-      experimentLogs: {
-        ...state.experimentLogs,
+      experimentAuditLogs: {
+        ...state.experimentAuditLogs,
         [experimentId]: {
           ...experimentLog,
           logs: updatedLogs,
@@ -99,11 +99,11 @@ const reducer = createReducer(
     };
   }),
   on(logsActions.actionGetExperimentLogsFailure, (state, { experimentId }) => {
-    const experimentLog = state.experimentLogs[experimentId] || initialExperimentLogsMetadata;
+    const experimentLog = state.experimentAuditLogs[experimentId] || initialAuditLogsMetadata;
     return {
       ...state,
-      experimentLogs: {
-        ...state.experimentLogs,
+      experimentAuditLogs: {
+        ...state.experimentAuditLogs,
         [experimentId]: {
           ...experimentLog,
           isLoading: false,
@@ -112,11 +112,11 @@ const reducer = createReducer(
     };
   }),
   on(logsActions.actionSetExperimentLogFilter, (state, { experimentId, filterType }) => {
-    const experimentLog = state.experimentLogs[experimentId] || initialExperimentLogsMetadata;
+    const experimentLog = state.experimentAuditLogs[experimentId] || initialAuditLogsMetadata;
     return {
       ...state,
-      experimentLogs: {
-        ...state.experimentLogs,
+      experimentAuditLogs: {
+        ...state.experimentAuditLogs,
         [experimentId]: {
           ...experimentLog,
           filter: filterType,
