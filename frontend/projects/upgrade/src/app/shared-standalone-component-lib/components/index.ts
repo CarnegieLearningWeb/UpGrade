@@ -14,6 +14,8 @@ import { CommonTagComponent } from './common-tag/common-tag.component';
 import { CommonTagListComponent } from './common-tag-list/common-tag-list.component';
 import { CommonLearnMoreLinkComponent } from './common-learn-more-link/common-learn-more-link.component';
 import { CommonSimpleTextValidatedConfirmationModalComponent } from './common-simple-text-validated-confirmation-modal/common-simple-text-validated-confirmation-modal.component';
+import { CommonAuditLogTimelineComponent } from './common-audit-log-timeline/common-audit-log-timeline.component';
+import { CommonAuditLogDiffDisplayComponent } from './common-audit-log-timeline/common-audit-log-diff-display/common-audit-log-diff-display.component';
 
 export {
   CommonPageComponent,
@@ -32,4 +34,6 @@ export {
   CommonTagListComponent,
   CommonLearnMoreLinkComponent,
   CommonSimpleTextValidatedConfirmationModalComponent,
+  CommonAuditLogTimelineComponent,
+  CommonAuditLogDiffDisplayComponent,
 };

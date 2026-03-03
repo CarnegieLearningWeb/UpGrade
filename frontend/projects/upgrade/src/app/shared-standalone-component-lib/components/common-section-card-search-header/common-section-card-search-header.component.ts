@@ -73,7 +73,7 @@ export interface FilterOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonSectionCardSearchHeaderComponent implements OnChanges {
-  @Input() filterOptions: FilterOption[] = [];
+  @Input() dynamicFilterOptions: FilterOption[] = [];
   @Input() searchString: string;
   @Input() searchKey: string;
   @Output() search = new EventEmitter<CommonSearchWidgetSearchParams<string>>();
@@ -82,8 +82,8 @@ export class CommonSectionCardSearchHeaderComponent implements OnChanges {
   groupedOptions: { groupName: string; options: FilterOption[] }[] = [];
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['filterOptions']) {
-      this.buidOptions();
+    if (changes['dynamicFilterOptions']) {
+      this.rebuildOptions();
     }
   }
 
@@ -95,25 +95,25 @@ export class CommonSectionCardSearchHeaderComponent implements OnChanges {
   }
 
   get filterOptionsValues(): string[] {
-    return this.filterOptions.map((option) => option.value);
+    return this.dynamicFilterOptions.map((option) => option.value);
   }
 
   get filteredStatusOptions(): string[] {
-    return this.filterOptions.find((option) => option.value === this.searchKey)?.valueOptions || [];
+    return this.dynamicFilterOptions.find((option) => option.value === this.searchKey)?.valueOptions || [];
   }
 
   get isDropdown(): boolean {
-    return this.filterOptions.find((option) => option.value === this.searchKey)?.type === 'dropdown';
+    return this.dynamicFilterOptions.find((option) => option.value === this.searchKey)?.type === 'dropdown';
   }
 
-  private buidOptions(): void {
+  private rebuildOptions(): void {
     // Cache standalone options
-    this.standaloneOptions = this.filterOptions.filter((option) => !option.group && option.type !== 'group');
+    this.standaloneOptions = this.dynamicFilterOptions.filter((option) => !option.group && option.type !== 'group');
 
     // Cache grouped options
     const groups = new Map<string, FilterOption[]>();
 
-    this.filterOptions.forEach((option) => {
+    this.dynamicFilterOptions.forEach((option) => {
       if (option.group) {
         if (!groups.has(option.group)) {
           groups.set(option.group, []);

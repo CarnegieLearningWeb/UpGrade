@@ -1,8 +1,10 @@
 import { AppState } from '../../core.module';
 import { EntityState } from '@ngrx/entity';
 import { LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
+import { User } from '../../users/store/users.model';
 
 export const NUMBER_OF_LOGS = 20;
+export const SYSTEM_USER_EMAIL = 'system@gmail.com';
 
 export enum LogType {
   ERROR_LOG = 'Error log',
@@ -34,12 +36,7 @@ export interface AuditLogs {
   versionNumber: number;
   type: LOG_TYPE;
   data: any;
-  user?: {
-    firstName: string;
-    lastName: string;
-    email?: string;
-    imageUrl?: string;
-  };
+  user?: User;
 }
 
 export interface ErrorLogs {
@@ -54,7 +51,7 @@ export interface ErrorLogs {
   name: string;
 }
 
-export interface ExperimentLogsMetadata {
+export interface AuditLogsMetadata {
   logs: AuditLogs[];
   skip: number;
   total: number | null;
@@ -71,7 +68,7 @@ export interface LogState extends EntityState<AuditLogs | ErrorLogs> {
   totalErrorLogs: number;
   auditLogFilter: LOG_TYPE;
   errorLogFilter: SERVER_ERROR;
-  experimentLogs: Record<string, ExperimentLogsMetadata>;
+  experimentAuditLogs: Record<string, AuditLogsMetadata>;
 }
 
 export interface State extends AppState {

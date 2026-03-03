@@ -40,7 +40,7 @@ export const selectAuditFilterType = createSelector(selectLogState, (state) => s
 export const selectErrorFilterType = createSelector(selectLogState, (state) => state.errorLogFilter);
 
 // Experiment-specific log selectors
-export const selectExperimentLogsState = createSelector(selectLogState, (state) => state.experimentLogs);
+export const selectExperimentLogsState = createSelector(selectLogState, (state) => state.experimentAuditLogs);
 
 export const selectExperimentLogsMetadata = createSelector(
   selectExperimentLogsState,

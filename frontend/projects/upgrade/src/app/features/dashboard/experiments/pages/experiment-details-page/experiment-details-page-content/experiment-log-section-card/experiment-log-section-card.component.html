@@ -20,12 +20,13 @@
 
   <!-- Timeline Content -->
   <ng-container content *ngIf="isSectionCardExpanded">
-    <app-experiment-logs-timeline
+    <common-audit-log-timeline
       [groupedLogs]="timelineDataSource$ | async"
       [isLoading]="isLoading$ | async"
       [isEmpty]="(experimentLogs$ | async)?.length === 0"
+      [config]="timelineConfig"
       (scrolledToBottom)="fetchLogsOnScroll()"
     >
-    </app-experiment-logs-timeline>
+    </common-audit-log-timeline>
   </ng-container>
 </app-common-section-card>

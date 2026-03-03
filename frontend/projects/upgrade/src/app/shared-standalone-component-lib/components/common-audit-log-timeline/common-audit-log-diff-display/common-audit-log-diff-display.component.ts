@@ -2,24 +2,24 @@ import { Component, ChangeDetectionStrategy, Input, AfterViewInit } from '@angul
 import { CommonModule } from '@angular/common';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateModule } from '@ngx-translate/core';
-import { LOG_TYPE } from 'upgrade_types';
 import Convert from 'ansi-to-html';
 
 /**
- * Sub-component for displaying diffs in experiment logs.
+ * Generic component for displaying diffs in audit logs.
+ * Supports any entity type (experiments, feature flags, segments).
  */
 @Component({
-  selector: 'app-experiment-log-diff-display',
-  templateUrl: './experiment-log-diff-display.component.html',
-  styleUrls: ['./experiment-log-diff-display.component.scss'],
+  selector: 'common-audit-log-diff-display',
+  templateUrl: './common-audit-log-diff-display.component.html',
+  styleUrls: ['./common-audit-log-diff-display.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, MatExpansionModule, TranslateModule],
 })
-export class ExperimentLogDiffDisplayComponent implements AfterViewInit {
+export class CommonAuditLogDiffDisplayComponent implements AfterViewInit {
   @Input() logId: string;
   @Input() logData: any;
-  @Input() logType: LOG_TYPE;
+  @Input() logType: string;
   @Input() createdAt: string;
   @Input() actionMessage: string;
 
