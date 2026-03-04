@@ -16,6 +16,8 @@ import {
   MoocletVariableResponseDetails,
   MoocletValueRequestBody,
   MoocletValueResponseDetails,
+  MoocletRewardCountRequestBody,
+  MoocletPaginatedResponse,
 } from '../../types/Mooclet';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { MoocletError } from '../errors/MoocletError';
@@ -225,6 +227,23 @@ export class MoocletDataService {
       url: this.apiUrl + endpoint,
       apiToken: this.apiToken,
       body: requestBody,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
+
+    return response;
+  }
+
+  public async getRewardsForExperiment(
+    requestBody: MoocletRewardCountRequestBody,
+    logger: UpgradeLogger
+  ): Promise<MoocletPaginatedResponse<MoocletValueResponseDetails>> {
+    const endpoint = `/value?mooclet=${requestBody.moocletId}&variable__name=${requestBody.variableName}`;
+
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'GET',
+      url: this.apiUrl + endpoint,
+      apiToken: this.apiToken,
     };
 
     const response = await this.fetchExternalMoocletsData(requestParams, logger);

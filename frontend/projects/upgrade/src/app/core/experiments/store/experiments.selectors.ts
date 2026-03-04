@@ -10,7 +10,6 @@ import {
   ExperimentActionButton,
   EXPERIMENT_ACTION_BUTTON_TYPE,
   EXPERIMENT_OVERVIEW_LABELS,
-  CurrentPosteriorsTableRow,
   EXPERIMENT_SECTION_CARD_TYPE,
   EXPERIMENT_DETAILS_PAGE_ACTIONS,
   SectionCardRestriction,
@@ -29,6 +28,7 @@ import {
 import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
 import { formatTSConfigurablePolicyParamDetails } from '../mooclet-helper.service';
 import { KeyValueFormat } from '../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
+import { ExperimentRewardsSummary } from '../../../../../../../../types/src/Mooclet';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
 
@@ -335,44 +335,18 @@ export const selectExperimentActionButtons = createSelector(
   }
 );
 
-export const selectCurrentPosteriorsTableData = createSelector(
+export const selectRewardsDataForSelectedExperiment = createSelector(
   selectSelectedExperiment,
-  (experiment: ExperimentVM): CurrentPosteriorsTableRow[] => {
-    if (!experiment?.moocletPolicyParameters?.current_posteriors) {
-      return [];
-    }
+  selectExperimentState,
+  (experiment: ExperimentVM, state: ExperimentState): ExperimentRewardsSummary => {
+    return state.rewardsSummaries[experiment.id] || [];
+  }
+);
 
-    const posteriors = experiment.moocletPolicyParameters.current_posteriors;
-    const rows: CurrentPosteriorsTableRow[] = [];
-
-    // Calculate grand total for percentage calculation
-    let grandTotalSuccesses = 0;
-    let grandTotalFailures = 0;
-
-    Object.values(posteriors).forEach((posterior) => {
-      grandTotalSuccesses += posterior.successes;
-      grandTotalFailures += posterior.failures;
-    });
-
-    const grandTotal = grandTotalSuccesses + grandTotalFailures;
-
-    // Create table rows
-    Object.entries(posteriors).forEach(([conditionCode, posterior]) => {
-      const total = posterior.successes + posterior.failures;
-      const successRate = total > 0 ? (posterior.successes / total) * 100 : 0;
-      const percentage = grandTotal > 0 ? (total / grandTotal) * 100 : 0;
-
-      rows.push({
-        conditionCode,
-        successes: posterior.successes,
-        failures: posterior.failures,
-        successRate,
-        total,
-        percentage,
-      });
-    });
-
-    return rows;
+export const selectIsLoadingRewardsSummary = createSelector(
+  selectExperimentState,
+  (state: ExperimentState): boolean => {
+    return state.isLoadingRewardsSummary;
   }
 );
 

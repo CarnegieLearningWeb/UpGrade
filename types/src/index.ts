@@ -97,4 +97,6 @@ export {
   SUPPORTED_MOOCLET_ALGORITHMS,
   BinaryRewardAllowedValue,
   BinaryRewardValueMap,
+  ExperimentRewardsByCondition,
+  ExperimentRewardsSummary,
 } from './Mooclet';

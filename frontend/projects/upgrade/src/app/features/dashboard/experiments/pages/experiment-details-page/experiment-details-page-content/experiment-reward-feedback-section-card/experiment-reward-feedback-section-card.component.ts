@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Store } from '@ngrx/store';
@@ -7,7 +7,10 @@ import { CommonSectionCardTitleHeaderComponent } from '../../../../../../../shar
 import { CommonSectionCardActionButtonsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-action-buttons/common-section-card-action-buttons.component';
 import { TSConfigurableRewardCountTableComponent } from './ts-configurable-reward-count-table/ts-configurable-reward-count-table.component';
 import { AppState } from '../../../../../../../core/core.state';
-import { selectCurrentPosteriorsTableData } from '../../../../../../../core/experiments/store/experiments.selectors';
+import { Observable } from 'rxjs/internal/Observable';
+import { actionFetchRewardsDataForExperiment } from '../../../../../../../core/experiments/store/experiments.actions';
+import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
+import { ExperimentRewardsSummary } from '../../../../../../../../../../../../types/src/Mooclet';
 
 @Component({
   selector: 'app-experiment-reward-feedback-section-card',
@@ -25,10 +28,17 @@ import { selectCurrentPosteriorsTableData } from '../../../../../../../core/expe
 })
 export class ExperimentRewardFeedbackSectionCardComponent {
   @Input() isSectionCardExpanded = true;
+  rewardsSummary$: Observable<ExperimentRewardsSummary>;
+  isLoading$: Observable<boolean>;
 
-  currentPosteriorsTableData$ = this.store.select(selectCurrentPosteriorsTableData);
+  experimentService = inject(ExperimentService);
 
-  constructor(private readonly store: Store<AppState>) {}
+  ngOnInit(): void {
+    // go ahead and refetch this each time instead of caching it in store, it is live data that could be updated
+    this.experimentService.fetchRewardsDataForExperiment();
+    this.rewardsSummary$ = this.experimentService.getRewardsSummaryForSelectedExperiment();
+    this.isLoading$ = this.experimentService.isLoadingRewardsSummary$;
+  }
 
   onSectionCardExpandChange(isSectionCardExpanded: boolean): void {
     this.isSectionCardExpanded = isSectionCardExpanded;

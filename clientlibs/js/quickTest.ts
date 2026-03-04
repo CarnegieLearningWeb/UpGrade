@@ -19,17 +19,17 @@ const groupsForSession = { classId: ['EPHEMERAL_USER_GROUP'] };
 const includeStoredUserGroups = true; // true to merge with stored user groups, false for session-only groups
 const alias = 'alias' + userId;
 const hostUrl = URL.LOCAL;
-const context = 'upgrade-internal';
-const site = 'asdf';
-const target = 'fssfs';
+const context = 'assign-prog';
+const site = 'fakesite';
+const target = 'faketarget';
 const status = MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED;
 const featureFlagKey = 'TEST_FEATURE_FLAG';
 
 // reward testing variables ----- //
-const experimentId = 'f9c3927c-b786-45f5-a96c-dd9262e3b4b6'; // needed for reward testing
+const experimentId = '1a43d51e-b286-40a2-9dd7-a01b67797276'; // needed for reward testing
 const rewardSite = site; // if using decision point for reward
 const rewardTarget = target; // if using decision point for reward
-const rewardValue = 'SUCCESS'; // or 'FAILURE' or use an UpgradeClient.BINARY_REWARD_VALUE enum
+const rewardValue = 'FAILURE'; // or 'FAILURE' or use an UpgradeClient.BINARY_REWARD_VALUE enum
 // ---------------------------- //
 
 const options: UpGradeClientInterfaces.IConfigOptions = {
@@ -81,7 +81,7 @@ async function quickTest() {
   await doInit(client);
   await doGroupMembership(client);
   await doWorkingGroupMembership(client);
-  await doAliases(client);
+  // await doAliases(client);
   // await doAssign(client);
   // await doAssignIgnoreCache(client);
   // await doAssign(client);

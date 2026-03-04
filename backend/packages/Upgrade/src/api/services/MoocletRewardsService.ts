@@ -9,8 +9,16 @@ import { IndividualEnrollmentRepository } from '../repositories/IndividualEnroll
 import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { HttpError } from 'routing-controllers';
-import { MoocletValueRequestBody } from '../../types/Mooclet';
+import {
+  MoocletPaginatedResponse,
+  MoocletRewardCountRequestBody,
+  MoocletValueRequestBody,
+  MoocletValueResponseDetails,
+} from '../../types/Mooclet';
 import { RewardValidator } from '../controllers/validators/RewardValidator';
+import { ExperimentRewardsByCondition, ExperimentRewardsSummary } from 'upgrade_types';
+import { AppRequest } from 'src/types';
+import { MoocletExperimentService } from './MoocletExperimentService';
 
 export interface IRewardResponse {
   message: string;
@@ -25,7 +33,8 @@ export class MoocletRewardsService {
     private moocletExperimentRefRepository: MoocletExperimentRefRepository,
     @InjectRepository()
     private individualEnrollmentRepository: IndividualEnrollmentRepository,
-    private moocletDataService: MoocletDataService
+    private moocletDataService: MoocletDataService,
+    private moocletExperimentService: MoocletExperimentService
   ) {}
 
   /**
@@ -202,6 +211,74 @@ export class MoocletRewardsService {
       this.throwConflictError(`Version-condition mapping not found, no reward sent.`, request, logger);
     }
     return map.moocletVersionId;
+  }
+
+  public async getRewardsSummaryForExperiment(
+    experimentId: string,
+    request: AppRequest
+  ): Promise<ExperimentRewardsSummary> {
+    try {
+      const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(
+        experimentId
+      );
+      const moocletRewardsResponse = await this.fetchRewardsForExperiment(moocletExperimentRef, request.logger);
+      return this.createExperimentRewardsSummary(moocletExperimentRef, moocletRewardsResponse, request.logger);
+    } catch (error) {
+      request.logger.error({ message: 'Error fetching rewards summary for experiment', experimentId, error });
+      throw error;
+    }
+  }
+
+  public async fetchRewardsForExperiment(
+    moocletExperimentRef: MoocletExperimentRef,
+    logger: UpgradeLogger
+  ): Promise<MoocletPaginatedResponse<MoocletValueResponseDetails>> {
+    const requestBody: MoocletRewardCountRequestBody = {
+      moocletId: moocletExperimentRef.moocletId,
+      variableName: moocletExperimentRef.outcomeVariableName,
+    };
+
+    return await this.moocletDataService.getRewardsForExperiment(requestBody, logger);
+  }
+
+  public async createExperimentRewardsSummary(
+    moocletExperimentRef: MoocletExperimentRef,
+    moocletRewardsResponse: MoocletPaginatedResponse<MoocletValueResponseDetails>,
+    logger: UpgradeLogger
+  ): Promise<ExperimentRewardsSummary> {
+    const rewards: MoocletValueResponseDetails[] = moocletRewardsResponse.results;
+
+    if (!moocletRewardsResponse?.results) {
+      logger.warn({
+        message: 'No rewards data returned from Mooclet API',
+        experimentId: moocletExperimentRef.experimentId,
+      });
+      return []; // or throw appropriate error
+    }
+
+    const rewardsSummaries = moocletExperimentRef.versionConditionMaps.map(
+      ({ experimentCondition, moocletVersionId }) => {
+        const versionRewards = rewards.filter((reward) => reward.version === moocletVersionId);
+        const successes = versionRewards.filter((reward) => reward.value === 1.0).length;
+        const failures = versionRewards.filter((reward) => reward.value === 0.0).length;
+        const total = successes + failures;
+        const percentSuccess = total > 0 ? (successes / total) * 100 : 0.0;
+        const successRate = percentSuccess.toFixed(1) + '%';
+
+        const rewardsForCondition: ExperimentRewardsByCondition = {
+          conditionCode: experimentCondition.conditionCode,
+          successes,
+          failures,
+          total,
+          successRate,
+          order: experimentCondition.order,
+        };
+        return rewardsForCondition;
+      }
+    );
+
+    const orderedRewardsSummary = rewardsSummaries.sort((a, b) => a.order - b.order);
+    return orderedRewardsSummary;
   }
 
   /**

@@ -28,6 +28,7 @@ import {
   ExperimentQueryComparator,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
+import { ExperimentRewardsSummary } from '../../../../../../../../types/src/Mooclet';
 
 export {
   CONSISTENCY_RULE,
@@ -626,6 +627,8 @@ export interface ExperimentState extends EntityState<ExperimentVM> {
   updatedStat?: IExperimentEnrollmentDetailStats;
   isLoadingExperimentDelete: boolean;
   isLoadingImportExperiment: boolean;
+  isLoadingRewardsSummary: boolean;
+  rewardsSummaries: Record<string, ExperimentRewardsSummary>;
 }
 
 export interface State extends AppState {
@@ -712,16 +715,6 @@ export interface InteractionEffectGraphData {
 export interface ExperimentSegmentListResponse extends SegmentNew {
   experiment: Experiment;
 }
-
-export interface CurrentPosteriorsTableRow {
-  conditionCode: string;
-  successes: number;
-  failures: number;
-  successRate: number;
-  total: number;
-  percentage: number;
-}
-
 export interface UpsertMetricParams {
   sourceQuery: ExperimentQueryDTO | null;
   action: UPSERT_EXPERIMENT_ACTION;

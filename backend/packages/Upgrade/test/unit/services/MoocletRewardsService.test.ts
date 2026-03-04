@@ -12,6 +12,7 @@ import { RewardValidator } from '../../../src/api/controllers/validators/RewardV
 import { RequestedExperimentUser } from '../../../src/api/controllers/validators/ExperimentUserValidator';
 import { HttpError } from 'routing-controllers';
 import { configureLogger } from '../../utils/logger';
+import { MoocletExperimentService } from 'src/api/services/MoocletExperimentService';
 
 describe('MoocletRewardsService', () => {
   let service: MoocletRewardsService;
@@ -19,6 +20,7 @@ describe('MoocletRewardsService', () => {
   let mockMoocletDataService: jest.Mocked<MoocletDataService>;
   let mockMoocletExperimentRefRepository: jest.Mocked<MoocletExperimentRefRepository>;
   let mockIndividualEnrollmentRepository: jest.Mocked<IndividualEnrollmentRepository>;
+  let mockMoocletExperimentService: jest.Mocked<MoocletExperimentService>;
 
   const mockUser = {
     id: 'user-123',
@@ -81,10 +83,15 @@ describe('MoocletRewardsService', () => {
       findEnrollments: jest.fn(),
     } as any;
 
+    mockMoocletExperimentService = {
+      getMoocletExperimentRefByUpgradeExperimentId: jest.fn(),
+    } as any;
+
     service = new MoocletRewardsService(
       mockMoocletExperimentRefRepository as any,
       mockIndividualEnrollmentRepository as any,
-      mockMoocletDataService as any
+      mockMoocletDataService as any,
+      mockMoocletExperimentService as any
     );
   });
 
