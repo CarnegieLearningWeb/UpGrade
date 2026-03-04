@@ -25,6 +25,7 @@ import { ConditionWeightUpdate } from '../../../../modals/edit-condition-weights
 import { ConditionHelperService } from '../../../../../../../core/experiments/condition-helper.service';
 import { selectConditionWeightsValid } from '../../../../../../../core/experiments/store/experiments.selectors';
 import { Store } from '@ngrx/store';
+import { MoocletExperimentHelperService } from '../../../../../../../core/experiments/mooclet-helper.service';
 
 @Component({
   selector: 'app-experiment-conditions-section-card',
@@ -59,7 +60,8 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly dialogService: DialogService,
     private readonly conditionHelperService: ConditionHelperService,
-    private readonly store: Store
+    private readonly store: Store,
+    private readonly moocletHelperService: MoocletExperimentHelperService
   ) {}
 
   ngOnInit() {
@@ -74,6 +76,10 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
         restriction,
       }))
     );
+  }
+
+  isMoocletExperiment(experiment: Experiment) {
+    return this.moocletHelperService.isMoocletAlgorithm(experiment?.assignmentAlgorithm);
   }
 
   onAddConditionClick(appContext: string, experimentId: string): void {
