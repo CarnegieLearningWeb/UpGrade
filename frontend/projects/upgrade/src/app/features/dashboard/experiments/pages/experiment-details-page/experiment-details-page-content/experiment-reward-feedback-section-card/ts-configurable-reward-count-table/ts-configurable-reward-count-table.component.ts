@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { TranslateModule } from '@ngx-translate/core';
-import { ExperimentRewardsSummary } from '../../../../../../../../../../../../../types/src/Mooclet';
+import { ExperimentRewardsSummary } from 'upgrade_types';
 
 @Component({
   selector: 'app-ts-configurable-reward-count-table',
@@ -14,7 +14,7 @@ import { ExperimentRewardsSummary } from '../../../../../../../../../../../../..
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TSConfigurableRewardCountTableComponent {
-  @Input() dataSource: ExperimentRewardsSummary[] = [];
+  @Input() dataSource: ExperimentRewardsSummary = [];
   @Input() isLoading = false;
 
   displayedColumns = ['conditionCode', 'successes', 'failures', 'total', 'successRate', 'spacer'];

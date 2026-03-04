@@ -1948,6 +1948,6 @@ export class ExperimentController {
     if (!env.mooclets?.enabled) {
       throw new BadRequestError('Mooclet is not enabled in the environment');
     }
-    return this.moocletRewardService.getRewardsSummaryForExperiment(id, request);
+    return this.moocletRewardService.getRewardsSummaryForExperiment(id, request.logger);
   }
 }

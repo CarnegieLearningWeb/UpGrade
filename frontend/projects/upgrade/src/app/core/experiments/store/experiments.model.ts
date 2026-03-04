@@ -26,10 +26,9 @@ import {
   METRIC_TYPE,
   ExperimentQueryPayload,
   ExperimentQueryComparator,
+  ExperimentRewardsSummary,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
-import { ExperimentRewardsSummary } from '../../../../../../../../types/src/Mooclet';
-
 export {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,

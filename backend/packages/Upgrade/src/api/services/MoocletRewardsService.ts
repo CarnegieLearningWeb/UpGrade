@@ -17,7 +17,6 @@ import {
 } from '../../types/Mooclet';
 import { RewardValidator } from '../controllers/validators/RewardValidator';
 import { ExperimentRewardsByCondition, ExperimentRewardsSummary } from 'upgrade_types';
-import { AppRequest } from 'src/types';
 import { MoocletExperimentService } from './MoocletExperimentService';
 
 export interface IRewardResponse {
@@ -215,16 +214,16 @@ export class MoocletRewardsService {
 
   public async getRewardsSummaryForExperiment(
     experimentId: string,
-    request: AppRequest
+    logger: UpgradeLogger
   ): Promise<ExperimentRewardsSummary> {
     try {
       const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(
         experimentId
       );
-      const moocletRewardsResponse = await this.fetchRewardsForExperiment(moocletExperimentRef, request.logger);
-      return this.createExperimentRewardsSummary(moocletExperimentRef, moocletRewardsResponse, request.logger);
+      const moocletRewardsResponse = await this.fetchRewardsForExperiment(moocletExperimentRef, logger);
+      return this.createExperimentRewardsSummary(moocletExperimentRef, moocletRewardsResponse, logger);
     } catch (error) {
-      request.logger.error({ message: 'Error fetching rewards summary for experiment', experimentId, error });
+      logger.error({ message: 'Error fetching rewards summary for experiment', experimentId, error });
       throw error;
     }
   }

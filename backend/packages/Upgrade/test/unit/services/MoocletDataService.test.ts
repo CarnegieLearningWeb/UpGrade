@@ -459,4 +459,109 @@ describe('#MoocletDataService', () => {
       );
     });
   });
+
+  describe('#getRewardsForExperiment', () => {
+    it('should successfully fetch rewards for an experiment', async () => {
+      const requestBody = {
+        moocletId: 456,
+        variableName: 'outcome_var',
+      };
+
+      const mockResponse = {
+        count: 5,
+        next: null,
+        previous: null,
+        results: [
+          { id: '1', version: 100, value: 1.0, variable: 'outcome_var', learner: 'user-1', mooclet: 456 },
+          { id: '2', version: 100, value: 0.0, variable: 'outcome_var', learner: 'user-2', mooclet: 456 },
+          { id: '3', version: 200, value: 1.0, variable: 'outcome_var', learner: 'user-3', mooclet: 456 },
+        ],
+      };
+
+      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockResolvedValue(mockResponse);
+
+      const result = await moocletDataService.getRewardsForExperiment(requestBody, logger);
+
+      expect(result).toEqual(mockResponse);
+      expect(moocletDataService.fetchExternalMoocletsData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'GET',
+          url: expect.stringContaining('/value?mooclet=456&variable__name=outcome_var'),
+        }),
+        logger
+      );
+    });
+
+    it('should construct correct query parameters with moocletId and variableName', async () => {
+      const requestBody = {
+        moocletId: 789,
+        variableName: 'test_variable',
+      };
+
+      const mockResponse = {
+        count: 0,
+        next: null,
+        previous: null,
+        results: [],
+      };
+
+      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockResolvedValue(mockResponse);
+
+      await moocletDataService.getRewardsForExperiment(requestBody, logger);
+
+      expect(moocletDataService.fetchExternalMoocletsData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'GET',
+          url: expect.stringContaining('mooclet=789'),
+        }),
+        logger
+      );
+      expect(moocletDataService.fetchExternalMoocletsData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'GET',
+          url: expect.stringContaining('variable__name=test_variable'),
+        }),
+        logger
+      );
+    });
+
+    it('should handle paginated responses with next page', async () => {
+      const requestBody = {
+        moocletId: 456,
+        variableName: 'outcome_var',
+      };
+
+      const mockResponse = {
+        count: 100,
+        next: 'http://api.mooclet.com/next-page',
+        previous: null,
+        results: [{ id: '1', version: 100, value: 1.0 }],
+      };
+
+      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockResolvedValue(mockResponse);
+
+      const result = await moocletDataService.getRewardsForExperiment(requestBody, logger);
+
+      expect(result.next).toBe('http://api.mooclet.com/next-page');
+      expect(result.count).toBe(100);
+    });
+
+    it('should throw error when fetchExternalMoocletsData fails', async () => {
+      const requestBody = {
+        moocletId: 456,
+        variableName: 'outcome_var',
+      };
+
+      const mockError = new Error('API connection failed');
+      jest.spyOn(moocletDataService, 'fetchExternalMoocletsData').mockRejectedValue(mockError);
+
+      await expect(moocletDataService.getRewardsForExperiment(requestBody, logger)).rejects.toThrow(
+        'API connection failed'
+      );
+    });
+
+    afterAll(() => {
+      jest.restoreAllMocks();
+    });
+  });
 });

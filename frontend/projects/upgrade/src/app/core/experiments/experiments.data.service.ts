@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   Experiment,
   ExperimentStateInfo,
@@ -13,8 +13,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { API_ENDPOINTS } from '../api-endpoints.constants';
 import { Observable } from 'rxjs';
 import { ExperimentSegmentListRequest, SegmentFile } from '../segments/store/segments.model';
-import { IImportFile, LIST_FILTER_MODE } from 'upgrade_types';
-import { ExperimentRewardsSummary } from '../../../../../../../types/src/Mooclet';
+import { IImportFile, LIST_FILTER_MODE, ExperimentRewardsSummary } from 'upgrade_types';
 
 @Injectable()
 export class ExperimentDataService {

@@ -24,11 +24,11 @@ import {
   CONSISTENCY_RULE_DISPLAY_MAP,
   ASSIGNMENT_UNIT_DISPLAY_MAP,
   FILTER_MODE,
+  ExperimentRewardsSummary,
 } from 'upgrade_types';
 import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
 import { formatTSConfigurablePolicyParamDetails } from '../mooclet-helper.service';
 import { KeyValueFormat } from '../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
-import { ExperimentRewardsSummary } from '../../../../../../../../types/src/Mooclet';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
 
@@ -339,7 +339,26 @@ export const selectRewardsDataForSelectedExperiment = createSelector(
   selectSelectedExperiment,
   selectExperimentState,
   (experiment: ExperimentVM, state: ExperimentState): ExperimentRewardsSummary => {
-    return state.rewardsSummaries[experiment.id] || [];
+    if (!experiment || !experiment.id) {
+      return [];
+    }
+    const rewardsSummary = state.rewardsSummaries[experiment.id];
+
+    if (!rewardsSummary) {
+      const defaultRewardsSummary: ExperimentRewardsSummary = experiment.conditions.map((condition) => {
+        return {
+          conditionCode: condition.conditionCode,
+          successes: 0,
+          failures: 0,
+          total: 0,
+          successRate: 'n/a',
+          order: condition.order,
+        };
+      });
+      return defaultRewardsSummary;
+    }
+
+    return rewardsSummary;
   }
 );
 

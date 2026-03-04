@@ -548,6 +548,444 @@ describe('MoocletRewardsService', () => {
     });
   });
 
+  describe('getRewardsSummaryForExperiment', () => {
+    const mockMoocletRewardsResponse = {
+      count: 10,
+      next: null,
+      previous: null,
+      results: [
+        { id: '1', version: 100, value: 1.0, variable: 'reward_variable', learner: 'user-1', mooclet: 456 },
+        { id: '2', version: 100, value: 0.0, variable: 'reward_variable', learner: 'user-2', mooclet: 456 },
+        { id: '3', version: 100, value: 1.0, variable: 'reward_variable', learner: 'user-3', mooclet: 456 },
+        { id: '4', version: 200, value: 1.0, variable: 'reward_variable', learner: 'user-4', mooclet: 456 },
+        { id: '5', version: 200, value: 0.0, variable: 'reward_variable', learner: 'user-5', mooclet: 456 },
+      ],
+    };
+
+    beforeEach(() => {
+      mockMoocletDataService.getRewardsForExperiment = jest.fn();
+    });
+
+    it('should successfully fetch and return rewards summary', async () => {
+      const refWithConditions = {
+        ...mockMoocletExperimentRef,
+        versionConditionMaps: [
+          {
+            experimentConditionId: 'condition-1',
+            moocletVersionId: 100,
+            experimentCondition: { conditionCode: 'Control', order: 0 },
+          },
+          {
+            experimentConditionId: 'condition-2',
+            moocletVersionId: 200,
+            experimentCondition: { conditionCode: 'Treatment', order: 1 },
+          },
+        ],
+      };
+
+      mockMoocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId.mockResolvedValue(
+        refWithConditions as any
+      );
+      mockMoocletDataService.getRewardsForExperiment.mockResolvedValue(mockMoocletRewardsResponse as any);
+
+      const result = await service.getRewardsSummaryForExperiment('experiment-123', mockLogger);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({
+        conditionCode: 'Control',
+        successes: 2,
+        failures: 1,
+        total: 3,
+        successRate: '66.7%',
+        order: 0,
+      });
+      expect(result[1]).toEqual({
+        conditionCode: 'Treatment',
+        successes: 1,
+        failures: 1,
+        total: 2,
+        successRate: '50.0%',
+        order: 1,
+      });
+    });
+
+    it('should handle experiment with no rewards', async () => {
+      const refWithConditions = {
+        ...mockMoocletExperimentRef,
+        versionConditionMaps: [
+          {
+            experimentConditionId: 'condition-1',
+            moocletVersionId: 100,
+            experimentCondition: { conditionCode: 'Control', order: 0 },
+          },
+        ],
+      };
+
+      mockMoocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId.mockResolvedValue(
+        refWithConditions as any
+      );
+      mockMoocletDataService.getRewardsForExperiment.mockResolvedValue({
+        count: 0,
+        next: null,
+        previous: null,
+        results: [],
+      } as any);
+
+      const result = await service.getRewardsSummaryForExperiment('experiment-123', mockLogger);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        conditionCode: 'Control',
+        successes: 0,
+        failures: 0,
+        total: 0,
+        successRate: '0.0%',
+        order: 0,
+      });
+    });
+
+    it('should log error and re-throw when mooclet service fails', async () => {
+      const error = new Error('Mooclet API error');
+      mockMoocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId.mockRejectedValue(error);
+
+      await expect(service.getRewardsSummaryForExperiment('experiment-123', mockLogger)).rejects.toThrow(error);
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Error fetching rewards summary for experiment',
+          experimentId: 'experiment-123',
+          error,
+        })
+      );
+    });
+
+    it('should sort results by condition order', async () => {
+      const refWithConditions = {
+        ...mockMoocletExperimentRef,
+        versionConditionMaps: [
+          {
+            experimentConditionId: 'condition-2',
+            moocletVersionId: 200,
+            experimentCondition: { conditionCode: 'Treatment', order: 1 },
+          },
+          {
+            experimentConditionId: 'condition-1',
+            moocletVersionId: 100,
+            experimentCondition: { conditionCode: 'Control', order: 0 },
+          },
+        ],
+      };
+
+      mockMoocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId.mockResolvedValue(
+        refWithConditions as any
+      );
+      mockMoocletDataService.getRewardsForExperiment.mockResolvedValue(mockMoocletRewardsResponse as any);
+
+      const result = await service.getRewardsSummaryForExperiment('experiment-123', mockLogger);
+
+      expect(result[0].conditionCode).toBe('Control');
+      expect(result[0].order).toBe(0);
+      expect(result[1].conditionCode).toBe('Treatment');
+      expect(result[1].order).toBe(1);
+    });
+  });
+
+  describe('fetchRewardsForExperiment', () => {
+    beforeEach(() => {
+      mockMoocletDataService.getRewardsForExperiment = jest.fn();
+    });
+
+    it('should call mooclet data service with correct parameters', async () => {
+      const moocletRef = {
+        moocletId: 456,
+        outcomeVariableName: 'test_variable',
+      } as MoocletExperimentRef;
+
+      mockMoocletDataService.getRewardsForExperiment.mockResolvedValue({
+        count: 5,
+        next: null,
+        previous: null,
+        results: [],
+      } as any);
+
+      await service.fetchRewardsForExperiment(moocletRef, mockLogger as any);
+
+      expect(mockMoocletDataService.getRewardsForExperiment).toHaveBeenCalledWith(
+        {
+          moocletId: 456,
+          variableName: 'test_variable',
+        },
+        mockLogger
+      );
+    });
+
+    it('should return paginated response from mooclet data service', async () => {
+      const moocletRef = {
+        moocletId: 456,
+        outcomeVariableName: 'test_variable',
+      } as MoocletExperimentRef;
+
+      const expectedResponse = {
+        count: 3,
+        next: 'http://next-page',
+        previous: null,
+        results: [{ id: '1', value: 1.0 }],
+      };
+
+      mockMoocletDataService.getRewardsForExperiment.mockResolvedValue(expectedResponse as any);
+
+      const result = await service.fetchRewardsForExperiment(moocletRef, mockLogger as any);
+
+      expect(result).toEqual(expectedResponse);
+    });
+  });
+
+  describe('createExperimentRewardsSummary', () => {
+    it('should calculate success rate correctly for each condition', async () => {
+      const refWithConditions = {
+        ...mockMoocletExperimentRef,
+        experimentId: 'exp-123',
+        versionConditionMaps: [
+          {
+            experimentConditionId: 'condition-1',
+            moocletVersionId: 100,
+            experimentCondition: { conditionCode: 'Control', order: 0 },
+          },
+          {
+            experimentConditionId: 'condition-2',
+            moocletVersionId: 200,
+            experimentCondition: { conditionCode: 'Treatment', order: 1 },
+          },
+        ],
+      };
+
+      const rewardsResponse = {
+        count: 7,
+        next: null,
+        previous: null,
+        results: [
+          { id: '1', version: 100, value: 1.0 },
+          { id: '2', version: 100, value: 1.0 },
+          { id: '3', version: 100, value: 0.0 },
+          { id: '4', version: 200, value: 1.0 },
+          { id: '5', version: 200, value: 0.0 },
+          { id: '6', version: 200, value: 0.0 },
+          { id: '7', version: 200, value: 0.0 },
+        ],
+      };
+
+      const result = await service.createExperimentRewardsSummary(
+        refWithConditions as any,
+        rewardsResponse as any,
+        mockLogger as any
+      );
+
+      expect(result[0]).toEqual({
+        conditionCode: 'Control',
+        successes: 2,
+        failures: 1,
+        total: 3,
+        successRate: '66.7%',
+        order: 0,
+      });
+      expect(result[1]).toEqual({
+        conditionCode: 'Treatment',
+        successes: 1,
+        failures: 3,
+        total: 4,
+        successRate: '25.0%',
+        order: 1,
+      });
+    });
+
+    it('should handle 100% success rate', async () => {
+      const refWithConditions = {
+        ...mockMoocletExperimentRef,
+        experimentId: 'exp-123',
+        versionConditionMaps: [
+          {
+            experimentConditionId: 'condition-1',
+            moocletVersionId: 100,
+            experimentCondition: { conditionCode: 'Control', order: 0 },
+          },
+        ],
+      };
+
+      const rewardsResponse = {
+        count: 3,
+        next: null,
+        previous: null,
+        results: [
+          { id: '1', version: 100, value: 1.0 },
+          { id: '2', version: 100, value: 1.0 },
+          { id: '3', version: 100, value: 1.0 },
+        ],
+      };
+
+      const result = await service.createExperimentRewardsSummary(
+        refWithConditions as any,
+        rewardsResponse as any,
+        mockLogger as any
+      );
+
+      expect(result[0].successRate).toBe('100.0%');
+    });
+
+    it('should handle 0% success rate', async () => {
+      const refWithConditions = {
+        ...mockMoocletExperimentRef,
+        experimentId: 'exp-123',
+        versionConditionMaps: [
+          {
+            experimentConditionId: 'condition-1',
+            moocletVersionId: 100,
+            experimentCondition: { conditionCode: 'Control', order: 0 },
+          },
+        ],
+      };
+
+      const rewardsResponse = {
+        count: 2,
+        next: null,
+        previous: null,
+        results: [
+          { id: '1', version: 100, value: 0.0 },
+          { id: '2', version: 100, value: 0.0 },
+        ],
+      };
+
+      const result = await service.createExperimentRewardsSummary(
+        refWithConditions as any,
+        rewardsResponse as any,
+        mockLogger as any
+      );
+
+      expect(result[0].successRate).toBe('0.0%');
+    });
+
+    it('should return empty array when results is undefined', async () => {
+      const refWithConditions = {
+        ...mockMoocletExperimentRef,
+        experimentId: 'exp-123',
+        versionConditionMaps: [
+          {
+            experimentConditionId: 'condition-1',
+            moocletVersionId: 100,
+            experimentCondition: { conditionCode: 'Control', order: 0 },
+          },
+        ],
+      };
+
+      const rewardsResponse = {
+        count: 0,
+        next: null,
+        previous: null,
+        results: undefined,
+      };
+
+      const result = await service.createExperimentRewardsSummary(
+        refWithConditions as any,
+        rewardsResponse as any,
+        mockLogger as any
+      );
+
+      expect(result).toEqual([]);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'No rewards data returned from Mooclet API',
+          experimentId: 'exp-123',
+        })
+      );
+    });
+
+    it('should filter rewards by version ID correctly', async () => {
+      const refWithConditions = {
+        ...mockMoocletExperimentRef,
+        experimentId: 'exp-123',
+        versionConditionMaps: [
+          {
+            experimentConditionId: 'condition-1',
+            moocletVersionId: 100,
+            experimentCondition: { conditionCode: 'Control', order: 0 },
+          },
+          {
+            experimentConditionId: 'condition-2',
+            moocletVersionId: 200,
+            experimentCondition: { conditionCode: 'Treatment', order: 1 },
+          },
+        ],
+      };
+
+      const rewardsResponse = {
+        count: 5,
+        next: null,
+        previous: null,
+        results: [
+          { id: '1', version: 100, value: 1.0 },
+          { id: '2', version: 999, value: 1.0 }, // Different version, should be ignored
+          { id: '3', version: 100, value: 0.0 },
+          { id: '4', version: 200, value: 1.0 },
+          { id: '5', version: 200, value: 0.0 },
+        ],
+      };
+
+      const result = await service.createExperimentRewardsSummary(
+        refWithConditions as any,
+        rewardsResponse as any,
+        mockLogger as any
+      );
+
+      // Version 999 should not be counted
+      expect(result[0].total).toBe(2); // Only version 100
+      expect(result[1].total).toBe(2); // Only version 200
+    });
+
+    it('should handle condition with no rewards', async () => {
+      const refWithConditions = {
+        ...mockMoocletExperimentRef,
+        experimentId: 'exp-123',
+        versionConditionMaps: [
+          {
+            experimentConditionId: 'condition-1',
+            moocletVersionId: 100,
+            experimentCondition: { conditionCode: 'Control', order: 0 },
+          },
+          {
+            experimentConditionId: 'condition-2',
+            moocletVersionId: 200,
+            experimentCondition: { conditionCode: 'Treatment', order: 1 },
+          },
+        ],
+      };
+
+      const rewardsResponse = {
+        count: 2,
+        next: null,
+        previous: null,
+        results: [
+          { id: '1', version: 100, value: 1.0 },
+          { id: '2', version: 100, value: 0.0 },
+          // No rewards for version 200
+        ],
+      };
+
+      const result = await service.createExperimentRewardsSummary(
+        refWithConditions as any,
+        rewardsResponse as any,
+        mockLogger as any
+      );
+
+      expect(result[1]).toEqual({
+        conditionCode: 'Treatment',
+        successes: 0,
+        failures: 0,
+        total: 0,
+        successRate: '0.0%',
+        order: 1,
+      });
+    });
+  });
+
   describe('private helper methods', () => {
     describe('findMoocletExperimentRefById', () => {
       it('should return mooclet ref when found', async () => {

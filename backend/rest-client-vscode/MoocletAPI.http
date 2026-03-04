@@ -27,7 +27,7 @@
 @host = https://apps.qa-cli.net/mooclet-service
 
 # Replace with your token, i.e.
-@token = Token 8596fc28f0be787901ae0623e885fcc25bf0182e
+@token = Token abc123
 # @token =
 
 @apiEndpoint = /engine/api/v1

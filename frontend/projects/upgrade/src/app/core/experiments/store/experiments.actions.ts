@@ -18,7 +18,7 @@ import {
   UpdateExperimentConditionsRequest,
 } from './experiments.model';
 import { ExperimentSegmentListRequest } from '../../segments/store/segments.model';
-import { ExperimentRewardsSummary } from '../../../../../../../../types/src/Mooclet';
+import { ExperimentRewardsSummary } from 'upgrade_types';
 
 export const actionGetExperiments = createAction('[Experiment] Get Experiments', props<{ fromStarting?: boolean }>());
 
