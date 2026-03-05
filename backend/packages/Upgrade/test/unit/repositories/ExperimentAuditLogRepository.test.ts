@@ -143,6 +143,32 @@ describe('ExperimentAuditLogRepository Testing', () => {
     expect(res).toEqual(5);
   });
 
+  it('should get total logs with experimentId', async () => {
+    const experimentId = '550e8400-e29b-41d4-a716-446655440000';
+    const res = await repo.getTotalLogs(LOG_TYPE.EXPERIMENT_CREATED, experimentId);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.andWhere).toHaveBeenCalledTimes(1);
+    expect(mock.getCount).toHaveBeenCalledTimes(1);
+
+    expect(res).toEqual(5);
+  });
+
+  it('should get total logs with only experimentId (no filter)', async () => {
+    const experimentId = '550e8400-e29b-41d4-a716-446655440000';
+    const res = await repo.getTotalLogs(undefined, experimentId);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.andWhere).not.toHaveBeenCalled();
+    expect(mock.getCount).toHaveBeenCalledTimes(1);
+
+    expect(res).toEqual(5);
+  });
+
   it('should throw an error when get total logs fails', async () => {
     mock.getCount.mockRejectedValue(err);
 
@@ -183,6 +209,44 @@ describe('ExperimentAuditLogRepository Testing', () => {
     expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(1);
     expect(mock.orderBy).toHaveBeenCalledTimes(1);
     expect(mock.where).not.toHaveBeenCalled();
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
+
+    expect(res).toEqual(result);
+  });
+
+  it('should find paginated with experimentId', async () => {
+    const experimentId = '550e8400-e29b-41d4-a716-446655440000';
+    const res = await repo.paginatedFind(3, 0, LOG_TYPE.EXPERIMENT_CREATED, experimentId);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.offset).toHaveBeenCalledTimes(1);
+    expect(mock.offset).toHaveBeenCalledWith(0);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(3);
+    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(1);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.andWhere).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(1);
+
+    expect(res).toEqual(result);
+  });
+
+  it('should find paginated with only experimentId (no filter)', async () => {
+    const experimentId = '550e8400-e29b-41d4-a716-446655440000';
+    const res = await repo.paginatedFind(3, 0, undefined, experimentId);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.offset).toHaveBeenCalledTimes(1);
+    expect(mock.offset).toHaveBeenCalledWith(0);
+    expect(mock.limit).toHaveBeenCalledTimes(1);
+    expect(mock.limit).toHaveBeenCalledWith(3);
+    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(1);
+    expect(mock.orderBy).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.andWhere).not.toHaveBeenCalled();
     expect(mock.getMany).toHaveBeenCalledTimes(1);
 
     expect(res).toEqual(result);

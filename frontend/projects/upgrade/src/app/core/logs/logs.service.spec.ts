@@ -236,4 +236,74 @@ describe('LogsService', () => {
       expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionSetErrorLogFilter({ filterType }));
     });
   });
+
+  describe('#fetchExperimentLogs', () => {
+    it('should dispatch actionGetExperimentLogs with experimentId and fromStart', () => {
+      const experimentId = 'exp-123';
+      const fromStart = true;
+
+      service.fetchExperimentLogs(experimentId, fromStart);
+
+      expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionGetExperimentLogs({ experimentId, fromStart }));
+    });
+
+    it('should dispatch actionGetExperimentLogs with only experimentId', () => {
+      const experimentId = 'exp-123';
+
+      service.fetchExperimentLogs(experimentId);
+
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        LogActions.actionGetExperimentLogs({ experimentId, fromStart: undefined })
+      );
+    });
+  });
+
+  describe('#setExperimentLogFilter', () => {
+    it('should dispatch actionSetExperimentLogFilter with experimentId and filterType', () => {
+      const experimentId = 'exp-123';
+      const filterType = LOG_TYPE.EXPERIMENT_UPDATED;
+
+      service.setExperimentLogFilter(experimentId, filterType);
+
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        LogActions.actionSetExperimentLogFilter({ experimentId, filterType })
+      );
+    });
+  });
+
+  describe('#isAllExperimentLogsFetched', () => {
+    const testCases = [
+      {
+        whenCondition: 'skip does not equal total',
+        expectedValue: false,
+        metadata: { skip: 10, total: 20, logs: [], isLoading: false, filter: null },
+      },
+      {
+        whenCondition: 'skip equals total',
+        expectedValue: true,
+        metadata: { skip: 20, total: 20, logs: [], isLoading: false, filter: null },
+      },
+      {
+        whenCondition: 'metadata is null',
+        expectedValue: false,
+        metadata: null,
+      },
+    ];
+
+    testCases.forEach((testCase) => {
+      const { whenCondition, expectedValue, metadata } = testCase;
+
+      it(`WHEN ${whenCondition}, THEN ${expectedValue}`, fakeAsync(() => {
+        const experimentId = 'exp-123';
+        LogSelectors.selectIsAllExperimentLogsFetched.setResult(expectedValue);
+
+        service.isAllExperimentLogsFetched(experimentId).subscribe((val) => {
+          tick(0);
+          expect(val).toEqual(expectedValue);
+        });
+
+        tick();
+      }));
+    });
+  });
 });
