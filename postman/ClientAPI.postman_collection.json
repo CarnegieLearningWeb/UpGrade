@@ -1,0 +1,362 @@
+{
+  "info": {
+    "name": "Client API",
+    "description": "Client-facing v6 API endpoints for UpGrade. This collection covers common happy-path client requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3030/api",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "testuser123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "v6 Endpoints",
+      "description": "Modern API using User-Id header (RESTful approach)",
+      "item": [
+        {
+          "name": "Init User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"group\": {\n    \"schoolId\": [\"school-001\", \"school-002\"],\n    \"classId\": [\"class-advanced-math\"],\n    \"instructorId\": [\"instructor-john\"]\n  },\n  \"workingGroup\": {\n    \"schoolId\": \"school-001\",\n    \"classId\": \"class-advanced-math\",\n    \"instructorId\": \"instructor-john\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/init",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "init"]
+            },
+            "description": "Create or update an experiment user with group memberships and working group. The User-Id header identifies the user."
+          }
+        },
+        {
+          "name": "Set Group Membership",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"group\": {\n    \"schoolId\": [\"school-003\"],\n    \"classId\": [\"class-advanced-physics\"],\n    \"instructorId\": [\"instructor-jane\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/groupmembership",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "groupmembership"]
+            },
+            "description": "Update the group membership for a user. Groups are represented as Record<string, string[]> where keys are group types and values are arrays of group identifiers."
+          }
+        },
+        {
+          "name": "Set Working Group",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workingGroup\": {\n    \"schoolId\": \"school-003\",\n    \"classId\": \"class-advanced-physics\",\n    \"instructorId\": \"instructor-jane\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/workinggroup",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "workinggroup"]
+            },
+            "description": "Update the working group for a user. Working group is represented as Record<string, string> where each group type maps to a single value."
+          }
+        },
+        {
+          "name": "Mark Experiment Point",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"site\": \"mathtutor\",\n    \"target\": \"problem-solving-module\",\n    \"assignedCondition\": {\n      \"conditionCode\": \"control\",\n      \"experimentId\": \"exp-001-adaptive-learning\"\n    }\n  },\n  \"status\": \"condition applied\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/mark",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "mark"]
+            },
+            "description": "Mark an experiment decision point with the assigned condition. Status can be 'condition applied', 'condition not applied', or 'no condition assigned'."
+          }
+        },
+        {
+          "name": "Get Experiment Assignments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"context\": \"assignment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "assign"]
+            },
+            "description": "Get all experiment conditions assigned to the user for a given context. Returns an array of assignments with site, target, experimentType, and assignedCondition."
+          }
+        },
+        {
+          "name": "Log Metrics",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": [\n    {\n      \"timestamp\": \"2026-02-17T10:30:00Z\",\n      \"metrics\": {\n        \"attributes\": {\n          \"completionTime\": 120,\n          \"scorePercentage\": 85,\n          \"difficultyLevel\": \"MEDIUM\"\n        },\n        \"groupedMetrics\": [\n          {\n            \"groupClass\": \"workspaceType\",\n            \"groupKey\": \"math-workspace\",\n            \"groupUniquifier\": \"workspace-001\",\n            \"attributes\": {\n              \"problemsSolved\": 15,\n              \"hintsUsed\": 3\n            }\n          }\n        ]\n      }\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/log",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "log"]
+            },
+            "description": "Log metric data for the user. Supports both individual attributes (Record<string, string | number>) and grouped metrics with groupClass, groupKey, and groupUniquifier."
+          }
+        },
+        {
+          "name": "Get Feature Flags (Stored Mode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"context\": \"assignment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/featureflag",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "featureflag"]
+            },
+            "description": "Get feature flags for the user using stored groups (standard mode). Returns an array of feature flag names."
+          }
+        },
+        {
+          "name": "Get Feature Flags (Ephemeral Mode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"context\": \"assignment\",\n  \"groupsForSession\": {\n    \"schoolId\": [\"demo-school\"],\n    \"classId\": [\"demo-class-advanced\"]\n  },\n  \"includeStoredUserGroups\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/featureflag",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "featureflag"]
+            },
+            "description": "Get feature flags using ephemeral session-only groups (ignores stored user groups). Useful for temporary group assignments without persisting to the user record."
+          }
+        },
+        {
+          "name": "Get Feature Flags (Merged Mode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"context\": \"assignment\",\n  \"groupsForSession\": {\n    \"classId\": [\"temp-class-123\", \"special-session\"]\n  },\n  \"includeStoredUserGroups\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/featureflag",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "featureflag"]
+            },
+            "description": "Get feature flags using merged mode - combines both stored user groups and session-specific groups. Both groupsForSession and includeStoredUserGroups must be provided together."
+          }
+        },
+        {
+          "name": "Set User Aliases",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aliases\": [\"alias-user-abc\", \"old-id-456\", \"external-ref-789\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/useraliases",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "useraliases"]
+            },
+            "description": "Set aliases for the current user. Aliases allow multiple identifiers to reference the same user."
+          }
+        },
+        {
+          "name": "Send Reward (Direct Lookup)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rewardValue\": \"SUCCESS\",\n  \"experimentId\": \"exp-001-adaptive-learning\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/reward",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "reward"]
+            },
+            "description": "Send reward signal for adaptive experiments (Mooclets) using direct experiment ID lookup. Reward values: 'SUCCESS' or 'FAILURE'."
+          }
+        },
+        {
+          "name": "Send Reward (Decision Point Lookup)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rewardValue\": \"FAILURE\",\n  \"context\": \"assignment\",\n  \"decisionPoint\": {\n    \"site\": \"mathtutor\",\n    \"target\": \"problem-solving-module\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/reward",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "reward"]
+            },
+            "description": "Send reward signal for adaptive experiments using decision point lookup (context + site + target). Either experimentId OR (context + decisionPoint) must be provided."
+          }
+        },
+        {
+          "name": "Clear Database (Demo)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/clearDB",
+              "host": ["{{baseUrl}}"],
+              "path": ["clearDB"]
+            },
+            "description": "Clear the database (demo mode only). Note: This endpoint requires authorization in production environments."
+          }
+        }
+      ]
+    }
+  ]
+}
