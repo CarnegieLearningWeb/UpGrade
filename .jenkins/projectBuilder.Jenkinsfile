@@ -14,9 +14,6 @@ projectBuilderV5 (
             projectDir: ".",
             runInProjectDir: true,
             versioning: "branch",
-            fileFilter: [
-                include: ["packages/backend/.*"]
-            ],
             appInfrastructure: [
                 [file: "cloudformation/backend/app-infrastructure.yml"]
             ],
