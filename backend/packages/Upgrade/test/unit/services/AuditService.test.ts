@@ -1,5 +1,4 @@
 import { AuditService } from '../../../src/api/services/AuditService';
-import { Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
@@ -10,7 +9,7 @@ const auditArr = [1, 2, 3];
 
 describe('Audit Service Testing', () => {
   let service: AuditService;
-  let repo: Repository<ExperimentAuditLogRepository>;
+  let repo: ExperimentAuditLogRepository;
   let module: TestingModule;
 
   beforeAll(() => {
@@ -35,7 +34,7 @@ describe('Audit Service Testing', () => {
     }).compile();
 
     service = module.get<AuditService>(AuditService);
-    repo = module.get<Repository<ExperimentAuditLogRepository>>(getRepositoryToken(ExperimentAuditLogRepository));
+    repo = module.get<ExperimentAuditLogRepository>(getRepositoryToken(ExperimentAuditLogRepository));
   });
 
   it('should be defined', async () => {
