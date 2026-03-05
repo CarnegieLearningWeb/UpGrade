@@ -7,6 +7,9 @@
         style="justify-content: left; padding-left: 16px"
         class="ft-14-600"
         *matHeaderCellDef
+        [matTooltip]="'experiments.details.conditions.weight-adaptive-tooltip.text' | translate"
+        [matTooltipDisabled]="!isMoocletExperiment(experiment)"
+        matTooltipPosition="above"
       >
         {{ key.includes('Icon') ? '' : columnHeaders[key] }}
       </mat-header-cell>
@@ -16,9 +19,12 @@
         style="justify-content: left"
         class="ft-14-400"
         *matCellDef="let element; let i = dataIndex"
+        [matTooltip]="'experiments.details.conditions.weight-adaptive-tooltip.text' | translate"
+        [matTooltipDisabled]="!isMoocletExperiment(experiment)"
+        matTooltipPosition="above"
       >
         <!-- Special handling for weight column when experiment has moocletPolicyParameters -->
-        <span *ngIf="key === 'weight' && experiment?.moocletPolicyParameters; else regularCell">N/A</span>
+        <span *ngIf="key === 'weight' && isMoocletExperiment(experiment); else regularCell">N/A</span>
 
         <ng-template #regularCell>
           <span *ngIf="!key.includes('Icon'); else icon" style="padding-left: -5px">{{ element.data[key] }}</span>

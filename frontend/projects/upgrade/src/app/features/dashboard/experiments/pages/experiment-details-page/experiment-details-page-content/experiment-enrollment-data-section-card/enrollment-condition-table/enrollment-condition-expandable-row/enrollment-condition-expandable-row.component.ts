@@ -6,7 +6,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { EnrollmentPointPartitionTableComponent } from '../enrollment-point-partition-table/enrollment-point-partition-table.component';
-
+import { MoocletExperimentHelperService } from '../../../../../../../../../core/experiments/mooclet-helper.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
 @Component({
   selector: 'app-enrollment-condition-expandable-row',
   templateUrl: './enrollment-condition-expandable-row.component.html',
@@ -17,6 +18,7 @@ import { EnrollmentPointPartitionTableComponent } from '../enrollment-point-part
     CommonModule,
     MatTableModule,
     MatIconModule,
+    MatTooltipModule,
     forwardRef(() => EnrollmentPointPartitionTableComponent),
   ],
 })
@@ -29,7 +31,8 @@ export class EnrollmentConditionExpandableRowComponent implements OnDestroy {
   expandedId = '';
   columnHeaders = {};
   translateSub: Subscription;
-  constructor(private translate: TranslateService) {
+
+  constructor(private translate: TranslateService, private moocletHelperService: MoocletExperimentHelperService) {
     this.translateSub = this.translate
       .get([
         'global.condition.text',
@@ -49,6 +52,10 @@ export class EnrollmentConditionExpandableRowComponent implements OnDestroy {
           experimentId: arrayValues['home.view-experiment-global.experiment-target.text'],
         };
       });
+  }
+
+  isMoocletExperiment(experiment: ExperimentVM): boolean {
+    return this.moocletHelperService.isMoocletAlgorithm(experiment?.assignmentAlgorithm);
   }
 
   toggleExpandableSymbol(id: string): void {
