@@ -13,7 +13,7 @@ RUN yarn
 # ARG CODEARTIFACT_REGISTRY="//cli-467155500999.d.codeartifact.us-east-1.amazonaws.com/npm/cli-npm-artifacts/"
 # RUN npm config set '${CODEARTIFACT_REGISTRY}:_authToken=${CODEARTIFACT_AUTH_TOKEN}'
 
-RUN ["yarn", "workspace", "ab_testing_backend", "build"]
+RUN ["yarn", "workspace", "upgrade-backend", "build"]
 
 FROM ${IMAGE_REPO}node:22.14-alpine3.21
 
@@ -27,4 +27,4 @@ COPY --from=build /usr/src/app/package.json ./package.json
 COPY --from=build /usr/src/app/packages/backend ./packages/backend
 COPY --from=build /usr/src/app/packages/types ./packages/types
 EXPOSE 3030
-CMD ["yarn", "workspace", "ab_testing_backend", "production"]
+CMD ["yarn", "workspace", "upgrade-backend", "production"]

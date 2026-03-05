@@ -27,4 +27,4 @@ RUN yarn
 EXPOSE 4200 3030
 
 # Run frontend and backend with concurrently
-CMD ["concurrently", "\"yarn workspace ab-testing docker:local\"", "\"yarn workspace ab_testing_backend dev\""]
+CMD ["concurrently", "\"yarn workspace upgrade-frontend docker:local\"", "\"yarn workspace upgrade-backend dev\""]

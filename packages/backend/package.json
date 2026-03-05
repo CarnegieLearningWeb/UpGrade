@@ -1,7 +1,7 @@
 {
-    "name": "ab_testing_backend",
+    "name": "upgrade-backend",
     "version": "6.3.0",
-    "description": "Backend for A/B Testing Project",
+    "description": "Backend for the UpGrade A/B Testing Platform",
     "main": "index.js",
     "scripts": {
         "start": "nps",

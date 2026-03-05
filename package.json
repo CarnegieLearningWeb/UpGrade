@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "overrides": {
-    "ab-testing": {
+    "upgrade-frontend": {
       "typescript": "~5.5.4"
     }
   },
@@ -31,7 +31,9 @@
     "prepare": "is-ci || husky install",
     "lint": "eslint --quiet -c .eslintrc.js --ext .ts './packages/{frontend,backend,types}/**/*.ts'",
     "prettier:write": "prettier --config .prettierrc './packages/{frontend,backend,types}/**/*.{ts,js,html,json,scss}' --write",
-    "prettier:check": "prettier --config .prettierrc './packages/{frontend,backend,types}/**/*.{ts,js,html,json,scss}' --check"
+    "prettier:check": "prettier --config .prettierrc './packages/{frontend,backend,types}/**/*.{ts,js,html,json,scss}' --check",
+    "backend": "yarn workspace upgrade-backend",
+    "frontend": "yarn workspace upgrade-frontend"
   },
   "lint-staged": {
     "./packages/frontend/projects/upgrade/src/**/*.{ts,js,html,json,scss}": [

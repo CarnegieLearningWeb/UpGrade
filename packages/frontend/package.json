@@ -1,5 +1,6 @@
 {
-  "name": "ab-testing",
+  "name": "upgrade-frontend",
+  "description": "Frontend for the UpGrade A/B Testing Platform",
   "version": "6.4.0",
   "license": "MIT",
   "scripts": {

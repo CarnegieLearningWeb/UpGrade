@@ -45,16 +45,16 @@ projectBuilderV5 (
             oneArtifactPerEnvironment: true,
             buildScripts: [
                 [
-                    script: 'npx yarn workspace ab-testing test',
+                    script: 'npx yarn workspace upgrade-frontend test',
                     githubCheck: "upgrade-frontend-test",
                     log: "upgrade-frontend-test.log"
                 ],
                 [
-                    script: 'npx yarn workspace ab-testing prebuild:project',
+                    script: 'npx yarn workspace upgrade-frontend prebuild:project',
                     log: 'env-pre-build.log',
                 ],
                 [
-                    script: 'npx yarn workspace ab-testing build:project',
+                    script: 'npx yarn workspace upgrade-frontend build:project',
                     log: '${projectName}-build.log',
                     githubCheck: '${projectName}-build'
                 ]
@@ -78,7 +78,7 @@ projectBuilderV5 (
             skipArtifactUpload: true,
             buildScripts: [
                 [
-                    script: 'npx yarn workspace ab_testing_backend test',
+                    script: 'npx yarn workspace upgrade-backend test',
                     githubCheck: '${projectName} test',
                     log: '${projectName}-test.log'
                 ]
