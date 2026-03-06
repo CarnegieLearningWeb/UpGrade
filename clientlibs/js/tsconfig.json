@@ -19,7 +19,7 @@
     "typeRoots": ["./node_modules/@types"],
     "lib": ["es2018", "dom"],
     "paths": {
-      "upgrade_types": ["../../../types"]
+      "upgrade_types": ["../../../packages/types"]
     },
     "esModuleInterop": true
   },
