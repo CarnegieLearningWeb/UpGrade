@@ -36,6 +36,7 @@ export class ExperimentConditionsTableComponent {
   @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
   @Input() actionsTooltip?: string = '';
+  @Input() isMoocletExperiment = false;
   @Output() rowAction = new EventEmitter<ExperimentConditionRowActionEvent>();
   @Output() editWeights = new EventEmitter<ExperimentCondition[]>();
 

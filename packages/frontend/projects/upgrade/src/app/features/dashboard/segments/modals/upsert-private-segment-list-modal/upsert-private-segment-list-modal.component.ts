@@ -103,7 +103,6 @@ export class UpsertPrivateSegmentListModalComponent {
 
     this.initializeListeners();
     this.populateFormForEdit();
-    this.sortValues();
   }
 
   ngAfterViewInit() {
@@ -148,18 +147,6 @@ export class UpsertPrivateSegmentListModalComponent {
 
       return null;
     };
-  }
-
-  // Function to sort the values
-  sortValues() {
-    const currentValues = this.privateSegmentListForm?.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.VALUES).value;
-    const sortedValues = [...currentValues].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-    this.privateSegmentListForm?.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.VALUES).setValue(sortedValues);
-  }
-
-  // onBlur handler
-  onBlur() {
-    this.sortValues();
   }
 
   fetchData() {
