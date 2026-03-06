@@ -8,24 +8,23 @@ RUN apk update && apk add --no-cache xdg-utils
 WORKDIR /usr/src/app
 
 # Copy frontend and backend and upgrade types source
-COPY ./frontend ./frontend
-COPY ./backend/packages/Upgrade ./backend/packages/Upgrade
-COPY ./backend/tsconfig.json ./backend
-COPY ./types ./types
+COPY ./packages/frontend ./packages/frontend
+COPY ./packages/backend ./packages/backend
+COPY ./packages/backend/tsconfig.json ./backend
+COPY ./packages/types ./packages/types
+COPY ./package.json ./package.json
 
 ENV NEW_RELIC_NO_CONFIG_FILE=true
 ENV NR_NATIVE_METRICS_NO_BUILD=true
 
 # Install concurrently globally
-RUN npm install -g concurrently
+RUN yarn global add concurrently
 
-# Install frontend dependencies
-RUN cd frontend && npm ci
-# Install backend dependencies
-RUN cd backend/packages/Upgrade && npm ci
+# Install  dependencies
+RUN yarn
 
 # Expose any ports the frontend and backend use
 EXPOSE 4200 3030
 
 # Run frontend and backend with concurrently
-CMD ["concurrently", "\"npm --prefix ./frontend run docker:local\"", "\"npm --prefix ./backend/packages/Upgrade run dev\""]
+CMD ["concurrently", "\"yarn workspace upgrade-frontend docker:local\"", "\"yarn workspace upgrade-backend dev\""]
