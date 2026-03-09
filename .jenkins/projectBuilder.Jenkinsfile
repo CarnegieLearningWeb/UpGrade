@@ -4,7 +4,7 @@ projectBuilderV5 (
     ],
     initScripts: [
         [
-            script: 'npx corepack enable && yarn',
+            script: 'npx yarn',
             log: 'yarn-install.log'
         ]
     ],
