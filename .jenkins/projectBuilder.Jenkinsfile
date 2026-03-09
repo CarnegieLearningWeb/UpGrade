@@ -4,7 +4,7 @@ projectBuilderV5 (
     ],
     initScripts: [
         [
-            script: 'npx yarn',
+            script: 'npx corepack enable && yarn',
             log: 'yarn-install.log'
         ]
     ],
@@ -14,6 +14,9 @@ projectBuilderV5 (
             projectDir: ".",
             runInProjectDir: true,
             versioning: "branch",
+            fileFilter: [
+                include: ["/packages/backend/.*"]
+            ],
             appInfrastructure: [
                 [file: "cloudformation/backend/app-infrastructure.yml"]
             ],
@@ -23,7 +26,7 @@ projectBuilderV5 (
             ],
             dockerConfig: [
                 cpu: 2048,
-                memory: 8192,
+                memory: 4096,
                 dockerFile: "packages/backend/cl.Dockerfile",
                 requiresCodeArtifactToken: true,
             ],
@@ -73,6 +76,9 @@ projectBuilderV5 (
             projectDir: ".",
             runInProjectDir: true,
             skipArtifactUpload: true,
+            fileFilter: [
+                include: ["/packages/backend/.*"]
+            ],
             buildScripts: [
                 [
                     script: 'npx yarn workspace upgrade-backend test',

@@ -5,7 +5,6 @@ import tsconfig from '../tsconfig.json';
 const content: any = JSON.parse(JSON.stringify(tsconfig)); // Clone JSON.parse(JSON.stringify(tsconfig.json
 content.compilerOptions.outDir = 'dist';
 content.include = ['src/**/*', 'custom.d.ts'];
-content.compilerOptions.paths.upgrade_types = ['./types'];
 delete content.references;
 delete content.extends;
 delete content.references;

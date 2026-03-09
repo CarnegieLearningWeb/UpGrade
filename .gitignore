@@ -5,3 +5,4 @@ node_modules
 setup_upgrade.sh
 .idea
 *.iml
+.yarn

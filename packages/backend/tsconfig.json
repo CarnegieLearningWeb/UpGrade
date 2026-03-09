@@ -42,14 +42,9 @@
       "esnext.asynciterable",
       "ES2020.Promise"
     ],
-      "paths": {
-      "upgrade_types": ["../types"]
+    "paths": {
+      "upgrade_types": ["../types/dist/src"]
     }
   },
-  "references": [
-    {
-      "path": "../types"
-    }
-  ],
   "exclude": ["**/*/node_modules"]
 }

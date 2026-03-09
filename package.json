@@ -65,5 +65,6 @@
   "bugs": {
     "url": "https://github.com/CarnegieLearningWeb/UpGrade/issues"
   },
-  "homepage": "https://github.com/CarnegieLearningWeb/UpGrade#readme"
+  "homepage": "https://github.com/CarnegieLearningWeb/UpGrade#readme",
+  "packageManager": "yarn@4.13.0"
 }

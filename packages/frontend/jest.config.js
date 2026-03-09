@@ -6,12 +6,12 @@ module.exports = {
   coverageReporters: ['json-summary', 'text', 'lcov'],
   setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
 
-  // Fix for zone.js/testing module resolution
-  moduleNameMapper: {
-    '^zone.js/testing$': '<rootDir>/../../node_modules/zone.js/bundles/zone-testing.umd.js',
-    // Keep other path mappings from tsconfig
-    '^upgrade_types(.*)$': '<rootDir>/../../../types$1',
-  },
+  // // Fix for zone.js/testing module resolution
+  // moduleNameMapper: {
+  //   '^zone.js/testing$': '<rootDir>/../../node_modules/zone.js/bundles/zone-testing.umd.js',
+  //   // Keep other path mappings from tsconfig
+  //   '^upgrade_types(.*)$': '<rootDir>/../../../types$1',
+  // },
 
   // Updated transform configuration
   transform: {
