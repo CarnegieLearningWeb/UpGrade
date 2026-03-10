@@ -220,8 +220,30 @@ export class MoocletRewardsService {
       const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(
         experimentId
       );
-      const moocletRewardsResponse = await this.fetchRewardsForExperiment(moocletExperimentRef, logger);
-      return this.createExperimentRewardsSummary(moocletExperimentRef, moocletRewardsResponse, logger);
+      const rewards: MoocletValueResponseDetails[] = [];
+      logger.info({
+        message: `Fetching Rewards data from mooclet server.`,
+        experimentId,
+      });
+      let response = await this.fetchRewardsForExperiment(moocletExperimentRef, logger);
+      if (Array.isArray(response.results)) {
+        rewards.push(...response.results);
+      }
+
+      while (response.next) {
+        logger.info({
+          message: `But wait there's more (Fetching more Rewards data from Mooclet server for experiment...)`,
+          totalFound: response.count,
+          totalFetched: response.results.length,
+          next: response.next,
+        });
+        response = await this.fetchRewardsForExperiment(moocletExperimentRef, logger, response.next);
+        if (Array.isArray(response.results)) {
+          rewards.push(...response.results);
+        }
+      }
+
+      return this.createExperimentRewardsSummary(moocletExperimentRef, rewards, logger);
     } catch (error) {
       logger.error({ message: 'Error fetching rewards summary for experiment', experimentId, error });
       throw error;
@@ -230,29 +252,30 @@ export class MoocletRewardsService {
 
   public async fetchRewardsForExperiment(
     moocletExperimentRef: MoocletExperimentRef,
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    nextPageUrl?: string
   ): Promise<MoocletPaginatedResponse<MoocletValueResponseDetails>> {
     const requestBody: MoocletRewardCountRequestBody = {
       moocletId: moocletExperimentRef.moocletId,
       variableName: moocletExperimentRef.outcomeVariableName,
     };
 
-    return await this.moocletDataService.getRewardsForExperiment(requestBody, logger);
+    return await this.moocletDataService.getRewardsForExperiment(requestBody, logger, nextPageUrl);
   }
 
   public async createExperimentRewardsSummary(
     moocletExperimentRef: MoocletExperimentRef,
-    moocletRewardsResponse: MoocletPaginatedResponse<MoocletValueResponseDetails>,
+    rewardsData: MoocletValueResponseDetails[],
     logger: UpgradeLogger
   ): Promise<ExperimentRewardsSummary> {
-    const rewards: MoocletValueResponseDetails[] = moocletRewardsResponse.results;
+    const rewards: MoocletValueResponseDetails[] = rewardsData;
 
-    if (!moocletRewardsResponse?.results) {
+    if (!rewardsData) {
       logger.warn({
         message: 'No rewards data returned from Mooclet API',
         experimentId: moocletExperimentRef.experimentId,
       });
-      return []; // or throw appropriate error
+      return [];
     }
 
     const rewardsSummaries = moocletExperimentRef.versionConditionMaps.map(

@@ -236,13 +236,23 @@ export class MoocletDataService {
 
   public async getRewardsForExperiment(
     requestBody: MoocletRewardCountRequestBody,
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    nextPageUrl?: string
   ): Promise<MoocletPaginatedResponse<MoocletValueResponseDetails>> {
-    const endpoint = `/value?mooclet=${requestBody.moocletId}&variable__name=${requestBody.variableName}`;
+    let url = '';
+
+    // this endpoint serves a paginated response
+    // if there are more results "pages" mooclet api sends the exact url to use for "next" page
+    if (nextPageUrl) {
+      url = nextPageUrl;
+    } else {
+      const endpoint = `/value?mooclet=${requestBody.moocletId}&variable__name=${requestBody.variableName}`;
+      url = this.apiUrl + endpoint;
+    }
 
     const requestParams: MoocletProxyRequestParams = {
       method: 'GET',
-      url: this.apiUrl + endpoint,
+      url,
       apiToken: this.apiToken,
     };
 
