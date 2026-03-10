@@ -1,7 +1,7 @@
 import { DataService } from './../DataService/DataService';
 import ApiService from './../ApiService/ApiService';
 import UpgradeClient from './UpgradeClient';
-import { EXPERIMENT_TYPE } from '../../../../types/src';
+import { EXPERIMENT_TYPE } from 'upgrade_types';
 
 const mockHttpClient = {
   doGet: jest.fn(),
