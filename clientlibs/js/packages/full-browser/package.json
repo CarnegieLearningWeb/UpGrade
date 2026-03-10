@@ -1,15 +1,12 @@
 {
   "name": "upgrade_client_lib_full_browser",
-  "version": "6.2.6",
+  "version": "6.4.0",
   "description": "UpGrade client library for browsers (includes axios)",
   "main": "dist/browser/index.js",
   "types": "dist/browser/index.d.ts",
   "files": [
     "dist/browser/**/*"
   ],
-  "dependencies": {
-    "uuid": "^8.3.2"
-  },
   "keywords": [
     "upgrade",
     "a/b testing",

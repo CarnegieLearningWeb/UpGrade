@@ -6,13 +6,13 @@ services:
     image: upgrade-app:latest
     user: "node"
     env_file:
-      - ./backend/packages/Upgrade/.env.docker.local
+      - ./packages/backend/.env.docker.local
     environment:
       - NODE_ENV=development
     volumes:
-      - ./frontend:/usr/src/app/frontend
-      - ./backend:/usr/src/app/backend
-      - frontend-node_modules:/usr/src/app/frontend/node_modules
+      - ./packages/frontend:/usr/src/app/packages/frontend
+      - ./packages/backend:/usr/src/app/packages/backend
+      - frontend-node_modules:/usr/src/app/packages/frontend/node_modules
     networks:
       - localdev
     ports:
@@ -33,7 +33,7 @@ services:
       - "5432:5432"
     volumes:
       - upgradedbdata:/var/lib/postgresql/data
-  
+
 volumes:
   upgradedbdata:
   frontend-node_modules:
