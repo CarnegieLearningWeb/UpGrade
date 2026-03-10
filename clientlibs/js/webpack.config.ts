@@ -18,7 +18,7 @@ const generalConfiguration = {
   },
   resolve: {
     alias: {
-      upgrade_types: path.resolve(__dirname, '../../types/src'),
+      upgrade_types: path.resolve(__dirname, '../../packages/types/src'),
     },
     extensions: ['.tsx', '.ts', '.js'],
   },

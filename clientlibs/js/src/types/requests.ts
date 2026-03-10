@@ -1,4 +1,4 @@
-import { MARKED_DECISION_POINT_STATUS } from '../../../../types/src';
+import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { UpGradeClientInterfaces } from './Interfaces';
 
 /* eslint-disable @typescript-eslint/no-namespace */
