@@ -239,16 +239,11 @@ export class MoocletDataService {
     logger: UpgradeLogger,
     nextPageUrl?: string
   ): Promise<MoocletPaginatedResponse<MoocletValueResponseDetails>> {
-    let url = '';
-
     // this endpoint serves a paginated response
     // if there are more results "pages" mooclet api sends the exact url to use for "next" page
-    if (nextPageUrl) {
-      url = nextPageUrl;
-    } else {
-      const endpoint = `/value?mooclet=${requestBody.moocletId}&variable__name=${requestBody.variableName}`;
-      url = this.apiUrl + endpoint;
-    }
+    // else it is nul/undefined and we'll fetch from the beginning
+    const url =
+      nextPageUrl || `${this.apiUrl}/value?mooclet=${requestBody.moocletId}&variable__name=${requestBody.variableName}`;
 
     const requestParams: MoocletProxyRequestParams = {
       method: 'GET',
