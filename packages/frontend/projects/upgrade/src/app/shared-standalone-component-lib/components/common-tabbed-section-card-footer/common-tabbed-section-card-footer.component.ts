@@ -10,7 +10,8 @@ import {
   Output,
 } from '@angular/core';
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { CommonTabHelpersService } from '../../../shared/services/common-tab-helpers.service';
 
 /**
  * The `app-common-tabbed-section-card-footer` component provides a common footer component for tabbed sections.
@@ -33,50 +34,25 @@ import { ActivatedRoute, Router } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommonTabbedSectionCardFooterComponent implements OnInit {
-  @Input() selectedIndex = 0; // Default to the first tab
+  @Input() selectedIndex = 0;
   @Input() tabLabels: { label: string; disabled?: boolean }[] = [];
   @Output() selectedTabChange = new EventEmitter<number>();
 
-  router = inject(Router);
   route = inject(ActivatedRoute);
   changeDetector = inject(ChangeDetectorRef);
+  tabHelpers = inject(CommonTabHelpersService);
 
   ngOnInit(): void {
-    this.setSelectedTabFromQueryParams();
+    const tabIndex = this.tabHelpers.getTabIndexFromQueryParams(this.route, this.tabLabels.length);
+    if (tabIndex !== null) {
+      this.selectedIndex = tabIndex;
+    }
+    this.selectedTabChange.emit(this.selectedIndex);
+    this.changeDetector.markForCheck();
   }
 
   onSelectedTabChange(event: MatTabChangeEvent) {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { tab: event.index },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
+    this.tabHelpers.navigateToTab(event.index, this.route);
     this.selectedTabChange.emit(event.index);
-  }
-
-  setSelectedTabFromQueryParams() {
-    const tab = this.route.snapshot.queryParamMap.get('tab');
-
-    if (tab) {
-      const selectedTab = parseInt(tab, 10);
-
-      if (isNaN(selectedTab)) {
-        console.warn('Tab index from url is not a number');
-        return;
-      }
-
-      const tabWithinRange = selectedTab >= 0 && selectedTab < this.tabLabels.length;
-
-      if (!tabWithinRange) {
-        console.warn('Tab index from url is out of range');
-        return;
-      }
-
-      this.selectedIndex = selectedTab;
-    }
-
-    this.selectedTabChange.emit(this.selectedIndex);
-    this.changeDetector.markForCheck();
   }
 }

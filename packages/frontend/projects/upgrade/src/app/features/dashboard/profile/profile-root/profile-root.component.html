@@ -3,11 +3,17 @@
   <span class="ft-16-400 subtitle" [innerHTML]="'profile.sub-heading.text' | translate"></span>
 
   <mat-card appearance="raised" class="tabs-wrapper">
-    <mat-tab-group [selectedIndex]="0" [mat-stretch-tabs]="false" [dynamicHeight]="true" disableRipple>
+    <mat-tab-group
+      [selectedIndex]="selectedIndex"
+      (selectedTabChange)="onSelectedTabChange($event)"
+      [mat-stretch-tabs]="false"
+      [dynamicHeight]="true"
+      disableRipple
+    >
       <mat-tab>
         <ng-template mat-tab-label>
           <span class="ft-22-600 tab-label">
-            {{ 'profile.heading.text' | translate }}
+            {{ tabLabels[0].label | translate }}
           </span>
         </ng-template>
         <profile-info></profile-info>
@@ -15,7 +21,7 @@
       <mat-tab>
         <ng-template mat-tab-label>
           <span class="ft-22-600 tab-label">
-            {{ 'global.metrics.text' | translate }}
+            {{ tabLabels[1].label | translate }}
           </span>
         </ng-template>
         <profile-metrics></profile-metrics>
