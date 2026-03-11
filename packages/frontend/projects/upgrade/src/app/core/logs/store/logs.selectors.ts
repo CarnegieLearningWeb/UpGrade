@@ -38,3 +38,30 @@ export const selectTotalErrorLogs = createSelector(selectLogState, (state) => st
 export const selectAuditFilterType = createSelector(selectLogState, (state) => state.auditLogFilter);
 
 export const selectErrorFilterType = createSelector(selectLogState, (state) => state.errorLogFilter);
+
+// Experiment-specific log selectors
+export const selectExperimentLogsState = createSelector(selectLogState, (state) => state.experimentAuditLogs);
+
+export const selectExperimentLogsMetadata = createSelector(
+  selectExperimentLogsState,
+  (experimentLogs: Record<string, any>, props: { experimentId: string }) => experimentLogs[props.experimentId] || null
+);
+
+export const selectExperimentLogs = createSelector(selectExperimentLogsMetadata, (metadata) => metadata?.logs || []);
+
+export const selectIsExperimentLogsLoading = createSelector(
+  selectExperimentLogsMetadata,
+  (metadata) => metadata?.isLoading || false
+);
+
+export const selectExperimentLogsTotal = createSelector(
+  selectExperimentLogsMetadata,
+  (metadata) => metadata?.total || 0
+);
+
+export const selectExperimentLogsSkip = createSelector(selectExperimentLogsMetadata, (metadata) => metadata?.skip || 0);
+
+export const selectIsAllExperimentLogsFetched = createSelector(selectExperimentLogsMetadata, (metadata) => {
+  if (!metadata || metadata.total === null) return false;
+  return metadata.skip >= metadata.total;
+});

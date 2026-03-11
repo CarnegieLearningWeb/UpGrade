@@ -85,6 +85,17 @@ interface ExperimentStateChangedData {
 }
 
 interface ExperimentDeletedData {
+  experimentId: string;
+  experimentName: string;
+}
+
+interface ExperimentDataExportedData {
+  experimentId: string;
+  experimentName: string;
+}
+
+interface ExperimentDesignExportedData {
+  experimentId: string;
   experimentName: string;
 }
 
@@ -126,6 +137,8 @@ export type AuditLogData =
   | ExperimentUpdatedData
   | ExperimentStateChangedData
   | ExperimentDeletedData
+  | ExperimentDataExportedData
+  | ExperimentDesignExportedData
   | FeatureFlagCreatedData
   | FeatureFlagUpdatedData
   | FeatureFlagStateChangedData

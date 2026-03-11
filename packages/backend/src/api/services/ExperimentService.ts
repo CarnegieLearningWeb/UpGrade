@@ -351,6 +351,7 @@ export class ExperimentService {
 
         // adding entry in audit log
         const deleteAuditLogData = {
+          experimentId: experiment.id,
           experimentName: experiment.name,
         };
 

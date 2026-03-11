@@ -1,5 +1,5 @@
+import { LogDateFormatType } from '../../core/logs/store/logs.model';
 import { LogDateFormatPipe } from './logs-date-format.pipe';
-import { LogDateFormatType } from '../../../../core/logs/store/logs.model';
 
 describe('LogDateFormatPipe', () => {
   const logDateFormatPipe = new LogDateFormatPipe();

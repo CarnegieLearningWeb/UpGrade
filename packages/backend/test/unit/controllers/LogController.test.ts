@@ -36,6 +36,45 @@ describe('Log Controller Testing', () => {
       .expect(200);
   });
 
+  test('Post request for /api/audit with experimentId', () => {
+    return request(app)
+      .post('/api/audit')
+      .send({
+        skip: 0,
+        take: 0,
+        filter: 'experimentCreated',
+        experimentId: '550e8400-e29b-41d4-a716-446655440000',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Post request for /api/audit with only experimentId (no filter)', () => {
+    return request(app)
+      .post('/api/audit')
+      .send({
+        skip: 0,
+        take: 10,
+        experimentId: '550e8400-e29b-41d4-a716-446655440000',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Post request for /api/audit with invalid experimentId should fail', () => {
+    return request(app)
+      .post('/api/audit')
+      .send({
+        skip: 0,
+        take: 0,
+        experimentId: 'invalid-uuid',
+      })
+      .set('Accept', 'application/json')
+      .expect(400);
+  });
+
   test('Post request for /api/error', () => {
     return request(app)
       .post('/api/error')

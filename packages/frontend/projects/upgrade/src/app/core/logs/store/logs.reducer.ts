@@ -1,11 +1,19 @@
 import { createReducer, on, Action } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
-import { AuditLogs, LogState, ErrorLogs } from './logs.model';
+import { AuditLogs, LogState, ErrorLogs, AuditLogsMetadata } from './logs.model';
 import * as logsActions from './logs.actions';
 
 export const adapter: EntityAdapter<AuditLogs | ErrorLogs> = createEntityAdapter<AuditLogs | ErrorLogs>();
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
+
+const initialAuditLogsMetadata: AuditLogsMetadata = {
+  logs: [],
+  skip: 0,
+  total: null,
+  isLoading: false,
+  filter: null,
+};
 
 export const initialState: LogState = adapter.getInitialState({
   isAuditLogLoading: false,
@@ -16,6 +24,7 @@ export const initialState: LogState = adapter.getInitialState({
   totalErrorLogs: null,
   auditLogFilter: null,
   errorLogFilter: null,
+  experimentAuditLogs: {},
 });
 
 const reducer = createReducer(
@@ -55,7 +64,68 @@ const reducer = createReducer(
   on(logsActions.actionSetIsAuditLogLoading, (state, { isAuditLogLoading }) => ({ ...state, isAuditLogLoading })),
   on(logsActions.actionSetIsErrorLogLoading, (state, { isErrorLogLoading }) => ({ ...state, isErrorLogLoading })),
   on(logsActions.actionSetAuditLogFilter, (state, { filterType }) => ({ ...state, auditLogFilter: filterType })),
-  on(logsActions.actionSetErrorLogFilter, (state, { filterType }) => ({ ...state, errorLogFilter: filterType }))
+  on(logsActions.actionSetErrorLogFilter, (state, { filterType }) => ({ ...state, errorLogFilter: filterType })),
+  // Experiment-specific log handlers
+  on(logsActions.actionGetExperimentLogs, (state, { experimentId, fromStart }) => {
+    const experimentLog = state.experimentAuditLogs[experimentId] || initialAuditLogsMetadata;
+    return {
+      ...state,
+      experimentAuditLogs: {
+        ...state.experimentAuditLogs,
+        [experimentId]: {
+          ...experimentLog,
+          isLoading: true,
+          ...(fromStart && { skip: 0, logs: [] }),
+        },
+      },
+    };
+  }),
+  on(logsActions.actionGetExperimentLogsSuccess, (state, { experimentId, auditLogs, totalAuditLogs, fromStart }) => {
+    const experimentLog = state.experimentAuditLogs[experimentId] || initialAuditLogsMetadata;
+    const updatedLogs = fromStart ? auditLogs : [...experimentLog.logs, ...auditLogs];
+
+    return {
+      ...state,
+      experimentAuditLogs: {
+        ...state.experimentAuditLogs,
+        [experimentId]: {
+          ...experimentLog,
+          logs: updatedLogs,
+          skip: updatedLogs.length,
+          total: totalAuditLogs,
+          isLoading: false,
+        },
+      },
+    };
+  }),
+  on(logsActions.actionGetExperimentLogsFailure, (state, { experimentId }) => {
+    const experimentLog = state.experimentAuditLogs[experimentId] || initialAuditLogsMetadata;
+    return {
+      ...state,
+      experimentAuditLogs: {
+        ...state.experimentAuditLogs,
+        [experimentId]: {
+          ...experimentLog,
+          isLoading: false,
+        },
+      },
+    };
+  }),
+  on(logsActions.actionSetExperimentLogFilter, (state, { experimentId, filterType }) => {
+    const experimentLog = state.experimentAuditLogs[experimentId] || initialAuditLogsMetadata;
+    return {
+      ...state,
+      experimentAuditLogs: {
+        ...state.experimentAuditLogs,
+        [experimentId]: {
+          ...experimentLog,
+          filter: filterType,
+          logs: [],
+          skip: 0,
+        },
+      },
+    };
+  })
 );
 
 export function logsReducer(state: LogState | undefined, action: Action) {

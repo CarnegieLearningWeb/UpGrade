@@ -32,6 +32,8 @@ import {
   selectSortAs,
   selectSortKey,
   selectTotalExperiment,
+  selectRewardsDataForSelectedExperiment,
+  selectIsLoadingRewardsSummary,
 } from './experiments.selectors';
 
 describe('Experiments Selectors', () => {
@@ -818,6 +820,113 @@ describe('Experiments Selectors', () => {
       const result = selectContextMetaData.projector(state);
 
       expect(result).toEqual(state.contextMetaData);
+    });
+  });
+
+  describe('#selectRewardsDataForSelectedExperiment', () => {
+    it('should return rewards summary for selected experiment', () => {
+      const mockRewardsSummary = [
+        {
+          conditionCode: 'Control',
+          successes: 10,
+          failures: 5,
+          total: 15,
+          successRate: '66.7%',
+          order: 0,
+        },
+        {
+          conditionCode: 'Treatment',
+          successes: 8,
+          failures: 7,
+          total: 15,
+          successRate: '53.3%',
+          order: 1,
+        },
+      ];
+
+      const state = {
+        ...mockState,
+        rewardsSummaries: {
+          '1f12cd8f-7ff9-4731-a4eb-7104918ed252': mockRewardsSummary,
+        },
+      };
+
+      const selectedExperiment = state.entities['1f12cd8f-7ff9-4731-a4eb-7104918ed252'];
+
+      const result = selectRewardsDataForSelectedExperiment.projector(selectedExperiment, state);
+
+      expect(result).toEqual(mockRewardsSummary);
+    });
+
+    it('should return empty array when no rewards summary exists for selected experiment', () => {
+      const state = {
+        ...mockState,
+        rewardsSummaries: {},
+      };
+
+      const expectedDefault = [
+        {
+          conditionCode: 'control',
+          failures: 0,
+          order: 1,
+          successRate: 'n/a',
+          successes: 0,
+          total: 0,
+        },
+        {
+          conditionCode: 'variant',
+          failures: 0,
+          order: 2,
+          successRate: 'n/a',
+          successes: 0,
+          total: 0,
+        },
+      ];
+
+      const selectedExperiment = state.entities['1f12cd8f-7ff9-4731-a4eb-7104918ed252'];
+
+      const result = selectRewardsDataForSelectedExperiment.projector(selectedExperiment, state);
+
+      expect(result).toEqual(expectedDefault);
+    });
+
+    it('should return empty array when experiment is null', () => {
+      const state = {
+        ...mockState,
+        rewardsSummaries: {
+          'some-id': [],
+        },
+      };
+
+      const selectedExperiment = null;
+
+      const result = selectRewardsDataForSelectedExperiment.projector(selectedExperiment, state);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('#selectIsLoadingRewardsSummary', () => {
+    it('should return true when loading rewards summary', () => {
+      const state = {
+        ...mockState,
+        isLoadingRewardsSummary: true,
+      };
+
+      const result = selectIsLoadingRewardsSummary.projector(state);
+
+      expect(result).toEqual(true);
+    });
+
+    it('should return false when not loading rewards summary', () => {
+      const state = {
+        ...mockState,
+        isLoadingRewardsSummary: false,
+      };
+
+      const result = selectIsLoadingRewardsSummary.projector(state);
+
+      expect(result).toEqual(false);
     });
   });
 });

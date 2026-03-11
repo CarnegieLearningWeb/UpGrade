@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import * as env from '../../../../../../environments/environment';
-import { LogType } from '../../../../../core/logs/store/logs.model';
+import { LogType, SYSTEM_USER_EMAIL } from '../../../../../core/logs/store/logs.model';
 import { EXPERIMENT_LIST_OPERATION, FEATURE_FLAG_LIST_OPERATION, LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 import Convert from 'ansi-to-html';
 
@@ -15,7 +15,7 @@ export class TimelineComponent {
   @Input() logData;
   @Input() logType: LogType;
   // Used to change setting icon based on theme
-  systemUserEmail = 'system@gmail.com';
+  systemUserEmail = SYSTEM_USER_EMAIL;
   endPoint = env.environment.apiBaseUrl.substring(0, env.environment.apiBaseUrl.lastIndexOf('/'));
 
   get LogType() {

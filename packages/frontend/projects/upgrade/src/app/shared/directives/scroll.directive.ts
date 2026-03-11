@@ -3,7 +3,7 @@ import { debounce } from '../decorator/debounce.decorator';
 
 @Directive({
   selector: '[scroll]',
-  standalone: false,
+  standalone: true,
 })
 export class ScrollDirective {
   @Output() scrolled = new EventEmitter<number>();

@@ -6,10 +6,10 @@ import { AuditLogsComponent } from '../components/audit-logs/audit-logs.componen
 import { ErrorLogsComponent } from '../components/error-logs/error-logs.component';
 import { LogsService } from '../../../../core/logs/logs.service';
 import { TimelineComponent } from '../components/timeline/timeline.component';
-import { LogDateFormatPipe } from '../pipes/logs-date-format.pipe';
 import { ErrorLogPipe } from '../pipes/error-log.pipe';
 import { ExperimentActionMessage } from '../pipes/experiment-action-message.pipe';
 import { SettingsService } from '../../../../core/settings/settings.service';
+import { SharedModule } from '../../../../shared/shared.module';
 
 xdescribe('LogsComponent', () => {
   let component: LogsComponent;
@@ -22,11 +22,10 @@ xdescribe('LogsComponent', () => {
         AuditLogsComponent,
         ErrorLogsComponent,
         TimelineComponent,
-        LogDateFormatPipe,
         ErrorLogPipe,
         ExperimentActionMessage,
       ],
-      imports: [TestingModule],
+      imports: [TestingModule, SharedModule],
       providers: [LogsService, SettingsService],
     }).compileComponents();
   }));

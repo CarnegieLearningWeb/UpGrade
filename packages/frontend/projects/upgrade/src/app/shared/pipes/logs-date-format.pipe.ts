@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { LogDateFormatType } from '../../../../core/logs/store/logs.model';
+import { LogDateFormatType } from '../../core/logs/store/logs.model';
 
 @Pipe({
   name: 'logDateFormatPipe',

@@ -1,0 +1,58 @@
+.accordion {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.expansion-header {
+  padding: 8px 16px;
+  min-height: 48px !important;
+
+  ::ng-deep .mat-expansion-panel-header-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+}
+
+.action-msg {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.view-diff {
+  color: var(--primary);
+  cursor: pointer;
+  margin-left: 8px;
+  text-decoration: underline;
+}
+
+.log-time {
+  color: var(--text-secondary);
+  margin-left: auto;
+  padding-left: 16px;
+}
+
+.diff-container {
+  background-color: var(--background-secondary);
+  padding: 16px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 500px;
+  overflow-y: auto;
+
+  ::ng-deep {
+    .ansi-color {
+      font-weight: normal;
+    }
+  }
+}
+
+pre {
+  margin: 0;
+  padding: 0;
+}

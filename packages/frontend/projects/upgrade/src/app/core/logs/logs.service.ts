@@ -11,6 +11,9 @@ import {
   selectTotalAuditLogs,
   selectTotalErrorLogs,
   selectSkipErrorLog,
+  selectIsExperimentLogsLoading,
+  selectIsAllExperimentLogsFetched,
+  selectExperimentLogs,
 } from './store/logs.selectors';
 import { combineLatest } from 'rxjs';
 import { selectAllExperiment } from '../experiments/store/experiments.selectors';
@@ -113,5 +116,25 @@ export class LogsService {
 
   setErrorLogFilter(filterType: SERVER_ERROR) {
     this.store$.dispatch(logsActions.actionSetErrorLogFilter({ filterType }));
+  }
+
+  getExperimentLogsById(experimentId: string) {
+    return this.store$.pipe(select(selectExperimentLogs, { experimentId }));
+  }
+
+  getExperimentLogsLoadingState(experimentId: string) {
+    return this.store$.pipe(select(selectIsExperimentLogsLoading, { experimentId }));
+  }
+
+  isAllExperimentLogsFetched(experimentId: string) {
+    return this.store$.pipe(select(selectIsAllExperimentLogsFetched, { experimentId }));
+  }
+
+  fetchExperimentLogs(experimentId: string, fromStart?: boolean) {
+    this.store$.dispatch(logsActions.actionGetExperimentLogs({ experimentId, fromStart }));
+  }
+
+  setExperimentLogFilter(experimentId: string, filterType: LOG_TYPE) {
+    this.store$.dispatch(logsActions.actionSetExperimentLogFilter({ experimentId, filterType }));
   }
 }

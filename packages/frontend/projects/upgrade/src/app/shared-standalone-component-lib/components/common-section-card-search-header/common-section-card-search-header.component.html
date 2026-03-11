@@ -1,9 +1,17 @@
 <div class="search-header">
   <mat-form-field class="dense-3 filter-options" subscriptSizing="dynamic">
     <mat-select class="ft-14-400" [(ngModel)]="searchKey" (selectionChange)="onSearch()">
-      <mat-option class="ft-14-400" *ngFor="let filterOption of filterOptionsValues" [value]="filterOption">
-        {{ filterOption | titlecase }}
+      <!-- Standalone options (no group) -->
+      <mat-option class="ft-14-400" *ngFor="let option of standaloneOptions" [value]="option.value">
+        {{ option.value | titlecase }}
       </mat-option>
+
+      <!-- Grouped options -->
+      <mat-optgroup *ngFor="let group of groupedOptions" [label]="group.groupName">
+        <mat-option class="ft-14-400" *ngFor="let option of group.options" [value]="option.value">
+          {{ option.value | titlecase }}
+        </mat-option>
+      </mat-optgroup>
     </mat-select>
   </mat-form-field>
   <mat-form-field class="dense-3 search-input" subscriptSizing="dynamic">

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { TranslateModule } from '@ngx-translate/core';
-import { CurrentPosteriorsTableRow } from '../../../../../../../../core/experiments/store/experiments.model';
+import { ExperimentRewardsSummary } from 'upgrade_types';
 
 @Component({
   selector: 'app-ts-configurable-reward-count-table',
@@ -14,7 +14,7 @@ import { CurrentPosteriorsTableRow } from '../../../../../../../../core/experime
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TSConfigurableRewardCountTableComponent {
-  @Input() dataSource: CurrentPosteriorsTableRow[] = [];
+  @Input() dataSource: ExperimentRewardsSummary = [];
   @Input() isLoading = false;
 
   displayedColumns = ['conditionCode', 'successes', 'failures', 'total', 'successRate', 'spacer'];
