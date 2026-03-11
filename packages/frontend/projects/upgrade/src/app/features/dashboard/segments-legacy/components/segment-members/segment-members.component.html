@@ -14,9 +14,11 @@
               formControlName="type"
               [placeholder]="'segments.members-placeholder-type.text' | translate"
             >
-              <mat-option class="ft-14-400" *ngFor="let val of segmentMemberTypes" [value]="val.value">
+              @for (val of segmentMemberTypes; track val) {
+              <mat-option class="ft-14-400" [value]="val.value">
                 {{ val.name }}
               </mat-option>
+              }
             </mat-select>
           </mat-form-field>
         </mat-cell>
@@ -28,27 +30,26 @@
           {{ 'segments.global-members-id/name.text' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-          <ng-container
-            *ngIf="segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment'; else noSelect"
-          >
-            <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
-              <mat-select class="ft-14-400" formControlName="id">
-                <mat-option class="ft-14-400" *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
-                  {{ subSegmentId }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </ng-container>
-          <ng-template #noSelect>
-            <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
-              <input
-                class="ft-14-400"
-                matInput
-                [placeholder]="'segments.global-members-id/name.text' | translate"
-                formControlName="id"
-              />
-            </mat-form-field>
-          </ng-template>
+          @if (segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment') {
+          <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
+            <mat-select class="ft-14-400" formControlName="id">
+              @for (subSegmentId of subSegmentIds; track subSegmentId) {
+              <mat-option class="ft-14-400" [value]="subSegmentId">
+                {{ subSegmentId }}
+              </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          } @else {
+          <mat-form-field class="dense-2 form-control" appearance="outline" subscriptSizing="dynamic">
+            <input
+              class="ft-14-400"
+              matInput
+              [placeholder]="'segments.global-members-id/name.text' | translate"
+              formControlName="id"
+            />
+          </mat-form-field>
+          }
         </mat-cell>
       </ng-container>
 
@@ -80,10 +81,13 @@
       <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
       <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
     </mat-table>
-    <span class="ft-14-400 validation-message" *ngIf="membersCountError" [innerHTML]="membersCountError"></span>
-    <span class="ft-14-400 validation-message" *ngIf="!membersValid">
+    @if (membersCountError) {
+    <span class="ft-14-400 validation-message" [innerHTML]="membersCountError"></span>
+    } @if (!membersValid) {
+    <span class="ft-14-400 validation-message">
       {{ 'segments.new-segment-members-stepper.error-message.text' | translate }}
     </span>
+    }
     <button type="button" class="ft-12-700 add-member" (click)="addMember()">
       + {{ 'segments.members-add-members.text' | translate }}
     </button>

@@ -1,26 +1,30 @@
 <div class="exclude-entities">
   <h3 class="ft-22-700">{{ 'users.excluded-entity.text' | translate }}</h3>
-  <form class="exclude-form" [formGroup]="excludeEntitiesForm" *ngIf="(permissions$ | async)?.users.create">
+  @if ((permissions$ | async)?.users.create) {
+  <form class="exclude-form" [formGroup]="excludeEntitiesForm">
     <mat-form-field class="dense-2 ft-14-400 form-control">
       <mat-select class="input" formControlName="entityType">
-        <mat-option *ngFor="let entity of entityTypes" [value]="entity.value">
+        @for (entity of entityTypes; track entity) {
+        <mat-option [value]="entity.value">
           {{ entity.value }}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
-
-    <mat-form-field class="dense-2 ft-14-600 form-control" *ngIf="entityTypeValue">
+    @if (entityTypeValue) {
+    <mat-form-field class="dense-2 ft-14-600 form-control">
       <mat-select class="input" formControlName="groupType">
-        <mat-option *ngFor="let groupType of groupTypes" [value]="groupType">
+        @for (groupType of groupTypes; track groupType) {
+        <mat-option [value]="groupType">
           {{ groupType }}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
-
+    }
     <mat-form-field class="dense-2 ft-14-600 form-control input">
       <input matInput [placeholder]="getIdPlaceholder" formControlName="id" />
     </mat-form-field>
-
     <button
       mat-raised-button
       class="default-button"
@@ -31,9 +35,11 @@
       {{ 'users.exclude-btn.text' | translate }}
     </button>
   </form>
-
-  <div class="entities-container" *ngIf="allExcludedEntities.data.length; else zeroState">
-    <mat-progress-bar class="progress-bar" mode="indeterminate" *ngIf="isEntityLoading$ | async"></mat-progress-bar>
+  } @if (allExcludedEntities.data.length) {
+  <div class="entities-container">
+    @if (isEntityLoading$ | async) {
+    <mat-progress-bar class="progress-bar" mode="indeterminate"></mat-progress-bar>
+    }
     <table mat-table [dataSource]="allExcludedEntities" matSort>
       <!-- TYPE Column -->
       <ng-container matColumnDef="type">
@@ -46,7 +52,6 @@
           {{ element.type ? (element.type | titlecase) : ('users-global.text' | translate) }}
         </td>
       </ng-container>
-
       <!-- ID Column -->
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header class="ft-12-700">
@@ -58,33 +63,21 @@
           {{ element.type ? element.groupId : element.userId }}
         </td>
       </ng-container>
-
       <!-- Delete Column -->
       <ng-container matColumnDef="removeEntity">
         <th mat-header-cell *matHeaderCellDef class="ft-12-700"></th>
         <td class="ft-12-600" mat-cell *matCellDef="let element">
-          <mat-icon
-            *ngIf="(permissions$ | async)?.users.delete"
-            class="remove-icon"
-            (click)="removeExcludedEntity(element)"
-          >
-            delete_outline
-          </mat-icon>
+          @if ((permissions$ | async)?.users.delete) {
+          <mat-icon class="remove-icon" (click)="removeExcludedEntity(element)"> delete_outline </mat-icon>
+          }
         </td>
       </ng-container>
-
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
     <mat-paginator class="paginator" [hidePageSize]="true" [pageSize]="5"></mat-paginator>
   </div>
-
-  <ng-template #zeroState>
-    <span
-      *ngIf="(currentUser$ | async)?.role === userRole.READER && !(isEntityLoading$ | async)"
-      class="zero-state"
-      [innerHTML]="'users.no-excluded-entity.text' | translate"
-    >
-    </span>
-  </ng-template>
+  } @else { @if ((currentUser$ | async)?.role === userRole.READER && !(isEntityLoading$ | async)) {
+  <span class="zero-state" [innerHTML]="'users.no-excluded-entity.text' | translate"> </span>
+  } }
 </div>

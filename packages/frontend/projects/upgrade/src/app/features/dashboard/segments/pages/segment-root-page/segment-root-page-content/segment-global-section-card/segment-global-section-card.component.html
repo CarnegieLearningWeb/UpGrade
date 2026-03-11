@@ -13,21 +13,21 @@
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   ></app-common-section-card-action-buttons>
   <!-- content -->
-  <ng-container content *ngIf="isSectionCardExpanded">
-    <ng-container *ngIf="isLoadingGlobalSegments$ | async; else table">
-      <div class="mat-spinner-container">
-        <mat-spinner diameter="60"></mat-spinner>
-      </div>
-    </ng-container>
-
-    <ng-template #table>
-      <div class="table-container">
-        <app-segment-global-section-card-table
-          [dataSource$]="dataSource$ | async"
-          [isLoading$]="isLoadingGlobalSegments$"
-        >
-        </app-segment-global-section-card-table>
-      </div>
-    </ng-template>
+  @if (isSectionCardExpanded) {
+  <ng-container content>
+    @if (isLoadingGlobalSegments$ | async) {
+    <div class="mat-spinner-container">
+      <mat-spinner diameter="60"></mat-spinner>
+    </div>
+    } @else {
+    <div class="table-container">
+      <app-segment-global-section-card-table
+        [dataSource$]="dataSource$ | async"
+        [isLoading$]="isLoadingGlobalSegments$"
+      >
+      </app-segment-global-section-card-table>
+    </div>
+    }
   </ng-container>
+  }
 </app-common-section-card>

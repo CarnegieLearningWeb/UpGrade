@@ -7,7 +7,6 @@ import {
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { TranslateModule } from '@ngx-translate/core';
 import { FeatureFlagExposuresDataComponent } from './feature-flag-exposures-data/feature-flag-exposures-data.component';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-feature-flag-exposures-section-card',
@@ -15,7 +14,6 @@ import { CommonModule } from '@angular/common';
     CommonSectionCardComponent,
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
-    CommonModule,
     TranslateModule,
     FeatureFlagExposuresDataComponent,
   ],

@@ -23,9 +23,11 @@
             {{ 'home.view-experiment.graph-select-all.text' | translate }}
           </span>
         </mat-checkbox>
-        <mat-option class="ft-14-400" *ngFor="let partition of partitionsFilterOptions" [value]="partition.id">
+        @for (partition of partitionsFilterOptions; track partition) {
+        <mat-option class="ft-14-400" [value]="partition.id">
           {{ partition.point + ' (' + partition.twoCharacterId + ')' }}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
 
@@ -51,9 +53,11 @@
             {{ 'home.view-experiment.graph-select-all.text' | translate }}
           </span>
         </mat-checkbox>
-        <mat-option class="ft-14-400" *ngFor="let condition of conditionsFilterOptions" [value]="condition.id">
+        @for (condition of conditionsFilterOptions; track condition) {
+        <mat-option class="ft-14-400" [value]="condition.id">
           {{ condition.code }}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
 
@@ -67,9 +71,11 @@
         [(ngModel)]="selectedGroupFilter"
         (selectionChange)="applyExperimentFilter(ExperimentFilter.GROUP_FILTER)"
       >
-        <mat-option class="ft-14-400" *ngFor="let groupValue of groupFiltersOptions" [value]="groupValue">
+        @for (groupValue of groupFiltersOptions; track groupValue) {
+        <mat-option class="ft-14-400" [value]="groupValue">
           {{ groupValue }}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
 
@@ -82,19 +88,23 @@
         [(ngModel)]="selectedDateFilter"
         (selectionChange)="applyExperimentFilter(ExperimentFilter.DATE_FILTER)"
       >
-        <mat-option class="ft-14-400" *ngFor="let dateFilterType of dateFilterOptions" [value]="dateFilterType.value">
+        @for (dateFilterType of dateFilterOptions; track dateFilterType) {
+        <mat-option class="ft-14-400" [value]="dateFilterType.value">
           {{ dateFilterType.viewValue | titlecase }}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </div>
 
   <div class="chart-container">
     <div class="condition-container">
-      <div class="condition" *ngFor="let condition of graphColorIndicators; let index = index">
+      @for (condition of graphColorIndicators; track condition; let index = $index) {
+      <div class="condition">
         <span class="color-box" [ngStyle]="{ 'background-color': colors[index] }"></span>
         <span>{{ condition.conditionCode }}</span>
       </div>
+      }
     </div>
     <br />
     <div class="chart">
@@ -119,9 +129,11 @@
             </div>
           </ng-template>
         </ngx-charts-bar-vertical-stacked>
-        <div class="spinner" *ngIf="isGraphLoading$ | async">
+        @if (isGraphLoading$ | async) {
+        <div class="spinner">
           <mat-spinner diameter="60"></mat-spinner>
         </div>
+        }
       </div>
 
       <div class="enrollment-statistic">

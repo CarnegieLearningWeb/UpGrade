@@ -10,13 +10,11 @@
     <p class="validation-modal-content-text ft-16-400">
       {{ data.params.message }}
     </p>
-    <p
-      class="validation-modal-content-text ft-14-400"
-      [ngClass]="data.params.subMessageClass"
-      *ngIf="data.params.subMessage"
-    >
+    @if (data.params.subMessage) {
+    <p class="validation-modal-content-text ft-14-400" [ngClass]="data.params.subMessageClass">
       {{ data.params.subMessage }}
     </p>
+    }
     <div class="validation-modal-content-text ft-16-600">
       {{ validationPrompt }}
     </div>

@@ -1,6 +1,8 @@
 <div class="table-container">
   <!-- Loading spinner -->
-  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+  @if (isLoading$ | async) {
+  <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
+  }
 
   <!-- Table -->
   <table mat-table [dataSource]="queries" [ngClass]="{ 'no-data': !queries?.length }" class="metrics-table">
@@ -13,14 +15,11 @@
         @let statisticOperations = getStatisticOperations(row); @let metricKeys = getMetricKeys(row);
         <td mat-cell class="metric-column ft-14-400" [class.multi-statistic]="statisticOperations.length > 1">
           <div class="multi-line-cell">
-            <span
-              *ngFor="let key of metricKeys"
-              [appTextOverflowTooltip]="key"
-              matTooltipPosition="above"
-              class="line-clamp-1"
-            >
+            @for (key of metricKeys; track key) {
+            <span [appTextOverflowTooltip]="key" matTooltipPosition="above" class="line-clamp-1">
               {{ key }}
             </span>
+            }
           </div>
         </td>
       </ng-template>
@@ -35,14 +34,11 @@
         @let statisticOperations = getStatisticOperations(row);
         <td mat-cell class="statistic-column ft-14-400" [class.multi-statistic]="statisticOperations.length > 1">
           <div class="multi-line-cell">
-            <span
-              *ngFor="let operation of statisticOperations"
-              [appTextOverflowTooltip]="operation | titlecase"
-              matTooltipPosition="above"
-              class="line-clamp-1"
-            >
+            @for (operation of statisticOperations; track operation) {
+            <span [appTextOverflowTooltip]="operation | titlecase" matTooltipPosition="above" class="line-clamp-1">
               {{ operation | titlecase }}
             </span>
+            }
           </div>
         </td>
       </ng-template>
@@ -76,10 +72,10 @@
         @let statisticOperations = getStatisticOperations(row); @let hasMultipleStatistics = statisticOperations.length
         > 1;
         <td mat-cell class="actions-column ft-14-400 dense-2" [class.multi-statistic]="hasMultipleStatistics">
+          @if (showActions) {
           <div
             class="button-wrapper"
             [class.multi-statistic]="hasMultipleStatistics"
-            *ngIf="showActions"
             [matTooltip]="actionsTooltip"
             [matTooltipDisabled]="!actionsDisabled"
             matTooltipPosition="above"
@@ -88,10 +84,10 @@
               <mat-icon>edit</mat-icon>
             </button>
           </div>
+          } @if (showActions) {
           <div
             class="button-wrapper"
             [class.multi-statistic]="hasMultipleStatistics"
-            *ngIf="showActions"
             [matTooltip]="actionsTooltip"
             [matTooltipDisabled]="!actionsDisabled"
             matTooltipPosition="above"
@@ -105,6 +101,7 @@
               <mat-icon>delete_outline</mat-icon>
             </button>
           </div>
+          }
         </td>
       </ng-template>
     </ng-container>

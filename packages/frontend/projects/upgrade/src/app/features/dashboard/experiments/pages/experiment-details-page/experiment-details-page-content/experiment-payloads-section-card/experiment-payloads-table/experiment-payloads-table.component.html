@@ -1,6 +1,8 @@
 <div class="table-container">
   <!-- Loading spinner -->
-  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+  @if (isLoading$ | async) {
+  <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
+  }
 
   <!-- Table -->
   <table
@@ -70,9 +72,9 @@
         }
       </th>
       <td mat-cell *matCellDef="let payload" class="actions-column ft-14-400 dense-2">
+        @if (showActions) {
         <div
           class="button-wrapper"
-          *ngIf="showActions"
           [matTooltip]="actionsTooltip"
           [matTooltipDisabled]="!actionsDisabled"
           matTooltipPosition="above"
@@ -86,6 +88,7 @@
             <mat-icon>edit</mat-icon>
           </button>
         </div>
+        }
       </td>
     </ng-container>
 

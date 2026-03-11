@@ -18,7 +18,8 @@
         </ng-template>
         <audit-logs></audit-logs>
       </mat-tab>
-      <mat-tab *ngIf="environment.errorLogsToggle">
+      @if (environment.errorLogsToggle) {
+      <mat-tab>
         <ng-template mat-tab-label>
           <span class="ft-22-600 tab-label">
             {{ 'logs.error-logs-tab.text' | translate }}
@@ -26,6 +27,7 @@
         </ng-template>
         <error-logs></error-logs>
       </mat-tab>
+      }
     </mat-tab-group>
 
     <mat-form-field class="dense-2 log-filter" subscriptSizing="dynamic">
@@ -34,14 +36,17 @@
         [(ngModel)]="selectedFilterOption"
         (ngModelChange)="changeLogOption($event)"
       >
-        <mat-option *ngFor="let option of filterOptions" [value]="option.value">
-          <span *ngIf="option.viewValue.length <= 35; else tooltipText">{{ option.viewValue }}</span>
-          <ng-template #tooltipText>
-            <span [matTooltip]="option.viewValue" matTooltipPosition="above">
-              {{ option.viewValue | truncate : 35 }}
-            </span>
-          </ng-template>
+        @for (option of filterOptions; track option) {
+        <mat-option [value]="option.value">
+          @if (option.viewValue.length <= 35) {
+          <span>{{ option.viewValue }}</span>
+          } @else {
+          <span [matTooltip]="option.viewValue" matTooltipPosition="above">
+            {{ option.viewValue | truncate : 35 }}
+          </span>
+          }
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </mat-card>

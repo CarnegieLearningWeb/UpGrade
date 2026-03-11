@@ -8,9 +8,11 @@
         [(ngModel)]="selectedContextOption"
         (selectionChange)="contextIsSelected()"
       >
-        <mat-option class="ft-14-400" *ngFor="let context of allContexts" [value]="context">
+        @for (context of allContexts; track context) {
+        <mat-option class="ft-14-400" [value]="context">
           {{ context }}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
     <div class="explainer-box">

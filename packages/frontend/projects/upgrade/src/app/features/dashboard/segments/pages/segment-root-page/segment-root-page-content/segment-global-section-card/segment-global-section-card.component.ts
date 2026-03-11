@@ -5,7 +5,7 @@ import {
   CommonSectionCardTitleHeaderComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { SegmentsService } from '../../../../../../../core/segments/segments.service';
-import { AsyncPipe, NgIf, TitleCasePipe } from '@angular/common';
+import { AsyncPipe, TitleCasePipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterModule } from '@angular/router';
@@ -29,7 +29,6 @@ import { SegmentGlobalSectionCardTableComponent } from './segment-global-section
     CommonSectionCardActionButtonsComponent,
     SegmentGlobalSectionCardTableComponent,
     AsyncPipe,
-    NgIf,
     MatProgressSpinnerModule,
     RouterModule,
     TranslateModule,

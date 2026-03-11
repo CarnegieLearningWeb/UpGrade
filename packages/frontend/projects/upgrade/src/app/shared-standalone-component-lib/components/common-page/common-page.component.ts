@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -19,7 +18,7 @@ import { TranslateModule } from '@ngx-translate/core';
  */
 @Component({
   selector: 'app-common-page',
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   templateUrl: './common-page.component.html',
   styleUrl: './common-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

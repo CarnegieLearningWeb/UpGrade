@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { AsyncPipe, NgIf, CommonModule } from '@angular/common';
+import { AsyncPipe, CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -64,7 +64,6 @@ import { MoocletExperimentHelperService } from '../../../../../core/experiments/
     TranslateModule,
     CommonTagsInputComponent,
     AsyncPipe,
-    NgIf,
     SharedModule,
     TsConfigurablePolicyParametersFormComponent,
   ],

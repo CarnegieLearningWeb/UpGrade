@@ -6,9 +6,11 @@
       {{ 'stratifications.import-stratification.message.text' | translate }}
     </p>
     <input accept=".csv" type="file" class="ft-14-400 file-input" (change)="uploadFile($event)" multiple />
-    <span class="error-msg" *ngIf="!isStratificationCSVValid">
+    @if (!isStratificationCSVValid) {
+    <span class="error-msg">
       {{ 'stratifications.import-stratification.error.message.text' | translate }}
     </span>
+    }
   </div>
 
   <div class="button-container">

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { TranslateModule } from '@ngx-translate/core';
@@ -26,7 +26,7 @@ import isEqual from 'lodash.isequal';
 @Component({
   selector: 'app-ts-configurable-policy-parameters-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, TranslateModule],
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, TranslateModule],
   templateUrl: './ts-configurable-policy-parameters-form.component.html',
   styleUrl: './ts-configurable-policy-parameters-form.component.scss',
 })

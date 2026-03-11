@@ -1,4 +1,5 @@
-<app-common-section-card class="details-overview-card" *ngIf="segment$ | async as segment">
+@if (segment$ | async; as segment) {
+<app-common-section-card class="details-overview-card">
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
@@ -9,7 +10,6 @@
     [id]="segment.id"
   ></app-common-section-card-title-header>
   <!-- TODO: Update the SEGMENT_STATUS enum to lowercase and remove toLowerCase() once the legacy Segments code is removed -->
-
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
@@ -19,7 +19,6 @@
     (menuButtonItemClick)="onMenuButtonItemClick($event, segment)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   ></app-common-section-card-action-buttons>
-
   <!-- content -->
   <ng-container content>
     <app-common-section-card-overview-details
@@ -27,7 +26,6 @@
       (tagItemClick)="filterSegmentsByChips($event)"
     ></app-common-section-card-overview-details>
   </ng-container>
-
   <!-- footer -->
   <app-segment-overview-details-footer
     footer
@@ -35,3 +33,4 @@
     (tabChange)="onSelectedTabChange($event)"
   ></app-segment-overview-details-footer>
 </app-common-section-card>
+}

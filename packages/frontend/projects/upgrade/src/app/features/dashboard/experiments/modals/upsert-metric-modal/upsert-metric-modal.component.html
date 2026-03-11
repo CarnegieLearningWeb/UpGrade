@@ -31,93 +31,78 @@
     </div>
 
     <!-- Repeatable Metric Fields -->
-    <ng-container *ngIf="showMetricClass">
-      <mat-form-field appearance="outline">
-        <mat-label class="ft-14-400">Metric Class</mat-label>
-        <input
-          matInput
-          formControlName="metricClass"
-          placeholder="e.g., workspace"
-          class="ft-14-400"
-          [matAutocomplete]="metricClassAutocomplete"
-          appTrimInput
-        />
-        <mat-autocomplete
-          #metricClassAutocomplete="matAutocomplete"
-          panelWidth="auto"
-          [displayWith]="displayFn"
-          (optionSelected)="onMetricClassOptionSelected($event.option.value)"
-        >
-          <mat-option
-            *ngFor="let metricClass of filteredMetricClasses$ | async"
-            [value]="metricClass"
-            class="ft-14-400"
-          >
-            {{ metricClass.key }}
-          </mat-option>
-        </mat-autocomplete>
-
-        <!-- Show error when validation fails AND field has been touched, otherwise show hint -->
-        <mat-error
-          *ngIf="
-            metricForm.get('metricClass')?.hasError('mustSelectFromOptions') && metricForm.get('metricClass')?.touched
-          "
-          class="form-hint ft-12-400"
-        >
-          {{ 'experiments.upsert-metric-modal.metric-class-warning.text' | translate }}
-        </mat-error>
-        <mat-hint
-          *ngIf="
-            !(
-              metricForm.get('metricClass')?.hasError('mustSelectFromOptions') && metricForm.get('metricClass')?.touched
-            )
-          "
-          class="form-hint ft-12-400"
-        >
-          {{ 'experiments.upsert-metric-modal.metric-class-hint.text' | translate }}
-        </mat-hint>
-      </mat-form-field>
-    </ng-container>
-
-    <ng-container *ngIf="showMetricKey">
-      <mat-form-field appearance="outline">
-        <mat-label class="ft-14-400">Metric Key</mat-label>
-        <input
-          matInput
-          formControlName="metricKey"
-          placeholder="e.g., problem ID"
-          class="ft-14-400"
-          [matAutocomplete]="metricKeyAutocomplete"
-          appTrimInput
-        />
-        <mat-autocomplete
-          #metricKeyAutocomplete="matAutocomplete"
-          panelWidth="auto"
-          [displayWith]="displayFn"
-          (optionSelected)="onMetricKeyOptionSelected($event.option.value)"
-        >
-          <mat-option *ngFor="let metricKey of filteredMetricKeys$ | async" [value]="metricKey" class="ft-14-400">
-            {{ metricKey.key }}
-          </mat-option>
-        </mat-autocomplete>
-
-        <!-- Show error when validation fails AND field has been touched, otherwise show hint -->
-        <mat-error
-          *ngIf="metricForm.get('metricKey')?.hasError('mustSelectFromOptions') && metricForm.get('metricKey')?.touched"
-          class="form-hint ft-12-400"
-        >
-          {{ 'experiments.upsert-metric-modal.metric-key-warning.text' | translate }}
-        </mat-error>
-        <mat-hint
-          *ngIf="
-            !(metricForm.get('metricKey')?.hasError('mustSelectFromOptions') && metricForm.get('metricKey')?.touched)
-          "
-          class="form-hint ft-12-400"
-        >
-          {{ 'experiments.upsert-metric-modal.metric-key-hint.text' | translate }}
-        </mat-hint>
-      </mat-form-field>
-    </ng-container>
+    @if (showMetricClass) {
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Metric Class</mat-label>
+      <input
+        matInput
+        formControlName="metricClass"
+        placeholder="e.g., workspace"
+        class="ft-14-400"
+        [matAutocomplete]="metricClassAutocomplete"
+        appTrimInput
+      />
+      <mat-autocomplete
+        #metricClassAutocomplete="matAutocomplete"
+        panelWidth="auto"
+        [displayWith]="displayFn"
+        (optionSelected)="onMetricClassOptionSelected($event.option.value)"
+      >
+        @for (metricClass of filteredMetricClasses$ | async; track metricClass) {
+        <mat-option [value]="metricClass" class="ft-14-400">
+          {{ metricClass.key }}
+        </mat-option>
+        }
+      </mat-autocomplete>
+      <!-- Show error when validation fails AND field has been touched, otherwise show hint -->
+      @if ( metricForm.get('metricClass')?.hasError('mustSelectFromOptions') && metricForm.get('metricClass')?.touched )
+      {
+      <mat-error class="form-hint ft-12-400">
+        {{ 'experiments.upsert-metric-modal.metric-class-warning.text' | translate }}
+      </mat-error>
+      } @if ( !( metricForm.get('metricClass')?.hasError('mustSelectFromOptions') &&
+      metricForm.get('metricClass')?.touched ) ) {
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'experiments.upsert-metric-modal.metric-class-hint.text' | translate }}
+      </mat-hint>
+      }
+    </mat-form-field>
+    } @if (showMetricKey) {
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Metric Key</mat-label>
+      <input
+        matInput
+        formControlName="metricKey"
+        placeholder="e.g., problem ID"
+        class="ft-14-400"
+        [matAutocomplete]="metricKeyAutocomplete"
+        appTrimInput
+      />
+      <mat-autocomplete
+        #metricKeyAutocomplete="matAutocomplete"
+        panelWidth="auto"
+        [displayWith]="displayFn"
+        (optionSelected)="onMetricKeyOptionSelected($event.option.value)"
+      >
+        @for (metricKey of filteredMetricKeys$ | async; track metricKey) {
+        <mat-option [value]="metricKey" class="ft-14-400">
+          {{ metricKey.key }}
+        </mat-option>
+        }
+      </mat-autocomplete>
+      <!-- Show error when validation fails AND field has been touched, otherwise show hint -->
+      @if (metricForm.get('metricKey')?.hasError('mustSelectFromOptions') && metricForm.get('metricKey')?.touched) {
+      <mat-error class="form-hint ft-12-400">
+        {{ 'experiments.upsert-metric-modal.metric-key-warning.text' | translate }}
+      </mat-error>
+      } @if ( !(metricForm.get('metricKey')?.hasError('mustSelectFromOptions') && metricForm.get('metricKey')?.touched)
+      ) {
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'experiments.upsert-metric-modal.metric-key-hint.text' | translate }}
+      </mat-hint>
+      }
+    </mat-form-field>
+    }
 
     <!-- Metric ID -->
     <mat-form-field appearance="outline">
@@ -136,86 +121,93 @@
         [displayWith]="displayFn"
         (optionSelected)="onMetricIdOptionSelected($event.option.value)"
       >
-        <mat-option *ngFor="let metric of filteredMetricIds$ | async" [value]="metric" class="ft-14-400">
+        @for (metric of filteredMetricIds$ | async; track metric) {
+        <mat-option [value]="metric" class="ft-14-400">
           {{ metric.key }}
         </mat-option>
+        }
       </mat-autocomplete>
 
       <!-- Show error when validation fails AND field has been touched, otherwise show hint -->
-      <mat-error
-        *ngIf="metricForm.get('metricId')?.hasError('mustSelectFromOptions') && metricForm.get('metricId')?.touched"
-        class="form-hint ft-12-400"
-      >
+      @if (metricForm.get('metricId')?.hasError('mustSelectFromOptions') && metricForm.get('metricId')?.touched) {
+      <mat-error class="form-hint ft-12-400">
         {{ 'experiments.upsert-metric-modal.metric-id-warning.text' | translate }}
       </mat-error>
-      <mat-hint
-        *ngIf="!(metricForm.get('metricId')?.hasError('mustSelectFromOptions') && metricForm.get('metricId')?.touched)"
-        class="form-hint ft-12-400"
-      >
+      } @if (!(metricForm.get('metricId')?.hasError('mustSelectFromOptions') && metricForm.get('metricId')?.touched)) {
+      <mat-hint class="form-hint ft-12-400">
         {{ 'experiments.upsert-metric-modal.metric-id-hint.text' | translate }}
       </mat-hint>
+      }
     </mat-form-field>
 
     <!-- Individual Statistic (Repeatable only) -->
-    <ng-container *ngIf="showIndividualStatistic">
-      <mat-form-field appearance="outline">
-        <mat-label class="ft-14-400">Individual Statistic</mat-label>
-        <mat-select formControlName="individualStatistic" placeholder="Select individual statistic" class="ft-14-400">
-          <mat-option *ngFor="let option of individualStatisticOptions" [value]="option.value" class="ft-14-400">
-            {{ option.label }}
-          </mat-option>
-        </mat-select>
-        <mat-hint class="form-hint ft-12-400">
-          {{ 'experiments.upsert-metric-modal.individual-statistic-hint.text' | translate }}
-          <app-common-learn-more-link learnMoreLinkKey="guide.metrics"></app-common-learn-more-link>
-        </mat-hint>
-      </mat-form-field>
-    </ng-container>
+    @if (showIndividualStatistic) {
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Individual Statistic</mat-label>
+      <mat-select formControlName="individualStatistic" placeholder="Select individual statistic" class="ft-14-400">
+        @for (option of individualStatisticOptions; track option) {
+        <mat-option [value]="option.value" class="ft-14-400">
+          {{ option.label }}
+        </mat-option>
+        }
+      </mat-select>
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'experiments.upsert-metric-modal.individual-statistic-hint.text' | translate }}
+        <app-common-learn-more-link learnMoreLinkKey="guide.metrics"></app-common-learn-more-link>
+      </mat-hint>
+    </mat-form-field>
+    }
 
     <!-- Aggregate Statistic -->
-    <ng-container *ngIf="showAggregateStatistic">
-      <mat-form-field appearance="outline">
-        <mat-label class="ft-14-400">Aggregate Statistic</mat-label>
-        <mat-select formControlName="aggregateStatistic" placeholder="Select aggregate statistic" class="ft-14-400">
-          <mat-option *ngFor="let option of aggregateStatisticOptions" [value]="option.value" class="ft-14-400">
-            {{ option.label }}
-          </mat-option>
-        </mat-select>
-        <mat-hint class="form-hint ft-12-400">
-          {{ 'experiments.upsert-metric-modal.aggregate-statistic-hint.text' | translate }}
-          <app-common-learn-more-link learnMoreLinkKey="guide.metrics"></app-common-learn-more-link>
-        </mat-hint>
-      </mat-form-field>
-    </ng-container>
+    @if (showAggregateStatistic) {
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Aggregate Statistic</mat-label>
+      <mat-select formControlName="aggregateStatistic" placeholder="Select aggregate statistic" class="ft-14-400">
+        @for (option of aggregateStatisticOptions; track option) {
+        <mat-option [value]="option.value" class="ft-14-400">
+          {{ option.label }}
+        </mat-option>
+        }
+      </mat-select>
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'experiments.upsert-metric-modal.aggregate-statistic-hint.text' | translate }}
+        <app-common-learn-more-link learnMoreLinkKey="guide.metrics"></app-common-learn-more-link>
+      </mat-hint>
+    </mat-form-field>
+    }
 
     <!-- Comparison (Categorical only) -->
-    <ng-container *ngIf="showComparison">
-      <div class="comparison-section dense-1">
-        <mat-radio-group formControlName="comparison">
-          <span class="section-label ft-14-600">Comparison</span>
-          <mat-radio-button *ngFor="let option of comparisonOptions" [value]="option.value">
-            <div class="radio-content">
-              <span class="radio-label ft-14-600">{{ option.label }}</span>
-            </div>
-          </mat-radio-button>
-        </mat-radio-group>
-      </div>
-    </ng-container>
+    @if (showComparison) {
+    <div class="comparison-section dense-1">
+      <mat-radio-group formControlName="comparison">
+        <span class="section-label ft-14-600">Comparison</span>
+        @for (option of comparisonOptions; track option) {
+        <mat-radio-button [value]="option.value">
+          <div class="radio-content">
+            <span class="radio-label ft-14-600">{{ option.label }}</span>
+          </div>
+        </mat-radio-button>
+        }
+      </mat-radio-group>
+    </div>
+    }
 
     <!-- Value (Categorical only) -->
-    <ng-container *ngIf="showComparison && allowableDataKeys.length > 0">
-      <mat-form-field appearance="outline">
-        <mat-label class="ft-14-400">Value</mat-label>
-        <mat-select formControlName="compareValue" placeholder="Select value" class="ft-14-400">
-          <mat-option *ngFor="let value of allowableDataKeys" [value]="value" class="ft-14-400">
-            {{ value }}
-          </mat-option>
-        </mat-select>
-        <mat-hint class="form-hint ft-12-400">
-          {{ 'experiments.upsert-metric-modal.value-hint.text' | translate }}
-        </mat-hint>
-      </mat-form-field>
-    </ng-container>
+    @if (showComparison && allowableDataKeys.length > 0) {
+    <mat-form-field appearance="outline">
+      <mat-label class="ft-14-400">Value</mat-label>
+      <mat-select formControlName="compareValue" placeholder="Select value" class="ft-14-400">
+        @for (value of allowableDataKeys; track value) {
+        <mat-option [value]="value" class="ft-14-400">
+          {{ value }}
+        </mat-option>
+        }
+      </mat-select>
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'experiments.upsert-metric-modal.value-hint.text' | translate }}
+      </mat-hint>
+    </mat-form-field>
+    }
 
     <!-- Display Name -->
     <mat-form-field appearance="outline">

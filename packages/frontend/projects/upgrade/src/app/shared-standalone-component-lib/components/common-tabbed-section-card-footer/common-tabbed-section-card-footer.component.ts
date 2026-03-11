@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 
@@ -17,7 +16,7 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
  */
 @Component({
   selector: 'app-common-tabbed-section-card-footer',
-  imports: [MatTabsModule, CommonModule],
+  imports: [MatTabsModule],
   templateUrl: './common-tabbed-section-card-footer.component.html',
   styleUrl: './common-tabbed-section-card-footer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
