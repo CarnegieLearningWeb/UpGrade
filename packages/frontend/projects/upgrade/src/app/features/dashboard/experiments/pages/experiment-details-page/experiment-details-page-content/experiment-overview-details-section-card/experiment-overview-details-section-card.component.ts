@@ -60,6 +60,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   tabLabels = [
     { label: 'Design', disabled: false },
     { label: 'Data', disabled: false },
+    { label: 'Logs', disabled: false },
   ];
 
   // Action buttons - maps ExperimentActionButton[] to ActionButton[]
