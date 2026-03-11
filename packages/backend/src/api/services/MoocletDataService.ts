@@ -16,6 +16,8 @@ import {
   MoocletVariableResponseDetails,
   MoocletValueRequestBody,
   MoocletValueResponseDetails,
+  MoocletRewardCountRequestBody,
+  MoocletPaginatedResponse,
 } from '../../types/Mooclet';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { MoocletError } from '../errors/MoocletError';
@@ -225,6 +227,28 @@ export class MoocletDataService {
       url: this.apiUrl + endpoint,
       apiToken: this.apiToken,
       body: requestBody,
+    };
+
+    const response = await this.fetchExternalMoocletsData(requestParams, logger);
+
+    return response;
+  }
+
+  public async getRewardsForExperiment(
+    requestBody: MoocletRewardCountRequestBody,
+    logger: UpgradeLogger,
+    nextPageUrl?: string
+  ): Promise<MoocletPaginatedResponse<MoocletValueResponseDetails>> {
+    // this endpoint serves a paginated response
+    // if there are more results "pages" mooclet api sends the exact url to use for "next" page
+    // else it is nul/undefined and we'll fetch from the beginning
+    const url =
+      nextPageUrl || `${this.apiUrl}/value?mooclet=${requestBody.moocletId}&variable__name=${requestBody.variableName}`;
+
+    const requestParams: MoocletProxyRequestParams = {
+      method: 'GET',
+      url,
+      apiToken: this.apiToken,
     };
 
     const response = await this.fetchExternalMoocletsData(requestParams, logger);

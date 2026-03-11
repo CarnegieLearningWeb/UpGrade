@@ -51,6 +51,8 @@ import {
   selectExperimentMenuItems,
   selectDisabledExperimentFields,
   selectSectionCardRestriction,
+  selectRewardsDataForSelectedExperiment,
+  selectIsLoadingRewardsSummary,
 } from './store/experiments.selectors';
 import * as experimentAction from './store/experiments.actions';
 import { AppState } from '../core.state';
@@ -103,6 +105,8 @@ export class ExperimentService {
   hasExperimentStarted$ = this.store$.pipe(select(selectHasExperimentStarted));
   experimentMenuItems$ = this.store$.pipe(select(selectExperimentMenuItems));
   disabledExperimentFields$ = this.store$.pipe(select(selectDisabledExperimentFields));
+  isLoadingRewardsSummary$ = this.store$.pipe(select(selectIsLoadingRewardsSummary));
+
   sectionCardRestriction$ = (cardType: EXPERIMENT_SECTION_CARD_TYPE) =>
     this.store$.pipe(select(selectSectionCardRestriction(cardType)));
 
@@ -295,5 +299,17 @@ export class ExperimentService {
 
   setIsLoadingImportExperiment(isLoadingImportExperiment: boolean) {
     this.store$.dispatch(experimentAction.actionSetIsLoadingImportExperiment({ isLoadingImportExperiment }));
+  }
+
+  fetchRewardsDataForExperiment() {
+    this.selectedExperiment$.pipe(take(1)).subscribe((experiment) => {
+      if (experiment) {
+        this.store$.dispatch(experimentAction.actionFetchRewardsDataForExperiment({ experimentId: experiment.id }));
+      }
+    });
+  }
+
+  getRewardsSummaryForSelectedExperiment() {
+    return this.store$.pipe(select(selectRewardsDataForSelectedExperiment));
   }
 }

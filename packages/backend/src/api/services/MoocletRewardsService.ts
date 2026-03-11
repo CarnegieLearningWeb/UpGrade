@@ -9,8 +9,15 @@ import { IndividualEnrollmentRepository } from '../repositories/IndividualEnroll
 import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { HttpError } from 'routing-controllers';
-import { MoocletValueRequestBody } from '../../types/Mooclet';
+import {
+  MoocletPaginatedResponse,
+  MoocletRewardCountRequestBody,
+  MoocletValueRequestBody,
+  MoocletValueResponseDetails,
+} from '../../types/Mooclet';
 import { RewardValidator } from '../controllers/validators/RewardValidator';
+import { ExperimentRewardsByCondition, ExperimentRewardsSummary } from 'upgrade_types';
+import { MoocletExperimentService } from './MoocletExperimentService';
 
 export interface IRewardResponse {
   message: string;
@@ -25,7 +32,8 @@ export class MoocletRewardsService {
     private moocletExperimentRefRepository: MoocletExperimentRefRepository,
     @InjectRepository()
     private individualEnrollmentRepository: IndividualEnrollmentRepository,
-    private moocletDataService: MoocletDataService
+    private moocletDataService: MoocletDataService,
+    private moocletExperimentService: MoocletExperimentService
   ) {}
 
   /**
@@ -202,6 +210,97 @@ export class MoocletRewardsService {
       this.throwConflictError(`Version-condition mapping not found, no reward sent.`, request, logger);
     }
     return map.moocletVersionId;
+  }
+
+  public async getRewardsSummaryForExperiment(
+    experimentId: string,
+    logger: UpgradeLogger
+  ): Promise<ExperimentRewardsSummary> {
+    try {
+      const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(
+        experimentId
+      );
+      const rewards: MoocletValueResponseDetails[] = [];
+      logger.info({
+        message: `Fetching Rewards data from mooclet server.`,
+        experimentId,
+      });
+      let response = await this.fetchRewardsForExperiment(moocletExperimentRef, logger);
+      if (Array.isArray(response.results)) {
+        rewards.push(...response.results);
+      }
+
+      while (response.next) {
+        logger.info({
+          message: `But wait there's more (Fetching more Rewards data from Mooclet server for experiment...)`,
+          totalFound: response.count,
+          totalFetched: response.results.length,
+          next: response.next,
+        });
+        response = await this.fetchRewardsForExperiment(moocletExperimentRef, logger, response.next);
+        if (Array.isArray(response.results)) {
+          rewards.push(...response.results);
+        }
+      }
+
+      return this.createExperimentRewardsSummary(moocletExperimentRef, rewards, logger);
+    } catch (error) {
+      logger.error({ message: 'Error fetching rewards summary for experiment', experimentId, error });
+      throw error;
+    }
+  }
+
+  public async fetchRewardsForExperiment(
+    moocletExperimentRef: MoocletExperimentRef,
+    logger: UpgradeLogger,
+    nextPageUrl?: string
+  ): Promise<MoocletPaginatedResponse<MoocletValueResponseDetails>> {
+    const requestBody: MoocletRewardCountRequestBody = {
+      moocletId: moocletExperimentRef.moocletId,
+      variableName: moocletExperimentRef.outcomeVariableName,
+    };
+
+    return await this.moocletDataService.getRewardsForExperiment(requestBody, logger, nextPageUrl);
+  }
+
+  public async createExperimentRewardsSummary(
+    moocletExperimentRef: MoocletExperimentRef,
+    rewardsData: MoocletValueResponseDetails[],
+    logger: UpgradeLogger
+  ): Promise<ExperimentRewardsSummary> {
+    const rewards: MoocletValueResponseDetails[] = rewardsData;
+
+    if (!rewardsData) {
+      logger.warn({
+        message: 'No rewards data returned from Mooclet API',
+        experimentId: moocletExperimentRef.experimentId,
+      });
+      return [];
+    }
+
+    const rewardsSummaries = moocletExperimentRef.versionConditionMaps.map(
+      ({ experimentCondition, moocletVersionId }) => {
+        const versionRewards = rewards.filter((reward) => reward.version === moocletVersionId);
+        const successes = versionRewards.filter((reward) => reward.value === 1.0).length;
+        const failures = versionRewards.filter((reward) => reward.value === 0.0).length;
+        const total = successes + failures;
+        const percentSuccess = total > 0 ? (successes / total) * 100 : 0.0;
+        const successRate = percentSuccess.toFixed(1) + '%';
+
+        const rewardsForCondition: ExperimentRewardsByCondition = {
+          conditionCode: experimentCondition.conditionCode,
+          successes,
+          failures,
+          total,
+          successRate,
+          order: experimentCondition.order,
+        };
+        return rewardsForCondition;
+      }
+    );
+
+    const orderedRewardsSummary = rewardsSummaries.sort((a, b) => a.order - b.order);
+    return orderedRewardsSummary;
   }
 
   /**

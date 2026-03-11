@@ -694,6 +694,24 @@ export class ExperimentEffects {
     )
   );
 
+  fetchRewardsDataForExperiment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionFetchRewardsDataForExperiment),
+      map((action) => action.experimentId),
+      switchMap((experimentId) =>
+        this.experimentDataService.fetchMoocletRewardsDataForExperiment(experimentId).pipe(
+          map((rewardsSummary) =>
+            experimentAction.actionFetchRewardsDataForExperimentSuccess({
+              experimentId,
+              rewardsSummary,
+            })
+          ),
+          catchError((error) => of(experimentAction.actionFetchRewardsDataForExperimentFailure({ error })))
+        )
+      )
+    )
+  );
+
   private download(filename, text, isZip: boolean) {
     const element = document.createElement('a');
     isZip

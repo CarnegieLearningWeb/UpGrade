@@ -47,6 +47,9 @@ import {
   actionExportExperimentInfoFailure,
   actionExportExperimentDesign,
   actionExportExperimentDesignSuccess,
+  actionFetchRewardsDataForExperiment,
+  actionFetchRewardsDataForExperimentSuccess,
+  actionFetchRewardsDataForExperimentFailure,
 } from './experiments.actions';
 import { ExperimentEffects } from './experiments.effects';
 import {
@@ -1320,6 +1323,77 @@ describe('ExperimentEffects', () => {
           exportAll: false,
         })
       );
+
+      tick(0);
+    }));
+  });
+
+  describe('fetchRewardsDataForExperiment$', () => {
+    it('should dispatch actionFetchRewardsDataForExperimentSuccess on successful fetch', fakeAsync(() => {
+      const experimentId = 'test-experiment-123';
+      const mockRewardsSummary = [
+        {
+          conditionCode: 'Control',
+          successes: 10,
+          failures: 5,
+          total: 15,
+          successRate: '66.7%',
+          order: 0,
+        },
+        {
+          conditionCode: 'Treatment',
+          successes: 8,
+          failures: 7,
+          total: 15,
+          successRate: '53.3%',
+          order: 1,
+        },
+      ];
+
+      experimentDataService.fetchMoocletRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));
+
+      const expectedAction = actionFetchRewardsDataForExperimentSuccess({
+        experimentId,
+        rewardsSummary: mockRewardsSummary,
+      });
+
+      service.fetchRewardsDataForExperiment$.subscribe((resultingAction) => {
+        expect(resultingAction).toEqual(expectedAction);
+      });
+
+      actions$.next(actionFetchRewardsDataForExperiment({ experimentId }));
+
+      tick(0);
+    }));
+
+    it('should dispatch actionFetchRewardsDataForExperimentFailure on fetch error', fakeAsync(() => {
+      const experimentId = 'test-experiment-123';
+      const error = new Error('API error');
+
+      experimentDataService.fetchMoocletRewardsDataForExperiment = jest.fn().mockReturnValue(throwError(error));
+
+      const expectedAction = actionFetchRewardsDataForExperimentFailure({ error });
+
+      service.fetchRewardsDataForExperiment$.subscribe((resultingAction) => {
+        expect(resultingAction).toEqual(expectedAction);
+      });
+
+      actions$.next(actionFetchRewardsDataForExperiment({ experimentId }));
+
+      tick(0);
+    }));
+
+    it('should call experimentDataService with correct experimentId', fakeAsync(() => {
+      const experimentId = 'test-experiment-456';
+      const mockRewardsSummary = [];
+
+      experimentDataService.fetchMoocletRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));
+
+      service.fetchRewardsDataForExperiment$.subscribe(() => {
+        expect(experimentDataService.fetchMoocletRewardsDataForExperiment).toHaveBeenCalledWith(experimentId);
+      });
+
+      actions$.next(actionFetchRewardsDataForExperiment({ experimentId }));
 
       tick(0);
     }));

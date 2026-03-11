@@ -38,6 +38,8 @@ import { SegmentInputValidator } from './validators/SegmentInputValidator';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { IdValidator } from './validators/ExperimentUserValidator';
 import { Segment } from '../models/Segment';
+import { MoocletRewardsService } from '../services/MoocletRewardsService';
+import { ExperimentRewardsSummary } from 'upgrade_types';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
@@ -656,6 +658,7 @@ export class ExperimentController {
     public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService,
     public moocletExperimentService: MoocletExperimentService,
+    public moocletRewardService: MoocletRewardsService,
     public importExportService: ImportExportService
   ) {}
 
@@ -1932,5 +1935,19 @@ export class ExperimentController {
     }
 
     return lists;
+  }
+
+  /**
+   * Get Mooclet Rewards Feedback data
+   */
+  @Get('/mooclet-rewards/:id')
+  public getMoocletRewards(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<ExperimentRewardsSummary> {
+    if (!env.mooclets?.enabled) {
+      throw new BadRequestError('Mooclet is not enabled in the environment');
+    }
+    return this.moocletRewardService.getRewardsSummaryForExperiment(id, request.logger);
   }
 }

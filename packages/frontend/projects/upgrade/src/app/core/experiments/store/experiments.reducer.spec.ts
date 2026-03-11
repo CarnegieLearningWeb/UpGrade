@@ -32,6 +32,9 @@ import {
   actionUpsertExperiment,
   actionUpsertExperimentFailure,
   actionUpsertExperimentSuccess,
+  actionFetchRewardsDataForExperiment,
+  actionFetchRewardsDataForExperimentSuccess,
+  actionFetchRewardsDataForExperimentFailure,
 } from './experiments.actions';
 import {
   DATE_RANGE,
@@ -681,5 +684,149 @@ describe('ExperimentsReducer', () => {
 
     expect(newState).not.toBe(previousState);
     expect(newState.stats['1'].users).toEqual(11);
+  });
+
+  describe('Rewards Summary Actions', () => {
+    it('action "actionFetchRewardsDataForExperiment" should set isLoadingRewardsSummary to true', () => {
+      const previousState = { ...initialState };
+      previousState.isLoadingRewardsSummary = false;
+
+      const testAction: Action = actionFetchRewardsDataForExperiment({
+        experimentId: 'test-exp-123',
+      });
+
+      const newState = experimentsReducer(previousState, testAction);
+
+      expect(newState).not.toBe(previousState);
+      expect(newState.isLoadingRewardsSummary).toEqual(true);
+    });
+
+    it('action "actionFetchRewardsDataForExperimentSuccess" should store rewards summary and set loading to false', () => {
+      const previousState = { ...initialState };
+      previousState.isLoadingRewardsSummary = true;
+      previousState.rewardsSummaries = {};
+
+      const mockRewardsSummary = [
+        {
+          conditionCode: 'Control',
+          successes: 10,
+          failures: 5,
+          total: 15,
+          successRate: '66.7%',
+          order: 0,
+        },
+        {
+          conditionCode: 'Treatment',
+          successes: 8,
+          failures: 7,
+          total: 15,
+          successRate: '53.3%',
+          order: 1,
+        },
+      ];
+
+      const testAction: Action = actionFetchRewardsDataForExperimentSuccess({
+        experimentId: 'exp-123',
+        rewardsSummary: mockRewardsSummary,
+      });
+
+      const newState = experimentsReducer(previousState, testAction);
+
+      expect(newState).not.toBe(previousState);
+      expect(newState.isLoadingRewardsSummary).toEqual(false);
+      expect(newState.rewardsSummaries['exp-123']).toEqual(mockRewardsSummary);
+    });
+
+    it('action "actionFetchRewardsDataForExperimentSuccess" should update existing rewards summary', () => {
+      const oldSummary = [
+        {
+          conditionCode: 'Control',
+          successes: 5,
+          failures: 5,
+          total: 10,
+          successRate: '50.0%',
+          order: 0,
+        },
+      ];
+
+      const previousState = { ...initialState };
+      previousState.rewardsSummaries = {
+        'exp-123': oldSummary,
+      };
+
+      const newSummary = [
+        {
+          conditionCode: 'Control',
+          successes: 10,
+          failures: 5,
+          total: 15,
+          successRate: '66.7%',
+          order: 0,
+        },
+      ];
+
+      const testAction: Action = actionFetchRewardsDataForExperimentSuccess({
+        experimentId: 'exp-123',
+        rewardsSummary: newSummary,
+      });
+
+      const newState = experimentsReducer(previousState, testAction);
+
+      expect(newState.rewardsSummaries['exp-123']).toEqual(newSummary);
+      expect(newState.rewardsSummaries['exp-123']).not.toEqual(oldSummary);
+    });
+
+    it('action "actionFetchRewardsDataForExperimentSuccess" should preserve other experiment summaries', () => {
+      const summary1 = [{ conditionCode: 'A', successes: 1, failures: 0, total: 1, successRate: '100%', order: 0 }];
+      const summary2 = [{ conditionCode: 'B', successes: 2, failures: 0, total: 2, successRate: '100%', order: 0 }];
+
+      const previousState = { ...initialState };
+      previousState.rewardsSummaries = {
+        'exp-1': summary1,
+      };
+
+      const testAction: Action = actionFetchRewardsDataForExperimentSuccess({
+        experimentId: 'exp-2',
+        rewardsSummary: summary2,
+      });
+
+      const newState = experimentsReducer(previousState, testAction);
+
+      expect(newState.rewardsSummaries['exp-1']).toEqual(summary1);
+      expect(newState.rewardsSummaries['exp-2']).toEqual(summary2);
+    });
+
+    it('action "actionFetchRewardsDataForExperimentFailure" should set loading to false', () => {
+      const previousState = { ...initialState };
+      previousState.isLoadingRewardsSummary = true;
+
+      const testAction: Action = actionFetchRewardsDataForExperimentFailure({
+        error: new Error('API error'),
+      });
+
+      const newState = experimentsReducer(previousState, testAction);
+
+      expect(newState).not.toBe(previousState);
+      expect(newState.isLoadingRewardsSummary).toEqual(false);
+    });
+
+    it('action "actionFetchRewardsDataForExperimentFailure" should not modify rewardsSummaries', () => {
+      const existingSummary = [
+        { conditionCode: 'A', successes: 1, failures: 0, total: 1, successRate: '100%', order: 0 },
+      ];
+
+      const previousState = { ...initialState };
+      previousState.rewardsSummaries = {
+        'exp-1': existingSummary,
+      };
+
+      const testAction: Action = actionFetchRewardsDataForExperimentFailure({
+        error: new Error('API error'),
+      });
+
+      const newState = experimentsReducer(previousState, testAction);
+
+      expect(newState.rewardsSummaries).toEqual(previousState.rewardsSummaries);
+    });
   });
 });

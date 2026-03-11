@@ -12,6 +12,13 @@ export interface MoocletRequestBody {
   policy: number;
 }
 
+export interface MoocletPaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 export interface MoocletResponseDetails {
   id: number;
   name: string;
@@ -71,6 +78,11 @@ export interface MoocletValueRequestBody {
   version: number;
   learner?: number | string;
   policy?: number;
+}
+
+export interface MoocletRewardCountRequestBody {
+  moocletId: number;
+  variableName: string;
 }
 
 export interface MoocletValueResponseDetails {

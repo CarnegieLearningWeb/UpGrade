@@ -23,6 +23,17 @@ const BinaryRewardValueMap = {
   [BinaryRewardAllowedValue.FAILURE]: 0,
 };
 
+interface ExperimentRewardsByCondition {
+  conditionCode: string;
+  successes: number;
+  failures: number;
+  total: number;
+  successRate: string;
+  order: number;
+}
+
+type ExperimentRewardsSummary = Array<ExperimentRewardsByCondition>;
+
 export {
   MOOCLET_POLICY_SCHEMA_MAP,
   SUPPORTED_MOOCLET_ALGORITHMS,
@@ -32,4 +43,6 @@ export {
   MoocletTSConfigurablePolicyParametersDTO,
   BinaryRewardAllowedValue,
   BinaryRewardValueMap,
+  ExperimentRewardsSummary,
+  ExperimentRewardsByCondition,
 };

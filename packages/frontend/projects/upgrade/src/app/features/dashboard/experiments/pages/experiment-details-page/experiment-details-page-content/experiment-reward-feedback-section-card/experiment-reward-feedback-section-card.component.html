@@ -15,7 +15,7 @@
   <app-ts-configurable-reward-count-table
     content
     *ngIf="isSectionCardExpanded"
-    [dataSource]="currentPosteriorsTableData$ | async"
-    [isLoading]="false"
+    [dataSource]="rewardsSummary$ | async"
+    [isLoading]="isLoading$ | async"
   ></app-ts-configurable-reward-count-table>
 </app-common-section-card>

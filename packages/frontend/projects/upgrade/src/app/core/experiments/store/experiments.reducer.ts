@@ -36,6 +36,8 @@ export const initialState: ExperimentState = adapter.getInitialState({
   currentUserSelectedContext: null,
   isLoadingExperimentDelete: false,
   isLoadingImportExperiment: false,
+  isLoadingRewardsSummary: false,
+  rewardsSummaries: {},
 });
 
 const reducer = createReducer(
@@ -367,6 +369,27 @@ const reducer = createReducer(
   on(experimentsAction.actionSetIsLoadingImportExperiment, (state, { isLoadingImportExperiment }) => ({
     ...state,
     isLoadingImportExperiment,
+  })),
+  on(experimentsAction.actionFetchRewardsDataForExperiment, (state) => ({
+    ...state,
+    isLoadingRewardsSummary: true,
+  })),
+  on(
+    experimentsAction.actionFetchRewardsDataForExperimentSuccess,
+    (state, { experimentId, rewardsSummary }): ExperimentState => {
+      return {
+        ...state,
+        isLoadingRewardsSummary: false,
+        rewardsSummaries: {
+          ...state.rewardsSummaries,
+          [experimentId]: rewardsSummary,
+        },
+      };
+    }
+  ),
+  on(experimentsAction.actionFetchRewardsDataForExperimentFailure, (state) => ({
+    ...state,
+    isLoadingRewardsSummary: false,
   }))
 );
 
