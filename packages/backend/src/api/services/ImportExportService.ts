@@ -135,7 +135,7 @@ export class ImportExportService {
 
         this.experimentAuditLogRepository.saveRawJson(
           LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
-          { experimentName: experiment.name },
+          { experimentId: experiment.id, experimentName: experiment.name },
           user
         );
         return experimentRecord;

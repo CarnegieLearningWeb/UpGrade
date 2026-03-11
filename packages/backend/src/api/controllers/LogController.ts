@@ -50,6 +50,9 @@ export class AuditLogController {
    *               filter:
    *                type: string
    *                enum: [experimentCreated, experimentUpdated, experimentStateChanged, experimentDeleted]
+   *               experimentId:
+   *                type: string
+   *                format: uuid
    *           description: number of audit logs to requests
    *       tags:
    *         - Logs
@@ -64,8 +67,8 @@ export class AuditLogController {
     @Body({ validate: true }) logParams: AuditLogParamsValidator
   ): Promise<ExperimentAuditPaginationInfo> {
     const [nodes, total] = await Promise.all([
-      this.auditService.getAuditLogs(logParams.take, logParams.skip, logParams.filter),
-      this.auditService.getTotalLogs(logParams.filter),
+      this.auditService.getAuditLogs(logParams.take, logParams.skip, logParams.filter, logParams.experimentId),
+      this.auditService.getTotalLogs(logParams.filter, logParams.experimentId),
     ]);
     return {
       total,

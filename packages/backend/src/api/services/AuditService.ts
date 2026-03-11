@@ -11,15 +11,25 @@ export class AuditService {
     private experimentAuditLogRepository: ExperimentAuditLogRepository
   ) {}
 
-  public getTotalLogs(filter: LOG_TYPE): Promise<number> {
+  public getTotalLogs(filter?: LOG_TYPE, experimentId?: string): Promise<number> {
     if (filter) {
-      return this.experimentAuditLogRepository.getTotalLogs(filter);
+      return this.experimentAuditLogRepository.getTotalLogs(filter, experimentId);
     }
+
+    if (experimentId) {
+      return this.experimentAuditLogRepository.count({ where: { id: experimentId } });
+    }
+
     return this.experimentAuditLogRepository.count();
   }
 
-  public async getAuditLogs(limit: number, offset: number, filter?: LOG_TYPE): Promise<ExperimentAuditLog[]> {
-    const logs = await this.experimentAuditLogRepository.paginatedFind(limit, offset, filter);
+  public async getAuditLogs(
+    limit: number,
+    offset: number,
+    filter?: LOG_TYPE,
+    experimentId?: string
+  ): Promise<ExperimentAuditLog[]> {
+    const logs = await this.experimentAuditLogRepository.paginatedFind(limit, offset, filter, experimentId);
     return logs.map((log) => this.convertStateStrings(log));
   }
 

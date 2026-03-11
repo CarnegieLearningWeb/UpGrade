@@ -140,4 +140,125 @@ describe('LogsSelectors', () => {
       expect(result).toEqual(SERVER_ERROR.CONDITION_NOT_FOUND);
     });
   });
+
+  describe('#selectExperimentLogsState', () => {
+    it('should return the experimentAuditLogs from state', () => {
+      const state = { ...mockState };
+      const experimentLogs = {
+        'exp-123': { logs: [], skip: 0, total: 10, isLoading: false, filter: null },
+      };
+      state.experimentAuditLogs = experimentLogs;
+
+      const result = LogsSelectors.selectExperimentLogsState.projector(state);
+
+      expect(result).toEqual(experimentLogs);
+    });
+  });
+
+  describe('#selectExperimentLogsMetadata', () => {
+    it('should return metadata for specific experiment', () => {
+      const experimentLogs = {
+        'exp-123': { logs: [], skip: 5, total: 10, isLoading: false, filter: null },
+      };
+      const props = { experimentId: 'exp-123' };
+
+      const result = LogsSelectors.selectExperimentLogsMetadata.projector(experimentLogs, props);
+
+      expect(result).toEqual(experimentLogs['exp-123']);
+    });
+
+    it('should return null if experiment not found', () => {
+      const experimentLogs = {};
+      const props = { experimentId: 'exp-456' };
+
+      const result = LogsSelectors.selectExperimentLogsMetadata.projector(experimentLogs, props);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('#selectExperimentLogs', () => {
+    it('should return logs array from metadata', () => {
+      const mockLogs: AuditLogs[] = [
+        {
+          id: 'log1',
+          createdAt: '2020-10-10',
+          updatedAt: '2020-10-10',
+          data: {},
+          versionNumber: 1,
+          type: LOG_TYPE.EXPERIMENT_CREATED,
+        },
+      ];
+      const metadata = { logs: mockLogs, skip: 1, total: 1, isLoading: false, filter: null };
+      const props = { experimentId: 'exp-123' };
+
+      const result = LogsSelectors.selectExperimentLogs.projector(metadata, props);
+
+      expect(result).toEqual(mockLogs);
+    });
+
+    it('should return empty array if metadata is null', () => {
+      const props = { experimentId: 'exp-456' };
+
+      const result = LogsSelectors.selectExperimentLogs.projector(null, props);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('#selectIsExperimentLogsLoading', () => {
+    it('should return isLoading from metadata', () => {
+      const metadata = { logs: [], skip: 0, total: 10, isLoading: true, filter: null };
+      const props = { experimentId: 'exp-123' };
+
+      const result = LogsSelectors.selectIsExperimentLogsLoading.projector(metadata, props);
+
+      expect(result).toEqual(true);
+    });
+
+    it('should return false if metadata is null', () => {
+      const props = { experimentId: 'exp-456' };
+
+      const result = LogsSelectors.selectIsExperimentLogsLoading.projector(null, props);
+
+      expect(result).toEqual(false);
+    });
+  });
+
+  describe('#selectIsAllExperimentLogsFetched', () => {
+    it('should return true when skip equals total', () => {
+      const metadata = { logs: [], skip: 10, total: 10, isLoading: false, filter: null };
+      const props = { experimentId: 'exp-123' };
+
+      const result = LogsSelectors.selectIsAllExperimentLogsFetched.projector(metadata, props);
+
+      expect(result).toEqual(true);
+    });
+
+    it('should return false when skip is less than total', () => {
+      const metadata = { logs: [], skip: 5, total: 10, isLoading: false, filter: null };
+      const props = { experimentId: 'exp-123' };
+
+      const result = LogsSelectors.selectIsAllExperimentLogsFetched.projector(metadata, props);
+
+      expect(result).toEqual(false);
+    });
+
+    it('should return false when metadata is null', () => {
+      const props = { experimentId: 'exp-456' };
+
+      const result = LogsSelectors.selectIsAllExperimentLogsFetched.projector(null, props);
+
+      expect(result).toEqual(false);
+    });
+
+    it('should return false when total is null', () => {
+      const metadata = { logs: [], skip: 5, total: null, isLoading: false, filter: null };
+      const props = { experimentId: 'exp-123' };
+
+      const result = LogsSelectors.selectIsAllExperimentLogsFetched.projector(metadata, props);
+
+      expect(result).toEqual(false);
+    });
+  });
 });

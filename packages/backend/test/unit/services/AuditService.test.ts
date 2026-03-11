@@ -1,5 +1,4 @@
 import { AuditService } from '../../../src/api/services/AuditService';
-import { Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
@@ -10,7 +9,7 @@ const auditArr = [1, 2, 3];
 
 describe('Audit Service Testing', () => {
   let service: AuditService;
-  let repo: Repository<ExperimentAuditLogRepository>;
+  let repo: ExperimentAuditLogRepository;
   let module: TestingModule;
 
   beforeAll(() => {
@@ -35,7 +34,7 @@ describe('Audit Service Testing', () => {
     }).compile();
 
     service = module.get<AuditService>(AuditService);
-    repo = module.get<Repository<ExperimentAuditLogRepository>>(getRepositoryToken(ExperimentAuditLogRepository));
+    repo = module.get<ExperimentAuditLogRepository>(getRepositoryToken(ExperimentAuditLogRepository));
   });
 
   it('should be defined', async () => {
@@ -56,9 +55,37 @@ describe('Audit Service Testing', () => {
     expect(flags).toEqual(auditArr.length);
   });
 
+  it('should return a count of audit logs with experimentId', async () => {
+    const experimentId = '550e8400-e29b-41d4-a716-446655440000';
+    const flags = await service.getTotalLogs(LOG_TYPE.EXPERIMENT_CREATED, experimentId);
+    expect(flags).toEqual(auditArr.length);
+    expect(repo.getTotalLogs).toHaveBeenCalledWith(LOG_TYPE.EXPERIMENT_CREATED, experimentId);
+  });
+
+  it('should return a count of audit logs with only experimentId (no filter)', async () => {
+    const experimentId = '550e8400-e29b-41d4-a716-446655440000';
+    const flags = await service.getTotalLogs(undefined, experimentId);
+    expect(flags).toEqual(auditArr.length);
+    expect(repo.count).toHaveBeenCalledWith({ where: { id: experimentId } });
+  });
+
   it('should return an array of audit logs', async () => {
     const flags = await service.getAuditLogs(1, 0);
     expect(flags).toEqual(auditArr);
+  });
+
+  it('should return an array of audit logs with experimentId', async () => {
+    const experimentId = '550e8400-e29b-41d4-a716-446655440000';
+    const flags = await service.getAuditLogs(1, 0, undefined, experimentId);
+    expect(flags).toEqual(auditArr);
+    expect(repo.paginatedFind).toHaveBeenCalledWith(1, 0, undefined, experimentId);
+  });
+
+  it('should return an array of audit logs with filter and experimentId', async () => {
+    const experimentId = '550e8400-e29b-41d4-a716-446655440000';
+    const flags = await service.getAuditLogs(1, 0, LOG_TYPE.EXPERIMENT_CREATED, experimentId);
+    expect(flags).toEqual(auditArr);
+    expect(repo.paginatedFind).toHaveBeenCalledWith(1, 0, LOG_TYPE.EXPERIMENT_CREATED, experimentId);
   });
 
   it('should return an array of audit logs by type', async () => {

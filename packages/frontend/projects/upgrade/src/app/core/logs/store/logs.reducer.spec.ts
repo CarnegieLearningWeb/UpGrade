@@ -213,4 +213,123 @@ describe('LogsReducer', () => {
 
     expect(newState.errorLogFilter).toEqual(SERVER_ERROR.INCORRECT_PARAM_FORMAT);
   });
+
+  it('should handle actionGetExperimentLogs by setting isLoading to true for experiment', () => {
+    const previousState = { ...initialState };
+    const experimentId = 'exp-123';
+    const testAction = LogsActions.actionGetExperimentLogs({ experimentId, fromStart: false });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.experimentAuditLogs[experimentId]).toBeDefined();
+    expect(newState.experimentAuditLogs[experimentId].isLoading).toEqual(true);
+  });
+
+  it('should handle actionGetExperimentLogs with fromStart by resetting logs and skip', () => {
+    const previousState = { ...initialState };
+    const experimentId = 'exp-123';
+    previousState.experimentAuditLogs[experimentId] = {
+      logs: [...mockAuditLogs],
+      skip: 10,
+      total: 20,
+      isLoading: false,
+      filter: null,
+    };
+    const testAction = LogsActions.actionGetExperimentLogs({ experimentId, fromStart: true });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.experimentAuditLogs[experimentId].logs).toEqual([]);
+    expect(newState.experimentAuditLogs[experimentId].skip).toEqual(0);
+    expect(newState.experimentAuditLogs[experimentId].isLoading).toEqual(true);
+  });
+
+  it('should handle actionGetExperimentLogsSuccess by appending logs when fromStart is false', () => {
+    const previousState = { ...initialState };
+    const experimentId = 'exp-123';
+    previousState.experimentAuditLogs[experimentId] = {
+      logs: [mockAuditLogs[0]],
+      skip: 1,
+      total: null,
+      isLoading: true,
+      filter: null,
+    };
+    const testAction = LogsActions.actionGetExperimentLogsSuccess({
+      experimentId,
+      auditLogs: [mockAuditLogs[1]],
+      totalAuditLogs: 2,
+      fromStart: false,
+    });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.experimentAuditLogs[experimentId].logs).toEqual([mockAuditLogs[0], mockAuditLogs[1]]);
+    expect(newState.experimentAuditLogs[experimentId].skip).toEqual(2);
+    expect(newState.experimentAuditLogs[experimentId].total).toEqual(2);
+    expect(newState.experimentAuditLogs[experimentId].isLoading).toEqual(false);
+  });
+
+  it('should handle actionGetExperimentLogsSuccess by replacing logs when fromStart is true', () => {
+    const previousState = { ...initialState };
+    const experimentId = 'exp-123';
+    previousState.experimentAuditLogs[experimentId] = {
+      logs: [mockAuditLogs[0]],
+      skip: 1,
+      total: null,
+      isLoading: true,
+      filter: null,
+    };
+    const testAction = LogsActions.actionGetExperimentLogsSuccess({
+      experimentId,
+      auditLogs: [mockAuditLogs[1]],
+      totalAuditLogs: 1,
+      fromStart: true,
+    });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.experimentAuditLogs[experimentId].logs).toEqual([mockAuditLogs[1]]);
+    expect(newState.experimentAuditLogs[experimentId].skip).toEqual(1);
+    expect(newState.experimentAuditLogs[experimentId].total).toEqual(1);
+    expect(newState.experimentAuditLogs[experimentId].isLoading).toEqual(false);
+  });
+
+  it('should handle actionGetExperimentLogsFailure by setting isLoading to false', () => {
+    const previousState = { ...initialState };
+    const experimentId = 'exp-123';
+    previousState.experimentAuditLogs[experimentId] = {
+      logs: [],
+      skip: 0,
+      total: null,
+      isLoading: true,
+      filter: null,
+    };
+    const testAction = LogsActions.actionGetExperimentLogsFailure({ experimentId });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.experimentAuditLogs[experimentId].isLoading).toEqual(false);
+  });
+
+  it('should handle actionSetExperimentLogFilter by setting filter and resetting logs', () => {
+    const previousState = { ...initialState };
+    const experimentId = 'exp-123';
+    previousState.experimentAuditLogs[experimentId] = {
+      logs: [...mockAuditLogs],
+      skip: 10,
+      total: 20,
+      isLoading: false,
+      filter: null,
+    };
+    const testAction = LogsActions.actionSetExperimentLogFilter({
+      experimentId,
+      filterType: LOG_TYPE.EXPERIMENT_UPDATED,
+    });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.experimentAuditLogs[experimentId].filter).toEqual(LOG_TYPE.EXPERIMENT_UPDATED);
+    expect(newState.experimentAuditLogs[experimentId].logs).toEqual([]);
+    expect(newState.experimentAuditLogs[experimentId].skip).toEqual(0);
+  });
 });

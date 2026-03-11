@@ -13,6 +13,7 @@ import {
   selectSkipErrorLog,
   selectAuditFilterType,
   selectErrorFilterType,
+  selectExperimentLogsState,
 } from './logs.selectors';
 import { NUMBER_OF_LOGS, AuditLogParams, ErrorLogParams } from './logs.model';
 
@@ -55,6 +56,49 @@ export class LogsEffects {
             })
           ),
           catchError(() => [logsActions.actionGetAuditLogsFailure()])
+        );
+      })
+    )
+  );
+
+  getExperimentLogs$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(logsActions.actionGetExperimentLogs),
+      withLatestFrom(this.store$.pipe(select(selectExperimentLogsState))),
+      map(([action, experimentLogsState]) => ({
+        experimentId: action.experimentId,
+        fromStart: action.fromStart || false,
+        metadata: experimentLogsState[action.experimentId],
+      })),
+      filter(({ metadata, fromStart }) => {
+        if (fromStart) return true;
+        if (!metadata || metadata.total === null) return true;
+        return metadata.skip < metadata.total;
+      }),
+      mergeMap(({ experimentId, fromStart, metadata }) => {
+        const skip = fromStart ? 0 : metadata?.skip || 0;
+        const filter = metadata?.filter || null;
+
+        let params: AuditLogParams = {
+          skip,
+          take: NUMBER_OF_LOGS,
+          experimentId,
+        };
+
+        if (filter) {
+          params = { ...params, filter };
+        }
+
+        return this.logsDataService.getAllAuditLogs(params).pipe(
+          map((data: any) =>
+            logsActions.actionGetExperimentLogsSuccess({
+              experimentId,
+              auditLogs: data.nodes,
+              totalAuditLogs: data.total,
+              fromStart,
+            })
+          ),
+          catchError(() => [logsActions.actionGetExperimentLogsFailure({ experimentId })])
         );
       })
     )
@@ -120,6 +164,17 @@ export class LogsEffects {
         map((action) => action.filterType),
         tap(() => {
           this.store$.dispatch(logsActions.actionGetErrorLogs({ fromStart: true }));
+        })
+      ),
+    { dispatch: false }
+  );
+
+  changeExperimentLogFilter$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(logsActions.actionSetExperimentLogFilter),
+        tap(({ experimentId }) => {
+          this.store$.dispatch(logsActions.actionGetExperimentLogs({ experimentId, fromStart: true }));
         })
       ),
     { dispatch: false }

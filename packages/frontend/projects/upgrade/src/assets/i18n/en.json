@@ -308,6 +308,7 @@
   "home.change-post-experiment-rule.title.text": "Change Post Experiment Condition",
   "logs-global.log-zero-state.text": "No Logs",
   "logs-global.log-view-diff.text": "view",
+  "logs-global.log-no-user": "User Details Unknown",
   "logs.main-heading.text": "Logs",
   "logs.sub-heading.text": "Track changes made in environment",
   "logs.error-logs-tab.text": "Error Logs",
