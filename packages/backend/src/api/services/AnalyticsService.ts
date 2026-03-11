@@ -529,7 +529,7 @@ export class AnalyticsService {
       }
       await this.experimentAuditLogRepository.saveRawJson(
         LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
-        { experimentName: experimentDetails[0].experimentName },
+        { experimentId: experimentDetails[0].experimentId, experimentName: experimentDetails[0].experimentName },
         user
       );
       logger.info({ message: `Exported Data emailed successfully to ${email}` });
