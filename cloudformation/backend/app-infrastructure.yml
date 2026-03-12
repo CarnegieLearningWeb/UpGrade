@@ -68,7 +68,7 @@ Resources:
     Properties:
       ContainerDefinitions:
         - Name: log_router
-          Image: 467155500999.dkr.ecr.us-east-1.amazonaws.com/splunk/fluentd-hec:latest
+          Image: 467155500999.dkr.ecr.us-east-1.amazonaws.com/splunk/fluentbit:2026.2.0
           Essential: 'true'
           MemoryReservation: 64
           ReadonlyRootFilesystem: true
@@ -83,10 +83,10 @@ Resources:
             - Name: HEC_TOKEN
               ValueFrom: !Sub arn:aws:ssm:us-east-1:${AWS::AccountId}:parameter/HEC_TOKEN
           FirelensConfiguration:
-            Type: fluentd
+            Type: fluentbit
             Options:
               config-file-type: file
-              config-file-value: /fluentd_configs/default-fluent.conf
+              config-file-value: /fluent-bit/etc/custom.conf
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -97,9 +97,6 @@ Resources:
           MountPoints:
             - ContainerPath: /tmp
               SourceVolume: log_router_tmp
-            - ContainerPath: /fluentd_configs
-              SourceVolume: fluentd_configs
-              ReadOnly: true
         - Name: !Ref appName
           Essential: 'true'
           Image: !Sub 467155500999.dkr.ecr.us-east-1.amazonaws.com/microservices/${appName}:${version}
@@ -256,11 +253,6 @@ Resources:
         OperatingSystemFamily: LINUX
       Volumes:
         - Name: log_router_tmp
-        - Name: fluentd_configs
-          EFSVolumeConfiguration:
-            TransitEncryption: ENABLED
-            FilesystemId:
-              Fn::ImportValue: !Sub ${sharedEcsResourcesPrefix}-${environment}-fluentdConfigFilesystemId
       TaskRoleArn: 
         Fn::ImportValue: !Sub ${sharedResourcesPrefix}-${environment}-taskRoleArn
   ecsService:
