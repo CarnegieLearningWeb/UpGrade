@@ -21,12 +21,15 @@ import {
   POST_EXPERIMENT_RULE,
   PAUSE_BEHAVIOR_MODAL_MODE,
   EXPERIMENT_DETAILS_PAGE_ACTIONS,
+  ExperimentStateTimeLog,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { CommonExportHelpersService } from '../../../../../../../shared/services/common-export-helpers.service';
+import ObjectsToCsv from 'objects-to-csv';
 
 @Component({
   selector: 'app-experiment-overview-details-section-card',
@@ -85,7 +88,8 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
     private readonly dialogService: DialogService,
     private readonly router: Router,
     private readonly authService: AuthService,
-    private readonly translate: TranslateService
+    private readonly translate: TranslateService,
+    private readonly commonExportHelpersService: CommonExportHelpersService
   ) {}
 
   filterExperimentByChips(tagValue: string) {
@@ -137,6 +141,12 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
             !permissions?.experiments.delete ||
             menuItems.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE)?.disabled,
         },
+        {
+          label: 'experiments.details.export-state-change-logs.menu-item.text',
+          action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_STATE_CHANGE_LOGS,
+          disabled: menuItems.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_STATE_CHANGE_LOGS)
+            ?.disabled,
+        },
       ])
     );
   }
@@ -179,6 +189,9 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA:
         this.openConfirmEmailDataModal(experiment.id, experiment.name);
         break;
+      case EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_STATE_CHANGE_LOGS:
+        this.downloadStateChangeLogs(experiment.name, experiment.stateTimeLogs || []);
+        break;
       default:
         console.log('Unknown action');
     }
@@ -195,6 +208,43 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
           }
         })
     );
+  }
+
+  downloadStateChangeLogs(name: string, stateTimeLogs: ExperimentStateTimeLog[]) {
+    const formattedLogs = stateTimeLogs
+      .map((log) => ({
+        timeLog: new Date(log.timeLog).toLocaleString(),
+        fromState: log.fromState,
+        toState: log.toState,
+      }))
+      .sort((a, b) => new Date(a.timeLog).getTime() - new Date(b.timeLog).getTime()); // Sort logs by time
+    this.downloadLogsAsCSV(formattedLogs, `${name}_state_change_logs_${new Date().toISOString()}`);
+  }
+
+  private downloadLogsAsCSV(values: Partial<ExperimentStateTimeLog>[], fileName: string): void {
+    if (!values || values.length === 0) {
+      return;
+    }
+
+    this.commonExportHelpersService.downloadValuesAsCSV(this.ObjectsToCsvRows(values), fileName);
+  }
+
+  private ObjectsToCsvRows(values: object[]): string[] {
+    const headers = Object.keys(values[0]);
+    return [
+      headers.join(','),
+      ...values.map((obj) =>
+        headers
+          .map((header) => {
+            const value = obj[header];
+            if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+              return `"${value.replace(/"/g, '""')}"`;
+            }
+            return value ?? '';
+          })
+          .join(',')
+      ),
+    ];
   }
 
   openConfirmArchiveModal(id: string, name: string) {

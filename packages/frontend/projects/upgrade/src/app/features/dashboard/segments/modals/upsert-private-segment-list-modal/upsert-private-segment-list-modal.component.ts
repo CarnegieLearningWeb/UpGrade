@@ -17,6 +17,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
+import { CommonExportHelpersService } from '../../../../../shared/services/common-export-helpers.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MatInputModule } from '@angular/material/input';
@@ -89,6 +90,7 @@ export class UpsertPrivateSegmentListModalComponent {
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
     private featureFlagService: FeatureFlagsService,
+    private commonExportHelpersService: CommonExportHelpersService,
     public dialogRef: MatDialogRef<UpsertPrivateSegmentListModalComponent>
   ) {}
 
@@ -471,25 +473,9 @@ export class UpsertPrivateSegmentListModalComponent {
 
   onDownloadRequested(values: string[]) {
     if (this.privateSegmentListForm.get('name').valid) {
-      this.downloadValuesAsCSV(values, this.privateSegmentListForm.get('name').value);
+      this.commonExportHelpersService.downloadValuesAsCSV(values, this.privateSegmentListForm.get('name').value);
     } else {
       this.privateSegmentListForm.get('name').markAsTouched();
-    }
-  }
-
-  private downloadValuesAsCSV(values: string[], fileName: string): void {
-    const csvContent = values.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `${fileName}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
     }
   }
 

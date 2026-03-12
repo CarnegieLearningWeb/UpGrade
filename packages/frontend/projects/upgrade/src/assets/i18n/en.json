@@ -464,6 +464,7 @@
   "experiments.details.edit-experiment.menu-item.text": "Edit Experiment",
   "experiments.details.duplicate-experiment.menu-item.text": "Duplicate Experiment",
   "experiments.details.export-experiment-design.menu-item.text": "Export Experiment Design",
+  "experiments.details.export-state-change-logs.menu-item.text": "Export State Change Logs",
   "experiments.details.email-experiment-data.menu-item.text": "Email Experiment Data",
   "experiments.details.archive-experiment.menu-item.text": "Archive Experiment",
   "experiments.details.delete-experiment.menu-item.text": "Delete Experiment",
