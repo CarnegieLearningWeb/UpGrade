@@ -29,7 +29,6 @@ import { UserPermission } from '../../../../../../../core/auth/store/auth.models
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CommonExportHelpersService } from '../../../../../../../shared/services/common-export-helpers.service';
-import ObjectsToCsv from 'objects-to-csv';
 
 @Component({
   selector: 'app-experiment-overview-details-section-card',
@@ -211,13 +210,12 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   }
 
   downloadStateChangeLogs(name: string, stateTimeLogs: ExperimentStateTimeLog[]) {
-    const formattedLogs = stateTimeLogs
-      .map((log) => ({
-        timeLog: new Date(log.timeLog).toLocaleString(),
-        fromState: log.fromState,
-        toState: log.toState,
-      }))
-      .sort((a, b) => new Date(a.timeLog).getTime() - new Date(b.timeLog).getTime()); // Sort logs by time
+    const sortedLogs = [...stateTimeLogs].sort((a, b) => new Date(a.timeLog).getTime() - new Date(b.timeLog).getTime());
+    const formattedLogs = sortedLogs.map((log) => ({
+      timeLog: new Date(log.timeLog).toLocaleString(),
+      fromState: log.fromState,
+      toState: log.toState,
+    }));
     this.downloadLogsAsCSV(formattedLogs, `${name}_state_change_logs_${new Date().toISOString()}`);
   }
 
@@ -226,10 +224,10 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
       return;
     }
 
-    this.commonExportHelpersService.downloadValuesAsCSV(this.ObjectsToCsvRows(values), fileName);
+    this.commonExportHelpersService.downloadValuesAsCSV(this.objectsToCsvRows(values), fileName);
   }
 
-  private ObjectsToCsvRows(values: object[]): string[] {
+  private objectsToCsvRows(values: object[]): string[] {
     const headers = Object.keys(values[0]);
     return [
       headers.join(','),
