@@ -9,9 +9,10 @@ import { ProfileInfoComponent } from './components/profile-info/profile-info.com
 import { MetricsComponent } from './components/metrics/metrics.component';
 import { AddMetricsComponent } from './components/modals/add-metrics/add-metrics.component';
 import { NgJsonEditorModule } from 'ang-jsoneditor';
+import { MatTabsModule } from '@angular/material/tabs';
 
 @NgModule({
   declarations: [ProfileRootComponent, NewUserComponent, ProfileInfoComponent, MetricsComponent, AddMetricsComponent],
-  imports: [CommonModule, ProfileRoutingModule, SharedModule, NgJsonEditorModule],
+  imports: [CommonModule, ProfileRoutingModule, SharedModule, NgJsonEditorModule, MatTabsModule],
 })
 export class ProfileModule {}

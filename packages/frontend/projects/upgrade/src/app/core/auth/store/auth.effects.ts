@@ -111,7 +111,7 @@ export class AuthEffects {
         tap(([action, redirectUrl]) => {
           this.authService.deferFetchUserExperimentDataAfterNavigationEnd(action.user, action.googleCredential);
           const path = redirectUrl || '/home';
-          this.router.navigate([path]);
+          this.router.navigateByUrl(path);
         })
       ),
     { dispatch: false }

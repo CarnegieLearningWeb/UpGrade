@@ -1,6 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
+import { ActivatedRoute } from '@angular/router';
+import { CommonTabHelpersService } from '../../../shared/services/common-tab-helpers.service';
 
 /**
  * The `app-common-tabbed-section-card-footer` component provides a common footer component for tabbed sections.
@@ -22,12 +33,26 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
   styleUrl: './common-tabbed-section-card-footer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommonTabbedSectionCardFooterComponent {
-  @Input() selectedIndex = 0; // Default to the first tab
+export class CommonTabbedSectionCardFooterComponent implements OnInit {
+  @Input() selectedIndex = 0;
   @Input() tabLabels: { label: string; disabled?: boolean }[] = [];
   @Output() selectedTabChange = new EventEmitter<number>();
 
+  route = inject(ActivatedRoute);
+  changeDetector = inject(ChangeDetectorRef);
+  tabHelpers = inject(CommonTabHelpersService);
+
+  ngOnInit(): void {
+    const tabIndex = this.tabHelpers.getTabIndexFromQueryParams(this.route, this.tabLabels.length);
+    if (tabIndex !== null) {
+      this.selectedIndex = tabIndex;
+    }
+    this.selectedTabChange.emit(this.selectedIndex);
+    this.changeDetector.markForCheck();
+  }
+
   onSelectedTabChange(event: MatTabChangeEvent) {
+    this.tabHelpers.navigateToTab(event.index, this.route);
     this.selectedTabChange.emit(event.index);
   }
 }

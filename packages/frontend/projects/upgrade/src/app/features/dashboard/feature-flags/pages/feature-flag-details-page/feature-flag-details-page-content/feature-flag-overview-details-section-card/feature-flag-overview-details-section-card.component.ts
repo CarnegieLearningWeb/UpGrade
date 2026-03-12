@@ -4,7 +4,7 @@ import {
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
-import { FeatureFlagOverviewDetailsFooterComponent } from './feature-flag-overview-details-footer/feature-flag-overview-details-footer.component';
+import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../shared-standalone-component-lib/components/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
@@ -30,7 +30,7 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
     CommonSectionCardOverviewDetailsComponent,
-    FeatureFlagOverviewDetailsFooterComponent,
+    CommonTabbedSectionCardFooterComponent,
     TranslateModule,
   ],
   templateUrl: './feature-flag-overview-details-section-card.component.html',
@@ -39,6 +39,7 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 })
 export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, OnDestroy {
   @Output() sectionCardExpandChange = new EventEmitter<boolean>();
+  @Output() tabChange = new EventEmitter<number>();
   permissions$: Observable<UserPermission> = this.authService.userPermissions$;
   featureFlag$ = this.featureFlagService.selectedFeatureFlag$;
   flagAndPermissions$: Observable<{ flag: FeatureFlag; permissions: UserPermission }> = combineLatest([
@@ -54,6 +55,10 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   menuButtonItems$: Observable<IMenuButtonItem[]>;
   isSectionCardExpanded = true;
   emailId = '';
+  tabLabels = [
+    { label: 'Participants', disabled: false },
+    { label: 'Data', disabled: true },
+  ];
 
   constructor(
     private readonly dialogService: DialogService,
@@ -216,6 +221,10 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
     this.featureFlagService.setSearchKey(FLAG_SEARCH_KEY.TAG);
     this.featureFlagService.setSearchString(tagValue);
     this.router.navigate(['/featureflags']);
+  }
+
+  onSelectedTabChange(tabIndex: number): void {
+    this.tabChange.emit(tabIndex);
   }
 
   ngOnDestroy(): void {

@@ -9,7 +9,6 @@ import {
   selectSearchKey,
   selectSearchString,
   selectIsLoadingUpsertFeatureFlag,
-  selectActiveDetailsTabIndex,
   selectIsLoadingUpdateFeatureFlagStatus,
   selectSelectedFeatureFlag,
   selectSearchFeatureFlagParams,
@@ -71,7 +70,6 @@ export class FeatureFlagsService {
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
   selectRootTableState$ = this.store$.select(selectRootTableState);
-  activeDetailsTabIndex$ = this.store$.pipe(select(selectActiveDetailsTabIndex));
   selectFeatureFlagInclusions$ = this.store$.pipe(select(selectFeatureFlagInclusions));
   selectFeatureFlagInclusionsLength$ = this.store$.pipe(
     select(selectFeatureFlagInclusions),
@@ -165,10 +163,6 @@ export class FeatureFlagsService {
   setSortingType(sortingType: SORT_AS_DIRECTION) {
     this.localStorageService.setItem(FeatureFlagLocalStorageKeys.FEATURE_FLAG_SORT_TYPE, sortingType);
     this.store$.dispatch(FeatureFlagsActions.actionSetSortingType({ sortingType }));
-  }
-
-  setActiveDetailsTab(activeDetailsTabIndex: number) {
-    this.store$.dispatch(FeatureFlagsActions.actionSetActiveDetailsTabIndex({ activeDetailsTabIndex }));
   }
 
   addFeatureFlagInclusionPrivateSegmentList(list: AddPrivateSegmentListRequest) {

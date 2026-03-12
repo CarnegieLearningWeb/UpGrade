@@ -29,9 +29,9 @@
   </ng-container>
 
   <!-- footer -->
-  <app-segment-overview-details-footer
+  <app-common-tabbed-section-card-footer
     footer
-    [segment]="segment"
-    (tabChange)="onSelectedTabChange($event)"
-  ></app-segment-overview-details-footer>
+    [tabLabels]="(tabLabels$ | async) || []"
+    (selectedTabChange)="onSelectedTabChange($event)"
+  ></app-common-tabbed-section-card-footer>
 </app-common-section-card>

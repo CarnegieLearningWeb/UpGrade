@@ -73,7 +73,6 @@ export class LocalStorageService {
       isLoadingUpsertPrivateSegmentList: false,
       hasInitialFeatureFlagsDataLoaded: false,
       duplicateKeyFound: false,
-      activeDetailsTabIndex: 0,
       skipFlags: 0,
       totalFlags: null,
       searchKey: (featureFlagSearchKey as FLAG_SEARCH_KEY) || FLAG_SEARCH_KEY.ALL,

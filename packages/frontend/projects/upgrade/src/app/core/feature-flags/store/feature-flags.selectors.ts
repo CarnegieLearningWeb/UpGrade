@@ -108,11 +108,6 @@ export const selectSortKey = createSelector(selectFeatureFlagsState, (state) => 
 
 export const selectSortAs = createSelector(selectFeatureFlagsState, (state) => state.sortAs);
 
-export const selectActiveDetailsTabIndex = createSelector(
-  selectFeatureFlagsState,
-  (state) => state.activeDetailsTabIndex
-);
-
 export const selectFeatureFlagsListLength = createSelector(
   selectAllFeatureFlags,
   (featureFlags) => featureFlags.length
