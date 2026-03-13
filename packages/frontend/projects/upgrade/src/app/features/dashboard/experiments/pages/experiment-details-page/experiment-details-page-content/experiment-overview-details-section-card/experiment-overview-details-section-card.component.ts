@@ -227,7 +227,7 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
     this.commonExportHelpersService.downloadValuesAsCSV(this.objectsToCsvRows(values), fileName);
   }
 
-  private objectsToCsvRows(values: object[]): string[] {
+  private objectsToCsvRows(values: Record<string, any>[]): string[] {
     const headers = Object.keys(values[0]);
     return [
       headers.join(','),
