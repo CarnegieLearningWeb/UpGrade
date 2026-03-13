@@ -109,25 +109,6 @@ export class MoocletExperimentHelperService {
   }
 
   /**
-   *
-   * Generate a unique outcome variable name based on experiment name and timestamp.
-   * Returns a string in this format:
-   * "[first 10 chars of sanitized experiment name]_[ISO_timestamp]_REWARD_VARIABLE"
-   */
-  generateUniqueOutcomeVariableName(experimentName: string): string {
-    // first 10 chars of experiment name, sanitized
-    const baseName = experimentName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '')
-      .substring(0, 10);
-
-    // append ISO date timestamp suffix to ensure uniqueness
-    const timestamp = new Date().toISOString();
-    return `${baseName}_${timestamp}_REWARD_VARIABLE`;
-  }
-
-  /**
    * Get supported mooclet algorithm options for UI display.
    * Returns algorithm options with descriptions, or empty array if mooclet is disabled.
    */
@@ -169,6 +150,7 @@ export class MoocletExperimentHelperService {
    */
   validateTSConfigurablePolicyParameters(jsonValue: any): Observable<ValidationError[]> {
     const ValidatorClass = MOOCLET_POLICY_SCHEMA_MAP[ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE];
+
     const plainDTO = {
       assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
       ...jsonValue,
@@ -200,14 +182,13 @@ export class MoocletExperimentHelperService {
   /**
    * Build complete DTO from editable parameters.
    * Combines user-provided values with system-generated and default values.
+   * Note: outcome_variable_name is now generated server-side during experiment creation.
    */
   buildTSConfigurablePolicyParametersDTO(
     editableParams: EditableTSConfigurablePolicyParameters,
-    experimentName: string,
-    existingOutcomeVariableName?: string
+    experimentName: string
   ): MoocletTSConfigurablePolicyParametersDTO {
     const defaults = this.getTSConfigurableDefaults();
-
     return {
       // User-configurable fields
       batch_size: editableParams.batch_size,
@@ -219,7 +200,6 @@ export class MoocletExperimentHelperService {
       },
       // System-managed fields
       assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
-      outcome_variable_name: existingOutcomeVariableName ?? this.generateUniqueOutcomeVariableName(experimentName),
       max_rating: defaults.max_rating,
       min_rating: defaults.min_rating,
     } as MoocletTSConfigurablePolicyParametersDTO;

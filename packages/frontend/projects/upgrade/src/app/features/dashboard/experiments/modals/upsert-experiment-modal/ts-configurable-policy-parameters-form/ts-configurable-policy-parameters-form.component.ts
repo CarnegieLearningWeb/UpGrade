@@ -160,8 +160,7 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
     // Delegate DTO assembly to service
     return this.moocletExperimentHelperService.buildTSConfigurablePolicyParametersDTO(
       formValue,
-      this.experimentNameValue,
-      this.existingPolicyParams?.outcome_variable_name
+      this.experimentNameValue
     );
   }
 }

@@ -51,7 +51,7 @@ export class MoocletTSConfigurablePolicyParametersDTO extends MoocletPolicyParam
   @IsNumber()
   tspostdiff_thresh = 0;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  outcome_variable_name = '';
+  outcome_variable_name?: string;
 }
