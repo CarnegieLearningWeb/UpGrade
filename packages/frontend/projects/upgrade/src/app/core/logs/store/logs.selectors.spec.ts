@@ -261,4 +261,125 @@ describe('LogsSelectors', () => {
       expect(result).toEqual(false);
     });
   });
+
+  describe('#selectFeatureFlagLogsState', () => {
+    it('should return the featureFlagAuditLogs from state', () => {
+      const state = { ...mockState };
+      const flagLogs = {
+        'flag-123': { logs: [], skip: 0, total: 10, isLoading: false, filter: null },
+      };
+      state.featureFlagAuditLogs = flagLogs;
+
+      const result = LogsSelectors.selectFeatureFlagLogsState.projector(state);
+
+      expect(result).toEqual(flagLogs);
+    });
+  });
+
+  describe('#selectFeatureFlagLogsMetadata', () => {
+    it('should return metadata for specific flag', () => {
+      const flagLogs = {
+        'flag-123': { logs: [], skip: 5, total: 10, isLoading: false, filter: null },
+      };
+      const props = { flagId: 'flag-123' };
+
+      const result = LogsSelectors.selectFeatureFlagLogsMetadata.projector(flagLogs, props);
+
+      expect(result).toEqual(flagLogs['flag-123']);
+    });
+
+    it('should return null if flag not found', () => {
+      const flagLogs = {};
+      const props = { flagId: 'flag-456' };
+
+      const result = LogsSelectors.selectFeatureFlagLogsMetadata.projector(flagLogs, props);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('#selectFeatureFlagLogs', () => {
+    it('should return logs array from metadata', () => {
+      const mockLogs: AuditLogs[] = [
+        {
+          id: 'log1',
+          createdAt: '2020-10-10',
+          updatedAt: '2020-10-10',
+          data: {},
+          versionNumber: 1,
+          type: LOG_TYPE.FEATURE_FLAG_CREATED,
+        },
+      ];
+      const metadata = { logs: mockLogs, skip: 1, total: 1, isLoading: false, filter: null };
+      const props = { flagId: 'flag-123' };
+
+      const result = LogsSelectors.selectFeatureFlagLogs.projector(metadata, props);
+
+      expect(result).toEqual(mockLogs);
+    });
+
+    it('should return empty array if metadata is null', () => {
+      const props = { flagId: 'flag-456' };
+
+      const result = LogsSelectors.selectFeatureFlagLogs.projector(null, props);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('#selectIsFeatureFlagLogsLoading', () => {
+    it('should return isLoading from metadata', () => {
+      const metadata = { logs: [], skip: 0, total: 10, isLoading: true, filter: null };
+      const props = { flagId: 'flag-123' };
+
+      const result = LogsSelectors.selectIsFeatureFlagLogsLoading.projector(metadata, props);
+
+      expect(result).toEqual(true);
+    });
+
+    it('should return false if metadata is null', () => {
+      const props = { flagId: 'flag-456' };
+
+      const result = LogsSelectors.selectIsFeatureFlagLogsLoading.projector(null, props);
+
+      expect(result).toEqual(false);
+    });
+  });
+
+  describe('#selectIsAllFeatureFlagLogsFetched', () => {
+    it('should return true when skip equals total', () => {
+      const metadata = { logs: [], skip: 10, total: 10, isLoading: false, filter: null };
+      const props = { flagId: 'flag-123' };
+
+      const result = LogsSelectors.selectIsAllFeatureFlagLogsFetched.projector(metadata, props);
+
+      expect(result).toEqual(true);
+    });
+
+    it('should return false when skip is less than total', () => {
+      const metadata = { logs: [], skip: 5, total: 10, isLoading: false, filter: null };
+      const props = { flagId: 'flag-123' };
+
+      const result = LogsSelectors.selectIsAllFeatureFlagLogsFetched.projector(metadata, props);
+
+      expect(result).toEqual(false);
+    });
+
+    it('should return false when metadata is null', () => {
+      const props = { flagId: 'flag-456' };
+
+      const result = LogsSelectors.selectIsAllFeatureFlagLogsFetched.projector(null, props);
+
+      expect(result).toEqual(false);
+    });
+
+    it('should return false when total is null', () => {
+      const metadata = { logs: [], skip: 5, total: null, isLoading: false, filter: null };
+      const props = { flagId: 'flag-123' };
+
+      const result = LogsSelectors.selectIsAllFeatureFlagLogsFetched.projector(metadata, props);
+
+      expect(result).toEqual(false);
+    });
+  });
 });

@@ -32,6 +32,11 @@
       >
         exposures-card
       </app-feature-flag-exposures-section-card>
+      <app-feature-flag-log-section-card
+        [isSectionCardExpanded]="isSectionCardExpanded"
+        *ngIf="activeTabIndex === 2"
+        section-card
+      ></app-feature-flag-log-section-card>
     </app-common-section-card-list>
   </ng-container>
 

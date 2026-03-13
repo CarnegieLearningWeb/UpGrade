@@ -332,4 +332,123 @@ describe('LogsReducer', () => {
     expect(newState.experimentAuditLogs[experimentId].logs).toEqual([]);
     expect(newState.experimentAuditLogs[experimentId].skip).toEqual(0);
   });
+
+  it('should handle actionGetFeatureFlagLogs by setting isLoading to true for flag', () => {
+    const previousState = { ...initialState };
+    const flagId = 'flag-123';
+    const testAction = LogsActions.actionGetFeatureFlagLogs({ flagId, fromStart: false });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.featureFlagAuditLogs[flagId]).toBeDefined();
+    expect(newState.featureFlagAuditLogs[flagId].isLoading).toEqual(true);
+  });
+
+  it('should handle actionGetFeatureFlagLogs with fromStart by resetting logs and skip', () => {
+    const previousState = { ...initialState };
+    const flagId = 'flag-123';
+    previousState.featureFlagAuditLogs[flagId] = {
+      logs: [...mockAuditLogs],
+      skip: 10,
+      total: 20,
+      isLoading: false,
+      filter: null,
+    };
+    const testAction = LogsActions.actionGetFeatureFlagLogs({ flagId, fromStart: true });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.featureFlagAuditLogs[flagId].logs).toEqual([]);
+    expect(newState.featureFlagAuditLogs[flagId].skip).toEqual(0);
+    expect(newState.featureFlagAuditLogs[flagId].isLoading).toEqual(true);
+  });
+
+  it('should handle actionGetFeatureFlagLogsSuccess by appending logs when fromStart is false', () => {
+    const previousState = { ...initialState };
+    const flagId = 'flag-123';
+    previousState.featureFlagAuditLogs[flagId] = {
+      logs: [mockAuditLogs[0]],
+      skip: 1,
+      total: null,
+      isLoading: true,
+      filter: null,
+    };
+    const testAction = LogsActions.actionGetFeatureFlagLogsSuccess({
+      flagId,
+      auditLogs: [mockAuditLogs[1]],
+      totalAuditLogs: 2,
+      fromStart: false,
+    });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.featureFlagAuditLogs[flagId].logs).toEqual([mockAuditLogs[0], mockAuditLogs[1]]);
+    expect(newState.featureFlagAuditLogs[flagId].skip).toEqual(2);
+    expect(newState.featureFlagAuditLogs[flagId].total).toEqual(2);
+    expect(newState.featureFlagAuditLogs[flagId].isLoading).toEqual(false);
+  });
+
+  it('should handle actionGetFeatureFlagLogsSuccess by replacing logs when fromStart is true', () => {
+    const previousState = { ...initialState };
+    const flagId = 'flag-123';
+    previousState.featureFlagAuditLogs[flagId] = {
+      logs: [mockAuditLogs[0]],
+      skip: 1,
+      total: null,
+      isLoading: true,
+      filter: null,
+    };
+    const testAction = LogsActions.actionGetFeatureFlagLogsSuccess({
+      flagId,
+      auditLogs: [mockAuditLogs[1]],
+      totalAuditLogs: 1,
+      fromStart: true,
+    });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.featureFlagAuditLogs[flagId].logs).toEqual([mockAuditLogs[1]]);
+    expect(newState.featureFlagAuditLogs[flagId].skip).toEqual(1);
+    expect(newState.featureFlagAuditLogs[flagId].total).toEqual(1);
+    expect(newState.featureFlagAuditLogs[flagId].isLoading).toEqual(false);
+  });
+
+  it('should handle actionGetFeatureFlagLogsFailure by setting isLoading to false', () => {
+    const previousState = { ...initialState };
+    const flagId = 'flag-123';
+    previousState.featureFlagAuditLogs[flagId] = {
+      logs: [],
+      skip: 0,
+      total: null,
+      isLoading: true,
+      filter: null,
+    };
+    const testAction = LogsActions.actionGetFeatureFlagLogsFailure({ flagId });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.featureFlagAuditLogs[flagId].isLoading).toEqual(false);
+  });
+
+  it('should handle actionSetFeatureFlagLogFilter by setting filter and resetting logs', () => {
+    const previousState = { ...initialState };
+    const flagId = 'flag-123';
+    previousState.featureFlagAuditLogs[flagId] = {
+      logs: [...mockAuditLogs],
+      skip: 10,
+      total: 20,
+      isLoading: false,
+      filter: null,
+    };
+    const testAction = LogsActions.actionSetFeatureFlagLogFilter({
+      flagId,
+      filterType: LOG_TYPE.FEATURE_FLAG_UPDATED,
+    });
+
+    const newState = logsReducer(previousState, testAction);
+
+    expect(newState.featureFlagAuditLogs[flagId].filter).toEqual(LOG_TYPE.FEATURE_FLAG_UPDATED);
+    expect(newState.featureFlagAuditLogs[flagId].logs).toEqual([]);
+    expect(newState.featureFlagAuditLogs[flagId].skip).toEqual(0);
+  });
 });

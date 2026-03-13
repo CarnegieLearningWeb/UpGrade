@@ -61,3 +61,24 @@ export const actionSetExperimentLogFilter = createAction(
   '[Logs] Set Experiment Log Filter',
   props<{ experimentId: string; filterType: LOG_TYPE }>()
 );
+
+// Feature flag-specific log actions
+export const actionGetFeatureFlagLogs = createAction(
+  '[Logs] Get Feature Flag Logs',
+  props<{ flagId: string; fromStart?: boolean }>()
+);
+
+export const actionGetFeatureFlagLogsSuccess = createAction(
+  '[Logs] Get Feature Flag Logs Success',
+  props<{ flagId: string; auditLogs: AuditLogs[]; totalAuditLogs: number; fromStart: boolean }>()
+);
+
+export const actionGetFeatureFlagLogsFailure = createAction(
+  '[Logs] Get Feature Flag Logs Failure',
+  props<{ flagId: string }>()
+);
+
+export const actionSetFeatureFlagLogFilter = createAction(
+  '[Logs] Set Feature Flag Log Filter',
+  props<{ flagId: string; filterType: LOG_TYPE }>()
+);

@@ -306,4 +306,72 @@ describe('LogsService', () => {
       }));
     });
   });
+
+  describe('#fetchFeatureFlagLogs', () => {
+    it('should dispatch actionGetFeatureFlagLogs with flagId and fromStart', () => {
+      const flagId = 'flag-123';
+      const fromStart = true;
+
+      service.fetchFeatureFlagLogs(flagId, fromStart);
+
+      expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionGetFeatureFlagLogs({ flagId, fromStart }));
+    });
+
+    it('should dispatch actionGetFeatureFlagLogs with only flagId', () => {
+      const flagId = 'flag-123';
+
+      service.fetchFeatureFlagLogs(flagId);
+
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        LogActions.actionGetFeatureFlagLogs({ flagId, fromStart: undefined })
+      );
+    });
+  });
+
+  describe('#setFeatureFlagLogFilter', () => {
+    it('should dispatch actionSetFeatureFlagLogFilter with flagId and filterType', () => {
+      const flagId = 'flag-123';
+      const filterType = LOG_TYPE.FEATURE_FLAG_UPDATED;
+
+      service.setFeatureFlagLogFilter(flagId, filterType);
+
+      expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionSetFeatureFlagLogFilter({ flagId, filterType }));
+    });
+  });
+
+  describe('#isAllFeatureFlagLogsFetched', () => {
+    const testCases = [
+      {
+        whenCondition: 'skip does not equal total',
+        expectedValue: false,
+        metadata: { skip: 10, total: 20, logs: [], isLoading: false, filter: null },
+      },
+      {
+        whenCondition: 'skip equals total',
+        expectedValue: true,
+        metadata: { skip: 20, total: 20, logs: [], isLoading: false, filter: null },
+      },
+      {
+        whenCondition: 'metadata is null',
+        expectedValue: false,
+        metadata: null,
+      },
+    ];
+
+    testCases.forEach((testCase) => {
+      const { whenCondition, expectedValue, metadata } = testCase;
+
+      it(`WHEN ${whenCondition}, THEN ${expectedValue}`, fakeAsync(() => {
+        const flagId = 'flag-123';
+        LogSelectors.selectIsAllFeatureFlagLogsFetched.setResult(expectedValue);
+
+        service.isAllFeatureFlagLogsFetched(flagId).subscribe((val) => {
+          tick(0);
+          expect(val).toEqual(expectedValue);
+        });
+
+        tick();
+      }));
+    });
+  });
 });

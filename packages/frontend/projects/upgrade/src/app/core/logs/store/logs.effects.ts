@@ -14,8 +14,9 @@ import {
   selectAuditFilterType,
   selectErrorFilterType,
   selectExperimentLogsState,
+  selectFeatureFlagLogsState,
 } from './logs.selectors';
-import { NUMBER_OF_LOGS, AuditLogParams, ErrorLogParams } from './logs.model';
+import { NUMBER_OF_LOGS, AuditLogParams, AuditLogsMetadata, ErrorLogParams } from './logs.model';
 
 @Injectable()
 export class LogsEffects {
@@ -43,10 +44,7 @@ export class LogsEffects {
       mergeMap(([fromStart, skipAuditLog, filterType]) => {
         let params: AuditLogParams = { skip: fromStart ? 0 : skipAuditLog, take: NUMBER_OF_LOGS };
         if (filterType) {
-          params = {
-            ...params,
-            filter: filterType,
-          };
+          params = { ...params, filter: filterType };
         }
         return this.logsDataService.getAllAuditLogs(params).pipe(
           map((data: any) =>
@@ -56,49 +54,6 @@ export class LogsEffects {
             })
           ),
           catchError(() => [logsActions.actionGetAuditLogsFailure()])
-        );
-      })
-    )
-  );
-
-  getExperimentLogs$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(logsActions.actionGetExperimentLogs),
-      withLatestFrom(this.store$.pipe(select(selectExperimentLogsState))),
-      map(([action, experimentLogsState]) => ({
-        experimentId: action.experimentId,
-        fromStart: action.fromStart || false,
-        metadata: experimentLogsState[action.experimentId],
-      })),
-      filter(({ metadata, fromStart }) => {
-        if (fromStart) return true;
-        if (!metadata || metadata.total === null) return true;
-        return metadata.skip < metadata.total;
-      }),
-      mergeMap(({ experimentId, fromStart, metadata }) => {
-        const skip = fromStart ? 0 : metadata?.skip || 0;
-        const filter = metadata?.filter || null;
-
-        let params: AuditLogParams = {
-          skip,
-          take: NUMBER_OF_LOGS,
-          experimentId,
-        };
-
-        if (filter) {
-          params = { ...params, filter };
-        }
-
-        return this.logsDataService.getAllAuditLogs(params).pipe(
-          map((data: any) =>
-            logsActions.actionGetExperimentLogsSuccess({
-              experimentId,
-              auditLogs: data.nodes,
-              totalAuditLogs: data.total,
-              fromStart,
-            })
-          ),
-          catchError(() => [logsActions.actionGetExperimentLogsFailure({ experimentId })])
         );
       })
     )
@@ -127,10 +82,7 @@ export class LogsEffects {
       mergeMap(([fromStart, skipErrorLog, filterType]) => {
         let params: ErrorLogParams = { skip: fromStart ? 0 : skipErrorLog, take: NUMBER_OF_LOGS };
         if (filterType) {
-          params = {
-            ...params,
-            filter: filterType,
-          };
+          params = { ...params, filter: filterType };
         }
         return this.logsDataService.getAllErrorLogs(params).pipe(
           map((data: any) =>
@@ -145,38 +97,91 @@ export class LogsEffects {
     )
   );
 
-  changeAuditFilter$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(logsActions.actionSetAuditLogFilter),
-        map((action) => action.filterType),
-        tap(() => {
-          this.store$.dispatch(logsActions.actionGetAuditLogs({ fromStart: true }));
-        })
-      ),
-    { dispatch: false }
+  changeAuditFilter$ = this.createFilterChangeEffect(logsActions.actionSetAuditLogFilter, () =>
+    this.store$.dispatch(logsActions.actionGetAuditLogs({ fromStart: true }))
   );
 
-  changeErrorFilter$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(logsActions.actionSetErrorLogFilter),
-        map((action) => action.filterType),
-        tap(() => {
-          this.store$.dispatch(logsActions.actionGetErrorLogs({ fromStart: true }));
-        })
-      ),
-    { dispatch: false }
+  changeErrorFilter$ = this.createFilterChangeEffect(logsActions.actionSetErrorLogFilter, () =>
+    this.store$.dispatch(logsActions.actionGetErrorLogs({ fromStart: true }))
   );
 
-  changeExperimentLogFilter$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(logsActions.actionSetExperimentLogFilter),
-        tap(({ experimentId }) => {
-          this.store$.dispatch(logsActions.actionGetExperimentLogs({ experimentId, fromStart: true }));
-        })
-      ),
-    { dispatch: false }
+  getExperimentLogs$ = this.createScopedAuditLogsEffect({
+    actionType: logsActions.actionGetExperimentLogs,
+    stateSelector: selectExperimentLogsState,
+    getId: (action) => action.experimentId,
+    idParam: (experimentId) => ({ experimentId }),
+    successAction: (experimentId, auditLogs, total, fromStart) =>
+      logsActions.actionGetExperimentLogsSuccess({ experimentId, auditLogs, totalAuditLogs: total, fromStart }),
+    failureAction: (experimentId) => logsActions.actionGetExperimentLogsFailure({ experimentId }),
+  });
+
+  changeExperimentLogFilter$ = this.createFilterChangeEffect(
+    logsActions.actionSetExperimentLogFilter,
+    ({ experimentId }) => this.store$.dispatch(logsActions.actionGetExperimentLogs({ experimentId, fromStart: true }))
   );
+
+  getFeatureFlagLogs$ = this.createScopedAuditLogsEffect({
+    actionType: logsActions.actionGetFeatureFlagLogs,
+    stateSelector: selectFeatureFlagLogsState,
+    getId: (action) => action.flagId,
+    idParam: (flagId) => ({ flagId }),
+    successAction: (flagId, auditLogs, total, fromStart) =>
+      logsActions.actionGetFeatureFlagLogsSuccess({ flagId, auditLogs, totalAuditLogs: total, fromStart }),
+    failureAction: (flagId) => logsActions.actionGetFeatureFlagLogsFailure({ flagId }),
+  });
+
+  changeFeatureFlagLogFilter$ = this.createFilterChangeEffect(logsActions.actionSetFeatureFlagLogFilter, ({ flagId }) =>
+    this.store$.dispatch(logsActions.actionGetFeatureFlagLogs({ flagId, fromStart: true }))
+  );
+
+  private createScopedAuditLogsEffect(config: {
+    actionType: any;
+    stateSelector: any;
+    getId: (action: any) => string;
+    idParam: (id: string) => Partial<AuditLogParams>;
+    successAction: (id: string, auditLogs: any[], total: number, fromStart: boolean) => any;
+    failureAction: (id: string) => any;
+  }) {
+    return createEffect(() =>
+      this.actions$.pipe(
+        ofType(config.actionType),
+        withLatestFrom(this.store$.pipe(select(config.stateSelector))),
+        map(([action, logsState]: [any, Record<string, AuditLogsMetadata>]) => ({
+          id: config.getId(action),
+          fromStart: action.fromStart || false,
+          metadata: logsState[config.getId(action)],
+        })),
+        filter(({ metadata, fromStart }) => {
+          if (fromStart) return true;
+          if (!metadata || metadata.total === null) return true;
+          return metadata.skip < metadata.total;
+        }),
+        mergeMap(({ id, fromStart, metadata }) => {
+          const skip = fromStart ? 0 : metadata?.skip || 0;
+          const logFilter = metadata?.filter || null;
+
+          let params: AuditLogParams = { skip, take: NUMBER_OF_LOGS, ...config.idParam(id) };
+          if (logFilter) {
+            params = { ...params, filter: logFilter };
+          }
+
+          return this.logsDataService.getAllAuditLogs(params).pipe(
+            map((data: any) => config.successAction(id, data.nodes, data.total, fromStart)),
+            catchError(() => [config.failureAction(id)])
+          );
+        })
+      )
+    );
+  }
+
+  private createFilterChangeEffect(actionType: any, dispatchFn: (action: any) => void) {
+    return createEffect(
+      () =>
+        this.actions$.pipe(
+          ofType(actionType),
+          tap((action) => dispatchFn(action))
+        ),
+      { dispatch: false }
+    );
+  }
 }

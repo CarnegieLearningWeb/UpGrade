@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
-import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
+import { ExperimentAuditLogRepository, AuditLogQueryParams } from '../repositories/ExperimentAuditLogRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES, LOG_TYPE } from 'upgrade_types';
 
@@ -11,25 +11,12 @@ export class AuditService {
     private experimentAuditLogRepository: ExperimentAuditLogRepository
   ) {}
 
-  public getTotalLogs(filter?: LOG_TYPE, experimentId?: string): Promise<number> {
-    if (filter) {
-      return this.experimentAuditLogRepository.getTotalLogs(filter, experimentId);
-    }
-
-    if (experimentId) {
-      return this.experimentAuditLogRepository.count({ where: { id: experimentId } });
-    }
-
-    return this.experimentAuditLogRepository.count();
+  public getTotalLogs(logParams: Pick<AuditLogQueryParams, 'filter' | 'experimentId' | 'flagId'>): Promise<number> {
+    return this.experimentAuditLogRepository.getTotalLogs(logParams);
   }
 
-  public async getAuditLogs(
-    limit: number,
-    offset: number,
-    filter?: LOG_TYPE,
-    experimentId?: string
-  ): Promise<ExperimentAuditLog[]> {
-    const logs = await this.experimentAuditLogRepository.paginatedFind(limit, offset, filter, experimentId);
+  public async getAuditLogs(logParams: AuditLogQueryParams): Promise<ExperimentAuditLog[]> {
+    const logs = await this.experimentAuditLogRepository.paginatedFind(logParams);
     return logs.map((log) => this.convertStateStrings(log));
   }
 

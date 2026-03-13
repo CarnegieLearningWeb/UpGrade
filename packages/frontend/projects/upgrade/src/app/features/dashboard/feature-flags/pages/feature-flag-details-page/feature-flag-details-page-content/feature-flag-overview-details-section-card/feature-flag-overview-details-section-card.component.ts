@@ -58,6 +58,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   tabLabels = [
     { label: 'Participants', disabled: false },
     { label: 'Data', disabled: true },
+    { label: 'Logs', disabled: false },
   ];
 
   constructor(
