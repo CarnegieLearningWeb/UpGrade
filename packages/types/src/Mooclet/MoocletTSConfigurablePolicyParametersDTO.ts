@@ -1,4 +1,4 @@
-import { IsNumber, IsString, ValidateNested, IsOptional, IsObject, IsDefined, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsString, ValidateNested, IsOptional, IsObject, IsDefined } from 'class-validator';
 import { Type } from 'class-transformer';
 import { MoocletPolicyParametersDTO } from './MoocletPolicyParametersDTO';
 
