@@ -185,8 +185,7 @@ export class MoocletExperimentHelperService {
    * Note: outcome_variable_name is now generated server-side during experiment creation.
    */
   buildTSConfigurablePolicyParametersDTO(
-    editableParams: EditableTSConfigurablePolicyParameters,
-    experimentName: string
+    editableParams: EditableTSConfigurablePolicyParameters
   ): MoocletTSConfigurablePolicyParametersDTO {
     const defaults = this.getTSConfigurableDefaults();
     return {

@@ -400,7 +400,7 @@ export class MoocletExperimentService extends ExperimentService {
         return updatedExperiment;
       }
 
-      await this.doRevertableversionEdits({
+      await this.doRevertableVersionEdits({
         versionEdits,
         currentMoocletExperimentRef,
         incomingExperiment,
@@ -671,7 +671,7 @@ export class MoocletExperimentService extends ExperimentService {
    * @returns Promise that resolves when all edits are complete
    * @throws Will throw the first encountered error if any task fails
    */
-  async doRevertableversionEdits({
+  async doRevertableVersionEdits({
     versionEdits,
     currentMoocletExperimentRef,
     incomingExperiment,

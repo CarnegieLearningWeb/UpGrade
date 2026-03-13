@@ -164,7 +164,7 @@ describe('MoocletAlgorithmHelperService', () => {
         prior_failure: 10,
       };
 
-      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'Test Experiment');
+      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
       expect(result.batch_size).toBe(50);
       expect(result.uniform_threshold).toBe(100);
@@ -174,14 +174,14 @@ describe('MoocletAlgorithmHelperService', () => {
 
     it('should set assignmentAlgorithm to MOOCLET_TS_CONFIGURABLE', () => {
       const editableParams = createMockEditableParams();
-      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'Test');
+      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
       expect(result.assignmentAlgorithm).toBe(ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE);
     });
 
     it('should not set outcome_variable_name since it is generated server-side', () => {
       const editableParams = createMockEditableParams();
-      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'My Experiment');
+      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
       expect(result.outcome_variable_name).toBeUndefined();
     });
@@ -190,7 +190,7 @@ describe('MoocletAlgorithmHelperService', () => {
       const editableParams = createMockEditableParams();
       const defaults = service.getTSConfigurableDefaults();
 
-      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'Test');
+      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
       expect(result.max_rating).toBe(defaults.max_rating);
       expect(result.min_rating).toBe(defaults.min_rating);
@@ -205,7 +205,7 @@ describe('MoocletAlgorithmHelperService', () => {
         prior_failure: 20,
       };
 
-      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'Test');
+      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
       expect(result.prior).toBeDefined();
       expect(result.prior.success).toBe(15);
@@ -215,11 +215,8 @@ describe('MoocletAlgorithmHelperService', () => {
     it('should not include outcome_variable_name for any experiment name', () => {
       const editableParams = createMockEditableParams();
 
-      const result1 = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'Short');
-      const result2 = service.buildTSConfigurablePolicyParametersDTO(
-        editableParams,
-        'Very Long Experiment Name With Many Words'
-      );
+      const result1 = service.buildTSConfigurablePolicyParametersDTO(editableParams);
+      const result2 = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
       expect(result1.outcome_variable_name).toBeUndefined();
       expect(result2.outcome_variable_name).toBeUndefined();

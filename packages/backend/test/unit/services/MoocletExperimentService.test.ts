@@ -1644,7 +1644,6 @@ describe('#MoocletExperimentService', () => {
         );
 
         expect(result.addedConditions).toHaveLength(1);
-        expect(result.addedConditions).toHaveLength(1);
         expect(result.modifiedConditions).toHaveLength(1);
       });
 
