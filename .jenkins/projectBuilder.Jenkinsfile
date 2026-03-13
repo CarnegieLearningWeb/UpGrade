@@ -11,7 +11,7 @@ projectBuilderV5 (
     projects: [
         "upgrade-service":[
             artifactType: "ecr",
-            projectDir: ".",
+            fileFilter: [include: ["packages/backend/.*"]],
             runInProjectDir: true,
             versioning: "branch",
             appInfrastructure: [
@@ -34,7 +34,7 @@ projectBuilderV5 (
         ],
         "upgrade":[
             artifactType: 'codeartifact',
-            projectDir: '.',
+            fileFilter: [include: ["packages/frontend/.*"]],
             runInProjectDir: true,
             artifactDir: 'packages/frontend/dist/upgrade/browser',
             artifactPrefix: "upgrade",
@@ -70,7 +70,7 @@ projectBuilderV5 (
         "upgrade-backend-tests": [
             artifactType: "codeartifact",
             versioning: "none",
-            projectDir: ".",
+            fileFilter: [include: ["packages/backend/.*"]],
             runInProjectDir: true,
             skipArtifactUpload: true,
             buildScripts: [
