@@ -874,30 +874,10 @@ describe('Segment Service Testing', () => {
       service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
       service.getSegmentByIds = jest.fn().mockResolvedValue([]);
 
-      // Mock repository saves to return the expected segments
-      repo.save = jest
-        .fn()
-        .mockResolvedValueOnce({
-          id: 'public-segment-id',
-          name: 'public-segment',
-          type: SEGMENT_TYPE.PUBLIC,
-          context: 'add',
-          subSegments: [],
-        })
-        .mockResolvedValueOnce({
-          id: 'private-list-1',
-          name: 'private-list-1',
-          type: SEGMENT_TYPE.PRIVATE,
-          context: 'add',
-          subSegments: [],
-        })
-        .mockResolvedValueOnce({
-          id: 'private-list-2',
-          name: 'private-list-2',
-          type: SEGMENT_TYPE.PRIVATE,
-          context: 'add',
-          subSegments: [],
-        });
+      // Mock repository saves with a generic implementation that echoes the input segment
+      repo.save = jest.fn().mockImplementation(async (segment: Segment) => ({
+        ...segment,
+      }));
 
       await service.upsertSegment(publicSegment, logger);
 
