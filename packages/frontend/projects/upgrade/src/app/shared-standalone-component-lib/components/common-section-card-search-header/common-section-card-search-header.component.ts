@@ -5,6 +5,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnInit,
   Output,
   SimpleChanges,
 } from '@angular/core';
@@ -73,7 +74,7 @@ export interface FilterOption {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommonSectionCardSearchHeaderComponent implements OnChanges {
+export class CommonSectionCardSearchHeaderComponent implements OnInit, OnChanges {
   @Input() filterOptions: FilterOption[] = [];
   @Input() searchString: string;
   @Input() searchKey: string;
@@ -82,12 +83,16 @@ export class CommonSectionCardSearchHeaderComponent implements OnChanges {
   standaloneOptions: FilterOption[] = [];
   groupedOptions: { groupName: string; options: FilterOption[] }[] = [];
 
+  ngOnInit(): void {
+    this.buildOptions();
+  }
+
   // if filterOptions have changed, rebuild the options
   ngOnChanges(changes: SimpleChanges): void {
     const filterOptionsChange = changes['filterOptions'];
     if (filterOptionsChange && !filterOptionsChange.firstChange) {
       if (!isEqual(filterOptionsChange.previousValue, filterOptionsChange.currentValue)) {
-        this.rebuildOptions();
+        this.buildOptions();
       }
     }
   }
@@ -111,7 +116,7 @@ export class CommonSectionCardSearchHeaderComponent implements OnChanges {
     return this.filterOptions.find((option) => option.value === this.searchKey)?.type === 'dropdown';
   }
 
-  private rebuildOptions(): void {
+  private buildOptions(): void {
     // Cache standalone options
     this.standaloneOptions = this.filterOptions.filter((option) => !option.group && option.type !== 'group');
 
