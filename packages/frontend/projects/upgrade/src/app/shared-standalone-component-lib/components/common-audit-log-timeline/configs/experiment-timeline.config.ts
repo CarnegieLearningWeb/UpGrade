@@ -7,12 +7,12 @@ import { LOG_TYPE, EXPERIMENT_LIST_OPERATION } from 'upgrade_types';
  */
 export const EXPERIMENT_TIMELINE_LOG_TYPE_CONFIG: AuditLogTimelineConfig = {
   logTypeMessageMap: {
-    [LOG_TYPE.EXPERIMENT_CREATED]: 'logs.audit-log-experiment-created.text',
-    [LOG_TYPE.EXPERIMENT_DELETED]: 'logs.audit-log-experiment-deleted.text',
-    [LOG_TYPE.EXPERIMENT_STATE_CHANGED]: 'logs.audit-log-experiment-state-changed.text',
-    [LOG_TYPE.EXPERIMENT_UPDATED]: 'logs.audit-log-experiment-updated.text',
-    [LOG_TYPE.EXPERIMENT_DATA_EXPORTED]: 'logs.audit-log-experiment-data-exported.text',
-    [LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED]: 'logs.audit-log-experiment-design-exported.text',
+    [LOG_TYPE.EXPERIMENT_CREATED]: 'logs.experiment-level.audit-log-experiment-created.text',
+    [LOG_TYPE.EXPERIMENT_DELETED]: 'logs.experiment-level.audit-log-experiment-deleted.text',
+    [LOG_TYPE.EXPERIMENT_STATE_CHANGED]: 'logs.experiment-level.audit-log-experiment-state-changed.text',
+    [LOG_TYPE.EXPERIMENT_UPDATED]: 'logs.experiment-level.audit-log-experiment-updated.text',
+    [LOG_TYPE.EXPERIMENT_DATA_EXPORTED]: 'logs.experiment-level.audit-log-experiment-data-exported.text',
+    [LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED]: 'logs.experiment-level.audit-log-experiment-design-exported.text',
   },
 
   listOperationMessageMap: {

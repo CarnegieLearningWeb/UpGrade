@@ -52,6 +52,16 @@ export interface ErrorLogs {
   name: string;
 }
 
+export interface AuditLogsApiResponse {
+  nodes: AuditLogs[];
+  total: number;
+}
+
+export interface ErrorLogsApiResponse {
+  nodes: ErrorLogs[];
+  total: number;
+}
+
 export interface AuditLogsMetadata {
   logs: AuditLogs[];
   skip: number;

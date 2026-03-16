@@ -60,7 +60,7 @@
                 <!-- Log Messages by Type -->
                 <!-- Simple logs without diffs: DELETED, DATA_EXPORTED, DESIGN_EXPORTED -->
                 <span *ngIf="isSimpleLogType(log.type)" class="log-text">
-                  <span class="ft-16-600 action action-msg">
+                  <span class="ft-16-400 action action-msg">
                     {{ getLogTypeMessage(log.type) | translate }}
                   </span>
                   <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
@@ -68,7 +68,7 @@
 
                 <!-- CREATED and STATE_CHANGED logs -->
                 <span *ngIf="isStateChangeOrCreated(log.type)" class="log-text">
-                  <span class="ft-16-600 action action-msg">
+                  <span class="ft-16-400 action action-msg">
                     <ng-container *ngIf="log.data?.previousState && log.data?.newState">
                       {{
                         getLogTypeMessage(log.type)
@@ -92,7 +92,7 @@
                   <ng-container *ngIf="hasListOperation(log.data); else propertiesUpdated">
                     <!-- CREATED or DELETED list operations (no diff) -->
                     <div class="log-text" *ngIf="!log.data.list.diff">
-                      <span class="ft-16-600 action action-msg">
+                      <span class="ft-16-400 action action-msg">
                         {{ getLogTypeMessage(log.type) | translate }}
                         <ng-container *ngIf="log.data.list.operation">
                           -
@@ -115,7 +115,7 @@
                         <mat-expansion-panel hideToggle="true">
                           <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                             <mat-panel-title>
-                              <span class="ft-16-600 action-msg">
+                              <span class="ft-16-400 action-msg">
                                 {{ getLogTypeMessage(log.type) | translate }}
                                 <ng-container *ngIf="log.data.list.operation">
                                   -

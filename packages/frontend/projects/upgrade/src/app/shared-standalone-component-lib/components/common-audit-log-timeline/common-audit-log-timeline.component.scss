@@ -83,7 +83,6 @@ $light-blue: #e9f3ff;
 $yellow: #fff1de;
 $black: #111111;
 $timeline-background-color: #eaf0f8;
-$action-msg-font-size: 15px;
 
 .timeline {
   position: relative;
@@ -174,7 +173,6 @@ $action-msg-font-size: 15px;
 
         &-msg {
           margin-right: 5px;
-          font-size: $action-msg-font-size !important;
         }
       }
 

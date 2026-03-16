@@ -2,10 +2,9 @@
   <mat-expansion-panel hideToggle="true">
     <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
       <mat-panel-title>
-        <span class="ft-16-600 action-msg">{{ actionMessage }}</span>
+        <span class="ft-16-400 action-msg">{{ actionMessage }}</span>
         <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
       </mat-panel-title>
-      <span class="ft-16-400 log-time">{{ createdAt | date : 'shortTime' }}</span>
     </mat-expansion-panel-header>
 
     <pre><div class="ft-14-400 diff-container" [id]="'diff-' + logId">{{ renderDiff() }}</div></pre>
