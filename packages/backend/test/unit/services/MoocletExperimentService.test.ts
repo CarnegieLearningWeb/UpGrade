@@ -462,6 +462,107 @@ describe('#MoocletExperimentService', () => {
         logger
       );
     });
+
+    it('should auto-generate outcome variable name for ts_configurable experiments', async () => {
+      // Create params for ts_configurable experiment with empty outcome_variable_name
+      const paramsWithTSConfigurable = {
+        ...params,
+        experimentDTO: {
+          ...params.experimentDTO,
+          name: 'Test Experiment',
+          assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+          moocletPolicyParameters: {
+            ...mockTSConfigMoocletPolicyParameters,
+            outcome_variable_name: '', // Empty outcome variable name
+          },
+        },
+      };
+
+      // Spy on the private generateUniqueOutcomeVariableName method
+      const generateNameSpy = jest
+        .spyOn(moocletExperimentService as any, 'generateUniqueOutcomeVariableName')
+        .mockReturnValue('test_experi_2026-03-13T00:00:00.000Z_REWARD_VARIABLE');
+
+      await moocletExperimentService['handleCreateMoocletTransaction'](manager, paramsWithTSConfigurable);
+
+      // Verify that generateUniqueOutcomeVariableName was called
+      expect(generateNameSpy).toHaveBeenCalledWith('Test Experiment');
+
+      // Verify that orchestrateMoocletCreation was called with the generated name
+      expect(moocletExperimentService['orchestrateMoocletCreation']).toHaveBeenCalledWith(
+        paramsWithTSConfigurable.experimentDTO,
+        expect.objectContaining({
+          outcome_variable_name: 'test_experi_2026-03-13T00:00:00.000Z_REWARD_VARIABLE',
+        }),
+        logger
+      );
+    });
+
+    it('should always generate new outcome variable name even when one exists for ts_configurable', async () => {
+      // Create params for ts_configurable experiment with existing outcome_variable_name
+      const paramsWithExistingOutcomeName = {
+        ...params,
+        experimentDTO: {
+          ...params.experimentDTO,
+          name: 'Test Experiment',
+          assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
+          moocletPolicyParameters: {
+            ...mockTSConfigMoocletPolicyParameters,
+            outcome_variable_name: 'existing_outcome_variable',
+          },
+        },
+      };
+
+      // Spy on the private generateUniqueOutcomeVariableName method
+      const generateNameSpy = jest
+        .spyOn(moocletExperimentService as any, 'generateUniqueOutcomeVariableName')
+        .mockReturnValue('test_experi_2026-03-13T00:00:00.000Z_REWARD_VARIABLE');
+
+      await moocletExperimentService['handleCreateMoocletTransaction'](manager, paramsWithExistingOutcomeName);
+
+      // Verify that generateUniqueOutcomeVariableName was called (should always generate)
+      expect(generateNameSpy).toHaveBeenCalledWith('Test Experiment');
+
+      // Verify that orchestrateMoocletCreation was called with the NEW generated name (not existing)
+      expect(moocletExperimentService['orchestrateMoocletCreation']).toHaveBeenCalledWith(
+        paramsWithExistingOutcomeName.experimentDTO,
+        expect.objectContaining({
+          outcome_variable_name: 'test_experi_2026-03-13T00:00:00.000Z_REWARD_VARIABLE',
+        }),
+        logger
+      );
+    });
+
+    it('should not generate outcome variable name for non-ts_configurable experiments', async () => {
+      // Create params for random algorithm (non-ts_configurable)
+      const paramsWithRandomAlgorithm = {
+        ...params,
+        experimentDTO: {
+          ...params.experimentDTO,
+          name: 'Test Experiment',
+          assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+          moocletPolicyParameters: {
+            // Generic policy parameters without outcome_variable_name
+            assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+          },
+        },
+      };
+
+      // Spy on the private generateUniqueOutcomeVariableName method
+      const generateNameSpy = jest.spyOn(moocletExperimentService as any, 'generateUniqueOutcomeVariableName');
+
+      await moocletExperimentService['handleCreateMoocletTransaction'](manager, paramsWithRandomAlgorithm);
+
+      // Verify that generateUniqueOutcomeVariableName was NOT called
+      expect(generateNameSpy).not.toHaveBeenCalled();
+
+      // Verify that orchestrateMoocletCreation was called with original parameters
+      expect(moocletExperimentService['orchestrateMoocletCreation']).toHaveBeenCalledWith(
+        paramsWithRandomAlgorithm.experimentDTO,
+        paramsWithRandomAlgorithm.experimentDTO.moocletPolicyParameters,
+        logger
+      );
+    });
   });
 
   describe('#orchestrateMoocletCreation', () => {
@@ -675,6 +776,73 @@ describe('#MoocletExperimentService', () => {
 
       // Mooclet deletion should not be attempted if upgrade deletion fails
       expect(orchestrateSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('#generateUniqueOutcomeVariableName', () => {
+    it('should generate a unique outcome variable name with correct format', () => {
+      // Mock Date to have predictable timestamp
+      const mockDate = new Date('2026-03-13T10:30:45.123Z');
+      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      jest.spyOn(mockDate, 'toISOString').mockReturnValue('2026-03-13T10:30:45.123Z');
+
+      const result = (moocletExperimentService as any).generateUniqueOutcomeVariableName('Test Experiment Name');
+
+      expect(result).toBe('test_exper_2026-03-13T10:30:45.123Z_REWARD_VARIABLE');
+
+      // Restore original Date
+      jest.restoreAllMocks();
+    });
+
+    it('should handle long experiment names by truncating to 10 characters', () => {
+      const mockDate = new Date('2026-03-13T10:30:45.123Z');
+      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      jest.spyOn(mockDate, 'toISOString').mockReturnValue('2026-03-13T10:30:45.123Z');
+
+      const result = (moocletExperimentService as any).generateUniqueOutcomeVariableName(
+        'This is a very long experiment name that should be truncated'
+      );
+
+      expect(result).toBe('this_is_a__2026-03-13T10:30:45.123Z_REWARD_VARIABLE');
+      expect(result.substring(0, result.indexOf('_2026'))).toHaveLength(10);
+
+      jest.restoreAllMocks();
+    });
+
+    it('should sanitize special characters in experiment names', () => {
+      const mockDate = new Date('2026-03-13T10:30:45.123Z');
+      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      jest.spyOn(mockDate, 'toISOString').mockReturnValue('2026-03-13T10:30:45.123Z');
+
+      const result = (moocletExperimentService as any).generateUniqueOutcomeVariableName('Test@#$%Exp!');
+
+      expect(result).toBe('test_exp_2026-03-13T10:30:45.123Z_REWARD_VARIABLE');
+
+      jest.restoreAllMocks();
+    });
+
+    it('should handle experiment names with leading and trailing underscores', () => {
+      const mockDate = new Date('2026-03-13T10:30:45.123Z');
+      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      jest.spyOn(mockDate, 'toISOString').mockReturnValue('2026-03-13T10:30:45.123Z');
+
+      const result = (moocletExperimentService as any).generateUniqueOutcomeVariableName('___Test___');
+
+      expect(result).toBe('test_2026-03-13T10:30:45.123Z_REWARD_VARIABLE');
+
+      jest.restoreAllMocks();
+    });
+
+    it('should convert uppercase names to lowercase', () => {
+      const mockDate = new Date('2026-03-13T10:30:45.123Z');
+      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      jest.spyOn(mockDate, 'toISOString').mockReturnValue('2026-03-13T10:30:45.123Z');
+
+      const result = (moocletExperimentService as any).generateUniqueOutcomeVariableName('UPPERCASE');
+
+      expect(result).toBe('uppercase_2026-03-13T10:30:45.123Z_REWARD_VARIABLE');
+
+      jest.restoreAllMocks();
     });
   });
 
@@ -1389,28 +1557,6 @@ describe('#MoocletExperimentService', () => {
       } as any as MoocletVersionConditionMap,
     ];
 
-    describe('#detectNewOutcomeVariableName', () => {
-      it('should detect changed outcome variable name', () => {
-        const experimentDTO = {
-          moocletPolicyParameters: { outcome_variable_name: 'new_variable' },
-        } as any as ExperimentDTO;
-
-        const result = moocletExperimentService['detectNewOutcomeVariableName'](experimentDTO, 'old_variable');
-
-        expect(result).toBe('new_variable');
-      });
-
-      it('should return null if outcome variable name unchanged', () => {
-        const experimentDTO = {
-          moocletPolicyParameters: { outcome_variable_name: 'same_variable' },
-        } as any as ExperimentDTO;
-
-        const result = moocletExperimentService['detectNewOutcomeVariableName'](experimentDTO, 'same_variable');
-
-        expect(result).toBeNull();
-      });
-    });
-
     describe('#detectNewConditions', () => {
       it('should detect new conditions', () => {
         const experimentDTO = {
@@ -1486,7 +1632,6 @@ describe('#MoocletExperimentService', () => {
     describe('#detectExperimentDesignChanges', () => {
       it('should detect multiple changes', () => {
         const experimentDTO = {
-          moocletPolicyParameters: { outcome_variable_name: 'new_variable' },
           conditions: [
             { id: 'cond-1', conditionCode: 'modified_control' },
             { id: 'cond-2', conditionCode: 'treatment' },
@@ -1495,25 +1640,21 @@ describe('#MoocletExperimentService', () => {
 
         const result = moocletExperimentService['detectExperimentDesignChanges'](
           experimentDTO,
-          mockMoocletExperimentRef,
-          'old_variable'
+          mockMoocletExperimentRef
         );
 
-        expect(result.newOutcomeVariableName).toBe('new_variable');
         expect(result.addedConditions).toHaveLength(1);
         expect(result.modifiedConditions).toHaveLength(1);
       });
 
       it('should return null if no changes detected', () => {
         const experimentDTO = {
-          moocletPolicyParameters: { outcome_variable_name: 'same_variable' },
           conditions: [{ id: 'cond-1', conditionCode: 'control' }],
         } as any as ExperimentDTO;
 
         const result = moocletExperimentService['detectExperimentDesignChanges'](
           experimentDTO,
-          mockMoocletExperimentRef,
-          'same_variable'
+          mockMoocletExperimentRef
         );
 
         expect(result).toBeNull();
@@ -1562,7 +1703,6 @@ describe('#MoocletExperimentService', () => {
 
       jest.spyOn(moocletExperimentService as any, 'fetchCurrentResources').mockResolvedValue({
         currentMoocletExperimentRef: mockMoocletExperimentRef,
-        currentOutcomeVariableResponse: { name: mockExperiment.moocletPolicyParameters['outcome_variable_name'] },
         currentPolicyParametersResponse: { parameters: mockExperiment.moocletPolicyParameters },
         currentExperiment: mockCurrentExperiment,
       });
@@ -1585,25 +1725,26 @@ describe('#MoocletExperimentService', () => {
     });
 
     it('should throw error when version/variable edits attempted on enrolling experiment', async () => {
-      const enrollingExperiment = { ...mockExperiment, state: EXPERIMENT_STATE.ENROLLING };
+      const enrollingExperiment = {
+        ...mockExperiment,
+        state: EXPERIMENT_STATE.RUNNING,
+      };
       const params = { experimentDTO: enrollingExperiment, currentUser: mockCurrentUser, logger };
 
       jest.spyOn(moocletExperimentService as any, 'fetchCurrentResources').mockResolvedValue({
         currentMoocletExperimentRef: mockMoocletExperimentRef,
-        currentOutcomeVariableResponse: { name: 'old_variable' },
         currentPolicyParametersResponse: { parameters: mockExperiment.moocletPolicyParameters },
         currentExperiment: mockCurrentExperiment,
       });
 
       jest.spyOn(moocletExperimentService as any, 'detectExperimentDesignChanges').mockReturnValue({
-        newOutcomeVariableName: 'new_variable',
-        addedConditions: false,
-        removedConditions: false,
-        modifiedConditions: false,
+        addedConditions: [{ id: 'new-cond', conditionCode: 'new-condition' }],
+        removedConditions: null,
+        modifiedConditions: null,
       });
 
       await expect((moocletExperimentService as any).handleEditMoocletTransaction(manager, params)).rejects.toThrow(
-        '[Mooclet Edit] Ineligible experiment state for Mooclet edits'
+        /Ineligible version edits detected for an active Mooclet experiment/
       );
     });
 
@@ -1638,7 +1779,6 @@ describe('#MoocletExperimentService', () => {
     it('should rollback policy parameters', async () => {
       const rollbackRef = {
         revertPolicyParameters: mockTSConfigMoocletPolicyParameters,
-        revertOutcomeVariableName: null,
         restoreVersions: null,
         revertVersionModifications: null,
         removeVersions: null,
@@ -1657,32 +1797,9 @@ describe('#MoocletExperimentService', () => {
       );
     });
 
-    it('should rollback outcome variable name', async () => {
-      const rollbackRef = {
-        revertPolicyParameters: null,
-        revertOutcomeVariableName: 'old_variable',
-        restoreVersions: null,
-        revertVersionModifications: null,
-        removeVersions: null,
-        currentMoocletExperimentRef: mockMoocletExperimentRef,
-        currentExperiment: mockCurrentExperiment,
-      };
-
-      jest.spyOn(moocletExperimentService as any, 'handleUpdateOutcomeVariableName').mockResolvedValue({});
-
-      await (moocletExperimentService as any).rollbackMoocletEdits(rollbackRef, logger);
-
-      expect(moocletExperimentService['handleUpdateOutcomeVariableName']).toHaveBeenCalledWith(
-        'old_variable',
-        mockMoocletExperimentRef,
-        logger
-      );
-    });
-
     it('should throw error if rollback itself fails', async () => {
       const rollbackRef = {
         revertPolicyParameters: mockTSConfigMoocletPolicyParameters,
-        revertOutcomeVariableName: null,
         restoreVersions: null,
         revertVersionModifications: null,
         removeVersions: null,

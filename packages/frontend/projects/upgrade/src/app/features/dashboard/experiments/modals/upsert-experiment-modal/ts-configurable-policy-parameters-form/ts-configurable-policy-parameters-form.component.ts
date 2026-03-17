@@ -32,7 +32,6 @@ import isEqual from 'lodash.isequal';
 })
 export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDestroy {
   @Input() existingPolicyParams?: MoocletTSConfigurablePolicyParametersDTO;
-  @Input() experimentNameValue?: string;
   @Input() disabled = false; // Disable all form fields when true
   @Output() parametersChange = new EventEmitter<MoocletTSConfigurablePolicyParametersDTO>();
   @Output() validationChange = new EventEmitter<boolean>();
@@ -158,10 +157,6 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
     formValue: EditableTSConfigurablePolicyParameters
   ): MoocletTSConfigurablePolicyParametersDTO {
     // Delegate DTO assembly to service
-    return this.moocletExperimentHelperService.buildTSConfigurablePolicyParametersDTO(
-      formValue,
-      this.experimentNameValue,
-      this.existingPolicyParams?.outcome_variable_name
-    );
+    return this.moocletExperimentHelperService.buildTSConfigurablePolicyParametersDTO(formValue);
   }
 }
