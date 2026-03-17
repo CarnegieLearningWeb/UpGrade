@@ -835,4 +835,220 @@ describe('Segment Service Testing', () => {
     const results = await service.findPaginated(1, 2, logger);
     expect(results).toEqual(res);
   });
+
+  describe('Private segment cloning behavior', () => {
+    it('should clone private subsegments when they are lists of a public segment', async () => {
+      // Create a public segment with private subsegments (lists)
+      const publicSegment = new SegmentInputValidator();
+      publicSegment.id = 'public-segment-id';
+      publicSegment.name = 'public-segment';
+      publicSegment.type = SEGMENT_TYPE.PUBLIC;
+      publicSegment.context = 'add';
+      publicSegment.subSegmentIds = [];
+      publicSegment.userIds = [];
+      publicSegment.groups = [];
+
+      // Create private subsegments (lists) with their own members
+      const privateList1 = new Segment();
+      privateList1.id = 'private-list-1';
+      privateList1.name = 'private-list-1';
+      privateList1.type = SEGMENT_TYPE.PRIVATE;
+      privateList1.context = 'add';
+      privateList1.subSegments = [];
+      privateList1.individualForSegment = [{ userId: 'user1' } as IndividualForSegment];
+      privateList1.groupForSegment = [{ groupId: 'group1', type: 'type1' } as GroupForSegment];
+
+      const privateList2 = new Segment();
+      privateList2.id = 'private-list-2';
+      privateList2.name = 'private-list-2';
+      privateList2.type = SEGMENT_TYPE.PRIVATE;
+      privateList2.context = 'add';
+      privateList2.subSegments = [];
+      privateList2.individualForSegment = [{ userId: 'user2' } as IndividualForSegment];
+      privateList2.groupForSegment = [];
+
+      // Add private lists as subSegments (not subSegmentIds)
+      publicSegment.subSegments = [privateList1, privateList2];
+
+      // Mock service methods
+      service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
+      service.getSegmentByIds = jest.fn().mockResolvedValue([]);
+
+      // Mock repository saves with a generic implementation that echoes the input segment
+      repo.save = jest.fn().mockImplementation(async (segment: Segment) => ({
+        ...segment,
+      }));
+
+      await service.upsertSegment(publicSegment, logger);
+
+      // Verify that repo.save was called for the main segment plus each private list
+      // The first call is for the main public segment, then one for each private list being cloned
+      expect(repo.save).toHaveBeenCalledTimes(3);
+    });
+
+    it('should ignore private subsegments that are not in subSegmentIds for private segments', async () => {
+      // Create a private segment (like an exclusion/inclusion list)
+      const privateSegment = new SegmentInputValidator();
+      privateSegment.id = 'private-segment-id';
+      privateSegment.name = 'private-segment';
+      privateSegment.type = SEGMENT_TYPE.PRIVATE;
+      privateSegment.context = 'add';
+      privateSegment.subSegmentIds = ['allowed-subsegment-id']; // Only this one should be processed
+      privateSegment.userIds = [];
+      privateSegment.groups = [];
+
+      // Create subsegments - some in subSegmentIds, some not
+      const allowedSubsegment = new Segment();
+      allowedSubsegment.id = 'allowed-subsegment-id';
+      allowedSubsegment.name = 'allowed-subsegment';
+      allowedSubsegment.type = SEGMENT_TYPE.PUBLIC;
+
+      const ignoredSubsegment = new Segment();
+      ignoredSubsegment.id = 'ignored-subsegment-id';
+      ignoredSubsegment.name = 'ignored-subsegment';
+      ignoredSubsegment.type = SEGMENT_TYPE.PRIVATE;
+
+      // Add both to subSegments array, but only the allowed one to subSegmentIds
+      privateSegment.subSegments = [allowedSubsegment, ignoredSubsegment];
+
+      // Mock service methods - getSegmentByIds should return what it finds based on subSegmentIds
+      service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
+      service.getSegmentByIds = jest.fn().mockImplementation((ids) => {
+        // Simulate finding segments by the requested IDs
+        const allAvailableSegments = [allowedSubsegment, ignoredSubsegment];
+        return Promise.resolve(allAvailableSegments.filter((seg) => ids.includes(seg.id)));
+      });
+
+      // Mock repository save to capture what gets passed to it
+      repo.save = jest.fn().mockResolvedValue({
+        id: privateSegment.id,
+        name: privateSegment.name,
+        type: privateSegment.type,
+        context: privateSegment.context,
+        subSegments: [],
+      });
+
+      await service.upsertSegment(privateSegment, logger);
+
+      // Verify that getSegmentByIds was called with only the IDs from subSegmentIds
+      expect(service.getSegmentByIds).toHaveBeenCalledWith(['allowed-subsegment-id']);
+
+      // Verify that repo.save was called with only the subsegment found via subSegmentIds
+      expect(repo.save).toHaveBeenCalledWith({
+        id: privateSegment.id,
+        name: privateSegment.name,
+        description: undefined,
+        context: privateSegment.context,
+        type: privateSegment.type,
+        listType: undefined,
+        tags: undefined,
+        subSegments: [allowedSubsegment], // Only the one from subSegmentIds, not the ignored one
+      });
+    });
+
+    it('should process subsegments from subSegmentIds for private segments', async () => {
+      // Create a private segment with valid subSegmentIds
+      const privateSegment = new SegmentInputValidator();
+      privateSegment.id = 'private-segment-id';
+      privateSegment.name = 'private-segment';
+      privateSegment.type = SEGMENT_TYPE.PRIVATE;
+      privateSegment.context = 'add';
+      privateSegment.subSegmentIds = ['valid-subsegment-1', 'valid-subsegment-2'];
+      privateSegment.userIds = [];
+      privateSegment.groups = [];
+      privateSegment.subSegments = [];
+
+      // Create valid subsegments
+      const validSubsegment1 = new Segment();
+      validSubsegment1.id = 'valid-subsegment-1';
+      validSubsegment1.name = 'valid-subsegment-1';
+      validSubsegment1.type = SEGMENT_TYPE.PUBLIC;
+
+      const validSubsegment2 = new Segment();
+      validSubsegment2.id = 'valid-subsegment-2';
+      validSubsegment2.name = 'valid-subsegment-2';
+      validSubsegment2.type = SEGMENT_TYPE.PUBLIC;
+
+      // Mock service methods
+      service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
+      service.getSegmentByIds = jest.fn().mockResolvedValue([validSubsegment1, validSubsegment2]);
+
+      // Mock repository save
+      const savedSegment = {
+        id: privateSegment.id,
+        name: privateSegment.name,
+        type: privateSegment.type,
+        context: privateSegment.context,
+        subSegments: [validSubsegment1, validSubsegment2],
+      };
+      repo.save = jest.fn().mockResolvedValue(savedSegment);
+
+      await service.upsertSegment(privateSegment, logger);
+
+      // Verify that getSegmentByIds was called with the correct IDs
+      expect(service.getSegmentByIds).toHaveBeenCalledWith(['valid-subsegment-1', 'valid-subsegment-2']);
+
+      // Verify that repo.save was called with both valid subsegments
+      expect(repo.save).toHaveBeenCalledWith({
+        id: privateSegment.id,
+        name: privateSegment.name,
+        description: undefined,
+        context: privateSegment.context,
+        type: privateSegment.type,
+        listType: undefined,
+        tags: undefined,
+        subSegments: [validSubsegment1, validSubsegment2],
+      });
+    });
+
+    it('should handle missing subsegments in subSegmentIds gracefully', async () => {
+      // Create a private segment with subSegmentIds that don't exist
+      const privateSegment = new SegmentInputValidator();
+      privateSegment.id = 'private-segment-id';
+      privateSegment.name = 'private-segment';
+      privateSegment.type = SEGMENT_TYPE.PRIVATE;
+      privateSegment.context = 'add';
+      privateSegment.subSegmentIds = ['missing-subsegment-1', 'existing-subsegment'];
+      privateSegment.userIds = [];
+      privateSegment.groups = [];
+      privateSegment.subSegments = [];
+
+      // Only one subsegment exists
+      const existingSubsegment = new Segment();
+      existingSubsegment.id = 'existing-subsegment';
+      existingSubsegment.name = 'existing-subsegment';
+      existingSubsegment.type = SEGMENT_TYPE.PUBLIC;
+
+      // Mock service methods - getSegmentByIds returns only the existing one
+      service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
+      service.getSegmentByIds = jest.fn().mockResolvedValue([existingSubsegment]);
+
+      // Mock repository save
+      const savedSegment = {
+        id: privateSegment.id,
+        name: privateSegment.name,
+        type: privateSegment.type,
+        context: privateSegment.context,
+        subSegments: [existingSubsegment],
+      };
+      repo.save = jest.fn().mockResolvedValue(savedSegment);
+
+      await service.upsertSegment(privateSegment, logger);
+
+      // Verify that getSegmentByIds was called with all requested IDs
+      expect(service.getSegmentByIds).toHaveBeenCalledWith(['missing-subsegment-1', 'existing-subsegment']);
+
+      // Verify that repo.save was called with only the existing subsegment
+      expect(repo.save).toHaveBeenCalledWith({
+        id: privateSegment.id,
+        name: privateSegment.name,
+        description: undefined,
+        context: privateSegment.context,
+        type: privateSegment.type,
+        listType: undefined,
+        tags: undefined,
+        subSegments: [existingSubsegment],
+      });
+    });
+  });
 });

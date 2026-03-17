@@ -898,8 +898,9 @@ export class SegmentService {
     const { id, name, description, context, type, listType, tags } = segment;
     const segmentsById = await this.getSegmentByIds(segment.subSegmentIds || []);
     const allSegments = [...segmentsById, ...(segment.subSegments || [])];
-    // If there are private subsegments, they are lists - so we need to clone the data
-    const isListData = allSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
+    // If the segment is public and there are private subsegments, they are lists - so we need to clone the data
+    const isListData =
+      type === SEGMENT_TYPE.PUBLIC && allSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
     let subSegmentData;
     if (isListData) {
       subSegmentData = await Promise.all(
