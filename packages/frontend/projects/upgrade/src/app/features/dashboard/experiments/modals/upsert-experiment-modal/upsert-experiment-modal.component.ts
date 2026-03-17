@@ -532,10 +532,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     stratificationFactorControl?.updateValueAndValidity();
   }
 
-  get experimentNameValue() {
-    return this.experimentForm.get('name')?.value;
-  }
-
   get assignmentAlgorithmValue() {
     return this.experimentForm.get('assignmentAlgorithm')?.value;
   }

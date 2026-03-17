@@ -46,57 +46,6 @@ describe('MoocletAlgorithmHelperService', () => {
   });
 
   // ============================================================================
-  // Outcome Variable Name Generation
-  // ============================================================================
-
-  describe('generateUniqueOutcomeVariableName', () => {
-    beforeEach(() => {
-      jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2024-01-15T10:30:00.000Z');
-    });
-
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
-
-    it('should generate name with sanitized experiment name', () => {
-      const result = service.generateUniqueOutcomeVariableName('Test Experiment');
-      expect(result).toBe('test_exper_2024-01-15T10:30:00.000Z_REWARD_VARIABLE');
-    });
-
-    it('should truncate long experiment names to 10 characters', () => {
-      const result = service.generateUniqueOutcomeVariableName('This is a very long experiment name');
-      const baseName = result.split('_2024')[0];
-      expect(baseName.length).toBe(10);
-    });
-
-    it('should replace special characters with underscores', () => {
-      const result = service.generateUniqueOutcomeVariableName('Test@#$%Exp!');
-      expect(result).toBe('test_exp_2024-01-15T10:30:00.000Z_REWARD_VARIABLE');
-    });
-
-    it('should handle multiple consecutive spaces', () => {
-      const result = service.generateUniqueOutcomeVariableName('Test    Exp');
-      expect(result).toBe('test_exp_2024-01-15T10:30:00.000Z_REWARD_VARIABLE');
-    });
-
-    it('should trim leading and trailing underscores', () => {
-      const result = service.generateUniqueOutcomeVariableName('___Test___');
-      expect(result).toBe('test_2024-01-15T10:30:00.000Z_REWARD_VARIABLE');
-    });
-
-    it('should convert to lowercase', () => {
-      const result = service.generateUniqueOutcomeVariableName('UPPERCASE');
-      expect(result).toBe('uppercase_2024-01-15T10:30:00.000Z_REWARD_VARIABLE');
-    });
-
-    it('should include timestamp for uniqueness', () => {
-      const result = service.generateUniqueOutcomeVariableName('Test');
-      expect(result).toContain('2024-01-15T10:30:00.000Z');
-      expect(result).toContain('_REWARD_VARIABLE');
-    });
-  });
-
-  // ============================================================================
   // TS Configurable Default Parameters
   // ============================================================================
 
@@ -215,7 +164,7 @@ describe('MoocletAlgorithmHelperService', () => {
         prior_failure: 10,
       };
 
-      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'Test Experiment');
+      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
       expect(result.batch_size).toBe(50);
       expect(result.uniform_threshold).toBe(100);
@@ -225,23 +174,23 @@ describe('MoocletAlgorithmHelperService', () => {
 
     it('should set assignmentAlgorithm to MOOCLET_TS_CONFIGURABLE', () => {
       const editableParams = createMockEditableParams();
-      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'Test');
+      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
       expect(result.assignmentAlgorithm).toBe(ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE);
     });
 
-    it('should generate unique outcome_variable_name', () => {
+    it('should not set outcome_variable_name since it is generated server-side', () => {
       const editableParams = createMockEditableParams();
-      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'My Experiment');
+      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
-      expect(result.outcome_variable_name).toBe('my_experim_2024-01-15T10:30:00.000Z_REWARD_VARIABLE');
+      expect(result.outcome_variable_name).toBeUndefined();
     });
 
     it('should set max_rating and min_rating from defaults', () => {
       const editableParams = createMockEditableParams();
       const defaults = service.getTSConfigurableDefaults();
 
-      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'Test');
+      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
       expect(result.max_rating).toBe(defaults.max_rating);
       expect(result.min_rating).toBe(defaults.min_rating);
@@ -256,24 +205,21 @@ describe('MoocletAlgorithmHelperService', () => {
         prior_failure: 20,
       };
 
-      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'Test');
+      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
       expect(result.prior).toBeDefined();
       expect(result.prior.success).toBe(15);
       expect(result.prior.failure).toBe(20);
     });
 
-    it('should handle different experiment names correctly', () => {
+    it('should not include outcome_variable_name for any experiment name', () => {
       const editableParams = createMockEditableParams();
 
-      const result1 = service.buildTSConfigurablePolicyParametersDTO(editableParams, 'Short');
-      const result2 = service.buildTSConfigurablePolicyParametersDTO(
-        editableParams,
-        'Very Long Experiment Name With Many Words'
-      );
+      const result1 = service.buildTSConfigurablePolicyParametersDTO(editableParams);
+      const result2 = service.buildTSConfigurablePolicyParametersDTO(editableParams);
 
-      expect(result1.outcome_variable_name).toContain('short');
-      expect(result2.outcome_variable_name).toContain('very_long_');
+      expect(result1.outcome_variable_name).toBeUndefined();
+      expect(result2.outcome_variable_name).toBeUndefined();
     });
   });
 
@@ -424,6 +370,40 @@ describe('MoocletAlgorithmHelperService', () => {
         tspostdiff_thresh: 3,
         prior: { success: 1, failure: 1 },
         outcome_variable_name: 'test',
+        max_rating: 5,
+        min_rating: 1,
+      };
+
+      service.validateTSConfigurablePolicyParameters(params).subscribe((errors) => {
+        expect(errors.length).toBe(0);
+        done();
+      });
+    });
+
+    it('should validate successfully even with empty outcome_variable_name', (done) => {
+      const params = {
+        batch_size: 30,
+        uniform_threshold: 50,
+        tspostdiff_thresh: 3,
+        prior: { success: 1, failure: 1 },
+        outcome_variable_name: '', // Empty string should not cause validation errors
+        max_rating: 5,
+        min_rating: 1,
+      };
+
+      service.validateTSConfigurablePolicyParameters(params).subscribe((errors) => {
+        expect(errors.length).toBe(0);
+        done();
+      });
+    });
+
+    it('should validate successfully without outcome_variable_name property', (done) => {
+      const params = {
+        batch_size: 30,
+        uniform_threshold: 50,
+        tspostdiff_thresh: 3,
+        prior: { success: 1, failure: 1 },
+        // outcome_variable_name property completely missing
         max_rating: 5,
         min_rating: 1,
       };
