@@ -99,7 +99,12 @@ describe('Audit Service Testing', () => {
     const experimentId = '550e8400-e29b-41d4-a716-446655440000';
     const flags = await service.getAuditLogs({ take: 1, skip: 0, filter: LOG_TYPE.EXPERIMENT_CREATED, experimentId });
     expect(flags).toEqual(auditArr);
-    expect(repo.paginatedFind).toHaveBeenCalledWith({ take: 1, skip: 0, filter: LOG_TYPE.EXPERIMENT_CREATED, experimentId });
+    expect(repo.paginatedFind).toHaveBeenCalledWith({
+      take: 1,
+      skip: 0,
+      filter: LOG_TYPE.EXPERIMENT_CREATED,
+      experimentId,
+    });
   });
 
   it('should return an array of audit logs with flagId', async () => {
@@ -113,7 +118,12 @@ describe('Audit Service Testing', () => {
     const flagId = '550e8400-e29b-41d4-a716-446655440001';
     const flags = await service.getAuditLogs({ take: 1, skip: 0, filter: LOG_TYPE.FEATURE_FLAG_UPDATED, flagId });
     expect(flags).toEqual(auditArr);
-    expect(repo.paginatedFind).toHaveBeenCalledWith({ take: 1, skip: 0, filter: LOG_TYPE.FEATURE_FLAG_UPDATED, flagId });
+    expect(repo.paginatedFind).toHaveBeenCalledWith({
+      take: 1,
+      skip: 0,
+      filter: LOG_TYPE.FEATURE_FLAG_UPDATED,
+      flagId,
+    });
   });
 
   it('should return an array of audit logs by type', async () => {
