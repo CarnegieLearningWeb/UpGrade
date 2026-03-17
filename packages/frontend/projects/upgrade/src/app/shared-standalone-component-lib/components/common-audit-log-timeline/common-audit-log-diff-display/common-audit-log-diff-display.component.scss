@@ -5,11 +5,10 @@
 
 .expansion-header {
   padding: 8px 16px;
-  min-height: 48px !important;
+  height: auto;
 
   ::ng-deep .mat-expansion-panel-header-title {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     width: 100%;
   }
@@ -17,20 +16,12 @@
 
 .action-msg {
   color: var(--text-primary);
-  font-weight: 600;
 }
 
 .view-diff {
-  color: var(--primary);
+  margin-left: 25px;
+  color: var(--blue);
   cursor: pointer;
-  margin-left: 8px;
-  text-decoration: underline;
-}
-
-.log-time {
-  color: var(--text-secondary);
-  margin-left: auto;
-  padding-left: 16px;
 }
 
 .diff-container {

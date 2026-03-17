@@ -41,21 +41,21 @@
 
         <ng-container [ngSwitch]="log.type">
           <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED" class="log-text">
-            <span class="ft-16-600 action action-msg">
+            <span class="ft-16-400 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
             </span>
             <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DATA_EXPORTED" class="log-text">
-            <span class="ft-16-600 action action-msg">
+            <span class="ft-16-400 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
             </span>
             <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DESIGN_EXPORTED" class="log-text">
-            <span class="ft-16-600 action action-msg">
+            <span class="ft-16-400 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
             </span>
             <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
@@ -70,7 +70,7 @@
                 : ''
             "
           >
-            <span class="ft-16-600 action action-msg">
+            <span class="ft-16-400 action action-msg">
               {{
                 (log.type
                   | experimentActionMessage
@@ -100,7 +100,7 @@
                       : ''
                   "
                 >
-                  <span class="ft-16-600 action action-msg">
+                  <span class="ft-16-400 action action-msg">
                     {{ log.type | experimentActionMessage | translate }}
                     <a
                       class="link"
@@ -129,7 +129,7 @@
                     <mat-expansion-panel hideToggle="true">
                       <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                         <mat-panel-title>
-                          <span class="ft-16-600 action-msg">
+                          <span class="ft-16-400 action-msg">
                             {{ log.type | experimentActionMessage | translate }}
                             <a
                               class="link"
@@ -173,7 +173,7 @@
                 <mat-expansion-panel hideToggle="true">
                   <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                     <mat-panel-title>
-                      <span class="ft-16-600 action-msg">
+                      <span class="ft-16-400 action-msg">
                         {{ (log.type | experimentActionMessage | translate) + ' ' }}
                         <a
                           class="link"
@@ -197,21 +197,21 @@
           </div>
 
           <div *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_DELETED" class="log-text">
-            <span class="ft-16-600 action action-msg">
+            <span class="ft-16-400 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
             </span>
             <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_DATA_EXPORTED" class="log-text">
-            <span class="ft-16-600 action action-msg">
+            <span class="ft-16-400 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
             </span>
             <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
           </div>
 
           <div *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_DESIGN_EXPORTED" class="log-text">
-            <span class="ft-16-600 action action-msg">
+            <span class="ft-16-400 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
             </span>
             <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
@@ -226,7 +226,7 @@
                 : ''
             "
           >
-            <span class="ft-16-600 action action-msg">
+            <span class="ft-16-400 action action-msg">
               {{
                 log.type
                   | experimentActionMessage
@@ -257,7 +257,7 @@
                       : ''
                   "
                 >
-                  <span class="ft-16-600 action action-msg">
+                  <span class="ft-16-400 action action-msg">
                     {{ log.type | experimentActionMessage | translate }}
                     <a
                       class="link"
@@ -287,7 +287,7 @@
                     <mat-expansion-panel hideToggle="true">
                       <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                         <mat-panel-title>
-                          <span class="ft-16-600 action-msg">
+                          <span class="ft-16-400 action-msg">
                             {{ log.type | experimentActionMessage | translate }}
                             <a
                               class="link"
@@ -332,7 +332,7 @@
                   <mat-expansion-panel hideToggle="true">
                     <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                       <mat-panel-title>
-                        <span class="ft-16-600 action-msg">
+                        <span class="ft-16-400 action-msg">
                           {{ log.type | experimentActionMessage | translate }}
                           <a
                             class="link"
@@ -360,7 +360,7 @@
 
               <ng-template #flagFilterModeUpdated>
                 <div class="log-text full-width">
-                  <span class="ft-16-600 action action-msg">
+                  <span class="ft-16-400 action action-msg">
                     {{ log.type | experimentActionMessage | translate }}
                     <a
                       class="link"
@@ -382,11 +382,11 @@
         </ng-container>
 
         <ng-template #experimentNotExist>
-          <span class="ft-16-600 action-msg">{{ ' ' + log.data.experimentName }}</span>
+          <span class="ft-16-400 action-msg">{{ ' ' + log.data.experimentName }}</span>
         </ng-template>
 
         <ng-template #flagNotExist>
-          <span class="ft-16-600 action-msg">{{ log.data.flagName }}</span>
+          <span class="ft-16-400 action-msg">{{ log.data.flagName }}</span>
         </ng-template>
       </div>
 

@@ -18,6 +18,7 @@ export const FEATURE_FLAG_TIMELINE_LOG_TYPE_CONFIG: AuditLogTimelineConfig = {
     [FEATURE_FLAG_LIST_OPERATION.CREATED]: 'logs.audit-log-list-created.text',
     [FEATURE_FLAG_LIST_OPERATION.DELETED]: 'logs.audit-log-list-deleted.text',
     [FEATURE_FLAG_LIST_OPERATION.UPDATED]: 'logs.audit-log-list-updated.text',
+    [FEATURE_FLAG_LIST_OPERATION.STATUS_CHANGED]: 'logs.audit-log-feature-flag-updated-list-state-changed.text',
   },
 
   isSimpleLogType: (type: string): boolean => {
@@ -34,6 +35,10 @@ export const FEATURE_FLAG_TIMELINE_LOG_TYPE_CONFIG: AuditLogTimelineConfig = {
 
   hasListOperation: (logData: any): boolean => {
     return !!logData?.list;
+  },
+
+  isFilterModeUpdate: (logData: any): boolean => {
+    return !logData?.diff && !logData?.list && !!logData?.filterMode;
   },
 
   isUpdateLogType: (type: string): boolean => {
