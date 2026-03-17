@@ -210,39 +210,20 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   }
 
   downloadStateChangeLogs(name: string, stateTimeLogs: ExperimentStateTimeLog[]) {
+    if (!stateTimeLogs.length) return;
+
+    const headerRow = 'timeLog,fromState,toState';
     const sortedLogs = [...stateTimeLogs].sort((a, b) => new Date(a.timeLog).getTime() - new Date(b.timeLog).getTime());
-    const formattedLogs = sortedLogs.map((log) => ({
-      timeLog: new Date(log.timeLog).toLocaleString(),
-      fromState: log.fromState,
-      toState: log.toState,
-    }));
-    this.downloadLogsAsCSV(formattedLogs, `${name}_state_change_logs_${new Date().toISOString()}`);
-  }
+    const dataRows = sortedLogs.map(({ timeLog, fromState, toState }) => {
+      const formattedTime = new Date(timeLog).toLocaleString();
+      return `"${formattedTime}","${fromState}","${toState}"`;
+    });
+    const csvRows = [headerRow, ...dataRows];
 
-  private downloadLogsAsCSV(values: Partial<ExperimentStateTimeLog>[], fileName: string): void {
-    if (!values || values.length === 0) {
-      return;
-    }
-
-    this.commonExportHelpersService.downloadValuesAsCSV(this.objectsToCsvRows(values), fileName);
-  }
-
-  private objectsToCsvRows(values: Record<string, any>[]): string[] {
-    const headers = Object.keys(values[0]);
-    return [
-      headers.join(','),
-      ...values.map((obj) =>
-        headers
-          .map((header) => {
-            const value = obj[header];
-            if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
-              return `"${value.replace(/"/g, '""')}"`;
-            }
-            return value ?? '';
-          })
-          .join(',')
-      ),
-    ];
+    this.commonExportHelpersService.downloadValuesAsCSV(
+      csvRows,
+      `${name}_state_change_logs_${new Date().toISOString()}`
+    );
   }
 
   openConfirmArchiveModal(id: string, name: string) {
