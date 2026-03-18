@@ -63,6 +63,7 @@ describe('ExperimentService Testing', () => {
   let decisionPointRepo: DecisionPointRepository;
   let auditLogRepo: ExperimentAuditLogRepository;
   let conditionPayloadRepo: ConditionPayloadRepository;
+  let queryRepo: QueryRepository;
 
   let module: Awaited<ReturnType<TestingModuleBuilder['compile']>>;
   let dataSource: DataSource;
@@ -269,6 +270,7 @@ describe('ExperimentService Testing', () => {
             upsertExperimentCondition: jest.fn().mockResolvedValue(mockCondition1),
             deleteCondition: jest.fn().mockResolvedValue({ affected: 1 }),
             getAllUniqueIdentifier: jest.fn().mockResolvedValue(['C1', 'C2']),
+            insertConditions: jest.fn().mockResolvedValue([mockCondition1]),
           },
         },
         {
@@ -281,6 +283,7 @@ describe('ExperimentService Testing', () => {
             deleteDecisionPoint: jest.fn().mockResolvedValue({ affected: 1 }),
             deleteByIds: jest.fn().mockResolvedValue({ affected: 1 }),
             getAllUniqueIdentifier: jest.fn().mockResolvedValue(['C1', 'C2']),
+            insertDecisionPoint: jest.fn().mockResolvedValue([mockDecisionPoint1]),
           },
         },
         {
@@ -296,6 +299,7 @@ describe('ExperimentService Testing', () => {
             find: jest.fn().mockResolvedValue([mockConditionPayload]),
             upsertConditionPayload: jest.fn().mockResolvedValue(mockConditionPayload),
             deleteConditionPayload: jest.fn().mockResolvedValue({ affected: 1 }),
+            insertConditionPayload: jest.fn().mockResolvedValue([]),
           },
         },
         {
@@ -323,6 +327,7 @@ describe('ExperimentService Testing', () => {
           useValue: {
             upsertQuery: jest.fn().mockResolvedValue(mockQuery),
             deleteQuery: jest.fn().mockResolvedValue({ affected: 1 }),
+            insertQueries: jest.fn().mockImplementation((docs) => Promise.resolve(docs)),
           },
         },
         {
@@ -431,6 +436,7 @@ describe('ExperimentService Testing', () => {
     decisionPointRepo = module.get<DecisionPointRepository>(getRepositoryToken(DecisionPointRepository));
     auditLogRepo = module.get<ExperimentAuditLogRepository>(getRepositoryToken(ExperimentAuditLogRepository));
     conditionPayloadRepo = module.get<ConditionPayloadRepository>(getRepositoryToken(ConditionPayloadRepository));
+    queryRepo = module.get<QueryRepository>(getRepositoryToken(QueryRepository));
   });
 
   afterEach(() => {
@@ -645,6 +651,19 @@ describe('ExperimentService Testing', () => {
       );
     });
 
+    it('should assign order to queries based on their position when updating', async () => {
+      const q1 = { ...mockQuery, id: 'q1', name: 'query-1' };
+      const q2 = { ...mockQuery, id: 'q2', name: 'query-2' };
+      const experimentWithQueries = { ...mockExperimentDTO, queries: [q1, q2] as any };
+
+      await service.update(experimentWithQueries, mockUser, logger);
+
+      const upsertCalls = (queryRepo.upsertQuery as jest.Mock).mock.calls;
+      const savedQueries = upsertCalls.map((call) => call[0]);
+      expect(savedQueries.find((q) => q.name === 'query-1').order).toBe(1);
+      expect(savedQueries.find((q) => q.name === 'query-2').order).toBe(2);
+    });
+
     it('should create default payloads for missing condition-partition combinations', async () => {
       const experimentWithNewPartition = {
         ...mockExperimentDTO,
@@ -680,6 +699,73 @@ describe('ExperimentService Testing', () => {
         }),
         entityManager
       );
+    });
+  });
+
+  describe('create()', () => {
+    const baseCreateDTO = (): ExperimentDTO =>
+      ({
+        id: undefined,
+        name: 'New Experiment',
+        description: '',
+        state: EXPERIMENT_STATE.INACTIVE,
+        type: EXPERIMENT_TYPE.SIMPLE,
+        consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
+        assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
+        postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+        context: ['context1'],
+        filterMode: FILTER_MODE.INCLUDE_ALL,
+        tags: [],
+        conditions: [{ id: 'condition-1', conditionCode: 'control', assignmentWeight: 100 }] as any,
+        partitions: [{ id: 'partition-1', site: 'site', target: 'target' }] as any,
+        conditionPayloads: [],
+        queries: [],
+        factors: [],
+        stateTimeLogs: [],
+        experimentSegmentInclusion: [],
+        experimentSegmentExclusion: [],
+      }) as any;
+
+    it('should assign order to queries starting from 1 on create', async () => {
+      const q1 = { ...mockQuery, id: 'q1', name: 'query-1', metric: { key: 'test-metric' } };
+      const dto = { ...baseCreateDTO(), queries: [q1] as any };
+
+      await service.create(dto, mockUser, logger);
+
+      const insertedDocs: any[] = (queryRepo.insertQueries as jest.Mock).mock.calls[0][0];
+      expect(insertedDocs[0].order).toBe(1);
+    });
+
+    it('should assign sequential order to multiple queries on create', async () => {
+      const q1 = { ...mockQuery, id: 'q1', name: 'query-1', metric: { key: 'test-metric' } };
+      const q2 = { ...mockQuery, id: 'q2', name: 'query-2', metric: { key: 'test-metric' } };
+      const q3 = { ...mockQuery, id: 'q3', name: 'query-3', metric: { key: 'test-metric' } };
+      const dto = { ...baseCreateDTO(), queries: [q1, q2, q3] as any };
+
+      await service.create(dto, mockUser, logger);
+
+      const insertedDocs: any[] = (queryRepo.insertQueries as jest.Mock).mock.calls[0][0];
+      expect(insertedDocs[0].order).toBe(1);
+      expect(insertedDocs[1].order).toBe(2);
+      expect(insertedDocs[2].order).toBe(3);
+    });
+
+    it('should overwrite any pre-existing order value on create', async () => {
+      const q1 = { ...mockQuery, id: 'q1', name: 'query-1', metric: { key: 'test-metric' }, order: 99 };
+      const dto = { ...baseCreateDTO(), queries: [q1] as any };
+
+      await service.create(dto, mockUser, logger);
+
+      const insertedDocs: any[] = (queryRepo.insertQueries as jest.Mock).mock.calls[0][0];
+      expect(insertedDocs[0].order).toBe(1);
+    });
+
+    it('should not call insertQueries when experiment has no queries', async () => {
+      const dto = { ...baseCreateDTO(), queries: [] };
+
+      await service.create(dto, mockUser, logger);
+
+      expect(queryRepo.insertQueries).not.toHaveBeenCalled();
     });
   });
 });
