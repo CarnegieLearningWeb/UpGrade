@@ -724,7 +724,7 @@ describe('ExperimentService Testing', () => {
         stateTimeLogs: [],
         experimentSegmentInclusion: [],
         experimentSegmentExclusion: [],
-      }) as any;
+      } as any);
 
     it('should assign order to queries starting from 1 on create', async () => {
       const q1 = { ...mockQuery, id: 'q1', name: 'query-1', metric: { key: 'test-metric' } };
