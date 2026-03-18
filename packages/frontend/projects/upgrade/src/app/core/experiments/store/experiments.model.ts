@@ -464,7 +464,7 @@ export interface ExperimentQueryDTO {
     key: string;
   };
   repeatedMeasure: REPEATED_MEASURE;
-  order?: number;
+  order?: number | null;
 }
 
 export interface ExperimentSegmentDTO {
