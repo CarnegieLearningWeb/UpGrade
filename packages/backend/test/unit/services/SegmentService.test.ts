@@ -28,6 +28,7 @@ import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
 import {
   SEGMENT_TYPE,
   SERVER_ERROR,
+  SEGMENT_STATUS,
   EXPERIMENT_STATE,
   FEATURE_FLAG_STATUS,
   IMPORT_COMPATIBILITY_TYPE,
@@ -409,6 +410,57 @@ describe('Segment Service Testing', () => {
     };
     const segments = await service.getAllSegmentWithStatus(logger);
     expect(segments).toEqual(res);
+  });
+
+  it('should return UNUSED status for segments only referenced by archived experiments', async () => {
+    const archivedExp = new Experiment();
+    archivedExp.id = 'archivedExp1';
+    archivedExp.state = EXPERIMENT_STATE.ARCHIVED;
+
+    service.getExperimentSegmentInclusionData = jest
+      .fn()
+      .mockResolvedValue([{ segment: seg1, experiment: archivedExp }]);
+    service.getExperimentSegmentExclusionData = jest
+      .fn()
+      .mockResolvedValue([{ segment: seg1, experiment: archivedExp }]);
+    service.getFeatureFlagSegmentInclusionData = jest.fn().mockResolvedValue([]);
+    service.getFeatureFlagSegmentExclusionData = jest.fn().mockResolvedValue([]);
+
+    const result = await service.getAllSegmentWithStatus(logger);
+
+    // All segments should be UNUSED — archived experiments don't lock segments
+    result.segmentsData.forEach((seg) => {
+      expect((seg as any).status).toBe(SEGMENT_STATUS.UNUSED);
+    });
+
+    // The pointer to the archived experiment is still present in the returned data
+    expect(result.experimentSegmentInclusionData).toEqual([{ segment: seg1, experiment: archivedExp }]);
+  });
+
+  it('should return USED status for segments referenced by both archived and active experiments', async () => {
+    const archivedExp = new Experiment();
+    archivedExp.id = 'archivedExp1';
+    archivedExp.state = EXPERIMENT_STATE.ARCHIVED;
+
+    const activeExp = new Experiment();
+    activeExp.id = 'activeExp1';
+    activeExp.state = EXPERIMENT_STATE.RUNNING;
+
+    service.getExperimentSegmentInclusionData = jest.fn().mockResolvedValue([
+      { segment: seg1, experiment: archivedExp },
+      { segment: seg1, experiment: activeExp },
+    ]);
+    service.getExperimentSegmentExclusionData = jest.fn().mockResolvedValue([]);
+    service.getFeatureFlagSegmentInclusionData = jest.fn().mockResolvedValue([]);
+    service.getFeatureFlagSegmentExclusionData = jest.fn().mockResolvedValue([]);
+
+    const result = await service.getAllSegmentWithStatus(logger);
+
+    // seg1 (and its subSegment seg2) should still be USED because an active experiment references it
+    const seg1Result = result.segmentsData.find((s) => s.id === seg1.id);
+    const seg2Result = result.segmentsData.find((s) => s.id === seg2.id);
+    expect((seg1Result as any)?.status).toBe(SEGMENT_STATUS.USED);
+    expect((seg2Result as any)?.status).toBe(SEGMENT_STATUS.USED);
   });
 
   it('should return single segments with status', async () => {

@@ -20,10 +20,11 @@
         "drop": "npm start db.drop",
         "help": "npm start help",
         "typecheck": "tsc --noEmit",
-        "migration:generate": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:generate src/database/migrations/$npm_config_name -d src/loaders/typeormLoader.ts",
-        "migration:create": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:create src/database/migrations/$npm_config_name",
-        "migration:run": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:run -d src/loaders/typeormLoader.ts",
-        "migration:revert": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:revert -d src/loaders/typeormLoader.ts"
+        "migration:generate": "./node_modules/.bin/ts-node --project tsconfig.json -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:generate src/database/migrations/$npm_config_name -d src/loaders/typeormLoader.ts",
+        "migration:create": "./node_modules/.bin/ts-node --project tsconfig.json -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:create src/database/migrations/$npm_config_name",
+        "migration:run": "./node_modules/.bin/ts-node --project tsconfig.json -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:run -d src/loaders/typeormLoader.ts",
+        "migration:revert": "./node_modules/.bin/ts-node --project tsconfig.json -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:revert -d src/loaders/typeormLoader.ts",
+        "schema:drop": "./node_modules/.bin/ts-node --project tsconfig.json -r tsconfig-paths/register ./node_modules/.bin/typeorm schema:drop -d src/loaders/typeormLoader.ts"
     },
     "keywords": [],
     "author": "",
