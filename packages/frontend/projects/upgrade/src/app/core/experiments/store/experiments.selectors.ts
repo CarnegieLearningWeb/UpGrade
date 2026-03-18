@@ -549,6 +549,10 @@ export const selectExperimentMenuItems = createSelector(
         action: EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE,
         disabled: isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE, state),
       },
+      {
+        action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_STATE_CHANGE_LOGS,
+        disabled: isMenuItemDisabled(EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_STATE_CHANGE_LOGS, state),
+      },
     ];
   }
 );

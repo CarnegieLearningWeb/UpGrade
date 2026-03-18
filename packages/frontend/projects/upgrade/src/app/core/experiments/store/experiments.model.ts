@@ -133,6 +133,7 @@ export enum EXPERIMENT_DETAILS_PAGE_ACTIONS {
   EMAIL_DATA = 'emailData',
   ARCHIVE = 'archive',
   DELETE = 'delete',
+  EXPORT_STATE_CHANGE_LOGS = 'exportStateChangeLogs',
 }
 
 export interface ExperimentActionButton {

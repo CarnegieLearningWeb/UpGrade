@@ -21,12 +21,14 @@ import {
   POST_EXPERIMENT_RULE,
   PAUSE_BEHAVIOR_MODAL_MODE,
   EXPERIMENT_DETAILS_PAGE_ACTIONS,
+  ExperimentStateTimeLog,
 } from '../../../../../../../core/experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { CommonExportHelpersService } from '../../../../../../../shared/services/common-export-helpers.service';
 
 @Component({
   selector: 'app-experiment-overview-details-section-card',
@@ -90,7 +92,8 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
     private readonly dialogService: DialogService,
     private readonly router: Router,
     private readonly authService: AuthService,
-    private readonly translate: TranslateService
+    private readonly translate: TranslateService,
+    private readonly commonExportHelpersService: CommonExportHelpersService
   ) {}
 
   filterExperimentByChips(tagValue: string) {
@@ -142,6 +145,12 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
             !permissions?.experiments.delete ||
             menuItems.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE)?.disabled,
         },
+        {
+          label: 'experiments.details.export-state-change-logs.menu-item.text',
+          action: EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_STATE_CHANGE_LOGS,
+          disabled: menuItems.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_STATE_CHANGE_LOGS)
+            ?.disabled,
+        },
       ])
     );
   }
@@ -184,6 +193,9 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
       case EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA:
         this.openConfirmEmailDataModal(experiment.id, experiment.name);
         break;
+      case EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_STATE_CHANGE_LOGS:
+        this.downloadStateChangeLogs(experiment.name, experiment.stateTimeLogs || []);
+        break;
       default:
         console.log('Unknown action');
     }
@@ -199,6 +211,23 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
             this.experimentService.exportExperimentDesign([id]);
           }
         })
+    );
+  }
+
+  downloadStateChangeLogs(name: string, stateTimeLogs: ExperimentStateTimeLog[]) {
+    if (!stateTimeLogs.length) return;
+
+    const headerRow = 'timeLog,fromState,toState';
+    const sortedLogs = [...stateTimeLogs].sort((a, b) => new Date(a.timeLog).getTime() - new Date(b.timeLog).getTime());
+    const dataRows = sortedLogs.map(({ timeLog, fromState, toState }) => {
+      const formattedTime = new Date(timeLog).toLocaleString();
+      return `"${formattedTime}","${fromState}","${toState}"`;
+    });
+    const csvRows = [headerRow, ...dataRows];
+
+    this.commonExportHelpersService.downloadValuesAsCSV(
+      csvRows,
+      `${name}_state_change_logs_${new Date().toISOString()}`
     );
   }
 
