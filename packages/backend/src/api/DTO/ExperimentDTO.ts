@@ -248,6 +248,10 @@ export class QueryValidator {
   @IsNotEmpty()
   @IsEnum(REPEATED_MEASURE)
   public repeatedMeasure: REPEATED_MEASURE;
+
+  @IsOptional()
+  @IsInt()
+  public order?: number;
 }
 
 class User {

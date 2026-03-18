@@ -30,7 +30,9 @@ export class ExperimentRepository extends Repository<Experiment> {
     const experimentMetricQuery = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs');
+      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
+      .addOrderBy('queries.order', 'ASC', 'NULLS LAST')
+      .addOrderBy('queries.createdAt', 'ASC');
 
     const experimentSegment = this.createQueryBuilder('experiment')
       .select('experiment.id')
@@ -504,6 +506,8 @@ export class ExperimentRepository extends Repository<Experiment> {
       .addOrderBy('partitions.order', 'ASC')
       .addOrderBy('factors.order', 'ASC')
       .addOrderBy('levels.order', 'ASC')
+      .addOrderBy('queries.order', 'ASC', 'NULLS LAST')
+      .addOrderBy('queries.createdAt', 'ASC')
       .where({ id })
       .getOne();
     return experiment;

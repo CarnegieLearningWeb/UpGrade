@@ -900,12 +900,13 @@ export class ExperimentService {
         let queriesDocToSave =
           (newQueries?.[0] &&
             newQueries.length > 0 &&
-            newQueries.map((query: any) => {
+            newQueries.map((query: any, index: number) => {
               promiseArray.push(this.metricRepository.findOne({ where: { key: query.metric.key } }));
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
+              rest.order = index + 1;
               return rest;
             })) ||
           [];
