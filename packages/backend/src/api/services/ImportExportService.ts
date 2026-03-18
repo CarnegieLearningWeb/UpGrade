@@ -107,6 +107,13 @@ export class ImportExportService {
       experimentDetails.map(async (experiment) => {
         experiment.backendVersion = env.app.version;
 
+        experiment.queries?.sort((a, b) => {
+          if (!a.order && !b.order) return a.createdAt < b.createdAt ? -1 : 1;
+          if (!a.order) return 1;
+          if (!b.order) return -1;
+          return a.order - b.order;
+        });
+
         let experimentRecord = this.experimentService.reducedConditionPayload(
           this.experimentService.formattingPayload(this.experimentService.formattingConditionPayload(experiment))
         );
