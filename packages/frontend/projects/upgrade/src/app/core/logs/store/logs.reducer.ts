@@ -25,6 +25,7 @@ export const initialState: LogState = adapter.getInitialState({
   auditLogFilter: null,
   errorLogFilter: null,
   experimentAuditLogs: {},
+  featureFlagAuditLogs: {},
 });
 
 const reducer = createReducer(
@@ -119,6 +120,67 @@ const reducer = createReducer(
         ...state.experimentAuditLogs,
         [experimentId]: {
           ...experimentLog,
+          filter: filterType,
+          logs: [],
+          skip: 0,
+        },
+      },
+    };
+  }),
+  // Feature flag-specific log handlers
+  on(logsActions.actionGetFeatureFlagLogs, (state, { flagId, fromStart }) => {
+    const flagLog = state.featureFlagAuditLogs[flagId] || initialAuditLogsMetadata;
+    return {
+      ...state,
+      featureFlagAuditLogs: {
+        ...state.featureFlagAuditLogs,
+        [flagId]: {
+          ...flagLog,
+          isLoading: true,
+          ...(fromStart && { skip: 0, logs: [] }),
+        },
+      },
+    };
+  }),
+  on(logsActions.actionGetFeatureFlagLogsSuccess, (state, { flagId, auditLogs, totalAuditLogs, fromStart }) => {
+    const flagLog = state.featureFlagAuditLogs[flagId] || initialAuditLogsMetadata;
+    const updatedLogs = fromStart ? auditLogs : [...flagLog.logs, ...auditLogs];
+
+    return {
+      ...state,
+      featureFlagAuditLogs: {
+        ...state.featureFlagAuditLogs,
+        [flagId]: {
+          ...flagLog,
+          logs: updatedLogs,
+          skip: updatedLogs.length,
+          total: totalAuditLogs,
+          isLoading: false,
+        },
+      },
+    };
+  }),
+  on(logsActions.actionGetFeatureFlagLogsFailure, (state, { flagId }) => {
+    const flagLog = state.featureFlagAuditLogs[flagId] || initialAuditLogsMetadata;
+    return {
+      ...state,
+      featureFlagAuditLogs: {
+        ...state.featureFlagAuditLogs,
+        [flagId]: {
+          ...flagLog,
+          isLoading: false,
+        },
+      },
+    };
+  }),
+  on(logsActions.actionSetFeatureFlagLogFilter, (state, { flagId, filterType }) => {
+    const flagLog = state.featureFlagAuditLogs[flagId] || initialAuditLogsMetadata;
+    return {
+      ...state,
+      featureFlagAuditLogs: {
+        ...state.featureFlagAuditLogs,
+        [flagId]: {
+          ...flagLog,
           filter: filterType,
           logs: [],
           skip: 0,

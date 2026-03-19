@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { DATE_RANGE } from 'upgrade_types';
-import { LOG_TYPE } from 'upgrade_types';
+import { AuditLogQueryParams } from '../../../../src/api/repositories/ExperimentAuditLogRepository';
 
 @Service()
 export default class AuditServiceMock {
@@ -20,11 +20,11 @@ export default class AuditServiceMock {
     return Promise.resolve([]);
   }
 
-  public getTotalLogs(filter: LOG_TYPE): Promise<[]> {
-    return Promise.resolve([]);
+  public getTotalLogs(logParams: Pick<AuditLogQueryParams, 'filter' | 'experimentId' | 'flagId'>): Promise<number> {
+    return Promise.resolve(0);
   }
 
-  public getAuditLogs(limit: number, offset: number, filter?: LOG_TYPE): Promise<[]> {
+  public getAuditLogs(logParams: AuditLogQueryParams): Promise<[]> {
     return Promise.resolve([]);
   }
 }

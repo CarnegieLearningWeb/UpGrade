@@ -67,8 +67,8 @@ export class AuditLogController {
     @Body({ validate: true }) logParams: AuditLogParamsValidator
   ): Promise<ExperimentAuditPaginationInfo> {
     const [nodes, total] = await Promise.all([
-      this.auditService.getAuditLogs(logParams.take, logParams.skip, logParams.filter, logParams.experimentId),
-      this.auditService.getTotalLogs(logParams.filter, logParams.experimentId),
+      this.auditService.getAuditLogs(logParams),
+      this.auditService.getTotalLogs(logParams),
     ]);
     return {
       total,

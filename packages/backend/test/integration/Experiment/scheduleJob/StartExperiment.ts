@@ -91,7 +91,10 @@ export default async function StartExperiment(): Promise<void> {
     ])
   );
 
-  const auditLog = await auditService.getAuditLogs(1, 0);
+  const auditLog = await auditService.getAuditLogs({
+    skip: 0,
+    take: 1,
+  });
 
   expect(auditLog[0].user).toEqual(expect.objectContaining(systemUserDoc));
 }

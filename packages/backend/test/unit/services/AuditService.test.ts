@@ -46,46 +46,84 @@ describe('Audit Service Testing', () => {
   });
 
   it('should return a count of audit logs', async () => {
-    const flags = await service.getTotalLogs(LOG_TYPE.EXPERIMENT_CREATED);
+    const flags = await service.getTotalLogs({ filter: LOG_TYPE.EXPERIMENT_CREATED });
     expect(flags).toEqual(auditArr.length);
   });
 
-  it('should return a count of audit logs', async () => {
-    const flags = await service.getTotalLogs(null);
+  it('should return a count of audit logs with no filter', async () => {
+    const flags = await service.getTotalLogs({});
     expect(flags).toEqual(auditArr.length);
   });
 
   it('should return a count of audit logs with experimentId', async () => {
     const experimentId = '550e8400-e29b-41d4-a716-446655440000';
-    const flags = await service.getTotalLogs(LOG_TYPE.EXPERIMENT_CREATED, experimentId);
+    const flags = await service.getTotalLogs({ filter: LOG_TYPE.EXPERIMENT_CREATED, experimentId });
     expect(flags).toEqual(auditArr.length);
-    expect(repo.getTotalLogs).toHaveBeenCalledWith(LOG_TYPE.EXPERIMENT_CREATED, experimentId);
+    expect(repo.getTotalLogs).toHaveBeenCalledWith({ filter: LOG_TYPE.EXPERIMENT_CREATED, experimentId });
   });
 
   it('should return a count of audit logs with only experimentId (no filter)', async () => {
     const experimentId = '550e8400-e29b-41d4-a716-446655440000';
-    const flags = await service.getTotalLogs(undefined, experimentId);
+    const flags = await service.getTotalLogs({ experimentId });
     expect(flags).toEqual(auditArr.length);
-    expect(repo.count).toHaveBeenCalledWith({ where: { id: experimentId } });
+    expect(repo.getTotalLogs).toHaveBeenCalledWith({ experimentId });
+  });
+
+  it('should return a count of audit logs with flagId', async () => {
+    const flagId = '550e8400-e29b-41d4-a716-446655440001';
+    const flags = await service.getTotalLogs({ filter: LOG_TYPE.FEATURE_FLAG_UPDATED, flagId });
+    expect(flags).toEqual(auditArr.length);
+    expect(repo.getTotalLogs).toHaveBeenCalledWith({ filter: LOG_TYPE.FEATURE_FLAG_UPDATED, flagId });
+  });
+
+  it('should return a count of audit logs with only flagId (no filter)', async () => {
+    const flagId = '550e8400-e29b-41d4-a716-446655440001';
+    const flags = await service.getTotalLogs({ flagId });
+    expect(flags).toEqual(auditArr.length);
+    expect(repo.getTotalLogs).toHaveBeenCalledWith({ flagId });
   });
 
   it('should return an array of audit logs', async () => {
-    const flags = await service.getAuditLogs(1, 0);
+    const flags = await service.getAuditLogs({ take: 1, skip: 0 });
     expect(flags).toEqual(auditArr);
   });
 
   it('should return an array of audit logs with experimentId', async () => {
     const experimentId = '550e8400-e29b-41d4-a716-446655440000';
-    const flags = await service.getAuditLogs(1, 0, undefined, experimentId);
+    const flags = await service.getAuditLogs({ take: 1, skip: 0, experimentId });
     expect(flags).toEqual(auditArr);
-    expect(repo.paginatedFind).toHaveBeenCalledWith(1, 0, undefined, experimentId);
+    expect(repo.paginatedFind).toHaveBeenCalledWith({ take: 1, skip: 0, experimentId });
   });
 
   it('should return an array of audit logs with filter and experimentId', async () => {
     const experimentId = '550e8400-e29b-41d4-a716-446655440000';
-    const flags = await service.getAuditLogs(1, 0, LOG_TYPE.EXPERIMENT_CREATED, experimentId);
+    const flags = await service.getAuditLogs({ take: 1, skip: 0, filter: LOG_TYPE.EXPERIMENT_CREATED, experimentId });
     expect(flags).toEqual(auditArr);
-    expect(repo.paginatedFind).toHaveBeenCalledWith(1, 0, LOG_TYPE.EXPERIMENT_CREATED, experimentId);
+    expect(repo.paginatedFind).toHaveBeenCalledWith({
+      take: 1,
+      skip: 0,
+      filter: LOG_TYPE.EXPERIMENT_CREATED,
+      experimentId,
+    });
+  });
+
+  it('should return an array of audit logs with flagId', async () => {
+    const flagId = '550e8400-e29b-41d4-a716-446655440001';
+    const flags = await service.getAuditLogs({ take: 1, skip: 0, flagId });
+    expect(flags).toEqual(auditArr);
+    expect(repo.paginatedFind).toHaveBeenCalledWith({ take: 1, skip: 0, flagId });
+  });
+
+  it('should return an array of audit logs with filter and flagId', async () => {
+    const flagId = '550e8400-e29b-41d4-a716-446655440001';
+    const flags = await service.getAuditLogs({ take: 1, skip: 0, filter: LOG_TYPE.FEATURE_FLAG_UPDATED, flagId });
+    expect(flags).toEqual(auditArr);
+    expect(repo.paginatedFind).toHaveBeenCalledWith({
+      take: 1,
+      skip: 0,
+      filter: LOG_TYPE.FEATURE_FLAG_UPDATED,
+      flagId,
+    });
   });
 
   it('should return an array of audit logs by type', async () => {

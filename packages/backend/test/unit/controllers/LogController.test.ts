@@ -75,6 +75,45 @@ describe('Log Controller Testing', () => {
       .expect(400);
   });
 
+  test('Post request for /api/audit with flagId', () => {
+    return request(app)
+      .post('/api/audit')
+      .send({
+        skip: 0,
+        take: 10,
+        flagId: '550e8400-e29b-41d4-a716-446655440001',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Post request for /api/audit with filter and flagId', () => {
+    return request(app)
+      .post('/api/audit')
+      .send({
+        skip: 0,
+        take: 10,
+        filter: 'featureFlagUpdated',
+        flagId: '550e8400-e29b-41d4-a716-446655440001',
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Post request for /api/audit with invalid flagId should fail', () => {
+    return request(app)
+      .post('/api/audit')
+      .send({
+        skip: 0,
+        take: 0,
+        flagId: 'invalid-uuid',
+      })
+      .set('Accept', 'application/json')
+      .expect(400);
+  });
+
   test('Post request for /api/error', () => {
     return request(app)
       .post('/api/error')

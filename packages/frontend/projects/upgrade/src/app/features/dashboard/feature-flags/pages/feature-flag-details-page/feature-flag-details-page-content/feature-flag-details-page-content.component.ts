@@ -5,6 +5,7 @@ import { FeatureFlagInclusionsSectionCardComponent } from './feature-flag-inclus
 import { FeatureFlagExclusionsSectionCardComponent } from './feature-flag-exclusions-section-card/feature-flag-exclusions-section-card.component';
 import { FeatureFlagExposuresSectionCardComponent } from './feature-flag-exposures-section-card/feature-flag-exposures-section-card.component';
 import { FeatureFlagOverviewDetailsSectionCardComponent } from './feature-flag-overview-details-section-card/feature-flag-overview-details-section-card.component';
+import { FeatureFlagLogSectionCardComponent } from './feature-flag-log-section-card/feature-flag-log-section-card.component';
 import { FeatureFlagsService } from '../../../../../../core/feature-flags/feature-flags.service';
 import { Observable, Subscription, combineLatest } from 'rxjs';
 import { FeatureFlag } from '../../../../../../core/feature-flags/store/feature-flags.model';
@@ -22,6 +23,7 @@ import { filter, map, startWith } from 'rxjs/operators';
     FeatureFlagExclusionsSectionCardComponent,
     FeatureFlagExposuresSectionCardComponent,
     FeatureFlagOverviewDetailsSectionCardComponent,
+    FeatureFlagLogSectionCardComponent,
     SharedModule,
   ],
   templateUrl: './feature-flag-details-page-content.component.html',

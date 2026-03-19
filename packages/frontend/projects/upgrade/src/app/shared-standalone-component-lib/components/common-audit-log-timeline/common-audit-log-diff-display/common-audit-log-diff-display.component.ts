@@ -20,7 +20,6 @@ export class CommonAuditLogDiffDisplayComponent implements AfterViewInit {
   @Input() logId: string;
   @Input() logData: any;
   @Input() logType: string;
-  @Input() createdAt: string;
   @Input() actionMessage: string;
 
   ngAfterViewInit(): void {

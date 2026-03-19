@@ -5,17 +5,21 @@ import { LOG_TYPE } from 'upgrade_types';
 import { UserDTO } from '../DTO/UserDTO';
 import repositoryError from './utils/repositoryError';
 
+export interface AuditLogQueryParams {
+  take: number;
+  skip: number;
+  filter?: LOG_TYPE;
+  experimentId?: string;
+  flagId?: string;
+}
+
 @EntityRepository(ExperimentAuditLog)
 export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog> {
-  public async paginatedFind(
-    limit: number,
-    offset: number,
-    filter?: LOG_TYPE,
-    experimentId?: string
-  ): Promise<ExperimentAuditLog[]> {
+  public async paginatedFind(logParams: AuditLogQueryParams): Promise<ExperimentAuditLog[]> {
+    const { take, skip, filter, experimentId, flagId } = logParams;
     let queryBuilder = this.createQueryBuilder('audit')
-      .offset(offset)
-      .limit(limit)
+      .offset(skip)
+      .limit(take)
       .leftJoinAndSelect('audit.user', 'user')
       .orderBy('audit.createdAt', 'DESC');
 
@@ -30,18 +34,22 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
         : queryBuilder.where(experimentIdCondition, { experimentId });
     }
 
+    if (flagId) {
+      const flagIdCondition = "(audit.data->>'flagId' = :flagId)";
+      queryBuilder =
+        filter || experimentId
+          ? queryBuilder.andWhere(flagIdCondition, { flagId })
+          : queryBuilder.where(flagIdCondition, { flagId });
+    }
+
     return queryBuilder.getMany().catch((error: any) => {
-      const errorMsg = repositoryError(
-        'ExperimentAuditLogRepository',
-        'paginatedFind',
-        { limit, offset, filter, experimentId },
-        error
-      );
+      const errorMsg = repositoryError('ExperimentAuditLogRepository', 'paginatedFind', logParams, error);
       throw errorMsg;
     });
   }
 
-  public getTotalLogs(filter?: LOG_TYPE, experimentId?: string): Promise<number> {
+  public getTotalLogs(logParams: Pick<AuditLogQueryParams, 'filter' | 'experimentId' | 'flagId'>): Promise<number> {
+    const { filter, experimentId, flagId } = logParams;
     let queryBuilder = this.createQueryBuilder('audit');
 
     if (filter) {
@@ -55,8 +63,16 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
         : queryBuilder.where(experimentIdCondition, { experimentId });
     }
 
+    if (flagId) {
+      const flagIdCondition = "(audit.data->>'flagId' = :flagId)";
+      queryBuilder =
+        filter || experimentId
+          ? queryBuilder.andWhere(flagIdCondition, { flagId })
+          : queryBuilder.where(flagIdCondition, { flagId });
+    }
+
     return queryBuilder.getCount().catch((error: any) => {
-      const errorMsg = repositoryError('ExperimentAuditLogRepository', 'getTotalLogs', { filter, experimentId }, error);
+      const errorMsg = repositoryError('ExperimentAuditLogRepository', 'getTotalLogs', logParams, error);
       throw errorMsg;
     });
   }

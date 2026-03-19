@@ -14,6 +14,9 @@ import {
   selectIsExperimentLogsLoading,
   selectIsAllExperimentLogsFetched,
   selectExperimentLogs,
+  selectIsFeatureFlagLogsLoading,
+  selectIsAllFeatureFlagLogsFetched,
+  selectFeatureFlagLogs,
 } from './store/logs.selectors';
 import { combineLatest } from 'rxjs';
 import { selectAllExperiment } from '../experiments/store/experiments.selectors';
@@ -136,5 +139,25 @@ export class LogsService {
 
   setExperimentLogFilter(experimentId: string, filterType: LOG_TYPE) {
     this.store$.dispatch(logsActions.actionSetExperimentLogFilter({ experimentId, filterType }));
+  }
+
+  getFeatureFlagLogsById(flagId: string) {
+    return this.store$.pipe(select(selectFeatureFlagLogs, { flagId }));
+  }
+
+  getFeatureFlagLogsLoadingState(flagId: string) {
+    return this.store$.pipe(select(selectIsFeatureFlagLogsLoading, { flagId }));
+  }
+
+  isAllFeatureFlagLogsFetched(flagId: string) {
+    return this.store$.pipe(select(selectIsAllFeatureFlagLogsFetched, { flagId }));
+  }
+
+  fetchFeatureFlagLogs(flagId: string, fromStart?: boolean) {
+    this.store$.dispatch(logsActions.actionGetFeatureFlagLogs({ flagId, fromStart }));
+  }
+
+  setFeatureFlagLogFilter(flagId: string, filterType: LOG_TYPE) {
+    this.store$.dispatch(logsActions.actionSetFeatureFlagLogFilter({ flagId, filterType }));
   }
 }

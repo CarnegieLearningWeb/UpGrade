@@ -83,7 +83,6 @@ $light-blue: #e9f3ff;
 $yellow: #fff1de;
 $black: #111111;
 $timeline-background-color: #eaf0f8;
-$action-msg-font-size: 15px;
 
 .timeline {
   position: relative;
@@ -151,56 +150,37 @@ $action-msg-font-size: 15px;
     }
 
     .content {
-      display: flex;
+      display: grid;
+      grid-template-columns: 125px 1fr auto;
+      column-gap: 12px;
+      align-items: start;
       position: relative;
 
       .log-text {
-        display: flex;
-        flex-grow: 1;
-        justify-content: space-between;
         max-width: 100%;
       }
 
       .user-name {
-        flex-shrink: 0;
         padding-bottom: 3px;
-        width: 125px;
         word-wrap: break-word;
       }
 
-      .action {
-        flex-grow: 1;
-        padding-left: 12px;
-
-        &-msg {
-          margin-right: 5px;
-          font-size: $action-msg-font-size !important;
-        }
+      .action-msg {
+        margin-right: 5px;
       }
 
       .accordion {
-        flex-grow: 1;
         max-width: 100%;
 
         .expansion-header {
           height: auto !important;
         }
-
-        .view-diff {
-          margin-left: 15px;
-          color: var(--blue);
-        }
-
-        .diff-container {
-          color: var(--grey);
-        }
       }
 
-      .log-time {
-        flex-shrink: 0;
-        align-self: center;
-        margin-left: 5px;
+      .col-time {
         text-align: right;
+        white-space: nowrap;
+        align-self: center;
       }
 
       .full-width {
@@ -215,7 +195,8 @@ $action-msg-font-size: 15px;
 }
 
 ::ng-deep .mat-expansion-panel-header {
-  padding: 0 0 0 12px !important;
+  padding: 0 0 0 0px !important;
+  align-items: flex-start !important;
 
   &:hover {
     background-color: unset !important;
@@ -224,8 +205,4 @@ $action-msg-font-size: 15px;
 
 ::ng-deep .mat-content.mat-content-hide-toggle {
   margin-right: 0 !important;
-}
-
-::ng-deep .mat-expansion-panel-header-title {
-  align-items: center !important;
 }

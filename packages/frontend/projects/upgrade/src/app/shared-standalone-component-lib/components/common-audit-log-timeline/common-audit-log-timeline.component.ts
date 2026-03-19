@@ -99,6 +99,10 @@ export class CommonAuditLogTimelineComponent {
     return this.config?.listOperationMessageMap?.[operation] || '';
   }
 
+  isFilterModeUpdate(logData: any): boolean {
+    return this.config?.isFilterModeUpdate?.(logData) ?? false;
+  }
+
   onScrolledToBottom(): void {
     this.scrolledToBottom.emit();
   }

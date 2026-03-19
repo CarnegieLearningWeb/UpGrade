@@ -26,6 +26,8 @@ describe('LogsEffects', () => {
     LogsSelectors.selectErrorFilterType.setResult(SERVER_ERROR.ASSIGNMENT_ERROR);
     LogsSelectors.selectIsErrorLogLoading.setResult(false);
     LogsSelectors.selectTotalErrorLogs.setResult(10);
+    LogsSelectors.selectExperimentLogsState.setResult({});
+    LogsSelectors.selectFeatureFlagLogsState.setResult({});
 
     logsDataService.getAllAuditLogs = jest.fn().mockReturnValue(of({}));
     logsDataService.getAllErrorLogs = jest.fn().mockReturnValue(of({}));
@@ -261,7 +263,7 @@ describe('LogsEffects', () => {
   });
 
   describe('changeErrorFilter', () => {
-    it('should always dispatch actionGetAuditLogs(fromStart: true)', fakeAsync(() => {
+    it('should always dispatch actionGetErrorLogs(fromStart: true)', fakeAsync(() => {
       service.changeErrorFilter$.subscribe();
 
       actions$.next(
@@ -277,10 +279,6 @@ describe('LogsEffects', () => {
   });
 
   describe('getExperimentLogs$', () => {
-    beforeEach(() => {
-      LogsSelectors.selectExperimentLogsState.setResult({});
-    });
-
     it('should dispatch actionGetExperimentLogsSuccess when service call succeeds', fakeAsync(() => {
       const experimentId = 'exp-123';
       const mockReturnData = {
@@ -341,6 +339,53 @@ describe('LogsEffects', () => {
       expect(neverEmitted).toEqual(true);
     }));
 
+    it('should fetch even when all logs fetched if fromStart is true', fakeAsync(() => {
+      const experimentId = 'exp-123';
+      LogsSelectors.selectExperimentLogsState.setResult({
+        [experimentId]: { skip: 10, total: 10, logs: [], isLoading: false, filter: null },
+      });
+
+      const mockReturnData = { nodes: [], total: 10 };
+      logsDataService.getAllAuditLogs = jest.fn().mockReturnValue(of(mockReturnData));
+
+      const expectedAction = LogsActions.actionGetExperimentLogsSuccess({
+        experimentId,
+        auditLogs: [],
+        totalAuditLogs: 10,
+        fromStart: true,
+      });
+
+      service.getExperimentLogs$.subscribe((result) => {
+        expect(result).toEqual(expectedAction);
+      });
+
+      actions$.next(LogsActions.actionGetExperimentLogs({ experimentId, fromStart: true }));
+
+      tick(0);
+    }));
+
+    it('should use existing skip offset when appending logs', fakeAsync(() => {
+      const experimentId = 'exp-123';
+      LogsSelectors.selectExperimentLogsState.setResult({
+        [experimentId]: { skip: 5, total: 20, logs: [], isLoading: false, filter: null },
+      });
+
+      const mockReturnData = { nodes: [], total: 20 };
+      logsDataService.getAllAuditLogs = jest.fn().mockReturnValue(of(mockReturnData));
+
+      service.getExperimentLogs$.subscribe();
+
+      actions$.next(LogsActions.actionGetExperimentLogs({ experimentId }));
+
+      tick(0);
+
+      expect(logsDataService.getAllAuditLogs).toHaveBeenCalledWith({
+        skip: 5,
+        take: 20,
+        experimentId,
+      });
+    }));
+
     it('should fetch with filter when metadata has filter set', fakeAsync(() => {
       const experimentId = 'exp-123';
       const filter = LOG_TYPE.EXPERIMENT_UPDATED;
@@ -388,6 +433,162 @@ describe('LogsEffects', () => {
       expect(store$.dispatch).toHaveBeenCalledWith(
         LogsActions.actionGetExperimentLogs({ experimentId, fromStart: true })
       );
+    }));
+  });
+
+  describe('getFeatureFlagLogs$', () => {
+    it('should dispatch actionGetFeatureFlagLogsSuccess when service call succeeds', fakeAsync(() => {
+      const flagId = 'flag-123';
+      const mockReturnData = {
+        nodes: [],
+        total: 5,
+      };
+
+      logsDataService.getAllAuditLogs = jest.fn().mockReturnValue(of(mockReturnData));
+
+      const expectedAction = LogsActions.actionGetFeatureFlagLogsSuccess({
+        flagId,
+        auditLogs: [],
+        totalAuditLogs: 5,
+        fromStart: false,
+      });
+
+      service.getFeatureFlagLogs$.subscribe((result) => {
+        expect(result).toEqual(expectedAction);
+      });
+
+      actions$.next(LogsActions.actionGetFeatureFlagLogs({ flagId }));
+
+      tick(0);
+    }));
+
+    it('should dispatch actionGetFeatureFlagLogsFailure when service call fails', fakeAsync(() => {
+      const flagId = 'flag-123';
+
+      logsDataService.getAllAuditLogs = jest.fn().mockReturnValue(throwError(() => new Error('test error')));
+
+      const expectedAction = LogsActions.actionGetFeatureFlagLogsFailure({ flagId });
+
+      service.getFeatureFlagLogs$.subscribe((result) => {
+        expect(result).toEqual(expectedAction);
+      });
+
+      actions$.next(LogsActions.actionGetFeatureFlagLogs({ flagId }));
+
+      tick(0);
+    }));
+
+    it('should not fetch if all logs already fetched and fromStart is false', fakeAsync(() => {
+      const flagId = 'flag-123';
+      LogsSelectors.selectFeatureFlagLogsState.setResult({
+        [flagId]: { skip: 10, total: 10, logs: [], isLoading: false, filter: null },
+      });
+
+      let neverEmitted = true;
+
+      service.getFeatureFlagLogs$.subscribe(() => {
+        neverEmitted = false;
+      });
+
+      actions$.next(LogsActions.actionGetFeatureFlagLogs({ flagId, fromStart: false }));
+
+      tick(0);
+
+      expect(neverEmitted).toEqual(true);
+    }));
+
+    it('should fetch even when all logs fetched if fromStart is true', fakeAsync(() => {
+      const flagId = 'flag-123';
+      LogsSelectors.selectFeatureFlagLogsState.setResult({
+        [flagId]: { skip: 10, total: 10, logs: [], isLoading: false, filter: null },
+      });
+
+      const mockReturnData = { nodes: [], total: 10 };
+      logsDataService.getAllAuditLogs = jest.fn().mockReturnValue(of(mockReturnData));
+
+      const expectedAction = LogsActions.actionGetFeatureFlagLogsSuccess({
+        flagId,
+        auditLogs: [],
+        totalAuditLogs: 10,
+        fromStart: true,
+      });
+
+      service.getFeatureFlagLogs$.subscribe((result) => {
+        expect(result).toEqual(expectedAction);
+      });
+
+      actions$.next(LogsActions.actionGetFeatureFlagLogs({ flagId, fromStart: true }));
+
+      tick(0);
+    }));
+
+    it('should use existing skip offset when appending logs', fakeAsync(() => {
+      const flagId = 'flag-123';
+      LogsSelectors.selectFeatureFlagLogsState.setResult({
+        [flagId]: { skip: 5, total: 20, logs: [], isLoading: false, filter: null },
+      });
+
+      const mockReturnData = { nodes: [], total: 20 };
+      logsDataService.getAllAuditLogs = jest.fn().mockReturnValue(of(mockReturnData));
+
+      service.getFeatureFlagLogs$.subscribe();
+
+      actions$.next(LogsActions.actionGetFeatureFlagLogs({ flagId }));
+
+      tick(0);
+
+      expect(logsDataService.getAllAuditLogs).toHaveBeenCalledWith({
+        skip: 5,
+        take: 20,
+        flagId,
+      });
+    }));
+
+    it('should fetch with filter when metadata has filter set', fakeAsync(() => {
+      const flagId = 'flag-123';
+      const filter = LOG_TYPE.FEATURE_FLAG_UPDATED;
+      LogsSelectors.selectFeatureFlagLogsState.setResult({
+        [flagId]: { skip: 0, total: null, logs: [], isLoading: false, filter },
+      });
+
+      const mockReturnData = {
+        nodes: [],
+        total: 5,
+      };
+
+      logsDataService.getAllAuditLogs = jest.fn().mockReturnValue(of(mockReturnData));
+
+      service.getFeatureFlagLogs$.subscribe();
+
+      actions$.next(LogsActions.actionGetFeatureFlagLogs({ flagId }));
+
+      tick(0);
+
+      expect(logsDataService.getAllAuditLogs).toHaveBeenCalledWith({
+        skip: 0,
+        take: 20,
+        flagId,
+        filter,
+      });
+    }));
+  });
+
+  describe('changeFeatureFlagLogFilter$', () => {
+    it('should dispatch actionGetFeatureFlagLogs with fromStart: true', fakeAsync(() => {
+      const flagId = 'flag-123';
+
+      service.changeFeatureFlagLogFilter$.subscribe();
+
+      actions$.next(
+        LogsActions.actionSetFeatureFlagLogFilter({
+          flagId,
+          filterType: LOG_TYPE.FEATURE_FLAG_UPDATED,
+        })
+      );
+
+      tick(0);
+
+      expect(store$.dispatch).toHaveBeenCalledWith(LogsActions.actionGetFeatureFlagLogs({ flagId, fromStart: true }));
     }));
   });
 });

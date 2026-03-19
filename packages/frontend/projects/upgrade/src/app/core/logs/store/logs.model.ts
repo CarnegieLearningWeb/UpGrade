@@ -21,6 +21,7 @@ export interface AuditLogParams {
   take: number;
   filter?: LOG_TYPE;
   experimentId?: string;
+  flagId?: string;
 }
 
 export interface ErrorLogParams {
@@ -51,6 +52,16 @@ export interface ErrorLogs {
   name: string;
 }
 
+export interface AuditLogsApiResponse {
+  nodes: AuditLogs[];
+  total: number;
+}
+
+export interface ErrorLogsApiResponse {
+  nodes: ErrorLogs[];
+  total: number;
+}
+
 export interface AuditLogsMetadata {
   logs: AuditLogs[];
   skip: number;
@@ -69,6 +80,7 @@ export interface LogState extends EntityState<AuditLogs | ErrorLogs> {
   auditLogFilter: LOG_TYPE;
   errorLogFilter: SERVER_ERROR;
   experimentAuditLogs: Record<string, AuditLogsMetadata>;
+  featureFlagAuditLogs: Record<string, AuditLogsMetadata>;
 }
 
 export interface State extends AppState {

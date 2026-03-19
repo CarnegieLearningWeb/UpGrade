@@ -72,6 +72,15 @@ export interface AuditLogTimelineConfig {
    * @returns true if the log is an update operation
    */
   isUpdateLogType?: (type: string) => boolean;
+
+  /**
+   * Determines if the log data represents a filter mode (include-all) change,
+   * i.e. no diff and no list operation, but a filterMode field is present.
+   *
+   * @param logData - The log's data object
+   * @returns true if the log is a filter mode update
+   */
+  isFilterModeUpdate?: (logData: any) => boolean;
 }
 
 /**

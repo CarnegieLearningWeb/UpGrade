@@ -65,3 +65,33 @@ export const selectIsAllExperimentLogsFetched = createSelector(selectExperimentL
   if (!metadata || metadata.total === null) return false;
   return metadata.skip >= metadata.total;
 });
+
+// Feature flag-specific log selectors
+export const selectFeatureFlagLogsState = createSelector(selectLogState, (state) => state.featureFlagAuditLogs);
+
+export const selectFeatureFlagLogsMetadata = createSelector(
+  selectFeatureFlagLogsState,
+  (featureFlagLogs: Record<string, any>, props: { flagId: string }) => featureFlagLogs[props.flagId] || null
+);
+
+export const selectFeatureFlagLogs = createSelector(selectFeatureFlagLogsMetadata, (metadata) => metadata?.logs || []);
+
+export const selectIsFeatureFlagLogsLoading = createSelector(
+  selectFeatureFlagLogsMetadata,
+  (metadata) => metadata?.isLoading || false
+);
+
+export const selectFeatureFlagLogsTotal = createSelector(
+  selectFeatureFlagLogsMetadata,
+  (metadata) => metadata?.total || 0
+);
+
+export const selectFeatureFlagLogsSkip = createSelector(
+  selectFeatureFlagLogsMetadata,
+  (metadata) => metadata?.skip || 0
+);
+
+export const selectIsAllFeatureFlagLogsFetched = createSelector(selectFeatureFlagLogsMetadata, (metadata) => {
+  if (!metadata || metadata.total === null) return false;
+  return metadata.skip >= metadata.total;
+});

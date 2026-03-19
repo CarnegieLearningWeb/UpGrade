@@ -40,7 +40,7 @@
 
               <!-- Log Content -->
               <div class="content">
-                <!-- User Name -->
+                <!-- Col 1: User Name -->
                 <span class="ft-16-600 user-name">
                   <ng-container *ngIf="getUserFullName(log.user); else unknownUserTemplate">
                     <span *ngIf="!shouldTruncateUserName(log.user); else userNameEllipsis">
@@ -57,18 +57,17 @@
                   </ng-template>
                 </span>
 
-                <!-- Log Messages by Type -->
+                <!-- Col 2: Log Message -->
                 <!-- Simple logs without diffs: DELETED, DATA_EXPORTED, DESIGN_EXPORTED -->
                 <span *ngIf="isSimpleLogType(log.type)" class="log-text">
-                  <span class="ft-16-600 action action-msg">
+                  <span class="ft-16-400 action-msg">
                     {{ getLogTypeMessage(log.type) | translate }}
                   </span>
-                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
                 </span>
 
                 <!-- CREATED and STATE_CHANGED logs -->
                 <span *ngIf="isStateChangeOrCreated(log.type)" class="log-text">
-                  <span class="ft-16-600 action action-msg">
+                  <span class="ft-16-400 action-msg">
                     <ng-container *ngIf="log.data?.previousState && log.data?.newState">
                       {{
                         getLogTypeMessage(log.type)
@@ -83,7 +82,6 @@
                       {{ getLogTypeMessage(log.type) | translate }}
                     </ng-container>
                   </span>
-                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
                 </span>
 
                 <!-- UPDATED logs with potential diffs -->
@@ -92,7 +90,7 @@
                   <ng-container *ngIf="hasListOperation(log.data); else propertiesUpdated">
                     <!-- CREATED or DELETED list operations (no diff) -->
                     <div class="log-text" *ngIf="!log.data.list.diff">
-                      <span class="ft-16-600 action action-msg">
+                      <span class="ft-16-400 action-msg">
                         {{ getLogTypeMessage(log.type) | translate }}
                         <ng-container *ngIf="log.data.list.operation">
                           -
@@ -101,12 +99,12 @@
                               | translate
                                 : {
                                     listTableType: getListTableType(log.data.list.filterType),
-                                    listName: log.data.list.listName
+                                    listName: log.data.list.listName,
+                                    status: log.data.list.enabled ? 'enabled' : 'disabled'
                                   }
                           }}
                         </ng-container>
                       </span>
-                      <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
                     </div>
 
                     <!-- UPDATED list operation (with diff) -->
@@ -115,7 +113,7 @@
                         <mat-expansion-panel hideToggle="true">
                           <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                             <mat-panel-title>
-                              <span class="ft-16-600 action-msg">
+                              <span class="ft-16-400 action-msg">
                                 {{ getLogTypeMessage(log.type) | translate }}
                                 <ng-container *ngIf="log.data.list.operation">
                                   -
@@ -124,7 +122,8 @@
                                       | translate
                                         : {
                                             listTableType: getListTableType(log.data.list.filterType),
-                                            listName: log.data.list.listName
+                                            listName: log.data.list.listName,
+                                            status: log.data.list.enabled ? 'enabled' : 'disabled'
                                           }
                                   }}
                                 </ng-container>
@@ -134,24 +133,41 @@
                                 [innerHTML]="'logs-global.log-view-diff.text' | translate"
                               ></span>
                             </mat-panel-title>
-                            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
                           </mat-expansion-panel-header>
                         </mat-expansion-panel>
                       </mat-accordion>
                     </div>
                   </ng-container>
 
-                  <!-- General entity properties updated (with diff) -->
+                  <!-- General entity properties updated (with diff) or filter mode change -->
                   <ng-template #propertiesUpdated>
-                    <common-audit-log-diff-display
-                      [logId]="log.id"
-                      [logData]="log.data"
-                      [logType]="log.type"
-                      [createdAt]="log.createdAt"
-                      [actionMessage]="getLogTypeMessage(log.type) | translate"
-                    ></common-audit-log-diff-display>
+                    <!-- Filter mode (include-all) toggled -->
+                    <ng-container *ngIf="isFilterModeUpdate(log.data); else diffUpdated">
+                      <div class="log-text">
+                        <span class="ft-16-400 action-msg">
+                          {{ getLogTypeMessage(log.type) | translate }}
+                          -
+                          {{
+                            'logs.audit-log-feature-flag-updated-filterMode-changed.text'
+                              | translate : { status: log.data.filterMode === 'includeAll' ? 'enabled' : 'disabled' }
+                          }}
+                        </span>
+                      </div>
+                    </ng-container>
+
+                    <ng-template #diffUpdated>
+                      <common-audit-log-diff-display
+                        [logId]="log.id"
+                        [logData]="log.data"
+                        [logType]="log.type"
+                        [actionMessage]="getLogTypeMessage(log.type) | translate"
+                      ></common-audit-log-diff-display>
+                    </ng-template>
                   </ng-template>
                 </div>
+
+                <!-- Col 3: Time -->
+                <span class="ft-16-400 col-time">{{ log.createdAt | date : 'shortTime' }}</span>
               </div>
             </div>
           </ng-container>
