@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class queryOrder1752000000000 implements MigrationInterface {
-  name = 'queryOrder1752000000000';
+export class QueryOrder1773939767393 implements MigrationInterface {
+  name = 'QueryOrder1773939767393';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "public"."query" ADD "order" integer`);
