@@ -66,6 +66,7 @@ export class FeatureFlagLogSectionCardComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private currentFlagId: string | null = null;
+  private hasDoneIntialFetch = false;
 
   LogDateFormatType = LogDateFormatType;
   timelineConfig: AuditLogTimelineConfig = FEATURE_FLAG_TIMELINE_LOG_TYPE_CONFIG;
@@ -76,10 +77,11 @@ export class FeatureFlagLogSectionCardComponent implements OnInit, OnDestroy {
     // Fetch logs when feature flag loads
     this.selectedFeatureFlag$
       .pipe(
-        filter((flag): flag is FeatureFlag => !!flag),
+        filter((flag): flag is FeatureFlag => !!flag && !this.hasDoneIntialFetch),
         tap((flag) => {
           this.currentFlagId = flag.id;
           this.logsService.fetchFeatureFlagLogs(flag.id, true);
+          this.hasDoneIntialFetch = true;
         }),
         takeUntil(this.destroy$)
       )

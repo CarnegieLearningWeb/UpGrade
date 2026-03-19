@@ -66,6 +66,7 @@ export class ExperimentLogSectionCardComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private currentExperimentId: string | null = null;
+  private hasDoneIntialFetch = false;
 
   LogDateFormatType = LogDateFormatType;
   timelineConfig: AuditLogTimelineConfig = EXPERIMENT_TIMELINE_LOG_TYPE_CONFIG;
@@ -76,10 +77,11 @@ export class ExperimentLogSectionCardComponent implements OnInit, OnDestroy {
     // Fetch logs when experiment loads
     this.selectedExperiment$
       .pipe(
-        filter((exp): exp is Experiment => !!exp),
+        filter((exp): exp is Experiment => !!exp && !this.hasDoneIntialFetch),
         tap((exp) => {
           this.currentExperimentId = exp.id;
           this.logsService.fetchExperimentLogs(exp.id, true);
+          this.hasDoneIntialFetch = true;
         }),
         takeUntil(this.destroy$)
       )
