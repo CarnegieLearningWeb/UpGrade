@@ -15,11 +15,11 @@ module.exports = {
         run: {
           default: {
             // -i. Run all tests serially in the current process, rather than creating a worker pool of child processes that run tests. This can be useful for debugging.
-            script: 'cross-env NODE_ENV=test jest --runInBand --testPathPattern=integration -i',
+            script: 'cross-env NODE_ENV=test jest --runInBand --config jest.integration.config.js -i',
             hiddenFromHelp: true,
           },
           watch: {
-            script: 'cross-env NODE_ENV=test jest --runInBand --watch --testPathPattern=integration -i',
+            script: 'cross-env NODE_ENV=test jest --runInBand --watch --config jest.integration.config.js -i',
             hiddenFromHelp: true,
           },
         },

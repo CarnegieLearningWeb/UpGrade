@@ -39,6 +39,7 @@ test/**/*.js
 test/**/*.js.map
 coverage/
 !test/preprocessor.js
+!test/integration/setup/*.js
 mydb.sql
 
 .ebextensions
