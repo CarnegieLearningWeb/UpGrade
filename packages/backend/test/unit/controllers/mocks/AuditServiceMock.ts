@@ -20,8 +20,8 @@ export default class AuditServiceMock {
     return Promise.resolve([]);
   }
 
-  public getTotalLogs(logParams: Pick<AuditLogQueryParams, 'filter' | 'experimentId' | 'flagId'>): Promise<[]> {
-    return Promise.resolve([]);
+  public getTotalLogs(logParams: Pick<AuditLogQueryParams, 'filter' | 'experimentId' | 'flagId'>): Promise<number> {
+    return Promise.resolve(0);
   }
 
   public getAuditLogs(logParams: AuditLogQueryParams): Promise<[]> {
