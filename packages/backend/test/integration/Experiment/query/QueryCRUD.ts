@@ -74,6 +74,7 @@ export default async function QueryCRUD(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         query: { operationType: 'avg' },
+        order: 1,
         metric: expect.objectContaining({
           key: 'totalProblemsCompleted',
           type: 'continuous',

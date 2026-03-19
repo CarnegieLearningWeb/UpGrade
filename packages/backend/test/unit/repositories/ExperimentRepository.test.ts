@@ -161,6 +161,11 @@ describe('ExperimentRepository Testing', () => {
     expect(mock.select).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(4);
 
+    // queries are ordered by `order` ASC (NULLS LAST) then `createdAt` ASC as a stable fallback
+    expect(mock.addOrderBy).toHaveBeenCalledTimes(2);
+    expect(mock.addOrderBy).toHaveBeenCalledWith('queries.order', 'ASC', 'NULLS LAST');
+    expect(mock.addOrderBy).toHaveBeenCalledWith('queries.createdAt', 'ASC');
+
     expect(res).toEqual(result);
   });
 
@@ -359,6 +364,22 @@ describe('ExperimentRepository Testing', () => {
     expect(mock.returning).toHaveBeenCalledTimes(1);
     expect(mock.returning).toHaveBeenCalledWith('*');
     expect(mock.execute).toHaveBeenCalledTimes(1);
+  });
+
+  it('should find one experiment ordered by queries.order then createdAt', async () => {
+    const res = await repo.findOneExperiment(experiment.id);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    // conditions, partitions, factors, levels, queries.order, queries.createdAt = 6 addOrderBy calls
+    expect(mock.addOrderBy).toHaveBeenCalledTimes(6);
+    expect(mock.addOrderBy).toHaveBeenCalledWith('queries.order', 'ASC', 'NULLS LAST');
+    expect(mock.addOrderBy).toHaveBeenCalledWith('queries.createdAt', 'ASC');
+
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getOne).toHaveBeenCalledTimes(1);
+
+    expect(res).toEqual(experiment);
   });
 
   it('should clear the database', async () => {

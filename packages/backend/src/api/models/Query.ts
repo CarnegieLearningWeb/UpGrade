@@ -35,4 +35,7 @@ export class Query extends BaseModel {
     default: REPEATED_MEASURE.mostRecent,
   })
   public repeatedMeasure: REPEATED_MEASURE;
+
+  @Column({ nullable: true })
+  public order: number;
 }
