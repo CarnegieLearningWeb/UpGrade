@@ -125,6 +125,8 @@ Resources:
               Value: '{{resolve:ssm:UPGRADE_CACHING_ENABLED}}'
             - Name: CACHING_TTL
               Value: '{{resolve:ssm:UPGRADE_CACHING_TTL}}'
+            - Name: CACHING_MAX_KEYS
+              Value: '{{resolve:ssm:UPGRADE_CACHING_MAX_KEYS}}'
             - Name: CONTROLLERS
               Value: '{{resolve:ssm:UPGRADE_CONTROLLERS}}'
             - Name: CORS_WHITELIST
