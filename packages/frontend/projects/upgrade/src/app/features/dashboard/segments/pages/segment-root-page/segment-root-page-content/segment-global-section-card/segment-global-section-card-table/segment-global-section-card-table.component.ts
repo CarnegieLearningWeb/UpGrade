@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { AsyncPipe, NgIf, NgFor } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
 import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
@@ -18,7 +18,7 @@ import {
 
 @Component({
   selector: 'app-segment-global-section-card-table',
-  imports: [MatTableModule, AsyncPipe, NgIf, NgFor, SharedModule, RouterModule, CommonStatusIndicatorChipComponent],
+  imports: [MatTableModule, AsyncPipe, SharedModule, RouterModule, CommonStatusIndicatorChipComponent],
   templateUrl: './segment-global-section-card-table.component.html',
   styleUrl:
     '../../segment-root-section-card/segment-root-section-card-table/segment-root-section-card-table.component.scss',

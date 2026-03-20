@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { AsyncPipe, NgIf, NgFor } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
 import {
@@ -35,8 +35,6 @@ import {
   imports: [
     MatTableModule,
     AsyncPipe,
-    NgIf,
-    NgFor,
     SharedModule,
     RouterModule,
     CommonStatusIndicatorChipComponent,

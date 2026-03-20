@@ -19,14 +19,18 @@
         {{ 'segments.overview.segment-app-context.text' | translate }}
       </mat-label>
       <mat-select class="ft-14-400" formControlName="context">
-        <mat-option class="ft-14-400" *ngFor="let context of allContexts" [value]="context">
+        @for (context of allContexts; track context) {
+        <mat-option class="ft-14-400" [value]="context">
           {{ context }}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
-    <span class="ft-14-400 validation-message" *ngIf="!isSegmentNameValid">
+    @if (!isSegmentNameValid) {
+    <span class="ft-14-400 validation-message">
       {{ 'segments.new-segment-overview-stepper.segment-name-error.text' | translate }}
     </span>
+    }
   </section>
 
   <div class="button-container">

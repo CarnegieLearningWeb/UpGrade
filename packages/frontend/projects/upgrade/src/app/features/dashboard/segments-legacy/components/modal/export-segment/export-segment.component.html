@@ -7,9 +7,11 @@
         {{ 'home.view-experiment.export-method.text' | translate }}
       </mat-label>
       <mat-select class="ft-14-400 export-selection" formControlName="exportMethod">
-        <mat-option class="ft-14-400" *ngFor="let method of exportMethod" [value]="method.value">
+        @for (method of exportMethod; track method) {
+        <mat-option class="ft-14-400" [value]="method.value">
           {{ method.value }}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </form>

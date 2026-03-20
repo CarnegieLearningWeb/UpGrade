@@ -7,99 +7,102 @@
   (primaryActionBtnClicked)="importFiles()"
 >
   <div class="drag-drop-container">
-    <ng-container *ngIf="!(isLoadingImport$ | async); else loadingSpinner">
-      <ng-container *ngIf="(uploadedFileCount | async) < 1; else validationTable">
-        <app-common-import-container
-          fileType=".json"
-          buttonLabel="Choose JSON"
-          (filesSelected)="handleFilesSelected($event)"
-        >
-        </app-common-import-container>
-        <p class="ft-12-400 import-message">
-          <span *ngIf="config.params.messageKey">
-            {{ config.params.messageKey | translate }}
-          </span>
-          <app-common-learn-more-link learnMoreLinkKey="guide.importing-entities"></app-common-learn-more-link>
-        </p>
-      </ng-container>
-      <ng-template #validationTable>
-        <div class="table-container">
-          <table
-            mat-table
-            class="file-compatibility-table"
-            [dataSource]="fileValidationErrorDataSource"
-            multiTemplateDataRows
-          >
-            <!-- Actions Column -->
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell class="ft-14-500 dense-2" *matCellDef="let element; let rowIndex = dataIndex">
-                <button
-                  mat-icon-button
-                  [ngClass]="{ 'expand-button--disabled': element.compatibilityType === 'compatible' }"
-                  [disabled]="element.compatibilityType === 'compatible'"
-                  (click)="toggleExpand(rowIndex)"
-                >
-                  <mat-icon>{{
-                    element.compatibilityType === 'compatible' || !expandedRows.has(rowIndex)
-                      ? 'chevron_right'
-                      : 'expand_more'
-                  }}</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-
-            <!-- File Name Column -->
-            <ng-container matColumnDef="fileName">
-              <th mat-header-cell class="ft-14-600" *matHeaderCellDef>File Name</th>
-              <td mat-cell class="ft-14-500" *matCellDef="let element">
-                <span [appTextOverflowTooltip]="element.fileName" matTooltipPosition="above" class="line-clamp-1">
-                  {{ element.fileName }}
+    @if (!(isLoadingImport$ | async)) { @if ((uploadedFileCount | async) < 1) {
+    <app-common-import-container
+      fileType=".json"
+      buttonLabel="Choose JSON"
+      (filesSelected)="handleFilesSelected($event)"
+    >
+    </app-common-import-container>
+    <p class="ft-12-400 import-message">
+      @if (config.params.messageKey) {
+      <span>
+        {{ config.params.messageKey | translate }}
+      </span>
+      }
+      <app-common-learn-more-link learnMoreLinkKey="guide.importing-entities"></app-common-learn-more-link>
+    </p>
+    } @else {
+    <div class="table-container">
+      <table
+        mat-table
+        class="file-compatibility-table"
+        [dataSource]="fileValidationErrorDataSource"
+        multiTemplateDataRows
+      >
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell class="ft-14-500 dense-2" *matCellDef="let element; let rowIndex = dataIndex">
+            <button
+              mat-icon-button
+              [ngClass]="{ 'expand-button--disabled': element.compatibilityType === 'compatible' }"
+              [disabled]="element.compatibilityType === 'compatible'"
+              (click)="toggleExpand(rowIndex)"
+            >
+              <mat-icon>{{
+                element.compatibilityType === 'compatible' || !expandedRows.has(rowIndex)
+                  ? 'chevron_right'
+                  : 'expand_more'
+              }}</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <!-- File Name Column -->
+        <ng-container matColumnDef="fileName">
+          <th mat-header-cell class="ft-14-600" *matHeaderCellDef>File Name</th>
+          <td mat-cell class="ft-14-500" *matCellDef="let element">
+            <span [appTextOverflowTooltip]="element.fileName" matTooltipPosition="above" class="line-clamp-1">
+              {{ element.fileName }}
+            </span>
+          </td>
+        </ng-container>
+        <!-- Compatibility Type Column -->
+        <ng-container matColumnDef="compatibilityType">
+          <th mat-header-cell class="ft-14-600" *matHeaderCellDef>Compatibility Type</th>
+          <td mat-cell class="ft-14-500" *matCellDef="let element">
+            <app-common-status-indicator-chip
+              [chipClass]="element.compatibilityType"
+            ></app-common-status-indicator-chip>
+          </td>
+        </ng-container>
+        <!-- Expanded Detail Row -->
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell class="expandable-row" *matCellDef="let element; let rowIndex = dataIndex">
+            @if (expandedRows.has(rowIndex)) {
+            <div class="ft-14-500" class="compatibility-details-container">
+              @if (element.compatibilityType === 'incompatible') {
+              <div>
+                @if (config.params.incompatibleMessageKey) {
+                <span>
+                  {{ element.error || (config.params.incompatibleMessageKey | translate) }}
                 </span>
-              </td>
-            </ng-container>
-
-            <!-- Compatibility Type Column -->
-            <ng-container matColumnDef="compatibilityType">
-              <th mat-header-cell class="ft-14-600" *matHeaderCellDef>Compatibility Type</th>
-              <td mat-cell class="ft-14-500" *matCellDef="let element">
-                <app-common-status-indicator-chip
-                  [chipClass]="element.compatibilityType"
-                ></app-common-status-indicator-chip>
-              </td>
-            </ng-container>
-
-            <!-- Expanded Detail Row -->
-            <ng-container matColumnDef="expandedDetail">
-              <td mat-cell class="expandable-row" *matCellDef="let element; let rowIndex = dataIndex">
-                <div class="ft-14-500" *ngIf="expandedRows.has(rowIndex)" class="compatibility-details-container">
-                  <div *ngIf="element.compatibilityType === 'incompatible'">
-                    <span *ngIf="config.params.incompatibleMessageKey">
-                      {{ element.error || (config.params.incompatibleMessageKey | translate) }}
-                    </span>
-                  </div>
-                  <div *ngIf="element.compatibilityType === 'warning'">
-                    <span *ngIf="config.params.warningMessageKey">
-                      {{ element.error || (config.params.warningMessageKey | translate) }}
-                    </span>
-                  </div>
-                </div>
-              </td>
-            </ng-container>
-
-            <!-- Header and Rows -->
-            <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-            <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-            <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"></mat-row>
-          </table>
-          <span class="ft-14-400 validation-message validation-message-padding">{{
-            mixedCompatibilityMessage$ | async | translate
-          }}</span>
-        </div>
-      </ng-template>
-    </ng-container>
-    <ng-template #loadingSpinner>
-      <mat-spinner class="spinner" diameter="150"></mat-spinner>
-    </ng-template>
+                }
+              </div>
+              } @if (element.compatibilityType === 'warning') {
+              <div>
+                @if (config.params.warningMessageKey) {
+                <span>
+                  {{ element.error || (config.params.warningMessageKey | translate) }}
+                </span>
+                }
+              </div>
+              }
+            </div>
+            }
+          </td>
+        </ng-container>
+        <!-- Header and Rows -->
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+        <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"></mat-row>
+      </table>
+      <span class="ft-14-400 validation-message validation-message-padding">{{
+        mixedCompatibilityMessage$ | async | translate
+      }}</span>
+    </div>
+    } } @else {
+    <mat-spinner class="spinner" diameter="150"></mat-spinner>
+    }
   </div>
 </app-common-dialog>

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
@@ -7,6 +7,6 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: './feature-flag-exposures-data.component.html',
   styleUrl: './feature-flag-exposures-data.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
 })
 export class FeatureFlagExposuresDataComponent {}

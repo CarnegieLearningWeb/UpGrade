@@ -1,429 +1,347 @@
 <div class="timeline">
-  <ng-container *ngFor="let log of logData; let index = index">
-    <div class="timeline-container">
-      <ng-container *ngIf="logType === LogType.AUDIT_LOG; else errorLogIconTemplate">
-        <app-shared-icons
-          class="icon icon--black"
-          [iconType]="'dark-setting'"
-          *ngIf="log.user?.email === systemUserEmail; else userIconTemplate"
-        ></app-shared-icons>
-
-        <ng-template #userIconTemplate>
-          <img [src]="log.user.imageUrl" class="icon" *ngIf="log.user?.imageUrl; else noUserLogTemplate" />
-        </ng-template>
-      </ng-container>
-
-      <!-- If user is null or Action is performed via CLI tool-->
-      <ng-template #noUserLogTemplate>
-        <app-shared-icons class="icon" [ngClass]="'icon--light-blue'" [iconType]="'user-1'"></app-shared-icons>
-      </ng-template>
-
-      <ng-template #errorLogIconTemplate>
-        <app-shared-icons
-          class="{{ 'icon icon--' + (log.value | errorLog : 'class') }}"
-          [iconType]="log.type | errorLog : 'icon'"
-        ></app-shared-icons>
-      </ng-template>
-
-      <div class="content" *ngIf="logType === LogType.AUDIT_LOG; else errorLogTemplate">
-        <span class="ft-16-600 user-name">
-          <ng-container *ngIf="log.user">
-            <span *ngIf="(log['user']['firstName'] + ' ' + log['user']['lastName']).length < 30; else userNameEllipsis">
-              {{ log['user']['firstName'] + ' ' + log['user']['lastName'] }}
-            </span>
-            <ng-template #userNameEllipsis>
-              <span [matTooltip]="log['user']['firstName'] + ' ' + log['user']['lastName']" matTooltipPosition="above">
-                {{ log['user']['firstName'] + ' ' + log['user']['lastName'] | truncate : 30 }}
-              </span>
-            </ng-template>
-          </ng-container>
+  @for (log of logData; track log; let index = $index) {
+  <div class="timeline-container">
+    @if (logType === LogType.AUDIT_LOG) { @if (log.user?.email === systemUserEmail) {
+    <app-shared-icons class="icon icon--black" [iconType]="'dark-setting'"></app-shared-icons>
+    } @else { @if (log.user?.imageUrl) {
+    <img [src]="log.user.imageUrl" class="icon" />
+    } @else {
+    <app-shared-icons class="icon" [ngClass]="'icon--light-blue'" [iconType]="'user-1'"></app-shared-icons>
+    } } } @else {
+    <app-shared-icons
+      class="{{ 'icon icon--' + (log.value | errorLog : 'class') }}"
+      [iconType]="log.type | errorLog : 'icon'"
+    ></app-shared-icons>
+    }
+    <!-- If user is null or Action is performed via CLI tool-->
+    @if (logType === LogType.AUDIT_LOG) {
+    <div class="content">
+      <span class="ft-16-600 user-name">
+        @if (log.user) { @if ((log['user']['firstName'] + ' ' + log['user']['lastName']).length < 30) {
+        <span>
+          {{ log['user']['firstName'] + ' ' + log['user']['lastName'] }}
         </span>
-
-        <ng-container [ngSwitch]="log.type">
-          <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED" class="log-text">
-            <span class="ft-16-400 action action-msg">
-              {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
-            </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-          </div>
-
-          <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DATA_EXPORTED" class="log-text">
-            <span class="ft-16-400 action action-msg">
-              {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
-            </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-          </div>
-
-          <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DESIGN_EXPORTED" class="log-text">
-            <span class="ft-16-400 action action-msg">
-              {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
-            </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-          </div>
-
-          <div
-            class="log-text"
-            *ngSwitchCase="
-              log.type === ExperimentLogType.EXPERIMENT_STATE_CHANGED ||
-              log.type === ExperimentLogType.EXPERIMENT_CREATED
-                ? log.type
-                : ''
-            "
-          >
-            <span class="ft-16-400 action action-msg">
-              {{
-                (log.type
-                  | experimentActionMessage
-                  | translate
-                    : { previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }) +
-                  ' '
-              }}
-              <a
-                class="link"
-                *ngIf="log.data.isExperimentExist; else experimentNotExist"
-                [routerLink]="['/home', 'detail', log.data.experimentId]"
-                >{{ log.data.experimentName }}</a
-              >
-            </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-          </div>
-          <div class="full-width" *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED">
-            <ng-container *ngIf="log.data.list; else experimentPropertiesUpdated">
-              <ng-container [ngSwitch]="log.data.list.operation">
-                <!-- Case for CREATED OR DELETED -->
-                <div
-                  class="log-text"
-                  *ngSwitchCase="
-                    log.data.list.operation === EXPERIMENT_LIST_OPERATION.CREATED ||
-                    log.data.list.operation === EXPERIMENT_LIST_OPERATION.DELETED
-                      ? log.data.list.operation
-                      : ''
-                  "
-                >
-                  <span class="ft-16-400 action action-msg">
-                    {{ log.type | experimentActionMessage | translate }}
-                    <a
-                      class="link"
-                      *ngIf="log.data.isExperimentExist; else experimentNotExist"
-                      [routerLink]="['/home', 'detail', log.data.experimentId]"
-                      >{{ log.data.experimentName }}</a
-                    >
-                    -
-                    {{
-                      log.data.list.operation
-                        | listOperationsMessage
-                        | translate
-                          : {
-                              listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
-                              listName: log.data.list.listName
-                            }
-                    }}
-                  </span>
-                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-                </div>
-
-                <!-- Case for UPDATED -->
-                <div *ngSwitchCase="EXPERIMENT_LIST_OPERATION.UPDATED" class="log-text">
-                  <!-- Content for UPDATED operation -->
-                  <mat-accordion class="accordion">
-                    <mat-expansion-panel hideToggle="true">
-                      <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
-                        <mat-panel-title>
-                          <span class="ft-16-400 action-msg">
-                            {{ log.type | experimentActionMessage | translate }}
-                            <a
-                              class="link"
-                              *ngIf="log.data.isExperimentExist; else experimentNotExist"
-                              [routerLink]="['/home', 'detail', log.data.experimentId]"
-                              >{{ log.data.experimentName }}</a
-                            >
-                            -
-                            {{
-                              log.data.list.operation
-                                | listOperationsMessage
-                                | translate
-                                  : {
-                                      listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
-                                      listName: log.data.list.listName,
-                                    }
-                            }}
-                          </span>
-                          <span
-                            class="ft-12-600 view-diff"
-                            [innerHTML]="'logs-global.log-view-diff.text' | translate"
-                          ></span>
-                        </mat-panel-title>
-                        <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-                      </mat-expansion-panel-header>
-
-                      <pre><div
-                        class="ft-14-400 diff-container"
-                        [id]="log.id"
-                        >{{ getHtmlFormedLogData(log.id, log.data.list.diff) }}</div
-                      ></pre>
-                    </mat-expansion-panel>
-                  </mat-accordion>
-                </div>
-              </ng-container>
-            </ng-container>
-
-            <!-- Default log view if log.data.list does not exist -->
-            <ng-template class="log-text" #experimentPropertiesUpdated>
-              <mat-accordion class="accordion">
-                <mat-expansion-panel hideToggle="true">
-                  <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
-                    <mat-panel-title>
-                      <span class="ft-16-400 action-msg">
-                        {{ (log.type | experimentActionMessage | translate) + ' ' }}
-                        <a
-                          class="link"
-                          *ngIf="log.data.isExperimentExist; else experimentNotExist"
-                          [routerLink]="['/home', 'detail', log.data.experimentId]"
-                          >{{ log.data.experimentName }}</a
-                        >
-                      </span>
-                      <span
-                        class="ft-12-600 view-diff"
-                        [innerHTML]="'logs-global.log-view-diff.text' | translate"
-                      ></span>
-                    </mat-panel-title>
-                    <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-                  </mat-expansion-panel-header>
-
-                  <pre><div class="ft-14-400 diff-container" [id]="log.id">{{ getHtmlFormedLogData(log.id, log.data.diff) }}</div></pre>
-                </mat-expansion-panel>
-              </mat-accordion>
-            </ng-template>
-          </div>
-
-          <div *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_DELETED" class="log-text">
-            <span class="ft-16-400 action action-msg">
-              {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
-            </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-          </div>
-
-          <div *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_DATA_EXPORTED" class="log-text">
-            <span class="ft-16-400 action action-msg">
-              {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
-            </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-          </div>
-
-          <div *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_DESIGN_EXPORTED" class="log-text">
-            <span class="ft-16-400 action action-msg">
-              {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
-            </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-          </div>
-
-          <div
-            class="log-text"
-            *ngSwitchCase="
-              log.type === ExperimentLogType.FEATURE_FLAG_STATUS_CHANGED ||
-              log.type === ExperimentLogType.FEATURE_FLAG_CREATED
-                ? log.type
-                : ''
-            "
-          >
-            <span class="ft-16-400 action action-msg">
-              {{
-                log.type
-                  | experimentActionMessage
-                  | translate
-                    : { previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }
-              }}
-              <a
-                class="link"
-                *ngIf="log.data.isFlagExist; else flagNotExist"
-                [routerLink]="['/featureflags', 'detail', log.data.flagId]"
-                >{{ log.data.flagName }}</a
-              >
-            </span>
-            <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-          </div>
-
-          <div class="full-width" *ngSwitchCase="ExperimentLogType.FEATURE_FLAG_UPDATED">
-            <ng-container *ngIf="log.data.list; else flagPropertiesUpdated">
-              <ng-container [ngSwitch]="log.data.list.operation">
-                <!-- Case for CREATED OR DELETED OR STATUS_CHANGED -->
-                <div
-                  class="log-text"
-                  *ngSwitchCase="
-                    log.data.list.operation === FEATURE_FLAG_LIST_OPERATION.CREATED ||
-                    log.data.list.operation === FEATURE_FLAG_LIST_OPERATION.DELETED ||
-                    log.data.list.operation === FEATURE_FLAG_LIST_OPERATION.STATUS_CHANGED
-                      ? log.data.list.operation
-                      : ''
-                  "
-                >
-                  <span class="ft-16-400 action action-msg">
-                    {{ log.type | experimentActionMessage | translate }}
-                    <a
-                      class="link"
-                      *ngIf="log.data.isFlagExist; else flagNotExist"
-                      [routerLink]="['/featureflags', 'detail', log.data.flagId]"
-                      >{{ log.data.flagName }}</a
-                    >
-                    -
-                    {{
-                      log.data.list.operation
-                        | listOperationsMessage
-                        | translate
-                          : {
-                              listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
-                              listName: log.data.list.listName,
-                              status: log.data.list.enabled ? 'enabled' : 'disabled'
-                            }
-                    }}
-                  </span>
-                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-                </div>
-
-                <!-- Case for UPDATED -->
-                <div *ngSwitchCase="FEATURE_FLAG_LIST_OPERATION.UPDATED" class="log-text">
-                  <!-- Content for UPDATED operation -->
-                  <mat-accordion class="accordion">
-                    <mat-expansion-panel hideToggle="true">
-                      <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
-                        <mat-panel-title>
-                          <span class="ft-16-400 action-msg">
-                            {{ log.type | experimentActionMessage | translate }}
-                            <a
-                              class="link"
-                              *ngIf="log.data.isFlagExist; else flagNotExist"
-                              [routerLink]="['/featureflags', 'detail', log.data.flagId]"
-                              >{{ log.data.flagName }}</a
-                            >
-                            -
-                            {{
-                              log.data.list.operation
-                                | listOperationsMessage
-                                | translate
-                                  : {
-                                      listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
-                                      listName: log.data.list.listName,
-                                    }
-                            }}
-                          </span>
-                          <span
-                            class="ft-12-600 view-diff"
-                            [innerHTML]="'logs-global.log-view-diff.text' | translate"
-                          ></span>
-                        </mat-panel-title>
-                        <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-                      </mat-expansion-panel-header>
-
-                      <pre><div
-                        class="ft-14-400 diff-container"
-                        [id]="log.id"
-                        >{{ getHtmlFormedLogData(log.id, log.data.list.diff) }}</div
-                      ></pre>
-                    </mat-expansion-panel>
-                  </mat-accordion>
-                </div>
-              </ng-container>
-            </ng-container>
-
-            <!-- Default log view if log.data.list does not exist -->
-            <ng-template class="log-text" #flagPropertiesUpdated>
-              <ng-container *ngIf="log.data.diff; else flagFilterModeUpdated">
-                <mat-accordion class="accordion">
-                  <mat-expansion-panel hideToggle="true">
-                    <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
-                      <mat-panel-title>
-                        <span class="ft-16-400 action-msg">
-                          {{ log.type | experimentActionMessage | translate }}
-                          <a
-                            class="link"
-                            *ngIf="log.data.isFlagExist; else flagNotExist"
-                            [routerLink]="['/featureflags', 'detail', log.data.flagId]"
-                            >{{ log.data.flagName }}</a
-                          >
-                        </span>
-                        <span
-                          class="ft-12-600 view-diff"
-                          [innerHTML]="'logs-global.log-view-diff.text' | translate"
-                        ></span>
-                      </mat-panel-title>
-                      <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-                    </mat-expansion-panel-header>
-
-                    <pre><div
-                      class="ft-14-400 diff-container"
-                      [id]="log.id"
-                      >{{ getHtmlFormedLogData(log.id, log.data.diff) }}</div
-                    ></pre>
-                  </mat-expansion-panel>
-                </mat-accordion>
-              </ng-container>
-
-              <ng-template #flagFilterModeUpdated>
-                <div class="log-text full-width">
-                  <span class="ft-16-400 action action-msg">
-                    {{ log.type | experimentActionMessage | translate }}
-                    <a
-                      class="link"
-                      *ngIf="log.data.isFlagExist; else flagNotExist"
-                      [routerLink]="['/featureflags', 'detail', log.data.flagId]"
-                      >{{ log.data.flagName }}</a
-                    >
-                    -
-                    {{
-                      'logs.audit-log-feature-flag-updated-filterMode-changed.text'
-                        | translate : { status: log.data.filterMode === 'includeAll' ? 'enabled' : 'disabled' }
-                    }}
-                  </span>
-                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-                </div>
-              </ng-template>
-            </ng-template>
-          </div>
-        </ng-container>
-
-        <ng-template #experimentNotExist>
-          <span class="ft-16-400 action-msg">{{ ' ' + log.data.experimentName }}</span>
-        </ng-template>
-
-        <ng-template #flagNotExist>
-          <span class="ft-16-400 action-msg">{{ log.data.flagName }}</span>
-        </ng-template>
+        } @else {
+        <span [matTooltip]="log['user']['firstName'] + ' ' + log['user']['lastName']" matTooltipPosition="above">
+          {{ log['user']['firstName'] + ' ' + log['user']['lastName'] | truncate : 30 }}
+        </span>
+        } }
+      </span>
+      @switch (log.type) { @case (ExperimentLogType.EXPERIMENT_DELETED) {
+      <div class="log-text">
+        <span class="ft-16-400 action action-msg">
+          {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
+        </span>
+        <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
       </div>
-
-      <ng-template #errorLogTemplate>
-        <div class="content">
-          <span class="ft-16-600 error-type">{{ log.type }}</span>
-          <span> :</span>
-          <div class="log-text">
-            <mat-accordion class="accordion">
-              <mat-expansion-panel hideToggle="true">
-                <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
-                  <mat-panel-title>
-                    <span
-                      *ngIf="log.type !== ServerErrors.REPORTED_ERROR; else errorFromClient"
-                      class="ft-16-600 action-msg-error"
-                    >
-                      {{
-                        'logs.error-logs-message.text'
-                          | translate : { errorName: log.name, endPoint: endPoint + log.endPoint }
-                      }}
-                    </span>
-                    <ng-template #errorFromClient>
-                      <span class="ft-16-600 action-msg-error">
-                        {{ 'logs.error-logs-failed-experimentPoint.text' | translate }}
-                      </span>
-                    </ng-template>
-                    <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
-                  </mat-panel-title>
-                  <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
-                </mat-expansion-panel-header>
-
-                <pre class="ft-14-400">{{ log.message }}</pre>
-              </mat-expansion-panel>
-            </mat-accordion>
-          </div>
+      } @case (ExperimentLogType.EXPERIMENT_DATA_EXPORTED) {
+      <div class="log-text">
+        <span class="ft-16-400 action action-msg">
+          {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
+        </span>
+        <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+      </div>
+      } @case (ExperimentLogType.EXPERIMENT_DESIGN_EXPORTED) {
+      <div class="log-text">
+        <span class="ft-16-400 action action-msg">
+          {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
+        </span>
+        <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+      </div>
+      } @case ( log.type === ExperimentLogType.EXPERIMENT_STATE_CHANGED || log.type ===
+      ExperimentLogType.EXPERIMENT_CREATED ? log.type : '' ) {
+      <div class="log-text">
+        <span class="ft-16-400 action action-msg">
+          {{
+            (log.type
+              | experimentActionMessage
+              | translate
+                : { previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }) + ' '
+          }}
+          @if (log.data.isExperimentExist) {
+          <a class="link" [routerLink]="['/home', 'detail', log.data.experimentId]">{{ log.data.experimentName }}</a>
+          } @else {
+          <span class="ft-16-400 action-msg">{{ ' ' + log.data.experimentName }}</span>
+          }
+        </span>
+        <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+      </div>
+      } @case (ExperimentLogType.EXPERIMENT_UPDATED) {
+      <div class="full-width">
+        @if (log.data.list) { @switch (log.data.list.operation) {
+        <!-- Case for CREATED OR DELETED -->
+        @case ( log.data.list.operation === EXPERIMENT_LIST_OPERATION.CREATED || log.data.list.operation ===
+        EXPERIMENT_LIST_OPERATION.DELETED ? log.data.list.operation : '' ) {
+        <div class="log-text">
+          <span class="ft-16-400 action action-msg">
+            {{ log.type | experimentActionMessage | translate }}
+            @if (log.data.isExperimentExist) {
+            <a class="link" [routerLink]="['/home', 'detail', log.data.experimentId]">{{ log.data.experimentName }}</a>
+            } @else {
+            <span class="ft-16-400 action-msg">{{ ' ' + log.data.experimentName }}</span>
+            } -
+            {{
+              log.data.list.operation
+                | listOperationsMessage
+                | translate
+                  : {
+                      listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
+                      listName: log.data.list.listName
+                    }
+            }}
+          </span>
+          <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
         </div>
-      </ng-template>
+        }
+        <!-- Case for UPDATED -->
+        @case (EXPERIMENT_LIST_OPERATION.UPDATED) {
+        <div class="log-text">
+          <!-- Content for UPDATED operation -->
+          <mat-accordion class="accordion">
+            <mat-expansion-panel hideToggle="true">
+              <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
+                <mat-panel-title>
+                  <span class="ft-16-400 action-msg">
+                    {{ log.type | experimentActionMessage | translate }}
+                    @if (log.data.isExperimentExist) {
+                    <a class="link" [routerLink]="['/home', 'detail', log.data.experimentId]">{{
+                      log.data.experimentName
+                    }}</a>
+                    } @else {
+                    <span class="ft-16-400 action-msg">{{ ' ' + log.data.experimentName }}</span>
+                    } -
+                    {{
+                                      log.data.list.operation
+                                      | listOperationsMessage
+                                      | translate
+                                      : {
+                                      listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
+                                      listName: log.data.list.listName,
+                                    }
+                    }}
+                  </span>
+                  <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
+                </mat-panel-title>
+                <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+              </mat-expansion-panel-header>
+              <pre><div
+                                class="ft-14-400 diff-container"
+                                [id]="log.id"
+                                >{{ getHtmlFormedLogData(log.id, log.data.list.diff) }}</div
+                              ></pre>
+            </mat-expansion-panel>
+          </mat-accordion>
+        </div>
+        } } } @else {
+        <mat-accordion class="accordion">
+          <mat-expansion-panel hideToggle="true">
+            <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
+              <mat-panel-title>
+                <span class="ft-16-400 action-msg">
+                  {{ (log.type | experimentActionMessage | translate) + ' ' }}
+                  @if (log.data.isExperimentExist) {
+                  <a class="link" [routerLink]="['/home', 'detail', log.data.experimentId]">{{
+                    log.data.experimentName
+                  }}</a>
+                  } @else {
+                  <span class="ft-16-400 action-msg">{{ ' ' + log.data.experimentName }}</span>
+                  }
+                </span>
+                <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
+              </mat-panel-title>
+              <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+            </mat-expansion-panel-header>
+            <pre><div class="ft-14-400 diff-container" [id]="log.id">{{ getHtmlFormedLogData(log.id, log.data.diff) }}</div></pre>
+          </mat-expansion-panel>
+        </mat-accordion>
+        }
+        <!-- Default log view if log.data.list does not exist -->
+      </div>
+      } @case (ExperimentLogType.FEATURE_FLAG_DELETED) {
+      <div class="log-text">
+        <span class="ft-16-400 action action-msg">
+          {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
+        </span>
+        <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+      </div>
+      } @case (ExperimentLogType.FEATURE_FLAG_DATA_EXPORTED) {
+      <div class="log-text">
+        <span class="ft-16-400 action action-msg">
+          {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
+        </span>
+        <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+      </div>
+      } @case (ExperimentLogType.FEATURE_FLAG_DESIGN_EXPORTED) {
+      <div class="log-text">
+        <span class="ft-16-400 action action-msg">
+          {{ (log.type | experimentActionMessage | translate) + log.data.flagName }}
+        </span>
+        <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+      </div>
+      } @case ( log.type === ExperimentLogType.FEATURE_FLAG_STATUS_CHANGED || log.type ===
+      ExperimentLogType.FEATURE_FLAG_CREATED ? log.type : '' ) {
+      <div class="log-text">
+        <span class="ft-16-400 action action-msg">
+          {{
+            log.type
+              | experimentActionMessage
+              | translate
+                : { previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }
+          }}
+          @if (log.data.isFlagExist) {
+          <a class="link" [routerLink]="['/featureflags', 'detail', log.data.flagId]">{{ log.data.flagName }}</a>
+          } @else {
+          <span class="ft-16-400 action-msg">{{ log.data.flagName }}</span>
+          }
+        </span>
+        <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+      </div>
+      } @case (ExperimentLogType.FEATURE_FLAG_UPDATED) {
+      <div class="full-width">
+        @if (log.data.list) { @switch (log.data.list.operation) {
+        <!-- Case for CREATED OR DELETED OR STATUS_CHANGED -->
+        @case ( log.data.list.operation === FEATURE_FLAG_LIST_OPERATION.CREATED || log.data.list.operation ===
+        FEATURE_FLAG_LIST_OPERATION.DELETED || log.data.list.operation === FEATURE_FLAG_LIST_OPERATION.STATUS_CHANGED ?
+        log.data.list.operation : '' ) {
+        <div class="log-text">
+          <span class="ft-16-400 action action-msg">
+            {{ log.type | experimentActionMessage | translate }}
+            @if (log.data.isFlagExist) {
+            <a class="link" [routerLink]="['/featureflags', 'detail', log.data.flagId]">{{ log.data.flagName }}</a>
+            } @else {
+            <span class="ft-16-400 action-msg">{{ log.data.flagName }}</span>
+            } -
+            {{
+              log.data.list.operation
+                | listOperationsMessage
+                | translate
+                  : {
+                      listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
+                      listName: log.data.list.listName,
+                      status: log.data.list.enabled ? 'enabled' : 'disabled'
+                    }
+            }}
+          </span>
+          <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+        </div>
+        }
+        <!-- Case for UPDATED -->
+        @case (FEATURE_FLAG_LIST_OPERATION.UPDATED) {
+        <div class="log-text">
+          <!-- Content for UPDATED operation -->
+          <mat-accordion class="accordion">
+            <mat-expansion-panel hideToggle="true">
+              <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
+                <mat-panel-title>
+                  <span class="ft-16-400 action-msg">
+                    {{ log.type | experimentActionMessage | translate }}
+                    @if (log.data.isFlagExist) {
+                    <a class="link" [routerLink]="['/featureflags', 'detail', log.data.flagId]">{{
+                      log.data.flagName
+                    }}</a>
+                    } @else {
+                    <span class="ft-16-400 action-msg">{{ log.data.flagName }}</span>
+                    } -
+                    {{
+                                          log.data.list.operation
+                                          | listOperationsMessage
+                                          | translate
+                                          : {
+                                          listTableType: log.data.list.filterType === 'inclusion' ? 'include' : 'exclude',
+                                          listName: log.data.list.listName,
+                                        }
+                    }}
+                  </span>
+                  <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
+                </mat-panel-title>
+                <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+              </mat-expansion-panel-header>
+              <pre><div
+                                    class="ft-14-400 diff-container"
+                                    [id]="log.id"
+                                    >{{ getHtmlFormedLogData(log.id, log.data.list.diff) }}</div
+                                  ></pre>
+            </mat-expansion-panel>
+          </mat-accordion>
+        </div>
+        } } } @else { @if (log.data.diff) {
+        <mat-accordion class="accordion">
+          <mat-expansion-panel hideToggle="true">
+            <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
+              <mat-panel-title>
+                <span class="ft-16-400 action-msg">
+                  {{ log.type | experimentActionMessage | translate }}
+                  @if (log.data.isFlagExist) {
+                  <a class="link" [routerLink]="['/featureflags', 'detail', log.data.flagId]">{{
+                    log.data.flagName
+                  }}</a>
+                  } @else {
+                  <span class="ft-16-400 action-msg">{{ log.data.flagName }}</span>
+                  }
+                </span>
+                <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
+              </mat-panel-title>
+              <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+            </mat-expansion-panel-header>
+            <pre><div
+                                  class="ft-14-400 diff-container"
+                                  [id]="log.id"
+                                  >{{ getHtmlFormedLogData(log.id, log.data.diff) }}</div
+                                ></pre>
+          </mat-expansion-panel>
+        </mat-accordion>
+        } @else {
+        <div class="log-text full-width">
+          <span class="ft-16-400 action action-msg">
+            {{ log.type | experimentActionMessage | translate }}
+            @if (log.data.isFlagExist) {
+            <a class="link" [routerLink]="['/featureflags', 'detail', log.data.flagId]">{{ log.data.flagName }}</a>
+            } @else {
+            <span class="ft-16-400 action-msg">{{ log.data.flagName }}</span>
+            } -
+            {{
+              'logs.audit-log-feature-flag-updated-filterMode-changed.text'
+                | translate : { status: log.data.filterMode === 'includeAll' ? 'enabled' : 'disabled' }
+            }}
+          </span>
+          <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+        </div>
+        } }
+        <!-- Default log view if log.data.list does not exist -->
+      </div>
+      } }
     </div>
-  </ng-container>
+    } @else {
+    <div class="content">
+      <span class="ft-16-600 error-type">{{ log.type }}</span>
+      <span> :</span>
+      <div class="log-text">
+        <mat-accordion class="accordion">
+          <mat-expansion-panel hideToggle="true">
+            <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
+              <mat-panel-title>
+                @if (log.type !== ServerErrors.REPORTED_ERROR) {
+                <span class="ft-16-600 action-msg-error">
+                  {{
+                    'logs.error-logs-message.text'
+                      | translate : { errorName: log.name, endPoint: endPoint + log.endPoint }
+                  }}
+                </span>
+                } @else {
+                <span class="ft-16-600 action-msg-error">
+                  {{ 'logs.error-logs-failed-experimentPoint.text' | translate }}
+                </span>
+                }
+                <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
+              </mat-panel-title>
+              <span class="ft-16-400 log-time">{{ log.createdAt | date : 'shortTime' }}</span>
+            </mat-expansion-panel-header>
+            <pre class="ft-14-400">{{ log.message }}</pre>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+    </div>
+    }
+  </div>
+  }
 </div>

@@ -1,6 +1,8 @@
 <div class="table-container">
   <!-- Loading spinner -->
-  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading"></mat-progress-bar>
+  @if (isLoading) {
+  <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
+  }
 
   <!-- Table -->
   <table mat-table [dataSource]="dataSource" [ngClass]="{ 'no-data': !dataSource?.length }">

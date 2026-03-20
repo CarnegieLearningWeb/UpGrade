@@ -1,29 +1,27 @@
 <div class="content-section dense-2">
-  <div *ngFor="let item of data | keyvalue : noSort">
+  @for (item of data | keyvalue : noSort; track item) {
+  <div>
     <div class="item-key-value" [class.bulletted-list-container]="bullettedListKeys.includes(item.key)">
       <span class="ft-14-600">{{ item.key }}:</span>
-
       <!-- Tags display -->
+      @if (item.key === experimentOverviewLabels.TAGS) {
       <app-common-tag-list
-        *ngIf="item.key === experimentOverviewLabels.TAGS; else checkBulletedList"
         class="chips-container"
         [tags]="item.value"
         (tagClick)="searchByTag($event)"
       ></app-common-tag-list>
-
+      } @else { @if (bullettedListKeys.includes(item.key)) {
+      <ul class="bulletted-list">
+        @for (param of item.value; track param) {
+        <li class="ft-14-400">{{ param.labelKey | translate }}: {{ param.value }}</li>
+        }
+      </ul>
+      } @else {
+      <span class="ft-14-400 item-value">{{ item.value }}</span>
+      } }
       <!-- Bulleted list display -->
-      <ng-template #checkBulletedList>
-        <ul *ngIf="bullettedListKeys.includes(item.key); else defaultValue" class="bulletted-list">
-          <li *ngFor="let param of item.value" class="ft-14-400">
-            {{ param.labelKey | translate }}: {{ param.value }}
-          </li>
-        </ul>
-      </ng-template>
-
       <!-- Default simple value display -->
-      <ng-template #defaultValue>
-        <span class="ft-14-400 item-value">{{ item.value }}</span>
-      </ng-template>
     </div>
   </div>
+  }
 </div>

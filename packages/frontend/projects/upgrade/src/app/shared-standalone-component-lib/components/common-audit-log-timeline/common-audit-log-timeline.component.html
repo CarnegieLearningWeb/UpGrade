@@ -1,99 +1,110 @@
 <div class="logs-container" scroll (scrolled)="onScrolledToBottom()">
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-spinner">
+  @if (isLoading) {
+  <div class="loading-spinner">
     <mat-spinner diameter="50"></mat-spinner>
   </div>
+  }
 
   <!-- Grouped Logs Timeline -->
-  <ng-container *ngIf="groupedLogs && groupedLogs.dates.length > 0">
-    <div *ngFor="let date of groupedLogs.dates" class="timeline-section">
-      <!-- Date Column -->
-      <div class="date-column">
-        <span class="date-info">{{ date | logDateFormatPipe : LogDateFormatType.DATE_MONTH }}</span>
-        <span class="day-info">{{ date | logDateFormatPipe : LogDateFormatType.YEAR_DAY }}</span>
-      </div>
-
-      <!-- Timeline Column -->
-      <div class="timeline-column">
-        <div class="timeline">
-          <ng-container *ngFor="let log of groupedLogs.dateGroups[date]; let index = index">
-            <div class="timeline-container">
-              <!-- User Icon -->
-              <app-shared-icons
-                *ngIf="isSystemUser(log.user)"
-                class="icon icon--black"
-                [iconType]="'dark-setting'"
-              ></app-shared-icons>
-
-              <img
-                *ngIf="!isSystemUser(log.user) && hasUserImage(log.user)"
-                [src]="log.user.imageUrl"
-                class="icon"
-                [alt]="getUserFullName(log.user)"
-              />
-
-              <app-shared-icons
-                *ngIf="!isSystemUser(log.user) && !hasUserImage(log.user)"
-                class="icon icon--light-blue"
-                [iconType]="'user-1'"
-              ></app-shared-icons>
-
-              <!-- Log Content -->
-              <div class="content">
-                <!-- Col 1: User Name -->
-                <span class="ft-16-600 user-name">
-                  <ng-container *ngIf="getUserFullName(log.user); else unknownUserTemplate">
-                    <span *ngIf="!shouldTruncateUserName(log.user); else userNameEllipsis">
-                      {{ getUserFullName(log.user) }}
-                    </span>
-                    <ng-template #userNameEllipsis>
-                      <span [matTooltip]="getUserFullName(log.user)" matTooltipPosition="above">
-                        {{ getUserFullName(log.user) | truncate : 30 }}
-                      </span>
-                    </ng-template>
-                  </ng-container>
-                  <ng-template #unknownUserTemplate>
-                    <span class="unknown-user">{{ 'logs-global.log-no-user' | translate }}</span>
-                  </ng-template>
+  @if (groupedLogs && groupedLogs.dates.length > 0) { @for (date of groupedLogs.dates; track date) {
+  <div class="timeline-section">
+    <!-- Date Column -->
+    <div class="date-column">
+      <span class="date-info">{{ date | logDateFormatPipe : LogDateFormatType.DATE_MONTH }}</span>
+      <span class="day-info">{{ date | logDateFormatPipe : LogDateFormatType.YEAR_DAY }}</span>
+    </div>
+    <!-- Timeline Column -->
+    <div class="timeline-column">
+      <div class="timeline">
+        @for (log of groupedLogs.dateGroups[date]; track log; let index = $index) {
+        <div class="timeline-container">
+          <!-- User Icon -->
+          @if (isSystemUser(log.user)) {
+          <app-shared-icons class="icon icon--black" [iconType]="'dark-setting'"></app-shared-icons>
+          } @if (!isSystemUser(log.user) && hasUserImage(log.user)) {
+          <img [src]="log.user.imageUrl" class="icon" [alt]="getUserFullName(log.user)" />
+          } @if (!isSystemUser(log.user) && !hasUserImage(log.user)) {
+          <app-shared-icons class="icon icon--light-blue" [iconType]="'user-1'"></app-shared-icons>
+          }
+          <!-- Log Content -->
+          <div class="content">
+            <!-- Col 1: User Name -->
+            <span class="ft-16-600 user-name">
+              @if (getUserFullName(log.user)) { @if (!shouldTruncateUserName(log.user)) {
+              <span>
+                {{ getUserFullName(log.user) }}
+              </span>
+              } @else {
+              <span [matTooltip]="getUserFullName(log.user)" matTooltipPosition="above">
+                {{ getUserFullName(log.user) | truncate : 30 }}
+              </span>
+              } } @else {
+              <span class="unknown-user">{{ 'logs-global.log-no-user' | translate }}</span>
+              }
+            </span>
+            <!-- Col 2: Log Message -->
+            <!-- Simple logs without diffs: DELETED, DATA_EXPORTED, DESIGN_EXPORTED -->
+            @if (isSimpleLogType(log.type)) {
+            <span class="log-text">
+              <span class="ft-16-400 action-msg">
+                {{ getLogTypeMessage(log.type) | translate }}
+              </span>
+            </span>
+            }
+            <!-- CREATED and STATE_CHANGED logs -->
+            @if (isStateChangeOrCreated(log.type)) {
+            <span class="log-text">
+              <span class="ft-16-400 action-msg">
+                @if (log.data?.previousState && log.data?.newState) {
+                {{
+                  getLogTypeMessage(log.type)
+                    | translate
+                      : {
+                          previousState: log.data.previousState | titlecase,
+                          newState: log.data.newState | titlecase
+                        }
+                }}
+                } @if (!log.data?.previousState || !log.data?.newState) {
+                {{ getLogTypeMessage(log.type) | translate }}
+                }
+              </span>
+            </span>
+            }
+            <!-- UPDATED logs with potential diffs -->
+            @if (isUpdateLogType(log.type)) {
+            <div class="full-width">
+              <!-- List operation update -->
+              @if (hasListOperation(log.data)) {
+              <!-- CREATED or DELETED list operations (no diff) -->
+              @if (!log.data.list.diff) {
+              <div class="log-text">
+                <span class="ft-16-400 action-msg">
+                  {{ getLogTypeMessage(log.type) | translate }}
+                  @if (log.data.list.operation) { -
+                  {{
+                    getListOperationMessage(log.data.list.operation)
+                      | translate
+                        : {
+                            listTableType: getListTableType(log.data.list.filterType),
+                            listName: log.data.list.listName,
+                            status: log.data.list.enabled ? 'enabled' : 'disabled'
+                          }
+                  }}
+                  }
                 </span>
-
-                <!-- Col 2: Log Message -->
-                <!-- Simple logs without diffs: DELETED, DATA_EXPORTED, DESIGN_EXPORTED -->
-                <span *ngIf="isSimpleLogType(log.type)" class="log-text">
-                  <span class="ft-16-400 action-msg">
-                    {{ getLogTypeMessage(log.type) | translate }}
-                  </span>
-                </span>
-
-                <!-- CREATED and STATE_CHANGED logs -->
-                <span *ngIf="isStateChangeOrCreated(log.type)" class="log-text">
-                  <span class="ft-16-400 action-msg">
-                    <ng-container *ngIf="log.data?.previousState && log.data?.newState">
-                      {{
-                        getLogTypeMessage(log.type)
-                          | translate
-                            : {
-                                previousState: log.data.previousState | titlecase,
-                                newState: log.data.newState | titlecase
-                              }
-                      }}
-                    </ng-container>
-                    <ng-container *ngIf="!log.data?.previousState || !log.data?.newState">
-                      {{ getLogTypeMessage(log.type) | translate }}
-                    </ng-container>
-                  </span>
-                </span>
-
-                <!-- UPDATED logs with potential diffs -->
-                <div class="full-width" *ngIf="isUpdateLogType(log.type)">
-                  <!-- List operation update -->
-                  <ng-container *ngIf="hasListOperation(log.data); else propertiesUpdated">
-                    <!-- CREATED or DELETED list operations (no diff) -->
-                    <div class="log-text" *ngIf="!log.data.list.diff">
-                      <span class="ft-16-400 action-msg">
-                        {{ getLogTypeMessage(log.type) | translate }}
-                        <ng-container *ngIf="log.data.list.operation">
-                          -
+              </div>
+              }
+              <!-- UPDATED list operation (with diff) -->
+              @if (log.data.list.diff) {
+              <div class="log-text">
+                <mat-accordion class="accordion">
+                  <mat-expansion-panel hideToggle="true">
+                    <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
+                      <mat-panel-title>
+                        <span class="ft-16-400 action-msg">
+                          {{ getLogTypeMessage(log.type) | translate }}
+                          @if (log.data.list.operation) { -
                           {{
                             getListOperationMessage(log.data.list.operation)
                               | translate
@@ -103,81 +114,55 @@
                                     status: log.data.list.enabled ? 'enabled' : 'disabled'
                                   }
                           }}
-                        </ng-container>
-                      </span>
-                    </div>
-
-                    <!-- UPDATED list operation (with diff) -->
-                    <div class="log-text" *ngIf="log.data.list.diff">
-                      <mat-accordion class="accordion">
-                        <mat-expansion-panel hideToggle="true">
-                          <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
-                            <mat-panel-title>
-                              <span class="ft-16-400 action-msg">
-                                {{ getLogTypeMessage(log.type) | translate }}
-                                <ng-container *ngIf="log.data.list.operation">
-                                  -
-                                  {{
-                                    getListOperationMessage(log.data.list.operation)
-                                      | translate
-                                        : {
-                                            listTableType: getListTableType(log.data.list.filterType),
-                                            listName: log.data.list.listName,
-                                            status: log.data.list.enabled ? 'enabled' : 'disabled'
-                                          }
-                                  }}
-                                </ng-container>
-                              </span>
-                              <span
-                                class="ft-12-600 view-diff"
-                                [innerHTML]="'logs-global.log-view-diff.text' | translate"
-                              ></span>
-                            </mat-panel-title>
-                          </mat-expansion-panel-header>
-                        </mat-expansion-panel>
-                      </mat-accordion>
-                    </div>
-                  </ng-container>
-
-                  <!-- General entity properties updated (with diff) or filter mode change -->
-                  <ng-template #propertiesUpdated>
-                    <!-- Filter mode (include-all) toggled -->
-                    <ng-container *ngIf="isFilterModeUpdate(log.data); else diffUpdated">
-                      <div class="log-text">
-                        <span class="ft-16-400 action-msg">
-                          {{ getLogTypeMessage(log.type) | translate }}
-                          -
-                          {{
-                            'logs.audit-log-feature-flag-updated-filterMode-changed.text'
-                              | translate : { status: log.data.filterMode === 'includeAll' ? 'enabled' : 'disabled' }
-                          }}
+                          }
                         </span>
-                      </div>
-                    </ng-container>
-
-                    <ng-template #diffUpdated>
-                      <common-audit-log-diff-display
-                        [logId]="log.id"
-                        [logData]="log.data"
-                        [logType]="log.type"
-                        [actionMessage]="getLogTypeMessage(log.type) | translate"
-                      ></common-audit-log-diff-display>
-                    </ng-template>
-                  </ng-template>
-                </div>
-
-                <!-- Col 3: Time -->
-                <span class="ft-16-400 col-time">{{ log.createdAt | date : 'shortTime' }}</span>
+                        <span
+                          class="ft-12-600 view-diff"
+                          [innerHTML]="'logs-global.log-view-diff.text' | translate"
+                        ></span>
+                      </mat-panel-title>
+                    </mat-expansion-panel-header>
+                  </mat-expansion-panel>
+                </mat-accordion>
               </div>
+              } } @else {
+              <!-- Filter mode (include-all) toggled -->
+              @if (isFilterModeUpdate(log.data)) {
+              <div class="log-text">
+                <span class="ft-16-400 action-msg">
+                  {{ getLogTypeMessage(log.type) | translate }}
+                  -
+                  {{
+                    'logs.audit-log-feature-flag-updated-filterMode-changed.text'
+                      | translate : { status: log.data.filterMode === 'includeAll' ? 'enabled' : 'disabled' }
+                  }}
+                </span>
+              </div>
+              } @else {
+              <common-audit-log-diff-display
+                [logId]="log.id"
+                [logData]="log.data"
+                [logType]="log.type"
+                [actionMessage]="getLogTypeMessage(log.type) | translate"
+              ></common-audit-log-diff-display>
+              } }
+              <!-- General entity properties updated (with diff) or filter mode change -->
             </div>
-          </ng-container>
+            }
+            <!-- Col 3: Time -->
+            <span class="ft-16-400 col-time">{{ log.createdAt | date : 'shortTime' }}</span>
+          </div>
         </div>
+        }
       </div>
     </div>
-  </ng-container>
+  </div>
+  } }
 
   <!-- Empty State -->
-  <div *ngIf="isEmpty && !isLoading" class="empty-state">
+  @if (isEmpty && !isLoading) {
+  <div class="empty-state">
     <p>{{ 'logs-global.log-zero-state.text' | translate }}</p>
   </div>
+  }
 </div>

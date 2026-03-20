@@ -4,9 +4,7 @@
       {{ chipText }}
     </span>
   </mat-chip>
-  <app-common-warning-icon
-    *ngIf="warningMessageKeys.length > 0"
-    [warningMessageKeys]="warningMessageKeys"
-    class="warning-icon"
-  ></app-common-warning-icon>
+  @if (warningMessageKeys.length > 0) {
+  <app-common-warning-icon [warningMessageKeys]="warningMessageKeys" class="warning-icon"></app-common-warning-icon>
+  }
 </div>

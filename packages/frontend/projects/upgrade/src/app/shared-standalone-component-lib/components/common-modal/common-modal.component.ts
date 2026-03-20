@@ -5,7 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogClose } from '@angular/material/dialog';
-import { CommonModule } from '@angular/common';
+
 import { MatIcon } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -18,7 +18,6 @@ import { TranslateModule } from '@ngx-translate/core';
     FormsModule,
     MatButtonModule,
     MatDialogClose,
-    CommonModule,
     MatIcon,
     TranslateModule,
   ],

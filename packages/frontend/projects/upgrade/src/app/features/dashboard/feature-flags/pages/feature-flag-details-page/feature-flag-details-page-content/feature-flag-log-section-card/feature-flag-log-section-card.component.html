@@ -1,4 +1,5 @@
-<app-common-section-card *ngIf="selectedEntity$ | async">
+@if (selectedEntity$ | async) {
+<app-common-section-card>
   <!-- Search Widget -->
   <app-common-section-card-search-header
     header-left
@@ -8,7 +9,6 @@
     (search)="onSearch($event)"
   >
   </app-common-section-card-search-header>
-
   <!-- Action Buttons -->
   <app-common-section-card-action-buttons
     header-right
@@ -17,9 +17,9 @@
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
-
   <!-- Timeline Content -->
-  <ng-container content *ngIf="isSectionCardExpanded">
+  @if (isSectionCardExpanded) {
+  <ng-container content>
     <common-audit-log-timeline
       [groupedLogs]="timelineDataSource$ | async"
       [isLoading]="isLoading$ | async"
@@ -29,4 +29,6 @@
     >
     </common-audit-log-timeline>
   </ng-container>
+  }
 </app-common-section-card>
+}

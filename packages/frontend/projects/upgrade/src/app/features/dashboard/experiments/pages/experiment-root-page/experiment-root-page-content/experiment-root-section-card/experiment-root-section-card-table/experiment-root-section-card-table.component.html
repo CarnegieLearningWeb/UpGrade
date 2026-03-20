@@ -1,5 +1,7 @@
 <div class="experiment-list-table-container" #tableContainer>
-  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+  @if (isLoading$ | async) {
+  <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
+  }
   <table
     class="experiment-list-table"
     mat-table
@@ -24,14 +26,15 @@
         >
           {{ experiment.name }}
         </a>
+        @if (experiment.description) {
         <span
-          *ngIf="experiment.description"
           [appTextOverflowTooltip]="experiment.description"
           matTooltipPosition="right"
           class="experiment-description ft-10-400 line-clamp-1"
         >
           {{ experiment.description }}
         </span>
+        }
       </td>
     </ng-container>
 
@@ -97,25 +100,24 @@
         {{ EXPERIMENT_TRANSLATION_KEYS.ENROLLMENT | translate }}
       </th>
       <td mat-cell *matCellDef="let experiment" class="enrollment-column ft-14-400">
-        <ng-container *ngIf="experiment.stat; else skeletonTemplate">
-          <span class="enrollment-info">
-            {{ experiment.stat?.users || 0 }}
-          </span>
-        </ng-container>
-        <ng-template #skeletonTemplate>
-          <ngx-skeleton-loader
-            count="1"
-            animation="pulse"
-            [theme]="{
-              'border-radius': '5px',
-              height: '20px',
-              position: 'relative',
-              top: '8px',
-              'animation-duration': '2s'
-            }"
-          >
-          </ngx-skeleton-loader>
-        </ng-template>
+        @if (experiment.stat) {
+        <span class="enrollment-info">
+          {{ experiment.stat?.users || 0 }}
+        </span>
+        } @else {
+        <ngx-skeleton-loader
+          count="1"
+          animation="pulse"
+          [theme]="{
+            'border-radius': '5px',
+            height: '20px',
+            position: 'relative',
+            top: '8px',
+            'animation-duration': '2s'
+          }"
+        >
+        </ngx-skeleton-loader>
+        }
       </td>
     </ng-container>
 
@@ -125,12 +127,11 @@
     <!-- No Data Row -->
     <tr *matNoDataRow>
       <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
-        <ng-container *ngIf="isSearchActive$ | async; else noExperiments">
-          {{ 'experiments.no-matching-experiments.text' | translate }}
-        </ng-container>
-        <ng-template #noExperiments>
-          {{ 'experiments.no-experiments-in-table.text' | translate }}
-        </ng-template>
+        @if (isSearchActive$ | async) {
+        {{ 'experiments.no-matching-experiments.text' | translate }}
+        } @else {
+        {{ 'experiments.no-experiments-in-table.text' | translate }}
+        }
       </td>
     </tr>
   </table>

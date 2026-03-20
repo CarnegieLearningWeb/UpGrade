@@ -5,7 +5,7 @@ import {
   CommonSectionCardActionButtonsComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ExperimentRootSectionCardTableComponent } from './experiment-root-section-card-table/experiment-root-section-card-table.component';
 import { TranslateModule } from '@ngx-translate/core';
@@ -28,7 +28,6 @@ import { StratificationFactorsService } from '../../../../../../../core/stratifi
     CommonSectionCardActionButtonsComponent,
     ExperimentRootSectionCardTableComponent,
     AsyncPipe,
-    NgIf,
     MatProgressSpinnerModule,
     TranslateModule,
   ],

@@ -1,41 +1,40 @@
 <div class="title-header">
   <h5 class="title ft-18-700">
-    {{ title | translate }} &nbsp;<span *ngIf="tableRowCount > 0"> ({{ tableRowCount }}) </span>
+    {{ title | translate }} &nbsp;@if (tableRowCount > 0) {
+    <span> ({{ tableRowCount }}) </span>
+    } @if (chipClass) {
     <app-common-status-indicator-chip
-      *ngIf="chipClass"
       [chipClass]="chipClass"
       [warningMessageKeys]="warningMessageKeys"
       class="status-chip"
     ></app-common-status-indicator-chip>
-    <app-common-warning-icon
-      *ngIf="!chipClass && warningMessageKeys.length > 0"
-      [warningMessageKeys]="warningMessageKeys"
-      class="warning-icon"
-    ></app-common-warning-icon>
+    } @if (!chipClass && warningMessageKeys.length > 0) {
+    <app-common-warning-icon [warningMessageKeys]="warningMessageKeys" class="warning-icon"></app-common-warning-icon>
+    }
   </h5>
   <p class="subtitle">
-    <ng-container *ngIf="subtitle">
-      <span class="ft-14-400">
-        {{ subtitle | translate }}
-      </span>
-    </ng-container>
-    <ng-container *ngIf="createdAt && updatedAt">
-      <span class="ft-14-400">
-        {{ ('common-section-card-title-header.created-on.text' | translate) + (createdAt | date : 'MMM d, y') + ' | ' }}
-      </span>
-      <span class="ft-14-400">
-        {{
-          ('common-section-card-title-header.details-updated-at.text' | translate) +
-            (updatedAt | date : 'MMM d, y, h:mm a')
-        }}
-      </span>
-      <ng-container *ngIf="pauseBehaviorText">
-        <span class="ft-14-400"> | {{ 'experiments.details.pause-behavior-label.text' | translate }}: </span>
-        <button class="pause-behavior-link ft-14-400" (click)="pauseBehaviorClick.emit()">
-          {{ pauseBehaviorText }}
-        </button>
-      </ng-container>
-    </ng-container>
+    @if (subtitle) {
+    <span class="ft-14-400">
+      {{ subtitle | translate }}
+    </span>
+    } @if (createdAt && updatedAt) {
+    <span class="ft-14-400">
+      {{ ('common-section-card-title-header.created-on.text' | translate) + (createdAt | date : 'MMM d, y') + ' | ' }}
+    </span>
+    <span class="ft-14-400">
+      {{
+        ('common-section-card-title-header.details-updated-at.text' | translate) +
+          (updatedAt | date : 'MMM d, y, h:mm a')
+      }}
+    </span>
+    @if (pauseBehaviorText) {
+    <span class="ft-14-400"> | {{ 'experiments.details.pause-behavior-label.text' | translate }}: </span>
+    <button class="pause-behavior-link ft-14-400" (click)="pauseBehaviorClick.emit()">
+      {{ pauseBehaviorText }}
+    </button>
+    } }
   </p>
-  <span *ngIf="id" class="item-id ft-10-400">ID: {{ id }}</span>
+  @if (id) {
+  <span class="item-id ft-10-400">ID: {{ id }}</span>
+  }
 </div>

@@ -18,9 +18,11 @@
         appTrimInput
       />
       <mat-autocomplete #siteAutocomplete="matAutocomplete" panelWidth="auto">
-        <mat-option *ngFor="let site of filteredSites$ | async" [value]="site" class="ft-14-400">
+        @for (site of filteredSites$ | async; track site) {
+        <mat-option [value]="site" class="ft-14-400">
           {{ site }}
         </mat-option>
+        }
       </mat-autocomplete>
       <mat-hint class="form-hint ft-12-400">
         {{ 'experiments.upsert-decision-point-modal.site-hint.text' | translate }}
@@ -39,9 +41,11 @@
         appTrimInput
       />
       <mat-autocomplete #targetAutocomplete="matAutocomplete" panelWidth="auto">
-        <mat-option *ngFor="let target of filteredTargets$ | async" [value]="target" class="ft-14-400">
+        @for (target of filteredTargets$ | async; track target) {
+        <mat-option [value]="target" class="ft-14-400">
           {{ target }}
         </mat-option>
+        }
       </mat-autocomplete>
       <mat-hint class="form-hint ft-12-400">
         {{ 'experiments.upsert-decision-point-modal.target-hint.text' | translate }}
@@ -49,12 +53,11 @@
       </mat-hint>
     </mat-form-field>
 
-    <div
-      *ngIf="decisionPointForm.get('target')?.hasError('duplicateDecisionPoint')"
-      class="duplicate-error-message ft-12-400"
-    >
+    @if (decisionPointForm.get('target')?.hasError('duplicateDecisionPoint')) {
+    <div class="duplicate-error-message ft-12-400">
       {{ 'experiments.upsert-decision-point-modal.decision-point-warning.text' | translate }}
     </div>
+    }
 
     <div class="exclude-if-reached-container dense-1">
       <mat-checkbox formControlName="excludeIfReached">

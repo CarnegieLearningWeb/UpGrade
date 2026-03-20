@@ -7,7 +7,7 @@ import {
 import { ExperimentService } from '../../../../../../../../core/experiments/experiments.service';
 import { Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
-import { CommonModule } from '@angular/common';
+
 import { EnrollmentConditionExpandableRowComponent } from './enrollment-condition-expandable-row/enrollment-condition-expandable-row.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -15,7 +15,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   selector: 'app-enrollment-condition-table',
   templateUrl: './enrollment-condition-table.component.html',
   styleUrls: ['./enrollment-condition-table.component.scss'],
-  imports: [CommonModule, TranslateModule, EnrollmentConditionExpandableRowComponent, MatProgressSpinnerModule],
+  imports: [TranslateModule, EnrollmentConditionExpandableRowComponent, MatProgressSpinnerModule],
 })
 export class EnrollmentConditionTableComponent implements OnChanges, OnInit, OnDestroy {
   @Input() experiment: ExperimentVM;

@@ -1,48 +1,47 @@
 <div class="content-container">
-  <ng-container *ngIf="featureFlag$ | async as featureFlag; else loading">
-    <app-common-section-card-list class="common-section-card-list">
-      <app-feature-flag-overview-details-section-card
-        [data]="featureFlag"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        (sectionCardExpandChange)="onSectionCardExpandChange($event)"
-        (tabChange)="onTabChange($event)"
-        section-card
-      ></app-feature-flag-overview-details-section-card>
-      <app-feature-flag-inclusions-section-card
-        [data]="featureFlag"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        *ngIf="activeTabIndex === 0"
-        section-card
-      >
-        inclusions-card
-      </app-feature-flag-inclusions-section-card>
-      <app-feature-flag-exclusions-section-card
-        [data]="featureFlag"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        *ngIf="activeTabIndex === 0"
-        section-card
-      >
-        exclusions-card
-      </app-feature-flag-exclusions-section-card>
-      <app-feature-flag-exposures-section-card
-        [data]="featureFlag"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        *ngIf="activeTabIndex === 1"
-        section-card
-      >
-        exposures-card
-      </app-feature-flag-exposures-section-card>
-      <app-feature-flag-log-section-card
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        *ngIf="activeTabIndex === 2"
-        section-card
-      ></app-feature-flag-log-section-card>
-    </app-common-section-card-list>
-  </ng-container>
-
-  <ng-template #loading>
-    <div class="mat-spinner-container">
-      <mat-spinner diameter="100"></mat-spinner>
-    </div>
-  </ng-template>
+  @if (featureFlag$ | async; as featureFlag) {
+  <app-common-section-card-list class="common-section-card-list">
+    <app-feature-flag-overview-details-section-card
+      [data]="featureFlag"
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+      (tabChange)="onTabChange($event)"
+      section-card
+    ></app-feature-flag-overview-details-section-card>
+    @if (activeTabIndex === 0) {
+    <app-feature-flag-inclusions-section-card
+      [data]="featureFlag"
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    >
+      inclusions-card
+    </app-feature-flag-inclusions-section-card>
+    } @if (activeTabIndex === 0) {
+    <app-feature-flag-exclusions-section-card
+      [data]="featureFlag"
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    >
+      exclusions-card
+    </app-feature-flag-exclusions-section-card>
+    } @if (activeTabIndex === 1) {
+    <app-feature-flag-exposures-section-card
+      [data]="featureFlag"
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    >
+      exposures-card
+    </app-feature-flag-exposures-section-card>
+    } @if (activeTabIndex === 2) {
+    <app-feature-flag-log-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-feature-flag-log-section-card>
+    }
+  </app-common-section-card-list>
+  } @else {
+  <div class="mat-spinner-container">
+    <mat-spinner diameter="100"></mat-spinner>
+  </div>
+  }
 </div>

@@ -1,11 +1,7 @@
 <div class="action-buttons">
   <div class="main-container">
-    <div
-      *ngIf="showSlideToggle"
-      [matTooltip]="slideToggleTooltip"
-      [matTooltipDisabled]="!slideToggleDisabled"
-      matTooltipPosition="above"
-    >
+    @if (showSlideToggle) {
+    <div [matTooltip]="slideToggleTooltip" [matTooltipDisabled]="!slideToggleDisabled" matTooltipPosition="above">
       <mat-slide-toggle
         color="primary"
         [checked]="slideToggleChecked"
@@ -15,59 +11,61 @@
         {{ slideToggleText }}
       </mat-slide-toggle>
     </div>
+    }
 
     <!-- New: Support for multiple action buttons -->
-    <ng-container *ngIf="actionButtons && actionButtons.length > 0">
-      <div
-        *ngFor="let button of actionButtons"
-        [matTooltip]="button.tooltip"
-        [matTooltipDisabled]="!button.disabled"
-        [matTooltipClass]="button.tooltipClass"
-        matTooltipPosition="above"
+    @if (actionButtons && actionButtons.length > 0) { @for (button of actionButtons; track button) {
+    <div
+      [matTooltip]="button.tooltip"
+      [matTooltipDisabled]="!button.disabled"
+      [matTooltipClass]="button.tooltipClass"
+      matTooltipPosition="above"
+    >
+      <button
+        mat-flat-button
+        [ngClass]="button.colorClass"
+        [disabled]="button.disabled"
+        (click)="onActionButtonClick(button.action)"
       >
-        <button
-          mat-flat-button
-          [ngClass]="button.colorClass"
-          [disabled]="button.disabled"
-          (click)="onActionButtonClick(button.action)"
-        >
-          <mat-icon *ngIf="button.icon">{{ button.icon }}</mat-icon>
-          <span>{{ button.translationKey | translate }}</span>
-        </button>
-      </div>
-    </ng-container>
+        @if (button.icon) {
+        <mat-icon>{{ button.icon }}</mat-icon>
+        }
+        <span>{{ button.translationKey | translate }}</span>
+      </button>
+    </div>
+    } }
 
     <!-- Legacy: Single primary button (for backward compatibility) -->
+    @if (showPrimaryButton) {
     <div
-      *ngIf="showPrimaryButton"
       [matTooltip]="primaryButtonTooltip"
       [matTooltipDisabled]="!primaryActionBtnDisabled"
       matTooltipPosition="above"
     >
       <button mat-flat-button color="primary" [disabled]="primaryActionBtnDisabled" (click)="onPrimaryButtonClick()">
-        <mat-icon *ngIf="primaryButtonIcon">{{ primaryButtonIcon }}</mat-icon>
+        @if (primaryButtonIcon) {
+        <mat-icon>{{ primaryButtonIcon }}</mat-icon>
+        }
         <span>{{ primaryButtonText }}</span>
       </button>
     </div>
+    }
   </div>
 
   <div class="options-container dense-2">
-    <div
-      *ngIf="showMenuButton"
-      [matTooltip]="menuButtonTooltip"
-      [matTooltipDisabled]="!menuButtonDisabled"
-      matTooltipPosition="above"
-    >
+    @if (showMenuButton) {
+    <div [matTooltip]="menuButtonTooltip" [matTooltipDisabled]="!menuButtonDisabled" matTooltipPosition="above">
       <button mat-icon-button [matMenuTriggerFor]="menu" [disabled]="menuButtonDisabled">
         <mat-icon>more_vert</mat-icon>
       </button>
     </div>
+    }
     <mat-menu #menu="matMenu">
-      <ng-container *ngFor="let item of menuButtonItems">
-        <button *ngIf="!item.disabled" mat-menu-item (click)="onMenuButtonItemClick(item.action)">
-          <span class="ft-14-400">{{ item.label | translate | titlecase }}</span>
-        </button>
-      </ng-container>
+      @for (item of menuButtonItems; track item) { @if (!item.disabled) {
+      <button mat-menu-item (click)="onMenuButtonItemClick(item.action)">
+        <span class="ft-14-400">{{ item.label | translate | titlecase }}</span>
+      </button>
+      } }
     </mat-menu>
 
     <div

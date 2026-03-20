@@ -4,8 +4,8 @@
       <h3 class="ft-22-700">{{ 'users.stratification-users-title.text' | translate }}</h3>
     </div>
     <div>
+      @if ((permissions$ | async)?.stratifications.create) {
       <button
-        *ngIf="(permissions$ | async)?.stratifications.create"
         (click)="openImportStratificationsDialog()"
         mat-flat-button
         color="primary"
@@ -14,10 +14,13 @@
         <mat-icon>add</mat-icon>
         <span>{{ 'users.stratification-users-import-csv.text' | translate }}</span>
       </button>
+      }
     </div>
   </div>
   <div class="table-container">
-    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+    @if (isLoading$ | async) {
+    <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
+    }
     <mat-table [dataSource]="stratificationFactorsForTable" class="stratification-factor-table">
       <!-- Factor Column -->
       <ng-container matColumnDef="factor">
