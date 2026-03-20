@@ -15,6 +15,7 @@ import {
   SEGMENT_SEARCH_KEY,
   DuplicateSegmentNameError,
   EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
+  EXPERIMENT_STATE,
 } from 'upgrade_types';
 import { Not } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
@@ -305,17 +306,21 @@ export class SegmentService {
       };
 
       if (allExperimentSegmentsInclusion) {
-        allExperimentSegmentsInclusion.forEach((ele) => {
-          collectSegmentIds(ele.segment.id);
-          ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
-        });
+        allExperimentSegmentsInclusion
+          .filter((ele) => ele.experiment.state !== EXPERIMENT_STATE.ARCHIVED)
+          .forEach((ele) => {
+            collectSegmentIds(ele.segment.id);
+            ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
+          });
       }
 
       if (allExperimentSegmentsExclusion) {
-        allExperimentSegmentsExclusion.forEach((ele) => {
-          collectSegmentIds(ele.segment.id);
-          ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
-        });
+        allExperimentSegmentsExclusion
+          .filter((ele) => ele.experiment.state !== EXPERIMENT_STATE.ARCHIVED)
+          .forEach((ele) => {
+            collectSegmentIds(ele.segment.id);
+            ele.segment.subSegments.forEach((subSegment) => collectSegmentIds(subSegment.id));
+          });
       }
 
       if (allFeatureFlagSegmentsInclusion) {
