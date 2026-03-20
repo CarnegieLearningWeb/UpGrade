@@ -110,6 +110,7 @@ export const env = {
   caching: {
     enabled: toBool(getOsEnvOptional('CACHING_ENABLED')),
     ttl: toNumber(getOsEnvOptional('CACHING_TTL')),
+    maxKeys: toNumber(getOsEnvOptional('CACHING_MAX_KEYS')),
   },
   clientApi: {
     secret: getOsEnv('CLIENT_API_SECRET'),
