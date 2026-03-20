@@ -154,10 +154,6 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionFetchGlobalSegments({ fromStarting }));
   }
 
-  fetchAllSegments(fromStarting?: boolean) {
-    this.store$.dispatch(SegmentsActions.actionfetchAllSegments({ fromStarting }));
-  }
-
   fetchAllSegmentListOptions() {
     this.store$.dispatch(SegmentsActions.actionFetchListSegmentOptions());
   }

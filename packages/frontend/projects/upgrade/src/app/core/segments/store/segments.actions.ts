@@ -34,23 +34,6 @@ export const actionFetchSegmentsSuccess = createAction(
   }>()
 );
 
-export const actionfetchAllSegments = createAction(
-  '[Segments] Segments Legacy GET All',
-  props<{ fromStarting?: boolean }>()
-);
-
-export const actionFetchSegmentsSuccessLegacyGetAll = createAction(
-  '[Segments] Fetch Segments Success Legacy GET All',
-  props<{
-    segments: Segment[];
-    experimentSegmentInclusion: experimentSegmentInclusionExclusionData[];
-    experimentSegmentExclusion: experimentSegmentInclusionExclusionData[];
-    featureFlagSegmentInclusion: featureFlagSegmentInclusionExclusionData[];
-    featureFlagSegmentExclusion: featureFlagSegmentInclusionExclusionData[];
-    allParentSegments: Segment[];
-  }>()
-);
-
 export const actionFetchSegmentsFailure = createAction('[Segments] Fetch Segments Failure (Legacy GET all)');
 
 export const actionFetchListSegmentOptions = createAction(

@@ -90,28 +90,6 @@ export class SegmentsEffects {
     )
   );
 
-  fetchAllSegments$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(SegmentsActions.actionfetchAllSegments),
-      withLatestFrom(this.store$.pipe(select(selectAllSegments))),
-      switchMap(() =>
-        this.segmentsDataService.fetchAllSegments().pipe(
-          map((data: any) =>
-            SegmentsActions.actionFetchSegmentsSuccessLegacyGetAll({
-              segments: data.segmentsData,
-              experimentSegmentInclusion: data.experimentSegmentInclusionData,
-              experimentSegmentExclusion: data.experimentSegmentExclusionData,
-              featureFlagSegmentInclusion: data.featureFlagSegmentInclusionData,
-              featureFlagSegmentExclusion: data.featureFlagSegmentExclusionData,
-              allParentSegments: data.allParentSegments,
-            })
-          ),
-          catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
-        )
-      )
-    )
-  );
-
   fetchListSegmentOptions$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionFetchListSegmentOptions),

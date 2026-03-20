@@ -32,15 +32,10 @@ export const initialState: SegmentState = adapter.getInitialState({
 
 const reducer = createReducer(
   initialState,
-  on(
-    SegmentsActions.actionUpsertSegment,
-    SegmentsActions.actionGetSegmentById,
-    SegmentsActions.actionfetchAllSegments,
-    (state) => ({
-      ...state,
-      isLoadingSegments: true,
-    })
-  ),
+  on(SegmentsActions.actionUpsertSegment, SegmentsActions.actionGetSegmentById, (state) => ({
+    ...state,
+    isLoadingSegments: true,
+  })),
   on(
     SegmentsActions.actionFetchSegmentsSuccess,
     (
@@ -75,31 +70,6 @@ const reducer = createReducer(
         newState.skipSegments = state.skipSegments + segments.length;
         return adapter.upsertMany(segments, { ...newState, isLoadingSegments: false });
       }
-    }
-  ),
-  on(
-    SegmentsActions.actionFetchSegmentsSuccessLegacyGetAll,
-    (
-      state,
-      {
-        segments,
-        experimentSegmentExclusion,
-        experimentSegmentInclusion,
-        featureFlagSegmentInclusion,
-        featureFlagSegmentExclusion,
-        allParentSegments,
-      }
-    ) => {
-      const newState = {
-        ...state,
-        segments,
-        allExperimentSegmentsInclusion: experimentSegmentInclusion,
-        allExperimentSegmentsExclusion: experimentSegmentExclusion,
-        allFeatureFlagSegmentsInclusion: featureFlagSegmentInclusion,
-        allFeatureFlagSegmentsExclusion: featureFlagSegmentExclusion,
-        allParentSegments,
-      };
-      return adapter.upsertMany(segments, { ...newState, isLoadingSegments: false });
     }
   ),
   on(SegmentsActions.actionFetchListSegmentOptionsSuccess, (state, { listSegmentOptions }) => {
