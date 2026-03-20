@@ -43,7 +43,6 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
 import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY, DuplicateSegmentNameError } from 'upgrade_types';
 import { LocalStorageService } from '../local-storage/local-storage.service';
-import { selectShouldUseLegacyUI } from './store/segments.selectors';
 import { selectContextMetaData } from '../experiments/store/experiments.selectors';
 import { CommonTextHelpersService } from '../../shared/services/common-text-helpers.service';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -64,7 +63,6 @@ export class SegmentsService {
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
   selectRootTableState$ = this.store$.pipe(select(selectRootTableState));
   selectGlobalTableState$ = this.store$.pipe(select(selectGlobalTableState));
-  shouldUseLegacyView$ = this.store$.pipe(select(selectShouldUseLegacyUI));
   selectedSegmentOverviewDetails = this.store$.pipe(select(selectSegmentOverviewDetails));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
@@ -154,10 +152,6 @@ export class SegmentsService {
 
   fetchGlobalSegments(fromStarting?: boolean) {
     this.store$.dispatch(SegmentsActions.actionFetchGlobalSegments({ fromStarting }));
-  }
-
-  fetchAllSegments(fromStarting?: boolean) {
-    this.store$.dispatch(SegmentsActions.actionfetchAllSegments({ fromStarting }));
   }
 
   fetchAllSegmentListOptions() {

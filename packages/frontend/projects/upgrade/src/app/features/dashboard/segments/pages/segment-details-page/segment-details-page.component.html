@@ -1,10 +1,4 @@
-@if (segment$ | async; as segment) { @if (shouldUseLegacyView$ | async) {
-<!-- Legacy View -->
-<view-segment></view-segment>
-} @else {
-<!-- New View -->
 <app-common-page>
   <app-segment-details-page-header header></app-segment-details-page-header>
   <app-segment-details-page-content content></app-segment-details-page-content>
 </app-common-page>
-} }

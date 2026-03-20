@@ -39,7 +39,6 @@ import {
 } from '../../../../../core/segments/store/segments.model';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscription, timer } from 'rxjs';
-import { SegmentsModule } from '../../../segments-legacy/segments.module';
 import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
@@ -59,7 +58,6 @@ import { SharedModule } from '../../../../../shared/shared.module';
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
-    SegmentsModule,
     SharedModule,
   ],
   templateUrl: './upsert-private-segment-list-modal.component.html',

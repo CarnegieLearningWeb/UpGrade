@@ -22,28 +22,6 @@ describe('SegmentsReducer', () => {
     }
   });
 
-  describe('actionFetchSegmentsSuccess', () => {
-    it('should set allExperimentSegments values', () => {
-      const previousState = { ...initialState };
-      previousState.allExperimentSegmentsInclusion = null;
-      previousState.allExperimentSegmentsExclusion = null;
-
-      const testAction = SegmentsActions.actionFetchSegmentsSuccessLegacyGetAll({
-        segments: [],
-        experimentSegmentExclusion: [],
-        experimentSegmentInclusion: [],
-        featureFlagSegmentExclusion: [],
-        featureFlagSegmentInclusion: [],
-        allParentSegments: [],
-      });
-
-      const newState = segmentsReducer(previousState, testAction);
-
-      expect(newState.allExperimentSegmentsExclusion).toEqual([]);
-      expect(newState.allExperimentSegmentsInclusion).toEqual([]);
-    });
-  });
-
   describe('actions to request failures to set isloadingSegments to false', () => {
     const testActions = {
       actionFetchSegmentsFailure: SegmentsActions.actionFetchSegmentsFailure,

@@ -261,11 +261,11 @@ export enum SEGMENT_TYPE {
 }
 
 export enum SEGMENT_STATUS {
-  USED = 'Used',
-  UNUSED = 'Unused',
-  EXCLUDED = 'Excluded',
-  LOCKED = 'Locked',
-  UNLOCKED = 'Unlocked',
+  USED = 'used',
+  UNUSED = 'unused',
+  EXCLUDED = 'excluded',
+  LOCKED = 'locked',
+  UNLOCKED = 'unlocked',
 }
 
 export enum SEGMENT_SEARCH_KEY {
