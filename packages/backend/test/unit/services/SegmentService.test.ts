@@ -365,20 +365,20 @@ describe('Segment Service Testing', () => {
         {
           id: seg1.id,
           context: 'add',
-          status: 'Used',
+          status: 'used',
           subSegments: seg1.subSegments,
           groupForSegment: seg1.groupForSegment,
           individualForSegment: seg1.individualForSegment,
         },
-        { id: seg2.id, context: 'add', status: 'Used', subSegments: seg2.subSegments },
+        { id: seg2.id, context: 'add', status: 'used', subSegments: seg2.subSegments },
       ],
       experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
       featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
       featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
       allParentSegments: [
-        { status: 'Used', ...seg1 },
-        { status: 'Used', ...seg2 },
+        { status: 'used', ...seg1 },
+        { status: 'used', ...seg2 },
       ],
     };
     const segments = await service.getAllSegmentWithStatus(logger);
@@ -392,20 +392,20 @@ describe('Segment Service Testing', () => {
         {
           id: seg1.id,
           context: 'add',
-          status: 'Used',
+          status: 'used',
           subSegments: seg1.subSegments,
           groupForSegment: seg1.groupForSegment,
           individualForSegment: seg1.individualForSegment,
         },
-        { id: seg2.id, context: 'add', status: 'Used', subSegments: seg2.subSegments },
+        { id: seg2.id, context: 'add', status: 'used', subSegments: seg2.subSegments },
       ],
       experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
       experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
       featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
       featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
       allParentSegments: [
-        { status: 'Used', ...seg1 },
-        { status: 'Used', ...seg2 },
+        { status: 'used', ...seg1 },
+        { status: 'used', ...seg2 },
       ],
     };
     const segments = await service.getAllSegmentWithStatus(logger);
@@ -468,7 +468,7 @@ describe('Segment Service Testing', () => {
       segment: {
         id: seg1.id,
         context: 'add',
-        status: 'Used',
+        status: 'used',
         subSegments: seg1.subSegments,
         groupForSegment: seg1.groupForSegment,
         individualForSegment: seg1.individualForSegment,
@@ -478,8 +478,8 @@ describe('Segment Service Testing', () => {
       featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
       featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
       allParentSegments: [
-        { status: 'Used', ...seg1 },
-        { status: 'Used', ...seg2 },
+        { status: 'used', ...seg1 },
+        { status: 'used', ...seg2 },
       ],
     };
     const segment = await service.getSingleSegmentWithStatus(seg1.id, logger);
@@ -739,15 +739,15 @@ describe('Segment Service Testing', () => {
     const res = [
       {
         segmentsData: segmentArr.map((segment) => {
-          return { ...segment, status: 'Used' };
+          return { ...segment, status: 'used' };
         }),
         experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
         experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
         featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
         featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
         allParentSegments: [
-          { status: 'Used', ...seg1 },
-          { status: 'Used', ...seg2 },
+          { status: 'used', ...seg1 },
+          { status: 'used', ...seg2 },
         ],
       },
       2,
@@ -772,15 +772,15 @@ describe('Segment Service Testing', () => {
     const res = [
       {
         segmentsData: segmentArr.map((segment) => {
-          return { ...segment, status: 'Used' };
+          return { ...segment, status: 'used' };
         }),
         experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
         experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
         featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
         featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
         allParentSegments: [
-          { status: 'Used', ...seg1 },
-          { status: 'Used', ...seg2 },
+          { status: 'used', ...seg1 },
+          { status: 'used', ...seg2 },
         ],
       },
       2,
@@ -805,15 +805,15 @@ describe('Segment Service Testing', () => {
     const res = [
       {
         segmentsData: segmentArr.map((segment) => {
-          return { ...segment, status: 'Used' };
+          return { ...segment, status: 'used' };
         }),
         experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
         experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
         featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
         featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
         allParentSegments: [
-          { status: 'Used', ...seg1 },
-          { status: 'Used', ...seg2 },
+          { status: 'used', ...seg1 },
+          { status: 'used', ...seg2 },
         ],
       },
       2,
@@ -838,15 +838,15 @@ describe('Segment Service Testing', () => {
     const res = [
       {
         segmentsData: segmentArr.map((segment) => {
-          return { ...segment, status: 'Used' };
+          return { ...segment, status: 'used' };
         }),
         experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
         experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
         featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
         featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
         allParentSegments: [
-          { status: 'Used', ...seg1 },
-          { status: 'Used', ...seg2 },
+          { status: 'used', ...seg1 },
+          { status: 'used', ...seg2 },
         ],
       },
       2,
@@ -871,15 +871,15 @@ describe('Segment Service Testing', () => {
     const res = [
       {
         segmentsData: segmentArr.map((segment) => {
-          return { ...segment, status: 'Used' };
+          return { ...segment, status: 'used' };
         }),
         experimentSegmentExclusionData: [{ experiment: exp, segment: seg1 }],
         experimentSegmentInclusionData: [{ experiment: exp, segment: seg1 }],
         featureFlagSegmentExclusionData: [{ featureFlag: ff, segment: seg1 }],
         featureFlagSegmentInclusionData: [{ featureFlag: ff, segment: seg1 }],
         allParentSegments: [
-          { status: 'Used', ...seg1 },
-          { status: 'Used', ...seg2 },
+          { status: 'used', ...seg1 },
+          { status: 'used', ...seg2 },
         ],
       },
       2,

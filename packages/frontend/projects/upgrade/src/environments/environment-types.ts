@@ -79,7 +79,6 @@ export interface Environment {
   useHashRouting: boolean;
   googleClientId: string;
   domainName: string;
-  segmentsRefreshToggle: boolean;
   errorLogsToggle: boolean;
   withinSubjectExperimentSupportToggle: boolean;
   metricAnalyticsExperimentDisplayToggle: boolean;
@@ -95,7 +94,6 @@ export interface RuntimeEnvironmentConfig {
   googleClientId?: string;
   endpointApi?: string;
   apiBaseUrl?: string;
-  segmentsRefreshToggle?: boolean;
   withinSubjectExperimentSupportToggle?: boolean;
   errorLogsToggle?: boolean;
   metricAnalyticsExperimentDisplayToggle?: boolean;

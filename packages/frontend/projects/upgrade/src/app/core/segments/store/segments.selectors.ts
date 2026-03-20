@@ -180,22 +180,6 @@ export const selectSegmentLists = createSelector(
   }
 );
 
-export const selectShouldUseLegacyUI = createSelector(selectSelectedSegment, (segment: Segment): boolean => {
-  if (segment?.type === SEGMENT_TYPE.PUBLIC) {
-    // Check if the segment has individuals, groups, or non-private subsegments
-    const hasIndividuals = segment.individualForSegment?.length > 0;
-    const hasGroups = segment.groupForSegment?.length > 0;
-
-    // Filter for non-private subsegments
-    const hasNonPrivateSubsegments = segment.subSegments?.some(
-      (subsegment) => subsegment.type !== SEGMENT_TYPE.PRIVATE
-    );
-
-    return hasIndividuals || hasGroups || hasNonPrivateSubsegments;
-  }
-  return false;
-});
-
 export const selectSegmentUsageData = createSelector(
   selectSelectedSegment,
   selectExperimentSegmentsInclusion,
