@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { SharedModule } from '../../../shared/shared.module';
 import { MatChipsModule } from '@angular/material/chips';
 import { CommonTagComponent } from '../common-tag/common-tag.component';
@@ -20,7 +20,7 @@ import { CommonTagComponent } from '../common-tag/common-tag.component';
  */
 @Component({
   selector: 'app-common-tag-list',
-  imports: [CommonModule, SharedModule, MatChipsModule, CommonTagComponent],
+  imports: [SharedModule, MatChipsModule, CommonTagComponent],
   templateUrl: './common-tag-list.component.html',
   styleUrls: ['./common-tag-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

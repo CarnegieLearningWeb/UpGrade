@@ -1,4 +1,5 @@
-<app-common-section-card *ngIf="selectedSegment$ | async as segment">
+@if (selectedSegment$ | async; as segment) {
+<app-common-section-card>
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
@@ -6,7 +7,6 @@
     [subtitle]="'segments.details.used-by.card.subtitle.text' | translate"
     [tableRowCount]="tableRowCount$ | async"
   ></app-common-section-card-title-header>
-
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
@@ -14,7 +14,9 @@
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
-
   <!-- content -->
-  <app-segment-used-by-table content *ngIf="isSectionCardExpanded"></app-segment-used-by-table>
+  @if (isSectionCardExpanded) {
+  <app-segment-used-by-table content></app-segment-used-by-table>
+  }
 </app-common-section-card>
+}

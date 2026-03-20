@@ -18,7 +18,7 @@ import {
   Experiment,
 } from '../../../../../../../../core/experiments/store/experiments.model';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
 import {
@@ -35,7 +35,6 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
   imports: [
     MatTableModule,
     AsyncPipe,
-    NgIf,
     SharedModule,
     RouterModule,
     CommonStatusIndicatorChipComponent,

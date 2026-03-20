@@ -1,9 +1,6 @@
 <div class="profile-wrapper" #profileInfoContainer>
-  <div
-    class="personal-information"
-    *ngIf="currentUser"
-    [ngClass]="{ 'normal-user': currentUser?.role !== UserRole.ADMIN }"
-  >
+  @if (currentUser) {
+  <div class="personal-information" [ngClass]="{ 'normal-user': currentUser?.role !== UserRole.ADMIN }">
     <img [src]="currentUser?.imageUrl" class="profile-pic" referrerpolicy="no-referrer" />
     <div class="user-info">
       <span class="ft-22-700">{{ (currentUser?.firstName || '') + ' ' + (currentUser?.lastName || '') }}</span>
@@ -11,8 +8,8 @@
       <span class="ft-12-600 role">{{ currentUser?.role | titlecase }}</span>
     </div>
     <div class="toggle-container">
+      @if ((permissions$ | async)?.manageRoles.update) {
       <mat-slide-toggle
-        *ngIf="(permissions$ | async)?.manageRoles.update"
         class="ft-13-700 toggle"
         color="primary"
         [checked]="toCheckAuth$ | async"
@@ -21,6 +18,7 @@
       >
         {{ 'profile.action.authorization.text' | translate }}
       </mat-slide-toggle>
+      }
       <!-- TODO: Uncomment if we want filter metric toggle -->
       <!-- <mat-slide-toggle
         *ngIf="(permissions$ | async)?.manageRoles.update"
@@ -29,12 +27,13 @@
         [checked]="toFilterMetric$ | async"
         (change)="setToFilterMetric($event)"
         labelPosition="before"
-      >
+        >
         {{ 'profile.action.filter-metric.text' | translate }}
       </mat-slide-toggle> -->
     </div>
   </div>
-  <div class="role-wrapper" *ngIf="(permissions$ | async)?.manageRoles.update">
+  } @if ((permissions$ | async)?.manageRoles.update) {
+  <div class="role-wrapper">
     <div class="header">
       <h3 class="header-title">{{ 'profile.manage-roles.heading.text' | translate }}</h3>
       <button class="ft-14-700" mat-flat-button color="primary" (click)="openNewUserModal()">
@@ -49,9 +48,11 @@
           [(ngModel)]="selectedUserFilterOption"
           (selectionChange)="applyFilter(searchString); setSearchKey()"
         >
-          <mat-option class="ft-14-400" *ngFor="let filterOption of userFilterOptions" [value]="filterOption.value">
+          @for (filterOption of userFilterOptions; track filterOption) {
+          <mat-option class="ft-14-400" [value]="filterOption.value">
             {{ filterOption.viewValue | titlecase }}
           </mat-option>
+          }
         </mat-select>
       </mat-form-field>
       <mat-form-field class="dense-2 input" subscriptSizing="dynamic">
@@ -66,7 +67,9 @@
         <mat-icon class="search-icon" matSuffix>search</mat-icon>
       </mat-form-field>
     </div>
-    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isUsersLoading"></mat-progress-bar>
+    @if (isUsersLoading) {
+    <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
+    }
     <div scroll (scrolled)="fetchUsersOnScroll()" #usersTable class="users-list-container">
       <form [formGroup]="userDetailsForm">
         <table
@@ -83,7 +86,8 @@
               </span>
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
-              <div *ngIf="editMode === index; else firstNameReadOnly">
+              @if (editMode === index) {
+              <div>
                 <mat-form-field class="dense-2 input" appearance="outline" subscriptSizing="dynamic">
                   <input
                     class="ft-14-400"
@@ -93,11 +97,11 @@
                   />
                 </mat-form-field>
               </div>
-              <ng-template #firstNameReadOnly>
-                <span>
-                  {{ user.firstName }}
-                </span>
-              </ng-template>
+              } @else {
+              <span>
+                {{ user.firstName }}
+              </span>
+              }
             </td>
           </ng-container>
           <ng-container matColumnDef="lastName">
@@ -107,7 +111,8 @@
               </span>
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
-              <div *ngIf="editMode === index; else lastNameReadOnly">
+              @if (editMode === index) {
+              <div>
                 <mat-form-field class="dense-2 input" appearance="outline" subscriptSizing="dynamic">
                   <input
                     class="ft-14-400"
@@ -117,11 +122,11 @@
                   />
                 </mat-form-field>
               </div>
-              <ng-template #lastNameReadOnly>
-                <span>
-                  {{ user.lastName }}
-                </span>
-              </ng-template>
+              } @else {
+              <span>
+                {{ user.lastName }}
+              </span>
+              }
             </td>
           </ng-container>
           <ng-container matColumnDef="email">
@@ -143,49 +148,45 @@
               </span>
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
-              <div *ngIf="editMode === index; else roleReadOnly">
+              @if (editMode === index) {
+              <div>
                 <mat-form-field class="dense-2 input" appearance="outline" subscriptSizing="dynamic">
                   <mat-select
                     class="ft-14-400 input"
                     formControlName="role"
                     [placeholder]="'profile.form.role-control.text' | translate"
                   >
-                    <mat-option class="ft-14-400" *ngFor="let role of userRoles" [value]="role">
+                    @for (role of userRoles; track role) {
+                    <mat-option class="ft-14-400" [value]="role">
                       {{ role | titlecase }}
                     </mat-option>
+                    }
                   </mat-select>
                 </mat-form-field>
               </div>
-              <ng-template #roleReadOnly>
-                <span>
-                  {{ user.role | titlecase }}
-                </span>
-              </ng-template>
+              } @else {
+              <span>
+                {{ user.role | titlecase }}
+              </span>
+              }
             </td>
           </ng-container>
-
           <ng-container matColumnDef="edit">
             <th class="ft-12-700" mat-header-cell *matHeaderCellDef></th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
-              <mat-icon
-                *ngIf="editMode !== index; else saveBtnTemplate"
-                class="icon"
-                (click)="editPermission(user, index)"
+              @if (editMode !== index) {
+              <mat-icon class="icon" (click)="editPermission(user, index)"> create </mat-icon>
+              } @else {
+              <button
+                mat-raised-button
+                class="default-button form-control"
+                [ngClass]="{ 'default-button--disabled': !this.userDetailsForm.valid }"
+                [disabled]="!this.userDetailsForm.valid"
+                (click)="updatePermission(user)"
               >
-                create
-              </mat-icon>
-
-              <ng-template #saveBtnTemplate>
-                <button
-                  mat-raised-button
-                  class="default-button form-control"
-                  [ngClass]="{ 'default-button--disabled': !this.userDetailsForm.valid }"
-                  [disabled]="!this.userDetailsForm.valid"
-                  (click)="updatePermission(user)"
-                >
-                  {{ 'users.preview-users.save.text' | translate }}
-                </button>
-              </ng-template>
+                {{ 'users.preview-users.save.text' | translate }}
+              </button>
+              }
             </td>
           </ng-container>
           <ng-container matColumnDef="deleteUser">
@@ -200,4 +201,5 @@
       </form>
     </div>
   </div>
+  }
 </div>

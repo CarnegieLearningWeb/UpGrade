@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -23,7 +22,7 @@ import { TranslateModule } from '@ngx-translate/core';
  */
 @Component({
   selector: 'app-common-section-card',
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   templateUrl: './common-section-card.component.html',
   styleUrl: './common-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,4 +1,5 @@
-<app-common-section-card class="details-overview-card" *ngIf="featureFlag$ | async as flag">
+@if (featureFlag$ | async; as flag) {
+<app-common-section-card class="details-overview-card">
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
@@ -8,7 +9,6 @@
     [chipClass]="flag.status"
     [warningMessageKeys]="warningKeysForSelectedFlag$ | async"
   ></app-common-section-card-title-header>
-
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
@@ -22,7 +22,6 @@
     (menuButtonItemClick)="onMenuButtonItemClick($event, flag)"
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   ></app-common-section-card-action-buttons>
-
   <!-- content -->
   <ng-container content>
     <app-common-section-card-overview-details
@@ -30,7 +29,6 @@
       (tagItemClick)="filterFeatureFlagByChips($event)"
     ></app-common-section-card-overview-details>
   </ng-container>
-
   <!-- footer -->
   <app-common-tabbed-section-card-footer
     footer
@@ -38,3 +36,4 @@
     (selectedTabChange)="onSelectedTabChange($event)"
   ></app-common-tabbed-section-card-footer>
 </app-common-section-card>
+}

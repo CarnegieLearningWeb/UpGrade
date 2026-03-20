@@ -8,20 +8,18 @@
 >
   <form [formGroup]="pauseForm" class="form-standard dense-3">
     <!-- Show intro text only in pause mode -->
-    <ng-container *ngIf="data.params?.mode === PAUSE_BEHAVIOR_MODAL_MODE.PAUSE">
-      <!-- Confirmation message -->
-      <div class="pause-confirm ft-16-400">
-        <span>{{
-          'experiments.pause-experiment-modal.message.text'
-            | translate : { experimentName: data.params?.experimentName }
-        }}</span>
-      </div>
-
-      <!-- Info text -->
-      <div class="pause-info ft-14-400">
-        <span>{{ 'experiments.pause-experiment-modal.info.text' | translate }}</span>
-      </div>
-    </ng-container>
+    @if (data.params?.mode === PAUSE_BEHAVIOR_MODAL_MODE.PAUSE) {
+    <!-- Confirmation message -->
+    <div class="pause-confirm ft-16-400">
+      <span>{{
+        'experiments.pause-experiment-modal.message.text' | translate : { experimentName: data.params?.experimentName }
+      }}</span>
+    </div>
+    <!-- Info text -->
+    <div class="pause-info ft-14-400">
+      <span>{{ 'experiments.pause-experiment-modal.info.text' | translate }}</span>
+    </div>
+    }
 
     <!-- Pause Behavior Section -->
     <div class="pause-behavior-section dense-1">
@@ -68,15 +66,19 @@
     </div>
 
     <!-- Conditional Condition Dropdown -->
-    <mat-form-field *ngIf="isAssignSelected$ | async" appearance="outline" class="condition-dropdown">
+    @if (isAssignSelected$ | async) {
+    <mat-form-field appearance="outline" class="condition-dropdown">
       <mat-label class="ft-14-400">
         {{ 'experiments.pause-experiment-modal.select-condition-label.text' | translate }}
       </mat-label>
       <mat-select formControlName="revertTo" placeholder="Select condition" class="ft-14-400">
-        <mat-option *ngFor="let condition of conditions" [value]="condition.id" class="ft-14-400">
+        @for (condition of conditions; track condition) {
+        <mat-option [value]="condition.id" class="ft-14-400">
           {{ condition.conditionCode }}
         </mat-option>
+        }
       </mat-select>
     </mat-form-field>
+    }
   </form>
 </app-common-dialog>

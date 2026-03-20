@@ -7,9 +7,11 @@
           [(ngModel)]="selectedMetricFilterOption"
           (selectionChange)="applyFilter(searchValue)"
         >
-          <mat-option class="ft-14-400" *ngFor="let context of metricFilterOptions" [value]="context">
+          @for (context of metricFilterOptions; track context) {
+          <mat-option class="ft-14-400" [value]="context">
             {{ context | titlecase }}
           </mat-option>
+          }
         </mat-select>
       </mat-form-field>
       <mat-form-field class="dense-2" subscriptSizing="dynamic">
@@ -24,102 +26,86 @@
       </mat-form-field>
     </div>
 
-    <button
-      mat-flat-button
-      color="primary"
-      class="ft-14-700"
-      (click)="openAddMetricDialog()"
-      *ngIf="permissions?.metrics.create"
-    >
+    @if (permissions?.metrics.create) {
+    <button mat-flat-button color="primary" class="ft-14-700" (click)="openAddMetricDialog()">
       <mat-icon>add</mat-icon>
       <span>{{ 'metric.add-metrics.text' | translate }}</span>
     </button>
+    }
   </div>
-  <div class="read-mode-container" *ngIf="permissions?.metrics.create">
+  @if (permissions?.metrics.create) {
+  <div class="read-mode-container">
     <mat-slide-toggle class="ft-13-700" color="primary" (change)="changeMetricMode($event)" labelPosition="before">
       {{ 'metric.read-mode.text' | translate }}
     </mat-slide-toggle>
   </div>
-  <mat-progress-bar mode="indeterminate" class="spinner" *ngIf="isAnalysisMetricsLoading$ | async"></mat-progress-bar>
+  } @if (isAnalysisMetricsLoading$ | async) {
+  <mat-progress-bar mode="indeterminate" class="spinner"></mat-progress-bar>
+  }
   <div #metricsTable class="metrics-table-container">
-    <ng-container *ngIf="allMetrics.data?.length; else zeroState">
-      <table mat-table [dataSource]="allMetrics">
-        <!-- Metric Column -->
-        <ng-container matColumnDef="metric">
-          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            {{ 'query.metric.text' | translate }}
-          </th>
-          <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-            <ng-container *ngIf="element">
-              <mat-tree [dataSource]="[element]" [treeControl]="nestedTreeControl" class="mat-nested-tree">
-                <!-- Leaf node template -->
-                <mat-tree-node *matTreeNodeDef="let node">
-                  <mat-icon class="leaf-node-icon">fiber_manual_record</mat-icon>
-                  {{ node.key }}
-                  <mat-icon
-                    *ngIf="permissions.metrics.delete && keyEditMode"
-                    class="delete-icon"
-                    (click)="deleteNode(node, index)"
-                  >
-                    delete_outline
+    @if (allMetrics.data?.length) {
+    <table mat-table [dataSource]="allMetrics">
+      <!-- Metric Column -->
+      <ng-container matColumnDef="metric">
+        <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+          {{ 'query.metric.text' | translate }}
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+          @if (element) {
+          <mat-tree [dataSource]="[element]" [treeControl]="nestedTreeControl" class="mat-nested-tree">
+            <!-- Leaf node template -->
+            <mat-tree-node *matTreeNodeDef="let node">
+              <mat-icon class="leaf-node-icon">fiber_manual_record</mat-icon>
+              {{ node.key }}
+              @if (permissions.metrics.delete && keyEditMode) {
+              <mat-icon class="delete-icon" (click)="deleteNode(node, index)"> delete_outline </mat-icon>
+              }
+            </mat-tree-node>
+            <!-- Expandable node template -->
+            <mat-nested-tree-node *matTreeNodeDef="let node; when: hasNestedChild">
+              <div class="mat-tree-node">
+                <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.key">
+                  <mat-icon>
+                    {{ nestedTreeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
                   </mat-icon>
-                </mat-tree-node>
-
-                <!-- Expandable node template -->
-                <mat-nested-tree-node *matTreeNodeDef="let node; when: hasNestedChild">
-                  <div class="mat-tree-node">
-                    <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.key">
-                      <mat-icon>
-                        {{ nestedTreeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
-                      </mat-icon>
-                    </button>
-                    {{ node.key }}
-                    <mat-icon
-                      *ngIf="permissions.metrics.delete && keyEditMode"
-                      class="delete-icon"
-                      (click)="deleteNode(node, index)"
-                      >delete_outline</mat-icon
-                    >
-                  </div>
-                  <div *ngIf="nestedTreeControl.isExpanded(node)" role="group">
-                    <ng-container matTreeNodeOutlet></ng-container>
-                  </div>
-                </mat-nested-tree-node>
-              </mat-tree>
-            </ng-container>
-          </td>
-        </ng-container>
-
-        <!-- Context Column -->
-        <ng-container matColumnDef="context">
-          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            {{ 'query.table-context.text' | translate }}
-          </th>
-          <td class="ft-12-600" mat-cell *matCellDef="let metric">
-            <mat-chip-listbox class="dense-2">
-              <mat-chip
-                *ngFor="let contextTag of metric.context"
-                (click)="filterMetricsByChips(contextTag, MetricSearchKey.CONTEXT)"
-              >
-                <span class="chip-label">
-                  {{ contextTag }}
-                </span>
-              </mat-chip>
-            </mat-chip-listbox>
-          </td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
-    </ng-container>
+                </button>
+                {{ node.key }}
+                @if (permissions.metrics.delete && keyEditMode) {
+                <mat-icon class="delete-icon" (click)="deleteNode(node, index)">delete_outline</mat-icon>
+                }
+              </div>
+              @if (nestedTreeControl.isExpanded(node)) {
+              <div role="group">
+                <ng-container matTreeNodeOutlet></ng-container>
+              </div>
+              }
+            </mat-nested-tree-node>
+          </mat-tree>
+          }
+        </td>
+      </ng-container>
+      <!-- Context Column -->
+      <ng-container matColumnDef="context">
+        <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+          {{ 'query.table-context.text' | translate }}
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let metric">
+          <mat-chip-listbox class="dense-2">
+            @for (contextTag of metric.context; track contextTag) {
+            <mat-chip (click)="filterMetricsByChips(contextTag, MetricSearchKey.CONTEXT)">
+              <span class="chip-label">
+                {{ contextTag }}
+              </span>
+            </mat-chip>
+            }
+          </mat-chip-listbox>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+    } @else { @if (!(isAnalysisMetricsLoading$ | async)) {
+    <span class="zero-state" [innerHTML]="'global.no-metrics.text' | translate"> </span>
+    } }
   </div>
-
-  <ng-template #zeroState>
-    <span
-      *ngIf="!(isAnalysisMetricsLoading$ | async)"
-      class="zero-state"
-      [innerHTML]="'global.no-metrics.text' | translate"
-    >
-    </span>
-  </ng-template>
 </mat-card>

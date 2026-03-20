@@ -1,5 +1,7 @@
 <div class="table-container">
-  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+  @if (isLoading$ | async) {
+  <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
+  }
   <table
     class="used-by-table"
     mat-table
@@ -20,14 +22,15 @@
         >
           {{ item.name }}
         </a>
+        @if (item.description) {
         <span
-          *ngIf="item.description"
           [appTextOverflowTooltip]="item.description"
           matTooltipPosition="right"
           class="item-description ft-10-400 line-clamp-1"
         >
           {{ item.description }}
         </span>
+        }
       </td>
     </ng-container>
 

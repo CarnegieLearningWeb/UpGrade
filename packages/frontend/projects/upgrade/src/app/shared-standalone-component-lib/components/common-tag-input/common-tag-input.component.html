@@ -1,5 +1,5 @@
+@if (!showImportHelper) {
 <mat-form-field
-  *ngIf="!showImportHelper"
   class="input-container"
   subscriptSizing="dynamic"
   appearance="outline"
@@ -7,13 +7,15 @@
 >
   <mat-label class="ft-14-400">
     {{ label | translate }}
-    <span *ngIf="inputType === CommonTagInputType.VALUES" class="required-asterisk">*</span>
+    @if (inputType === CommonTagInputType.VALUES) {
+    <span class="required-asterisk">*</span>
+    }
   </mat-label>
   <div class="chips-wrapper">
     <div class="chips-container dense-2">
       <mat-chip-grid #tagsList>
+        @for (componentTag of tags.value; track componentTag) {
         <mat-chip-row
-          *ngFor="let componentTag of tags.value"
           [selectable]="isChipSelectable"
           [removable]="isChipRemovable"
           (removed)="removeChip(componentTag)"
@@ -25,9 +27,11 @@
           >
             {{ componentTag | truncate : truncationLength }}
           </span>
-          <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
+          @if (isChipRemovable) {
+          <mat-icon matChipRemove>cancel</mat-icon>
+          }
         </mat-chip-row>
-
+        }
         <input
           [matChipInputFor]="tagsList"
           [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
@@ -40,18 +44,20 @@
           class="ft-14-400"
         />
       </mat-chip-grid>
-      <div *ngIf="inputType === CommonTagInputType.VALUES" class="sharing-icon-buttons">
+      @if (inputType === CommonTagInputType.VALUES) {
+      <div class="sharing-icon-buttons">
         <button mat-icon-button class="icon-button" (click)="onActionButtonClick($event)">
           <span class="material-symbols-outlined">
             {{ tagsExist ? 'download' : 'upload' }}
           </span>
         </button>
       </div>
+      }
     </div>
   </div>
 </mat-form-field>
-
-<div *ngIf="showImportHelper" class="drag-drop-container">
+} @if (showImportHelper) {
+<div class="drag-drop-container">
   <app-common-import-container
     fileType=".csv"
     buttonLabel="Choose CSV"
@@ -65,3 +71,4 @@
     <app-common-learn-more-link learnMoreLinkKey="guide.add-lists"></app-common-learn-more-link>
   </p>
 </div>
+}

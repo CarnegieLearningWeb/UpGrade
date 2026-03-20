@@ -1,11 +1,11 @@
-<app-common-section-card *ngIf="selectedExperiment$ | async as experiment">
+@if (selectedExperiment$ | async; as experiment) {
+<app-common-section-card>
   <!-- header-left -->
   <app-common-section-card-title-header
     header-left
     [title]="'experiments.details.enrollment-data.card.title.text' | translate"
     [subtitle]="'experiments.details.enrollment-data.card.subtitle.text' | translate"
   ></app-common-section-card-title-header>
-
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
@@ -14,11 +14,9 @@
     (sectionCardExpandChange)="onSectionCardExpandChange($event)"
   >
   </app-common-section-card-action-buttons>
-
   <!-- content -->
-  <app-experiment-enrollment-data
-    content
-    [experiment]="experiment"
-    *ngIf="isSectionCardExpanded"
-  ></app-experiment-enrollment-data>
+  @if (isSectionCardExpanded) {
+  <app-experiment-enrollment-data content [experiment]="experiment"></app-experiment-enrollment-data>
+  }
 </app-common-section-card>
+}

@@ -11,20 +11,26 @@
       <mat-label class="ft-14-400">Name</mat-label>
       <input matInput formControlName="name" placeholder="Enter segment name" class="ft-14-400" appTrimInput />
       <!-- Required error will show by default when the control is invalid and touched -->
-      <mat-error *ngIf="nameControl?.errors?.['required']"> Name is required </mat-error>
+      @if (nameControl?.errors?.['required']) {
+      <mat-error> Name is required </mat-error>
+      }
 
       <!-- Custom duplicate name error -->
-      <mat-error *ngIf="nameControl?.errors?.['duplicateSegmentName'] as errorData">
+      @if (nameControl?.errors?.['duplicateSegmentName']; as errorData) {
+      <mat-error>
         {{
           'segments.errors.duplicate-name.text'
             | translate : { name: errorData.duplicateName, context: errorData.context }
         }}
       </mat-error>
+      }
 
       <!-- Only show the hint when there are no errors -->
-      <mat-hint *ngIf="!nameControl?.errors" class="form-hint ft-12-400">
+      @if (!nameControl?.errors) {
+      <mat-hint class="form-hint ft-12-400">
         {{ 'segments.upsert-segment-modal.name-hint.text' | translate }}
       </mat-hint>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline">
@@ -35,23 +41,20 @@
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">App Context</mat-label>
       <mat-select formControlName="appContext" class="ft-14-400">
-        <mat-option *ngFor="let context of appContexts$ | async" [value]="context" class="ft-14-400">{{
-          context
-        }}</mat-option>
+        @for (context of appContexts$ | async; track context) {
+        <mat-option [value]="context" class="ft-14-400">{{ context }}</mat-option>
+        }
       </mat-select>
-      <mat-hint
-        *ngIf="!(config.params.action === UPSERT_SEGMENT_ACTION.EDIT && isContextChanged)"
-        class="form-hint ft-12-400"
-      >
+      @if (!(config.params.action === UPSERT_SEGMENT_ACTION.EDIT && isContextChanged)) {
+      <mat-hint class="form-hint ft-12-400">
         {{ 'segments.upsert-segment-modal.app-context-hint.text' | translate }}
         <app-common-learn-more-link learnMoreLinkKey="glossary.context"></app-common-learn-more-link>
       </mat-hint>
-      <mat-hint
-        *ngIf="config.params.action === UPSERT_SEGMENT_ACTION.EDIT && isContextChanged"
-        class="form-hint ft-12-400 warning-hint"
-      >
+      } @if (config.params.action === UPSERT_SEGMENT_ACTION.EDIT && isContextChanged) {
+      <mat-hint class="form-hint ft-12-400 warning-hint">
         {{ 'segments.upsert-segment-modal.app-context-warning.text' | translate }}
       </mat-hint>
+      }
     </mat-form-field>
 
     <app-common-tags-input

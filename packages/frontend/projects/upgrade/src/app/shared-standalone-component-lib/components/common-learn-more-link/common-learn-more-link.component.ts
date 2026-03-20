@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { LEARN_MORE_LINKS, LearnMoreLinkKey } from '../../../shared/constants/learn-more-links.constants';
 
 /**
@@ -12,7 +12,7 @@ import { LEARN_MORE_LINKS, LearnMoreLinkKey } from '../../../shared/constants/le
  */
 @Component({
   selector: 'app-common-learn-more-link',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './common-learn-more-link.component.html',
   styleUrls: ['./common-learn-more-link.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

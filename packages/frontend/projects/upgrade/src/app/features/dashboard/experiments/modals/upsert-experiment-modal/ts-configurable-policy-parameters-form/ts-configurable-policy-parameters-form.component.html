@@ -18,15 +18,19 @@
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.prior-success.hint.text' | translate
       }}</mat-hint>
-      <mat-error *ngIf="policyForm.get('prior_success')?.hasError('min')">{{
+      @if (policyForm.get('prior_success')?.hasError('min')) {
+      <mat-error>{{
         'home.new-experiment.design.ts-configurable-policy.prior-success.min-error.text' | translate
       }}</mat-error>
-      <mat-error *ngIf="policyForm.get('prior_success')?.hasError('max')">
+      } @if (policyForm.get('prior_success')?.hasError('max')) {
+      <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
-      <mat-error *ngIf="policyForm.get('prior_success')?.hasError('integer')">
+      } @if (policyForm.get('prior_success')?.hasError('integer')) {
+      <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
       </mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -37,15 +41,19 @@
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.prior-failure.hint.text' | translate
       }}</mat-hint>
-      <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('min')">{{
+      @if (policyForm.get('prior_failure')?.hasError('min')) {
+      <mat-error>{{
         'home.new-experiment.design.ts-configurable-policy.prior-failure.min-error.text' | translate
       }}</mat-error>
-      <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('max')">
+      } @if (policyForm.get('prior_failure')?.hasError('max')) {
+      <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
-      <mat-error *ngIf="policyForm.get('prior_failure')?.hasError('integer')">
+      } @if (policyForm.get('prior_failure')?.hasError('integer')) {
+      <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
       </mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -56,15 +64,19 @@
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.batch-size.hint.text' | translate
       }}</mat-hint>
-      <mat-error *ngIf="policyForm.get('batch_size')?.hasError('min')">{{
+      @if (policyForm.get('batch_size')?.hasError('min')) {
+      <mat-error>{{
         'home.new-experiment.design.ts-configurable-policy.batch-size.min-error.text' | translate
       }}</mat-error>
-      <mat-error *ngIf="policyForm.get('batch_size')?.hasError('max')">
+      } @if (policyForm.get('batch_size')?.hasError('max')) {
+      <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
-      <mat-error *ngIf="policyForm.get('batch_size')?.hasError('integer')">
+      } @if (policyForm.get('batch_size')?.hasError('integer')) {
+      <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
       </mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -75,15 +87,19 @@
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.uniform-threshold.hint.text' | translate
       }}</mat-hint>
-      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('min')">
+      @if (policyForm.get('uniform_threshold')?.hasError('min')) {
+      <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.min-error.text' | translate }}
       </mat-error>
-      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('max')">
+      } @if (policyForm.get('uniform_threshold')?.hasError('max')) {
+      <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
-      <mat-error *ngIf="policyForm.get('uniform_threshold')?.hasError('integer')">
+      } @if (policyForm.get('uniform_threshold')?.hasError('integer')) {
+      <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
       </mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -102,12 +118,15 @@
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.hint.text' | translate
       }}</mat-hint>
-      <mat-error *ngIf="policyForm.get('tspostdiff_thresh')?.hasError('min')">
+      @if (policyForm.get('tspostdiff_thresh')?.hasError('min')) {
+      <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.min-error.text' | translate }}
       </mat-error>
-      <mat-error *ngIf="policyForm.get('tspostdiff_thresh')?.hasError('max')">
+      } @if (policyForm.get('tspostdiff_thresh')?.hasError('max')) {
+      <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.max-error.text' | translate }}
       </mat-error>
+      }
     </mat-form-field>
   </form>
 </div>

@@ -5,7 +5,7 @@ import {
   CommonSectionCardActionButtonsComponent,
 } from '../../../../../../../shared-standalone-component-lib/components';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeatureFlagRootSectionCardTableComponent } from './feature-flag-root-section-card-table/feature-flag-root-section-card-table.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -34,7 +34,6 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
     CommonSectionCardActionButtonsComponent,
     FeatureFlagRootSectionCardTableComponent,
     AsyncPipe,
-    NgIf,
     MatProgressSpinnerModule,
     RouterModule,
     TranslateModule,

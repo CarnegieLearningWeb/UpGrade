@@ -1,81 +1,72 @@
 <div class="content-container">
-  <ng-container *ngIf="experiment$ | async as experiment; else loading">
-    <app-common-section-card-list class="common-section-card-list">
-      <app-experiment-overview-details-section-card
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        (sectionCardExpandChange)="onSectionCardExpandChange($event)"
-        (tabChange)="onTabChange($event)"
-        section-card
-      ></app-experiment-overview-details-section-card>
-
-      <!-- Design Tab -->
-      <app-experiment-decision-points-section-card
-        *ngIf="activeTabIndex === 0"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        section-card
-      ></app-experiment-decision-points-section-card>
-
-      <app-experiment-conditions-section-card
-        *ngIf="activeTabIndex === 0"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        section-card
-      ></app-experiment-conditions-section-card>
-
-      <app-experiment-payloads-section-card
-        *ngIf="activeTabIndex === 0"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        section-card
-      ></app-experiment-payloads-section-card>
-
-      <app-experiment-inclusions-section-card
-        *ngIf="activeTabIndex === 0"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        section-card
-      ></app-experiment-inclusions-section-card>
-
-      <app-experiment-exclusions-section-card
-        *ngIf="activeTabIndex === 0"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        section-card
-      ></app-experiment-exclusions-section-card>
-
-      <app-experiment-metrics-section-card
-        *ngIf="activeTabIndex === 0"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        section-card
-      ></app-experiment-metrics-section-card>
-
-      <!-- Data Tab -->
-      <app-experiment-enrollment-data-section-card
-        *ngIf="activeTabIndex === 1"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        section-card
-      ></app-experiment-enrollment-data-section-card>
-
-      <app-experiment-reward-feedback-section-card
-        *ngIf="activeTabIndex === 1 && (shouldShowRewardFeedback$ | async)"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        section-card
-      ></app-experiment-reward-feedback-section-card>
-
-      <app-experiment-metrics-data-section-card
-        *ngIf="activeTabIndex === 1"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        section-card
-      ></app-experiment-metrics-data-section-card>
-
-      <!-- Logs Tab -->
-      <app-experiment-log-section-card
-        *ngIf="activeTabIndex === 2"
-        [isSectionCardExpanded]="isSectionCardExpanded"
-        section-card
-      ></app-experiment-log-section-card>
-    </app-common-section-card-list>
-  </ng-container>
-
-  <ng-template #loading>
-    <div class="mat-spinner-container">
-      <mat-spinner diameter="100"></mat-spinner>
-    </div>
-  </ng-template>
+  @if (experiment$ | async; as experiment) {
+  <app-common-section-card-list class="common-section-card-list">
+    <app-experiment-overview-details-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+      (tabChange)="onTabChange($event)"
+      section-card
+    ></app-experiment-overview-details-section-card>
+    <!-- Design Tab -->
+    @if (activeTabIndex === 0) {
+    <app-experiment-decision-points-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-experiment-decision-points-section-card>
+    } @if (activeTabIndex === 0) {
+    <app-experiment-conditions-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-experiment-conditions-section-card>
+    } @if (activeTabIndex === 0) {
+    <app-experiment-payloads-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-experiment-payloads-section-card>
+    } @if (activeTabIndex === 0) {
+    <app-experiment-inclusions-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-experiment-inclusions-section-card>
+    } @if (activeTabIndex === 0) {
+    <app-experiment-exclusions-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-experiment-exclusions-section-card>
+    } @if (activeTabIndex === 0) {
+    <app-experiment-metrics-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-experiment-metrics-section-card>
+    }
+    <!-- Data Tab -->
+    @if (activeTabIndex === 1) {
+    <app-experiment-enrollment-data-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-experiment-enrollment-data-section-card>
+    } @if (activeTabIndex === 1 && (shouldShowRewardFeedback$ | async)) {
+    <app-experiment-reward-feedback-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-experiment-reward-feedback-section-card>
+    } @if (activeTabIndex === 1) {
+    <app-experiment-metrics-data-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-experiment-metrics-data-section-card>
+    }
+    <!-- Logs Tab -->
+    @if (activeTabIndex === 2) {
+    <app-experiment-log-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-experiment-log-section-card>
+    }
+  </app-common-section-card-list>
+  } @else {
+  <div class="mat-spinner-container">
+    <mat-spinner diameter="100"></mat-spinner>
+  </div>
+  }
 </div>

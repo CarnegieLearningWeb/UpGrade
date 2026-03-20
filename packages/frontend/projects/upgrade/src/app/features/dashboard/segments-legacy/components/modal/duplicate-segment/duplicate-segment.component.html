@@ -15,9 +15,11 @@
     </mat-label>
     <input class="ft-14-400 name-input" matInput [(ngModel)]="segmentDescription" [value]="segmentDescription" />
   </mat-form-field>
-  <span class="ft-14-400 validation-message" *ngIf="!isSegmentNameValid">
+  @if (!isSegmentNameValid) {
+  <span class="ft-14-400 validation-message">
     {{ 'segments.new-segment-overview-stepper.segment-name-error.text' | translate }}
   </span>
+  }
 </div>
 <div mat-dialog-actions class="duplicate-segment-dialog-actions">
   <button class="shared-modal--modal-btn" mat-flat-button (click)="onCancelClick()">

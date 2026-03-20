@@ -15,5 +15,7 @@
   </app-common-section-card-action-buttons>
 
   <!-- content -->
-  <app-feature-flag-exposures-data content *ngIf="isSectionCardExpanded"></app-feature-flag-exposures-data>
+  @if (isSectionCardExpanded) {
+  <app-feature-flag-exposures-data content></app-feature-flag-exposures-data>
+  }
 </app-common-section-card>

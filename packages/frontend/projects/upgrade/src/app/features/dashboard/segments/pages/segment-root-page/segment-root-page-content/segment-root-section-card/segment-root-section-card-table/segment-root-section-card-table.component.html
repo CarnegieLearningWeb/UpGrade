@@ -1,5 +1,7 @@
 <div class="segment-list-table-container" #tableContainer>
-  <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoading$ | async"></mat-progress-bar>
+  @if (isLoading$ | async) {
+  <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
+  }
   <table
     class="segment-list-table"
     mat-table
@@ -24,14 +26,15 @@
         >
           {{ segment.name }}
         </a>
+        @if (segment.description) {
         <span
-          *ngIf="segment.description"
           [appTextOverflowTooltip]="segment.description"
           matTooltipPosition="right"
           class="segment-description ft-10-400 line-clamp-1"
         >
           {{ segment.description }}
         </span>
+        }
       </td>
     </ng-container>
 
@@ -108,12 +111,11 @@
     <!-- No Data Row -->
     <tr *matNoDataRow>
       <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
-        <ng-container *ngIf="isSearchActive$ | async; else noSegments">
-          {{ 'segments.no-matching-segments.text' | translate }}
-        </ng-container>
-        <ng-template #noSegments>
-          {{ 'segments.no-segments-in-table.text' | translate }}
-        </ng-template>
+        @if (isSearchActive$ | async) {
+        {{ 'segments.no-matching-segments.text' | translate }}
+        } @else {
+        {{ 'segments.no-segments-in-table.text' | translate }}
+        }
       </td>
     </tr>
   </table>

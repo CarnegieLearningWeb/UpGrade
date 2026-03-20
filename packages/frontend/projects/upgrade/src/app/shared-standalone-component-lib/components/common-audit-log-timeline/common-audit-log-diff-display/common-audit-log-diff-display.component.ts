@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateModule } from '@ngx-translate/core';
 import Convert from 'ansi-to-html';
@@ -14,7 +14,7 @@ import Convert from 'ansi-to-html';
   styleUrls: ['./common-audit-log-diff-display.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, MatExpansionModule, TranslateModule],
+  imports: [MatExpansionModule, TranslateModule],
 })
 export class CommonAuditLogDiffDisplayComponent implements AfterViewInit {
   @Input() logId: string;

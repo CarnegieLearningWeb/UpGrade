@@ -2,20 +2,27 @@
   <mat-form-field class="dense-3 filter-options" subscriptSizing="dynamic">
     <mat-select class="ft-14-400" [(ngModel)]="searchKey" (selectionChange)="onSearch()">
       <!-- Standalone options (no group) -->
-      <mat-option class="ft-14-400" *ngFor="let option of standaloneOptions" [value]="option.value">
+      @for (option of standaloneOptions; track option) {
+      <mat-option class="ft-14-400" [value]="option.value">
         {{ option.value | titlecase }}
       </mat-option>
+      }
 
       <!-- Grouped options -->
-      <mat-optgroup *ngFor="let group of groupedOptions" [label]="group.groupName">
-        <mat-option class="ft-14-400" *ngFor="let option of group.options" [value]="option.value">
+      @for (group of groupedOptions; track group) {
+      <mat-optgroup [label]="group.groupName">
+        @for (option of group.options; track option) {
+        <mat-option class="ft-14-400" [value]="option.value">
           {{ option.value | titlecase }}
         </mat-option>
+        }
       </mat-optgroup>
+      }
     </mat-select>
   </mat-form-field>
   <mat-form-field class="dense-3 search-input" subscriptSizing="dynamic">
-    <div *ngIf="!isDropdown">
+    @if (!isDropdown) {
+    <div>
       <input
         class="ft-14-400"
         matInput
@@ -25,18 +32,22 @@
         [placeholder]="'global.search.text' | translate"
       />
     </div>
-    <div *ngIf="isDropdown">
+    } @if (isDropdown) {
+    <div>
       <mat-select
         class="ft-14-400"
         [(ngModel)]="searchString"
         (selectionChange)="onSearch()"
         [placeholder]="'global.search.text' | translate"
       >
-        <mat-option class="ft-14-400" *ngFor="let filterOption of filteredStatusOptions" [value]="filterOption">
+        @for (filterOption of filteredStatusOptions; track filterOption) {
+        <mat-option class="ft-14-400" [value]="filterOption">
           {{ filterOption | titlecase }}
         </mat-option>
+        }
       </mat-select>
     </div>
+    }
     <mat-icon (click)="onSearch()" class="search-icon" matSuffix>search</mat-icon>
   </mat-form-field>
 </div>

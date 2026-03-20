@@ -1,14 +1,12 @@
 <div class="data-container">
-  <ng-container *ngIf="hasExperimentStarted$ | async; else notStarted">
-    <app-enrollment-over-time [experiment]="experiment"></app-enrollment-over-time>
-    <app-enrollment-condition-table [experiment]="experiment"></app-enrollment-condition-table>
-  </ng-container>
-
-  <ng-template #notStarted>
-    <div class="not-started-message">
-      <span class="ft-14-400">
-        {{ 'experiments.details.enrollment-data.card.not-started-label.text' | translate }}
-      </span>
-    </div>
-  </ng-template>
+  @if (hasExperimentStarted$ | async) {
+  <app-enrollment-over-time [experiment]="experiment"></app-enrollment-over-time>
+  <app-enrollment-condition-table [experiment]="experiment"></app-enrollment-condition-table>
+  } @else {
+  <div class="not-started-message">
+    <span class="ft-14-400">
+      {{ 'experiments.details.enrollment-data.card.not-started-label.text' | translate }}
+    </span>
+  </div>
+  }
 </div>

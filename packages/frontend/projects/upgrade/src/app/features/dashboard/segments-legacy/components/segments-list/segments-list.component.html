@@ -7,9 +7,11 @@
           [(ngModel)]="selectedSegmentFilterOption"
           (selectionChange)="applyFilter(searchValue); setSearchKey(selectedSegmentFilterOption)"
         >
-          <mat-option class="ft-14-400" *ngFor="let filterOption of segmentFilterOptions" [value]="filterOption">
+          @for (filterOption of segmentFilterOptions; track filterOption) {
+          <mat-option class="ft-14-400" [value]="filterOption">
             {{ filterOption | titlecase }}
           </mat-option>
+          }
         </mat-select>
       </mat-form-field>
       <mat-form-field class="dense-2" subscriptSizing="dynamic">
@@ -25,41 +27,29 @@
       </mat-form-field>
     </div>
     <div>
-      <button
-        mat-flat-button
-        color="primary"
-        class="ft-14-700 export-segments"
-        (click)="openExportAllSegment()"
-        *ngIf="(permissions$ | async)?.segments.create"
-      >
+      @if ((permissions$ | async)?.segments.create) {
+      <button mat-flat-button color="primary" class="ft-14-700 export-segments" (click)="openExportAllSegment()">
         <mat-icon>download</mat-icon>
         <span>{{ 'segments.export-all-segments.text' | translate }}</span>
       </button>
-      <button
-        (click)="openImportSegmentsDialog()"
-        mat-flat-button
-        color="primary"
-        class="ft-14-700 import-segments"
-        *ngIf="(permissions$ | async)?.segments.create"
-      >
+      } @if ((permissions$ | async)?.segments.create) {
+      <button (click)="openImportSegmentsDialog()" mat-flat-button color="primary" class="ft-14-700 import-segments">
         <mat-icon>add</mat-icon>
         <span>{{ 'segments.import-segment.text' | translate }}</span>
       </button>
-      <button
-        mat-flat-button
-        color="primary"
-        class="ft-14-700"
-        (click)="openNewSegmentDialog()"
-        *ngIf="(permissions$ | async)?.segments.create"
-      >
+      } @if ((permissions$ | async)?.segments.create) {
+      <button mat-flat-button color="primary" class="ft-14-700" (click)="openNewSegmentDialog()">
         <mat-icon>add</mat-icon>
         <span>{{ 'segments.add-segments.text' | translate }}</span>
       </button>
+      }
     </div>
   </div>
 
   <div class="segments-list-table-container" #tableContainer>
-    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingSegments$ | async"></mat-progress-bar>
+    @if (isLoadingSegments$ | async) {
+    <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
+    }
     <table
       class="segments-list"
       mat-table
@@ -76,23 +66,20 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <a
-            [routerLink]="['/segments', 'detail', segment.id]"
-            *ngIf="segment.name?.length < 30; else segmentNameEllipsis"
-            class="segment-name"
-          >
+          @if (segment.name?.length < 30) {
+          <a [routerLink]="['/segments', 'detail', segment.id]" class="segment-name">
             {{ segment.name }}
           </a>
-          <ng-template #segmentNameEllipsis>
-            <a
-              [routerLink]="['/segments', 'detail', segment.id]"
-              [matTooltip]="segment.name"
-              class="segment-name"
-              matTooltipPosition="above"
-            >
-              {{ segment.name | truncate : 30 }}
-            </a>
-          </ng-template>
+          } @else {
+          <a
+            [routerLink]="['/segments', 'detail', segment.id]"
+            [matTooltip]="segment.name"
+            class="segment-name"
+            matTooltipPosition="above"
+          >
+            {{ segment.name | truncate : 30 }}
+          </a>
+          }
           <br />
         </td>
       </ng-container>
@@ -138,18 +125,19 @@
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
           <mat-chip-listbox class="dense-2">
-            <mat-chip
-              *ngIf="segment.context != 'ALL'"
-              (click)="filterSegmentsByChips(segment.context, SegmentSearchKey.CONTEXT)"
-            >
+            @if (segment.context != 'ALL') {
+            <mat-chip (click)="filterSegmentsByChips(segment.context, SegmentSearchKey.CONTEXT)">
               <span class="chip-label">
                 {{ segment.context }}
               </span>
             </mat-chip>
+            }
           </mat-chip-listbox>
-          <span class="ft-12-600" *ngIf="segment.context == 'ALL'" style="margin-left: 10px">
+          @if (segment.context == 'ALL') {
+          <span class="ft-12-600" style="margin-left: 10px">
             {{ segment.context }}
           </span>
+          }
         </td>
       </ng-container>
 

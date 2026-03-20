@@ -12,7 +12,8 @@
         <span class="section-label ft-14-600">{{
           'experiments.edit-condition-weights-modal.method-header.text' | translate
         }}</span>
-        <mat-radio-button *ngFor="let method of weightingMethods" [value]="method.value" [disabled]="method.disabled">
+        @for (method of weightingMethods; track method) {
+        <mat-radio-button [value]="method.value" [disabled]="method.disabled">
           <div class="radio-content">
             <span class="radio-label ft-14-600" [class.disabled-text]="method.disabled">
               {{ method.name | titlecase }}
@@ -22,6 +23,7 @@
             </span>
           </div>
         </mat-radio-button>
+        }
       </mat-radio-group>
     </div>
 
