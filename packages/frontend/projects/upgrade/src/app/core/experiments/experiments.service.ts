@@ -137,9 +137,11 @@ export class ExperimentService {
   }
 
   updateExperiment(experiment: ExperimentVM) {
-    delete experiment.stat;
     this.store$.dispatch(
-      experimentAction.actionUpsertExperiment({ experiment, actionType: UpsertExperimentType.UPDATE_EXPERIMENT })
+      experimentAction.actionUpsertExperiment({
+        experiment,
+        actionType: UpsertExperimentType.UPDATE_EXPERIMENT,
+      })
     );
   }
 

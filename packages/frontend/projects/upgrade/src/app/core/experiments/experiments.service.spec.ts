@@ -302,7 +302,6 @@ describe('ExperimentService', () => {
 
       service.updateExperiment(experiment);
 
-      expect(experiment.stat).toBeUndefined();
       expect(mockStore.dispatch).toHaveBeenCalledWith(
         actionUpsertExperiment({
           experiment,

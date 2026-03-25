@@ -133,7 +133,10 @@ export class ExperimentEffects {
   UpsertExperiment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionUpsertExperiment),
-      map((action) => ({ experiment: action.experiment, actionType: action.actionType })),
+      map((action) => ({
+        experiment: action.experiment,
+        actionType: action.actionType,
+      })),
       filter(({ experiment, actionType }) => !!experiment && !!actionType),
       withLatestFrom(this.store$.pipe(select(selectExperimentStats))),
       switchMap(([{ experiment, actionType }, experimentStats]) => {

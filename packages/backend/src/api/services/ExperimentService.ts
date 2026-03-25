@@ -1101,6 +1101,9 @@ export class ExperimentService {
         delete oldExperimentClone.updatedAt;
         delete oldExperimentClone.createdAt;
         delete oldExperimentClone.queries; // TODO: Remove comment if we want to consider queries in diff
+        // Segments are managed via separate actions and not part of this update operation
+        delete (oldExperimentClone as any).experimentSegmentInclusion;
+        delete (oldExperimentClone as any).experimentSegmentExclusion;
 
         // Sort based on createdAt to make correct diff
         oldExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
@@ -1117,7 +1120,12 @@ export class ExperimentService {
           delete condition.updatedAt;
           delete condition.createdAt;
           delete (condition as any).experimentId;
+          delete (condition as any).conditionPayloads;
+          delete (condition as any).levelCombinationElements;
         });
+
+        // Ensure this formatting has happened
+        const formattedOldClone = this.formattingPayload(oldExperimentClone);
 
         // removing unwanted params for diff
         const newExperimentClone = JSON.parse(JSON.stringify(updatedExperiment));
@@ -1142,12 +1150,32 @@ export class ExperimentService {
           delete condition.createdAt;
           delete (condition as any).experimentId;
         });
+
+        // Strip timestamps from conditionPayload items and their nested relation objects
+        [formattedOldClone, newExperimentClone].forEach((clone) => {
+          (clone.conditionPayloads || []).forEach((cp: any) => {
+            delete cp.updatedAt;
+            delete cp.createdAt;
+            delete cp.versionNumber;
+            if (cp.parentCondition) {
+              delete cp.parentCondition.updatedAt;
+              delete cp.parentCondition.createdAt;
+              delete cp.parentCondition.versionNumber;
+            }
+            if (cp.decisionPoint) {
+              delete cp.decisionPoint.updatedAt;
+              delete cp.decisionPoint.createdAt;
+              delete cp.decisionPoint.versionNumber;
+            }
+          });
+        });
+
         logger.info({ message: 'Updated experiment:', details: updatedExperiment });
         // add AuditLogs here
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,
           experimentName: experiment.name,
-          diff: diffString(oldExperimentClone, newExperimentClone),
+          diff: diffString(formattedOldClone, newExperimentClone),
         };
 
         await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
