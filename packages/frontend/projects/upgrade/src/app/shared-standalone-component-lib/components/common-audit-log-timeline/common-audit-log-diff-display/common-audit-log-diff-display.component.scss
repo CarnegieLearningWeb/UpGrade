@@ -1,6 +1,5 @@
 .accordion {
   width: 100%;
-  // margin-top: 8px;
 }
 
 .expansion-header {
@@ -24,26 +23,88 @@
   cursor: pointer;
 }
 
-.diff-container {
-  background-color: var(--background-secondary);
-  padding: 16px;
+.diff-table-wrapper {
+  max-height: 500px;
+  overflow: auto;
+  border: 1px solid var(--border-color, #e0e0e0);
   border-radius: 4px;
   font-family: 'Courier New', monospace;
-  font-size: 14px;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  max-height: 500px;
-  overflow-y: auto;
+  font-size: 12px;
+}
 
-  ::ng-deep {
-    .ansi-color {
-      font-weight: normal;
-    }
+.diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  .col-linenum {
+    width: 48px;
+  }
+
+  .col-content {
+    width: calc(50% - 48px);
   }
 }
 
-pre {
-  margin: 0;
-  padding: 0;
+.diff-row {
+  &:hover td {
+    filter: brightness(0.97);
+  }
+}
+
+.linenum-cell {
+  text-align: right;
+  padding: 1px 6px;
+  user-select: none;
+  color: var(--text-hint, #999);
+  background-color: var(--background-secondary, #f5f5f5);
+  border-right: 1px solid var(--border-color, #e0e0e0);
+  min-width: 36px;
+  white-space: nowrap;
+
+  &.removed {
+    background-color: var(--diff-removed-linenum-bg, #ffd7d5);
+    color: var(--diff-removed-linenum-text, #c0392b);
+  }
+
+  &.added {
+    background-color: var(--diff-added-linenum-bg, #ccffd8);
+    color: var(--diff-added-linenum-text, #27ae60);
+  }
+}
+
+.content-cell {
+  padding: 1px 8px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  vertical-align: top;
+
+  &.removed {
+    background-color: var(--diff-removed-bg, #fff0f0);
+  }
+
+  &.added {
+    background-color: var(--diff-added-bg, #f0fff4);
+  }
+
+  &.empty {
+    background-color: var(--diff-empty-bg, #fafafa);
+  }
+
+  .diff-marker {
+    display: inline-block;
+    width: 12px;
+    font-weight: 600;
+    user-select: none;
+    color: inherit;
+  }
+
+  .diff-content {
+    color: var(--text-primary);
+  }
+}
+
+// Left/right column divider
+.diff-table tr td:nth-child(3) {
+  border-left: 2px solid var(--border-color, #e0e0e0);
 }

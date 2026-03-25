@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, Input, AfterViewInit } from '@angular/core';
-
+import { Component, ChangeDetectionStrategy, Input, OnChanges } from '@angular/core';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateModule } from '@ngx-translate/core';
-import Convert from 'ansi-to-html';
+import { AuditLogDiffHelperService, DiffRow } from '../../../../core/logs/audit-log-diff.helper';
+
+export type { DiffRow };
 
 /**
  * Generic component for displaying diffs in audit logs.
@@ -16,38 +17,23 @@ import Convert from 'ansi-to-html';
   standalone: true,
   imports: [MatExpansionModule, TranslateModule],
 })
-export class CommonAuditLogDiffDisplayComponent implements AfterViewInit {
+export class CommonAuditLogDiffDisplayComponent implements OnChanges {
   @Input() logId: string;
   @Input() logData: any;
   @Input() logType: string;
   @Input() actionMessage: string;
 
-  ngAfterViewInit(): void {
-    // Convert ANSI-formatted diff to HTML after view is initialized
-    if (this.hasDiff) {
-      setTimeout(() => {
-        this.renderDiff();
-      }, 0);
-    }
-  }
+  constructor(private diffHelper: AuditLogDiffHelperService) {}
+
+  diffRows: DiffRow[] = [];
 
   get hasDiff(): boolean {
-    return !!(this.logData?.diff || this.logData?.list?.diff);
+    return this.diffHelper.hasDiff(this.logData);
   }
 
-  get diffContent(): string {
-    return this.logData?.list?.diff || this.logData?.diff || '';
-  }
-
-  renderDiff(): void {
-    const convert = new Convert();
-    let convertedToHtml = convert.toHtml(this.diffContent);
-    convertedToHtml = convertedToHtml.split('color:#FFF').join('color: grey');
-
-    const diffNode = document.getElementById(`diff-${this.logId}`);
-    if (diffNode) {
-      const html = new DOMParser().parseFromString(convertedToHtml, 'text/html');
-      diffNode.innerHTML = html.body.innerHTML;
+  ngOnChanges(): void {
+    if (this.diffHelper.hasDiff(this.logData)) {
+      this.diffRows = this.diffHelper.parseDiff(this.diffHelper.getDiffContent(this.logData));
     }
   }
 }

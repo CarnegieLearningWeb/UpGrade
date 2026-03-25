@@ -7,6 +7,53 @@
       </mat-panel-title>
     </mat-expansion-panel-header>
 
-    <pre><div class="ft-14-400 diff-container" [id]="'diff-' + logId">{{ renderDiff() }}</div></pre>
+    @if (hasDiff) {
+    <div class="diff-table-wrapper">
+      <table class="diff-table ft-12-400">
+        <colgroup>
+          <col class="col-linenum" />
+          <col class="col-content" />
+          <col class="col-linenum" />
+          <col class="col-content" />
+        </colgroup>
+        <tbody>
+          @for (row of diffRows; track $index) {
+          <tr class="diff-row">
+            <td class="linenum-cell" [class.removed]="row.leftType === 'removed'">
+              {{ row.leftType !== 'empty' ? row.leftLineNum : '' }}
+            </td>
+            <td
+              class="content-cell"
+              [class.removed]="row.leftType === 'removed'"
+              [class.empty]="row.leftType === 'empty'"
+            >
+              @if (row.leftType === 'removed') {
+              <span class="diff-marker">-</span>
+              } @else {
+              <span class="diff-marker"> </span>
+              }
+              <span class="diff-content">{{ row.leftContent }}</span>
+            </td>
+            <td class="linenum-cell" [class.added]="row.rightType === 'added'">
+              {{ row.rightType !== 'empty' ? row.rightLineNum : '' }}
+            </td>
+            <td
+              class="content-cell"
+              [class.added]="row.rightType === 'added'"
+              [class.empty]="row.rightType === 'empty'"
+            >
+              @if (row.rightType === 'added') {
+              <span class="diff-marker">+</span>
+              } @else {
+              <span class="diff-marker"> </span>
+              }
+              <span class="diff-content">{{ row.rightContent }}</span>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
   </mat-expansion-panel>
 </mat-accordion>
