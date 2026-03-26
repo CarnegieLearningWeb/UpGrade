@@ -274,7 +274,7 @@ describe('AuditLogDiffHelperService', () => {
         const raw = '-block1 old\n+block1 new\n context line\n-block2 old\n+block2 new';
         const rows = service.parseDiff(raw);
 
-        expect(rows).toHaveLength(4);
+        expect(rows).toHaveLength(3);
         expect(rows[0]).toMatchObject({ leftType: 'removed', rightType: 'added', leftContent: 'block1 old' });
         expect(rows[1]).toMatchObject({ leftType: 'context', leftContent: 'context line' });
         expect(rows[2]).toMatchObject({ leftType: 'removed', rightType: 'added', leftContent: 'block2 old' });
