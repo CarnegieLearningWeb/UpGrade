@@ -17,7 +17,6 @@
 @import './app/features/dashboard/profile/components/modals/new-user/new-user.theme.scss';
 @import './app/features/dashboard/experiment-users/components/experiment-users/experiment-users.theme.scss';
 @import './app/features/dashboard/experiment-users/components/preview-user/preview-user.theme.scss';
-@import './app/features/dashboard/logs/common/logs-view.theme.scss';
 @import './app/features/dashboard/common/tabs-view.theme.scss';
 @import './app/features/auth/login/login.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
@@ -30,7 +29,6 @@
   @include profile-info-component-theme($theme);
   @include new-user-component-theme($theme);
   @include preview-user-component-theme($theme);
-  @include logs-view-component-theme($theme);
   @include tabs-view-theme($theme);
   @include login-component-theme($theme);
   @include metrics-component-theme($theme);
