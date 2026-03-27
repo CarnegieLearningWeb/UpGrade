@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input, OnChanges } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuditLogDiffHelperService, DiffRow } from '../../../../core/logs/audit-log-diff.helper';
@@ -15,13 +16,14 @@ export type { DiffRow };
   styleUrls: ['./common-audit-log-diff-display.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [MatExpansionModule, TranslateModule],
+  imports: [NgTemplateOutlet, MatExpansionModule, TranslateModule],
 })
 export class CommonAuditLogDiffDisplayComponent implements OnChanges {
   @Input() logId: string;
   @Input() logData: any;
   @Input() logType: string;
   @Input() actionMessage: string;
+  @Input() wrapInAccordion = true;
 
   constructor(private diffHelper: AuditLogDiffHelperService) {}
 
