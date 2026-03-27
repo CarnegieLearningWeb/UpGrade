@@ -122,6 +122,13 @@
                         ></span>
                       </mat-panel-title>
                     </mat-expansion-panel-header>
+                    <common-audit-log-diff-display
+                      [logId]="log.id"
+                      [logData]="log.data"
+                      [logType]="log.type"
+                      [actionMessage]="getLogTypeMessage(log.type) | translate"
+                      [wrapInAccordion]="false"
+                    ></common-audit-log-diff-display>
                   </mat-expansion-panel>
                 </mat-accordion>
               </div>

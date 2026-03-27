@@ -188,6 +188,12 @@ $timeline-background-color: #eaf0f8;
       }
     }
   }
+
+  .view-diff {
+    margin-left: 20px;
+    color: var(--blue);
+    cursor: pointer;
+  }
 }
 
 ::ng-deep .mat-expansion-panel:not([class*='mat-elevation-z']) {
@@ -205,4 +211,8 @@ $timeline-background-color: #eaf0f8;
 
 ::ng-deep .mat-content.mat-content-hide-toggle {
   margin-right: 0 !important;
+}
+
+::ng-deep .mat-expansion-panel-body {
+  padding: 24px 24px 0 0 !important;
 }

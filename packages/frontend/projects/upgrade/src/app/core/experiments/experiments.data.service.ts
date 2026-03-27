@@ -51,7 +51,13 @@ export class ExperimentDataService {
 
   updateExperiment(experiment: Experiment) {
     const url = `${API_ENDPOINTS.updateExperiments}/${experiment.id}`;
-    return this.http.put<Experiment>(url, { ...experiment });
+    return this.http.put<Experiment>(url, { ...this.stripVMProperties(experiment) });
+  }
+
+  private stripVMProperties(experiment: Experiment): Experiment {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { stat, weightingMethod, ...experimentData } = experiment as any;
+    return experimentData;
   }
 
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {

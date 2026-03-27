@@ -1100,7 +1100,9 @@ export class ExperimentService {
         delete oldExperimentClone.versionNumber;
         delete oldExperimentClone.updatedAt;
         delete oldExperimentClone.createdAt;
-        delete oldExperimentClone.queries; // TODO: Remove comment if we want to consider queries in diff
+        // Segments are managed via separate actions and not part of this update operation
+        delete (oldExperimentClone as any).experimentSegmentInclusion;
+        delete (oldExperimentClone as any).experimentSegmentExclusion;
 
         // Sort based on createdAt to make correct diff
         oldExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
@@ -1117,15 +1119,25 @@ export class ExperimentService {
           delete condition.updatedAt;
           delete condition.createdAt;
           delete (condition as any).experimentId;
+          delete (condition as any).conditionPayloads;
+          delete (condition as any).levelCombinationElements;
         });
+        (oldExperimentClone.queries || []).map((query: any) => {
+          delete query.versionNumber;
+          delete query.updatedAt;
+          delete query.createdAt;
+          delete query.experiment;
+          delete query.archivedStats;
+        });
+
+        // Ensure this formatting has happened
+        const formattedOldClone = this.formattingPayload(oldExperimentClone);
 
         // removing unwanted params for diff
         const newExperimentClone = JSON.parse(JSON.stringify(updatedExperiment));
         delete newExperimentClone.versionNumber;
         delete newExperimentClone.updatedAt;
         delete newExperimentClone.createdAt;
-        delete newExperimentClone.queries;
-
         // Sort based on createdAt to make correct diff
         newExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         newExperimentClone.conditions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
@@ -1142,12 +1154,39 @@ export class ExperimentService {
           delete condition.createdAt;
           delete (condition as any).experimentId;
         });
+        (newExperimentClone.queries || []).map((query: any) => {
+          delete query.versionNumber;
+          delete query.updatedAt;
+          delete query.createdAt;
+          delete query.experiment;
+          delete query.archivedStats;
+        });
+
+        // Strip timestamps from conditionPayload items and their nested relation objects
+        [formattedOldClone, newExperimentClone].forEach((clone) => {
+          (clone.conditionPayloads || []).forEach((cp: any) => {
+            delete cp.updatedAt;
+            delete cp.createdAt;
+            delete cp.versionNumber;
+            if (cp.parentCondition) {
+              delete cp.parentCondition.updatedAt;
+              delete cp.parentCondition.createdAt;
+              delete cp.parentCondition.versionNumber;
+            }
+            if (cp.decisionPoint) {
+              delete cp.decisionPoint.updatedAt;
+              delete cp.decisionPoint.createdAt;
+              delete cp.decisionPoint.versionNumber;
+            }
+          });
+        });
+
         logger.info({ message: 'Updated experiment:', details: updatedExperiment });
         // add AuditLogs here
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,
           experimentName: experiment.name,
-          diff: diffString(oldExperimentClone, newExperimentClone),
+          diff: diffString(formattedOldClone, newExperimentClone),
         };
 
         await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
@@ -2152,12 +2191,12 @@ export class ExperimentService {
 
       // update list AuditLogs here
       const updateAuditLog: AuditLogData = {
-        flagId: experiment.id,
-        flagName: experiment.name,
+        experimentId: experiment.id,
+        experimentName: experiment.name,
         list: listData,
       };
 
-      await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, currentUser);
+      await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, currentUser);
 
       return existingRecord;
     });

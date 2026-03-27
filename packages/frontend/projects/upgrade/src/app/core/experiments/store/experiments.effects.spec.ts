@@ -78,6 +78,7 @@ describe('ExperimentEffects', () => {
   let commonModalEventsService: any;
   let mockEnvironment: Environment;
   let commonExportHelpersService: any;
+  let experimentService: any;
 
   beforeEach(() => {
     actions$ = new ActionsSubject();
@@ -99,6 +100,9 @@ describe('ExperimentEffects', () => {
     commonModalEventsService = {
       forceCloseModal: jest.fn(),
       emitCloseModalEvent: jest.fn(),
+    };
+    experimentService = {
+      stripExperimentVMProperties: jest.fn(),
     };
     service = new ExperimentEffects(
       actions$,
