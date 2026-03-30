@@ -66,4 +66,16 @@ export const GLOBAL_AUDIT_LOG_TIMELINE_CONFIG: AuditLogTimelineConfig = {
 
   isUpdateLogType: (type) =>
     [...EXPERIMENT_UPDATE_LOG_TYPES, ...FEATURE_FLAG_UPDATE_LOG_TYPES].includes(type as LOG_TYPE),
+
+  getEntityName: (logData) => logData?.experimentName || logData?.flagName || null,
+
+  getEntityLink: (logData) => {
+    if (logData?.experimentId && logData?.isExperimentExist) {
+      return ['/home', 'detail', logData.experimentId];
+    }
+    if (logData?.flagId && logData?.isFlagExist) {
+      return ['/featureflags', 'detail', logData.flagId];
+    }
+    return null;
+  },
 };

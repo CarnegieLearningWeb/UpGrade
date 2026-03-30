@@ -103,6 +103,14 @@ export class CommonAuditLogTimelineComponent {
     return this.config?.isFilterModeUpdate?.(logData) ?? false;
   }
 
+  getEntityName(logData: any): string | null {
+    return this.config?.getEntityName?.(logData) ?? null;
+  }
+
+  getEntityLink(logData: any): string[] | null {
+    return this.config?.getEntityLink?.(logData) ?? null;
+  }
+
   onScrolledToBottom(): void {
     this.scrolledToBottom.emit();
   }

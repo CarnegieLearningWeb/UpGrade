@@ -49,6 +49,7 @@
             <span class="log-text">
               <span class="ft-16-400 action-msg">
                 {{ getLogTypeMessage(log.type) | translate }}
+                @if (getEntityName(log.data)) { {{ ' ' + getEntityName(log.data) }} }
               </span>
             </span>
             }
@@ -67,6 +68,10 @@
                 }}
                 } @if (!log.data?.previousState || !log.data?.newState) {
                 {{ getLogTypeMessage(log.type) | translate }}
+                } @if (getEntityLink(log.data)) {
+                <a class="entity-link" [routerLink]="getEntityLink(log.data)">{{ getEntityName(log.data) }}</a>
+                } @else if (getEntityName(log.data)) {
+                {{ ' ' + getEntityName(log.data) }}
                 }
               </span>
             </span>
@@ -81,7 +86,11 @@
               <div class="log-text">
                 <span class="ft-16-400 action-msg">
                   {{ getLogTypeMessage(log.type) | translate }}
-                  @if (log.data.list.operation) { -
+                  @if (getEntityLink(log.data)) {
+                  <a class="entity-link" [routerLink]="getEntityLink(log.data)">{{ getEntityName(log.data) }}</a>
+                  } @else if (getEntityName(log.data)) {
+                  {{ ' ' + getEntityName(log.data) }}
+                  } @if (log.data.list.operation) { -
                   {{
                     getListOperationMessage(log.data.list.operation)
                       | translate
@@ -104,7 +113,13 @@
                       <mat-panel-title>
                         <span class="ft-16-400 action-msg">
                           {{ getLogTypeMessage(log.type) | translate }}
-                          @if (log.data.list.operation) { -
+                          @if (getEntityLink(log.data)) {
+                          <a class="entity-link" [routerLink]="getEntityLink(log.data)">{{
+                            getEntityName(log.data)
+                          }}</a>
+                          } @else if (getEntityName(log.data)) {
+                          {{ ' ' + getEntityName(log.data) }}
+                          } @if (log.data.list.operation) { -
                           {{
                             getListOperationMessage(log.data.list.operation)
                               | translate
@@ -138,7 +153,11 @@
               <div class="log-text">
                 <span class="ft-16-400 action-msg">
                   {{ getLogTypeMessage(log.type) | translate }}
-                  -
+                  @if (getEntityLink(log.data)) {
+                  <a class="entity-link" [routerLink]="getEntityLink(log.data)">{{ getEntityName(log.data) }}</a>
+                  } @else if (getEntityName(log.data)) {
+                  {{ ' ' + getEntityName(log.data) }}
+                  } -
                   {{
                     'logs.audit-log-feature-flag-updated-filterMode-changed.text'
                       | translate : { status: log.data.filterMode === 'includeAll' ? 'enabled' : 'disabled' }
@@ -146,14 +165,35 @@
                 </span>
               </div>
               } @else {
-              <common-audit-log-diff-display
-                [logId]="log.id"
-                [logData]="log.data"
-                [logType]="log.type"
-                [actionMessage]="getLogTypeMessage(log.type) | translate"
-              ></common-audit-log-diff-display>
+              <!-- General entity properties updated (with diff) -->
+              <mat-accordion class="accordion">
+                <mat-expansion-panel hideToggle="true">
+                  <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
+                    <mat-panel-title>
+                      <span class="ft-16-400 action-msg">
+                        {{ getLogTypeMessage(log.type) | translate }}
+                        @if (getEntityLink(log.data)) {
+                        <a class="entity-link" [routerLink]="getEntityLink(log.data)">{{ getEntityName(log.data) }}</a>
+                        } @else if (getEntityName(log.data)) {
+                        {{ ' ' + getEntityName(log.data) }}
+                        }
+                      </span>
+                      <span
+                        class="ft-12-600 view-diff"
+                        [innerHTML]="'logs-global.log-view-diff.text' | translate"
+                      ></span>
+                    </mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <common-audit-log-diff-display
+                    [logId]="log.id"
+                    [logData]="log.data"
+                    [logType]="log.type"
+                    [actionMessage]="getLogTypeMessage(log.type) | translate"
+                    [wrapInAccordion]="false"
+                  ></common-audit-log-diff-display>
+                </mat-expansion-panel>
+              </mat-accordion>
               } }
-              <!-- General entity properties updated (with diff) or filter mode change -->
             </div>
             }
             <!-- Col 3: Time -->

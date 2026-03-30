@@ -167,6 +167,11 @@ $timeline-background-color: #eaf0f8;
 
       .action-msg {
         margin-right: 5px;
+
+        .entity-link {
+          text-decoration: underline;
+          color: var(--blue);
+        }
       }
 
       .accordion {
