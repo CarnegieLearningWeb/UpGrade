@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit, OnDestroy } from '@angular/core';
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import { CommonModalComponent } from '@shared-component-lib';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,7 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { BehaviorSubject, map, Observable, startWith, Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import {
   POST_EXPERIMENT_RULE,
   ExperimentCondition,

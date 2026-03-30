@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import { CommonModalComponent } from '@shared-component-lib';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { FormsModule } from '@angular/forms';
@@ -8,7 +8,7 @@ import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { BehaviorSubject, Observable, Subscription, combineLatest, map } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({

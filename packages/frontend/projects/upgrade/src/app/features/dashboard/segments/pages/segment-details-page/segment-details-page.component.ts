@@ -1,6 +1,6 @@
 // segment-details-page.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonPageComponent } from '../../../../../shared-standalone-component-lib/components';
+import { CommonPageComponent } from '@shared-component-lib';
 import { SegmentDetailsPageHeaderComponent } from './segment-details-page-header/segment-details-page-header.component';
 import { SegmentDetailsPageContentComponent } from './segment-details-page-content/segment-details-page-content.component';
 import { SegmentsService } from '../../../../../core/segments/segments.service';

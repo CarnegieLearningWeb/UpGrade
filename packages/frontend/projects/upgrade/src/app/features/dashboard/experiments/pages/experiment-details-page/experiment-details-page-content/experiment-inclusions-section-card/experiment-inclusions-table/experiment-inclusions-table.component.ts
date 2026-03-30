@@ -4,7 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../../../../core/experiments/experiments.service';
 import { ParticipantListRowActionEvent } from '../../../../../../../../core/feature-flags/store/feature-flags.model';
 import { LIST_FILTER_MODE } from 'upgrade_types';
-import { CommonDetailsParticipantListTableComponent } from '../../../../../../../../shared-standalone-component-lib/components/common-details-participant-list-table/common-details-participant-list-table.component';
+import { CommonDetailsParticipantListTableComponent } from '@shared-component-lib/common-details-participant-list-table/common-details-participant-list-table.component';
 
 @Component({
   selector: 'app-experiment-inclusions-table',

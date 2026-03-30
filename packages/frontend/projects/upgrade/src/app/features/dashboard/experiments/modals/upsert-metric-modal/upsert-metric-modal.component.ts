@@ -21,8 +21,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonModalComponent } from '@shared-component-lib';
+import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
 import { SharedModule } from '../../../../../shared/shared.module';
 import {
@@ -37,7 +37,7 @@ import { MetricHelperService } from '../../../../../core/experiments/metric-help
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { NotificationService } from '../../../../../core/notifications/notification.service';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
-import { CommonLearnMoreLinkComponent } from '../../../../../shared-standalone-component-lib/components';
+import { CommonLearnMoreLinkComponent } from '@shared-component-lib';
 import {
   ASSIGNMENT_UNIT,
   IMetricMetaData,

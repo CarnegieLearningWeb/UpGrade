@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { CommonRootPageHeaderComponent } from '../../../../../../shared-standalone-component-lib/components';
+import { CommonRootPageHeaderComponent } from '@shared-component-lib';
 
 @Component({
   selector: 'app-experiment-root-page-header',

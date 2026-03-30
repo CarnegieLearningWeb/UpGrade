@@ -3,7 +3,7 @@ import {
   CommonSectionCardComponent,
   CommonSectionCardSearchHeaderComponent,
   CommonSectionCardActionButtonsComponent,
-} from '../../../../../../../shared-standalone-component-lib/components';
+} from '@shared-component-lib';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { AsyncPipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -18,7 +18,7 @@ import {
   FEATURE_FLAG_BUTTON_ACTION,
   FeatureFlag,
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
-import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
+import { CommonSearchWidgetSearchParams } from '@shared-component-lib/common-section-card-search-header/common-section-card-search-header.component';
 import {
   CommonTableHelpersService,
   TableState,

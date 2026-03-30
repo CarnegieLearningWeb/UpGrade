@@ -20,7 +20,7 @@ import {
   OPERATION_TYPES,
   REPEATED_MEASURE,
 } from 'upgrade_types';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MetricHelperService } from '../../../../../core/experiments/metric-helper.service';

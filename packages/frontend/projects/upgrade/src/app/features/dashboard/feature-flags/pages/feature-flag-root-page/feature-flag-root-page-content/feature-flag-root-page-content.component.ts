@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { CommonSectionCardListComponent } from '../../../../../../shared-standalone-component-lib/components';
+import { CommonSectionCardListComponent } from '@shared-component-lib';
 import { FeatureFlagRootSectionCardComponent } from './feature-flag-root-section-card/feature-flag-root-section-card.component';
 
 @Component({

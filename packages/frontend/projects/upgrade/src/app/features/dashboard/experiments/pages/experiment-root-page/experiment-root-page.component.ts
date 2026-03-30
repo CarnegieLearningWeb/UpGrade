@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonPageComponent } from '../../../../../shared-standalone-component-lib/components';
+import { CommonPageComponent } from '@shared-component-lib';
 import { ExperimentRootPageHeaderComponent } from './experiment-root-page-header/experiment-root-page-header.component';
 import { ExperimentRootPageContentComponent } from './experiment-root-page-content/experiment-root-page-content.component';
 

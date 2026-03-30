@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { CommonDetailsPageHeaderComponent } from '../../../../../../shared-standalone-component-lib/components';
+import { CommonDetailsPageHeaderComponent } from '@shared-component-lib';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { CommonModule } from '@angular/common';
 

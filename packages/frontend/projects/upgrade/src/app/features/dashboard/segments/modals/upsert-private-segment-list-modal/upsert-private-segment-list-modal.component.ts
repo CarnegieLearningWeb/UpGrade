@@ -1,8 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
-import {
-  CommonModalComponent,
-  CommonTagsInputComponent,
-} from '../../../../../shared-standalone-component-lib/components';
+import { CommonModalComponent, CommonTagsInputComponent } from '@shared-component-lib';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import {
@@ -42,7 +39,7 @@ import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscri
 import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { SharedModule } from '../../../../../shared/shared.module';
 

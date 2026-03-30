@@ -3,14 +3,14 @@ import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
-} from '../../../../../../../shared-standalone-component-lib/components';
-import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../shared-standalone-component-lib/components/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
+} from '@shared-component-lib';
+import { CommonTabbedSectionCardFooterComponent } from '@shared-component-lib/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { CommonSectionCardOverviewDetailsComponent } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
+import { CommonSectionCardOverviewDetailsComponent } from '@shared-component-lib/common-section-card-overview-details/common-section-card-overview-details.component';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import {
   FEATURE_FLAG_DETAILS_PAGE_ACTIONS,
@@ -18,7 +18,7 @@ import {
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { combineLatest, map, Observable, Subscription } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
-import { CommonSimpleConfirmationModalComponent } from '../../../../../../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
+import { CommonSimpleConfirmationModalComponent } from '@shared-component-lib/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 import { Router } from '@angular/router';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
