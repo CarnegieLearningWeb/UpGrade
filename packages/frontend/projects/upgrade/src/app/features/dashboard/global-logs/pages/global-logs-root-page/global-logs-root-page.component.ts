@@ -4,10 +4,10 @@ import {
   CommonRootPageHeaderComponent,
   CommonSectionCardListComponent,
 } from '../../../../../shared-standalone-component-lib/components';
-import { LogsAuditLogSectionCardComponent } from './logs-audit-log-section-card/logs-audit-log-section-card.component';
+import { GlobalLogsAuditLogSectionCardComponent } from './global-logs-audit-log-section-card/global-logs-audit-log-section-card.component';
 
 @Component({
-  selector: 'app-logs-root-page',
+  selector: 'app-global-logs-root-page',
   template: `
     <app-common-page>
       <!-- header -->
@@ -15,7 +15,7 @@ import { LogsAuditLogSectionCardComponent } from './logs-audit-log-section-card/
       </app-common-root-page-header>
       <!-- content -->
       <app-common-section-card-list content>
-        <app-logs-audit-log-section-card section-card></app-logs-audit-log-section-card>
+        <app-global-logs-audit-log-section-card section-card></app-global-logs-audit-log-section-card>
       </app-common-section-card-list>
     </app-common-page>
   `,
@@ -24,7 +24,7 @@ import { LogsAuditLogSectionCardComponent } from './logs-audit-log-section-card/
     CommonPageComponent,
     CommonRootPageHeaderComponent,
     CommonSectionCardListComponent,
-    LogsAuditLogSectionCardComponent,
+    GlobalLogsAuditLogSectionCardComponent,
   ],
 })
-export class LogsRootPageComponent {}
+export class GlobalLogsRootPageComponent {}

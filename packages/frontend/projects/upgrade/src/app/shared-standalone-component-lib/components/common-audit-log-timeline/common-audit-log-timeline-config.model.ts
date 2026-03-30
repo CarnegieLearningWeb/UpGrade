@@ -31,6 +31,14 @@ export interface AuditLogTimelineConfig {
   logTypeMessageMap: Record<string, string>;
 
   /**
+   * Optional mapping of log type enum values to human-readable display labels for filter menus.
+   * When present, these labels are shown in the filter dropdown instead of the raw enum value.
+   *
+   * Example: \{ 'experimentCreated': 'Experiment Created' \}
+   */
+  logTypeDisplayLabelMap?: Record<string, string>;
+
+  /**
    * Optional mapping for list operation types (inclusion/exclusion lists).
    * Only needed if the entity supports list operations.
    *

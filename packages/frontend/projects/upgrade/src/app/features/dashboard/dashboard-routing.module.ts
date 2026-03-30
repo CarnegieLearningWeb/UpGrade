@@ -64,7 +64,9 @@ const routes: Routes = [
       {
         path: 'logs',
         loadComponent: () =>
-          import('./logs/pages/logs-root-page/logs-root-page.component').then((c) => c.LogsRootPageComponent),
+          import('./global-logs/pages/global-logs-root-page/global-logs-root-page.component').then(
+            (c) => c.GlobalLogsRootPageComponent
+          ),
         data: {
           title: 'app-header.title.logs',
         },
