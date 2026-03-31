@@ -63,7 +63,10 @@ const routes: Routes = [
       },
       {
         path: 'logs',
-        loadChildren: () => import('./logs/logs.module').then((m) => m.LogsModule),
+        loadComponent: () =>
+          import('./global-logs/pages/global-logs-root-page/global-logs-root-page.component').then(
+            (c) => c.GlobalLogsRootPageComponent
+          ),
         data: {
           title: 'app-header.title.logs',
         },

@@ -53,6 +53,7 @@ export interface CommonSearchWidgetSearchParams<SearchKeyType> {
 
 export interface FilterOption {
   value: string;
+  label?: string;
   type?: string;
   valueOptions?: string[];
   group?: string;

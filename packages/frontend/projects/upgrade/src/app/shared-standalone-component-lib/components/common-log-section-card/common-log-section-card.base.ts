@@ -125,8 +125,12 @@ export abstract class CommonLogSectionCardBase implements OnInit, OnDestroy {
 
     const options: FilterOption[] = [
       { value: 'All' },
-      ...actionTypes.map((type) => ({ value: type, group: 'Event Type' })),
-      ...Array.from(userSet).map((user) => ({ value: user, group: 'Users' })),
+      ...actionTypes.map((type) => ({
+        value: type,
+        label: this.timelineConfig.logTypeDisplayLabelMap?.[type],
+        group: 'Event Type',
+      })),
+      ...Array.from(userSet).map((user) => ({ value: user, label: user, group: 'Users' })),
     ];
 
     this.filterOptions$.next(options);

@@ -15,8 +15,8 @@ import { AuditLogs } from '../../../../../../../core/logs/store/logs.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Observable } from 'rxjs';
 import { AuditLogTimelineConfig } from '@shared-component-lib/common-audit-log-timeline/common-audit-log-timeline-config.model';
-import { FEATURE_FLAG_TIMELINE_LOG_TYPE_CONFIG } from '@shared-component-lib/common-audit-log-timeline/configs/feature-flag-timeline.config';
 import { CommonLogSectionCardBase } from '@shared-component-lib/common-log-section-card/common-log-section-card.base';
+import { FEATURE_FLAG_TIMELINE_LOG_TYPE_CONFIG } from '../../../../feature-flag-timeline.config';
 
 @Component({
   selector: 'app-feature-flag-log-section-card',

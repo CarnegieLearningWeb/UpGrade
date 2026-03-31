@@ -31,6 +31,14 @@ export interface AuditLogTimelineConfig {
   logTypeMessageMap: Record<string, string>;
 
   /**
+   * Optional mapping of log type enum values to human-readable display labels for filter menus.
+   * When present, these labels are shown in the filter dropdown instead of the raw enum value.
+   *
+   * Example: \{ 'experimentCreated': 'Experiment Created' \}
+   */
+  logTypeDisplayLabelMap?: Record<string, string>;
+
+  /**
    * Optional mapping for list operation types (inclusion/exclusion lists).
    * Only needed if the entity supports list operations.
    *
@@ -81,6 +89,27 @@ export interface AuditLogTimelineConfig {
    * @returns true if the log is a filter mode update
    */
   isFilterModeUpdate?: (logData: any) => boolean;
+
+  /**
+   * Extracts the entity name (e.g., experiment name, feature flag name) from log data.
+   * When provided, the name is displayed after the action message in the log entry.
+   * On context-specific timelines (e.g., the experiment detail page) this should return null
+   * since the entity name is already implied by the page context.
+   *
+   * @param logData - The log's data object
+   * @returns The entity name string, or null if not applicable
+   */
+  getEntityName?: (logData: any) => string | null;
+
+  /**
+   * Returns the router link array for navigating to the entity's detail page.
+   * Should return null if the entity no longer exists or navigation is not applicable.
+   * When null but getEntityName returns a value, the name is shown as plain text.
+   *
+   * @param logData - The log's data object
+   * @returns Router link segments (e.g., ['/home', 'detail', id]) or null
+   */
+  getEntityLink?: (logData: any) => string[] | null;
 }
 
 /**
