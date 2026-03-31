@@ -1,6 +1,7 @@
 // Container and layout styles (moved from section-card)
 .logs-container {
-  max-height: 600px;
+  min-height: var(--audit-log-container-height, 300px);
+  max-height: var(--audit-log-container-height, 600px);
   overflow-y: auto;
   overflow-x: hidden;
   padding-top: 10px;

@@ -70,10 +70,10 @@ export const GLOBAL_AUDIT_LOG_TIMELINE_CONFIG: AuditLogTimelineConfig = {
   getEntityName: (logData) => logData?.experimentName || logData?.flagName || null,
 
   getEntityLink: (logData) => {
-    if (logData?.experimentId && logData?.isExperimentExist) {
+    if (logData?.experimentId) {
       return ['/home', 'detail', logData.experimentId];
     }
-    if (logData?.flagId && logData?.isFlagExist) {
+    if (logData?.flagId) {
       return ['/featureflags', 'detail', logData.flagId];
     }
     return null;

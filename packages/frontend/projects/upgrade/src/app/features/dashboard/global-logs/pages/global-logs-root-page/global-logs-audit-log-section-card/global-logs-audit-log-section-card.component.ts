@@ -17,6 +17,7 @@ import { AuditLogTimelineConfig } from '../../../../../../shared-standalone-comp
 
 @Component({
   selector: 'app-global-logs-audit-log-section-card',
+  styleUrls: ['./global-logs-audit-log-section-card.component.scss'],
   template: ` <app-common-section-card>
     <app-common-section-card-search-header
       header-left
