@@ -4,7 +4,7 @@
       <!-- Standalone options (no group) -->
       @for (option of standaloneOptions; track option) {
       <mat-option class="ft-14-400" [value]="option.value">
-        {{ option.value | titlecase }}
+        {{ option.label ?? (option.value | titlecase) }}
       </mat-option>
       }
 
@@ -13,7 +13,7 @@
       <mat-optgroup [label]="group.groupName">
         @for (option of group.options; track option) {
         <mat-option class="ft-14-400" [value]="option.value">
-          {{ option.value | titlecase }}
+          {{ option.label ?? (option.value | titlecase) }}
         </mat-option>
         }
       </mat-optgroup>
