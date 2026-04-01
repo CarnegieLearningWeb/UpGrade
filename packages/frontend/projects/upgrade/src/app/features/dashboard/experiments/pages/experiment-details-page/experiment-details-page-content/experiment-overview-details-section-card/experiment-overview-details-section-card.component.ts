@@ -4,9 +4,9 @@ import {
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
   CommonSectionCardOverviewDetailsComponent,
-} from '../../../../../../../shared-standalone-component-lib/components';
-import { ActionButton } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-action-buttons/common-section-card-action-buttons.component';
-import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../shared-standalone-component-lib/components/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
+} from '@shared-component-lib';
+import { ActionButton } from '@shared-component-lib/common-section-card-action-buttons/common-section-card-action-buttons.component';
+import { CommonTabbedSectionCardFooterComponent } from '@shared-component-lib/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IMenuButtonItem, EXPERIMENT_SEARCH_KEY } from 'upgrade_types';

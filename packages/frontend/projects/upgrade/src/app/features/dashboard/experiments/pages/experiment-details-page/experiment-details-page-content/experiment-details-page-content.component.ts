@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonSectionCardListComponent } from '../../../../../../shared-standalone-component-lib/components';
+import { CommonSectionCardListComponent } from '@shared-component-lib';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../../../shared/shared.module';
 import { ExperimentOverviewDetailsSectionCardComponent } from './experiment-overview-details-section-card/experiment-overview-details-section-card.component';

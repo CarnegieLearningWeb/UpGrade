@@ -1,8 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import {
-  CommonModalComponent,
-  CommonTagsInputComponent,
-} from '../../../../../shared-standalone-component-lib/components';
+import { CommonModalComponent, CommonTagsInputComponent } from '@shared-component-lib';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -28,9 +25,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { CommonTextHelpersService } from '../../../../../shared/services/common-text-helpers.service';
 import isEqual from 'lodash.isequal';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import { SharedModule } from '../../../../../shared/shared.module';
-import { CommonLearnMoreLinkComponent } from '../../../../../shared-standalone-component-lib/components';
+import { CommonLearnMoreLinkComponent } from '@shared-component-lib';
 
 @Component({
   selector: 'upsert-add-feature-flag-modal',

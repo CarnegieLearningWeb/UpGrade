@@ -19,6 +19,8 @@
     "lib": ["es2018", "dom"],
     "paths": {
       "upgrade_types": ["../../types", "./types"],
+      "@shared-component-lib": ["../projects/upgrade/src/app/shared-standalone-component-lib/components"],
+      "@shared-component-lib/*": ["../projects/upgrade/src/app/shared-standalone-component-lib/components/*"]
     },
     "useDefineForClassFields": false
   }

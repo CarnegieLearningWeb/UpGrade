@@ -13,7 +13,7 @@ import { SimpleNotificationsModule } from 'angular2-notifications';
 import { environment } from '../environments/environment';
 import { ENV } from '../environments/environment-types';
 import { AuthModule } from './core/auth/auth.module';
-import { provideImportServiceTypeAdapters } from './shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
+import { provideImportServiceTypeAdapters } from '@shared-component-lib/common-import-modal/common-import-type-adapters';
 
 @NgModule({
   declarations: [AppComponent],

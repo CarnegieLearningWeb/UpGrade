@@ -1,8 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import {
-  CommonModalComponent,
-  CommonTagsInputComponent,
-} from '../../../../../shared-standalone-component-lib/components';
+import { CommonModalComponent, CommonTagsInputComponent } from '@shared-component-lib';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -25,12 +22,12 @@ import {
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { BehaviorSubject, Observable, map, startWith, Subscription, combineLatestWith, withLatestFrom } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { DuplicateSegmentNameError, SEGMENT_TYPE } from 'upgrade_types';
 import isEqual from 'lodash.isequal';
 import { SharedModule } from '../../../../../shared/shared.module';
-import { CommonLearnMoreLinkComponent } from '../../../../../shared-standalone-component-lib/components';
+import { CommonLearnMoreLinkComponent } from '@shared-component-lib';
 
 @Component({
   selector: 'upsert-add-segment-modal',

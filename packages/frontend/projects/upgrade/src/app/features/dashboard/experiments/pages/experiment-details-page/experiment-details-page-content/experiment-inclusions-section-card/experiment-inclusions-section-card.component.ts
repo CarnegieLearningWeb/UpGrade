@@ -3,7 +3,7 @@ import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
-} from '../../../../../../../shared-standalone-component-lib/components';
+} from '@shared-component-lib';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { IMenuButtonItem, FILTER_MODE } from 'upgrade_types';
@@ -11,7 +11,7 @@ import { ExperimentInclusionsTableComponent } from './experiment-inclusions-tabl
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatDialogRef } from '@angular/material/dialog';
-import { CommonSimpleConfirmationModalComponent } from '../../../../../../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
+import { CommonSimpleConfirmationModalComponent } from '@shared-component-lib/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
 import { Observable, map, Subscription, combineLatest, take } from 'rxjs';
 import {
   Experiment,

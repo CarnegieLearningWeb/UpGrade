@@ -3,7 +3,7 @@ import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
-} from '../../../../../../../shared-standalone-component-lib/components';
+} from '@shared-component-lib';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentDecisionPointsTableComponent } from './experiment-decision-points-table/experiment-decision-points-table.component';

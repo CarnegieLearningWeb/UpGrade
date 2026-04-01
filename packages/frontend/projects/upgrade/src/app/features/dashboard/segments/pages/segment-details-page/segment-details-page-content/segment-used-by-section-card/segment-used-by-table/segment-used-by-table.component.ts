@@ -10,7 +10,7 @@ import { SegmentsService } from '../../../../../../../../core/segments/segments.
 import { Observable } from 'rxjs';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { UsedByTableRow } from '../../../../../../../../core/segments/store/segments.model';
-import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
+import { CommonStatusIndicatorChipComponent } from '@shared-component-lib';
 
 @Component({
   selector: 'app-segment-used-by-table',

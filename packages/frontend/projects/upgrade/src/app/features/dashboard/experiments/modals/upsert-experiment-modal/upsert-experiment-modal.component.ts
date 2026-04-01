@@ -11,12 +11,9 @@ import { MatRadioModule } from '@angular/material/radio';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, Observable, Subscription, combineLatestWith, map, startWith, take } from 'rxjs';
 import { isEqual } from 'lodash';
-import {
-  CommonModalComponent,
-  CommonLearnMoreLinkComponent,
-} from '../../../../../shared-standalone-component-lib/components';
+import { CommonModalComponent, CommonLearnMoreLinkComponent } from '@shared-component-lib';
 import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
-import { CommonTagsInputComponent } from '../../../../../shared-standalone-component-lib/components/common-tag-input/common-tag-input.component';
+import { CommonTagsInputComponent } from '@shared-component-lib/common-tag-input/common-tag-input.component';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import {
   UPSERT_EXPERIMENT_ACTION,
@@ -41,7 +38,7 @@ import {
   EXPERIMENT_TYPE,
   MoocletPolicyParametersDTO,
 } from 'upgrade_types';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 import { ENV, Environment } from '../../../../../../environments/environment-types';
 import { SharedModule } from '../../../../../shared/shared.module';

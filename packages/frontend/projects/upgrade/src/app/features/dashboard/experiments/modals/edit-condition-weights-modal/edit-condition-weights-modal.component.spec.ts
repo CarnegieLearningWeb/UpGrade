@@ -10,7 +10,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 
 import { EditConditionWeightsModalComponent } from './edit-condition-weights-modal.component';
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import { CommonModalComponent } from '@shared-component-lib';
 
 describe('EditConditionWeightsModalComponent', () => {
   let component: EditConditionWeightsModalComponent;

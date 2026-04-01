@@ -3,7 +3,7 @@ import {
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
   CommonSectionCardActionButtonsComponent,
-} from '../../../../../../../shared-standalone-component-lib/components';
+} from '@shared-component-lib';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { SegmentsService } from '../../../../../../../core/segments/segments.service';

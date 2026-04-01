@@ -11,7 +11,7 @@ import {
 } from 'upgrade_types';
 import { ExperimentVM, TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS } from './store/experiments.model';
 import { environment } from '../../../environments/environment';
-import { BullettedListKeyValueFormat } from '../../shared-standalone-component-lib/components/common-section-card-overview-details/common-section-card-overview-details.component';
+import { BullettedListKeyValueFormat } from '@shared-component-lib/common-section-card-overview-details/common-section-card-overview-details.component';
 import { CommonFormHelpersService } from '../../shared/services/common-form-helpers.service';
 
 // ============================================================================

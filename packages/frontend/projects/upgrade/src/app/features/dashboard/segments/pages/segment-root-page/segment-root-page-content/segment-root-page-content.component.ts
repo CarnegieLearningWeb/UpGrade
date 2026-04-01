@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { CommonSectionCardListComponent } from '../../../../../../shared-standalone-component-lib/components';
+import { CommonSectionCardListComponent } from '@shared-component-lib';
 import { SegmentRootSectionCardComponent } from './segment-root-section-card/segment-root-section-card.component';
 import { SegmentGlobalSectionCardComponent } from './segment-global-section-card/segment-global-section-card.component';
 

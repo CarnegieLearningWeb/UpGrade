@@ -15,14 +15,14 @@ import {
   UPSERT_FEATURE_FLAG_ACTION,
   UpsertFeatureFlagParams,
 } from '../../core/feature-flags/store/feature-flags.model';
-import { CommonSimpleConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
-import { CommonSimpleTextValidatedConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-text-validated-confirmation-modal/common-simple-text-validated-confirmation-modal.component';
+import { CommonSimpleConfirmationModalComponent } from '@shared-component-lib/common-simple-confirmation-modal/common-simple-confirmation-modal.component';
+import { CommonSimpleTextValidatedConfirmationModalComponent } from '@shared-component-lib/common-simple-text-validated-confirmation-modal/common-simple-text-validated-confirmation-modal.component';
 import {
   CommonModalConfig,
   ModalSize,
   SimpleConfirmationModalParams,
   TextValidatedConfirmationModalParams,
-} from '../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+} from '@shared-component-lib/common-modal/common-modal.types';
 import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { UpsertSegmentModalComponent } from '../../features/dashboard/segments/modals/upsert-segment-modal/upsert-segment-modal.component';
 import {
@@ -33,8 +33,8 @@ import {
   ImportServiceAdapter,
   SEGMENT_IMPORT_SERVICE,
   SEGMENT_LIST_IMPORT_SERVICE,
-} from '../../shared-standalone-component-lib/components/common-import-modal/common-import-type-adapters';
-import { CommonImportModalComponent } from '../../shared-standalone-component-lib/components/common-import-modal/common-import-modal.component';
+} from '@shared-component-lib/common-import-modal/common-import-type-adapters';
+import { CommonImportModalComponent } from '@shared-component-lib/common-import-modal/common-import-modal.component';
 import { DeleteSegmentModalComponent } from '../../features/dashboard/segments/modals/delete-segment-modal/delete-segment-modal.component';
 import { UpsertExperimentModalComponent } from '../../features/dashboard/experiments/modals/upsert-experiment-modal/upsert-experiment-modal.component';
 import { UpsertDecisionPointModalComponent } from '../../features/dashboard/experiments/modals/upsert-decision-point-modal/upsert-decision-point-modal.component';

@@ -3,7 +3,7 @@ import {
   CommonSectionCardComponent,
   CommonSectionCardSearchHeaderComponent,
   CommonSectionCardActionButtonsComponent,
-} from '../../../../../../../shared-standalone-component-lib/components';
+} from '@shared-component-lib';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
 import { AsyncPipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -14,7 +14,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { Observable, map, combineLatest } from 'rxjs';
 import { EXPERIMENT_BUTTON_ACTION, Experiment } from '../../../../../../../core/experiments/store/experiments.model';
-import { CommonSearchWidgetSearchParams } from '../../../../../../../shared-standalone-component-lib/components/common-section-card-search-header/common-section-card-search-header.component';
+import { CommonSearchWidgetSearchParams } from '@shared-component-lib/common-section-card-search-header/common-section-card-search-header.component';
 import { TableState } from '../../../../../../../shared/services/common-table-helpers.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';

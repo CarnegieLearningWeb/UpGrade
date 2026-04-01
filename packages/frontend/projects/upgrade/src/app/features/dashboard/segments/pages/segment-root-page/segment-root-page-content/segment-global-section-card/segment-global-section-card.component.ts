@@ -3,7 +3,7 @@ import {
   CommonSectionCardComponent,
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardTitleHeaderComponent,
-} from '../../../../../../../shared-standalone-component-lib/components';
+} from '@shared-component-lib';
 import { SegmentsService } from '../../../../../../../core/segments/segments.service';
 import { AsyncPipe, TitleCasePipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';

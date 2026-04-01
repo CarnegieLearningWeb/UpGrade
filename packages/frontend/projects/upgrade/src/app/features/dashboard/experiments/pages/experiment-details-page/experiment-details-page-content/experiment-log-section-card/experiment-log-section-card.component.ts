@@ -3,20 +3,20 @@ import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
   CommonSectionCardSearchHeaderComponent,
-} from '../../../../../../../shared-standalone-component-lib/components';
+} from '@shared-component-lib';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../../../core/experiments/experiments.service';
 import { Experiment } from '../../../../../../../core/experiments/store/experiments.model';
 import { LogsService } from '../../../../../../../core/logs/logs.service';
 import { SharedModule } from '../../../../../../../shared/shared.module';
-import { CommonAuditLogTimelineComponent } from '../../../../../../../shared-standalone-component-lib/components/common-audit-log-timeline/common-audit-log-timeline.component';
+import { CommonAuditLogTimelineComponent } from '@shared-component-lib/common-audit-log-timeline/common-audit-log-timeline.component';
 import { AuditLogs } from '../../../../../../../core/logs/store/logs.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Observable } from 'rxjs';
-import { AuditLogTimelineConfig } from '../../../../../../../shared-standalone-component-lib/components/common-audit-log-timeline/common-audit-log-timeline-config.model';
+import { AuditLogTimelineConfig } from '@shared-component-lib/common-audit-log-timeline/common-audit-log-timeline-config.model';
+import { CommonLogSectionCardBase } from '@shared-component-lib/common-log-section-card/common-log-section-card.base';
 import { EXPERIMENT_TIMELINE_LOG_TYPE_CONFIG } from '../../../../experiment-timeline.config';
-import { CommonLogSectionCardBase } from '../../../../../../../shared-standalone-component-lib/components/common-log-section-card/common-log-section-card.base';
 
 @Component({
   selector: 'app-experiment-log-section-card',

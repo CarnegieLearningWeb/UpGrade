@@ -3,7 +3,7 @@ import {
   CommonSectionCardActionButtonsComponent,
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
-} from '../../../../../../../shared-standalone-component-lib/components';
+} from '@shared-component-lib';
 import { FeatureFlag } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { TranslateModule } from '@ngx-translate/core';
 import { FeatureFlagExposuresDataComponent } from './feature-flag-exposures-data/feature-flag-exposures-data.component';

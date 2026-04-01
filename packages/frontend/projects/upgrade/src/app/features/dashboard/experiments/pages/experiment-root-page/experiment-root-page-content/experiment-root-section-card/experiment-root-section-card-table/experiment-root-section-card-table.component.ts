@@ -21,10 +21,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
-import {
-  CommonStatusIndicatorChipComponent,
-  CommonTagListComponent,
-} from '../../../../../../../../shared-standalone-component-lib/components';
+import { CommonStatusIndicatorChipComponent, CommonTagListComponent } from '@shared-component-lib';
 import { ExperimentService } from '../../../../../../../../core/experiments/experiments.service';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { EXPERIMENT_STATE, FILTER_MODE, EXPERIMENT_SEARCH_KEY } from 'upgrade_types';

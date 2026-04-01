@@ -6,7 +6,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
-import { CommonStatusIndicatorChipComponent } from '../../../../../../../../shared-standalone-component-lib/components';
+import { CommonStatusIndicatorChipComponent } from '@shared-component-lib';
 import { SegmentsService } from '../../../../../../../../core/segments/segments.service';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 import {

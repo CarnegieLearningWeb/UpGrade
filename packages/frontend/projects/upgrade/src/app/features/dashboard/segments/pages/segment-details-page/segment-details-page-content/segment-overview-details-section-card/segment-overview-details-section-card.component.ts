@@ -4,8 +4,8 @@ import {
   CommonSectionCardComponent,
   CommonSectionCardTitleHeaderComponent,
   CommonSectionCardOverviewDetailsComponent,
-} from '../../../../../../../shared-standalone-component-lib/components';
-import { CommonTabbedSectionCardFooterComponent } from '../../../../../../../shared-standalone-component-lib/components/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
+} from '@shared-component-lib';
+import { CommonTabbedSectionCardFooterComponent } from '@shared-component-lib/common-tabbed-section-card-footer/common-tabbed-section-card-footer.component';
 import { Segment, SEGMENT_DETAILS_PAGE_ACTIONS } from '../../../../../../../core/segments/store/segments.model';
 import { SEGMENT_STATUS, SEGMENT_SEARCH_KEY, IMenuButtonItem, SEGMENT_TYPE } from 'upgrade_types';
 import { CommonModule } from '@angular/common';

@@ -18,11 +18,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, Observable, Subscription, combineLatestWith, map, startWith, take } from 'rxjs';
 import isEqual from 'lodash.isequal';
 
-import { CommonModalComponent } from '../../../../../shared-standalone-component-lib/components';
+import { CommonModalComponent } from '@shared-component-lib';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { DecisionPointHelperService } from '../../../../../core/experiments/decision-point-helper.service';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
-import { CommonModalConfig } from '../../../../../shared-standalone-component-lib/components/common-modal/common-modal.types';
+import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import {
   UPSERT_EXPERIMENT_ACTION,
   UpsertDecisionPointParams,
@@ -32,7 +32,7 @@ import {
   Experiment,
 } from '../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../shared/shared.module';
-import { CommonLearnMoreLinkComponent } from '../../../../../shared-standalone-component-lib/components';
+import { CommonLearnMoreLinkComponent } from '@shared-component-lib';
 
 @Component({
   selector: 'upsert-decision-point-modal',
