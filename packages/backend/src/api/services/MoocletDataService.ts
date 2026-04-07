@@ -371,11 +371,13 @@ export class MoocletDataService {
           jsonResponse = res.data;
           return jsonResponse;
         } else {
-          return {
-            error: res,
-          };
+          logger.error({ message: 'Non-2xx response from Mooclets API', url, method, status: res?.status });
+          throw new MoocletError(`Mooclet server returned non-2xx status: ${res?.status}`);
         }
       } catch (err) {
+        if (err instanceof MoocletError) {
+          throw err;
+        }
         logger.error({ message: 'Error fetching data from Mooclets API', url, method });
         throw new MoocletError('Failed to communicate with Mooclet server');
       }

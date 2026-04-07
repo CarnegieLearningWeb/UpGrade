@@ -421,7 +421,7 @@ describe('#MoocletDataService', () => {
       expect(response).toEqual(mockResponse.data);
     });
 
-    it('should return an error object when the request fails with a non-2xx status', async () => {
+    it('should throw a MoocletError when the request fails with a non-2xx status', async () => {
       const mockRequestParams: MoocletProxyRequestParams = {
         method: 'POST',
         url: 'https://api.example.com/mooclet',
@@ -436,8 +436,9 @@ describe('#MoocletDataService', () => {
 
       (axios.request as jest.Mock).mockResolvedValue(mockErrorResponse);
 
-      const response = await moocletDataService.fetchExternalMoocletsData(mockRequestParams, logger);
-      expect(response).toEqual({ error: mockErrorResponse });
+      await expect(moocletDataService.fetchExternalMoocletsData(mockRequestParams, logger)).rejects.toThrow(
+        'Mooclet server returned non-2xx status: 400'
+      );
     });
 
     it('should handle and log errors when the request fails', async () => {

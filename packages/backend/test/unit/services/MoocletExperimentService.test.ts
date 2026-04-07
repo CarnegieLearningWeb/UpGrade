@@ -1491,6 +1491,14 @@ describe('#MoocletExperimentService', () => {
       );
     });
 
+    it('should throw MoocletError if moocletExperimentRef is not found', async () => {
+      jest.spyOn(moocletExperimentService, 'getMoocletExperimentRefByUpgradeExperimentId').mockResolvedValue(undefined);
+
+      await expect(
+        moocletExperimentService.getConditionFromMoocletProxy(mockExperiment, mockUserId, logger)
+      ).rejects.toThrow(`MoocletExperimentRef not found for experiment id ${mockExperiment.id}`);
+    });
+
     it('should throw error if version not found in maps', async () => {
       const mockVersionResponse = { id: 999, name: 'unknown' };
 
