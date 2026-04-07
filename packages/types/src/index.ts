@@ -91,6 +91,8 @@ export {
   ExperimentQueryComparator,
 } from './Experiment/interfaces';
 export {
+  Prior,
+  CurrentPosteriors,
   MoocletPolicyParametersDTO,
   MoocletTSConfigurablePolicyParametersDTO,
   MOOCLET_POLICY_SCHEMA_MAP,

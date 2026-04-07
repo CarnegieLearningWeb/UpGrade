@@ -35,8 +35,10 @@ vm.experiment.context[0];
     [actionsDisabled]="vm.restriction.isDisabled"
     [actionsTooltip]="restrictionTooltip"
     [isMoocletExperiment]="isMoocletExperiment(vm.experiment)"
+    [priors]="vm.experiment.moocletPolicyParameters?.priors"
     (rowAction)="onRowAction($event, vm.experiment.id, appContext)"
     (editWeights)="onEditWeights($event, vm.experiment)"
+    (editPriors)="onEditPriors($event, vm.experiment)"
   ></app-experiment-conditions-table>
   }
 </app-common-section-card>

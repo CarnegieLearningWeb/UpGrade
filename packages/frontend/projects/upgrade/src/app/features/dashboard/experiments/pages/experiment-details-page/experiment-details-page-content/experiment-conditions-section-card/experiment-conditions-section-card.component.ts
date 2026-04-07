@@ -22,6 +22,7 @@ import { UserPermission } from '../../../../../../../core/auth/store/auth.models
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { ConditionWeightUpdate } from '../../../../modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
+import { Prior } from 'upgrade_types';
 import { ConditionHelperService } from '../../../../../../../core/experiments/condition-helper.service';
 import { selectConditionWeightsValid } from '../../../../../../../core/experiments/store/experiments.selectors';
 import { Store } from '@ngrx/store';
@@ -128,8 +129,18 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
       .openEditConditionWeightsModal(conditions, experiment.weightingMethod)
       .subscribe((result: ConditionWeightUpdate[] | undefined) => {
         if (result) {
-          // Update the experiment with new condition weights
           this.experimentService.updateExperimentConditionWeights(experiment, result);
+        }
+      });
+  }
+
+  onEditPriors(conditions: ExperimentCondition[], experiment: ExperimentVM): void {
+    const existingPriors = experiment.moocletPolicyParameters?.priors;
+    this.dialogService
+      .openEditConditionPriorsModal(conditions, existingPriors)
+      .subscribe((result: Record<string, Prior> | undefined) => {
+        if (result) {
+          this.experimentService.updateExperimentConditionPriors(experiment, result);
         }
       });
   }

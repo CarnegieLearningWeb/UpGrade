@@ -24,17 +24,17 @@
 # 11. Repeat steps 8-10 as needed
 
 ############ env variables 
-@host = https://apps.qa-cli.net/mooclet-service
+@host = http://localhost:8000/mooclet-service
 
 # Replace with your token, i.e.
-@token = Token abc123
+@token = Token 0656e428497a93e7e8fa2f2009d1cf4786d467db
 # @token =
 
 @apiEndpoint = /engine/api/v1
 
 ############ request variables (change as needed)
-@moocletId = 196
-@moocletName = newmooc4
+@moocletId = 108
+@moocletName = 
 @policyId = 17
 @policyParametersId = 2
 @version1Name = controlz
@@ -47,6 +47,11 @@
 
 ########### Get policy id by assignment algorithm name
 GET {{host}}{{apiEndpoint}}/policy HTTP/1.1
+Authorization: {{token}}
+Content-type: application/json
+
+########### Get policy id by assignment algorithm name
+GET {{host}}{{apiEndpoint}}/mooclet/{{moocletId}} HTTP/1.1
 Authorization: {{token}}
 Content-type: application/json
 
