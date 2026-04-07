@@ -52,6 +52,7 @@ import {
   EXPERIMENT_STATE,
   MoocletPolicyParametersDTO,
   MoocletTSConfigurablePolicyParametersDTO,
+  Prior,
   SUPPORTED_MOOCLET_ALGORITHMS,
 } from 'upgrade_types';
 import { ExperimentCondition } from '../models/ExperimentCondition';
@@ -394,6 +395,22 @@ export class MoocletExperimentService extends ExperimentService {
 
       updatedExperiment.moocletPolicyParameters = policyParameterResponse.parameters;
 
+      // Transform priors keys from Mooclet version IDs back to UpGrade condition codes,
+      // so the PUT response is consistent with the GET response from attachPolicyParamsToExperimentDTO.
+      const updatedTsParams = updatedExperiment.moocletPolicyParameters as MoocletTSConfigurablePolicyParametersDTO;
+      if (updatedTsParams?.priors) {
+        const transformedPriors: Record<string, Prior> = {};
+        for (const [versionId, priorData] of Object.entries(updatedTsParams.priors)) {
+          const map = currentMoocletExperimentRef.versionConditionMaps.find(
+            (m) => String(m.moocletVersionId) === versionId
+          );
+          if (map?.experimentCondition?.conditionCode) {
+            transformedPriors[map.experimentCondition.conditionCode] = priorData;
+          }
+        }
+        updatedTsParams.priors = transformedPriors;
+      }
+
       // --------- update versions ----------------------
 
       if (!versionEdits) {
@@ -522,6 +539,21 @@ export class MoocletExperimentService extends ExperimentService {
     currentMoocletExperimentRef: MoocletExperimentRef,
     logger: UpgradeLogger
   ): Promise<MoocletPolicyParametersResponseDetails> {
+    const tsParams = newPolicyParameters as MoocletTSConfigurablePolicyParametersDTO;
+    if (tsParams.priors) {
+      // Translate conditionCode keys to Mooclet version IDs before sending to the Mooclet API
+      const translatedPriors: Record<string, Prior> = {};
+      for (const [conditionCode, priorData] of Object.entries(tsParams.priors)) {
+        const versionConditionMap = currentMoocletExperimentRef.versionConditionMaps?.find(
+          (map) => map.experimentCondition?.conditionCode === conditionCode
+        );
+        if (versionConditionMap?.moocletVersionId) {
+          translatedPriors[String(versionConditionMap.moocletVersionId)] = priorData;
+        }
+      }
+      newPolicyParameters = { ...tsParams, priors: translatedPriors } as MoocletPolicyParametersDTO;
+    }
+
     return this.moocletDataService.updatePolicyParameters(
       currentMoocletExperimentRef.policyParametersId,
       {
@@ -1168,7 +1200,7 @@ export class MoocletExperimentService extends ExperimentService {
         logger
       );
 
-      // Transform current_posteriors keys from Mooclet version IDs to UpGrade condition codes
+      // Transform current_posteriors and priors keys from Mooclet version IDs to UpGrade condition codes
       const tsConfigurableParams = policyParameters.parameters as MoocletTSConfigurablePolicyParametersDTO;
       if (tsConfigurableParams.current_posteriors) {
         const transformedPosteriors = {};
@@ -1186,6 +1218,19 @@ export class MoocletExperimentService extends ExperimentService {
           }
         }
         tsConfigurableParams.current_posteriors = transformedPosteriors;
+      }
+
+      if (tsConfigurableParams.priors) {
+        const transformedPriors: Record<string, Prior> = {};
+        for (const [versionId, priorData] of Object.entries(tsConfigurableParams.priors)) {
+          const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
+            (map) => map.moocletVersionId === parseInt(versionId, 10)
+          );
+          if (versionConditionMap?.experimentCondition?.conditionCode) {
+            transformedPriors[versionConditionMap.experimentCondition.conditionCode] = priorData;
+          }
+        }
+        tsConfigurableParams.priors = transformedPriors;
       }
 
       experiment.moocletPolicyParameters = policyParameters.parameters;

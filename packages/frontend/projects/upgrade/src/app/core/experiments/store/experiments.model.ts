@@ -598,8 +598,6 @@ export const EXPERIMENT_OVERVIEW_LABELS = {
 
 export const TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS = {
   BATCH_SIZE: 'home.new-experiment.design.ts-configurable-policy.batch-size.label.text',
-  PRIOR_SUCCESS: 'home.new-experiment.design.ts-configurable-policy.prior-success.label.text',
-  PRIOR_FAILURE: 'home.new-experiment.design.ts-configurable-policy.prior-failure.label.text',
   UNIFORM_THRESHOLD: 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.label.text',
   TSPOSTDIFF_THRESH: 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.label.text',
 };
