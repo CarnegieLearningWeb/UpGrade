@@ -966,7 +966,9 @@ export class ExperimentService {
               return doc.id === id;
             })
           ) {
-            toDeleteConditionPayloads.push(this.conditionPayloadRepository.deleteConditionPayload(id, logger));
+            toDeleteConditionPayloads.push(
+              this.conditionPayloadRepository.deleteConditionPayload(id, transactionalEntityManager, logger)
+            );
           }
         });
 
@@ -975,6 +977,7 @@ export class ExperimentService {
           ...toDeleteConditions,
           ...toDeleteDecisionPoints,
           ...toDeleteQueries,
+          ...toDeleteConditionPayloads,
           transactionalEntityManager
             .createQueryBuilder()
             .delete()
