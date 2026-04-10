@@ -2000,7 +2000,7 @@ export class ExperimentAssignmentService {
         message: 'Error getting condition from Mooclet proxy; experiment will return no condition for this user',
         experimentId: experiment.id,
         userId,
-        err,
+        error: err,
       });
       return undefined;
     }

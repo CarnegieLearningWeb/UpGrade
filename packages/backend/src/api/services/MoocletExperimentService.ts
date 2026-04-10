@@ -1305,10 +1305,6 @@ export class MoocletExperimentService extends ExperimentService {
     const moocletExperimentRef = await this.getMoocletExperimentRefByUpgradeExperimentId(experiment.id);
 
     if (!moocletExperimentRef) {
-      logger.error({
-        message: 'MoocletExperimentRef not found for experiment',
-        experimentId: experiment.id,
-      });
       throw new MoocletError(`MoocletExperimentRef not found for experiment id ${experiment.id}`);
     }
 

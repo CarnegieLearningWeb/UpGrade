@@ -249,8 +249,8 @@ describe('#MoocletDataService', () => {
     const mockPolicyParameters: MoocletTSConfigurablePolicyParametersDTO = {
       assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
       prior: {
-        failure: 1,
-        success: 1,
+        1: { failure: 1, success: 1 },
+        2: { failure: 1, success: 1 },
       },
       batch_size: 1,
       max_rating: 1,
@@ -429,12 +429,16 @@ describe('#MoocletDataService', () => {
         body: { ...mockRequest },
       };
 
-      const mockErrorResponse = {
-        status: 400,
-        data: { error: 'Bad Request' },
-      };
+      const mockAxiosError = Object.assign(new Error('Request failed with status code 400'), {
+        response: {
+          status: 400,
+          data: { error: 'Bad Request' },
+        },
+        isAxiosError: true,
+      });
 
-      (axios.request as jest.Mock).mockResolvedValue(mockErrorResponse);
+      (axios.request as jest.Mock).mockRejectedValue(mockAxiosError);
+      (axios as any).isAxiosError.mockReturnValueOnce(true);
 
       await expect(moocletDataService.fetchExternalMoocletsData(mockRequestParams, logger)).rejects.toThrow(
         'Mooclet server returned non-2xx status: 400'
