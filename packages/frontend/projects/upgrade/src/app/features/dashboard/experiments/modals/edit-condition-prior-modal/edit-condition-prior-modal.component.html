@@ -6,7 +6,7 @@
   [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
   (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
 >
-  <form [formGroup]="priorsForm" class="form-standard dense-3">
+  <form [formGroup]="priorForm" class="form-standard dense-3">
     <div class="table-container">
       <table
         mat-table
@@ -17,7 +17,7 @@
         <!-- Condition Column -->
         <ng-container matColumnDef="condition">
           <th mat-header-cell *matHeaderCellDef class="condition-column ft-14-600">
-            {{ 'experiments.edit-condition-priors-modal.condition-header.text' | translate }}
+            {{ 'experiments.edit-condition-prior-modal.condition-header.text' | translate }}
           </th>
           <td mat-cell *matCellDef="let condition" class="condition-column ft-14-400">
             <span [appTextOverflowTooltip]="condition.conditionCode" matTooltipPosition="above" class="line-clamp-1">
@@ -28,18 +28,18 @@
 
         <!-- Successes Column -->
         <ng-container matColumnDef="successes">
-          <th mat-header-cell *matHeaderCellDef class="priors-column ft-14-600">
-            {{ 'experiments.edit-condition-priors-modal.successes-header.text' | translate }}
+          <th mat-header-cell *matHeaderCellDef class="prior-column ft-14-600">
+            {{ 'experiments.edit-condition-prior-modal.successes-header.text' | translate }}
           </th>
-          <td mat-cell *matCellDef="let condition; let i = index" class="priors-column ft-14-400">
-            <mat-form-field appearance="outline" class="priors-input">
+          <td mat-cell *matCellDef="let condition; let i = index" class="prior-column ft-14-400">
+            <mat-form-field appearance="outline" class="prior-input">
               <input matInput type="number" min="1" step="1" [formControl]="getSuccessesControl(i)" placeholder="1" />
               @if (getSuccessesControl(i).hasError('min')) {
-              <mat-error>{{ 'experiments.edit-condition-priors-modal.min-error.text' | translate }}</mat-error>
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.min-error.text' | translate }}</mat-error>
               } @if (getSuccessesControl(i).hasError('max')) {
-              <mat-error>{{ 'experiments.edit-condition-priors-modal.max-error.text' | translate }}</mat-error>
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.max-error.text' | translate }}</mat-error>
               } @if (getSuccessesControl(i).hasError('integer')) {
-              <mat-error>{{ 'experiments.edit-condition-priors-modal.integer-error.text' | translate }}</mat-error>
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.integer-error.text' | translate }}</mat-error>
               }
             </mat-form-field>
           </td>
@@ -47,18 +47,18 @@
 
         <!-- Failures Column -->
         <ng-container matColumnDef="failures">
-          <th mat-header-cell *matHeaderCellDef class="priors-column ft-14-600">
-            {{ 'experiments.edit-condition-priors-modal.failures-header.text' | translate }}
+          <th mat-header-cell *matHeaderCellDef class="prior-column ft-14-600">
+            {{ 'experiments.edit-condition-prior-modal.failures-header.text' | translate }}
           </th>
-          <td mat-cell *matCellDef="let condition; let i = index" class="priors-column ft-14-400">
-            <mat-form-field appearance="outline" class="priors-input">
+          <td mat-cell *matCellDef="let condition; let i = index" class="prior-column ft-14-400">
+            <mat-form-field appearance="outline" class="prior-input">
               <input matInput type="number" min="1" step="1" [formControl]="getFailuresControl(i)" placeholder="1" />
               @if (getFailuresControl(i).hasError('min')) {
-              <mat-error>{{ 'experiments.edit-condition-priors-modal.min-error.text' | translate }}</mat-error>
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.min-error.text' | translate }}</mat-error>
               } @if (getFailuresControl(i).hasError('max')) {
-              <mat-error>{{ 'experiments.edit-condition-priors-modal.max-error.text' | translate }}</mat-error>
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.max-error.text' | translate }}</mat-error>
               } @if (getFailuresControl(i).hasError('integer')) {
-              <mat-error>{{ 'experiments.edit-condition-priors-modal.integer-error.text' | translate }}</mat-error>
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.integer-error.text' | translate }}</mat-error>
               }
             </mat-form-field>
           </td>
@@ -71,7 +71,7 @@
         <!-- No Data Row -->
         <tr *matNoDataRow>
           <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
-            {{ 'experiments.edit-condition-priors-modal.no-data.text' | translate }}
+            {{ 'experiments.edit-condition-prior-modal.no-data.text' | translate }}
           </td>
         </tr>
       </table>

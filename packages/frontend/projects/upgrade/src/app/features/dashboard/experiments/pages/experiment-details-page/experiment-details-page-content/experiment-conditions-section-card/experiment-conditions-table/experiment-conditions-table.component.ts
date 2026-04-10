@@ -38,14 +38,14 @@ export class ExperimentConditionsTableComponent {
   @Input() actionsDisabled?: boolean = false;
   @Input() actionsTooltip?: string = '';
   @Input() isMoocletExperiment = false;
-  @Input() priors?: Record<string, Prior>;
+  @Input() prior?: Record<string, Prior>;
   @Output() rowAction = new EventEmitter<ExperimentConditionRowActionEvent>();
   @Output() editWeights = new EventEmitter<ExperimentCondition[]>();
-  @Output() editPriors = new EventEmitter<ExperimentCondition[]>();
+  @Output() editprior = new EventEmitter<ExperimentCondition[]>();
 
   get displayedColumns(): string[] {
     if (this.isMoocletExperiment) {
-      return ['condition', 'priorsSuccesses', 'priorsFailures', 'priorsEdit', 'description', 'actions'];
+      return ['condition', 'priorSuccesses', 'priorFailures', 'priorEdit', 'description', 'actions'];
     }
     return ['condition', 'weight', 'weightEdit', 'description', 'actions'];
   }
@@ -54,17 +54,17 @@ export class ExperimentConditionsTableComponent {
     CONDITION: 'experiments.details.conditions.condition.text',
     DESCRIPTION: 'experiments.details.conditions.description.text',
     WEIGHT: 'experiments.details.conditions.weight.text',
-    PRIORS_SUCCESSES: 'experiments.details.conditions.priors-successes.text',
-    PRIORS_FAILURES: 'experiments.details.conditions.priors-failures.text',
+    prior_SUCCESSES: 'experiments.details.conditions.prior-successes.text',
+    prior_FAILURES: 'experiments.details.conditions.prior-failures.text',
     ACTIONS: 'experiments.details.conditions.actions.text',
   };
 
-  getPriorSuccesses(condition: ExperimentCondition): number {
-    return this.priors?.[condition.conditionCode]?.success ?? 1;
+  getprioruccesses(condition: ExperimentCondition): number {
+    return this.prior?.[condition.conditionCode]?.success ?? 1;
   }
 
   getPriorFailures(condition: ExperimentCondition): number {
-    return this.priors?.[condition.conditionCode]?.failure ?? 1;
+    return this.prior?.[condition.conditionCode]?.failure ?? 1;
   }
 
   onEditButtonClick(condition: ExperimentCondition): void {
@@ -79,7 +79,7 @@ export class ExperimentConditionsTableComponent {
     this.editWeights.emit(this.conditions);
   }
 
-  onEditPriorsClick(): void {
-    this.editPriors.emit(this.conditions);
+  onEditpriorClick(): void {
+    this.editprior.emit(this.conditions);
   }
 }
