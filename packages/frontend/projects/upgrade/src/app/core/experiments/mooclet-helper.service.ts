@@ -210,20 +210,20 @@ export class MoocletExperimentHelperService {
   }
 
   /**
-   * Get field validators for per-condition prior success/failure inputs used in the priors editor.
+   * Get field validators for per-condition prior success/failure inputs used in the prior editor.
    */
-  getPriorsFieldValidators(): Record<string, ValidatorFn[]> {
-    const priorsDefault = 1;
+  getpriorFieldValidators(): Record<string, ValidatorFn[]> {
+    const priorDefault = 1;
     return {
       successes: [
         Validators.required,
-        Validators.min(priorsDefault),
+        Validators.min(priorDefault),
         Validators.max(DEFAULT_MAX_NUMBER_INPUT),
         CommonFormHelpersService.integerValidator(),
       ],
       failures: [
         Validators.required,
-        Validators.min(priorsDefault),
+        Validators.min(priorDefault),
         Validators.max(DEFAULT_MAX_NUMBER_INPUT),
         CommonFormHelpersService.integerValidator(),
       ],

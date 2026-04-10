@@ -22,7 +22,7 @@ export interface ConditionPriorUpdate {
 }
 
 @Component({
-  selector: 'app-edit-condition-priors-modal',
+  selector: 'app-edit-condition-prior-modal',
   imports: [
     CommonModalComponent,
     MatTableModule,
@@ -34,13 +34,13 @@ export interface ConditionPriorUpdate {
     TranslateModule,
     SharedModule,
   ],
-  templateUrl: './edit-condition-priors-modal.component.html',
-  styleUrl: './edit-condition-priors-modal.component.scss',
+  templateUrl: './edit-condition-prior-modal.component.html',
+  styleUrl: './edit-condition-prior-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EditConditionPriorsModalComponent implements OnInit {
+export class EditConditionpriorModalComponent implements OnInit {
   isPrimaryButtonDisabled$: Observable<boolean>;
-  priorsForm: FormGroup;
+  priorForm: FormGroup;
   displayedColumns: string[] = ['condition', 'successes', 'failures'];
 
   conditions: ConditionPriorUpdate[] = [];
@@ -48,18 +48,18 @@ export class EditConditionPriorsModalComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public config: CommonModalConfig<{ conditions: ConditionPriorUpdate[] }>,
-    public dialogRef: MatDialogRef<EditConditionPriorsModalComponent>,
+    public dialogRef: MatDialogRef<EditConditionpriorModalComponent>,
     private readonly formBuilder: FormBuilder,
     private readonly moocletHelperService: MoocletExperimentHelperService
   ) {}
 
   ngOnInit(): void {
     this.conditions = this.config.params.conditions;
-    this.createPriorsForm();
+    this.createpriorForm();
   }
 
-  createPriorsForm(): void {
-    const validators = this.moocletHelperService.getPriorsFieldValidators();
+  createpriorForm(): void {
+    const validators = this.moocletHelperService.getpriorFieldValidators();
 
     const conditionsFormArray = this.formBuilder.array(
       this.conditions.map((condition) =>
@@ -71,16 +71,16 @@ export class EditConditionPriorsModalComponent implements OnInit {
       )
     );
 
-    this.priorsForm = this.formBuilder.group({ conditions: conditionsFormArray });
+    this.priorForm = this.formBuilder.group({ conditions: conditionsFormArray });
 
     this.isPrimaryButtonDisabled$ = combineLatest([
-      this.priorsForm.statusChanges.pipe(startWith(this.priorsForm.status)),
-      this.priorsForm.valueChanges.pipe(startWith(this.priorsForm.value)),
-    ]).pipe(map(([status]) => status === 'INVALID' || this.priorsForm.pristine));
+      this.priorForm.statusChanges.pipe(startWith(this.priorForm.status)),
+      this.priorForm.valueChanges.pipe(startWith(this.priorForm.value)),
+    ]).pipe(map(([status]) => status === 'INVALID' || this.priorForm.pristine));
   }
 
   get conditionsFormArray(): FormArray {
-    return this.priorsForm.get('conditions') as FormArray;
+    return this.priorForm.get('conditions') as FormArray;
   }
 
   getSuccessesControl(index: number): FormControl {
@@ -92,7 +92,7 @@ export class EditConditionPriorsModalComponent implements OnInit {
   }
 
   onPrimaryActionBtnClicked(): void {
-    if (this.priorsForm.valid) {
+    if (this.priorForm.valid) {
       const result: Record<string, Prior> = {};
       this.conditionsFormArray.controls.forEach((control) => {
         const conditionCode = control.get('conditionCode')?.value;
@@ -103,7 +103,7 @@ export class EditConditionPriorsModalComponent implements OnInit {
       });
       this.dialogRef.close(result);
     } else {
-      CommonFormHelpersService.triggerTouchedToDisplayErrors(this.priorsForm);
+      CommonFormHelpersService.triggerTouchedToDisplayErrors(this.priorForm);
     }
   }
 

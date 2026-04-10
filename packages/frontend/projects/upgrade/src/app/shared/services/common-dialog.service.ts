@@ -63,8 +63,8 @@ import {
 } from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
 import {
   ConditionPriorUpdate,
-  EditConditionPriorsModalComponent,
-} from '../../features/dashboard/experiments/modals/edit-condition-priors-modal/edit-condition-priors-modal.component';
+  EditConditionpriorModalComponent,
+} from '../../features/dashboard/experiments/modals/edit-condition-prior-modal/edit-condition-prior-modal.component';
 import { Prior } from 'upgrade_types';
 import {
   EditPayloadModalComponent,
@@ -618,17 +618,17 @@ export class DialogService {
     return dialogRef.afterClosed();
   }
 
-  openEditConditionPriorsModal(
+  openEditConditionpriorModal(
     conditions: ExperimentCondition[],
-    existingPriors?: Record<string, Prior>
+    existingprior?: Record<string, Prior>
   ): Observable<Record<string, Prior>> {
     const conditionPriorUpdates: ConditionPriorUpdate[] = conditions.map((condition) => ({
       conditionCode: condition.conditionCode,
-      successes: existingPriors?.[condition.conditionCode]?.success ?? 1,
-      failures: existingPriors?.[condition.conditionCode]?.failure ?? 1,
+      successes: existingprior?.[condition.conditionCode]?.success ?? 1,
+      failures: existingprior?.[condition.conditionCode]?.failure ?? 1,
     }));
 
-    const dialogRef = this.dialog.open(EditConditionPriorsModalComponent, {
+    const dialogRef = this.dialog.open(EditConditionpriorModalComponent, {
       panelClass: ['experiment-modal', 'modal-shadow'],
       hasBackdrop: true,
       autoFocus: false,
@@ -636,7 +636,7 @@ export class DialogService {
       backdropClass: 'modal-backdrop',
       width: ModalSize.STANDARD,
       data: {
-        title: 'experiments.edit-condition-priors-modal.title.text',
+        title: 'experiments.edit-condition-prior-modal.title.text',
         primaryActionBtnLabel: 'Save',
         primaryActionBtnColor: 'primary',
         cancelBtnLabel: 'Cancel',

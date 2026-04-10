@@ -300,12 +300,12 @@ export class ExperimentService {
     );
   }
 
-  updateExperimentConditionPriors(experiment: ExperimentVM, priors: Record<string, Prior>): void {
+  updateExperimentConditionprior(experiment: ExperimentVM, prior: Record<string, Prior>): void {
     const updatedExperiment: ExperimentVM = {
       ...experiment,
       moocletPolicyParameters: {
         ...experiment.moocletPolicyParameters,
-        priors,
+        prior,
       } as MoocletTSConfigurablePolicyParametersDTO,
     };
     this.store$.dispatch(

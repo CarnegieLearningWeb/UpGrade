@@ -395,20 +395,20 @@ export class MoocletExperimentService extends ExperimentService {
 
       updatedExperiment.moocletPolicyParameters = policyParameterResponse.parameters;
 
-      // Transform priors keys from Mooclet version IDs back to UpGrade condition codes,
+      // Transform prior keys from Mooclet version IDs back to UpGrade condition codes,
       // so the PUT response is consistent with the GET response from attachPolicyParamsToExperimentDTO.
       const updatedTsParams = updatedExperiment.moocletPolicyParameters as MoocletTSConfigurablePolicyParametersDTO;
-      if (updatedTsParams?.priors) {
-        const transformedPriors: Record<string, Prior> = {};
-        for (const [versionId, priorData] of Object.entries(updatedTsParams.priors)) {
+      if (updatedTsParams?.prior) {
+        const transformedPrior: Record<string, Prior> = {};
+        for (const [versionId, priorData] of Object.entries(updatedTsParams.prior)) {
           const map = currentMoocletExperimentRef.versionConditionMaps.find(
             (m) => String(m.moocletVersionId) === versionId
           );
           if (map?.experimentCondition?.conditionCode) {
-            transformedPriors[map.experimentCondition.conditionCode] = priorData;
+            transformedPrior[map.experimentCondition.conditionCode] = priorData;
           }
         }
-        updatedTsParams.priors = transformedPriors;
+        updatedTsParams.prior = transformedPrior;
       }
 
       // --------- update versions ----------------------
@@ -540,18 +540,18 @@ export class MoocletExperimentService extends ExperimentService {
     logger: UpgradeLogger
   ): Promise<MoocletPolicyParametersResponseDetails> {
     const tsParams = newPolicyParameters as MoocletTSConfigurablePolicyParametersDTO;
-    if (tsParams.priors) {
+    if (tsParams.prior) {
       // Translate conditionCode keys to Mooclet version IDs before sending to the Mooclet API
-      const translatedPriors: Record<string, Prior> = {};
-      for (const [conditionCode, priorData] of Object.entries(tsParams.priors)) {
+      const translatedprior: Record<string, Prior> = {};
+      for (const [conditionCode, priorData] of Object.entries(tsParams.prior)) {
         const versionConditionMap = currentMoocletExperimentRef.versionConditionMaps?.find(
           (map) => map.experimentCondition?.conditionCode === conditionCode
         );
         if (versionConditionMap?.moocletVersionId) {
-          translatedPriors[String(versionConditionMap.moocletVersionId)] = priorData;
+          translatedprior[String(versionConditionMap.moocletVersionId)] = priorData;
         }
       }
-      newPolicyParameters = { ...tsParams, priors: translatedPriors } as MoocletPolicyParametersDTO;
+      newPolicyParameters = { ...tsParams, prior: translatedprior } as MoocletPolicyParametersDTO;
     }
 
     return this.moocletDataService.updatePolicyParameters(
@@ -1200,7 +1200,7 @@ export class MoocletExperimentService extends ExperimentService {
         logger
       );
 
-      // Transform current_posteriors and priors keys from Mooclet version IDs to UpGrade condition codes
+      // Transform current_posteriors and prior keys from Mooclet version IDs to UpGrade condition codes
       const tsConfigurableParams = policyParameters.parameters as MoocletTSConfigurablePolicyParametersDTO;
       if (tsConfigurableParams.current_posteriors) {
         const transformedPosteriors = {};
@@ -1220,17 +1220,17 @@ export class MoocletExperimentService extends ExperimentService {
         tsConfigurableParams.current_posteriors = transformedPosteriors;
       }
 
-      if (tsConfigurableParams.priors) {
-        const transformedPriors: Record<string, Prior> = {};
-        for (const [versionId, priorData] of Object.entries(tsConfigurableParams.priors)) {
+      if (tsConfigurableParams.prior) {
+        const transformedprior: Record<string, Prior> = {};
+        for (const [versionId, priorData] of Object.entries(tsConfigurableParams.prior)) {
           const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
             (map) => map.moocletVersionId === parseInt(versionId, 10)
           );
           if (versionConditionMap?.experimentCondition?.conditionCode) {
-            transformedPriors[versionConditionMap.experimentCondition.conditionCode] = priorData;
+            transformedprior[versionConditionMap.experimentCondition.conditionCode] = priorData;
           }
         }
-        tsConfigurableParams.priors = transformedPriors;
+        tsConfigurableParams.prior = transformedprior;
       }
 
       experiment.moocletPolicyParameters = policyParameters.parameters;

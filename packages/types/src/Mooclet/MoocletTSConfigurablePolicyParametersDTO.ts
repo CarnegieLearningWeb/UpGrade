@@ -29,7 +29,7 @@ export class MoocletTSConfigurablePolicyParametersDTO extends MoocletPolicyParam
   @IsObject()
   @ValidateNested({ each: true })
   @Type(() => Prior)
-  priors?: Record<string, Prior>;
+  prior?: Record<string, Prior>;
 
   @IsOptional()
   @IsObject()
