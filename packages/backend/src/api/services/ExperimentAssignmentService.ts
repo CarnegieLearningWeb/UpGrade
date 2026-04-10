@@ -1993,7 +1993,17 @@ export class ExperimentAssignmentService {
   private async getConditionFromMoocletProxy(experiment: Experiment, user: ExperimentUser, logger: UpgradeLogger) {
     const userId = user.id;
 
-    return await this.moocletExperimentService.getConditionFromMoocletProxy(experiment, userId, logger);
+    try {
+      return await this.moocletExperimentService.getConditionFromMoocletProxy(experiment, userId, logger);
+    } catch (err) {
+      logger.error({
+        message: 'Error getting condition from Mooclet proxy; experiment will return no condition for this user',
+        experimentId: experiment.id,
+        userId,
+        error: err,
+      });
+      return undefined;
+    }
   }
 
   private assignRandom(
