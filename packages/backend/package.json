@@ -1,6 +1,6 @@
 {
     "name": "upgrade-backend",
-    "version": "6.3.0",
+    "version": "6.5.0",
     "description": "Backend for the UpGrade A/B Testing Platform",
     "main": "index.js",
     "scripts": {
