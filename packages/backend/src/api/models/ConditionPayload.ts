@@ -22,6 +22,12 @@ export class ConditionPayload extends BaseModel {
   @ManyToOne(() => ExperimentCondition, (condition) => condition.conditionPayloads, { onDelete: 'CASCADE' })
   public parentCondition: ExperimentCondition;
 
+  @Column({ name: 'parentConditionId', nullable: true })
+  parentConditionId?: string;
+
   @ManyToOne(() => DecisionPoint, (decisionPoint) => decisionPoint.conditionPayloads, { onDelete: 'CASCADE' })
   public decisionPoint: DecisionPoint;
+
+  @Column({ name: 'decisionPointId', nullable: true })
+  decisionPointId?: string;
 }
