@@ -65,7 +65,7 @@
         "@aws-sdk/s3-request-presigner": "^3.995.0",
         "@golevelup/ts-jest": "^0.4.0",
         "@nestjs/common": "^11.0.16",
-        "@nestjs/core": "^11.1.13",
+        "@nestjs/core": "^11.1.18",
         "@nestjs/testing": "^11.0.16",
         "@nestjs/typeorm": "^11.0.0",
         "@types/supertest": "^6.0.2",
