@@ -4,7 +4,10 @@
     @for (key of displayedColumns; track key) {
     <ng-container [matColumnDef]="key">
       <mat-header-cell
-        [ngClass]="{ 'weight-column': key === 'weight' }"
+        [ngClass]="{
+          'weight-column': key === 'weight',
+          'hidden-column': key === 'weight' && isMoocletExperiment(experiment)
+        }"
         style="justify-content: left; padding-left: 16px"
         class="ft-14-600"
         *matHeaderCellDef
@@ -15,7 +18,10 @@
         {{ key.includes('Icon') ? '' : columnHeaders[key] }}
       </mat-header-cell>
       <mat-cell
-        [ngClass]="{ 'weight-column': key === 'weight' }"
+        [ngClass]="{
+          'weight-column': key === 'weight',
+          'hidden-column': key === 'weight' && isMoocletExperiment(experiment)
+        }"
         style="justify-content: left"
         class="ft-14-400"
         *matCellDef="let element; let i = dataIndex"

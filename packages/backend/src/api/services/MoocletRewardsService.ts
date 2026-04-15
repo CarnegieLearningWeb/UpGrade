@@ -1,5 +1,11 @@
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE, SERVER_ERROR, BinaryRewardValueMap } from 'upgrade_types';
+import {
+  EXPERIMENT_STATE,
+  SERVER_ERROR,
+  BinaryRewardValueMap,
+  MoocletTSConfigurablePolicyParametersDTO,
+  Prior,
+} from 'upgrade_types';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletDataService } from './MoocletDataService';
@@ -243,7 +249,24 @@ export class MoocletRewardsService {
         }
       }
 
-      return this.createExperimentRewardsSummary(moocletExperimentRef, rewards, logger);
+      let tsConfigurableParams: MoocletTSConfigurablePolicyParametersDTO | undefined;
+      if (moocletExperimentRef.policyParametersId) {
+        try {
+          const policyParametersResponse = await this.moocletDataService.getPolicyParameters(
+            moocletExperimentRef.policyParametersId,
+            logger
+          );
+          tsConfigurableParams = policyParametersResponse.parameters as MoocletTSConfigurablePolicyParametersDTO;
+        } catch (policyError) {
+          logger.warn({
+            message: 'Could not fetch policy parameters for Thompson sampling estimate',
+            experimentId,
+            error: policyError,
+          });
+        }
+      }
+
+      return this.createExperimentRewardsSummary(moocletExperimentRef, rewards, logger, tsConfigurableParams);
     } catch (error) {
       logger.error({ message: 'Error fetching rewards summary for experiment', experimentId, error });
       throw error;
@@ -266,7 +289,8 @@ export class MoocletRewardsService {
   public async createExperimentRewardsSummary(
     moocletExperimentRef: MoocletExperimentRef,
     rewardsData: MoocletValueResponseDetails[],
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    policyParameters?: MoocletTSConfigurablePolicyParametersDTO
   ): Promise<ExperimentRewardsSummary> {
     const rewards: MoocletValueResponseDetails[] = rewardsData;
 
@@ -278,8 +302,17 @@ export class MoocletRewardsService {
       return [];
     }
 
+    const conditionCodes = moocletExperimentRef.versionConditionMaps.map(
+      ({ experimentCondition }) => experimentCondition.conditionCode
+    );
+    const DEFAULT_PRIOR: Prior = { success: 1, failure: 1 };
+    const estimatedWeightMap = policyParameters
+      ? this.computeThompsonWeightsMap(conditionCodes, policyParameters)
+      : null;
+
     const rewardsSummaries = moocletExperimentRef.versionConditionMaps.map(
       ({ experimentCondition, moocletVersionId }) => {
+        const conditionCode = experimentCondition.conditionCode;
         const versionRewards = rewards.filter((reward) => reward.version === moocletVersionId);
         const successes = versionRewards.filter((reward) => reward.value === 1.0).length;
         const failures = versionRewards.filter((reward) => reward.value === 0.0).length;
@@ -287,13 +320,20 @@ export class MoocletRewardsService {
         const percentSuccess = total > 0 ? (successes / total) * 100 : 0.0;
         const successRate = percentSuccess.toFixed(1) + '%';
 
+        const conditionPrior: Prior = policyParameters?.prior?.[conditionCode] ?? DEFAULT_PRIOR;
+        const conditionPosteriors = policyParameters?.current_posteriors?.[conditionCode];
+
         const rewardsForCondition: ExperimentRewardsByCondition = {
-          conditionCode: experimentCondition.conditionCode,
+          conditionCode,
           successes,
           failures,
-          total,
           successRate,
           order: experimentCondition.order,
+          estimatedWeight: estimatedWeightMap?.get(conditionCode),
+          priorSuccess: conditionPrior.success,
+          priorFailure: conditionPrior.failure,
+          posteriorSuccesses: conditionPosteriors?.successes ?? 0,
+          posteriorFailures: conditionPosteriors?.failures ?? 0,
         };
         return rewardsForCondition;
       }
@@ -301,6 +341,89 @@ export class MoocletRewardsService {
 
     const orderedRewardsSummary = rewardsSummaries.sort((a, b) => a.order - b.order);
     return orderedRewardsSummary;
+  }
+
+  /**
+   * Computes Thompson Sampling estimated weight percentages per condition.
+   * Combines per-condition priors with current_posteriors as Beta distribution inputs.
+   * Returns a Map of conditionCode → integer estimated weight (all values sum to 100).
+   */
+  private computeThompsonWeightsMap(
+    conditionCodes: string[],
+    params: MoocletTSConfigurablePolicyParametersDTO
+  ): Map<string, number> {
+    const DEFAULT_PRIOR: Prior = { success: 1, failure: 1 };
+
+    const arms = conditionCodes.map((conditionCode) => {
+      const prior: Prior = params.prior?.[conditionCode] ?? DEFAULT_PRIOR;
+      const posteriors = params.current_posteriors?.[conditionCode];
+      return {
+        conditionCode,
+        alpha: prior.success + (posteriors?.successes ?? 0),
+        beta: prior.failure + (posteriors?.failures ?? 0),
+      };
+    });
+
+    const iterations = 10_000;
+    const wins = new Array(arms.length).fill(0);
+    for (let i = 0; i < iterations; i++) {
+      let maxSample = -1;
+      let maxIdx = 0;
+      for (let j = 0; j < arms.length; j++) {
+        const sample = this.randBeta(arms[j].alpha, arms[j].beta);
+        if (sample > maxSample) {
+          maxSample = sample;
+          maxIdx = j;
+        }
+      }
+      wins[maxIdx]++;
+    }
+
+    // Largest Remainder Method: normalize to integer percentages summing to exactly 100
+    const raw = arms.map((_, i) => (wins[i] / iterations) * 100);
+    const floored = raw.map(Math.floor);
+    const remainder = 100 - floored.reduce((a, b) => a + b, 0);
+    const indices = raw
+      .map((v, i) => ({ diff: v - floored[i], i }))
+      .sort((a, b) => b.diff - a.diff)
+      .map(({ i }) => i);
+    for (let k = 0; k < remainder; k++) floored[indices[k]]++;
+
+    return new Map(arms.map((arm, i) => [arm.conditionCode, floored[i]]));
+  }
+
+  // --- Beta distribution sampling (Marsaglia-Tsang / Box-Muller) ---
+
+  private randNormal(): number {
+    const u = Math.random() || Number.EPSILON; // guard against log(0)
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random());
+  }
+
+  private randGamma(shape: number): number {
+    if (shape < 1) {
+      return this.randGamma(1 + shape) * Math.pow(Math.random(), 1 / shape);
+    }
+    const d = shape - 1 / 3;
+    const c = 1 / Math.sqrt(9 * d);
+    let x: number;
+    let v: number;
+    let u: number;
+    do {
+      do {
+        x = this.randNormal();
+        v = 1 + c * x;
+      } while (v <= 0);
+      v = v * v * v;
+      u = Math.random();
+      // eslint-disable-next-line no-constant-condition
+    } while (!(u < 1 - 0.0331 * x * x * x * x) && !(Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))));
+    return d * v;
+  }
+
+  private randBeta(alpha: number, beta: number): number {
+    const g1 = this.randGamma(alpha);
+    const g2 = this.randGamma(beta);
+    return g1 / (g1 + g2);
   }
 
   /**
