@@ -22,7 +22,6 @@ Set up the Python package structure, tooling, and CI foundation before writing a
   │       ├── assignment.py
   │       ├── api_service.py
   │       ├── data_service.py
-  │       ├── http_client.py
   │       ├── types/
   │       │   ├── __init__.py
   │       │   ├── enums.py
@@ -95,6 +94,7 @@ class MetricMetaData(str, Enum):
 - `UserAliasRequest` — userId, aliases
 - `FeatureFlagRequest` — userId, context
 - `AddMetricsRequest` — metricUnit (list of `GroupMetric` or `SingleMetric`)
+- `SendRewardRequest` — rewardValue (`BinaryRewardValue`), experimentId (optional), context (optional), decisionPoint (optional: site + target)
 
 ### Response Models (Pydantic)
 
@@ -107,6 +107,7 @@ class MetricMetaData(str, Enum):
 - `MarkDecisionPointResponse` — userId, site, target, experimentId
 - `LogEventResponse` — id, uniquifier, timeStamp, data
 - `UserAliasResponse` — userId, aliases
+- `SendRewardResponse` — message, request (rewardValue, experimentId, context, decisionPoint), reward (variable, value, mooclet, version, learner)
 - `ErrorResponse` — message, httpStatusCode, type
 
 ### Deliverable
@@ -126,22 +127,6 @@ Implement the HTTP communication layer that wraps `httpx`. Both sync and async i
 - Accepts a `clientSessionId` header on every request
 - Raises `UpgradeApiError` (a library-defined exception) on non-2xx responses
 
-### `IHttpClientWrapper` Protocol
-
-Define a `Protocol` class so consumers can inject a custom HTTP client:
-
-```python
-class IHttpClientWrapper(Protocol):
-    def get(self, url: str, headers: dict) -> dict: ...
-    def post(self, url: str, body: dict, headers: dict) -> dict: ...
-    def patch(self, url: str, body: dict, headers: dict) -> dict: ...
-
-class IAsyncHttpClientWrapper(Protocol):
-    async def get(...) -> dict: ...
-    async def post(...) -> dict: ...
-    async def patch(...) -> dict: ...
-```
-
 ### `ApiService`
 
 Maps library operations to HTTP endpoints (v6):
@@ -157,12 +142,13 @@ Maps library operations to HTTP endpoints (v6):
 | `log` | POST | `/api/v6/log` |
 | `set_alt_user_ids` | PATCH | `/api/v6/useraliases` |
 | `add_metrics` | POST | `/api/v6/metric` |
+| `send_reward` | POST | `/api/v6/reward` |
 
 Both sync and async variants for each method.
 
 ### Deliverable
 
-HTTP layer fully tested with `respx` (httpx mock). All endpoints covered. Custom client injection tested.
+HTTP layer fully tested with `respx` (httpx mock). All endpoints covered.
 
 ---
 
@@ -231,7 +217,6 @@ class UpgradeClient:
         context: str,
         token: str = "",
         client_session_id: str | None = None,   # auto-generated UUID if None
-        http_client: IHttpClientWrapper | None = None,
     ): ...
 ```
 
@@ -250,6 +235,7 @@ class UpgradeClient:
 | `log` | `async log(metrics: list[LogInput]) -> list[LogEventResponse]` |
 | `set_alt_user_ids` | `async set_alt_user_ids(aliases: list[str]) -> UserAliasResponse` |
 | `add_metrics` | `async add_metrics(metrics: list[GroupMetric \| SingleMetric]) -> dict` |
+| `send_reward` | `async send_reward(reward_value: BinaryRewardValue, experiment_id=None, context=None, decision_point=None) -> SendRewardResponse` |
 
 ### Sync Variants
 
@@ -363,10 +349,8 @@ CI pipeline green across all Python versions. Coverage report published as CI ar
 | Metrics logging (grouped) | ✓ | ✓ | Phase 6 |
 | Alternate user IDs | ✓ | ✓ | Phase 6 |
 | Add metrics | ✓ | ✓ | Phase 6 |
-| Custom HTTP client injection | ✓ | ✓ | Phase 3 |
 | Async interface | ✓ | — | Phase 6 |
 | Sync interface | — | ✓ | Phase 6 |
 | Cache bypass (`ignore_cache`) | — | ✓ | Phase 4 |
-| Caliper logging | ✓ | — | Post-v1 |
-| Adaptive experiment rewards | ✓ | — | Post-v1 |
+| Adaptive experiment rewards | ✓ | — | Phase 6 |
 | Session-only feature flag groups | ✓ | — | Post-v1 |
