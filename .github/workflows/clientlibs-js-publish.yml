@@ -24,6 +24,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ steps.set-vars.outputs.ref }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22
+      - name: Install packages/types dependencies
+        shell: bash
+        working-directory: packages/types
+        run: npm ci
       - name: Build Types Package
         uses: ./.github/actions/generic-npm-build
         with:
