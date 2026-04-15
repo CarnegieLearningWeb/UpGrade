@@ -1077,10 +1077,9 @@ export class MoocletExperimentService extends ExperimentService {
 
       moocletExperimentRef.variableId = moocletVariableResponse?.id;
       moocletExperimentRef.policyId = newMoocletRequest.policy;
-      moocletExperimentRef.outcomeVariableName =
-        upgradeExperiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE
-          ? (moocletPolicyParameters as MoocletTSConfigurablePolicyParametersDTO).outcome_variable_name
-          : undefined;
+      moocletExperimentRef.outcomeVariableName = (
+        moocletPolicyParameters as MoocletTSConfigurablePolicyParametersDTO
+      ).outcome_variable_name;
     } catch (err) {
       await this.orchestrateDeleteMoocletResources(moocletExperimentRef, logger);
       throw err;

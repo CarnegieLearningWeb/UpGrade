@@ -26,6 +26,10 @@ div {
       color: var(--darker-grey);
     }
 
+    .hidden-column {
+      visibility: hidden;
+    }
+
     mat-header-row {
       min-height: 48px;
       border-bottom: none;
