@@ -15,7 +15,7 @@ inputs:
   node_version:
     description: Version of nodejs to build with
     required: false
-    default: 18
+    default: 22
 runs:
   using: composite
   steps:
