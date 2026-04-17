@@ -5,8 +5,7 @@
     <ng-container [matColumnDef]="key">
       <mat-header-cell
         [ngClass]="{
-          'weight-column': key === 'weight',
-          'hidden-column': key === 'weight' && isMoocletExperiment(experiment)
+          'weight-column': key === 'weight'
         }"
         style="justify-content: left; padding-left: 16px"
         class="ft-14-600"
@@ -15,7 +14,7 @@
         [matTooltipDisabled]="!isMoocletExperiment(experiment)"
         matTooltipPosition="above"
       >
-        {{ key.includes('Icon') ? '' : columnHeaders[key] }}
+        {{ key.includes('Icon') || (key === 'weight' && isMoocletExperiment(experiment)) ? '' : columnHeaders[key] }}
       </mat-header-cell>
       <mat-cell
         [ngClass]="{
