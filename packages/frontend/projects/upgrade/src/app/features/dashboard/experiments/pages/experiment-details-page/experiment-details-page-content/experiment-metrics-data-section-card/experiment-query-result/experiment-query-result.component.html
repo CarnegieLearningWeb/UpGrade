@@ -10,7 +10,8 @@
     }}</span>
     <br />
   </div>
-  } @for (query of experiment.queries; track query.id; let isLast = $last) {
+  } @let isQueryExecuting = (isQueryExecuting$ | async); @for (query of experiment.queries; track query.id; let isLast =
+  $last) {
   <div>
     <span class="ft-16-700 main-effect-data-text">
       {{ query.name }}
@@ -18,7 +19,7 @@
     <br />
     @if (experimentType === 'Factorial') {
     <div>
-      @if (!(isQueryExecuting$ | async)) { @if (!isResultExist(query.id)) {
+      @if (!isQueryExecuting) { @if (!isResultExist(query.id)) {
       <div style="display: flex; overflow-x: scroll">
         <br />
         @for (factor of factors; track $index; let i = $index) {
@@ -76,7 +77,7 @@
     </div>
     } @if (experimentType === 'Simple') {
     <div>
-      @if (!(isQueryExecuting$ | async)) { @if (!isResultExist(query.id)) { @if (hasData(query?.id)) {
+      @if (!isQueryExecuting) { @if (!isResultExist(query.id)) { @if (hasData(query?.id)) {
       <div style="height: 250px; width: 30%">
         <ngx-charts-bar-vertical
           [view]="[400, 250]"
@@ -136,7 +137,7 @@
           {{ query.name }}
         </span>
         <br />
-        @if (!(isQueryExecuting$ | async)) { @if (!isResultExist(query.id)) {
+        @let isQueryExecuting = (isQueryExecuting$ | async); @if (!isQueryExecuting) { @if (!isResultExist(query.id)) {
         <div style="display: table; overflow-x: scroll">
           <br />
           <div style="display: block; margin-right: 100px">
