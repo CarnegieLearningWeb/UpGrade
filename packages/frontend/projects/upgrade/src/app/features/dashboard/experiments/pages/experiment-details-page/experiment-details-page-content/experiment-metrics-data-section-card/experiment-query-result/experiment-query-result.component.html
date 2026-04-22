@@ -3,15 +3,18 @@
   <div class="loading-container">
     <mat-spinner diameter="60"></mat-spinner>
   </div>
-  } @else { @if (experiment.queries?.length > 0) { @if (experimentType === 'Factorial') {
+  } @else {
+  @if (experiment.queries?.length > 0) {
+  @if (experimentType === 'Factorial') {
   <div>
     <span class="ft-18-700 main-effect-data-text">{{
       'home.experiment-query-result.main-effect.title.text' | translate
     }}</span>
     <br />
   </div>
-  } @let isQueryExecuting = (isQueryExecuting$ | async); @for (query of experiment.queries; track query.id; let isLast =
-  $last) {
+  }
+  @let isQueryExecuting = (isQueryExecuting$ | async);
+  @for (query of experiment.queries; track query.id; let isLast = $last) {
   <div>
     <span class="ft-16-700 main-effect-data-text">
       {{ query.name }}
