@@ -687,6 +687,9 @@ export class FeatureFlagService {
       where: { id: flagId },
     });
 
+    if (!featureFlag) {
+      throw new NotFoundException(`Feature flag with id ${flagId} not found`);
+    }
     const featureFlagAge = dayjs().year() - dayjs(featureFlag.createdAt).year();
 
     const dates = getDateRangeNames(dateRange, clientOffset, featureFlagAge);
