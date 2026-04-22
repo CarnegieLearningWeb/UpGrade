@@ -295,6 +295,9 @@ Resources:
             - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet1
             - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet2
             - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet3
+            - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet4
+            - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet5
+            - Fn::ImportValue: !Sub ${sharedNetworkingPrefix}-${environment}-privatesubnet6
       PropagateTags: TASK_DEFINITION
       TaskDefinition: !Ref ecsTaskDef
   ecsScaling:
