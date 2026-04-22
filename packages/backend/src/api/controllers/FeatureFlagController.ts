@@ -999,7 +999,7 @@ export class FeatureFlagsController {
    *              flagId:
    *               type: string
    *               example: 45b9d8cd-f113-4f93-9826-c3d1ff4ee73c
-   *              dateEnum:
+   *              range:
    *               type: string
    *               enum: [last_seven_days, last_two_weeks, last_one_month, last_three_months, last_six_months, last_twelve_months, total]
    *              clientOffset:

@@ -70,7 +70,7 @@ export class FeatureFlagsService {
   sortAs$ = this.store$.pipe(select(selectSortAs));
   warningKeysForSelectedFlag$ = this.store$.pipe(select(selectWarningKeysForSelectedFlag));
   warningKeysForAllFlags$ = this.store$.pipe(select(selectWarningKeysForAllFlags));
-  selectFeatureFlagGraphInfo$ = this.store$.pipe(select(selectFeatureFlagGraphInfo));
+  featureFlagGraphInfo$ = this.store$.pipe(select(selectFeatureFlagGraphInfo));
   isFeatureFlagGraphLoading$ = this.store$.pipe(select(selectIsFeatureFlagGraphLoading));
   featureFlagTotalExposures$ = this.store$.pipe(select(selectFeatureFlagTotalExposures));
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));

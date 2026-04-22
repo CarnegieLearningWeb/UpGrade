@@ -64,7 +64,7 @@ export class FeatureFlagExposuresDataComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setTotalDateLabel();
 
-    this.graphInfoSub = this.featureFlagsService.selectFeatureFlagGraphInfo$
+    this.graphInfoSub = this.featureFlagsService.featureFlagGraphInfo$
       .pipe(filter((info) => !!info))
       .subscribe((graphInfo: IExposureStatByDate[]) => {
         this.populateGraphData(graphInfo);
