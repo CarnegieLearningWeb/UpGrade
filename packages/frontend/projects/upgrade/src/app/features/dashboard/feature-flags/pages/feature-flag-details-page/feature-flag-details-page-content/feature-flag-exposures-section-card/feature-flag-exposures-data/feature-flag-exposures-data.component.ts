@@ -148,7 +148,7 @@ export class FeatureFlagExposuresDataComponent implements OnInit, OnDestroy {
     ];
 
     const matchedWindow = rangeBoundaries.find(({ cutoff }) => startDate >= cutoff);
-    return matchedWindow ? matchedWindow.range : DATE_RANGE.LAST_TWELVE_MONTHS;
+    return matchedWindow ? matchedWindow.range : DATE_RANGE.TOTAL;
   }
 
   private subtractDays(baseDate: Date, days: number): Date {
