@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
 import * as FeatureFlagsActions from './feature-flags.actions';
 import { catchError, switchMap, map, filter, withLatestFrom, tap, first } from 'rxjs/operators';
 import { FeatureFlag, FeatureFlagsPaginationParams, NUMBER_OF_FLAGS } from './feature-flags.model';
+import { DATE_RANGE } from '../../experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState, NotificationService } from '../../core.module';
@@ -427,6 +428,48 @@ export class FeatureFlagsEffects {
             this.notificationService.showError('Failed to export All exclude lists Design');
             return of(FeatureFlagsActions.actionExportAllExcludeListsDesignFailure());
           })
+        )
+      )
+    )
+  );
+
+  setFeatureFlagGraphRange$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(FeatureFlagsActions.actionSetFeatureFlagGraphRange),
+        tap(({ flagId, range, clientOffset }) => {
+          if (range) {
+            this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlagGraphInfo({ flagId, range, clientOffset }));
+          } else {
+            this.store$.dispatch(FeatureFlagsActions.actionSetFeatureFlagGraphInfo({ graphInfo: null }));
+          }
+        })
+      ),
+    { dispatch: false }
+  );
+
+  fetchFeatureFlagGraphInfo$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionFetchFeatureFlagGraphInfo),
+      switchMap(({ flagId, range, clientOffset }) =>
+        this.featureFlagsDataService.fetchFeatureFlagGraphInfo({ flagId, range, clientOffset }).pipe(
+          map((data) => FeatureFlagsActions.actionFetchFeatureFlagGraphInfoSuccess({ graphInfo: [...data].reverse() })),
+          catchError(() => [FeatureFlagsActions.actionFetchFeatureFlagGraphInfoFailure()])
+        )
+      )
+    )
+  );
+
+  fetchFeatureFlagTotalExposures$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionFetchFeatureFlagTotalExposures),
+      switchMap(({ flagId, clientOffset }) =>
+        this.featureFlagsDataService.fetchFeatureFlagGraphInfo({ flagId, range: DATE_RANGE.TOTAL, clientOffset }).pipe(
+          map((data) => {
+            const totalExposures = data.reduce((sum, d) => sum + d.count, 0);
+            return FeatureFlagsActions.actionFetchFeatureFlagTotalExposuresSuccess({ totalExposures });
+          }),
+          catchError(() => [FeatureFlagsActions.actionFetchFeatureFlagTotalExposuresFailure()])
         )
       )
     )

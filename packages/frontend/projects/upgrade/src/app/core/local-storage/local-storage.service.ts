@@ -79,6 +79,9 @@ export class LocalStorageService {
       searchValue: featureFlagSearchString || null,
       sortKey: (featureFlagSortKey as FLAG_SORT_KEY) || FLAG_SORT_KEY.NAME,
       sortAs: (featureFlagSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
+      graphInfo: null,
+      isGraphLoading: false,
+      totalExposures: null,
     };
 
     const segmentState: SegmentState = {

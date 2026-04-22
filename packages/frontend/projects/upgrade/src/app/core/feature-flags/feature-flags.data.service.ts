@@ -6,10 +6,12 @@ import {
   FeatureFlagSegmentListDetails,
   FeatureFlagsPaginationInfo,
   FeatureFlagsPaginationParams,
+  IExposureStatByDate,
   UpdateFeatureFlagRequest,
   UpdateFeatureFlagStatusRequest,
   UpdateFilterModeRequest,
 } from './store/feature-flags.model';
+import { DATE_RANGE } from '../experiments/store/experiments.model';
 import { Observable, delay, of } from 'rxjs';
 
 import {
@@ -136,5 +138,10 @@ export class FeatureFlagsDataService {
   deleteExclusionList(segmentId: string) {
     const url = `${API_ENDPOINTS.addFlagExclusionList}/${segmentId}`;
     return this.http.delete(url);
+  }
+
+  fetchFeatureFlagGraphInfo(params: { flagId: string; range: DATE_RANGE; clientOffset: number }) {
+    const url = API_ENDPOINTS.featureFlagGraphInfo;
+    return this.http.post<IExposureStatByDate[]>(url, params);
   }
 }
