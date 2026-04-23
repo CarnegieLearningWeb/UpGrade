@@ -199,7 +199,7 @@ export interface LevelCombinationElement {
 export interface ExperimentDecisionPoint {
   id: string;
   site: string;
-  target?: string;
+  target?: string | null;
   description: string;
   twoCharacterId: string;
   order: number;
