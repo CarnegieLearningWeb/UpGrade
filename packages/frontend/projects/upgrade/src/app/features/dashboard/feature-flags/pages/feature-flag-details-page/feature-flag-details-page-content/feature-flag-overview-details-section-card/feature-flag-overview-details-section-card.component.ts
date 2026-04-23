@@ -57,7 +57,7 @@ export class FeatureFlagOverviewDetailsSectionCardComponent implements OnInit, O
   emailId = '';
   tabLabels = [
     { label: 'Participants', disabled: false },
-    { label: 'Data', disabled: true },
+    { label: 'Data', disabled: false },
     { label: 'Logs', disabled: false },
   ];
 

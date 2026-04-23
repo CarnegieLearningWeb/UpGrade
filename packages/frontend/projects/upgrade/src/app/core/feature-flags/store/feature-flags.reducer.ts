@@ -26,6 +26,9 @@ export const initialState: FeatureFlagState = adapter.getInitialState({
   searchValue: null,
   sortKey: FLAG_SORT_KEY.NAME,
   sortAs: SORT_AS_DIRECTION.ASCENDING,
+  graphInfo: null,
+  isGraphLoading: false,
+  totalExposures: null,
 });
 
 const reducer = createReducer(
@@ -279,6 +282,34 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionDeleteFeatureFlagExclusionListFailure, (state) => ({
     ...state,
     isLoadingUpsertPrivateSegmentList: false,
+  })),
+
+  // Graph / Exposures Actions
+  on(FeatureFlagsActions.actionFetchFeatureFlagGraphInfo, (state) => ({
+    ...state,
+    isGraphLoading: true,
+    graphInfo: null,
+  })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagGraphInfoSuccess, (state, { graphInfo }) => ({
+    ...state,
+    isGraphLoading: false,
+    graphInfo,
+  })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagGraphInfoFailure, (state) => ({
+    ...state,
+    isGraphLoading: false,
+  })),
+  on(FeatureFlagsActions.actionSetFeatureFlagGraphInfo, (state, { graphInfo }) => ({
+    ...state,
+    graphInfo,
+  })),
+  on(FeatureFlagsActions.actionFetchFeatureFlagTotalExposuresSuccess, (state, { totalExposures }) => ({
+    ...state,
+    totalExposures,
+  })),
+  on(FeatureFlagsActions.actionSetFeatureFlagTotalExposures, (state, { totalExposures }) => ({
+    ...state,
+    totalExposures,
   }))
 );
 

@@ -23,6 +23,7 @@ import { FeatureFlagFilterModeUpdateValidator } from './validators/FeatureFlagFi
 import { AppRequest, PaginationResponse } from '../../types';
 import { IImportError, ValidatedImportResponse, LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
 import {
+  ExposuresDateValidator,
   FeatureFlagImportValidation,
   FeatureFlagListImportValidation,
   FeatureFlagValidation,
@@ -979,5 +980,70 @@ export class FeatureFlagsController {
     }
 
     return lists;
+  }
+
+  /**
+   * @swagger
+   * /flags/date:
+   *    post:
+   *       description: Get Feature Flag Exposures By Date
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: props
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *              flagId:
+   *               type: string
+   *               example: 45b9d8cd-f113-4f93-9826-c3d1ff4ee73c
+   *              range:
+   *               type: string
+   *               enum: [last_seven_days, last_two_weeks, last_one_month, last_three_months, last_six_months, last_twelve_months, total]
+   *              clientOffset:
+   *               type: number
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature Flag Exposures By Date
+   *            schema:
+   *              type: array
+   *              description: ''
+   *              minItems: 1
+   *              uniqueItems: true
+   *              items:
+   *                type: object
+   *                required:
+   *                  - date
+   *                  - count
+   *                properties:
+   *                  date:
+   *                    type: string
+   *                    minLength: 1
+   *                  count:
+   *                    type: number
+   *                    minimum: 0
+   *          '400':
+   *            description: BadRequestError - InvalidParameterValue
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Internal Server Error
+   */
+  @Post('/date')
+  public async exposuresByDate(
+    @Body({ validate: true })
+    auditParams: ExposuresDateValidator
+  ): Promise<{ date: string; count: number }[]> {
+    return this.featureFlagService.getExposureStatsByDate(
+      auditParams.flagId,
+      auditParams.range,
+      auditParams.clientOffset
+    );
   }
 }

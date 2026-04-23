@@ -210,6 +210,12 @@ export const selectWarningKeysForSelectedFlag = createSelector(selectSelectedFea
   getWarningKeysForFlag(flag)
 );
 
+export const selectFeatureFlagGraphInfo = createSelector(selectFeatureFlagsState, (state) => state.graphInfo);
+
+export const selectIsFeatureFlagGraphLoading = createSelector(selectFeatureFlagsState, (state) => state.isGraphLoading);
+
+export const selectFeatureFlagTotalExposures = createSelector(selectFeatureFlagsState, (state) => state.totalExposures);
+
 // Selector for all flags - returns map of flagId to translation key arrays
 export const selectWarningKeysForAllFlags = createSelector(selectFeatureFlagsState, (state: FeatureFlagState) => {
   const warningKeys: { [flagId: string]: string[] } = {};
