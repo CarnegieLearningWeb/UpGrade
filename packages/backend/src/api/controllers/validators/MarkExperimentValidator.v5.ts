@@ -22,6 +22,7 @@ class Data {
   site: string;
 
   @IsString()
+  @IsOptional()
   target: string;
 
   @IsOptional()

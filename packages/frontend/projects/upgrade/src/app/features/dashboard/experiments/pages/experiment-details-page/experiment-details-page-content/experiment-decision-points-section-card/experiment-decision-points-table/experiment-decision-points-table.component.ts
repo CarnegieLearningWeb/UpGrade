@@ -40,7 +40,10 @@ export class ExperimentDecisionPointsTableComponent {
   @Input() actionsTooltip?: string = '';
   @Output() rowAction = new EventEmitter<ExperimentDecisionPointRowActionEvent>();
 
-  displayedColumns: string[] = ['site', 'target', 'excludeIfReached', 'actions'];
+  get displayedColumns(): string[] {
+    const hasTarget = this.decisionPoints?.some((dp) => dp.target);
+    return hasTarget ? ['site', 'target', 'excludeIfReached', 'actions'] : ['site', 'excludeIfReached', 'actions'];
+  }
 
   DECISION_POINT_TRANSLATION_KEYS = {
     SITE: 'experiments.details.decision-points.site.text',

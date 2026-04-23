@@ -33,7 +33,7 @@ import {
 import { MainAuditLog } from './Experiment/auditLogs';
 import { NoPartitionPoint } from './Experiment/onlyExperimentPoint';
 // import { StatsGroupExperiment } from './ExperimentStats';
-import { NoExperiment } from './Experiment/markExperimentPoint';
+import { NoExperiment, NullTargetMixed, NullTargetAll } from './Experiment/markExperimentPoint';
 import {
   NoPreviewUser,
   PreviewAssignments,
@@ -163,6 +163,14 @@ describe('Integration Tests', () => {
 
   test('Mark Experiment before experiment is created', () => {
     return NoExperiment();
+  });
+
+  test('Mark Experiment point with null target in mixed-target experiment', () => {
+    return NullTargetMixed();
+  });
+
+  test('Mark Experiment point when all decision points have null target', () => {
+    return NullTargetAll();
   });
 
   test('No Group for Experiment', () => {

@@ -480,6 +480,34 @@ export const individualExperimentWithMetric = clone({
   ],
 });
 
+export const allNullTargetPartitionsExperiment = clone({
+  ...getExperiment(),
+  consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
+  assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.INACTIVE,
+  logging: false,
+  type: EXPERIMENT_TYPE.SIMPLE,
+  partitions: [
+    {
+      id: 'd2702d3c-5e04-41a7-8766-1da8a95b71a1',
+      site: 'CurriculumSequence',
+      description: 'No Target Decision Point 1',
+      twoCharacterId: 'N1',
+      excludeIfReached: false,
+      order: 1,
+    },
+    {
+      id: 'd2702d3c-5e04-41a7-8766-1da8a95b71a2',
+      site: 'CurriculumSequence',
+      description: 'No Target Decision Point 2',
+      twoCharacterId: 'N2',
+      excludeIfReached: false,
+      order: 2,
+    },
+  ],
+});
+
 export const scheduleJobStartExperiment = clone({ ...getExperiment(), state: EXPERIMENT_STATE.SCHEDULED });
 
 export const scheduleJobEndExperiment = clone({

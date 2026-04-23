@@ -68,6 +68,7 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
 
   decisionPointForm: FormGroup;
   currentContext: string;
+  showTargetField = false;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -109,11 +110,15 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
     this.decisionPointForm = this.formBuilder.group(
       {
         site: [initialValues.site, [Validators.required]],
-        target: [initialValues.target, [Validators.required]],
+        target: [initialValues.target],
         excludeIfReached: [initialValues.excludeIfReached],
       },
       options
     );
+
+    if (this.showTargetField) {
+      this.decisionPointForm.get('target').addValidators(Validators.required);
+    }
 
     this.initialFormValues$.next(this.decisionPointForm.value);
   }
@@ -127,7 +132,17 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
       action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceDecisionPoint?.target ? sourceDecisionPoint.target : '';
     const excludeIfReached = sourceDecisionPoint?.excludeIfReached || false;
 
+    if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceDecisionPoint?.target) {
+      this.showTargetField = true;
+    }
+
     return { site, target, excludeIfReached };
+  }
+
+  onAddTargetClicked(): void {
+    this.showTargetField = true;
+    this.decisionPointForm.get('target').addValidators(Validators.required);
+    this.decisionPointForm.get('target').updateValueAndValidity();
   }
 
   setupAutocompleteFilters(): void {
@@ -168,9 +183,8 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
     const site = siteControl.value?.trim() || '';
     const target = targetControl.value?.trim() || '';
 
-    // Don't validate if either field is empty (required validator will handle that)
-    if (!site || !target) {
-      // Clear any existing duplicate errors when fields are empty
+    // Don't validate if site is empty (required validator will handle that)
+    if (!site) {
       this.clearDuplicateError(siteControl);
       this.clearDuplicateError(targetControl);
       return null;
@@ -190,7 +204,7 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
     // Check if this decision point already exists
     const isDuplicate = currentExperiment.partitions.some((decisionPoint) => {
       const isSameSite = decisionPoint.site?.trim() === site;
-      const isSameTarget = decisionPoint.target?.trim() === target;
+      const isSameTarget = (decisionPoint.target?.trim() || '') === target;
 
       // For edit action, exclude the current decision point being edited
       if (this.config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT) {
@@ -272,12 +286,12 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
     const formData = this.decisionPointForm.value;
     const decisionPointData: DecisionPointFormData = {
       site: formData.site?.trim() || '',
-      target: formData.target?.trim() || '',
+      target: formData.target?.trim() || null,
       excludeIfReached: formData.excludeIfReached,
     };
 
-    // Validate trimmed values are not empty
-    if (!decisionPointData.site || !decisionPointData.target) {
+    // Validate site is not empty
+    if (!decisionPointData.site) {
       CommonFormHelpersService.triggerTouchedToDisplayErrors(this.decisionPointForm);
       return;
     }
