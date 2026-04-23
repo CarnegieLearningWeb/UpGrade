@@ -5,6 +5,13 @@
   row-gap: 32px;
 }
 
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
 .not-started-message {
   display: flex;
   align-items: center;
