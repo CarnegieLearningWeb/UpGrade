@@ -36,7 +36,7 @@ import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupExclusion } from '../models/GroupExclusion';
 import { Experiment } from '../models/Experiment';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import { v4 as uuid } from 'uuid';
+
 import { PreviewUserService } from './PreviewUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentService } from './ExperimentService';
@@ -288,7 +288,7 @@ export class ExperimentAssignmentService {
         ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0].assignmentUnit
         : null;
     monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
-      id: monitoredDocument?.id || uuid(),
+      id: monitoredDocument?.id || crypto.randomUUID(),
       experimentId: experimentId,
       condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? null : condition,
       user: userDoc,
@@ -1765,7 +1765,7 @@ export class ExperimentAssignmentService {
         // get condition which should be assigned
         if (!groupEnrollment && !groupExclusion && conditionAssigned && !invalidGroup && !noGroupSpecified) {
           const groupEnrollmentDocument: Omit<GroupEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> = {
-            id: uuid(),
+            id: crypto.randomUUID(),
             experiment,
             partition: decisionPoint as DecisionPoint,
             groupId: user?.workingGroup?.[experiment.group],
@@ -1791,7 +1791,7 @@ export class ExperimentAssignmentService {
         if (!individualEnrollment && !individualExclusion && conditionAssigned && !invalidGroup && !noGroupSpecified) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
             {
-              id: uuid(),
+              id: crypto.randomUUID(),
               experiment,
               partition: decisionPoint as DecisionPoint,
               user,
@@ -1825,7 +1825,7 @@ export class ExperimentAssignmentService {
         if (!individualEnrollment) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
             {
-              id: uuid(),
+              id: crypto.randomUUID(),
               experiment,
               partition: decisionPoint as DecisionPoint,
               user,
@@ -1868,7 +1868,7 @@ export class ExperimentAssignmentService {
         if (!individualEnrollment && !individualExclusion && conditionAssigned) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
             {
-              id: uuid(),
+              id: crypto.randomUUID(),
               experiment,
               partition: decisionPoint as DecisionPoint,
               user,

@@ -3,7 +3,7 @@ import { Container } from 'typedi';
 import { configureLogger } from '../../utils/logger';
 import { useContainer as routingUseContainer } from 'routing-controllers';
 import request from 'supertest';
-import { v4 as uuid } from 'uuid';
+
 import { ScheduledJobService } from '../../../src/api/services/ScheduledJobService';
 import ScheduledJobServiceMock from './mocks/ScheduledJobServiceMock';
 import { ScheduleJobMiddleware } from '../../../src/api/middlewares/ScheduleJobMiddleware';
@@ -27,7 +27,7 @@ describe('Scheduled Job Controller Testing', () => {
     // creating express app here
     return request(app)
       .post('/api/scheduledJobs/start')
-      .send({ id: uuid() })
+      .send({ id: crypto.randomUUID() })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -36,7 +36,7 @@ describe('Scheduled Job Controller Testing', () => {
   test('Post request for /api/scheduledJobs/end', () => {
     return request(app)
       .post('/api/scheduledJobs/end')
-      .send({ id: uuid() })
+      .send({ id: crypto.randomUUID() })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

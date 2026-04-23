@@ -1,7 +1,6 @@
 import { Service } from 'typedi';
 import { IExperimentAssignmentv5 } from 'upgrade_types';
 import { ILogInput } from 'upgrade_types';
-import { v4 as uuid } from 'uuid';
 
 @Service()
 export default class ExperimentAssignmentServiceMock {
@@ -39,8 +38,8 @@ export default class ExperimentAssignmentServiceMock {
               type: 'string',
               value: 'Control Content',
             },
-            id: uuid(),
-            experimentId: uuid(),
+            id: crypto.randomUUID(),
+            experimentId: crypto.randomUUID(),
           },
         ],
       };

@@ -21,7 +21,7 @@ import { Not } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
 import Papa from 'papaparse';
 import { env } from '../../env';
-import { v4 as uuid } from 'uuid';
+
 import { ErrorWithType } from '../errors/ErrorWithType';
 import {
   SegmentInputValidator,
@@ -517,7 +517,7 @@ export class SegmentService {
     const validatedSegments = await this.checkSegmentsValidity(segments);
     for (const segment of validatedSegments.segments) {
       // Giving new id to avoid segment duplication
-      segment.id = uuid();
+      segment.id = crypto.randomUUID();
 
       logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
       await this.addSegmentDataInDB(segment, logger);
@@ -531,7 +531,7 @@ export class SegmentService {
 
     for (const list of validatedLists.segments) {
       // Giving new id to avoid segment duplication
-      list.id = uuid();
+      list.id = crypto.randomUUID();
       list.type = SEGMENT_TYPE.PRIVATE;
 
       logger.info({ message: `Import segment list => ${JSON.stringify(list, undefined, 2)}` });
@@ -899,7 +899,7 @@ export class SegmentService {
     }
 
     // create/update segment document
-    segment.id = segment.id || uuid();
+    segment.id = segment.id || crypto.randomUUID();
     const { id, name, description, context, type, listType, tags } = segment;
     const segmentsById = await this.getSegmentByIds(segment.subSegmentIds || []);
     const allSegments = [...segmentsById, ...(segment.subSegments || [])];

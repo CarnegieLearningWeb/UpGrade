@@ -3,7 +3,7 @@ import request from 'supertest';
 import { configureLogger } from '../../utils/logger';
 import { useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
-import { v4 as uuid } from 'uuid';
+
 import SegmentServiceMock from './mocks/SegmentServiceMock';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 
@@ -26,7 +26,7 @@ describe('Segment Controller Testing', () => {
   });
 
   const segmentData = {
-    id: uuid(),
+    id: crypto.randomUUID(),
     name: 'segment1',
     description: 'desc',
     context: 'home',
@@ -41,7 +41,7 @@ describe('Segment Controller Testing', () => {
   };
 
   const listInputData = {
-    parentSegmentId: uuid(),
+    parentSegmentId: crypto.randomUUID(),
     name: 'list1',
     description: 'list description',
     context: 'home',
@@ -62,7 +62,7 @@ describe('Segment Controller Testing', () => {
 
   test('Get request for /api/segments/:segmentId', () => {
     return request(app)
-      .get(`/api/segments/${uuid()}`)
+      .get(`/api/segments/${crypto.randomUUID()}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -70,7 +70,7 @@ describe('Segment Controller Testing', () => {
 
   test('Get request for /api/segments/status/:segmentId', () => {
     return request(app)
-      .get(`/api/segments/status/${uuid()}`)
+      .get(`/api/segments/status/${crypto.randomUUID()}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -86,7 +86,7 @@ describe('Segment Controller Testing', () => {
   });
 
   test('Delete request for /api/segments/:segmentId', () => {
-    return request(app).delete(`/api/segments/${uuid()}`).expect('Content-Type', /json/).expect(200);
+    return request(app).delete(`/api/segments/${crypto.randomUUID()}`).expect('Content-Type', /json/).expect(200);
   });
 
   test('Post request for /api/segments/import', () => {
@@ -106,7 +106,7 @@ describe('Segment Controller Testing', () => {
     return request(app)
       .get('/api/segments/export/json')
       .query({
-        ids: [uuid()],
+        ids: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -117,7 +117,7 @@ describe('Segment Controller Testing', () => {
     return request(app)
       .get('/api/segments/export/csv')
       .query({
-        ids: [uuid()],
+        ids: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -135,7 +135,7 @@ describe('Segment Controller Testing', () => {
 
   test('Post request for /api/segments (updateSegmentList)', () => {
     const updateListData = {
-      id: uuid(),
+      id: crypto.randomUUID(),
       name: 'updated list',
       description: 'updated description',
       context: 'home',
@@ -155,8 +155,8 @@ describe('Segment Controller Testing', () => {
   });
 
   test('Delete request for /api/segments/list/:segmentId (deleteSegmentList)', () => {
-    const segmentId = uuid();
-    const parentSegmentId = uuid();
+    const segmentId = crypto.randomUUID();
+    const parentSegmentId = crypto.randomUUID();
 
     return request(app)
       .delete(`/api/segments/list/${segmentId}`)

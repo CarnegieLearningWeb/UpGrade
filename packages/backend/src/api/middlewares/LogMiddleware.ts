@@ -3,7 +3,6 @@ import express from 'express';
 import morgan from 'morgan';
 import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { v4 as uuid } from 'uuid';
 
 @Middleware({ type: 'before' })
 export class LogMiddleware implements ExpressMiddlewareInterface {
@@ -25,7 +24,7 @@ export class LogMiddleware implements ExpressMiddlewareInterface {
     // add request id in the header
     const headerName = 'x-request-id';
     const oldValue: string = req.get('headerName');
-    const id = oldValue === undefined ? uuid() : oldValue;
+    const id = oldValue === undefined ? crypto.randomUUID() : oldValue;
     res.set(headerName, id);
 
     // child logger creation
