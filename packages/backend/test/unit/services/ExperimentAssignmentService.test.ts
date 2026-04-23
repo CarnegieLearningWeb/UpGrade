@@ -1828,13 +1828,10 @@ describe('Experiment Assignment Service Test', () => {
         condition,
         loggerMock,
         undefined, // no experimentId
-        undefined  // null target
+        undefined // null target
       );
 
-      sinon.assert.calledWith(
-        loggerMock.info,
-        sinon.match({ message: sinon.match(`Target: undefined`) })
-      );
+      sinon.assert.calledWith(loggerMock.info, sinon.match({ message: sinon.match(`Target: undefined`) }));
     });
   });
 });
