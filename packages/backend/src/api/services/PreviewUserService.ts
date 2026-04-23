@@ -1,6 +1,6 @@
 import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
-import { v4 as uuid } from 'uuid';
+
 import { PreviewUser } from '../models/PreviewUser';
 import { PreviewUserRepository } from '../repositories/PreviewUserRepository';
 import { ExplicitIndividualAssignmentRepository } from '../repositories/ExplicitIndividualAssignmentRepository';
@@ -86,7 +86,7 @@ export class PreviewUserService {
 
   public create(userDTO: PreviewUserValidator, logger: UpgradeLogger): Promise<PreviewUser> {
     logger.info({ message: `Create a new preview user => ${userDTO}` });
-    userDTO.id = userDTO.id || uuid();
+    userDTO.id = userDTO.id || crypto.randomUUID();
     return this.userRepository.save(this.previewUserValidatorToUser(userDTO));
   }
 
@@ -119,7 +119,7 @@ export class PreviewUserService {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { createdAt, updatedAt, versionNumber, ...rest } = assignment;
           rest.previewUser = previewUser;
-          rest.id = rest.id || uuid();
+          rest.id = rest.id || crypto.randomUUID();
           rest.experimentCondition = assignment.experimentCondition.id as any;
           rest.experiment = assignment.experiment.id as any;
           return rest;

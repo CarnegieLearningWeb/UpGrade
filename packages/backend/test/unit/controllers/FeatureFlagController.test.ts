@@ -7,7 +7,7 @@ import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService
 import FeatureFlagServiceMock from './mocks/FeatureFlagServiceMock';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { v4 as uuid } from 'uuid';
+
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import ExperimentUserServiceMock from './mocks/ExperimentUserServiceMock';
 
@@ -45,7 +45,7 @@ describe('Feature Flag Controller Testing', () => {
     return request(app)
       .post('/api/flags')
       .send({
-        id: uuid(),
+        id: crypto.randomUUID(),
         name: 'string',
         key: 'string',
         description: 'string',
@@ -63,7 +63,7 @@ describe('Feature Flag Controller Testing', () => {
     return request(app)
       .patch('/api/flags/status')
       .send({
-        flagId: uuid(),
+        flagId: crypto.randomUUID(),
         status: 'enabled',
       })
       .set('Accept', 'application/json')
@@ -75,7 +75,7 @@ describe('Feature Flag Controller Testing', () => {
     return request(app)
       .patch('/api/flags/filterMode')
       .send({
-        flagId: uuid(),
+        flagId: crypto.randomUUID(),
         filterMode: 'includeAll',
       })
       .set('Accept', 'application/json')
@@ -85,7 +85,7 @@ describe('Feature Flag Controller Testing', () => {
 
   test('Delete request for /api/flags/id', () => {
     return request(app)
-      .delete('/api/flags/' + uuid())
+      .delete('/api/flags/' + crypto.randomUUID())
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -93,9 +93,9 @@ describe('Feature Flag Controller Testing', () => {
 
   test('Put request for /api/flags/id', () => {
     return request(app)
-      .put('/api/flags/' + uuid())
+      .put('/api/flags/' + crypto.randomUUID())
       .send({
-        id: uuid(),
+        id: crypto.randomUUID(),
         name: 'string',
         key: 'string',
         description: 'string',
@@ -113,7 +113,7 @@ describe('Feature Flag Controller Testing', () => {
     return request(app)
       .post('/api/flags/inclusionList')
       .send({
-        id: uuid(),
+        id: crypto.randomUUID(),
         enabled: true,
         listType: 'string',
         list: {
@@ -134,7 +134,7 @@ describe('Feature Flag Controller Testing', () => {
     return request(app)
       .post('/api/flags/exclusionList')
       .send({
-        id: uuid(),
+        id: crypto.randomUUID(),
         enabled: true,
         listType: 'string',
         list: {
@@ -153,7 +153,7 @@ describe('Feature Flag Controller Testing', () => {
 
   test('Delete request for /api/flags/inclusionList/id', () => {
     return request(app)
-      .delete('/api/flags/inclusionList/' + uuid())
+      .delete('/api/flags/inclusionList/' + crypto.randomUUID())
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -161,7 +161,7 @@ describe('Feature Flag Controller Testing', () => {
 
   test('Delete request for /api/flags/exclusionList/id', () => {
     return request(app)
-      .delete('/api/flags/exclusionList/' + uuid())
+      .delete('/api/flags/exclusionList/' + crypto.randomUUID())
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -172,11 +172,11 @@ describe('Feature Flag Controller Testing', () => {
   // This will ensure we test the full lifecycle and have the necessary data for updates.
 
   // test('Put request for /api/flags/inclusionList/id', () => {
-  //   const segmentId = uuid();
+  //   const segmentId = crypto.randomUUID();
   //   return request(app)
   //     .put('/api/flags/inclusionList/' + segmentId)
   //     .send({
-  //       flagId: uuid(),
+  //       flagId: crypto.randomUUID(),
   //       enabled: true,
   //       listType: 'string',
   //       list: {
@@ -195,11 +195,11 @@ describe('Feature Flag Controller Testing', () => {
   // });
 
   // test('Put request for /api/flags/exclusionList/id', () => {
-  //   const segmentId = uuid();
+  //   const segmentId = crypto.randomUUID();
   //   return request(app)
   //     .put('/api/flags/exclusionList/' + segmentId)
   //     .send({
-  //       flagId: uuid(),
+  //       flagId: crypto.randomUUID(),
   //       enabled: true,
   //       listType: 'string',
   //       list: {

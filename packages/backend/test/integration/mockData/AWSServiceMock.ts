@@ -1,11 +1,10 @@
 import { Service } from 'typedi';
-import { v4 as uuid } from 'uuid';
 
 @Service()
 export default class AWSServiceMock {
   public stepFunctionStartExecution(timeStamp: Date, body: any): Promise<any> {
     return Promise.resolve({
-      executionArn: uuid(),
+      executionArn: crypto.randomUUID(),
       startDate: Date.now(),
     });
   }

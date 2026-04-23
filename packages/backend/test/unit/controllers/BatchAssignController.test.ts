@@ -8,7 +8,7 @@ import { ExperimentUserService } from '../../../src/api/services/ExperimentUserS
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
 import ExperimentUserServiceMock from './mocks/ExperimentUserServiceMock';
-import { v4 as uuid } from 'uuid';
+
 import { DataSource } from 'typeorm';
 import { Container as TypeDIContainer } from '../../../src/typeorm-typedi-extensions';
 
@@ -49,8 +49,8 @@ describe('BatchAssign Controller Testing', () => {
   });
 
   test('Post request for /api/batch-assign with valid batch assignment request', () => {
-    const userId1 = uuid();
-    const userId2 = uuid();
+    const userId1 = crypto.randomUUID();
+    const userId2 = crypto.randomUUID();
 
     return request(app)
       .post('/api/batch-assign')
@@ -66,7 +66,7 @@ describe('BatchAssign Controller Testing', () => {
   });
 
   test('Post request for /api/batch-assign with single user', () => {
-    const userId = uuid();
+    const userId = crypto.randomUUID();
 
     return request(app)
       .post('/api/batch-assign')
@@ -82,7 +82,7 @@ describe('BatchAssign Controller Testing', () => {
   });
 
   test('Post request for /api/batch-assign with multiple users', () => {
-    const userIds = [uuid(), uuid(), uuid(), uuid()];
+    const userIds = [crypto.randomUUID(), crypto.randomUUID(), crypto.randomUUID(), crypto.randomUUID()];
 
     return request(app)
       .post('/api/batch-assign')
@@ -98,7 +98,7 @@ describe('BatchAssign Controller Testing', () => {
   });
 
   test('Post request for /api/batch-assign with different context values', () => {
-    const userId = uuid();
+    const userId = crypto.randomUUID();
 
     return request(app)
       .post('/api/batch-assign')
@@ -128,7 +128,7 @@ describe('BatchAssign Controller Testing', () => {
   });
 
   test('Post request for /api/batch-assign with large batch of users', () => {
-    const userIds = Array.from({ length: 50 }, () => uuid());
+    const userIds = Array.from({ length: 50 }, () => crypto.randomUUID());
 
     return request(app)
       .post('/api/batch-assign')
@@ -168,7 +168,7 @@ describe('BatchAssign Controller Testing', () => {
         context: '',
         site: 'SelectSection',
         target: 'Site1',
-        userIds: [uuid()],
+        userIds: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
       .expect(400);
@@ -180,7 +180,7 @@ describe('BatchAssign Controller Testing', () => {
       .send({
         context: 'home',
         target: 'Site1',
-        userIds: [uuid()],
+        userIds: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
       .expect(400);
@@ -193,7 +193,7 @@ describe('BatchAssign Controller Testing', () => {
         context: 'home',
         site: '',
         target: 'Site1',
-        userIds: [uuid()],
+        userIds: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
       .expect(400);
@@ -205,7 +205,7 @@ describe('BatchAssign Controller Testing', () => {
       .send({
         context: 'home',
         site: 'SelectSection',
-        userIds: [uuid()],
+        userIds: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
       .expect(400);
@@ -218,7 +218,7 @@ describe('BatchAssign Controller Testing', () => {
         context: 'home',
         site: 'SelectSection',
         target: '',
-        userIds: [uuid()],
+        userIds: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
       .expect(400);
@@ -243,7 +243,7 @@ describe('BatchAssign Controller Testing', () => {
         context: null,
         site: 'SelectSection',
         target: 'Site1',
-        userIds: [uuid()],
+        userIds: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
       .expect(400);
@@ -269,7 +269,7 @@ describe('BatchAssign Controller Testing', () => {
         context: 123,
         site: 'SelectSection',
         target: 'Site1',
-        userIds: [uuid()],
+        userIds: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
       .expect(400);
@@ -282,7 +282,7 @@ describe('BatchAssign Controller Testing', () => {
         context: 'home',
         site: 'SelectSection',
         target: 'Site1',
-        userIds: [uuid(), 123, uuid()],
+        userIds: [crypto.randomUUID(), 123, crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
       .expect(400);

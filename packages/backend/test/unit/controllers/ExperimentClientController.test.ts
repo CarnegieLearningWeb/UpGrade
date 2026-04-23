@@ -18,7 +18,6 @@ import ClientLibMiddlewareMock from './mocks/ClientLibMiddlewareMock';
 import MockuserCheckMiddleware from './mocks/UserCheckMiddlewareMock';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-// import { v4 as uuid } from 'uuid';
 
 describe('Experiment Client Controller Testing', () => {
   beforeAll(() => {

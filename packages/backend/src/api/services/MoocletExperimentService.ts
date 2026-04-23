@@ -41,7 +41,7 @@ import { QueryService } from './QueryService';
 import { SegmentService } from './SegmentService';
 import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletVersionConditionMap } from '../models/MoocletVersionConditionMap';
-import { v4 as uuid } from 'uuid';
+
 import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 import { ConditionValidator, ExperimentDTO } from '../DTO/ExperimentDTO';
 import { UserDTO } from '../DTO/UserDTO';
@@ -1054,7 +1054,7 @@ export class MoocletExperimentService extends ExperimentService {
       throw err;
     }
 
-    moocletExperimentRef.id = uuid();
+    moocletExperimentRef.id = crypto.randomUUID();
 
     return moocletExperimentRef;
   }

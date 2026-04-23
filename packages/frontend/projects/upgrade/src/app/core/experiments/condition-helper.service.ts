@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { v4 as uuidv4 } from 'uuid';
 
 import { ExperimentService } from './experiments.service';
 import {
@@ -98,7 +97,7 @@ export class ConditionHelperService {
   addCondition(experiment: Experiment, conditionData: ConditionFormData): void {
     const currentConditions = [...(experiment.conditions || [])];
     const newCondition = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       conditionCode: conditionData.conditionCode,
       description: conditionData.description,
       assignmentWeight: 0,

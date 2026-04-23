@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { v4 as uuidv4 } from 'uuid';
 
 import { ExperimentService } from './experiments.service';
 import {
@@ -21,7 +20,7 @@ export class DecisionPointHelperService {
   addDecisionPoint(experiment: Experiment, decisionPointData: DecisionPointFormData): void {
     const currentDecisionPoints = [...(experiment.partitions || [])];
     const newDecisionPoint = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       site: decisionPointData.site,
       target: decisionPointData.target,
       description: '',
