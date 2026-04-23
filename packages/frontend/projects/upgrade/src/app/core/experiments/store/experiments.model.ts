@@ -395,7 +395,7 @@ export interface ExperimentFormData {
 
 export interface DecisionPointFormData {
   site: string;
-  target?: string;
+  target?: string | null;
   excludeIfReached: boolean;
 }
 
