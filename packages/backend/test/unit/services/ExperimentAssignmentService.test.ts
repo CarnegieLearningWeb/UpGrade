@@ -1800,7 +1800,12 @@ describe('Experiment Assignment Service Test', () => {
         undefined, // no experimentId
         undefined // null target
       );
-      expect(result).toMatchObject({ site, condition });
+
+      sinon.assert.calledWith(
+        monitoredDecisionPointRepositoryMock.saveRawJson,
+        sinon.match({ site, condition, target: null })
+      );
+      expect(result).toMatchObject({ site, condition, target: null });
     });
 
     it('[markExperimentPoint] should accept undefined target and log correctly (no running experiment)', async () => {
