@@ -499,7 +499,7 @@ export const allNullTargetPartitionsExperiment = clone({
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b71a2',
-      site: 'CurriculumSequence',
+      site: 'CurriculumSequence2',
       description: 'No Target Decision Point 2',
       twoCharacterId: 'N2',
       excludeIfReached: false,

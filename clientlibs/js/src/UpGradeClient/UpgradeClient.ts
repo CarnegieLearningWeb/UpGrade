@@ -310,7 +310,7 @@ export default class UpgradeClient {
     await this.getAllExperimentConditions();
 
     if (this.dataService.getExperimentAssignmentData()) {
-      const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
+      const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target || null);
 
       const assignment = new Assignment(experimentAssignment, this.apiService);
 

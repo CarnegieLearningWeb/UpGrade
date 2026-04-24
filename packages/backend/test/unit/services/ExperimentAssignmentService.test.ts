@@ -1774,7 +1774,7 @@ describe('Experiment Assignment Service Test', () => {
       });
     });
 
-    it('[markExperimentPoint] should save monitored point with null target when target is undefined and no experiment is running', async () => {
+    it('[markExperimentPoint] should save monitored point with null target when target is null and no experiment is running', async () => {
       const userId = 'testUser';
       const site = 'testSite';
       const condition = 'testCondition';

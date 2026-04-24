@@ -492,7 +492,6 @@ export class ExperimentClientController {
    *                type: object
    *                required:
    *                  - site
-   *                  - target
    *                  - condition
    *                properties:
    *                  site:

@@ -84,7 +84,6 @@ export async function NullTargetAllDecisionPoints(): Promise<void> {
   expect(assignments.length).toEqual(experimentObject.partitions.length);
   assignments.forEach((assignment) => {
     expect(assignment.target).toBeNull();
-    expect(assignment.site).toEqual('CurriculumSequence');
     expect(assignment.assignedCondition.length).toBeGreaterThan(0);
   });
 

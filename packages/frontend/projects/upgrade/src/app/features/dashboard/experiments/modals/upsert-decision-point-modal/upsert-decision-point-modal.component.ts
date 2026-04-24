@@ -118,6 +118,7 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
 
     if (this.showTargetField) {
       this.decisionPointForm.get('target').addValidators(Validators.required);
+      this.decisionPointForm.get('target').updateValueAndValidity();
     }
 
     this.initialFormValues$.next(this.decisionPointForm.value);
@@ -181,7 +182,7 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
     }
 
     const site = siteControl.value?.trim() || '';
-    const target = targetControl.value?.trim() || '';
+    const target = targetControl.value?.trim() || null;
 
     // Don't validate if site is empty (required validator will handle that)
     if (!site) {
@@ -204,7 +205,7 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
     // Check if this decision point already exists
     const isDuplicate = currentExperiment.partitions.some((decisionPoint) => {
       const isSameSite = decisionPoint.site?.trim() === site;
-      const isSameTarget = (decisionPoint.target?.trim() || '') === target;
+      const isSameTarget = (decisionPoint.target?.trim() || null) === target;
 
       // For edit action, exclude the current decision point being edited
       if (this.config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT) {
@@ -212,7 +213,7 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
         if (sourceDecisionPoint) {
           const isCurrentDecisionPoint =
             decisionPoint.site?.trim() === sourceDecisionPoint.site?.trim() &&
-            decisionPoint.target?.trim() === sourceDecisionPoint.target?.trim();
+            (decisionPoint.target?.trim() || null) === (sourceDecisionPoint.target?.trim() || null);
 
           // Skip validation if it's the same decision point being edited
           if (isCurrentDecisionPoint) {

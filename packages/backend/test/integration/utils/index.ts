@@ -100,7 +100,7 @@ export async function getAllExperimentCondition(
 
 export async function markExperimentPoint(
   userId: string,
-  target: string | undefined,
+  target: string | null,
   site: string,
   condition: string | null,
   experimentId: string,
