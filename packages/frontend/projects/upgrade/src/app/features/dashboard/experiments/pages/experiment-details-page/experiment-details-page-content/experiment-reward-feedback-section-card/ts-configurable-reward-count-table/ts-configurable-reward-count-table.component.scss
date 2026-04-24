@@ -63,31 +63,33 @@
     }
 
     .condition-column {
-      width: 350px;
       text-align: left;
       padding-left: 32px;
+      width: 8%;
     }
 
-    .successes-column,
-    .failures-column,
-    .success-rate-column,
-    .estimated-weight-column,
-    .spacer-column {
-      width: auto;
+    .prior-column,
+    .posterior-column {
+      width: 6%;
+    }
+
+    .count-column {
+      width: 20%;
+    }
+
+    .count-column,
+    .prior-column,
+    .posterior-column,
+    .estimated-weight-column {
       text-align: right;
-      padding-right: 16px;
     }
 
     &.no-data .condition-column {
       width: auto;
     }
 
-    .successes-column {
-      width: 64px;
-    }
-
-    .spacer-column {
-      min-width: 64px;
+    .prior-column {
+      color: var(--darker-grey);
     }
   }
 }

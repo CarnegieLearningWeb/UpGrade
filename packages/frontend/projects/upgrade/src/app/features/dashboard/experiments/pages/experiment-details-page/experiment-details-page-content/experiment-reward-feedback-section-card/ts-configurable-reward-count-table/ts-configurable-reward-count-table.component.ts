@@ -18,7 +18,16 @@ export class TSConfigurableRewardCountTableComponent {
   @Input() dataSource: ExperimentRewardsSummary = [];
   @Input() isLoading = false;
 
-  displayedColumns = ['conditionCode', 'successes', 'failures', 'successRate', 'estimatedWeight', 'spacer'];
+  displayedColumns = [
+    'conditionCode',
+    'successes',
+    'successPrior',
+    'successPosterior',
+    'failures',
+    'failurePrior',
+    'failurePosterior',
+    'estimatedWeight',
+  ];
 
   getEstimatedWeightTooltip(row: ExperimentRewardsByCondition): string {
     const ps = row.posteriorSuccesses ?? 0;
@@ -27,6 +36,6 @@ export class TSConfigurableRewardCountTableComponent {
     const priorF = row.priorFailure ?? 1;
     const alpha = ps + priorS;
     const beta = pf + priorF;
-    return `successes: ${ps} + (${priorS}) = ${alpha}\nfailures: ${pf} + (${priorF}) = ${beta}\nbeta(${alpha}, ${beta})`;
+    return `α: posteriors(${ps}) + prior(${priorS}) = ${alpha}\nβ: posteriors(${pf}) + prior(${priorF}) = ${beta}\nbeta(${alpha}, ${beta})`;
   }
 }
