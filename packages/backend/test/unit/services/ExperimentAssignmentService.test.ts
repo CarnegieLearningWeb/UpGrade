@@ -933,7 +933,7 @@ describe('Experiment Assignment Service Test', () => {
 
     const monitoredDocument = {
       site: site,
-      target: target,
+      target: null,
       condition: condition,
       user: {
         id: userId,
@@ -975,14 +975,14 @@ describe('Experiment Assignment Service Test', () => {
       condition,
       loggerMock,
       undefined,
-      undefined,
+      null,
       undefined,
       clientError
     );
     expect(result).toMatchObject({
       condition: condition,
       site: site,
-      target: target,
+      target: null,
     });
     sinon.assert.calledOnce(loggerMock.error);
   });
@@ -1798,7 +1798,7 @@ describe('Experiment Assignment Service Test', () => {
         condition,
         loggerMock,
         undefined, // no experimentId
-        undefined // null target
+        null // null target
       );
 
       sinon.assert.calledWith(
@@ -1833,10 +1833,10 @@ describe('Experiment Assignment Service Test', () => {
         condition,
         loggerMock,
         undefined, // no experimentId
-        undefined // null target
+        null // null target
       );
 
-      sinon.assert.calledWith(loggerMock.info, sinon.match({ message: sinon.match(`Target: undefined`) }));
+      sinon.assert.calledWith(loggerMock.info, sinon.match({ message: sinon.match(`Target: null`) }));
     });
   });
 });

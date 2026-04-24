@@ -47,6 +47,7 @@ export const UserNotDefined = async () => {
       MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
       null,
       new UpgradeLogger(),
+      null,
       null
     )
   ).rejects.toThrow();

@@ -23,7 +23,7 @@ class Data {
 
   @IsString()
   @IsOptional()
-  target: string;
+  target?: string | null;
 
   @IsOptional()
   @ValidateNested()

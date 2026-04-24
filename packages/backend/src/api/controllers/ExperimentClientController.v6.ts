@@ -451,7 +451,7 @@ export class ExperimentClientController {
       experiment.data.assignedCondition?.conditionCode ?? null,
       request.logger,
       experiment.data.assignedCondition?.experimentId ?? null,
-      experiment.data.target,
+      experiment.data.target ?? null,
       experiment.uniquifier ? experiment.uniquifier : null,
       experiment.clientError ? experiment.clientError : null
     );
