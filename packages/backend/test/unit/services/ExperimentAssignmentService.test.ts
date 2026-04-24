@@ -1755,10 +1755,10 @@ describe('Experiment Assignment Service Test', () => {
       const context = 'context';
       const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
       const exp = structuredClone(simpleIndividualAssignmentExperiment);
-      // Add a second null-target partition at the same site
+      // Add a second null-target partition with a different site so each decision point remains uniquely addressable
       exp.partitions = [
-        { ...exp.partitions[0], id: 'dp-null-1', target: null, twoCharacterId: 'N1', order: 1 },
-        { ...exp.partitions[0], id: 'dp-null-2', target: null, twoCharacterId: 'N2', order: 2 },
+        { ...exp.partitions[0], id: 'dp-null-1', site: 'site-null-1', target: null, twoCharacterId: 'N1', order: 1 },
+        { ...exp.partitions[0], id: 'dp-null-2', site: 'site-null-2', target: null, twoCharacterId: 'N2', order: 2 },
       ];
 
       const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
