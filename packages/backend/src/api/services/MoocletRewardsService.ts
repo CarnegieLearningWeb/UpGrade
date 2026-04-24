@@ -302,17 +302,21 @@ export class MoocletRewardsService {
       return [];
     }
 
-    const conditionCodes = moocletExperimentRef.versionConditionMaps.map(
-      ({ experimentCondition }) => experimentCondition.conditionCode
+    const versionConditionPairs = moocletExperimentRef.versionConditionMaps.map(
+      ({ experimentCondition, moocletVersionId }) => ({
+        conditionCode: experimentCondition.conditionCode,
+        moocletVersionId,
+      })
     );
     const DEFAULT_PRIOR: Prior = { success: 1, failure: 1 };
     const estimatedWeightMap = policyParameters
-      ? this.computeThompsonWeightsMap(conditionCodes, policyParameters)
+      ? this.computeThompsonWeightsMap(versionConditionPairs, policyParameters)
       : null;
 
     const rewardsSummaries = moocletExperimentRef.versionConditionMaps.map(
       ({ experimentCondition, moocletVersionId }) => {
         const conditionCode = experimentCondition.conditionCode;
+        const versionIdKey = String(moocletVersionId);
         const versionRewards = rewards.filter((reward) => reward.version === moocletVersionId);
         const successes = versionRewards.filter((reward) => reward.value === 1.0).length;
         const failures = versionRewards.filter((reward) => reward.value === 0.0).length;
@@ -320,8 +324,8 @@ export class MoocletRewardsService {
         const percentSuccess = total > 0 ? (successes / total) * 100 : 0.0;
         const successRate = percentSuccess.toFixed(1) + '%';
 
-        const conditionPrior: Prior = policyParameters?.prior?.[conditionCode] ?? DEFAULT_PRIOR;
-        const conditionPosteriors = policyParameters?.current_posteriors?.[conditionCode];
+        const conditionPrior: Prior = policyParameters?.prior?.[versionIdKey] ?? DEFAULT_PRIOR;
+        const conditionPosteriors = policyParameters?.current_posteriors?.[versionIdKey];
 
         const rewardsForCondition: ExperimentRewardsByCondition = {
           conditionCode,
@@ -349,14 +353,15 @@ export class MoocletRewardsService {
    * Returns a Map of conditionCode → integer estimated weight (all values sum to 100).
    */
   private computeThompsonWeightsMap(
-    conditionCodes: string[],
+    versionConditionPairs: { conditionCode: string; moocletVersionId: number }[],
     params: MoocletTSConfigurablePolicyParametersDTO
   ): Map<string, number> {
     const DEFAULT_PRIOR: Prior = { success: 1, failure: 1 };
 
-    const arms = conditionCodes.map((conditionCode) => {
-      const prior: Prior = params.prior?.[conditionCode] ?? DEFAULT_PRIOR;
-      const posteriors = params.current_posteriors?.[conditionCode];
+    const arms = versionConditionPairs.map(({ conditionCode, moocletVersionId }) => {
+      const versionIdKey = String(moocletVersionId);
+      const prior: Prior = params.prior?.[versionIdKey] ?? DEFAULT_PRIOR;
+      const posteriors = params.current_posteriors?.[versionIdKey];
       return {
         conditionCode,
         alpha: prior.success + (posteriors?.successes ?? 0),

@@ -20,31 +20,57 @@
 
     <!-- Successes Column -->
     <ng-container matColumnDef="successes">
-      <th mat-header-cell *matHeaderCellDef class="successes-column ft-14-600">
+      <th mat-header-cell *matHeaderCellDef class="successes-column count-column ft-14-600">
         {{ 'experiments.details.posteriors.successes.text' | translate }}
       </th>
-      <td mat-cell *matCellDef="let row" class="successes-column ft-14-400">
+      <td mat-cell *matCellDef="let row" class="successes-column count-column ft-14-400">
         {{ row.successes }}
+      </td>
+    </ng-container>
+
+    <!-- Success Prior Column -->
+    <ng-container matColumnDef="successPrior">
+      <th mat-header-cell *matHeaderCellDef class="prior-column ft-14-600">
+        {{ 'experiments.details.posteriors.prior.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="prior-column ft-14-400">({{ row.priorSuccess ?? 1 }})</td>
+    </ng-container>
+
+    <!-- Success Posterior Column -->
+    <ng-container matColumnDef="successPosterior">
+      <th mat-header-cell *matHeaderCellDef class="posterior-column ft-14-600">
+        {{ 'experiments.details.posteriors.posterior.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="posterior-column ft-14-700">
+        {{ row.successes + (row.priorSuccess ?? 1) }}
       </td>
     </ng-container>
 
     <!-- Failures Column -->
     <ng-container matColumnDef="failures">
-      <th mat-header-cell *matHeaderCellDef class="failures-column ft-14-600">
+      <th mat-header-cell *matHeaderCellDef class="failures-column count-column ft-14-600">
         {{ 'experiments.details.posteriors.failures.text' | translate }}
       </th>
-      <td mat-cell *matCellDef="let row" class="failures-column ft-14-400">
+      <td mat-cell *matCellDef="let row" class="failures-column count-column ft-14-400">
         {{ row.failures }}
       </td>
     </ng-container>
 
-    <!-- Success Rate Column -->
-    <ng-container matColumnDef="successRate">
-      <th mat-header-cell *matHeaderCellDef class="success-rate-column ft-14-600">
-        {{ 'experiments.details.posteriors.successRate.text' | translate }}
+    <!-- Failure Prior Column -->
+    <ng-container matColumnDef="failurePrior">
+      <th mat-header-cell *matHeaderCellDef class="prior-column ft-14-600">
+        {{ 'experiments.details.posteriors.prior.text' | translate }}
       </th>
-      <td mat-cell *matCellDef="let row" class="success-rate-column ft-14-400">
-        {{ row.successRate }}
+      <td mat-cell *matCellDef="let row" class="prior-column ft-14-400">({{ row.priorFailure ?? 1 }})</td>
+    </ng-container>
+
+    <!-- Failure Posterior Column -->
+    <ng-container matColumnDef="failurePosterior">
+      <th mat-header-cell *matHeaderCellDef class="posterior-column ft-14-600">
+        {{ 'experiments.details.posteriors.posterior.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="posterior-column ft-14-700">
+        {{ row.failures + (row.priorFailure ?? 1) }}
       </td>
     </ng-container>
 
@@ -70,12 +96,6 @@
       >
         {{ row.estimatedWeight != null ? '≈' + row.estimatedWeight + '%' : '—' }}
       </td>
-    </ng-container>
-
-    <!-- Spacer Column -->
-    <ng-container matColumnDef="spacer">
-      <th mat-header-cell *matHeaderCellDef class="spacer-column"></th>
-      <td mat-cell *matCellDef="let row" class="spacer-column"></td>
     </ng-container>
 
     <!-- Header and Row Definitions -->
