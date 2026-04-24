@@ -127,7 +127,7 @@ export class ExperimentAssignmentService {
     public moocletExperimentService: MoocletExperimentService
   ) {}
 
-  private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
+  private async getCachedExperiments(site: string, target: string | null): Promise<[DecisionPoint[], Experiment[]]> {
     const cacheKey = CACHE_PREFIX.MARK_KEY_PREFIX + '-' + site + '-' + target;
     const dpExperiments = await this.cacheService.wrap(cacheKey, () =>
       this.decisionPointRepository.find({
@@ -156,7 +156,7 @@ export class ExperimentAssignmentService {
     condition: string | null,
     logger: UpgradeLogger,
     experimentId: string,
-    target?: string,
+    target: string | null,
     uniquifier?: string,
     clientError?: string
   ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {

@@ -933,7 +933,7 @@ describe('Experiment Assignment Service Test', () => {
 
     const monitoredDocument = {
       site: site,
-      target: target,
+      target: null,
       condition: condition,
       user: {
         id: userId,
@@ -975,14 +975,14 @@ describe('Experiment Assignment Service Test', () => {
       condition,
       loggerMock,
       undefined,
-      undefined,
+      null,
       undefined,
       clientError
     );
     expect(result).toMatchObject({
       condition: condition,
       site: site,
-      target: target,
+      target: null,
     });
     sinon.assert.calledOnce(loggerMock.error);
   });
@@ -1727,6 +1727,116 @@ describe('Experiment Assignment Service Test', () => {
       sinon.assert.calledWith(loggerMock.info, {
         message: `getAllExperimentConditions: User: user1`,
       });
+    });
+  });
+
+  describe('null target decision points', () => {
+    it('[getAllExperimentConditions] should return assignment with null target for an experiment with a null-target partition', async () => {
+      const context = 'context';
+      const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
+      // Override the partition target to null
+      exp.partitions[0] = { ...exp.partitions[0], target: null };
+
+      const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+      testedModule.cacheService.wrap = sandbox.stub().resolves([exp]);
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+      testedModule.experimentUserService = experimentUserServiceMock;
+
+      const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+      expect(result.length).toEqual(1);
+      expect(result[0].site).toEqual(exp.partitions[0].site);
+      expect(result[0].target).toBeNull();
+      expect(result[0].assignedCondition).toBeDefined();
+      expect(result[0].assignedCondition.length).toBeGreaterThan(0);
+    });
+
+    it('[getAllExperimentConditions] should return assignments for all partitions when all targets are null', async () => {
+      const context = 'context';
+      const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
+      // Add a second null-target partition with a different site so each decision point remains uniquely addressable
+      exp.partitions = [
+        { ...exp.partitions[0], id: 'dp-null-1', site: 'site-null-1', target: null, twoCharacterId: 'N1', order: 1 },
+        { ...exp.partitions[0], id: 'dp-null-2', site: 'site-null-2', target: null, twoCharacterId: 'N2', order: 2 },
+      ];
+
+      const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+      testedModule.cacheService.wrap = sandbox.stub().resolves([exp]);
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+      testedModule.experimentUserService = experimentUserServiceMock;
+
+      const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+      expect(result.length).toEqual(2);
+      result.forEach((assignment) => {
+        expect(assignment.target).toBeNull();
+        expect(assignment.assignedCondition.length).toBeGreaterThan(0);
+      });
+    });
+
+    it('[markExperimentPoint] should save monitored point with null target when target is null and no experiment is running', async () => {
+      const userId = 'testUser';
+      const site = 'testSite';
+      const condition = 'testCondition';
+
+      const monitoredDocument = { site, target: null, condition, user: { id: userId } };
+      const monitoredDecisionPointRepositoryMock = {
+        saveRawJson: sandbox.stub().callsFake((args) => args),
+        findOne: sandbox.stub().resolves(monitoredDocument),
+      };
+
+      testedModule.cacheService.wrap = sandbox.stub().resolves([]);
+      testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
+      testedModule.experimentService.getPayloadAndFactorialObject = sandbox
+        .stub()
+        .resolves([{ payloadFound: conditionPayloadRepositoryMock, factorialObject: factorRepositoryMock }]);
+
+      const result = await testedModule.markExperimentPoint(
+        { id: userId },
+        site,
+        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        condition,
+        loggerMock,
+        undefined, // no experimentId
+        null // null target
+      );
+
+      sinon.assert.calledWith(
+        monitoredDecisionPointRepositoryMock.saveRawJson,
+        sinon.match({ site, condition, target: null })
+      );
+      expect(result).toMatchObject({ site, condition, target: null });
+    });
+
+    it('[markExperimentPoint] should accept undefined target and log correctly (no running experiment)', async () => {
+      // Verifies that passing undefined target does not crash and logs the null target in the info message
+      const userId = 'testUser';
+      const site = 'testSite';
+      const condition = 'testCondition';
+
+      const monitoredDocument = { site, target: null, condition, user: { id: userId } };
+      const monitoredDecisionPointRepositoryMock = {
+        saveRawJson: sandbox.stub().callsFake((args) => args),
+        findOne: sandbox.stub().resolves(monitoredDocument),
+      };
+
+      testedModule.cacheService.wrap = sandbox.stub().resolves([]);
+      testedModule.monitoredDecisionPointRepository = monitoredDecisionPointRepositoryMock;
+      testedModule.experimentService.getPayloadAndFactorialObject = sandbox
+        .stub()
+        .resolves([{ payloadFound: conditionPayloadRepositoryMock, factorialObject: factorRepositoryMock }]);
+
+      await testedModule.markExperimentPoint(
+        { id: userId },
+        site,
+        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        condition,
+        loggerMock,
+        undefined, // no experimentId
+        null // null target
+      );
+
+      sinon.assert.calledWith(loggerMock.info, sinon.match({ message: sinon.match(`Target: null`) }));
     });
   });
 });

@@ -336,8 +336,8 @@ public class ExperimentClient implements AutoCloseable {
 			List<ExperimentsResponse> experiments) {
 		return experiments.stream()
 				.filter(t -> t.getSite().equalsIgnoreCase(site) &&
-						(isStringNull(target) ? isStringNull(t.getTarget().toString())
-								: t.getTarget().toString().equalsIgnoreCase(target)))
+						(isStringNull(target) ? t.getTarget() == null
+								: t.getTarget() != null && t.getTarget().toString().equalsIgnoreCase(target)))
 				.findFirst()
 				.map(ExperimentClient::copyExperimentResponse)
 				.orElse(new ExperimentsResponse());
@@ -346,8 +346,8 @@ public class ExperimentClient implements AutoCloseable {
 	private void rotateConditions(String site, String target) {
 		if (this.allExperiments != null) {
 			ExperimentsResponse result = this.allExperiments.stream().filter(t -> t.getSite().equalsIgnoreCase(site) &&
-					(isStringNull(target) ? isStringNull(t.getTarget().toString())
-							: t.getTarget().toString().equalsIgnoreCase(target)))
+					(isStringNull(target) ? t.getTarget() == null
+							: t.getTarget() != null && t.getTarget().toString().equalsIgnoreCase(target)))
 					.findFirst().orElse(null);
 			if (result != null) {
 				Condition[] rotatedCondition = Arrays.copyOf(result.getAssignedCondition(),
@@ -362,7 +362,9 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
-		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget().toString(),
+		String targetString = experimentsResponse.getTarget() != null ? experimentsResponse.getTarget().toString()
+				: null;
+		ExperimentsResponse resultCondition = new ExperimentsResponse(targetString,
 				experimentsResponse.getSite(), experimentsResponse.getExperimentType(),
 				Arrays.copyOf(experimentsResponse.getAssignedCondition(),
 						experimentsResponse.getAssignedCondition().length),

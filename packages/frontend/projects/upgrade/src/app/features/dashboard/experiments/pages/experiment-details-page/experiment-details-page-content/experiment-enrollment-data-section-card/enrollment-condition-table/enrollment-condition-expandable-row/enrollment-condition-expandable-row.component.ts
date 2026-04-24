@@ -40,7 +40,6 @@ export class EnrollmentConditionExpandableRowComponent implements OnDestroy {
         'home.view-experiment.global.users-enrolled.text',
         'home.view-experiment.global.group-enrolled.text',
         'home.view-experiment-global.experiment-site.text',
-        'home.view-experiment-global.experiment-target.text',
       ])
       .subscribe((arrayValues) => {
         this.columnHeaders = {
@@ -49,7 +48,6 @@ export class EnrollmentConditionExpandableRowComponent implements OnDestroy {
           userEnrolled: arrayValues['home.view-experiment.global.users-enrolled.text'],
           groupEnrolled: arrayValues['home.view-experiment.global.group-enrolled.text'],
           experimentPoint: arrayValues['home.view-experiment-global.experiment-site.text'],
-          experimentId: arrayValues['home.view-experiment-global.experiment-target.text'],
         };
       });
   }

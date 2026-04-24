@@ -38,7 +38,7 @@ export namespace UpGradeClientRequests {
     status: MARKED_DECISION_POINT_STATUS;
     data: {
       site: string;
-      target: string;
+      target: string | null;
       assignedCondition: { conditionCode: string; experimentId?: string };
     };
     uniquifier?: string;
@@ -51,7 +51,7 @@ export namespace UpGradeClientRequests {
     context?: string;
     decisionPoint?: {
       site: string;
-      target: string;
+      target: string | null;
     };
   }
 }

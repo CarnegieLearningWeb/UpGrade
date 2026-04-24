@@ -30,6 +30,9 @@
       </mat-hint>
     </mat-form-field>
 
+    @if (!showTargetField) {
+    <button mat-button type="button" class="ft-14-400" (click)="onAddTargetClicked()">+ Add Target (optional)</button>
+    } @if (showTargetField) {
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Target</mat-label>
       <input
@@ -52,8 +55,7 @@
         <app-common-learn-more-link learnMoreLinkKey="glossary.decisionPoint"></app-common-learn-more-link>
       </mat-hint>
     </mat-form-field>
-
-    @if (decisionPointForm.get('target')?.hasError('duplicateDecisionPoint')) {
+    } @if (decisionPointForm.get('target')?.hasError('duplicateDecisionPoint')) {
     <div class="duplicate-error-message ft-12-400">
       {{ 'experiments.upsert-decision-point-modal.decision-point-warning.text' | translate }}
     </div>

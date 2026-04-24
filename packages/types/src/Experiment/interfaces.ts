@@ -52,7 +52,7 @@ export interface IExperimentEnrollmentDetailStats {
 
 export interface IExperimentAssignmentv5 {
   site: string;
-  target: string;
+  target: string | null;
   assignedCondition: AssignedCondition[];
   assignedFactor?: Record<string, { level: string; payload: IPayload }>[];
   experimentType: EXPERIMENT_TYPE;

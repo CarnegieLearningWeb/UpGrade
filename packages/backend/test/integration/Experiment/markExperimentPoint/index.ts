@@ -3,6 +3,7 @@ import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../../src/api/services/CheckService';
 import TestCase1 from './NoExperiment';
+import { NullTargetMixedDecisionPoint, NullTargetAllDecisionPoints } from './NullTargetDecisionPoint';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 const initialChecks = async () => {
@@ -42,4 +43,14 @@ const initialChecks = async () => {
 export const NoExperiment = async () => {
   await initialChecks();
   await TestCase1();
+};
+
+export const NullTargetMixed = async () => {
+  await initialChecks();
+  await NullTargetMixedDecisionPoint();
+};
+
+export const NullTargetAll = async () => {
+  await initialChecks();
+  await NullTargetAllDecisionPoints();
 };

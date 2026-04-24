@@ -51,7 +51,7 @@ export function checkExperimentAssignedIsNotDefault(
 export function checkMarkExperimentPointForUser(
   markedDecisionPoint: MonitoredDecisionPoint[],
   userId: string,
-  target: string,
+  target: string | null | undefined,
   site: string,
   markExperimentPointLogLength?: number
 ): void {
@@ -60,7 +60,7 @@ export function checkMarkExperimentPointForUser(
       expect.arrayContaining([
         expect.objectContaining({
           site: site,
-          target: target,
+          target: target ?? null,
           user: expect.objectContaining({
             id: userId,
           }),
@@ -100,7 +100,7 @@ export async function getAllExperimentCondition(
 
 export async function markExperimentPoint(
   userId: string,
-  target: string,
+  target: string | null,
   site: string,
   condition: string | null,
   experimentId: string,

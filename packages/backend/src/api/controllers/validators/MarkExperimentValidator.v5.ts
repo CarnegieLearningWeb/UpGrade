@@ -22,7 +22,8 @@ class Data {
   site: string;
 
   @IsString()
-  target: string;
+  @IsOptional()
+  target?: string | null;
 
   @IsOptional()
   @ValidateNested()

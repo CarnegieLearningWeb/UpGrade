@@ -306,11 +306,11 @@ export default class UpgradeClient {
    * ```
    */
 
-  async getDecisionPointAssignment(site: string, target?: string): Promise<Assignment> {
+  async getDecisionPointAssignment(site: string, target?: string | null): Promise<Assignment> {
     await this.getAllExperimentConditions();
 
     if (this.dataService.getExperimentAssignmentData()) {
-      const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
+      const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target || null);
 
       const assignment = new Assignment(experimentAssignment, this.apiService);
 
@@ -370,7 +370,7 @@ export default class UpgradeClient {
 
   async markDecisionPoint(
     site: string,
-    target: string,
+    target: string | null,
     condition: string | null = null,
     status: MARKED_DECISION_POINT_STATUS,
     uniquifier?: string,
@@ -632,7 +632,7 @@ export default class UpgradeClient {
     rewardValue: 'SUCCESS' | 'FAILURE';
     experimentId?: string;
     context?: string;
-    decisionPoint?: { site: string; target: string };
+    decisionPoint?: { site: string; target: string | null };
   }): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
     return await this.apiService.sendReward(params);
   }
