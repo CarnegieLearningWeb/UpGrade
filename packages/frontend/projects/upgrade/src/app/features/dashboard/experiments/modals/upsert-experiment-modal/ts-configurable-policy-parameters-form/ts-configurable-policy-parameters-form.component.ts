@@ -80,8 +80,6 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
       batch_size: [params.batch_size, validators.batch_size],
       uniform_threshold: [params.uniform_threshold, validators.uniform_threshold],
       tspostdiff_thresh: [params.tspostdiff_thresh, validators.tspostdiff_thresh],
-      prior_success: [params.prior_success, validators.prior_success],
-      prior_failure: [params.prior_failure, validators.prior_failure],
     });
   }
 

@@ -1,0 +1,80 @@
+<app-common-dialog
+  [title]="config.title"
+  [cancelBtnLabel]="config.cancelBtnLabel"
+  [primaryActionBtnLabel]="config.primaryActionBtnLabel"
+  [primaryActionBtnColor]="config.primaryActionBtnColor"
+  [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
+  (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
+>
+  <form [formGroup]="priorForm" class="form-standard dense-3">
+    <div class="table-container">
+      <table
+        mat-table
+        [dataSource]="conditions"
+        class="conditions-table"
+        [ngClass]="{ 'no-data': !conditions?.length }"
+      >
+        <!-- Condition Column -->
+        <ng-container matColumnDef="condition">
+          <th mat-header-cell *matHeaderCellDef class="condition-column ft-14-600">
+            {{ 'experiments.edit-condition-prior-modal.condition-header.text' | translate }}
+          </th>
+          <td mat-cell *matCellDef="let condition" class="condition-column ft-14-400">
+            <span [appTextOverflowTooltip]="condition.conditionCode" matTooltipPosition="above" class="line-clamp-1">
+              {{ condition.conditionCode }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Successes Column -->
+        <ng-container matColumnDef="successes">
+          <th mat-header-cell *matHeaderCellDef class="prior-column ft-14-600">
+            {{ 'experiments.edit-condition-prior-modal.successes-header.text' | translate }}
+          </th>
+          <td mat-cell *matCellDef="let condition; let i = index" class="prior-column ft-14-400">
+            <mat-form-field appearance="outline" class="prior-input">
+              <input matInput type="number" min="1" step="1" [formControl]="getSuccessesControl(i)" placeholder="1" />
+              @if (getSuccessesControl(i).hasError('min')) {
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.min-error.text' | translate }}</mat-error>
+              } @if (getSuccessesControl(i).hasError('max')) {
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.max-error.text' | translate }}</mat-error>
+              } @if (getSuccessesControl(i).hasError('integer')) {
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.integer-error.text' | translate }}</mat-error>
+              }
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- Failures Column -->
+        <ng-container matColumnDef="failures">
+          <th mat-header-cell *matHeaderCellDef class="prior-column ft-14-600">
+            {{ 'experiments.edit-condition-prior-modal.failures-header.text' | translate }}
+          </th>
+          <td mat-cell *matCellDef="let condition; let i = index" class="prior-column ft-14-400">
+            <mat-form-field appearance="outline" class="prior-input">
+              <input matInput type="number" min="1" step="1" [formControl]="getFailuresControl(i)" placeholder="1" />
+              @if (getFailuresControl(i).hasError('min')) {
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.min-error.text' | translate }}</mat-error>
+              } @if (getFailuresControl(i).hasError('max')) {
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.max-error.text' | translate }}</mat-error>
+              } @if (getFailuresControl(i).hasError('integer')) {
+              <mat-error>{{ 'experiments.edit-condition-prior-modal.integer-error.text' | translate }}</mat-error>
+              }
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- Header and Row Definitions -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        <!-- No Data Row -->
+        <tr *matNoDataRow>
+          <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
+            {{ 'experiments.edit-condition-prior-modal.no-data.text' | translate }}
+          </td>
+        </tr>
+      </table>
+    </div>
+  </form>
+</app-common-dialog>

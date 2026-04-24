@@ -62,7 +62,6 @@ describe('MoocletAlgorithmHelperService', () => {
       expect(result.batch_size).toBe(expected.batch_size);
       expect(result.uniform_threshold).toBe(expected.uniform_threshold);
       expect(result.tspostdiff_thresh).toBe(expected.tspostdiff_thresh);
-      expect(result.prior).toEqual(expected.prior);
       expect(result.max_rating).toBe(expected.max_rating);
       expect(result.min_rating).toBe(expected.min_rating);
     });
@@ -81,8 +80,6 @@ describe('MoocletAlgorithmHelperService', () => {
         batch_size: defaults.batch_size,
         uniform_threshold: defaults.uniform_threshold,
         tspostdiff_thresh: defaults.tspostdiff_thresh,
-        prior_success: defaults.prior.success,
-        prior_failure: defaults.prior.failure,
       });
     });
 
@@ -91,7 +88,6 @@ describe('MoocletAlgorithmHelperService', () => {
       const defaults = new MoocletTSConfigurablePolicyParametersDTO();
 
       expect(result.batch_size).toBe(defaults.batch_size);
-      expect(result.prior_success).toBe(defaults.prior.success);
     });
 
     it('should extract editable fields from existing params', () => {
@@ -99,7 +95,6 @@ describe('MoocletAlgorithmHelperService', () => {
         batch_size: 50,
         uniform_threshold: 100,
         tspostdiff_thresh: 5,
-        prior: { success: 10, failure: 10 },
       });
 
       const result = service.deriveEditableParametersForTSConfigurable(existingParams);
@@ -108,21 +103,7 @@ describe('MoocletAlgorithmHelperService', () => {
         batch_size: 50,
         uniform_threshold: 100,
         tspostdiff_thresh: 5,
-        prior_success: 10,
-        prior_failure: 10,
       });
-    });
-
-    it('should flatten nested prior object into prior_success and prior_failure', () => {
-      const existingParams = createMockTSConfigurableParams({
-        prior: { success: 20, failure: 30 },
-      });
-
-      const result = service.deriveEditableParametersForTSConfigurable(existingParams);
-
-      expect(result.prior_success).toBe(20);
-      expect(result.prior_failure).toBe(30);
-      expect((result as any).prior).toBeUndefined();
     });
 
     it('should not include non-editable fields in result', () => {
@@ -160,8 +141,6 @@ describe('MoocletAlgorithmHelperService', () => {
         batch_size: 50,
         uniform_threshold: 100,
         tspostdiff_thresh: 5,
-        prior_success: 10,
-        prior_failure: 10,
       };
 
       const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
@@ -169,7 +148,6 @@ describe('MoocletAlgorithmHelperService', () => {
       expect(result.batch_size).toBe(50);
       expect(result.uniform_threshold).toBe(100);
       expect(result.tspostdiff_thresh).toBe(5);
-      expect(result.prior).toEqual({ success: 10, failure: 10 });
     });
 
     it('should set assignmentAlgorithm to MOOCLET_TS_CONFIGURABLE', () => {
@@ -196,22 +174,6 @@ describe('MoocletAlgorithmHelperService', () => {
       expect(result.min_rating).toBe(defaults.min_rating);
     });
 
-    it('should convert flat prior fields to nested prior object', () => {
-      const editableParams: EditableTSConfigurablePolicyParameters = {
-        batch_size: 30,
-        uniform_threshold: 50,
-        tspostdiff_thresh: 3,
-        prior_success: 15,
-        prior_failure: 20,
-      };
-
-      const result = service.buildTSConfigurablePolicyParametersDTO(editableParams);
-
-      expect(result.prior).toBeDefined();
-      expect(result.prior.success).toBe(15);
-      expect(result.prior.failure).toBe(20);
-    });
-
     it('should not include outcome_variable_name for any experiment name', () => {
       const editableParams = createMockEditableParams();
 
@@ -234,8 +196,6 @@ describe('MoocletAlgorithmHelperService', () => {
       expect(validators.batch_size).toBeDefined();
       expect(validators.uniform_threshold).toBeDefined();
       expect(validators.tspostdiff_thresh).toBeDefined();
-      expect(validators.prior_success).toBeDefined();
-      expect(validators.prior_failure).toBeDefined();
     });
 
     it('should include required validator for all fields', () => {
@@ -252,9 +212,6 @@ describe('MoocletAlgorithmHelperService', () => {
 
       expect(validators.batch_size.length).toBe(4);
       expect(validators.uniform_threshold.length).toBe(4);
-      expect(validators.prior_success.length).toBe(4);
-      expect(validators.prior_failure.length).toBe(4);
-
       expect(validators.tspostdiff_thresh.length).toBe(3);
 
       // Test that min validator works correctly for batch_size
@@ -351,7 +308,6 @@ describe('MoocletAlgorithmHelperService', () => {
         batch_size: 30,
         uniform_threshold: 50,
         tspostdiff_thresh: 3,
-        prior: { success: 1, failure: 1 },
         outcome_variable_name: 'test_outcome',
         max_rating: 5,
         min_rating: 1,
@@ -368,7 +324,6 @@ describe('MoocletAlgorithmHelperService', () => {
         batch_size: 30,
         uniform_threshold: 50,
         tspostdiff_thresh: 3,
-        prior: { success: 1, failure: 1 },
         outcome_variable_name: 'test',
         max_rating: 5,
         min_rating: 1,
@@ -385,7 +340,6 @@ describe('MoocletAlgorithmHelperService', () => {
         batch_size: 30,
         uniform_threshold: 50,
         tspostdiff_thresh: 3,
-        prior: { success: 1, failure: 1 },
         outcome_variable_name: '', // Empty string should not cause validation errors
         max_rating: 5,
         min_rating: 1,
@@ -402,7 +356,6 @@ describe('MoocletAlgorithmHelperService', () => {
         batch_size: 30,
         uniform_threshold: 50,
         tspostdiff_thresh: 3,
-        prior: { success: 1, failure: 1 },
         // outcome_variable_name property completely missing
         max_rating: 5,
         min_rating: 1,
@@ -461,7 +414,6 @@ describe('formatTSConfigurablePolicyParamDetails (pure function)', () => {
         batch_size: 50,
         uniform_threshold: 100,
         tspostdiff_thresh: 5,
-        prior: { success: 10, failure: 10 },
       }),
     });
 
@@ -469,22 +421,7 @@ describe('formatTSConfigurablePolicyParamDetails (pure function)', () => {
 
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
-    expect(result.length).toBe(5);
-  });
-
-  it('should include prior values in formatted output', () => {
-    environment.moocletToggle = true;
-    const experiment = createMockExperimentVM({
-      assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
-      moocletPolicyParameters: createMockTSConfigurableParams({
-        prior: { success: 15, failure: 20 },
-      }),
-    });
-
-    const result = formatTSConfigurablePolicyParamDetails(experiment);
-
-    expect(result.some((param) => param.value === 15)).toBe(true);
-    expect(result.some((param) => param.value === 20)).toBe(true);
+    expect(result.length).toBe(3);
   });
 
   it('should include all configurable parameters', () => {
@@ -495,7 +432,6 @@ describe('formatTSConfigurablePolicyParamDetails (pure function)', () => {
         batch_size: 50,
         uniform_threshold: 100,
         tspostdiff_thresh: 5,
-        prior: { success: 10, failure: 10 },
       }),
     });
 
@@ -505,7 +441,6 @@ describe('formatTSConfigurablePolicyParamDetails (pure function)', () => {
     expect(values).toContain(50);
     expect(values).toContain(100);
     expect(values).toContain(5);
-    expect(values).toContain(10);
   });
 });
 
@@ -521,8 +456,6 @@ function createMockEditableParams(
     batch_size: defaults.batch_size,
     uniform_threshold: defaults.uniform_threshold,
     tspostdiff_thresh: defaults.tspostdiff_thresh,
-    prior_success: defaults.prior.success,
-    prior_failure: defaults.prior.failure,
     ...overrides,
   };
 }

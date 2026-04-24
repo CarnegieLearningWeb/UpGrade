@@ -73,7 +73,14 @@
       text-align: right;
     }
 
-    .weight-edit-column {
+    .prior-column {
+      width: 10%;
+      min-width: 72px;
+      text-align: right;
+    }
+
+    .weight-edit-column,
+    .prior-edit-column {
       width: 10%;
       text-align: left;
 
@@ -90,6 +97,10 @@
           }
         }
       }
+    }
+
+    .prior-edit-column {
+      padding-left: 20px;
     }
 
     .description-column {

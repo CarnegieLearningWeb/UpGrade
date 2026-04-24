@@ -13,6 +13,7 @@ import {
   EXPERIMENT_ROW_ACTION,
 } from '../../../../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
+import { Prior } from 'upgrade_types';
 
 @Component({
   selector: 'app-experiment-conditions-table',
@@ -37,19 +38,34 @@ export class ExperimentConditionsTableComponent {
   @Input() actionsDisabled?: boolean = false;
   @Input() actionsTooltip?: string = '';
   @Input() isMoocletExperiment = false;
+  @Input() prior?: Record<string, Prior>;
   @Output() rowAction = new EventEmitter<ExperimentConditionRowActionEvent>();
   @Output() editWeights = new EventEmitter<ExperimentCondition[]>();
+  @Output() editprior = new EventEmitter<ExperimentCondition[]>();
 
-  displayedColumns: string[] = ['condition', 'weight', 'weightEdit', 'description', 'actions'];
-
-  // Make enum accessible in template
+  get displayedColumns(): string[] {
+    if (this.isMoocletExperiment) {
+      return ['condition', 'priorSuccesses', 'priorFailures', 'priorEdit', 'description', 'actions'];
+    }
+    return ['condition', 'weight', 'weightEdit', 'description', 'actions'];
+  }
 
   CONDITION_TRANSLATION_KEYS = {
     CONDITION: 'experiments.details.conditions.condition.text',
     DESCRIPTION: 'experiments.details.conditions.description.text',
     WEIGHT: 'experiments.details.conditions.weight.text',
+    prior_SUCCESSES: 'experiments.details.conditions.prior-successes.text',
+    prior_FAILURES: 'experiments.details.conditions.prior-failures.text',
     ACTIONS: 'experiments.details.conditions.actions.text',
   };
+
+  getprioruccesses(condition: ExperimentCondition): number {
+    return this.prior?.[condition.conditionCode]?.success ?? 1;
+  }
+
+  getPriorFailures(condition: ExperimentCondition): number {
+    return this.prior?.[condition.conditionCode]?.failure ?? 1;
+  }
 
   onEditButtonClick(condition: ExperimentCondition): void {
     this.rowAction.emit({ action: EXPERIMENT_ROW_ACTION.EDIT, condition });
@@ -61,5 +77,9 @@ export class ExperimentConditionsTableComponent {
 
   onEditWeightsClick(): void {
     this.editWeights.emit(this.conditions);
+  }
+
+  onEditpriorClick(): void {
+    this.editprior.emit(this.conditions);
   }
 }

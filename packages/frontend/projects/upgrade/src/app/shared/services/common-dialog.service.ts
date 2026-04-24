@@ -62,6 +62,11 @@ import {
   EditConditionWeightsModalComponent,
 } from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
 import {
+  ConditionPriorUpdate,
+  EditConditionpriorModalComponent,
+} from '../../features/dashboard/experiments/modals/edit-condition-prior-modal/edit-condition-prior-modal.component';
+import { Prior } from 'upgrade_types';
+import {
   EditPayloadModalComponent,
   EditPayloadModalParams,
 } from '../../features/dashboard/experiments/modals/edit-payload-modal/edit-payload-modal.component';
@@ -607,6 +612,35 @@ export class DialogService {
           })),
           weightingMethod,
         },
+      },
+    });
+
+    return dialogRef.afterClosed();
+  }
+
+  openEditConditionpriorModal(
+    conditions: ExperimentCondition[],
+    existingprior?: Record<string, Prior>
+  ): Observable<Record<string, Prior>> {
+    const conditionPriorUpdates: ConditionPriorUpdate[] = conditions.map((condition) => ({
+      conditionCode: condition.conditionCode,
+      successes: existingprior?.[condition.conditionCode]?.success ?? 1,
+      failures: existingprior?.[condition.conditionCode]?.failure ?? 1,
+    }));
+
+    const dialogRef = this.dialog.open(EditConditionpriorModalComponent, {
+      panelClass: ['experiment-modal', 'modal-shadow'],
+      hasBackdrop: true,
+      autoFocus: false,
+      restoreFocus: false,
+      backdropClass: 'modal-backdrop',
+      width: ModalSize.STANDARD,
+      data: {
+        title: 'experiments.edit-condition-prior-modal.title.text',
+        primaryActionBtnLabel: 'Save',
+        primaryActionBtnColor: 'primary',
+        cancelBtnLabel: 'Cancel',
+        params: { conditions: conditionPriorUpdates },
       },
     });
 

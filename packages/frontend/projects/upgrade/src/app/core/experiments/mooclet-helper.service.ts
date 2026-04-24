@@ -39,17 +39,6 @@ export function formatTSConfigurablePolicyParamDetails(
   const params = experiment.moocletPolicyParameters;
   const formattedParams: BullettedListKeyValueFormat[] = [];
 
-  if (params.prior) {
-    formattedParams.push({
-      labelKey: TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.PRIOR_SUCCESS,
-      value: params.prior.success,
-    });
-    formattedParams.push({
-      labelKey: TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.PRIOR_FAILURE,
-      value: params.prior.failure,
-    });
-  }
-
   formattedParams.push({
     labelKey: TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS.BATCH_SIZE,
     value: params.batch_size,
@@ -85,8 +74,6 @@ export interface EditableTSConfigurablePolicyParameters {
   batch_size: number;
   uniform_threshold: number;
   tspostdiff_thresh: number;
-  prior_success: number;
-  prior_failure: number;
 }
 
 /**
@@ -174,8 +161,6 @@ export class MoocletExperimentHelperService {
       batch_size: source.batch_size,
       uniform_threshold: source.uniform_threshold,
       tspostdiff_thresh: source.tspostdiff_thresh,
-      prior_success: source.prior?.success,
-      prior_failure: source.prior?.failure,
     };
   }
 
@@ -193,10 +178,6 @@ export class MoocletExperimentHelperService {
       batch_size: editableParams.batch_size,
       uniform_threshold: editableParams.uniform_threshold,
       tspostdiff_thresh: editableParams.tspostdiff_thresh,
-      prior: {
-        success: editableParams.prior_success,
-        failure: editableParams.prior_failure,
-      },
       // System-managed fields
       assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
       max_rating: defaults.max_rating,
@@ -225,15 +206,24 @@ export class MoocletExperimentHelperService {
         CommonFormHelpersService.integerValidator(),
       ],
       tspostdiff_thresh: [Validators.required, Validators.min(defaults.tspostdiff_thresh), Validators.max(1.0)],
-      prior_success: [
+    };
+  }
+
+  /**
+   * Get field validators for per-condition prior success/failure inputs used in the prior editor.
+   */
+  getpriorFieldValidators(): Record<string, ValidatorFn[]> {
+    const priorDefault = 1;
+    return {
+      successes: [
         Validators.required,
-        Validators.min(defaults.prior.success),
+        Validators.min(priorDefault),
         Validators.max(DEFAULT_MAX_NUMBER_INPUT),
         CommonFormHelpersService.integerValidator(),
       ],
-      prior_failure: [
+      failures: [
         Validators.required,
-        Validators.min(defaults.prior.failure),
+        Validators.min(priorDefault),
         Validators.max(DEFAULT_MAX_NUMBER_INPUT),
         CommonFormHelpersService.integerValidator(),
       ],
