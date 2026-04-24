@@ -360,12 +360,11 @@ export class MoocletRewardsService {
 
     const arms = versionConditionPairs.map(({ conditionCode, moocletVersionId }) => {
       const versionIdKey = String(moocletVersionId);
-      const prior: Prior = params.prior?.[versionIdKey] ?? DEFAULT_PRIOR;
       const posteriors = params.current_posteriors?.[versionIdKey];
       return {
         conditionCode,
-        alpha: prior.success + (posteriors?.successes ?? 0),
-        beta: prior.failure + (posteriors?.failures ?? 0),
+        alpha: posteriors?.successes ?? DEFAULT_PRIOR.success,
+        beta: posteriors?.failures ?? DEFAULT_PRIOR.failure,
       };
     });
 
