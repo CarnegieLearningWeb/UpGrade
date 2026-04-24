@@ -35,7 +35,7 @@ export namespace UpGradeClientInterfaces {
 
   export interface IMarkDecisionPointParams {
     site: string;
-    target: string;
+    target: string | null;
     condition: string;
     status: MARKED_DECISION_POINT_STATUS;
     uniquifier?: string;
@@ -52,7 +52,7 @@ export namespace UpGradeClientInterfaces {
   export interface IMarkDecisionPoint {
     id: string;
     site: string;
-    target: string;
+    target: string | null;
     userId: string;
     experimentId: string;
   }
@@ -95,7 +95,7 @@ export namespace UpGradeClientInterfaces {
       context?: string;
       decisionPoint?: {
         site: string;
-        target: string;
+        target: string | null;
       };
     };
     reward: {

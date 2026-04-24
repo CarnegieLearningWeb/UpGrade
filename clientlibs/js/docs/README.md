@@ -358,7 +358,7 @@ const allExperimentConditionsResponse: IExperimentAssignment5[] = await upgradeC
 | `site` | `string` | `undefined` |
 | `condition` | `string` | `null` |
 | `status` | `MARKED_DECISION_POINT_STATUS` | `undefined` |
-| `target?` | `string` | `undefined` |
+| `target?` | `string` | `null` |
 | `clientError?` | `string` | `undefined` |
 
 #### Returns

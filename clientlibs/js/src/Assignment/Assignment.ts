@@ -10,7 +10,7 @@ import ApiService from '../ApiService/ApiService';
 
 export default class Assignment {
   private _site: string;
-  private _target: string;
+  private _target: string | null;
   private _conditionCode: string;
   private _payloadType: PAYLOAD_TYPE;
   private _payloadValue: string | null;

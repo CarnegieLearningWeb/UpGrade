@@ -52,7 +52,7 @@ export class DataService {
     return assignment;
   }
 
-  public findExperimentAssignmentBySiteAndTarget(site: string, target: string): IExperimentAssignmentv5 {
+  public findExperimentAssignmentBySiteAndTarget(site: string, target: string | null): IExperimentAssignmentv5 {
     const assignment = this.experimentAssignmentData.find(
       (assignment) => assignment.site === site && assignment.target === target
     );
