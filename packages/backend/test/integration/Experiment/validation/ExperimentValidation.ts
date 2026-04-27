@@ -14,7 +14,6 @@ import {
   ASSIGNMENT_ALGORITHM,
   SEGMENT_TYPE,
 } from 'upgrade_types';
-import { v4 as uuid } from 'uuid';
 
 export default async function testExperimentValidation(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -26,7 +25,7 @@ export default async function testExperimentValidation(): Promise<void> {
 
   // Function to create base experiment data with fresh UUIDs
   const createBaseExperimentData = () => ({
-    id: uuid(),
+    id: crypto.randomUUID(),
     name: 'Validation Test Experiment',
     description: 'Test experiment for validation',
     context: ['home'],
@@ -48,7 +47,7 @@ export default async function testExperimentValidation(): Promise<void> {
     type: EXPERIMENT_TYPE.SIMPLE,
     conditions: [
       {
-        id: uuid(),
+        id: crypto.randomUUID(),
         name: 'Test Condition',
         conditionCode: 'testCondition',
         assignmentWeight: 100,
@@ -60,7 +59,7 @@ export default async function testExperimentValidation(): Promise<void> {
       {
         site: 'testSite',
         target: 'testTarget',
-        id: uuid(),
+        id: crypto.randomUUID(),
         description: 'Test partition description',
         excludeIfReached: false,
         order: 1,

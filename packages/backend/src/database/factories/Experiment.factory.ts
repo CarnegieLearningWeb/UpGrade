@@ -1,6 +1,5 @@
 import * as Faker from 'faker';
 import { define } from 'typeorm-seeding';
-import * as uuid from 'uuid';
 import { Experiment } from '../../api/models/Experiment';
 import {
   EXPERIMENT_STATE,
@@ -71,7 +70,7 @@ define(Experiment, (faker: typeof Faker) => {
   const group = ASSIGNMENT_UNIT.GROUP ? faker.random.arrayElement(['class', 'teacher', 'school']) : undefined;
 
   const experiment = new Experiment();
-  experiment.id = uuid.v4();
+  experiment.id = crypto.randomUUID();
   experiment.name = name;
   experiment.description = description;
   experiment.state = state;

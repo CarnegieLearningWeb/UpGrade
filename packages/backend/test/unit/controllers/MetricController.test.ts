@@ -5,7 +5,7 @@ import { useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
 import { MetricService } from '../../../src/api/services/MetricService';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { v4 as uuid } from 'uuid';
+
 import MetricServiceMock from './mocks/MetricServiceMock';
 
 describe('Metric Controller Testing', () => {
@@ -39,7 +39,7 @@ describe('Metric Controller Testing', () => {
 
   test('Delete request for /api/metric/:key', () => {
     return request(app)
-      .delete(`/api/metric/${uuid()}`)
+      .delete(`/api/metric/${crypto.randomUUID()}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

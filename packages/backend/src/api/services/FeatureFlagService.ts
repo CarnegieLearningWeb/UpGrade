@@ -9,7 +9,7 @@ import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFl
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
 import { EntityManager, In, DataSource } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
-import { v4 as uuid } from 'uuid';
+
 import { env } from '../../env';
 import {
   IFeatureFlagSearchParams,
@@ -389,7 +389,7 @@ export class FeatureFlagService {
     logger: UpgradeLogger,
     entityManager?: EntityManager
   ): Promise<FeatureFlag> {
-    flag.id = uuid();
+    flag.id = crypto.randomUUID();
     // saving feature flag doc
 
     await this.clearCachedFlagsForContext(flag.context[0]);
@@ -962,7 +962,7 @@ export class FeatureFlagService {
         );
 
         const featureFlagSegmentInclusionList = featureFlag.featureFlagSegmentInclusion.map((segmentInclusionList) => {
-          segmentInclusionList.segment.id = uuid();
+          segmentInclusionList.segment.id = crypto.randomUUID();
 
           const userIds = segmentInclusionList.segment.individualForSegment.map((individual) =>
             individual.userId ? individual.userId : null
@@ -989,7 +989,7 @@ export class FeatureFlagService {
         });
 
         const featureFlagSegmentExclusionList = featureFlag.featureFlagSegmentExclusion.map((segmentExclusionList) => {
-          segmentExclusionList.segment.id = uuid();
+          segmentExclusionList.segment.id = crypto.randomUUID();
 
           const userIds = segmentExclusionList.segment.individualForSegment.map((individual) =>
             individual.userId ? individual.userId : null
@@ -1219,7 +1219,7 @@ export class FeatureFlagService {
             enabled: false,
             listType: list.listType,
             id: featureFlagId,
-            segment: { ...list, id: uuid(), context: featureFlag.context[0] },
+            segment: { ...list, id: crypto.randomUUID(), context: featureFlag.context[0] },
           };
 
           listDocs.push(listDoc);

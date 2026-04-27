@@ -3,7 +3,7 @@ import request from 'supertest';
 import { configureLogger } from '../../utils/logger';
 import { useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
-import { v4 as uuid } from 'uuid';
+
 import ExperimentServiceMock from './mocks/ExperimentServiceMock';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
@@ -49,7 +49,7 @@ describe('Experiment Controller Testing', () => {
   });
 
   const experimentData: ExperimentDTO = {
-    id: uuid(),
+    id: crypto.randomUUID(),
     name: 'string',
     description: 'string',
     context: ['home'],
@@ -119,7 +119,7 @@ describe('Experiment Controller Testing', () => {
 
   const moocletExperimentData: ExperimentDTO = {
     ...experimentData,
-    id: uuid(),
+    id: crypto.randomUUID(),
     moocletPolicyParameters: tsConfigurablePolicyParameters,
     assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
   };
@@ -182,7 +182,10 @@ describe('Experiment Controller Testing', () => {
   });
 
   test('Get request for /api/experiments/single/:id', () => {
-    return request(app).get(`/api/experiments/single/${uuid()}`).expect('Content-Type', /json/).expect(200);
+    return request(app)
+      .get(`/api/experiments/single/${crypto.randomUUID()}`)
+      .expect('Content-Type', /json/)
+      .expect(200);
   });
 
   const expIdNotTypeUUID = 'abc';
@@ -191,7 +194,10 @@ describe('Experiment Controller Testing', () => {
   });
 
   test('Get request for /api/experiments/conditions/:id', () => {
-    return request(app).get(`/api/experiments/conditions/${uuid()}`).expect('Content-Type', /json/).expect(200);
+    return request(app)
+      .get(`/api/experiments/conditions/${crypto.randomUUID()}`)
+      .expect('Content-Type', /json/)
+      .expect(200);
   });
 
   test('Get request for /api/experiments/conditions/:id with no uuid', () => {
@@ -207,7 +213,7 @@ describe('Experiment Controller Testing', () => {
   });
 
   test('Delete request for /api/experiments/:id', () => {
-    return request(app).delete(`/api/experiments/${uuid()}`).expect('Content-Type', /json/).expect(200);
+    return request(app).delete(`/api/experiments/${crypto.randomUUID()}`).expect('Content-Type', /json/).expect(200);
   });
 
   test('Delete request for /api/experiments/:id with no uuid', () => {
@@ -249,7 +255,7 @@ describe('Experiment Controller Testing', () => {
     return request(app)
       .get('/api/experiments/export')
       .query({
-        ids: [uuid()],
+        ids: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -298,7 +304,7 @@ describe('Experiment Controller Testing', () => {
 
   test('Delete request for /api/experiments/inclusionList/id', () => {
     return request(app)
-      .delete('/api/experiments/inclusionList/' + uuid())
+      .delete('/api/experiments/inclusionList/' + crypto.randomUUID())
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -306,7 +312,7 @@ describe('Experiment Controller Testing', () => {
 
   test('Delete request for /api/experiments/exclusionList/id', () => {
     return request(app)
-      .delete('/api/experiments/exclusionList/' + uuid())
+      .delete('/api/experiments/exclusionList/' + crypto.randomUUID())
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

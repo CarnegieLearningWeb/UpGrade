@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { v4 as uuidv4 } from 'uuid';
 
 import { ExperimentService } from './experiments.service';
 import { Experiment, ExperimentQueryDTO, UpdateExperimentMetricsRequest } from './store/experiments.model';
@@ -17,7 +16,7 @@ export class MetricHelperService {
     const currentMetrics = [...(experiment.queries || [])];
     const newMetric = {
       ...metricData,
-      id: uuidv4(),
+      id: crypto.randomUUID(),
     };
 
     const updatedMetrics = [...currentMetrics, newMetric] as ExperimentQueryDTO[];
