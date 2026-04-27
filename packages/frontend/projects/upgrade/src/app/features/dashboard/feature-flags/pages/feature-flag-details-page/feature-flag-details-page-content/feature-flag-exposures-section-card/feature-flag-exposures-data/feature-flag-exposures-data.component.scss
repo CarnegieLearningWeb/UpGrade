@@ -1,3 +1,91 @@
-.exposures-data-container {
+.exposures-data {
   padding: 32px;
+
+  .exposures-filters {
+    display: flex;
+    padding-top: 16px;
+
+    .time {
+      width: 20%;
+    }
+  }
+
+  .chart-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+
+    .condition-container {
+      display: flex;
+      flex-direction: column;
+
+      .condition {
+        display: flex;
+        align-items: center;
+
+        .color-box {
+          display: inline-block;
+          margin-right: 12px;
+          border-radius: 4px;
+          width: 20px;
+          height: 20px;
+          background-color: #31e8dd;
+        }
+      }
+    }
+
+    .chart {
+      display: flex;
+      min-height: 494px;
+
+      &-data {
+        position: relative;
+        flex-grow: 1;
+
+        .spinner {
+          display: flex;
+          position: absolute;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+
+    .exposure-statistic {
+      display: flex;
+      flex-direction: column;
+      margin-left: 32px;
+      width: 200px;
+      text-align: center;
+
+      &__total {
+        padding-bottom: 16px;
+      }
+
+      .title {
+        display: block;
+        color: var(--grey-5);
+      }
+
+      .numbers {
+        display: block;
+        margin-bottom: -8px;
+        color: var(--blue);
+      }
+    }
+  }
+
+  ::ng-deep .ngx-charts {
+    ::ng-deep text {
+      font-family: 'Open Sans';
+      font-weight: 400;
+      fill: var(--black-2);
+    }
+  }
+}
+
+.custom-tooltip-content {
+  padding: 6px 0;
 }

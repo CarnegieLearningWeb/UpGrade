@@ -8,8 +8,9 @@ import {
   ValidateNested,
   IsUUID,
   ArrayMinSize,
+  IsNumber,
 } from 'class-validator';
-import { FILTER_MODE, FEATURE_FLAG_STATUS, LIST_FILTER_MODE } from 'upgrade_types';
+import { FILTER_MODE, FEATURE_FLAG_STATUS, LIST_FILTER_MODE, DATE_RANGE } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { FeatureFlagListValidator } from './FeatureFlagListValidator';
 
@@ -91,6 +92,20 @@ export class FeatureFlagListImportValidation {
   @IsUUID()
   @IsNotEmpty()
   public flagId: string;
+}
+
+export class ExposuresDateValidator {
+  @IsNotEmpty()
+  @IsString()
+  public flagId: string;
+
+  @IsNotEmpty()
+  @IsEnum(DATE_RANGE)
+  public range: DATE_RANGE;
+
+  @IsNotEmpty()
+  @IsNumber()
+  public clientOffset: number;
 }
 
 class FeatureFlagFile {

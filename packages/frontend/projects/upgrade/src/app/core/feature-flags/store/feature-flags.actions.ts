@@ -6,8 +6,10 @@ import {
   UpdateFeatureFlagRequest,
   UpdateFilterModeRequest,
   FeatureFlagSegmentListDetails,
+  IExposureStatByDate,
 } from './feature-flags.model';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
+import { DATE_RANGE } from '../../experiments/store/experiments.model';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../../segments/store/segments.model';
 
 export const actionFetchFeatureFlags = createAction(
@@ -256,4 +258,48 @@ export const actionDeleteFeatureFlagExclusionListSuccess = createAction(
 export const actionDeleteFeatureFlagExclusionListFailure = createAction(
   '[Feature Flags] Delete Feature Flag Exclusion List Failure',
   props<{ error: any }>()
+);
+
+// Graph / Exposures Actions
+export const actionSetFeatureFlagGraphRange = createAction(
+  '[Feature Flags] Set Feature Flag Graph Range',
+  props<{ flagId: string; range: DATE_RANGE | null; clientOffset: number }>()
+);
+
+export const actionFetchFeatureFlagGraphInfo = createAction(
+  '[Feature Flags] Fetch Feature Flag Graph Info',
+  props<{ flagId: string; range: DATE_RANGE; clientOffset: number }>()
+);
+
+export const actionFetchFeatureFlagGraphInfoSuccess = createAction(
+  '[Feature Flags] Fetch Feature Flag Graph Info Success',
+  props<{ graphInfo: IExposureStatByDate[] }>()
+);
+
+export const actionFetchFeatureFlagGraphInfoFailure = createAction(
+  '[Feature Flags] Fetch Feature Flag Graph Info Failure'
+);
+
+export const actionSetFeatureFlagGraphInfo = createAction(
+  '[Feature Flags] Set Feature Flag Graph Info',
+  props<{ graphInfo: IExposureStatByDate[] | null }>()
+);
+
+export const actionFetchFeatureFlagTotalExposures = createAction(
+  '[Feature Flags] Fetch Feature Flag Total Exposures',
+  props<{ flagId: string; clientOffset: number }>()
+);
+
+export const actionFetchFeatureFlagTotalExposuresSuccess = createAction(
+  '[Feature Flags] Fetch Feature Flag Total Exposures Success',
+  props<{ totalExposures: number }>()
+);
+
+export const actionFetchFeatureFlagTotalExposuresFailure = createAction(
+  '[Feature Flags] Fetch Feature Flag Total Exposures Failure'
+);
+
+export const actionSetFeatureFlagTotalExposures = createAction(
+  '[Feature Flags] Set Feature Flag Total Exposures',
+  props<{ totalExposures: number | null }>()
 );

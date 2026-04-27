@@ -1,6 +1,5 @@
 import * as Faker from 'faker';
 import { define } from 'typeorm-seeding';
-import * as uuid from 'uuid';
 import { ExperimentCondition } from '../../api/models/ExperimentCondition';
 
 define(ExperimentCondition, (faker: typeof Faker, settings: { experimentId: string }) => {
@@ -10,7 +9,7 @@ define(ExperimentCondition, (faker: typeof Faker, settings: { experimentId: stri
   const conditionCode = faker.random.alphaNumeric(1);
 
   const experimentCondition = new ExperimentCondition();
-  experimentCondition.id = uuid.v4();
+  experimentCondition.id = crypto.randomUUID();
   experimentCondition.name = name;
   experimentCondition.description = description;
   experimentCondition.assignmentWeight = assignmentWeight;

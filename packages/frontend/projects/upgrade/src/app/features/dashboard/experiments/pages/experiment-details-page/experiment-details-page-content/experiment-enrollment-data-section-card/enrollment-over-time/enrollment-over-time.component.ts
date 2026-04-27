@@ -6,7 +6,6 @@ import {
   IEnrollmentStatByDate,
   ExperimentConditionFilterOptions,
   ExperimentPartitionFilterOptions,
-  ExperimentDateFilterOptions,
   ExperimentCondition,
   EXPERIMENT_STATE,
 } from '../../../../../../../../core/experiments/store/experiments.model';
@@ -21,6 +20,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import {
+  CommonChartHelpersService,
+  DateFilterOption,
+  SINCE_DATE_FORMATTER,
+} from '../../../../../../../../shared/services/common-chart-helpers.service';
 
 // Used in EnrollmentOverTimeComponent
 enum ExperimentFilterType {
@@ -53,15 +57,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   groupFiltersOptions: string[] = [];
   conditionsFilterOptions: ExperimentConditionFilterOptions[] = [];
   partitionsFilterOptions: ExperimentPartitionFilterOptions[] = [];
-  dateFilterOptions: ExperimentDateFilterOptions[] = [
-    { value: DATE_RANGE.TOTAL, viewValue: 'Total' },
-    { value: DATE_RANGE.LAST_SEVEN_DAYS, viewValue: 'Last 7 days' },
-    { value: DATE_RANGE.LAST_TWO_WEEKS, viewValue: 'Last 2 weeks' },
-    { value: DATE_RANGE.LAST_ONE_MONTH, viewValue: 'Last 1 month' },
-    { value: DATE_RANGE.LAST_THREE_MONTHS, viewValue: 'Last 3 months' },
-    { value: DATE_RANGE.LAST_SIX_MONTHS, viewValue: 'Last 6 months' },
-    { value: DATE_RANGE.LAST_TWELVE_MONTHS, viewValue: 'Last 12 months' },
-  ];
+  dateFilterOptions: DateFilterOption[];
   selectedGroupFilter: string = INDIVIDUAL;
   selectedCondition: string[] = [];
   selectedPartition: string[] = [];
@@ -98,10 +94,14 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
 
   graphInfoSub: Subscription;
   isGraphLoading$ = this.experimentService.isGraphLoading$;
-  private readonly sinceDateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
 
-  constructor(private readonly experimentService: ExperimentService) {
+  constructor(
+    private readonly experimentService: ExperimentService,
+    private readonly commonChartHelpersService: CommonChartHelpersService
+  ) {
+    this.dateFilterOptions = this.commonChartHelpersService.getDateFilterOptions();
     this.formateXAxisLabel = this.formateXAxisLabel.bind(this);
+    this.formateYAxisLabel = this.formateYAxisLabel.bind(this);
   }
 
   // Getters
@@ -163,22 +163,12 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     this.experimentService.setGraphRange(this.effectiveDateFilter, this.experiment.id, -new Date().getTimezoneOffset());
   }
 
-  // remove empty series data labels
-  formateXAxisLabel(value) {
-    if (
-      this.effectiveDateFilter === DATE_RANGE.LAST_SEVEN_DAYS ||
-      this.effectiveDateFilter === DATE_RANGE.LAST_TWO_WEEKS ||
-      this.effectiveDateFilter === DATE_RANGE.LAST_ONE_MONTH
-    ) {
-      return typeof value === 'string' ? value.substring(0, 5) : '';
-    } else if (this.effectiveDateFilter === DATE_RANGE.TOTAL) {
-      return typeof value === 'string' ? value.substring(0, 4) : '';
-    }
-    return typeof value === 'string' ? value.substring(0, 3) : '';
+  formateXAxisLabel(value: unknown): string {
+    return this.commonChartHelpersService.formatXAxisLabel(this.effectiveDateFilter, value);
   }
 
-  formateYAxisLabel(value) {
-    return value % 1 !== 0 ? '' : value;
+  formateYAxisLabel(value: number): string | number {
+    return this.commonChartHelpersService.formatYAxisLabel(value);
   }
 
   populateGraphData(graphData: IEnrollmentStatByDate[]) {
@@ -286,7 +276,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     }
 
     const earliestEnrollment = this.getEarliestEnrollmentStartDate();
-    const label = earliestEnrollment ? `Total (Since ${this.sinceDateFormatter.format(earliestEnrollment)})` : 'Total';
+    const label = earliestEnrollment ? `Total (Since ${SINCE_DATE_FORMATTER.format(earliestEnrollment)})` : 'Total';
 
     if (totalOption.viewValue !== label) {
       totalOption.viewValue = label;
@@ -294,25 +284,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   }
 
   private getDynamicTotalRange(): DATE_RANGE {
-    const earliestEnrollment = this.getEarliestEnrollmentStartDate();
-
-    if (!earliestEnrollment) {
-      return DATE_RANGE.LAST_SEVEN_DAYS;
-    }
-
-    const now = new Date();
-    const effectiveStart = earliestEnrollment > now ? now : earliestEnrollment;
-    const rangeBoundaries = [
-      { range: DATE_RANGE.LAST_SEVEN_DAYS, cutoff: this.subtractDays(now, 7) },
-      { range: DATE_RANGE.LAST_TWO_WEEKS, cutoff: this.subtractDays(now, 14) },
-      { range: DATE_RANGE.LAST_ONE_MONTH, cutoff: this.subtractMonths(now, 1) },
-      { range: DATE_RANGE.LAST_THREE_MONTHS, cutoff: this.subtractMonths(now, 3) },
-      { range: DATE_RANGE.LAST_SIX_MONTHS, cutoff: this.subtractMonths(now, 6) },
-      { range: DATE_RANGE.LAST_TWELVE_MONTHS, cutoff: this.subtractMonths(now, 12) },
-    ];
-
-    const matchedWindow = rangeBoundaries.find(({ cutoff }) => effectiveStart >= cutoff);
-    return matchedWindow ? matchedWindow.range : DATE_RANGE.TOTAL;
+    return this.commonChartHelpersService.getDynamicTotalRange(this.getEarliestEnrollmentStartDate());
   }
 
   private getEarliestEnrollmentStartDate(): Date | null {
@@ -329,18 +301,6 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     }
 
     return new Date(enrollmentLog.timeLog);
-  }
-
-  private subtractDays(baseDate: Date, days: number): Date {
-    const date = new Date(baseDate);
-    date.setDate(date.getDate() - days);
-    return date;
-  }
-
-  private subtractMonths(baseDate: Date, months: number): Date {
-    const date = new Date(baseDate);
-    date.setMonth(date.getMonth() - months);
-    return date;
   }
 
   getConditionCode(conditionId: string): string {

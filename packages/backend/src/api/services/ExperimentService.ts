@@ -10,7 +10,7 @@ import {
   EXPERIMENT_SEARCH_KEY,
   IExperimentSortParams,
 } from '../models/Experiment';
-import { v4 as uuid } from 'uuid';
+
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
@@ -440,7 +440,7 @@ export class ExperimentService {
     toState: EXPERIMENT_STATE
   ) {
     const stateTimeLogDoc = new StateTimeLog();
-    stateTimeLogDoc.id = uuid();
+    stateTimeLogDoc.id = crypto.randomUUID();
     stateTimeLogDoc.fromState = fromState;
     stateTimeLogDoc.toState = toState;
     stateTimeLogDoc.timeLog = new Date();
@@ -481,7 +481,7 @@ export class ExperimentService {
           const queryId = result.id;
           delete result.id;
           const archivedStats: Omit<ArchivedStats, 'createdAt' | 'updatedAt' | 'versionNumber'> = {
-            id: uuid(),
+            id: crypto.randomUUID(),
             result: result,
             query: { id: queryId } as Query,
           };
@@ -559,7 +559,7 @@ export class ExperimentService {
         const decisionPointExists = await this.decisionPointRepository.findOneBy({ id: decisionPoint.id });
         if (decisionPointExists) {
           // provide new uuid:
-          experimentDecisionPoints[experimentDecisionPoints.indexOf(decisionPoint)].id = uuid();
+          experimentDecisionPoints[experimentDecisionPoints.indexOf(decisionPoint)].id = crypto.randomUUID();
         }
       }
 
@@ -815,7 +815,7 @@ export class ExperimentService {
           (conditions &&
             conditions.length > 0 &&
             conditions.map((condition: ConditionValidator) => {
-              condition.id = condition.id || uuid();
+              condition.id = condition.id || crypto.randomUUID();
               return { ...condition, experiment: experimentDoc };
             })) ||
           [];
@@ -843,7 +843,7 @@ export class ExperimentService {
             const payload = filteredConditionPayloads[decisionPoint.id]?.[condition.id];
             if (!payload) {
               const payloadToAdd: ConditionPayloadValidator = {
-                id: uuid(),
+                id: crypto.randomUUID(),
                 parentCondition: condition.id,
                 decisionPoint: decisionPoint.id,
                 payload: {
@@ -890,7 +890,7 @@ export class ExperimentService {
                   },
                 })
               );
-              decisionPoint.id = decisionPoint.id || uuid();
+              decisionPoint.id = decisionPoint.id || crypto.randomUUID();
               return { ...decisionPoint, experiment: experimentDoc };
             })) ||
           [];
@@ -905,7 +905,7 @@ export class ExperimentService {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
               rest.experiment = experimentDoc;
-              rest.id = rest.id || uuid();
+              rest.id = rest.id || crypto.randomUUID();
               rest.order = index + 1;
               return rest;
             })) ||
@@ -1264,7 +1264,7 @@ export class ExperimentService {
     );
 
     const createdExperiment = await entityManager.transaction(async (transactionalEntityManager) => {
-      experiment.id = experiment.id || uuid();
+      experiment.id = experiment.id || crypto.randomUUID();
       experiment.description = experiment.description || '';
 
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
@@ -1318,7 +1318,7 @@ export class ExperimentService {
       const conditionDocsToSave: Array<Partial<Omit<ExperimentCondition, 'levelCombinationElements'>>> =
         conditions && conditions.length > 0
           ? conditions.map((condition: ConditionValidator) => {
-              const newId = uuid();
+              const newId = crypto.randomUUID();
               conditionIdMap.set(condition.id, newId);
               condition.id = newId;
               return { ...condition, experiment: experimentDoc };
@@ -1330,7 +1330,7 @@ export class ExperimentService {
       const decisionPointDocsToSave: Array<Partial<DecisionPoint>> =
         partitions && partitions.length > 0
           ? partitions.map((decisionPoint) => {
-              const newId = uuid();
+              const newId = crypto.randomUUID();
               decisionPointIdMap.set(decisionPoint.id, newId);
               decisionPoint.id = newId;
               decisionPoint.description = decisionPoint.description || '';
@@ -1349,7 +1349,7 @@ export class ExperimentService {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
             rest.experiment = experimentDoc;
-            rest.id = uuid();
+            rest.id = crypto.randomUUID();
             rest.order = index + 1;
             return rest;
           })) ||
@@ -1424,7 +1424,7 @@ export class ExperimentService {
               throw new Error(`Decision point not found for condition payload: ${conditionPayload.id}`);
             }
             const conditionPayloadToReturn = {
-              id: uuid(),
+              id: crypto.randomUUID(),
               payloadType: conditionPayload.payload.type,
               payloadValue: conditionPayload.payload.value,
               parentCondition,
@@ -1656,7 +1656,7 @@ export class ExperimentService {
   }
 
   private deduceExperimentDetails(experiment: Experiment): Experiment {
-    experiment.id = uuid();
+    experiment.id = crypto.randomUUID();
     // delete createdAt and updatedAt dates to let typeorm handle them and initialize versionNumber as fresh experiment version to detect updates
     delete experiment.createdAt;
     delete experiment.updatedAt;
@@ -1692,10 +1692,10 @@ export class ExperimentService {
 
   deduceConditions(result) {
     result.conditions.forEach((condition) => {
-      this.allIdMap[condition.id] = uuid();
+      this.allIdMap[condition.id] = crypto.randomUUID();
       condition.id = this.allIdMap[condition.id];
       condition.levelCombinationElements.forEach((lce) => {
-        lce.id = uuid();
+        lce.id = crypto.randomUUID();
         lce.level.id = this.allIdMap[lce.level.id];
       });
     });
@@ -1716,7 +1716,7 @@ export class ExperimentService {
     }
     if (result.conditionPayloads) {
       result.conditionPayloads.forEach((conditionPayload) => {
-        conditionPayload.id = uuid();
+        conditionPayload.id = crypto.randomUUID();
         conditionPayload.parentCondition = this.allIdMap[conditionPayload.parentCondition];
         if (conditionPayload.decisionPoint) {
           conditionPayload.decisionPoint = this.allIdMap[conditionPayload.decisionPoint];
@@ -1728,7 +1728,7 @@ export class ExperimentService {
 
   deducePartition(result) {
     result.partitions.forEach((decisionPoint, decisionPointIndex) => {
-      this.allIdMap[decisionPoint.id] = uuid();
+      this.allIdMap[decisionPoint.id] = crypto.randomUUID();
       decisionPoint.id = this.allIdMap[decisionPoint.id];
       if (decisionPoint.expPoint) {
         result.partitions[decisionPointIndex].site = decisionPoint.expPoint;
@@ -1753,9 +1753,9 @@ export class ExperimentService {
 
   deduceFactors(result) {
     result.factors.forEach((factor, factorIndex) => {
-      factor.id = uuid();
+      factor.id = crypto.randomUUID();
       factor.levels.forEach((level, levelIndex) => {
-        this.allIdMap[level.id] = uuid();
+        this.allIdMap[level.id] = crypto.randomUUID();
         level.id = this.allIdMap[level.id];
         if (level.alias) {
           result.factors[factorIndex].levels[levelIndex].payload = {};
@@ -1771,17 +1771,21 @@ export class ExperimentService {
     if (!result.experimentSegmentInclusion) {
       result.experimentSegmentInclusion = [];
     }
-    result.experimentSegmentInclusion.forEach((segmentInclusion) => (segmentInclusion.segment.id = uuid()));
+    result.experimentSegmentInclusion.forEach(
+      (segmentInclusion) => (segmentInclusion.segment.id = crypto.randomUUID())
+    );
 
     if (!result.experimentSegmentExclusion) {
       result.experimentSegmentExclusion = [];
     }
-    result.experimentSegmentExclusion.forEach((segmentExclusion) => (segmentExclusion.segment.id = uuid()));
+    result.experimentSegmentExclusion.forEach(
+      (segmentExclusion) => (segmentExclusion.segment.id = crypto.randomUUID())
+    );
   }
 
   deduceQueries(result) {
     result.queries.forEach((query) => {
-      query.id = uuid();
+      query.id = crypto.randomUUID();
     });
   }
 
@@ -2233,7 +2237,7 @@ export class ExperimentService {
       async (transactionalEntityManager) => {
         const listDocs: (ExperimentSegmentInclusion | ExperimentSegmentExclusion)[] = [];
         for (const list of validFiles) {
-          const listDoc: SegmentInputValidator = { ...list, id: uuid(), context: experiment.context[0] };
+          const listDoc: SegmentInputValidator = { ...list, id: crypto.randomUUID(), context: experiment.context[0] };
           const createdList = await this.addList(
             listDoc,
             experimentId,
@@ -2333,7 +2337,7 @@ export class ExperimentService {
       normalFactors.length > 0 &&
       normalFactors.map((factor) => {
         const factorReturn = {
-          id: factor.id || uuid(),
+          id: factor.id || crypto.randomUUID(),
           name: factor.name,
           order: factor.order,
           description: factor.description,
@@ -2343,7 +2347,7 @@ export class ExperimentService {
 
         factorReturn.levels = factor.levels.map((level) => {
           return {
-            id: level.id || uuid(),
+            id: level.id || crypto.randomUUID(),
             name: level.name,
             order: level.order,
             description: level.description,
@@ -2358,7 +2362,7 @@ export class ExperimentService {
 
     conditions.forEach((condition) => {
       const array = condition.levelCombinationElements.map((elements) => {
-        elements.id = elements.id || uuid();
+        elements.id = elements.id || crypto.randomUUID();
         // elements.condition = condition;
         return { ...elements, condition: condition };
       });
@@ -2424,7 +2428,7 @@ export class ExperimentService {
   }
 
   private getListSegment(list: ParticipantsValidator, context): SegmentInputValidator {
-    list.segment.id = uuid();
+    list.segment.id = crypto.randomUUID();
 
     const userIds = list.segment.individualForSegment?.map((individual) =>
       individual.userId ? individual.userId : null
