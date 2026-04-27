@@ -42,6 +42,7 @@ interface RowData {
 })
 export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
   @Input() experiment: ExperimentVM;
+  @Input() isLoadingExperiment: boolean;
 
   // chart options
   colorScheme = {
