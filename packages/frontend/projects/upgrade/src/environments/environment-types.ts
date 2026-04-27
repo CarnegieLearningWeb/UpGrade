@@ -67,6 +67,7 @@ export interface APIEndpoints {
   getGroupAssignmentStatus: string;
   stratification: string;
   getMoocletRewardsData: string;
+  featureFlagGraphInfo: string;
 }
 
 export interface Environment {

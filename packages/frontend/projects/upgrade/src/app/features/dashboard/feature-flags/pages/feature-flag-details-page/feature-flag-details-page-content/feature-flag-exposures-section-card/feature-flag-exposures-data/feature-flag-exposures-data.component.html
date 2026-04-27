@@ -1,3 +1,64 @@
-<div class="exposures-data-container">
-  <span class="ft-14-400"> Add Exposures data here! </span>
+<div class="exposures-data">
+  <div class="exposures-filters">
+    <mat-form-field class="dense-2 time" appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400 dropdown-label">
+        {{ 'feature-flags.details.exposures.time-filter.label.text' | translate }}
+      </mat-label>
+      <mat-select class="ft-14-400" [(ngModel)]="selectedDateFilter" (selectionChange)="applyDateFilter()">
+        @for (option of dateFilterOptions; track option) {
+        <mat-option class="ft-14-400" [value]="option.value">
+          {{ option.viewValue | titlecase }}
+        </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="chart-container">
+    <div class="condition-container">
+      <div class="condition">
+        <span class="color-box"></span>
+        <span>{{ 'feature-flags.details.exposures.legend.exposed.text' | translate }}</span>
+      </div>
+    </div>
+    <br />
+    <div class="chart">
+      <div class="chart-data">
+        <ngx-charts-bar-vertical-stacked
+          [scheme]="colorScheme"
+          [results]="graphData"
+          [xAxis]="true"
+          [yAxis]="true"
+          [legend]="false"
+          [barPadding]="8"
+          [noBarWhenZero]="true"
+          [xAxisTickFormatting]="formatXAxisLabel"
+          [yAxisTickFormatting]="formatYAxisLabel"
+          [yScaleMax]="yScaleMax"
+        >
+          <ng-template #tooltipTemplate let-model="model">
+            <div class="custom-tooltip-content">
+              <span>{{ model.name }}</span>
+              <br />
+              <span>{{ model.value }}</span>
+            </div>
+          </ng-template>
+        </ngx-charts-bar-vertical-stacked>
+        @if (isGraphLoading$ | async) {
+        <div class="spinner">
+          <mat-spinner diameter="60"></mat-spinner>
+        </div>
+        }
+      </div>
+
+      <div class="exposure-statistic">
+        <div class="exposure-statistic__total">
+          <span class="ft-14-600 title">
+            {{ 'feature-flags.details.exposures.total.text' | translate }}
+          </span>
+          <span class="ft-30-700 numbers">{{ totalExposures$ | async }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

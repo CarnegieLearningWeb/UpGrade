@@ -16,6 +16,6 @@
 
   <!-- content -->
   @if (isSectionCardExpanded) {
-  <app-feature-flag-exposures-data content></app-feature-flag-exposures-data>
+  <app-feature-flag-exposures-data content [featureFlag]="data"></app-feature-flag-exposures-data>
   }
 </app-common-section-card>

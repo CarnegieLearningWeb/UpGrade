@@ -184,6 +184,11 @@ export const FLAG_TRANSLATION_KEYS = {
 
 export const FLAG_ROOT_DISPLAYED_COLUMNS = Object.values(FLAG_ROOT_COLUMN_NAMES);
 
+export interface IExposureStatByDate {
+  date: string;
+  count: number;
+}
+
 export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingUpsertFeatureFlag: boolean;
   isLoadingImportFeatureFlag: boolean;
@@ -200,6 +205,9 @@ export interface FeatureFlagState extends EntityState<FeatureFlag> {
   searchValue: string;
   sortKey: FLAG_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;
+  graphInfo: IExposureStatByDate[] | null;
+  isGraphLoading: boolean;
+  totalExposures: number | null;
 }
 
 export interface State extends AppState {
