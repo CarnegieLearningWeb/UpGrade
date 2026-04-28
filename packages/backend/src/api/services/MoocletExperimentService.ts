@@ -52,7 +52,6 @@ import {
   EXPERIMENT_STATE,
   MoocletPolicyParametersDTO,
   MoocletTSConfigurablePolicyParametersDTO,
-  Prior,
   SUPPORTED_MOOCLET_ALGORITHMS,
 } from 'upgrade_types';
 import { ExperimentCondition } from '../models/ExperimentCondition';
@@ -399,16 +398,10 @@ export class MoocletExperimentService extends ExperimentService {
       // so the PUT response is consistent with the GET response from attachPolicyParamsToExperimentDTO.
       const updatedTsParams = updatedExperiment.moocletPolicyParameters as MoocletTSConfigurablePolicyParametersDTO;
       if (updatedTsParams?.prior) {
-        const transformedPrior: Record<string, Prior> = {};
-        for (const [versionId, priorData] of Object.entries(updatedTsParams.prior)) {
-          const map = currentMoocletExperimentRef.versionConditionMaps.find(
-            (m) => String(m.moocletVersionId) === versionId
-          );
-          if (map?.experimentCondition?.conditionCode) {
-            transformedPrior[map.experimentCondition.conditionCode] = priorData;
-          }
-        }
-        updatedTsParams.prior = transformedPrior;
+        updatedTsParams.prior = this.translateVersionIdsToConditionCodes(
+          updatedTsParams.prior,
+          currentMoocletExperimentRef.versionConditionMaps
+        );
       }
 
       // --------- update versions ----------------------
@@ -542,16 +535,13 @@ export class MoocletExperimentService extends ExperimentService {
     const tsParams = newPolicyParameters as MoocletTSConfigurablePolicyParametersDTO;
     if (tsParams.prior) {
       // Translate conditionCode keys to Mooclet version IDs before sending to the Mooclet API
-      const translatedprior: Record<string, Prior> = {};
-      for (const [conditionCode, priorData] of Object.entries(tsParams.prior)) {
-        const versionConditionMap = currentMoocletExperimentRef.versionConditionMaps?.find(
-          (map) => map.experimentCondition?.conditionCode === conditionCode
-        );
-        if (versionConditionMap?.moocletVersionId) {
-          translatedprior[String(versionConditionMap.moocletVersionId)] = priorData;
-        }
-      }
-      newPolicyParameters = { ...tsParams, prior: translatedprior } as MoocletPolicyParametersDTO;
+      newPolicyParameters = {
+        ...tsParams,
+        prior: this.translateConditionCodesToVersionIds(
+          tsParams.prior,
+          currentMoocletExperimentRef.versionConditionMaps
+        ),
+      } as MoocletPolicyParametersDTO;
     }
 
     return this.moocletDataService.updatePolicyParameters(
@@ -1202,34 +1192,17 @@ export class MoocletExperimentService extends ExperimentService {
       // Transform current_posteriors and prior keys from Mooclet version IDs to UpGrade condition codes
       const tsConfigurableParams = policyParameters.parameters as MoocletTSConfigurablePolicyParametersDTO;
       if (tsConfigurableParams.current_posteriors) {
-        const transformedPosteriors = {};
-        for (const [versionId, posteriorData] of Object.entries(tsConfigurableParams.current_posteriors)) {
-          const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
-            (map) => map.moocletVersionId === parseInt(versionId, 10)
-          );
-
-          if (versionConditionMap?.experimentCondition?.conditionCode) {
-            transformedPosteriors[versionConditionMap.experimentCondition.conditionCode] = posteriorData;
-          } else {
-            logger.warn({
-              message: `No condition mapping found for Mooclet version ${versionId} in experiment ${experiment.id}`,
-            });
-          }
-        }
-        tsConfigurableParams.current_posteriors = transformedPosteriors;
+        tsConfigurableParams.current_posteriors = this.translateVersionIdsToConditionCodes(
+          tsConfigurableParams.current_posteriors,
+          moocletExperimentRef.versionConditionMaps
+        );
       }
 
       if (tsConfigurableParams.prior) {
-        const transformedprior: Record<string, Prior> = {};
-        for (const [versionId, priorData] of Object.entries(tsConfigurableParams.prior)) {
-          const versionConditionMap = moocletExperimentRef.versionConditionMaps.find(
-            (map) => map.moocletVersionId === parseInt(versionId, 10)
-          );
-          if (versionConditionMap?.experimentCondition?.conditionCode) {
-            transformedprior[versionConditionMap.experimentCondition.conditionCode] = priorData;
-          }
-        }
-        tsConfigurableParams.prior = transformedprior;
+        tsConfigurableParams.prior = this.translateVersionIdsToConditionCodes(
+          tsConfigurableParams.prior,
+          moocletExperimentRef.versionConditionMaps
+        );
       }
 
       experiment.moocletPolicyParameters = policyParameters.parameters;
@@ -1392,6 +1365,37 @@ export class MoocletExperimentService extends ExperimentService {
 
   public isMoocletExperiment(assignmentAlgorithm: ASSIGNMENT_ALGORITHM): boolean {
     return SUPPORTED_MOOCLET_ALGORITHMS.includes(assignmentAlgorithm);
+  }
+
+  private translateConditionCodesToVersionIds<T>(
+    record: Record<string, T>,
+    versionConditionMaps: MoocletVersionConditionMap[]
+  ): Record<string, T> {
+    const result: Record<string, T> = {};
+    for (const [conditionCode, value] of Object.entries(record)) {
+      const map = versionConditionMaps?.find((m) => m.experimentCondition?.conditionCode === conditionCode);
+      if (map?.moocletVersionId) {
+        result[String(map.moocletVersionId)] = value;
+      }
+    }
+    return result;
+  }
+
+  private translateVersionIdsToConditionCodes<T>(
+    record: Record<string, T>,
+    versionConditionMaps: MoocletVersionConditionMap[]
+  ): Record<string, T> {
+    const result: Record<string, T> = {};
+    for (const [versionId, value] of Object.entries(record)) {
+      const map = versionConditionMaps?.find((m) => String(m.moocletVersionId) === versionId);
+      if (!map?.experimentCondition?.conditionCode) {
+        throw new MoocletError(
+          `Reward feedback summary could not be processed: no condition mapping found for Mooclet version ${versionId}`
+        );
+      }
+      result[map.experimentCondition.conditionCode] = value;
+    }
+    return result;
   }
 
   /**

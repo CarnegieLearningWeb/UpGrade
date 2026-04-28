@@ -41,7 +41,7 @@ export class ExperimentConditionsTableComponent {
   @Input() prior?: Record<string, Prior>;
   @Output() rowAction = new EventEmitter<ExperimentConditionRowActionEvent>();
   @Output() editWeights = new EventEmitter<ExperimentCondition[]>();
-  @Output() editprior = new EventEmitter<ExperimentCondition[]>();
+  @Output() editPrior = new EventEmitter<ExperimentCondition[]>();
 
   get displayedColumns(): string[] {
     if (this.isMoocletExperiment) {
@@ -54,12 +54,12 @@ export class ExperimentConditionsTableComponent {
     CONDITION: 'experiments.details.conditions.condition.text',
     DESCRIPTION: 'experiments.details.conditions.description.text',
     WEIGHT: 'experiments.details.conditions.weight.text',
-    prior_SUCCESSES: 'experiments.details.conditions.prior-successes.text',
-    prior_FAILURES: 'experiments.details.conditions.prior-failures.text',
+    PRIOR_SUCCESSES: 'experiments.details.conditions.prior-successes.text',
+    PRIOR_FAILURES: 'experiments.details.conditions.prior-failures.text',
     ACTIONS: 'experiments.details.conditions.actions.text',
   };
 
-  getprioruccesses(condition: ExperimentCondition): number {
+  getPriorSuccesses(condition: ExperimentCondition): number {
     return this.prior?.[condition.conditionCode]?.success ?? 1;
   }
 
@@ -79,7 +79,7 @@ export class ExperimentConditionsTableComponent {
     this.editWeights.emit(this.conditions);
   }
 
-  onEditpriorClick(): void {
-    this.editprior.emit(this.conditions);
+  onEditPriorClick(): void {
+    this.editPrior.emit(this.conditions);
   }
 }

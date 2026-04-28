@@ -30,12 +30,8 @@ export class TSConfigurableRewardCountTableComponent {
   ];
 
   getEstimatedWeightTooltip(row: ExperimentRewardsByCondition): string {
-    const ps = row.posteriorSuccesses ?? 0;
-    const pf = row.posteriorFailures ?? 0;
-    const priorS = row.priorSuccess ?? 1;
-    const priorF = row.priorFailure ?? 1;
-    const alpha = ps + priorS;
-    const beta = pf + priorF;
-    return `α: posteriors(${ps}) + prior(${priorS}) = ${alpha}\nβ: posteriors(${pf}) + prior(${priorF}) = ${beta}\nbeta(${alpha}, ${beta})`;
+    const alpha = row.posteriorSuccesses ?? 0;
+    const beta = row.posteriorFailures ?? 0;
+    return `α: posteriors(${alpha})\nβ: posteriors(${beta})\nbeta(${alpha}, ${beta})`;
   }
 }
