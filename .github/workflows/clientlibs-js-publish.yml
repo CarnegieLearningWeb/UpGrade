@@ -11,6 +11,11 @@ on:
         description: 'Branch or tag ref to publish'
         required: true
         default: 'main'  
+
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   clientlibs-js-publish:
     name: UpGrade Client Libs JS Publish
@@ -21,7 +26,7 @@ jobs:
         run: |
           echo "::set-output name=ref::${{ inputs.ref || github.event.inputs.ref }}"
       - name: Git Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.set-vars.outputs.ref }}
       - name: Build Types Package
@@ -29,7 +34,5 @@ jobs:
         with:
           working_directory: clientlibs/js
       - name: Publish Client Libs js Package
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: clientlibs/js/package.json
+        run: npm publish
+        working-directory: clientlibs/js/package.json
