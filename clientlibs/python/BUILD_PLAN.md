@@ -75,9 +75,6 @@ class BinaryRewardValue(str, Enum):
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
 
-class MetricMetaData(str, Enum):
-    CONTINUOUS = "continuous"
-    CATEGORICAL = "categorical"
 ```
 
 ### Request Models (Pydantic)
@@ -93,7 +90,6 @@ class MetricMetaData(str, Enum):
 - `LogGroupMetrics` — groupClass, groupKey, groupUniquifier, attributes
 - `UserAliasRequest` — userId, aliases
 - `FeatureFlagRequest` — userId, context
-- `AddMetricsRequest` — metricUnit (list of `GroupMetric` or `SingleMetric`)
 - `SendRewardRequest` — rewardValue (`BinaryRewardValue`), experimentId (optional), context (optional), decisionPoint (optional: site + target)
 
 ### Response Models (Pydantic)
@@ -141,7 +137,6 @@ Maps library operations to HTTP endpoints (v6):
 | `get_all_feature_flags` | POST | `/api/v6/featureflag` |
 | `log` | POST | `/api/v6/log` |
 | `set_alt_user_ids` | PATCH | `/api/v6/useraliases` |
-| `add_metrics` | POST | `/api/v6/metric` |
 | `send_reward` | POST | `/api/v6/reward` |
 
 Both sync and async variants for each method.
@@ -234,7 +229,6 @@ class UpgradeClient:
 | `has_feature_flag` | `async has_feature_flag(key: str) -> bool` |
 | `log` | `async log(metrics: list[LogInput]) -> list[LogEventResponse]` |
 | `set_alt_user_ids` | `async set_alt_user_ids(aliases: list[str]) -> UserAliasResponse` |
-| `add_metrics` | `async add_metrics(metrics: list[GroupMetric \| SingleMetric]) -> dict` |
 | `send_reward` | `async send_reward(reward_value: BinaryRewardValue, experiment_id=None, context=None, decision_point=None) -> SendRewardResponse` |
 
 ### Sync Variants
@@ -348,7 +342,6 @@ CI pipeline green across all Python versions. Coverage report published as CI ar
 | Feature flags (cached) | ✓ | ✓ | Phase 6 |
 | Metrics logging (grouped) | ✓ | ✓ | Phase 6 |
 | Alternate user IDs | ✓ | ✓ | Phase 6 |
-| Add metrics | ✓ | ✓ | Phase 6 |
 | Async interface | ✓ | — | Phase 6 |
 | Sync interface | — | ✓ | Phase 6 |
 | Cache bypass (`ignore_cache`) | — | ✓ | Phase 4 |
