@@ -1404,7 +1404,10 @@ describe('#MoocletExperimentService', () => {
       const mockPolicyParams = {
         parameters: {
           assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
-          prior: { success: 1, failure: 1 },
+          prior: {
+            '1': { success: 1, failure: 1 },
+            '2': { success: 1, failure: 1 },
+          },
         },
       };
 
@@ -1675,7 +1678,16 @@ describe('#MoocletExperimentService', () => {
     mockMoocletExperimentRef.id = 'ref-123';
     mockMoocletExperimentRef.policyParametersId = 1;
     mockMoocletExperimentRef.variableId = 2;
-    mockMoocletExperimentRef.versionConditionMaps = [];
+    mockMoocletExperimentRef.versionConditionMaps = [
+      {
+        moocletVersionId: 10,
+        experimentCondition: { conditionCode: 'control' } as any,
+      } as MoocletVersionConditionMap,
+      {
+        moocletVersionId: 20,
+        experimentCondition: { conditionCode: 'treatment' } as any,
+      } as MoocletVersionConditionMap,
+    ];
 
     const mockExperiment = {
       id: 'exp-123',
@@ -1721,7 +1733,13 @@ describe('#MoocletExperimentService', () => {
       updateSpy.mockResolvedValue(updatedExperiment);
 
       jest.spyOn(moocletExperimentService as any, 'doRevertablePolicyParameterChange').mockResolvedValue({
-        parameters: mockExperiment.moocletPolicyParameters,
+        parameters: {
+          ...mockExperiment.moocletPolicyParameters,
+          prior: {
+            '10': { success: 1, failure: 1 },
+            '20': { success: 1, failure: 1 },
+          },
+        },
       });
 
       const result = await (moocletExperimentService as any).handleEditMoocletTransaction(manager, params);
