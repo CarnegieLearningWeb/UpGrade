@@ -63,7 +63,7 @@ import {
 } from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
 import {
   ConditionPriorUpdate,
-  EditConditionpriorModalComponent,
+  EditConditionPriorModalComponent,
 } from '../../features/dashboard/experiments/modals/edit-condition-prior-modal/edit-condition-prior-modal.component';
 import { Prior } from 'upgrade_types';
 import {
@@ -618,17 +618,17 @@ export class DialogService {
     return dialogRef.afterClosed();
   }
 
-  openEditConditionpriorModal(
+  openEditConditionPriorModal(
     conditions: ExperimentCondition[],
-    existingprior?: Record<string, Prior>
+    existingPrior?: Record<string, Prior>
   ): Observable<Record<string, Prior>> {
     const conditionPriorUpdates: ConditionPriorUpdate[] = conditions.map((condition) => ({
       conditionCode: condition.conditionCode,
-      successes: existingprior?.[condition.conditionCode]?.success ?? 1,
-      failures: existingprior?.[condition.conditionCode]?.failure ?? 1,
+      successes: existingPrior?.[condition.conditionCode]?.success ?? 1,
+      failures: existingPrior?.[condition.conditionCode]?.failure ?? 1,
     }));
 
-    const dialogRef = this.dialog.open(EditConditionpriorModalComponent, {
+    const dialogRef = this.dialog.open(EditConditionPriorModalComponent, {
       panelClass: ['experiment-modal', 'modal-shadow'],
       hasBackdrop: true,
       autoFocus: false,
