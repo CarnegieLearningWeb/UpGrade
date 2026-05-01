@@ -134,13 +134,13 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
       });
   }
 
-  onEditprior(conditions: ExperimentCondition[], experiment: ExperimentVM): void {
-    const existingprior = experiment.moocletPolicyParameters?.prior;
+  onEditPrior(conditions: ExperimentCondition[], experiment: ExperimentVM): void {
+    const existingPrior = experiment.moocletPolicyParameters?.prior;
     this.dialogService
-      .openEditConditionpriorModal(conditions, existingprior)
+      .openEditConditionPriorModal(conditions, existingPrior)
       .subscribe((result: Record<string, Prior> | undefined) => {
         if (result) {
-          this.experimentService.updateExperimentConditionprior(experiment, result);
+          this.experimentService.updateExperimentConditionPrior(experiment, result);
         }
       });
   }

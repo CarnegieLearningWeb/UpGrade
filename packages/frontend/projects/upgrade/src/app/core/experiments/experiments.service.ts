@@ -300,7 +300,7 @@ export class ExperimentService {
     );
   }
 
-  updateExperimentConditionprior(experiment: ExperimentVM, prior: Record<string, Prior>): void {
+  updateExperimentConditionPrior(experiment: ExperimentVM, prior: Record<string, Prior>): void {
     const updatedExperiment: ExperimentVM = {
       ...experiment,
       moocletPolicyParameters: {

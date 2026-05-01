@@ -248,10 +248,7 @@ describe('#MoocletDataService', () => {
   describe('#postNewPolicyParameters', () => {
     const mockPolicyParameters: MoocletTSConfigurablePolicyParametersDTO = {
       assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
-      prior: {
-        failure: 1,
-        success: 1,
-      },
+      prior: { 1: { failure: 1, success: 1 } },
       batch_size: 1,
       max_rating: 1,
       min_rating: 0,

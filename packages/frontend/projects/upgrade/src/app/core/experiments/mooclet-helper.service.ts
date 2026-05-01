@@ -212,7 +212,7 @@ export class MoocletExperimentHelperService {
   /**
    * Get field validators for per-condition prior success/failure inputs used in the prior editor.
    */
-  getpriorFieldValidators(): Record<string, ValidatorFn[]> {
+  getPriorFieldValidators(): Record<string, ValidatorFn[]> {
     const priorDefault = 1;
     return {
       successes: [

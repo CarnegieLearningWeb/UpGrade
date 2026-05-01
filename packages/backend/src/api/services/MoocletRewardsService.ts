@@ -336,8 +336,8 @@ export class MoocletRewardsService {
           estimatedWeight: estimatedWeightMap?.get(conditionCode),
           priorSuccess: conditionPrior.success,
           priorFailure: conditionPrior.failure,
-          posteriorSuccesses: conditionPosteriors?.successes ?? 0,
-          posteriorFailures: conditionPosteriors?.failures ?? 0,
+          posteriorSuccesses: conditionPosteriors?.successes ?? DEFAULT_PRIOR.success,
+          posteriorFailures: conditionPosteriors?.failures ?? DEFAULT_PRIOR.failure,
         };
         return rewardsForCondition;
       }

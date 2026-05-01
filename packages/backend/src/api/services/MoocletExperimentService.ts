@@ -1389,9 +1389,7 @@ export class MoocletExperimentService extends ExperimentService {
     for (const [versionId, value] of Object.entries(record)) {
       const map = versionConditionMaps?.find((m) => String(m.moocletVersionId) === versionId);
       if (!map?.experimentCondition?.conditionCode) {
-        throw new MoocletError(
-          `Reward feedback summary could not be processed: no condition mapping found for Mooclet version ${versionId}`
-        );
+        throw new MoocletError(`No condition mapping found for Mooclet version ${versionId}`);
       }
       result[map.experimentCondition.conditionCode] = value;
     }

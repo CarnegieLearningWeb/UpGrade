@@ -38,7 +38,7 @@ export interface ConditionPriorUpdate {
   styleUrl: './edit-condition-prior-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EditConditionpriorModalComponent implements OnInit {
+export class EditConditionPriorModalComponent implements OnInit {
   isPrimaryButtonDisabled$: Observable<boolean>;
   priorForm: FormGroup;
   displayedColumns: string[] = ['condition', 'successes', 'failures'];
@@ -48,18 +48,18 @@ export class EditConditionpriorModalComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public config: CommonModalConfig<{ conditions: ConditionPriorUpdate[] }>,
-    public dialogRef: MatDialogRef<EditConditionpriorModalComponent>,
+    public dialogRef: MatDialogRef<EditConditionPriorModalComponent>,
     private readonly formBuilder: FormBuilder,
     private readonly moocletHelperService: MoocletExperimentHelperService
   ) {}
 
   ngOnInit(): void {
     this.conditions = this.config.params.conditions;
-    this.createpriorForm();
+    this.createPriorForm();
   }
 
-  createpriorForm(): void {
-    const validators = this.moocletHelperService.getpriorFieldValidators();
+  createPriorForm(): void {
+    const validators = this.moocletHelperService.getPriorFieldValidators();
 
     const conditionsFormArray = this.formBuilder.array(
       this.conditions.map((condition) =>
