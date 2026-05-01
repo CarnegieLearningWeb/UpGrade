@@ -1186,8 +1186,8 @@ describe('MoocletRewardsService', () => {
         estimatedWeight: undefined,
         priorSuccess: 1,
         priorFailure: 1,
-        posteriorSuccesses: 0,
-        posteriorFailures: 0,
+        posteriorSuccesses: 1,
+        posteriorFailures: 1,
       });
     });
   });
