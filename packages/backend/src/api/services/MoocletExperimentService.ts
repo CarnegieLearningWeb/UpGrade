@@ -1374,6 +1374,9 @@ export class MoocletExperimentService extends ExperimentService {
     const result: Record<string, T> = {};
     for (const [conditionCode, value] of Object.entries(record)) {
       const map = versionConditionMaps?.find((m) => m.experimentCondition?.conditionCode === conditionCode);
+      if (!map?.moocletVersionId) {
+        throw new MoocletError(`No version mapping found for condition code ${conditionCode}`);
+      }
       if (map?.moocletVersionId) {
         result[String(map.moocletVersionId)] = value;
       }
