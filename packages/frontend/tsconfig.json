@@ -17,6 +17,7 @@
     "module": "es2020",
     "target": "ES2022",
     "lib": ["es2018", "dom"],
+    "types": ["jest", "google.accounts"],
     "paths": {
       "upgrade_types": ["../../types", "./types"],
       "@shared-component-lib": ["../projects/upgrade/src/app/shared-standalone-component-lib/components"],
