@@ -39,9 +39,9 @@
     "js-clientlib": "yarn --cwd clientlibs/js run",
     "clean": "rm -rf node_modules clientlibs/js/node_modules packages/types/dist packages/backend/dist packages/frontend/dist clientlibs/js/dist",
     "install:all": "yarn && yarn --cwd clientlibs/js install",
-    "build": "yarn types build && concurrently \"yarn backend build\" \"yarn js-clientlib build\" \"yarn frontend build\"",
+    "build:all": "yarn types build && concurrently \"yarn backend build\" \"yarn js-clientlib build\" \"yarn frontend build\"",
     "launch": "concurrently -p \"[{name}]\" -n \"types,backend,frontend\" -c \"blue,magenta,cyan\" \"yarn types build\" \"yarn backend dev\" \"yarn frontend start\"",
-    "do-all-the-things": "yarn clean && yarn install:all && yarn build && yarn launch"
+    "clean-launch": "yarn clean && yarn install:all && yarn build:all && yarn launch"
   },
   "lint-staged": {
     "./packages/frontend/projects/upgrade/src/**/*.{ts,js,html,json,scss}": [
