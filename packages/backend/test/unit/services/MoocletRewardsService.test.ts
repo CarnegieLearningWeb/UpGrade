@@ -598,6 +598,9 @@ describe('MoocletRewardsService', () => {
         total: 3,
         successRate: '66.7%',
         order: 0,
+        estimatedWeight: undefined,
+        posteriorSuccesses: 1,
+        posteriorFailures: 1,
       });
       expect(result[1]).toEqual({
         conditionCode: 'Treatment',
@@ -606,6 +609,9 @@ describe('MoocletRewardsService', () => {
         total: 2,
         successRate: '50.0%',
         order: 1,
+        estimatedWeight: undefined,
+        posteriorSuccesses: 1,
+        posteriorFailures: 1,
       });
     });
 
@@ -641,6 +647,9 @@ describe('MoocletRewardsService', () => {
         total: 0,
         successRate: '0.0%',
         order: 0,
+        estimatedWeight: undefined,
+        posteriorSuccesses: 1,
+        posteriorFailures: 1,
       });
     });
 
@@ -701,6 +710,9 @@ describe('MoocletRewardsService', () => {
         total: 3,
         successRate: '66.7%',
         order: 0,
+        estimatedWeight: undefined,
+        posteriorSuccesses: 1,
+        posteriorFailures: 1,
       });
       // Treatment (version 200): page1 has id3 (success), page2 has id5 (failure) + id6 (success) => 2 successes, 1 failure
       expect(result[1]).toEqual({
@@ -710,6 +722,9 @@ describe('MoocletRewardsService', () => {
         total: 3,
         successRate: '66.7%',
         order: 1,
+        estimatedWeight: undefined,
+        posteriorSuccesses: 1,
+        posteriorFailures: 1,
       });
     });
 
@@ -988,6 +1003,9 @@ describe('MoocletRewardsService', () => {
         total: 3,
         successRate: '66.7%',
         order: 0,
+        estimatedWeight: undefined,
+        posteriorSuccesses: 1,
+        posteriorFailures: 1,
       });
       expect(result[1]).toEqual({
         conditionCode: 'Treatment',
@@ -996,6 +1014,9 @@ describe('MoocletRewardsService', () => {
         total: 4,
         successRate: '25.0%',
         order: 1,
+        estimatedWeight: undefined,
+        posteriorSuccesses: 1,
+        posteriorFailures: 1,
       });
     });
 
@@ -1156,6 +1177,9 @@ describe('MoocletRewardsService', () => {
         total: 0,
         successRate: '0.0%',
         order: 1,
+        estimatedWeight: undefined,
+        posteriorSuccesses: 1,
+        posteriorFailures: 1,
       });
     });
   });

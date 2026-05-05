@@ -72,7 +72,7 @@
     .failures-column,
     .total-column,
     .success-rate-column,
-    .spacer-column {
+    .estimated-weight-column {
       width: auto;
       text-align: right;
       padding-right: 16px;
@@ -84,10 +84,6 @@
 
     .successes-column {
       width: 64px;
-    }
-
-    .spacer-column {
-      min-width: 64px;
     }
   }
 }
