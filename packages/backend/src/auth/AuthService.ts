@@ -7,6 +7,7 @@ import { UserRepository } from '../api/repositories/UserRepository';
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '../env';
 import { SERVER_ERROR } from 'upgrade_types';
+import { FAKE_DEV_CREDENTIAL, DEV_USER_EMAIL, SYSTEM_USER_EMAIL } from './auth.constants';
 
 @Service()
 export class AuthService {
@@ -94,6 +95,12 @@ export class AuthService {
       throw error;
     }
     return document[0];
+  }
+
+  public async getUserForNoAuth(token: string | null): Promise<User | null> {
+    const email = token === FAKE_DEV_CREDENTIAL ? DEV_USER_EMAIL : SYSTEM_USER_EMAIL;
+    const users = await this.userRepository.find({ where: { email } });
+    return users[0] ?? null;
   }
 
   private isLoginUserRequestPath(request: express.Request): boolean {

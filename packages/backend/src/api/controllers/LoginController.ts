@@ -1,8 +1,10 @@
-import { JsonController, Post, Body, Authorized, Req } from 'routing-controllers';
+import { JsonController, Post, Get, Body, Authorized, Req } from 'routing-controllers';
 import { AppRequest } from '../../types';
 import { User } from '../models/User';
 import { UserDTO } from '../DTO/UserDTO';
 import { UserService } from '../services/UserService';
+import { env } from '../../env';
+import { devUserDoc } from '../../init/seed/systemUser';
 
 /**
  * @swagger
@@ -31,10 +33,32 @@ import { UserService } from '../services/UserService';
  *     description: Login APIs
  */
 
-@Authorized()
 @JsonController('/login')
 export class LoginController {
   constructor(public userService: UserService) {}
+
+  /**
+   * @swagger
+   * /login/check-auth:
+   *    get:
+   *       description: Check whether Google auth is required. Returns devUser when auth is disabled.
+   *       tags:
+   *         - Login
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Auth config and optional dev user
+   */
+  @Get('/check-auth')
+  public async checkAuth(): Promise<{ googleAuthRequired: boolean; devUser?: User }> {
+    const googleAuthRequired = env.google.authTokenRequired;
+    if (googleAuthRequired) {
+      return { googleAuthRequired };
+    }
+    const users = await this.userService.getUserByEmail(devUserDoc.email);
+    return { googleAuthRequired, devUser: users[0] };
+  }
 
   /**
    * @swagger
@@ -63,6 +87,7 @@ export class LoginController {
    *          '401':
    *            description: AuthorizationRequiredError
    */
+  @Authorized()
   @Post('/user')
   public upsertUser(@Body({ validate: true }) user: UserDTO, @Req() request: AppRequest): Promise<User> {
     if (user.role) {

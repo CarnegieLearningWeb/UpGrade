@@ -7,7 +7,15 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 export const systemUserDoc = {
   email: 'system@gmail.com',
   firstName: 'System',
-  lastName: '',
+  lastName: 'User',
+  role: 'admin',
+  imageUrl: 'https://cdn1.iconfinder.com/data/icons/business-set-18/32/2.business-icons-final-19-512.png',
+};
+
+export const devUserDoc = {
+  email: 'dev.user@example.com',
+  firstName: 'Dev',
+  lastName: 'User',
   role: 'admin',
   imageUrl: 'https://cdn1.iconfinder.com/data/icons/business-set-18/32/2.business-icons-final-19-512.png',
 };
@@ -21,5 +29,6 @@ export function CreateSystemUser(): Promise<User> {
       await userService.upsertAdminUser(adminUser as any, new UpgradeLogger());
     });
   }
+  userService.upsertAdminUser(devUserDoc as any, new UpgradeLogger());
   return userService.upsertAdminUser(systemUserDoc as any, new UpgradeLogger());
 }

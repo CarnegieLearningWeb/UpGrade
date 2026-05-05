@@ -34,7 +34,7 @@ module.exports = {
     '<rootDir>/dist/',
     '<rootDir>/e2e/',
     '<rootDir>/src/environments/',
-    '<rootDir>/src/app/features/',
+    '<rootDir>/src/app/features/dashboard/',
     '<rootDir>/src/app/shared/',
   ],
 
