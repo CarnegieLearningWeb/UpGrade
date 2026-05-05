@@ -29,11 +29,8 @@ interface ExperimentRewardsByCondition {
   failures: number;
   successRate: string;
   order: number;
-  estimatedWeight?: number;
   priorSuccess?: number;
   priorFailure?: number;
-  posteriorSuccesses?: number;
-  posteriorFailures?: number;
 }
 
 type ExperimentRewardsSummary = Array<ExperimentRewardsByCondition>;

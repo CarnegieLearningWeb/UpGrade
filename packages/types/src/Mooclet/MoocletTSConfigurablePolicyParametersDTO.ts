@@ -27,8 +27,6 @@ export class CurrentPosteriors {
 export class MoocletTSConfigurablePolicyParametersDTO extends MoocletPolicyParametersDTO {
   @IsOptional()
   @IsObject()
-  @ValidateNested({ each: true })
-  @Type(() => Prior)
   prior?: Record<string, Prior>;
 
   @IsOptional()

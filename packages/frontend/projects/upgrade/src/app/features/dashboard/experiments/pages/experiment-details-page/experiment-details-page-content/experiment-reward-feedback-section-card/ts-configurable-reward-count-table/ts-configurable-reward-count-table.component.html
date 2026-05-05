@@ -38,7 +38,7 @@
 
     <!-- Success Posterior Column -->
     <ng-container matColumnDef="successPosterior">
-      <th mat-header-cell *matHeaderCellDef class="posterior-column ft-14-600">
+      <th mat-header-cell *matHeaderCellDef class="posterior-column ft-14-700">
         {{ 'experiments.details.posteriors.posterior.text' | translate }}
       </th>
       <td mat-cell *matCellDef="let row" class="posterior-column ft-14-700">
@@ -66,35 +66,11 @@
 
     <!-- Failure Posterior Column -->
     <ng-container matColumnDef="failurePosterior">
-      <th mat-header-cell *matHeaderCellDef class="posterior-column ft-14-600">
+      <th mat-header-cell *matHeaderCellDef class="posterior-column ft-14-700">
         {{ 'experiments.details.posteriors.posterior.text' | translate }}
       </th>
       <td mat-cell *matCellDef="let row" class="posterior-column ft-14-700">
         {{ row.failures + (row.priorFailure ?? 1) }}
-      </td>
-    </ng-container>
-
-    <!-- Estimated Weight Column -->
-    <ng-container matColumnDef="estimatedWeight">
-      <th
-        mat-header-cell
-        *matHeaderCellDef
-        class="estimated-weight-column ft-14-600"
-        [matTooltip]="'experiments.details.posteriors.estimated-weight-header-tooltip.text' | translate"
-        matTooltipClass="multiline-tooltip"
-        matTooltipPosition="above"
-      >
-        {{ 'experiments.details.posteriors.estimated-weight.text' | translate }}
-      </th>
-      <td
-        mat-cell
-        *matCellDef="let row"
-        class="estimated-weight-column ft-14-400"
-        [matTooltip]="row.estimatedWeight != null ? getEstimatedWeightTooltip(row) : null"
-        matTooltipClass="multiline-tooltip"
-        matTooltipPosition="above"
-      >
-        {{ row.estimatedWeight != null ? '≈' + row.estimatedWeight + '%' : '—' }}
       </td>
     </ng-container>
 
