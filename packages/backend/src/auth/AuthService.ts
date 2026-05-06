@@ -6,8 +6,8 @@ import { User } from '../api/models/User';
 import { UserRepository } from '../api/repositories/UserRepository';
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '../env';
-import { SERVER_ERROR } from 'upgrade_types';
-import { FAKE_DEV_CREDENTIAL, DEV_USER_EMAIL, SYSTEM_USER_EMAIL } from './auth.constants';
+import { SERVER_ERROR, SYSTEM_USER_EMAIL, DEV_USER_EMAIL } from 'upgrade_types';
+import { FAKE_DEV_CREDENTIAL } from './auth.constants';
 
 @Service()
 export class AuthService {
@@ -47,7 +47,7 @@ export class AuthService {
         }
         payload = {
           hd: env.google.domainName,
-          email: 'system@gmail.com',
+          email: SYSTEM_USER_EMAIL,
         };
         request.logger.info({ message: 'Access token validated' });
       } catch (error) {

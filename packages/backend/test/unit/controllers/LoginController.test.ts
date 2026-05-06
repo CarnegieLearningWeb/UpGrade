@@ -7,7 +7,7 @@ import { UserService } from '../../../src/api/services/UserService';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import UserServiceMock from './mocks/UserServiceMock';
 import { env } from '../../../src/env';
-import { DEV_USER_EMAIL } from '../../../src/auth/auth.constants';
+import { DEV_USER_EMAIL } from 'upgrade_types';
 
 const mockDevUser = {
   email: DEV_USER_EMAIL,
@@ -22,6 +22,7 @@ describe('Login Controller Testing', () => {
     configureLogger();
     routingUseContainer(Container);
     classValidatorUseContainer(Container);
+    (env.google as any).authTokenRequired = true;
 
     Container.set(UserService, new UserServiceMock());
   });

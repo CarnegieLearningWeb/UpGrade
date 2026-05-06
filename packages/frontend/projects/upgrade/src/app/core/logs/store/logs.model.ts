@@ -1,10 +1,10 @@
 import { AppState } from '../../core.module';
 import { EntityState } from '@ngrx/entity';
-import { LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
+import { LOG_TYPE, SERVER_ERROR, SYSTEM_USER_EMAIL } from 'upgrade_types';
 import { User } from '../../users/store/users.model';
 
+export { SYSTEM_USER_EMAIL };
 export const NUMBER_OF_LOGS = 20;
-export const SYSTEM_USER_EMAIL = 'system@gmail.com';
 
 export enum LogType {
   ERROR_LOG = 'Error log',
