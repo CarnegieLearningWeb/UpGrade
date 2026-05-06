@@ -174,14 +174,27 @@ export class ExperimentService {
       .createQueryBuilder()
       .subQuery()
       .from(Experiment, 'experiment')
-      .select('DISTINCT(experiment.id)')
+      .select('experiment.id')
       .leftJoin('experiment.partitions', 'partitions')
-      .orderBy('experiment.id');
+      .groupBy('experiment.id');
 
     if (searchParams) {
       const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
     }
+
+    if (sortParams) {
+      paginatedParentSubQuery = paginatedParentSubQuery
+        .addGroupBy(`experiment.${sortParams.key}`)
+        .orderBy(`experiment.${sortParams.key}`, sortParams.sortAs)
+        .addOrderBy('experiment.id', 'ASC');
+    } else {
+      paginatedParentSubQuery = paginatedParentSubQuery
+        .addGroupBy('experiment.updatedAt')
+        .orderBy('experiment.updatedAt', 'DESC')
+        .addOrderBy('experiment.id', 'ASC');
+    }
+
     const countQuery = paginatedParentSubQuery.clone();
 
     paginatedParentSubQuery = paginatedParentSubQuery.limit(take).offset(skip);
