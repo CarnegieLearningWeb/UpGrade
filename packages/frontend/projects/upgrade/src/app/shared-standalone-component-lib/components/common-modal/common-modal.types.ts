@@ -23,6 +23,7 @@ export interface SimpleConfirmationModalParams {
   message: string;
   subMessage?: string;
   subMessageClass?: 'info' | 'warn';
+  warningMessage?: string;
 }
 
 export interface TextValidatedConfirmationModalParams {

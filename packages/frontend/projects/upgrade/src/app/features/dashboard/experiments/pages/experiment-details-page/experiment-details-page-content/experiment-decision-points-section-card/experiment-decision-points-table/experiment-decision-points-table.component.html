@@ -56,14 +56,14 @@
         @if (showActions) {
         <div
           class="button-wrapper"
-          [matTooltip]="actionsTooltip"
-          [matTooltipDisabled]="!actionsDisabled"
+          [matTooltip]="getRowActionsTooltip(decisionPoint)"
+          [matTooltipDisabled]="!isRowActionsDisabled(decisionPoint)"
           matTooltipPosition="above"
         >
           <button
             mat-icon-button
             class="action-button"
-            [disabled]="actionsDisabled"
+            [disabled]="isRowActionsDisabled(decisionPoint)"
             (click)="onEditButtonClick(decisionPoint)"
           >
             <mat-icon>edit</mat-icon>
@@ -72,14 +72,14 @@
         } @if (showActions) {
         <div
           class="button-wrapper"
-          [matTooltip]="actionsTooltip"
-          [matTooltipDisabled]="!actionsDisabled"
+          [matTooltip]="getRowActionsTooltip(decisionPoint)"
+          [matTooltipDisabled]="!isRowActionsDisabled(decisionPoint)"
           matTooltipPosition="above"
         >
           <button
             mat-icon-button
             class="action-button"
-            [disabled]="actionsDisabled"
+            [disabled]="isRowActionsDisabled(decisionPoint)"
             (click)="onDeleteButtonClick(decisionPoint)"
           >
             <mat-icon>delete_outline</mat-icon>

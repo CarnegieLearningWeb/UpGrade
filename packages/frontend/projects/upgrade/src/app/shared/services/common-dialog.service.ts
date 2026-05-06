@@ -821,7 +821,14 @@ export class DialogService {
     return this.dialog.open(PauseExperimentModalComponent, config);
   }
 
-  openResumeExperimentModal(experimentName: string): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+  openResumeExperimentModal(
+    experimentName: string,
+    pendingDpCount = 0
+  ): MatDialogRef<CommonSimpleConfirmationModalComponent, boolean> {
+    const warningMessage =
+      pendingDpCount > 0
+        ? `* ${pendingDpCount} pending decision point${pendingDpCount > 1 ? 's' : ''} will go live when this experiment resumes.`
+        : undefined;
     const commonModalConfig: CommonModalConfig<SimpleConfirmationModalParams> = {
       title: 'Resume Experiment',
       primaryActionBtnLabel: 'Resume',
@@ -831,6 +838,7 @@ export class DialogService {
         message: `Are you sure you want to resume "${experimentName}"?`,
         subMessage: '* While the experiment is running, decision points and conditions cannot be edited.',
         subMessageClass: 'info',
+        warningMessage,
       },
     };
     return this.openSimpleCommonConfirmationModal(commonModalConfig, ModalSize.MEDIUM);

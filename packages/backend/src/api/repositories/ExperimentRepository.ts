@@ -223,7 +223,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     target: string
   ): Promise<Experiment[]> {
     const whereExperimentsClause =
-      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context]) AND partitions.site = :site AND partitions.target = :target';
+      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context]) AND partitions.site = :site AND partitions.target = :target AND partitions.pendingActivation = false';
     const whereClauseParams = {
       enrolling: 'enrolling',
       enrollmentComplete: 'enrollmentComplete',
@@ -242,7 +242,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     target: string
   ): Promise<Experiment[]> {
     const whereExperimentsClause =
-      'experiment.state = :enrolling AND :context ILIKE ANY (ARRAY[experiment.context]) AND partitions.site = :site AND partitions.target = :target';
+      'experiment.state = :enrolling AND :context ILIKE ANY (ARRAY[experiment.context]) AND partitions.site = :site AND partitions.target = :target AND partitions.pendingActivation = false';
     const whereClauseParams = {
       enrolling: 'enrolling',
       assign: 'assign',

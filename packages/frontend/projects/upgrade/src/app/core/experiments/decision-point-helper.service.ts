@@ -26,6 +26,7 @@ export class DecisionPointHelperService {
       description: '',
       order: currentDecisionPoints.length + 1,
       excludeIfReached: decisionPointData.excludeIfReached,
+      pendingActivation: true,
     };
 
     const updatedDecisionPoints = [...currentDecisionPoints, newDecisionPoint] as ExperimentDecisionPoint[];

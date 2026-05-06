@@ -545,6 +545,8 @@
   "experiments.details.restrictions.experiment-archived.text": "Experiment design cannot be modified after completion",
   "experiments.details.restrictions.decision-points-running.text": "Decision Points cannot be modified while the experiment is running",
   "experiments.details.restrictions.decision-points-paused.text": "Decision Points cannot be modified while the experiment is paused",
+  "experiments.details.decision-points.row-actions.locked.tooltip": "This decision point has been active in an enrolling experiment and cannot be edited.",
+  "experiments.details.decision-points.row-actions.pending.tooltip": "This decision point was added while paused and can be edited until the experiment resumes.",
   "experiments.details.restrictions.conditions-running.text": "Conditions cannot be modified while the experiment is running",
   "experiments.details.restrictions.conditions-paused.text": "Conditions cannot be modified while the experiment is paused",
   "experiments.details.restrictions.include-all-enabled.text": "Disabled while including all participants",

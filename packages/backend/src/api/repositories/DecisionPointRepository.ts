@@ -14,7 +14,7 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
       .insert()
       .into(DecisionPoint)
       .values(decisionPointDoc)
-      .orUpdate(['target', 'description', 'excludeIfReached', 'order'], ['id'])
+      .orUpdate(['target', 'description', 'excludeIfReached', 'order', 'pendingActivation'], ['id'])
       .setParameter('target', decisionPointDoc.target)
       .setParameter('description', decisionPointDoc.description)
       .setParameter('excludeIfReached', decisionPointDoc.excludeIfReached)
@@ -102,6 +102,25 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'partitionPointAndNameId', undefined, errorMsg);
+        throw errorMsgString;
+      });
+  }
+
+  public async activateAllForExperiment(experimentId: string, entityManager?: EntityManager): Promise<void> {
+    const that: Repository<DecisionPoint> | EntityManager = entityManager ? entityManager : this;
+    await that
+      .createQueryBuilder()
+      .update(DecisionPoint)
+      .set({ pendingActivation: false })
+      .where('"experimentId" = :experimentId AND "pendingActivation" = true', { experimentId })
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'activateAllForExperiment',
+          { experimentId },
+          errorMsg
+        );
         throw errorMsgString;
       });
   }

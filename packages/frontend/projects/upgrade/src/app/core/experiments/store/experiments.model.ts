@@ -207,6 +207,7 @@ export interface ExperimentDecisionPoint {
   updatedAt: string;
   versionNumber: number;
   excludeIfReached: boolean;
+  pendingActivation?: boolean;
 }
 
 export interface ExperimentFactor {

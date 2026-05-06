@@ -188,6 +188,10 @@ export class PartitionValidator {
   @IsNotEmpty()
   @IsBoolean()
   public excludeIfReached: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  public pendingActivation?: boolean;
 }
 
 abstract class BaseConditionPayloadValidator {

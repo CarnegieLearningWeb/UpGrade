@@ -322,9 +322,10 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   }
 
   private handleResumeExperiment(experiment: Experiment): void {
+    const pendingDpCount = (experiment.partitions || []).filter((dp) => dp.pendingActivation).length;
     this.subscriptions.add(
       this.dialogService
-        .openResumeExperimentModal(experiment.name)
+        .openResumeExperimentModal(experiment.name, pendingDpCount)
         .afterClosed()
         .subscribe((confirmed: boolean) => {
           if (confirmed) {

@@ -15,6 +15,11 @@
         {{ data.params.subMessage | translate }}
       </p>
       }
+      @if (data.params.warningMessage) {
+      <p class="confirm-modal-content-text ft-14-400 warn">
+        {{ data.params.warningMessage }}
+      </p>
+      }
     </div>
   </app-common-dialog>
 </div>

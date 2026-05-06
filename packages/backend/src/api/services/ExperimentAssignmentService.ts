@@ -134,6 +134,7 @@ export class ExperimentAssignmentService {
         where: {
           site: site,
           target: target,
+          pendingActivation: false,
         },
         relations: [
           'experiment',

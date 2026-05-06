@@ -516,6 +516,9 @@ export class ExperimentService {
     // updating experiment schedules
     await this.updateExperimentSchedules(experimentId, logger, entityManager);
 
+    // activate all pending decision points for this experiment on any state transition
+    await this.decisionPointRepository.activateAllForExperiment(experimentId, entityManager);
+
     return {
       ...oldExperiment,
       state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[updatedState[0].state] || updatedState[0].state,
@@ -584,6 +587,8 @@ export class ExperimentService {
           decisionPoint.twoCharacterId = twoCharacterId;
         }
         uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
+        // Imported experiments start inactive; all DPs are pending until first state transition.
+        decisionPoint.pendingActivation = true;
         return decisionPoint;
       });
 
@@ -877,6 +882,7 @@ export class ExperimentService {
           [];
 
         // creating decision point docs
+        const oldDecisionPointIds = new Set(oldDecisionPoints.map((dp) => dp.id));
         let promiseArray = [];
         const decisionPointDocToSave =
           (decisionPoints &&
@@ -891,7 +897,12 @@ export class ExperimentService {
                 })
               );
               decisionPoint.id = decisionPoint.id || crypto.randomUUID();
-              return { ...decisionPoint, experiment: experimentDoc };
+              const isNewDecisionPoint = !oldDecisionPointIds.has(decisionPoint.id);
+              return {
+                ...decisionPoint,
+                experiment: experimentDoc,
+                pendingActivation: isNewDecisionPoint ? true : decisionPoint.pendingActivation ?? false,
+              };
             })) ||
           [];
 

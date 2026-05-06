@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,6 +12,7 @@ import {
   ExperimentDecisionPoint,
   ExperimentDecisionPointRowActionEvent,
   EXPERIMENT_ROW_ACTION,
+  EXPERIMENT_STATE,
 } from '../../../../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 
@@ -38,6 +39,7 @@ export class ExperimentDecisionPointsTableComponent {
   @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
   @Input() actionsTooltip?: string = '';
+  @Input() experimentState?: EXPERIMENT_STATE;
   @Output() rowAction = new EventEmitter<ExperimentDecisionPointRowActionEvent>();
 
   displayedColumns: string[] = ['site', 'target', 'excludeIfReached', 'actions'];
@@ -48,6 +50,35 @@ export class ExperimentDecisionPointsTableComponent {
     EXCLUDE_IF_REACHED: 'experiments.details.decision-points.exclude-if-reached.text',
     ACTIONS: 'experiments.details.decision-points.actions.text',
   };
+
+  constructor(private translate: TranslateService) {}
+
+  isRowActionsDisabled(decisionPoint: ExperimentDecisionPoint): boolean {
+    if (this.actionsDisabled) {
+      return true;
+    }
+    if (this.experimentState === EXPERIMENT_STATE.PAUSED) {
+      return !decisionPoint.pendingActivation;
+    }
+    return false;
+  }
+
+  getRowActionsTooltip(decisionPoint: ExperimentDecisionPoint): string {
+    if (this.actionsDisabled) {
+      return this.actionsTooltip || '';
+    }
+    if (this.experimentState === EXPERIMENT_STATE.PAUSED && !decisionPoint.pendingActivation) {
+      return this.translate.instant(
+        'experiments.details.decision-points.row-actions.locked.tooltip'
+      );
+    }
+    if (this.experimentState === EXPERIMENT_STATE.PAUSED && decisionPoint.pendingActivation) {
+      return this.translate.instant(
+        'experiments.details.decision-points.row-actions.pending.tooltip'
+      );
+    }
+    return '';
+  }
 
   onEditButtonClick(decisionPoint: ExperimentDecisionPoint): void {
     this.rowAction.emit({ action: EXPERIMENT_ROW_ACTION.EDIT, decisionPoint });
