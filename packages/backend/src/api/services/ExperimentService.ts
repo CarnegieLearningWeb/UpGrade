@@ -206,9 +206,13 @@ export class ExperimentService {
       .where(`experiment.id IN ${paginatedParentSubQuery.getQuery()}`);
 
     if (sortParams) {
-      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
+      queryBuilderToReturn = queryBuilderToReturn
+        .addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs)
+        .addOrderBy('experiment.id', 'ASC');
     } else {
-      queryBuilderToReturn = queryBuilderToReturn.addOrderBy('experiment.updatedAt', 'DESC');
+      queryBuilderToReturn = queryBuilderToReturn
+        .addOrderBy('experiment.updatedAt', 'DESC')
+        .addOrderBy('experiment.id', 'ASC');
     }
     const [experimentData, count] = await Promise.all([queryBuilderToReturn.getMany(), countQuery.getCount()]);
     return [
