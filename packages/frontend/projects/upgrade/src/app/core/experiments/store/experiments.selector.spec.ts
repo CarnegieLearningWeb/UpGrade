@@ -39,9 +39,8 @@ import {
 describe('Experiments Selectors', () => {
   const mockState: ExperimentState = {
     ...initialState,
-    ids: ['1f12cd8f-7ff9-4731-a4eb-7104918ed252'],
-    entities: {
-      '1f12cd8f-7ff9-4731-a4eb-7104918ed252': {
+    experiments: [
+      {
         createdAt: '2022-05-20T15:58:36.602Z',
         updatedAt: '2022-05-20T17:40:13.685Z',
         versionNumber: 7,
@@ -210,7 +209,7 @@ describe('Experiments Selectors', () => {
         stat: null,
         weightingMethod: 'equal',
       },
-    },
+    ],
     isLoadingExperiment: false,
     isLoadingExperimentDetailStats: false,
     skipExperiment: 0,
@@ -513,13 +512,13 @@ describe('Experiments Selectors', () => {
     it('should return expirements list', () => {
       const state = { ...mockState };
       const experimentId = '1f12cd8f-7ff9-4731-a4eb-7104918ed252';
-      const allExperiments = [state.entities[experimentId]];
+      const allExperiments = state.experiments;
 
       const result = selectAllExperiment.projector(state, allExperiments);
 
       expect(result).toEqual([
         {
-          ...state.entities[experimentId],
+          ...state.experiments[0],
           stat: {
             ...state.stats[experimentId],
           },
@@ -590,7 +589,7 @@ describe('Experiments Selectors', () => {
       );
 
       expect(result).toEqual({
-        ...previousState.entities[params.experimentId],
+        ...previousState.experiments.find((exp) => exp.id === params.experimentId),
         stat: {
           ...previousState.stats[params.experimentId],
         },
@@ -619,7 +618,7 @@ describe('Experiments Selectors', () => {
       );
 
       expect(result).toEqual({
-        ...previousState.entities[params.experimentId],
+        ...previousState.experiments.find((exp) => exp.id === params.experimentId),
         stat: null,
       });
     });
@@ -636,7 +635,7 @@ describe('Experiments Selectors', () => {
         experimentId,
       });
 
-      expect(result).toEqual(state.entities[experimentId]);
+      expect(result).toEqual(state.experiments.find((exp) => exp.id === experimentId));
     });
   });
 
@@ -851,7 +850,7 @@ describe('Experiments Selectors', () => {
         },
       };
 
-      const selectedExperiment = state.entities['1f12cd8f-7ff9-4731-a4eb-7104918ed252'];
+      const selectedExperiment = state.experiments.find((exp) => exp.id === '1f12cd8f-7ff9-4731-a4eb-7104918ed252');
 
       const result = selectRewardsDataForSelectedExperiment.projector(selectedExperiment, state);
 
@@ -883,7 +882,7 @@ describe('Experiments Selectors', () => {
         },
       ];
 
-      const selectedExperiment = state.entities['1f12cd8f-7ff9-4731-a4eb-7104918ed252'];
+      const selectedExperiment = state.experiments.find((exp) => exp.id === '1f12cd8f-7ff9-4731-a4eb-7104918ed252');
 
       const result = selectRewardsDataForSelectedExperiment.projector(selectedExperiment, state);
 

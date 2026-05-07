@@ -5,8 +5,8 @@
   <table
     class="flag-list-table"
     mat-table
-    [dataSource]="dataSource$"
-    [ngClass]="{ 'no-data': !dataSource$?.data?.length }"
+    [dataSource]="featureFlags$ | async"
+    [ngClass]="{ 'no-data': !(featureFlags$ | async)?.length }"
     matSort
     (matSortChange)="changeSorting($event)"
     [matSortActive]="flagSortKey$ | async"

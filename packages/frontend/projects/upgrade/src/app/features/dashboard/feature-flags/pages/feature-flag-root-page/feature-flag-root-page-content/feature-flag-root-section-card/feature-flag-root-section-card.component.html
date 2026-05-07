@@ -31,7 +31,7 @@
     } @else {
     <div class="table-container">
       <app-feature-flag-root-section-card-table
-        [dataSource$]="dataSource$ | async"
+        [featureFlags$]="featureFlags$"
         [isLoading$]="isLoadingFeatureFlags$"
         [isSearchActive$]="isSearchActive$"
         [expandedTagsMap]="expandedTagsMap"

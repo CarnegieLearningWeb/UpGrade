@@ -7,7 +7,6 @@ class ExperimentSearchParam {
   @IsEnum(EXPERIMENT_SEARCH_KEY)
   public key: EXPERIMENT_SEARCH_KEY;
 
-  @IsNotEmpty()
   @IsString()
   public string: string;
 }

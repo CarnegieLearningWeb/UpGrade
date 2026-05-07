@@ -178,9 +178,14 @@ export class ExperimentService {
       .leftJoin('experiment.partitions', 'partitions')
       .groupBy('experiment.id');
 
-    if (searchParams) {
+    if (searchParams && searchParams.string !== '') {
       const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
+    }
+
+    // Filter out archived experiments unless specifically searching by status
+    if (searchParams?.key !== EXPERIMENT_SEARCH_KEY.STATUS) {
+      paginatedParentSubQuery = paginatedParentSubQuery.andWhere(`experiment.state != 'archived'`);
     }
 
     if (sortParams) {

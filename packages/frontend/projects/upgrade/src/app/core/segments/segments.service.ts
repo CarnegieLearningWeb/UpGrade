@@ -5,6 +5,7 @@ import * as SegmentsActions from './store/segments.actions';
 import {
   selectIsLoadingSegments,
   selectAllSegments,
+  selectSegmentsState,
   selectSelectedSegment,
   selectRootTableState,
   selectSegmentOverviewDetails,
@@ -38,7 +39,7 @@ import {
   UpdateSegmentRequest,
   UpsertSegmentType,
 } from './store/segments.model';
-import { filter, map, take } from 'rxjs/operators';
+import { filter, map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
 import { SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY, DuplicateSegmentNameError } from 'upgrade_types';
@@ -94,14 +95,7 @@ export class SegmentsService {
 
   allSegments$ = this.store$.pipe(
     select(selectAllSegments),
-    filter((allSegments) => !!allSegments),
-    map((Segments) =>
-      Segments.sort((a, b) => {
-        const d1 = new Date(a.createdAt);
-        const d2 = new Date(b.createdAt);
-        return d1 < d2 ? 1 : d1 > d2 ? -1 : 0;
-      })
-    )
+    filter((allSegments) => !!allSegments)
   );
 
   selectPrivateSegmentListTypeOptions$ = (appContext: string): Observable<{ value: string; viewValue: string }[]> => {

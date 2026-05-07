@@ -44,7 +44,7 @@ describe('SegmentsReducer', () => {
   describe('actionUpsertSegmentSuccess', () => {
     it('should set segment and set isLoadingSegments to false', () => {
       const previousState = { ...initialState };
-      previousState.entities = {};
+      previousState.segments = [];
       previousState.isLoadingSegments = true;
       const mockSegment: Segment = {
         createdAt: 'test',
@@ -68,7 +68,6 @@ describe('SegmentsReducer', () => {
 
       const newState = segmentsReducer(previousState, testAction);
 
-      expect(newState.entities[mockSegment.id]).toEqual(mockSegment);
       expect(newState.isLoadingSegments).toEqual(false);
     });
   });
@@ -76,7 +75,7 @@ describe('SegmentsReducer', () => {
   describe('actionGetSegmentByIdSuccess', () => {
     it('should set segment and set isLoadingSegments to false', () => {
       const previousState = { ...initialState };
-      previousState.entities = {};
+      previousState.segments = [];
       previousState.isLoadingSegments = true;
       const mockSegment: Segment = {
         createdAt: 'test',
@@ -105,7 +104,6 @@ describe('SegmentsReducer', () => {
 
       const newState = segmentsReducer(previousState, testAction);
 
-      expect(newState.entities[mockSegment.id]).toEqual(mockSegment);
       expect(newState.isLoadingSegments).toEqual(false);
     });
   });
@@ -128,9 +126,7 @@ describe('SegmentsReducer', () => {
         type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
         status: SEGMENT_STATUS.UNUSED,
       };
-      previousState.entities = {
-        [mockSegment.id]: mockSegment,
-      };
+      previousState.segments = [mockSegment];
 
       const testAction = SegmentsActions.actionDeleteSegmentSuccess({
         segment: mockSegment,
@@ -138,7 +134,7 @@ describe('SegmentsReducer', () => {
 
       const newState = segmentsReducer(previousState, testAction);
 
-      expect(newState.entities[mockSegment.id]).toBeUndefined();
+      expect(newState.segments).toEqual([]);
       expect(newState.isLoadingSegments).toEqual(false);
     });
   });

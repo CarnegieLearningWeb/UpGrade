@@ -5,12 +5,10 @@
   <table
     class="segment-list-table"
     mat-table
-    [dataSource]="dataSource$"
-    [ngClass]="{ 'no-data': !dataSource$?.data?.length }"
+    [dataSource]="segments$ | async"
+    [ngClass]="{ 'no-data': !(segments$ | async)?.length }"
     matSort
     (matSortChange)="changeSorting($event)"
-    [matSortActive]="segmentSortKey$ | async"
-    [matSortDirection]="segmentSortAs$ | async | lowercase"
   >
     <!-- Name Column -->
     <ng-container [matColumnDef]="SEGMENT_ROOT_COLUMN_NAMES.NAME">
