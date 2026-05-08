@@ -31,9 +31,8 @@ export const selectIsLoadingGlobalSegments = createSelector(
   (state) => state.isLoadingSegments
 );
 
-export const selectSegmentById = createSelector(
-  selectSegmentsState,
-  (state, { segmentId }) => state.entities[segmentId]
+export const selectSegmentById = createSelector(selectSegmentsState, (state, { segmentId }) =>
+  state.segments.find((segment) => segment.id === segmentId)
 );
 
 export const selectAppContexts = createSelector(selectContextMetaData, (contextMetaData) =>
@@ -61,18 +60,6 @@ export const selectFeatureFlagSegmentsExclusion = createSelector(
 );
 
 export const selectParentSegments = createSelector(selectSegmentsState, (state) => state.allParentSegments);
-
-export const selectAllSegmentEntities = createSelector(
-  selectSegmentsState,
-  selectGlobalSegmentsState,
-  (segmentState, globalSegmentState) => {
-    const allSegments = [...segmentState.segments, ...globalSegmentState.segments];
-    return allSegments.reduce((entities, segment) => {
-      entities[segment.id] = segment;
-      return entities;
-    }, {});
-  }
-);
 
 export const selectSegmentIdFromRoute = createSelector(selectRouterState, (routerState) => {
   if (routerState?.state?.params?.segmentId) {
