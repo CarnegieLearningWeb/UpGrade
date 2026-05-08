@@ -1,5 +1,5 @@
 import { createReducer, Action, on } from '@ngrx/store';
-import { SegmentState, Segment, GlobalSegmentState } from './segments.model';
+import { SegmentState, GlobalSegmentState } from './segments.model';
 import * as SegmentsActions from './segments.actions';
 import {
   SEGMENT_SEARCH_KEY,

@@ -1,5 +1,5 @@
 import { createReducer, Action, on } from '@ngrx/store';
-import { FeatureFlagState, FeatureFlag } from './feature-flags.model';
+import { FeatureFlagState } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 

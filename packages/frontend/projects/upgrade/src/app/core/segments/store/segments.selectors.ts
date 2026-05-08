@@ -12,7 +12,7 @@ import {
 
 import { selectRouterState } from '../../core.state';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
-import { SEGMENT_SEARCH_KEY, SEGMENT_TYPE } from 'upgrade_types';
+import { SEGMENT_SEARCH_KEY } from 'upgrade_types';
 
 export const selectSegmentsState = createFeatureSelector<SegmentState>('segments');
 

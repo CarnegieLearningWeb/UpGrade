@@ -1,14 +1,16 @@
 <div class="segment-list-table-container" #tableContainer>
   @if (isLoading$ | async) {
   <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
-  }
+  } @let segments = (segments$ | async);
   <table
     class="segment-list-table"
     mat-table
-    [dataSource]="segments$ | async"
-    [ngClass]="{ 'no-data': !(segments$ | async)?.length }"
+    [dataSource]="segments"
+    [ngClass]="{ 'no-data': !segments?.length }"
     matSort
     (matSortChange)="changeSorting($event)"
+    [matSortActive]="segmentSortKey$ | async"
+    [matSortDirection]="segmentSortAs$ | async | lowercase"
   >
     <!-- Name Column -->
     <ng-container [matColumnDef]="SEGMENT_ROOT_COLUMN_NAMES.NAME">

@@ -52,7 +52,7 @@ const reducer = createReducer(
       ...state,
       experiments: updatedExperiments,
       totalExperiments,
-      skipExperiment: state.skipExperiment + experiments.length,
+      skipExperiment: fromStarting ? experiments.length : state.skipExperiment + experiments.length,
       isLoadingExperiment: false,
     };
   }),

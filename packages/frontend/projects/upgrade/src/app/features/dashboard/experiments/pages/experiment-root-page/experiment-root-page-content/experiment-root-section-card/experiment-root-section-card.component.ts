@@ -13,7 +13,7 @@ import { EXPERIMENT_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { Observable, map } from 'rxjs';
-import { EXPERIMENT_BUTTON_ACTION, Experiment } from '../../../../../../../core/experiments/store/experiments.model';
+import { EXPERIMENT_BUTTON_ACTION } from '../../../../../../../core/experiments/store/experiments.model';
 import { CommonSearchWidgetSearchParams } from '@shared-component-lib/common-section-card-search-header/common-section-card-search-header.component';
 
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';

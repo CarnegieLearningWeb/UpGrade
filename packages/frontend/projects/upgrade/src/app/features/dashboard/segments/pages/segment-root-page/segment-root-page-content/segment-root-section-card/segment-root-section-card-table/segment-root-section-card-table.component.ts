@@ -21,7 +21,6 @@ import { SegmentsService } from '../../../../../../../../core/segments/segments.
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { SEGMENT_SEARCH_KEY } from 'upgrade_types';
 import {
-  NUMBER_OF_SEGMENTS,
   Segment,
   SEGMENT_ROOT_COLUMN_NAMES,
   SEGMENT_ROOT_DISPLAYED_COLUMNS,
