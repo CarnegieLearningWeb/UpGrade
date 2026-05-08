@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { TranslateModule } from '@ngx-translate/core';
 import { Observable, combineLatest, map, startWith } from 'rxjs';
-import { CommonModalComponent } from '@shared-component-lib';
+import { CommonLearnMoreLinkComponent, CommonModalComponent } from '@shared-component-lib';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
 import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import { MoocletExperimentHelperService } from '../../../../../core/experiments/mooclet-helper.service';
@@ -24,6 +24,7 @@ export interface ConditionPriorUpdate {
 @Component({
   selector: 'app-edit-condition-prior-modal',
   imports: [
+    CommonLearnMoreLinkComponent,
     CommonModalComponent,
     MatTableModule,
     MatFormFieldModule,
@@ -104,6 +105,34 @@ export class EditConditionPriorModalComponent implements OnInit {
       this.dialogRef.close(result);
     } else {
       CommonFormHelpersService.triggerTouchedToDisplayErrors(this.priorForm);
+    }
+  }
+
+  blockNonInteger(event: KeyboardEvent): void {
+    const navigationKeys = [
+      'Backspace',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+      'Tab',
+      'Home',
+      'End',
+    ];
+    if (navigationKeys.includes(event.key) || event.ctrlKey || event.metaKey) return;
+    if (!/^\d$/.test(event.key)) {
+      event.preventDefault();
+      return;
+    }
+    if (event.key === '0' && !(event.target as HTMLInputElement).value) {
+      event.preventDefault();
+    }
+  }
+
+  enforceMinOne(control: FormControl): void {
+    if (control.value !== null && control.value < 1) {
+      control.setValue(1);
     }
   }
 

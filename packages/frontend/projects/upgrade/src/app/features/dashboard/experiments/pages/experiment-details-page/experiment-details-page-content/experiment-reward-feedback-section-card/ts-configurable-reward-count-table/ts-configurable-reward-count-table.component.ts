@@ -22,6 +22,7 @@ export class TSConfigurableRewardCountTableComponent {
     'successes',
     'successPrior',
     'successPosterior',
+    'spacer',
     'failures',
     'failurePrior',
     'failurePosterior',

@@ -45,7 +45,7 @@
         height: 56px;
 
         td {
-          min-width: 96px;
+          // min-width: 96px;
           padding-left: 0;
           color: var(--black-2);
         }
@@ -65,29 +65,47 @@
     .condition-column {
       text-align: left;
       padding-left: 32px;
-      width: 8%;
-    }
-
-    .prior-column,
-    .posterior-column {
-      width: 6%;
-    }
-
-    .count-column {
       width: 20%;
     }
 
-    .count-column,
-    .prior-column,
-    .posterior-column {
-      text-align: right;
+    .successes-column {
+      width: 8%;
+    }
+
+    .successes-prior-column {
+      width: 8%;
+    }
+
+    .successes-posterior-column {
+      width: 8%;
+    }
+
+    .spacer-column {
+      width: 8%;
+    }
+
+    .failures-column {
+      width: 8%;
+    }
+
+    .failures-prior-column {
+      width: 8%;
+    }
+
+    .failures-posterior-column {
+      width: 8%;
+    }
+
+    .data-column {
+      text-align: center;
     }
 
     &.no-data .condition-column {
       width: auto;
     }
 
-    .prior-column {
+    .failures-posterior-column,
+    .successes-prior-column {
       color: var(--darker-grey);
     }
   }
