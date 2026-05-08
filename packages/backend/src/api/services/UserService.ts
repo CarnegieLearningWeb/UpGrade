@@ -49,7 +49,7 @@ export class UserService {
     const isUserExists = await this.userRepository.find({ where: { email: user.email } });
     const response = await this.userRepository.upsertUser(user);
     if (!isUserExists && response) {
-      this.sendWelcomeEmail(user.email);
+      this.sendWelcomeEmail(user.email, logger);
     }
     return response;
   }
@@ -105,10 +105,16 @@ export class UserService {
     return this.userRepository.findByIds([email]);
   }
 
-  public async updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole): Promise<User> {
+  public async updateUserDetails(
+    firstName: string,
+    lastName: string,
+    email: string,
+    role: UserRole,
+    logger: UpgradeLogger
+  ): Promise<User> {
     const response = await this.userRepository.updateUserDetails(firstName, lastName, email, role);
     if (response) {
-      this.sendRoleChangedEmail(email, role);
+      this.sendRoleChangedEmail(email, role, logger);
     }
     return response;
   }
@@ -136,16 +142,20 @@ export class UserService {
     return searchStringConcatenated;
   }
 
-  public sendWelcomeEmail(email: string): void {
+  public sendWelcomeEmail(email: string, logger: UpgradeLogger): void {
     const emailSubject = `Welcome to UpGrade!`;
     const emailBody = this.emails.welcomeEmailBody();
-    this.sendEmail(email, emailSubject, emailBody);
+    this.sendEmail(email, emailSubject, emailBody).catch((err) => {
+      logger.error({ message: `Failed to send welcome email to ${email}`, error: err });
+    });
   }
 
-  public sendRoleChangedEmail(email: string, role: UserRole): void {
+  public sendRoleChangedEmail(email: string, role: UserRole, logger: UpgradeLogger): void {
     const emailSubject = `UpGrade Role Changed`;
     const emailBody = this.emails.roleChangeEmailBody(role);
-    this.sendEmail(email, emailSubject, emailBody);
+    this.sendEmail(email, emailSubject, emailBody).catch((err) => {
+      logger.error({ message: `Failed to send role change email to ${email}`, error: err });
+    });
   }
 
   public async sendEmail(email_to: string, emailSubject: string, emailBody: string): Promise<string> {

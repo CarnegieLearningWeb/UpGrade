@@ -23,6 +23,7 @@ export const API_ENDPOINTS: APIEndpoints = {
   updateExperimentState: '/experiments/state',
   users: '/users',
   loginUser: '/login/user',
+  checkAuthConfig: '/login/check-auth',
   getAllUsers: '/users/paginated',
   userDetails: '/users/details',
   previewUsers: '/previewUsers',

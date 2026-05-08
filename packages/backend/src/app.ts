@@ -14,7 +14,7 @@ import { publicLoader } from './loaders/publicLoader';
 import { iocLoader } from './loaders/iocLoader';
 import { typeormLoader } from './loaders/typeormLoader';
 import { swaggerLoader } from './loaders/swaggerLoader';
-import { CreateSystemUser } from './init/seed/systemUser';
+import { CreateSystemUsers } from './init/seed/systemUser';
 import { enableMetricFiltering } from './init/seed/EnableMetricFiltering';
 import { InitMetrics } from './init/seed/initMetrics';
 import { banner } from './lib/banner';
@@ -31,7 +31,7 @@ bootstrapMicroframework({
   .then(() => {
     // logging data after the winston is configured
     logger.info({ detail: 'Server starting at ' + Date.now() });
-    return CreateSystemUser();
+    return CreateSystemUsers();
   })
   .then(() => {
     // enable metric filtering

@@ -22,6 +22,7 @@ export interface APIEndpoints {
   updateExperimentState: string;
   users: string;
   loginUser: string;
+  checkAuthConfig: string;
   getAllUsers: string;
   userDetails: string;
   previewUsers: string;

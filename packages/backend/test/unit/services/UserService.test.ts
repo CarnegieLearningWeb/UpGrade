@@ -157,6 +157,13 @@ describe('User Service Testing', () => {
     expect(user).toEqual([]);
   });
 
+  it('should return updated user even when role change email send fails', async () => {
+    const awsService = module.get<AWSService>(AWSService);
+    jest.spyOn(awsService, 'sendEmail').mockRejectedValue(new Error('AWS not configured'));
+    const user = await service.updateUserDetails('fn', 'ln', 'bb@email.com', UserRole.CREATOR, logger);
+    expect(user).toEqual(mockUser1);
+  });
+
   it('should delete the user by email', async () => {
     const user = await service.deleteUser('bb@email.com');
     expect(user).toEqual(mockUser1);
