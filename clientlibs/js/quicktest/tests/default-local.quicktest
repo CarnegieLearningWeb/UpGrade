@@ -1,0 +1,50 @@
+# UpGrade Quicktest Config — Local
+#
+# This file is committed and works out of the box for a locally running server.
+# To create your own config, copy this file (e.g. ecs-qa.config) and
+# fill in your values. All non-default config files are gitignored.
+#
+# Usage: yarn clientlib-ts:quicktest --config default-local --loops 5
+
+# Server
+HOST_URL=http://localhost:3030
+
+# Experiment decision point
+CONTEXT=upgrade-internal
+SITE=fakesite
+TARGET=faketarget
+
+# Group membership
+GROUP_CLASS=classId
+GROUP_VALUE=STORED_USER_GROUP
+WORKING_GROUP=STORED_USER_GROUP
+
+# Reward testing
+REWARD_VALUE=FAILURE
+# EXPERIMENT_ID: used for reward-by-ID testing.
+# Run --setup to create an experiment and get its ID, or set manually.
+EXPERIMENT_ID=
+
+# Feature flags
+FEATURE_FLAG_KEY=TEST_FEATURE_FLAG
+
+# User ID
+# USER_ID_MODE controls how the user ID is chosen each run:
+#   RANDOM_EVERY_SESSION_LOOP (default) — new random ID each run
+#   RANDOM_SAME_FOR_ALL_LOOPS           — same random ID across all looper steps (set once at startup)
+#   SPECIFIED_USER_SAME_ALL_LOOPS       — use the USER_ID value below for every run
+USER_ID_MODE=RANDOM_EVERY_SESSION_LOOP
+# USER_ID=my-test-user-123
+
+# Script — ordered comma-separated list of functions to run in runOnce.
+# Available: doInit, doGroupMembership, doWorkingGroupMembership, doAliases,
+#            doAssign, doAssignIgnoreCache, doGetDecisionPointAssignment, doMark,
+#            doLog, doSendRewardByExperimentId, doSendRewardByDecisionPoint,
+#            doFeatureFlags, doFeatureFlagsIgnoreCache, doHasFeatureFlag,
+#            doSetFeatureFlagUserGroupsForSession
+SCRIPT=doInit,doGroupMembership,doWorkingGroupMembership,doGetDecisionPointAssignment,doMark,doSendRewardByDecisionPoint
+
+# Admin auth — required for --setup and --teardown
+# For local dev: leave empty if GOOGLE_AUTH_TOKEN_REQUIRED=false in backend .env
+# For QA/Staging: provide a valid bearer token (future work)
+ADMIN_API_TOKEN=
