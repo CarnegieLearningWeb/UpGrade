@@ -18,11 +18,11 @@
       </th>
       <td mat-cell *matCellDef="let decisionPoint" class="decision-point-column ft-14-400">
         <span
-          [appTextOverflowTooltip]="getDecisionPoint(decisionPoint.id)"
+          [appTextOverflowTooltip]="getDecisionPoint(decisionPoint)"
           matTooltipPosition="above"
           class="line-clamp-1"
         >
-          {{ getDecisionPoint(decisionPoint.id) }}
+          {{ getDecisionPoint(decisionPoint) }}
         </span>
       </td>
     </ng-container>

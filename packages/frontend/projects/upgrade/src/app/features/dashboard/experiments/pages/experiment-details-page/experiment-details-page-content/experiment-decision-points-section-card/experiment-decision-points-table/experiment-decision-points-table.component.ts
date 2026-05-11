@@ -48,8 +48,7 @@ export class ExperimentDecisionPointsTableComponent {
     ACTIONS: 'experiments.details.decision-points.actions.text',
   };
 
-  getDecisionPoint(decisionPointId: string): string {
-    const decisionPoint = this.decisionPoints.find((dp) => dp.id === decisionPointId);
+  getDecisionPoint(decisionPoint: ExperimentDecisionPoint): string {
     if (!decisionPoint) {
       return '';
     }

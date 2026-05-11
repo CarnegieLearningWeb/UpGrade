@@ -54,7 +54,7 @@ export interface ExperimentConditionFilterOptions {
 export interface ExperimentPartitionFilterOptions {
   id: string;
   point: string;
-  target: string;
+  target?: string;
 }
 
 export interface ExperimentDateFilterOptions {
