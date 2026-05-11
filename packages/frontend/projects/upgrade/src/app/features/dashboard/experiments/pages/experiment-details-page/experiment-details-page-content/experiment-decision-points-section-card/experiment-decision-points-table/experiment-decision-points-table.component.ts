@@ -40,14 +40,22 @@ export class ExperimentDecisionPointsTableComponent {
   @Input() actionsTooltip?: string = '';
   @Output() rowAction = new EventEmitter<ExperimentDecisionPointRowActionEvent>();
 
-  displayedColumns: string[] = ['site', 'target', 'excludeIfReached', 'actions'];
+  displayedColumns: string[] = ['decisionPoint', 'excludeIfReached', 'actions'];
 
   DECISION_POINT_TRANSLATION_KEYS = {
-    SITE: 'experiments.details.decision-points.site.text',
-    TARGET: 'experiments.details.decision-points.target.text',
+    DECISION_POINT: 'experiments.details.decision-points.decision-point.text',
     EXCLUDE_IF_REACHED: 'experiments.details.decision-points.exclude-if-reached.text',
     ACTIONS: 'experiments.details.decision-points.actions.text',
   };
+
+  getDecisionPoint(decisionPointId: string): string {
+    const decisionPoint = this.decisionPoints.find((dp) => dp.id === decisionPointId);
+    if (!decisionPoint) {
+      return '';
+    }
+    const targetDisplay = decisionPoint.target ? ` (${decisionPoint.target})` : '';
+    return `${decisionPoint.site}${targetDisplay}`;
+  }
 
   onEditButtonClick(decisionPoint: ExperimentDecisionPoint): void {
     this.rowAction.emit({ action: EXPERIMENT_ROW_ACTION.EDIT, decisionPoint });

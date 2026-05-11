@@ -51,16 +51,13 @@ export class ExperimentPayloadsTableComponent {
     ACTIONS: 'experiments.details.payloads.actions.text',
   };
 
-  // Get site name from decision point ID
-  getSite(decisionPointId: string): string {
+  getDecisionPoint(decisionPointId: string): string {
     const decisionPoint = this.partitions.find((dp) => dp.id === decisionPointId);
-    return decisionPoint?.site || '';
-  }
-
-  // Get target name from decision point ID
-  getTarget(decisionPointId: string): string {
-    const decisionPoint = this.partitions.find((dp) => dp.id === decisionPointId);
-    return decisionPoint?.target || '';
+    if (!decisionPoint) {
+      return '';
+    }
+    const targetDisplay = decisionPoint.target ? ` (${decisionPoint.target})` : '';
+    return `${decisionPoint.site}${targetDisplay}`;
   }
 
   // Get condition name from condition ID

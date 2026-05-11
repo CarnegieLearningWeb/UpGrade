@@ -109,7 +109,7 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
     this.decisionPointForm = this.formBuilder.group(
       {
         site: [initialValues.site, [Validators.required]],
-        target: [initialValues.target, [Validators.required]],
+        target: [initialValues.target],
         excludeIfReached: [initialValues.excludeIfReached],
       },
       options
@@ -168,8 +168,8 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
     const site = siteControl.value?.trim() || '';
     const target = targetControl.value?.trim() || '';
 
-    // Don't validate if either field is empty (required validator will handle that)
-    if (!site || !target) {
+    // Don't validate if site field is empty (required validator will handle that)
+    if (!site) {
       // Clear any existing duplicate errors when fields are empty
       this.clearDuplicateError(siteControl);
       this.clearDuplicateError(targetControl);
@@ -276,8 +276,8 @@ export class UpsertDecisionPointModalComponent implements OnInit, OnDestroy {
       excludeIfReached: formData.excludeIfReached,
     };
 
-    // Validate trimmed values are not empty
-    if (!decisionPointData.site || !decisionPointData.target) {
+    // Validate trimmed site value is not empty
+    if (!decisionPointData.site) {
       CommonFormHelpersService.triggerTouchedToDisplayErrors(this.decisionPointForm);
       return;
     }

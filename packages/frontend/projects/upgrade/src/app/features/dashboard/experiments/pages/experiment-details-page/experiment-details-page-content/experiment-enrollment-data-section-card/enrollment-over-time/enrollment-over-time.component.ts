@@ -130,7 +130,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
         this.partitionsFilterOptions.push({
           point: partition.site,
           id: partition.id,
-          twoCharacterId: partition.twoCharacterId,
+          target: partition.target,
         });
         this.selectedPartition.push(partition.id);
       });
@@ -308,6 +308,10 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       (acc, condition) => (acc = condition.id === conditionId ? condition.conditionCode : acc),
       ''
     );
+  }
+
+  getPartitionDisplayText(partition: ExperimentPartitionFilterOptions): string {
+    return partition.point + (partition.target ? ` (${partition.target})` : '');
   }
 
   // For maintaining checkbox Select All in condition and partition filter

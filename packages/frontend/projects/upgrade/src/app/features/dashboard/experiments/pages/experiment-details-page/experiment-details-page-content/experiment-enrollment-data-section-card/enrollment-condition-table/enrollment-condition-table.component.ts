@@ -54,8 +54,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit, OnD
           const partitions = [];
           condition.partitions.forEach((partition) => {
             const partitionObj: EnrollmentByConditionOrPartitionData = {
-              experimentPoint: this.getPartitionData(partition.id, 'site'),
-              experimentId: this.getPartitionData(partition.id, 'target') || '',
+              experimentPoint: this.getPartitionData(partition.id),
               userEnrolled: partition.users,
               groupEnrolled: partition.groups,
             };
@@ -73,11 +72,9 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit, OnD
     });
   }
 
-  getPartitionData(partitionId: string, key: string) {
-    return this.experiment.partitions.reduce(
-      (acc, partition) => (partition.id === partitionId ? (acc = partition[key]) : acc),
-      null
-    );
+  getPartitionData(partitionId: string) {
+    const decisionPoint = this.experiment.partitions.find((partition) => partition.id === partitionId);
+    return decisionPoint ? decisionPoint.site + (decisionPoint.target ? ` (${decisionPoint.target})` : '') : '';
   }
 
   getConditionData(conditionId: string, key: string) {
