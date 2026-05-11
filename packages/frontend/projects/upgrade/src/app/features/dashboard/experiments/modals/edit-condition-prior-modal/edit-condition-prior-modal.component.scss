@@ -1,10 +1,6 @@
 .prior-input {
-  margin-top: 20px;
-  width: 90px;
-
-  .mat-mdc-form-field-subscript-wrapper {
-    display: none;
-  }
+  margin-top: 8px;
+  width: 110px;
 }
 
 .prior-hint {
@@ -90,14 +86,10 @@
       padding-right: 16px;
 
       .prior-input {
-        width: 90px;
+        width: 110px;
 
         input {
           text-align: right;
-        }
-
-        .mat-mdc-form-field-subscript-wrapper {
-          display: none;
         }
       }
     }

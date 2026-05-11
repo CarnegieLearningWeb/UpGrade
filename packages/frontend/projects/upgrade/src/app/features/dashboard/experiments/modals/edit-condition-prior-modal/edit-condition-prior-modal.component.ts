@@ -136,6 +136,10 @@ export class EditConditionPriorModalComponent implements OnInit {
     }
   }
 
+  selectAll(event: FocusEvent): void {
+    (event.target as HTMLInputElement).select();
+  }
+
   closeModal(): void {
     this.dialogRef.close();
   }

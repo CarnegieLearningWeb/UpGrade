@@ -603,6 +603,7 @@
   "experiments.edit-condition-prior-modal.min-error.text": "Value must be at least 1.",
   "experiments.edit-condition-prior-modal.max-error.text": "Value exceeds the maximum allowed.",
   "experiments.edit-condition-prior-modal.integer-error.text": "Value must be a whole number.",
+  "experiments.edit-condition-prior-modal.required-error.text": "Enter value",
   "experiments.edit-condition-prior-modal.no-data.text": "No conditions available.",
   "experiments.edit-condition-prior-modal.hint.text": "* Prior successes/failures will be added to the reward counts for each condition to incorporate prior knowledge or beliefs about the conditions. The default of 1 is the minimum starting value. When values are all equal, there is no initial bias.",
   "feature-flags.global-status.text": "Status",
