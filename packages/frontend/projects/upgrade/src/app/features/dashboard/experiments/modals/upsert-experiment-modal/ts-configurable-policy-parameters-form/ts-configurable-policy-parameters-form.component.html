@@ -12,52 +12,6 @@
   <form [formGroup]="policyForm" class="policy-form">
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400">{{
-        'home.new-experiment.design.ts-configurable-policy.prior-success.label.text' | translate
-      }}</mat-label>
-      <input matInput type="number" formControlName="prior_success" class="ft-14-400" min="0" step="1" />
-      <mat-hint class="form-hint ft-12-400">{{
-        'home.new-experiment.design.ts-configurable-policy.prior-success.hint.text' | translate
-      }}</mat-hint>
-      @if (policyForm.get('prior_success')?.hasError('min')) {
-      <mat-error>{{
-        'home.new-experiment.design.ts-configurable-policy.prior-success.min-error.text' | translate
-      }}</mat-error>
-      } @if (policyForm.get('prior_success')?.hasError('max')) {
-      <mat-error>
-        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
-      </mat-error>
-      } @if (policyForm.get('prior_success')?.hasError('integer')) {
-      <mat-error>
-        {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
-      </mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label class="ft-14-400">{{
-        'home.new-experiment.design.ts-configurable-policy.prior-failure.label.text' | translate
-      }}</mat-label>
-      <input matInput type="number" formControlName="prior_failure" class="ft-14-400" min="0" step="1" />
-      <mat-hint class="form-hint ft-12-400">{{
-        'home.new-experiment.design.ts-configurable-policy.prior-failure.hint.text' | translate
-      }}</mat-hint>
-      @if (policyForm.get('prior_failure')?.hasError('min')) {
-      <mat-error>{{
-        'home.new-experiment.design.ts-configurable-policy.prior-failure.min-error.text' | translate
-      }}</mat-error>
-      } @if (policyForm.get('prior_failure')?.hasError('max')) {
-      <mat-error>
-        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
-      </mat-error>
-      } @if (policyForm.get('prior_failure')?.hasError('integer')) {
-      <mat-error>
-        {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
-      </mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label class="ft-14-400">{{
         'home.new-experiment.design.ts-configurable-policy.batch-size.label.text' | translate
       }}</mat-label>
       <input matInput type="number" formControlName="batch_size" class="ft-14-400" min="1" step="1" />

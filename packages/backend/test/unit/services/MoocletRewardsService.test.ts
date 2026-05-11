@@ -595,17 +595,19 @@ describe('MoocletRewardsService', () => {
         conditionCode: 'Control',
         successes: 2,
         failures: 1,
-        total: 3,
         successRate: '66.7%',
         order: 0,
+        priorSuccess: 1,
+        priorFailure: 1,
       });
       expect(result[1]).toEqual({
         conditionCode: 'Treatment',
         successes: 1,
         failures: 1,
-        total: 2,
         successRate: '50.0%',
         order: 1,
+        priorSuccess: 1,
+        priorFailure: 1,
       });
     });
 
@@ -638,9 +640,10 @@ describe('MoocletRewardsService', () => {
         conditionCode: 'Control',
         successes: 0,
         failures: 0,
-        total: 0,
         successRate: '0.0%',
         order: 0,
+        priorSuccess: 1,
+        priorFailure: 1,
       });
     });
 
@@ -698,18 +701,20 @@ describe('MoocletRewardsService', () => {
         conditionCode: 'Control',
         successes: 2,
         failures: 1,
-        total: 3,
         successRate: '66.7%',
         order: 0,
+        priorSuccess: 1,
+        priorFailure: 1,
       });
       // Treatment (version 200): page1 has id3 (success), page2 has id5 (failure) + id6 (success) => 2 successes, 1 failure
       expect(result[1]).toEqual({
         conditionCode: 'Treatment',
         successes: 2,
         failures: 1,
-        total: 3,
         successRate: '66.7%',
         order: 1,
+        priorSuccess: 1,
+        priorFailure: 1,
       });
     });
 
@@ -817,9 +822,9 @@ describe('MoocletRewardsService', () => {
       const result = await service.getRewardsSummaryForExperiment('experiment-123', mockLogger);
 
       expect(mockMoocletDataService.getRewardsForExperiment).toHaveBeenCalledTimes(3);
-      expect(result[0].total).toBe(3);
       expect(result[0].successes).toBe(2);
       expect(result[0].failures).toBe(1);
+      expect(result[0].successes + result[0].failures).toBe(3);
     });
 
     it('should log error and re-throw when mooclet service fails', async () => {
@@ -985,17 +990,19 @@ describe('MoocletRewardsService', () => {
         conditionCode: 'Control',
         successes: 2,
         failures: 1,
-        total: 3,
         successRate: '66.7%',
         order: 0,
+        priorSuccess: 1,
+        priorFailure: 1,
       });
       expect(result[1]).toEqual({
         conditionCode: 'Treatment',
         successes: 1,
         failures: 3,
-        total: 4,
         successRate: '25.0%',
         order: 1,
+        priorSuccess: 1,
+        priorFailure: 1,
       });
     });
 
@@ -1115,8 +1122,8 @@ describe('MoocletRewardsService', () => {
       );
 
       // Version 999 should not be counted
-      expect(result[0].total).toBe(2); // Only version 100
-      expect(result[1].total).toBe(2); // Only version 200
+      expect(result[0].successes + result[0].failures).toBe(2); // Only version 100
+      expect(result[1].successes + result[1].failures).toBe(2); // Only version 200
     });
 
     it('should handle condition with no rewards', async () => {
@@ -1153,9 +1160,10 @@ describe('MoocletRewardsService', () => {
         conditionCode: 'Treatment',
         successes: 0,
         failures: 0,
-        total: 0,
         successRate: '0.0%',
         order: 1,
+        priorSuccess: 1,
+        priorFailure: 1,
       });
     });
   });
