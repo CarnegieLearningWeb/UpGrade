@@ -204,10 +204,7 @@ const globalReducer = createReducer(
     segments: globalSegments,
     isLoadingSegments: false,
   })),
-  on(SegmentsActions.actionGetSegmentByIdSuccess, (state, { segment }) => {
-    if (segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-      return { ...state, isLoadingSegments: false };
-    }
+  on(SegmentsActions.actionGetSegmentByIdSuccess, (state) => {
     return { ...state, isLoadingSegments: false };
   })
 );

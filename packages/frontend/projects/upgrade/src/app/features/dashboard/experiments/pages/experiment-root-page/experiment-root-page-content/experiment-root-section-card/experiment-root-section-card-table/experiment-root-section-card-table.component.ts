@@ -6,7 +6,8 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  OnInit,
+  OnDestroy,
+  AfterViewInit,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -42,7 +43,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
   styleUrl: './experiment-root-section-card-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExperimentRootSectionCardTableComponent implements OnInit {
+export class ExperimentRootSectionCardTableComponent implements AfterViewInit, OnDestroy {
   @Input() experiments: Experiment[];
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
@@ -60,20 +61,12 @@ export class ExperimentRootSectionCardTableComponent implements OnInit {
 
   constructor(private readonly experimentService: ExperimentService) {}
 
-  ngOnInit() {
-    // No frontend sorting - backend provides sorted data
-  }
-
   fetchExperimentOnScroll() {
     this.experimentService.loadExperiments();
   }
 
   ngAfterViewInit() {
     this.setupIntersectionObserver();
-  }
-
-  ngOnChanges() {
-    // No frontend sorting - backend provides sorted data
   }
 
   ngOnDestroy() {

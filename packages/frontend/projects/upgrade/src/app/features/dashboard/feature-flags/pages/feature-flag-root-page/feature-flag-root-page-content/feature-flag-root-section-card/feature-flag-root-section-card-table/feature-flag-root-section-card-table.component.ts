@@ -6,7 +6,8 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  OnInit,
+  AfterViewInit,
+  OnDestroy,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -40,7 +41,7 @@ import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types
   styleUrl: './feature-flag-root-section-card-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeatureFlagRootSectionCardTableComponent implements OnInit {
+export class FeatureFlagRootSectionCardTableComponent implements AfterViewInit, OnDestroy {
   @Input() featureFlags$: Observable<FeatureFlag[]>;
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
@@ -58,16 +59,8 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
 
   constructor(private featureFlagsService: FeatureFlagsService) {}
 
-  ngOnInit() {
-    // No client-side sorting - backend handles all sorting
-  }
-
   ngAfterViewInit() {
     this.setupIntersectionObserver();
-  }
-
-  ngOnChanges() {
-    // No client-side sorting - backend handles all sorting
   }
 
   ngOnDestroy() {

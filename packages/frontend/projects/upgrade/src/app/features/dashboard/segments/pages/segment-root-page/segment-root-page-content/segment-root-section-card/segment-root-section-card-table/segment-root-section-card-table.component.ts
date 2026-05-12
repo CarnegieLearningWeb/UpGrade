@@ -6,8 +6,8 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  OnInit,
   AfterViewInit,
+  OnDestroy,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -41,7 +41,7 @@ import {
   styleUrl: './segment-root-section-card-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SegmentRootSectionCardTableComponent implements OnInit, AfterViewInit {
+export class SegmentRootSectionCardTableComponent implements AfterViewInit, OnDestroy {
   @Input() segments$: Observable<Segment[]>;
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
@@ -58,16 +58,8 @@ export class SegmentRootSectionCardTableComponent implements OnInit, AfterViewIn
 
   constructor(private segmentsService: SegmentsService) {}
 
-  ngOnInit() {
-    // No frontend sorting - backend provides sorted data
-  }
-
   ngAfterViewInit() {
     this.setupIntersectionObserver();
-  }
-
-  ngOnChanges() {
-    // No frontend sorting - backend provides sorted data
   }
 
   ngOnDestroy() {
