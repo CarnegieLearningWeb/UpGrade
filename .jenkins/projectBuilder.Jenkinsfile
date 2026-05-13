@@ -12,9 +12,6 @@ projectBuilderV5 (
         "upgrade-service":[
             artifactType: "ecr",
             versioning: "branch",
-            appInfrastructure: [
-                [file: "cloudformation/backend/app-infrastructure.yml"]
-            ],
             s3Context: [
                 glob: "packages/backend/**/*,packages/types/**/*,packages/frontend/package.json,*.json,yarn.lock,.yarn*",
                 exclude: "**/node_modules,**/node_modules/**,**/*.log,.git"
