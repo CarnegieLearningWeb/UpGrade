@@ -94,14 +94,7 @@ export class SegmentsService {
 
   allSegments$ = this.store$.pipe(
     select(selectAllSegments),
-    filter((allSegments) => !!allSegments),
-    map((Segments) =>
-      Segments.sort((a, b) => {
-        const d1 = new Date(a.createdAt);
-        const d2 = new Date(b.createdAt);
-        return d1 < d2 ? 1 : d1 > d2 ? -1 : 0;
-      })
-    )
+    filter((allSegments) => !!allSegments)
   );
 
   selectPrivateSegmentListTypeOptions$ = (appContext: string): Observable<{ value: string; viewValue: string }[]> => {

@@ -74,7 +74,7 @@ describe('SegmentSelectors', () => {
           },
           navigationId: 0,
         },
-        {}
+        []
       );
 
       expect(result).toEqual(undefined);
@@ -97,9 +97,7 @@ describe('SegmentSelectors', () => {
         type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
         status: SEGMENT_STATUS.UNUSED,
       };
-      previousState.entities = {
-        abc123: mockSegment,
-      };
+      previousState.segments = [mockSegment];
 
       const result = SegmentSelectors.selectSelectedSegment.projector(
         {
@@ -112,7 +110,7 @@ describe('SegmentSelectors', () => {
           },
           navigationId: 0,
         },
-        previousState.entities
+        previousState.segments
       );
 
       expect(result).toEqual(mockSegment);

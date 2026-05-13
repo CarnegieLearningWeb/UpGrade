@@ -11,17 +11,12 @@ import { SegmentRootSectionCardTableComponent } from './segment-root-section-car
 import { TranslateModule } from '@ngx-translate/core';
 import { SEGMENT_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { RouterModule } from '@angular/router';
-import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { Observable, map } from 'rxjs';
-import { Segment, SEGMENTS_BUTTON_ACTION } from '../../../../../../../core/segments/store/segments.model';
+import { SEGMENTS_BUTTON_ACTION } from '../../../../../../../core/segments/store/segments.model';
 import { CommonSearchWidgetSearchParams } from '@shared-component-lib/common-section-card-search-header/common-section-card-search-header.component';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
-import {
-  CommonTableHelpersService,
-  TableState,
-} from '../../../../../../../shared/services/common-table-helpers.service';
 
 @Component({
   selector: 'app-segment-root-section-card',
@@ -42,12 +37,11 @@ import {
 })
 export class SegmentRootSectionCardComponent {
   permissions$: Observable<UserPermission>;
-  dataSource$: Observable<MatTableDataSource<Segment>>;
+  segments$ = this.segmentsService.selectAllSegments$;
   isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
   isInitialLoading$ = this.segmentsService.isInitialSegmentsLoading();
   searchString$ = this.segmentsService.selectSearchString$;
   searchKey$ = this.segmentsService.selectSearchKey$;
-  selectRootTableState$ = this.segmentsService.selectRootTableState$;
   isSearchActive$: Observable<boolean> = this.searchString$.pipe(map((searchString) => !!searchString));
   expandedTagsMap = new Map<string, boolean>();
 
@@ -76,21 +70,12 @@ export class SegmentRootSectionCardComponent {
   constructor(
     private segmentsService: SegmentsService,
     private dialogService: DialogService,
-    private tableHelpersService: CommonTableHelpersService,
     private authService: AuthService
   ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
     this.segmentsService.fetchSegmentsPaginated(true);
-  }
-
-  ngAfterViewInit() {
-    this.dataSource$ = this.selectRootTableState$.pipe(
-      map((tableState: TableState<Segment>) => {
-        return this.tableHelpersService.mapTableStateToDataSource<Segment>(tableState);
-      })
-    );
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<SEGMENT_SEARCH_KEY>) {
