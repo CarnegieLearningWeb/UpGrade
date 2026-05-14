@@ -558,14 +558,26 @@ describe('Experiment Assignment Service Test', () => {
     expect(includedExperiment).toEqual([exp]);
   });
 
-  it('[experimentLevelExclusionInclusion] should return an exclusion reason if a user or userGroup is on exclusion list', async () => {
-    const userDoc = { id: 'user2', group: { teacher: ['teacher1'] }, workingGroup: {} };
+  it('[experimentLevelExclusionInclusion] should return an exclusion reason if a user workingGroup is on exclusion list', async () => {
+    const userDoc = { id: 'user2', group: { teacher: ['teacher1'] }, workingGroup: { teacher: 'teacher1' } };
     const exp = structuredClone(simpleIndividualAssignmentExperiment);
     const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
     expect(exclusionReason.length).toEqual(1);
     expect(exclusionReason[0].matchedGroup).toEqual(true);
     expect(exclusionReason[0].reason).toEqual('group');
     expect(includedExperiment).toEqual([]);
+  });
+
+  it('[experimentLevelExclusionInclusion] should not return an exclusion reason if a user workingGroup is not on exclusion list', async () => {
+    const userDoc = {
+      id: 'user2',
+      group: { teacher: ['teacher1', 'teacher2'] },
+      workingGroup: { teacher: 'teacher2' },
+    };
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
+    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
+    expect(exclusionReason.length).toEqual(0);
+    expect(includedExperiment).toEqual([exp]);
   });
 
   it('[createExperimentPool] should return empty pool of experiments for no active experiments', async () => {

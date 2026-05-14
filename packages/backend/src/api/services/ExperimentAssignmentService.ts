@@ -2223,11 +2223,9 @@ export class ExperimentAssignmentService {
     const explicitGroupExclusionFilteredData: { groupId: string; type: string; id: string }[] = [];
 
     const userGroups = [];
-    if (experimentUser.group) {
-      Object.keys(experimentUser.group).forEach((type) => {
-        experimentUser.group[type].forEach((groupId) => {
-          userGroups.push({ type, groupId });
-        });
+    if (experimentUser.workingGroup) {
+      Object.keys(experimentUser.workingGroup).forEach((type) => {
+        userGroups.push({ type, groupId: experimentUser.workingGroup[type] });
       });
     }
 
