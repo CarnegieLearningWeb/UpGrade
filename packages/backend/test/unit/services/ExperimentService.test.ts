@@ -814,10 +814,7 @@ describe('ExperimentService Testing', () => {
 
       await service.updateState(mockExperiment.id, EXPERIMENT_STATE.ENROLLING, mockUser, logger);
 
-      expect(decisionPointRepo.setAllPendingActivationFalse).toHaveBeenCalledWith(
-        mockExperiment.id,
-        undefined
-      );
+      expect(decisionPointRepo.setAllPendingActivationFalse).toHaveBeenCalledWith(mockExperiment.id, undefined);
     });
 
     it('should not call setAllPendingActivationFalse when transitioning to PAUSED', async () => {
