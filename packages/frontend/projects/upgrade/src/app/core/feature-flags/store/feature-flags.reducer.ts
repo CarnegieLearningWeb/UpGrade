@@ -92,7 +92,7 @@ const reducer = createReducer(
 
   // Feature Flag Delete Actions
   on(FeatureFlagsActions.actionDeleteFeatureFlag, (state) => ({ ...state, isLoadingFeatureFlagDelete: true })),
-  on(FeatureFlagsActions.actionDeleteFeatureFlagSuccess, (state, { flag }) => ({
+  on(FeatureFlagsActions.actionDeleteFeatureFlagSuccess, (state) => ({
     ...state,
     selectedFlag: null, // Clear selected flag since it was deleted
     isLoadingFeatureFlagDelete: false,
@@ -109,7 +109,17 @@ const reducer = createReducer(
   })),
   on(FeatureFlagsActions.actionUpdateFeatureFlagStatusSuccess, (state, { response }) => ({
     ...state,
-    selectedFlag: state.selectedFlag?.id === response.id ? response : state.selectedFlag,
+    selectedFlag:
+      state.selectedFlag?.id === response.id
+        ? {
+            ...state.selectedFlag,
+            ...response,
+            featureFlagSegmentInclusion:
+              response.featureFlagSegmentInclusion ?? state.selectedFlag.featureFlagSegmentInclusion,
+            featureFlagSegmentExclusion:
+              response.featureFlagSegmentExclusion ?? state.selectedFlag.featureFlagSegmentExclusion,
+          }
+        : state.selectedFlag,
     isLoadingUpdateFeatureFlagStatus: false,
   })),
   on(FeatureFlagsActions.actionUpdateFeatureFlagStatusFailure, (state) => ({
@@ -120,7 +130,17 @@ const reducer = createReducer(
   // UI State Update Actions
   on(FeatureFlagsActions.actionUpdateFilterModeSuccess, (state, { response }) => ({
     ...state,
-    selectedFlag: state.selectedFlag?.id === response.id ? response : state.selectedFlag,
+    selectedFlag:
+      state.selectedFlag?.id === response.id
+        ? {
+            ...state.selectedFlag,
+            ...response,
+            featureFlagSegmentInclusion:
+              response.featureFlagSegmentInclusion ?? state.selectedFlag.featureFlagSegmentInclusion,
+            featureFlagSegmentExclusion:
+              response.featureFlagSegmentExclusion ?? state.selectedFlag.featureFlagSegmentExclusion,
+          }
+        : state.selectedFlag,
   })),
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
     ...state,
