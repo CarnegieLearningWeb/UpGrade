@@ -476,18 +476,27 @@ export const selectSectionCardRestriction = (cardType: EXPERIMENT_SECTION_CARD_T
       };
     }
 
-    // Running/Paused: Only Decision Points & Conditions disabled
-    if ([EXPERIMENT_STATE.RUNNING, EXPERIMENT_STATE.PAUSED].includes(state)) {
+    // Running: Decision Points & Conditions disabled
+    if (state === EXPERIMENT_STATE.RUNNING) {
       const isRestrictedCard = [
         EXPERIMENT_SECTION_CARD_TYPE.DECISION_POINTS,
         EXPERIMENT_SECTION_CARD_TYPE.CONDITIONS,
       ].includes(cardType);
 
       if (isRestrictedCard) {
-        const statusSuffix = state === EXPERIMENT_STATE.RUNNING ? 'running' : 'paused';
         return {
           isDisabled: true,
-          tooltipKey: `experiments.details.restrictions.${cardType}-${statusSuffix}.text`,
+          tooltipKey: `experiments.details.restrictions.${cardType}-running.text`,
+        };
+      }
+    }
+
+    // Paused: Only Conditions disabled; Decision Points remain editable to allow adding pending DPs
+    if (state === EXPERIMENT_STATE.PAUSED) {
+      if (cardType === EXPERIMENT_SECTION_CARD_TYPE.CONDITIONS) {
+        return {
+          isDisabled: true,
+          tooltipKey: `experiments.details.restrictions.${cardType}-paused.text`,
         };
       }
     }

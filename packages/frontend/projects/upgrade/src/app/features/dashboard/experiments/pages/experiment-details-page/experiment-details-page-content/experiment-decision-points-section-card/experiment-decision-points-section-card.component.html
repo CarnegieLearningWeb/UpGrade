@@ -33,6 +33,7 @@ vm.experiment.context[0];
     [showActions]="canShowActions"
     [actionsDisabled]="vm.restriction.isDisabled"
     [actionsTooltip]="restrictionTooltip"
+    [experimentState]="vm.experiment.state"
     (rowAction)="onRowAction($event, vm.experiment.id, appContext)"
   ></app-experiment-decision-points-table>
   }

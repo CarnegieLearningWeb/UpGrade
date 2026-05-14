@@ -490,6 +490,10 @@ export class ExperimentService {
       await this.populateExclusionTable(experimentId, state, logger);
     }
 
+    if (state === EXPERIMENT_STATE.ENROLLING) {
+      await this.decisionPointRepository.setAllPendingActivationFalse(experimentId, entityManager);
+    }
+
     if (state === EXPERIMENT_STATE.ARCHIVED) {
       const queryIds = oldExperiment.queries.map((query) => query.id);
       const results = await this.queryService.analyze(queryIds, logger);
@@ -908,7 +912,7 @@ export class ExperimentService {
                 })
               );
               decisionPoint.id = decisionPoint.id || crypto.randomUUID();
-              return { ...decisionPoint, experiment: experimentDoc };
+              return { ...decisionPoint, experiment: experimentDoc, pendingActivation: true };
             })) ||
           [];
 
@@ -1351,7 +1355,7 @@ export class ExperimentService {
               decisionPointIdMap.set(decisionPoint.id, newId);
               decisionPoint.id = newId;
               decisionPoint.description = decisionPoint.description || '';
-              return { ...decisionPoint, experiment: experimentDoc };
+              return { ...decisionPoint, experiment: experimentDoc, pendingActivation: true };
             })
           : [];
 

@@ -893,56 +893,59 @@ export class ExperimentAssignmentService {
     repeatedEnrollmentCounts: { userId: string; decisionPointId: string; count: number }[],
     logger: UpgradeLogger
   ): IExperimentAssignmentv5[] {
-    return experiment.partitions.map((decisionPoint) => {
-      const { target, site } = decisionPoint;
+    return experiment.partitions
+      .filter((dp) => !dp.pendingActivation)
+      .map((decisionPoint) => {
+        const { target, site } = decisionPoint;
 
-      // Determine payload and factorial object
-      const { payloadFound, factorialObject } = this.getPayloadAndFactorialObject(
-        conditionAssigned,
-        type,
-        conditionPayloads,
-        decisionPoint,
-        factors
-      );
+        // Determine payload and factorial object
+        const { payloadFound, factorialObject } = this.getPayloadAndFactorialObject(
+          conditionAssigned,
+          type,
+          conditionPayloads,
+          decisionPoint,
+          factors
+        );
 
-      // Log preview state information
-      if (experiment.state === EXPERIMENT_STATE.PREVIEW) {
-        logger.info({
-          message: `getAllExperimentConditions: experiment: ${experiment.name}, user: ${userId}, condition: ${
-            conditionAssigned ? conditionAssigned.conditionCode : null
-          }`,
-        });
-      }
+        // Log preview state information
+        if (experiment.state === EXPERIMENT_STATE.PREVIEW) {
+          logger.info({
+            message: `getAllExperimentConditions: experiment: ${experiment.name}, user: ${userId}, condition: ${
+              conditionAssigned ? conditionAssigned.conditionCode : null
+            }`,
+          });
+        }
 
-      const assignedFactors = factorialObject?.assignedFactor || null;
-      const factorialCondition = factorialObject?.factorialCondition || null;
-      const assignedConditionToReturn = factorialCondition ||
-        conditionAssigned || {
-          conditionCode: null,
-        };
+        const assignedFactors = factorialObject?.assignedFactor || null;
+        const factorialCondition = factorialObject?.factorialCondition || null;
+        const assignedConditionToReturn = factorialCondition ||
+          conditionAssigned || {
+            conditionCode: null,
+          };
 
-      if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-        const count =
-          repeatedEnrollmentCounts.find((repeatedEnrollment) => repeatedEnrollment.decisionPointId === decisionPoint.id)
-            ?.count || 0;
-        return withInSubjectType(experiment, conditionPayloads, decisionPoint, factors, userId, count);
-      } else {
-        const experimentId = experiment.id;
-        return {
-          target,
-          site,
-          assignedCondition: [
-            {
-              ...assignedConditionToReturn,
-              payload: payloadFound?.payload,
-              experimentId,
-            },
-          ],
-          assignedFactor: assignedFactors ? [assignedFactors] : null,
-          experimentType: experiment.type,
-        };
-      }
-    });
+        if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+          const count =
+            repeatedEnrollmentCounts.find(
+              (repeatedEnrollment) => repeatedEnrollment.decisionPointId === decisionPoint.id
+            )?.count || 0;
+          return withInSubjectType(experiment, conditionPayloads, decisionPoint, factors, userId, count);
+        } else {
+          const experimentId = experiment.id;
+          return {
+            target,
+            site,
+            assignedCondition: [
+              {
+                ...assignedConditionToReturn,
+                payload: payloadFound?.payload,
+                experimentId,
+              },
+            ],
+            assignedFactor: assignedFactors ? [assignedFactors] : null,
+            experimentType: experiment.type,
+          };
+        }
+      });
   }
 
   private getPayloadAndFactorialObject(

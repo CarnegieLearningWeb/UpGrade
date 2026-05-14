@@ -36,6 +36,11 @@ export class DecisionPoint extends BaseModel {
   })
   public excludeIfReached: boolean;
 
+  @Column({
+    default: false,
+  })
+  public pendingActivation: boolean;
+
   @ManyToOne(() => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
