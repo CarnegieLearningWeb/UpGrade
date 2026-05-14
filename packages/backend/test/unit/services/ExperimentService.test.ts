@@ -770,13 +770,35 @@ describe('ExperimentService Testing', () => {
       expect(queryRepo.insertQueries).not.toHaveBeenCalled();
     });
 
-    it('should set pendingActivation to true on all new decision points', async () => {
+    it('should set pendingActivation to true on new decision points for INACTIVE experiments', async () => {
       const dto = baseCreateDTO();
 
       await service.create(dto, mockUser, logger);
 
       expect(decisionPointRepo.insertDecisionPoint).toHaveBeenCalledWith(
         expect.arrayContaining([expect.objectContaining({ pendingActivation: true })]),
+        expect.any(Object)
+      );
+    });
+
+    it('should set pendingActivation to false on decision points when experiment starts in ENROLLING state', async () => {
+      const dto = { ...baseCreateDTO(), state: EXPERIMENT_STATE.ENROLLING };
+
+      await service.create(dto, mockUser, logger);
+
+      expect(decisionPointRepo.insertDecisionPoint).toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ pendingActivation: false })]),
+        expect.any(Object)
+      );
+    });
+
+    it('should set pendingActivation to false on decision points when experiment starts in RUNNING state', async () => {
+      const dto = { ...baseCreateDTO(), state: EXPERIMENT_STATE.RUNNING };
+
+      await service.create(dto, mockUser, logger);
+
+      expect(decisionPointRepo.insertDecisionPoint).toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ pendingActivation: false })]),
         expect.any(Object)
       );
     });

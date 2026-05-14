@@ -894,7 +894,7 @@ export class ExperimentAssignmentService {
     logger: UpgradeLogger
   ): IExperimentAssignmentv5[] {
     return experiment.partitions
-      .filter((dp) => !dp.pendingActivation)
+      .filter((dp) => !dp.pendingActivation || experiment.state === EXPERIMENT_STATE.PREVIEW)
       .map((decisionPoint) => {
         const { target, site } = decisionPoint;
 

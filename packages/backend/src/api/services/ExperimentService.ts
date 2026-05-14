@@ -957,7 +957,8 @@ export class ExperimentService {
         oldDecisionPoints.forEach(({ id, site, target }) => {
           if (
             !decisionPointDocToSave.find((doc) => {
-              return doc.id === id && doc.site === site && doc.target === target;
+              // normalize undefined/null for target so null-target DPs are not falsely deleted
+              return doc.id === id && doc.site === site && (doc.target ?? null) === (target ?? null);
             })
           ) {
             toDeleteDecisionPoints.push(
@@ -1347,6 +1348,9 @@ export class ExperimentService {
           : [];
 
       // creating decision point docs
+      // DPs are pending unless the experiment starts directly in an enrolling state
+      const internalCreationState = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[experiment.state] || experiment.state;
+      const startsPending = internalCreationState !== EXPERIMENT_STATE.ENROLLING;
       const decisionPointIdMap = new Map<string, string>();
       const decisionPointDocsToSave: Array<Partial<DecisionPoint>> =
         partitions && partitions.length > 0
@@ -1355,7 +1359,7 @@ export class ExperimentService {
               decisionPointIdMap.set(decisionPoint.id, newId);
               decisionPoint.id = newId;
               decisionPoint.description = decisionPoint.description || '';
-              return { ...decisionPoint, experiment: experimentDoc, pendingActivation: true };
+              return { ...decisionPoint, experiment: experimentDoc, pendingActivation: startsPending };
             })
           : [];
 
