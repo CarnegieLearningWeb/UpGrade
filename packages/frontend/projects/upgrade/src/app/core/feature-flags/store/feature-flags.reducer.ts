@@ -31,6 +31,24 @@ export const initialState: FeatureFlagState = {
   totalExposures: null,
 };
 
+type SelectedFlag = FeatureFlagState['selectedFlag'];
+
+const mergeSelectedFlagWithPartialResponse = (
+  selectedFlag: SelectedFlag,
+  response: Partial<NonNullable<SelectedFlag>>
+): SelectedFlag => {
+  if (!response?.id || selectedFlag?.id !== response.id) {
+    return selectedFlag;
+  }
+
+  return {
+    ...selectedFlag,
+    ...response,
+    featureFlagSegmentInclusion: response.featureFlagSegmentInclusion ?? selectedFlag.featureFlagSegmentInclusion,
+    featureFlagSegmentExclusion: response.featureFlagSegmentExclusion ?? selectedFlag.featureFlagSegmentExclusion,
+  };
+};
+
 const reducer = createReducer(
   initialState,
   on(FeatureFlagsActions.actionFetchFeatureFlagsSuccess, (state, { flags, totalFlags }) => {
@@ -109,17 +127,7 @@ const reducer = createReducer(
   })),
   on(FeatureFlagsActions.actionUpdateFeatureFlagStatusSuccess, (state, { response }) => ({
     ...state,
-    selectedFlag:
-      state.selectedFlag?.id === response.id
-        ? {
-            ...state.selectedFlag,
-            ...response,
-            featureFlagSegmentInclusion:
-              response.featureFlagSegmentInclusion ?? state.selectedFlag.featureFlagSegmentInclusion,
-            featureFlagSegmentExclusion:
-              response.featureFlagSegmentExclusion ?? state.selectedFlag.featureFlagSegmentExclusion,
-          }
-        : state.selectedFlag,
+    selectedFlag: mergeSelectedFlagWithPartialResponse(state.selectedFlag, response),
     isLoadingUpdateFeatureFlagStatus: false,
   })),
   on(FeatureFlagsActions.actionUpdateFeatureFlagStatusFailure, (state) => ({
@@ -130,17 +138,7 @@ const reducer = createReducer(
   // UI State Update Actions
   on(FeatureFlagsActions.actionUpdateFilterModeSuccess, (state, { response }) => ({
     ...state,
-    selectedFlag:
-      state.selectedFlag?.id === response.id
-        ? {
-            ...state.selectedFlag,
-            ...response,
-            featureFlagSegmentInclusion:
-              response.featureFlagSegmentInclusion ?? state.selectedFlag.featureFlagSegmentInclusion,
-            featureFlagSegmentExclusion:
-              response.featureFlagSegmentExclusion ?? state.selectedFlag.featureFlagSegmentExclusion,
-          }
-        : state.selectedFlag,
+    selectedFlag: mergeSelectedFlagWithPartialResponse(state.selectedFlag, response),
   })),
   on(FeatureFlagsActions.actionSetIsLoadingFeatureFlags, (state, { isLoadingFeatureFlags }) => ({
     ...state,
