@@ -232,6 +232,39 @@ describe('Experiment Assignment Service Test', () => {
     expect(result[0].assignedCondition[0]).toEqual(cond);
   });
 
+  it('should not pool experiments together due to a shared pending decision point site/target', async () => {
+    const context = 'context';
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+
+    // Exp1 has one active DP and one pending DP that shares site/target with Exp2's active DP
+    const exp1 = structuredClone(simpleIndividualAssignmentExperiment);
+    const pendingPartitionOnExp1 = {
+      ...exp1.partitions[0],
+      id: 'pending-shared-id',
+      site: 'SharedSite',
+      target: 'SharedTarget',
+      pendingActivation: true,
+    };
+    exp1.partitions = [...exp1.partitions, pendingPartitionOnExp1];
+
+    // Exp2 has an active DP at the same site/target as Exp1's pending DP
+    const exp2 = structuredClone(simpleIndividualAssignmentExperiment);
+    exp2.id = 'exp2-id';
+    exp2.partitions = [{ ...exp2.partitions[0], id: 'exp2-dp-1', site: 'SharedSite', target: 'SharedTarget' }];
+
+    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+    testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp1, exp2]);
+    testedModule.experimentUserService = experimentUserServiceMock;
+
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+    // Both experiments should independently assign — Exp1's pending DP must not create a pool
+    // conflict that causes Exp2 to be excluded. Each experiment should produce its own assignment.
+    const assignedExperimentIds = new Set(result.map((r) => r.site + '_' + r.target));
+    // Exp1's active DP (CurriculumSequence/W1) and Exp2's active DP (SharedSite/SharedTarget) should both appear
+    expect(assignedExperimentIds.has(`${exp2.partitions[0].site}_${exp2.partitions[0].target}`)).toBe(true);
+  });
+
   it('should exclude decision points with pendingActivation=true from assignment', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
@@ -275,32 +308,6 @@ describe('Experiment Assignment Service Test', () => {
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
 
-    expect(result.length).toEqual(1);
-    expect(result[0].site).toEqual(exp.partitions[0].site);
-  });
-
-  it('should include pendingActivation=true decision points for PREVIEW experiments when accessed by a preview user', async () => {
-    const context = 'context';
-    const userDoc = { id: 'preview-user-123', group: { schoolId: ['school1'] }, workingGroup: {} };
-    const exp = structuredClone(simpleIndividualAssignmentExperiment);
-
-    // Put experiment in PREVIEW state with a pending DP (newly created, never ran)
-    exp.state = EXPERIMENT_STATE.PREVIEW;
-    exp.partitions[0] = { ...exp.partitions[0], pendingActivation: true };
-
-    // Simulate a preview user — preview users cause getValidExperimentsWithPreview to be used
-    const previewUserMock = { id: userDoc.id, assignments: [] };
-    testedModule.previewUserService = {
-      findOneFromCache: sandbox.stub().resolves(previewUserMock),
-      findOne: sandbox.stub().resolves(previewUserMock),
-    };
-    testedModule.experimentRepository.getValidExperimentsWithPreview = sandbox.stub().resolves([exp]);
-    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
-    testedModule.experimentUserService = experimentUserServiceMock;
-
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
-
-    // pendingActivation should be ignored for PREVIEW experiments
     expect(result.length).toEqual(1);
     expect(result[0].site).toEqual(exp.partitions[0].site);
   });

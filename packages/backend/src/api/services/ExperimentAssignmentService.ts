@@ -433,7 +433,7 @@ export class ExperimentAssignmentService {
         );
 
         const allWithinSubjectDecisionPoints = filteredWithinSubjectExperiments
-          .map((experiment) => experiment.partitions)
+          .map((experiment) => this.getActivePartitions(experiment))
           .flat();
 
         repeatedEnrollmentCounts = await this.repeatedEnrollmentRepository.getRepeatedEnrollmentCount(
@@ -883,6 +883,10 @@ export class ExperimentAssignmentService {
     return experimentsToAssign;
   }
 
+  private getActivePartitions(experiment: Experiment): DecisionPoint[] {
+    return experiment.partitions.filter((dp) => !dp.pendingActivation);
+  }
+
   private mapDecisionPoints(
     experiment: Experiment,
     conditionAssigned: ExperimentCondition | undefined,
@@ -989,7 +993,7 @@ export class ExperimentAssignmentService {
         // mark experiment
         experimentMarked.push(experiment);
         poolExperiments.push(experiment);
-        experiment.partitions.forEach((partition) => {
+        this.getActivePartitions(experiment).forEach((partition) => {
           const id = `${partition.site}_${partition.target}`;
           poolExperiments = poolExperiments.concat(this.createPool(id, decisionPointExperimentMap, experimentMarked));
         });
@@ -1005,7 +1009,7 @@ export class ExperimentAssignmentService {
     const decisionPointExperimentMap: Record<string, Experiment[]> = {};
 
     experiments.forEach((experiment) => {
-      experiment.partitions.forEach((partition) => {
+      this.getActivePartitions(experiment).forEach((partition) => {
         const partitionId = `${partition.site}_${partition.target}`;
         decisionPointExperimentMap[partitionId] = decisionPointExperimentMap[partitionId] || [];
         decisionPointExperimentMap[partitionId].push(experiment);
