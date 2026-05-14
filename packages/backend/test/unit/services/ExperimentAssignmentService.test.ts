@@ -232,6 +232,53 @@ describe('Experiment Assignment Service Test', () => {
     expect(result[0].assignedCondition[0]).toEqual(cond);
   });
 
+  it('should exclude decision points with pendingActivation=true from assignment', async () => {
+    const context = 'context';
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
+
+    // Add a second partition that is pending activation (not yet run in ENROLLING state)
+    const pendingPartition = {
+      ...exp.partitions[0],
+      id: 'pending-partition-id',
+      site: 'PendingSite',
+      target: 'PendingTarget',
+      pendingActivation: true,
+    };
+    exp.partitions = [...exp.partitions, pendingPartition];
+
+    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+    testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentUserService = experimentUserServiceMock;
+
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+    // Only the non-pending partition should produce an assignment
+    expect(result.length).toEqual(1);
+    expect(result[0].site).toEqual(exp.partitions[0].site);
+    expect(result[0].target).toEqual(exp.partitions[0].target);
+    const assignedSites = result.map((r) => r.site);
+    expect(assignedSites).not.toContain('PendingSite');
+  });
+
+  it('should include all decision points when none have pendingActivation set', async () => {
+    const context = 'context';
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
+
+    // Explicitly set pendingActivation: false on the partition
+    exp.partitions[0] = { ...exp.partitions[0], pendingActivation: false };
+
+    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+    testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentUserService = experimentUserServiceMock;
+
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+    expect(result.length).toEqual(1);
+    expect(result[0].site).toEqual(exp.partitions[0].site);
+  });
+
   it('should return the assigned condition for a factorial individual experiment', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };

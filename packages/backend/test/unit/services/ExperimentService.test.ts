@@ -257,6 +257,7 @@ describe('ExperimentService Testing', () => {
           useValue: {
             findOne: jest.fn().mockResolvedValue(mockExperiment),
             findOneExperiment: jest.fn().mockResolvedValue(mockExperiment),
+            findByIds: jest.fn().mockResolvedValue([]),
             save: jest.fn().mockResolvedValue(mockExperiment),
             updateExperiment: jest.fn().mockResolvedValue(mockExperiment),
             updateState: jest.fn().mockResolvedValue([{ state: EXPERIMENT_STATE.ENROLLING }]),
@@ -284,6 +285,7 @@ describe('ExperimentService Testing', () => {
             deleteByIds: jest.fn().mockResolvedValue({ affected: 1 }),
             getAllUniqueIdentifier: jest.fn().mockResolvedValue(['C1', 'C2']),
             insertDecisionPoint: jest.fn().mockResolvedValue([mockDecisionPoint1]),
+            setAllPendingActivationFalse: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -766,6 +768,50 @@ describe('ExperimentService Testing', () => {
       await service.create(dto, mockUser, logger);
 
       expect(queryRepo.insertQueries).not.toHaveBeenCalled();
+    });
+
+    it('should set pendingActivation to true on all new decision points', async () => {
+      const dto = baseCreateDTO();
+
+      await service.create(dto, mockUser, logger);
+
+      expect(decisionPointRepo.insertDecisionPoint).toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ pendingActivation: true })]),
+        expect.any(Object)
+      );
+    });
+  });
+
+  describe('updateState()', () => {
+    it('should call setAllPendingActivationFalse when transitioning to ENROLLING', async () => {
+      experimentRepo.findOne = jest.fn().mockResolvedValue({
+        ...mockExperiment,
+        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+      });
+      experimentRepo.updateState = jest.fn().mockResolvedValue([{ state: EXPERIMENT_STATE.ENROLLING }]);
+
+      await service.updateState(mockExperiment.id, EXPERIMENT_STATE.ENROLLING, mockUser, logger);
+
+      expect(decisionPointRepo.setAllPendingActivationFalse).toHaveBeenCalledWith(
+        mockExperiment.id,
+        undefined
+      );
+    });
+
+    it('should not call setAllPendingActivationFalse when transitioning to PAUSED', async () => {
+      experimentRepo.updateState = jest.fn().mockResolvedValue([{ state: EXPERIMENT_STATE.PAUSED }]);
+
+      await service.updateState(mockExperiment.id, EXPERIMENT_STATE.PAUSED, mockUser, logger);
+
+      expect(decisionPointRepo.setAllPendingActivationFalse).not.toHaveBeenCalled();
+    });
+
+    it('should not call setAllPendingActivationFalse when transitioning to INACTIVE', async () => {
+      experimentRepo.updateState = jest.fn().mockResolvedValue([{ state: EXPERIMENT_STATE.INACTIVE }]);
+
+      await service.updateState(mockExperiment.id, EXPERIMENT_STATE.INACTIVE, mockUser, logger);
+
+      expect(decisionPointRepo.setAllPendingActivationFalse).not.toHaveBeenCalled();
     });
   });
 });
