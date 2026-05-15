@@ -14,6 +14,7 @@ import {
   EXPERIMENT_ROW_ACTION,
 } from '../../../../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
+import { formatDecisionPointDisplay } from '../../../../../experiment-decision-point.utils';
 
 @Component({
   selector: 'app-experiment-decision-points-table',
@@ -49,11 +50,7 @@ export class ExperimentDecisionPointsTableComponent {
   };
 
   getDecisionPoint(decisionPoint: ExperimentDecisionPoint): string {
-    if (!decisionPoint) {
-      return '';
-    }
-    const targetDisplay = decisionPoint.target ? ` (${decisionPoint.target})` : '';
-    return `${decisionPoint.site}${targetDisplay}`;
+    return formatDecisionPointDisplay(decisionPoint);
   }
 
   onEditButtonClick(decisionPoint: ExperimentDecisionPoint): void {

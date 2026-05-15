@@ -217,10 +217,13 @@ export class ExperimentService {
     const [experimentData, count] = await Promise.all([queryBuilderToReturn.getMany(), countQuery.getCount()]);
     return [
       experimentData.map((experiment) => {
+        const experimentWithStringTargets = this.coerceExperimentDecisionPointTargets(experiment);
         return {
-          ...experiment,
-          state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experiment.state] || experiment.state,
-          stateTimeLogs: this.transformStateTimeLogs(experiment.stateTimeLogs),
+          ...experimentWithStringTargets,
+          state:
+            EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[experimentWithStringTargets.state] ||
+            experimentWithStringTargets.state,
+          stateTimeLogs: this.transformStateTimeLogs(experimentWithStringTargets.stateTimeLogs),
         };
       }),
       count || 0,
@@ -430,14 +433,15 @@ export class ExperimentService {
   public async getExperimentPartitions(experimentId: string, logger: UpgradeLogger): Promise<DecisionPoint[]> {
     logger.info({ message: `getExperimentPartitions experiment => ${experimentId}` });
     const experiment: Experiment = await this.findOne(experimentId, logger);
-    return experiment?.partitions;
+    return this.coerceDecisionPointTargets(experiment?.partitions || []);
   }
 
   public async getAllExperimentPartitions(
     logger: UpgradeLogger
   ): Promise<Array<Pick<DecisionPoint, 'site' | 'target'>>> {
     logger.info({ message: 'getAllExperimentPartitions experiment' });
-    return this.decisionPointRepository.partitionPointAndName();
+    const decisionPoints = await this.decisionPointRepository.partitionPointAndName();
+    return this.coerceDecisionPointTargets(decisionPoints as DecisionPoint[]);
   }
 
   public async getAllUniqueIdentifiers(logger: UpgradeLogger): Promise<string[]> {
@@ -1868,9 +1872,11 @@ export class ExperimentService {
   }
 
   public formattingConditionPayload(experiment: Experiment): Experiment {
-    if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
+    const experimentWithStringTargets = this.coerceExperimentDecisionPointTargets(experiment);
+
+    if (experimentWithStringTargets.type === EXPERIMENT_TYPE.FACTORIAL) {
       const conditionPayload: ConditionPayload[] = [];
-      experiment.conditions.forEach((condition) => {
+      experimentWithStringTargets.conditions.forEach((condition) => {
         const conditionPayloads = condition.conditionPayloads.map((conditionPayload) => {
           return { ...conditionPayload, parentCondition: condition };
         });
@@ -1878,10 +1884,10 @@ export class ExperimentService {
         delete condition.conditionPayloads;
       });
 
-      return { ...experiment, conditionPayloads: conditionPayload };
+      return { ...experimentWithStringTargets, conditionPayloads: conditionPayload };
     }
 
-    const { conditions, partitions } = experiment;
+    const { conditions, partitions } = experimentWithStringTargets;
 
     const conditionPayload: ConditionPayload[] = [];
     partitions.forEach((partition) => {
@@ -1895,7 +1901,7 @@ export class ExperimentService {
         }
       });
     });
-    return { ...experiment, conditionPayloads: conditionPayload };
+    return { ...experimentWithStringTargets, conditionPayloads: conditionPayload };
   }
 
   public reducedConditionPayload(experiment: Experiment): any {
@@ -1910,6 +1916,8 @@ export class ExperimentService {
   }
 
   public formattingPayload(experiment: Experiment): any {
+    const experimentWithStringTargets = this.coerceExperimentDecisionPointTargets(experiment);
+
     const updatedConditionPayloads = experiment.conditionPayloads.map((conditionPayload) => {
       const { payloadType, payloadValue, ...rest } = conditionPayload;
       return {
@@ -1927,7 +1935,21 @@ export class ExperimentService {
       return { ...rest, levels: updatedLevels };
     });
 
-    return { ...experiment, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
+    return { ...experimentWithStringTargets, factors: updatedFactors, conditionPayloads: updatedConditionPayloads };
+  }
+
+  private coerceDecisionPointTargets(decisionPoints: DecisionPoint[]): DecisionPoint[] {
+    return decisionPoints.map((decisionPoint) => ({
+      ...decisionPoint,
+      target: decisionPoint.target ?? '',
+    }));
+  }
+
+  private coerceExperimentDecisionPointTargets(experiment: Experiment): Experiment {
+    return {
+      ...experiment,
+      partitions: this.coerceDecisionPointTargets(experiment.partitions || []),
+    };
   }
 
   private mapStatusStrings(statusString: string): string {

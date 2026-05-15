@@ -25,6 +25,7 @@ import {
   DateFilterOption,
   SINCE_DATE_FORMATTER,
 } from '../../../../../../../../shared/services/common-chart-helpers.service';
+import { formatDecisionPointDisplay } from '../../../../../experiment-decision-point.utils';
 
 // Used in EnrollmentOverTimeComponent
 enum ExperimentFilterType {
@@ -128,7 +129,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       this.selectedPartition = [];
       this.experiment.partitions.forEach((partition) => {
         this.partitionsFilterOptions.push({
-          point: partition.site,
+          site: partition.site,
           id: partition.id,
           target: partition.target,
         });
@@ -310,8 +311,8 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     );
   }
 
-  getPartitionDisplayText(partition: ExperimentPartitionFilterOptions): string {
-    return partition.point + (partition.target ? ` (${partition.target})` : '');
+  getDecisionPointDisplayText(partition: ExperimentPartitionFilterOptions): string {
+    return formatDecisionPointDisplay(partition);
   }
 
   // For maintaining checkbox Select All in condition and partition filter

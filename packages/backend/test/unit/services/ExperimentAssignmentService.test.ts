@@ -73,6 +73,8 @@ describe('Experiment Assignment Service Test', () => {
   const moocletExperimentServiceMock = sinon.createStubInstance(MoocletExperimentService);
   experimentServiceMock.formattingConditionPayload.restore();
   experimentServiceMock.formattingPayload.restore();
+  experimentServiceMock.coerceExperimentDecisionPointTargets.restore();
+  experimentServiceMock.coerceDecisionPointTargets.restore();
 
   beforeAll(() => {
     configureLogger();

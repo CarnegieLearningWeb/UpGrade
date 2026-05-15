@@ -168,6 +168,7 @@ export const experiment = {
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ae',
       site: 'CurriculumSequence',
+      target: '',
       description: 'No Decision Point',
       twoCharacterId: 'NP',
       excludeIfReached: false,

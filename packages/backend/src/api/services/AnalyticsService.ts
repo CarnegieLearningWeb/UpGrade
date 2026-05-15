@@ -343,7 +343,7 @@ export class AnalyticsService {
         const stratification =
           row.stratification && row.stratificationValue ? `${row.stratification}: ${row.stratificationValue}` : 'NA';
         const target = row.target ? ` (${row.target})` : '';
-        const decisionPoint = row.site ? row.site + target : 'NA';
+        const decisionPoint = row.site + target;
 
         return {
           ExperimentId: row.experimentId,
