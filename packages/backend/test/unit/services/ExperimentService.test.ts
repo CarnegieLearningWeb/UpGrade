@@ -83,6 +83,13 @@ describe('ExperimentService Testing', () => {
     order: 1,
   };
 
+  const mockCondition3: Partial<ExperimentCondition> = {
+    id: 'condition-3',
+    conditionCode: 'new-treatment',
+    assignmentWeight: 40,
+    order: 2,
+  };
+
   const createMockDecisionPoint1 = () => ({
     id: 'partition-1',
     site: 'test-site',
@@ -115,7 +122,9 @@ describe('ExperimentService Testing', () => {
       payloadType: PAYLOAD_TYPE.STRING,
       payloadValue: 'control',
       parentCondition: mockCondition1 as ExperimentCondition,
+      parentConditionId: mockCondition1.id,
       decisionPoint: mockDecisionPoint1 as DecisionPoint,
+      decisionPointId: mockDecisionPoint1.id,
     };
 
     mockExperiment = {
@@ -170,14 +179,14 @@ describe('ExperimentService Testing', () => {
       conditionPayloads: [
         {
           id: 'payload-1',
-          parentCondition: 'condition-1',
-          decisionPoint: 'partition-1',
+          parentCondition: mockCondition1,
+          decisionPoint: mockDecisionPoint1,
           payload: { type: PAYLOAD_TYPE.STRING, value: 'control' },
         } as any,
         {
           id: 'payload-2',
-          parentCondition: 'condition-3',
-          decisionPoint: 'partition-1',
+          parentCondition: mockCondition3,
+          decisionPoint: mockDecisionPoint1,
           payload: { type: PAYLOAD_TYPE.STRING, value: 'new-treatment' },
         } as any,
       ],
@@ -267,7 +276,7 @@ describe('ExperimentService Testing', () => {
           useValue: {
             find: jest.fn().mockResolvedValue([mockCondition1]),
             save: jest.fn().mockResolvedValue(mockCondition1),
-            upsertExperimentCondition: jest.fn().mockResolvedValue(mockCondition1),
+            upsertExperimentCondition: jest.fn().mockImplementation((value) => Promise.resolve(value)),
             deleteCondition: jest.fn().mockResolvedValue({ affected: 1 }),
             getAllUniqueIdentifier: jest.fn().mockResolvedValue(['C1', 'C2']),
             insertConditions: jest.fn().mockResolvedValue([mockCondition1]),
@@ -279,7 +288,7 @@ describe('ExperimentService Testing', () => {
             find: jest.fn().mockResolvedValue([mockDecisionPoint1]),
             save: jest.fn().mockResolvedValue(mockDecisionPoint1),
             findOne: jest.fn().mockResolvedValue(null),
-            upsertDecisionPoint: jest.fn().mockResolvedValue(mockDecisionPoint1),
+            upsertDecisionPoint: jest.fn().mockImplementation((value) => Promise.resolve(value)),
             deleteDecisionPoint: jest.fn().mockResolvedValue({ affected: 1 }),
             deleteByIds: jest.fn().mockResolvedValue({ affected: 1 }),
             getAllUniqueIdentifier: jest.fn().mockResolvedValue(['C1', 'C2']),
@@ -693,8 +702,8 @@ describe('ExperimentService Testing', () => {
       // Should create payloads for partition-2 with both conditions
       expect(conditionPayloadRepo.upsertConditionPayload).toHaveBeenCalledWith(
         expect.objectContaining({
-          parentCondition: 'condition-1',
-          decisionPoint: 'partition-2',
+          parentConditionId: 'condition-1',
+          decisionPointId: 'partition-2',
           payloadValue: 'control',
         }),
         entityManager

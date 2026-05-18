@@ -92,6 +92,8 @@ export {
 } from './Experiment/interfaces';
 export { SYSTEM_USER_EMAIL, DEV_USER_EMAIL, FAKE_DEV_CREDENTIAL } from './User';
 export {
+  Prior,
+  CurrentPosteriors,
   MoocletPolicyParametersDTO,
   MoocletTSConfigurablePolicyParametersDTO,
   MOOCLET_POLICY_SCHEMA_MAP,

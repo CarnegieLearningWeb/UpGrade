@@ -1,23 +1,35 @@
+.prior-input {
+  margin-top: 8px;
+  width: 110px;
+}
+
+.prior-hint {
+  margin: 12px 30px;
+}
+
 .table-container {
   position: relative;
   overflow: auto;
   width: 100%;
-  padding: 32px;
 
-  .spinner {
-    position: sticky;
-    top: 0;
-    z-index: 1111;
-  }
-
-  /* Add gap between header and body when no data exists */
   ::ng-deep .no-data tbody:before {
     display: block;
     line-height: 8px;
     content: '\200C';
   }
 
-  table {
+  .conditions-table {
+    input[type='number'] {
+      -webkit-appearance: textfield;
+      -moz-appearance: textfield;
+
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    }
+
     ::ng-deep thead {
       background-color: var(--zircon);
 
@@ -45,7 +57,7 @@
         height: 56px;
 
         td {
-          // min-width: 96px;
+          min-width: 96px;
           padding-left: 0;
           color: var(--black-2);
         }
@@ -63,50 +75,23 @@
     }
 
     .condition-column {
-      text-align: left;
+      width: 50%;
       padding-left: 32px;
-      width: 20%;
     }
 
-    .successes-column {
-      width: 8%;
-    }
-
-    .successes-prior-column {
-      width: 8%;
-    }
-
-    .successes-posterior-column {
-      width: 8%;
-    }
-
-    .spacer-column {
-      width: 8%;
-    }
-
-    .failures-column {
-      width: 8%;
-    }
-
-    .failures-prior-column {
-      width: 8%;
-    }
-
-    .failures-posterior-column {
-      width: 8%;
-    }
-
-    .data-column {
+    .prior-column {
+      width: 25%;
       text-align: center;
-    }
+      padding-left: 16px;
+      padding-right: 16px;
 
-    &.no-data .condition-column {
-      width: auto;
-    }
+      .prior-input {
+        width: 110px;
 
-    .failures-posterior-column,
-    .successes-prior-column {
-      color: var(--darker-grey);
+        input {
+          text-align: right;
+        }
+      }
     }
   }
 }
