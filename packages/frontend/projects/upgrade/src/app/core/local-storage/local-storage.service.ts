@@ -58,6 +58,7 @@ export class LocalStorageService {
       isLoadingImportExperiment: false,
       isLoadingRewardsSummary: false,
       rewardsSummaries: {},
+      competingDecisionPoints: {},
     };
 
     const featureFlagState: FeatureFlagState = {

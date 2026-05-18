@@ -46,6 +46,7 @@
   "global.group-type-singular.text": "Group ({{groupType}})",
   "global.group-type-plural.text": "Groups ({{groupType}})",
   "global.no-participants-included-warning.text": "No participants are currently included",
+  "global.competing-decision-points-warning.text": "This experiment has competing decision points",
   "app-header.title.login": "Login",
   "app-header.title.experiments": "Experiments",
   "app-header.title.experiment-dashboard": "Experiment Dashboard",

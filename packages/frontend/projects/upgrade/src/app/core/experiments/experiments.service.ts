@@ -53,6 +53,7 @@ import {
   selectSectionCardRestriction,
   selectRewardsDataForSelectedExperiment,
   selectIsLoadingRewardsSummary,
+  selectCompetingDecisionPoints,
 } from './store/experiments.selectors';
 import * as experimentAction from './store/experiments.actions';
 import { AppState } from '../core.state';
@@ -97,6 +98,7 @@ export class ExperimentService {
   experimentMenuItems$ = this.store$.pipe(select(selectExperimentMenuItems));
   disabledExperimentFields$ = this.store$.pipe(select(selectDisabledExperimentFields));
   isLoadingRewardsSummary$ = this.store$.pipe(select(selectIsLoadingRewardsSummary));
+  competingDecisionPoints$ = this.store$.pipe(select(selectCompetingDecisionPoints));
 
   sectionCardRestriction$ = (cardType: EXPERIMENT_SECTION_CARD_TYPE) =>
     this.store$.pipe(select(selectSectionCardRestriction(cardType)));
@@ -304,5 +306,9 @@ export class ExperimentService {
 
   getRewardsSummaryForSelectedExperiment() {
     return this.store$.pipe(select(selectRewardsDataForSelectedExperiment));
+  }
+
+  fetchCompetingDecisionPoints() {
+    this.store$.dispatch(experimentAction.actionFetchCompetingDecisionPoints());
   }
 }

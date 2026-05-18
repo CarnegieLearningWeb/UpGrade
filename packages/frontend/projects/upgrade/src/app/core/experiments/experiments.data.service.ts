@@ -215,4 +215,8 @@ export class ExperimentDataService {
     const url = `${API_ENDPOINTS.getMoocletRewardsData}/${experimentId}`;
     return this.http.get<ExperimentRewardsSummary>(url);
   }
+
+  getCompetingDecisionPoints(): Observable<Record<string, string[]>> {
+    return this.http.get<Record<string, string[]>>(API_ENDPOINTS.competingDecisionPoints);
+  }
 }

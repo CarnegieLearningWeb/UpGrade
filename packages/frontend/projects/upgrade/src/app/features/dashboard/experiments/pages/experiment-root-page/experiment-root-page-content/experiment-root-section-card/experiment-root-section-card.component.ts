@@ -85,6 +85,7 @@ export class ExperimentRootSectionCardComponent {
     this.experimentService.loadExperiments(true);
     this.stratificationFactorsService.fetchStratificationFactors(true);
     this.experimentService.fetchAllExperimentNames();
+    this.experimentService.fetchCompetingDecisionPoints();
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<EXPERIMENT_SEARCH_KEY>) {

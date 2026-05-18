@@ -565,4 +565,36 @@ export class ExperimentRepository extends Repository<Experiment> {
 
     return experimentQuery;
   }
+
+  public async getCompetingDecisionPoints(): Promise<Record<string, string[]>> {
+    const competingStates = [EXPERIMENT_STATE.INACTIVE, EXPERIMENT_STATE.ENROLLING, EXPERIMENT_STATE.ENROLLMENT_COMPLETE];
+
+    const experiments = await this.createQueryBuilder('experiment')
+      .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .where('experiment.state IN (:...states)', { states: competingStates })
+      .getMany();
+
+    const result: Record<string, string[]> = {};
+
+    for (const experiment of experiments) {
+      for (const partition of experiment.partitions) {
+        const competingIds: string[] = [];
+
+        for (const other of experiments) {
+          if (other.id === experiment.id) continue;
+          const hasContextOverlap = experiment.context.some((ctx) => other.context.includes(ctx));
+          if (!hasContextOverlap) continue;
+          if (other.partitions.some((p) => p.site === partition.site && p.target === partition.target)) {
+            competingIds.push(other.id);
+          }
+        }
+
+        if (competingIds.length > 0) {
+          result[partition.id] = competingIds;
+        }
+      }
+    }
+
+    return result;
+  }
 }

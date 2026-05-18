@@ -35,6 +35,7 @@ export const initialState: ExperimentState = {
   isLoadingImportExperiment: false,
   isLoadingRewardsSummary: false,
   rewardsSummaries: {},
+  competingDecisionPoints: {},
 };
 
 const reducer = createReducer(
@@ -503,7 +504,14 @@ const reducer = createReducer(
   on(experimentsAction.actionFetchRewardsDataForExperimentFailure, (state) => ({
     ...state,
     isLoadingRewardsSummary: false,
-  }))
+  })),
+  on(
+    experimentsAction.actionFetchCompetingDecisionPointsSuccess,
+    (state, { competingDecisionPoints }): ExperimentState => ({
+      ...state,
+      competingDecisionPoints,
+    })
+  )
 );
 
 export function experimentsReducer(state: ExperimentState | undefined, action: Action) {

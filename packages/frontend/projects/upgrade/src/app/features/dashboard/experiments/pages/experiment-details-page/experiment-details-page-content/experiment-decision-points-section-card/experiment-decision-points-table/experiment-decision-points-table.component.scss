@@ -65,6 +65,16 @@
     .site-column {
       width: 36%;
       padding-left: 32px;
+
+      .competing-dp-warning-icon {
+        font-size: 18px;
+        height: 18px;
+        width: 18px;
+        vertical-align: middle;
+        margin-left: 6px;
+        color: var(--warning-color, #f59e0b);
+        cursor: default;
+      }
     }
 
     .target-column {

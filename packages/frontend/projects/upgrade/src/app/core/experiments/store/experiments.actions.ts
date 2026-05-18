@@ -416,3 +416,14 @@ export const actionFetchRewardsDataForExperimentFailure = createAction(
   '[Experiment] Fetch Rewards Data For Experiment Failure',
   props<{ error: any }>()
 );
+
+export const actionFetchCompetingDecisionPoints = createAction('[Experiment] Fetch Competing Decision Points');
+
+export const actionFetchCompetingDecisionPointsSuccess = createAction(
+  '[Experiment] Fetch Competing Decision Points Success',
+  props<{ competingDecisionPoints: Record<string, string[]> }>()
+);
+
+export const actionFetchCompetingDecisionPointsFailure = createAction(
+  '[Experiment] Fetch Competing Decision Points Failure'
+);

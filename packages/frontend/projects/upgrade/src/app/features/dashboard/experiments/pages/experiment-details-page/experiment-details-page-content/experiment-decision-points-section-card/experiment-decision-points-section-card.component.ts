@@ -40,6 +40,7 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
   @Input() isSectionCardExpanded = true;
 
   selectedExperiment$ = this.experimentService.selectedExperiment$;
+  competingDecisionPoints$ = this.experimentService.competingDecisionPoints$;
   vm$: Observable<{ experiment: Experiment; permissions: UserPermission; restriction: SectionCardRestriction }>;
 
   constructor(

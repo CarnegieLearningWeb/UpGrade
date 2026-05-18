@@ -445,6 +445,10 @@ export class ExperimentService {
     return this.decisionPointRepository.partitionPointAndName();
   }
 
+  public async getCompetingDecisionPoints(): Promise<Record<string, string[]>> {
+    return this.experimentRepository.getCompetingDecisionPoints();
+  }
+
   public async getAllUniqueIdentifiers(logger: UpgradeLogger): Promise<string[]> {
     logger.info({ message: 'getAllUniqueIdentifiers' });
     const conditionsUniqueIdentifier = this.experimentConditionRepository.getAllUniqueIdentifier();

@@ -69,6 +69,7 @@ export interface APIEndpoints {
   stratification: string;
   getMoocletRewardsData: string;
   featureFlagGraphInfo: string;
+  competingDecisionPoints: string;
 }
 
 export interface Environment {

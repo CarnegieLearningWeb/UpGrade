@@ -20,6 +20,14 @@
         <span [appTextOverflowTooltip]="decisionPoint.site" matTooltipPosition="above" class="line-clamp-1">
           {{ decisionPoint.site }}
         </span>
+        @if (competingDecisionPoints[decisionPoint.id]?.length) {
+        <mat-icon
+          class="competing-dp-warning-icon"
+          [matTooltip]="'Competing experiments: ' + competingDecisionPoints[decisionPoint.id].join(', ')"
+          matTooltipPosition="above"
+          >warning_amber</mat-icon
+        >
+        }
       </td>
     </ng-container>
 

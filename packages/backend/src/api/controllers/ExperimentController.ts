@@ -883,6 +883,26 @@ export class ExperimentController {
 
   /**
    * @swagger
+   * /experiments/competing-decision-points:
+   *    get:
+   *       description: Get a map of decision point IDs to arrays of experiment IDs that compete at the same site/target/context
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Competing decision points map
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+  @Get('/competing-decision-points')
+  public getCompetingDecisionPoints(): Promise<Record<string, string[]>> {
+    return this.experimentService.getCompetingDecisionPoints();
+  }
+
+  /**
+   * @swagger
    * /experiments/single/{id}:
    *    get:
    *       description: Get experiment by id

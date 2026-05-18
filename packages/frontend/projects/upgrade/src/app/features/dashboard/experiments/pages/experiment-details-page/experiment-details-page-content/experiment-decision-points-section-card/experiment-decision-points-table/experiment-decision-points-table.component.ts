@@ -34,6 +34,7 @@ import { SharedModule } from '../../../../../../../../shared/shared.module';
 })
 export class ExperimentDecisionPointsTableComponent {
   @Input() decisionPoints: ExperimentDecisionPoint[] = [];
+  @Input() competingDecisionPoints: Record<string, string[]> = {};
   @Input() isLoading$: Observable<boolean>;
   @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;

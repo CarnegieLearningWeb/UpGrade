@@ -714,6 +714,32 @@ export class ExperimentEffects {
     )
   );
 
+  fetchCompetingDecisionPoints$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionFetchCompetingDecisionPoints),
+      switchMap(() =>
+        this.experimentDataService.getCompetingDecisionPoints().pipe(
+          map((competingDecisionPoints) =>
+            experimentAction.actionFetchCompetingDecisionPointsSuccess({ competingDecisionPoints })
+          ),
+          catchError(() => of(experimentAction.actionFetchCompetingDecisionPointsFailure()))
+        )
+      )
+    )
+  );
+
+  refetchCompetingDecisionPointsOnDpChange$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(
+        experimentAction.actionUpdateExperimentDecisionPointsSuccess,
+        experimentAction.actionUpdateExperimentStateSuccess,
+        experimentAction.actionDeleteExperimentSuccess,
+        experimentAction.actionUpsertExperimentSuccess
+      ),
+      map(() => experimentAction.actionFetchCompetingDecisionPoints())
+    )
+  );
+
   private download(filename, text, isZip: boolean) {
     const element = document.createElement('a');
     isZip

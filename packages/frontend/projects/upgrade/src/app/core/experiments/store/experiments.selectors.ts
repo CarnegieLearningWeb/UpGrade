@@ -368,6 +368,11 @@ export const selectIsLoadingRewardsSummary = createSelector(
   }
 );
 
+export const selectCompetingDecisionPoints = createSelector(
+  selectExperimentState,
+  (state: ExperimentState): Record<string, string[]> => state.competingDecisionPoints || {}
+);
+
 // Warning logic for experiments
 const hasNoInclusionsWarning = (experiment: Experiment): boolean => {
   return (
@@ -377,12 +382,24 @@ const hasNoInclusionsWarning = (experiment: Experiment): boolean => {
   );
 };
 
-const getWarningKeysForExperiment = (experiment: Experiment): string[] => {
+const hasCompetingDecisionPointsWarning = (
+  experiment: Experiment,
+  competingDecisionPoints: Record<string, string[]>
+): boolean => {
+  return experiment?.partitions?.some((p) => (competingDecisionPoints[p.id]?.length ?? 0) > 0) ?? false;
+};
+
+const getWarningKeysForExperiment = (
+  experiment: Experiment,
+  competingDecisionPoints: Record<string, string[]>
+): string[] => {
   const warnings: string[] = [];
 
-  // Check each warning type (in future more types can be added here)
   if (hasNoInclusionsWarning(experiment)) {
     warnings.push('global.no-participants-included-warning.text');
+  }
+  if (hasCompetingDecisionPointsWarning(experiment, competingDecisionPoints)) {
+    warnings.push('global.competing-decision-points-warning.text');
   }
 
   return warnings;
@@ -390,20 +407,22 @@ const getWarningKeysForExperiment = (experiment: Experiment): string[] => {
 
 export const selectWarningKeysForSelectedExperiment = createSelector(
   selectSelectedExperiment,
-  (experiment): string[] => {
+  selectCompetingDecisionPoints,
+  (experiment, competingDecisionPoints): string[] => {
     if (!experiment) {
       return [];
     }
-    return getWarningKeysForExperiment(experiment);
+    return getWarningKeysForExperiment(experiment, competingDecisionPoints);
   }
 );
 
 export const selectWarningKeysForAllExperiments = createSelector(
   selectAllExperiment,
-  (experiments): Record<string, string[]> => {
+  selectCompetingDecisionPoints,
+  (experiments, competingDecisionPoints): Record<string, string[]> => {
     const warningMap: Record<string, string[]> = {};
     experiments.forEach((experiment) => {
-      warningMap[experiment.id] = getWarningKeysForExperiment(experiment);
+      warningMap[experiment.id] = getWarningKeysForExperiment(experiment, competingDecisionPoints);
     });
     return warningMap;
   }

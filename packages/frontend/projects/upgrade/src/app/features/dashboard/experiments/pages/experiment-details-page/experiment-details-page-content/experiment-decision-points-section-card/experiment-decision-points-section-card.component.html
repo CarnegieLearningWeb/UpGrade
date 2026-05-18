@@ -29,6 +29,7 @@ vm.experiment.context[0];
   <app-experiment-decision-points-table
     content
     [decisionPoints]="vm.experiment.partitions || []"
+    [competingDecisionPoints]="competingDecisionPoints$ | async"
     [isLoading$]="experimentService.isLoadingSelectedExperiment$"
     [showActions]="canShowActions"
     [actionsDisabled]="vm.restriction.isDisabled"
