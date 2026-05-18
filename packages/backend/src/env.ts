@@ -78,6 +78,7 @@ export const env = {
     from: getOsEnv('EMAIL_FROM'),
     expireAfterSeconds: toNumber(getOsEnv('EMAIL_EXPIRE_AFTER_SECONDS')),
     emailBucket: getOsEnv('EMAIL_BUCKET'),
+    tmpWriteableFilePath: getOsEnvOptional('EMAIL_TMP_WRITEABLE_FILE_PATH') || 'src/api/assets/files/',
   },
   google: {
     clientId: getOsEnvArray('GOOGLE_CLIENT_ID'),

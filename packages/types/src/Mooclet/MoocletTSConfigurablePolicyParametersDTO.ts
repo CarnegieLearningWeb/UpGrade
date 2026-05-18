@@ -17,18 +17,17 @@ export class Prior {
 export class CurrentPosteriors {
   @IsNumber()
   @Type(() => Number)
-  failures: number;
+  failures = 0;
 
   @IsNumber()
   @Type(() => Number)
-  successes: number;
+  successes = 0;
 }
 
 export class MoocletTSConfigurablePolicyParametersDTO extends MoocletPolicyParametersDTO {
-  @IsDefined()
-  @ValidateNested()
-  @Type(() => Prior)
-  prior: Prior = new Prior();
+  @IsOptional()
+  @IsObject()
+  prior?: Record<string, Prior>;
 
   @IsOptional()
   @IsObject()

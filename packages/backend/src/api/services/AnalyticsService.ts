@@ -142,7 +142,7 @@ export class AnalyticsService {
   ): Promise<void> {
     try {
       const timeStamp = new Date().toISOString();
-      const folderPath = 'src/api/assets/files/';
+      const folderPath = env.email.tmpWriteableFilePath;
       // create the directory if not exist
       if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });

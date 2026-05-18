@@ -83,7 +83,6 @@ import {
   ValidatedExperimentError,
   ConditionPayloadValidator,
 } from '../DTO/ExperimentDTO';
-import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
 import { CacheService } from './CacheService';
@@ -782,10 +781,10 @@ export class ExperimentService {
       this.experimentSchedulerService.updateExperimentSchedules(experiment as any, logger);
     }
 
+    let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
     return entityManager
       .transaction(async (transactionalEntityManager) => {
         experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
-        let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
         if (experiment.conditions.length) {
           const response = this.setConditionOrPartitionIdentifiers(experiment.conditions, uniqueIdentifiers);
           experiment.conditions = response[0];
@@ -883,7 +882,7 @@ export class ExperimentService {
           });
         });
 
-        const conditionPayloadDocToSave: Array<Partial<Omit<ConditionPayload, 'parentCondition' | 'decisionPoint'>>> =
+        const conditionPayloadDocToSave: Array<Partial<ConditionPayload>> =
           (newPayloads &&
             newPayloads.length > 0 &&
             newPayloads.map((conditionPayload) => {
@@ -891,8 +890,8 @@ export class ExperimentService {
                 id: conditionPayload.id,
                 payloadType: conditionPayload.payload.type,
                 payloadValue: conditionPayload.payload.value,
-                parentCondition: conditionPayload.parentCondition,
-                decisionPoint: conditionPayload.decisionPoint,
+                parentConditionId: conditionPayload.parentCondition,
+                decisionPointId: conditionPayload.decisionPoint,
               };
               return conditionPayloadToReturn;
             })) ||
@@ -989,7 +988,9 @@ export class ExperimentService {
               return doc.id === id;
             })
           ) {
-            toDeleteConditionPayloads.push(this.conditionPayloadRepository.deleteConditionPayload(id, logger));
+            toDeleteConditionPayloads.push(
+              this.conditionPayloadRepository.deleteConditionPayload(id, transactionalEntityManager, logger)
+            );
           }
         });
 
@@ -998,6 +999,7 @@ export class ExperimentService {
           ...toDeleteConditions,
           ...toDeleteDecisionPoints,
           ...toDeleteQueries,
+          ...toDeleteConditionPayloads,
           transactionalEntityManager
             .createQueryBuilder()
             .delete()
@@ -1015,7 +1017,6 @@ export class ExperimentService {
         let conditionDocs: ExperimentCondition[];
         let decisionPointDocs: DecisionPoint[];
         let queryDocs: Query[];
-        let conditionPayloadDocs: ConditionPayloadDTO[];
         try {
           [conditionDocs, decisionPointDocs, queryDocs] = await Promise.all([
             Promise.all(
@@ -1048,16 +1049,14 @@ export class ExperimentService {
         }
 
         try {
-          [conditionPayloadDocs] = await Promise.all([
-            Promise.all(
-              conditionPayloadDocToSave.map(async (conditionPayload) => {
-                return this.conditionPayloadRepository.upsertConditionPayload(
-                  conditionPayload,
-                  transactionalEntityManager
-                );
-              })
-            ) as any,
-          ]);
+          await Promise.all(
+            conditionPayloadDocToSave.map(async (conditionPayload) => {
+              return this.conditionPayloadRepository.upsertConditionPayload(
+                conditionPayload,
+                transactionalEntityManager
+              );
+            })
+          );
         } catch (err) {
           const error = err as Error;
           error.message = `Error in creating conditionPayloads "updateExperimentInDB"`;
@@ -1073,11 +1072,15 @@ export class ExperimentService {
           return { ...decisionPointDoc, experiment: decisionPointDoc.experiment };
         });
 
-        const conditionPayloadDocToReturn = await transactionalEntityManager.getRepository(ConditionPayload).find({
-          relations: ['parentCondition', 'decisionPoint'],
-          where: { id: In(conditionPayloadDocs.map((conditionPayload) => conditionPayload.id)) },
+        const conditionPayloadDocToReturn = conditionPayloadDocToSave.map((conditionPayload) => {
+          const parentCondition = conditionDocs.find((c) => c.id === conditionPayload.parentConditionId);
+          const decisionPoint = decisionPointDocs.find((dp) => dp.id === conditionPayload.decisionPointId);
+          return {
+            ...conditionPayload,
+            parentCondition: parentCondition,
+            decisionPoint: decisionPoint,
+          };
         });
-
         // sort the payloads by decision point order and condition order
         conditionPayloadDocToReturn.sort((a, b) => {
           if (a.decisionPoint.order === b.decisionPoint.order) {

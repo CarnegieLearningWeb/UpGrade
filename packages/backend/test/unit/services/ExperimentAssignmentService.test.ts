@@ -1729,4 +1729,17 @@ describe('Experiment Assignment Service Test', () => {
       });
     });
   });
+
+  it('[getConditionFromMoocletProxy] should return undefined and log error when mooclet proxy throws', async () => {
+    const userDoc = { id: 'user123', group: {}, workingGroup: {} };
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
+    const mockError = new Error('Mooclet proxy error');
+
+    moocletExperimentServiceMock.getConditionFromMoocletProxy.rejects(mockError);
+
+    const result = await (testedModule as any).getConditionFromMoocletProxy(exp, userDoc, loggerMock);
+
+    expect(result).toBeUndefined();
+    sinon.assert.calledOnce(loggerMock.error);
+  });
 });
