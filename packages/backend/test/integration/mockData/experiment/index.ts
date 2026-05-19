@@ -227,6 +227,7 @@ export const groupLevelExclusionExperiment = clone({
     },
     {
       site: 'CurriculumSequence',
+      target: '',
       description: 'No Decision Point',
       twoCharacterId: 'NP',
       excludeIfReached: true,
@@ -355,6 +356,7 @@ export const withinSubjectExclusionExperiment = clone({
     },
     {
       site: 'CurriculumSequence',
+      target: '',
       description: 'No Decision Point',
       twoCharacterId: 'NP',
       excludeIfReached: true,
@@ -420,6 +422,7 @@ export const individualLevelEnrollmentCodeExperiment = clone({
     },
     {
       site: 'CurriculumSequence',
+      target: '',
       description: 'No Decision Point',
       twoCharacterId: 'NP',
       excludeIfReached: true,
@@ -446,6 +449,7 @@ export const groupLevelEnrollmentCodeExperiment = clone({
     },
     {
       site: 'CurriculumSequence',
+      target: '',
       description: 'No Decision Point',
       twoCharacterId: 'NP',
       excludeIfReached: true,

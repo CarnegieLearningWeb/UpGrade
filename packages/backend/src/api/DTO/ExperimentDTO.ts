@@ -174,7 +174,7 @@ export class PartitionValidator {
   public site: string;
 
   @IsString()
-  public target = '';
+  public target: string;
 
   @IsOptional()
   @IsString()

@@ -80,6 +80,7 @@ export const revertToExperiment = {
     },
     {
       site: 'CurriculumSequence',
+      target: '',
       description: 'No Decision Point',
       twoCharacterId: 'NP',
     },
@@ -436,6 +437,7 @@ export const experimentFifth = {
     {
       id: 'f22467b1-f0e9-4444-9517-cc03037bc079',
       site: 'CurriculumSequence',
+      target: '',
       description: 'No Decision Point',
       twoCharacterId: 'NP',
       excludeIfReached: false,
