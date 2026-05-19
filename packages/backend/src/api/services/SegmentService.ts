@@ -21,7 +21,7 @@ import { Not } from 'typeorm';
 import { EntityManager, DataSource } from 'typeorm';
 import Papa from 'papaparse';
 import { env } from '../../env';
-import { v4 as uuid } from 'uuid';
+
 import { ErrorWithType } from '../errors/ErrorWithType';
 import {
   SegmentInputValidator,
@@ -211,6 +211,17 @@ export class SegmentService {
       const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.where(whereClause);
     }
+
+    if (sortParams) {
+      paginatedParentSubQuery = paginatedParentSubQuery
+        .addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs)
+        .addOrderBy('segment.id', 'ASC');
+    } else {
+      paginatedParentSubQuery = paginatedParentSubQuery
+        .addOrderBy('segment.updatedAt', 'DESC')
+        .addOrderBy('segment.id', 'ASC');
+    }
+
     const countQuery = paginatedParentSubQuery.clone().andWhere('segment.type=:type', { type: SEGMENT_TYPE.PUBLIC });
     paginatedParentSubQuery = paginatedParentSubQuery.andWhere('segment.type = :type').offset(skip).limit(take);
 
@@ -223,7 +234,11 @@ export class SegmentService {
       .where(`segment.id IN ${paginatedParentSubQuery.getQuery()}`);
 
     if (sortParams) {
-      segmentsDataQuery = segmentsDataQuery.addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs);
+      segmentsDataQuery = segmentsDataQuery
+        .addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs)
+        .addOrderBy('segment.id', 'ASC');
+    } else {
+      segmentsDataQuery = segmentsDataQuery.addOrderBy('segment.updatedAt', 'DESC').addOrderBy('segment.id', 'ASC');
     }
     const [segmentsData, count] = await Promise.all([segmentsDataQuery.getMany(), countQuery.getCount()]);
     return [await this.getSegmentStatus(segmentsData), count];
@@ -517,7 +532,7 @@ export class SegmentService {
     const validatedSegments = await this.checkSegmentsValidity(segments);
     for (const segment of validatedSegments.segments) {
       // Giving new id to avoid segment duplication
-      segment.id = uuid();
+      segment.id = crypto.randomUUID();
 
       logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
       await this.addSegmentDataInDB(segment, logger);
@@ -531,7 +546,7 @@ export class SegmentService {
 
     for (const list of validatedLists.segments) {
       // Giving new id to avoid segment duplication
-      list.id = uuid();
+      list.id = crypto.randomUUID();
       list.type = SEGMENT_TYPE.PRIVATE;
 
       logger.info({ message: `Import segment list => ${JSON.stringify(list, undefined, 2)}` });
@@ -899,7 +914,7 @@ export class SegmentService {
     }
 
     // create/update segment document
-    segment.id = segment.id || uuid();
+    segment.id = segment.id || crypto.randomUUID();
     const { id, name, description, context, type, listType, tags } = segment;
     const segmentsById = await this.getSegmentByIds(segment.subSegmentIds || []);
     const allSegments = [...segmentsById, ...(segment.subSegments || [])];

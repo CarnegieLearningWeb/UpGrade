@@ -44,7 +44,7 @@ import { Scenario9, Scenario10 } from './ExperimentAssignment/index';
 import Container from 'typedi';
 import { AWSService } from '../../src/api/services/AWSService';
 import AWSServiceMock from './mockData/AWSServiceMock';
-import { CreateSystemUser } from '../../src/init/seed/systemUser';
+import { CreateSystemUsers } from '../../src/init/seed/systemUser';
 import { createGlobalExcludeSegment } from '../../src/init/seed/globalExcludeSegment';
 import { SystemUserCreated } from './SystemUser/index';
 import {
@@ -146,7 +146,7 @@ describe('Integration Tests', () => {
     await cacheManager.resetAllCache();
 
     // create System Users
-    await CreateSystemUser();
+    await CreateSystemUsers();
     await createGlobalExcludeSegment(new UpgradeLogger());
   });
 

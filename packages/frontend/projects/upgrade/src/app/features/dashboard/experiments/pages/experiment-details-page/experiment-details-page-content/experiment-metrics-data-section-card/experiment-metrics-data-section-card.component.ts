@@ -28,6 +28,7 @@ export class ExperimentMetricsDataSectionCardComponent {
   @Input() isSectionCardExpanded = true;
 
   selectedExperiment$ = this.experimentService.selectedExperiment$;
+  isLoadingExperiment$ = this.experimentService.isLoadingExperiment$;
 
   constructor(private readonly experimentService: ExperimentService, private readonly authService: AuthService) {}
 

@@ -30,6 +30,7 @@ import timezone from 'dayjs/plugin/timezone';
 import { ExperimentService } from './ExperimentService';
 import { QueryService } from './QueryService';
 import { HttpError } from 'routing-controllers';
+import { getDateRangeNames } from '../repositories/utils/dateQuery';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -75,82 +76,11 @@ export class AnalyticsService {
     });
 
     const experimentAge = dayjs().year() - dayjs(experiment.createdAt).year();
-
+    const dates = getDateRangeNames(dateRange, clientOffset, experimentAge);
     const [individualEnrollmentConditionAndDecisionPoint, groupEnrollmentConditionAndDecisionPoint] =
       await this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange, clientOffset);
-    const keyToReturn = {};
-    switch (dateRange) {
-      case DATE_RANGE.LAST_SEVEN_DAYS:
-        for (let i = 0; i < 7; i++) {
-          const date = new Date();
-          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
-          date.setDate(date.getDate() - i);
-          const newDate = date.toDateString();
-          keyToReturn[newDate] = {};
-        }
-        break;
-      case DATE_RANGE.LAST_TWO_WEEKS:
-        for (let i = 0; i < 14; i++) {
-          const date = new Date();
-          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
-          date.setDate(date.getDate() - i);
-          const newDate = date.toDateString();
-          keyToReturn[newDate] = {};
-        }
-        break;
-      case DATE_RANGE.LAST_ONE_MONTH:
-        for (let i = 0; i < 30; i++) {
-          const date = new Date();
-          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
-          date.setDate(date.getDate() - i);
-          const newDate = date.toDateString();
-          keyToReturn[newDate] = {};
-        }
-        break;
-      case DATE_RANGE.LAST_THREE_MONTHS:
-        for (let i = 0; i < 3; i++) {
-          const date = new Date();
-          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
-          date.setDate(1);
-          date.setMonth(date.getMonth() - i);
-          const newDate = date.toDateString();
-          keyToReturn[newDate] = {};
-        }
-        break;
-      case DATE_RANGE.LAST_SIX_MONTHS:
-        for (let i = 0; i < 6; i++) {
-          const date = new Date();
-          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
-          date.setDate(1);
-          date.setMonth(date.getMonth() - i);
-          const newDate = date.toDateString();
-          keyToReturn[newDate] = {};
-        }
-        break;
-      case DATE_RANGE.LAST_TWELVE_MONTHS:
-        for (let i = 0; i < 12; i++) {
-          const date = new Date();
-          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
-          date.setDate(1);
-          date.setMonth(date.getMonth() - i);
-          const newDate = date.toDateString();
-          keyToReturn[newDate] = {};
-        }
-        break;
-      default:
-        for (let i = 0; i < experimentAge + 1; i++) {
-          const date = new Date();
-          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
-          date.setDate(1);
-          date.setFullYear(date.getFullYear() - i);
-          date.setMonth(0);
-          const newDate = date.toDateString();
-          keyToReturn[newDate] = {};
-        }
 
-        break;
-    }
-    return Object.keys(keyToReturn).map((date) => {
+    return dates.map((date) => {
       const stats: IExperimentEnrollmentDetailDateStats = {
         id: experimentId,
         conditions: experiment

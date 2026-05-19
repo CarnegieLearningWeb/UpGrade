@@ -1,6 +1,6 @@
 {
     "name": "upgrade-backend",
-    "version": "6.4.0",
+    "version": "6.5.0",
     "description": "Backend for the UpGrade A/B Testing Platform",
     "main": "index.js",
     "scripts": {
@@ -45,7 +45,6 @@
         "@types/serve-favicon": "^2.2.31",
         "@types/swagger-jsdoc": "^6.0.4",
         "@types/swagger-ui-express": "^4.1.0",
-        "@types/uuid": "^9.0.7",
         "copyfiles": "^2.1.1",
         "coverage-badge-creator": "^1.0.11",
         "cross-env": "^7.0.3",
@@ -65,11 +64,11 @@
         "@aws-sdk/s3-request-presigner": "^3.995.0",
         "@golevelup/ts-jest": "^0.4.0",
         "@nestjs/common": "^11.0.16",
-        "@nestjs/core": "^11.1.13",
+        "@nestjs/core": "^11.1.18",
         "@nestjs/testing": "^11.0.16",
         "@nestjs/typeorm": "^11.0.0",
         "@types/supertest": "^6.0.2",
-        "axios": "^1.13.5",
+        "axios": "^1.15.2",
         "body-parser": "^1.20.4",
         "cache-manager": "^5.3.2",
         "chalk": "^5.3.0",
@@ -113,7 +112,6 @@
         "typedi": "^0.8.0",
         "typeorm": "^0.3.26",
         "typescript": "^5.3.3",
-        "uuid": "^9.0.1",
         "winston": "^3.2.1",
         "winston-splunk-httplogger": "^3.1.0"
     }

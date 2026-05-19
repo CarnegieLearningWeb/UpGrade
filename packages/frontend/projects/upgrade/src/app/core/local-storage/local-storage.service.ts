@@ -33,8 +33,7 @@ export class LocalStorageService {
 
     // 1. Populate experiment state
     const experimentState: ExperimentState = {
-      ids: [],
-      entities: {},
+      experiments: [],
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,
       isLoadingExperimentExport: false,
@@ -62,8 +61,8 @@ export class LocalStorageService {
     };
 
     const featureFlagState: FeatureFlagState = {
-      ids: [],
-      entities: {},
+      featureFlags: [],
+      selectedFlag: null,
       isLoadingUpsertFeatureFlag: false,
       isLoadingImportFeatureFlag: false,
       isLoadingSelectedFeatureFlag: false,
@@ -79,11 +78,13 @@ export class LocalStorageService {
       searchValue: featureFlagSearchString || null,
       sortKey: (featureFlagSortKey as FLAG_SORT_KEY) || FLAG_SORT_KEY.NAME,
       sortAs: (featureFlagSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
+      graphInfo: null,
+      isGraphLoading: false,
+      totalExposures: null,
     };
 
     const segmentState: SegmentState = {
-      ids: [],
-      entities: {},
+      segments: [],
       isLoadingSegments: false,
       allExperimentSegmentsInclusion: null,
       allExperimentSegmentsExclusion: null,
@@ -103,7 +104,7 @@ export class LocalStorageService {
     const state = {
       experiments: experimentState,
       featureFlags: featureFlagState,
-      segments: segmentState,
+      segments: segmentState, // Re-enabled since it wasn't the issue
     };
     return state;
   }

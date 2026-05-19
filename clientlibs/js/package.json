@@ -1,6 +1,6 @@
 {
   "name": "upgrade_client_lib",
-  "version": "6.4.0",
+  "version": "6.5.0",
   "description": "Client library to communicate with the Upgrade server",
   "files": [
     "dist/*",
@@ -33,24 +33,24 @@
   },
   "scripts": {
     "build:bundler": "webpack",
-    "build:types": "concurrently \"npm:build:types-*\"",
+    "build:types": "concurrently \"yarn:build:types-*\"",
     "build:types-default": "./node_modules/.bin/dts-bundle-generator -o ./index.d.ts src/index.ts",
     "build:types-browser": "./node_modules/.bin/dts-bundle-generator -o dist/browser/index.d.ts src/index.ts",
     "build:types-node": "./node_modules/.bin/dts-bundle-generator -o dist/node/index.d.ts src/index.ts",
     "build:types-lite": "./node_modules/.bin/dts-bundle-generator -o dist/lite/index.d.ts src/index.ts",
     "version:sync": "node scripts/sync-versions.js",
     "prepare:packages": "node scripts/prepare-packages.js",
-    "build": "npm run clean && npm run build:bundler && npm run build:types && npm run version:sync && npm run prepare:packages",
+    "build": "yarn clean && yarn build:bundler && yarn build:types && yarn version:sync && yarn prepare:packages",
     "build:watch": "tsc -w",
     "clean": "rm -rf dist",
-    "lint": "eslint -c ../../.eslintrc.js --ext .ts './{src, test}/**/*.ts' && npm run prettier:check",
-    "lint:fix": "eslint -c ../../.eslintrc.js --ext .ts './{src, test}/**/*.ts' --fix && npm run prettier:write",
+    "lint": "eslint -c ../../.eslintrc.js --ext .ts './{src, test}/**/*.ts' && yarn prettier:check",
+    "lint:fix": "eslint -c ../../.eslintrc.js --ext .ts './{src, test}/**/*.ts' --fix && yarn prettier:write",
     "prettier:write": "prettier --config ../../.prettierrc './{src, test}/**/*.ts' --write",
     "prettier:check": "prettier --config ../../.prettierrc './{src, test}/**/*.ts' --check",
     "docs:markdown": "typedoc --options typedoc.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "quicktest": "ts-node quickTest.ts"
+    "quicktest": "([ -d dist ] || yarn build) && ts-node quickTest.ts"
   },
   "keywords": [],
   "author": "",

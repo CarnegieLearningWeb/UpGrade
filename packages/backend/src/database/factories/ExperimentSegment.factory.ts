@@ -1,7 +1,6 @@
 import * as Faker from 'faker';
 import { define } from 'typeorm-seeding';
 import { DecisionPoint } from '../../api/models/DecisionPoint';
-import * as uuid from 'uuid';
 
 define(DecisionPoint, (faker: typeof Faker, settings: { experimentId: string }) => {
   const name = faker.random.words(1);
@@ -9,7 +8,7 @@ define(DecisionPoint, (faker: typeof Faker, settings: { experimentId: string }) 
   const point = faker.random.words(1);
 
   const experimentCondition = new DecisionPoint();
-  experimentCondition.id = uuid.v4();
+  experimentCondition.id = crypto.randomUUID();
   experimentCondition.target = name;
   experimentCondition.description = description;
   experimentCondition.site = point;

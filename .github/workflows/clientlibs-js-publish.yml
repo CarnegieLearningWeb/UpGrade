@@ -10,14 +10,19 @@ on:
       ref:
         description: 'Branch or tag ref to publish'
         required: true
-        default: 'main'
+        default: 'main'  
+
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   clientlibs-js-publish:
     name: UpGrade Client Libs JS Publish
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || github.sha }}
       - uses: actions/setup-node@v4
@@ -32,7 +37,5 @@ jobs:
         working-directory: clientlibs/js
         run: yarn build
       - name: Publish upgrade_client_lib
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: clientlibs/js/package.json
+        run: npm publish
+        working-directory: clientlibs/js/package.json

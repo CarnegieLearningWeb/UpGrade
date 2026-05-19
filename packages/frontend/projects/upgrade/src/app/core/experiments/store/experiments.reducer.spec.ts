@@ -72,7 +72,7 @@ describe('ExperimentsReducer', () => {
   it('action "actionGetExperimentsSuccess" should set state with new experiments and reset loading', () => {
     const previousState: ExperimentState = {
       ...initialState,
-      entities: null,
+      experiments: [],
       isLoadingExperiment: true,
       totalExperiments: 0,
       skipExperiment: 0,
@@ -94,12 +94,11 @@ describe('ExperimentsReducer', () => {
     expect(newState).not.toBe(previousState);
     expect(newState).toEqual({
       ...previousState,
-      entities: {
-        '1': {
+      experiments: [
+        {
           id: '1',
         },
-      },
-      ids: ['1'],
+      ],
       totalExperiments: 1,
       skipExperiment: 1,
       isLoadingExperiment: false,
@@ -139,12 +138,19 @@ describe('ExperimentsReducer', () => {
     expect(newState.isLoadingExperiment).toEqual(false);
   });
 
-  it('action "actionUpsertExperimentSuccess" should set loading to false and set new experiment', () => {
+  it('action "actionUpsertExperimentSuccess" should set loading to false and update existing experiment', () => {
     const previousState = { ...initialState };
     previousState.isLoadingExperiment = true;
+    previousState.experiments = [
+      {
+        id: '1',
+        name: 'old-name',
+      } as ExperimentVM,
+    ];
     const testAction: Action = actionUpsertExperimentSuccess({
       experiment: {
         id: '1',
+        name: 'new-name',
       } as ExperimentVM,
     });
 
@@ -154,12 +160,12 @@ describe('ExperimentsReducer', () => {
     expect(newState).toEqual({
       ...previousState,
       isLoadingExperiment: false,
-      entities: {
-        '1': {
+      experiments: [
+        {
           id: '1',
+          name: 'new-name',
         },
-      },
-      ids: ['1'],
+      ],
     });
   });
 
@@ -418,23 +424,21 @@ describe('ExperimentsReducer', () => {
     expect(newState).toEqual({
       ...previousState,
       isLoadingExperiment: false,
-      entities: {
-        '1': {
+      experiments: [
+        {
           id: '1',
         },
-      },
-      ids: ['1'],
+      ],
     });
   });
 
   it('action "actionDeleteExperimentSuccess" should remove experiment by id', () => {
     const previousState = { ...initialState };
-    previousState.entities = {
-      '1': {
+    previousState.experiments = [
+      {
         id: '1',
       } as ExperimentVM,
-    };
-    previousState.ids = ['1'];
+    ];
 
     const testAction: Action = actionDeleteExperimentSuccess({
       experimentId: '1',
@@ -445,8 +449,8 @@ describe('ExperimentsReducer', () => {
     expect(newState).not.toBe(previousState);
     expect(newState).toEqual({
       ...previousState,
-      entities: {},
-      ids: [],
+      experiments: [],
+      isLoadingExperimentDelete: false,
     });
   });
 
@@ -465,13 +469,20 @@ describe('ExperimentsReducer', () => {
     expect(newState.isLoadingExperiment).toEqual(true);
   });
 
-  it('action "actionUpdateExperimentStateSuccess" should set loading to false and set experiment', () => {
+  it('action "actionUpdateExperimentStateSuccess" should set loading to false and update experiment', () => {
     const previousState = { ...initialState };
     previousState.isLoadingExperiment = false;
+    previousState.experiments = [
+      {
+        id: '1',
+        description: 'old-description',
+      } as ExperimentVM,
+    ];
 
     const testAction: Action = actionUpdateExperimentStateSuccess({
       experiment: {
         id: '1',
+        description: 'new-description',
       } as any,
     });
 
@@ -481,12 +492,12 @@ describe('ExperimentsReducer', () => {
     expect(newState).toEqual({
       ...previousState,
       isLoadingExperiment: false,
-      entities: {
-        '1': {
+      experiments: [
+        {
           id: '1',
+          description: 'new-description',
         },
-      },
-      ids: ['1'],
+      ],
     });
   });
 

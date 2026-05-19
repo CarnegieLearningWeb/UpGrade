@@ -1,6 +1,6 @@
 {
   "name": "UpGrade",
-  "version": "6.4.0",
+  "version": "6.5.0",
   "description": "This is a combined repository for UpGrade, an open-source platform to support large-scale A/B testing in educational applications.  Learn more at www.upgradeplatform.org",
   "main": "index.js",
   "workspaces": [
@@ -14,6 +14,7 @@
   "private": true,
   "devDependencies": {
     "@angular-eslint/eslint-plugin": "^14.1.2",
+    "concurrently": "^8.2.1",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
     "eslint": "^8.26.0",
@@ -33,7 +34,14 @@
     "prettier:write": "prettier --config .prettierrc './packages/{frontend,backend,types}/**/*.{ts,js,html,json,scss}' --write",
     "prettier:check": "prettier --config .prettierrc './packages/{frontend,backend,types}/**/*.{ts,js,html,json,scss}' --check",
     "backend": "yarn workspace upgrade-backend",
-    "frontend": "yarn workspace upgrade-frontend"
+    "frontend": "yarn workspace upgrade-frontend",
+    "types": "yarn workspace upgrade_types",
+    "js-clientlib": "yarn --cwd clientlibs/js run",
+    "clean": "rm -rf node_modules clientlibs/js/node_modules packages/types/dist packages/backend/dist packages/frontend/dist clientlibs/js/dist",
+    "install:all": "yarn && yarn --cwd clientlibs/js install",
+    "build:all": "yarn types build && concurrently \"yarn backend build\" \"yarn js-clientlib build\" \"yarn frontend build\"",
+    "launch": "concurrently -p \"[{name}]\" -n \"types,backend,frontend\" -c \"blue,magenta,cyan\" \"yarn types build\" \"yarn backend dev\" \"yarn frontend start\"",
+    "clean-launch": "yarn clean && yarn install:all && yarn build:all && yarn launch"
   },
   "lint-staged": {
     "./packages/frontend/projects/upgrade/src/**/*.{ts,js,html,json,scss}": [

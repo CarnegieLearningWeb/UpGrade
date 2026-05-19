@@ -12,9 +12,6 @@ projectBuilderV5 (
         "upgrade-service":[
             artifactType: "ecr",
             versioning: "branch",
-            appInfrastructure: [
-                [file: "cloudformation/backend/app-infrastructure.yml"]
-            ],
             s3Context: [
                 glob: "packages/backend/**/*,packages/types/**/*,packages/frontend/package.json,*.json,yarn.lock,.yarn*",
                 exclude: "**/node_modules,**/node_modules/**,**/*.log,.git"
@@ -53,10 +50,11 @@ projectBuilderV5 (
                 ]
             ],
             envVars: [
-                API_BASE_URL: '@vault(secret/configs/upgrade/${environment}/API_BASE_URL)',
-                BASE_HREF_PREFIX: '@vault(secret/configs/upgrade/${environment}/BASE_HREF_PREFIX)',
-                GOOGLE_CLIENT_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_CLIENT_ID)',
-                GOOGLE_SERVICE_ACCOUNT_ID: '@vault(secret/configs/upgrade/${environment}/GOOGLE_SERVICE_ACCOUNT_ID)',
+                // The parameters for every environment are in the CLI Shared Services account
+                API_BASE_URL: '@ssm(/frontend-configuration/upgrade/${environment}/API_BASE_URL)',
+                BASE_HREF_PREFIX: '@ssm(/frontend-configuration/upgrade/${environment}/BASE_HREF_PREFIX)',
+                GOOGLE_CLIENT_ID: '@ssm(/frontend-configuration/upgrade/${environment}/GOOGLE_CLIENT_ID)',
+                GOOGLE_SERVICE_ACCOUNT_ID: '@ssm(/frontend-configuration/upgrade/${environment}/GOOGLE_SERVICE_ACCOUNT_ID)',
             ],
             automatedBranchBuilds: [
                 "dev",

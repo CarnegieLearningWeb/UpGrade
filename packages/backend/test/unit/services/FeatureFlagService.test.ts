@@ -23,7 +23,7 @@ import {
   SORT_AS_DIRECTION,
 } from 'upgrade_types';
 import { isUUID } from 'class-validator';
-import { v4 as uuid } from 'uuid';
+
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { FeatureFlagValidation } from '../../../src/api/controllers/validators/FeatureFlagValidator';
 import { FeatureFlagListValidator } from '../../../src/api/controllers/validators/FeatureFlagListValidator';
@@ -48,7 +48,7 @@ describe('Feature Flag Service Testing', () => {
   };
 
   const mockFlag1 = new FeatureFlag();
-  mockFlag1.id = uuid();
+  mockFlag1.id = crypto.randomUUID();
   mockFlag1.name = 'name';
   mockFlag1.key = 'key';
   mockFlag1.description = 'description';
@@ -58,7 +58,7 @@ describe('Feature Flag Service Testing', () => {
   mockFlag1.featureFlagSegmentExclusion = [];
 
   const mockFlag2 = new FeatureFlagValidation();
-  mockFlag2.id = uuid();
+  mockFlag2.id = crypto.randomUUID();
   mockFlag2.name = 'name';
   mockFlag2.key = 'key';
   mockFlag2.description = 'description';
@@ -80,7 +80,7 @@ describe('Feature Flag Service Testing', () => {
 
   const mockSegment = {
     name: 'name',
-    id: uuid(),
+    id: crypto.randomUUID(),
     context: 'context',
     type: SEGMENT_TYPE.PRIVATE,
     userIds: ['user1'],
@@ -127,7 +127,7 @@ describe('Feature Flag Service Testing', () => {
     createQueryBuilder: () => queryBuilderMock,
     getRepository: jest.fn().mockReturnThis(),
     findOne: jest.fn().mockResolvedValue({
-      featureFlag: { id: uuid(), name: 'flag' },
+      featureFlag: { id: crypto.randomUUID(), name: 'flag' },
       segment: { id: 'mock-segment-id', name: 'mock-segment-name' },
     }),
     findByIds: jest.fn().mockResolvedValue([mockFlag1]),
@@ -247,8 +247,8 @@ describe('Feature Flag Service Testing', () => {
           provide: getRepositoryToken(FeatureFlagSegmentExclusionRepository),
           useValue: {
             findOne: jest.fn().mockResolvedValue({
-              featureFlag: { id: uuid(), name: 'flag' },
-              segment: { id: uuid(), name: 'name' },
+              featureFlag: { id: crypto.randomUUID(), name: 'flag' },
+              segment: { id: crypto.randomUUID(), name: 'name' },
             }),
             insertData: jest.fn().mockResolvedValue(mockList),
           },
@@ -257,8 +257,8 @@ describe('Feature Flag Service Testing', () => {
           provide: getRepositoryToken(FeatureFlagSegmentInclusionRepository),
           useValue: {
             findOne: jest.fn().mockResolvedValue({
-              featureFlag: { id: uuid(), name: 'flag' },
-              segment: { id: uuid(), name: 'name' },
+              featureFlag: { id: crypto.randomUUID(), name: 'flag' },
+              segment: { id: crypto.randomUUID(), name: 'name' },
             }),
             insertData: jest.fn().mockResolvedValue(mockList),
           },

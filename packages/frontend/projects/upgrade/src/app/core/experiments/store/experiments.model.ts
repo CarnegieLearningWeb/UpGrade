@@ -1,4 +1,3 @@
-import { EntityState } from '@ngrx/entity';
 import { AppState } from '../../core.module';
 import {
   CONSISTENCY_RULE,
@@ -604,7 +603,9 @@ export const TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS = {
 
 export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
 
-export interface ExperimentState extends EntityState<ExperimentVM> {
+export interface ExperimentState {
+  // List page data - plain array preserves backend sort order
+  experiments: ExperimentVM[];
   isLoadingExperiment: boolean;
   isLoadingExperimentDetailStats: boolean;
   isLoadingExperimentExport: boolean;

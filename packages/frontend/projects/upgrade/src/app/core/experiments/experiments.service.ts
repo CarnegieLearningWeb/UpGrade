@@ -67,16 +67,7 @@ import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 export class ExperimentService {
   constructor(private store$: Store<AppState>, private localStorageService: LocalStorageService) {}
 
-  experiments$: Observable<Experiment[]> = this.store$.pipe(
-    select(selectAllExperiment),
-    map((experiments) =>
-      experiments.sort((a, b) => {
-        const d1 = new Date(a.createdAt);
-        const d2 = new Date(b.createdAt);
-        return d1 < d2 ? 1 : d1 > d2 ? -1 : 0;
-      })
-    )
-  );
+  experiments$: Observable<Experiment[]> = this.store$.pipe(select(selectAllExperiment));
   currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));

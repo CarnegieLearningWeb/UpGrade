@@ -1,10 +1,9 @@
 import * as Faker from 'faker';
 import { define } from 'typeorm-seeding';
 import { ExperimentUser } from '../../api/models/ExperimentUser';
-import * as uuid from 'uuid';
 
 define(ExperimentUser, (faker: typeof Faker) => {
-  const id = uuid.v4();
+  const id = crypto.randomUUID();
   const group: any = { class: faker.random.number(5), teacher: faker.name.firstName(), school: faker.name.findName };
 
   const user = new ExperimentUser();

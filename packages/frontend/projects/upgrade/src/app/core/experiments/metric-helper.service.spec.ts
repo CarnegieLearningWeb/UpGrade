@@ -4,7 +4,7 @@ import { ExperimentService } from './experiments.service';
 import { ExperimentQueryDTO } from './store/experiments.model';
 import { OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
 
-jest.mock('uuid', () => ({ v4: () => 'mock-uuid' }));
+jest.mock('crypto', () => ({ randomUUID: () => 'mock-uuid' }));
 
 describe('MetricHelperService', () => {
   let service: MetricHelperService;

@@ -1,6 +1,6 @@
 {
   "name": "upgrade_client_lib_lite",
-  "version": "6.4.0",
+  "version": "6.5.0",
   "description": "UpGrade client library with externalized axios - works in both browser and Node.js",
   "main": "dist/lite/index.js",
   "types": "dist/lite/index.d.ts",

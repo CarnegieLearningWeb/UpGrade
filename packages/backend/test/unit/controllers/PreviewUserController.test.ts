@@ -4,7 +4,7 @@ import { configureLogger } from '../../utils/logger';
 import { useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { v4 as uuid } from 'uuid';
+
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import PreviewUserServiceMock from './mocks/PreviewUserServiceMock';
 
@@ -35,7 +35,7 @@ describe('Preview User Controller Testing', () => {
 
   test('Get request for /api/previewusers/:id', () => {
     return request(app)
-      .get(`/api/previewusers/${uuid()}`)
+      .get(`/api/previewusers/${crypto.randomUUID()}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -73,7 +73,7 @@ describe('Preview User Controller Testing', () => {
 
   test('Put request for /api/previewusers/:id', () => {
     return request(app)
-      .put(`/api/previewusers/${uuid()}`)
+      .put(`/api/previewusers/${crypto.randomUUID()}`)
       .send({
         id: 'string',
         assignments: [
@@ -95,7 +95,7 @@ describe('Preview User Controller Testing', () => {
 
   test('Delete request for /api/previewusers/:id', () => {
     return request(app)
-      .delete(`/api/previewusers/${uuid()}`)
+      .delete(`/api/previewusers/${crypto.randomUUID()}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

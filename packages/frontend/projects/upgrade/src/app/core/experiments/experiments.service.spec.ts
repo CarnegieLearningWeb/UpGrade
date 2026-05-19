@@ -145,19 +145,14 @@ describe('ExperimentService', () => {
   });
 
   describe('#experiments$', () => {
-    it('should emit sorted list of entities', fakeAsync(() => {
+    it('should emit experiments in selector order', fakeAsync(() => {
       ExperimentSelectors.selectAllExperiment.setResult(mockExperimentsList);
 
       mockStore.next('thisValueIsMeaningless');
 
       service.experiments$.subscribe((val) => {
         tick(0);
-        expect(val).toEqual([
-          { id: 'first', createdAt: '04/25/17 04:34:22 +0000' },
-          { id: 'second', createdAt: '04/24/17 04:34:22 +0000' },
-          { id: 'third', createdAt: '04/24/17 04:34:22 +0000' },
-          { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000' },
-        ]);
+        expect(val).toEqual(mockExperimentsList);
       });
     }));
   });

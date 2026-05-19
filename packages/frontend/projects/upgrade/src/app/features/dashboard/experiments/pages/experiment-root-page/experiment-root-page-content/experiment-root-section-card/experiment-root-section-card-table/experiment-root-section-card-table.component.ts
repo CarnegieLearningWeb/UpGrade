@@ -6,7 +6,8 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  OnInit,
+  OnDestroy,
+  AfterViewInit,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -17,7 +18,7 @@ import {
   EXPERIMENT_TRANSLATION_KEYS,
   Experiment,
 } from '../../../../../../../../core/experiments/store/experiments.model';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
@@ -42,8 +43,8 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
   styleUrl: './experiment-root-section-card-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExperimentRootSectionCardTableComponent implements OnInit {
-  @Input() dataSource$: MatTableDataSource<Experiment>;
+export class ExperimentRootSectionCardTableComponent implements AfterViewInit, OnDestroy {
+  @Input() experiments: Experiment[];
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
   @Input() expandedTagsMap: Map<string, boolean>;
@@ -60,20 +61,12 @@ export class ExperimentRootSectionCardTableComponent implements OnInit {
 
   constructor(private readonly experimentService: ExperimentService) {}
 
-  ngOnInit() {
-    this.sortTable();
-  }
-
   fetchExperimentOnScroll() {
     this.experimentService.loadExperiments();
   }
 
   ngAfterViewInit() {
     this.setupIntersectionObserver();
-  }
-
-  ngOnChanges() {
-    this.sortTable();
   }
 
   ngOnDestroy() {
@@ -97,14 +90,6 @@ export class ExperimentRootSectionCardTableComponent implements OnInit {
 
     if (this.bottomTrigger) {
       this.observer.observe(this.bottomTrigger.nativeElement);
-    }
-  }
-
-  private sortTable() {
-    if (this.dataSource$?.data) {
-      this.dataSource$.sortingDataAccessor = (item, property) =>
-        property === 'name' ? item.name.toLowerCase() : item[property];
-      this.dataSource$.sort = this.sort;
     }
   }
 
@@ -147,19 +132,21 @@ export class ExperimentRootSectionCardTableComponent implements OnInit {
 
   changeSorting(event) {
     if (event.direction) {
+      // Make backend call with new sort parameters
       this.experimentService.setSortingType(event.direction.toUpperCase());
       this.experimentService.setSortKey(event.active);
+      this.experimentService.loadExperiments(true); // true = reset pagination
     } else {
       // When sorting is cleared, revert to default sorting
       this.experimentService.setSortingType(null);
       this.experimentService.setSortKey(null);
+      this.experimentService.loadExperiments(true); // true = reset pagination
+
+      // Scroll to top when sorting is cleared
       this.tableContainer.nativeElement.scroll({
         top: 0,
         behavior: 'smooth',
       });
-      const sortedData = [...this.dataSource$.data];
-      sortedData.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-      this.dataSource$.data = sortedData;
     }
   }
 

@@ -3,7 +3,7 @@ import request from 'supertest';
 import { configureLogger } from '../../utils/logger';
 import { useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
-import { v4 as uuid } from 'uuid';
+
 import AuditServiceMock from './mocks/AuditServiceMock';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 
@@ -27,7 +27,7 @@ describe('Analytics Controller Testing', () => {
   test('Post request for /api/stats/enrollment', () => {
     return request(app)
       .post('/api/stats/enrollment')
-      .send({ experimentIds: [uuid()] })
+      .send({ experimentIds: [crypto.randomUUID()] })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -36,7 +36,7 @@ describe('Analytics Controller Testing', () => {
   test('Post request for /api/stats/enrollment/detail', () => {
     return request(app)
       .post('/api/stats/enrollment/detail')
-      .send({ experimentId: uuid() })
+      .send({ experimentId: crypto.randomUUID() })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -46,7 +46,7 @@ describe('Analytics Controller Testing', () => {
     return request(app)
       .post('/api/stats/enrollment/date')
       .send({
-        experimentId: uuid(),
+        experimentId: crypto.randomUUID(),
         dateEnum: DATE_RANGE.LAST_SEVEN_DAYS,
         clientOffset: 330,
       })
@@ -59,7 +59,7 @@ describe('Analytics Controller Testing', () => {
     return request(app)
       .get('/api/stats/csv')
       .query({
-        experimentId: uuid(),
+        experimentId: crypto.randomUUID(),
         email: 'xyz@gmail.com',
       })
       .set('Accept', 'application/json')

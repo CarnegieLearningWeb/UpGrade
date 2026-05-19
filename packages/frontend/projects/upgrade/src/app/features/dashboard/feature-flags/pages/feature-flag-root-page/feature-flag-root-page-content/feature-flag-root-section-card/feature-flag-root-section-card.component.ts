@@ -11,7 +11,6 @@ import { FeatureFlagRootSectionCardTableComponent } from './feature-flag-root-se
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FLAG_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
 import { RouterModule } from '@angular/router';
-import { MatTableDataSource } from '@angular/material/table';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
 import { Observable, map } from 'rxjs';
 import {
@@ -19,10 +18,6 @@ import {
   FeatureFlag,
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
 import { CommonSearchWidgetSearchParams } from '@shared-component-lib/common-section-card-search-header/common-section-card-search-header.component';
-import {
-  CommonTableHelpersService,
-  TableState,
-} from '../../../../../../../shared/services/common-table-helpers.service';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
@@ -44,7 +39,7 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 })
 export class FeatureFlagRootSectionCardComponent {
   permissions$: Observable<UserPermission>;
-  dataSource$: Observable<MatTableDataSource<FeatureFlag>>;
+  featureFlags$: Observable<FeatureFlag[]>;
   isLoadingFeatureFlags$ = this.featureFlagService.isLoadingFeatureFlags$;
   isInitialLoading$ = this.featureFlagService.isInitialFeatureFlagsLoading$;
   isAllFlagsFetched$ = this.featureFlagService.isAllFlagsFetched$;
@@ -82,7 +77,6 @@ export class FeatureFlagRootSectionCardComponent {
     private featureFlagService: FeatureFlagsService,
     private translateService: TranslateService,
     private dialogService: DialogService,
-    private tableHelpersService: CommonTableHelpersService,
     private authService: AuthService
   ) {}
 
@@ -92,11 +86,7 @@ export class FeatureFlagRootSectionCardComponent {
   }
 
   ngAfterViewInit() {
-    this.dataSource$ = this.featureFlagService.selectRootTableState$.pipe(
-      map((tableState: TableState<FeatureFlag>) => {
-        return this.tableHelpersService.mapTableStateToDataSource<FeatureFlag>(tableState);
-      })
-    );
+    this.featureFlags$ = this.featureFlagService.featureFlags$;
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<FLAG_SEARCH_KEY>) {
