@@ -433,7 +433,7 @@ export class ExperimentAssignmentService {
         );
 
         const allWithinSubjectDecisionPoints = filteredWithinSubjectExperiments
-          .map((experiment) => this.getActivePartitions(experiment))
+          .map((experiment) => this.getActiveDecisionPoints(experiment))
           .flat();
 
         repeatedEnrollmentCounts = await this.repeatedEnrollmentRepository.getRepeatedEnrollmentCount(
@@ -883,7 +883,7 @@ export class ExperimentAssignmentService {
     return experimentsToAssign;
   }
 
-  private getActivePartitions(experiment: Experiment): DecisionPoint[] {
+  private getActiveDecisionPoints(experiment: Experiment): DecisionPoint[] {
     return experiment.partitions.filter((dp) => !dp.pendingActivation);
   }
 
@@ -993,8 +993,8 @@ export class ExperimentAssignmentService {
         // mark experiment
         experimentMarked.push(experiment);
         poolExperiments.push(experiment);
-        this.getActivePartitions(experiment).forEach((partition) => {
-          const id = `${partition.site}_${partition.target}`;
+        this.getActiveDecisionPoints(experiment).forEach((decisionPoint) => {
+          const id = `${decisionPoint.site}_${decisionPoint.target}`;
           poolExperiments = poolExperiments.concat(this.createPool(id, decisionPointExperimentMap, experimentMarked));
         });
       }
@@ -1009,10 +1009,10 @@ export class ExperimentAssignmentService {
     const decisionPointExperimentMap: Record<string, Experiment[]> = {};
 
     experiments.forEach((experiment) => {
-      this.getActivePartitions(experiment).forEach((partition) => {
-        const partitionId = `${partition.site}_${partition.target}`;
-        decisionPointExperimentMap[partitionId] = decisionPointExperimentMap[partitionId] || [];
-        decisionPointExperimentMap[partitionId].push(experiment);
+      this.getActiveDecisionPoints(experiment).forEach((decisionPoint) => {
+        const decisionPointId = `${decisionPoint.site}_${decisionPoint.target}`;
+        decisionPointExperimentMap[decisionPointId] = decisionPointExperimentMap[decisionPointId] || [];
+        decisionPointExperimentMap[decisionPointId].push(experiment);
       });
     });
 
