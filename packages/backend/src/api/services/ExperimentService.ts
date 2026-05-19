@@ -898,6 +898,7 @@ export class ExperimentService {
           [];
 
         // creating decision point docs
+        const oldDecisionPointsById = new Map(oldDecisionPoints.map((dp) => [dp.id, dp]));
         let promiseArray = [];
         const decisionPointDocToSave =
           (decisionPoints &&
@@ -912,7 +913,9 @@ export class ExperimentService {
                 })
               );
               decisionPoint.id = decisionPoint.id || crypto.randomUUID();
-              return { ...decisionPoint, experiment: experimentDoc, pendingActivation: true };
+              const existingDp = oldDecisionPointsById.get(decisionPoint.id);
+              const pendingActivation = existingDp ? existingDp.pendingActivation : true;
+              return { ...decisionPoint, experiment: experimentDoc, pendingActivation };
             })) ||
           [];
 
@@ -953,14 +956,22 @@ export class ExperimentService {
         });
 
         // delete decision points which don't exist in new experiment document
+        const activeStates = [EXPERIMENT_STATE.ENROLLING, EXPERIMENT_STATE.ENROLLMENT_COMPLETE];
         const toDeleteDecisionPoints = [];
-        oldDecisionPoints.forEach(({ id, site, target }) => {
+        oldDecisionPoints.forEach(({ id, site, target, pendingActivation }) => {
           if (
             !decisionPointDocToSave.find((doc) => {
               // normalize undefined/null for target so null-target DPs are not falsely deleted
               return doc.id === id && doc.site === site && (doc.target ?? null) === (target ?? null);
             })
           ) {
+            if (activeStates.includes(oldExperiment.state as EXPERIMENT_STATE) && !pendingActivation) {
+              throw new BadRequestError(
+                `Cannot remove decision point site="${site}" target="${target ?? ''}" from an experiment in state "${
+                  oldExperiment.state
+                }" — it has already been activated.`
+              );
+            }
             toDeleteDecisionPoints.push(
               this.decisionPointRepository.deleteDecisionPoint(id, transactionalEntityManager)
             );
