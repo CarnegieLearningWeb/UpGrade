@@ -14,6 +14,7 @@ import {
   EXPERIMENT_ROW_ACTION,
 } from '../../../../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
+import { formatDecisionPointDisplay } from '../../../../../experiment-decision-point.utils';
 
 @Component({
   selector: 'app-experiment-decision-points-table',
@@ -40,14 +41,17 @@ export class ExperimentDecisionPointsTableComponent {
   @Input() actionsTooltip?: string = '';
   @Output() rowAction = new EventEmitter<ExperimentDecisionPointRowActionEvent>();
 
-  displayedColumns: string[] = ['site', 'target', 'excludeIfReached', 'actions'];
+  displayedColumns: string[] = ['decisionPoint', 'excludeIfReached', 'actions'];
 
   DECISION_POINT_TRANSLATION_KEYS = {
-    SITE: 'experiments.details.decision-points.site.text',
-    TARGET: 'experiments.details.decision-points.target.text',
+    DECISION_POINT: 'experiments.details.decision-points.decision-point.text',
     EXCLUDE_IF_REACHED: 'experiments.details.decision-points.exclude-if-reached.text',
     ACTIONS: 'experiments.details.decision-points.actions.text',
   };
+
+  getDecisionPoint(decisionPoint: ExperimentDecisionPoint): string {
+    return formatDecisionPointDisplay(decisionPoint);
+  }
 
   onEditButtonClick(decisionPoint: ExperimentDecisionPoint): void {
     this.rowAction.emit({ action: EXPERIMENT_ROW_ACTION.EDIT, decisionPoint });

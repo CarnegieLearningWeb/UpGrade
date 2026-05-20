@@ -15,6 +15,7 @@ import {
   EXPERIMENT_ROW_ACTION,
 } from '../../../../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
+import { formatDecisionPointDisplay } from '../../../../../experiment-decision-point.utils';
 
 @Component({
   selector: 'app-experiment-payloads-table',
@@ -51,16 +52,9 @@ export class ExperimentPayloadsTableComponent {
     ACTIONS: 'experiments.details.payloads.actions.text',
   };
 
-  // Get site name from decision point ID
-  getSite(decisionPointId: string): string {
+  getDecisionPoint(decisionPointId: string): string {
     const decisionPoint = this.partitions.find((dp) => dp.id === decisionPointId);
-    return decisionPoint?.site || '';
-  }
-
-  // Get target name from decision point ID
-  getTarget(decisionPointId: string): string {
-    const decisionPoint = this.partitions.find((dp) => dp.id === decisionPointId);
-    return decisionPoint?.target || '';
+    return formatDecisionPointDisplay(decisionPoint);
   }
 
   // Get condition name from condition ID

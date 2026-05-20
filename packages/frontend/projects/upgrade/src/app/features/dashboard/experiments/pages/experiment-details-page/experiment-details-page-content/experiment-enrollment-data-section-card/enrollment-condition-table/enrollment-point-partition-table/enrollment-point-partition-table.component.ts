@@ -12,7 +12,7 @@ import { EnrollmentConditionExpandableRowComponent } from '../enrollment-conditi
 export class EnrollmentPointPartitionTableComponent implements OnChanges {
   @Input() partitionData: any[];
   @Input() experiment: ExperimentVM;
-  commonColumns = ['expandIcon', 'experimentPoint', 'experimentId', 'userEnrolled'];
+  commonColumns = ['expandIcon', 'experimentPoint', 'userEnrolled'];
   displayedColumns: string[] = [];
 
   ngOnChanges() {

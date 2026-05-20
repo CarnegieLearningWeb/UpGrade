@@ -52,8 +52,8 @@ export interface ExperimentConditionFilterOptions {
 
 export interface ExperimentPartitionFilterOptions {
   id: string;
-  point: string;
-  twoCharacterId: string;
+  site: string;
+  target: string;
 }
 
 export interface ExperimentDateFilterOptions {
@@ -431,7 +431,7 @@ export interface ExperimentConditionDTO {
 export interface ExperimentPartitionDTO {
   id: string;
   site: string;
-  target?: string;
+  target: string;
   description?: string;
   order: number;
   excludeIfReached: boolean;
