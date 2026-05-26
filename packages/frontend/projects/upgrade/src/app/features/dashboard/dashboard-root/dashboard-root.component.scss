@@ -5,12 +5,15 @@ mat-drawer-container {
 
 mat-drawer {
   width: 243px;
+  background-color: #00ff00;
 }
 
 .drawer-container {
   display: flex;
   flex-direction: column;
   height: 100%;
+  color: hotpink;
+  text-transform: uppercase;
 
   .logo {
     display: flex;
@@ -21,7 +24,7 @@ mat-drawer {
 
     &-link {
       text-decoration: none;
-      color: var(--blue);
+      color: hotpink;
     }
   }
 
