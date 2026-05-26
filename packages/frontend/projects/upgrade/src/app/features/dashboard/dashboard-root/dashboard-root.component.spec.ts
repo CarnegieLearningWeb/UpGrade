@@ -30,7 +30,8 @@ describe('DashboardRootComponent', () => {
   it('should display grimacing face emoji icons in the nav instead of mat-icons', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const icons = compiled.querySelectorAll('.icon');
-    expect(icons.length).toBeGreaterThan(0);
+    // 5 route link icons + 1 logout icon
+    expect(icons.length).toBe(6);
     icons.forEach((icon) => {
       expect(icon.textContent?.trim()).toBe('😬');
     });
