@@ -228,9 +228,7 @@ describe('typeormLoader', () => {
 
     test('logs the error before throwing', async () => {
       await expect(typeormLoader(mockSettings)).rejects.toThrow();
-      expect(mockLogError).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Database connection failed' })
-      );
+      expect(mockLogError).toHaveBeenCalledWith(expect.objectContaining({ message: 'Database connection failed' }));
     });
 
     test('does not pass anything to microframework settings — the app never boots', async () => {
