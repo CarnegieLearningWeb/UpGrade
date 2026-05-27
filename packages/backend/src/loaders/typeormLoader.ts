@@ -10,13 +10,22 @@ import { UpgradeLogger } from '../lib/logger/UpgradeLogger';
 
 const log = new UpgradeLogger();
 
-export const parseReplicaHosts = (hostReplica: string | null): string[] => {
+export const parseReplicaHosts = (hostReplica?: string | null): string[] => {
   if (!hostReplica) {
     return [];
   }
 
   try {
-    return JSON.parse(hostReplica) as string[];
+    const parsedHosts = JSON.parse(hostReplica) as unknown;
+    if (Array.isArray(parsedHosts) && parsedHosts.every((host) => typeof host === 'string')) {
+      return parsedHosts;
+    }
+
+    log.error({
+      message: 'Invalid read replica host list format — continuing without replica hosts',
+      error: new Error('host_replica must be a JSON string array'),
+    });
+    return [];
   } catch (error) {
     log.error({
       message: 'Invalid read replica host configuration — continuing without replica hosts',

@@ -290,6 +290,15 @@ describe('typeormLoader', () => {
       );
     });
 
+    test('falls back to [] and logs when replica host config is valid JSON but wrong shape', () => {
+      expect(parseReplicaHosts('{"host":"replica"}')).toEqual([]);
+      expect(mockLogError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('Invalid read replica host list format'),
+        })
+      );
+    });
+
     test('works correctly when microframework settings is undefined', async () => {
       await expect(typeormLoader(undefined)).resolves.toBeUndefined();
     });
