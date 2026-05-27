@@ -92,7 +92,7 @@ import { DataSource } from 'typeorm';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { Container } from '../../../src/typeorm-typedi-extensions';
 import { env } from '../../../src/env';
-import { typeormLoader } from '../../../src/loaders/typeormLoader';
+import { parseReplicaHosts, typeormLoader } from '../../../src/loaders/typeormLoader';
 
 // ─── Typed handles into the mock internals ───────────────────────────────────
 const mainInstance = (DataSource as any).__main as {
@@ -281,6 +281,15 @@ describe('typeormLoader', () => {
 
   // ── Edge cases ──────────────────────────────────────────────────────────────
   describe('edge cases', () => {
+    test('falls back to [] and logs when replica host config is invalid JSON', () => {
+      expect(parseReplicaHosts('not-json')).toEqual([]);
+      expect(mockLogError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('Invalid read replica host configuration'),
+        })
+      );
+    });
+
     test('works correctly when microframework settings is undefined', async () => {
       await expect(typeormLoader(undefined)).resolves.toBeUndefined();
     });

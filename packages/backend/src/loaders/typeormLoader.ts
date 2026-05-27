@@ -10,7 +10,23 @@ import { UpgradeLogger } from '../lib/logger/UpgradeLogger';
 
 const log = new UpgradeLogger();
 
-const replicaHosts = (env.db.host_replica ? JSON.parse(env.db.host_replica) : []) as string[];
+export const parseReplicaHosts = (hostReplica: string | null): string[] => {
+  if (!hostReplica) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(hostReplica) as string[];
+  } catch (error) {
+    log.error({
+      message: 'Invalid read replica host configuration — continuing without replica hosts',
+      error,
+    });
+    return [];
+  }
+};
+
+const replicaHosts = parseReplicaHosts(env.db.host_replica);
 
 const masterHost: PostgresConnectionCredentialsOptions = {
   host: env.db.host,
