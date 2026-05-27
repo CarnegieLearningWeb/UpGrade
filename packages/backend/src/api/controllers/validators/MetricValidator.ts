@@ -55,7 +55,7 @@ function isValidMetric(value: any): value is IGroupMetric | ISingleMetric {
       typeof value.datatype === 'string' &&
       value.datatype.trim().length > 0 &&
       Object.values(IMetricMetaData).includes(value.datatype) &&
-      (value.allowedValues === undefined ||
+      ((value.datatype === IMetricMetaData.CONTINUOUS && value.allowedValues === undefined) ||
         (Array.isArray(value.allowedValues) &&
           value.allowedValues.every(
             (allowedValue) => typeof allowedValue === 'string' || typeof allowedValue === 'number'
