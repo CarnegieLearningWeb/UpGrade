@@ -6,6 +6,9 @@ import { CONNECTION_NAME } from './enums';
 import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 import { Container as tteContainer } from '../typeorm-typedi-extensions';
+import { UpgradeLogger } from '../lib/logger/UpgradeLogger';
+
+const log = new UpgradeLogger();
 
 const replicaHosts = (env.db.host_replica ? JSON.parse(env.db.host_replica) : []) as string[];
 
@@ -71,7 +74,23 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
 
     // register the data source instance in the typeorm-typeDI-extensions
     tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
-    await Promise.all([appDataSourceInstance.initialize(), exportDataSourceInstance.initialize()]);
+    const [mainResult, replicaResult] = await Promise.allSettled([
+      appDataSourceInstance.initialize(),
+      exportDataSourceInstance.initialize(),
+    ]);
+
+    // Main DB is required — rethrow so the outer catch can classify and re-throw.
+    if (mainResult.status === 'rejected') {
+      throw mainResult.reason;
+    }
+
+    // Read replica is optional — log the failure but let the app start.
+    // Requests that attempt to use the replica connection will receive an error
+    // at query time instead of preventing the whole app from booting.
+    if (replicaResult.status === 'rejected') {
+      const replicaErr = replicaResult.reason as any;
+      log.error({ message: 'Read replica connection failed — continuing without replica', error: replicaErr });
+    }
 
     if (!env.db.synchronize && !env.isECS) {
       await appDataSourceInstance.runMigrations();
@@ -86,8 +105,8 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
       });
     }
   } catch (err) {
-    // TODO: use logger to log the error
     const error = err as any;
+    log.error({ message: 'Database connection failed', error });
     if (error.code === 'ECONNREFUSED') {
       error.type = SERVER_ERROR.DB_UNREACHABLE;
       throw error;
