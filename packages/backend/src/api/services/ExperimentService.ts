@@ -476,11 +476,8 @@ export class ExperimentService {
     logger: UpgradeLogger,
     scheduleDate?: Date,
     entityManager?: EntityManager
-  ): Promise<Experiment> {
-    const oldExperiment = await this.experimentRepository.findOne({
-      where: { id: experimentId },
-      relations: ['stateTimeLogs', 'partitions', 'queries', 'queries.metric'],
-    });
+  ): Promise<ExperimentDTO> {
+    const oldExperiment = await this.experimentRepository.findOneExperiment(experimentId);
     await this.clearExperimentCacheDetail(
       oldExperiment.context[0],
       oldExperiment.partitions.map((partition) => {
@@ -529,7 +526,7 @@ export class ExperimentService {
     // updating the experiment and stateTimeLog
     const stateTimeLogRepo = entityManager ? entityManager.getRepository(StateTimeLog) : this.stateTimeLogsRepository;
     logger.info({ message: `stateTimeLogDoc =>`, details: stateTimeLogDoc });
-    const [updatedState, updatedStateTimeLog] = await Promise.all([
+    await Promise.all([
       this.experimentRepository.updateState(experimentId, state, scheduleDate, entityManager),
       stateTimeLogRepo.save(stateTimeLogDoc),
     ]);
@@ -537,15 +534,22 @@ export class ExperimentService {
     // updating experiment schedules
     await this.updateExperimentSchedules(experimentId, logger, entityManager);
 
-    return {
-      ...oldExperiment,
-      state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[updatedState[0].state] || updatedState[0].state,
-      startOn: updatedState[0].startOn,
-      stateTimeLogs: [
-        ...this.transformStateTimeLogs(oldExperiment.stateTimeLogs),
-        this.transformStateTimeLogs([updatedStateTimeLog]),
-      ].flat(),
-    };
+    oldExperiment.state = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[state] || state;
+    if (scheduleDate) {
+      oldExperiment.startOn = scheduleDate;
+    }
+
+    const responseStateTimeLog = {
+      ...stateTimeLogDoc,
+      experiment: { id: oldExperiment.id },
+    } as StateTimeLog;
+
+    oldExperiment.stateTimeLogs = [
+      ...this.transformStateTimeLogs(oldExperiment.stateTimeLogs),
+      this.transformStateTimeLogs([responseStateTimeLog])[0],
+    ];
+
+    return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(oldExperiment)));
   }
 
   public async verifyExperiments(
