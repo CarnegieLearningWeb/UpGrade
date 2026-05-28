@@ -206,6 +206,7 @@ export interface ExperimentDecisionPoint {
   updatedAt: string;
   versionNumber: number;
   excludeIfReached: boolean;
+  pendingActivation?: boolean;
 }
 
 export interface ExperimentFactor {
@@ -436,6 +437,7 @@ export interface ExperimentPartitionDTO {
   order: number;
   excludeIfReached: boolean;
   twoCharacterId?: string;
+  pendingActivation?: boolean;
 }
 
 export interface ExperimentFactorDTO {

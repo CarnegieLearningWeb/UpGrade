@@ -433,7 +433,7 @@ export class ExperimentAssignmentService {
         );
 
         const allWithinSubjectDecisionPoints = filteredWithinSubjectExperiments
-          .map((experiment) => experiment.partitions)
+          .map((experiment) => this.getActiveDecisionPoints(experiment))
           .flat();
 
         repeatedEnrollmentCounts = await this.repeatedEnrollmentRepository.getRepeatedEnrollmentCount(
@@ -883,6 +883,10 @@ export class ExperimentAssignmentService {
     return experimentsToAssign;
   }
 
+  private getActiveDecisionPoints(experiment: Experiment): DecisionPoint[] {
+    return experiment.partitions.filter((dp) => !dp.pendingActivation || experiment.state === EXPERIMENT_STATE.PREVIEW);
+  }
+
   private mapDecisionPoints(
     experiment: Experiment,
     conditionAssigned: ExperimentCondition | undefined,
@@ -893,56 +897,59 @@ export class ExperimentAssignmentService {
     repeatedEnrollmentCounts: { userId: string; decisionPointId: string; count: number }[],
     logger: UpgradeLogger
   ): IExperimentAssignmentv5[] {
-    return experiment.partitions.map((decisionPoint) => {
-      const { target, site } = decisionPoint;
+    return experiment.partitions
+      .filter((dp) => !dp.pendingActivation || experiment.state === EXPERIMENT_STATE.PREVIEW)
+      .map((decisionPoint) => {
+        const { target, site } = decisionPoint;
 
-      // Determine payload and factorial object
-      const { payloadFound, factorialObject } = this.getPayloadAndFactorialObject(
-        conditionAssigned,
-        type,
-        conditionPayloads,
-        decisionPoint,
-        factors
-      );
+        // Determine payload and factorial object
+        const { payloadFound, factorialObject } = this.getPayloadAndFactorialObject(
+          conditionAssigned,
+          type,
+          conditionPayloads,
+          decisionPoint,
+          factors
+        );
 
-      // Log preview state information
-      if (experiment.state === EXPERIMENT_STATE.PREVIEW) {
-        logger.info({
-          message: `getAllExperimentConditions: experiment: ${experiment.name}, user: ${userId}, condition: ${
-            conditionAssigned ? conditionAssigned.conditionCode : null
-          }`,
-        });
-      }
+        // Log preview state information
+        if (experiment.state === EXPERIMENT_STATE.PREVIEW) {
+          logger.info({
+            message: `getAllExperimentConditions: experiment: ${experiment.name}, user: ${userId}, condition: ${
+              conditionAssigned ? conditionAssigned.conditionCode : null
+            }`,
+          });
+        }
 
-      const assignedFactors = factorialObject?.assignedFactor || null;
-      const factorialCondition = factorialObject?.factorialCondition || null;
-      const assignedConditionToReturn = factorialCondition ||
-        conditionAssigned || {
-          conditionCode: null,
-        };
+        const assignedFactors = factorialObject?.assignedFactor || null;
+        const factorialCondition = factorialObject?.factorialCondition || null;
+        const assignedConditionToReturn = factorialCondition ||
+          conditionAssigned || {
+            conditionCode: null,
+          };
 
-      if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-        const count =
-          repeatedEnrollmentCounts.find((repeatedEnrollment) => repeatedEnrollment.decisionPointId === decisionPoint.id)
-            ?.count || 0;
-        return withInSubjectType(experiment, conditionPayloads, decisionPoint, factors, userId, count);
-      } else {
-        const experimentId = experiment.id;
-        return {
-          target,
-          site,
-          assignedCondition: [
-            {
-              ...assignedConditionToReturn,
-              payload: payloadFound?.payload,
-              experimentId,
-            },
-          ],
-          assignedFactor: assignedFactors ? [assignedFactors] : null,
-          experimentType: experiment.type,
-        };
-      }
-    });
+        if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+          const count =
+            repeatedEnrollmentCounts.find(
+              (repeatedEnrollment) => repeatedEnrollment.decisionPointId === decisionPoint.id
+            )?.count || 0;
+          return withInSubjectType(experiment, conditionPayloads, decisionPoint, factors, userId, count);
+        } else {
+          const experimentId = experiment.id;
+          return {
+            target,
+            site,
+            assignedCondition: [
+              {
+                ...assignedConditionToReturn,
+                payload: payloadFound?.payload,
+                experimentId,
+              },
+            ],
+            assignedFactor: assignedFactors ? [assignedFactors] : null,
+            experimentType: experiment.type,
+          };
+        }
+      });
   }
 
   private getPayloadAndFactorialObject(
@@ -986,8 +993,8 @@ export class ExperimentAssignmentService {
         // mark experiment
         experimentMarked.push(experiment);
         poolExperiments.push(experiment);
-        experiment.partitions.forEach((partition) => {
-          const id = `${partition.site}_${partition.target}`;
+        this.getActiveDecisionPoints(experiment).forEach((decisionPoint) => {
+          const id = `${decisionPoint.site}_${decisionPoint.target}`;
           poolExperiments = poolExperiments.concat(this.createPool(id, decisionPointExperimentMap, experimentMarked));
         });
       }
@@ -1002,10 +1009,10 @@ export class ExperimentAssignmentService {
     const decisionPointExperimentMap: Record<string, Experiment[]> = {};
 
     experiments.forEach((experiment) => {
-      experiment.partitions.forEach((partition) => {
-        const partitionId = `${partition.site}_${partition.target}`;
-        decisionPointExperimentMap[partitionId] = decisionPointExperimentMap[partitionId] || [];
-        decisionPointExperimentMap[partitionId].push(experiment);
+      this.getActiveDecisionPoints(experiment).forEach((decisionPoint) => {
+        const decisionPointId = `${decisionPoint.site}_${decisionPoint.target}`;
+        decisionPointExperimentMap[decisionPointId] = decisionPointExperimentMap[decisionPointId] || [];
+        decisionPointExperimentMap[decisionPointId].push(experiment);
       });
     });
 

@@ -489,6 +489,8 @@
   "experiments.details.decision-points.exclude-if-reached.text": "Exclude If Reached",
   "experiments.details.decision-points.actions.text": "Actions",
   "experiments.details.decision-points.card.no-data-row.text": "No decision points defined. Experiments require at least one decision point.",
+  "experiments.details.decision-points.paused-row-tooltip.locked.text": "This decision point has been active while in running status and can no longer be edited.",
+  "experiments.details.decision-points.paused-row-tooltip.pending.text": "Decision point can be edited or deleted until experiment is resumed.",
   "experiments.upsert-decision-point-modal.site-hint.text": "The site indicates a place in the code where the condition will be assigned.",
   "experiments.upsert-decision-point-modal.target-hint.text": "The target indicates the app component that will undergo the experiment.",
   "experiments.upsert-decision-point-modal.exclude-if-reached-hint.text": "Exclude students who visited the decision point while the experiment is inactive.",

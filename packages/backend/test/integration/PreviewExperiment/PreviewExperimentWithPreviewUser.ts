@@ -40,8 +40,4 @@ export default async function testCase(): Promise<void> {
   // get all experiment condition for preview user
   const experimentConditionAssignments = await getAllExperimentCondition(previewUser.id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);
-
-  // // get all experiment for non preview user
-  // experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
-  // expect(experimentConditionAssignments).toHaveLength(0);
 }

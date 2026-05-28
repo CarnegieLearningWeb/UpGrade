@@ -220,4 +220,40 @@ describe('DecisionPointRepository Testing', () => {
     expect(mock.select).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
+
+  describe('setAllPendingActivationFalse', () => {
+    it('should set pendingActivation to false for all DPs using entityManager', async () => {
+      await repo.setAllPendingActivationFalse('experiment-1', manager);
+
+      expect(manager.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(mock.update).toHaveBeenCalledTimes(1);
+      expect(mock.update).toHaveBeenCalledWith(DecisionPoint);
+      expect(mock.set).toHaveBeenCalledTimes(1);
+      expect(mock.set).toHaveBeenCalledWith({ pendingActivation: false });
+      expect(mock.where).toHaveBeenCalledTimes(1);
+      expect(mock.where).toHaveBeenCalledWith('"experimentId" = :experimentId', { experimentId: 'experiment-1' });
+      expect(mock.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it('should set pendingActivation to false using repo createQueryBuilder when no entityManager', async () => {
+      await repo.setAllPendingActivationFalse('experiment-1');
+
+      expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(mock.update).toHaveBeenCalledTimes(1);
+      expect(mock.update).toHaveBeenCalledWith(DecisionPoint);
+      expect(mock.set).toHaveBeenCalledWith({ pendingActivation: false });
+      expect(mock.where).toHaveBeenCalledWith('"experimentId" = :experimentId', { experimentId: 'experiment-1' });
+      expect(mock.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw when execute fails', async () => {
+      mock.execute.mockRejectedValue(err);
+
+      await expect(repo.setAllPendingActivationFalse('experiment-1', manager)).rejects.toThrow();
+
+      expect(mock.update).toHaveBeenCalledTimes(1);
+      expect(mock.set).toHaveBeenCalledWith({ pendingActivation: false });
+      expect(mock.execute).toHaveBeenCalledTimes(1);
+    });
+  });
 });

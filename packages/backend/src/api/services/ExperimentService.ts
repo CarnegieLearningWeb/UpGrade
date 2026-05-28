@@ -494,6 +494,10 @@ export class ExperimentService {
       await this.populateExclusionTable(experimentId, state, logger);
     }
 
+    if (state === EXPERIMENT_STATE.ENROLLING) {
+      await this.decisionPointRepository.setAllPendingActivationFalse(experimentId, entityManager);
+    }
+
     if (state === EXPERIMENT_STATE.ARCHIVED) {
       const queryIds = oldExperiment.queries.map((query) => query.id);
       const results = await this.queryService.analyze(queryIds, logger);
@@ -898,6 +902,7 @@ export class ExperimentService {
           [];
 
         // creating decision point docs
+        const oldDecisionPointsById = new Map(oldDecisionPoints.map((dp) => [dp.id, dp]));
         let promiseArray = [];
         const decisionPointDocToSave =
           (decisionPoints &&
@@ -912,7 +917,9 @@ export class ExperimentService {
                 })
               );
               decisionPoint.id = decisionPoint.id || crypto.randomUUID();
-              return { ...decisionPoint, experiment: experimentDoc };
+              const existingDp = oldDecisionPointsById.get(decisionPoint.id);
+              const pendingActivation = existingDp ? existingDp.pendingActivation : true;
+              return { ...decisionPoint, experiment: experimentDoc, pendingActivation };
             })) ||
           [];
 
@@ -953,13 +960,22 @@ export class ExperimentService {
         });
 
         // delete decision points which don't exist in new experiment document
+        const activeStates = [EXPERIMENT_STATE.ENROLLING, EXPERIMENT_STATE.ENROLLMENT_COMPLETE];
         const toDeleteDecisionPoints = [];
-        oldDecisionPoints.forEach(({ id, site, target }) => {
+        oldDecisionPoints.forEach(({ id, site, target, pendingActivation }) => {
           if (
             !decisionPointDocToSave.find((doc) => {
-              return doc.id === id && doc.site === site && doc.target === target;
+              // normalize undefined/null for target so null-target DPs are not falsely deleted
+              return doc.id === id && doc.site === site && (doc.target ?? null) === (target ?? null);
             })
           ) {
+            if (activeStates.includes(oldExperiment.state as EXPERIMENT_STATE) && !pendingActivation) {
+              throw new BadRequestError(
+                `Cannot remove decision point site="${site}" target="${target ?? ''}" from an experiment in state "${
+                  oldExperiment.state
+                }" — it has already been activated.`
+              );
+            }
             toDeleteDecisionPoints.push(
               this.decisionPointRepository.deleteDecisionPoint(id, transactionalEntityManager)
             );
@@ -1351,6 +1367,9 @@ export class ExperimentService {
           : [];
 
       // creating decision point docs
+      // DPs are pending unless the experiment starts directly in an enrolling state
+      const internalCreationState = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[experiment.state] || experiment.state;
+      const startsPending = internalCreationState !== EXPERIMENT_STATE.ENROLLING;
       const decisionPointIdMap = new Map<string, string>();
       const decisionPointDocsToSave: Array<Partial<DecisionPoint>> =
         partitions && partitions.length > 0
@@ -1359,7 +1378,7 @@ export class ExperimentService {
               decisionPointIdMap.set(decisionPoint.id, newId);
               decisionPoint.id = newId;
               decisionPoint.description = decisionPoint.description || '';
-              return { ...decisionPoint, experiment: experimentDoc };
+              return { ...decisionPoint, experiment: experimentDoc, pendingActivation: startsPending };
             })
           : [];
 
