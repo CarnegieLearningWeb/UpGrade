@@ -1217,7 +1217,7 @@ export class ExperimentController {
     experiment: AssignmentStateUpdateValidator,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<any> {
+  ): Promise<ExperimentDTO> {
     return this.experimentService.updateState(
       experiment.experimentId,
       experiment.state,
