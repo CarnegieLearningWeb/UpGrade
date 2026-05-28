@@ -312,6 +312,32 @@ describe('Experiment Assignment Service Test', () => {
     expect(result[0].site).toEqual(exp.partitions[0].site);
   });
 
+  it('should include pending decision points for a preview user on a PREVIEW experiment', async () => {
+    const context = 'context';
+    const userDoc = { id: 'preview-user-1', group: {}, workingGroup: {} };
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
+    exp.state = EXPERIMENT_STATE.PREVIEW;
+
+    // All DPs are pendingActivation=true because the experiment has never been ENROLLING
+    exp.partitions = exp.partitions.map((p) => ({ ...p, pendingActivation: true }));
+    const secondPartition = { ...exp.partitions[0], id: 'dp-2', site: 'PreviewSite', target: 'PreviewTarget' };
+    exp.partitions = [...exp.partitions, secondPartition];
+
+    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+    // When a previewUser is present, getExperimentsForUser calls experimentRepository.getValidExperimentsWithPreview
+    testedModule.experimentRepository.getValidExperimentsWithPreview = sandbox.stub().resolves([exp]);
+    testedModule.experimentUserService = experimentUserServiceMock;
+    testedModule.previewUserService.findOneFromCache = sandbox.stub().resolves({ id: userDoc.id, assignments: [] });
+
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+    // Both DPs should be returned — pendingActivation must not filter them out for preview experiments
+    expect(result.length).toEqual(2);
+    const sites = result.map((r) => r.site);
+    expect(sites).toContain(exp.partitions[0].site);
+    expect(sites).toContain('PreviewSite');
+  });
+
   it('should return the assigned condition for a factorial individual experiment', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };

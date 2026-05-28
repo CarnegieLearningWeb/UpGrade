@@ -884,7 +884,7 @@ export class ExperimentAssignmentService {
   }
 
   private getActiveDecisionPoints(experiment: Experiment): DecisionPoint[] {
-    return experiment.partitions.filter((dp) => !dp.pendingActivation);
+    return experiment.partitions.filter((dp) => !dp.pendingActivation || experiment.state === EXPERIMENT_STATE.PREVIEW);
   }
 
   private mapDecisionPoints(
