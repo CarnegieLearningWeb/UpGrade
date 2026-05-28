@@ -9,6 +9,9 @@
         </div>
       </div>
       <div #googleSignInButtonRef class="google-sign-in-btn"></div>
+      @if (configCheckError) {
+      <span class="config-error ft-12-700">{{ configCheckError }}</span>
+      }
       <span class="info ft-12-700">
         {{ 'login.info.text' | translate }}
         <a href="https://www.upgradeplatform.org/" target="_blank" class="info--link">www.upgradeplatform.org</a>

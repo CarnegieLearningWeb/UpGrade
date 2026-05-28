@@ -6,7 +6,8 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  OnInit,
+  AfterViewInit,
+  OnDestroy,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -17,7 +18,7 @@ import {
   FLAG_TRANSLATION_KEYS,
   FeatureFlag,
 } from '../../../../../../../../core/feature-flags/store/feature-flags.model';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
@@ -40,8 +41,8 @@ import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types
   styleUrl: './feature-flag-root-section-card-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeatureFlagRootSectionCardTableComponent implements OnInit {
-  @Input() dataSource$: MatTableDataSource<FeatureFlag>;
+export class FeatureFlagRootSectionCardTableComponent implements AfterViewInit, OnDestroy {
+  @Input() featureFlags$: Observable<FeatureFlag[]>;
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
   @Input() expandedTagsMap: Map<string, boolean>;
@@ -58,16 +59,8 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
 
   constructor(private featureFlagsService: FeatureFlagsService) {}
 
-  ngOnInit() {
-    this.sortTable();
-  }
-
   ngAfterViewInit() {
     this.setupIntersectionObserver();
-  }
-
-  ngOnChanges() {
-    this.sortTable();
   }
 
   ngOnDestroy() {
@@ -91,14 +84,6 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
 
     if (this.bottomTrigger) {
       this.observer.observe(this.bottomTrigger.nativeElement);
-    }
-  }
-
-  private sortTable() {
-    if (this.dataSource$?.data) {
-      this.dataSource$.sortingDataAccessor = (item, property) =>
-        property === 'name' ? item.name.toLowerCase() : item[property];
-      this.dataSource$.sort = this.sort;
     }
   }
 
@@ -145,19 +130,21 @@ export class FeatureFlagRootSectionCardTableComponent implements OnInit {
 
   changeSorting(event) {
     if (event.direction) {
+      // Make backend call with new sort parameters
       this.featureFlagsService.setSortingType(event.direction.toUpperCase());
       this.featureFlagsService.setSortKey(event.active);
+      this.featureFlagsService.fetchFeatureFlags(true); // true = reset pagination
     } else {
       // When sorting is cleared, revert to default sorting
       this.featureFlagsService.setSortingType(null);
       this.featureFlagsService.setSortKey(null);
+      this.featureFlagsService.fetchFeatureFlags(true); // true = reset pagination
+
+      // Scroll to top when sorting is cleared
       this.tableContainer.nativeElement.scroll({
         top: 0,
         behavior: 'smooth',
       });
-      this.dataSource$.data = this.dataSource$.data.sort(
-        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      );
     }
   }
 

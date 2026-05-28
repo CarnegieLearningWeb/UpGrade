@@ -1,4 +1,3 @@
-import { EntityState } from '@ngrx/entity';
 import { AppState } from '../../core.module';
 import {
   CONSISTENCY_RULE,
@@ -53,8 +52,8 @@ export interface ExperimentConditionFilterOptions {
 
 export interface ExperimentPartitionFilterOptions {
   id: string;
-  point: string;
-  twoCharacterId: string;
+  site: string;
+  target: string;
 }
 
 export interface ExperimentDateFilterOptions {
@@ -433,7 +432,7 @@ export interface ExperimentConditionDTO {
 export interface ExperimentPartitionDTO {
   id: string;
   site: string;
-  target?: string;
+  target: string;
   description?: string;
   order: number;
   excludeIfReached: boolean;
@@ -600,15 +599,15 @@ export const EXPERIMENT_OVERVIEW_LABELS = {
 
 export const TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS = {
   BATCH_SIZE: 'home.new-experiment.design.ts-configurable-policy.batch-size.label.text',
-  PRIOR_SUCCESS: 'home.new-experiment.design.ts-configurable-policy.prior-success.label.text',
-  PRIOR_FAILURE: 'home.new-experiment.design.ts-configurable-policy.prior-failure.label.text',
   UNIFORM_THRESHOLD: 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.label.text',
   TSPOSTDIFF_THRESH: 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.label.text',
 };
 
 export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
 
-export interface ExperimentState extends EntityState<ExperimentVM> {
+export interface ExperimentState {
+  // List page data - plain array preserves backend sort order
+  experiments: ExperimentVM[];
   isLoadingExperiment: boolean;
   isLoadingExperimentDetailStats: boolean;
   isLoadingExperimentExport: boolean;

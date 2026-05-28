@@ -83,15 +83,14 @@ export class ExperimentEffects {
             },
           };
         }
-        if (searchString) {
-          params = {
-            ...params,
-            searchParams: {
-              key: searchKey,
-              string: searchString,
-            },
-          };
-        }
+        // Always send searchParams for experiments, even when searchString is blank
+        params = {
+          ...params,
+          searchParams: {
+            key: searchKey,
+            string: searchString || '',
+          },
+        };
         return this.experimentDataService.getAllExperiment(params).pipe(
           switchMap((data: any) => {
             const experiments = data.nodes;

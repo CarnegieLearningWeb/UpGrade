@@ -19,6 +19,7 @@
     "ignoreDeprecations": "6.0",
     "typeRoots": ["./node_modules/@types"],
     "types": ["node"],
+    "ignoreDeprecations": "6.0",
     "lib": ["es2018", "dom"],
     "types": ["jest", "node"],
     "paths": {

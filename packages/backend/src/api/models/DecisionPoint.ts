@@ -18,7 +18,7 @@ export class DecisionPoint extends BaseModel {
   @Column()
   public site: string;
 
-  @Column({ nullable: true })
+  @Column()
   public target: string;
 
   @Column()

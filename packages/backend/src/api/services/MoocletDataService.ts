@@ -345,8 +345,6 @@ export class MoocletDataService {
     logger: UpgradeLogger
   ): Promise<any> {
     const { method, url, body } = requestParams;
-    let jsonResponse = '';
-
     if (method && url) {
       const headers: HeadersInit = {
         Authorization: this.apiToken,
@@ -366,18 +364,30 @@ export class MoocletDataService {
         };
 
         const res = await axios.request(options);
-
-        if (res?.status?.toString().startsWith('2')) {
-          jsonResponse = res.data;
-          return jsonResponse;
-        } else {
-          return {
-            error: res,
-          };
-        }
+        return res.data;
       } catch (err) {
-        logger.error({ message: 'Error fetching data from Mooclets API', url, method });
-        throw new MoocletError('Failed to communicate with Mooclet server');
+        if (err instanceof MoocletError) {
+          throw err;
+        }
+        if (axios.isAxiosError(err)) {
+          logger.error({
+            message: 'Error fetching data from Mooclets API',
+            url,
+            method,
+            status: err.response?.status,
+            responseBody: err.response?.data,
+            error: err,
+          });
+          throw new MoocletError(`Mooclet server returned non-2xx status: ${err.response?.status}`);
+        } else {
+          logger.error({
+            message: 'Error fetching data from Mooclets API',
+            url,
+            method,
+            error: err,
+          });
+          throw new MoocletError('Failed to communicate with Mooclet server');
+        }
       }
     }
   }

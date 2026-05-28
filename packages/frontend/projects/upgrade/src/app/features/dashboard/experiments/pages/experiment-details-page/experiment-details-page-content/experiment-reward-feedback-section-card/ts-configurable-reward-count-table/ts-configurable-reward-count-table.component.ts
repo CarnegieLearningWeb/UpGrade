@@ -17,5 +17,14 @@ export class TSConfigurableRewardCountTableComponent {
   @Input() dataSource: ExperimentRewardsSummary = [];
   @Input() isLoading = false;
 
-  displayedColumns = ['conditionCode', 'successes', 'failures', 'total', 'successRate', 'spacer'];
+  displayedColumns = [
+    'conditionCode',
+    'successes',
+    'successPrior',
+    'successPosterior',
+    'spacer',
+    'failures',
+    'failurePrior',
+    'failurePosterior',
+  ];
 }

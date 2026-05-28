@@ -7,13 +7,10 @@ import {
 } from './experiments.model';
 import { createReducer, on, Action } from '@ngrx/store';
 import * as experimentsAction from './experiments.actions';
-import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 
-export const adapter: EntityAdapter<ExperimentVM> = createEntityAdapter<ExperimentVM>();
-
-export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
-
-export const initialState: ExperimentState = adapter.getInitialState({
+export const initialState: ExperimentState = {
+  // List page state
+  experiments: [],
   isLoadingExperiment: false,
   isLoadingExperimentDetailStats: false,
   isLoadingExperimentExport: false,
@@ -38,7 +35,7 @@ export const initialState: ExperimentState = adapter.getInitialState({
   isLoadingImportExperiment: false,
   isLoadingRewardsSummary: false,
   rewardsSummaries: {},
-});
+};
 
 const reducer = createReducer(
   initialState,
@@ -46,14 +43,18 @@ const reducer = createReducer(
     ...state,
   })),
   on(experimentsAction.actionGetExperimentsSuccess, (state, { experiments, totalExperiments, fromStarting }) => {
-    const newState = {
+    // Replace entire array with backend data - preserves exact sort order
+    const updatedExperiments = fromStarting
+      ? experiments // First fetch - use backend data directly
+      : [...state.experiments, ...experiments]; // Pagination - append to existing
+
+    return {
       ...state,
+      experiments: updatedExperiments,
       totalExperiments,
-      skipExperiment: state.skipExperiment + experiments.length,
+      skipExperiment: fromStarting ? experiments.length : state.skipExperiment + experiments.length,
+      isLoadingExperiment: false,
     };
-    return fromStarting
-      ? adapter.setAll(experiments, { ...newState, isLoadingExperiment: false })
-      : adapter.upsertMany(experiments, { ...newState, isLoadingExperiment: false });
   }),
   on(
     experimentsAction.actionGetExperimentsFailure,
@@ -63,9 +64,16 @@ const reducer = createReducer(
     experimentsAction.actionUpdateExperimentStateFailure,
     (state) => ({ ...state, isLoadingExperiment: false })
   ),
-  on(experimentsAction.actionUpsertExperimentSuccess, (state, { experiment }) =>
-    adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
-  ),
+  on(experimentsAction.actionUpsertExperimentSuccess, (state, { experiment }) => {
+    // Update experiment if it exists, otherwise don't add to list (let refetch handle it)
+    const updatedExperiments = state.experiments.map((exp) => (exp.id === experiment.id ? experiment : exp));
+
+    return {
+      ...state,
+      experiments: updatedExperiments,
+      isLoadingExperiment: false,
+    };
+  }),
   on(experimentsAction.actionFetchExperimentStatsSuccess, (state, { stats }) => {
     const newStats = {};
     stats = Object.keys(stats).map((key) => {
@@ -94,49 +102,98 @@ const reducer = createReducer(
     // set it to 1 because we are loading at least one experiment so that nav to root page will not show empty template
     totalExperiments: !state.totalExperiments ? 1 : state.totalExperiments,
   })),
-  on(experimentsAction.actionGetExperimentByIdSuccess, (state, { experiment }) =>
-    adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
-  ),
+  on(experimentsAction.actionGetExperimentByIdSuccess, (state, { experiment }) => {
+    // Upsert experiment: update if exists, add if not (for direct navigation)
+    const existingIndex = state.experiments.findIndex((exp) => exp.id === experiment.id);
+    let updatedExperiments;
+    if (existingIndex >= 0) {
+      // Update existing experiment
+      updatedExperiments = [...state.experiments];
+      updatedExperiments[existingIndex] = experiment;
+    } else {
+      // Add new experiment (for direct navigation to detail page)
+      updatedExperiments = [experiment, ...state.experiments];
+    }
+
+    return {
+      ...state,
+      experiments: updatedExperiments,
+      isLoadingExperiment: false,
+    };
+  }),
   // Experiment Delete Actions
   on(experimentsAction.actionDeleteExperiment, (state) => ({ ...state, isLoadingExperimentDelete: true })),
   on(experimentsAction.actionDeleteExperimentSuccess, (state, { experimentId }) => {
-    return adapter.removeOne(experimentId, {
+    const updatedExperiments = state.experiments.filter((exp) => exp.id !== experimentId);
+
+    return {
       ...state,
+      experiments: updatedExperiments,
       isLoadingExperimentDelete: false,
-    });
+    };
   }),
   on(experimentsAction.actionDeleteExperimentFailure, (state) => ({
     ...state,
     isLoadingExperimentDelete: false,
   })),
   on(experimentsAction.actionUpdateExperimentState, (state) => ({ ...state, isLoadingExperiment: true })),
-  on(experimentsAction.actionUpdateExperimentStateSuccess, (state, { experiment }) =>
-    adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
-  ),
+  on(experimentsAction.actionUpdateExperimentStateSuccess, (state, { experiment }) => {
+    const updatedExperiments = state.experiments.map((exp) => (exp.id === experiment.id ? experiment : exp));
+
+    return {
+      ...state,
+      experiments: updatedExperiments,
+      isLoadingExperiment: false,
+    };
+  }),
   on(experimentsAction.actionUpdateExperimentFilterMode, (state) => ({ ...state, isLoadingExperiment: true })),
-  on(experimentsAction.actionUpdateExperimentFilterModeSuccess, (state, { experiment }) =>
-    adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
-  ),
+  on(experimentsAction.actionUpdateExperimentFilterModeSuccess, (state, { experiment }) => {
+    const updatedExperiments = state.experiments.map((exp) => (exp.id === experiment.id ? experiment : exp));
+
+    return {
+      ...state,
+      experiments: updatedExperiments,
+      isLoadingExperiment: false,
+    };
+  }),
   on(experimentsAction.actionUpdateExperimentDecisionPoints, (state) => ({ ...state, isLoadingExperiment: true })),
-  on(experimentsAction.actionUpdateExperimentDecisionPointsSuccess, (state, { experiment }) =>
-    adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
-  ),
+  on(experimentsAction.actionUpdateExperimentDecisionPointsSuccess, (state, { experiment }) => {
+    const updatedExperiments = state.experiments.map((exp) => (exp.id === experiment.id ? experiment : exp));
+
+    return {
+      ...state,
+      experiments: updatedExperiments,
+      isLoadingExperiment: false,
+    };
+  }),
   on(experimentsAction.actionUpdateExperimentDecisionPointsFailure, (state) => ({
     ...state,
     isLoadingExperiment: false,
   })),
   on(experimentsAction.actionUpdateExperimentConditions, (state) => ({ ...state, isLoadingExperiment: true })),
-  on(experimentsAction.actionUpdateExperimentConditionsSuccess, (state, { experiment }) =>
-    adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
-  ),
+  on(experimentsAction.actionUpdateExperimentConditionsSuccess, (state, { experiment }) => {
+    const updatedExperiments = state.experiments.map((exp) => (exp.id === experiment.id ? experiment : exp));
+
+    return {
+      ...state,
+      experiments: updatedExperiments,
+      isLoadingExperiment: false,
+    };
+  }),
   on(experimentsAction.actionUpdateExperimentConditionsFailure, (state) => ({
     ...state,
     isLoadingExperiment: false,
   })),
   on(experimentsAction.actionUpdateExperimentMetrics, (state) => ({ ...state, isLoadingExperiment: true })),
-  on(experimentsAction.actionUpdateExperimentMetricsSuccess, (state, { experiment }) =>
-    adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
-  ),
+  on(experimentsAction.actionUpdateExperimentMetricsSuccess, (state, { experiment }) => {
+    const updatedExperiments = state.experiments.map((exp) => (exp.id === experiment.id ? experiment : exp));
+
+    return {
+      ...state,
+      experiments: updatedExperiments,
+      isLoadingExperiment: false,
+    };
+  }),
   on(experimentsAction.actionUpdateExperimentMetricsFailure, (state) => ({
     ...state,
     isLoadingExperiment: false,
@@ -206,15 +263,27 @@ const reducer = createReducer(
   })),
   on(experimentsAction.actionAddExperimentInclusionListSuccess, (state, { listResponse }) => {
     const { experiment } = listResponse;
-    const existingExperiment = state.entities[experiment?.id];
+    const existingExperimentIndex = state.experiments.findIndex((exp) => exp.id === experiment?.id);
 
-    return adapter.updateOne(
-      {
-        id: experiment?.id,
-        changes: { experimentSegmentInclusion: [listResponse, ...existingExperiment.experimentSegmentInclusion] },
-      },
-      { ...state }
-    );
+    if (existingExperimentIndex >= 0) {
+      const existingExperiment = state.experiments[existingExperimentIndex];
+      const updatedExperiments = [...state.experiments];
+      updatedExperiments[existingExperimentIndex] = {
+        ...existingExperiment,
+        experimentSegmentInclusion: [listResponse, ...existingExperiment.experimentSegmentInclusion],
+      };
+
+      return {
+        ...state,
+        experiments: updatedExperiments,
+        isLoadingUpsertPrivateSegmentList: false,
+      };
+    }
+
+    return {
+      ...state,
+      isLoadingUpsertPrivateSegmentList: false,
+    };
   }),
   on(experimentsAction.actionAddExperimentInclusionListFailure, (state) => ({
     ...state,
@@ -228,23 +297,31 @@ const reducer = createReducer(
   })),
   on(experimentsAction.actionUpdateExperimentInclusionListSuccess, (state, { listResponse }) => {
     const { experiment } = listResponse;
-    const existingExperiment = state.entities[experiment?.id];
+    const existingExperimentIndex = state.experiments.findIndex((exp) => exp.id === experiment?.id);
 
-    if (existingExperiment) {
-      const updatedInclusions =
-        existingExperiment.experimentSegmentInclusion?.map((inclusion) =>
-          inclusion.segment.id === listResponse.segment.id ? listResponse : inclusion
-        ) ?? [];
-
-      return adapter.updateOne(
-        {
-          id: experiment?.id,
-          changes: { experimentSegmentInclusion: updatedInclusions },
-        },
-        { ...state, isLoadingUpsertPrivateSegmentList: false }
+    if (existingExperimentIndex >= 0) {
+      const existingExperiment = state.experiments[existingExperimentIndex];
+      const updatedInclusionList = existingExperiment.experimentSegmentInclusion.map((item) =>
+        item.segment?.id === listResponse.segment?.id ? listResponse : item
       );
+
+      const updatedExperiments = [...state.experiments];
+      updatedExperiments[existingExperimentIndex] = {
+        ...existingExperiment,
+        experimentSegmentInclusion: updatedInclusionList,
+      };
+
+      return {
+        ...state,
+        experiments: updatedExperiments,
+        isLoadingUpsertPrivateSegmentList: false,
+      };
     }
-    return state;
+
+    return {
+      ...state,
+      isLoadingUpsertPrivateSegmentList: false,
+    };
   }),
   on(experimentsAction.actionUpdateExperimentInclusionListFailure, (state) => ({
     ...state,
@@ -257,26 +334,34 @@ const reducer = createReducer(
     isLoadingUpsertPrivateSegmentList: true,
   })),
   on(experimentsAction.actionDeleteExperimentInclusionListSuccess, (state, { segmentId }) => {
-    const updatedState = { ...state, isLoadingUpsertPrivateSegmentList: false };
-    const experimentId = Object.keys(state.entities).find((id) =>
-      state.entities[id].experimentSegmentInclusion?.some((inclusion) => inclusion.segment?.id === segmentId)
+    // Find the experiment that contains this segment in its inclusion list
+    const existingExperimentIndex = state.experiments.findIndex((exp) =>
+      exp.experimentSegmentInclusion?.some((item) => item.segment?.id === segmentId)
     );
 
-    if (experimentId) {
-      const experiment = state.entities[experimentId];
-      const updatedInclusions =
-        experiment.experimentSegmentInclusion?.filter((inclusion) => inclusion.segment.id !== segmentId) ?? [];
-
-      return adapter.updateOne(
-        {
-          id: experiment.id,
-          changes: { experimentSegmentInclusion: updatedInclusions },
-        },
-        updatedState
+    if (existingExperimentIndex >= 0) {
+      const existingExperiment = state.experiments[existingExperimentIndex];
+      const updatedInclusionList = existingExperiment.experimentSegmentInclusion.filter(
+        (item) => item.segment?.id !== segmentId
       );
+
+      const updatedExperiments = [...state.experiments];
+      updatedExperiments[existingExperimentIndex] = {
+        ...existingExperiment,
+        experimentSegmentInclusion: updatedInclusionList,
+      };
+
+      return {
+        ...state,
+        experiments: updatedExperiments,
+        isLoadingUpsertPrivateSegmentList: false,
+      };
     }
 
-    return updatedState;
+    return {
+      ...state,
+      isLoadingUpsertPrivateSegmentList: false,
+    };
   }),
   on(experimentsAction.actionDeleteExperimentInclusionListFailure, (state) => ({
     ...state,
@@ -290,15 +375,27 @@ const reducer = createReducer(
   })),
   on(experimentsAction.actionAddExperimentExclusionListSuccess, (state, { listResponse }) => {
     const { experiment } = listResponse;
-    const existingExperiment = state.entities[experiment?.id];
+    const existingExperimentIndex = state.experiments.findIndex((exp) => exp.id === experiment?.id);
 
-    return adapter.updateOne(
-      {
-        id: experiment?.id,
-        changes: { experimentSegmentExclusion: [listResponse, ...existingExperiment.experimentSegmentExclusion] },
-      },
-      { ...state }
-    );
+    if (existingExperimentIndex >= 0) {
+      const existingExperiment = state.experiments[existingExperimentIndex];
+      const updatedExperiments = [...state.experiments];
+      updatedExperiments[existingExperimentIndex] = {
+        ...existingExperiment,
+        experimentSegmentExclusion: [listResponse, ...existingExperiment.experimentSegmentExclusion],
+      };
+
+      return {
+        ...state,
+        experiments: updatedExperiments,
+        isLoadingUpsertPrivateSegmentList: false,
+      };
+    }
+
+    return {
+      ...state,
+      isLoadingUpsertPrivateSegmentList: false,
+    };
   }),
   on(experimentsAction.actionAddExperimentExclusionListFailure, (state) => ({
     ...state,
@@ -312,23 +409,31 @@ const reducer = createReducer(
   })),
   on(experimentsAction.actionUpdateExperimentExclusionListSuccess, (state, { listResponse }) => {
     const { experiment } = listResponse;
-    const existingExperiment = state.entities[experiment?.id];
+    const existingExperimentIndex = state.experiments.findIndex((exp) => exp.id === experiment?.id);
 
-    if (existingExperiment) {
-      const updatedExclusions =
-        existingExperiment.experimentSegmentExclusion?.map((exclusion) =>
-          exclusion.segment.id === listResponse.segment.id ? listResponse : exclusion
-        ) ?? [];
-
-      return adapter.updateOne(
-        {
-          id: experiment?.id,
-          changes: { experimentSegmentExclusion: updatedExclusions },
-        },
-        { ...state, isLoadingUpsertPrivateSegmentList: false }
+    if (existingExperimentIndex >= 0) {
+      const existingExperiment = state.experiments[existingExperimentIndex];
+      const updatedExclusionList = existingExperiment.experimentSegmentExclusion.map((item) =>
+        item.segment?.id === listResponse.segment?.id ? listResponse : item
       );
+
+      const updatedExperiments = [...state.experiments];
+      updatedExperiments[existingExperimentIndex] = {
+        ...existingExperiment,
+        experimentSegmentExclusion: updatedExclusionList,
+      };
+
+      return {
+        ...state,
+        experiments: updatedExperiments,
+        isLoadingUpsertPrivateSegmentList: false,
+      };
     }
-    return state;
+
+    return {
+      ...state,
+      isLoadingUpsertPrivateSegmentList: false,
+    };
   }),
   on(experimentsAction.actionUpdateExperimentExclusionListFailure, (state) => ({
     ...state,
@@ -341,26 +446,34 @@ const reducer = createReducer(
     isLoadingUpsertPrivateSegmentList: true,
   })),
   on(experimentsAction.actionDeleteExperimentExclusionListSuccess, (state, { segmentId }) => {
-    const updatedState = { ...state, isLoadingUpsertPrivateSegmentList: false };
-    const experimentId = Object.keys(state.entities).find((id) =>
-      state.entities[id].experimentSegmentExclusion?.some((exclusion) => exclusion.segment?.id === segmentId)
+    // Find the experiment that contains this segment in its exclusion list
+    const existingExperimentIndex = state.experiments.findIndex((exp) =>
+      exp.experimentSegmentExclusion?.some((item) => item.segment?.id === segmentId)
     );
 
-    if (experimentId) {
-      const experiment = state.entities[experimentId];
-      const updatedExclusions =
-        experiment.experimentSegmentExclusion?.filter((exclusion) => exclusion.segment.id !== segmentId) ?? [];
-
-      return adapter.updateOne(
-        {
-          id: experiment.id,
-          changes: { experimentSegmentExclusion: updatedExclusions },
-        },
-        updatedState
+    if (existingExperimentIndex >= 0) {
+      const existingExperiment = state.experiments[existingExperimentIndex];
+      const updatedExclusionList = existingExperiment.experimentSegmentExclusion.filter(
+        (item) => item.segment?.id !== segmentId
       );
+
+      const updatedExperiments = [...state.experiments];
+      updatedExperiments[existingExperimentIndex] = {
+        ...existingExperiment,
+        experimentSegmentExclusion: updatedExclusionList,
+      };
+
+      return {
+        ...state,
+        experiments: updatedExperiments,
+        isLoadingUpsertPrivateSegmentList: false,
+      };
     }
 
-    return updatedState;
+    return {
+      ...state,
+      isLoadingUpsertPrivateSegmentList: false,
+    };
   }),
   on(experimentsAction.actionDeleteExperimentExclusionListFailure, (state) => ({
     ...state,

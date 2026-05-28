@@ -1,5 +1,11 @@
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE, SERVER_ERROR, BinaryRewardValueMap } from 'upgrade_types';
+import {
+  EXPERIMENT_STATE,
+  SERVER_ERROR,
+  BinaryRewardValueMap,
+  MoocletTSConfigurablePolicyParametersDTO,
+  Prior,
+} from 'upgrade_types';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { MoocletExperimentRef } from '../models/MoocletExperimentRef';
 import { MoocletDataService } from './MoocletDataService';
@@ -243,7 +249,24 @@ export class MoocletRewardsService {
         }
       }
 
-      return this.createExperimentRewardsSummary(moocletExperimentRef, rewards, logger);
+      let tsConfigurableParams: MoocletTSConfigurablePolicyParametersDTO | undefined;
+      if (moocletExperimentRef.policyParametersId) {
+        try {
+          const policyParametersResponse = await this.moocletDataService.getPolicyParameters(
+            moocletExperimentRef.policyParametersId,
+            logger
+          );
+          tsConfigurableParams = policyParametersResponse.parameters as MoocletTSConfigurablePolicyParametersDTO;
+        } catch (policyError) {
+          logger.warn({
+            message: 'Could not fetch policy parameters for Thompson sampling estimate',
+            experimentId,
+            error: policyError,
+          });
+        }
+      }
+
+      return this.createExperimentRewardsSummary(moocletExperimentRef, rewards, logger, tsConfigurableParams);
     } catch (error) {
       logger.error({ message: 'Error fetching rewards summary for experiment', experimentId, error });
       throw error;
@@ -266,7 +289,8 @@ export class MoocletRewardsService {
   public async createExperimentRewardsSummary(
     moocletExperimentRef: MoocletExperimentRef,
     rewardsData: MoocletValueResponseDetails[],
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    policyParameters?: MoocletTSConfigurablePolicyParametersDTO
   ): Promise<ExperimentRewardsSummary> {
     const rewards: MoocletValueResponseDetails[] = rewardsData;
 
@@ -278,8 +302,12 @@ export class MoocletRewardsService {
       return [];
     }
 
+    const DEFAULT_PRIOR: Prior = { success: 1, failure: 1 };
+
     const rewardsSummaries = moocletExperimentRef.versionConditionMaps.map(
       ({ experimentCondition, moocletVersionId }) => {
+        const conditionCode = experimentCondition.conditionCode;
+        const versionIdKey = String(moocletVersionId);
         const versionRewards = rewards.filter((reward) => reward.version === moocletVersionId);
         const successes = versionRewards.filter((reward) => reward.value === 1.0).length;
         const failures = versionRewards.filter((reward) => reward.value === 0.0).length;
@@ -287,13 +315,16 @@ export class MoocletRewardsService {
         const percentSuccess = total > 0 ? (successes / total) * 100 : 0.0;
         const successRate = percentSuccess.toFixed(1) + '%';
 
+        const conditionPrior: Prior = policyParameters?.prior?.[versionIdKey] ?? DEFAULT_PRIOR;
+
         const rewardsForCondition: ExperimentRewardsByCondition = {
-          conditionCode: experimentCondition.conditionCode,
+          conditionCode,
           successes,
           failures,
-          total,
           successRate,
           order: experimentCondition.order,
+          priorSuccess: conditionPrior.success,
+          priorFailure: conditionPrior.failure,
         };
         return rewardsForCondition;
       }

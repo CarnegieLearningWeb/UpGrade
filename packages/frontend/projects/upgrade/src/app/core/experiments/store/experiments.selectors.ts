@@ -1,5 +1,4 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { selectAll } from './experiments.reducer';
 import {
   EXPERIMENT_SEARCH_KEY,
   ExperimentState,
@@ -32,7 +31,7 @@ import { KeyValueFormat } from '@shared-component-lib/common-section-card-overvi
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
 
-export const selectAllExperimentFromState = createSelector(selectExperimentState, selectAll);
+export const selectAllExperimentFromState = createSelector(selectExperimentState, (state) => state.experiments);
 
 export const selectAllExperiment = createSelector(
   selectExperimentState,
@@ -54,8 +53,8 @@ export const selectSelectedExperiment = createSelector(
   (routerState, experimentState): ExperimentVM | undefined => {
     // be very defensive here to make sure routerState is correct
     const experimentId = routerState?.state?.params?.experimentId;
-    if (experimentId && experimentState?.entities) {
-      const experiment = experimentState.entities[experimentId];
+    if (experimentId && experimentState?.experiments) {
+      const experiment = experimentState.experiments.find((exp) => exp.id === experimentId);
 
       // Return undefined if experiment doesn't exist yet
       if (!experiment) {
@@ -77,9 +76,8 @@ export const selectConditionWeightsValid = createSelector(selectSelectedExperime
   return isWeightSumValid(experiment?.conditions || []);
 });
 
-export const selectExperimentById = createSelector(
-  selectExperimentState,
-  (state, { experimentId }) => state.entities[experimentId]
+export const selectExperimentById = createSelector(selectExperimentState, (state, { experimentId }) =>
+  state.experiments.find((exp) => exp.id === experimentId)
 );
 
 export const selectExperimentStats = createSelector(selectExperimentState, (state) => state.stats);
@@ -146,8 +144,9 @@ export const selectExperimentStatById = createSelector(
 export const selectContextMetaData = createSelector(selectExperimentState, (state) => state.contextMetaData);
 
 export const selectExperimentQueries = createSelector(selectExperimentState, (state, { experimentId }) => {
-  if (state.entities[experimentId]) {
-    return state.entities[experimentId].queries;
+  const experiment = state.experiments.find((exp) => exp.id === experimentId);
+  if (experiment) {
+    return experiment.queries;
   }
   return null;
 });

@@ -142,7 +142,7 @@ export class AnalyticsService {
   ): Promise<void> {
     try {
       const timeStamp = new Date().toISOString();
-      const folderPath = 'src/api/assets/files/';
+      const folderPath = env.email.tmpWriteableFilePath;
       // create the directory if not exist
       if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
@@ -342,6 +342,8 @@ export class AnalyticsService {
         const excludeIfReached = row.excludeIfReached ? 'TRUE' : 'FALSE';
         const stratification =
           row.stratification && row.stratificationValue ? `${row.stratification}: ${row.stratificationValue}` : 'NA';
+        const target = row.target ? ` (${row.target})` : '';
+        const decisionPoint = row.site + target;
 
         return {
           ExperimentId: row.experimentId,
@@ -356,8 +358,7 @@ export class AnalyticsService {
           DesignType: row.designType,
           AlgorithmType: row.algorithmType,
           Stratification: stratification,
-          Site: row.site,
-          Target: row.target,
+          DecisionPoint: decisionPoint,
           ExcludeifReached: excludeIfReached,
           ConditionName: row.conditionName,
           Payload: row.payload ? row.payload : row.conditionName,
@@ -406,8 +407,7 @@ export class AnalyticsService {
             DesignType: '',
             AlgorithmType: '',
             Stratification: '',
-            Site: '',
-            Target: '',
+            DecisionPoint: '',
             ExcludeifReached: '',
             ConditionName: '',
             Payload: '',
