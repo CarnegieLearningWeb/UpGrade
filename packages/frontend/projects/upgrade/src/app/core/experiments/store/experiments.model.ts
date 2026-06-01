@@ -609,6 +609,7 @@ export interface ExperimentState {
   // List page data - plain array preserves backend sort order
   experiments: ExperimentVM[];
   isLoadingExperiment: boolean;
+  hasInitialExperimentsDataLoaded: boolean;
   isLoadingExperimentDetailStats: boolean;
   isLoadingExperimentExport: boolean;
   skipExperiment: number;

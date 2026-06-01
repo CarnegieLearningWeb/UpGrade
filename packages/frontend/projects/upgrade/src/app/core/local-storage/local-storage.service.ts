@@ -58,6 +58,7 @@ export class LocalStorageService {
       isLoadingImportExperiment: false,
       isLoadingRewardsSummary: false,
       rewardsSummaries: {},
+      hasInitialExperimentsDataLoaded: false,
     };
 
     const featureFlagState: FeatureFlagState = {
@@ -86,6 +87,7 @@ export class LocalStorageService {
     const segmentState: SegmentState = {
       segments: [],
       isLoadingSegments: false,
+      hasInitialSegmentsDataLoaded: false,
       allExperimentSegmentsInclusion: null,
       allExperimentSegmentsExclusion: null,
       allFeatureFlagSegmentsInclusion: null,
