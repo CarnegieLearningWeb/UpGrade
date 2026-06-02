@@ -1,7 +1,6 @@
 import { Service } from 'typedi';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { Segment } from '../models/Segment';
-import { FeatureFlagExposure } from '../models/FeatureFlagExposure';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
@@ -102,34 +101,16 @@ export class FeatureFlagService {
 
     const filteredFeatureFlags = await this.getCachedFlagsFromContext(context);
 
-    const [isUserExcluded, isGroupExcluded] = await this.experimentAssignmentService.checkUserOrGroupIsGloballyExcluded(
-      experimentUserDoc,
-      context
-    );
-
-    if (isUserExcluded || isGroupExcluded) {
-      return [];
-    }
-
     const includedFeatureFlags = await this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, experimentUserDoc);
 
     // save exposures in db
-    try {
-      await this.dataSource.transaction(async (transactionalEntityManager) => {
-        const exposureRepo = transactionalEntityManager.getRepository(FeatureFlagExposure);
-        const exposuresToSave = includedFeatureFlags.map((flag) => ({
-          featureFlag: flag,
-          experimentUserId: experimentUserDoc.id,
-        }));
-        if (exposuresToSave.length > 0) {
-          // fire and forget, we don't need to wait on this, return flag asap to user
-          exposureRepo.save(exposuresToSave);
-        }
-      });
-    } catch (err) {
-      const error = new Error(`Error in saving feature flag exposure records ${err}`);
-      (error as any).type = SERVER_ERROR.QUERY_FAILED;
-      logger.error(error);
+    if (includedFeatureFlags.length > 0) {
+      this.featureFlagExposureRepository
+        .recordExposureIfNotExists(
+          includedFeatureFlags.map((flag) => flag.id),
+          experimentUserDoc.id
+        )
+        .catch((err) => logger.error({ message: `Error saving FF exposures: ${err}` }));
     }
 
     return includedFeatureFlags.map((flags) => flags.key);
@@ -882,13 +863,19 @@ export class FeatureFlagService {
     experimentUser: ExperimentUser
   ): Promise<FeatureFlag[]> {
     const segmentObjMap = {};
+    const getEnabledSegmentIds = (list: FeatureFlagSegmentExclusion[] | FeatureFlagSegmentInclusion[]) => {
+      return list.filter((item) => item.enabled).map((item) => item.segment.id);
+    };
+
     featureFlags.forEach((flag) => {
-      const includeIds = flag.featureFlagSegmentInclusion
-        .filter((inclusion) => inclusion.enabled)
-        .map((segmentInclusion) => segmentInclusion.segment.id);
-      const excludeIds = flag.featureFlagSegmentExclusion
-        .filter((exclusion) => exclusion.enabled)
-        .map((segmentExclusion) => segmentExclusion.segment.id);
+      const excludeIds = getEnabledSegmentIds(flag.featureFlagSegmentExclusion);
+      let includeIds = [];
+
+      // this should be fixed upstream also so featureFlagSegmentInclusion is always an empty array already,
+      // but this will at least catch it here also if something was missed so that we aren't caching or running logic on irrelevant segments
+      if (flag.filterMode !== FILTER_MODE.INCLUDE_ALL) {
+        includeIds = getEnabledSegmentIds(flag.featureFlagSegmentInclusion);
+      }
 
       segmentObjMap[flag.id] = {
         segmentIdsQueue: [...includeIds, ...excludeIds],
