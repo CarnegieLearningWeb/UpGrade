@@ -958,7 +958,7 @@ describe('ExperimentService Testing', () => {
 
   describe('updateState()', () => {
     it('should call setAllPendingActivationFalse when transitioning to ENROLLING', async () => {
-      experimentRepo.findOne = jest.fn().mockResolvedValue({
+      experimentRepo.findOneExperiment = jest.fn().mockResolvedValue({
         ...mockExperiment,
         state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
       });
