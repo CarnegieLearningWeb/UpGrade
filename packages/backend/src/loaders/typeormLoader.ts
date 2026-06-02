@@ -99,23 +99,12 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
 
     // register the data source instance in the typeorm-typeDI-extensions
     tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
-    const [mainResult, replicaResult] = await Promise.allSettled([
-      appDataSourceInstance.initialize(),
-      exportDataSourceInstance.initialize(),
-    ]);
+    await appDataSourceInstance.initialize();
 
-    // Main DB is required — rethrow so the outer catch can classify and re-throw.
-    if (mainResult.status === 'rejected') {
-      throw mainResult.reason;
-    }
-
-    // Read replica is optional — log the failure but let the app start.
-    // Requests that attempt to use the replica connection will receive an error
-    // at query time instead of preventing the whole app from booting.
-    if (replicaResult.status === 'rejected') {
-      const replicaErr = replicaResult.reason as any;
+    // Fire-and-forget replica init so a slow/unreachable replica doesn't block app startup.
+    void exportDataSourceInstance.initialize().catch((replicaErr) => {
       log.error({ message: 'Read replica connection failed — continuing without replica', error: replicaErr });
-    }
+    });
 
     if (!env.db.synchronize && !env.isECS) {
       await appDataSourceInstance.runMigrations();
