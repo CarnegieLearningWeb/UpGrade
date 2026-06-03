@@ -110,7 +110,7 @@ export class FeatureFlagService {
           includedFeatureFlags.map((flag) => flag.id),
           experimentUserDoc.id
         )
-.catch((err) => logger.error({ message: 'Error saving FF exposures', err }));
+        .catch((err) => logger.error({ message: 'Error saving FF exposures', err }));
     }
 
     return includedFeatureFlags.map((flags) => flags.key);
