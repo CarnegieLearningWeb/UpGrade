@@ -6,6 +6,15 @@ import { getDateVariables } from './utils/dateQuery';
 
 @EntityRepository(FeatureFlagExposure)
 export class FeatureFlagExposureRepository extends Repository<FeatureFlagExposure> {
+  public async recordExposureIfNotExists(flagIds: string[], experimentUserId: string): Promise<void> {
+    await this.createQueryBuilder()
+      .insert()
+      .into(FeatureFlagExposure)
+      .values(flagIds.map((featureFlagId) => ({ featureFlagId, experimentUserId })))
+      .orIgnore()
+      .execute();
+  }
+
   public async getExposuresByDateRange(flagId: string, dateRange: DATE_RANGE, clientOffset: number) {
     const { whereDate, selectRange } = getDateVariables(dateRange, clientOffset, 'feature_flag_exposure');
     const query = this.createQueryBuilder('feature_flag_exposure')

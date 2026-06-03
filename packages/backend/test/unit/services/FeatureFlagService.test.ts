@@ -30,6 +30,8 @@ import { FeatureFlagListValidator } from '../../../src/api/controllers/validator
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
+import { FeatureFlagExposureRepository } from '../../../src/api/repositories/FeatureFlagExposureRepository';
+import { FeatureFlagSegmentInclusion } from '../../../src/api/models/FeatureFlagSegmentInclusion';
 import { User } from '../../../src/api/models/User';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
@@ -77,6 +79,26 @@ describe('Feature Flag Service Testing', () => {
   mockFlag4.tags = [];
   mockFlag4.featureFlagSegmentInclusion = [];
   mockFlag4.featureFlagSegmentExclusion = [];
+
+  const inclusionSegmentForExcludeAll = { id: 'seg-include-for-exclude-all' } as any;
+  const excludeAllFlagWithInclusion = new FeatureFlag();
+  excludeAllFlagWithInclusion.id = 'exclude-all-flag-id';
+  excludeAllFlagWithInclusion.key = 'exclude-all-key';
+  excludeAllFlagWithInclusion.filterMode = FILTER_MODE.EXCLUDE_ALL;
+  excludeAllFlagWithInclusion.featureFlagSegmentInclusion = [
+    { enabled: true, segment: inclusionSegmentForExcludeAll } as FeatureFlagSegmentInclusion,
+  ];
+  excludeAllFlagWithInclusion.featureFlagSegmentExclusion = [];
+
+  const inclusionSegmentForIncludeAll = { id: 'seg-include-for-include-all' } as any;
+  const includeAllFlagWithInclusion = new FeatureFlag();
+  includeAllFlagWithInclusion.id = 'include-all-flag-id';
+  includeAllFlagWithInclusion.key = 'include-all-key';
+  includeAllFlagWithInclusion.filterMode = FILTER_MODE.INCLUDE_ALL;
+  includeAllFlagWithInclusion.featureFlagSegmentInclusion = [
+    { enabled: true, segment: inclusionSegmentForIncludeAll } as FeatureFlagSegmentInclusion,
+  ];
+  includeAllFlagWithInclusion.featureFlagSegmentExclusion = [];
 
   const mockSegment = {
     name: 'name',
@@ -241,6 +263,12 @@ describe('Feature Flag Service Testing', () => {
               getMany: jest.fn().mockResolvedValue([]),
               getOne: jest.fn().mockResolvedValue(null),
             })),
+          },
+        },
+        {
+          provide: getRepositoryToken(FeatureFlagExposureRepository),
+          useValue: {
+            recordExposureIfNotExists: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -535,5 +563,123 @@ describe('Feature Flag Service Testing', () => {
     await service.clearCachedFlagsForContext('test');
 
     expect(service.cacheService.delCache).toHaveBeenCalled();
+  });
+
+  describe('getKeys - global exclusion removed', () => {
+    it('should not call checkUserOrGroupIsGloballyExcluded', async () => {
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+
+      flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue([]);
+      service.cacheService.wrap = jest.fn().mockResolvedValue([mockFlag1]);
+
+      await service.getKeys(userDoc, 'context1', logger);
+
+      expect(experimentAssignmentService.checkUserOrGroupIsGloballyExcluded).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getKeys - exposure recording', () => {
+    it('should call recordExposureIfNotExists with included flag ids and user id', async () => {
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const exposureRepo = module.get(getRepositoryToken(FeatureFlagExposureRepository)) as any;
+      const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+
+      flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue([]);
+      service.cacheService.wrap = jest.fn().mockResolvedValue([mockFlag1]);
+      (experimentAssignmentService.inclusionExclusionLogic as jest.Mock).mockResolvedValue([[mockFlag1.id], []]);
+
+      await service.getKeys(userDoc, 'context1', logger);
+
+      expect(exposureRepo.recordExposureIfNotExists).toHaveBeenCalledWith([mockFlag1.id], userDoc.id);
+    });
+
+    it('should not call recordExposureIfNotExists when no flags are included', async () => {
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const exposureRepo = module.get(getRepositoryToken(FeatureFlagExposureRepository)) as any;
+      const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+
+      flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue([]);
+      service.cacheService.wrap = jest.fn().mockResolvedValue([mockFlag1]);
+      (experimentAssignmentService.inclusionExclusionLogic as jest.Mock).mockResolvedValue([[], []]);
+
+      await service.getKeys(userDoc, 'context1', logger);
+
+      expect(exposureRepo.recordExposureIfNotExists).not.toHaveBeenCalled();
+    });
+
+    it('should not use dataSource.transaction for exposure recording', async () => {
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+
+      flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue([]);
+      service.cacheService.wrap = jest.fn().mockResolvedValue([mockFlag1]);
+      (experimentAssignmentService.inclusionExclusionLogic as jest.Mock).mockResolvedValue([[mockFlag1.id], []]);
+
+      await service.getKeys(userDoc, 'context1', logger);
+
+      expect(dataSource.transaction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('featureFlagLevelInclusionExclusion - filterMode segment handling', () => {
+    it('EXCLUDE_ALL: passes enabled inclusion segment IDs to resolveSegmentsForEntities', async () => {
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+      const resolveSegmentsSpy = experimentAssignmentService.resolveSegmentsForEntities as jest.Mock;
+
+      flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue([]);
+      service.cacheService.wrap = jest.fn().mockResolvedValue([excludeAllFlagWithInclusion]);
+      resolveSegmentsSpy.mockResolvedValue([{}, {}]);
+
+      await service.getKeys(userDoc, 'context1', logger);
+
+      expect(resolveSegmentsSpy).toHaveBeenCalledTimes(1);
+      const segmentObjMap = resolveSegmentsSpy.mock.calls[0][0];
+      expect(segmentObjMap[excludeAllFlagWithInclusion.id].currentIncludedSegmentIds).toEqual([
+        inclusionSegmentForExcludeAll.id,
+      ]);
+    });
+
+    it('INCLUDE_ALL: does not pass inclusion segment IDs to resolveSegmentsForEntities', async () => {
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+      const resolveSegmentsSpy = experimentAssignmentService.resolveSegmentsForEntities as jest.Mock;
+
+      flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue([]);
+      service.cacheService.wrap = jest.fn().mockResolvedValue([includeAllFlagWithInclusion]);
+      resolveSegmentsSpy.mockResolvedValue([{}, {}]);
+
+      await service.getKeys(userDoc, 'context1', logger);
+
+      expect(resolveSegmentsSpy).toHaveBeenCalledTimes(1);
+      const segmentObjMap = resolveSegmentsSpy.mock.calls[0][0];
+      expect(segmentObjMap[includeAllFlagWithInclusion.id].currentIncludedSegmentIds).toEqual([]);
+    });
+
+    it('should exclude disabled inclusion segments regardless of filterMode', async () => {
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+      const resolveSegmentsSpy = experimentAssignmentService.resolveSegmentsForEntities as jest.Mock;
+
+      const flagWithDisabledInclusion = new FeatureFlag();
+      flagWithDisabledInclusion.id = 'flag-disabled-inclusion';
+      flagWithDisabledInclusion.key = 'flag-disabled-key';
+      flagWithDisabledInclusion.filterMode = FILTER_MODE.EXCLUDE_ALL;
+      flagWithDisabledInclusion.featureFlagSegmentInclusion = [
+        { enabled: false, segment: { id: 'disabled-seg-id' } } as FeatureFlagSegmentInclusion,
+      ];
+      flagWithDisabledInclusion.featureFlagSegmentExclusion = [];
+
+      flagRepo.getFlagsFromContext = jest.fn().mockResolvedValue([]);
+      service.cacheService.wrap = jest.fn().mockResolvedValue([flagWithDisabledInclusion]);
+      resolveSegmentsSpy.mockResolvedValue([{}, {}]);
+
+      await service.getKeys(userDoc, 'context1', logger);
+
+      expect(resolveSegmentsSpy).toHaveBeenCalledTimes(1);
+      const segmentObjMap = resolveSegmentsSpy.mock.calls[0][0];
+      expect(segmentObjMap[flagWithDisabledInclusion.id].currentIncludedSegmentIds).toEqual([]);
+    });
   });
 });
