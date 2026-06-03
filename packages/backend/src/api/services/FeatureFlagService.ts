@@ -5,6 +5,7 @@ import { FeatureFlagExposure } from '../models/FeatureFlagExposure';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
+import { FeatureFlagExposureRepository } from '../repositories/FeatureFlagExposureRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
 import { EntityManager, In, DataSource } from 'typeorm';
@@ -35,6 +36,7 @@ import {
   CACHE_PREFIX,
   ValidatedImportResponse,
   IMPORT_COMPATIBILITY_TYPE,
+  DATE_RANGE,
 } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
@@ -54,11 +56,14 @@ import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
 import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
+import dayjs from 'dayjs';
+import { getDateRangeNames } from '../repositories/utils/dateQuery';
 
 @Service()
 export class FeatureFlagService {
   constructor(
     @InjectRepository() private featureFlagRepository: FeatureFlagRepository,
+    @InjectRepository() private featureFlagExposureRepository: FeatureFlagExposureRepository,
     @InjectRepository() private segmentRepository: SegmentRepository,
     @InjectRepository() private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
     @InjectRepository() private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
@@ -671,6 +676,36 @@ export class FeatureFlagService {
         return await executeTransaction(manager);
       });
     }
+  }
+
+  public async getExposureStatsByDate(
+    flagId: string,
+    dateRange: DATE_RANGE,
+    clientOffset: number
+  ): Promise<{ date: string; count: number }[]> {
+    const featureFlag = await this.featureFlagRepository.findOne({
+      where: { id: flagId },
+    });
+
+    if (!featureFlag) {
+      throw new NotFoundException(`Feature flag with id ${flagId} not found`);
+    }
+    const featureFlagAge = dayjs().year() - dayjs(featureFlag.createdAt).year();
+
+    const dates = getDateRangeNames(dateRange, clientOffset, featureFlagAge);
+    const exposuresByDate = await this.featureFlagExposureRepository.getExposuresByDateRange(
+      flagId,
+      dateRange,
+      clientOffset
+    );
+
+    return dates.map((date) => {
+      const count = exposuresByDate.find((stat) => stat.date_range.toDateString() === date)?.count || 0;
+      return {
+        date,
+        count,
+      };
+    });
   }
 
   public async updateList(

@@ -18,7 +18,7 @@ export class DecisionPoint extends BaseModel {
   @Column()
   public site: string;
 
-  @Column({ nullable: true })
+  @Column()
   public target: string;
 
   @Column()
@@ -35,6 +35,11 @@ export class DecisionPoint extends BaseModel {
     default: false,
   })
   public excludeIfReached: boolean;
+
+  @Column({
+    default: false,
+  })
+  public pendingActivation: boolean;
 
   @ManyToOne(() => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
   public experiment: Experiment;

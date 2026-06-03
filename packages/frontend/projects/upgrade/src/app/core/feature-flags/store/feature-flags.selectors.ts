@@ -2,14 +2,15 @@ import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { FeatureFlag, FeatureFlagState, ParticipantListTableRow } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
-import { selectAll, selectIds } from './feature-flags.reducer';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types';
 
 export const selectFeatureFlagsState = createFeatureSelector<FeatureFlagState>('featureFlags');
 
-export const selectAllFeatureFlags = createSelector(selectFeatureFlagsState, selectAll);
+export const selectAllFeatureFlags = createSelector(selectFeatureFlagsState, (state) => state.featureFlags);
 
-export const selectFeatureFlagIds = createSelector(selectFeatureFlagsState, selectIds);
+export const selectFeatureFlagIds = createSelector(selectFeatureFlagsState, (state) =>
+  state.featureFlags.map((flag) => flag.id)
+);
 
 export const selectAllFeatureFlagsSortedByDate = createSelector(selectAllFeatureFlags, (featureFlags) => {
   if (!featureFlags) {
@@ -56,7 +57,9 @@ export const selectSelectedFeatureFlag = createSelector(
     // be very defensive here to make sure routerState is correct
     const flagId = routerState?.state?.params?.flagId;
     if (flagId) {
-      return featureFlagState.entities[flagId];
+      return featureFlagState.selectedFlag?.id === flagId
+        ? featureFlagState.selectedFlag
+        : featureFlagState.featureFlags.find((flag) => flag.id === flagId);
     }
     return undefined;
   }
@@ -210,10 +213,16 @@ export const selectWarningKeysForSelectedFlag = createSelector(selectSelectedFea
   getWarningKeysForFlag(flag)
 );
 
+export const selectFeatureFlagGraphInfo = createSelector(selectFeatureFlagsState, (state) => state.graphInfo);
+
+export const selectIsFeatureFlagGraphLoading = createSelector(selectFeatureFlagsState, (state) => state.isGraphLoading);
+
+export const selectFeatureFlagTotalExposures = createSelector(selectFeatureFlagsState, (state) => state.totalExposures);
+
 // Selector for all flags - returns map of flagId to translation key arrays
 export const selectWarningKeysForAllFlags = createSelector(selectFeatureFlagsState, (state: FeatureFlagState) => {
   const warningKeys: { [flagId: string]: string[] } = {};
-  Object.values(state.entities).forEach((flag) => {
+  state.featureFlags.forEach((flag) => {
     if (flag) {
       warningKeys[flag.id] = getWarningKeysForFlag(flag);
     }

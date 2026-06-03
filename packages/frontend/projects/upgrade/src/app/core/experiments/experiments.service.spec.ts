@@ -13,6 +13,7 @@ import {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_STATE,
   POST_EXPERIMENT_RULE,
+  SegmentNew,
   UpsertExperimentType,
 } from './store/experiments.model';
 import * as ExperimentSelectors from './store/experiments.selectors';
@@ -41,7 +42,6 @@ import {
   SEGMENT_STATUS,
   SEGMENT_TYPE,
 } from 'upgrade_types';
-import { SegmentNew } from './store/experiments.model';
 import { Segment } from '../segments/store/segments.model';
 
 const MockStateStore$ = new BehaviorSubject({});
@@ -145,19 +145,14 @@ describe('ExperimentService', () => {
   });
 
   describe('#experiments$', () => {
-    it('should emit sorted list of entities', fakeAsync(() => {
+    it('should emit experiments in selector order', fakeAsync(() => {
       ExperimentSelectors.selectAllExperiment.setResult(mockExperimentsList);
 
       mockStore.next('thisValueIsMeaningless');
 
       service.experiments$.subscribe((val) => {
         tick(0);
-        expect(val).toEqual([
-          { id: 'first', createdAt: '04/25/17 04:34:22 +0000' },
-          { id: 'second', createdAt: '04/24/17 04:34:22 +0000' },
-          { id: 'third', createdAt: '04/24/17 04:34:22 +0000' },
-          { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000' },
-        ]);
+        expect(val).toEqual(mockExperimentsList);
       });
     }));
   });
@@ -174,40 +169,25 @@ describe('ExperimentService', () => {
   });
 
   describe('#haveInitialExperimentsLoaded', () => {
-    describe('should return true if experiments are not loading and experiment data exists, and false otherwise', () => {
+    describe('should return the value of hasInitialExperimentsDataLoaded selector', () => {
       const testCases = [
         {
-          whenCondition: 'is NOT in loadingstate AND has experiments',
+          whenCondition: 'initial experiments data has loaded',
           expectedValue: true,
-          isLoading: false,
-          experiments: mockExperimentsList,
+          hasInitialDataLoaded: true,
         },
         {
-          whenCondition: 'is NOT loading AND has NO experiments',
-          expectedValue: true,
-          isLoading: false,
-          experiments: [],
-        },
-        {
-          whenCondition: 'is loading AND has NO experiments',
+          whenCondition: 'initial experiments data has not loaded',
           expectedValue: false,
-          isLoading: true,
-          experiments: [],
-        },
-        {
-          whenCondition: 'is loading AND has experiments',
-          expectedValue: true,
-          isLoading: true,
-          experiments: mockExperimentsList,
+          hasInitialDataLoaded: false,
         },
       ];
 
       testCases.forEach((testCase) => {
-        const { whenCondition, expectedValue, isLoading, experiments } = testCase;
+        const { whenCondition, expectedValue, hasInitialDataLoaded } = testCase;
 
         it(`WHEN ${whenCondition}, THEN ${expectedValue}:`, fakeAsync(() => {
-          ExperimentSelectors.selectIsLoadingExperiment.setResult(isLoading);
-          ExperimentSelectors.selectAllExperiment.setResult(experiments);
+          ExperimentSelectors.selectHasInitialExperimentsDataLoaded.setResult(hasInitialDataLoaded);
 
           service.haveInitialExperimentsLoaded().subscribe((val) => {
             tick(0);
@@ -349,7 +329,7 @@ describe('ExperimentService', () => {
     testCases.forEach((testCase) => {
       const { whenCondition, expectedValue, experiment, experimentId } = testCase;
 
-      it(`WHEN ${whenCondition}, THEN ${expectedValue}:`, fakeAsync(() => {
+      it(`WHEN ${whenCondition}`, fakeAsync(() => {
         ExperimentSelectors.selectExperimentById.setResult(experiment);
 
         service.selectExperimentById(experimentId).subscribe((val) => {

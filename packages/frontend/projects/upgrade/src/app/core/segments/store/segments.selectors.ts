@@ -9,20 +9,25 @@ import {
   featureFlagSegmentInclusionExclusionData,
   GlobalSegmentState,
 } from './segments.model';
-import { selectAll } from './segments.reducer';
+
 import { selectRouterState } from '../../core.state';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
-import { SEGMENT_SEARCH_KEY, SEGMENT_TYPE } from 'upgrade_types';
+import { SEGMENT_SEARCH_KEY } from 'upgrade_types';
 
 export const selectSegmentsState = createFeatureSelector<SegmentState>('segments');
 
-export const selectAllSegments = createSelector(selectSegmentsState, selectAll);
+export const selectAllSegments = createSelector(selectSegmentsState, (state) => state.segments);
 
 export const selectGlobalSegmentsState = createFeatureSelector<GlobalSegmentState>('globalSegments');
 
-export const selectGlobalSegments = createSelector(selectGlobalSegmentsState, selectAll);
+export const selectGlobalSegments = createSelector(selectGlobalSegmentsState, (state) => state.segments);
 
 export const selectIsLoadingSegments = createSelector(selectSegmentsState, (state) => state.isLoadingSegments);
+
+export const selectHasInitialSegmentsDataLoaded = createSelector(
+  selectSegmentsState,
+  (state) => state.hasInitialSegmentsDataLoaded
+);
 
 export const isLoadingUpsertSegment = createSelector(selectSegmentsState, (state) => state.isLoadingUpsertSegment);
 
@@ -31,9 +36,8 @@ export const selectIsLoadingGlobalSegments = createSelector(
   (state) => state.isLoadingSegments
 );
 
-export const selectSegmentById = createSelector(
-  selectSegmentsState,
-  (state, { segmentId }) => state.entities[segmentId]
+export const selectSegmentById = createSelector(selectSegmentsState, (state, { segmentId }) =>
+  state.segments.find((segment) => segment.id === segmentId)
 );
 
 export const selectAppContexts = createSelector(selectContextMetaData, (contextMetaData) =>
@@ -62,15 +66,6 @@ export const selectFeatureFlagSegmentsExclusion = createSelector(
 
 export const selectParentSegments = createSelector(selectSegmentsState, (state) => state.allParentSegments);
 
-export const selectAllSegmentEntities = createSelector(
-  selectSegmentsState,
-  selectGlobalSegmentsState,
-  (segmentState, globalSegmentState) => ({
-    ...segmentState.entities,
-    ...globalSegmentState.entities,
-  })
-);
-
 export const selectSegmentIdFromRoute = createSelector(selectRouterState, (routerState) => {
   if (routerState?.state?.params?.segmentId) {
     return routerState.state.params.segmentId;
@@ -93,13 +88,13 @@ export const selectSegmentIdAfterNavigation = createSelector(
 
 export const selectSelectedSegment = createSelector(
   selectRouterState,
-  selectAllSegmentEntities,
-  (routerState, allSegmentEntities) => {
-    if (routerState?.state && allSegmentEntities) {
+  selectAllSegments,
+  (routerState, allSegments) => {
+    if (routerState?.state && allSegments) {
       const {
         state: { params },
       } = routerState;
-      return allSegmentEntities[params.segmentId] ? allSegmentEntities[params.segmentId] : undefined;
+      return allSegments.find((segment) => segment.id === params.segmentId);
     }
     return undefined;
   }

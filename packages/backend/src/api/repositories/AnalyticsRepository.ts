@@ -18,6 +18,7 @@ import { UserStratificationFactorRepository } from './UserStratificationReposito
 import _ from 'lodash';
 import { Repository } from 'typeorm';
 import { RepeatedEnrollment } from '../models/RepeatedEnrollment';
+import { getDateVariables } from './utils/dateQuery';
 
 export interface IEnrollmentByCondition {
   conditions_id: string;
@@ -512,7 +513,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     const groupEnrollmentRepository = Container.getCustomRepository(GroupEnrollmentRepository);
 
     const groupByRange = `date_range`;
-    const { whereDate: individualWhereDate, selectRange: individualSelectRange } = this.getDateVariables(
+    const { whereDate: individualWhereDate, selectRange: individualSelectRange } = getDateVariables(
       dateRange,
       clientOffset,
       'individualEnrollment'
@@ -569,7 +570,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
         .execute();
     }
 
-    const { whereDate: groupWhereDate, selectRange: groupSelectRange } = this.getDateVariables(
+    const { whereDate: groupWhereDate, selectRange: groupSelectRange } = getDateVariables(
       dateRange,
       clientOffset,
       'groupEnrollment'
@@ -596,74 +597,6 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
       .execute();
 
     return Promise.all([individualEnrollmentConditionAndDecisionPoint, ret]);
-  }
-
-  private getDateVariables(
-    dateRange: DATE_RANGE,
-    clientOffset: number,
-    tableName: string
-  ): { whereDate: string; selectRange: string } {
-    let whereDate = '';
-    let selectRange = '';
-    const dateTruncString = dateRange === DATE_RANGE.TOTAL ? 'year' : 'month';
-    switch (dateRange) {
-      case DATE_RANGE.LAST_SEVEN_DAYS:
-        whereDate = `"${tableName}"."createdAt" > current_date - interval '7 days'`;
-        selectRange =
-          `date_trunc('day', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
-      + interval '` +
-          clientOffset +
-          ` minutes') AS date_range`;
-        break;
-      case DATE_RANGE.LAST_TWO_WEEKS:
-        whereDate = `"${tableName}"."createdAt" > current_date - interval '14 days'`;
-        selectRange =
-          `date_trunc('day', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
-      + interval '` +
-          clientOffset +
-          ` minutes') AS date_range`;
-        break;
-      case DATE_RANGE.LAST_ONE_MONTH:
-        whereDate = `"${tableName}"."createdAt" > current_date - interval '30 days'`;
-        selectRange =
-          `date_trunc('day', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
-      + interval '` +
-          clientOffset +
-          ` minutes') AS date_range`;
-        break;
-      case DATE_RANGE.LAST_THREE_MONTHS:
-        whereDate = `"${tableName}"."createdAt" > current_date - interval '3 months'`;
-        selectRange =
-          `date_trunc('month', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
-      + interval '` +
-          clientOffset +
-          ` minutes') AS date_range`;
-        break;
-      case DATE_RANGE.LAST_SIX_MONTHS:
-        whereDate = `"${tableName}"."createdAt" > current_date - interval '6 months'`;
-        selectRange =
-          `date_trunc('month', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
-      + interval '` +
-          clientOffset +
-          ` minutes') AS date_range`;
-        break;
-      case DATE_RANGE.LAST_TWELVE_MONTHS:
-        whereDate = `"${tableName}"."createdAt" > current_date - interval '12 months'`;
-        selectRange =
-          `date_trunc('month', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
-      + interval '` +
-          clientOffset +
-          ` minutes') AS date_range`;
-        break;
-      default:
-        selectRange =
-          `date_trunc('${dateTruncString}', "${tableName}"."createdAt"::timestamptz at time zone 'UTC'
-      + interval '` +
-          clientOffset +
-          ` minutes') AS date_range`;
-        break;
-    }
-    return { whereDate, selectRange };
   }
 
   private async getEnrollmentForSimple(experimentId: string): Promise<any[]> {

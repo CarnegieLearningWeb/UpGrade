@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
 import {
+  selectAllFeatureFlags,
   selectAllFeatureFlagsSortedByDate,
   selectIsAllFlagsFetched,
   selectIsLoadingFeatureFlags,
@@ -26,6 +27,9 @@ import {
   selectWarningKeysForSelectedFlag,
   selectWarningKeysForAllFlags,
   selectDuplicateKeyFound,
+  selectFeatureFlagGraphInfo,
+  selectIsFeatureFlagGraphLoading,
+  selectFeatureFlagTotalExposures,
 } from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
 import { actionFetchContextMetaData } from '../experiments/store/experiments.actions';
@@ -37,6 +41,7 @@ import {
   UpdateFeatureFlagStatusRequest,
   FeatureFlagLocalStorageKeys,
 } from './store/feature-flags.model';
+import { DATE_RANGE } from '../experiments/store/experiments.model';
 import { map, take } from 'rxjs';
 import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../segments/store/segments.model';
@@ -57,6 +62,7 @@ export class FeatureFlagsService {
   isLoadingImportFeatureFlag$ = this.store$.pipe(select(selectIsLoadingImportFeatureFlag));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
   isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
+  featureFlags$ = this.store$.pipe(select(selectAllFeatureFlags));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   appContexts$ = this.store$.pipe(select(selectAppContexts));
   isAllFlagsFetched$ = this.store$.pipe(select(selectIsAllFlagsFetched));
@@ -66,6 +72,9 @@ export class FeatureFlagsService {
   sortAs$ = this.store$.pipe(select(selectSortAs));
   warningKeysForSelectedFlag$ = this.store$.pipe(select(selectWarningKeysForSelectedFlag));
   warningKeysForAllFlags$ = this.store$.pipe(select(selectWarningKeysForAllFlags));
+  featureFlagGraphInfo$ = this.store$.pipe(select(selectFeatureFlagGraphInfo));
+  isFeatureFlagGraphLoading$ = this.store$.pipe(select(selectIsFeatureFlagGraphLoading));
+  featureFlagTotalExposures$ = this.store$.pipe(select(selectFeatureFlagTotalExposures));
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
@@ -187,5 +196,17 @@ export class FeatureFlagsService {
 
   deleteFeatureFlagExclusionPrivateSegmentList(segmentId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagExclusionList({ segmentId }));
+  }
+
+  setGraphRange(range: DATE_RANGE | null, flagId: string, clientOffset: number) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetFeatureFlagGraphRange({ range, flagId, clientOffset }));
+  }
+
+  fetchTotalExposures(flagId: string, clientOffset: number) {
+    this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlagTotalExposures({ flagId, clientOffset }));
+  }
+
+  clearTotalExposures() {
+    this.store$.dispatch(FeatureFlagsActions.actionSetFeatureFlagTotalExposures({ totalExposures: null }));
   }
 }

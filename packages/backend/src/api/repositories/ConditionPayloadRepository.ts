@@ -65,8 +65,13 @@ export class ConditionPayloadRepository extends Repository<ConditionPayload> {
     return result.raw[0] || [];
   }
 
-  public async deleteConditionPayload(id: string, logger: UpgradeLogger): Promise<ConditionPayload> {
-    const result = await this.createQueryBuilder()
+  public async deleteConditionPayload(
+    id: string,
+    entityManager: EntityManager,
+    logger?: UpgradeLogger
+  ): Promise<ConditionPayload> {
+    const result = await entityManager
+      .createQueryBuilder()
       .delete()
       .from(ConditionPayload)
       .where('id=:id', { id })
@@ -79,7 +84,9 @@ export class ConditionPayloadRepository extends Repository<ConditionPayload> {
           { id },
           errorMsg
         );
-        logger.error(errorMsg);
+        if (logger) {
+          logger.error(errorMsg);
+        }
         throw errorMsgString;
       });
     return result.raw;

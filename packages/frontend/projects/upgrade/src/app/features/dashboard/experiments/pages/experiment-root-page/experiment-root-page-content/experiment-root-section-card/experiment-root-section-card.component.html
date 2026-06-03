@@ -31,7 +31,7 @@
     } @else {
     <div class="table-container">
       <app-experiment-root-section-card-table
-        [dataSource$]="dataSource$ | async"
+        [experiments]="experiments$ | async"
         [isLoading$]="isLoadingExperiments$"
         [isSearchActive$]="isSearchActive$"
         [expandedTagsMap]="expandedTagsMap"

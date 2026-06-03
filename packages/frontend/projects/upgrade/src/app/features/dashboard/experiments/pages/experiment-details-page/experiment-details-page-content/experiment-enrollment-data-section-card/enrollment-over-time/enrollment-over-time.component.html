@@ -25,7 +25,7 @@
         </mat-checkbox>
         @for (partition of partitionsFilterOptions; track partition) {
         <mat-option class="ft-14-400" [value]="partition.id">
-          {{ partition.point + ' (' + partition.twoCharacterId + ')' }}
+          {{ getDecisionPointDisplayText(partition) }}
         </mat-option>
         }
       </mat-select>

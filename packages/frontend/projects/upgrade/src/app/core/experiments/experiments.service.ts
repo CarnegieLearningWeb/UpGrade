@@ -21,6 +21,7 @@ import {
 import { Store, select } from '@ngrx/store';
 import {
   selectAllExperiment,
+  selectHasInitialExperimentsDataLoaded,
   selectIsLoadingExperiment,
   selectSelectedExperiment,
   selectExperimentOverviewDetails,
@@ -60,22 +61,14 @@ import { map, take, tap } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { ExperimentSegmentListRequest } from '../segments/store/segments.model';
 import { ConditionWeightUpdate } from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
+import { MoocletTSConfigurablePolicyParametersDTO, Prior } from 'upgrade_types';
 import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 
 @Injectable()
 export class ExperimentService {
-  constructor(private store$: Store<AppState>, private localStorageService: LocalStorageService) {}
+  constructor(private readonly store$: Store<AppState>, private readonly localStorageService: LocalStorageService) {}
 
-  experiments$: Observable<Experiment[]> = this.store$.pipe(
-    select(selectAllExperiment),
-    map((experiments) =>
-      experiments.sort((a, b) => {
-        const d1 = new Date(a.createdAt);
-        const d2 = new Date(b.createdAt);
-        return d1 < d2 ? 1 : d1 > d2 ? -1 : 0;
-      })
-    )
-  );
+  experiments$: Observable<Experiment[]> = this.store$.pipe(select(selectAllExperiment));
   currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
@@ -111,9 +104,7 @@ export class ExperimentService {
     this.store$.pipe(select(selectSectionCardRestriction(cardType)));
 
   haveInitialExperimentsLoaded() {
-    return combineLatest([this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$]).pipe(
-      map(([isLoading, experiments]) => !isLoading || !!experiments.length)
-    );
+    return this.store$.pipe(select(selectHasInitialExperimentsDataLoaded));
   }
 
   isAllExperimentsFetched() {
@@ -291,6 +282,22 @@ export class ExperimentService {
     };
 
     // Dispatch the update action
+    this.store$.dispatch(
+      experimentAction.actionUpsertExperiment({
+        experiment: updatedExperiment,
+        actionType: UpsertExperimentType.UPDATE_EXPERIMENT,
+      })
+    );
+  }
+
+  updateExperimentConditionPrior(experiment: ExperimentVM, prior: Record<string, Prior>): void {
+    const updatedExperiment: ExperimentVM = {
+      ...experiment,
+      moocletPolicyParameters: {
+        ...experiment.moocletPolicyParameters,
+        prior,
+      } as MoocletTSConfigurablePolicyParametersDTO,
+    };
     this.store$.dispatch(
       experimentAction.actionUpsertExperiment({
         experiment: updatedExperiment,

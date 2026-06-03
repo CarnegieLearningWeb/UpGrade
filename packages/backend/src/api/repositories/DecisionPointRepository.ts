@@ -106,6 +106,25 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
       });
   }
 
+  public async setAllPendingActivationFalse(experimentId: string, entityManager?: EntityManager): Promise<void> {
+    const that = entityManager ? entityManager : this;
+    await that
+      .createQueryBuilder()
+      .update(DecisionPoint)
+      .set({ pendingActivation: false })
+      .where('"experimentId" = :experimentId', { experimentId })
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'setAllPendingActivationFalse',
+          { experimentId },
+          errorMsg
+        );
+        throw errorMsgString;
+      });
+  }
+
   public async getAllUniqueIdentifier(): Promise<string[]> {
     const experimentDecisionPoints = await this.createQueryBuilder('experimentPartition')
       .select('experimentPartition.twoCharacterId')

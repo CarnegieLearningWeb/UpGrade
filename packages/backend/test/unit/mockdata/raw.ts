@@ -122,6 +122,7 @@ export const simpleIndividualExperiment = {
       order: 1,
       excludeIfReached: false,
       conditionPayloads: [],
+      pendingActivation: false,
     },
   ],
   queries: [],

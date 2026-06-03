@@ -40,7 +40,7 @@ describe('SegmentService', () => {
   });
 
   describe('#allSegments$', () => {
-    it('should emit sorted list of entities', fakeAsync(() => {
+    it('should emit list of segments', fakeAsync(() => {
       SegmentSelectors.selectAllSegments.setResult(mockSegmentsList);
 
       mockStore.next('thisValueIsMeaningless');

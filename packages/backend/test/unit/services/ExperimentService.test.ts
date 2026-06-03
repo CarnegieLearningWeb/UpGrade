@@ -83,6 +83,13 @@ describe('ExperimentService Testing', () => {
     order: 1,
   };
 
+  const mockCondition3: Partial<ExperimentCondition> = {
+    id: 'condition-3',
+    conditionCode: 'new-treatment',
+    assignmentWeight: 40,
+    order: 2,
+  };
+
   const createMockDecisionPoint1 = () => ({
     id: 'partition-1',
     site: 'test-site',
@@ -115,7 +122,9 @@ describe('ExperimentService Testing', () => {
       payloadType: PAYLOAD_TYPE.STRING,
       payloadValue: 'control',
       parentCondition: mockCondition1 as ExperimentCondition,
+      parentConditionId: mockCondition1.id,
       decisionPoint: mockDecisionPoint1 as DecisionPoint,
+      decisionPointId: mockDecisionPoint1.id,
     };
 
     mockExperiment = {
@@ -170,14 +179,14 @@ describe('ExperimentService Testing', () => {
       conditionPayloads: [
         {
           id: 'payload-1',
-          parentCondition: 'condition-1',
-          decisionPoint: 'partition-1',
+          parentCondition: mockCondition1,
+          decisionPoint: mockDecisionPoint1,
           payload: { type: PAYLOAD_TYPE.STRING, value: 'control' },
         } as any,
         {
           id: 'payload-2',
-          parentCondition: 'condition-3',
-          decisionPoint: 'partition-1',
+          parentCondition: mockCondition3,
+          decisionPoint: mockDecisionPoint1,
           payload: { type: PAYLOAD_TYPE.STRING, value: 'new-treatment' },
         } as any,
       ],
@@ -257,6 +266,7 @@ describe('ExperimentService Testing', () => {
           useValue: {
             findOne: jest.fn().mockResolvedValue(mockExperiment),
             findOneExperiment: jest.fn().mockResolvedValue(mockExperiment),
+            findByIds: jest.fn().mockResolvedValue([]),
             save: jest.fn().mockResolvedValue(mockExperiment),
             updateExperiment: jest.fn().mockResolvedValue(mockExperiment),
             updateState: jest.fn().mockResolvedValue([{ state: EXPERIMENT_STATE.ENROLLING }]),
@@ -267,7 +277,7 @@ describe('ExperimentService Testing', () => {
           useValue: {
             find: jest.fn().mockResolvedValue([mockCondition1]),
             save: jest.fn().mockResolvedValue(mockCondition1),
-            upsertExperimentCondition: jest.fn().mockResolvedValue(mockCondition1),
+            upsertExperimentCondition: jest.fn().mockImplementation((value) => Promise.resolve(value)),
             deleteCondition: jest.fn().mockResolvedValue({ affected: 1 }),
             getAllUniqueIdentifier: jest.fn().mockResolvedValue(['C1', 'C2']),
             insertConditions: jest.fn().mockResolvedValue([mockCondition1]),
@@ -279,11 +289,12 @@ describe('ExperimentService Testing', () => {
             find: jest.fn().mockResolvedValue([mockDecisionPoint1]),
             save: jest.fn().mockResolvedValue(mockDecisionPoint1),
             findOne: jest.fn().mockResolvedValue(null),
-            upsertDecisionPoint: jest.fn().mockResolvedValue(mockDecisionPoint1),
+            upsertDecisionPoint: jest.fn().mockImplementation((value) => Promise.resolve(value)),
             deleteDecisionPoint: jest.fn().mockResolvedValue({ affected: 1 }),
             deleteByIds: jest.fn().mockResolvedValue({ affected: 1 }),
             getAllUniqueIdentifier: jest.fn().mockResolvedValue(['C1', 'C2']),
             insertDecisionPoint: jest.fn().mockResolvedValue([mockDecisionPoint1]),
+            setAllPendingActivationFalse: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -693,12 +704,155 @@ describe('ExperimentService Testing', () => {
       // Should create payloads for partition-2 with both conditions
       expect(conditionPayloadRepo.upsertConditionPayload).toHaveBeenCalledWith(
         expect.objectContaining({
-          parentCondition: 'condition-1',
-          decisionPoint: 'partition-2',
+          parentConditionId: 'condition-1',
+          decisionPointId: 'partition-2',
           payloadValue: 'control',
         }),
         entityManager
       );
+    });
+
+    it('should preserve pendingActivation: false for an existing decision point during update', async () => {
+      const existingDp = { ...createMockDecisionPoint1(), pendingActivation: false };
+      experimentRepo.findOneExperiment = jest.fn().mockResolvedValue({
+        ...mockExperiment,
+        partitions: [existingDp],
+      });
+
+      await service.update(mockExperimentDTO, mockUser, logger);
+
+      expect(decisionPointRepo.upsertDecisionPoint).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'partition-1', pendingActivation: false }),
+        expect.any(Object)
+      );
+    });
+
+    it('should set pendingActivation: true for a new decision point added during update', async () => {
+      const existingDp = { ...createMockDecisionPoint1(), pendingActivation: false };
+      experimentRepo.findOneExperiment = jest.fn().mockResolvedValue({
+        ...mockExperiment,
+        partitions: [existingDp],
+      });
+
+      const updatedExperiment = {
+        ...mockExperimentDTO,
+        partitions: [
+          createMockDecisionPoint1(),
+          {
+            id: 'partition-new',
+            site: 'new-site',
+            target: 'new-target',
+            order: 2,
+            excludeIfReached: false,
+            conditionPayloads: [],
+          },
+        ] as any,
+      };
+
+      await service.update(updatedExperiment as any, mockUser, logger);
+
+      expect(decisionPointRepo.upsertDecisionPoint).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'partition-new', pendingActivation: true }),
+        expect.any(Object)
+      );
+    });
+
+    it('should throw BadRequestError when removing an active decision point from an ENROLLING experiment', async () => {
+      const activeDp = { ...createMockDecisionPoint1(), pendingActivation: false };
+      const dpToRemove = {
+        id: 'partition-2',
+        site: 'site-to-remove',
+        target: 'target-to-remove',
+        pendingActivation: false,
+        conditionPayloads: [],
+      };
+      experimentRepo.findOneExperiment = jest.fn().mockResolvedValue({
+        ...mockExperiment,
+        state: EXPERIMENT_STATE.ENROLLING,
+        partitions: [activeDp, dpToRemove],
+      });
+
+      const updatedExperiment = {
+        ...mockExperimentDTO,
+        partitions: [createMockDecisionPoint1()] as any,
+      };
+
+      await expect(service.update(updatedExperiment as any, mockUser, logger)).rejects.toThrow(
+        'Cannot remove decision point'
+      );
+    });
+
+    it('should throw BadRequestError when removing an active decision point from an ENROLLMENT_COMPLETE experiment', async () => {
+      const activeDp = { ...createMockDecisionPoint1(), pendingActivation: false };
+      const dpToRemove = {
+        id: 'partition-2',
+        site: 'site-to-remove',
+        target: 'target-to-remove',
+        pendingActivation: false,
+        conditionPayloads: [],
+      };
+      experimentRepo.findOneExperiment = jest.fn().mockResolvedValue({
+        ...mockExperiment,
+        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+        partitions: [activeDp, dpToRemove],
+      });
+
+      const updatedExperiment = {
+        ...mockExperimentDTO,
+        partitions: [createMockDecisionPoint1()] as any,
+      };
+
+      await expect(service.update(updatedExperiment as any, mockUser, logger)).rejects.toThrow(
+        'Cannot remove decision point'
+      );
+    });
+
+    it('should allow removing a pending decision point from an ENROLLING experiment', async () => {
+      const activeDp = { ...createMockDecisionPoint1(), pendingActivation: false };
+      const pendingDp = {
+        id: 'partition-2',
+        site: 'pending-site',
+        target: 'pending-target',
+        pendingActivation: true,
+        conditionPayloads: [],
+      };
+      experimentRepo.findOneExperiment = jest.fn().mockResolvedValue({
+        ...mockExperiment,
+        state: EXPERIMENT_STATE.ENROLLING,
+        partitions: [activeDp, pendingDp],
+      });
+
+      const updatedExperiment = {
+        ...mockExperimentDTO,
+        partitions: [createMockDecisionPoint1()] as any,
+      };
+
+      const result = await service.update(updatedExperiment as any, mockUser, logger);
+      expect(result).toBeDefined();
+    });
+
+    it('should allow removing a decision point from an INACTIVE experiment', async () => {
+      const dp1 = { ...createMockDecisionPoint1(), pendingActivation: false };
+      const dp2 = {
+        id: 'partition-2',
+        site: 'other-site',
+        target: 'other-target',
+        pendingActivation: false,
+        conditionPayloads: [],
+      };
+      experimentRepo.findOneExperiment = jest.fn().mockResolvedValue({
+        ...mockExperiment,
+        state: EXPERIMENT_STATE.INACTIVE,
+        partitions: [dp1, dp2],
+      });
+
+      const updatedExperiment = {
+        ...mockExperimentDTO,
+        partitions: [createMockDecisionPoint1()] as any,
+      };
+
+      const result = await service.update(updatedExperiment as any, mockUser, logger);
+      expect(result).toBeDefined();
     });
   });
 
@@ -766,6 +920,69 @@ describe('ExperimentService Testing', () => {
       await service.create(dto, mockUser, logger);
 
       expect(queryRepo.insertQueries).not.toHaveBeenCalled();
+    });
+
+    it('should set pendingActivation to true on new decision points for INACTIVE experiments', async () => {
+      const dto = baseCreateDTO();
+
+      await service.create(dto, mockUser, logger);
+
+      expect(decisionPointRepo.insertDecisionPoint).toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ pendingActivation: true })]),
+        expect.any(Object)
+      );
+    });
+
+    it('should set pendingActivation to false on decision points when experiment starts in ENROLLING state', async () => {
+      const dto = { ...baseCreateDTO(), state: EXPERIMENT_STATE.ENROLLING };
+
+      await service.create(dto, mockUser, logger);
+
+      expect(decisionPointRepo.insertDecisionPoint).toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ pendingActivation: false })]),
+        expect.any(Object)
+      );
+    });
+
+    it('should set pendingActivation to false on decision points when experiment starts in RUNNING state', async () => {
+      const dto = { ...baseCreateDTO(), state: EXPERIMENT_STATE.RUNNING };
+
+      await service.create(dto, mockUser, logger);
+
+      expect(decisionPointRepo.insertDecisionPoint).toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ pendingActivation: false })]),
+        expect.any(Object)
+      );
+    });
+  });
+
+  describe('updateState()', () => {
+    it('should call setAllPendingActivationFalse when transitioning to ENROLLING', async () => {
+      experimentRepo.findOneExperiment = jest.fn().mockResolvedValue({
+        ...mockExperiment,
+        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+      });
+      experimentRepo.updateState = jest.fn().mockResolvedValue([{ state: EXPERIMENT_STATE.ENROLLING }]);
+
+      await service.updateState(mockExperiment.id, EXPERIMENT_STATE.ENROLLING, mockUser, logger);
+
+      expect(decisionPointRepo.setAllPendingActivationFalse).toHaveBeenCalledWith(mockExperiment.id, undefined);
+    });
+
+    it('should not call setAllPendingActivationFalse when transitioning to PAUSED', async () => {
+      experimentRepo.updateState = jest.fn().mockResolvedValue([{ state: EXPERIMENT_STATE.PAUSED }]);
+
+      await service.updateState(mockExperiment.id, EXPERIMENT_STATE.PAUSED, mockUser, logger);
+
+      expect(decisionPointRepo.setAllPendingActivationFalse).not.toHaveBeenCalled();
+    });
+
+    it('should not call setAllPendingActivationFalse when transitioning to INACTIVE', async () => {
+      experimentRepo.updateState = jest.fn().mockResolvedValue([{ state: EXPERIMENT_STATE.INACTIVE }]);
+
+      await service.updateState(mockExperiment.id, EXPERIMENT_STATE.INACTIVE, mockUser, logger);
+
+      expect(decisionPointRepo.setAllPendingActivationFalse).not.toHaveBeenCalled();
     });
   });
 });

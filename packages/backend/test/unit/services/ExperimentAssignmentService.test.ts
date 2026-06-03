@@ -232,6 +232,112 @@ describe('Experiment Assignment Service Test', () => {
     expect(result[0].assignedCondition[0]).toEqual(cond);
   });
 
+  it('should not pool experiments together due to a shared pending decision point site/target', async () => {
+    const context = 'context';
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+
+    // Exp1 has one active DP and one pending DP that shares site/target with Exp2's active DP
+    const exp1 = structuredClone(simpleIndividualAssignmentExperiment);
+    const pendingPartitionOnExp1 = {
+      ...exp1.partitions[0],
+      id: 'pending-shared-id',
+      site: 'SharedSite',
+      target: 'SharedTarget',
+      pendingActivation: true,
+    };
+    exp1.partitions = [...exp1.partitions, pendingPartitionOnExp1];
+
+    // Exp2 has an active DP at the same site/target as Exp1's pending DP
+    const exp2 = structuredClone(simpleIndividualAssignmentExperiment);
+    exp2.id = 'exp2-id';
+    exp2.partitions = [{ ...exp2.partitions[0], id: 'exp2-dp-1', site: 'SharedSite', target: 'SharedTarget' }];
+
+    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+    testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp1, exp2]);
+    testedModule.experimentUserService = experimentUserServiceMock;
+
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+    // Both experiments should independently assign — Exp1's pending DP must not create a pool
+    // conflict that causes Exp2 to be excluded. Each experiment should produce its own assignment.
+    const assignedExperimentIds = new Set(result.map((r) => r.site + '_' + r.target));
+    // Exp1's active DP (CurriculumSequence/W1) and Exp2's active DP (SharedSite/SharedTarget) should both appear
+    expect(assignedExperimentIds.has(`${exp2.partitions[0].site}_${exp2.partitions[0].target}`)).toBe(true);
+  });
+
+  it('should exclude decision points with pendingActivation=true from assignment', async () => {
+    const context = 'context';
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
+
+    // Add a second partition that is pending activation (not yet run in ENROLLING state)
+    const pendingPartition = {
+      ...exp.partitions[0],
+      id: 'pending-partition-id',
+      site: 'PendingSite',
+      target: 'PendingTarget',
+      pendingActivation: true,
+    };
+    exp.partitions = [...exp.partitions, pendingPartition];
+
+    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+    testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentUserService = experimentUserServiceMock;
+
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+    // Only the non-pending partition should produce an assignment
+    expect(result.length).toEqual(1);
+    expect(result[0].site).toEqual(exp.partitions[0].site);
+    expect(result[0].target).toEqual(exp.partitions[0].target);
+    const assignedSites = result.map((r) => r.site);
+    expect(assignedSites).not.toContain('PendingSite');
+  });
+
+  it('should include all decision points when none have pendingActivation set', async () => {
+    const context = 'context';
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
+
+    // Explicitly set pendingActivation: false on the partition
+    exp.partitions[0] = { ...exp.partitions[0], pendingActivation: false };
+
+    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+    testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentUserService = experimentUserServiceMock;
+
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+    expect(result.length).toEqual(1);
+    expect(result[0].site).toEqual(exp.partitions[0].site);
+  });
+
+  it('should include pending decision points for a preview user on a PREVIEW experiment', async () => {
+    const context = 'context';
+    const userDoc = { id: 'preview-user-1', group: {}, workingGroup: {} };
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
+    exp.state = EXPERIMENT_STATE.PREVIEW;
+
+    // All DPs are pendingActivation=true because the experiment has never been ENROLLING
+    exp.partitions = exp.partitions.map((p) => ({ ...p, pendingActivation: true }));
+    const secondPartition = { ...exp.partitions[0], id: 'dp-2', site: 'PreviewSite', target: 'PreviewTarget' };
+    exp.partitions = [...exp.partitions, secondPartition];
+
+    const experimentUserServiceMock = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+    // When a previewUser is present, getExperimentsForUser calls experimentRepository.getValidExperimentsWithPreview
+    testedModule.experimentRepository.getValidExperimentsWithPreview = sandbox.stub().resolves([exp]);
+    testedModule.experimentUserService = experimentUserServiceMock;
+    testedModule.previewUserService.findOneFromCache = sandbox.stub().resolves({ id: userDoc.id, assignments: [] });
+
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+    // Both DPs should be returned — pendingActivation must not filter them out for preview experiments
+    expect(result.length).toEqual(2);
+    const sites = result.map((r) => r.site);
+    expect(sites).toContain(exp.partitions[0].site);
+    expect(sites).toContain('PreviewSite');
+  });
+
   it('should return the assigned condition for a factorial individual experiment', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
@@ -1728,5 +1834,18 @@ describe('Experiment Assignment Service Test', () => {
         message: `getAllExperimentConditions: User: user1`,
       });
     });
+  });
+
+  it('[getConditionFromMoocletProxy] should return undefined and log error when mooclet proxy throws', async () => {
+    const userDoc = { id: 'user123', group: {}, workingGroup: {} };
+    const exp = structuredClone(simpleIndividualAssignmentExperiment);
+    const mockError = new Error('Mooclet proxy error');
+
+    moocletExperimentServiceMock.getConditionFromMoocletProxy.rejects(mockError);
+
+    const result = await (testedModule as any).getConditionFromMoocletProxy(exp, userDoc, loggerMock);
+
+    expect(result).toBeUndefined();
+    sinon.assert.calledOnce(loggerMock.error);
   });
 });

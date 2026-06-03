@@ -1,5 +1,4 @@
 import { AppState } from '../../core.state';
-import { EntityState } from '@ngrx/entity';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 import { MemberTypes, Segment } from '../../segments/store/segments.model';
 
@@ -184,22 +183,37 @@ export const FLAG_TRANSLATION_KEYS = {
 
 export const FLAG_ROOT_DISPLAYED_COLUMNS = Object.values(FLAG_ROOT_COLUMN_NAMES);
 
-export interface FeatureFlagState extends EntityState<FeatureFlag> {
-  isLoadingUpsertFeatureFlag: boolean;
-  isLoadingImportFeatureFlag: boolean;
-  isLoadingSelectedFeatureFlag: boolean;
+export interface IExposureStatByDate {
+  date: string;
+  count: number;
+}
+
+export interface FeatureFlagState {
+  // List page data - plain array preserves backend sort order
+  featureFlags: FeatureFlag[];
   isLoadingFeatureFlags: boolean;
-  isLoadingUpdateFeatureFlagStatus: boolean;
-  isLoadingFeatureFlagDelete: boolean;
-  isLoadingUpsertPrivateSegmentList: boolean;
   hasInitialFeatureFlagsDataLoaded: boolean;
-  duplicateKeyFound: boolean;
   skipFlags: number;
   totalFlags: number;
   searchKey: FLAG_SEARCH_KEY;
   searchValue: string;
   sortKey: FLAG_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;
+
+  // Individual flag operations for details pages
+  selectedFlag: FeatureFlag | null;
+  isLoadingSelectedFeatureFlag: boolean;
+  isLoadingUpsertFeatureFlag: boolean;
+  isLoadingImportFeatureFlag: boolean;
+  isLoadingUpdateFeatureFlagStatus: boolean;
+  isLoadingFeatureFlagDelete: boolean;
+  isLoadingUpsertPrivateSegmentList: boolean;
+  duplicateKeyFound: boolean;
+
+  // Graph data
+  graphInfo: IExposureStatByDate[] | null;
+  isGraphLoading: boolean;
+  totalExposures: number | null;
 }
 
 export interface State extends AppState {

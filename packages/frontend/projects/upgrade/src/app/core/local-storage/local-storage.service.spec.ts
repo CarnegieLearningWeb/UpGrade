@@ -21,8 +21,7 @@ describe('LocalStorageService', () => {
 
   describe('#loadInitialState', () => {
     const expectedStateWithFetchedValues: ExperimentState = {
-      ids: [],
-      entities: {},
+      experiments: [],
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,
       isLoadingExperimentExport: false,
@@ -47,10 +46,10 @@ describe('LocalStorageService', () => {
       isLoadingImportExperiment: false,
       rewardsSummaries: {},
       isLoadingRewardsSummary: false,
+      hasInitialExperimentsDataLoaded: false,
     };
     const expectedStateWithDefaults: ExperimentState = {
-      ids: [],
-      entities: {},
+      experiments: [],
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,
       isLoadingExperimentExport: false,
@@ -75,6 +74,7 @@ describe('LocalStorageService', () => {
       isLoadingImportExperiment: false,
       rewardsSummaries: {},
       isLoadingRewardsSummary: false,
+      hasInitialExperimentsDataLoaded: false,
     };
 
     const testCases = [

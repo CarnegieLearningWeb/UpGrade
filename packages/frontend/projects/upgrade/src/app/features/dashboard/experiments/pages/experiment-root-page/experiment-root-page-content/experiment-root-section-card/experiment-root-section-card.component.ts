@@ -10,12 +10,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ExperimentRootSectionCardTableComponent } from './experiment-root-section-card-table/experiment-root-section-card-table.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { EXPERIMENT_SEARCH_KEY, IMenuButtonItem } from 'upgrade_types';
-import { MatTableDataSource } from '@angular/material/table';
+
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
-import { Observable, map, combineLatest } from 'rxjs';
-import { EXPERIMENT_BUTTON_ACTION, Experiment } from '../../../../../../../core/experiments/store/experiments.model';
+import { Observable, map } from 'rxjs';
+import { EXPERIMENT_BUTTON_ACTION } from '../../../../../../../core/experiments/store/experiments.model';
 import { CommonSearchWidgetSearchParams } from '@shared-component-lib/common-section-card-search-header/common-section-card-search-header.component';
-import { TableState } from '../../../../../../../shared/services/common-table-helpers.service';
+
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { StratificationFactorsService } from '../../../../../../../core/stratification-factors/stratification-factors.service';
@@ -37,7 +37,7 @@ import { StratificationFactorsService } from '../../../../../../../core/stratifi
 })
 export class ExperimentRootSectionCardComponent {
   permissions$: Observable<UserPermission>;
-  dataSource$: Observable<MatTableDataSource<Experiment>>;
+  experiments$ = this.experimentService.experiments$;
   isLoadingExperiments$ = this.experimentService.isLoadingExperiment$;
   isInitialLoading$ = this.experimentService.haveInitialExperimentsLoaded();
   searchString$ = this.experimentService.selectSearchString$;
@@ -87,25 +87,9 @@ export class ExperimentRootSectionCardComponent {
     this.experimentService.fetchAllExperimentNames();
   }
 
-  ngAfterViewInit() {
-    this.dataSource$ = combineLatest([
-      this.experimentService.selectRootTableState$,
-      this.experimentService.selectSearchKey$,
-    ]).pipe(
-      map(([tableState, searchKey]: [TableState<Experiment>, EXPERIMENT_SEARCH_KEY]) => {
-        // Filter out archived experiments unless STATUS filter is selected
-        if (searchKey !== EXPERIMENT_SEARCH_KEY.STATUS) {
-          const filteredData = tableState.tableData.filter((experiment) => experiment.state !== 'archived');
-          return new MatTableDataSource<Experiment>(filteredData);
-        }
-        return new MatTableDataSource<Experiment>(tableState.tableData);
-      })
-    );
-  }
-
   onSearch(params: CommonSearchWidgetSearchParams<EXPERIMENT_SEARCH_KEY>) {
-    this.experimentService.setSearchString(params.searchString?.trim() || '');
     this.experimentService.setSearchKey(params.searchKey as EXPERIMENT_SEARCH_KEY);
+    this.experimentService.setSearchString(params.searchString?.trim() || '');
   }
 
   onAddExperimentButtonClick() {

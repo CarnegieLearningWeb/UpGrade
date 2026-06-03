@@ -5,8 +5,8 @@
   <table
     class="experiment-list-table"
     mat-table
-    [dataSource]="dataSource$"
-    [ngClass]="{ 'no-data': !dataSource$?.data?.length }"
+    [dataSource]="experiments || []"
+    [ngClass]="{ 'no-data': !experiments?.length }"
     matSort
     (matSortChange)="changeSorting($event)"
     [matSortActive]="experimentSortKey$ | async"

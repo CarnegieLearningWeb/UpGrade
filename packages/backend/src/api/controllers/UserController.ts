@@ -199,9 +199,10 @@ export class UserController {
   @Post('/details')
   public updateUserDetails(
     @Body({ validate: true })
-    user: UserDTO
+    user: UserDTO,
+    @Req() request: AppRequest
   ): Promise<User> {
-    return this.userService.updateUserDetails(user.firstName, user.lastName, user.email, user.role);
+    return this.userService.updateUserDetails(user.firstName, user.lastName, user.email, user.role, request.logger);
   }
 
   /**

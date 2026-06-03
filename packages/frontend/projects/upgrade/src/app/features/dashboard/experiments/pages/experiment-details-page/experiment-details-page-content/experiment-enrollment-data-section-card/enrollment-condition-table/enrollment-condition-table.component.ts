@@ -10,6 +10,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { EnrollmentConditionExpandableRowComponent } from './enrollment-condition-expandable-row/enrollment-condition-expandable-row.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { formatDecisionPointDisplay } from '../../../../../experiment-decision-point.utils';
 
 @Component({
   selector: 'app-enrollment-condition-table',
@@ -54,8 +55,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit, OnD
           const partitions = [];
           condition.partitions.forEach((partition) => {
             const partitionObj: EnrollmentByConditionOrPartitionData = {
-              experimentPoint: this.getPartitionData(partition.id, 'site'),
-              experimentId: this.getPartitionData(partition.id, 'target') || '',
+              experimentPoint: this.getDecisionPointData(partition.id),
               userEnrolled: partition.users,
               groupEnrolled: partition.groups,
             };
@@ -73,11 +73,9 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit, OnD
     });
   }
 
-  getPartitionData(partitionId: string, key: string) {
-    return this.experiment.partitions.reduce(
-      (acc, partition) => (partition.id === partitionId ? (acc = partition[key]) : acc),
-      null
-    );
+  getDecisionPointData(partitionId: string) {
+    const decisionPoint = this.experiment.partitions.find((partition) => partition.id === partitionId);
+    return decisionPoint ? formatDecisionPointDisplay(decisionPoint) : '';
   }
 
   getConditionData(conditionId: string, key: string) {

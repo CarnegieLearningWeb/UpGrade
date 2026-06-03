@@ -3,6 +3,7 @@ import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
 import * as SegmentsActions from './store/segments.actions';
 import {
+  selectHasInitialSegmentsDataLoaded,
   selectIsLoadingSegments,
   selectAllSegments,
   selectSelectedSegment,
@@ -50,9 +51,9 @@ import { actionFetchContextMetaData } from '../experiments/store/experiments.act
 @Injectable({ providedIn: 'root' })
 export class SegmentsService {
   constructor(
-    private store$: Store<AppState>,
-    private segmentsDataService: SegmentsDataService,
-    private localStorageService: LocalStorageService
+    private readonly store$: Store<AppState>,
+    private readonly segmentsDataService: SegmentsDataService,
+    private readonly localStorageService: LocalStorageService
   ) {}
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
@@ -94,14 +95,7 @@ export class SegmentsService {
 
   allSegments$ = this.store$.pipe(
     select(selectAllSegments),
-    filter((allSegments) => !!allSegments),
-    map((Segments) =>
-      Segments.sort((a, b) => {
-        const d1 = new Date(a.createdAt);
-        const d2 = new Date(b.createdAt);
-        return d1 < d2 ? 1 : d1 > d2 ? -1 : 0;
-      })
-    )
+    filter((allSegments) => !!allSegments)
   );
 
   selectPrivateSegmentListTypeOptions$ = (appContext: string): Observable<{ value: string; viewValue: string }[]> => {
@@ -109,7 +103,7 @@ export class SegmentsService {
       select(selectContextMetaData),
       map((contextMetaData) => {
         const groupTypes = contextMetaData?.contextMetadata?.[appContext]?.GROUP_TYPES ?? [];
-        const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes as string[]);
+        const groupTypeSelectOptions = CommonTextHelpersService.formatGroupTypes(groupTypes);
 
         return [
           { value: LIST_OPTION_TYPE.SEGMENT, viewValue: LIST_OPTION_TYPE.SEGMENT },
@@ -141,9 +135,7 @@ export class SegmentsService {
   }
 
   isInitialSegmentsLoading() {
-    return combineLatest(this.store$.pipe(select(selectIsLoadingSegments)), this.allSegments$).pipe(
-      map(([isLoading, segments]) => !isLoading || !!segments.length)
-    );
+    return this.store$.pipe(select(selectHasInitialSegmentsDataLoaded));
   }
 
   fetchSegmentsPaginated(fromStarting?: boolean) {

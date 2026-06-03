@@ -211,6 +211,17 @@ export class SegmentService {
       const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.where(whereClause);
     }
+
+    if (sortParams) {
+      paginatedParentSubQuery = paginatedParentSubQuery
+        .addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs)
+        .addOrderBy('segment.id', 'ASC');
+    } else {
+      paginatedParentSubQuery = paginatedParentSubQuery
+        .addOrderBy('segment.updatedAt', 'DESC')
+        .addOrderBy('segment.id', 'ASC');
+    }
+
     const countQuery = paginatedParentSubQuery.clone().andWhere('segment.type=:type', { type: SEGMENT_TYPE.PUBLIC });
     paginatedParentSubQuery = paginatedParentSubQuery.andWhere('segment.type = :type').offset(skip).limit(take);
 
@@ -223,7 +234,11 @@ export class SegmentService {
       .where(`segment.id IN ${paginatedParentSubQuery.getQuery()}`);
 
     if (sortParams) {
-      segmentsDataQuery = segmentsDataQuery.addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs);
+      segmentsDataQuery = segmentsDataQuery
+        .addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs)
+        .addOrderBy('segment.id', 'ASC');
+    } else {
+      segmentsDataQuery = segmentsDataQuery.addOrderBy('segment.updatedAt', 'DESC').addOrderBy('segment.id', 'ASC');
     }
     const [segmentsData, count] = await Promise.all([segmentsDataQuery.getMany(), countQuery.getCount()]);
     return [await this.getSegmentStatus(segmentsData), count];

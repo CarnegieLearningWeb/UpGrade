@@ -1,5 +1,4 @@
 import { AppState } from '../../core.state';
-import { EntityState } from '@ngrx/entity';
 import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 export { SEGMENT_STATUS };
 
@@ -228,8 +227,11 @@ export enum SEGMENT_LIST_ACTIONS {
   EXPORT_ALL = 'Export All Lists',
 }
 
-export interface SegmentState extends EntityState<Segment> {
+export interface SegmentState {
+  // List page data - plain array preserves backend sort order
+  segments: Segment[];
   isLoadingSegments: boolean;
+  hasInitialSegmentsDataLoaded: boolean;
   isLoadingUpsertSegment: boolean;
   // TODO: remove any
   allExperimentSegmentsInclusion: any;
@@ -252,7 +254,9 @@ export interface ListSegmentOption {
   context: string;
 }
 
-export interface GlobalSegmentState extends EntityState<Segment> {
+export interface GlobalSegmentState {
+  // Global segments list - plain array preserves backend sort order
+  segments: Segment[];
   isLoadingSegments: boolean;
   sortKey: SEGMENT_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;

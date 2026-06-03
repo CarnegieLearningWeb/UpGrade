@@ -83,7 +83,6 @@ import {
   ValidatedExperimentError,
   ConditionPayloadValidator,
 } from '../DTO/ExperimentDTO';
-import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
 import { CacheService } from './CacheService';
@@ -174,14 +173,32 @@ export class ExperimentService {
       .createQueryBuilder()
       .subQuery()
       .from(Experiment, 'experiment')
-      .select('DISTINCT(experiment.id)')
+      .select('experiment.id')
       .leftJoin('experiment.partitions', 'partitions')
-      .orderBy('experiment.id');
+      .groupBy('experiment.id');
 
-    if (searchParams) {
+    if (searchParams && searchParams.string !== '') {
       const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
     }
+
+    // Filter out archived experiments unless specifically searching by status
+    if (searchParams?.key !== EXPERIMENT_SEARCH_KEY.STATUS) {
+      paginatedParentSubQuery = paginatedParentSubQuery.andWhere(`experiment.state != 'archived'`);
+    }
+
+    if (sortParams) {
+      paginatedParentSubQuery = paginatedParentSubQuery
+        .addGroupBy(`experiment.${sortParams.key}`)
+        .orderBy(`experiment.${sortParams.key}`, sortParams.sortAs)
+        .addOrderBy('experiment.id', 'ASC');
+    } else {
+      paginatedParentSubQuery = paginatedParentSubQuery
+        .addGroupBy('experiment.updatedAt')
+        .orderBy('experiment.updatedAt', 'DESC')
+        .addOrderBy('experiment.id', 'ASC');
+    }
+
     const countQuery = paginatedParentSubQuery.clone();
 
     paginatedParentSubQuery = paginatedParentSubQuery.limit(take).offset(skip);
@@ -193,9 +210,13 @@ export class ExperimentService {
       .where(`experiment.id IN ${paginatedParentSubQuery.getQuery()}`);
 
     if (sortParams) {
-      queryBuilderToReturn = queryBuilderToReturn.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
+      queryBuilderToReturn = queryBuilderToReturn
+        .addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs)
+        .addOrderBy('experiment.id', 'ASC');
     } else {
-      queryBuilderToReturn = queryBuilderToReturn.addOrderBy('experiment.updatedAt', 'DESC');
+      queryBuilderToReturn = queryBuilderToReturn
+        .addOrderBy('experiment.updatedAt', 'DESC')
+        .addOrderBy('experiment.id', 'ASC');
     }
     const [experimentData, count] = await Promise.all([queryBuilderToReturn.getMany(), countQuery.getCount()]);
     return [
@@ -455,11 +476,8 @@ export class ExperimentService {
     logger: UpgradeLogger,
     scheduleDate?: Date,
     entityManager?: EntityManager
-  ): Promise<Experiment> {
-    const oldExperiment = await this.experimentRepository.findOne({
-      where: { id: experimentId },
-      relations: ['stateTimeLogs', 'partitions', 'queries', 'queries.metric'],
-    });
+  ): Promise<ExperimentDTO> {
+    const oldExperiment = await this.experimentRepository.findOneExperiment(experimentId);
     await this.clearExperimentCacheDetail(
       oldExperiment.context[0],
       oldExperiment.partitions.map((partition) => {
@@ -471,6 +489,10 @@ export class ExperimentService {
     // Exclude the user only when the experiment is enrolling. For Preview state we don't need to exclude the user. The client need to provide explicit assignment for preview user to work correctly.
     if (state === EXPERIMENT_STATE.ENROLLING && oldExperiment.state !== EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
       await this.populateExclusionTable(experimentId, state, logger);
+    }
+
+    if (state === EXPERIMENT_STATE.ENROLLING) {
+      await this.decisionPointRepository.setAllPendingActivationFalse(experimentId, entityManager);
     }
 
     if (state === EXPERIMENT_STATE.ARCHIVED) {
@@ -508,7 +530,7 @@ export class ExperimentService {
     // updating the experiment and stateTimeLog
     const stateTimeLogRepo = entityManager ? entityManager.getRepository(StateTimeLog) : this.stateTimeLogsRepository;
     logger.info({ message: `stateTimeLogDoc =>`, details: stateTimeLogDoc });
-    const [updatedState, updatedStateTimeLog] = await Promise.all([
+    await Promise.all([
       this.experimentRepository.updateState(experimentId, state, scheduleDate, entityManager),
       stateTimeLogRepo.save(stateTimeLogDoc),
     ]);
@@ -516,15 +538,22 @@ export class ExperimentService {
     // updating experiment schedules
     await this.updateExperimentSchedules(experimentId, logger, entityManager);
 
-    return {
-      ...oldExperiment,
-      state: EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[updatedState[0].state] || updatedState[0].state,
-      startOn: updatedState[0].startOn,
-      stateTimeLogs: [
-        ...this.transformStateTimeLogs(oldExperiment.stateTimeLogs),
-        this.transformStateTimeLogs([updatedStateTimeLog]),
-      ].flat(),
-    };
+    oldExperiment.state = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[state] || state;
+    if (scheduleDate) {
+      oldExperiment.startOn = scheduleDate;
+    }
+
+    const responseStateTimeLog = {
+      ...stateTimeLogDoc,
+      experiment: { id: oldExperiment.id },
+    } as StateTimeLog;
+
+    oldExperiment.stateTimeLogs = [
+      ...this.transformStateTimeLogs(oldExperiment.stateTimeLogs),
+      this.transformStateTimeLogs([responseStateTimeLog])[0],
+    ];
+
+    return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(oldExperiment)));
   }
 
   public async verifyExperiments(
@@ -760,10 +789,10 @@ export class ExperimentService {
       this.experimentSchedulerService.updateExperimentSchedules(experiment as any, logger);
     }
 
+    let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
     return entityManager
       .transaction(async (transactionalEntityManager) => {
         experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
-        let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
         if (experiment.conditions.length) {
           const response = this.setConditionOrPartitionIdentifiers(experiment.conditions, uniqueIdentifiers);
           experiment.conditions = response[0];
@@ -861,7 +890,7 @@ export class ExperimentService {
           });
         });
 
-        const conditionPayloadDocToSave: Array<Partial<Omit<ConditionPayload, 'parentCondition' | 'decisionPoint'>>> =
+        const conditionPayloadDocToSave: Array<Partial<ConditionPayload>> =
           (newPayloads &&
             newPayloads.length > 0 &&
             newPayloads.map((conditionPayload) => {
@@ -869,14 +898,15 @@ export class ExperimentService {
                 id: conditionPayload.id,
                 payloadType: conditionPayload.payload.type,
                 payloadValue: conditionPayload.payload.value,
-                parentCondition: conditionPayload.parentCondition,
-                decisionPoint: conditionPayload.decisionPoint,
+                parentConditionId: conditionPayload.parentCondition,
+                decisionPointId: conditionPayload.decisionPoint,
               };
               return conditionPayloadToReturn;
             })) ||
           [];
 
         // creating decision point docs
+        const oldDecisionPointsById = new Map(oldDecisionPoints.map((dp) => [dp.id, dp]));
         let promiseArray = [];
         const decisionPointDocToSave =
           (decisionPoints &&
@@ -891,7 +921,9 @@ export class ExperimentService {
                 })
               );
               decisionPoint.id = decisionPoint.id || crypto.randomUUID();
-              return { ...decisionPoint, experiment: experimentDoc };
+              const existingDp = oldDecisionPointsById.get(decisionPoint.id);
+              const pendingActivation = existingDp ? existingDp.pendingActivation : true;
+              return { ...decisionPoint, experiment: experimentDoc, pendingActivation };
             })) ||
           [];
 
@@ -932,13 +964,22 @@ export class ExperimentService {
         });
 
         // delete decision points which don't exist in new experiment document
+        const activeStates = [EXPERIMENT_STATE.ENROLLING, EXPERIMENT_STATE.ENROLLMENT_COMPLETE];
         const toDeleteDecisionPoints = [];
-        oldDecisionPoints.forEach(({ id, site, target }) => {
+        oldDecisionPoints.forEach(({ id, site, target, pendingActivation }) => {
           if (
             !decisionPointDocToSave.find((doc) => {
-              return doc.id === id && doc.site === site && doc.target === target;
+              // normalize undefined/null for target so null-target DPs are not falsely deleted
+              return doc.id === id && doc.site === site && (doc.target ?? null) === (target ?? null);
             })
           ) {
+            if (activeStates.includes(oldExperiment.state as EXPERIMENT_STATE) && !pendingActivation) {
+              throw new BadRequestError(
+                `Cannot remove decision point site="${site}" target="${target ?? ''}" from an experiment in state "${
+                  oldExperiment.state
+                }" — it has already been activated.`
+              );
+            }
             toDeleteDecisionPoints.push(
               this.decisionPointRepository.deleteDecisionPoint(id, transactionalEntityManager)
             );
@@ -967,7 +1008,9 @@ export class ExperimentService {
               return doc.id === id;
             })
           ) {
-            toDeleteConditionPayloads.push(this.conditionPayloadRepository.deleteConditionPayload(id, logger));
+            toDeleteConditionPayloads.push(
+              this.conditionPayloadRepository.deleteConditionPayload(id, transactionalEntityManager, logger)
+            );
           }
         });
 
@@ -976,6 +1019,7 @@ export class ExperimentService {
           ...toDeleteConditions,
           ...toDeleteDecisionPoints,
           ...toDeleteQueries,
+          ...toDeleteConditionPayloads,
           transactionalEntityManager
             .createQueryBuilder()
             .delete()
@@ -993,7 +1037,6 @@ export class ExperimentService {
         let conditionDocs: ExperimentCondition[];
         let decisionPointDocs: DecisionPoint[];
         let queryDocs: Query[];
-        let conditionPayloadDocs: ConditionPayloadDTO[];
         try {
           [conditionDocs, decisionPointDocs, queryDocs] = await Promise.all([
             Promise.all(
@@ -1026,16 +1069,14 @@ export class ExperimentService {
         }
 
         try {
-          [conditionPayloadDocs] = await Promise.all([
-            Promise.all(
-              conditionPayloadDocToSave.map(async (conditionPayload) => {
-                return this.conditionPayloadRepository.upsertConditionPayload(
-                  conditionPayload,
-                  transactionalEntityManager
-                );
-              })
-            ) as any,
-          ]);
+          await Promise.all(
+            conditionPayloadDocToSave.map(async (conditionPayload) => {
+              return this.conditionPayloadRepository.upsertConditionPayload(
+                conditionPayload,
+                transactionalEntityManager
+              );
+            })
+          );
         } catch (err) {
           const error = err as Error;
           error.message = `Error in creating conditionPayloads "updateExperimentInDB"`;
@@ -1051,11 +1092,15 @@ export class ExperimentService {
           return { ...decisionPointDoc, experiment: decisionPointDoc.experiment };
         });
 
-        const conditionPayloadDocToReturn = await transactionalEntityManager.getRepository(ConditionPayload).find({
-          relations: ['parentCondition', 'decisionPoint'],
-          where: { id: In(conditionPayloadDocs.map((conditionPayload) => conditionPayload.id)) },
+        const conditionPayloadDocToReturn = conditionPayloadDocToSave.map((conditionPayload) => {
+          const parentCondition = conditionDocs.find((c) => c.id === conditionPayload.parentConditionId);
+          const decisionPoint = decisionPointDocs.find((dp) => dp.id === conditionPayload.decisionPointId);
+          return {
+            ...conditionPayload,
+            parentCondition: parentCondition,
+            decisionPoint: decisionPoint,
+          };
         });
-
         // sort the payloads by decision point order and condition order
         conditionPayloadDocToReturn.sort((a, b) => {
           if (a.decisionPoint.order === b.decisionPoint.order) {
@@ -1326,6 +1371,9 @@ export class ExperimentService {
           : [];
 
       // creating decision point docs
+      // DPs are pending unless the experiment starts directly in an enrolling state
+      const internalCreationState = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[experiment.state] || experiment.state;
+      const startsPending = internalCreationState !== EXPERIMENT_STATE.ENROLLING;
       const decisionPointIdMap = new Map<string, string>();
       const decisionPointDocsToSave: Array<Partial<DecisionPoint>> =
         partitions && partitions.length > 0
@@ -1334,7 +1382,7 @@ export class ExperimentService {
               decisionPointIdMap.set(decisionPoint.id, newId);
               decisionPoint.id = newId;
               decisionPoint.description = decisionPoint.description || '';
-              return { ...decisionPoint, experiment: experimentDoc };
+              return { ...decisionPoint, experiment: experimentDoc, pendingActivation: startsPending };
             })
           : [];
 

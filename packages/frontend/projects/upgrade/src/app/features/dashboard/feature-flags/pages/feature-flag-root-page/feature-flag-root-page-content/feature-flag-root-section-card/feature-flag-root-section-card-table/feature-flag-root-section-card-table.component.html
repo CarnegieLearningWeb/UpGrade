@@ -1,12 +1,12 @@
 <div class="flag-list-table-container" #tableContainer>
   @if (isLoading$ | async) {
   <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
-  }
+  } @let featureFlags = (featureFlags$ | async);
   <table
     class="flag-list-table"
     mat-table
-    [dataSource]="dataSource$"
-    [ngClass]="{ 'no-data': !dataSource$?.data?.length }"
+    [dataSource]="featureFlags"
+    [ngClass]="{ 'no-data': !featureFlags?.length }"
     matSort
     (matSortChange)="changeSorting($event)"
     [matSortActive]="flagSortKey$ | async"
