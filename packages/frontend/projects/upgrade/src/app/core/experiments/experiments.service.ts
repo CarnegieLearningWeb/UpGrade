@@ -21,6 +21,7 @@ import {
 import { Store, select } from '@ngrx/store';
 import {
   selectAllExperiment,
+  selectHasInitialExperimentsDataLoaded,
   selectIsLoadingExperiment,
   selectSelectedExperiment,
   selectExperimentOverviewDetails,
@@ -65,7 +66,7 @@ import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 
 @Injectable()
 export class ExperimentService {
-  constructor(private store$: Store<AppState>, private localStorageService: LocalStorageService) {}
+  constructor(private readonly store$: Store<AppState>, private readonly localStorageService: LocalStorageService) {}
 
   experiments$: Observable<Experiment[]> = this.store$.pipe(select(selectAllExperiment));
   currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));
@@ -103,9 +104,7 @@ export class ExperimentService {
     this.store$.pipe(select(selectSectionCardRestriction(cardType)));
 
   haveInitialExperimentsLoaded() {
-    return combineLatest([this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$]).pipe(
-      map(([isLoading, experiments]) => !isLoading || !!experiments.length)
-    );
+    return this.store$.pipe(select(selectHasInitialExperimentsDataLoaded));
   }
 
   isAllExperimentsFetched() {

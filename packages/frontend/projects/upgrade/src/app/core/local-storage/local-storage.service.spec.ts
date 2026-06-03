@@ -46,6 +46,7 @@ describe('LocalStorageService', () => {
       isLoadingImportExperiment: false,
       rewardsSummaries: {},
       isLoadingRewardsSummary: false,
+      hasInitialExperimentsDataLoaded: false,
     };
     const expectedStateWithDefaults: ExperimentState = {
       experiments: [],
@@ -73,6 +74,7 @@ describe('LocalStorageService', () => {
       isLoadingImportExperiment: false,
       rewardsSummaries: {},
       isLoadingRewardsSummary: false,
+      hasInitialExperimentsDataLoaded: false,
     };
 
     const testCases = [
