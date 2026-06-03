@@ -25,9 +25,9 @@ UpGrade is an open-source platform designed to support large-scale A/B testing i
 - ♊ **Stratified Random Sampling**: Sampling from subpopulations for proportional weighting.
 - ⏫ **Scalability**: Designed to support large-scale experiments.
 - 🔃 **Integration**: Easily integrates with EdTech applications.
-- 💻 **SDKs**: We have SDKs for [Java](https://github.com/CarnegieLearningWeb/UpGrade/tree/dev/clientlibs/java), [Javascript](https://github.com/CarnegieLearningWeb/UpGrade/tree/dev/clientlibs/js) and [C#](hhttps://github.com/CarnegieLearningWeb/UpGrade/tree/dev/clientlibs/csharp). More to come soon!
+- 💻 **SDKs**: We have SDKs for [Java](https://github.com/CarnegieLearningWeb/UpGrade/tree/dev/clientlibs/java), [Javascript](https://github.com/CarnegieLearningWeb/UpGrade/tree/dev/clientlibs/js) and [Python](hhttps://github.com/CarnegieLearningWeb/UpGrade/tree/dev/clientlibs/python).
 
-    ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) &nbsp;&nbsp; ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E) &nbsp;&nbsp; ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
+    ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) &nbsp;&nbsp; ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E) &nbsp;&nbsp; ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 
 https://github.com/CarnegieLearningWeb/UpGrade/assets/33730817/86d72930-9fab-4949-a2ba-3e480a3cdf7e
 

@@ -272,8 +272,8 @@ Prepare the library for publication to PyPI.
   - Link to UpGrade documentation
 - Verify `python -m build` produces a clean sdist and wheel
 - Test install from wheel in a clean virtualenv
-- Configure PyPI publishing via Trusted Publisher (OIDC) in GitHub Actions
-- Add CI workflow (`.github/workflows/python-publish.yml`) that publishes on tagged release
+- Configure PyPI publishing via Trusted Publisher (OIDC) in GitHub Actions - NOT COMPLETED
+- Add CI workflow (`.github/workflows/python-publish.yml`) that publishes on tagged release - NOT COMPLETED
 
 ### Deliverable
 
@@ -300,14 +300,14 @@ Ensure the library is production-ready with comprehensive test and quality cover
 
 ### Deliverable
 
-CI pipeline green across all Python versions. Coverage report published as CI artifact.
+CI pipeline green across all Python versions. Coverage report published as CI artifact. - NOT ADDED TO CI PIPELINE; WILL BE HANDLED MANUALLY FOR NOW
 
 ---
 
 ## Phase 9: Documentation and Release
 
-- Finalize `CHANGELOG.md`
-- Tag `v6.5.0` release in git
+- Finalize `CHANGELOG.md` - To add with release
+- Tag `v6.5.0` release in git - To add with release
 - Publish to PyPI production
 - Add Python library entry to the root UpGrade repository `README.md` alongside JS and Java entries
 
