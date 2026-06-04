@@ -377,6 +377,7 @@ export class ExperimentClientController {
    *                    type: string
    *                  target:
    *                    type: string
+   *                    nullable: true
    *                    example: partition1
    *                  assignedCondition:
    *                    type: object

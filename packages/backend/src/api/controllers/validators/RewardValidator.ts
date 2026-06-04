@@ -35,6 +35,6 @@ export class RewardValidator {
 
   public decisionPoint: {
     site: string;
-    target: string;
+    target?: string | null;
   };
 }

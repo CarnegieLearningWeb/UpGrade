@@ -208,7 +208,7 @@ describe('BatchAssign Controller Testing', () => {
         userIds: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
-      .expect(400);
+      .expect(200);
   });
 
   test('Post request for /api/batch-assign with empty target string', () => {
@@ -221,7 +221,7 @@ describe('BatchAssign Controller Testing', () => {
         userIds: [crypto.randomUUID()],
       })
       .set('Accept', 'application/json')
-      .expect(400);
+      .expect(200);
   });
 
   test('Post request for /api/batch-assign with missing userIds', () => {

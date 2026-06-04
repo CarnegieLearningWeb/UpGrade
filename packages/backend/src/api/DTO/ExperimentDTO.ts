@@ -173,8 +173,9 @@ export class PartitionValidator {
   @IsString()
   public site: string;
 
+  @IsOptional()
   @IsString()
-  public target: string;
+  public target?: string | null;
 
   @IsOptional()
   @IsString()

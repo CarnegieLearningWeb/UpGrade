@@ -1,3 +1,4 @@
+import { normalizeTarget } from './utils/decisionPointUtils';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import {
   EXPERIMENT_STATE,
@@ -170,11 +171,12 @@ export class MoocletRewardsService {
    */
   private async findMoocletExperimentRefByDecisionPoint(
     context: string,
-    decisionPoint: { site: string; target: string },
+    decisionPoint: { site: string; target?: string | null },
     request: RewardValidator,
     logger: UpgradeLogger
   ): Promise<MoocletExperimentRef> {
-    const { site, target } = decisionPoint;
+    const { site } = decisionPoint;
+    const target = normalizeTarget(decisionPoint.target);
     const moocletExperimentRefs =
       await this.moocletExperimentRefRepository.findActivelyEnrollingMoocletExperimentsByContextSiteTarget(
         context,
