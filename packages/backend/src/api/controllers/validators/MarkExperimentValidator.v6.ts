@@ -1,4 +1,4 @@
-import { Type, Transform } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { IsNotEmpty, IsDefined, IsString, IsOptional, IsEnum, ValidateNested } from 'class-validator';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 
@@ -21,9 +21,9 @@ class Data {
   @IsNotEmpty()
   site: string;
 
-  @Transform(({ value }) => value ?? '')
+  @IsOptional()
   @IsString()
-  target: string = '';
+  target?: string | null;
 
   @IsOptional()
   @ValidateNested()

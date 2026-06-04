@@ -44,7 +44,7 @@ import {
   MoocletPolicyParametersDTO,
   SUPPORTED_MOOCLET_ALGORITHMS,
 } from 'upgrade_types';
-import { Type, Transform } from 'class-transformer';
+import { Type } from 'class-transformer';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -173,9 +173,9 @@ export class PartitionValidator {
   @IsString()
   public site: string;
 
-  @Transform(({ value }) => value ?? '')
+  @IsOptional()
   @IsString()
-  public target: string = '';
+  public target?: string | null;
 
   @IsOptional()
   @IsString()
