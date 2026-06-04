@@ -224,6 +224,19 @@ describe('BatchAssign Controller Testing', () => {
       .expect(200);
   });
 
+  test('Post request for /api/batch-assign with null target', () => {
+    return request(app)
+      .post('/api/batch-assign')
+      .send({
+        context: 'home',
+        site: 'SelectSection',
+        target: null,
+        userIds: [crypto.randomUUID()],
+      })
+      .set('Accept', 'application/json')
+      .expect(200);
+  });
+
   test('Post request for /api/batch-assign with missing userIds', () => {
     return request(app)
       .post('/api/batch-assign')
