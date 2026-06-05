@@ -104,7 +104,7 @@ This guarantees that mark and assign always agree on the selected experiment for
 
 ---
 
-## Phase 6 — Java Client Library
+## Phase 6 — Java Client Library ✅ COMPLETED
 
 **Files:** `MarkExperimentRequest.java`, `ExperimentClient.java`
 
