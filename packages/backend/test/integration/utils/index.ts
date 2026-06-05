@@ -105,6 +105,7 @@ export async function markExperimentPoint(
   condition: string | null,
   experimentId: string,
   logger: UpgradeLogger,
+  context = 'home',
   uniquifier?: string
 ): Promise<MonitoredDecisionPoint[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
@@ -119,6 +120,7 @@ export async function markExperimentPoint(
     MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
     condition,
     logger,
+    context,
     experimentId,
     target,
     uniquifier
