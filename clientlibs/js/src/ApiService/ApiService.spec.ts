@@ -318,6 +318,86 @@ describe('ApiService', () => {
     });
   });
 
+  describe('#markDecisionPoint', () => {
+    const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/mark`;
+    const expectedOptions = {
+      headers: {
+        'Content-Type': 'application/json',
+        'Session-Id': 'testClientSessionId',
+        URL: expectedUrl,
+        'User-Id': defaultConfig.userId,
+        Authorization: 'Bearer testToken',
+      },
+      withCredentials: false,
+    };
+
+    const mockAssignment = {
+      site: 'testSite',
+      target: 'testTarget',
+      assignedCondition: [{ conditionCode: 'variant_x', experimentId: 'exp123' }],
+      assignedFactor: null,
+      experimentType: 'Simple',
+    };
+
+    beforeEach(() => {
+      MockDataService.findExperimentAssignmentBySiteAndTarget.mockReturnValue(mockAssignment);
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      MockDataService.rotateAssignmentList.mockImplementation(() => {});
+    });
+
+    it('should include context from config in the request body', async () => {
+      await apiService.markDecisionPoint({
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: 'condition applied' as any,
+      });
+
+      const postedBody = mockHttpClient.doPost.mock.calls[mockHttpClient.doPost.mock.calls.length - 1][1];
+      expect(postedBody.context).toEqual(defaultConfig.context);
+    });
+
+    it('should include status and data in the request body', async () => {
+      await apiService.markDecisionPoint({
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: 'condition applied' as any,
+      });
+
+      const postedBody = mockHttpClient.doPost.mock.calls[mockHttpClient.doPost.mock.calls.length - 1][1];
+      expect(postedBody.status).toEqual('condition applied');
+      expect(postedBody.data.site).toEqual('testSite');
+      expect(postedBody.data.target).toEqual('testTarget');
+    });
+
+    it('should include uniquifier when provided', async () => {
+      await apiService.markDecisionPoint({
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: 'condition applied' as any,
+        uniquifier: 'unique123',
+      });
+
+      const postedBody = mockHttpClient.doPost.mock.calls[mockHttpClient.doPost.mock.calls.length - 1][1];
+      expect(postedBody.uniquifier).toEqual('unique123');
+    });
+
+    it('should include clientError when provided', async () => {
+      await apiService.markDecisionPoint({
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: 'condition not applied' as any,
+        clientError: 'variant not recognized',
+      });
+
+      const postedBody = mockHttpClient.doPost.mock.calls[mockHttpClient.doPost.mock.calls.length - 1][1];
+      expect(postedBody.clientError).toEqual('variant not recognized');
+    });
+  });
+
   describe('#logCaliper', () => {
     const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/log/caliper`;
     const expectedOptions = {
