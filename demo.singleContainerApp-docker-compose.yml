@@ -31,7 +31,7 @@ services:
       - "postgres"
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -41,7 +41,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - upgradedbdata:/var/lib/postgresql/data
+      - upgradedbdata:/var/lib/postgresql
 
 volumes:
   upgradedbdata:
