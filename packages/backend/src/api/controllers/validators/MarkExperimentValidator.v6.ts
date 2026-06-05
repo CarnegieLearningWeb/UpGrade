@@ -31,6 +31,10 @@ class Data {
 }
 
 export class MarkExperimentValidatorv6 {
+  @IsString()
+  @IsNotEmpty()
+  public context: string;
+
   @IsDefined()
   @ValidateNested()
   @Type(() => Data)

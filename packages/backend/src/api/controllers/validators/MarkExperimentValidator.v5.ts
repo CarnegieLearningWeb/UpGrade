@@ -34,6 +34,10 @@ export class MarkExperimentValidatorv5 {
   @IsNotEmpty()
   public userId: string;
 
+  @IsString()
+  @IsOptional()
+  public context?: string;
+
   @IsDefined()
   @ValidateNested()
   @Type(() => Data)

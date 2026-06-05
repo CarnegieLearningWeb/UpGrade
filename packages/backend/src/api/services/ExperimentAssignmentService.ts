@@ -22,7 +22,6 @@ import {
   SUPPORTED_CALIPER_PROFILES,
   SUPPORTED_CALIPER_EVENTS,
   IExperimentAssignmentv5,
-  CACHE_PREFIX,
   ASSIGNMENT_ALGORITHM,
   IPayload,
   PAYLOAD_TYPE,
@@ -127,26 +126,108 @@ export class ExperimentAssignmentService {
     public moocletExperimentService: MoocletExperimentService
   ) {}
 
-  private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
-    const cacheKey = CACHE_PREFIX.MARK_KEY_PREFIX + '-' + site + '-' + target;
-    const dpExperiments = await this.cacheService.wrap(cacheKey, () =>
-      this.decisionPointRepository.find({
-        where: {
-          site: site,
-          target: target,
-        },
-        relations: [
-          'experiment',
-          'experiment.conditions',
-          'experiment.conditions.conditionPayloads',
-          'experiment.partitions',
-          'experiment.experimentSegmentInclusion.segment',
-          'experiment.experimentSegmentExclusion.segment',
-        ],
-      })
+  /**
+   * Shared experiment-selection logic used by both markExperimentPoint and (indirectly) getAllExperimentConditions.
+   *
+   * When experimentId is supplied the method validates it and returns that single experiment after running
+   * exclusion checks.  When experimentId is absent it applies the full filtering and pooling pipeline
+   * (global exclusion → group-experiment filtering → experiment-level inclusion/exclusion → processExperimentPools)
+   * so the selected experiment is guaranteed to match what getAllExperimentConditions would have returned for
+   * the same user and decision point.
+   */
+  private async resolveExperimentForMarkPoint(
+    site: string,
+    target: string,
+    context: string,
+    experimentId: string,
+    userDoc: RequestedExperimentUser,
+    previewUser: PreviewUser,
+    logger: UpgradeLogger
+  ): Promise<{
+    experiments: Experiment[];
+    experimentId: string | null;
+    isUserExcluded: boolean;
+    isGroupExcluded: boolean;
+    exclusionReason: { experiment: Experiment; reason: string; matchedGroup: boolean }[];
+  }> {
+    const allExperimentsForContext = await this.experimentService.getCachedValidExperiments(context);
+    const allExperimentsAtDP = allExperimentsForContext.filter((exp) =>
+      exp.partitions.some((p) => p.site === site && p.target === target)
     );
 
-    return [dpExperiments, dpExperiments.map((dp) => dp.experiment)];
+    if (allExperimentsAtDP.length === 0) {
+      return {
+        experiments: [],
+        experimentId,
+        isUserExcluded: false,
+        isGroupExcluded: false,
+        exclusionReason: [],
+      };
+    }
+
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
+
+    if (isUserExcluded || isGroupExcluded) {
+      return { experiments: [], experimentId, isUserExcluded, isGroupExcluded, exclusionReason: [] };
+    }
+
+    if (experimentId) {
+      // Experiment ID provided: validate it exists at this decision point then run exclusion checks.
+      const dpExpExists = allExperimentsAtDP.filter((exp) => exp.id === experimentId);
+      if (!dpExpExists.length) {
+        const error = new Error(
+          `Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userDoc.id}`
+        );
+        (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
+        (error as any).httpCode = 404;
+        logger.error(error);
+        throw error;
+      }
+      const [, exclusionReason] = await this.experimentLevelExclusionInclusion(dpExpExists, userDoc);
+      return {
+        experiments: dpExpExists,
+        experimentId,
+        isUserExcluded,
+        isGroupExcluded,
+        exclusionReason,
+      };
+    }
+
+    // No experiment ID: mirror the full filtering and pooling pipeline from getAllExperimentConditions so that
+    // the experiment selected here is guaranteed to match what getAllExperimentConditions would return.
+    const validExperiments = await this.filterAndProcessGroupExperiments(allExperimentsAtDP, userDoc, logger);
+    const [filteredExperiments, exclusionReason] = await this.experimentLevelExclusionInclusion(
+      validExperiments,
+      userDoc
+    );
+
+    if (filteredExperiments.length === 0) {
+      return { experiments: [], experimentId: null, isUserExcluded, isGroupExcluded, exclusionReason };
+    }
+
+    const experimentIds = filteredExperiments.map((exp) => exp.id);
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
+      await this.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
+
+    const selectedExperiments = this.processExperimentPools(
+      filteredExperiments,
+      individualEnrollments,
+      groupEnrollments,
+      individualExclusions,
+      groupExclusions,
+      userDoc,
+      previewUser
+    );
+
+    const experiments = selectedExperiments.length > 0 ? [selectedExperiments[0]] : [];
+    const resolvedExperimentId = experiments[0]?.id ?? null;
+    return {
+      experiments,
+      experimentId: resolvedExperimentId,
+      isUserExcluded,
+      isGroupExcluded,
+      exclusionReason,
+    };
   }
 
   public async markExperimentPoint(
@@ -155,6 +236,7 @@ export class ExperimentAssignmentService {
     status: MARKED_DECISION_POINT_STATUS | undefined,
     condition: string | null,
     logger: UpgradeLogger,
+    context: string,
     experimentId: string,
     target?: string,
     uniquifier?: string,
@@ -180,56 +262,21 @@ export class ExperimentAssignmentService {
     const previewUser: PreviewUser = await this.previewUserService.findOneFromCache(userId, logger);
     const { workingGroup } = userDoc;
 
-    // 1. Search decision points in experiments cache and return relevant experiments and decisionPoints data
-    const experimentsResult = await this.getCachedExperiments(site, target);
-    const dpExperiments = experimentsResult[0];
-    let experiments = experimentsResult[1];
-
     logger.info({
       message: `markExperimentPoint: Site: ${site}, Target: ${target}, Condition: ${condition}, Status: "${status}" for User: ${userId}`,
     });
 
-    if (experiments.length) {
-      if (experimentId) {
-        const dpExpExists = experiments.filter((exp) => exp.id === experimentId);
-
-        if (!dpExpExists.length) {
-          const error = new Error(
-            `Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`
-          );
-          (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
-          (error as any).httpCode = 404;
-          logger.error(error);
-          throw error;
-        }
-        experiments = dpExpExists;
-      } else {
-        const random = seedrandom(userId)();
-        experiments = [experiments[Math.floor(random * experiments.length)]];
-        experimentId = experiments[0]?.id;
-      }
-    }
-
-    // We are sure that either experiment length will not be greater than 1
-    const context: string | null = experiments?.[0]?.context?.[0] ?? null;
-
-    // 2. Check if user or group is globally excluded
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
-
-    // empty assignments if the user or group is excluded from the experiment
-    if (isUserExcluded || isGroupExcluded) {
-      experiments = [];
-    }
-
-    const experimentIds = experiments.map((experiment) => experiment.id);
-
-    // no experiments
-    if (experimentIds.length === 0) {
-      experiments = [];
-    }
-
-    // 3. Check for experiment level inclusion and exclusion
-    const [, exclusionReason] = await this.experimentLevelExclusionInclusion(experiments, userDoc);
+    // 1-3. Resolve which experiment to mark, applying the same filtering and pooling logic as getAllExperimentConditions
+    //      so that the two methods are guaranteed to agree on the selected experiment.
+    const {
+      experiments: resolvedExperiments,
+      experimentId: resolvedExperimentId,
+      isUserExcluded,
+      isGroupExcluded,
+      exclusionReason,
+    } = await this.resolveExperimentForMarkPoint(site, target, context, experimentId, userDoc, previewUser, logger);
+    const experiments = resolvedExperiments;
+    experimentId = resolvedExperimentId;
 
     // find monitored document
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
@@ -246,7 +293,7 @@ export class ExperimentAssignmentService {
     }
 
     if (experiments.length) {
-      const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
+      const selectedExperimentDP = experiments[0]?.partitions.find((p) => p.site === site && p.target === target);
       const experiment = experiments[0];
       const { conditions } = experiment;
       const payloadCondition = conditions.flatMap((condition) => condition.conditionPayloads);
