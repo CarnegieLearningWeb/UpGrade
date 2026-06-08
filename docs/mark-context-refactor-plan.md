@@ -137,7 +137,7 @@ This is the cleanest test to write before Phases 1–4 are complete, since it do
 
 ---
 
-#### 7b. Context contamination — testable once Phase 1 adds `context` to the wire format
+#### 7b. Context contamination — testable once Phase 1 adds `context` to the wire format ✅ COMPLETED
 
 **Setup:**
 
@@ -146,8 +146,8 @@ This is the cleanest test to write before Phases 1–4 are complete, since it do
 3. Mark user 1 with `context="math"` at `site="homepage"`, `target="button"`
 4. Mark user 2 with `context="science"` at the same `site`/`target`
 
-**Before fix:** Both marks hit the same `MARK_KEY_PREFIX-homepage-button` cache entry, so one of the users gets the wrong experiment's data in their monitored decision point record.  
-**After fix:** Each mark uses `EXPERIMENT_KEY_PREFIX-{context}`, so user 1's mark references experiment A and user 2's references experiment B.
+**Before fix:** `DecisionPointRepository.find({ where: { site, target } })` has no context filter, so both experiments A and B are included in the pool for any mark at that decision point. With no basis to exclude the wrong experiment, a user marking in context "math" may have experiment B selected — regardless of whether the result was cached or freshly queried. The cache makes this wrong behavior more consistent but is not the root cause.  
+**After fix:** `getCachedValidExperiments(context)` scopes the fetch to the given context before any filtering, so experiment B is never in the pool when marking for context "math". User 1's mark correctly references experiment A and user 2's references experiment B.
 
 ---
 
