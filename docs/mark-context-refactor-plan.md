@@ -122,7 +122,7 @@ This guarantees that mark and assign always agree on the selected experiment for
 
 ### New tests to add
 
-#### 7a. State filter — testable against the unfixed code (demonstrates bug, then verifies fix)
+#### 7a. State filter — testable against the unfixed code (demonstrates bug, then verifies fix) ✅ COMPLETED
 
 This is the cleanest test to write before Phases 1–4 are complete, since it doesn't require the `context` wire changes to observe the behavioral difference.
 

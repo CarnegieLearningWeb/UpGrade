@@ -103,7 +103,7 @@ export async function markExperimentPoint(
   target: string,
   site: string,
   condition: string | null,
-  experimentId: string,
+  experimentId: string | null,
   logger: UpgradeLogger,
   context = 'home',
   uniquifier?: string
