@@ -34,11 +34,10 @@ const noopStore: Cache<Store> = {
 export class CacheService {
   private cache: Cache<Store> = noopStore;
   private ttl = env.caching.ttl || 900;
+  private initPromise: Promise<void>;
 
   constructor() {
-    if (env.caching.enabled) {
-      this.initializeCache();
-    }
+    this.initPromise = env.caching.enabled ? this.initializeCache() : Promise.resolve();
   }
 
   private async initializeCache() {
@@ -56,6 +55,7 @@ export class CacheService {
   }
 
   public async setCache<T>(id: string, value: T): Promise<T> {
+    await this.initPromise;
     if (value === null || value === undefined) {
       return null;
     }
@@ -63,15 +63,18 @@ export class CacheService {
     return value;
   }
 
-  public getCache<T>(id: string): Promise<T | undefined> {
+  public async getCache<T>(id: string): Promise<T | undefined> {
+    await this.initPromise;
     return this.cache.get(id);
   }
 
-  public delCache(id: string): Promise<void> {
+  public async delCache(id: string): Promise<void> {
+    await this.initPromise;
     return this.cache.del(id);
   }
 
   public async resetPrefixCache(prefix: string): Promise<void> {
+    await this.initPromise;
     const keys = await this.cache.store.keys();
     const filteredKeys = keys.filter((str) => str.startsWith(prefix));
     if (filteredKeys.length > 0) {
@@ -79,19 +82,23 @@ export class CacheService {
     }
   }
 
-  public resetAllCache(): Promise<void> {
+  public async resetAllCache(): Promise<void> {
+    await this.initPromise;
     return this.cache.store.reset();
   }
 
-  public getKeys(): Promise<string[]> {
+  public async getKeys(): Promise<string[]> {
+    await this.initPromise;
     return this.cache.store.keys();
   }
 
-  public wrap<T>(key: string, fn: () => Promise<T>): Promise<T> {
+  public async wrap<T>(key: string, fn: () => Promise<T>): Promise<T> {
+    await this.initPromise;
     return this.cache.wrap(key, fn);
   }
 
   public async wrapFunction<T>(prefix: CACHE_PREFIX, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
+    await this.initPromise;
     if (!keys.length) {
       return [];
     }
