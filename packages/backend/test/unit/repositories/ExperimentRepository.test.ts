@@ -157,7 +157,7 @@ describe('ExperimentRepository Testing', () => {
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
 
-    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(22);
+    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(23);
     expect(mock.select).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(4);
 
@@ -178,7 +178,7 @@ describe('ExperimentRepository Testing', () => {
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
 
-    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(22);
+    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(23);
     expect(mock.select).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(4);
   });
@@ -369,15 +369,16 @@ describe('ExperimentRepository Testing', () => {
   it('should find one experiment ordered by queries.order then createdAt', async () => {
     const res = await repo.findOneExperiment(experiment.id);
 
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+    // 4 parallel queries: conditionLevelPayload, factorPartitionPayload, metric, segment
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
 
-    // conditions, partitions, factors, levels, queries.order, queries.createdAt = 6 addOrderBy calls
+    // conditions(1) + partitions+factors+levels(3) + queries.order+createdAt(2) = 6 addOrderBy calls
     expect(mock.addOrderBy).toHaveBeenCalledTimes(6);
     expect(mock.addOrderBy).toHaveBeenCalledWith('queries.order', 'ASC', 'NULLS LAST');
     expect(mock.addOrderBy).toHaveBeenCalledWith('queries.createdAt', 'ASC');
 
-    expect(mock.where).toHaveBeenCalledTimes(1);
-    expect(mock.getOne).toHaveBeenCalledTimes(1);
+    expect(mock.where).toHaveBeenCalledTimes(4);
+    expect(mock.getOne).toHaveBeenCalledTimes(4);
 
     expect(res).toEqual(experiment);
   });

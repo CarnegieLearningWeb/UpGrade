@@ -14,18 +14,9 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {
   public async findAllExperiments(): Promise<Experiment[]> {
-    const experimentConditionLevelPayloadQuery = this.createQueryBuilder('experiment')
-      .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('levelCombinationElements.level', 'level')
-      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload');
+    const experimentConditionLevelPayloadQuery = this.buildConditionLevelPayloadQuery();
 
-    const experimentFactorPartitionLevelPayloadQuery = this.createQueryBuilder('experiment')
-      .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
-      .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
-      .leftJoinAndSelect('experiment.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels');
+    const experimentFactorDecisionPointLevelPayloadQuery = this.buildFactorDecisionPointPayloadQuery();
 
     const experimentMetricQuery = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.queries', 'queries')
@@ -34,18 +25,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .addOrderBy('queries.order', 'ASC', 'NULLS LAST')
       .addOrderBy('queries.createdAt', 'ASC');
 
-    const experimentSegment = this.createQueryBuilder('experiment')
-      .select('experiment.id')
-      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
-      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
-      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
-      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
-      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion');
+    const experimentSegment = this.buildSegmentQuery();
 
     const [
       experimentConditionLevelPayloadData,
@@ -62,7 +42,7 @@ export class ExperimentRepository extends Repository<Experiment> {
         );
         throw errorMsgString;
       }),
-      experimentFactorPartitionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
+      experimentFactorDecisionPointLevelPayloadQuery.getMany().catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'ExperimentRepository',
           'findAllExperiments-experimentFactorPartitionLevelPayloadData',
@@ -127,50 +107,25 @@ export class ExperimentRepository extends Repository<Experiment> {
       assign: 'assign',
       context,
     };
-    const experimentConditionLevelPayloadQuery = this.createQueryBuilder('experiment')
-      .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('levelCombinationElements.level', 'level')
-      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
-      .where(
-        new Brackets((qb) => {
-          qb.where(whereExperimentsClause, whereClauseParams);
-        })
-      );
+    const experimentConditionLevelPayloadQuery = this.buildConditionLevelPayloadQuery().where(
+      new Brackets((qb) => {
+        qb.where(whereExperimentsClause, whereClauseParams);
+      })
+    );
 
-    const experimentFactorPartitionLevelPayloadQuery = this.createQueryBuilder('experiment')
-      .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
-      .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
-      .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
-      .leftJoinAndSelect('experiment.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels')
-      .where(
-        new Brackets((qb) => {
-          qb.where(whereExperimentsClause, whereClauseParams);
-        })
-      );
+    const experimentFactorDecisionPointLevelPayloadQuery = this.buildFactorDecisionPointPayloadQuery().where(
+      new Brackets((qb) => {
+        qb.where(whereExperimentsClause, whereClauseParams);
+      })
+    );
 
-    const experimentSegmentQuery = this.createQueryBuilder('experiment')
-      // making small queries
-      .select('experiment.id')
-      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
-      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
-      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
-      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
-      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .where(
-        new Brackets((qb) => {
-          qb.where(whereExperimentsClause, whereClauseParams);
-        })
-      );
+    const experimentSegmentQuery = this.buildSegmentQuery().where(
+      new Brackets((qb) => {
+        qb.where(whereExperimentsClause, whereClauseParams);
+      })
+    );
 
-    const [experimentConditionLevelPayloadData, experimentFactorPartitionLevelPayloadData, experimentSegmentData] =
+    const [experimentConditionLevelPayloadData, experimentFactorDecisionPointLevelPayloadData, experimentSegmentData] =
       await Promise.all([
         experimentConditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
           const errorMsgString = repositoryError(
@@ -181,10 +136,10 @@ export class ExperimentRepository extends Repository<Experiment> {
           );
           throw errorMsgString;
         }),
-        experimentFactorPartitionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
+        experimentFactorDecisionPointLevelPayloadQuery.getMany().catch((errorMsg: any) => {
           const errorMsgString = repositoryError(
             'ExperimentRepository',
-            'getValidExperiments-experimentFactorPartitionLevelPayloadQuery',
+            'getValidExperiments-experimentFactorDecisionPointLevelPayloadQuery',
             {},
             errorMsg
           );
@@ -202,7 +157,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       ]);
 
     const experimentData = experimentConditionLevelPayloadData.map((data) => {
-      const data2 = experimentFactorPartitionLevelPayloadData.find((i) => i.id === data.id);
+      const data2 = experimentFactorDecisionPointLevelPayloadData.find((i) => i.id === data.id);
       return { ...data, ...data2 };
     });
 
@@ -222,8 +177,11 @@ export class ExperimentRepository extends Repository<Experiment> {
     site: string,
     target: string
   ): Promise<Experiment[]> {
-    const whereExperimentsClause =
-      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context]) AND partitions.site = :site AND partitions.target = :target AND partitions.pendingActivation = false';
+    const baseWhereClause =
+      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context])';
+    const decisionPointWhereClause =
+      baseWhereClause +
+      ' AND partitions.site = :site AND partitions.target = :target AND partitions.pendingActivation = false';
     const whereClauseParams = {
       enrolling: 'enrolling',
       enrollmentComplete: 'enrollmentComplete',
@@ -232,26 +190,66 @@ export class ExperimentRepository extends Repository<Experiment> {
       site,
       target,
     };
-    const experiment = await this.createBaseQueryBuilder().where(whereExperimentsClause, whereClauseParams).getMany();
-    return experiment;
-  }
 
-  public async getEnrollingExperimentsForContextAndDecisionPoint(
-    context: string,
-    site: string,
-    target: string
-  ): Promise<Experiment[]> {
-    const whereExperimentsClause =
-      'experiment.state = :enrolling AND :context ILIKE ANY (ARRAY[experiment.context]) AND partitions.site = :site AND partitions.target = :target AND partitions.pendingActivation = false';
-    const whereClauseParams = {
-      enrolling: 'enrolling',
-      assign: 'assign',
-      context,
-      site,
-      target,
-    };
-    const experiment = await this.createBaseQueryBuilder().where(whereExperimentsClause, whereClauseParams).getMany();
-    return experiment;
+    const conditionLevelPayloadQuery = this.buildConditionLevelPayloadQuery().where(
+      new Brackets((qb) => {
+        qb.where(baseWhereClause, whereClauseParams);
+      })
+    );
+
+    // site/target filter lives here — this is the authoritative experiment list
+    const factorDecisionPointPayloadQuery = this.buildFactorDecisionPointPayloadQuery().where(
+      new Brackets((qb) => {
+        qb.where(decisionPointWhereClause, whereClauseParams);
+      })
+    );
+
+    const segmentQuery = this.buildSegmentQuery().where(
+      new Brackets((qb) => {
+        qb.where(baseWhereClause, whereClauseParams);
+      })
+    );
+
+    const [conditionLevelPayloadData, factorDecisionPointPayloadData, segmentData] = await Promise.all([
+      conditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperimentsForContextAndDecisionPoint-conditionLevelPayloadData',
+          {},
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+      factorDecisionPointPayloadQuery.getMany().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperimentsForContextAndDecisionPoint-factorDecisionPointPayloadData',
+          {},
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+      segmentQuery.getMany().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperimentsForContextAndDecisionPoint-segmentData',
+          {},
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+    ]);
+
+    // factorDecisionPointPayloadData is authoritative — it applied the site/target filter
+    const experimentData = factorDecisionPointPayloadData.map((data) => {
+      const condData = conditionLevelPayloadData.find((i) => i.id === data.id);
+      return { ...condData, ...data };
+    });
+
+    return experimentData.map((data) => {
+      const seg = segmentData.find((s) => s.id === data.id);
+      return seg ? { ...data, ...seg } : data;
+    });
   }
 
   public async getValidExperimentsWithPreview(context: string): Promise<Experiment[]> {
@@ -264,50 +262,25 @@ export class ExperimentRepository extends Repository<Experiment> {
       assign: 'assign',
       context,
     };
-    const experimentConditionLevelPayloadQuery = this.createQueryBuilder('experiment')
-      .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('levelCombinationElements.level', 'level')
-      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload')
-      .where(
-        new Brackets((qb) => {
-          qb.where(whereExperimentsClause, whereClauseParams);
-        })
-      );
+    const experimentConditionLevelPayloadQuery = this.buildConditionLevelPayloadQuery().where(
+      new Brackets((qb) => {
+        qb.where(whereExperimentsClause, whereClauseParams);
+      })
+    );
 
-    const experimentFactorPartitionLevelPayloadQuery = this.createQueryBuilder('experiment')
-      .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
-      .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
-      .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
-      .leftJoinAndSelect('experiment.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels')
-      .where(
-        new Brackets((qb) => {
-          qb.where(whereExperimentsClause, whereClauseParams);
-        })
-      );
+    const experimentFactorDecisionPointLevelPayloadQuery = this.buildFactorDecisionPointPayloadQuery().where(
+      new Brackets((qb) => {
+        qb.where(whereExperimentsClause, whereClauseParams);
+      })
+    );
 
-    const experimentSegmentQuery = this.createQueryBuilder('experiment')
-      // making small queries
-      .select('experiment.id')
-      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
-      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
-      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
-      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
-      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .where(
-        new Brackets((qb) => {
-          qb.where(whereExperimentsClause, whereClauseParams);
-        })
-      );
+    const experimentSegmentQuery = this.buildSegmentQuery().where(
+      new Brackets((qb) => {
+        qb.where(whereExperimentsClause, whereClauseParams);
+      })
+    );
 
-    const [experimentConditionLevelPayloadData, experimentFactorPartitionLevelPayloadData, experimentSegmentData] =
+    const [experimentConditionLevelPayloadData, experimentFactorDecisionPointLevelPayloadData, experimentSegmentData] =
       await Promise.all([
         experimentConditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
           const errorMsgString = repositoryError(
@@ -318,10 +291,10 @@ export class ExperimentRepository extends Repository<Experiment> {
           );
           throw errorMsgString;
         }),
-        experimentFactorPartitionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
+        experimentFactorDecisionPointLevelPayloadQuery.getMany().catch((errorMsg: any) => {
           const errorMsgString = repositoryError(
             'ExperimentRepository',
-            'getValidExperiments-experimentFactorPartitionLevelPayloadQuery',
+            'getValidExperiments-experimentFactorDecisionPointLevelPayloadQuery',
             {},
             errorMsg
           );
@@ -339,7 +312,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       ]);
 
     const experimentData = experimentConditionLevelPayloadData.map((data) => {
-      const data2 = experimentFactorPartitionLevelPayloadData.find((i) => i.id === data.id);
+      const data2 = experimentFactorDecisionPointLevelPayloadData.find((i) => i.id === data.id);
       return { ...data, ...data2 };
     });
 
@@ -473,16 +446,28 @@ export class ExperimentRepository extends Repository<Experiment> {
     }
   }
 
-  private createBaseQueryBuilder() {
+  private buildConditionLevelPayloadQuery() {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
+      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
+      .leftJoinAndSelect('levelCombinationElements.level', 'level')
+      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload');
+  }
+
+  private buildFactorDecisionPointPayloadQuery() {
+    return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
-      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
-      .leftJoinAndSelect('experiment.factors', 'factors')
-      .leftJoinAndSelect('factors.levels', 'levels')
       .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
+      .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
+      .leftJoinAndSelect('conditionPayloads.parentCondition', 'parentCondition')
+      .leftJoinAndSelect('experiment.factors', 'factors')
+      .leftJoinAndSelect('factors.levels', 'levels');
+  }
+
+  private buildSegmentQuery() {
+    return this.createQueryBuilder('experiment')
+      .select('experiment.id')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
@@ -491,31 +476,79 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionPayloads', 'ConditionPayloadsArray')
-      .leftJoinAndSelect('ConditionPayloadsArray.parentCondition', 'parentCondition')
-      .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
-      .leftJoinAndSelect('levelCombinationElements.level', 'level')
-      .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload');
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion');
   }
 
   public async findOneExperiment(id: string): Promise<Experiment> {
-    const experiment = await this.createBaseQueryBuilder()
+    const conditionLevelPayloadQuery = this.buildConditionLevelPayloadQuery()
       .addOrderBy('conditions.order', 'ASC')
+      .where({ id });
+
+    const factorDecisionPointPayloadQuery = this.buildFactorDecisionPointPayloadQuery()
       .addOrderBy('partitions.order', 'ASC')
       .addOrderBy('factors.order', 'ASC')
       .addOrderBy('levels.order', 'ASC')
+      .where({ id });
+
+    const metricQuery = this.createQueryBuilder('experiment')
+      .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .addOrderBy('queries.order', 'ASC', 'NULLS LAST')
       .addOrderBy('queries.createdAt', 'ASC')
-      .where({ id })
-      .getOne();
-    return experiment;
+      .where({ id });
+
+    const segmentQuery = this.buildSegmentQuery().where({ id });
+
+    const [conditionLevelPayloadData, factorDecisionPointPayloadData, metricData, segmentData] = await Promise.all([
+      conditionLevelPayloadQuery.getOne().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'findOneExperiment-conditionLevelPayloadData',
+          { id },
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+      factorDecisionPointPayloadQuery.getOne().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'findOneExperiment-factorDecisionPointPayloadData',
+          { id },
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+      metricQuery.getOne().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'findOneExperiment-metricData',
+          { id },
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+      segmentQuery.getOne().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'findOneExperiment-segmentData',
+          { id },
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+    ]);
+
+    if (!conditionLevelPayloadData) {
+      return undefined;
+    }
+
+    return { ...conditionLevelPayloadData, ...factorDecisionPointPayloadData, ...metricData, ...segmentData };
   }
 
   public async fetchExperimentDetailsForCSVDataExport(experimentId: string): Promise<ExperimentDetailsForCSVData[]> {
     // Get the experiment details
-    const experimentQuery = await this.createBaseQueryBuilder()
+    const experimentQuery = await this.createQueryBuilder('experiment')
       .select([
         'experiment.id as "experimentId"',
         'experiment.name as "experimentName"',
