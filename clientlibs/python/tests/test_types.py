@@ -310,12 +310,12 @@ class TestMarkDecisionPointResponse:
 class TestLogEventResponse:
     def test_valid(self) -> None:
         resp = LogEventResponse(
-            id="log-1",
+            id=1,
             uniquifier="u1",
             timeStamp="2024-01-01T00:00:00Z",
             data={"score": 95},
         )
-        assert resp.id == "log-1"
+        assert resp.id == 1
         assert resp.data == {"score": 95}
 
 

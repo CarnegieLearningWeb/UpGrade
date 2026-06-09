@@ -191,10 +191,10 @@ class UpgradeClient:
 
     async def mark_decision_point(
         self,
-        site: str,
-        target: str,
         condition: str,
         status: MarkedDecisionPointStatus,
+        site: str,
+        target: str = "",
         uniquifier: str = "",
         client_error: str = "",
     ) -> MarkDecisionPointResponse:
@@ -237,16 +237,16 @@ class UpgradeClient:
 
     def mark_decision_point_sync(
         self,
-        site: str,
-        target: str,
         condition: str,
         status: MarkedDecisionPointStatus,
+        site: str,
+        target: str = "",
         uniquifier: str = "",
         client_error: str = "",
     ) -> MarkDecisionPointResponse:
         """Synchronous variant of :meth:`mark_decision_point`."""
         return asyncio.run(
-            self.mark_decision_point(site, target, condition, status, uniquifier, client_error)
+            self.mark_decision_point(condition, status, site, target, uniquifier, client_error)
         )
 
     # ------------------------------------------------------------------

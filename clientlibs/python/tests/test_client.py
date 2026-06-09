@@ -61,7 +61,7 @@ MARK_PAYLOAD = {
     "condition": "control",
 }
 
-LOG_PAYLOAD = [{"id": "log-1", "uniquifier": "u1", "timeStamp": "2024-01-01T00:00:00Z", "data": {}}]
+LOG_PAYLOAD = [{"id": 1, "uniquifier": "u1", "timeStamp": "2024-01-01T00:00:00Z", "data": {}}]
 
 ALIAS_PAYLOAD = {"userId": USER, "aliases": ["alias-1"]}
 
@@ -295,7 +295,7 @@ class TestMarkDecisionPoint:
         client = make_client()
         await client.get_all_experiment_conditions()
         result = await client.mark_decision_point(
-            "home", "banner", "control", MarkedDecisionPointStatus.CONDITION_APPLIED
+             "control", MarkedDecisionPointStatus.CONDITION_APPLIED,"home", "banner",
         )
         assert result.site == "home"
         assert route.call_count == 1
@@ -309,7 +309,7 @@ class TestMarkDecisionPoint:
         client = make_client()
         assert client._data_service.get_all_assignments() is None
         await client.mark_decision_point(
-            "home", "banner", "control", MarkedDecisionPointStatus.CONDITION_APPLIED
+            "control", MarkedDecisionPointStatus.CONDITION_APPLIED,"home", "banner"
         )
         assert assign_route.call_count == 1
 
@@ -320,7 +320,7 @@ class TestMarkDecisionPoint:
         client = make_client()
         await client.get_all_experiment_conditions()
         await client.mark_decision_point(
-            "home", "banner", "control", MarkedDecisionPointStatus.CONDITION_APPLIED,
+            "control", MarkedDecisionPointStatus.CONDITION_APPLIED,"home", "banner",
             uniquifier="u-1",
         )
         body = json.loads(mark_route.calls[0].request.content)
@@ -339,12 +339,12 @@ class TestMarkDecisionPoint:
         await client.get_all_experiment_conditions()
 
         await client.mark_decision_point(
-            "quiz", "hint", "combo-A", MarkedDecisionPointStatus.CONDITION_APPLIED
+            "combo-A", MarkedDecisionPointStatus.CONDITION_APPLIED,"quiz", "hint", 
         )
         first_body = json.loads(mark_route.calls[0].request.content)
 
         await client.mark_decision_point(
-            "quiz", "hint", "combo-B", MarkedDecisionPointStatus.CONDITION_APPLIED
+            "combo-B", MarkedDecisionPointStatus.CONDITION_APPLIED,"quiz", "hint"
         )
         second_body = json.loads(mark_route.calls[1].request.content)
 
@@ -360,7 +360,7 @@ class TestMarkDecisionPoint:
         client = make_client()
         await client.get_all_experiment_conditions()
         await client.mark_decision_point(
-            "unknown", "point", "default", MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED
+             "default", MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED,"unknown", "site"
         )
         body = json.loads(mark_route.calls[0].request.content)
         assert body["data"]["site"] == "unknown"
@@ -385,17 +385,17 @@ class TestMarkDecisionPoint:
         client = make_client()
         await client.get_all_experiment_conditions()
         await client.mark_decision_point(
-            "home", None, "control", MarkedDecisionPointStatus.CONDITION_APPLIED
+             "control", MarkedDecisionPointStatus.CONDITION_APPLIED,"home"
         )
         body = json.loads(mark_route.calls[0].request.content)
-        assert body["data"]["target"] is None
+        assert body["data"]["target"] == ''
 
     @respx.mock
     def test_sync(self) -> None:
         respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
         respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
         result = make_client().mark_decision_point_sync(
-            "home", "banner", "control", MarkedDecisionPointStatus.CONDITION_APPLIED
+            "control", MarkedDecisionPointStatus.CONDITION_APPLIED,"home", "banner"
         )
         assert result.userId == USER
 
@@ -510,7 +510,7 @@ class TestLog:
         results = await make_client().log(
             [LogInput(timestamp="2024-01-01T00:00:00Z", metrics=LogMetrics())]
         )
-        assert results[0].id == "log-1"
+        assert results[0].id == 1
 
     @respx.mock
     def test_sync(self) -> None:
@@ -518,7 +518,7 @@ class TestLog:
         results = make_client().log_sync(
             [LogInput(timestamp="2024-01-01T00:00:00Z", metrics=LogMetrics())]
         )
-        assert results[0].id == "log-1"
+        assert results[0].id == 1
 
 
 # ---------------------------------------------------------------------------

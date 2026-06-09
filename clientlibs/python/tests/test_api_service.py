@@ -335,7 +335,7 @@ class TestGetAllFeatureFlags:
 # log
 # ---------------------------------------------------------------------------
 
-LOG_RESPONSE = [{"id": "log-1", "uniquifier": "u1", "timeStamp": "2024-01-01T00:00:00Z", "data": {"score": 95}}]
+LOG_RESPONSE = [{"id": 1, "uniquifier": "u1", "timeStamp": "2024-01-01T00:00:00Z", "data": {"score": 95}}]
 
 
 class TestLog:
@@ -346,7 +346,7 @@ class TestLog:
     async def test_async(self) -> None:
         respx.post(f"{BASE}/log").mock(return_value=Response(200, json=LOG_RESPONSE))
         results = await make_service().log([self._make_log_input()])
-        assert results[0].id == "log-1"
+        assert results[0].id == 1
         assert results[0].data == {"score": 95}
 
     @respx.mock

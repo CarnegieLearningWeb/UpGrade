@@ -90,7 +90,7 @@ Every method has an async variant (no suffix) and a synchronous variant (`_sync`
 |---|---|
 | `get_all_experiment_conditions(ignore_cache=False)` | Return all `Assignment` objects for this user/context |
 | `get_decision_point_assignment(site, target="")` | Return the `Assignment` for a specific decision point, or `None` |
-| `mark_decision_point(site, target, condition, status, uniquifier="", client_error="")` | Record that the user encountered a decision point |
+| `mark_decision_point( condition, status, site, target = "", uniquifier="", client_error="")` | Record that the user encountered a decision point |
 
 ### Feature Flags
 
