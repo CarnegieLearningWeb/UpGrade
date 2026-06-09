@@ -16,7 +16,7 @@ const config: Config.InitialOptions = {
     API_VERSION: 6,
   },
   moduleNameMapper: {
-    upgrade_types: '<rootDir>/../../types',
+    upgrade_types: '<rootDir>/../../packages/types/src',
   },
   coverageReporters: ['html'],
 };
