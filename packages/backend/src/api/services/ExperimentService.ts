@@ -1,5 +1,4 @@
 /* eslint-disable no-var */
-import { normalizePartitionTargets } from './utils/decisionPointUtils';
 import { GroupExclusion } from '../models/GroupExclusion';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { Service } from 'typedi';
@@ -298,8 +297,6 @@ export class ExperimentService {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
     const { existingEntityManager } = options || {};
     const entityManager = existingEntityManager || this.dataSource.manager;
-    // Normalize partition targets to ''
-    experiment.partitions = normalizePartitionTargets(experiment.partitions);
 
     // order for condition
     experiment.conditions.forEach((condition, index) => {
@@ -585,7 +582,7 @@ export class ExperimentService {
         logger.error(error);
         throw error;
       }
-      let experimentDecisionPoints = normalizePartitionTargets(experiment.partitions);
+      let experimentDecisionPoints = experiment.partitions;
       // Remove the decision points which already exist
       for (const decisionPoint of experimentDecisionPoints) {
         const decisionPointExists = await this.decisionPointRepository.findOneBy({ id: decisionPoint.id });
@@ -608,7 +605,9 @@ export class ExperimentService {
       });
 
       // Generate new twoCharacterId if it is already exist for decision points
+      // Normalize null or undefined decision point targets to ''
       experimentDecisionPoints = experimentDecisionPoints.map((decisionPoint) => {
+        decisionPoint.target = decisionPoint.target || '';
         let twoCharacterId = decisionPoint.twoCharacterId;
         if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
           twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
@@ -796,8 +795,6 @@ export class ExperimentService {
     return entityManager
       .transaction(async (transactionalEntityManager) => {
         experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
-        // Normalize partition targets before processing
-        experiment.partitions = normalizePartitionTargets(experiment.partitions);
         if (experiment.conditions.length) {
           const response = this.setConditionOrPartitionIdentifiers(experiment.conditions, uniqueIdentifiers);
           experiment.conditions = response[0];
@@ -1593,7 +1590,6 @@ export class ExperimentService {
         }
 
         const newExperiment = plainToClass(ExperimentDTO, experiment);
-
         if (!(newExperiment instanceof ExperimentDTO)) {
           return {
             fileName: experimentFile.fileName,

@@ -1,4 +1,3 @@
-import { normalizeTarget } from './utils/decisionPointUtils';
 import { GroupEnrollmentRepository } from '../repositories/GroupEnrollmentRepository';
 import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
 import {
@@ -128,15 +127,13 @@ export class ExperimentAssignmentService {
     public moocletExperimentService: MoocletExperimentService
   ) {}
 
-  private async getCachedExperiments(site: string, target?: string | null): Promise<[DecisionPoint[], Experiment[]]> {
-    // Normalize empty target to empty string
-    const normalizedTarget = normalizeTarget(target);
-    const cacheKey = CACHE_PREFIX.MARK_KEY_PREFIX + '-' + site + '-' + normalizedTarget;
+  private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
+    const cacheKey = CACHE_PREFIX.MARK_KEY_PREFIX + '-' + site + '-' + target;
     const dpExperiments = await this.cacheService.wrap(cacheKey, () =>
       this.decisionPointRepository.find({
         where: {
           site: site,
-          target: normalizedTarget,
+          target: target,
         },
         relations: [
           'experiment',
@@ -159,7 +156,7 @@ export class ExperimentAssignmentService {
     condition: string | null,
     logger: UpgradeLogger,
     experimentId: string,
-    target?: string | null,
+    target = '',
     uniquifier?: string,
     clientError?: string
   ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
@@ -171,9 +168,6 @@ export class ExperimentAssignmentService {
      * 5. Storing relevant enrollment/exclusion documents and check for enrollment ending criteria
      * 6. Storing new/updated monitored decision point document and store each monitored log document
      */
-
-    // Normalize empty target to empty string
-    const normalizedTarget = normalizeTarget(target);
 
     // check error from client side
     if (clientError) {
@@ -187,12 +181,12 @@ export class ExperimentAssignmentService {
     const { workingGroup } = userDoc;
 
     // 1. Search decision points in experiments cache and return relevant experiments and decisionPoints data
-    const experimentsResult = await this.getCachedExperiments(site, normalizedTarget);
+    const experimentsResult = await this.getCachedExperiments(site, target);
     const dpExperiments = experimentsResult[0];
     let experiments = experimentsResult[1];
 
     logger.info({
-      message: `markExperimentPoint: Site: ${site}, Target: ${normalizedTarget}, Condition: ${condition}, Status: "${status}" for User: ${userId}`,
+      message: `markExperimentPoint: Site: ${site}, Target: ${target}, Condition: ${condition}, Status: "${status}" for User: ${userId}`,
     });
 
     if (experiments.length) {
@@ -299,7 +293,7 @@ export class ExperimentAssignmentService {
       condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? null : condition,
       user: userDoc,
       site: site,
-      target: normalizedTarget,
+      target: target,
     });
 
     return {
@@ -481,20 +475,13 @@ export class ExperimentAssignmentService {
     experimentUserDocs: RequestedExperimentUser[],
     context: string,
     site: string,
-    target: string | null | undefined,
+    target: string,
     logger: UpgradeLogger
   ): Promise<Record<string, IExperimentAssignmentv5 | null>> {
-    // Normalize empty target to empty string
-    const normalizedTarget = normalizeTarget(target);
-
     logger.info({
       message: `getAllExperimentConditions: User: ${experimentUserDocs.map((doc) => doc.id).join(', ')}`,
     });
-    const experiments: Experiment[] = await this.getExperimentsForContextAndDecisionPoint(
-      context,
-      site,
-      normalizedTarget
-    );
+    const experiments: Experiment[] = await this.getExperimentsForContextAndDecisionPoint(context, site, target);
 
     if (experiments.length === 0) {
       return {};
@@ -710,14 +697,12 @@ export class ExperimentAssignmentService {
   private async getExperimentsForContextAndDecisionPoint(
     context: string,
     site: string,
-    target?: string | null
+    target: string
   ): Promise<Experiment[]> {
-    // Normalize empty target to empty string
-    const normalizedTarget = normalizeTarget(target);
     const experiments = await this.experimentRepository.getValidExperimentsForContextAndDecisionPoint(
       context,
       site,
-      normalizedTarget
+      target
     );
     // adding conditionPayloads at the root level instead of inside conditions
     return experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
@@ -1176,10 +1161,9 @@ export class ExperimentAssignmentService {
     reason: string,
     site: string,
     userId: string,
-    target: string | null | undefined,
+    target: string,
     requestContext: { logger: UpgradeLogger; userDoc: any }
   ): Promise<ExperimentError> {
-    const normalizedTarget = normalizeTarget(target);
     const error = new ExperimentError();
     const { logger, userDoc } = requestContext;
     logger.info({ message: `Failed experiment point for userId ${userId}` });
@@ -1187,7 +1171,7 @@ export class ExperimentAssignmentService {
     error.type = SERVER_ERROR.REPORTED_ERROR;
     error.message = JSON.stringify({
       site,
-      target: normalizedTarget,
+      target: target,
       userId: userDoc.id,
       reason,
     });
