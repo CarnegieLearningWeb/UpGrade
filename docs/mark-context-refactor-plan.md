@@ -151,20 +151,6 @@ This is the cleanest test to write before Phases 1–4 are complete, since it do
 
 ---
 
-#### 7c. Pooling regression — verifies correct behavior is preserved (Phase 0)
-
-Since pooling consolidation is already complete, this test documents the now-correct behavior and would catch a regression if the code were reverted.
-
-**Setup:**
-
-1. Create two experiments in the same pool at `site`/`target`, where pool assignment logic selects experiment A for user 1
-2. Call `getAllExperimentConditions` for user 1 → verify experiment A is assigned
-3. Call `markExperimentPoint` for user 1 at the same `site`/`target` with no `experimentId`
-
-**Assert:** The mark record's `experimentId` matches the experiment returned by assign (experiment A). Under the old code, mark used ad-hoc filtering rather than `processExperimentPools` and could select a different experiment.
-
----
-
 ## Order Dependencies
 
 Phases 1–4 are purely backend and can be done together. Phase 5 (JS) and Phase 6 (Java) depend on Phases 1–4 being finalized so the wire format is stable before client changes are made. Phase 7 follows Phases 1–4.
