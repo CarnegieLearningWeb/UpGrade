@@ -191,24 +191,27 @@ export class ExperimentRepository extends Repository<Experiment> {
       target,
     };
 
-    const conditionLevelPayloadQuery = this.buildConditionLevelPayloadQuery().where(
-      new Brackets((qb) => {
-        qb.where(baseWhereClause, whereClauseParams);
-      })
-    );
+    const conditionLevelPayloadQuery = this.buildConditionLevelPayloadQuery()
+      .leftJoin('experiment.partitions', 'partitions')
+      .where(
+        new Brackets((qb) => {
+          qb.where(decisionPointWhereClause, whereClauseParams);
+        })
+      );
 
-    // site/target filter lives here — this is the authoritative experiment list
     const factorDecisionPointPayloadQuery = this.buildFactorDecisionPointPayloadQuery().where(
       new Brackets((qb) => {
         qb.where(decisionPointWhereClause, whereClauseParams);
       })
     );
 
-    const segmentQuery = this.buildSegmentQuery().where(
-      new Brackets((qb) => {
-        qb.where(baseWhereClause, whereClauseParams);
-      })
-    );
+    const segmentQuery = this.buildSegmentQuery()
+      .leftJoin('experiment.partitions', 'partitions')
+      .where(
+        new Brackets((qb) => {
+          qb.where(decisionPointWhereClause, whereClauseParams);
+        })
+      );
 
     const [conditionLevelPayloadData, factorDecisionPointPayloadData, segmentData] = await Promise.all([
       conditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
@@ -240,7 +243,6 @@ export class ExperimentRepository extends Repository<Experiment> {
       }),
     ]);
 
-    // factorDecisionPointPayloadData is authoritative — it applied the site/target filter
     const experimentData = factorDecisionPointPayloadData.map((data) => {
       const condData = conditionLevelPayloadData.find((i) => i.id === data.id);
       return { ...condData, ...data };
