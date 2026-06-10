@@ -41,8 +41,7 @@ class DataService:
 
     def set_assignments(self, assignments: list[ExperimentAssignment]) -> None:
         """Populate the assignment cache from a fresh API response."""
-        self._assignments = {f"{a.site}|{a.target}": a for a in assignments}
-
+        self._assignments = {f"{a.site}|{a.target or ''}": a for a in assignments}
     def get_all_assignments(self) -> list[ExperimentAssignment] | None:
         """Return all cached assignments, or ``None`` if the cache is cold."""
         if self._assignments is None:
