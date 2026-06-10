@@ -1,5 +1,5 @@
-import { IsNotEmpty } from 'class-validator';
-import { IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class BatchAssignValidator {
   @IsNotEmpty()
@@ -10,9 +10,9 @@ export class BatchAssignValidator {
   @IsString()
   public site: string;
 
-  @IsNotEmpty()
+  @Transform(({ value }) => value ?? '')
   @IsString()
-  public target: string;
+  public target = '';
 
   @IsNotEmpty()
   @IsString({ each: true })

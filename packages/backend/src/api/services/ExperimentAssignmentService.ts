@@ -156,7 +156,7 @@ export class ExperimentAssignmentService {
     condition: string | null,
     logger: UpgradeLogger,
     experimentId: string,
-    target?: string,
+    target = '',
     uniquifier?: string,
     clientError?: string
   ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
@@ -1171,7 +1171,7 @@ export class ExperimentAssignmentService {
     error.type = SERVER_ERROR.REPORTED_ERROR;
     error.message = JSON.stringify({
       site,
-      target,
+      target: target,
       userId: userDoc.id,
       reason,
     });
