@@ -45,7 +45,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       experimentFactorDecisionPointLevelPayloadQuery.getMany().catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'ExperimentRepository',
-          'findAllExperiments-experimentFactorPartitionLevelPayloadData',
+          'findAllExperiments-experimentFactorDecisionPointLevelPayloadData',
           {},
           errorMsg
         );
