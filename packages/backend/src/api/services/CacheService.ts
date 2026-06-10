@@ -1,86 +1,129 @@
 import { env } from '../../env';
 import { Service } from 'typedi';
-import { MemoryCache, caching } from 'cache-manager';
+import { Cache, Store, caching } from 'cache-manager';
 import { CACHE_PREFIX } from 'upgrade_types';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+
+// this module will get swapped in if caching is enabled but the cache manager fails to initialize as a dummy default deliverer
+const noopStore: Cache<Store> = {
+  get: () => Promise.resolve(undefined),
+  set: () => Promise.resolve(),
+  del: () => Promise.resolve(),
+  reset: () => Promise.resolve(),
+  on: () => {
+    // noop
+  },
+  removeListener: () => {
+    // noop
+  },
+  wrap: (_key, fn) => fn(),
+  store: {
+    get: () => Promise.resolve(undefined),
+    set: () => Promise.resolve(),
+    del: () => Promise.resolve(),
+    reset: () => Promise.resolve(),
+    mget: () => Promise.resolve([]),
+    mset: () => Promise.resolve(),
+    mdel: () => Promise.resolve(),
+    keys: () => Promise.resolve([]),
+    ttl: () => Promise.resolve(0),
+  },
+};
 
 @Service()
 export class CacheService {
-  private memoryCache: MemoryCache;
+  private cache: Cache<Store> = noopStore;
   private ttl = env.caching.ttl || 900;
+  private initPromise: Promise<void>;
 
   constructor() {
-    // read from the environment variable for initializing caching
-    if (env.caching.enabled) {
-      this.initializeMemoryCache();
-    }
+    this.initPromise = env.caching.enabled ? this.initializeCache() : Promise.resolve();
   }
 
-  private async initializeMemoryCache() {
-    this.memoryCache = await caching('memory', {
-      max: env.caching?.maxKeys || 500,
-      ttl: this.ttl * 1000 /*milliseconds*/,
-    });
+  private async initializeCache() {
+    try {
+      this.cache = await caching('memory', {
+        max: env.caching?.maxKeys || 500,
+        ttl: this.ttl * 1000,
+      });
+    } catch (err) {
+      new UpgradeLogger().error({
+        message: 'CacheService failed to initialize — caching is enabled but cache is unavailable',
+        error: err,
+      });
+    }
   }
 
   public async setCache<T>(id: string, value: T): Promise<T> {
+    await this.initPromise;
     if (value === null || value === undefined) {
-      return Promise.resolve(null);
+      return null;
     }
-    if (this.memoryCache) {
-      await this.memoryCache.set(id, value);
-      return value;
-    }
-    return Promise.resolve(null);
+    await this.cache.set(id, value);
+    return value;
   }
 
-  public getCache<T>(id: string): Promise<T> {
-    return this.memoryCache ? this.memoryCache.get(id) : Promise.resolve(null);
+  public async getCache<T>(id: string): Promise<T | undefined> {
+    await this.initPromise;
+    return this.cache.get(id);
   }
 
-  public delCache(id: string): Promise<void> {
-    return this.memoryCache ? this.memoryCache.del(id) : Promise.resolve();
+  public async delCache(id: string): Promise<void> {
+    await this.initPromise;
+    return this.cache.del(id);
   }
 
   public async resetPrefixCache(prefix: string): Promise<void> {
-    const keys = this.memoryCache ? await this.memoryCache.store.keys() : [];
+    await this.initPromise;
+    const keys = await this.cache.store.keys();
     const filteredKeys = keys.filter((str) => str.startsWith(prefix));
-    return this.memoryCache ? this.memoryCache.store.mdel(...filteredKeys) : null;
+    if (filteredKeys.length > 0) {
+      return this.cache.store.mdel(...filteredKeys);
+    }
   }
 
   public async resetAllCache(): Promise<void> {
-    return this.memoryCache ? this.memoryCache.store.reset() : Promise.resolve();
+    await this.initPromise;
+    return this.cache.store.reset();
   }
 
-  // Use this to wrap the function that you want to cache
-  public wrap<T>(key: string, fn: () => Promise<T>): Promise<T> {
-    return this.memoryCache ? this.memoryCache.wrap(key, fn) : fn();
+  public async getKeys(): Promise<string[]> {
+    await this.initPromise;
+    return this.cache.store.keys();
+  }
+
+  public async wrap<T>(key: string, fn: () => Promise<T>): Promise<T> {
+    await this.initPromise;
+    return this.cache.wrap(key, fn);
   }
 
   public async wrapMany<T>(
     prefix: CACHE_PREFIX,
     keys: string[],
-    functionToCall: (missingKeys: string[]) => Promise<T[]>
+    dbFetchCallback: (missingKeys: string[]) => Promise<T[]>
   ): Promise<T[]> {
     if (!keys.length) {
       return [];
     }
 
+    // find all cached values for the keys, which will return the value, or undefined if the key is missing.
     const keysWithPrefix = keys.map((key) => prefix + key);
-    const cachedData = (this.memoryCache ? await this.memoryCache.store.mget(...keysWithPrefix) : []) as (
-      | T
-      | undefined
-    )[];
+    const cachedData = (await this.cache.store.mget(...keysWithPrefix)) as (T | undefined)[];
 
+    // determine which keys are missing from the cache
     const missingKeys = keys.filter((_, i) => !cachedData[i]);
 
-    if (missingKeys.length === 0) {
+    // if none are missing, we're done, return the cached data
+    const allCachedFound = cachedData.length > 0 && cachedData.every((cached) => !!cached);
+    if (allCachedFound) {
       return cachedData as T[];
     }
 
-    const fetchedData = await functionToCall(missingKeys);
+    // else, use the provided function to fetch the missing data, store it in the cache for next time, and return the combined results
+    const fetchedData = await dbFetchCallback(missingKeys);
 
-    if (fetchedData.length > 0 && this.memoryCache) {
-      await this.memoryCache.store.mset(
+    if (fetchedData.length > 0) {
+      await this.cache.store.mset(
         missingKeys.reduce((acc, key, index) => {
           if (fetchedData[index] != null) {
             acc.push([prefix + key, fetchedData[index]]);

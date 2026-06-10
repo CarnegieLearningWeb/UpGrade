@@ -336,6 +336,7 @@ export enum SUPPORTED_CALIPER_EVENTS {
 export enum CACHE_PREFIX {
   EXPERIMENT_KEY_PREFIX = 'validExperiments-',
   SEGMENT_KEY_PREFIX = 'segments-',
+  GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX = 'globalExcludeSegment-',
   MARK_KEY_PREFIX = 'markExperiments-',
   FEATURE_FLAG_KEY_PREFIX = 'featureFlags-',
 }
