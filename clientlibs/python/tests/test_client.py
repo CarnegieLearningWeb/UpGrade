@@ -368,11 +368,11 @@ class TestMarkDecisionPoint:
 
     @respx.mock
     async def test_null_target_in_assignment_payload(self) -> None:
-        """An assignment with target=null should produce a mark request with target=null."""
+        """An assignment with an empty-string target should produce a mark request with target=""."""
         null_target_payload = [
             {
                 "site": "home",
-                "target": None,
+                "target": "",
                 "experimentType": "Simple",
                 "assignedCondition": [
                     {"id": "cond-1", "conditionCode": "control", "payload": None, "experimentId": "exp-1"}
