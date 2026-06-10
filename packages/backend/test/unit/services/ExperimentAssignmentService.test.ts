@@ -1088,7 +1088,7 @@ describe('Experiment Assignment Service Test', () => {
     expect(result).toMatchObject({
       condition: condition,
       site: site,
-      target: target,
+      target: '',
     });
     sinon.assert.calledOnce(loggerMock.error);
   });

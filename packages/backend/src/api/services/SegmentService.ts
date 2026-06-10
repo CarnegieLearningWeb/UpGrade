@@ -116,7 +116,9 @@ export class SegmentService {
    * @returns A promise that resolves to the global exclude segment.
    */
   public async getGlobalExcludeSegmentByContext(context: string): Promise<Segment> {
-    return this.segmentRepository.findOneSegmentByContextAndType(context, SEGMENT_TYPE.GLOBAL_EXCLUDE);
+    return this.cacheService.wrap(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX + context, () =>
+      this.segmentRepository.findOneSegmentByContextAndType(context, SEGMENT_TYPE.GLOBAL_EXCLUDE)
+    );
   }
 
   public async getAllPublicSegmentsAndSubsegments(logger: UpgradeLogger): Promise<Segment[]> {
@@ -150,9 +152,6 @@ export class SegmentService {
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
     return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
-      if (!ids.length) {
-        return [];
-      }
       const result = await this.segmentRepository
         .createQueryBuilder('segment')
         .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
@@ -167,11 +166,7 @@ export class SegmentService {
         return [];
       }
 
-      // sort according to ids
-      const sortedData = ids.map((id) => {
-        return result.find((data) => data.id === id);
-      });
-      return sortedData;
+      return ids.map((id) => result.find((data) => data.id === id));
     });
   }
 
@@ -459,6 +454,11 @@ export class SegmentService {
       await transactionalEntityManager.getRepository(Segment).save(parentSegment);
       return deletedSegmentResponse;
     });
+
+    // reset cache
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX);
+
     return deletedSegmentResponse[0];
   }
 
@@ -474,9 +474,14 @@ export class SegmentService {
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
     const manager = this.dataSource;
-    const deletedSegment = manager.transaction(async (transactionalEntityManager) => {
+    const deletedSegment = await manager.transaction(async (transactionalEntityManager) => {
       return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
     });
+
+    // reset cache
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX);
+
     return deletedSegment;
   }
 
@@ -1014,6 +1019,7 @@ export class SegmentService {
 
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX);
 
     return transactionalEntityManager
       .getRepository(Segment)

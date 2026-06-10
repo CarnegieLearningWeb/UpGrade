@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsIn, registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
 import { BinaryRewardAllowedValue } from 'upgrade_types';
 
@@ -33,6 +34,7 @@ export class RewardValidator {
 
   public context: string;
 
+  @Transform(({ value }) => (value ? { ...value, target: value.target ?? '' } : value))
   public decisionPoint: {
     site: string;
     target: string;
