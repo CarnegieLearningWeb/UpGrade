@@ -369,7 +369,7 @@ describe('ExperimentRepository Testing', () => {
   it('should find one experiment ordered by queries.order then createdAt', async () => {
     const res = await repo.findOneExperiment(experiment.id);
 
-    // 4 parallel queries: conditionLevelPayload, factorPartitionPayload, metric, segment
+    // 4 parallel queries: conditionLevelPayload, factorDecisionPointPayload, metric, segment
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
 
     // conditions(1) + partitions+factors+levels(3) + queries.order+createdAt(2) = 6 addOrderBy calls
