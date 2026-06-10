@@ -34,7 +34,7 @@ class AssignedFactor(BaseModel):
 
 class ExperimentAssignment(BaseModel):
     site: str
-    target: str | None = None
+    target: str = ""
     experimentType: ExperimentType
     assignedCondition: list[AssignedCondition]
     assignedFactor: list[dict[str, AssignedFactor]] | None = None
