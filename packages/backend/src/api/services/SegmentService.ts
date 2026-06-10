@@ -454,6 +454,11 @@ export class SegmentService {
       await transactionalEntityManager.getRepository(Segment).save(parentSegment);
       return deletedSegmentResponse;
     });
+
+    // reset cache
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX);
+
     return deletedSegmentResponse[0];
   }
 
@@ -469,9 +474,14 @@ export class SegmentService {
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
     const manager = this.dataSource;
-    const deletedSegment = manager.transaction(async (transactionalEntityManager) => {
+    const deletedSegment = await manager.transaction(async (transactionalEntityManager) => {
       return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
     });
+
+    // reset cache
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX);
+
     return deletedSegment;
   }
 
