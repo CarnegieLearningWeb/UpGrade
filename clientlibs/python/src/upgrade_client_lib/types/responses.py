@@ -40,14 +40,6 @@ class ExperimentAssignment(BaseModel):
     assignedFactor: list[dict[str, AssignedFactor]] | None = None
 
 
-class FlagVariation(BaseModel):
-    id: str
-    value: str
-    name: str
-    description: str
-    defaultVariation: list[bool] = []
-
-
 class FeatureFlag(BaseModel):
     key: str
     status: bool | None = None

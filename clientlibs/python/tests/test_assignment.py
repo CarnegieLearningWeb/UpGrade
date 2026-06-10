@@ -307,12 +307,12 @@ class TestMarkDecisionPointAsync:
         assert kwargs["assigned_factor"] is None
 
     async def test_null_target_passed_through(self) -> None:
-        """target=None from the API should be forwarded as-is to mark_decision_point."""
+        """target="" from the API should be forwarded as-is to mark_decision_point."""
         svc = make_api_service()
-        a = Assignment(simple_raw(target=None), svc)
+        a = Assignment(simple_raw(target=""), svc)
         await a.mark_decision_point(MarkedDecisionPointStatus.CONDITION_APPLIED)
         _, kwargs = svc.mark_decision_point.call_args
-        assert kwargs["target"] is None
+        assert kwargs["target"] == ""
 
 
 # ---------------------------------------------------------------------------
