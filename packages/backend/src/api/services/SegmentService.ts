@@ -149,10 +149,7 @@ export class SegmentService {
   }
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
-    return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
-      if (!ids.length) {
-        return [];
-      }
+    return this.cacheService.wrapMany(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async (missingIds) => {
       const result = await this.segmentRepository
         .createQueryBuilder('segment')
         .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
@@ -160,18 +157,15 @@ export class SegmentService {
         .leftJoinAndSelect('segment.subSegments', 'subSegment')
         .leftJoinAndSelect('segment.experimentSegmentInclusion', 'experimentSegmentInclusion')
         .leftJoinAndSelect('segment.experimentSegmentExclusion', 'experimentSegmentExclusion')
-        .where('segment.id IN (:...ids)', { ids })
+        .where('segment.id IN (:...ids)', { ids: missingIds })
         .getMany();
 
       if (!result.length) {
         return [];
       }
 
-      // sort according to ids
-      const sortedData = ids.map((id) => {
-        return result.find((data) => data.id === id);
-      });
-      return sortedData;
+      // sort to match missingIds order so wrapMany can align with the full keys array
+      return missingIds.map((id) => result.find((data) => data.id === id));
     });
   }
 

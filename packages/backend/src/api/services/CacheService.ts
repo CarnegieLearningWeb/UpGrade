@@ -56,28 +56,47 @@ export class CacheService {
     return this.memoryCache ? this.memoryCache.wrap(key, fn) : fn();
   }
 
-  public async wrapFunction<T>(prefix: CACHE_PREFIX, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
-    const keysWithPrefix = keys.map((key) => prefix + key);
-    const cachedData = this.memoryCache ? await this.memoryCache.store.mget(...keysWithPrefix) : [];
+  public async wrapMany<T>(
+    prefix: CACHE_PREFIX,
+    keys: string[],
+    functionToCall: (missingKeys: string[]) => Promise<T[]>
+  ): Promise<T[]> {
+    if (!keys.length) {
+      return [];
+    }
 
-    const allCachedFound = cachedData.every((cached) => !!cached);
-    if (allCachedFound && env.caching.enabled) {
+    const keysWithPrefix = keys.map((key) => prefix + key);
+    const cachedData = (this.memoryCache ? await this.memoryCache.store.mget(...keysWithPrefix) : []) as (
+      | T
+      | undefined
+    )[];
+
+    const missingKeys = keys.filter((_, i) => !cachedData[i]);
+
+    if (missingKeys.length === 0) {
       return cachedData as T[];
     }
 
-    const data = await functionToCall();
+    const fetchedData = await functionToCall(missingKeys);
 
-    // creata an array of array containing key and data and then set it in cache
-    if (this.memoryCache) {
+    if (fetchedData.length > 0 && this.memoryCache) {
       await this.memoryCache.store.mset(
-        keys.reduce((acc, key, index) => {
-          if (data[index] !== null && data[index] !== undefined) {
-            acc.push([prefix + key, data[index]]);
+        missingKeys.reduce((acc, key, index) => {
+          if (fetchedData[index] != null) {
+            acc.push([prefix + key, fetchedData[index]]);
           }
           return acc;
         }, [])
       );
     }
-    return data;
+
+    const fetchedByKey = new Map<string, T>();
+    missingKeys.forEach((key, i) => {
+      if (fetchedData[i] != null) {
+        fetchedByKey.set(key, fetchedData[i]);
+      }
+    });
+
+    return keys.map((key, i) => (cachedData[i] ?? fetchedByKey.get(key)) as T);
   }
 }
