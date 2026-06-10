@@ -118,6 +118,43 @@ describe('Experiment Client Controller Testing', () => {
       .expect(200);
   });
 
+  test('Post request for /api/v5/mark with null target', () => {
+    return request(app)
+      .post('/api/v5/mark')
+      .send({
+        userId: 'u21',
+        status: 'condition applied',
+        data: {
+          target: null,
+          site: 'q',
+          assignedCondition: {
+            conditionCode: 'condition',
+          },
+        },
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Post request for /api/v5/mark with missing target', () => {
+    return request(app)
+      .post('/api/v5/mark')
+      .send({
+        userId: 'u21',
+        status: 'condition applied',
+        data: {
+          site: 'q',
+          assignedCondition: {
+            conditionCode: 'condition',
+          },
+        },
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
   test('Post request for /api/v5/assign', () => {
     return request(app)
       .post('/api/v5/assign')

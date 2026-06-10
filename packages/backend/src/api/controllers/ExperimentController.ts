@@ -248,6 +248,7 @@ interface ExperimentListImportValidation {
  *               example: SelectSection
  *             target:
  *               type: string
+ *               nullable: true
  *               example: using_fractions
  *             name:
  *               type: string
@@ -453,7 +454,6 @@ interface ExperimentListImportValidation {
  *             - id
  *             - twoCharacterId
  *             - site
- *             - target
  *             - description
  *           properties:
  *             createdAt:
@@ -475,7 +475,7 @@ interface ExperimentListImportValidation {
  *               minLength: 1
  *             target:
  *               type: string
- *               minLength: 1
+ *               minLength: 0
  *             description:
  *               type: string
  *               minLength: 1
@@ -861,7 +861,6 @@ export class ExperimentController {
    *                 type: object
    *                 required:
    *                   - site
-   *                   - target
    *                 properties:
    *                   site:
    *                     type: string
@@ -869,7 +868,7 @@ export class ExperimentController {
    *                     example: SelectSection
    *                   target:
    *                     type: string
-   *                     minLength: 1
+   *                     minLength: 0
    *                     example: using_fractions
    *          '401':
    *            description: AuthorizationRequiredError
