@@ -479,7 +479,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion');
   }
 
-  public async findOneExperiment(id: string): Promise<Experiment> {
+  public async findOneExperiment(id: string): Promise<Experiment | undefined> {
     const conditionLevelPayloadQuery = this.buildConditionLevelPayloadQuery()
       .addOrderBy('conditions.order', 'ASC')
       .where({ id });
