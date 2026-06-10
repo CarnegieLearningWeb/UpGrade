@@ -287,7 +287,7 @@ export class ExperimentRepository extends Repository<Experiment> {
         experimentConditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
           const errorMsgString = repositoryError(
             'ExperimentRepository',
-            'getValidExperiments-experimentConditionLevelPayloadQuery',
+            'getValidExperimentsWithPreview-experimentConditionLevelPayloadQuery',
             {},
             errorMsg
           );
@@ -296,7 +296,7 @@ export class ExperimentRepository extends Repository<Experiment> {
         experimentFactorDecisionPointLevelPayloadQuery.getMany().catch((errorMsg: any) => {
           const errorMsgString = repositoryError(
             'ExperimentRepository',
-            'getValidExperiments-experimentFactorDecisionPointLevelPayloadQuery',
+            'getValidExperimentsWithPreview-experimentFactorDecisionPointLevelPayloadQuery',
             {},
             errorMsg
           );
@@ -305,7 +305,7 @@ export class ExperimentRepository extends Repository<Experiment> {
         experimentSegmentQuery.getMany().catch((errorMsg: any) => {
           const errorMsgString = repositoryError(
             'ExperimentRepository',
-            'getValidExperiments-experimentSegmentQuery',
+            'getValidExperimentsWithPreview-experimentSegmentQuery',
             {},
             errorMsg
           );
