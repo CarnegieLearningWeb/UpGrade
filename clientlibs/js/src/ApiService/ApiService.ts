@@ -323,7 +323,7 @@ export default class ApiService {
     rewardValue: 'SUCCESS' | 'FAILURE';
     experimentId?: string;
     context?: string;
-    decisionPoint?: { site: string; target: string };
+    decisionPoint?: UpGradeClientInterfaces.IDecisionPoint;
   }): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
     const requestBody: UpGradeClientRequests.ISendRewardRequestBody = {
       rewardValue: params.rewardValue,

@@ -49,9 +49,6 @@ export namespace UpGradeClientRequests {
     rewardValue: 'SUCCESS' | 'FAILURE';
     experimentId?: string;
     context?: string;
-    decisionPoint?: {
-      site: string;
-      target: string;
-    };
+    decisionPoint?: UpGradeClientInterfaces.IDecisionPoint;
   }
 }
