@@ -334,7 +334,7 @@ export default class UpgradeClient {
    * ```
    */
 
-  async getDecisionPointAssignment(site: string, target = ''): Promise<Assignment> {
+  async getDecisionPointAssignment(site: string, target = ''): Promise<Assignment | null> {
     await this.getAllExperimentConditions();
 
     if (this.dataService.getExperimentAssignmentData()) {
