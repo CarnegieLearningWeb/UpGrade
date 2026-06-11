@@ -57,6 +57,7 @@ export class ExperimentRootSectionCardComponent {
     },
     { value: EXPERIMENT_SEARCH_KEY.CONTEXT, type: 'text' },
     { value: EXPERIMENT_SEARCH_KEY.TAG, type: 'text' },
+    { value: EXPERIMENT_SEARCH_KEY.DECISION_POINT, type: 'text' },
   ];
   isSectionCardExpanded = true;
 
