@@ -13,6 +13,33 @@ import { DataService } from '../DataService/DataService';
 
 declare const API_VERSION: string;
 
+// crypto.randomUUID() is only available in secure contexts (HTTPS).
+// crypto.getRandomValues() is available in both secure and insecure contexts.
+// Fall back to Math.random() only as a last resort for very old environments.
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
+    bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant bits
+    const hex = Array.from(bytes)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+  console.warn(
+    'upgrade_client_lib: crypto.getRandomValues is unavailable; falling back to Math.random() for clientSessionId generation. This is not cryptographically secure.'
+  );
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 /**
  * UpGradeClient is the main class for interacting with the UpGrade API.
  *
@@ -120,7 +147,7 @@ export default class UpgradeClient {
       userId: userId,
       hostURL: hostUrl,
       context: context,
-      clientSessionId: options?.clientSessionId || crypto.randomUUID(),
+      clientSessionId: options?.clientSessionId || generateUUID(),
       token: options?.token,
       httpClient: options?.httpClient,
       featureFlagUserGroupsForSession: options?.featureFlagUserGroupsForSession ?? null,

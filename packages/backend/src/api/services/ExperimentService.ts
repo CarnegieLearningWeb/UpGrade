@@ -595,7 +595,9 @@ export class ExperimentService {
       });
 
       // Generate new twoCharacterId if it is already exist for decision points
+      // Normalize null or undefined decision point targets to ''
       experimentDecisionPoints = experimentDecisionPoints.map((decisionPoint) => {
+        decisionPoint.target = decisionPoint.target || '';
         let twoCharacterId = decisionPoint.twoCharacterId;
         if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
           twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
@@ -1568,7 +1570,6 @@ export class ExperimentService {
         }
 
         const newExperiment = plainToClass(ExperimentDTO, experiment);
-
         if (!(newExperiment instanceof ExperimentDTO)) {
           return {
             fileName: experimentFile.fileName,

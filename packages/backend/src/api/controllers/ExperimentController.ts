@@ -31,7 +31,13 @@ import { env } from '../../env';
 import { Response } from 'express';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
-import { IImportError, LIST_FILTER_MODE, SERVER_ERROR, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
+import {
+  CACHE_PREFIX,
+  IImportError,
+  LIST_FILTER_MODE,
+  SERVER_ERROR,
+  SUPPORTED_MOOCLET_ALGORITHMS,
+} from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { SegmentInputValidator } from './validators/SegmentInputValidator';
@@ -248,6 +254,7 @@ interface ExperimentListImportValidation {
  *               example: SelectSection
  *             target:
  *               type: string
+ *               nullable: true
  *               example: using_fractions
  *             name:
  *               type: string
@@ -453,7 +460,6 @@ interface ExperimentListImportValidation {
  *             - id
  *             - twoCharacterId
  *             - site
- *             - target
  *             - description
  *           properties:
  *             createdAt:
@@ -475,7 +481,7 @@ interface ExperimentListImportValidation {
  *               minLength: 1
  *             target:
  *               type: string
- *               minLength: 1
+ *               minLength: 0
  *             description:
  *               type: string
  *               minLength: 1
@@ -861,7 +867,6 @@ export class ExperimentController {
    *                 type: object
    *                 required:
    *                   - site
-   *                   - target
    *                 properties:
    *                   site:
    *                     type: string
@@ -869,7 +874,7 @@ export class ExperimentController {
    *                     example: SelectSection
    *                   target:
    *                     type: string
-   *                     minLength: 1
+   *                     minLength: 0
    *                     example: using_fractions
    *          '401':
    *            description: AuthorizationRequiredError
@@ -1956,15 +1961,10 @@ export class ExperimentController {
   // debugging endpoint, will read all keys in cache and return a summary
   @Get('/cache')
   async debugCache(): Promise<any> {
-    const prefixes = {
-      experiments: 'validExperiments-',
-      segments: 'segments-',
-      marks: 'markExperiments-',
-      featureFlags: 'featureFlags-',
-    };
+    const prefixes = Object.fromEntries(Object.entries(CACHE_PREFIX));
 
     // Get all keys from cache
-    const allKeys = (await (this.cacheService as any).memoryCache?.store?.keys()) || [];
+    const allKeys = await this.cacheService.getKeys();
 
     // Build summary for each prefix
     const summary = {};

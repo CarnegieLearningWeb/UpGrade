@@ -57,9 +57,10 @@ export default class ExperimentAssignmentServiceMock {
 
   public clientFailedExperimentPoint(
     reason: string,
-    experimentPoint: string,
+    site: string,
     userId: string,
-    experimentId: string
+    target: string | null | undefined,
+    requestContext: any
   ): Promise<[]> {
     return Promise.resolve([]);
   }
