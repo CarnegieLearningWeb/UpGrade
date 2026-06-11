@@ -188,7 +188,7 @@ export enum EXPERIMENT_SEARCH_KEY {
   TAG = 'tag',
   CONTEXT = 'context',
   ID = 'id',
-  DECISION_POINT = 'decision Point',
+  DECISION_POINT = 'decisionPoint',
 }
 
 export enum EXPERIMENT_SORT_KEY {
