@@ -372,7 +372,7 @@ export default class UpgradeClient {
    * const markResponse = await upgradeClient.markDecisionPoint({
    *   site: 'dashboard',
    *   target: 'experimental button',
-   *   condition: 'variant_x'
+   *   condition: 'variant_x',
    *   status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
    *   uniquifier: 'some-unique-id',
    *   clientError: 'variant not recognized',
