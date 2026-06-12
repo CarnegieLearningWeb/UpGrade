@@ -1882,6 +1882,10 @@ export class ExperimentService {
       case EXPERIMENT_SEARCH_KEY.ID:
         searchArray.push(`experiment.id = '${searchString}'`);
         break;
+      case EXPERIMENT_SEARCH_KEY.DECISION_POINT:
+        searchArray.push(`partitions.site ${likeString}`);
+        searchArray.push(`partitions.target ${likeString}`);
+        break;
       default:
         searchArray.push(`name ${likeString}`);
         searchArray.push(`state::TEXT = '${this.mapStatusStrings(searchString)}'`);
