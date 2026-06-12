@@ -157,8 +157,6 @@ export class SegmentService {
         .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
         .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
         .leftJoinAndSelect('segment.subSegments', 'subSegment')
-        .leftJoinAndSelect('segment.experimentSegmentInclusion', 'experimentSegmentInclusion')
-        .leftJoinAndSelect('segment.experimentSegmentExclusion', 'experimentSegmentExclusion')
         .where('segment.id IN (:...ids)', { ids })
         .getMany();
 

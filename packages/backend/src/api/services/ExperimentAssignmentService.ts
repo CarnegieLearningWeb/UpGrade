@@ -2073,30 +2073,45 @@ export class ExperimentAssignmentService {
     users: string[];
     groups: { type: string; groupId: string }[];
   }> {
-    // Reculsively resolves the segments, returning the users and groups of all segments and subsegments
+    // One batched DB/cache lookup for all IDs at this level of the tree.
     const segments = (await this.segmentService.getSegmentByIds(segmentIds)) || [];
-    return await segments.reduce(async (acc, segment) => {
-      const currentData = await acc;
-      if (currentData && !currentData.segmentIdsSeen?.includes(segment.id)) {
-        currentData.segmentIdsSeen.push(segment.id);
-        currentData.users.push(...segment.individualForSegment.map((individual) => individual.userId));
-        currentData.groups.push(
+
+    // Collect sub-segment IDs from ALL segments at this level before recursing.
+    // Previously this used an async reduce, which awaited each segment's sub-segment
+    // resolution before moving to the next — effectively serializing the whole level.
+    // With a plain for loop we complete all synchronous work (member collection + sub-ID
+    // gathering) in one pass, then make a single recursive call for the entire next level.
+    // Result: O(depth) getSegmentByIds calls instead of O(segments-with-sub-segments).
+    const subSegmentIds: string[] = [];
+
+    for (const segment of segments) {
+      if (!resolveData.segmentIdsSeen.includes(segment.id)) {
+        resolveData.segmentIdsSeen.push(segment.id);
+        resolveData.users.push(...segment.individualForSegment.map((individual) => individual.userId));
+        resolveData.groups.push(
           ...segment.groupForSegment.map((group) => ({
             type: group.type,
             groupId: group.groupId,
           }))
         );
 
-        if (segment.subSegments && segment.subSegments.length > 0) {
-          const subSegmentIds = segment.subSegments
+        if (segment.subSegments?.length > 0) {
+          // Filter against both already-seen IDs and IDs already queued at this level
+          // to avoid redundant entries in the next recursive call.
+          segment.subSegments
             .map((seg) => seg.id)
-            .filter((seg) => !currentData.segmentIdsSeen?.includes(seg));
-          const resolvedThisSegment = await this.resolveSegment(subSegmentIds, currentData);
-          return { ...currentData, ...resolvedThisSegment };
+            .filter((id) => !resolveData.segmentIdsSeen.includes(id) && !subSegmentIds.includes(id))
+            .forEach((id) => subSegmentIds.push(id));
         }
       }
-      return currentData;
-    }, Promise.resolve(resolveData));
+    }
+
+    // Single recursive call for all sub-segments across this level — one cache/DB hit per depth.
+    if (subSegmentIds.length > 0) {
+      await this.resolveSegment(subSegmentIds, resolveData);
+    }
+
+    return resolveData;
   }
 
   private async getSegmentObject(experiments: Experiment[], experimentUsers: ExperimentUser[]): Promise<any> {
@@ -2145,8 +2160,10 @@ export class ExperimentAssignmentService {
 
     await Promise.all(
       Object.keys(segmentObj).map(async (expId) => {
-        includeData[expId] = await this.resolveSegment(segmentObj[expId].currentIncludedSegmentIds || []);
-        excludeData[expId] = await this.resolveSegment(segmentObj[expId].currentExcludedSegmentIds || []);
+        [includeData[expId], excludeData[expId]] = await Promise.all([
+          this.resolveSegment(segmentObj[expId].currentIncludedSegmentIds || []),
+          this.resolveSegment(segmentObj[expId].currentExcludedSegmentIds || []),
+        ]);
       })
     );
 
