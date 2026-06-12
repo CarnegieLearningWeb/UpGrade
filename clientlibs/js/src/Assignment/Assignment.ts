@@ -28,7 +28,7 @@ export default class Assignment {
       assignedCondition[0] && assignedCondition[0].payload ? assignedCondition[0].payload.type : PAYLOAD_TYPE.STRING;
     this._payloadValue =
       assignedCondition[0] && assignedCondition[0].payload ? assignedCondition[0].payload.value : null;
-    this._experimentType = experimentType;
+    this._experimentType = assignedFactor ? experimentType : EXPERIMENT_TYPE.SIMPLE;
     this._assignedFactor = assignedFactor ? assignedFactor[0] : null;
   }
 

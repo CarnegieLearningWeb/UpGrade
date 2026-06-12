@@ -1,4 +1,4 @@
-import { CaliperEnvelope, ILogRequestBody } from 'upgrade_types';
+import { CaliperEnvelope, EXPERIMENT_TYPE, ILogRequestBody, MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
 import ApiService from './ApiService';
 import { UpGradeClientInterfaces } from './../types/Interfaces';
 import { UpGradeClientRequests } from './../types/requests';
@@ -244,6 +244,97 @@ describe('ApiService', () => {
       await apiService.log(mockLogData);
 
       expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, mockLogDataInput, expectedOptions);
+    });
+  });
+
+  describe('#markDecisionPoint', () => {
+    const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/mark`;
+    const expectedOptions = {
+      headers: {
+        'Content-Type': 'application/json',
+        'Session-Id': 'testClientSessionId',
+        URL: expectedUrl,
+        'User-Id': defaultConfig.userId,
+        Authorization: 'Bearer testToken',
+      },
+      withCredentials: false,
+    };
+
+    const mockAssignment = {
+      site: 'testSite',
+      target: 'testTarget',
+      assignedCondition: [{ conditionCode: 'original_condition', payload: { type: PAYLOAD_TYPE.STRING, value: 'val' }, id: 'id1', experimentId: 'exp1' }],
+      experimentType: EXPERIMENT_TYPE.SIMPLE,
+    };
+
+    beforeEach(() => {
+      MockDataService.findExperimentAssignmentBySiteAndTarget.mockReturnValue(mockAssignment);
+      MockDataService.rotateAssignmentList.mockImplementation((a: any) => a);
+      mockHttpClient.doPost.mockClear();
+    });
+
+    it('should call sendRequest with site, target, condition, and status', async () => {
+      const params = {
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+      };
+      const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        status: params.status,
+        data: {
+          ...mockAssignment,
+          assignedCondition: { ...mockAssignment.assignedCondition[0], conditionCode: params.condition },
+        },
+      };
+
+      await apiService.markDecisionPoint(params);
+
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, expectedRequestBody, expectedOptions);
+    });
+
+    it('should include uniquifier in request body when provided', async () => {
+      const params = {
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        uniquifier: 'unique123',
+      };
+      const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        status: params.status,
+        data: {
+          ...mockAssignment,
+          assignedCondition: { ...mockAssignment.assignedCondition[0], conditionCode: params.condition },
+        },
+        uniquifier: 'unique123',
+      };
+
+      await apiService.markDecisionPoint(params);
+
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, expectedRequestBody, expectedOptions);
+    });
+
+    it('should include clientError in request body when provided', async () => {
+      const params = {
+        site: 'testSite',
+        target: 'testTarget',
+        condition: null,
+        status: MARKED_DECISION_POINT_STATUS.CONDITION_FAILED_TO_APPLY,
+        clientError: 'something went wrong',
+      };
+      const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        status: params.status,
+        data: {
+          ...mockAssignment,
+          assignedCondition: { ...mockAssignment.assignedCondition[0], conditionCode: params.condition },
+        },
+        clientError: 'something went wrong',
+      };
+
+      await apiService.markDecisionPoint(params);
+
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, expectedRequestBody, expectedOptions);
     });
   });
 
