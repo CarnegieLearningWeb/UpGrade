@@ -2152,6 +2152,55 @@ export class ExperimentAssignmentService {
     return segmentObj;
   }
 
+  // Flattens ExperimentUser.group (Record<type, groupId[]>) into the { type, groupId }[] shape
+  // used throughout segment membership checks.
+  private flattenUserGroups(group: Record<string, string[]> | undefined): { type: string; groupId: string }[] {
+    if (!group) return [];
+    return Object.entries(group).flatMap(([type, groupIds]) => groupIds.map((groupId) => ({ type, groupId })));
+  }
+
+  // DB-side alternative to resolveSegmentsForEntities for single-user paths.
+  // Issues one recursive CTE query per entity per side (include/exclude) instead of loading
+  // full member lists into memory. Returns the same { users, groups } shape so that
+  // inclusionExclusionLogic is unchanged — users contains only [userId] if the user is a
+  // member (not all 80k), groups contains only the user's matching groups.
+  public async resolveMembershipForEntities(
+    segmentObj: Record<string, any>,
+    userId: string,
+    userGroups: { type: string; groupId: string }[]
+  ): Promise<[Record<string, any>, Record<string, any>]> {
+    const includeData: Record<string, any> = {};
+    const excludeData: Record<string, any> = {};
+
+    await Promise.all(
+      Object.keys(segmentObj).map(async (entityId) => {
+        const [includeResult, excludeResult] = await Promise.all([
+          this.segmentService.checkMembershipForUser(
+            segmentObj[entityId].currentIncludedSegmentIds || [],
+            userId,
+            userGroups
+          ),
+          this.segmentService.checkMembershipForUser(
+            segmentObj[entityId].currentExcludedSegmentIds || [],
+            userId,
+            userGroups
+          ),
+        ]);
+
+        includeData[entityId] = {
+          users: includeResult.isIndividualMember ? [userId] : [],
+          groups: includeResult.matchedGroups,
+        };
+        excludeData[entityId] = {
+          users: excludeResult.isIndividualMember ? [userId] : [],
+          groups: excludeResult.matchedGroups,
+        };
+      })
+    );
+
+    return [includeData, excludeData];
+  }
+
   public async resolveSegmentsForEntities(
     segmentObj: Record<string, any>
   ): Promise<[Record<string, any>, Record<string, any>]> {
@@ -2205,7 +2254,11 @@ export class ExperimentAssignmentService {
     experimentUser: ExperimentUser
   ): Promise<[Experiment[], { experiment: Experiment; reason: string; matchedGroup: boolean }[]]> {
     const segmentObj = await this.getSegmentObject(experiments, [experimentUser]);
-    const [includeData, excludeData] = await this.resolveSegmentsForEntities(segmentObj);
+    const [includeData, excludeData] = await this.resolveMembershipForEntities(
+      segmentObj,
+      experimentUser.id,
+      this.flattenUserGroups(experimentUser.group)
+    );
     const experimentIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = experiments.map(
       ({ id, filterMode, group }) => ({ id, filterMode, group })
     );

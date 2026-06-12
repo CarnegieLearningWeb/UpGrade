@@ -150,6 +150,14 @@ export class SegmentService {
     return segmentDoc;
   }
 
+  public async checkMembershipForUser(
+    segmentIds: string[],
+    userId: string,
+    userGroups: { type: string; groupId: string }[]
+  ): Promise<{ isIndividualMember: boolean; matchedGroups: { type: string; groupId: string }[] }> {
+    return this.segmentRepository.checkMembershipForUser(segmentIds, userId, userGroups);
+  }
+
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
     return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
       const result = await this.segmentRepository

@@ -889,7 +889,16 @@ export class FeatureFlagService {
     const featureFlagIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = featureFlags.map(
       ({ id, filterMode }) => ({ id, filterMode })
     );
-    const [includeData, excludeData] = await this.experimentAssignmentService.resolveSegmentsForEntities(segmentObjMap);
+    const userGroups = experimentUser.group
+      ? Object.entries(experimentUser.group).flatMap(([type, groupIds]) =>
+          groupIds.map((groupId) => ({ type, groupId }))
+        )
+      : [];
+    const [includeData, excludeData] = await this.experimentAssignmentService.resolveMembershipForEntities(
+      segmentObjMap,
+      experimentUser.id,
+      userGroups
+    );
 
     const [includedFeatureFlagIds] = await this.experimentAssignmentService.inclusionExclusionLogic(
       includeData,

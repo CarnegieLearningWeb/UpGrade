@@ -139,6 +139,63 @@ export class SegmentRepository extends Repository<Segment> {
     return result.raw;
   }
 
+  /**
+   * Checks whether a user (by individual ID or working group membership) belongs to any segment
+   * in the tree rooted at the given segment IDs, traversing sub-segments recursively via a
+   * single recursive CTE. Returns a boolean for individual membership and the subset of the
+   * user's groups that matched — no member lists are loaded into application memory.
+   */
+  public async checkMembershipForUser(
+    segmentIds: string[],
+    userId: string,
+    userGroups: { type: string; groupId: string }[]
+  ): Promise<{ isIndividualMember: boolean; matchedGroups: { type: string; groupId: string }[] }> {
+    if (!segmentIds.length) {
+      return { isIndividualMember: false, matchedGroups: [] };
+    }
+
+    // Traverse the full segment tree (including sub-segments) in one recursive CTE.
+    // segment_for_segment join direction: parentSegmentId = parent, childSegmentId = child (sub-segment).
+    // The EXISTS sub-queries do indexed point lookups — no member rows are returned to the app.
+    const result = await this.manager.query(
+      `
+      WITH RECURSIVE segment_tree AS (
+        SELECT id FROM segment WHERE id = ANY($1::uuid[])
+        UNION
+        SELECT child.id
+        FROM segment child
+        INNER JOIN segment_for_segment sfs ON sfs."childSegmentId" = child.id
+        INNER JOIN segment_tree st ON st.id = sfs."parentSegmentId"
+      )
+      SELECT
+        EXISTS(
+          SELECT 1 FROM individual_for_segment ifs
+          INNER JOIN segment_tree st ON st.id = ifs."segmentId"
+          WHERE ifs."userId" = $2
+        ) AS is_individual_member,
+        COALESCE(
+          (
+            SELECT json_agg(json_build_object('type', gfs.type, 'groupId', gfs."groupId"))
+            FROM group_for_segment gfs
+            INNER JOIN segment_tree st ON st.id = gfs."segmentId"
+          ),
+          '[]'::json
+        ) AS segment_groups
+      `,
+      [segmentIds, userId]
+    );
+
+    const { is_individual_member, segment_groups } = result[0];
+    const allGroups: { type: string; groupId: string }[] = segment_groups;
+
+    // Filter to only the groups the requesting user actually belongs to.
+    const matchedGroups = allGroups.filter((g) =>
+      userGroups.some((ug) => ug.type === g.type && ug.groupId === g.groupId)
+    );
+
+    return { isIndividualMember: is_individual_member, matchedGroups };
+  }
+
   public async deleteSegments(ids: string[], logger: UpgradeLogger, entityManager?: EntityManager): Promise<Segment[]> {
     const queryRunner = entityManager ? entityManager : this;
 
