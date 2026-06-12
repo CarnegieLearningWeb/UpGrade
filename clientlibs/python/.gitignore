@@ -1,0 +1,17 @@
+# Build output
+dist/
+
+# Test coverage
+.coverage
+
+# Tool caches
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# Local Python version pin
+.python-version
+
+# Byte-compiled files
+__pycache__/
+*.pyc
