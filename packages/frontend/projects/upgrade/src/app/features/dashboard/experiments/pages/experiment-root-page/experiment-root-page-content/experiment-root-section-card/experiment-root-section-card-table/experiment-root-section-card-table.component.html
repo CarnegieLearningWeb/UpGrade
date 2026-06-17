@@ -6,6 +6,7 @@
     class="experiment-list-table"
     mat-table
     [dataSource]="experiments || []"
+    [trackBy]="trackByExperimentId"
     [ngClass]="{ 'no-data': !experiments?.length }"
     matSort
     (matSortChange)="changeSorting($event)"

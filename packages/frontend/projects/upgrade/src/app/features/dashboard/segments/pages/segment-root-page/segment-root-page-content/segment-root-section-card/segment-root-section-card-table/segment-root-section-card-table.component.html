@@ -6,6 +6,7 @@
     class="segment-list-table"
     mat-table
     [dataSource]="segments"
+    [trackBy]="trackBySegmentId"
     [ngClass]="{ 'no-data': !segments?.length }"
     matSort
     (matSortChange)="changeSorting($event)"
