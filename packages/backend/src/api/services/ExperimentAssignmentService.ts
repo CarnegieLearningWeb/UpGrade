@@ -158,7 +158,7 @@ export class ExperimentAssignmentService {
     if (allExperimentsAtDP.length === 0) {
       return {
         experiments: [],
-        experimentId,
+        experimentId: null,
         isUserExcluded: false,
         isGroupExcluded: false,
         exclusionReason: [],
