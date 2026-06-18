@@ -152,6 +152,10 @@ export class FeatureFlagRootSectionCardTableComponent implements AfterViewInit, 
     return this.expandedTagsMap?.get(flagId) || false;
   }
 
+  trackByFlagId(_index: number, featureFlag: FeatureFlag): string {
+    return featureFlag.id;
+  }
+
   onTagExpandedChange(flagId: string, expanded: boolean): void {
     this.tagsExpanded.emit({ flagId, expanded });
   }
