@@ -72,7 +72,10 @@ export class AnalyticsService {
   ): Promise<IEnrollmentStatByDate[]> {
     const experiment = await this.experimentRepository.findOne({
       where: { id: experimentId },
-      relations: ['conditions', 'partitions'],
+      relations: {
+        conditions: true,
+        partitions: true,
+      },
     });
 
     const experimentAge = dayjs().year() - dayjs(experiment.createdAt).year();

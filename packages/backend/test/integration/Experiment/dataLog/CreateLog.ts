@@ -227,7 +227,7 @@ export default async function CreateLog(): Promise<void> {
   );
 
   let logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
 
   expect(logData).toEqual(
@@ -266,7 +266,7 @@ export default async function CreateLog(): Promise<void> {
   );
 
   logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
 
   expect(logData).toEqual(
@@ -308,7 +308,7 @@ export default async function CreateLog(): Promise<void> {
   );
 
   logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
 
   expect(logData).toEqual(
@@ -357,7 +357,7 @@ export default async function CreateLog(): Promise<void> {
   );
 
   logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
 
   expect(logData).toEqual(
@@ -407,7 +407,7 @@ export default async function CreateLog(): Promise<void> {
   );
 
   logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
 
   expect(logData).toEqual(
@@ -471,7 +471,7 @@ export default async function CreateLog(): Promise<void> {
   );
 
   logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
 
   expect(logData).toEqual(
@@ -527,7 +527,7 @@ export default async function CreateLog(): Promise<void> {
   );
 
   logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
 
   expect(logData).toEqual(
@@ -599,7 +599,7 @@ export default async function CreateLog(): Promise<void> {
   );
 
   logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
 
   expect(logData).toEqual(
@@ -671,7 +671,7 @@ export default async function CreateLog(): Promise<void> {
   );
 
   logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
 
   expect(logData).toEqual(

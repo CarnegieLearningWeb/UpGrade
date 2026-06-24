@@ -26,7 +26,12 @@ export class ScheduledJobService {
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
       try {
         const scheduledJobRepository = transactionalEntityManager.getRepository(ScheduledJob);
-        const scheduledJob = await scheduledJobRepository.findOne({ where: { id }, relations: ['experiment'] });
+        const scheduledJob = await scheduledJobRepository.findOne({
+          where: { id },
+          relations: {
+            experiment: true,
+          },
+        });
 
         const currentDate = new Date();
         const timeDiff = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
@@ -72,7 +77,12 @@ export class ScheduledJobService {
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
       try {
         const scheduledJobRepository = transactionalEntityManager.getRepository(ScheduledJob);
-        const scheduledJob = await scheduledJobRepository.findOne({ where: { id }, relations: ['experiment'] });
+        const scheduledJob = await scheduledJobRepository.findOne({
+          where: { id },
+          relations: {
+            experiment: true,
+          },
+        });
         const experimentRepository = transactionalEntityManager.getRepository(Experiment);
         const experiment = await experimentRepository.findOneBy({ id: scheduledJob.experiment.id });
 
@@ -116,7 +126,9 @@ export class ScheduledJobService {
     logger.info({ message: 'get all start experiment scheduled jobs' });
     return this.scheduledJobRepository.find({
       where: { type: SCHEDULE_TYPE.START_EXPERIMENT },
-      relations: ['experiment'],
+      relations: {
+        experiment: true,
+      },
     });
   }
 
@@ -124,7 +136,9 @@ export class ScheduledJobService {
     logger.info({ message: 'get all end experiment scheduled jobs' });
     return this.scheduledJobRepository.find({
       where: { type: SCHEDULE_TYPE.END_EXPERIMENT },
-      relations: ['experiment'],
+      relations: {
+        experiment: true,
+      },
     });
   }
 

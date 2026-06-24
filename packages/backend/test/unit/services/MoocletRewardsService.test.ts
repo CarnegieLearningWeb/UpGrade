@@ -1203,7 +1203,10 @@ describe('MoocletRewardsService', () => {
         expect(mockMoocletExperimentRefRepository.findOne).toHaveBeenCalledWith(
           expect.objectContaining({
             where: expect.objectContaining({ experimentId: 'experiment-123' }),
-            relations: expect.arrayContaining(['versionConditionMaps', 'experiment']),
+            relations: expect.objectContaining({
+              versionConditionMaps: expect.anything(),
+              experiment: expect.anything(),
+            }),
           })
         );
       });

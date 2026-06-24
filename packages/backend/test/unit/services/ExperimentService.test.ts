@@ -266,7 +266,7 @@ describe('ExperimentService Testing', () => {
           useValue: {
             findOne: jest.fn().mockResolvedValue(mockExperiment),
             findOneExperiment: jest.fn().mockResolvedValue(mockExperiment),
-            findByIds: jest.fn().mockResolvedValue([]),
+            findBy: jest.fn().mockResolvedValue([]),
             save: jest.fn().mockResolvedValue(mockExperiment),
             updateExperiment: jest.fn().mockResolvedValue(mockExperiment),
             updateState: jest.fn().mockResolvedValue([{ state: EXPERIMENT_STATE.ENROLLING }]),

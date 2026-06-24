@@ -135,14 +135,23 @@ export class ExperimentAssignmentService {
           site: site,
           target: target,
         },
-        relations: [
-          'experiment',
-          'experiment.conditions',
-          'experiment.conditions.conditionPayloads',
-          'experiment.partitions',
-          'experiment.experimentSegmentInclusion.segment',
-          'experiment.experimentSegmentExclusion.segment',
-        ],
+        relations: {
+          experiment: {
+            conditions: {
+              conditionPayloads: true,
+            },
+
+            partitions: true,
+
+            experimentSegmentInclusion: {
+              segment: true,
+            },
+
+            experimentSegmentExclusion: {
+              segment: true,
+            },
+          },
+        },
       })
     );
 
@@ -1409,7 +1418,9 @@ export class ExperimentAssignmentService {
     const decisionPoints = experimentDoc.partitions;
     const individualAssignments = await this.individualEnrollmentRepository.find({
       where: { experiment: { id: experimentDoc.id } },
-      relations: ['user'],
+      relations: {
+        user: true,
+      },
     });
 
     // get the monitored document for all the decisionPoints in the experiment
@@ -1443,7 +1454,9 @@ export class ExperimentAssignmentService {
     // fetch all the monitored document if exist
     const monitoredDocuments = await this.monitoredDecisionPointRepository.find({
       where: { id: In(monitoredDocumentIds) },
-      relations: ['user'],
+      relations: {
+        user: true,
+      },
     });
 
     return monitoredDocuments;

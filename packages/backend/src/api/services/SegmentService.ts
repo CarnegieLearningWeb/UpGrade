@@ -492,7 +492,11 @@ export class SegmentService {
   ): Promise<Segment> {
     const segmentDoc = await manager.getRepository(Segment).findOne({
       where: { id: id },
-      relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+      relations: {
+        individualForSegment: true,
+        groupForSegment: true,
+        subSegments: true,
+      },
     });
     if (!segmentDoc) {
       throw new Error(SERVER_ERROR.QUERY_FAILED);
@@ -829,7 +833,11 @@ export class SegmentService {
     } else {
       const segmentDoc = await this.segmentRepository.findOne({
         where: { id: segmentIds[0] },
-        relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+        relations: {
+          individualForSegment: true,
+          groupForSegment: true,
+          subSegments: true,
+        },
       });
       if (!segmentDoc) {
         throw new Error(SERVER_ERROR.QUERY_FAILED);
@@ -891,7 +899,11 @@ export class SegmentService {
         // get segment by ids
         segmentDoc = await transactionalEntityManager.getRepository(Segment).findOne({
           where: { id: segment.id },
-          relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+          relations: {
+            individualForSegment: true,
+            groupForSegment: true,
+            subSegments: true,
+          },
         });
 
         // delete individual for segment
@@ -1021,9 +1033,14 @@ export class SegmentService {
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX);
 
-    return transactionalEntityManager
-      .getRepository(Segment)
-      .findOne({ where: { id: segmentDoc.id }, relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+    return transactionalEntityManager.getRepository(Segment).findOne({
+      where: { id: segmentDoc.id },
+      relations: {
+        individualForSegment: true,
+        groupForSegment: true,
+        subSegments: true,
+      },
+    });
   }
 
   private trimAndRemoveHiddenChars(value: string): string {
