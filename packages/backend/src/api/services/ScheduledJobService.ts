@@ -33,6 +33,10 @@ export class ScheduledJobService {
           },
         });
 
+        if (!scheduledJob) {
+          throw new Error(`Scheduled job not found for id: ${id}`);
+        }
+
         const currentDate = new Date();
         const timeDiff = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
         const fiveHoursInMS = 18000000;
@@ -83,6 +87,11 @@ export class ScheduledJobService {
             experiment: true,
           },
         });
+
+        if (!scheduledJob) {
+          throw new Error(`Scheduled job not found for id: ${id}`);
+        }
+
         const experimentRepository = transactionalEntityManager.getRepository(Experiment);
         const experiment = await experimentRepository.findOneBy({ id: scheduledJob.experiment.id });
 
