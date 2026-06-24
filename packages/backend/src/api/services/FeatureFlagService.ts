@@ -205,7 +205,7 @@ export class FeatureFlagService {
             subQuery
               .select('COUNT(*)', 'count')
               .from(FeatureFlagExposure, 'feature_flag_exposure')
-              .where('feature_flag_exposure.featureFlagId = feature_flag.id'),
+              .where('"feature_flag_exposure"."featureFlagId" = "feature_flag"."id"'),
           'feature_flag_exposureCount'
         )
         .getMany(),
