@@ -74,3 +74,39 @@ Available at `/swagger` when `SWAGGER_ENABLED=true`. Auto-generated from JSDoc `
 ## Test Coverage Target
 
 ~49% current, 80% goal. Tests live in `test/` (not alongside source files).
+
+## Precomputed Segment Lists (Feature Flags)
+
+Segment inclusion/exclusion for **feature flags** is precomputed and stored flat in the `precomputed_segment` table rather than resolved on-the-fly at assignment time.
+
+### How it works
+
+- **`PrecomputedSegment` entity** (`src/api/models/PrecomputedSegment.ts`) — one row per feature flag, columns: `featureFlagId` (PK), `inclusionIds: text[]`, `exclusionIds: text[]`. FK to `feature_flag` with `onDelete: CASCADE`.
+- **`PrecomputedSegmentService`** (`src/api/services/PrecomputedSegmentService.ts`) — owns all computation and cache logic:
+  - `recomputeForFlag(flagId)` — flattens all enabled inclusion/exclusion segments (recursive sub-segments) into flat ID arrays and upserts the row.
+  - `scheduleRecomputeForSegment(segmentId)` — fire-and-forget; finds all flags referencing a segment (and its parents) and calls `recomputeForFlag` for each.
+  - `getAffectedFlagIds(segmentId)` — public helper that returns flag IDs affected by a given segment (used before deletion).
+  - `getPrecomputedSets(flagIds[])` — cache-wrapped batch fetch, returns a `Map<flagId, PrecomputedSegment>`.
+  - `backfillMissingFlags(logger)` — called at startup; computes rows only for flags that have none yet (no-op once all flags are populated).
+  - `recomputeAllFlags(logger)` — full refresh of every flag; not called automatically, available for manual recovery.
+- **Assignment read path** — `FeatureFlagService.featureFlagLevelInclusionExclusion()` calls `getPrecomputedSets()` and does in-memory `Set.has()` checks. No recursive segment queries at assignment time.
+- **Cache** — keyed by `CACHE_PREFIX.PRECOMPUTED_SEGMENT_KEY_PREFIX + flagId`. Invalidated by `recomputeForFlag`.
+
+### What triggers a recompute
+
+| Event | Trigger |
+|---|---|
+| Segment list added to a flag | `FeatureFlagService.addList` → `recomputeForFlag` |
+| Segment list removed from a flag | `FeatureFlagService.deleteList` → `recomputeForFlag` |
+| Segment list members updated on a flag | `FeatureFlagService.updateList` → `recomputeForFlag` |
+| Private list added to a shared segment | `SegmentService.addList` → `scheduleRecomputeForSegment` |
+| Private list removed from a shared segment | `SegmentService.deleteList` → `scheduleRecomputeForSegment` |
+| Segment members/structure updated | `SegmentService.addSegmentDataWithPipeline` → `scheduleRecomputeForSegment` |
+| Segment deleted entirely | `SegmentService.deleteSegment` — collects affected flag IDs **before** deletion, fires `recomputeForFlag` for each **after** deletion (fire-and-forget) |
+| Server startup | `app.ts` → `backfillMissingFlags` — backfills any flag with no row |
+
+All recomputes triggered from write paths are **fire-and-forget** — callers never wait on them.
+
+### Key invariant
+
+The `precomputed_segment` row must always be recomputed **after** the structural change completes, so the flat arrays reflect the new state. For deletions specifically, affected flag IDs must be collected **before** the delete because the join table records are gone afterward.

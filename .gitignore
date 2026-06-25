@@ -1,6 +1,7 @@
 .DS_Store
 .dccache
 node_modules
+.claude*
 .vscode
 setup_upgrade.sh
 .idea

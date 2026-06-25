@@ -37,6 +37,7 @@ import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFl
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { getSegmentData, getSegmentsData } from '../controllers/SegmentController';
 import { CacheService } from './CacheService';
+import { PrecomputedSegmentService } from './PrecomputedSegmentService';
 import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import path from 'path';
@@ -83,7 +84,8 @@ export class SegmentService {
     private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
     @InjectRepository()
     private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
-    private cacheService: CacheService
+    private cacheService: CacheService,
+    private precomputedSegmentService: PrecomputedSegmentService
   ) {}
 
   public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
@@ -434,6 +436,9 @@ export class SegmentService {
       await transactionalEntityManager.getRepository(Segment).save(parentSegment);
       return createdSegment;
     });
+
+    this.precomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
+
     return createdSegment;
   }
 
@@ -459,6 +464,9 @@ export class SegmentService {
       await transactionalEntityManager.getRepository(Segment).save(parentSegment);
       return deletedSegmentResponse;
     });
+
+    this.precomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
+
     return deletedSegmentResponse[0];
   }
 
@@ -473,10 +481,17 @@ export class SegmentService {
 
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
+    // Collect affected flags before deletion — join table records are gone after
+    const affectedFlagIds = await this.precomputedSegmentService.getAffectedFlagIds(id);
+
     const manager = this.dataSource;
     const deletedSegment = manager.transaction(async (transactionalEntityManager) => {
       return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
     });
+
+    // Recompute after deletion so stale member IDs are removed (fire-and-forget)
+    affectedFlagIds.forEach((flagId) => this.precomputedSegmentService.recomputeForFlag(flagId, logger));
+
     return deletedSegment;
   }
 
@@ -1014,6 +1029,9 @@ export class SegmentService {
 
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
+
+    // Recompute precomputed sets for all flags that reference this segment (fire-and-forget)
+    this.precomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
 
     return transactionalEntityManager
       .getRepository(Segment)

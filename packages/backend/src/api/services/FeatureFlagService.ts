@@ -54,6 +54,7 @@ import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
+import { PrecomputedSegmentService } from './PrecomputedSegmentService';
 import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import dayjs from 'dayjs';
 import { getDateRangeNames } from '../repositories/utils/dateQuery';
@@ -70,7 +71,8 @@ export class FeatureFlagService {
     @InjectDataSource() private dataSource: DataSource,
     public experimentAssignmentService: ExperimentAssignmentService,
     public segmentService: SegmentService,
-    public cacheService: CacheService
+    public cacheService: CacheService,
+    public precomputedSegmentService: PrecomputedSegmentService
   ) {}
 
   public find(logger: UpgradeLogger): Promise<FeatureFlag[]> {
@@ -99,7 +101,7 @@ export class FeatureFlagService {
       throw error;
     }
 
-    const filteredFeatureFlags = await this.getCachedFlagsFromContext(context);
+    const filteredFeatureFlags = await this.getCachedFlagsForKeys(context);
 
     const includedFeatureFlags = await this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, experimentUserDoc);
 
@@ -127,9 +129,17 @@ export class FeatureFlagService {
     return JSON.parse(JSON.stringify(flags));
   }
 
+  public async getCachedFlagsForKeys(context: string): Promise<Pick<FeatureFlag, 'id' | 'key' | 'filterMode'>[]> {
+    const cacheKey = CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + 'keys-' + context;
+    return this.cacheService.wrap(
+      cacheKey,
+      this.featureFlagRepository.getFlagsForKeys.bind(this.featureFlagRepository, context)
+    );
+  }
+
   public async clearCachedFlagsForContext(context: string): Promise<void> {
-    const cacheKey = CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + context;
-    return this.cacheService.delCache(cacheKey);
+    await this.cacheService.delCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + context);
+    await this.cacheService.delCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + 'keys-' + context);
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<FeatureFlag | undefined> {
@@ -500,9 +510,23 @@ export class FeatureFlagService {
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Segment> {
+    // Capture the flag id before deletion for recompute
+    const repo =
+      filterType === LIST_FILTER_MODE.INCLUSION
+        ? this.featureFlagSegmentInclusionRepository
+        : this.featureFlagSegmentExclusionRepository;
+    const record = await repo.findOne({ where: { segment: { id: segmentId } }, relations: ['featureFlag'] });
+    const flagId = record?.featureFlag?.id;
+
     await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
-    return this.segmentService.deleteSegment(segmentId, logger);
+    const deleted = await this.segmentService.deleteSegment(segmentId, logger);
+
+    if (flagId) {
+      await this.precomputedSegmentService.recomputeForFlag(flagId, logger);
+    }
+
+    return deleted;
   }
 
   async createDeleteListAuditLogs(
@@ -648,15 +672,20 @@ export class FeatureFlagService {
       return featureFlagSegmentInclusionOrExclusionArray;
     };
 
+    let result: (FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[];
     if (transactionalEntityManager) {
-      // Use the provided entity manager
-      return await executeTransaction(transactionalEntityManager);
+      result = await executeTransaction(transactionalEntityManager);
     } else {
-      // Create a new transaction if no entity manager is provided
-      return await this.dataSource.transaction(async (manager) => {
+      result = await this.dataSource.transaction(async (manager) => {
         return await executeTransaction(manager);
       });
     }
+
+    // Recompute precomputed sets for each affected flag after transaction commits
+    const affectedFlagIds = [...new Set(listsInput.map((l) => l.id))];
+    await Promise.all(affectedFlagIds.map((flagId) => this.precomputedSegmentService.recomputeForFlag(flagId, logger)));
+
+    return result;
   }
 
   public async getExposureStatsByDate(
@@ -697,7 +726,7 @@ export class FeatureFlagService {
   ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
     logger.info({ message: `Update ${filterType} list for feature flag` });
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
-    return await this.dataSource.transaction(async (transactionalEntityManager) => {
+    const result = await this.dataSource.transaction(async (transactionalEntityManager) => {
       // Find the existing record
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
       const featureFlag = await this.findOne(listInput.id);
@@ -803,6 +832,10 @@ export class FeatureFlagService {
 
       return existingRecord;
     });
+
+    await this.precomputedSegmentService.recomputeForFlag(listInput.id, logger);
+
+    return result;
   }
 
   private paginatedSearchString(params: IFeatureFlagSearchParams): string {
@@ -859,47 +892,42 @@ export class FeatureFlagService {
   }
 
   private async featureFlagLevelInclusionExclusion(
-    featureFlags: FeatureFlag[],
+    featureFlags: Pick<FeatureFlag, 'id' | 'key' | 'filterMode'>[],
     experimentUser: ExperimentUser
-  ): Promise<FeatureFlag[]> {
-    const segmentObjMap = {};
-    const getEnabledSegmentIds = (list: FeatureFlagSegmentExclusion[] | FeatureFlagSegmentInclusion[]) => {
-      return list.filter((item) => item.enabled).map((item) => item.segment.id);
-    };
+  ): Promise<Pick<FeatureFlag, 'id' | 'key' | 'filterMode'>[]> {
+    const flagIds = featureFlags.map((f) => f.id);
+    const precomputedMap = await this.precomputedSegmentService.getPrecomputedSets(flagIds);
 
-    featureFlags.forEach((flag) => {
-      const excludeIds = getEnabledSegmentIds(flag.featureFlagSegmentExclusion);
-      let includeIds = [];
+    // Flatten all group IDs from the user's group map (type is ignored per design decision)
+    const userGroupIds: string[] = experimentUser.group ? Object.values(experimentUser.group).flat() : [];
 
-      // this should be fixed upstream also so featureFlagSegmentInclusion is always an empty array already,
-      // but this will at least catch it here also if something was missed so that we aren't caching or running logic on irrelevant segments
-      if (flag.filterMode !== FILTER_MODE.INCLUDE_ALL) {
-        includeIds = getEnabledSegmentIds(flag.featureFlagSegmentInclusion);
+    return featureFlags.filter((flag) => {
+      const computed = precomputedMap.get(flag.id);
+
+      if (!computed) {
+        // No precomputed row yet — apply filter_mode default conservatively
+        return flag.filterMode === FILTER_MODE.INCLUDE_ALL;
       }
 
-      segmentObjMap[flag.id] = {
-        segmentIdsQueue: [...includeIds, ...excludeIds],
-        currentIncludedSegmentIds: includeIds,
-        currentExcludedSegmentIds: excludeIds,
-        allIncludedSegmentIds: includeIds,
-        allExcludedSegmentIds: excludeIds,
-      };
+      const exclusionSet = new Set(computed.exclusionIds);
+      const inclusionSet = new Set(computed.inclusionIds);
+
+      // Individual exclusion always wins
+      if (exclusionSet.has(experimentUser.id)) return false;
+
+      // Individual inclusion bypasses group checks
+      if (inclusionSet.has(experimentUser.id)) return true;
+
+      const inGroupExclusion = userGroupIds.some((gid) => exclusionSet.has(gid));
+      const inGroupInclusion = userGroupIds.some((gid) => inclusionSet.has(gid));
+
+      if (flag.filterMode === FILTER_MODE.INCLUDE_ALL) {
+        return !inGroupExclusion;
+      } else {
+        // EXCLUDE_ALL: include only if in inclusion group and not in exclusion group
+        return inGroupInclusion && !inGroupExclusion;
+      }
     });
-
-    const featureFlagIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = featureFlags.map(
-      ({ id, filterMode }) => ({ id, filterMode })
-    );
-    const [includeData, excludeData] = await this.experimentAssignmentService.resolveSegmentsForEntities(segmentObjMap);
-
-    const [includedFeatureFlagIds] = await this.experimentAssignmentService.inclusionExclusionLogic(
-      includeData,
-      excludeData,
-      experimentUser,
-      featureFlagIdsWithFilter
-    );
-
-    const includedFeatureFlags = featureFlags.filter(({ id }) => includedFeatureFlagIds.includes(id));
-    return includedFeatureFlags;
   }
 
   public async importFeatureFlags(

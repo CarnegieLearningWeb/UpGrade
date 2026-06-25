@@ -19,6 +19,7 @@ import { enableMetricFiltering } from './init/seed/EnableMetricFiltering';
 import { InitMetrics } from './init/seed/initMetrics';
 import { banner } from './lib/banner';
 import { createGlobalExcludeSegment } from './init/seed/globalExcludeSegment';
+import { backfillPrecomputedSegments } from './init/seed/backfillPrecomputedSegments';
 
 /*
  * EXPRESS TYPESCRIPT BOILERPLATE
@@ -47,4 +48,7 @@ bootstrapMicroframework({
   .then(() => {
     // Create global exclude segment
     return createGlobalExcludeSegment(logger);
+  })
+  .then(() => {
+    return backfillPrecomputedSegments(logger);
   });
