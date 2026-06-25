@@ -759,12 +759,15 @@ export class FeatureFlagService {
       const oldSegmentDocClone = JSON.parse(JSON.stringify(oldSegmentDoc));
       let newSegmentDocClone;
 
-      // Update the segment
+      // Update the segment. Pass skipScheduleRecompute=true because updateList calls
+      // recomputeForFlag explicitly after the transaction — firing scheduleRecomputeForSegment
+      // from inside the transaction risks a stale-read race on the enabled flag.
       try {
         const updatedSegment = await this.segmentService.upsertSegmentInPipeline(
           listInput.segment,
           logger,
-          transactionalEntityManager
+          transactionalEntityManager,
+          true
         );
         existingRecord.segment = updatedSegment;
 

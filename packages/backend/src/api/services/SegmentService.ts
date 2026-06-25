@@ -41,8 +41,6 @@ import { PrecomputedSegmentService } from './PrecomputedSegmentService';
 import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import path from 'path';
-import { IndividualForSegment } from '../models/IndividualForSegment';
-import { GroupForSegment } from '../models/GroupForSegment';
 import { ISegmentSearchParams, ISegmentSortParams } from '../controllers/validators/SegmentPaginatedParamsValidator';
 import { ExperimentSegmentExclusion } from 'src/api/models/ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from 'src/api/models/ExperimentSegmentInclusion';
@@ -473,10 +471,11 @@ export class SegmentService {
   public upsertSegmentInPipeline(
     segment: SegmentInputValidator,
     logger: UpgradeLogger,
-    transactionalEntityManager: EntityManager
+    transactionalEntityManager: EntityManager,
+    skipScheduleRecompute = false
   ): Promise<Segment> {
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
-    return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager);
+    return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager, skipScheduleRecompute);
   }
 
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
@@ -890,12 +889,11 @@ export class SegmentService {
   async addSegmentDataWithPipeline(
     segment: SegmentInputValidator,
     logger: UpgradeLogger,
-    transactionalEntityManager: EntityManager
+    transactionalEntityManager: EntityManager,
+    skipScheduleRecompute = false
   ): Promise<Segment> {
     let segmentDoc: Segment;
 
-    let usersToDelete = [],
-      groupsToDelete = [];
     if (segment.id) {
       try {
         // get segment by ids
@@ -904,20 +902,21 @@ export class SegmentService {
           relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
         });
 
-        // delete individual for segment
+        // delete all members for this segment by segment id (single-param query, no per-row overhead)
         if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
-          usersToDelete = segmentDoc.individualForSegment.map((individual) => {
-            return { userId: individual.userId, segment: segment };
-          });
-          await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
+          await this.individualForSegmentRepository.deleteIndividualForSegmentById(
+            segment.id,
+            transactionalEntityManager,
+            logger
+          );
         }
 
-        // delete group for segment
         if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
-          groupsToDelete = segmentDoc.groupForSegment.map((group) => {
-            return { groupId: group.groupId, type: group.type, segment: segment };
-          });
-          await transactionalEntityManager.getRepository(GroupForSegment).delete(groupsToDelete as any);
+          await this.groupForSegmentRepository.deleteGroupForSegmentById(
+            segment.id,
+            transactionalEntityManager,
+            logger
+          );
         }
       } catch (err) {
         const error = err as ErrorWithType;
@@ -1030,8 +1029,13 @@ export class SegmentService {
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
 
-    // Recompute precomputed sets for all flags that reference this segment (fire-and-forget)
-    this.precomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
+    // Recompute precomputed sets for all flags that reference this segment (fire-and-forget).
+    // Skip when the caller already owns an explicit recomputeForFlag after the transaction —
+    // firing this from inside a transaction risks a stale-read race where the fire-and-forget
+    // reads the old enabled value and its upsert overwrites the correct post-commit result.
+    if (!skipScheduleRecompute) {
+      this.precomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
+    }
 
     return transactionalEntityManager
       .getRepository(Segment)
