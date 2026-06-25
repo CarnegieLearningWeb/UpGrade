@@ -444,17 +444,6 @@ export class ExperimentService {
     return this.decisionPointRepository.partitionPointAndName();
   }
 
-  public async getAllUniqueIdentifiers(logger: UpgradeLogger): Promise<string[]> {
-    logger.info({ message: 'getAllUniqueIdentifiers' });
-    const conditionsUniqueIdentifier = this.experimentConditionRepository.getAllUniqueIdentifier();
-    const decisionPointsUniqueIdentifier = this.decisionPointRepository.getAllUniqueIdentifier();
-    const [conditionIds, decisionPointsIds] = await Promise.all([
-      conditionsUniqueIdentifier,
-      decisionPointsUniqueIdentifier,
-    ]);
-    return [...conditionIds, ...decisionPointsIds];
-  }
-
   public async prepareStateTimeLogDoc(
     experimentDoc: Experiment,
     fromState: EXPERIMENT_STATE,
@@ -582,7 +571,7 @@ export class ExperimentService {
         logger.error(error);
         throw error;
       }
-      let experimentDecisionPoints = experiment.partitions;
+      const experimentDecisionPoints = experiment.partitions;
       // Remove the decision points which already exist
       for (const decisionPoint of experimentDecisionPoints) {
         const decisionPointExists = await this.decisionPointRepository.findOneBy({ id: decisionPoint.id });
@@ -591,31 +580,9 @@ export class ExperimentService {
           experimentDecisionPoints[experimentDecisionPoints.indexOf(decisionPoint)].id = crypto.randomUUID();
         }
       }
-
-      // Generate new twoCharacterId if it is already exist for conditions
-      let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
-      experiment.conditions = experiment.conditions.map((condition) => {
-        let twoCharacterId = condition.twoCharacterId;
-        if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
-          twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
-          condition.twoCharacterId = twoCharacterId;
-        }
-        uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
-        return condition;
-      });
-
-      // Generate new twoCharacterId if it is already exist for decision points
       // Normalize null or undefined decision point targets to ''
-      experimentDecisionPoints = experimentDecisionPoints.map((decisionPoint) => {
+      experimentDecisionPoints.forEach((decisionPoint) => {
         decisionPoint.target = decisionPoint.target || '';
-        let twoCharacterId = decisionPoint.twoCharacterId;
-        if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
-          twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
-          logger.info({ message: `Generate new twoCharacterId for Decision Point =>`, details: twoCharacterId });
-          decisionPoint.twoCharacterId = twoCharacterId;
-        }
-        uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
-        return decisionPoint;
       });
 
       // Always set the imported experiment to "inactive".
@@ -791,20 +758,9 @@ export class ExperimentService {
       this.experimentSchedulerService.updateExperimentSchedules(experiment as any, logger);
     }
 
-    let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
     return entityManager
       .transaction(async (transactionalEntityManager) => {
         experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
-        if (experiment.conditions.length) {
-          const response = this.setConditionOrPartitionIdentifiers(experiment.conditions, uniqueIdentifiers);
-          experiment.conditions = response[0];
-          uniqueIdentifiers = response[1];
-        }
-        if (experiment.partitions.length) {
-          const response = this.setConditionOrPartitionIdentifiers(experiment.partitions, uniqueIdentifiers);
-          experiment.partitions = response[0];
-          uniqueIdentifiers = response[1];
-        }
 
         const {
           conditions,
@@ -1265,38 +1221,6 @@ export class ExperimentService {
   //   }
   // }
 
-  // Used to generate twoCharacterId for condition and decision point
-  private getUniqueIdentifier(uniqueIdentifiers: string[]): string {
-    let identifier;
-    // TODO: remove twoCharacterId code entirely
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      identifier = Math.random().toString(36).substring(2, 4).toUpperCase();
-      if (uniqueIdentifiers.indexOf(identifier) === -1) {
-        break;
-      }
-    }
-    return identifier;
-  }
-
-  private setConditionOrPartitionIdentifiers(
-    data: ConditionValidator[] | PartitionValidator[],
-    uniqueIdentifiers: string[]
-  ): any[] {
-    const updatedData = (data as any).map((conditionOrDecisionPoint) => {
-      if (!conditionOrDecisionPoint.twoCharacterId) {
-        const twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
-        uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
-        return {
-          ...conditionOrDecisionPoint,
-          twoCharacterId,
-        };
-      }
-      return conditionOrDecisionPoint;
-    });
-    return [updatedData, uniqueIdentifiers];
-  }
-
   private async addExperimentInDB(
     experiment: ExperimentDTO,
     user: UserDTO,
@@ -1315,17 +1239,6 @@ export class ExperimentService {
       experiment.description = experiment.description || '';
 
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
-      let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
-      if (experiment.conditions.length) {
-        const response = this.setConditionOrPartitionIdentifiers(experiment.conditions, uniqueIdentifiers);
-        experiment.conditions = response[0];
-        uniqueIdentifiers = response[1];
-      }
-      if (experiment.partitions.length) {
-        const response = this.setConditionOrPartitionIdentifiers(experiment.partitions, uniqueIdentifiers);
-        experiment.partitions = response[0];
-        uniqueIdentifiers = response[1];
-      }
       const {
         conditions,
         partitions,

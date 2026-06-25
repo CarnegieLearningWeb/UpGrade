@@ -171,31 +171,6 @@ describe('DecisionPointRepository Testing', () => {
     expect(mock.execute).toHaveBeenCalledTimes(1);
   });
 
-  it('should get all unique decision points', async () => {
-    mock.getMany.mockResolvedValue([decisionPoint, decisionPoint]);
-    const res = await repo.getAllUniqueIdentifier();
-
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
-
-    expect(mock.select).toHaveBeenCalledTimes(1);
-    expect(mock.getMany).toHaveBeenCalledTimes(1);
-
-    expect(res).toEqual([decisionPoint.twoCharacterId, decisionPoint.twoCharacterId]);
-  });
-
-  it('should throw an error when get unique decision points fails', async () => {
-    mock.getMany.mockRejectedValue(err);
-
-    expect(async () => {
-      await repo.getAllUniqueIdentifier();
-    }).rejects.toThrow(err);
-
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
-
-    expect(mock.select).toHaveBeenCalledTimes(1);
-    expect(mock.getMany).toHaveBeenCalledTimes(1);
-  });
-
   it('should get decision point and name', async () => {
     mock.getMany.mockResolvedValue([decisionPoint, decisionPoint]);
     const res = await repo.partitionPointAndName();

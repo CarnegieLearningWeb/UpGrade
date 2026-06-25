@@ -124,14 +124,4 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
         throw errorMsgString;
       });
   }
-
-  public async getAllUniqueIdentifier(): Promise<string[]> {
-    const experimentDecisionPoints = await this.createQueryBuilder('experimentPartition')
-      .select('experimentPartition.twoCharacterId')
-      .getMany();
-    const uniqueIdentifier = experimentDecisionPoints.map(
-      (decisionPoint: DecisionPoint) => decisionPoint.twoCharacterId
-    );
-    return uniqueIdentifier;
-  }
 }
