@@ -103,7 +103,12 @@ export class FeatureFlagService {
 
     const filteredFeatureFlags = await this.getCachedFlagsForKeys(context);
 
-    const includedFeatureFlags = await this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, experimentUserDoc);
+    const includedFeatureFlags = await this.featureFlagLevelInclusionExclusion(
+      filteredFeatureFlags,
+      experimentUserDoc,
+      context,
+      logger
+    );
 
     // save exposures in db
     if (includedFeatureFlags.length > 0) {
@@ -405,6 +410,12 @@ export class FeatureFlagService {
         flagName: featureFlagDoc.name,
       };
       await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_CREATED, createAuditLogData, user);
+
+      // Seed an empty precomputed_segment row in the same transaction so the new flag always
+      // has a row (no segment lists yet => empty arrays). This keeps the assignment read path
+      // off the on-the-fly fallback for the common case and keeps the getKeys cache effective.
+      await this.precomputedSegmentService.seedEmptyRowForFlag(featureFlagDoc.id, manager);
+
       return featureFlagDoc;
     };
 
@@ -674,16 +685,22 @@ export class FeatureFlagService {
 
     let result: (FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[];
     if (transactionalEntityManager) {
+      // The caller owns the outer transaction. We must NOT recompute here: recomputeForFlag
+      // reads through its own repositories and cannot see this transaction's uncommitted writes,
+      // so it would persist an empty/stale precomputed_segment row that never self-heals. The
+      // caller is responsible for calling recomputeForFlag after its transaction commits.
       result = await executeTransaction(transactionalEntityManager);
     } else {
       result = await this.dataSource.transaction(async (manager) => {
         return await executeTransaction(manager);
       });
-    }
 
-    // Recompute precomputed sets for each affected flag after transaction commits
-    const affectedFlagIds = [...new Set(listsInput.map((l) => l.id))];
-    await Promise.all(affectedFlagIds.map((flagId) => this.precomputedSegmentService.recomputeForFlag(flagId, logger)));
+      // Recompute precomputed sets for each affected flag after the transaction commits
+      const affectedFlagIds = [...new Set(listsInput.map((l) => l.id))];
+      await Promise.all(
+        affectedFlagIds.map((flagId) => this.precomputedSegmentService.recomputeForFlag(flagId, logger))
+      );
+    }
 
     return result;
   }
@@ -896,7 +913,9 @@ export class FeatureFlagService {
 
   private async featureFlagLevelInclusionExclusion(
     featureFlags: Pick<FeatureFlag, 'id' | 'key' | 'filterMode'>[],
-    experimentUser: ExperimentUser
+    experimentUser: ExperimentUser,
+    context: string,
+    logger: UpgradeLogger
   ): Promise<Pick<FeatureFlag, 'id' | 'key' | 'filterMode'>[]> {
     const flagIds = featureFlags.map((f) => f.id);
     const precomputedMap = await this.precomputedSegmentService.getPrecomputedSets(flagIds);
@@ -904,12 +923,21 @@ export class FeatureFlagService {
     // Flatten all group IDs from the user's group map (type is ignored per design decision)
     const userGroupIds: string[] = experimentUser.group ? Object.values(experimentUser.group).flat() : [];
 
+    // Any flag without a precomputed row falls back to on-the-fly segment resolution so a
+    // truly-missing row never silently produces a wrong include/exclude decision. Seeding on
+    // create (and recompute on every list mutation) should make this rare — log it so a
+    // persistent fallback is visible rather than silently masking a recompute gap.
+    const missingFlagIds = flagIds.filter((id) => !precomputedMap.has(id));
+    const onTheFlyIncludedIds = missingFlagIds.length
+      ? await this.resolveFlagsOnTheFly(missingFlagIds, context, experimentUser, logger)
+      : new Set<string>();
+
     return featureFlags.filter((flag) => {
       const computed = precomputedMap.get(flag.id);
 
       if (!computed) {
-        // No precomputed row yet — apply filter_mode default conservatively
-        return flag.filterMode === FILTER_MODE.INCLUDE_ALL;
+        // No precomputed row — fall back to the on-the-fly resolution result for this flag
+        return onTheFlyIncludedIds.has(flag.id);
       }
 
       const exclusionSet = new Set(computed.exclusionIds);
@@ -931,6 +959,61 @@ export class FeatureFlagService {
         return inGroupInclusion && !inGroupExclusion;
       }
     });
+  }
+
+  /**
+   * Fallback assignment path for flags that have no precomputed_segment row. Resolves segment
+   * inclusion/exclusion on-the-fly using the same recursive resolution the codebase used before
+   * precomputed segments (and that experiments still use), preserving full group-type matching.
+   * Returns the set of flag IDs the user should be included in.
+   */
+  private async resolveFlagsOnTheFly(
+    missingFlagIds: string[],
+    context: string,
+    experimentUser: ExperimentUser,
+    logger: UpgradeLogger
+  ): Promise<Set<string>> {
+    logger.warn({
+      message: `featureFlagLevelInclusionExclusion: ${missingFlagIds.length} flag(s) missing a precomputed_segment row; resolving on-the-fly`,
+      details: { context, missingFlagIds },
+    });
+
+    // Load the full flags (with segment relations) for this context and keep only the missing ones
+    const missingIdSet = new Set(missingFlagIds);
+    const fullFlags = (await this.getCachedFlagsFromContext(context)).filter((flag) => missingIdSet.has(flag.id));
+    if (!fullFlags.length) {
+      return new Set<string>();
+    }
+
+    const getEnabledSegmentIds = (list: (FeatureFlagSegmentExclusion | FeatureFlagSegmentInclusion)[]) =>
+      (list ?? []).filter((item) => item.enabled).map((item) => item.segment.id);
+
+    const segmentObjMap: Record<string, any> = {};
+    fullFlags.forEach((flag) => {
+      const excludeIds = getEnabledSegmentIds(flag.featureFlagSegmentExclusion);
+      // INCLUDE_ALL flags ignore inclusion segments (matches the precomputed-path semantics)
+      const includeIds =
+        flag.filterMode !== FILTER_MODE.INCLUDE_ALL ? getEnabledSegmentIds(flag.featureFlagSegmentInclusion) : [];
+
+      segmentObjMap[flag.id] = {
+        segmentIdsQueue: [...includeIds, ...excludeIds],
+        currentIncludedSegmentIds: includeIds,
+        currentExcludedSegmentIds: excludeIds,
+        allIncludedSegmentIds: includeIds,
+        allExcludedSegmentIds: excludeIds,
+      };
+    });
+
+    const flagIdsWithFilter = fullFlags.map(({ id, filterMode }) => ({ id, filterMode }));
+    const [includeData, excludeData] = await this.experimentAssignmentService.resolveSegmentsForEntities(segmentObjMap);
+    const [includedFlagIds] = await this.experimentAssignmentService.inclusionExclusionLogic(
+      includeData,
+      excludeData,
+      experimentUser,
+      flagIdsWithFilter
+    );
+
+    return new Set(includedFlagIds);
   }
 
   public async importFeatureFlags(
@@ -1088,6 +1171,10 @@ export class FeatureFlagService {
       });
 
       createdFlags.push(createdFlag);
+
+      // The outer transaction has committed — recompute now (addList skipped it because it ran
+      // inside the transaction) so the imported enabled lists are reflected in precomputed_segment.
+      await this.precomputedSegmentService.recomputeForFlag(createdFlag.id, logger);
     }
     logger.info({ message: 'Imported feature flags', details: createdFlags });
 
@@ -1280,6 +1367,10 @@ export class FeatureFlagService {
 
         return await this.addList(listDocs, filterType, currentUser, logger, transactionalEntityManager);
       });
+
+    // The outer transaction has committed — recompute now (addList skipped it because it ran
+    // inside the transaction) so the imported lists are reflected in precomputed_segment.
+    await this.precomputedSegmentService.recomputeForFlag(featureFlagId, logger);
 
     logger.info({ message: 'Imported feature flags', details: createdLists });
 

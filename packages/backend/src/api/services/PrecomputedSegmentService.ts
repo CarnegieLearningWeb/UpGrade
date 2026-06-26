@@ -9,6 +9,7 @@ import { PrecomputedSegment } from '../models/PrecomputedSegment';
 import { CacheService } from './CacheService';
 import { CACHE_PREFIX } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { EntityManager } from 'typeorm';
 
 @Service()
 export class PrecomputedSegmentService {
@@ -49,6 +50,21 @@ export class PrecomputedSegmentService {
 
     await this.cacheService.delCache(CACHE_PREFIX.PRECOMPUTED_SEGMENT_KEY_PREFIX + flagId);
     logger.info({ message: `Recomputed precomputed_segment for flag ${flagId}` });
+  }
+
+  // Seed an empty precomputed_segment row for a brand-new flag, inside the flag's own
+  // creation transaction so the row is atomic with the flag insert. A new flag has no
+  // segment lists, so empty arrays are the correct initial state. `orIgnore` keeps this a
+  // no-op if a row somehow already exists. Seeding here guarantees getPrecomputedSets never
+  // returns a missing row for a freshly created flag (keeps the read-path cache effective).
+  public async seedEmptyRowForFlag(flagId: string, manager: EntityManager): Promise<void> {
+    await manager
+      .createQueryBuilder()
+      .insert()
+      .into(PrecomputedSegment)
+      .values({ featureFlagId: flagId, inclusionIds: [], exclusionIds: [] })
+      .orIgnore()
+      .execute();
   }
 
   // Triggered on segment member or structure changes — finds all affected flags and recomputes (fire-and-forget)

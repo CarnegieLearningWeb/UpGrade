@@ -487,7 +487,8 @@ export class SegmentService {
       return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
     });
 
-    // Recompute after deletion so stale member IDs are removed (fire-and-forget)
+    // Recompute after the delete transaction has committed so the recompute reads the
+    // post-delete state and stale member IDs are removed (fire-and-forget).
     affectedFlagIds.forEach((flagId) => this.precomputedSegmentService.recomputeForFlag(flagId, logger));
 
     // reset cache
