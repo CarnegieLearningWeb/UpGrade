@@ -1,10 +1,4 @@
-import {
-  ExperimentState,
-  EXPERIMENT_SEARCH_KEY,
-  SORT_AS_DIRECTION,
-  EXPERIMENT_SORT_KEY,
-  ExperimentVM,
-} from './experiments.model';
+import { ExperimentState, EXPERIMENT_SEARCH_KEY, SORT_AS_DIRECTION, EXPERIMENT_SORT_KEY } from './experiments.model';
 import { createReducer, on, Action } from '@ngrx/store';
 import * as experimentsAction from './experiments.actions';
 
@@ -12,6 +6,7 @@ export const initialState: ExperimentState = {
   // List page state
   experiments: [],
   isLoadingExperiment: false,
+  hasInitialExperimentsDataLoaded: false,
   isLoadingExperimentDetailStats: false,
   isLoadingExperimentExport: false,
   skipExperiment: 0,
@@ -54,6 +49,7 @@ const reducer = createReducer(
       totalExperiments,
       skipExperiment: fromStarting ? experiments.length : state.skipExperiment + experiments.length,
       isLoadingExperiment: false,
+      hasInitialExperimentsDataLoaded: true,
     };
   }),
   on(
@@ -98,9 +94,9 @@ const reducer = createReducer(
   on(experimentsAction.actionUpsertExperiment, experimentsAction.actionGetExperimentById, (state) => ({
     ...state,
     isLoadingExperiment: true,
-    // if we don't have a totalExperiments count yet (no paginated call with > 1 has occured yet),
-    // set it to 1 because we are loading at least one experiment so that nav to root page will not show empty template
-    totalExperiments: !state.totalExperiments ? 1 : state.totalExperiments,
+    // If the total count is unknown, assume at least one experiment is loading so the root page skips the empty state.
+    // Preserve 0 because it means the backend already confirmed an empty list.
+    totalExperiments: state.totalExperiments ?? 1,
   })),
   on(experimentsAction.actionGetExperimentByIdSuccess, (state, { experiment }) => {
     // Upsert experiment: update if exists, add if not (for direct navigation)

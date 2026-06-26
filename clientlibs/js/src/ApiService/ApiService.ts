@@ -2,7 +2,6 @@ import { UpGradeClientEnums, UpGradeClientInterfaces, UpGradeClientRequests } fr
 import { CaliperEnvelope, IExperimentAssignmentv5, ILogInput, IUserAliases, ILogRequestBody } from 'upgrade_types';
 import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
-import { IMarkDecisionPointParams } from 'UpGradeClient/UpGradeClient.types';
 
 // this variable is used by webpack to replace the value of USE_CUSTOM_HTTP_CLIENT with true or false to create two different builds
 declare const USE_CUSTOM_HTTP_CLIENT: boolean;
@@ -230,7 +229,7 @@ export default class ApiService {
     status,
     uniquifier,
     clientError,
-  }: IMarkDecisionPointParams): Promise<UpGradeClientInterfaces.IMarkDecisionPoint> {
+  }: UpGradeClientInterfaces.IMarkDecisionPointOptions): Promise<UpGradeClientInterfaces.IMarkDecisionPoint> {
     const assignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
 
     this.dataService.rotateAssignmentList(assignment);
@@ -308,8 +307,6 @@ export default class ApiService {
       };
     }
 
-    console.log('[ApiService] getAllFeatureFlags requestBody:', requestBody);
-
     const response = await this.sendRequest<string[], never>({
       path: this.api.getAllFeatureFlag,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
@@ -323,7 +320,7 @@ export default class ApiService {
     rewardValue: 'SUCCESS' | 'FAILURE';
     experimentId?: string;
     context?: string;
-    decisionPoint?: { site: string; target: string };
+    decisionPoint?: UpGradeClientInterfaces.IDecisionPoint;
   }): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
     const requestBody: UpGradeClientRequests.ISendRewardRequestBody = {
       rewardValue: params.rewardValue,

@@ -3,6 +3,7 @@
 node_modules
 .claude*
 .vscode
+.claude
 setup_upgrade.sh
 .idea
 *.iml

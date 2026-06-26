@@ -5,13 +5,13 @@ import {
   SEGMENT_SEARCH_KEY,
   SORT_AS_DIRECTION,
   SEGMENT_SORT_KEY,
-  SEGMENT_TYPE,
 } from '../../../../../../../../types/src/Experiment/enums';
 
 export const initialState: SegmentState = {
   // List page data - plain array preserves backend sort order
   segments: [],
   isLoadingSegments: false,
+  hasInitialSegmentsDataLoaded: false,
   allExperimentSegmentsInclusion: null,
   allExperimentSegmentsExclusion: null,
   allFeatureFlagSegmentsInclusion: null,
@@ -61,11 +61,21 @@ const reducer = createReducer(
       if (fromStarting) {
         // when going fromStarting (on any fetch other than fetch more on scroll)
         newState.skipSegments = segments.length;
-        return { ...newState, segments: [...segments], isLoadingSegments: false };
+        return {
+          ...newState,
+          segments: [...segments],
+          isLoadingSegments: false,
+          hasInitialSegmentsDataLoaded: true,
+        };
       } else {
         // when fetching more
         newState.skipSegments = state.skipSegments + segments.length;
-        return { ...newState, segments: [...state.segments, ...segments], isLoadingSegments: false };
+        return {
+          ...newState,
+          segments: [...state.segments, ...segments],
+          isLoadingSegments: false,
+          hasInitialSegmentsDataLoaded: true,
+        };
       }
     }
   ),
@@ -83,7 +93,7 @@ const reducer = createReducer(
     SegmentsActions.actionAddSegmentSuccess,
     (state) => ({ ...state, isLoadingSegments: false })
   ),
-  on(SegmentsActions.actionUpsertSegmentSuccess, (state, { segment }) => ({
+  on(SegmentsActions.actionUpsertSegmentSuccess, (state) => ({
     ...state,
     isLoadingSegments: false,
   })),

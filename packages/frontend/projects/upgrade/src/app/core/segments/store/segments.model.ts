@@ -231,6 +231,7 @@ export interface SegmentState {
   // List page data - plain array preserves backend sort order
   segments: Segment[];
   isLoadingSegments: boolean;
+  hasInitialSegmentsDataLoaded: boolean;
   isLoadingUpsertSegment: boolean;
   // TODO: remove any
   allExperimentSegmentsInclusion: any;

@@ -13,6 +13,33 @@ import { DataService } from '../DataService/DataService';
 
 declare const API_VERSION: string;
 
+// crypto.randomUUID() is only available in secure contexts (HTTPS).
+// crypto.getRandomValues() is available in both secure and insecure contexts.
+// Fall back to Math.random() only as a last resort for very old environments.
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
+    bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant bits
+    const hex = Array.from(bytes)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+  console.warn(
+    'upgrade_client_lib: crypto.getRandomValues is unavailable; falling back to Math.random() for clientSessionId generation. This is not cryptographically secure.'
+  );
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 /**
  * UpGradeClient is the main class for interacting with the UpGrade API.
  *
@@ -120,7 +147,7 @@ export default class UpgradeClient {
       userId: userId,
       hostURL: hostUrl,
       context: context,
-      clientSessionId: options?.clientSessionId || crypto.randomUUID(),
+      clientSessionId: options?.clientSessionId || generateUUID(),
       token: options?.token,
       httpClient: options?.httpClient,
       featureFlagUserGroupsForSession: options?.featureFlagUserGroupsForSession ?? null,
@@ -302,11 +329,12 @@ export default class UpgradeClient {
    *
    * @example
    * ```typescript
+   * const assignmentResponse: Assignment = await upgradeClient.getDecisionPointAssignment(site);
    * const assignmentResponse: Assignment = await upgradeClient.getDecisionPointAssignment(site, target);
    * ```
    */
 
-  async getDecisionPointAssignment(site: string, target?: string): Promise<Assignment> {
+  async getDecisionPointAssignment(site: string, target = ''): Promise<Assignment | null> {
     await this.getAllExperimentConditions();
 
     if (this.dataService.getExperimentAssignmentData()) {
@@ -327,65 +355,95 @@ export default class UpgradeClient {
    *
    * Marking the decision point will record the user's condition assignment, regardless of whether the user is enrolled in an experiment.
    *
-   * @param site
-   * @param target
-   * @param condition `condition` is the string identifier that the user was assigned to. If none is provided, the condition will be default (null)
-   *
-   * @param status `status` signifies a client application's note on what it did in the code with condition assignment that Upgrade provided.
-   *  Status can be one of the following:
-   *
-   * ```ts
-   * export enum MARKED_DECISION_POINT_STATUS {
-   *   CONDITION_APPLIED = 'condition applied',
-   *   CONDITION_FAILED_TO_APPLY = 'condition not applied',
-   *   NO_CONDITION_ASSIGNED = 'no condition assigned',
-   * }
-   * ```
-   *
-   * @param uniquifier A `uniquifier` unique string can be sent along to help tie a user's logged metrics to a specific marked condition.
-   * This identifier will also need to be sent when calling `upgradeClient.log()`
-   * This is required for 'within-subjects' experiments.
-   *
-   * @param clientError The client can also send along an additional `clientError` string to log context as to why a condition was not applied.
+   * Can be called with positional arguments (original form) or a single options object:
    *
    * @example
    * ```ts
    * import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
    *
-   * const site = 'dashboard';
-   * const target = 'experimental button';
-   * const condition = 'variant_x'; // send null if no condition / no experiment is running / error
-   * const status: MARKED_DECISION_POINT_STATUS = MARKED_DECISION_POINT_STATUS.CONDITION_FAILED_TO_APPLY
-   * const clientError = 'variant not recognized'; //optional
+   * // Options object form (target is optional — defaults to ''):
+   * const markResponse = await upgradeClient.markDecisionPoint({
+   *   site: 'dashboard',
+   *   condition: 'variant_x',
+   *   status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+   * });
    *
+   * // Options object form with all fields.
+   * const markResponse = await upgradeClient.markDecisionPoint({
+   *   site: 'dashboard',
+   *   target: 'experimental button',
+   *   condition: 'variant_x',
+   *   status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+   *   uniquifier: 'some-unique-id',
+   *   clientError: 'variant not recognized',
+   * });
+   *
+   * // Positional form (original, for backward compatibility):
+   * * Note, this signature is being deprecated in favor of the options object.
+   * * One reason is because target, while optional, must still be provided as an empty value if not used (will be normalized to '' if null/undefined).
    * const markResponse = await upgradeClient.markDecisionPoint(site, target, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
    * ```
    *
    * Note*: mark can also be called via `Assignment.markDecisionPoint()` when returning an assignment from `getDecisionPointAssignment()`:
    * ```ts
-   * const assignment: Assignment[] = await upgradeClient.getDecisionPointAssignment(site, target);
+   * const assignment: Assignment = await upgradeClient.getDecisionPointAssignment(site, target) // or await upgradeClient.getDecisionPointAssignment(site);
    * const markResponse = await assignment.markDecisionPoint(MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
    * ```
    */
 
   async markDecisionPoint(
+    options: UpGradeClientInterfaces.IMarkDecisionPointOptions
+  ): Promise<UpGradeClientInterfaces.IMarkDecisionPoint>;
+  /** @deprecated Use the options object overload: markDecisionPoint(options: IMarkDecisionPointOptions) */
+  async markDecisionPoint(
     site: string,
     target: string,
-    condition: string | null = null,
+    condition: string | null,
     status: MARKED_DECISION_POINT_STATUS,
     uniquifier?: string,
     clientError?: string
+  ): Promise<UpGradeClientInterfaces.IMarkDecisionPoint>;
+  async markDecisionPoint(
+    siteOrOptions: string | UpGradeClientInterfaces.IMarkDecisionPointOptions,
+    target?: string,
+    condition?: string | null,
+    status?: MARKED_DECISION_POINT_STATUS,
+    uniquifier?: string,
+    clientError?: string
   ): Promise<UpGradeClientInterfaces.IMarkDecisionPoint> {
+    let resolvedSite: string;
+    let resolvedTarget: string;
+    let resolvedCondition: string | null;
+    let resolvedStatus: MARKED_DECISION_POINT_STATUS;
+    let resolvedUniquifier: string | undefined;
+    let resolvedClientError: string | undefined;
+
+    if (typeof siteOrOptions === 'object') {
+      resolvedSite = siteOrOptions.site;
+      resolvedTarget = siteOrOptions.target ?? '';
+      resolvedCondition = siteOrOptions.condition ?? null;
+      resolvedStatus = siteOrOptions.status;
+      resolvedUniquifier = siteOrOptions.uniquifier;
+      resolvedClientError = siteOrOptions.clientError;
+    } else {
+      resolvedSite = siteOrOptions;
+      resolvedTarget = target ?? '';
+      resolvedCondition = condition ?? null;
+      resolvedStatus = status;
+      resolvedUniquifier = uniquifier;
+      resolvedClientError = clientError;
+    }
+
     if (this.dataService.getExperimentAssignmentData() == null) {
       await this.getAllExperimentConditions();
     }
     return await this.apiService.markDecisionPoint({
-      site,
-      target,
-      condition,
-      status,
-      uniquifier,
-      clientError,
+      site: resolvedSite,
+      target: resolvedTarget,
+      condition: resolvedCondition,
+      status: resolvedStatus,
+      uniquifier: resolvedUniquifier,
+      clientError: resolvedClientError,
     });
   }
 
@@ -627,12 +685,23 @@ export default class UpgradeClient {
    *   }
    * });
    * ```
+   *  * @example
+   * ```ts
+   * // Example 5: Using decision point without target
+   * const response = await upgradeClient.sendReward({
+   *   rewardValue: UpgradeClient.BINARY_REWARD_VALUE.FAILURE,
+   *   context: 'learning-module',
+   *   decisionPoint: {
+   *     site: 'math-course'
+   *   }
+   * });
+   * ```
    */
   async sendReward(params: {
     rewardValue: 'SUCCESS' | 'FAILURE';
     experimentId?: string;
     context?: string;
-    decisionPoint?: { site: string; target: string };
+    decisionPoint?: UpGradeClientInterfaces.IDecisionPoint;
   }): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
     return await this.apiService.sendReward(params);
   }

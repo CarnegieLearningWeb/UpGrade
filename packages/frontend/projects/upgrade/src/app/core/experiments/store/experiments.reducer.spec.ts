@@ -102,6 +102,7 @@ describe('ExperimentsReducer', () => {
       totalExperiments: 1,
       skipExperiment: 1,
       isLoadingExperiment: false,
+      hasInitialExperimentsDataLoaded: true,
     });
   });
 

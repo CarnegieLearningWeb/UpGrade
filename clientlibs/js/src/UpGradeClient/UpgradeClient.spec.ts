@@ -1,7 +1,7 @@
 import { DataService } from './../DataService/DataService';
 import ApiService from './../ApiService/ApiService';
 import UpgradeClient from './UpgradeClient';
-import { EXPERIMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 
 const mockHttpClient = {
   doGet: jest.fn(),
@@ -243,6 +243,65 @@ describe('UpgradeClient', () => {
       expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalled();
     });
   });
+  describe('#markDecisionPoint', () => {
+    beforeEach(() => {
+      ApiService.prototype.markDecisionPoint = jest.fn().mockResolvedValue({});
+      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => ['foo']);
+    });
+
+    it('should call apiService markDecisionPoint using options object form', async () => {
+      await upgradeClient.markDecisionPoint({
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+      });
+
+      expect(ApiService.prototype.markDecisionPoint).toHaveBeenCalledWith({
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        uniquifier: undefined,
+        clientError: undefined,
+      });
+    });
+
+    it('should normalize omitted target to empty string with options object', async () => {
+      await upgradeClient.markDecisionPoint({
+        site: 'testSite',
+        status: MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED,
+      });
+
+      expect(ApiService.prototype.markDecisionPoint).toHaveBeenCalledWith({
+        site: 'testSite',
+        target: '',
+        condition: null,
+        status: MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED,
+        uniquifier: undefined,
+        clientError: undefined,
+      });
+    });
+
+    it('should call apiService markDecisionPoint using positional arguments', async () => {
+      await upgradeClient.markDecisionPoint(
+        'testSite',
+        'testTarget',
+        'variant_x',
+        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
+      );
+
+      expect(ApiService.prototype.markDecisionPoint).toHaveBeenCalledWith({
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        uniquifier: undefined,
+        clientError: undefined,
+      });
+    });
+  });
+
   describe('#hasFeatureFlag', () => {
     it('should call apiService "getAllFeatureFlags" with no options', async () => {
       ApiService.prototype.getAllFeatureFlags = jest.fn();

@@ -33,6 +33,7 @@ import {
   FEATURE_FLAG_STATUS,
   IMPORT_COMPATIBILITY_TYPE,
   SORT_AS_DIRECTION,
+  CACHE_PREFIX,
 } from 'upgrade_types';
 import { configureLogger } from '../../utils/logger';
 import { ExperimentSegmentExclusion } from '../../../src/api/models/ExperimentSegmentExclusion';
@@ -1101,6 +1102,49 @@ describe('Segment Service Testing', () => {
         tags: undefined,
         subSegments: [existingSubsegment],
       });
+    });
+  });
+
+  describe('getGlobalExcludeSegmentByContext', () => {
+    it('delegates to findOneSegmentByContextAndType with correct args', async () => {
+      const globalExcludeSeg = new Segment();
+      globalExcludeSeg.id = 'global-exclude-id';
+      globalExcludeSeg.type = SEGMENT_TYPE.GLOBAL_EXCLUDE;
+      repo.findOneSegmentByContextAndType = jest.fn().mockResolvedValue(globalExcludeSeg);
+
+      const result = await service.getGlobalExcludeSegmentByContext('testContext');
+
+      expect(repo.findOneSegmentByContextAndType).toHaveBeenCalledWith('testContext', SEGMENT_TYPE.GLOBAL_EXCLUDE);
+      expect(result).toEqual(globalExcludeSeg);
+    });
+
+    it('calls cacheService.wrap with GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX + context as the cache key', async () => {
+      const globalExcludeSeg = new Segment();
+      globalExcludeSeg.id = 'global-exclude-id';
+      repo.findOneSegmentByContextAndType = jest.fn().mockResolvedValue(globalExcludeSeg);
+
+      const cacheService = module.get<CacheService>(CacheService);
+      const wrapSpy = jest.spyOn(cacheService, 'wrap');
+
+      await service.getGlobalExcludeSegmentByContext('myContext');
+
+      expect(wrapSpy).toHaveBeenCalledWith(
+        CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX + 'myContext',
+        expect.any(Function)
+      );
+    });
+  });
+
+  describe('cache invalidation on segment save', () => {
+    it('resets both SEGMENT_KEY_PREFIX and GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX caches when a segment is saved', async () => {
+      const cacheService = module.get<CacheService>(CacheService);
+      const resetSpy = jest.spyOn(cacheService, 'resetPrefixCache');
+      service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
+
+      await service.upsertSegment(segVal, logger);
+
+      expect(resetSpy).toHaveBeenCalledWith(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
+      expect(resetSpy).toHaveBeenCalledWith(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX);
     });
   });
 });

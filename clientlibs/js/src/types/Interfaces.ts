@@ -41,6 +41,15 @@ export namespace UpGradeClientInterfaces {
     uniquifier?: string;
     clientError?: string;
   }
+
+  export interface IMarkDecisionPointOptions {
+    site: string;
+    target?: string;
+    condition?: string | null;
+    status: MARKED_DECISION_POINT_STATUS;
+    uniquifier?: string;
+    clientError?: string;
+  }
   export interface IExperimentUser {
     id: string;
     group?: IExperimentUserGroup;
@@ -87,16 +96,18 @@ export namespace UpGradeClientInterfaces {
     aliases: IExperimentUserAliases;
   }
 
+  export interface IDecisionPoint {
+    site: string;
+    target?: string;
+  }
+
   export interface ISendRewardResponse {
     message: string;
     request: {
       rewardValue: 'SUCCESS' | 'FAILURE';
       experimentId?: string;
       context?: string;
-      decisionPoint?: {
-        site: string;
-        target: string;
-      };
+      decisionPoint?: IDecisionPoint;
     };
     reward: {
       variable: string;

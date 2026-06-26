@@ -6,8 +6,36 @@ import { CONNECTION_NAME } from './enums';
 import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 import { Container as tteContainer } from '../typeorm-typedi-extensions';
+import { UpgradeLogger } from '../lib/logger/UpgradeLogger';
 
-const replicaHosts = (env.db.host_replica ? JSON.parse(env.db.host_replica) : []) as string[];
+const log = new UpgradeLogger();
+
+export const parseReplicaHosts = (hostReplica?: string | null): string[] => {
+  if (!hostReplica) {
+    return [];
+  }
+
+  try {
+    const parsedHosts = JSON.parse(hostReplica) as unknown;
+    if (Array.isArray(parsedHosts) && parsedHosts.every((host) => typeof host === 'string')) {
+      return parsedHosts;
+    }
+
+    log.error({
+      message: 'Invalid read replica host list format — continuing without replica hosts',
+      error: new Error('host_replica must be a JSON string array'),
+    });
+    return [];
+  } catch (error) {
+    log.error({
+      message: 'Invalid read replica host configuration — continuing without replica hosts',
+      error,
+    });
+    return [];
+  }
+};
+
+const replicaHosts = parseReplicaHosts(env.db.host_replica);
 
 const masterHost: PostgresConnectionCredentialsOptions = {
   host: env.db.host,
@@ -71,7 +99,12 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
 
     // register the data source instance in the typeorm-typeDI-extensions
     tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
-    await Promise.all([appDataSourceInstance.initialize(), exportDataSourceInstance.initialize()]);
+    await appDataSourceInstance.initialize();
+
+    // Fire-and-forget replica init so a slow/unreachable replica doesn't block app startup.
+    void exportDataSourceInstance.initialize().catch((replicaErr) => {
+      log.error({ message: 'Read replica connection failed — continuing without replica', error: replicaErr });
+    });
 
     if (!env.db.synchronize && !env.isECS) {
       await appDataSourceInstance.runMigrations();
@@ -86,8 +119,8 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
       });
     }
   } catch (err) {
-    // TODO: use logger to log the error
     const error = err as any;
+    log.error({ message: 'Database connection failed', error });
     if (error.code === 'ECONNREFUSED') {
       error.type = SERVER_ERROR.DB_UNREACHABLE;
       throw error;
