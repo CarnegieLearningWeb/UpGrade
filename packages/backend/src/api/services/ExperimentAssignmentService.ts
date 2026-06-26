@@ -426,7 +426,7 @@ export class ExperimentAssignmentService {
           );
         })
       );
-let repeatedEnrollmentCounts: RepeatedEnrollmentDataCount[] = [];
+      let repeatedEnrollmentCounts: RepeatedEnrollmentDataCount[] = [];
       if (filteredExperiments.some((experiment) => experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS)) {
         const filteredWithinSubjectExperiments = filteredExperiments.filter(
           (experiment) => experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS

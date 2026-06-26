@@ -20,10 +20,9 @@ export class RepeatedEnrollmentRepository extends Repository<RepeatedEnrollment>
       .select(['ie.userId as "userId"', 'ie.experimentId as "experimentId"'])
       .addSelect('COUNT(*) as count')
       .leftJoin('repeatedEnrollment.individualEnrollment', 'ie')
-      .leftJoin('ie.experiment', 'experiment')
       .where('ie.userId = :userId', { userId })
       .andWhere('ie.experimentId IN (:...experimentIds)', { experimentIds })
-      .groupBy('ie.userId , ie.experimentId , ie.id')
+      .groupBy('ie.userId, ie.experimentId')
       .getRawMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
