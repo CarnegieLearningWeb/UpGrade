@@ -176,4 +176,89 @@ describe('FeatureFlagRepository Testing', () => {
     expect(mock.returning).toHaveBeenCalledWith('*');
     expect(mock.execute).toHaveBeenCalledTimes(1);
   });
+
+  describe('getFlagsFromContext', () => {
+    const context = 'test-context';
+
+    beforeEach(() => {
+      mock.getMany.mockResolvedValue([]);
+    });
+
+    it('should run two separate queries in parallel, one per filterMode', async () => {
+      await repo.getFlagsFromContext(context);
+
+      expect(repo.createQueryBuilder).toHaveBeenCalledTimes(2);
+      expect(mock.getMany).toHaveBeenCalledTimes(2);
+      expect(mock.andWhere).toHaveBeenCalledWith('feature_flag.filterMode = :includeAll', {
+        includeAll: FILTER_MODE.INCLUDE_ALL,
+      });
+      expect(mock.andWhere).toHaveBeenCalledWith('feature_flag.filterMode = :excludeAll', {
+        excludeAll: FILTER_MODE.EXCLUDE_ALL,
+      });
+    });
+
+    it('should apply context and status conditions to both queries', async () => {
+      await repo.getFlagsFromContext(context);
+
+      expect(mock.where).toHaveBeenCalledTimes(2);
+      expect(mock.where).toHaveBeenCalledWith('feature_flag.context @> :searchContext', {
+        searchContext: [context],
+      });
+      expect(mock.andWhere).toHaveBeenCalledWith('feature_flag.status = :status', {
+        status: FEATURE_FLAG_STATUS.ENABLED,
+      });
+    });
+
+    it('should not join inclusion segment member data for INCLUDE_ALL flags', async () => {
+      await repo.getFlagsFromContext(context);
+
+      // Collect all first-args passed to leftJoinAndSelect across both queries
+      const joinedRelations = mock.leftJoinAndSelect.mock.calls.map(([relation]) => relation);
+
+      // Inclusion-side member joins should appear exactly once (only from the EXCLUDE_ALL query)
+      expect(joinedRelations.filter((r) => r === 'segmentInclusion.individualForSegment')).toHaveLength(1);
+      expect(joinedRelations.filter((r) => r === 'segmentInclusion.groupForSegment')).toHaveLength(1);
+      expect(joinedRelations.filter((r) => r === 'segmentInclusion.subSegments')).toHaveLength(1);
+
+      // Exclusion-side member joins should appear twice (once per query)
+      expect(joinedRelations.filter((r) => r === 'segmentExclusion.individualForSegment')).toHaveLength(2);
+      expect(joinedRelations.filter((r) => r === 'segmentExclusion.groupForSegment')).toHaveLength(2);
+      expect(joinedRelations.filter((r) => r === 'segmentExclusion.subSegments')).toHaveLength(2);
+    });
+
+    it('should join inclusion segment member data for EXCLUDE_ALL flags', async () => {
+      await repo.getFlagsFromContext(context);
+
+      expect(mock.leftJoinAndSelect).toHaveBeenCalledWith(
+        'feature_flag.featureFlagSegmentInclusion',
+        'featureFlagSegmentInclusion'
+      );
+      expect(mock.leftJoinAndSelect).toHaveBeenCalledWith('featureFlagSegmentInclusion.segment', 'segmentInclusion');
+      expect(mock.leftJoinAndSelect).toHaveBeenCalledWith(
+        'segmentInclusion.individualForSegment',
+        'individualForSegment'
+      );
+      expect(mock.leftJoinAndSelect).toHaveBeenCalledWith('segmentInclusion.groupForSegment', 'groupForSegment');
+      expect(mock.leftJoinAndSelect).toHaveBeenCalledWith('segmentInclusion.subSegments', 'subSegment');
+    });
+
+    it('should combine results from both queries', async () => {
+      const includeAllFlag = new FeatureFlag();
+      includeAllFlag.id = 'include-all-flag';
+      const excludeAllFlag = new FeatureFlag();
+      excludeAllFlag.id = 'exclude-all-flag';
+
+      mock.getMany.mockResolvedValueOnce([includeAllFlag]).mockResolvedValueOnce([excludeAllFlag]);
+
+      const results = await repo.getFlagsFromContext(context);
+
+      expect(results).toEqual([includeAllFlag, excludeAllFlag]);
+    });
+
+    it('should throw when either query fails', async () => {
+      mock.getMany.mockRejectedValueOnce(err);
+
+      await expect(repo.getFlagsFromContext(context)).rejects.toThrow();
+    });
+  });
 });

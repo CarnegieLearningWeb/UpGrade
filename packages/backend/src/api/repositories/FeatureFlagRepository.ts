@@ -1,4 +1,4 @@
-import { Repository, EntityManager } from 'typeorm';
+import { Repository, EntityManager, SelectQueryBuilder } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { FeatureFlag } from '../models/FeatureFlag';
 import repositoryError from './utils/repositoryError';
@@ -91,26 +91,48 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
   }
 
   public async getFlagsFromContext(context: string): Promise<FeatureFlag[]> {
-    const result = await this.createQueryBuilder('feature_flag')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
-      .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
-      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
-      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
-      .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .where('feature_flag.context @> :searchContext', { searchContext: [context] })
-      .andWhere('feature_flag.status = :status', { status: FEATURE_FLAG_STATUS.ENABLED })
-      .getMany()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('FeatureFlagRepository', 'getFlagsFromContext', { context }, errorMsg);
-        throw errorMsgString;
-      });
+    const addExclusionJoins = (qb: SelectQueryBuilder<FeatureFlag>) =>
+      qb
+        .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
+        .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
+        .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
+        .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
+        .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion');
 
-    return result;
+    const addInclusionJoins = (qb: SelectQueryBuilder<FeatureFlag>) =>
+      qb
+        .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
+        .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
+        .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
+        .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
+        .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment');
+
+    const addBaseConditions = (qb: SelectQueryBuilder<FeatureFlag>) =>
+      qb
+        .where('feature_flag.context @> :searchContext', { searchContext: [context] })
+        .andWhere('feature_flag.status = :status', { status: FEATURE_FLAG_STATUS.ENABLED });
+
+    // INCLUDE_ALL flags: inclusion segments are irrelevant — skip all inclusion joins
+    const includeAllQuery = addBaseConditions(addExclusionJoins(this.createQueryBuilder('feature_flag'))).andWhere(
+      'feature_flag.filterMode = :includeAll',
+      { includeAll: FILTER_MODE.INCLUDE_ALL }
+    );
+
+    // EXCLUDE_ALL flags: both inclusion and exclusion segments are needed
+    const excludeAllQuery = addBaseConditions(
+      addInclusionJoins(addExclusionJoins(this.createQueryBuilder('feature_flag')))
+    ).andWhere('feature_flag.filterMode = :excludeAll', { excludeAll: FILTER_MODE.EXCLUDE_ALL });
+
+    const [includeAllFlags, excludeAllFlags] = await Promise.all([
+      includeAllQuery.getMany().catch((errorMsg: any) => {
+        throw repositoryError('FeatureFlagRepository', 'getFlagsFromContext', { context }, errorMsg);
+      }),
+      excludeAllQuery.getMany().catch((errorMsg: any) => {
+        throw repositoryError('FeatureFlagRepository', 'getFlagsFromContext', { context }, errorMsg);
+      }),
+    ]);
+
+    return [...includeAllFlags, ...excludeAllFlags];
   }
 
   public async validateUniqueKey(flagDTO: FeatureFlagValidation) {
