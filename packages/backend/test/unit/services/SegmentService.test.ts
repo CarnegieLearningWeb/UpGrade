@@ -12,6 +12,7 @@ import { ExperimentSegmentInclusionRepository } from '../../../src/api/repositor
 import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
+import { PrecomputedSegmentService } from '../../../src/api/services/PrecomputedSegmentService';
 import {
   ListInputValidator,
   SegmentFile,
@@ -195,6 +196,16 @@ describe('Segment Service Testing', () => {
         FeatureFlagSegmentInclusionRepository,
         CacheService,
         SegmentRepository,
+        {
+          provide: PrecomputedSegmentService,
+          useValue: {
+            scheduleRecomputeForSegment: jest.fn(),
+            recomputeForFlag: jest.fn().mockResolvedValue(undefined),
+            getAffectedFlagIds: jest.fn().mockResolvedValue([]),
+            seedEmptyRowForFlag: jest.fn().mockResolvedValue(undefined),
+            getPrecomputedSets: jest.fn().mockResolvedValue(new Map()),
+          },
+        },
         {
           provide: getDataSourceToken('default'),
           useValue: dataSource,
@@ -734,6 +745,36 @@ describe('Segment Service Testing', () => {
     expect(async () => {
       await service.deleteList(newList.id, seg1.id, logger);
     }).rejects.toThrow(err);
+  });
+
+  describe('precomputed segment recompute triggers', () => {
+    it('collects affected flags before deleting and recomputes them after the delete commits', async () => {
+      const precomputed = module.get<PrecomputedSegmentService>(PrecomputedSegmentService);
+      (precomputed.getAffectedFlagIds as jest.Mock).mockResolvedValue(['flagA']);
+
+      await service.deleteSegment(seg1.id, logger);
+
+      expect(precomputed.getAffectedFlagIds).toHaveBeenCalledWith(seg1.id);
+      expect(precomputed.recomputeForFlag).toHaveBeenCalledWith('flagA', logger);
+    });
+
+    it('schedules a recompute when a list is added to a segment', async () => {
+      const precomputed = module.get<PrecomputedSegmentService>(PrecomputedSegmentService);
+      service.upsertSegmentInPipeline = jest.fn().mockResolvedValue(segValSegment);
+
+      await service.addList(listVal, logger);
+
+      expect(precomputed.scheduleRecomputeForSegment).toHaveBeenCalled();
+    });
+
+    it('schedules a recompute when a list is deleted from a segment', async () => {
+      const precomputed = module.get<PrecomputedSegmentService>(PrecomputedSegmentService);
+      service.getSegmentById = jest.fn().mockResolvedValue(newSeg);
+
+      await service.deleteList(newList.id, newSeg.id, logger);
+
+      expect(precomputed.scheduleRecomputeForSegment).toHaveBeenCalled();
+    });
   });
 
   it('should find all paginated segments with search string all', async () => {
