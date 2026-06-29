@@ -38,4 +38,4 @@ jobs:
         run: yarn build
       - name: Publish upgrade_client_lib
         run: npm publish
-        working-directory: clientlibs/js/package.json
+        working-directory: clientlibs/js
