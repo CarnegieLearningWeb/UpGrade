@@ -10,6 +10,7 @@
 		by a merge conflict. -->
 
 	<version>6.5.0</version>
+	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
