@@ -6,6 +6,7 @@
     class="flag-list-table"
     mat-table
     [dataSource]="featureFlags"
+    [trackBy]="trackByFlagId"
     [ngClass]="{ 'no-data': !featureFlags?.length }"
     matSort
     (matSortChange)="changeSorting($event)"

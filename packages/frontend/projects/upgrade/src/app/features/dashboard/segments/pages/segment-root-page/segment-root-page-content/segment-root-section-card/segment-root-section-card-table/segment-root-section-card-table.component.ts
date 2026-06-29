@@ -144,6 +144,10 @@ export class SegmentRootSectionCardTableComponent implements AfterViewInit, OnDe
     return this.expandedTagsMap?.get(segmentId) || false;
   }
 
+  trackBySegmentId(_index: number, segment: Segment): string {
+    return segment.id;
+  }
+
   onTagExpandedChange(segmentId: string, expanded: boolean): void {
     this.tagsExpanded.emit({ segmentId, expanded });
   }
