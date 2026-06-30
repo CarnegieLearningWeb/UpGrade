@@ -30,7 +30,6 @@ export default async function NoPartitionPoint(): Promise<void> {
         description: 'Condition B',
         conditionCode: 'ConditionB',
         assignmentWeight: 60,
-        twoCharacterId: 'CB',
         order: 2,
       }),
       expect.objectContaining({
@@ -38,7 +37,6 @@ export default async function NoPartitionPoint(): Promise<void> {
         description: 'Condition A',
         conditionCode: 'ConditionA',
         assignmentWeight: 40,
-        twoCharacterId: 'CA',
         order: 1,
       }),
     ])
@@ -54,7 +52,6 @@ export default async function NoPartitionPoint(): Promise<void> {
         description: 'Condition C',
         conditionCode: 'Condition C',
         assignmentWeight: 50,
-        twoCharacterId: 'CC',
       },
     ],
   };
@@ -77,7 +74,6 @@ export default async function NoPartitionPoint(): Promise<void> {
         description: 'Condition B',
         conditionCode: 'ConditionB',
         assignmentWeight: 60,
-        twoCharacterId: 'CB',
         order: 1,
       }),
       expect.objectContaining({
@@ -85,7 +81,6 @@ export default async function NoPartitionPoint(): Promise<void> {
         description: 'Condition C',
         conditionCode: 'Condition C',
         assignmentWeight: 50,
-        twoCharacterId: 'CC',
         order: 2,
       }),
     ])

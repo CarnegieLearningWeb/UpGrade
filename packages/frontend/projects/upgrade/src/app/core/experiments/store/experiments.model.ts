@@ -169,7 +169,6 @@ export interface ExperimentCondition {
   description: string;
   conditionCode: string;
   assignmentWeight: number;
-  twoCharacterId: string;
   order: number;
   createdAt: string;
   updatedAt: string;
@@ -183,7 +182,6 @@ export interface ExperimentConditionForSimpleExp {
   description: string;
   conditionCode: string;
   assignmentWeight: number;
-  twoCharacterId: string;
   order: number;
   createdAt: string;
   updatedAt: string;
@@ -200,7 +198,6 @@ export interface ExperimentDecisionPoint {
   site: string;
   target: string;
   description: string;
-  twoCharacterId: string;
   order: number;
   createdAt: string;
   updatedAt: string;
@@ -425,7 +422,6 @@ export interface ExperimentConditionDTO {
   conditionCode: string;
   assignmentWeight: number;
   order: number;
-  twoCharacterId?: string;
   levelCombinationElements?: LevelCombinationElement[];
 }
 
@@ -436,7 +432,6 @@ export interface ExperimentPartitionDTO {
   description?: string;
   order: number;
   excludeIfReached: boolean;
-  twoCharacterId?: string;
   pendingActivation?: boolean;
 }
 

@@ -23,7 +23,6 @@ export abstract class TestMockData {
             description: 'Condition A',
             assignmentWeight: 40,
             conditionCode: 'ConditionA',
-            twoCharacterId: 'CA',
           },
           {
             id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -31,7 +30,6 @@ export abstract class TestMockData {
             description: 'Condition B',
             assignmentWeight: 60,
             conditionCode: 'ConditionB',
-            twoCharacterId: 'CB',
           },
         ],
         partitions: [
@@ -39,18 +37,15 @@ export abstract class TestMockData {
             expPoint: 'CurriculumSequence',
             expId: 'W1',
             description: 'Partition on Workspace 1',
-            twoCharacterId: 'W1',
           },
           {
             expPoint: 'CurriculumSequence',
             expId: 'W2',
             description: 'Partition on Workspace 2',
-            twoCharacterId: 'W2',
           },
           {
             expPoint: 'CurriculumSequence',
             description: 'No Partition',
-            twoCharacterId: 'NP',
           },
         ],
       },

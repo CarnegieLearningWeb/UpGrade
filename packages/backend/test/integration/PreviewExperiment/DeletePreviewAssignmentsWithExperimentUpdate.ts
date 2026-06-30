@@ -87,7 +87,6 @@ export default async function testCase(): Promise<void> {
         description: 'Condition C',
         conditionCode: 'Condition C',
         assignmentWeight: 50,
-        twoCharacterId: 'CC',
       },
     ],
   };
@@ -107,7 +106,6 @@ export default async function testCase(): Promise<void> {
         description: 'Condition C',
         conditionCode: 'Condition C',
         assignmentWeight: 50,
-        twoCharacterId: 'CC',
         order: 1,
       }),
     ])
