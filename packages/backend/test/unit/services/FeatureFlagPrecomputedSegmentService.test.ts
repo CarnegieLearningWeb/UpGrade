@@ -111,7 +111,9 @@ describe('FeatureFlagPrecomputedSegmentService', () => {
         expect.objectContaining({ where: { featureFlag: { id: 'flag1' }, enabled: true } })
       );
       // cache for this flag is invalidated
-      expect(cacheService.delCache).toHaveBeenCalledWith(CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX + 'flag1');
+      expect(cacheService.delCache).toHaveBeenCalledWith(
+        CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX + 'flag1'
+      );
     });
 
     it('produces empty arrays when the flag has no enabled lists', async () => {
