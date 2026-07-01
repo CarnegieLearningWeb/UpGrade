@@ -52,14 +52,15 @@ export class DataService {
     return assignment;
   }
 
-  public findExperimentAssignmentBySiteAndTarget(site: string, target: string): IExperimentAssignmentv5 {
+  public findExperimentAssignmentBySiteAndTarget(site: string, target?: string): IExperimentAssignmentv5 {
+    const normalizedTarget = target ?? '';
     const assignment = this.experimentAssignmentData.find(
-      (assignment) => assignment.site === site && assignment.target === target
+      (assignment) => assignment.site === site && assignment.target === normalizedTarget
     );
 
     const emptyAssignment: IExperimentAssignmentv5 = {
       site: site,
-      target: target,
+      target: normalizedTarget,
       assignedCondition: [
         {
           payload: null,

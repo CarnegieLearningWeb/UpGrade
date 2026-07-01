@@ -81,7 +81,6 @@ export default async function UpdateExperiment(): Promise<void> {
         description: 'Condition C',
         conditionCode: 'Condition C',
         assignmentWeight: 50,
-        twoCharacterId: 'CC',
       },
     ],
     partitions: [
@@ -90,7 +89,6 @@ export default async function UpdateExperiment(): Promise<void> {
         site: 'CurriculumSequence ',
         target: 'W3',
         description: 'Decision Point on Workspace 3',
-        twoCharacterId: 'W3',
         id: '328dcb72-6fe4-4beb-9660-9f13bca1081f',
       },
     ],
@@ -125,7 +123,6 @@ export default async function UpdateExperiment(): Promise<void> {
         description: 'Condition C',
         conditionCode: 'Condition C',
         assignmentWeight: 50,
-        twoCharacterId: 'CC',
         order: 2,
       }),
     ])
@@ -153,7 +150,6 @@ export default async function UpdateExperiment(): Promise<void> {
         site: 'CurriculumSequence ',
         target: 'W3',
         description: 'Decision Point on Workspace 3',
-        twoCharacterId: 'W3',
         order: 3,
       }),
     ])

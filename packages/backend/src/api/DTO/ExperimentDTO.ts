@@ -1,6 +1,5 @@
 import {
   ArrayMinSize,
-  IsAlphanumeric,
   IsArray,
   IsBoolean,
   IsDateString,
@@ -13,8 +12,6 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  MaxLength,
-  MinLength,
   ValidateIf,
   ValidateNested,
   ValidationArguments,
@@ -128,12 +125,6 @@ export class ConditionValidator {
   @IsString()
   public id: string;
 
-  @IsAlphanumeric()
-  @IsOptional()
-  @MinLength(2)
-  @MaxLength(2)
-  public twoCharacterId?: string;
-
   @IsOptional()
   @IsString()
   public description?: string;
@@ -163,11 +154,6 @@ export class PartitionValidator {
   @IsNotEmpty()
   @IsString()
   public id: string;
-
-  @IsOptional()
-  @MinLength(2)
-  @MaxLength(2)
-  public twoCharacterId?: string;
 
   @IsNotEmpty()
   @IsString()

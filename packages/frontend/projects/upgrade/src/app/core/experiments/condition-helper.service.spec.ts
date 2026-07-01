@@ -450,7 +450,6 @@ function createCondition(code: string, weight: number): ExperimentCondition {
     description: `Description for ${code}`,
     conditionCode: code,
     assignmentWeight: weight,
-    twoCharacterId: code.substring(0, 2),
     order: 1,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

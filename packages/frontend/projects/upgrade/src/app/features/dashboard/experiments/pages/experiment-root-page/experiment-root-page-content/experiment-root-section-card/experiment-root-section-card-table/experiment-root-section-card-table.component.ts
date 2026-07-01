@@ -150,6 +150,10 @@ export class ExperimentRootSectionCardTableComponent implements AfterViewInit, O
     }
   }
 
+  trackByExperimentId(_index: number, experiment: Experiment): string {
+    return experiment.id;
+  }
+
   isTagsExpanded(experimentId: string): boolean {
     return this.expandedTagsMap?.get(experimentId) || false;
   }

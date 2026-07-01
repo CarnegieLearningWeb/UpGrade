@@ -281,6 +281,39 @@ describe('DataService', () => {
       );
     });
 
+    it('should normalize undefined target to empty string and return empty assignment', () => {
+      const experimentAssignmentData: IExperimentAssignmentv5[] = [
+        {
+          site: 'site',
+          target: 'target',
+          assignedCondition: [
+            {
+              conditionCode: 'control',
+              payload: { type: PAYLOAD_TYPE.STRING, value: 'testControl' },
+              experimentId: 'abc123',
+              id: 'xyz321',
+            },
+          ],
+          assignedFactor: [],
+          experimentType: EXPERIMENT_TYPE.SIMPLE,
+        },
+      ];
+      const emptyAssignment: IExperimentAssignmentv5 = {
+        site: 'site',
+        target: '',
+        assignedCondition: [
+          {
+            payload: null,
+            conditionCode: null,
+            id: null,
+          },
+        ],
+        experimentType: null,
+      };
+      dataService.setExperimentAssignmentData(experimentAssignmentData);
+      expect(dataService.findExperimentAssignmentBySiteAndTarget('site', undefined)).toEqual(emptyAssignment);
+    });
+
     it('should return undefined if no site + target match is found', () => {
       const experimentAssignmentData: IExperimentAssignmentv5[] = [
         {

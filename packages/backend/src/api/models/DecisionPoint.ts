@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
-import { IsNotEmpty, IsAlphanumeric, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
 import { ConditionPayload } from './ConditionPayload';
@@ -8,11 +8,6 @@ import { ConditionPayload } from './ConditionPayload';
 export class DecisionPoint extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;
-
-  @Column('char', { length: '2', unique: false })
-  @IsAlphanumeric()
-  @IsNotEmpty()
-  public twoCharacterId: string;
 
   @IsNotEmpty()
   @Column()
