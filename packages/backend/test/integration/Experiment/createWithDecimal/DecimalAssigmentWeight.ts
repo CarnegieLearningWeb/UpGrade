@@ -70,7 +70,6 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
         description: 'Condition C',
         conditionCode: 'Condition C',
         assignmentWeight: 39.5,
-        twoCharacterId: 'CC',
       },
     ],
     partitions: [
@@ -79,7 +78,6 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
         site: 'CurriculumSequence ',
         target: 'W3',
         description: 'Decision Point on Workspace 3',
-        twoCharacterId: 'W3',
         id: '328dcb72-6fe4-4beb-9660-9f13bca1081f',
       },
     ],
@@ -101,7 +99,6 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
         description: 'Condition C',
         conditionCode: 'Condition C',
         assignmentWeight: 39.5,
-        twoCharacterId: 'CC',
       }),
     ])
   );
@@ -128,7 +125,6 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
         site: 'CurriculumSequence ',
         target: 'W3',
         description: 'Decision Point on Workspace 3',
-        twoCharacterId: 'W3',
       }),
     ])
   );

@@ -416,7 +416,6 @@ interface ExperimentListImportValidation {
  *             - updatedAt
  *             - versionNumber
  *             - id
- *             - twoCharacterId
  *             - name
  *             - description
  *             - conditionCode
@@ -431,9 +430,6 @@ interface ExperimentListImportValidation {
  *             versionNumber:
  *               type: number
  *             id:
- *               type: string
- *               minLength: 1
- *             twoCharacterId:
  *               type: string
  *               minLength: 1
  *             name:
@@ -458,7 +454,6 @@ interface ExperimentListImportValidation {
  *             - updatedAt
  *             - versionNumber
  *             - id
- *             - twoCharacterId
  *             - site
  *             - description
  *           properties:
@@ -471,9 +466,6 @@ interface ExperimentListImportValidation {
  *             versionNumber:
  *               type: number
  *             id:
- *               type: string
- *               minLength: 1
- *             twoCharacterId:
  *               type: string
  *               minLength: 1
  *             site:
@@ -968,7 +960,6 @@ export class ExperimentController {
    *                  - updatedAt
    *                  - versionNumber
    *                  - id
-   *                  - twoCharacterId
    *                  - name
    *                  - description
    *                  - conditionCode
@@ -983,9 +974,6 @@ export class ExperimentController {
    *                  versionNumber:
    *                    type: number
    *                  id:
-   *                    type: string
-   *                    minLength: 1
-   *                  twoCharacterId:
    *                    type: string
    *                    minLength: 1
    *                  name:

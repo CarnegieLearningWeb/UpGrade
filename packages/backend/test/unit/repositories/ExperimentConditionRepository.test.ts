@@ -12,7 +12,6 @@ const err = new Error('test error');
 
 const experimentCond = new ExperimentCondition();
 experimentCond.id = 'id1';
-experimentCond.twoCharacterId = 'ab';
 
 const result = {
   identifiers: [{ id: experimentCond.id }],
@@ -166,28 +165,5 @@ describe('ExperimentConditionRepository Testing', () => {
     expect(mock.from).toHaveBeenCalledTimes(1);
     expect(mock.where).toHaveBeenCalledTimes(1);
     expect(mock.execute).toHaveBeenCalledTimes(1);
-  });
-
-  it('should get all unique experiment conditions', async () => {
-    mock.getMany.mockResolvedValue([experimentCond, experimentCond]);
-    const res = await repo.getAllUniqueIdentifier();
-
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
-
-    expect(mock.select).toHaveBeenCalledTimes(1);
-    expect(mock.getMany).toHaveBeenCalledTimes(1);
-
-    expect(res).toEqual([experimentCond.twoCharacterId, experimentCond.twoCharacterId]);
-  });
-
-  it('should throw an error when get unique experiment conditions fails', async () => {
-    mock.getMany.mockRejectedValue(err);
-
-    expect(async () => {
-      await repo.getAllUniqueIdentifier();
-    }).rejects.toThrow(err);
-
-    expect(mock.select).toHaveBeenCalledTimes(1);
-    expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
 });
