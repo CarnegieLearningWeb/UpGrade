@@ -432,13 +432,9 @@ export class ExperimentAssignmentService {
           (experiment) => experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
         );
 
-        const allWithinSubjectDecisionPoints = filteredWithinSubjectExperiments
-          .map((experiment) => this.getActiveDecisionPoints(experiment))
-          .flat();
-
         repeatedEnrollmentCounts = await this.repeatedEnrollmentRepository.getRepeatedEnrollmentCount(
           userId,
-          allWithinSubjectDecisionPoints.map((dp) => dp.id),
+          filteredWithinSubjectExperiments.map((experiment) => experiment.id),
           logger
         );
       }
@@ -454,7 +450,7 @@ export class ExperimentAssignmentService {
             conditionPayloads,
             type,
             factors,
-            repeatedEnrollmentCounts || [],
+            repeatedEnrollmentCounts,
             logger
           );
           return [...accumulator, ...decisionPoints];
@@ -894,7 +890,7 @@ export class ExperimentAssignmentService {
     conditionPayloads: ConditionPayloadDTO[],
     type: EXPERIMENT_TYPE,
     factors: FactorDTO[],
-    repeatedEnrollmentCounts: { userId: string; decisionPointId: string; count: number }[],
+    repeatedEnrollmentCounts: RepeatedEnrollmentDataCount[],
     logger: UpgradeLogger
   ): IExperimentAssignmentv5[] {
     return experiment.partitions
@@ -929,9 +925,8 @@ export class ExperimentAssignmentService {
 
         if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
           const count =
-            repeatedEnrollmentCounts.find(
-              (repeatedEnrollment) => repeatedEnrollment.decisionPointId === decisionPoint.id
-            )?.count || 0;
+            repeatedEnrollmentCounts?.find((repeatedEnrollment) => repeatedEnrollment.experimentId === experiment.id)
+              ?.count || 0;
           return withInSubjectType(experiment, conditionPayloads, decisionPoint, factors, userId, count);
         } else {
           const experimentId = experiment.id;
