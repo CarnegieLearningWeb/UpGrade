@@ -6,14 +6,12 @@ export default setSeederFactory(DecisionPoint, (faker: Faker) => {
   const site = faker.word.words(1);
   const target = faker.word.words(1);
   const description = faker.word.words(4);
-  const twoCharacterId = faker.string.alphanumeric(2);
 
   const decisionPoint = new DecisionPoint();
   decisionPoint.id = crypto.randomUUID();
   decisionPoint.site = site;
   decisionPoint.target = target;
   decisionPoint.description = description;
-  decisionPoint.twoCharacterId = twoCharacterId;
 
   return decisionPoint;
 });
