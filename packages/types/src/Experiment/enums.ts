@@ -340,7 +340,7 @@ export enum CACHE_PREFIX {
   GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX = 'globalExcludeSegment-',
   MARK_KEY_PREFIX = 'markExperiments-',
   FEATURE_FLAG_KEY_PREFIX = 'featureFlags-',
-  PRECOMPUTED_SEGMENT_KEY_PREFIX = 'precomputedSegments-',
+  FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX = 'featureFlagPrecomputedSegments-',
 }
 
 export enum STATUS_INDICATOR_CHIP_TYPE {

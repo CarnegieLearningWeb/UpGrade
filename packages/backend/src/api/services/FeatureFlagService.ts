@@ -54,7 +54,7 @@ import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
-import { PrecomputedSegmentService } from './PrecomputedSegmentService';
+import { FeatureFlagPrecomputedSegmentService } from './FeatureFlagPrecomputedSegmentService';
 import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import dayjs from 'dayjs';
 import { getDateRangeNames } from '../repositories/utils/dateQuery';
@@ -72,7 +72,7 @@ export class FeatureFlagService {
     public experimentAssignmentService: ExperimentAssignmentService,
     public segmentService: SegmentService,
     public cacheService: CacheService,
-    public precomputedSegmentService: PrecomputedSegmentService
+    public featureFlagPrecomputedSegmentService: FeatureFlagPrecomputedSegmentService
   ) {}
 
   public find(logger: UpgradeLogger): Promise<FeatureFlag[]> {
@@ -411,10 +411,10 @@ export class FeatureFlagService {
       };
       await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_CREATED, createAuditLogData, user);
 
-      // Seed an empty precomputed_segment row in the same transaction so the new flag always
+      // Seed an empty feature_flag_precomputed_segment row in the same transaction so the new flag always
       // has a row (no segment lists yet => empty arrays). This keeps the assignment read path
       // off the on-the-fly fallback for the common case and keeps the getKeys cache effective.
-      await this.precomputedSegmentService.seedEmptyRowForFlag(featureFlagDoc.id, manager);
+      await this.featureFlagPrecomputedSegmentService.seedEmptyRowForFlag(featureFlagDoc.id, manager);
 
       return featureFlagDoc;
     };
@@ -534,7 +534,7 @@ export class FeatureFlagService {
     const deleted = await this.segmentService.deleteSegment(segmentId, logger);
 
     if (flagId) {
-      await this.precomputedSegmentService.recomputeForFlag(flagId, logger);
+      await this.featureFlagPrecomputedSegmentService.recomputeForFlag(flagId, logger);
     }
 
     return deleted;
@@ -687,7 +687,7 @@ export class FeatureFlagService {
     if (transactionalEntityManager) {
       // The caller owns the outer transaction. We must NOT recompute here: recomputeForFlag
       // reads through its own repositories and cannot see this transaction's uncommitted writes,
-      // so it would persist an empty/stale precomputed_segment row that never self-heals. The
+      // so it would persist an empty/stale feature_flag_precomputed_segment row that never self-heals. The
       // caller is responsible for calling recomputeForFlag after its transaction commits.
       result = await executeTransaction(transactionalEntityManager);
     } else {
@@ -698,7 +698,7 @@ export class FeatureFlagService {
       // Recompute precomputed sets for each affected flag after the transaction commits
       const affectedFlagIds = [...new Set(listsInput.map((l) => l.id))];
       await Promise.all(
-        affectedFlagIds.map((flagId) => this.precomputedSegmentService.recomputeForFlag(flagId, logger))
+        affectedFlagIds.map((flagId) => this.featureFlagPrecomputedSegmentService.recomputeForFlag(flagId, logger))
       );
     }
 
@@ -853,7 +853,7 @@ export class FeatureFlagService {
       return existingRecord;
     });
 
-    await this.precomputedSegmentService.recomputeForFlag(listInput.id, logger);
+    await this.featureFlagPrecomputedSegmentService.recomputeForFlag(listInput.id, logger);
 
     return result;
   }
@@ -918,7 +918,7 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<Pick<FeatureFlag, 'id' | 'key' | 'filterMode'>[]> {
     const flagIds = featureFlags.map((f) => f.id);
-    const precomputedMap = await this.precomputedSegmentService.getPrecomputedSets(flagIds);
+    const precomputedMap = await this.featureFlagPrecomputedSegmentService.getPrecomputedSets(flagIds);
 
     // Flatten all group IDs from the user's group map (type is ignored per design decision)
     const userGroupIds: string[] = experimentUser.group ? Object.values(experimentUser.group).flat() : [];
@@ -962,7 +962,7 @@ export class FeatureFlagService {
   }
 
   /**
-   * Fallback assignment path for flags that have no precomputed_segment row. Resolves segment
+   * Fallback assignment path for flags that have no feature_flag_precomputed_segment row. Resolves segment
    * inclusion/exclusion on-the-fly using the same recursive resolution the codebase used before
    * precomputed segments (and that experiments still use), preserving full group-type matching.
    * Returns the set of flag IDs the user should be included in.
@@ -974,7 +974,7 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<Set<string>> {
     logger.warn({
-      message: `featureFlagLevelInclusionExclusion: ${missingFlagIds.length} flag(s) missing a precomputed_segment row; resolving on-the-fly`,
+      message: `featureFlagLevelInclusionExclusion: ${missingFlagIds.length} flag(s) missing a feature_flag_precomputed_segment row; resolving on-the-fly`,
       details: { context, missingFlagIds },
     });
 
@@ -1173,8 +1173,8 @@ export class FeatureFlagService {
       createdFlags.push(createdFlag);
 
       // The outer transaction has committed — recompute now (addList skipped it because it ran
-      // inside the transaction) so the imported enabled lists are reflected in precomputed_segment.
-      await this.precomputedSegmentService.recomputeForFlag(createdFlag.id, logger);
+      // inside the transaction) so the imported enabled lists are reflected in feature_flag_precomputed_segment.
+      await this.featureFlagPrecomputedSegmentService.recomputeForFlag(createdFlag.id, logger);
     }
     logger.info({ message: 'Imported feature flags', details: createdFlags });
 
@@ -1369,8 +1369,8 @@ export class FeatureFlagService {
       });
 
     // The outer transaction has committed — recompute now (addList skipped it because it ran
-    // inside the transaction) so the imported lists are reflected in precomputed_segment.
-    await this.precomputedSegmentService.recomputeForFlag(featureFlagId, logger);
+    // inside the transaction) so the imported lists are reflected in feature_flag_precomputed_segment.
+    await this.featureFlagPrecomputedSegmentService.recomputeForFlag(featureFlagId, logger);
 
     logger.info({ message: 'Imported feature flags', details: createdLists });
 

@@ -1,4 +1,4 @@
-import { PrecomputedSegmentService } from '../../../src/api/services/PrecomputedSegmentService';
+import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/FeatureFlagPrecomputedSegmentService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { CACHE_PREFIX } from 'upgrade_types';
 import { configureLogger } from '../../utils/logger';
@@ -25,7 +25,7 @@ function makeSegmentRepoMock(fixtures: Record<string, any>) {
   return { createQueryBuilder, findParentSegmentIds: jest.fn().mockResolvedValue([]) };
 }
 
-describe('PrecomputedSegmentService', () => {
+describe('FeatureFlagPrecomputedSegmentService', () => {
   beforeAll(() => {
     configureLogger();
   });
@@ -36,7 +36,7 @@ describe('PrecomputedSegmentService', () => {
   let featureFlagRepository: any;
   let segmentRepository: any;
   let cacheService: any;
-  let service: PrecomputedSegmentService;
+  let service: FeatureFlagPrecomputedSegmentService;
 
   beforeEach(() => {
     precomputedSegmentRepository = {
@@ -53,7 +53,7 @@ describe('PrecomputedSegmentService', () => {
       wrapFunction: jest.fn(),
     };
 
-    service = new PrecomputedSegmentService(
+    service = new FeatureFlagPrecomputedSegmentService(
       precomputedSegmentRepository,
       featureFlagSegmentInclusionRepository,
       featureFlagSegmentExclusionRepository,
@@ -89,7 +89,7 @@ describe('PrecomputedSegmentService', () => {
       featureFlagSegmentInclusionRepository.find = jest.fn().mockResolvedValue([{ segment: { id: 'segA' } }]);
       featureFlagSegmentExclusionRepository.find = jest.fn().mockResolvedValue([{ segment: { id: 'segB' } }]);
 
-      service = new PrecomputedSegmentService(
+      service = new FeatureFlagPrecomputedSegmentService(
         precomputedSegmentRepository,
         featureFlagSegmentInclusionRepository,
         featureFlagSegmentExclusionRepository,
@@ -111,7 +111,7 @@ describe('PrecomputedSegmentService', () => {
         expect.objectContaining({ where: { featureFlag: { id: 'flag1' }, enabled: true } })
       );
       // cache for this flag is invalidated
-      expect(cacheService.delCache).toHaveBeenCalledWith(CACHE_PREFIX.PRECOMPUTED_SEGMENT_KEY_PREFIX + 'flag1');
+      expect(cacheService.delCache).toHaveBeenCalledWith(CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX + 'flag1');
     });
 
     it('produces empty arrays when the flag has no enabled lists', async () => {

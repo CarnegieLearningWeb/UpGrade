@@ -3,7 +3,7 @@ import { BaseModel } from './base/BaseModel';
 import { FeatureFlag } from './FeatureFlag';
 
 @Entity()
-export class PrecomputedSegment extends BaseModel {
+export class FeatureFlagPrecomputedSegment extends BaseModel {
   @PrimaryColumn('uuid')
   public featureFlagId: string;
 

@@ -37,7 +37,7 @@ import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFl
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { getSegmentData, getSegmentsData } from '../controllers/SegmentController';
 import { CacheService } from './CacheService';
-import { PrecomputedSegmentService } from './PrecomputedSegmentService';
+import { FeatureFlagPrecomputedSegmentService } from './FeatureFlagPrecomputedSegmentService';
 import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import path from 'path';
@@ -83,7 +83,7 @@ export class SegmentService {
     @InjectRepository()
     private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
     private cacheService: CacheService,
-    private precomputedSegmentService: PrecomputedSegmentService
+    private featureFlagPrecomputedSegmentService: FeatureFlagPrecomputedSegmentService
   ) {}
 
   public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
@@ -430,7 +430,7 @@ export class SegmentService {
       return createdSegment;
     });
 
-    this.precomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
+    this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
 
     return createdSegment;
   }
@@ -458,7 +458,7 @@ export class SegmentService {
       return deletedSegmentResponse;
     });
 
-    this.precomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
+    this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
 
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
@@ -480,7 +480,7 @@ export class SegmentService {
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
     // Collect affected flags before deletion — join table records are gone after
-    const affectedFlagIds = await this.precomputedSegmentService.getAffectedFlagIds(id);
+    const affectedFlagIds = await this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id);
 
     const manager = this.dataSource;
     const deletedSegment = await manager.transaction(async (transactionalEntityManager) => {
@@ -489,7 +489,13 @@ export class SegmentService {
 
     // Recompute after the delete transaction has committed so the recompute reads the
     // post-delete state and stale member IDs are removed (fire-and-forget).
-    affectedFlagIds.forEach((flagId) => this.precomputedSegmentService.recomputeForFlag(flagId, logger));
+    affectedFlagIds.forEach((flagId) =>
+      this.featureFlagPrecomputedSegmentService
+        .recomputeForFlag(flagId, logger)
+        .catch((err) =>
+          logger.error({ message: `Error recomputing feature_flag_precomputed_segment for flag ${flagId}: ${err}` })
+        )
+    );
 
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
@@ -1039,7 +1045,7 @@ export class SegmentService {
     // firing this from inside a transaction risks a stale-read race where the fire-and-forget
     // reads the old enabled value and its upsert overwrites the correct post-commit result.
     if (!skipScheduleRecompute) {
-      this.precomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
+      this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
     }
 
     return transactionalEntityManager

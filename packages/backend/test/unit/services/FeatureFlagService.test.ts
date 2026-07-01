@@ -28,7 +28,7 @@ import { ExperimentAssignmentService } from '../../../src/api/services/Experimen
 import { FeatureFlagValidation } from '../../../src/api/controllers/validators/FeatureFlagValidator';
 import { FeatureFlagListValidator } from '../../../src/api/controllers/validators/FeatureFlagListValidator';
 import { SegmentService } from '../../../src/api/services/SegmentService';
-import { PrecomputedSegmentService } from '../../../src/api/services/PrecomputedSegmentService';
+import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/FeatureFlagPrecomputedSegmentService';
 import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
 import { FeatureFlagExposureRepository } from '../../../src/api/repositories/FeatureFlagExposureRepository';
@@ -205,7 +205,7 @@ describe('Feature Flag Service Testing', () => {
           },
         },
         {
-          provide: PrecomputedSegmentService,
+          provide: FeatureFlagPrecomputedSegmentService,
           useValue: {
             // Empty map by default => every flag is "missing" a precomputed row, so getKeys
             // routes through the on-the-fly fallback (resolveSegmentsForEntities/inclusionExclusionLogic).
@@ -705,7 +705,7 @@ describe('Feature Flag Service Testing', () => {
     it('uses the precomputed set and skips on-the-fly resolution when a row exists', async () => {
       const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
       const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
-      const precomputed = module.get<PrecomputedSegmentService>(PrecomputedSegmentService);
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
 
       service.cacheService.wrap = jest.fn().mockResolvedValue([fastFlag]);
       (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
@@ -722,7 +722,7 @@ describe('Feature Flag Service Testing', () => {
 
     it('individual inclusion beats group exclusion on the fast path', async () => {
       const userDoc = { id: 'user123', group: { classId: ['bad-class'] }, workingGroup: {} } as any;
-      const precomputed = module.get<PrecomputedSegmentService>(PrecomputedSegmentService);
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
 
       service.cacheService.wrap = jest.fn().mockResolvedValue([fastFlag]);
       (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
@@ -738,7 +738,7 @@ describe('Feature Flag Service Testing', () => {
       const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
       const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
       const resolveSegmentsSpy = experimentAssignmentService.resolveSegmentsForEntities as jest.Mock;
-      const precomputed = module.get<PrecomputedSegmentService>(PrecomputedSegmentService);
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
 
       service.cacheService.wrap = jest.fn().mockResolvedValue([fastFlag]);
       (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(new Map()); // no row -> fallback
@@ -752,7 +752,7 @@ describe('Feature Flag Service Testing', () => {
 
   describe('precomputed recompute + seed triggers', () => {
     it('seeds an empty precomputed row in-transaction when a flag is created', async () => {
-      const precomputed = module.get<PrecomputedSegmentService>(PrecomputedSegmentService);
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
       flagRepo.insertFeatureFlag = jest.fn().mockResolvedValue([mockFlag1]);
 
       await service.create(mockFlag2, mockUser1, logger);
@@ -761,7 +761,7 @@ describe('Feature Flag Service Testing', () => {
     });
 
     it('recomputes the affected flag after addList (standalone, owns the transaction)', async () => {
-      const precomputed = module.get<PrecomputedSegmentService>(PrecomputedSegmentService);
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
 
       await service.addList([mockList], LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
 
@@ -769,7 +769,7 @@ describe('Feature Flag Service Testing', () => {
     });
 
     it('recomputes imported flags after the import transaction commits', async () => {
-      const precomputed = module.get<PrecomputedSegmentService>(PrecomputedSegmentService);
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
 
       await service.importFeatureFlags(
         [{ fileName: 'import.json', fileContent: JSON.stringify(mockFlag4) }],

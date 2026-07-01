@@ -1,20 +1,20 @@
 import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
-import { PrecomputedSegmentRepository } from '../repositories/PrecomputedSegmentRepository';
+import { FeatureFlagPrecomputedSegmentRepository } from '../repositories/FeatureFlagPrecomputedSegmentRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
 import { SegmentRepository } from '../repositories/SegmentRepository';
-import { PrecomputedSegment } from '../models/PrecomputedSegment';
+import { FeatureFlagPrecomputedSegment } from '../models/FeatureFlagPrecomputedSegment';
 import { CacheService } from './CacheService';
 import { CACHE_PREFIX } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { EntityManager } from 'typeorm';
 
 @Service()
-export class PrecomputedSegmentService {
+export class FeatureFlagPrecomputedSegmentService {
   constructor(
-    @InjectRepository() private precomputedSegmentRepository: PrecomputedSegmentRepository,
+    @InjectRepository() private precomputedSegmentRepository: FeatureFlagPrecomputedSegmentRepository,
     @InjectRepository() private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
     @InjectRepository() private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
     @InjectRepository() private featureFlagRepository: FeatureFlagRepository,
@@ -48,11 +48,11 @@ export class PrecomputedSegmentService {
       [...new Set(exclusionIds)]
     );
 
-    await this.cacheService.delCache(CACHE_PREFIX.PRECOMPUTED_SEGMENT_KEY_PREFIX + flagId);
-    logger.info({ message: `Recomputed precomputed_segment for flag ${flagId}` });
+    await this.cacheService.delCache(CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX + flagId);
+    logger.info({ message: `Recomputed feature_flag_precomputed_segment for flag ${flagId}` });
   }
 
-  // Seed an empty precomputed_segment row for a brand-new flag, inside the flag's own
+  // Seed an empty feature_flag_precomputed_segment row for a brand-new flag, inside the flag's own
   // creation transaction so the row is atomic with the flag insert. A new flag has no
   // segment lists, so empty arrays are the correct initial state. `orIgnore` keeps this a
   // no-op if a row somehow already exists. Seeding here guarantees getPrecomputedSets never
@@ -61,7 +61,7 @@ export class PrecomputedSegmentService {
     await manager
       .createQueryBuilder()
       .insert()
-      .into(PrecomputedSegment)
+      .into(FeatureFlagPrecomputedSegment)
       .values({ featureFlagId: flagId, inclusionIds: [], exclusionIds: [] })
       .orIgnore()
       .execute();
@@ -74,16 +74,18 @@ export class PrecomputedSegmentService {
       .catch((err) => logger.error({ message: `Error in scheduleRecomputeForSegment: ${err}` }));
   }
 
-  public async getPrecomputedSets(flagIds: string[]): Promise<Map<string, PrecomputedSegment>> {
+  public async getPrecomputedSets(flagIds: string[]): Promise<Map<string, FeatureFlagPrecomputedSegment>> {
     if (!flagIds.length) return new Map();
 
-    const results = await this.cacheService.wrapFunction(CACHE_PREFIX.PRECOMPUTED_SEGMENT_KEY_PREFIX, flagIds, () =>
-      this.precomputedSegmentRepository.findByFlagIds(flagIds)
+    const results = await this.cacheService.wrapFunction(
+      CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX,
+      flagIds,
+      () => this.precomputedSegmentRepository.findByFlagIds(flagIds)
     );
 
-    const map = new Map<string, PrecomputedSegment>();
+    const map = new Map<string, FeatureFlagPrecomputedSegment>();
     flagIds.forEach((id, i) => {
-      if (results[i]) map.set(id, results[i] as PrecomputedSegment);
+      if (results[i]) map.set(id, results[i] as FeatureFlagPrecomputedSegment);
     });
     return map;
   }
@@ -95,13 +97,13 @@ export class PrecomputedSegmentService {
       try {
         await this.recomputeForFlag(flag.id, logger);
       } catch (err) {
-        logger.error({ message: `Failed to recompute precomputed_segment for flag ${flag.id}: ${err}` });
+        logger.error({ message: `Failed to recompute feature_flag_precomputed_segment for flag ${flag.id}: ${err}` });
       }
     }
     logger.info({ message: `Backfill complete: recomputed ${flags.length} flags` });
   }
 
-  // Backfill only flags that have no precomputed_segment row yet — safe to run every startup
+  // Backfill only flags that have no feature_flag_precomputed_segment row yet — safe to run every startup
   public async backfillMissingFlags(logger: UpgradeLogger): Promise<void> {
     const [allFlags, existingRows] = await Promise.all([
       this.featureFlagRepository.find({ select: ['id'] }),
@@ -112,7 +114,7 @@ export class PrecomputedSegmentService {
     const missingFlags = allFlags.filter((f) => !existingFlagIds.has(f.id));
 
     if (!missingFlags.length) {
-      logger.info({ message: 'precomputed_segment backfill: all flags already have rows, nothing to do' });
+      logger.info({ message: 'feature_flag_precomputed_segment backfill: all flags already have rows, nothing to do' });
       return;
     }
 
@@ -120,11 +122,11 @@ export class PrecomputedSegmentService {
       try {
         await this.recomputeForFlag(flag.id, logger);
       } catch (err) {
-        logger.error({ message: `Failed to backfill precomputed_segment for flag ${flag.id}: ${err}` });
+        logger.error({ message: `Failed to backfill feature_flag_precomputed_segment for flag ${flag.id}: ${err}` });
       }
     }
     logger.info({
-      message: `precomputed_segment backfill complete: computed ${missingFlags.length} of ${allFlags.length} flags`,
+      message: `feature_flag_precomputed_segment backfill complete: computed ${missingFlags.length} of ${allFlags.length} flags`,
     });
   }
 
