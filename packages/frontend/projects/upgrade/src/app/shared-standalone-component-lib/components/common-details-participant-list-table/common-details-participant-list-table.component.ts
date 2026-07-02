@@ -92,8 +92,7 @@ export class CommonDetailsParticipantListTableComponent {
     const listType = rowData.listType;
     let count: number;
 
-    // Prefer the lightweight count returned by the details endpoint (member lists are not
-    // loaded there); fall back to the array length when the full lists are present.
+    // Prefer the count field (counts-only load); fall back to array length when full lists are present.
     if (listType?.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
       count = rowData.segment.individualForSegmentCount ?? rowData.segment.individualForSegment?.length ?? 0;
     } else {

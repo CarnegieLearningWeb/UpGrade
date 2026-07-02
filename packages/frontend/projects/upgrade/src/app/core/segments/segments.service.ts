@@ -123,8 +123,7 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionGetSegmentById({ segmentId }));
   }
 
-  // Fetches a single segment with its full member lists directly (bypassing the store), used
-  // to lazy-load members when editing a list loaded from the counts-only details endpoint.
+  // Lazy-loads a list's members for editing (bypasses the store).
   fetchSegmentWithMembersById(segmentId: string): Observable<Segment> {
     return this.segmentsDataService.fetchSegmentWithMembersById(segmentId);
   }

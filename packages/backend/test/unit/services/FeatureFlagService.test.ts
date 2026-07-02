@@ -448,6 +448,14 @@ describe('Feature Flag Service Testing', () => {
     expect(results).toBeTruthy();
   });
 
+  it('should use the counts-only fetch (not the full-member findOne) when toggling flag state', async () => {
+    const detailsSpy = jest.spyOn(service, 'findOneForDetails');
+    const findOneSpy = jest.spyOn(service, 'findOne');
+    await service.updateState(mockFlag1.id, FEATURE_FLAG_STATUS.ENABLED, mockUser1);
+    expect(detailsSpy).toHaveBeenCalledWith(mockFlag1.id);
+    expect(findOneSpy).not.toHaveBeenCalled();
+  });
+
   it('should update the filter mode', async () => {
     flagRepo.updateFilterMode = jest.fn().mockResolvedValue(mockFlag1);
     const results = await service.updateFilterMode(mockFlag1.id, FILTER_MODE.EXCLUDE_ALL, mockUser1);
@@ -461,7 +469,7 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should return undefined when no flag to delete', async () => {
-    service.findOne = jest.fn().mockResolvedValue(undefined);
+    service.findOneForDetails = jest.fn().mockResolvedValue(undefined);
     const results = await service.delete(mockFlag1.id, mockUser1, logger);
     expect(results).toEqual(undefined);
   });
