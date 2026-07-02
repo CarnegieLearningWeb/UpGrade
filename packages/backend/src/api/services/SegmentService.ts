@@ -150,6 +150,21 @@ export class SegmentService {
     return segmentDoc;
   }
 
+  // Fetches a segment (including private lists) by id with its full member lists. Unlike
+  // getSegmentById this does not exclude private segments, so a feature flag or experiment's
+  // private inclusion/exclusion list can be loaded on demand for editing (its members are not
+  // loaded on the counts-only details page).
+  public async getSegmentByIdWithMembers(id: string, logger: UpgradeLogger): Promise<Segment> {
+    logger.info({ message: `Find segment (including private) with members by id. segmentId: ${id}` });
+    return this.segmentRepository
+      .createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .where({ id })
+      .getOne();
+  }
+
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
     return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
       const result = await this.segmentRepository
@@ -884,31 +899,16 @@ export class SegmentService {
   ): Promise<Segment> {
     let segmentDoc: Segment;
 
-    let usersToDelete = [],
-      groupsToDelete = [];
     if (segment.id) {
       try {
-        // get segment by ids
-        segmentDoc = await transactionalEntityManager.getRepository(Segment).findOne({
-          where: { id: segment.id },
-          relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
-        });
-
-        // delete individual for segment
-        if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
-          usersToDelete = segmentDoc.individualForSegment.map((individual) => {
-            return { userId: individual.userId, segment: segment };
-          });
-          await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
-        }
-
-        // delete group for segment
-        if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
-          groupsToDelete = segmentDoc.groupForSegment.map((group) => {
-            return { groupId: group.groupId, type: group.type, segment: segment };
-          });
-          await transactionalEntityManager.getRepository(GroupForSegment).delete(groupsToDelete as any);
-        }
+        // Clear the existing members before re-inserting them below (the update model is a full
+        // replace). We delete with a single "WHERE segmentId = :id" statement per member table.
+        // Previously this fetched every member and passed a per-row criteria array to .delete(),
+        // which TypeORM expands into one giant OR predicate — extremely slow for large lists.
+        await Promise.all([
+          transactionalEntityManager.getRepository(IndividualForSegment).delete({ segmentId: segment.id }),
+          transactionalEntityManager.getRepository(GroupForSegment).delete({ segmentId: segment.id }),
+        ]);
       } catch (err) {
         const error = err as ErrorWithType;
         error.details = 'Error in deleting segment from DB';

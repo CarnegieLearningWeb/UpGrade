@@ -500,6 +500,58 @@ describe('Feature Flag Service Testing', () => {
     expect(result).toBeTruthy();
   });
 
+  it('should find one flag for the details view', async () => {
+    const result = await service.findOneForDetails(mockFlag1.id, logger);
+    expect(result).toEqual(mockFlag1);
+  });
+
+  describe('updateListStatus', () => {
+    it('should update an inclusion list enabled status without rewriting its members', async () => {
+      const inclusionRepo = module.get(getRepositoryToken(FeatureFlagSegmentInclusionRepository)) as any;
+      const segmentService = module.get<SegmentService>(SegmentService);
+      inclusionRepo.findOne = jest.fn().mockResolvedValue({
+        enabled: false,
+        featureFlag: { id: mockFlag1.id, name: mockFlag1.name, context: ['context1'] },
+        segment: { id: 'segment-1', name: 'list' },
+      });
+      inclusionRepo.save = jest.fn().mockResolvedValue({});
+      mockExperimentAuditLogRepository.saveRawJson.mockClear();
+
+      const result = await service.updateListStatus('segment-1', true, LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
+
+      expect(result.enabled).toBe(true);
+      expect(inclusionRepo.save).toHaveBeenCalled();
+      // a status-only toggle must NOT re-upsert the segment (which would rewrite all members)
+      expect(segmentService.upsertSegmentInPipeline).not.toHaveBeenCalled();
+      // a status change is recorded in the audit log
+      expect(mockExperimentAuditLogRepository.saveRawJson).toHaveBeenCalled();
+    });
+
+    it('should update an exclusion list enabled status', async () => {
+      const exclusionRepo = module.get(getRepositoryToken(FeatureFlagSegmentExclusionRepository)) as any;
+      exclusionRepo.findOne = jest.fn().mockResolvedValue({
+        enabled: true,
+        featureFlag: { id: mockFlag1.id, name: mockFlag1.name, context: ['context1'] },
+        segment: { id: 'segment-2', name: 'list' },
+      });
+      exclusionRepo.save = jest.fn().mockResolvedValue({});
+
+      const result = await service.updateListStatus('segment-2', false, LIST_FILTER_MODE.EXCLUSION, mockUser1, logger);
+
+      expect(result.enabled).toBe(false);
+      expect(exclusionRepo.save).toHaveBeenCalled();
+    });
+
+    it('should throw when no existing list record is found', async () => {
+      const inclusionRepo = module.get(getRepositoryToken(FeatureFlagSegmentInclusionRepository)) as any;
+      inclusionRepo.findOne = jest.fn().mockResolvedValue(undefined);
+
+      await expect(
+        service.updateListStatus('missing-segment', true, LIST_FILTER_MODE.INCLUSION, mockUser1, logger)
+      ).rejects.toThrow();
+    });
+  });
+
   it('should import a feature flag from a valid file', async () => {
     const result = await service.importFeatureFlags(
       [{ fileName: 'import.json', fileContent: JSON.stringify(mockFlag4) }],

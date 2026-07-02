@@ -48,6 +48,12 @@ export class Segment extends BaseModel {
   @Type(() => GroupForSegment)
   public groupForSegment: GroupForSegment[];
 
+  // Not persisted columns. Populated via loadRelationCountAndMap when a segment is loaded
+  // without its member lists (e.g. the feature-flag details page), so the UI can show counts
+  // without shipping the full individualForSegment / groupForSegment arrays.
+  public individualForSegmentCount?: number;
+  public groupForSegmentCount?: number;
+
   @ManyToMany(() => Segment, (segment) => segment.subSegments)
   @JoinTable({
     name: 'segment_for_segment',

@@ -155,6 +155,35 @@ export class FeatureFlagService {
     return featureFlag;
   }
 
+  // Lightweight variant of findOne for the details page, which only renders member *counts*
+  // per inclusion/exclusion list. It skips loading the (potentially tens of thousands of rows)
+  // individualForSegment and groupForSegment collections — which in findOne also cause a
+  // Cartesian-product row explosion — and instead maps lightweight COUNT subqueries onto each
+  // segment (individualForSegmentCount / groupForSegmentCount). The full member lists are
+  // fetched on demand via GET /segments/:id/members when a list is opened for editing.
+  // NOTE: callers that need the actual members (e.g. exports) must use findOne, not this.
+  public async findOneForDetails(id: string, logger?: UpgradeLogger): Promise<FeatureFlag | undefined> {
+    if (logger) {
+      logger.info({ message: `Find feature flag (details view) by id => ${id}` });
+    }
+    const featureFlag = await this.featureFlagRepository
+      .createQueryBuilder('feature_flag')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
+      .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
+      .loadRelationCountAndMap('segmentInclusion.individualForSegmentCount', 'segmentInclusion.individualForSegment')
+      .loadRelationCountAndMap('segmentInclusion.groupForSegmentCount', 'segmentInclusion.groupForSegment')
+      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
+      .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
+      .loadRelationCountAndMap('segmentExclusion.individualForSegmentCount', 'segmentExclusion.individualForSegment')
+      .loadRelationCountAndMap('segmentExclusion.groupForSegmentCount', 'segmentExclusion.groupForSegment')
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
+      .where({ id })
+      .getOne();
+
+    return featureFlag;
+  }
+
   public async create(
     flagDTO: FeatureFlagValidation,
     currentUser: UserDTO,
@@ -698,9 +727,11 @@ export class FeatureFlagService {
     logger.info({ message: `Update ${filterType} list for feature flag` });
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
-      // Find the existing record
+      // Find the existing record. Only the flag id/name are needed here (for the audit log
+      // below), so use the counts-only variant to avoid loading every list's members — which
+      // for large lists made saving an edit very slow.
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
-      const featureFlag = await this.findOne(listInput.id);
+      const featureFlag = await this.findOneForDetails(listInput.id);
 
       if (filterType === LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
@@ -803,6 +834,72 @@ export class FeatureFlagService {
 
       return existingRecord;
     });
+  }
+
+  public async updateListStatus(
+    segmentId: string,
+    enabled: boolean,
+    filterType: LIST_FILTER_MODE,
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
+    logger.info({ message: `Update ${filterType} list status for feature flag => segment ${segmentId}` });
+
+    let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
+    if (filterType === LIST_FILTER_MODE.INCLUSION) {
+      existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
+        where: { segment: { id: segmentId } },
+        relations: ['featureFlag', 'segment'],
+      });
+    } else {
+      existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
+        where: { segment: { id: segmentId } },
+        relations: ['featureFlag', 'segment'],
+      });
+    }
+
+    if (!existingRecord) {
+      const error = new Error(`No existing ${filterType} record found for segment ${segmentId}`);
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
+      throw error;
+    }
+
+    const statusChanged = existingRecord.enabled !== enabled;
+    existingRecord.enabled = enabled;
+
+    try {
+      if (filterType === LIST_FILTER_MODE.INCLUSION) {
+        await this.featureFlagSegmentInclusionRepository.save(existingRecord);
+      } else {
+        await this.featureFlagSegmentExclusionRepository.save(existingRecord);
+      }
+    } catch (err) {
+      const error = new Error(`Error in updating ${filterType} list status: ${err}`);
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
+      throw error;
+    }
+
+    await this.clearCachedFlagsForContext(existingRecord.featureFlag.context[0]);
+
+    if (statusChanged) {
+      const listData: ListOperationsData = {
+        listId: existingRecord.segment.id,
+        listName: existingRecord.segment.name,
+        filterType: filterType,
+        enabled: enabled,
+        operation: FEATURE_FLAG_LIST_OPERATION.STATUS_CHANGED,
+      };
+      const updateAuditLog: FeatureFlagUpdatedData = {
+        flagId: existingRecord.featureFlag.id,
+        flagName: existingRecord.featureFlag.name,
+        list: listData,
+      };
+      await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, currentUser);
+    }
+
+    return existingRecord;
   }
 
   private paginatedSearchString(params: IFeatureFlagSearchParams): string {

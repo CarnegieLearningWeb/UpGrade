@@ -48,6 +48,14 @@ export class SegmentsDataService {
     return this.http.get(url);
   }
 
+  // Fetches a single segment including its full member lists. Used to lazy-load members when
+  // editing a list, since the details page loads segments with counts only (no member arrays).
+  // Uses the /members endpoint, which (unlike GET /segments/:id) also returns private lists.
+  fetchSegmentWithMembersById(id: string): Observable<Segment> {
+    const url = `${API_ENDPOINTS.segments}/${id}/members`;
+    return this.http.get<Segment>(url);
+  }
+
   deleteSegment(id: string) {
     const url = `${API_ENDPOINTS.segments}/${id}`;
     return this.http.delete(url);

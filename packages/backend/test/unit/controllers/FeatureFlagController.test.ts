@@ -83,9 +83,35 @@ describe('Feature Flag Controller Testing', () => {
       .expect(200);
   });
 
+  test('Get request for /api/flags/id', () => {
+    return request(app)
+      .get('/api/flags/' + crypto.randomUUID())
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
   test('Delete request for /api/flags/id', () => {
     return request(app)
       .delete('/api/flags/' + crypto.randomUUID())
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Patch request for /api/flags/inclusionList/id/status', () => {
+    return request(app)
+      .patch('/api/flags/inclusionList/' + crypto.randomUUID() + '/status')
+      .send({ enabled: false })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Patch request for /api/flags/exclusionList/id/status', () => {
+    return request(app)
+      .patch('/api/flags/exclusionList/' + crypto.randomUUID() + '/status')
+      .send({ enabled: true })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

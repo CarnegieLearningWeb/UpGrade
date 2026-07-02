@@ -42,6 +42,11 @@ export const selectAllExperiment = createSelector(
 
 export const selectIsLoadingExperiment = createSelector(selectExperimentState, (state) => state.isLoadingExperiment);
 
+export const selectIsLoadingUpsertPrivateSegmentList = createSelector(
+  selectExperimentState,
+  (state) => state.isLoadingUpsertPrivateSegmentList
+);
+
 export const selectHasInitialExperimentsDataLoaded = createSelector(
   selectExperimentState,
   (state) => state.hasInitialExperimentsDataLoaded

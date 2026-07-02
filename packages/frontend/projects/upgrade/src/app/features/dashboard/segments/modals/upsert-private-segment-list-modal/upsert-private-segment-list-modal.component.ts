@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { CommonModalComponent, CommonTagsInputComponent } from '@shared-component-lib';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
@@ -35,7 +35,16 @@ import {
   UpsertPrivateSegmentListParams,
 } from '../../../../../core/segments/store/segments.model';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscription, timer } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  combineLatestWith,
+  map,
+  Observable,
+  startWith,
+  Subscription,
+  timer,
+} from 'rxjs';
 import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
@@ -63,7 +72,15 @@ import { SharedModule } from '../../../../../shared/shared.module';
 export class UpsertPrivateSegmentListModalComponent {
   @ViewChild('typeSelectRef') typeSelectRef: MatSelect;
   listOptionTypes$: Observable<{ value: string; viewValue: string }[]>;
-  isLoadingUpsertFeatureFlagList$ = this.featureFlagService.isLoadingUpsertPrivateSegmentList$;
+  // This modal drives add/edit for feature-flag lists, experiment lists, and standalone
+  // segment lists — each backed by a different store. Disable the primary button while an
+  // upsert is in flight in ANY of them so it can't be double-submitted. Each store resets its
+  // own flag on success/failure, so this re-enables (or the modal closes) automatically.
+  isUpsertLoading$ = combineLatest([
+    this.featureFlagService.isLoadingUpsertPrivateSegmentList$,
+    this.experimentService.isLoadingUpsertPrivateSegmentList$,
+    this.segmentsService.isLoadingSegments$,
+  ]).pipe(map((loadingFlags) => loadingFlags.some(Boolean)));
   initialFormValues$ = new BehaviorSubject<PrivateSegmentListFormData>(null);
 
   subscriptions = new Subscription();
@@ -86,6 +103,7 @@ export class UpsertPrivateSegmentListModalComponent {
     private experimentService: ExperimentService,
     private featureFlagService: FeatureFlagsService,
     private commonExportHelpersService: CommonExportHelpersService,
+    private changeDetectorRef: ChangeDetectorRef,
     public dialogRef: MatDialogRef<UpsertPrivateSegmentListModalComponent>
   ) {}
 
@@ -187,13 +205,31 @@ export class UpsertPrivateSegmentListModalComponent {
       return;
     }
 
-    const values = this.determineValues(sourceList.listType, sourceList.segment);
+    this.applyEditFormValues(sourceList.listType, sourceList.segment);
+
+    // The feature-flag details page loads segments with member counts only (no member
+    // arrays) to stay lightweight, so lazy-load the full segment when we detect that members
+    // exist but weren't loaded. Editing then operates on the complete list.
+    if (this.segmentMembersNeedFetch(sourceList.listType, sourceList.segment)) {
+      this.subscriptions.add(
+        this.segmentsService.fetchSegmentWithMembersById(sourceList.segment.id).subscribe((segment) => {
+          if (segment) {
+            this.applyEditFormValues(sourceList.listType, segment);
+            this.changeDetectorRef.markForCheck();
+          }
+        })
+      );
+    }
+  }
+
+  private applyEditFormValues(listType: string, segment: Segment): void {
+    const values = this.determineValues(listType, segment);
     const formValue: PrivateSegmentListFormData = {
-      listType: sourceList.listType as LIST_OPTION_TYPE,
-      segment: sourceList.segment,
+      listType: listType as LIST_OPTION_TYPE,
+      segment,
       values,
-      name: sourceList.segment.name,
-      description: sourceList.segment.description,
+      name: segment.name,
+      description: segment.description,
     };
 
     this.privateSegmentListForm.patchValue(formValue, { emitEvent: false });
@@ -202,17 +238,29 @@ export class UpsertPrivateSegmentListModalComponent {
     this.initialFormValues$.next(formValue);
 
     // Trigger validators after populating the form
-    this.setValidatorsBasedOnListType(sourceList.listType);
+    this.setValidatorsBasedOnListType(listType);
+  }
+
+  // True when the segment's member list wasn't loaded (counts-only) but a non-zero count
+  // indicates members exist, so the full list must be fetched before editing.
+  private segmentMembersNeedFetch(listType: string, segment: Segment): boolean {
+    if (!segment?.id || listType === LIST_OPTION_TYPE.SEGMENT) {
+      return false;
+    }
+    if (listType === LIST_OPTION_TYPE.INDIVIDUAL) {
+      return !segment.individualForSegment?.length && (segment.individualForSegmentCount ?? 0) > 0;
+    }
+    return !segment.groupForSegment?.length && (segment.groupForSegmentCount ?? 0) > 0;
   }
 
   determineValues(listType: string, segment: Segment): string[] {
     switch (listType) {
       case LIST_OPTION_TYPE.INDIVIDUAL:
-        return segment.individualForSegment.map((individual) => individual.userId);
+        return segment.individualForSegment?.map((individual) => individual.userId) ?? [];
       case LIST_OPTION_TYPE.SEGMENT:
         return [];
       default:
-        return segment.groupForSegment.map((group) => group.groupId);
+        return segment.groupForSegment?.map((group) => group.groupId) ?? [];
     }
   }
 
@@ -231,7 +279,7 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   listenForPrimaryButtonDisabled() {
-    this.isPrimaryButtonDisabled$ = this.isLoadingUpsertFeatureFlagList$.pipe(
+    this.isPrimaryButtonDisabled$ = this.isUpsertLoading$.pipe(
       combineLatestWith(this.isInitialFormValueChanged$),
       map(([isLoading, isInitialFormValueChanged]) => isLoading || !isInitialFormValueChanged)
     );
