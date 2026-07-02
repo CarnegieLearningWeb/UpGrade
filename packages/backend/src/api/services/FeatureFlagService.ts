@@ -170,6 +170,30 @@ export class FeatureFlagService {
     return featureFlag;
   }
 
+  // Counts-only variant of findOne for the details page: maps member counts instead of loading
+  // the member lists. Callers that need the actual members (e.g. exports) must use findOne.
+  public async findOneForDetails(id: string, logger?: UpgradeLogger): Promise<FeatureFlag | undefined> {
+    if (logger) {
+      logger.info({ message: `Find feature flag (details view) by id => ${id}` });
+    }
+    const featureFlag = await this.featureFlagRepository
+      .createQueryBuilder('feature_flag')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
+      .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
+      .loadRelationCountAndMap('segmentInclusion.individualForSegmentCount', 'segmentInclusion.individualForSegment')
+      .loadRelationCountAndMap('segmentInclusion.groupForSegmentCount', 'segmentInclusion.groupForSegment')
+      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
+      .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
+      .loadRelationCountAndMap('segmentExclusion.individualForSegmentCount', 'segmentExclusion.individualForSegment')
+      .loadRelationCountAndMap('segmentExclusion.groupForSegmentCount', 'segmentExclusion.groupForSegment')
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
+      .where({ id })
+      .getOne();
+
+    return featureFlag;
+  }
+
   public async create(
     flagDTO: FeatureFlagValidation,
     currentUser: UserDTO,
@@ -259,7 +283,7 @@ export class FeatureFlagService {
   ): Promise<FeatureFlag | undefined> {
     logger.info({ message: `Delete Feature Flag => ${featureFlagId}` });
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
-      const featureFlag = await this.findOne(featureFlagId, logger);
+      const featureFlag = await this.findOneForDetails(featureFlagId, logger);
 
       if (featureFlag) {
         await this.clearCachedFlagsForContext(featureFlag.context[0]);
@@ -303,7 +327,7 @@ export class FeatureFlagService {
   }
 
   public async updateState(flagId: string, status: FEATURE_FLAG_STATUS, currentUser: UserDTO): Promise<FeatureFlag> {
-    const oldFeatureFlag = await this.findOne(flagId);
+    const oldFeatureFlag = await this.findOneForDetails(flagId);
     await this.clearCachedFlagsForContext(oldFeatureFlag.context[0]);
     let updatedState: FeatureFlag;
     try {
@@ -439,7 +463,7 @@ export class FeatureFlagService {
       createdAt,
       updatedAt,
       ...oldFlagDoc
-    } = await this.findOne(flag.id);
+    } = await this.findOneForDetails(flag.id);
 
     let includeList = [...featureFlagSegmentInclusion];
     let excludeList = [...featureFlagSegmentExclusion];
@@ -746,7 +770,7 @@ export class FeatureFlagService {
     const result = await this.dataSource.transaction(async (transactionalEntityManager) => {
       // Find the existing record
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
-      const featureFlag = await this.findOne(listInput.id);
+      const featureFlag = await this.findOneForDetails(listInput.id);
 
       if (filterType === LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
@@ -856,6 +880,72 @@ export class FeatureFlagService {
     await this.featureFlagPrecomputedSegmentService.recomputeForFlag(listInput.id, logger);
 
     return result;
+  }
+
+  public async updateListStatus(
+    segmentId: string,
+    enabled: boolean,
+    filterType: LIST_FILTER_MODE,
+    currentUser: UserDTO,
+    logger: UpgradeLogger
+  ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
+    logger.info({ message: `Update ${filterType} list status for feature flag => segment ${segmentId}` });
+
+    let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
+    if (filterType === LIST_FILTER_MODE.INCLUSION) {
+      existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
+        where: { segment: { id: segmentId } },
+        relations: ['featureFlag', 'segment'],
+      });
+    } else {
+      existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
+        where: { segment: { id: segmentId } },
+        relations: ['featureFlag', 'segment'],
+      });
+    }
+
+    if (!existingRecord) {
+      const error = new Error(`No existing ${filterType} record found for segment ${segmentId}`);
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
+      throw error;
+    }
+
+    const statusChanged = existingRecord.enabled !== enabled;
+    existingRecord.enabled = enabled;
+
+    try {
+      if (filterType === LIST_FILTER_MODE.INCLUSION) {
+        await this.featureFlagSegmentInclusionRepository.save(existingRecord);
+      } else {
+        await this.featureFlagSegmentExclusionRepository.save(existingRecord);
+      }
+    } catch (err) {
+      const error = new Error(`Error in updating ${filterType} list status: ${err}`);
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
+      throw error;
+    }
+
+    await this.clearCachedFlagsForContext(existingRecord.featureFlag.context[0]);
+
+    if (statusChanged) {
+      const listData: ListOperationsData = {
+        listId: existingRecord.segment.id,
+        listName: existingRecord.segment.name,
+        filterType: filterType,
+        enabled: enabled,
+        operation: FEATURE_FLAG_LIST_OPERATION.STATUS_CHANGED,
+      };
+      const updateAuditLog: FeatureFlagUpdatedData = {
+        flagId: existingRecord.featureFlag.id,
+        flagName: existingRecord.featureFlag.name,
+        list: listData,
+      };
+      await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, currentUser);
+    }
+
+    return existingRecord;
   }
 
   private paginatedSearchString(params: IFeatureFlagSearchParams): string {
@@ -1355,7 +1445,7 @@ export class FeatureFlagService {
         const featureFlagListFile = featureFlagListFiles.find((file) => file.fileName === fileStatus.fileName);
         return this.segmentService.convertJSONStringToSegInputValFormat(featureFlagListFile.fileContent as string);
       });
-    const featureFlag = await this.findOne(featureFlagId, logger);
+    const featureFlag = await this.findOneForDetails(featureFlagId, logger);
 
     const createdLists: (FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[] =
       await this.dataSource.transaction(async (transactionalEntityManager) => {

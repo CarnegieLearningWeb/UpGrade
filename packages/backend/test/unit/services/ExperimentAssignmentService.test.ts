@@ -409,6 +409,47 @@ describe('Experiment Assignment Service Test', () => {
     expect(result[0].assignedCondition).toMatchObject(cond);
   });
 
+  it('should use a single shared rotation counter across all decision points in a within-subject experiment', async () => {
+    const context = 'context';
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+    const exp = structuredClone(simpleWithinSubjectOrderedRoundRobinExperiment);
+
+    // Add a second decision point to the experiment
+    const secondPartition = {
+      ...exp.partitions[0],
+      id: 'dp-2-id',
+      twoCharacterId: 'W2',
+      site: 'CurriculumSequence',
+      target: 'W2',
+    };
+    exp.partitions = [...exp.partitions, secondPartition];
+
+    // Simulate the user has already been through the rotation once (count = 1)
+    // For ORDERED_ROUND_ROBIN with 2 conditions and count=1, the second condition should be first
+    const repeatedEnrollmentCount = 1;
+    testedModule.repeatedEnrollmentRepository = {
+      getRepeatedEnrollmentCount: sandbox
+        .stub()
+        .resolves([{ userId: userDoc.id, experimentId: exp.id, count: repeatedEnrollmentCount }]),
+    };
+
+    testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+    testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+    // Both decision points should be returned
+    expect(result.length).toEqual(2);
+
+    // Both DPs must have the same assigned condition order — they share one rotation counter
+    expect(result[0].assignedCondition[0].conditionCode).toEqual(result[1].assignedCondition[0].conditionCode);
+    expect(result[0].assignedCondition[1].conditionCode).toEqual(result[1].assignedCondition[1].conditionCode);
+
+    // With count=1, the rotation should have advanced past position 0 — condition at index 1 should now be first
+    expect(result[0].assignedCondition[0].conditionCode).toEqual(exp.conditions[1].conditionCode);
+    expect(result[0].assignedCondition[1].conditionCode).toEqual(exp.conditions[0].conditionCode);
+  });
+
   it('should return the assigned condition for a simple group experiment', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { 'add-group1': ['school1'] }, workingGroup: { 'add-group1': 'school1' } };

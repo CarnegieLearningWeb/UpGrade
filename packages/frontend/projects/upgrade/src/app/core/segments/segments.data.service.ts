@@ -48,6 +48,12 @@ export class SegmentsDataService {
     return this.http.get(url);
   }
 
+  // Lazy-loads a list's members for editing; the /members endpoint also returns private lists.
+  fetchSegmentWithMembersById(id: string): Observable<Segment> {
+    const url = `${API_ENDPOINTS.segments}/${id}/members`;
+    return this.http.get<Segment>(url);
+  }
+
   deleteSegment(id: string) {
     const url = `${API_ENDPOINTS.segments}/${id}`;
     return this.http.delete(url);

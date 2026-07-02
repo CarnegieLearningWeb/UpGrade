@@ -48,6 +48,11 @@ export const selectIsLoadingUpsertFeatureFlag = createSelector(
   (state) => state.isLoadingUpsertFeatureFlag
 );
 
+export const selectIsLoadingUpsertPrivateSegmentList = createSelector(
+  selectFeatureFlagsState,
+  (state) => state.isLoadingUpsertPrivateSegmentList
+);
+
 export const selectDuplicateKeyFound = createSelector(selectFeatureFlagsState, (state) => state.duplicateKeyFound);
 
 export const selectSelectedFeatureFlag = createSelector(

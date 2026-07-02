@@ -632,6 +632,7 @@ export interface ExperimentState {
   isLoadingImportExperiment: boolean;
   isLoadingRewardsSummary: boolean;
   rewardsSummaries: Record<string, ExperimentRewardsSummary>;
+  isLoadingUpsertPrivateSegmentList?: boolean;
 }
 
 export interface State extends AppState {

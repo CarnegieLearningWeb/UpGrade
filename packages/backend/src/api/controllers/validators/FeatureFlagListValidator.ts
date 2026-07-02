@@ -18,3 +18,9 @@ export class FeatureFlagListValidator {
   @Type(() => SegmentInputValidator)
   public segment: SegmentInputValidator;
 }
+
+export class FeatureFlagListStatusValidator {
+  @IsDefined()
+  @IsBoolean()
+  public enabled: boolean;
+}
