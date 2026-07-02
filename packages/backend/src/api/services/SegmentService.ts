@@ -492,9 +492,7 @@ export class SegmentService {
     affectedFlagIds.forEach((flagId) =>
       this.featureFlagPrecomputedSegmentService
         .recomputeForFlag(flagId, logger)
-        .catch((err) =>
-          logger.error({ message: `Error recomputing feature_flag_precomputed_segment for flag ${flagId}: ${err}` })
-        )
+        .catch((err) => logger.error({ message: `Error recomputing feature_flag_precomputed_segment for flag ${flagId}`, error: err }))
     );
 
     // reset cache
