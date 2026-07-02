@@ -54,7 +54,7 @@ import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
-import { FeatureFlagPrecomputedSegmentService } from './FeatureFlagPrecomputedSegmentService';
+import { FeatureFlagPrecomputedSegmentService, precomputedGroupKey } from './FeatureFlagPrecomputedSegmentService';
 import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import dayjs from 'dayjs';
 import { getDateRangeNames } from '../repositories/utils/dateQuery';
@@ -920,8 +920,14 @@ export class FeatureFlagService {
     const flagIds = featureFlags.map((f) => f.id);
     const precomputedMap = await this.featureFlagPrecomputedSegmentService.getPrecomputedSets(flagIds);
 
-    // Flatten all group IDs from the user's group map (type is ignored per design decision)
-    const userGroupIds: string[] = experimentUser.group ? Object.values(experimentUser.group).flat() : [];
+    // Build type-qualified group keys from the user's group map so they match the namespaced group
+    // IDs stored in the precomputed arrays (individuals are matched bare against experimentUser.id).
+    // Must use the same precomputedGroupKey helper as the write path.
+    const userGroupKeys: string[] = experimentUser.group
+      ? Object.entries(experimentUser.group).flatMap(([type, groupIds]) =>
+          groupIds.map((groupId) => precomputedGroupKey(type, groupId))
+        )
+      : [];
 
     // Any flag without a precomputed row falls back to on-the-fly segment resolution so a
     // truly-missing row never silently produces a wrong include/exclude decision. Seeding on
@@ -949,8 +955,8 @@ export class FeatureFlagService {
       // Individual inclusion bypasses group checks
       if (inclusionSet.has(experimentUser.id)) return true;
 
-      const inGroupExclusion = userGroupIds.some((gid) => exclusionSet.has(gid));
-      const inGroupInclusion = userGroupIds.some((gid) => inclusionSet.has(gid));
+      const inGroupExclusion = userGroupKeys.some((key) => exclusionSet.has(key));
+      const inGroupInclusion = userGroupKeys.some((key) => inclusionSet.has(key));
 
       if (flag.filterMode === FILTER_MODE.INCLUDE_ALL) {
         return !inGroupExclusion;

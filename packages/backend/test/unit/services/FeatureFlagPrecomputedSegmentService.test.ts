@@ -70,7 +70,7 @@ describe('FeatureFlagPrecomputedSegmentService', () => {
         segA: {
           id: 'segA',
           individualForSegment: [{ userId: 'u1' }],
-          groupForSegment: [{ groupId: 'g1' }],
+          groupForSegment: [{ groupId: 'g1', type: 'schoolId' }],
           subSegments: [{ id: 'segChild' }],
         },
         segChild: {
@@ -103,8 +103,9 @@ describe('FeatureFlagPrecomputedSegmentService', () => {
       expect(precomputedSegmentRepository.upsertByFlagId).toHaveBeenCalledTimes(1);
       const [flagId, inclusionIds, exclusionIds] = precomputedSegmentRepository.upsertByFlagId.mock.calls[0];
       expect(flagId).toEqual('flag1');
-      // recursive sub-segment member u2 must be included alongside the direct members
-      expect(inclusionIds.sort()).toEqual(['g1', 'u1', 'u2']);
+      // recursive sub-segment member u2 must be included alongside the direct members;
+      // group members are namespaced with their type (schoolId:g1), individuals stay bare
+      expect(inclusionIds.sort()).toEqual(['schoolId:g1', 'u1', 'u2']);
       expect(exclusionIds).toEqual(['u3']);
       // only enabled lists are queried
       expect(featureFlagSegmentInclusionRepository.find).toHaveBeenCalledWith(

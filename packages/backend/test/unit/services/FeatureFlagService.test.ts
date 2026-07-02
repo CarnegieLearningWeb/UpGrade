@@ -725,13 +725,52 @@ describe('Feature Flag Service Testing', () => {
       const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
 
       service.cacheService.wrap = jest.fn().mockResolvedValue([fastFlag]);
+      // stored group IDs are namespaced with their type (classId:bad-class); individuals stay bare
       (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
-        new Map([[fastFlag.id, { inclusionIds: ['user123'], exclusionIds: ['bad-class'] }]])
+        new Map([[fastFlag.id, { inclusionIds: ['user123'], exclusionIds: ['classId:bad-class'] }]])
       );
 
       const result = await service.getKeys(userDoc, 'context1', logger);
 
       expect(result).toEqual([fastFlag.key]);
+    });
+
+    it('matches a group exclusion only when the group type also matches (type-aware)', async () => {
+      const excludeFlag = { id: 'ex-flag-id', key: 'ex-key', filterMode: FILTER_MODE.INCLUDE_ALL };
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+      service.cacheService.wrap = jest.fn().mockResolvedValue([excludeFlag]);
+
+      // User is in group 'grpA' under type 'classId'. The stored exclusion targets 'grpA' under a
+      // DIFFERENT type ('schoolId'), so with type-aware matching the user is NOT excluded.
+      const wrongType = { id: 'user123', group: { classId: ['grpA'] }, workingGroup: {} } as any;
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[excludeFlag.id, { inclusionIds: [], exclusionIds: ['schoolId:grpA'] }]])
+      );
+      expect(await service.getKeys(wrongType, 'context1', logger)).toEqual([excludeFlag.key]);
+
+      // Same group ID under the MATCHING type -> excluded.
+      const rightType = { id: 'user123', group: { schoolId: ['grpA'] }, workingGroup: {} } as any;
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[excludeFlag.id, { inclusionIds: [], exclusionIds: ['schoolId:grpA'] }]])
+      );
+      expect(await service.getKeys(rightType, 'context1', logger)).toEqual([]);
+    });
+
+    it('does not treat a group ID that collides with the user ID as an individual match', async () => {
+      // A group named the same string as the user's individual ID is excluded. Because groups are
+      // namespaced (schoolId:user123) and the individual check is bare (user123), the user must NOT
+      // be individually excluded — they are only excluded if they actually belong to that group.
+      const collideFlag = { id: 'col-flag-id', key: 'col-key', filterMode: FILTER_MODE.INCLUDE_ALL };
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+      service.cacheService.wrap = jest.fn().mockResolvedValue([collideFlag]);
+
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[collideFlag.id, { inclusionIds: [], exclusionIds: ['schoolId:user123'] }]])
+      );
+
+      // Not in the excluded group -> stays included (INCLUDE_ALL)
+      expect(await service.getKeys(userDoc, 'context1', logger)).toEqual([collideFlag.key]);
     });
 
     it('falls back to on-the-fly resolution when the precomputed row is missing', async () => {

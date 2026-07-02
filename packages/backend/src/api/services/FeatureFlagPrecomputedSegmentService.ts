@@ -11,6 +11,18 @@ import { CACHE_PREFIX } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { EntityManager } from 'typeorm';
 
+// Group IDs are stored namespaced with their group type in the same flat arrays as bare individual
+// user IDs. This (a) prevents a group ID from ever colliding with an individual user ID that happens
+// to share the same string, and (b) keeps matching type-aware, matching the experiment / on-the-fly
+// resolution path (see ExperimentAssignmentService.inclusionExclusionLogic). Both the write path
+// here and the read path in FeatureFlagService MUST compose the key with this same helper. The type
+// is recoverable by splitting on the FIRST delimiter — group types (e.g. 'schoolId') never contain
+// ':', though group IDs may.
+export const PRECOMPUTED_GROUP_DELIMITER = ':';
+export function precomputedGroupKey(type: string, groupId: string): string {
+  return `${type}${PRECOMPUTED_GROUP_DELIMITER}${groupId}`;
+}
+
 @Service()
 export class FeatureFlagPrecomputedSegmentService {
   constructor(
@@ -148,8 +160,9 @@ export class FeatureFlagPrecomputedSegmentService {
     const subSegmentIds: string[] = [];
 
     for (const segment of segments) {
+      // Individuals are stored bare; groups are namespaced with their type (see precomputedGroupKey).
       segment.individualForSegment.forEach((ind) => ids.push(ind.userId));
-      segment.groupForSegment.forEach((grp) => ids.push(grp.groupId));
+      segment.groupForSegment.forEach((grp) => ids.push(precomputedGroupKey(grp.type, grp.groupId)));
       segment.subSegments.forEach((sub) => {
         if (!seen.has(sub.id)) subSegmentIds.push(sub.id);
       });
