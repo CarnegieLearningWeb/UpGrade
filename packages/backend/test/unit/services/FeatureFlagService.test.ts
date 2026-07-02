@@ -533,6 +533,7 @@ describe('Feature Flag Service Testing', () => {
     it('should update an inclusion list enabled status without rewriting its members', async () => {
       const inclusionRepo = module.get(getRepositoryToken(FeatureFlagSegmentInclusionRepository)) as any;
       const segmentService = module.get<SegmentService>(SegmentService);
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
       inclusionRepo.findOne = jest.fn().mockResolvedValue({
         enabled: false,
         featureFlag: { id: mockFlag1.id, name: mockFlag1.name, context: ['context1'] },
@@ -549,6 +550,24 @@ describe('Feature Flag Service Testing', () => {
       expect(segmentService.upsertSegmentInPipeline).not.toHaveBeenCalled();
       // a status change is recorded in the audit log
       expect(mockExperimentAuditLogRepository.saveRawJson).toHaveBeenCalled();
+      // toggling enabled changes which segments contribute, so the precomputed row must be recomputed
+      expect(precomputed.recomputeForFlag).toHaveBeenCalledWith(mockFlag1.id, logger);
+    });
+
+    it('should not recompute when the enabled status is unchanged (no-op toggle)', async () => {
+      const inclusionRepo = module.get(getRepositoryToken(FeatureFlagSegmentInclusionRepository)) as any;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+      inclusionRepo.findOne = jest.fn().mockResolvedValue({
+        enabled: true,
+        featureFlag: { id: mockFlag1.id, name: mockFlag1.name, context: ['context1'] },
+        segment: { id: 'segment-1', name: 'list' },
+      });
+      inclusionRepo.save = jest.fn().mockResolvedValue({});
+
+      // request the same enabled value it already has
+      await service.updateListStatus('segment-1', true, LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
+
+      expect(precomputed.recomputeForFlag).not.toHaveBeenCalled();
     });
 
     it('should update an exclusion list enabled status', async () => {

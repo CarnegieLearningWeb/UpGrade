@@ -943,6 +943,11 @@ export class FeatureFlagService {
         list: listData,
       };
       await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, currentUser);
+
+      // Toggling a list's enabled state changes which segments contribute to the flag's
+      // precomputed inclusion/exclusion arrays, so the precomputed row must be recomputed
+      // (same as addList/deleteList/updateList). Only needed when the status actually changed.
+      await this.featureFlagPrecomputedSegmentService.recomputeForFlag(existingRecord.featureFlag.id, logger);
     }
 
     return existingRecord;
