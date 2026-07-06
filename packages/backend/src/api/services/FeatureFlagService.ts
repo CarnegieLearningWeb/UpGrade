@@ -155,13 +155,8 @@ export class FeatureFlagService {
     return featureFlag;
   }
 
-  // Lightweight variant of findOne for the details page, which only renders member *counts*
-  // per inclusion/exclusion list. It skips loading the (potentially tens of thousands of rows)
-  // individualForSegment and groupForSegment collections — which in findOne also cause a
-  // Cartesian-product row explosion — and instead maps lightweight COUNT subqueries onto each
-  // segment (individualForSegmentCount / groupForSegmentCount). The full member lists are
-  // fetched on demand via GET /segments/:id/members when a list is opened for editing.
-  // NOTE: callers that need the actual members (e.g. exports) must use findOne, not this.
+  // Counts-only variant of findOne for the details page: maps member counts instead of loading
+  // the member lists. Callers that need the actual members (e.g. exports) must use findOne.
   public async findOneForDetails(id: string, logger?: UpgradeLogger): Promise<FeatureFlag | undefined> {
     if (logger) {
       logger.info({ message: `Find feature flag (details view) by id => ${id}` });
@@ -273,7 +268,7 @@ export class FeatureFlagService {
   ): Promise<FeatureFlag | undefined> {
     logger.info({ message: `Delete Feature Flag => ${featureFlagId}` });
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
-      const featureFlag = await this.findOne(featureFlagId, logger);
+      const featureFlag = await this.findOneForDetails(featureFlagId, logger);
 
       if (featureFlag) {
         await this.clearCachedFlagsForContext(featureFlag.context[0]);
@@ -317,7 +312,7 @@ export class FeatureFlagService {
   }
 
   public async updateState(flagId: string, status: FEATURE_FLAG_STATUS, currentUser: UserDTO): Promise<FeatureFlag> {
-    const oldFeatureFlag = await this.findOne(flagId);
+    const oldFeatureFlag = await this.findOneForDetails(flagId);
     await this.clearCachedFlagsForContext(oldFeatureFlag.context[0]);
     let updatedState: FeatureFlag;
     try {
@@ -447,7 +442,7 @@ export class FeatureFlagService {
       createdAt,
       updatedAt,
       ...oldFlagDoc
-    } = await this.findOne(flag.id);
+    } = await this.findOneForDetails(flag.id);
 
     let includeList = [...featureFlagSegmentInclusion];
     let excludeList = [...featureFlagSegmentExclusion];
@@ -727,9 +722,7 @@ export class FeatureFlagService {
     logger.info({ message: `Update ${filterType} list for feature flag` });
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
-      // Find the existing record. Only the flag id/name are needed here (for the audit log
-      // below), so use the counts-only variant to avoid loading every list's members — which
-      // for large lists made saving an edit very slow.
+      // Only the flag id/name are needed here (audit log), so use the counts-only variant.
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
       const featureFlag = await this.findOneForDetails(listInput.id);
 
@@ -1328,7 +1321,7 @@ export class FeatureFlagService {
         const featureFlagListFile = featureFlagListFiles.find((file) => file.fileName === fileStatus.fileName);
         return this.segmentService.convertJSONStringToSegInputValFormat(featureFlagListFile.fileContent as string);
       });
-    const featureFlag = await this.findOne(featureFlagId, logger);
+    const featureFlag = await this.findOneForDetails(featureFlagId, logger);
 
     const createdLists: (FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion)[] =
       await this.dataSource.transaction(async (transactionalEntityManager) => {

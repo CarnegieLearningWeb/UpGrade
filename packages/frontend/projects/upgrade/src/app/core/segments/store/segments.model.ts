@@ -107,8 +107,7 @@ export interface Segment {
   individualForSegment: IndividualForSegment[];
   groupForSegment: GroupForSegment[];
   subSegments: Segment[];
-  // Lightweight member counts returned when the segment is loaded without its full member
-  // lists (e.g. the feature-flag details page). Undefined when the full lists are present.
+  // Member counts from counts-only loads (e.g. flag details); undefined when full lists are present.
   individualForSegmentCount?: number;
   groupForSegmentCount?: number;
   listType?: MemberTypes | string;

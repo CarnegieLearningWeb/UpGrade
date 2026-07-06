@@ -150,10 +150,7 @@ export class SegmentService {
     return segmentDoc;
   }
 
-  // Fetches a segment (including private lists) by id with its full member lists. Unlike
-  // getSegmentById this does not exclude private segments, so a feature flag or experiment's
-  // private inclusion/exclusion list can be loaded on demand for editing (its members are not
-  // loaded on the counts-only details page).
+  // Like getSegmentById but includes private lists, so a flag/experiment list can be loaded for editing.
   public async getSegmentByIdWithMembers(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Find segment (including private) with members by id. segmentId: ${id}` });
     return this.segmentRepository
@@ -901,10 +898,8 @@ export class SegmentService {
 
     if (segment.id) {
       try {
-        // Clear the existing members before re-inserting them below (the update model is a full
-        // replace). We delete with a single "WHERE segmentId = :id" statement per member table.
-        // Previously this fetched every member and passed a per-row criteria array to .delete(),
-        // which TypeORM expands into one giant OR predicate — extremely slow for large lists.
+        // Full replace: clear members with one delete per table. A per-row criteria array (the
+        // previous approach) expands into a giant OR predicate that is very slow for large lists.
         await Promise.all([
           transactionalEntityManager.getRepository(IndividualForSegment).delete({ segmentId: segment.id }),
           transactionalEntityManager.getRepository(GroupForSegment).delete({ segmentId: segment.id }),
