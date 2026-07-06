@@ -209,4 +209,63 @@ describe('FeatureFlagPrecomputedSegmentService', () => {
       expect(recomputeSpy).toHaveBeenCalledWith('f2', logger);
     });
   });
+
+  describe('withRecompute', () => {
+    it('resolves affected flag ids BEFORE running work, returns work result, and recomputes after', async () => {
+      const order: string[] = [];
+      const resolveAffectedFlagIds = jest.fn(async () => {
+        order.push('resolve');
+        return ['f1'];
+      });
+      const work = jest.fn(async () => {
+        order.push('work');
+        return 'done';
+      });
+
+      const result = await service.withRecompute(logger, resolveAffectedFlagIds, work);
+
+      expect(result).toBe('done');
+      expect(order).toEqual(['resolve', 'work']); // resolve strictly before the mutation
+      expect(resolveAffectedFlagIds).toHaveBeenCalledTimes(1);
+      expect(work).toHaveBeenCalledTimes(1);
+
+      // the recompute is fired after work; let the fire-and-forget chain settle
+      await new Promise((r) => setImmediate(r));
+      expect(precomputedSegmentRepository.upsertByFlagId).toHaveBeenCalledWith('f1', [], []);
+    });
+
+    it('does not await the recompute — resolves even if the recompute never settles', async () => {
+      // upsertByFlagId never resolves => recomputeForFlag never settles. If withRecompute awaited
+      // the recompute, this would hang and time out.
+      precomputedSegmentRepository.upsertByFlagId = jest.fn(() => new Promise(() => undefined));
+
+      await expect(
+        service.withRecompute(
+          logger,
+          () => ['f1'],
+          async () => 'ok'
+        )
+      ).resolves.toBe('ok');
+    });
+
+    it('still resolves (and logs) when the fire-and-forget recompute fails', async () => {
+      precomputedSegmentRepository.upsertByFlagId = jest.fn().mockRejectedValue(new Error('recompute boom'));
+      const errorSpy = jest.spyOn(logger, 'error');
+
+      await expect(
+        service.withRecompute(
+          logger,
+          () => ['f1'],
+          async () => 'ok'
+        )
+      ).resolves.toBe('ok');
+
+      // let the fire-and-forget .catch settle so the rejection is handled (no unhandled rejection)
+      await new Promise((r) => setImmediate(r));
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ message: expect.stringContaining('scheduleRecomputeForFlags') })
+      );
+      errorSpy.mockRestore();
+    });
+  });
 });

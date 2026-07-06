@@ -83,9 +83,11 @@ Segment inclusion/exclusion for **feature flags** is precomputed and stored flat
 
 - **`FeatureFlagPrecomputedSegment` entity** (`src/api/models/FeatureFlagPrecomputedSegment.ts`) — one row per feature flag, columns: `featureFlagId` (PK), `inclusionIds: text[]`, `exclusionIds: text[]`. FK to `feature_flag` with `onDelete: CASCADE`.
 - **`FeatureFlagPrecomputedSegmentService`** (`src/api/services/FeatureFlagPrecomputedSegmentService.ts`) — owns all computation and cache logic:
-  - `recomputeForFlag(flagId)` — flattens all enabled inclusion/exclusion segments (recursive sub-segments) into flat ID arrays and upserts the row.
-  - `scheduleRecomputeForSegment(segmentId)` — fire-and-forget; finds all flags referencing a segment (and its parents) and calls `recomputeForFlag` for each.
-  - `getAffectedFlagIds(segmentId)` — public helper that returns flag IDs affected by a given segment (used before deletion).
+  - `recomputeForFlag(flagId)` — flattens all enabled inclusion/exclusion segments (recursive sub-segments) into flat ID arrays and upserts the row. This is the only method that `await`s — callers on write paths never call it directly.
+  - `scheduleRecomputeForFlags(flagIds[])` — fire-and-forget recompute for a known set of flags (swallows/logs errors). The flag-side counterpart to `scheduleRecomputeForSegment`.
+  - `scheduleRecomputeForSegment(segmentId)` — fire-and-forget; finds all flags referencing a segment (and its parents) and recomputes each.
+  - `withRecompute(logger, resolveAffectedFlagIds, work)` — **the wrapper all top-level write methods use.** Resolves affected flag IDs *before* `work`, runs `work` (which must own/commit its own transaction), then fires a fire-and-forget recompute *after* commit. Keeps mutation + recompute in one call so a refactor can't drop the recompute. `work` is never blocked on the recompute.
+  - `getAffectedFlagIds(segmentId)` — public helper that returns flag IDs affected by a given segment (used as the `resolveAffectedFlagIds` for segment deletes).
   - `getPrecomputedSets(flagIds[])` — cache-wrapped batch fetch, returns a `Map<flagId, FeatureFlagPrecomputedSegment>`.
   - `backfillMissingFlags(logger)` — called at startup; computes rows only for flags that have none yet (no-op once all flags are populated).
   - `recomputeAllFlags(logger)` — full refresh of every flag; not called automatically, available for manual recovery.
@@ -96,17 +98,18 @@ Segment inclusion/exclusion for **feature flags** is precomputed and stored flat
 
 | Event | Trigger |
 |---|---|
-| Segment list added to a flag | `FeatureFlagService.addList` → `recomputeForFlag` |
-| Segment list removed from a flag | `FeatureFlagService.deleteList` → `recomputeForFlag` |
-| Segment list members updated on a flag | `FeatureFlagService.updateList` → `recomputeForFlag` |
+| Segment list added to a flag | `FeatureFlagService.addList` → `withRecompute` |
+| Segment list removed from a flag | `FeatureFlagService.deleteList` → delegates to `SegmentService.deleteSegment` (which owns the recompute) |
+| Segment list members updated on a flag | `FeatureFlagService.updateList` → `withRecompute` |
+| Flag context changed (deletes all its lists) | `FeatureFlagService.updateFeatureFlagInDB` → `withRecompute` (recomputes to empty; the segment delete does **not** cascade to the precomputed row) |
 | Private list added to a shared segment | `SegmentService.addList` → `scheduleRecomputeForSegment` |
 | Private list removed from a shared segment | `SegmentService.deleteList` → `scheduleRecomputeForSegment` |
 | Segment members/structure updated | `SegmentService.addSegmentDataWithPipeline` → `scheduleRecomputeForSegment` |
-| Segment deleted entirely | `SegmentService.deleteSegment` — collects affected flag IDs **before** deletion, fires `recomputeForFlag` for each **after** deletion (fire-and-forget) |
+| Segment deleted entirely | `SegmentService.deleteSegment` → `withRecompute` (collects affected flag IDs **before** the delete, recomputes **after** commit) |
 | Server startup | `app.ts` → `backfillMissingFlags` — backfills any flag with no row |
 
-All recomputes triggered from write paths are **fire-and-forget** — callers never wait on them.
+All recomputes triggered from write paths are **fire-and-forget** — no request handler (flag-side or segment-side) ever blocks on a recompute. The `import*` paths are the one exception: they `await recomputeForFlag` so "import complete" means the rows are ready.
 
 ### Key invariant
 
-The `feature_flag_precomputed_segment` row must always be recomputed **after** the structural change completes, so the flat arrays reflect the new state. For deletions specifically, affected flag IDs must be collected **before** the delete because the join table records are gone afterward.
+The `feature_flag_precomputed_segment` row must always be recomputed **after** the structural change commits, so the flat arrays reflect the new state. For deletions specifically, affected flag IDs must be collected **before** the delete because the join table records are gone afterward. Both halves of this invariant are enforced by `withRecompute` (resolve-before → work → recompute-after), so top-level write methods get the ordering for free rather than hand-rolling it.

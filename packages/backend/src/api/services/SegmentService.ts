@@ -479,21 +479,17 @@ export class SegmentService {
 
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
-    // Collect affected flags before deletion — join table records are gone after
-    const affectedFlagIds = await this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id);
 
-    const manager = this.dataSource;
-    const deletedSegment = await manager.transaction(async (transactionalEntityManager) => {
-      return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
-    });
-
-    // Recompute after the delete transaction has committed so the recompute reads the
-    // post-delete state and stale member IDs are removed (fire-and-forget).
-    affectedFlagIds.forEach((flagId) =>
-      this.featureFlagPrecomputedSegmentService
-        .recomputeForFlag(flagId, logger)
-        .catch((err) =>
-          logger.error({ message: `Error recomputing feature_flag_precomputed_segment for flag ${flagId}`, error: err })
+    // withRecompute collects the affected flags BEFORE the delete (the join rows are gone after),
+    // runs the delete in its own transaction, then fires a fire-and-forget recompute for those
+    // flags after commit. Keeping the ordering inside the wrapper means a future refactor of this
+    // method can't accidentally break it.
+    const deletedSegment = await this.featureFlagPrecomputedSegmentService.withRecompute(
+      logger,
+      () => this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
+      () =>
+        this.dataSource.transaction((transactionalEntityManager) =>
+          this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
         )
     );
 

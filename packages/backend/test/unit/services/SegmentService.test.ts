@@ -200,10 +200,17 @@ describe('Segment Service Testing', () => {
           provide: FeatureFlagPrecomputedSegmentService,
           useValue: {
             scheduleRecomputeForSegment: jest.fn(),
+            scheduleRecomputeForFlags: jest.fn(),
             recomputeForFlag: jest.fn().mockResolvedValue(undefined),
             getAffectedFlagIds: jest.fn().mockResolvedValue([]),
             seedEmptyRowForFlag: jest.fn().mockResolvedValue(undefined),
             getPrecomputedSets: jest.fn().mockResolvedValue(new Map()),
+            // Faithful stub: run the resolver + work so the mutation still executes; the real
+            // wrapper's fire-and-forget recompute behavior is covered in the precompute service's suite.
+            withRecompute: jest.fn(async (_logger, resolveAffectedFlagIds, work) => {
+              await resolveAffectedFlagIds();
+              return work();
+            }),
           },
         },
         {
@@ -748,30 +755,17 @@ describe('Segment Service Testing', () => {
   });
 
   describe('precomputed segment recompute triggers', () => {
-    it('collects affected flags before deleting and recomputes them after the delete commits', async () => {
+    it('delegates the collect-before-mutate-then-recompute ordering for deleteSegment to withRecompute', async () => {
       const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
       (precomputed.getAffectedFlagIds as jest.Mock).mockResolvedValue(['flagA']);
 
       await service.deleteSegment(seg1.id, logger);
 
+      expect(precomputed.withRecompute).toHaveBeenCalled();
+      // the resolver handed to withRecompute collects the affected flags for this segment
+      const [, resolveAffectedFlagIds] = (precomputed.withRecompute as jest.Mock).mock.calls[0];
+      await expect(resolveAffectedFlagIds()).resolves.toEqual(['flagA']);
       expect(precomputed.getAffectedFlagIds).toHaveBeenCalledWith(seg1.id);
-      expect(precomputed.recomputeForFlag).toHaveBeenCalledWith('flagA', logger);
-    });
-
-    it('logs and does not reject deleteSegment when a fire-and-forget recompute fails', async () => {
-      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
-      (precomputed.getAffectedFlagIds as jest.Mock).mockResolvedValue(['flagA']);
-      (precomputed.recomputeForFlag as jest.Mock).mockRejectedValueOnce(new Error('recompute boom'));
-      const errorSpy = jest.spyOn(logger, 'error');
-
-      // deleteSegment must still resolve — the recompute is fire-and-forget
-      await expect(service.deleteSegment(seg1.id, logger)).resolves.toBeDefined();
-
-      // let the fire-and-forget .catch settle so the rejection is handled (no unhandled rejection)
-      await new Promise((resolve) => setImmediate(resolve));
-
-      expect(errorSpy).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('flagA') }));
-      errorSpy.mockRestore();
     });
 
     it('schedules a recompute when a list is added to a segment', async () => {

@@ -447,7 +447,13 @@ export class FeatureFlagService {
     const includeListIds = includeList.map((list) => list.segment.id);
     const excludeListIds = excludeList.map((list) => list.segment.id);
 
-    return await this.dataSource.transaction(async (transactionalEntityManager) => {
+    // A context change (below) deletes all of this flag's inclusion/exclusion lists. That delete does
+    // NOT cascade to feature_flag_precomputed_segment (its FK is to feature_flag, not segment), so the
+    // row would otherwise keep stale member IDs. Recompute it (to empty) after commit via withRecompute.
+    // Non-context updates don't touch lists, so there is nothing to recompute.
+    const contextChanged = oldFlagDoc.context[0] !== flag.context[0];
+
+    const applyUpdate = async (transactionalEntityManager: EntityManager) => {
       const {
         featureFlagSegmentExclusion,
         featureFlagSegmentInclusion,
@@ -512,7 +518,13 @@ export class FeatureFlagService {
         featureFlagSegmentInclusion: includeList,
         featureFlagSegmentExclusion: excludeList,
       };
-    });
+    };
+
+    return this.featureFlagPrecomputedSegmentService.withRecompute(
+      logger,
+      () => (contextChanged ? [flag.id] : []),
+      () => this.dataSource.transaction(applyUpdate)
+    );
   }
 
   public async deleteList(
@@ -521,23 +533,12 @@ export class FeatureFlagService {
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Segment> {
-    // Capture the flag id before deletion for recompute
-    const repo =
-      filterType === LIST_FILTER_MODE.INCLUSION
-        ? this.featureFlagSegmentInclusionRepository
-        : this.featureFlagSegmentExclusionRepository;
-    const record = await repo.findOne({ where: { segment: { id: segmentId } }, relations: ['featureFlag'] });
-    const flagId = record?.featureFlag?.id;
-
     await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
-    const deleted = await this.segmentService.deleteSegment(segmentId, logger);
 
-    if (flagId) {
-      await this.featureFlagPrecomputedSegmentService.recomputeForFlag(flagId, logger);
-    }
-
-    return deleted;
+    // segmentService.deleteSegment collects the affected flags before deletion and fires the
+    // fire-and-forget recompute itself (via withRecompute), so no separate recompute is needed here.
+    return this.segmentService.deleteSegment(segmentId, logger);
   }
 
   async createDeleteListAuditLogs(
@@ -691,14 +692,12 @@ export class FeatureFlagService {
       // caller is responsible for calling recomputeForFlag after its transaction commits.
       result = await executeTransaction(transactionalEntityManager);
     } else {
-      result = await this.dataSource.transaction(async (manager) => {
-        return await executeTransaction(manager);
-      });
-
-      // Recompute precomputed sets for each affected flag after the transaction commits
-      const affectedFlagIds = [...new Set(listsInput.map((l) => l.id))];
-      await Promise.all(
-        affectedFlagIds.map((flagId) => this.featureFlagPrecomputedSegmentService.recomputeForFlag(flagId, logger))
+      // withRecompute runs the mutation in its own transaction, then fires a fire-and-forget
+      // recompute for the affected flags after commit — the caller never awaits it.
+      result = await this.featureFlagPrecomputedSegmentService.withRecompute(
+        logger,
+        () => [...new Set(listsInput.map((l) => l.id))],
+        () => this.dataSource.transaction((manager) => executeTransaction(manager))
       );
     }
 
@@ -743,7 +742,7 @@ export class FeatureFlagService {
   ): Promise<FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion> {
     logger.info({ message: `Update ${filterType} list for feature flag` });
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
-    const result = await this.dataSource.transaction(async (transactionalEntityManager) => {
+    const doUpdate = async (transactionalEntityManager: EntityManager) => {
       // Find the existing record
       let existingRecord: FeatureFlagSegmentInclusion | FeatureFlagSegmentExclusion;
       const featureFlag = await this.findOne(listInput.id);
@@ -851,9 +850,15 @@ export class FeatureFlagService {
       await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.FEATURE_FLAG_UPDATED, updateAuditLog, currentUser);
 
       return existingRecord;
-    });
+    };
 
-    await this.featureFlagPrecomputedSegmentService.recomputeForFlag(listInput.id, logger);
+    // withRecompute runs the update transaction, then fires a fire-and-forget recompute for the
+    // affected flag after commit — the caller never awaits it.
+    const result = await this.featureFlagPrecomputedSegmentService.withRecompute(
+      logger,
+      () => [listInput.id],
+      () => this.dataSource.transaction(doUpdate)
+    );
 
     return result;
   }

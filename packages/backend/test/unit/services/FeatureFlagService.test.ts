@@ -214,6 +214,13 @@ describe('Feature Flag Service Testing', () => {
             recomputeForFlag: jest.fn().mockResolvedValue(undefined),
             seedEmptyRowForFlag: jest.fn().mockResolvedValue(undefined),
             scheduleRecomputeForSegment: jest.fn(),
+            scheduleRecomputeForFlags: jest.fn(),
+            // Faithful stub: run the resolver + work so the mutation still executes; the real
+            // wrapper's fire-and-forget recompute behavior is covered in the precompute service's suite.
+            withRecompute: jest.fn(async (_logger, resolveAffectedFlagIds, work) => {
+              await resolveAffectedFlagIds();
+              return work();
+            }),
             getAffectedFlagIds: jest.fn().mockResolvedValue([]),
           },
         },
@@ -457,6 +464,49 @@ describe('Feature Flag Service Testing', () => {
     }).rejects.toThrow(
       new Error('Error in updating feature flag document "updateFeatureFlagInDB" Error: insert error')
     );
+  });
+
+  it('recomputes the precomputed row when a flag update changes its context (lists are deleted)', async () => {
+    const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+    // old flag has a different context than the incoming mockFlag2 (context: ['context']) and has lists
+    service.findOne = jest.fn().mockResolvedValue({
+      id: mockFlag2.id,
+      name: 'name',
+      key: 'key',
+      description: 'description',
+      context: ['old-context'],
+      status: FEATURE_FLAG_STATUS.ENABLED,
+      featureFlagSegmentInclusion: [{ segment: { id: 'inc-seg' } }],
+      featureFlagSegmentExclusion: [{ segment: { id: 'exc-seg' } }],
+    });
+
+    await service.update(mockFlag2, mockUser1, logger);
+
+    expect(precomputed.withRecompute).toHaveBeenCalled();
+    // the resolver targets this flag so its (now empty) row is rebuilt instead of left stale
+    const [, resolveAffectedFlagIds] = (precomputed.withRecompute as jest.Mock).mock.calls[0];
+    expect(await resolveAffectedFlagIds()).toEqual([mockFlag2.id]);
+  });
+
+  it('does not recompute the precomputed row when a flag update leaves the context unchanged', async () => {
+    const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+    // old flag has the SAME context as the incoming mockFlag2 (context: ['context']) — lists untouched
+    service.findOne = jest.fn().mockResolvedValue({
+      id: mockFlag2.id,
+      name: 'name',
+      key: 'key',
+      description: 'description',
+      context: ['context'],
+      status: FEATURE_FLAG_STATUS.ENABLED,
+      featureFlagSegmentInclusion: [],
+      featureFlagSegmentExclusion: [],
+    });
+
+    await service.update(mockFlag2, mockUser1, logger);
+
+    // withRecompute still wraps the write, but its resolver yields no flags => no recompute fired
+    const [, resolveAffectedFlagIds] = (precomputed.withRecompute as jest.Mock).mock.calls[0];
+    expect(await resolveAffectedFlagIds()).toEqual([]);
   });
 
   it('should update the flag state', async () => {
@@ -799,12 +849,15 @@ describe('Feature Flag Service Testing', () => {
       expect(precomputed.seedEmptyRowForFlag).toHaveBeenCalledWith(mockFlag1.id, expect.anything());
     });
 
-    it('recomputes the affected flag after addList (standalone, owns the transaction)', async () => {
+    it('recomputes the affected flag after addList (standalone) via withRecompute', async () => {
       const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
 
       await service.addList([mockList], LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
 
-      expect(precomputed.recomputeForFlag).toHaveBeenCalledWith(mockList.id, logger);
+      expect(precomputed.withRecompute).toHaveBeenCalled();
+      // the resolver handed to withRecompute yields the affected flag id
+      const [, resolveAffectedFlagIds] = (precomputed.withRecompute as jest.Mock).mock.calls[0];
+      expect(await resolveAffectedFlagIds()).toEqual([mockList.id]);
     });
 
     it('recomputes imported flags after the import transaction commits', async () => {

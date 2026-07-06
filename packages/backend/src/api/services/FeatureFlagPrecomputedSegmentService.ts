@@ -86,6 +86,42 @@ export class FeatureFlagPrecomputedSegmentService {
       .catch((err) => logger.error({ message: `Error in scheduleRecomputeForSegment: ${err}` }));
   }
 
+  // Fire-and-forget recompute for a known set of flags — the flag-side counterpart to
+  // scheduleRecomputeForSegment. Callers on the write path MUST NOT await this: the recompute
+  // is a read-through cache refresh that can run after the response is returned. Errors are
+  // swallowed (logged) so an unhandled rejection can never crash the process.
+  public scheduleRecomputeForFlags(flagIds: string[], logger: UpgradeLogger): void {
+    Promise.all([...new Set(flagIds)].map((flagId) => this.recomputeForFlag(flagId, logger))).catch((err) =>
+      logger.error({ message: `Error in scheduleRecomputeForFlags: ${err}` })
+    );
+  }
+
+  // Run a segment/flag-list mutation and guarantee the affected flags' precomputed rows are
+  // refreshed afterward — without the caller ever awaiting (or having to remember) the recompute.
+  //
+  // The ordering contract is enforced here, once, so individual write methods can't get it wrong
+  // during a later refactor:
+  //   1. `resolveAffectedFlagIds` runs BEFORE `work`. Required for deletes (once the join rows are
+  //      gone we can no longer discover which flags referenced the segment) and harmless for
+  //      adds/updates (the flags are already known / already attached).
+  //   2. `work` runs to completion. It MUST own and commit its own transaction: the recompute reads
+  //      through this service's own repositories and cannot see a still-open transaction's writes.
+  //   3. The recompute is fired fire-and-forget AFTER `work` resolves (post-commit) and is NOT
+  //      awaited, so the HTTP response is never blocked on it.
+  //
+  // Because the mutation and its recompute live in a single call, a change to the mutation body
+  // can't silently drop the recompute — the two can't drift apart.
+  public async withRecompute<T>(
+    logger: UpgradeLogger,
+    resolveAffectedFlagIds: () => string[] | Promise<string[]>,
+    work: () => Promise<T>
+  ): Promise<T> {
+    const affectedFlagIds = await resolveAffectedFlagIds();
+    const result = await work();
+    this.scheduleRecomputeForFlags(affectedFlagIds, logger);
+    return result;
+  }
+
   public async getPrecomputedSets(flagIds: string[]): Promise<Map<string, FeatureFlagPrecomputedSegment>> {
     if (!flagIds.length) return new Map();
 
