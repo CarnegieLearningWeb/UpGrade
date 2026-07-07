@@ -139,6 +139,14 @@ export class SegmentRepository extends Repository<Segment> {
     return result.raw;
   }
 
+  public async findParentSegmentIds(segmentId: string): Promise<string[]> {
+    const rows = await this.manager.query(
+      `SELECT "parentSegmentId" FROM "segment_for_segment" WHERE "childSegmentId" = $1`,
+      [segmentId]
+    );
+    return rows.map((r: { parentSegmentId: string }) => r.parentSegmentId);
+  }
+
   public async deleteSegments(ids: string[], logger: UpgradeLogger, entityManager?: EntityManager): Promise<Segment[]> {
     const queryRunner = entityManager ? entityManager : this;
 

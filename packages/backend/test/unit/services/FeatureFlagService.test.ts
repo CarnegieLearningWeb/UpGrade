@@ -28,6 +28,7 @@ import { ExperimentAssignmentService } from '../../../src/api/services/Experimen
 import { FeatureFlagValidation } from '../../../src/api/controllers/validators/FeatureFlagValidator';
 import { FeatureFlagListValidator } from '../../../src/api/controllers/validators/FeatureFlagListValidator';
 import { SegmentService } from '../../../src/api/services/SegmentService';
+import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/FeatureFlagPrecomputedSegmentService';
 import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentExclusionRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
 import { FeatureFlagExposureRepository } from '../../../src/api/repositories/FeatureFlagExposureRepository';
@@ -204,10 +205,32 @@ describe('Feature Flag Service Testing', () => {
           },
         },
         {
+          provide: FeatureFlagPrecomputedSegmentService,
+          useValue: {
+            // Empty map by default => every flag is "missing" a precomputed row, so getKeys
+            // routes through the on-the-fly fallback (resolveSegmentsForEntities/inclusionExclusionLogic).
+            // Individual tests override getPrecomputedSets to exercise the fast in-memory path.
+            getPrecomputedSets: jest.fn().mockResolvedValue(new Map()),
+            recomputeForFlag: jest.fn().mockResolvedValue(undefined),
+            seedEmptyRowForFlag: jest.fn().mockResolvedValue(undefined),
+            scheduleRecomputeForSegment: jest.fn(),
+            scheduleRecomputeForFlags: jest.fn(),
+            // Faithful stub: run the resolver + work so the mutation still executes; the real
+            // wrapper's fire-and-forget recompute behavior is covered in the precompute service's suite.
+            withRecompute: jest.fn(async (_logger, resolveAffectedFlagIds, work) => {
+              await resolveAffectedFlagIds();
+              return work();
+            }),
+            getAffectedFlagIds: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
           provide: getRepositoryToken(FeatureFlagRepository),
           useValue: {
             find: jest.fn().mockResolvedValue(mockFlagArr),
             findBy: jest.fn().mockResolvedValue(mockFlagArr),
+            getFlagsForKeys: jest.fn().mockResolvedValue(mockFlagArr),
+            getFlagsFromContext: jest.fn().mockResolvedValue(mockFlagArr),
             findOne: jest.fn().mockResolvedValue(mockFlag1),
             findWithNames: jest.fn().mockResolvedValue(mockFlagArr),
             findOneById: jest.fn().mockResolvedValue(mockFlag1),
@@ -443,6 +466,51 @@ describe('Feature Flag Service Testing', () => {
     );
   });
 
+  it('recomputes the precomputed row when a flag update changes its context (lists are deleted)', async () => {
+    const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+    // old flag has a different context than the incoming mockFlag2 (context: ['context']) and has lists.
+    // updateFeatureFlagInDB reads the old flag through the counts-only findOneForDetails.
+    service.findOneForDetails = jest.fn().mockResolvedValue({
+      id: mockFlag2.id,
+      name: 'name',
+      key: 'key',
+      description: 'description',
+      context: ['old-context'],
+      status: FEATURE_FLAG_STATUS.ENABLED,
+      featureFlagSegmentInclusion: [{ segment: { id: 'inc-seg' } }],
+      featureFlagSegmentExclusion: [{ segment: { id: 'exc-seg' } }],
+    });
+
+    await service.update(mockFlag2, mockUser1, logger);
+
+    expect(precomputed.withRecompute).toHaveBeenCalled();
+    // the resolver targets this flag so its (now empty) row is rebuilt instead of left stale
+    const [, resolveAffectedFlagIds] = (precomputed.withRecompute as jest.Mock).mock.calls[0];
+    expect(await resolveAffectedFlagIds()).toEqual([mockFlag2.id]);
+  });
+
+  it('does not recompute the precomputed row when a flag update leaves the context unchanged', async () => {
+    const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+    // old flag has the SAME context as the incoming mockFlag2 (context: ['context']) — lists untouched.
+    // updateFeatureFlagInDB reads the old flag through the counts-only findOneForDetails.
+    service.findOneForDetails = jest.fn().mockResolvedValue({
+      id: mockFlag2.id,
+      name: 'name',
+      key: 'key',
+      description: 'description',
+      context: ['context'],
+      status: FEATURE_FLAG_STATUS.ENABLED,
+      featureFlagSegmentInclusion: [],
+      featureFlagSegmentExclusion: [],
+    });
+
+    await service.update(mockFlag2, mockUser1, logger);
+
+    // withRecompute still wraps the write, but its resolver yields no flags => no recompute fired
+    const [, resolveAffectedFlagIds] = (precomputed.withRecompute as jest.Mock).mock.calls[0];
+    expect(await resolveAffectedFlagIds()).toEqual([]);
+  });
+
   it('should update the flag state', async () => {
     const results = await service.updateState(mockFlag1.id, FEATURE_FLAG_STATUS.ENABLED, mockUser1);
     expect(results).toBeTruthy();
@@ -557,6 +625,43 @@ describe('Feature Flag Service Testing', () => {
       await expect(
         service.updateListStatus('missing-segment', true, LIST_FILTER_MODE.INCLUSION, mockUser1, logger)
       ).rejects.toThrow();
+    });
+
+    it('recomputes the affected flag after a status toggle via withRecompute', async () => {
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+      const inclusionRepo = module.get(getRepositoryToken(FeatureFlagSegmentInclusionRepository)) as any;
+      inclusionRepo.findOne = jest.fn().mockResolvedValue({
+        enabled: false,
+        featureFlag: { id: mockFlag1.id, name: mockFlag1.name, context: ['context1'] },
+        segment: { id: 'segment-1', name: 'list' },
+      });
+      inclusionRepo.save = jest.fn().mockResolvedValue({});
+      (precomputed.withRecompute as jest.Mock).mockClear();
+
+      await service.updateListStatus('segment-1', true, LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
+
+      expect(precomputed.withRecompute).toHaveBeenCalled();
+      // the resolver handed to withRecompute yields the affected flag id
+      const [, resolveAffectedFlagIds] = (precomputed.withRecompute as jest.Mock).mock.calls[0];
+      expect(await resolveAffectedFlagIds()).toContain(mockFlag1.id);
+    });
+
+    it('does not recompute when the status is unchanged', async () => {
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+      const inclusionRepo = module.get(getRepositoryToken(FeatureFlagSegmentInclusionRepository)) as any;
+      inclusionRepo.findOne = jest.fn().mockResolvedValue({
+        enabled: true,
+        featureFlag: { id: mockFlag1.id, name: mockFlag1.name, context: ['context1'] },
+        segment: { id: 'segment-1', name: 'list' },
+      });
+      inclusionRepo.save = jest.fn().mockResolvedValue({});
+      (precomputed.withRecompute as jest.Mock).mockClear();
+
+      // toggling to the value it already has => no change, so the resolver yields no flags
+      await service.updateListStatus('segment-1', true, LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
+
+      const [, resolveAffectedFlagIds] = (precomputed.withRecompute as jest.Mock).mock.calls[0];
+      expect(await resolveAffectedFlagIds()).toEqual([]);
     });
   });
 
@@ -740,6 +845,148 @@ describe('Feature Flag Service Testing', () => {
       expect(resolveSegmentsSpy).toHaveBeenCalledTimes(1);
       const segmentObjMap = resolveSegmentsSpy.mock.calls[0][0];
       expect(segmentObjMap[flagWithDisabledInclusion.id].currentIncludedSegmentIds).toEqual([]);
+    });
+  });
+
+  describe('getKeys - precomputed segment fast path', () => {
+    const fastFlag = { id: 'fast-flag-id', key: 'fast-key', filterMode: FILTER_MODE.INCLUDE_ALL };
+
+    it('uses the precomputed set and skips on-the-fly resolution when a row exists', async () => {
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([fastFlag]);
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[fastFlag.id, { inclusionIds: [], exclusionIds: ['user123'] }]])
+      );
+
+      const result = await service.getKeys(userDoc, 'context1', logger);
+
+      // user123 is individually excluded -> flag filtered out
+      expect(result).toEqual([]);
+      // fast path must not fall back to recursive resolution
+      expect(experimentAssignmentService.resolveSegmentsForEntities).not.toHaveBeenCalled();
+    });
+
+    it('individual inclusion beats group exclusion on the fast path', async () => {
+      const userDoc = { id: 'user123', group: { classId: ['bad-class'] }, workingGroup: {} } as any;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([fastFlag]);
+      // stored group IDs are namespaced with their type (classId:bad-class); individuals stay bare
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[fastFlag.id, { inclusionIds: ['user123'], exclusionIds: ['classId:bad-class'] }]])
+      );
+
+      const result = await service.getKeys(userDoc, 'context1', logger);
+
+      expect(result).toEqual([fastFlag.key]);
+    });
+
+    it('matches a group exclusion only when the group type also matches (type-aware)', async () => {
+      const excludeFlag = { id: 'ex-flag-id', key: 'ex-key', filterMode: FILTER_MODE.INCLUDE_ALL };
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+      service.cacheService.wrap = jest.fn().mockResolvedValue([excludeFlag]);
+
+      // User is in group 'grpA' under type 'classId'. The stored exclusion targets 'grpA' under a
+      // DIFFERENT type ('schoolId'), so with type-aware matching the user is NOT excluded.
+      const wrongType = { id: 'user123', group: { classId: ['grpA'] }, workingGroup: {} } as any;
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[excludeFlag.id, { inclusionIds: [], exclusionIds: ['schoolId:grpA'] }]])
+      );
+      expect(await service.getKeys(wrongType, 'context1', logger)).toEqual([excludeFlag.key]);
+
+      // Same group ID under the MATCHING type -> excluded.
+      const rightType = { id: 'user123', group: { schoolId: ['grpA'] }, workingGroup: {} } as any;
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[excludeFlag.id, { inclusionIds: [], exclusionIds: ['schoolId:grpA'] }]])
+      );
+      expect(await service.getKeys(rightType, 'context1', logger)).toEqual([]);
+    });
+
+    it('does not treat a group ID that collides with the user ID as an individual match', async () => {
+      // A group named the same string as the user's individual ID is excluded. Because groups are
+      // namespaced (schoolId:user123) and the individual check is bare (user123), the user must NOT
+      // be individually excluded — they are only excluded if they actually belong to that group.
+      const collideFlag = { id: 'col-flag-id', key: 'col-key', filterMode: FILTER_MODE.INCLUDE_ALL };
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+      service.cacheService.wrap = jest.fn().mockResolvedValue([collideFlag]);
+
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[collideFlag.id, { inclusionIds: [], exclusionIds: ['schoolId:user123'] }]])
+      );
+
+      // Not in the excluded group -> stays included (INCLUDE_ALL)
+      expect(await service.getKeys(userDoc, 'context1', logger)).toEqual([collideFlag.key]);
+    });
+
+    it('falls back to on-the-fly resolution when the precomputed row is missing', async () => {
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+      const resolveSegmentsSpy = experimentAssignmentService.resolveSegmentsForEntities as jest.Mock;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([fastFlag]);
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(new Map()); // no row -> fallback
+      resolveSegmentsSpy.mockResolvedValue([{}, {}]);
+
+      await service.getKeys(userDoc, 'context1', logger);
+
+      expect(resolveSegmentsSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('falls back to on-the-fly resolution (does not throw) when the precomputed table read fails', async () => {
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+      const resolveSegmentsSpy = experimentAssignmentService.resolveSegmentsForEntities as jest.Mock;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([fastFlag]);
+      // Simulates the table not existing yet (e.g. migration not run): getPrecomputedSets rejects.
+      (precomputed.getPrecomputedSets as jest.Mock).mockRejectedValue(
+        new Error('relation "feature_flag_precomputed_segment" does not exist')
+      );
+      resolveSegmentsSpy.mockResolvedValue([{}, {}]);
+
+      // must resolve (not reject) and still route through the on-the-fly fallback
+      await expect(service.getKeys(userDoc, 'context1', logger)).resolves.toBeDefined();
+      expect(resolveSegmentsSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('precomputed recompute + seed triggers', () => {
+    it('seeds an empty precomputed row in-transaction when a flag is created', async () => {
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+      flagRepo.insertFeatureFlag = jest.fn().mockResolvedValue([mockFlag1]);
+
+      await service.create(mockFlag2, mockUser1, logger);
+
+      expect(precomputed.seedEmptyRowForFlag).toHaveBeenCalledWith(mockFlag1.id, expect.anything());
+    });
+
+    it('recomputes the affected flag after addList (standalone) via withRecompute', async () => {
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      await service.addList([mockList], LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
+
+      expect(precomputed.withRecompute).toHaveBeenCalled();
+      // the resolver handed to withRecompute yields the affected flag id
+      const [, resolveAffectedFlagIds] = (precomputed.withRecompute as jest.Mock).mock.calls[0];
+      expect(await resolveAffectedFlagIds()).toEqual([mockList.id]);
+    });
+
+    it('recomputes imported flags after the import transaction commits', async () => {
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      await service.importFeatureFlags(
+        [{ fileName: 'import.json', fileContent: JSON.stringify(mockFlag4) }],
+        mockUser1,
+        logger
+      );
+
+      expect(precomputed.recomputeForFlag).toHaveBeenCalled();
     });
   });
 });
