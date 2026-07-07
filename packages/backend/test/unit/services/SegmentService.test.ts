@@ -355,6 +355,11 @@ describe('Segment Service Testing', () => {
     expect(segments).toEqual(seg1);
   });
 
+  it('should get a segment (including private) with members by id', async () => {
+    const segment = await service.getSegmentByIdWithMembers(seg1.id, logger);
+    expect(segment).toEqual(seg1);
+  });
+
   it('should get segments by ids', async () => {
     const segments = await service.getSegmentByIds([seg1.id]);
     expect(segments).toEqual([seg1]);
@@ -511,6 +516,17 @@ describe('Segment Service Testing', () => {
     service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
     const segments = await service.upsertSegment(segVal, logger);
     expect(segments).toEqual(seg1);
+  });
+
+  it('should clear existing members with a single delete-by-segmentId when editing', async () => {
+    // Editing is a full replace: members are deleted then re-inserted. The delete must be a
+    // single "WHERE segmentId = :id" per member table rather than a per-row criteria list.
+    service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
+    repo.delete = jest.fn();
+
+    await service.upsertSegment(segVal, logger);
+
+    expect(repo.delete).toHaveBeenCalledWith({ segmentId: segVal.id });
   });
 
   it('should upsert a segment with trimmed whitespace and removed newline or carriage return', async () => {

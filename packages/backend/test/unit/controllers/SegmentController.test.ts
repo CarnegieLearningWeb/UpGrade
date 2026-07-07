@@ -68,6 +68,14 @@ describe('Segment Controller Testing', () => {
       .expect(200);
   });
 
+  test('Get request for /api/segments/:segmentId/members', () => {
+    return request(app)
+      .get(`/api/segments/${crypto.randomUUID()}/members`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
   test('Get request for /api/segments/status/:segmentId', () => {
     return request(app)
       .get(`/api/segments/status/${crypto.randomUUID()}`)
