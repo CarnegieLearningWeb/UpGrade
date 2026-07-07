@@ -936,6 +936,24 @@ describe('Feature Flag Service Testing', () => {
 
       expect(resolveSegmentsSpy).toHaveBeenCalledTimes(1);
     });
+
+    it('falls back to on-the-fly resolution (does not throw) when the precomputed table read fails', async () => {
+      const userDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const experimentAssignmentService = module.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+      const resolveSegmentsSpy = experimentAssignmentService.resolveSegmentsForEntities as jest.Mock;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([fastFlag]);
+      // Simulates the table not existing yet (e.g. migration not run): getPrecomputedSets rejects.
+      (precomputed.getPrecomputedSets as jest.Mock).mockRejectedValue(
+        new Error('relation "feature_flag_precomputed_segment" does not exist')
+      );
+      resolveSegmentsSpy.mockResolvedValue([{}, {}]);
+
+      // must resolve (not reject) and still route through the on-the-fly fallback
+      await expect(service.getKeys(userDoc, 'context1', logger)).resolves.toBeDefined();
+      expect(resolveSegmentsSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('precomputed recompute + seed triggers', () => {

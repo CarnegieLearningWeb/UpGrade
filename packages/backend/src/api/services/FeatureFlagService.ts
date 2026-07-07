@@ -3,6 +3,7 @@ import { FeatureFlag } from '../models/FeatureFlag';
 import { Segment } from '../models/Segment';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
+import { FeatureFlagPrecomputedSegment } from '../models/FeatureFlagPrecomputedSegment';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
 import { FeatureFlagExposureRepository } from '../repositories/FeatureFlagExposureRepository';
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
@@ -1029,7 +1030,19 @@ export class FeatureFlagService {
     logger: UpgradeLogger
   ): Promise<Pick<FeatureFlag, 'id' | 'key' | 'filterMode'>[]> {
     const flagIds = featureFlags.map((f) => f.id);
-    const precomputedMap = await this.featureFlagPrecomputedSegmentService.getPrecomputedSets(flagIds);
+    // getPrecomputedSets can throw if the feature_flag_precomputed_segment table is unavailable
+    // (e.g. the migration hasn't been run yet). Treat that identically to every row being missing:
+    // swallow the error and fall through to on-the-fly segment resolution below rather than failing
+    // the whole assignment request. Rows self-heal on the next restart (backfill) or list mutation.
+    let precomputedMap: Map<string, FeatureFlagPrecomputedSegment>;
+    try {
+      precomputedMap = await this.featureFlagPrecomputedSegmentService.getPrecomputedSets(flagIds);
+    } catch (err) {
+      logger.error({
+        message: `featureFlagLevelInclusionExclusion: failed to read feature_flag_precomputed_segment; falling back to on-the-fly resolution for all flags: ${err}`,
+      });
+      precomputedMap = new Map();
+    }
 
     // Build type-qualified group keys from the user's group map so they match the namespaced group
     // IDs stored in the precomputed arrays (individuals are matched bare against experimentUser.id).
