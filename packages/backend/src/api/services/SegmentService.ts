@@ -150,6 +150,18 @@ export class SegmentService {
     return segmentDoc;
   }
 
+  // Like getSegmentById but includes private lists, so a flag/experiment list can be loaded for editing.
+  public async getSegmentByIdWithMembers(id: string, logger: UpgradeLogger): Promise<Segment> {
+    logger.info({ message: `Find segment (including private) with members by id. segmentId: ${id}` });
+    return this.segmentRepository
+      .createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .where({ id })
+      .getOne();
+  }
+
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
     return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
       const result = await this.segmentRepository
@@ -902,28 +914,18 @@ export class SegmentService {
 
     if (segment.id) {
       try {
-        // get segment by ids
-        segmentDoc = await transactionalEntityManager.getRepository(Segment).findOne({
-          where: { id: segment.id },
-          relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
-        });
-
-        // delete all members for this segment by segment id (single-param query, no per-row overhead)
-        if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
-          await this.individualForSegmentRepository.deleteIndividualForSegmentById(
+        // Full replace: clear members with a single delete-by-segmentId per member table. A per-row
+        // criteria array (the previous approach) expands into a giant OR predicate that is very slow
+        // for large lists. The delete is cheap even when there are no members, so we skip the
+        // pre-SELECT that used to load the full member arrays just to decide whether to delete.
+        await Promise.all([
+          this.individualForSegmentRepository.deleteIndividualForSegmentById(
             segment.id,
             transactionalEntityManager,
             logger
-          );
-        }
-
-        if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
-          await this.groupForSegmentRepository.deleteGroupForSegmentById(
-            segment.id,
-            transactionalEntityManager,
-            logger
-          );
-        }
+          ),
+          this.groupForSegmentRepository.deleteGroupForSegmentById(segment.id, transactionalEntityManager, logger),
+        ]);
       } catch (err) {
         const error = err as ErrorWithType;
         error.details = 'Error in deleting segment from DB';

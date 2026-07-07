@@ -23,6 +23,7 @@ import {
   selectAllExperiment,
   selectHasInitialExperimentsDataLoaded,
   selectIsLoadingExperiment,
+  selectIsLoadingUpsertPrivateSegmentList,
   selectSelectedExperiment,
   selectExperimentOverviewDetails,
   selectSearchExperimentParams,
@@ -71,6 +72,7 @@ export class ExperimentService {
   experiments$: Observable<Experiment[]> = this.store$.pipe(select(selectAllExperiment));
   currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
+  isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertPrivateSegmentList));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
   selectedExperimentOverviewDetails$ = this.store$.pipe(select(selectExperimentOverviewDetails));
   searchParams$ = this.store$.pipe(select(selectSearchExperimentParams));
