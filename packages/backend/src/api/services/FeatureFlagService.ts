@@ -1185,6 +1185,8 @@ export class FeatureFlagService {
 
       // The outer transaction has committed — recompute now (addList skipped it because it ran
       // inside the transaction) so the imported enabled lists are reflected in feature_flag_precomputed_segment.
+      // Unlike the interactive write paths (which fire-and-forget via withRecompute), import intentionally
+      // awaits so a successful import response means the precomputed rows are already consistent.
       await this.featureFlagPrecomputedSegmentService.recomputeForFlag(createdFlag.id, logger);
     }
     logger.info({ message: 'Imported feature flags', details: createdFlags });
@@ -1381,6 +1383,8 @@ export class FeatureFlagService {
 
     // The outer transaction has committed — recompute now (addList skipped it because it ran
     // inside the transaction) so the imported lists are reflected in feature_flag_precomputed_segment.
+    // Unlike the interactive write paths (which fire-and-forget via withRecompute), import intentionally
+    // awaits so a successful import response means the precomputed rows are already consistent.
     await this.featureFlagPrecomputedSegmentService.recomputeForFlag(featureFlagId, logger);
 
     logger.info({ message: 'Imported feature flags', details: createdLists });
