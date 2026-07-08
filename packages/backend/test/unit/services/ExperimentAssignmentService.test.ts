@@ -35,7 +35,6 @@ import { ENROLLMENT_CODE, EXPERIMENT_STATE, FILTER_MODE, MARKED_DECISION_POINT_S
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
-import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import { factorialGroupExperiment, factorialIndividualExperiment } from '../mockdata/raw';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -72,7 +71,6 @@ describe('Experiment Assignment Service Test', () => {
   const segmentServiceMock = sinon.createStubInstance(SegmentService);
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
   const cacheServiceMock = sinon.createStubInstance(CacheService);
-  const moocletExperimentServiceMock = sinon.createStubInstance(MoocletExperimentService);
   const experimentPrecomputedSegmentServiceMock = sinon.createStubInstance(ExperimentPrecomputedSegmentService);
   // Default to "no precomputed rows" so the assignment read path exercises the on-the-fly fallback
   // (recursive segment resolution) these tests were written against.
@@ -130,6 +128,7 @@ describe('Experiment Assignment Service Test', () => {
       stateTimeLogsRepositoryMock,
       analyticsRepositoryMock,
       userStratificationFactorRepositoryMock,
+      {} as any, // thompsonSamplingConfigRepository — not used in existing tests
       previewUserServiceMock,
       experimentUserServiceMock,
       errorServiceMock,
@@ -137,8 +136,8 @@ describe('Experiment Assignment Service Test', () => {
       segmentServiceMock,
       experimentServiceMock,
       cacheServiceMock,
-      moocletExperimentServiceMock,
-      experimentPrecomputedSegmentServiceMock
+      experimentPrecomputedSegmentServiceMock,
+      {} as any // thompsonSamplingService — not used in existing tests
     );
 
     testedModule.cacheService.wrap.resolves([]);
@@ -2245,18 +2244,5 @@ describe('Experiment Assignment Service Test', () => {
         message: `getAllExperimentConditions: User: user1`,
       });
     });
-  });
-
-  it('[getConditionFromMoocletProxy] should return undefined and log error when mooclet proxy throws', async () => {
-    const userDoc = { id: 'user123', group: {}, workingGroup: {} };
-    const exp = structuredClone(simpleIndividualAssignmentExperiment);
-    const mockError = new Error('Mooclet proxy error');
-
-    moocletExperimentServiceMock.getConditionFromMoocletProxy.rejects(mockError);
-
-    const result = await (testedModule as any).getConditionFromMoocletProxy(exp, userDoc, loggerMock);
-
-    expect(result).toBeUndefined();
-    sinon.assert.calledOnce(loggerMock.error);
   });
 });

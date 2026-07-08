@@ -25,7 +25,7 @@
         *matHeaderCellDef
         class="weight-column ft-14-600"
         [matTooltip]="'experiments.details.conditions.weight-adaptive-tooltip.text' | translate"
-        [matTooltipDisabled]="!isMoocletExperiment"
+        [matTooltipDisabled]="!isThompsonSamplingExperiment"
         matTooltipPosition="above"
       >
         {{ CONDITION_TRANSLATION_KEYS.WEIGHT | translate }}
@@ -35,17 +35,17 @@
         *matCellDef="let condition"
         class="weight-column ft-14-400"
         [matTooltip]="'experiments.details.conditions.weight-adaptive-tooltip.text' | translate"
-        [matTooltipDisabled]="!isMoocletExperiment"
+        [matTooltipDisabled]="!isThompsonSamplingExperiment"
         matTooltipPosition="above"
       >
-        {{ isMoocletExperiment ? 'N/A' : condition.assignmentWeight }}
+        {{ isThompsonSamplingExperiment ? 'N/A' : condition.assignmentWeight }}
       </td>
     </ng-container>
 
     <!-- Weight Edit Column -->
     <ng-container matColumnDef="weightEdit">
       <th mat-header-cell *matHeaderCellDef class="weight-edit-column ft-14-600 dense-2">
-        @if (showActions && !isMoocletExperiment) {
+        @if (showActions && !isThompsonSamplingExperiment) {
         <div
           class="button-wrapper"
           [matTooltip]="
@@ -94,7 +94,7 @@
     <!-- Prior Edit Column -->
     <ng-container matColumnDef="priorEdit">
       <th mat-header-cell *matHeaderCellDef class="prior-edit-column ft-14-600 dense-2">
-        @if (showActions && isMoocletExperiment) {
+        @if (showActions && isThompsonSamplingExperiment) {
         <div
           class="button-wrapper"
           [matTooltip]="actionsTooltip"

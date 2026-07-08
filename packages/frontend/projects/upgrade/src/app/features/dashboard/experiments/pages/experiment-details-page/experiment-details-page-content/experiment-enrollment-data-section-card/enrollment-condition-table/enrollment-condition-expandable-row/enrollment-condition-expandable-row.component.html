@@ -11,25 +11,29 @@
         class="ft-14-600"
         *matHeaderCellDef
         [matTooltip]="'experiments.details.conditions.weight-adaptive-tooltip.text' | translate"
-        [matTooltipDisabled]="!isMoocletExperiment(experiment)"
+        [matTooltipDisabled]="!isThompsonSamplingExperiment(experiment)"
         matTooltipPosition="above"
       >
-        {{ key.includes('Icon') || (key === 'weight' && isMoocletExperiment(experiment)) ? '' : columnHeaders[key] }}
+        {{
+          key.includes('Icon') || (key === 'weight' && isThompsonSamplingExperiment(experiment))
+            ? ''
+            : columnHeaders[key]
+        }}
       </mat-header-cell>
       <mat-cell
         [ngClass]="{
           'weight-column': key === 'weight',
-          'hidden-column': key === 'weight' && isMoocletExperiment(experiment)
+          'hidden-column': key === 'weight' && isThompsonSamplingExperiment(experiment)
         }"
         style="justify-content: left"
         class="ft-14-400"
         *matCellDef="let element; let i = dataIndex"
         [matTooltip]="'experiments.details.conditions.weight-adaptive-tooltip.text' | translate"
-        [matTooltipDisabled]="!isMoocletExperiment(experiment)"
+        [matTooltipDisabled]="!isThompsonSamplingExperiment(experiment)"
         matTooltipPosition="above"
       >
-        <!-- Special handling for weight column when experiment has moocletPolicyParameters -->
-        @if (key === 'weight' && isMoocletExperiment(experiment)) {
+        <!-- Special handling for weight column when experiment uses Thompson Sampling -->
+        @if (key === 'weight' && isThompsonSamplingExperiment(experiment)) {
         <span>N/A</span>
         } @else { @if (!key.includes('Icon')) {
         <span style="padding-left: -5px">{{ element.data[key] }}</span>

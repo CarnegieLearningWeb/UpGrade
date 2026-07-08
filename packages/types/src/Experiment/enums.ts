@@ -37,13 +37,13 @@ export const CONDITION_ORDER_DISPLAY_MAP = {
 export enum ASSIGNMENT_ALGORITHM {
   RANDOM = 'random',
   STRATIFIED_RANDOM_SAMPLING = 'stratified random sampling',
-  MOOCLET_TS_CONFIGURABLE = 'ts_configurable',
+  THOMPSON_SAMPLING = 'thompson_sampling',
 }
 
 export const ASSIGNMENT_ALGORITHM_DISPLAY_MAP = {
   [ASSIGNMENT_ALGORITHM.RANDOM]: 'Random',
   [ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING]: 'Stratified Random Sampling',
-  [ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE]: 'Thompson Sampling (Configurable)',
+  [ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING]: 'Thompson Sampling',
 };
 
 export enum POST_EXPERIMENT_RULE {
@@ -116,8 +116,6 @@ export enum SERVER_ERROR {
   MISSING_HEADER_USER_ID = 'Missing `User-Id` header',
   SEGMENT_DUPLICATE_NAME = 'Segment with same name already exists for this app-context.',
   INVALID_APP_CONTEXT = 'Invalid app context',
-  MOOCLET_REWARD_ERROR = 'Error processing Mooclet reward',
-  MOOCLET_ERROR = 'Mooclet synchronization error',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {

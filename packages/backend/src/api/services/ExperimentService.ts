@@ -97,7 +97,6 @@ import { plainToClass } from 'class-transformer';
 import { StratificationFactorRepository } from '../repositories/StratificationFactorRepository';
 import { ExperimentDetailsForCSVData } from '../repositories/AnalyticsRepository';
 import { MetricService } from './MetricService';
-import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimentRefRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { NotFoundException } from '@nestjs/common/exceptions';
@@ -135,7 +134,6 @@ export class ExperimentService {
     @InjectRepository() protected levelCombinationElementsRepository: LevelCombinationElementRepository,
     @InjectRepository() protected archivedStatsRepository: ArchivedStatsRepository,
     @InjectRepository() protected stratificationRepository: StratificationFactorRepository,
-    @InjectRepository() protected moocletExperimentRefRepository: MoocletExperimentRefRepository,
     @InjectDataSource() protected dataSource: DataSource,
     protected previewUserService: PreviewUserService,
     protected segmentService: SegmentService,
@@ -393,7 +391,7 @@ export class ExperimentService {
 
     // Populate the experiment_precomputed_segment row from the just-attached lists. When an
     // existingEntityManager was provided the caller owns the (still-open) transaction, so it — not
-    // create — must recompute after commit (see MoocletExperimentService); recomputing here would
+    // create — must recompute after commit; recomputing here would
     // read uncommitted writes. recomputeForExperiment yields empty arrays when the experiment has no
     // lists, so this also seeds list-less experiments (no separate empty-seed needed).
     if (!existingEntityManager) {
@@ -1268,7 +1266,7 @@ export class ExperimentService {
     // filterMode was forced to EXCLUDE_ALL, but the experiment_precomputed_segment row still holds the
     // old member IDs. Recompute it (to empty) after commit so the assignment read path never serves
     // stale inclusion/exclusion data. Mirrors FeatureFlagService.updateFeatureFlagInDB's withRecompute.
-    // When a caller owns the transaction (existingEntityManager, e.g. MoocletExperimentService), the
+    // When a caller owns the transaction (existingEntityManager), the
     // writes are not committed yet, so the caller recomputes after its own commit (see syncUpdate) —
     // the same deferral create() uses.
     if (isChangingContext && !existingEntityManager) {
@@ -1582,14 +1580,6 @@ export class ExperimentService {
         }
         const experimentJSONValidationError = await this.validateExperimentJSON(newExperiment);
         const fileName = experimentFile.fileName;
-
-        if ('moocletPolicyParameters' in newExperiment && !env.mooclets?.enabled) {
-          return {
-            fileName,
-            error: 'moocletPolicyParameters was provided but mooclets are not enabled on backend.',
-            compatibilityType: IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE,
-          };
-        }
 
         try {
           experiment = this.autoFillSomeMissingProperties(experiment);
@@ -2091,7 +2081,7 @@ export class ExperimentService {
       // The caller owns the outer transaction. We must NOT recompute here: recomputeForExperiment
       // reads through its own repositories and cannot see this transaction's uncommitted writes, so
       // it would persist a stale experiment_precomputed_segment row that never self-heals. The caller
-      // (create / importExperimentLists / MoocletExperimentService) recomputes after it commits.
+      // (create / importExperimentLists) recomputes after it commits.
       return await executeTransaction(transactionalEntityManager);
     } else {
       // withRecompute runs the mutation in its own transaction, then fires a fire-and-forget

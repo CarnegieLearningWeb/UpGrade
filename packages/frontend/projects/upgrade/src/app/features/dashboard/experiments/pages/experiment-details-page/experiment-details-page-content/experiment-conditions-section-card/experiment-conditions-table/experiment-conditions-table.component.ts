@@ -37,14 +37,14 @@ export class ExperimentConditionsTableComponent {
   @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
   @Input() actionsTooltip?: string = '';
-  @Input() isMoocletExperiment = false;
+  @Input() isThompsonSamplingExperiment = false;
   @Input() prior?: Record<string, Prior>;
   @Output() rowAction = new EventEmitter<ExperimentConditionRowActionEvent>();
   @Output() editWeights = new EventEmitter<ExperimentCondition[]>();
   @Output() editPrior = new EventEmitter<ExperimentCondition[]>();
 
   get displayedColumns(): string[] {
-    if (this.isMoocletExperiment) {
+    if (this.isThompsonSamplingExperiment) {
       return ['condition', 'priorSuccesses', 'priorFailures', 'priorEdit', 'description', 'actions'];
     }
     return ['condition', 'weight', 'weightEdit', 'description', 'actions'];

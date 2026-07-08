@@ -140,14 +140,13 @@ Experiment join tables (`ExperimentSegmentInclusion` / `ExperimentSegmentExclusi
 | Segment list members updated | `ExperimentService.updateList` → `withRecompute` (passes `skipScheduleRecompute=true` to the segment upsert) |
 | Segment list removed | `ExperimentService.deleteList` → delegates to `SegmentService.deleteSegment` (which owns the recompute) |
 | Experiment created | `ExperimentService.create` → `await recomputeForExperiment` after lists attach (only when it owns the commit; recompute yields empty arrays for list-less experiments, so no separate empty-seed) |
-| Experiment created inside a Mooclet transaction | `MoocletExperimentService.syncCreate` → `await recomputeForExperiment` after the transaction commits (create deferred it because it ran inside the transaction) |
 | Experiment lists imported | `ExperimentService.importExperimentLists` → `await recomputeForExperiment` after the import transaction commits |
-| Experiment context changed (deletes all its lists) | `ExperimentService.updateExperimentInDB` → `scheduleRecomputeForExperiments` after commit (recomputes to empty; `deleteAllListsFromExperiment` deletes the private segments directly, so the precomputed row would otherwise keep stale IDs). When a caller owns the transaction (`MoocletExperimentService.syncUpdate` / `syncUpdateWithMoocletAlgorithmTransition`), those methods recompute after their own commit — mirrors the flag side's `updateFeatureFlagInDB` → `withRecompute` |
+| Experiment context changed (deletes all its lists) | `ExperimentService.updateExperimentInDB` → `scheduleRecomputeForExperiments` after commit (recomputes to empty; `deleteAllListsFromExperiment` deletes the private segments directly, so the precomputed row would otherwise keep stale IDs) |
 | Shared segment members/structure changed | `SegmentService.addList` / `deleteList` / `addSegmentDataWithPipeline` → `scheduleRecomputeForSegment` for **both** the flag and experiment services |
 | Segment deleted entirely | `SegmentService.deleteSegment` → collects affected experiment IDs **before** the delete, recomputes **after** commit (flags use `withRecompute` in the same method) |
 | Server startup | `app.ts` → `backfillExperimentPrecomputedSegments` (guarded by `.catch` — a missing table never crashes startup) |
 
-Same invariant as feature flags: recompute **after** the change commits; for deletes, collect affected experiment IDs **before**. All write-path recomputes are fire-and-forget except the `create` / import / Mooclet paths, which `await` so "done" means the row is ready.
+Same invariant as feature flags: recompute **after** the change commits; for deletes, collect affected experiment IDs **before**. All write-path recomputes are fire-and-forget except the `create` / import paths, which `await` so "done" means the row is ready.
 
 ### INCLUDE_ALL semantics (resolved)
 

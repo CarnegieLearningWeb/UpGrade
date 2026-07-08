@@ -713,14 +713,10 @@ export class ExperimentEffects {
   fetchRewardsDataForExperiment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionFetchRewardsDataForExperiment),
-      map((action) => action.experimentId),
-      switchMap((experimentId) =>
-        this.experimentDataService.fetchMoocletRewardsDataForExperiment(experimentId).pipe(
+      switchMap(({ experimentId }) =>
+        this.experimentDataService.fetchRewardsDataForExperiment(experimentId).pipe(
           map((rewardsSummary) =>
-            experimentAction.actionFetchRewardsDataForExperimentSuccess({
-              experimentId,
-              rewardsSummary,
-            })
+            experimentAction.actionFetchRewardsDataForExperimentSuccess({ experimentId, rewardsSummary })
           ),
           catchError((error) => of(experimentAction.actionFetchRewardsDataForExperimentFailure({ error })))
         )

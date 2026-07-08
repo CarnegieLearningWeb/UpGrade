@@ -19,7 +19,7 @@ import { Observable, Subscription, combineLatest } from 'rxjs';
 import { map, filter, startWith } from 'rxjs/operators';
 import { Experiment } from '../../../../../../core/experiments/store/experiments.model';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
-import { MoocletExperimentHelperService } from '../../../../../../core/experiments/mooclet-helper.service';
+import { ThompsonSamplingHelperService } from '../../../../../../core/experiments/thompson-sampling-helper.service';
 import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
 
 @Component({
@@ -56,7 +56,7 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly segmentService: SegmentsService,
-    private readonly moocletHelperService: MoocletExperimentHelperService
+    private readonly thompsonSamplingHelperService: ThompsonSamplingHelperService
   ) {}
 
   ngOnInit() {
@@ -91,10 +91,7 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
         if (!experiment) {
           return false;
         }
-        const isMoocletEnabled = this.moocletHelperService.isMoocletEnabled();
-        const hasMoocletPolicyParameters = !!experiment.moocletPolicyParameters;
-        const isTSConfigurable = experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE;
-        return isMoocletEnabled && hasMoocletPolicyParameters && isTSConfigurable;
+        return experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING;
       })
     );
   }

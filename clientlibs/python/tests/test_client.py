@@ -68,7 +68,6 @@ ALIAS_PAYLOAD = {"userId": USER, "aliases": ["alias-1"]}
 REWARD_PAYLOAD = {
     "message": "ok",
     "request": {"rewardValue": "SUCCESS"},
-    "reward": {"variable": "score", "value": 1.0, "mooclet": 1, "version": 1, "learner": USER},
 }
 
 
@@ -596,7 +595,7 @@ class TestSendReward:
         respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=REWARD_PAYLOAD))
         result = await make_client().send_reward(BinaryRewardValue.SUCCESS)
         assert result.message == "ok"
-        assert result.reward.variable == "score"
+        assert result.request.rewardValue == BinaryRewardValue.SUCCESS
 
     @respx.mock
     async def test_passes_all_params(self) -> None:
@@ -617,4 +616,4 @@ class TestSendReward:
     def test_sync(self) -> None:
         respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=REWARD_PAYLOAD))
         result = make_client().send_reward_sync(BinaryRewardValue.SUCCESS)
-        assert result.reward.mooclet == 1
+        assert result.message == "ok"

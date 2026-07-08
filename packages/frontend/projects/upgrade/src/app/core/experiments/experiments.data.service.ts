@@ -126,6 +126,11 @@ export class ExperimentDataService {
     return this.http.post(url, params);
   }
 
+  fetchRewardsDataForExperiment(experimentId: string): Observable<ExperimentRewardsSummary> {
+    const url = `${API_ENDPOINTS.experimentsRewardsSummary}/${experimentId}`;
+    return this.http.get<ExperimentRewardsSummary>(url);
+  }
+
   addInclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
     const url = API_ENDPOINTS.addExperimentInclusionList;
     return this.http.post<ExperimentSegmentListResponse>(url, list);
@@ -217,10 +222,5 @@ export class ExperimentDataService {
       queries: params.metrics,
     };
     return this.updateExperiment(updatedExperiment);
-  }
-
-  fetchMoocletRewardsDataForExperiment(experimentId: string): Observable<ExperimentRewardsSummary> {
-    const url = `${API_ENDPOINTS.getMoocletRewardsData}/${experimentId}`;
-    return this.http.get<ExperimentRewardsSummary>(url);
   }
 }

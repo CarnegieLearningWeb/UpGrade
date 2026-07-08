@@ -1,26 +1,14 @@
 import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { TranslateModule } from '@ngx-translate/core';
+import { BehaviorSubject, map, Observable, of, startWith, Subject, Subscription } from 'rxjs';
+import { ThompsonSamplingConfigDTO } from '../../../../../../core/experiments/store/experiments.model';
 import {
-  BehaviorSubject,
-  debounceTime,
-  from,
-  map,
-  Observable,
-  startWith,
-  Subject,
-  Subscription,
-  switchMap,
-} from 'rxjs';
-import { ValidationError } from 'class-validator';
-import { MoocletTSConfigurablePolicyParametersDTO } from 'upgrade_types';
-import {
-  EditableTSConfigurablePolicyParameters,
-  MoocletExperimentHelperService,
-} from '../../../../../../core/experiments/mooclet-helper.service';
+  EditableThompsonSamplingConfig,
+  ThompsonSamplingHelperService,
+} from '../../../../../../core/experiments/thompson-sampling-helper.service';
 import isEqual from 'lodash.isequal';
 
 @Component({
@@ -31,27 +19,26 @@ import isEqual from 'lodash.isequal';
   styleUrl: './ts-configurable-policy-parameters-form.component.scss',
 })
 export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDestroy {
-  @Input() existingPolicyParams?: MoocletTSConfigurablePolicyParametersDTO;
-  @Input() disabled = false; // Disable all form fields when true
-  @Output() parametersChange = new EventEmitter<MoocletTSConfigurablePolicyParametersDTO>();
+  @Input() existingPolicyParams?: ThompsonSamplingConfigDTO;
+  @Input() disabled = false;
+  @Output() parametersChange = new EventEmitter<ThompsonSamplingConfigDTO>();
   @Output() validationChange = new EventEmitter<boolean>();
   @Output() formChanged = new EventEmitter<boolean>();
 
   private readonly formBuilder = inject(FormBuilder);
-  private readonly moocletExperimentHelperService = inject(MoocletExperimentHelperService);
+  private readonly thompsonSamplingHelperService = inject(ThompsonSamplingHelperService);
 
   policyForm: FormGroup;
-  validationErrors$ = new BehaviorSubject<ValidationError[]>([]);
+  validationErrors$ = new BehaviorSubject<string[]>([]);
   isInitialFormValueChanged$: Observable<boolean>;
-  initialFormValue: EditableTSConfigurablePolicyParameters;
-  formValueChanges$ = new Subject<EditableTSConfigurablePolicyParameters>();
+  initialFormValue: EditableThompsonSamplingConfig;
+  formValueChanges$ = new Subject<EditableThompsonSamplingConfig>();
   subscriptions = new Subscription();
 
   ngOnInit(): void {
     this.initializeFormValues();
     this.createForm();
 
-    // Disable form if disabled input is true
     if (this.disabled) {
       this.policyForm.disable();
     }
@@ -66,73 +53,48 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
   }
 
   private initializeFormValues(): void {
-    // Delegate to service to derive initial form values from existing or default parameters
-    this.initialFormValue = this.moocletExperimentHelperService.deriveEditableParametersForTSConfigurable(
-      this.existingPolicyParams
-    );
+    this.initialFormValue = this.thompsonSamplingHelperService.deriveEditableParameters(this.existingPolicyParams);
   }
 
   private createForm(): void {
     const params = this.initialFormValue;
-    const validators = this.moocletExperimentHelperService.getTSConfigurableFieldValidators();
+    const validators = this.thompsonSamplingHelperService.getFieldValidators();
 
     this.policyForm = this.formBuilder.group({
-      batch_size: [params.batch_size, validators.batch_size],
-      uniform_threshold: [params.uniform_threshold, validators.uniform_threshold],
-      tspostdiff_thresh: [params.tspostdiff_thresh, validators.tspostdiff_thresh],
+      batchSize: [params.batchSize, validators.batchSize],
+      warmupThreshold: [params.warmupThreshold, validators.warmupThreshold],
+      minimumDrawDifference: [params.minimumDrawDifference, validators.minimumDrawDifference],
     });
   }
 
   private setupValidation(): void {
-    // Set up validation pipeline with debounce
-    this.subscriptions.add(
-      this.formValueChanges$
-        .pipe(
-          debounceTime(300),
-          switchMap((formValue) => this.validateParameters(formValue))
-        )
-        .subscribe((errors) => {
-          this.validationErrors$.next(errors);
-          this.emitValidationState(errors);
-        })
-    );
-
-    // Emit validation state immediately when Angular form validity changes
     this.subscriptions.add(
       this.policyForm.statusChanges.subscribe(() => {
-        this.emitValidationState(this.validationErrors$.value);
+        this.emitValidationState();
       })
     );
   }
 
-  private emitValidationState(backendErrors: ValidationError[]): void {
-    // Treat disabled form as valid; otherwise require Angular + backend validation to pass
-    const formDisabled = this.policyForm.disabled;
-    const isValid = formDisabled || (this.policyForm.valid && backendErrors.length === 0);
+  private emitValidationState(): void {
+    const isValid = this.policyForm.disabled || this.policyForm.valid;
     this.validationChange.emit(isValid);
   }
 
   private listenToFormChanges(): void {
     this.subscriptions.add(
-      this.policyForm.valueChanges.subscribe((formValue: EditableTSConfigurablePolicyParameters) => {
+      this.policyForm.valueChanges.subscribe((formValue: EditableThompsonSamplingConfig) => {
         this.emitFormValueChanges(formValue);
       })
     );
 
-    // Trigger initial validation and emit initial form state
     this.emitFormValueChanges(this.policyForm.value);
-    // Emit initial validation state considering Angular form validity
-    this.emitValidationState(this.validationErrors$.value);
+    this.emitValidationState();
   }
 
   private listenForIsInitialFormValueChanged() {
     this.isInitialFormValueChanged$ = this.policyForm.valueChanges.pipe(
       startWith(this.policyForm.value),
-      map(() => {
-        // Compare form values with initial parameters
-        const currentValues = this.policyForm.value;
-        return !isEqual(currentValues, this.initialFormValue);
-      })
+      map(() => !isEqual(this.policyForm.value, this.initialFormValue))
     );
     this.subscriptions.add(
       this.isInitialFormValueChanged$.subscribe((hasChanged) => {
@@ -141,20 +103,8 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
     );
   }
 
-  private validateParameters(formValue: EditableTSConfigurablePolicyParameters): Observable<ValidationError[]> {
-    const completeParams = this.buildCompletePolicyParametersDTO(formValue);
-    return from(this.moocletExperimentHelperService.validateTSConfigurablePolicyParameters(completeParams));
-  }
-
-  private emitFormValueChanges(formValue: EditableTSConfigurablePolicyParameters): void {
+  private emitFormValueChanges(formValue: EditableThompsonSamplingConfig): void {
     this.formValueChanges$.next(formValue);
-    this.parametersChange.emit(this.buildCompletePolicyParametersDTO(formValue));
-  }
-
-  private buildCompletePolicyParametersDTO(
-    formValue: EditableTSConfigurablePolicyParameters
-  ): MoocletTSConfigurablePolicyParametersDTO {
-    // Delegate DTO assembly to service
-    return this.moocletExperimentHelperService.buildTSConfigurablePolicyParametersDTO(formValue);
+    this.parametersChange.emit(this.thompsonSamplingHelperService.buildConfig(formValue));
   }
 }

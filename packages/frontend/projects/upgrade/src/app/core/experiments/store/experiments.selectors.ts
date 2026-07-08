@@ -26,7 +26,7 @@ import {
   ExperimentRewardsSummary,
 } from 'upgrade_types';
 import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
-import { formatTSConfigurablePolicyParamDetails } from '../mooclet-helper.service';
+import { formatThompsonSamplingConfigDetails } from '../thompson-sampling-helper.service';
 import { KeyValueFormat } from '@shared-component-lib/common-section-card-overview-details/common-section-card-overview-details.component';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
@@ -197,9 +197,8 @@ export const selectExperimentOverviewDetails = createSelector(selectSelectedExpe
   };
 
   // Add policy parameters if they exist
-  if (experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
-    details[EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS] =
-      formatTSConfigurablePolicyParamDetails(experiment);
+  if (experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+    details[EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS] = formatThompsonSamplingConfigDetails(experiment);
   }
 
   // Always add tags at the end
@@ -453,7 +452,7 @@ export const selectDisabledExperimentFields = createSelector(selectSelectedExper
   }
 
   if ([EXPERIMENT_STATE.COMPLETED, EXPERIMENT_STATE.ARCHIVED].includes(state)) {
-    return [...baseRestrictedFields, 'moocletPolicyParameters'];
+    return [...baseRestrictedFields, 'thompsonSamplingConfig'];
   }
 
   return baseRestrictedFields;

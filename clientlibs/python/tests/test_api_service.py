@@ -404,7 +404,6 @@ class TestSetAltUserIds:
 REWARD_RESPONSE = {
     "message": "Reward sent",
     "request": {"rewardValue": "SUCCESS", "experimentId": "exp-1"},
-    "reward": {"variable": "score", "value": 1.0, "mooclet": 42, "version": 3, "learner": USER_ID},
 }
 
 
@@ -414,13 +413,13 @@ class TestSendReward:
         respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=REWARD_RESPONSE))
         result = await make_service().send_reward(BinaryRewardValue.SUCCESS)
         assert result.message == "Reward sent"
-        assert result.reward.variable == "score"
+        assert result.request.experimentId == "exp-1"
 
     @respx.mock
     def test_sync(self) -> None:
         respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=REWARD_RESPONSE))
         result = make_service().send_reward_sync(BinaryRewardValue.SUCCESS)
-        assert result.reward.mooclet == 42
+        assert result.message == "Reward sent"
 
     @respx.mock
     async def test_full_params(self) -> None:
