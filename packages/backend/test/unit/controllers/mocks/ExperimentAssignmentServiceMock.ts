@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { IExperimentAssignmentv5 } from 'upgrade_types';
+import { IExperimentAssignment } from 'upgrade_types';
 import { ILogInput } from 'upgrade_types';
 
 @Service()
@@ -12,7 +12,7 @@ export default class ExperimentAssignmentServiceMock {
     return Promise.resolve([]);
   }
 
-  public formatAssignments(assignments: IExperimentAssignmentv5[]): IExperimentAssignmentv5[] {
+  public formatAssignments(assignments: IExperimentAssignment[]): IExperimentAssignment[] {
     return [];
   }
 
@@ -48,10 +48,6 @@ export default class ExperimentAssignmentServiceMock {
     return assignments;
   }
   public dataLog(userId: string, value: ILogInput[]): Promise<[]> {
-    return Promise.resolve([]);
-  }
-
-  public blobDataLog(userId: string, blobData: any): Promise<[]> {
     return Promise.resolve([]);
   }
 

@@ -50,13 +50,21 @@ export interface IExperimentEnrollmentDetailStats {
   conditions: IConditionEnrollmentStats[];
 }
 
-export interface IExperimentAssignmentv5 {
+export interface IExperimentAssignment {
   site: string;
   target: string;
   assignedCondition: AssignedCondition[];
   assignedFactor?: Record<string, { level: string; payload: IPayload }>[];
   experimentType: EXPERIMENT_TYPE;
 }
+
+/**
+ * @deprecated Use `IExperimentAssignment` instead. This interface is retained for
+ * backward compatibility (including declaration merging/augmentation) and will be
+ * removed in a future major version.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface IExperimentAssignmentv5 extends IExperimentAssignment {}
 
 export interface AssignedCondition {
   conditionCode: string;

@@ -73,6 +73,7 @@ export {
   CaliperGradingProfile,
   CaliperEnvelope,
   IPayload,
+  IExperimentAssignment,
   IExperimentAssignmentv5,
   ILogRequestBody,
   ILogMetrics,

@@ -2,7 +2,7 @@ import { UpGradeClientInterfaces } from '../types';
 import {
   ILogInput,
   CaliperEnvelope,
-  IExperimentAssignmentv5,
+  IExperimentAssignment,
   MARKED_DECISION_POINT_STATUS,
   IUserAliases,
   BinaryRewardAllowedValue,
@@ -306,11 +306,11 @@ export default class UpgradeClient {
    * const userId = "User1"
    * const context = "mathia"
    *
-   * const getAllResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions();
+   * const getAllResponse: IExperimentAssignment[] = await upgradeClient.getAllExperimentConditions();
    * ```
    */
-  async getAllExperimentConditions(options = { ignoreCache: false }): Promise<IExperimentAssignmentv5[]> {
-    let response: IExperimentAssignmentv5[] = options.ignoreCache
+  async getAllExperimentConditions(options = { ignoreCache: false }): Promise<IExperimentAssignment[]> {
+    let response: IExperimentAssignment[] = options.ignoreCache
       ? null
       : await this.dataService.getExperimentAssignmentData();
     if (response == null) {
