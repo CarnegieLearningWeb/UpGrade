@@ -34,7 +34,6 @@ import { ENROLLMENT_CODE, EXPERIMENT_STATE, MARKED_DECISION_POINT_STATUS } from 
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
-import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import { factorialGroupExperiment, factorialIndividualExperiment } from '../mockdata/raw';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
@@ -70,7 +69,6 @@ describe('Experiment Assignment Service Test', () => {
   const segmentServiceMock = sinon.createStubInstance(SegmentService);
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
   const cacheServiceMock = sinon.createStubInstance(CacheService);
-  const moocletExperimentServiceMock = sinon.createStubInstance(MoocletExperimentService);
   experimentServiceMock.formattingConditionPayload.restore();
   experimentServiceMock.formattingPayload.restore();
 
@@ -122,6 +120,7 @@ describe('Experiment Assignment Service Test', () => {
       stateTimeLogsRepositoryMock,
       analyticsRepositoryMock,
       userStratificationFactorRepositoryMock,
+      {} as any, // thompsonSamplingConfigRepository — not used in existing tests
       previewUserServiceMock,
       experimentUserServiceMock,
       errorServiceMock,
@@ -129,7 +128,7 @@ describe('Experiment Assignment Service Test', () => {
       segmentServiceMock,
       experimentServiceMock,
       cacheServiceMock,
-      moocletExperimentServiceMock
+      {} as any, // thompsonSamplingService — not used in existing tests
     );
 
     testedModule.cacheService.wrap.resolves([]);
@@ -1877,16 +1876,4 @@ describe('Experiment Assignment Service Test', () => {
     });
   });
 
-  it('[getConditionFromMoocletProxy] should return undefined and log error when mooclet proxy throws', async () => {
-    const userDoc = { id: 'user123', group: {}, workingGroup: {} };
-    const exp = structuredClone(simpleIndividualAssignmentExperiment);
-    const mockError = new Error('Mooclet proxy error');
-
-    moocletExperimentServiceMock.getConditionFromMoocletProxy.rejects(mockError);
-
-    const result = await (testedModule as any).getConditionFromMoocletProxy(exp, userDoc, loggerMock);
-
-    expect(result).toBeUndefined();
-    sinon.assert.calledOnce(loggerMock.error);
-  });
 });

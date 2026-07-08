@@ -3,7 +3,6 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
-  IsDefined,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -37,9 +36,6 @@ import {
   REPEATED_MEASURE,
   EXPERIMENT_TYPE,
   ASSIGNMENT_ALGORITHM,
-  MoocletTSConfigurablePolicyParametersDTO,
-  MoocletPolicyParametersDTO,
-  SUPPORTED_MOOCLET_ALGORITHMS,
 } from 'upgrade_types';
 import { Type, Transform } from 'class-transformer';
 
@@ -471,9 +467,6 @@ abstract class BaseExperimentWithoutPayload {
   public type: EXPERIMENT_TYPE;
 }
 
-const isMoocletAssignmentAlgorithm = (experiment: ExperimentDTO) =>
-  experiment.assignmentAlgorithm && SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment.assignmentAlgorithm);
-
 function IsAssignmentUnitGroupConsistent(validationOptions?: ValidationOptions) {
   return function (object: any, propertyName: string) {
     registerDecorator({
@@ -509,21 +502,13 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
   @Type(() => ConditionPayloadValidator)
   public conditionPayloads?: ConditionPayloadValidator[];
 
-  // This should be validated when assignmentAlgorithm is not RANDOM or STRATIFIED_RANDOM_SAMPLING
-  @ValidateIf(isMoocletAssignmentAlgorithm)
-  @IsDefined()
-  @ValidateNested()
-  @Type(() => MoocletPolicyParametersDTO, {
-    discriminator: {
-      property: 'assignmentAlgorithm',
-      subTypes: [
-        { value: MoocletTSConfigurablePolicyParametersDTO, name: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE },
-        // Other policy types can be added here
-      ],
-    },
-    keepDiscriminatorProperty: true,
-  })
-  public moocletPolicyParameters?: MoocletPolicyParametersDTO;
+  @IsOptional()
+  public thompsonSamplingConfig?: {
+    warmupThreshold?: number;
+    minimumDrawDifference?: number;
+    batchSize?: number;
+    priors?: Record<string, { success: number; failure: number }>;
+  };
 }
 
 export class OldExperimentDTO extends BaseExperimentWithoutPayload {

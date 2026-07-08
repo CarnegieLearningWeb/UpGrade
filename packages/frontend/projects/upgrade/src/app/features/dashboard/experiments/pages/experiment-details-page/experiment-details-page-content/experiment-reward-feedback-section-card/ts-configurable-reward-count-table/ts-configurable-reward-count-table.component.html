@@ -82,6 +82,22 @@
       </td>
     </ng-container>
 
+    <!-- Estimated Weight Column -->
+    <ng-container matColumnDef="estimatedWeight">
+      <th
+        mat-header-cell
+        *matHeaderCellDef
+        class="estimated-weight-column data-column ft-14-600"
+        [matTooltip]="'experiments.details.posteriors.estimated-weight-tooltip.text' | translate"
+        matTooltipPosition="above"
+      >
+        {{ 'experiments.details.posteriors.estimated-weight.text' | translate }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="estimated-weight-column data-column ft-14-400">
+        {{ row.estimatedWeight != null ? '≈' + row.estimatedWeight + '%' : '—' }}
+      </td>
+    </ng-container>
+
     <!-- Header and Row Definitions -->
     <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>

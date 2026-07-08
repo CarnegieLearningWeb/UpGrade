@@ -13,5 +13,4 @@ export const environment: Environment = {
   withinSubjectExperimentSupportToggle: true,
   errorLogsToggle: false,
   metricAnalyticsExperimentDisplayToggle: true,
-  moocletToggle: true,
 };

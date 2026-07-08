@@ -71,8 +71,13 @@ import { UserStratificationFactorRepository } from '../repositories/UserStratifi
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { In } from 'typeorm';
-import { env } from '../../env';
-import { MoocletExperimentService } from './MoocletExperimentService';
+import {
+  ThompsonSamplingService,
+  ConditionPrior,
+  ThompsonSamplingConfig,
+  ConditionRewardSummary,
+} from './ThompsonSamplingService';
+import { ThompsonSamplingExperimentConfigRepository } from '../repositories/ThompsonSamplingExperimentConfigRepository';
 
 export interface FactorialConditionResult {
   factorialCondition: Omit<ExperimentCondition, 'levelCombinationElements' | 'conditionPayloads'>;
@@ -117,6 +122,9 @@ export class ExperimentAssignmentService {
     @InjectRepository()
     private userStratificationFactorRepository: UserStratificationFactorRepository,
 
+    @InjectRepository()
+    private thompsonSamplingConfigRepository: ThompsonSamplingExperimentConfigRepository,
+
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
     public errorService: ErrorService,
@@ -124,7 +132,7 @@ export class ExperimentAssignmentService {
     public segmentService: SegmentService,
     public experimentService: ExperimentService,
     public cacheService: CacheService,
-    public moocletExperimentService: MoocletExperimentService
+    public thompsonSamplingService: ThompsonSamplingService
   ) {}
 
   private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
@@ -1847,26 +1855,14 @@ export class ExperimentAssignmentService {
         };
         await this.repeatedEnrollmentRepository.save(RepeatedEnrollmentDocument);
       } else {
-        let conditionAssigned: ExperimentCondition | void;
-
-        const isMoocletExperiment = this.moocletExperimentService.isMoocletExperiment(experiment.assignmentAlgorithm);
-
-        if (isMoocletExperiment) {
-          conditionAssigned = await this.moocletExperimentService.handleEnrollCondition(
-            experiment.id,
-            condition,
-            logger
-          );
-        } else {
-          conditionAssigned = await this.assignExperiment(
-            user,
-            experiment,
-            individualEnrollment,
-            groupEnrollment,
-            individualExclusion,
-            groupExclusion
-          );
-        }
+        const conditionAssigned = await this.assignExperiment(
+          user,
+          experiment,
+          individualEnrollment,
+          groupEnrollment,
+          individualExclusion,
+          groupExclusion
+        );
         if (!individualEnrollment && !individualExclusion && conditionAssigned) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
             {
@@ -1974,34 +1970,65 @@ export class ExperimentAssignmentService {
     logger: UpgradeLogger,
     enrollmentCount?: { conditionId: string; userCount: number }[]
   ): Promise<ExperimentCondition> {
-    const isMoocletExperiment = this.moocletExperimentService.isMoocletExperiment(experiment.assignmentAlgorithm);
-
-    if (isMoocletExperiment && !env.mooclets.enabled) {
-      logger.error({
-        message: 'Mooclet experiment algorithm is indicated but mooclets are not enabled',
-        experiment,
-        user,
-      });
-      return undefined;
+    if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+      return this.assignThompsonSampling(experiment, user, logger);
     }
 
-    if (isMoocletExperiment && env.mooclets.enabled) {
-      return this.getConditionFromMoocletProxy(experiment, user, logger);
-    } else {
-      return this.assignRandom(experiment, user, enrollmentCount);
-    }
+    return this.assignRandom(experiment, user, enrollmentCount);
   }
 
-  private async getConditionFromMoocletProxy(experiment: Experiment, user: ExperimentUser, logger: UpgradeLogger) {
-    const userId = user.id;
-
+  private async assignThompsonSampling(
+    experiment: Experiment,
+    user: ExperimentUser,
+    logger: UpgradeLogger
+  ): Promise<ExperimentCondition> {
     try {
-      return await this.moocletExperimentService.getConditionFromMoocletProxy(experiment, userId, logger);
+      const config = await this.thompsonSamplingConfigRepository.findByExperimentId(experiment.id);
+
+      if (!config) {
+        logger.error({
+          message: 'Thompson Sampling config not found for experiment; no condition assigned',
+          experimentId: experiment.id,
+          userId: user.id,
+        });
+        return undefined;
+      }
+
+      // Use conditionId as the identifier throughout — conditionCode is nullable
+      const conditionIds = experiment.conditions.map((c) => c.id);
+
+      const rewardSummaries: ConditionRewardSummary[] = config.conditionPosteriorStates.map((state) => ({
+        conditionCode: state.conditionId,
+        successCount: state.successCount,
+        totalCount: state.totalCount,
+      }));
+
+      const priors: Record<string, ConditionPrior> = {};
+      config.conditionPosteriorStates.forEach((state) => {
+        priors[state.conditionId] = { success: state.priorSuccess, failure: state.priorFailure };
+      });
+
+      const totalEnrollments = config.conditionPosteriorStates.reduce((sum, s) => sum + s.totalCount, 0);
+
+      const tsConfig: ThompsonSamplingConfig = {
+        priors,
+        warmupThreshold: config.warmupThreshold,
+        minimumDrawDifference: config.minimumDrawDifference,
+      };
+
+      const selectedConditionId = this.thompsonSamplingService.selectCondition(
+        conditionIds,
+        rewardSummaries,
+        totalEnrollments,
+        tsConfig
+      );
+
+      return experiment.conditions.find((c) => c.id === selectedConditionId);
     } catch (err) {
       logger.error({
-        message: 'Error getting condition from Mooclet proxy; experiment will return no condition for this user',
+        message: 'Error in Thompson Sampling assignment; no condition assigned',
         experimentId: experiment.id,
-        userId,
+        userId: user.id,
         error: err,
       });
       return undefined;

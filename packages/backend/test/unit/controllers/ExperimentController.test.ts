@@ -9,13 +9,9 @@ import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
-import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
-import MoocletExperimentServiceMock from './mocks/MoocletExperimentServiceMock';
-import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsService';
-import MoocletRewardsServiceMock from './mocks/MoocletRewardsServiceMock';
 import { ImportExportService } from '../../../src/api/services/ImportExportService';
+import { ThompsonSamplingExperimentCrudService } from '../../../src/api/services/ThompsonSamplingExperimentCrudService';
 import ImportExportServiceMock from './mocks/ImportExportServiceMock';
-import { env } from './../../../src/env';
 import {
   ASSIGNMENT_ALGORITHM,
   ASSIGNMENT_UNIT,
@@ -23,7 +19,6 @@ import {
   EXPERIMENT_STATE,
   EXPERIMENT_TYPE,
   FILTER_MODE,
-  MoocletTSConfigurablePolicyParametersDTO,
   POST_EXPERIMENT_RULE,
   SEGMENT_TYPE,
 } from 'upgrade_types';
@@ -38,9 +33,8 @@ describe('Experiment Controller Testing', () => {
     // set mock container
     Container.set(ExperimentService, new ExperimentServiceMock());
     Container.set(ExperimentAssignmentService, new ExperimentAssignmentServiceMock());
-    Container.set(MoocletExperimentService, new MoocletExperimentServiceMock());
-    Container.set(MoocletRewardsService, new MoocletRewardsServiceMock());
     Container.set(ImportExportService, new ImportExportServiceMock());
+    Container.set(ThompsonSamplingExperimentCrudService, {} as any);
   });
 
   afterAll(() => {
@@ -113,19 +107,6 @@ describe('Experiment Controller Testing', () => {
     ],
   };
 
-  const tsConfigurablePolicyParameters = new MoocletTSConfigurablePolicyParametersDTO();
-  tsConfigurablePolicyParameters.assignmentAlgorithm = ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE;
-  tsConfigurablePolicyParameters.outcome_variable_name = 'test_outcome';
-
-  const moocletExperimentData: ExperimentDTO = {
-    ...experimentData,
-    id: crypto.randomUUID(),
-    moocletPolicyParameters: tsConfigurablePolicyParameters,
-    assignmentAlgorithm: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE,
-  };
-
-  console.log({ moocletExperimentData });
-
   //for future use where user will be mocked for all testcases
 
   // const mockUser: User = {
@@ -145,16 +126,6 @@ describe('Experiment Controller Testing', () => {
 
   test('Post request for /api/experiments', () => {
     return request(app).post('/api/experiments').send(experimentData).expect('Content-Type', /json/).expect(200);
-  });
-
-  test('Post request for /api/experiments with moocletPolicyParameters and mooclets enabled', () => {
-    env.mooclets.enabled = true;
-    return request(app).post('/api/experiments').send(moocletExperimentData).expect('Content-Type', /json/).expect(200);
-  });
-
-  test('Post request for /api/experiments with moocletPolicyParameters and mooclets disabled', () => {
-    env.mooclets.enabled = false;
-    return request(app).post('/api/experiments').send(moocletExperimentData).expect(500);
   });
 
   test('Get request for /api/experiments/names', () => {

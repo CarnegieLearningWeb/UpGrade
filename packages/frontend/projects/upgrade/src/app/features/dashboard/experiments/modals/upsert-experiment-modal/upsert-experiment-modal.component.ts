@@ -36,14 +36,14 @@ import {
   POST_EXPERIMENT_RULE,
   ASSIGNMENT_ALGORITHM_DISPLAY_MAP,
   EXPERIMENT_TYPE,
-  MoocletPolicyParametersDTO,
 } from 'upgrade_types';
 import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
 import { ENV, Environment } from '../../../../../../environments/environment-types';
 import { SharedModule } from '../../../../../shared/shared.module';
 import { TsConfigurablePolicyParametersFormComponent } from './ts-configurable-policy-parameters-form/ts-configurable-policy-parameters-form.component';
-import { MoocletExperimentHelperService } from '../../../../../core/experiments/mooclet-helper.service';
+import { ThompsonSamplingHelperService } from '../../../../../core/experiments/thompson-sampling-helper.service';
+import { ThompsonSamplingConfigDTO } from '../../../../../core/experiments/store/experiments.model';
 
 @Component({
   selector: 'upsert-experiment-modal',
@@ -104,10 +104,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
    *
    * The child form receives existing params via async pipe but emits updates through event handlers.
    */
-  moocletPolicyParametersFormValue: MoocletPolicyParametersDTO;
-  isMoocletFormValid$ = new BehaviorSubject<boolean>(true);
-  isMoocletFormChanged$ = new BehaviorSubject<boolean>(false);
-  isMoocletFormDisabled = false; // Set to true when experiment is in CANCELLED state
+  thompsonSamplingConfigFormValue: ThompsonSamplingConfigDTO;
+  isTSFormValid$ = new BehaviorSubject<boolean>(true);
+  isTSFormChanged$ = new BehaviorSubject<boolean>(false);
+  isTSFormDisabled = false; // Set to true when experiment is in CANCELLED state
 
   // Enum references for template
   UPSERT_EXPERIMENT_ACTION = UPSERT_EXPERIMENT_ACTION;
@@ -189,7 +189,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     private readonly formBuilder: FormBuilder,
     private readonly experimentService: ExperimentService,
     private readonly stratificationFactorsService: StratificationFactorsService,
-    private readonly moocletExperimentHelperService: MoocletExperimentHelperService,
+    private readonly thompsonSamplingHelperService: ThompsonSamplingHelperService,
     public dialogRef: MatDialogRef<UpsertExperimentModalComponent>,
     @Inject(ENV) private readonly environment: Environment
   ) {
@@ -200,8 +200,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       });
     }
     // Delegate to service to get supported mooclet algorithm options
-    const moocletAlgorithmOptions = this.moocletExperimentHelperService.getSupportedMoocletAlgorithmOptions();
-    this.assignmentAlgorithms.push(...moocletAlgorithmOptions);
+    this.assignmentAlgorithms.push({
+      value: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+      description: ASSIGNMENT_ALGORITHM_DISPLAY_MAP[ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING],
+    });
   }
 
   ngOnInit(): void {
@@ -235,9 +237,8 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
           this.experimentForm.get(fieldName)?.disable();
         });
 
-        // Handle moocletPolicyParameters separately (it's a child form component)
-        if (fieldsToDisable.includes('moocletPolicyParameters')) {
-          this.isMoocletFormDisabled = true;
+        if (fieldsToDisable.includes('thompsonSamplingConfig')) {
+          this.isTSFormDisabled = true;
         }
       })
     );
@@ -268,9 +269,8 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     // Initialize consistency rules state based on initial unit of assignment
     this.initializeConsistencyRules(initialValues.unitOfAssignment);
 
-    // Initialize moocletPolicyParameters in EDIT mode to preserve existing values
-    if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceExperiment?.moocletPolicyParameters) {
-      this.moocletPolicyParametersFormValue = sourceExperiment.moocletPolicyParameters;
+    if (action === UPSERT_EXPERIMENT_ACTION.EDIT && sourceExperiment?.thompsonSamplingConfig) {
+      this.thompsonSamplingConfigFormValue = sourceExperiment.thompsonSamplingConfig;
     }
 
     this.initialFormValues$.next(this.experimentForm.getRawValue() as ExperimentFormData);
@@ -369,11 +369,11 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   // 3. Either primary or mooclet form is invalid
   listenForPrimaryButtonDisabled() {
     this.isPrimaryButtonDisabled$ = this.isLoadingUpsertExperiment$.pipe(
-      combineLatestWith(this.isInitialFormValueChanged$, this.isMoocletFormValid$, this.isMoocletFormChanged$),
-      map(([isLoading, isInitialFormValueChanged, isMoocletFormValid, isMoocletFormChanged]) => {
+      combineLatestWith(this.isInitialFormValueChanged$, this.isTSFormValid$, this.isTSFormChanged$),
+      map(([isLoading, isInitialFormValueChanged, isTSFormValid, isTSFormChanged]) => {
         const changesRequiredToAllowSubmit = this.config.params.action !== UPSERT_EXPERIMENT_ACTION.DUPLICATE;
-        const hasChanges = isInitialFormValueChanged || isMoocletFormChanged;
-        const allFormsValid = this.experimentForm.valid && isMoocletFormValid;
+        const hasChanges = isInitialFormValueChanged || isTSFormChanged;
+        const allFormsValid = this.experimentForm.valid && isTSFormValid;
 
         return isLoading || (changesRequiredToAllowSubmit && !hasChanges) || !allFormsValid;
       })
@@ -399,7 +399,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       this.experimentForm.get('assignmentAlgorithm')?.valueChanges.subscribe((algorithm) => {
         this.validateStratificationFactorSelection(algorithm);
         // Always check for mooclet algorithm changes to handle both TO and FROM mooclet transitions
-        this.checkForMoocletAlgorithmChange();
+        this.checkForAlgorithmChange();
       })
     );
   }
@@ -485,20 +485,17 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     );
   }
 
-  checkForMoocletAlgorithmChange(): void {
+  checkForAlgorithmChange(): void {
     const algorithm = this.assignmentAlgorithmValue;
 
-    if (!this.moocletExperimentHelperService.isMoocletAlgorithm(algorithm)) {
-      // Clear params when switching to non-mooclet algorithm
-      this.moocletPolicyParametersFormValue = undefined;
-    } else if (this.moocletExperimentHelperService.isTSConfigurable(algorithm)) {
-      // Only set defaults if we don't already have params
-      // This preserves existing values in EDIT mode or after user has made changes
-      if (!this.moocletPolicyParametersFormValue) {
-        this.moocletPolicyParametersFormValue = this.moocletExperimentHelperService.getTSConfigurableDefaults();
+    if (algorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+      if (!this.thompsonSamplingConfigFormValue) {
+        this.thompsonSamplingConfigFormValue = this.thompsonSamplingHelperService.buildConfig(
+          this.thompsonSamplingHelperService.getDefaults()
+        );
       }
     } else {
-      throw new Error(`Unsupported mooclet algorithm selected: ${algorithm}`);
+      this.thompsonSamplingConfigFormValue = undefined;
     }
   }
 
@@ -540,20 +537,20 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
    * Event handlers for mooclet policy parameters child form
    *
    * These handlers receive events from the child form and update parent state:
-   * - onMoocletParametersChange: Updates moocletPolicyParameters with user changes
-   * - onMoocletFormValidityChange: Updates validation state for button disable logic
-   * - onMoocletFormChanged: Tracks if user has modified the form (for save button enable)
+   * - onTSConfigChange: Updates thompsonSamplingConfig with user changes
+   * - onTSFormValidityChange: Updates validation state for button disable logic
+   * - onTSFormChanged: Tracks if user has modified the form (for save button enable)
    */
-  onMoocletParametersChange(params: MoocletPolicyParametersDTO): void {
-    this.moocletPolicyParametersFormValue = { ...params, assignmentAlgorithm: this.assignmentAlgorithmValue };
+  onTSConfigChange(params: ThompsonSamplingConfigDTO): void {
+    this.thompsonSamplingConfigFormValue = params;
   }
 
-  onMoocletFormValidityChange(isValid: boolean): void {
-    this.isMoocletFormValid$.next(isValid);
+  onTSFormValidityChange(isValid: boolean): void {
+    this.isTSFormValid$.next(isValid);
   }
 
-  onMoocletFormChanged(hasChanged: boolean): void {
-    this.isMoocletFormChanged$.next(hasChanged);
+  onTSFormChanged(hasChanged: boolean): void {
+    this.isTSFormChanged$.next(hasChanged);
   }
 
   // ---------------------------------------------------------------------------
@@ -638,8 +635,8 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       backendVersion: undefined, // @IsOptional - can be undefined
     };
 
-    if (this.moocletPolicyParametersFormValue) {
-      experimentRequest.moocletPolicyParameters = this.moocletPolicyParametersFormValue;
+    if (this.thompsonSamplingConfigFormValue) {
+      experimentRequest.thompsonSamplingConfig = this.thompsonSamplingConfigFormValue;
     }
 
     this.experimentService.createNewExperiment(experimentRequest);
@@ -690,8 +687,8 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       backendVersion: sourceExperiment.backendVersion,
     };
 
-    if (this.moocletPolicyParametersFormValue) {
-      experimentRequest.moocletPolicyParameters = this.moocletPolicyParametersFormValue;
+    if (this.thompsonSamplingConfigFormValue) {
+      experimentRequest.thompsonSamplingConfig = this.thompsonSamplingConfigFormValue;
     }
 
     this.experimentService.createNewExperiment(experimentRequest);
@@ -757,10 +754,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       revertTo: sourceExperiment.revertTo,
     };
 
-    if (this.moocletExperimentHelperService.isMoocletAlgorithm(assignmentAlgorithm)) {
-      experimentRequest.moocletPolicyParameters = this.moocletPolicyParametersFormValue;
+    if (this.thompsonSamplingHelperService.isThompsonSamplingAlgorithm(assignmentAlgorithm)) {
+      experimentRequest.thompsonSamplingConfig = this.thompsonSamplingConfigFormValue;
     } else {
-      experimentRequest.moocletPolicyParameters = undefined;
+      experimentRequest.thompsonSamplingConfig = undefined;
     }
 
     this.experimentService.updateExperiment(experimentRequest as unknown as ExperimentVM);

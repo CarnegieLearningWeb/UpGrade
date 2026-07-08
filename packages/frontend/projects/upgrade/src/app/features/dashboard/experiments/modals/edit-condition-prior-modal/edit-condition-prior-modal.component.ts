@@ -11,7 +11,7 @@ import { Observable, combineLatest, map, startWith } from 'rxjs';
 import { CommonLearnMoreLinkComponent, CommonModalComponent } from '@shared-component-lib';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
 import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
-import { MoocletExperimentHelperService } from '../../../../../core/experiments/mooclet-helper.service';
+import { ThompsonSamplingHelperService } from '../../../../../core/experiments/thompson-sampling-helper.service';
 import { Prior } from 'upgrade_types';
 import { SharedModule } from '../../../../../shared/shared.module';
 
@@ -51,7 +51,7 @@ export class EditConditionPriorModalComponent implements OnInit {
     public config: CommonModalConfig<{ conditions: ConditionPriorUpdate[] }>,
     public dialogRef: MatDialogRef<EditConditionPriorModalComponent>,
     private readonly formBuilder: FormBuilder,
-    private readonly moocletHelperService: MoocletExperimentHelperService
+    private readonly thompsonSamplingHelperService: ThompsonSamplingHelperService
   ) {}
 
   ngOnInit(): void {
@@ -60,7 +60,7 @@ export class EditConditionPriorModalComponent implements OnInit {
   }
 
   createPriorForm(): void {
-    const validators = this.moocletHelperService.getPriorFieldValidators();
+    const validators = this.thompsonSamplingHelperService.getPriorFieldValidators();
 
     const conditionsFormArray = this.formBuilder.array(
       this.conditions.map((condition) =>

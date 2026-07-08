@@ -8,7 +8,6 @@ import {
   Delete,
   Patch,
   Authorized,
-  BadRequestError,
 } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
@@ -29,8 +28,10 @@ import { Log } from '../models/Log';
 import { ExperimentUserValidatorv6 } from './validators/ExperimentUserValidator';
 import { UserCheckMiddleware } from '../middlewares/UserCheckMiddleware';
 import { RewardValidator } from './validators/RewardValidator';
-import { IRewardResponse, MoocletRewardsService } from '../services/MoocletRewardsService';
-import { env } from '../../env';
+import {
+  IThompsonSamplingRewardResponse,
+  ThompsonSamplingRewardService,
+} from '../services/ThompsonSamplingRewardService';
 
 interface IMonitoredDecisionPoint {
   id: string;
@@ -98,7 +99,7 @@ export class ExperimentClientController {
     public experimentUserService: ExperimentUserService,
     public featureFlagService: FeatureFlagService,
     public metricService: MetricService,
-    public moocletRewardsService: MoocletRewardsService
+    public thompsonSamplingRewardService: ThompsonSamplingRewardService
   ) {}
 
   /**
@@ -828,7 +829,7 @@ export class ExperimentClientController {
    * /v6/reward:
    *    post:
    *       description: |
-   *         Send a reward signal for an adaptive experiment (Mooclet).
+   *         Send a reward signal for an adaptive (Thompson Sampling) experiment.
    *
    *         This endpoint allows sending binary reward feedback (SUCCESS or FAILURE) for adaptive experiments.
    *         The reward is used by the adaptive algorithm to update its learning model and improve future assignments.
@@ -935,7 +936,7 @@ export class ExperimentClientController {
    *                          type: string
    *                reward:
    *                  type: object
-   *                  description: The reward data that was sent to the Mooclet API
+   *                  description: The reward data that was recorded
    *          '400':
    *            description: BadRequestError - Invalid parameters (e.g., missing required fields, invalid rewardValue)
    *          '401':
@@ -951,14 +952,9 @@ export class ExperimentClientController {
     request: AppRequest,
     @Body({ validate: true })
     rewardData: RewardValidator
-  ): Promise<IRewardResponse> {
+  ): Promise<IThompsonSamplingRewardResponse> {
     request.logger.info({ message: 'Starting the sendReward call for user' });
-    if (!env.mooclets?.enabled) {
-      throw new BadRequestError('Failed to send reward: mooclet is not currently enabled on backend.');
-    }
-
-    const experimentUserDoc = request.userDoc;
-    return this.moocletRewardsService.sendReward(experimentUserDoc, rewardData, request.logger);
+    return this.thompsonSamplingRewardService.recordReward(request.userDoc, rewardData, request.logger);
   }
 
   /**

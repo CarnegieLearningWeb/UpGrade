@@ -23,7 +23,6 @@ import { LevelRepository } from '../../../src/api/repositories/LevelRepository';
 import { LevelCombinationElementRepository } from '../../../src/api/repositories/LevelCombinationElements';
 import { ArchivedStatsRepository } from '../../../src/api/repositories/ArchivedStatsRepository';
 import { StratificationFactorRepository } from '../../../src/api/repositories/StratificationFactorRepository';
-import { MoocletExperimentRefRepository } from '../../../src/api/repositories/MoocletExperimentRefRepository';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { ExperimentSchedulerService } from '../../../src/api/services/ExperimentSchedulerService';
@@ -31,7 +30,6 @@ import { ErrorService } from '../../../src/api/services/ErrorService';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { QueryService } from '../../../src/api/services/QueryService';
 import { MetricService } from '../../../src/api/services/MetricService';
-import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { ExperimentCondition } from '../../../src/api/models/ExperimentCondition';
@@ -394,10 +392,6 @@ describe('ExperimentService Testing', () => {
           useValue: {},
         },
         {
-          provide: getRepositoryToken(MoocletExperimentRefRepository),
-          useValue: {},
-        },
-        {
           provide: CacheService,
           useValue: {
             delCache: jest.fn().mockResolvedValue(undefined),
@@ -430,10 +424,6 @@ describe('ExperimentService Testing', () => {
         },
         {
           provide: MetricService,
-          useValue: {},
-        },
-        {
-          provide: MoocletRewardsService,
           useValue: {},
         },
       ],

@@ -26,17 +26,17 @@ import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpda
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
-import { MoocletExperimentService } from '../services/MoocletExperimentService';
-import { env } from '../../env';
+import { ThompsonSamplingExperimentCrudService } from '../services/ThompsonSamplingExperimentCrudService';
 import { Response } from 'express';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
 import {
+  ASSIGNMENT_ALGORITHM,
   CACHE_PREFIX,
   IImportError,
   LIST_FILTER_MODE,
   SERVER_ERROR,
-  SUPPORTED_MOOCLET_ALGORITHMS,
+  ExperimentRewardsSummary,
 } from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
@@ -44,8 +44,6 @@ import { SegmentInputValidator } from './validators/SegmentInputValidator';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { IdValidator } from './validators/ExperimentUserValidator';
 import { Segment } from '../models/Segment';
-import { MoocletRewardsService } from '../services/MoocletRewardsService';
-import { ExperimentRewardsSummary } from 'upgrade_types';
 import { CacheService } from '../services/CacheService';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
@@ -656,10 +654,9 @@ export class ExperimentController {
   constructor(
     public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService,
-    public moocletExperimentService: MoocletExperimentService,
-    public moocletRewardService: MoocletRewardsService,
     public importExportService: ImportExportService,
-    public cacheService: CacheService
+    public cacheService: CacheService,
+    public thompsonSamplingCrudService: ThompsonSamplingExperimentCrudService
   ) {}
 
   /**
@@ -914,19 +911,16 @@ export class ExperimentController {
     @Params({ validate: true }) { id }: ExperimentIdValidator,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
-    let experiment = await this.experimentService.getSingleExperiment(id, request.logger);
+    const experiment = await this.experimentService.getSingleExperiment(id, request.logger);
+    return this.attachThompsonSamplingConfig(experiment);
+  }
 
-    if (SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment?.assignmentAlgorithm)) {
-      if (!env.mooclets?.enabled) {
-        throw new BadRequestError(
-          'MoocletPolicyParameters are present in the experiment but Mooclet is not enabled in the environment'
-        );
-      } else {
-        experiment = await this.moocletExperimentService.attachPolicyParamsToExperimentDTO(experiment, request.logger);
-      }
-    }
-
-    return experiment;
+  @Get('/rewards/:id')
+  public async getRewardsSummary(
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
+    @Req() request: AppRequest
+  ): Promise<ExperimentRewardsSummary> {
+    return this.thompsonSamplingCrudService.getRewardsSummary(id);
   }
 
   /**
@@ -1041,7 +1035,7 @@ export class ExperimentController {
    */
 
   @Post()
-  public create(
+  public async create(
     @Body({ validate: true }) experiment: ExperimentDTO,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
@@ -1053,21 +1047,17 @@ export class ExperimentController {
       throw new BadRequestError(contextValidationError);
     }
 
-    if ('moocletPolicyParameters' in experiment) {
-      if (!env.mooclets?.enabled) {
-        throw new BadRequestError(
-          'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
-        );
-      } else {
-        return this.moocletExperimentService.syncCreate({
-          experimentDTO: experiment,
-          currentUser,
-          logger: request.logger,
-        });
-      }
+    const createdExperiment = await this.experimentService.create(experiment, currentUser, request.logger);
+
+    if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+      await this.thompsonSamplingCrudService.createConfig(
+        createdExperiment.id,
+        createdExperiment.conditions,
+        experiment.thompsonSamplingConfig ?? {}
+      );
     }
 
-    return this.experimentService.create(experiment, currentUser, request.logger);
+    return this.attachThompsonSamplingConfig(createdExperiment);
   }
 
   /**
@@ -1149,20 +1139,6 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<Experiment | undefined> {
     request.logger.child({ user: currentUser });
-
-    // Manually check if the experiment has a mooclet ref
-    if (env.mooclets.enabled) {
-      const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(id);
-
-      if (moocletExperimentRef) {
-        return await this.moocletExperimentService.syncDelete({
-          moocletExperimentRef,
-          experimentId: id,
-          currentUser,
-          logger: request.logger,
-        });
-      }
-    }
 
     const experiment = await this.experimentService.delete(id, currentUser, { logger: request.logger });
 
@@ -1269,29 +1245,16 @@ export class ExperimentController {
       throw new BadRequestError(contextValidationError);
     }
 
-    if (env.mooclets.enabled) {
-      // if mooclet is enabled, we must check for potential assignment algorithm changes in all experiments
-      const updatedMoocletExperiment =
-        await this.moocletExperimentService.handlePotentialMoocletAssignmentAlgorithmChange(
-          { ...experiment, id },
-          currentUser,
-          request.logger
-        );
+    const updatedExperiment = await this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
 
-      if (updatedMoocletExperiment) {
-        return updatedMoocletExperiment;
-      }
-    } else {
-      // if mooclet is not enabled, but experiment has mooclet params, throw error
-      if ('moocletPolicyParameters' in experiment) {
-        throw new BadRequestError(
-          'Failed to update Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
-        );
+    if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+      await this.thompsonSamplingCrudService.syncConditions(id, updatedExperiment.conditions);
+      if (experiment.thompsonSamplingConfig) {
+        await this.thompsonSamplingCrudService.updateConfig(id, experiment.thompsonSamplingConfig);
       }
     }
 
-    // else, if mooclet is not involved, we can do a normal update
-    return this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
+    return this.attachThompsonSamplingConfig(updatedExperiment);
   }
 
   /**
@@ -1932,20 +1895,6 @@ export class ExperimentController {
     return lists;
   }
 
-  /**
-   * Get Mooclet Rewards Feedback data
-   */
-  @Get('/mooclet-rewards/:id')
-  public getMoocletRewards(
-    @Params({ validate: true }) { id }: IdValidator,
-    @Req() request: AppRequest
-  ): Promise<ExperimentRewardsSummary> {
-    if (!env.mooclets?.enabled) {
-      throw new BadRequestError('Mooclet is not enabled in the environment');
-    }
-    return this.moocletRewardService.getRewardsSummaryForExperiment(id, request.logger);
-  }
-
   // debugging endpoint, will read all keys in cache and return a summary
   @Get('/cache')
   async debugCache(): Promise<any> {
@@ -1982,5 +1931,19 @@ export class ExperimentController {
       allKeys,
       summary,
     };
+  }
+
+  private async attachThompsonSamplingConfig(experiment: ExperimentDTO): Promise<ExperimentDTO> {
+    if (experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+      const config = await this.thompsonSamplingCrudService.getConfigForExperiment(experiment.id);
+      if (config) {
+        experiment.thompsonSamplingConfig = {
+          warmupThreshold: config.warmupThreshold,
+          minimumDrawDifference: config.minimumDrawDifference,
+          batchSize: config.batchSize,
+        };
+      }
+    }
+    return experiment;
   }
 }

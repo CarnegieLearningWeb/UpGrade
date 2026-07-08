@@ -93,13 +93,8 @@ export {
 export { SYSTEM_USER_EMAIL, DEV_USER_EMAIL, FAKE_DEV_CREDENTIAL } from './User';
 export {
   Prior,
-  CurrentPosteriors,
-  MoocletPolicyParametersDTO,
-  MoocletTSConfigurablePolicyParametersDTO,
-  MOOCLET_POLICY_SCHEMA_MAP,
-  SUPPORTED_MOOCLET_ALGORITHMS,
   BinaryRewardAllowedValue,
   BinaryRewardValueMap,
   ExperimentRewardsByCondition,
   ExperimentRewardsSummary,
-} from './Mooclet';
+} from './Experiment/interfaces';
