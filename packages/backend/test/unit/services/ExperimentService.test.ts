@@ -48,6 +48,7 @@ import {
   LOG_TYPE,
   PAYLOAD_TYPE,
   IMetricMetaData,
+  EXPERIMENT_SEARCH_KEY,
 } from 'upgrade_types';
 import { StateTimeLog } from '../../../src/api/models/StateTimeLogs';
 import { Query } from '../../../src/api/models/Query';
@@ -981,6 +982,42 @@ describe('ExperimentService Testing', () => {
       await service.updateState(mockExperiment.id, EXPERIMENT_STATE.INACTIVE, mockUser, logger);
 
       expect(decisionPointRepo.setAllPendingActivationFalse).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('paginatedSearchString()', () => {
+    const getSearchClause = (key: EXPERIMENT_SEARCH_KEY, searchString: string): string =>
+      service['paginatedSearchString']({ key, string: searchString });
+
+    it('should search decision points by site, target, and displayed site-target pair', () => {
+      const searchString = 'SelectSection (absolute_value_plot_equality)';
+      const result = getSearchClause(EXPERIMENT_SEARCH_KEY.DECISION_POINT, searchString);
+
+      expect(result).toContain(`partitions.site ILIKE '%${searchString}%'`);
+      expect(result).toContain(`partitions.target ILIKE '%${searchString}%'`);
+      expect(result).toContain(
+        `(CASE WHEN COALESCE(partitions.target, '') = '' THEN partitions.site ` +
+          `ELSE CONCAT(partitions.site, ' (', partitions.target, ')') END) ILIKE '%${searchString}%'`
+      );
+    });
+
+    it('should use site as the decision point display value when target is empty', () => {
+      const result = getSearchClause(EXPERIMENT_SEARCH_KEY.DECISION_POINT, 'SelectSection');
+
+      expect(result).toContain(`COALESCE(partitions.target, '') = '' THEN partitions.site`);
+      expect(result).toContain(`partitions.site ILIKE '%SelectSection%'`);
+    });
+
+    it('should include displayed decision point search in all-search results', () => {
+      const searchString = 'SelectSection (absolute_value_plot_equality)';
+      const result = getSearchClause(EXPERIMENT_SEARCH_KEY.ALL, searchString);
+
+      expect(result).toContain(`partitions.site ILIKE '%${searchString}%'`);
+      expect(result).toContain(`partitions.target ILIKE '%${searchString}%'`);
+      expect(result).toContain(
+        `(CASE WHEN COALESCE(partitions.target, '') = '' THEN partitions.site ` +
+          `ELSE CONCAT(partitions.site, ' (', partitions.target, ')') END) ILIKE '%${searchString}%'`
+      );
     });
   });
 });

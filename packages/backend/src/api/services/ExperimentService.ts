@@ -1779,6 +1779,15 @@ export class ExperimentService {
 
     const likeString = `ILIKE '%${searchString}%'`;
     const searchArray: string[] = [];
+    const decisionPointDisplaySearch =
+      `(CASE WHEN COALESCE(partitions.target, '') = '' THEN partitions.site ` +
+      `ELSE CONCAT(partitions.site, ' (', partitions.target, ')') END) ${likeString}`;
+    const addDecisionPointSearch = () => {
+      searchArray.push(`partitions.site ${likeString}`);
+      searchArray.push(`partitions.target ${likeString}`);
+      searchArray.push(decisionPointDisplaySearch);
+    };
+
     switch (type) {
       case EXPERIMENT_SEARCH_KEY.NAME:
         searchArray.push(`${type} ${likeString}`);
@@ -1796,16 +1805,14 @@ export class ExperimentService {
         searchArray.push(`experiment.id = '${searchString}'`);
         break;
       case EXPERIMENT_SEARCH_KEY.DECISION_POINT:
-        searchArray.push(`partitions.site ${likeString}`);
-        searchArray.push(`partitions.target ${likeString}`);
+        addDecisionPointSearch();
         break;
       default:
         searchArray.push(`name ${likeString}`);
         searchArray.push(`state::TEXT = '${this.mapStatusStrings(searchString)}'`);
         searchArray.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
         searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
-        searchArray.push(`partitions.site ${likeString}`);
-        searchArray.push(`partitions.target ${likeString}`);
+        addDecisionPointSearch();
         if (isUUID(searchString)) {
           searchArray.push(`experiment.id = '${searchString}'`);
         }
