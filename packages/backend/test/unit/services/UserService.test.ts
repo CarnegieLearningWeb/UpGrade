@@ -60,7 +60,7 @@ describe('User Service Testing', () => {
             find: jest.fn().mockResolvedValue(userArr),
             upsertUser: jest.fn().mockResolvedValue(mockUser1),
             count: jest.fn().mockResolvedValue(userArr.length),
-            findByIds: jest.fn().mockResolvedValue(userArr.slice(1, 2)),
+            findBy: jest.fn().mockResolvedValue(userArr.slice(1, 2)),
             updateUserDetails: jest.fn().mockResolvedValue(mockUser1),
             deleteUserByEmail: jest.fn().mockResolvedValue(mockUser1),
             createQueryBuilder: jest.fn(() => ({
@@ -109,7 +109,7 @@ describe('User Service Testing', () => {
 
   it('should return users by email', async () => {
     const users = await service.getUserByEmail('pp@email.com');
-    expect(repo.findByIds).toBeCalledWith(['pp@email.com']);
+    expect(repo.findBy).toBeCalledWith({ email: 'pp@email.com' });
     expect(users).toEqual([mockUser2]);
   });
 

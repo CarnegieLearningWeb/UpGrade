@@ -418,7 +418,6 @@ describe('Experiment Assignment Service Test', () => {
     const secondPartition = {
       ...exp.partitions[0],
       id: 'dp-2-id',
-      twoCharacterId: 'W2',
       site: 'CurriculumSequence',
       target: 'W2',
     };

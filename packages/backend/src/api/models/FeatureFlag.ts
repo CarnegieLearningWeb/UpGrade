@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, OneToMany, Unique } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany, Unique, VirtualColumn } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { BaseModel } from './base/BaseModel';
 import { Type } from 'class-transformer';
@@ -60,4 +60,7 @@ export class FeatureFlag extends BaseModel {
 
   @OneToMany(() => FeatureFlagExposure, (featureFlagExposure) => featureFlagExposure.featureFlag)
   public featureFlagExposures: FeatureFlagExposure[];
+
+  @VirtualColumn({ query: () => `NULL` })
+  exposureCount?: number;
 }

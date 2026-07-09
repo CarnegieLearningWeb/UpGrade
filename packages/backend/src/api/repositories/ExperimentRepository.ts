@@ -430,10 +430,10 @@ export class ExperimentRepository extends Repository<Experiment> {
 
   public async clearDB(entityManager: EntityManager, logger: UpgradeLogger): Promise<void> {
     try {
-      const entities = entityManager.connection.entityMetadatas;
+      const entities = entityManager.dataSource.entityMetadatas;
       for (const entity of entities) {
         if (!['user', 'metric', 'setting', 'migrations'].includes(entity.tableName)) {
-          const repository = await entityManager.connection.getRepository(entity.name);
+          const repository = await entityManager.dataSource.getRepository(entity.name);
           await repository.query(`TRUNCATE ${entity.tableName} CASCADE;`);
         }
       }

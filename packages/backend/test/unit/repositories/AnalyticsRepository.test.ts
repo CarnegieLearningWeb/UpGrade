@@ -180,7 +180,7 @@ describe('AnalyticsRepository Testing', () => {
     expect(experimentRepo.findOne).toHaveBeenCalledTimes(1);
     expect(experimentRepo.findOne).toHaveBeenCalledWith({
       where: { id: experiment.id },
-      relations: ['partitions', 'conditions'],
+      relations: { partitions: true, conditions: true },
     });
 
     expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(3);
@@ -248,7 +248,7 @@ describe('AnalyticsRepository Testing', () => {
     expect(experimentRepo.findOne).toHaveBeenCalledTimes(1);
     expect(experimentRepo.findOne).toHaveBeenCalledWith({
       where: { id: experiment.id },
-      relations: ['partitions', 'conditions'],
+      relations: { partitions: true, conditions: true },
     });
 
     expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(3);
@@ -314,7 +314,7 @@ describe('AnalyticsRepository Testing', () => {
     expect(experimentRepo.findOne).toHaveBeenCalledTimes(1);
     expect(experimentRepo.findOne).toHaveBeenCalledWith({
       where: { id: experiment.id },
-      relations: ['partitions', 'conditions'],
+      relations: { partitions: true, conditions: true },
     });
 
     expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(3);
@@ -390,7 +390,7 @@ describe('AnalyticsRepository Testing', () => {
     expect(experimentRepo.findOne).toHaveBeenCalledTimes(1);
     expect(experimentRepo.findOne).toHaveBeenCalledWith({
       where: { id: experiment.id },
-      relations: ['partitions', 'conditions'],
+      relations: { partitions: true, conditions: true },
     });
 
     expect(individualEnrollmentRepo.createQueryBuilder).toHaveBeenCalledTimes(3);

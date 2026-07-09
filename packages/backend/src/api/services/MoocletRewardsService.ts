@@ -143,7 +143,13 @@ export class MoocletRewardsService {
   ): Promise<MoocletExperimentRef> {
     const moocletExperimentRef = await this.moocletExperimentRefRepository.findOne({
       where: { experimentId },
-      relations: ['versionConditionMaps', 'versionConditionMaps.experimentCondition', 'experiment'],
+      relations: {
+        versionConditionMaps: {
+          experimentCondition: true,
+        },
+
+        experiment: true,
+      },
     });
 
     if (!moocletExperimentRef) {
