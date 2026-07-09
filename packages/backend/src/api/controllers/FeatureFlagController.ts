@@ -30,7 +30,7 @@ import {
   IdValidator,
 } from './validators/FeatureFlagValidator';
 import { ExperimentUserService } from '../services/ExperimentUserService';
-import { FeatureFlagListValidator } from './validators/FeatureFlagListValidator';
+import { FeatureFlagListValidator, FeatureFlagListStatusValidator } from './validators/FeatureFlagListValidator';
 import { Segment } from '../models/Segment';
 import { Response } from 'express';
 import { UserDTO } from '../DTO/UserDTO';
@@ -214,7 +214,7 @@ export class FeatureFlagsController {
     @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlag | undefined> {
-    return this.featureFlagService.findOne(id, request.logger);
+    return this.featureFlagService.findOneForDetails(id, request.logger);
   }
 
   /**
@@ -628,6 +628,98 @@ export class FeatureFlagsController {
       );
     }
     return this.featureFlagService.updateList(inclusionList, LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
+  }
+
+  /**
+   * @swagger
+   * /flags/inclusionList/{id}/status:
+   *    patch:
+   *       description: Toggle the enabled status of a Feature Flag inclusion list without modifying its members
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Segment id of the list
+   *         - in: body
+   *           name: status
+   *           description: New enabled status
+   *           schema:
+   *             type: object
+   *             properties:
+   *               enabled:
+   *                 type: boolean
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature flag inclusion list status is updated
+   */
+  @Patch('/inclusionList/:id/status')
+  public async updateInclusionListStatus(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Body({ validate: true }) { enabled }: FeatureFlagListStatusValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentInclusion> {
+    return this.featureFlagService.updateListStatus(
+      id,
+      enabled,
+      LIST_FILTER_MODE.INCLUSION,
+      currentUser,
+      request.logger
+    );
+  }
+
+  /**
+   * @swagger
+   * /flags/exclusionList/{id}/status:
+   *    patch:
+   *       description: Toggle the enabled status of a Feature Flag exclusion list without modifying its members
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Segment id of the list
+   *         - in: body
+   *           name: status
+   *           description: New enabled status
+   *           schema:
+   *             type: object
+   *             properties:
+   *               enabled:
+   *                 type: boolean
+   *       tags:
+   *         - Feature Flags
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Feature flag exclusion list status is updated
+   */
+  @Patch('/exclusionList/:id/status')
+  public async updateExclusionListStatus(
+    @Params({ validate: true }) { id }: IdValidator,
+    @Body({ validate: true }) { enabled }: FeatureFlagListStatusValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<FeatureFlagSegmentExclusion> {
+    return this.featureFlagService.updateListStatus(
+      id,
+      enabled,
+      LIST_FILTER_MODE.EXCLUSION,
+      currentUser,
+      request.logger
+    );
   }
 
   /**

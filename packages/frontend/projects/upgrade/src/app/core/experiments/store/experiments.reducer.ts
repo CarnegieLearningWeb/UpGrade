@@ -30,6 +30,7 @@ export const initialState: ExperimentState = {
   isLoadingImportExperiment: false,
   isLoadingRewardsSummary: false,
   rewardsSummaries: {},
+  isLoadingUpsertPrivateSegmentList: false,
 };
 
 const reducer = createReducer(

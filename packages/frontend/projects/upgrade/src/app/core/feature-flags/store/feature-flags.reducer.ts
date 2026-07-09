@@ -182,6 +182,10 @@ const reducer = createReducer(
   }),
 
   // Feature Flag Inclusion List Update Actions
+  on(FeatureFlagsActions.actionUpdateFeatureFlagInclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
   on(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListSuccess, (state, { listResponse }) => {
     const { featureFlag } = listResponse;
 
@@ -201,6 +205,28 @@ const reducer = createReducer(
       ...state,
       selectedFlag: updatedSelectedFlag,
       isLoadingUpsertPrivateSegmentList: false,
+    };
+  }),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListFailure, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: false,
+  })),
+
+  // Feature Flag Inclusion List Status Toggle Actions
+  on(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListStatusSuccess, (state, { segmentId, enabled }) => {
+    const updatedSelectedFlag = state.selectedFlag
+      ? {
+          ...state.selectedFlag,
+          featureFlagSegmentInclusion:
+            state.selectedFlag.featureFlagSegmentInclusion?.map((inclusion) =>
+              inclusion.segment.id === segmentId ? { ...inclusion, enabled } : inclusion
+            ) ?? [],
+        }
+      : state.selectedFlag;
+
+    return {
+      ...state,
+      selectedFlag: updatedSelectedFlag,
     };
   }),
 
@@ -259,6 +285,10 @@ const reducer = createReducer(
   }),
 
   // Feature Flag Exclusion List Update Actions
+  on(FeatureFlagsActions.actionUpdateFeatureFlagExclusionList, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: true,
+  })),
   on(FeatureFlagsActions.actionUpdateFeatureFlagExclusionListSuccess, (state, { listResponse }) => {
     const { featureFlag } = listResponse;
 
@@ -278,6 +308,28 @@ const reducer = createReducer(
       ...state,
       selectedFlag: updatedSelectedFlag,
       isLoadingUpsertPrivateSegmentList: false,
+    };
+  }),
+  on(FeatureFlagsActions.actionUpdateFeatureFlagExclusionListFailure, (state) => ({
+    ...state,
+    isLoadingUpsertPrivateSegmentList: false,
+  })),
+
+  // Feature Flag Exclusion List Status Toggle Actions
+  on(FeatureFlagsActions.actionUpdateFeatureFlagExclusionListStatusSuccess, (state, { segmentId, enabled }) => {
+    const updatedSelectedFlag = state.selectedFlag
+      ? {
+          ...state.selectedFlag,
+          featureFlagSegmentExclusion:
+            state.selectedFlag.featureFlagSegmentExclusion?.map((exclusion) =>
+              exclusion.segment.id === segmentId ? { ...exclusion, enabled } : exclusion
+            ) ?? [],
+        }
+      : state.selectedFlag;
+
+    return {
+      ...state,
+      selectedFlag: updatedSelectedFlag,
     };
   }),
 

@@ -15,6 +15,10 @@ export default class SegmentServiceMock {
     return Promise.resolve([]);
   }
 
+  public getSegmentByIdWithMembers(id: string): Promise<Record<string, unknown>> {
+    return Promise.resolve({});
+  }
+
   public getSegmentWithStatusById(id: string): Promise<[]> {
     return Promise.resolve([]);
   }

@@ -83,4 +83,3 @@ describe('generateUUID (via constructor clientSessionId)', () => {
     expect(sessionId).toBe(providedId);
   });
 });
-
