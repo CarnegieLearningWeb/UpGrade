@@ -1771,13 +1771,13 @@ export class ExperimentService {
   }
   private paginatedSearchString(params: IExperimentSearchParams): string {
     const type = params.key;
-    // escape % and ' characters
-    const searchString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    const searchString = params.string.replace(/'/g, "''");
+    const likeSearchString = searchString.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
     if (type === EXPERIMENT_SEARCH_KEY.ID && !isUUID(searchString)) {
       return '';
     }
 
-    const likeString = `ILIKE '%${searchString}%'`;
+    const likeString = `ILIKE '%${likeSearchString}%' ESCAPE '\\'`;
     const searchArray: string[] = [];
     const decisionPointDisplaySearch =
       `(CASE WHEN COALESCE(partitions.target, '') = '' THEN partitions.site ` +

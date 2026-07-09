@@ -991,33 +991,44 @@ describe('ExperimentService Testing', () => {
 
     it('should search decision points by site, target, and displayed site-target pair', () => {
       const searchString = 'SelectSection (absolute_value_plot_equality)';
+      const escapedSearchString = 'SelectSection (absolute\\_value\\_plot\\_equality)';
+      const likeClause = `ILIKE '%${escapedSearchString}%' ESCAPE '\\'`;
       const result = getSearchClause(EXPERIMENT_SEARCH_KEY.DECISION_POINT, searchString);
 
-      expect(result).toContain(`partitions.site ILIKE '%${searchString}%'`);
-      expect(result).toContain(`partitions.target ILIKE '%${searchString}%'`);
+      expect(result).toContain(`partitions.site ${likeClause}`);
+      expect(result).toContain(`partitions.target ${likeClause}`);
       expect(result).toContain(
         `(CASE WHEN COALESCE(partitions.target, '') = '' THEN partitions.site ` +
-          `ELSE CONCAT(partitions.site, ' (', partitions.target, ')') END) ILIKE '%${searchString}%'`
+          `ELSE CONCAT(partitions.site, ' (', partitions.target, ')') END) ${likeClause}`
       );
     });
 
     it('should use site as the decision point display value when target is empty', () => {
+      const likeClause = `ILIKE '%SelectSection%' ESCAPE '\\'`;
       const result = getSearchClause(EXPERIMENT_SEARCH_KEY.DECISION_POINT, 'SelectSection');
 
       expect(result).toContain(`COALESCE(partitions.target, '') = '' THEN partitions.site`);
-      expect(result).toContain(`partitions.site ILIKE '%SelectSection%'`);
+      expect(result).toContain(`partitions.site ${likeClause}`);
     });
 
     it('should include displayed decision point search in all-search results', () => {
       const searchString = 'SelectSection (absolute_value_plot_equality)';
+      const escapedSearchString = 'SelectSection (absolute\\_value\\_plot\\_equality)';
+      const likeClause = `ILIKE '%${escapedSearchString}%' ESCAPE '\\'`;
       const result = getSearchClause(EXPERIMENT_SEARCH_KEY.ALL, searchString);
 
-      expect(result).toContain(`partitions.site ILIKE '%${searchString}%'`);
-      expect(result).toContain(`partitions.target ILIKE '%${searchString}%'`);
+      expect(result).toContain(`partitions.site ${likeClause}`);
+      expect(result).toContain(`partitions.target ${likeClause}`);
       expect(result).toContain(
         `(CASE WHEN COALESCE(partitions.target, '') = '' THEN partitions.site ` +
-          `ELSE CONCAT(partitions.site, ' (', partitions.target, ')') END) ILIKE '%${searchString}%'`
+          `ELSE CONCAT(partitions.site, ' (', partitions.target, ')') END) ${likeClause}`
       );
+    });
+
+    it('should escape LIKE wildcards and the escape character in search input', () => {
+      const result = getSearchClause(EXPERIMENT_SEARCH_KEY.NAME, '100%_path\\name');
+
+      expect(result).toContain(`name ILIKE '%100\\%\\_path\\\\name%' ESCAPE '\\'`);
     });
   });
 });
