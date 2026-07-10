@@ -127,13 +127,87 @@ export class ExperimentAssignmentService {
   ) {}
 
   /**
-   * Shared experiment-selection logic used by both markExperimentPoint and (indirectly) getAllExperimentConditions.
+   * Runs the shared experiment-selection pipeline: group-experiment filtering →
+   * enrollment/exclusion queries → preview-assignment merging →
+   * experiment-level inclusion/exclusion → pool selection.
+   *
+   * Used by both getAllExperimentConditions and resolveExperimentForMarkPoint so the
+   * two code paths are guaranteed to agree on which experiment is selected.
+   */
+  private async selectExperimentsForUser(
+    experiments: Experiment[],
+    userDoc: RequestedExperimentUser,
+    previewUser: PreviewUser | null,
+    logger: UpgradeLogger
+  ): Promise<{
+    selectedExperiments: Experiment[];
+    exclusionReason: { experiment: Experiment; reason: string; matchedGroup: boolean }[];
+    mergedIndividualEnrollments: IndividualEnrollment[];
+    groupEnrollments: GroupEnrollment[];
+    individualExclusions: IndividualExclusion[];
+    groupExclusions: GroupExclusion[];
+  }> {
+    const validExperiments = await this.filterAndProcessGroupExperiments(experiments, userDoc, logger);
+
+    if (validExperiments.length === 0) {
+      return {
+        selectedExperiments: [],
+        exclusionReason: [],
+        mergedIndividualEnrollments: [],
+        groupEnrollments: [],
+        individualExclusions: [],
+        groupExclusions: [],
+      };
+    }
+
+    const experimentIds = validExperiments.map((experiment) => experiment.id);
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
+      await this.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
+
+    let mergedIndividualEnrollments = individualEnrollments;
+    if (previewUser && previewUser.assignments) {
+      const previewAssignment: IndividualEnrollment[] = previewUser.assignments.map((assignment) => {
+        return {
+          user: userDoc,
+          condition: assignment.experimentCondition,
+          ...assignment,
+        } as any; // any is used because we don't have decisionPoint in the preview assignment
+      });
+      mergedIndividualEnrollments = [...previewAssignment, ...mergedIndividualEnrollments];
+    }
+
+    const [filteredExperiments, exclusionReason] = await this.experimentLevelExclusionInclusion(
+      validExperiments,
+      userDoc
+    );
+
+    const selectedExperiments = this.processExperimentPools(
+      filteredExperiments,
+      mergedIndividualEnrollments,
+      groupEnrollments,
+      individualExclusions,
+      groupExclusions,
+      userDoc,
+      previewUser
+    );
+
+    return {
+      selectedExperiments,
+      exclusionReason,
+      mergedIndividualEnrollments,
+      groupEnrollments,
+      individualExclusions,
+      groupExclusions,
+    };
+  }
+
+  /**
+   * Shared experiment-selection logic used by markExperimentPoint.
    *
    * When experimentId is supplied the method validates it and returns that single experiment after running
-   * exclusion checks.  When experimentId is absent it applies the full filtering and pooling pipeline
-   * (global exclusion → group-experiment filtering → experiment-level inclusion/exclusion → processExperimentPools)
-   * so the selected experiment is guaranteed to match what getAllExperimentConditions would have returned for
-   * the same user and decision point.
+   * exclusion checks.  When experimentId is absent it delegates to selectExperimentsForUser so the selected
+   * experiment is guaranteed to match what getAllExperimentConditions would return for the same user and
+   * decision point.
    */
   private async resolveExperimentForMarkPoint(
     site: string,
@@ -176,7 +250,7 @@ export class ExperimentAssignmentService {
       const dpExpExists = allExperimentsAtDP.filter((exp) => exp.id === experimentId);
       if (!dpExpExists.length) {
         const error = new Error(
-          `Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userDoc.id}`
+          `Experiment ID not found among valid experiments at this decision point in markExperimentPoint: ${userDoc.id}`
         );
         (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
         (error as any).httpCode = 404;
@@ -193,30 +267,12 @@ export class ExperimentAssignmentService {
       };
     }
 
-    // No experiment ID: mirror the full filtering and pooling pipeline from getAllExperimentConditions so that
-    // the experiment selected here is guaranteed to match what getAllExperimentConditions would return.
-    const validExperiments = await this.filterAndProcessGroupExperiments(allExperimentsAtDP, userDoc, logger);
-    const [filteredExperiments, exclusionReason] = await this.experimentLevelExclusionInclusion(
-      validExperiments,
-      userDoc
-    );
-
-    if (filteredExperiments.length === 0) {
-      return { experiments: [], experimentId: null, isUserExcluded, isGroupExcluded, exclusionReason };
-    }
-
-    const experimentIds = filteredExperiments.map((exp) => exp.id);
-    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
-      await this.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
-
-    const selectedExperiments = this.processExperimentPools(
-      filteredExperiments,
-      individualEnrollments,
-      groupEnrollments,
-      individualExclusions,
-      groupExclusions,
+    // No experiment ID: delegate to the shared selection pipeline so this method always agrees with getAllExperimentConditions.
+    const { selectedExperiments, exclusionReason } = await this.selectExperimentsForUser(
+      allExperimentsAtDP,
       userDoc,
-      previewUser
+      previewUser,
+      logger
     );
 
     const experiments = selectedExperiments.length > 0 ? [selectedExperiments[0]] : [];
@@ -395,48 +451,15 @@ export class ExperimentAssignmentService {
       return [];
     }
 
-    // 3. Filter out valid group experiments that doesn't have invalid group/workingGroup which are not enrolled yet
-    const validExperiments = await this.filterAndProcessGroupExperiments(experiments, experimentUserDoc, logger);
-
-    // 4. Process assignments and exclusions
+    // 3-5. Filter group experiments, check exclusions, and select from pools via the shared pipeline
     try {
-      // return empty assignments if there are no valid experiments
-      if (validExperiments.length === 0) {
-        return [];
-      }
-
-      const experimentIds = validExperiments.map((experiment) => experiment.id);
-
-      // Query assignments and exclusions for the user
-      const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
-        await this.getAssignmentsAndExclusionsForUser(experimentUserDoc, experimentIds);
-
-      let mergedIndividualAssignment = individualEnrollments;
-      // add assignments for individual assignments if preview user
-      if (previewUser && previewUser.assignments) {
-        const previewAssignment: IndividualEnrollment[] = previewUser.assignments.map((assignment) => {
-          return {
-            user: experimentUserDoc,
-            condition: assignment.experimentCondition,
-            ...assignment,
-          } as any; // any is used because we don't have decisionPoint in the preview assignment
-        });
-        mergedIndividualAssignment = [...previewAssignment, ...mergedIndividualAssignment];
-      }
-
-      // Check for experiment level inclusion and exclusion and return valid inclusion experiments
-      let [filteredExperiments] = await this.experimentLevelExclusionInclusion(validExperiments, experimentUserDoc);
-
-      // 5. Process experiment pools on filtered experiments
-      filteredExperiments = this.processExperimentPools(
-        filteredExperiments,
-        mergedIndividualAssignment,
+      const {
+        selectedExperiments: filteredExperiments,
+        mergedIndividualEnrollments: mergedIndividualAssignment,
         groupEnrollments,
         individualExclusions,
         groupExclusions,
-        experimentUserDoc,
-        previewUser
-      );
+      } = await this.selectExperimentsForUser(experiments, experimentUserDoc, previewUser, logger);
 
       // return empty if no experiments
       if (filteredExperiments.length === 0) {
