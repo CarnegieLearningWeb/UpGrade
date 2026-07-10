@@ -97,9 +97,8 @@ export class ExperimentOverviewDetailsSectionCardComponent implements OnInit, On
   ) {}
 
   filterExperimentByChips(tagValue: string) {
-    this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.TAG);
-    this.experimentService.setSearchString(tagValue);
-    this.router.navigate(['/experiments']);
+    this.experimentService.setSearchParams(EXPERIMENT_SEARCH_KEY.TAG, tagValue);
+    this.router.navigate(['/home']);
   }
   ngOnInit(): void {
     this.subscriptions.add(this.experimentService.currentUserEmailAddress$.subscribe((id) => (this.emailId = id)));
