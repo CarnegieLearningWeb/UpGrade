@@ -463,7 +463,10 @@ export class ExperimentEffects {
       this.actions$.pipe(
         ofType(experimentAction.actionSetSearchParams),
         tap(() => {
-          this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }));
+          const pathname = (this.router.url || '').split('?')[0].split('#')[0];
+          if (pathname === '/home') {
+            this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }));
+          }
         })
       ),
     { dispatch: false }
