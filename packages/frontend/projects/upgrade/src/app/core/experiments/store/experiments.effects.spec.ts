@@ -1088,7 +1088,7 @@ describe('ExperimentEffects', () => {
   });
 
   describe('#fetchExperimentOnSearchParamsChange$', () => {
-    it('should dispatch actionGetExperiments once if search string is not null', fakeAsync(() => {
+    it('should dispatch actionGetExperiments once when search params change', fakeAsync(() => {
       const searchKey = EXPERIMENT_SEARCH_KEY.DECISION_POINT;
       const searchString = 'lesson-stream (question-hint)';
       store$.dispatch = jest.fn();

@@ -462,10 +462,8 @@ export class ExperimentEffects {
     () =>
       this.actions$.pipe(
         ofType(experimentAction.actionSetSearchParams),
-        tap(({ searchString }) => {
-          if (searchString !== null) {
-            this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }));
-          }
+        tap(() => {
+          this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }));
         })
       ),
     { dispatch: false }
