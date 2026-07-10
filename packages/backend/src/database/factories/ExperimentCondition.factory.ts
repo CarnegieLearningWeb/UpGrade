@@ -1,12 +1,12 @@
-import * as Faker from 'faker';
-import { define } from 'typeorm-seeding';
+import { Faker } from '@faker-js/faker';
+import { setSeederFactory } from 'typeorm-extension';
 import { ExperimentCondition } from '../../api/models/ExperimentCondition';
 
-define(ExperimentCondition, (faker: typeof Faker, settings: { experimentId: string }) => {
-  const name = faker.random.words(1);
-  const description = faker.random.words(4);
+export default setSeederFactory(ExperimentCondition, (faker: Faker) => {
+  const name = faker.word.words(1);
+  const description = faker.word.words(4);
   const assignmentWeight = Math.random();
-  const conditionCode = faker.random.alphaNumeric(1);
+  const conditionCode = faker.string.alphanumeric(1);
 
   const experimentCondition = new ExperimentCondition();
   experimentCondition.id = crypto.randomUUID();
@@ -14,7 +14,6 @@ define(ExperimentCondition, (faker: typeof Faker, settings: { experimentId: stri
   experimentCondition.description = description;
   experimentCondition.assignmentWeight = assignmentWeight;
   experimentCondition.conditionCode = conditionCode;
-  experimentCondition.experiment = settings.experimentId as any;
 
   return experimentCondition;
 });

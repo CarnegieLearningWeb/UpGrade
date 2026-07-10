@@ -128,7 +128,10 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     // find experiment data
     const experiment = await experimentRepository.findOne({
       where: { id: experimentId },
-      relations: ['partitions', 'conditions'],
+      relations: {
+        partitions: true,
+        conditions: true,
+      },
     });
 
     if (experiment && experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
@@ -388,7 +391,9 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     if (!experimentIds.length) {
       return [];
     }
+
     const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository);
+
     const groupEnrollmentRepository = Container.getCustomRepository(GroupEnrollmentRepository);
 
     const [individualEnrollmentPerExperiment, groupEnrollmentPerExperiment]: [
@@ -475,6 +480,7 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     let userStratificationFactorQueryResult = [];
     if (experimentsData.stratification) {
       // get users stratification factor values:
+
       const userStratificationFactorRepository = Container.getCustomRepository(
         UserStratificationFactorRepository,
         'export'
@@ -509,7 +515,9 @@ export class AnalyticsRepository extends Repository<AnalyticsRepository> {
     clientOffset: number
   ): Promise<[IEnrollmentConditionAndPartitionDate[], IEnrollmentConditionAndPartitionDate[]]> {
     const experimentRepository = Container.getCustomRepository(ExperimentRepository);
+
     const individualEnrollmentRepository = Container.getCustomRepository(IndividualEnrollmentRepository);
+
     const groupEnrollmentRepository = Container.getCustomRepository(GroupEnrollmentRepository);
 
     const groupByRange = `date_range`;

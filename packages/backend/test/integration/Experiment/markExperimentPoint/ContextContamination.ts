@@ -51,7 +51,6 @@ export default async function ContextContamination(): Promise<void> {
       id: 'aabb0000-0000-0000-0000-000000000002',
       site: sharedSite,
       target: sharedTarget,
-      twoCharacterId: 'MA',
     },
   ];
   experimentA.conditions = [
@@ -70,7 +69,6 @@ export default async function ContextContamination(): Promise<void> {
       id: 'bbcc0000-0000-0000-0000-000000000002',
       site: sharedSite,
       target: sharedTarget,
-      twoCharacterId: 'SC',
     },
   ];
   experimentB.conditions = [

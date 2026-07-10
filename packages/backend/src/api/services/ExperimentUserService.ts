@@ -111,7 +111,9 @@ export class ExperimentUserService {
       promiseArray.push(
         this.userRepository.findOne({
           where: { id: aliasId },
-          relations: ['originalUser'],
+          relations: {
+            originalUser: true,
+          },
         })
       );
     });
@@ -279,7 +281,9 @@ export class ExperimentUserService {
     try {
       const userDoc = await this.userRepository.find({
         where: { id: userId },
-        relations: ['originalUser'],
+        relations: {
+          originalUser: true,
+        },
       });
       if (userDoc.length) {
         if (userDoc[0].originalUser) {
@@ -327,7 +331,9 @@ export class ExperimentUserService {
     try {
       const userDocs = await this.userRepository.find({
         where: { id: In(userIds) },
-        relations: ['originalUser'],
+        relations: {
+          originalUser: true,
+        },
       });
 
       return userDocs.map((doc) => {

@@ -16,7 +16,7 @@ export class FeatureFlagSegmentExclusionRepository extends Repository<FeatureFla
       .insert()
       .into(FeatureFlagSegmentExclusion)
       .values(data)
-      .onConflict(`DO NOTHING`)
+      .orIgnore()
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

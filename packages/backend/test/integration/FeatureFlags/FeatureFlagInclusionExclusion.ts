@@ -114,9 +114,9 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
   // Check the number of exposures
   // getKeys fire-and-forgets the exposure insert, so poll until the writes land in the DB
   let paginatedFind = await featureFlagService.findPaginated(0, 5, new UpgradeLogger());
-  for (let i = 0; i < 10 && (paginatedFind[0][0] as any).featureFlagExposures < 2; i++) {
+  for (let i = 0; i < 10 && (paginatedFind[0][0] as any).exposureCount < 2; i++) {
     await new Promise((resolve) => setTimeout(resolve, 100));
     paginatedFind = await featureFlagService.findPaginated(0, 5, new UpgradeLogger());
   }
-  expect(paginatedFind[0][0].featureFlagExposures).toEqual(2);
+  expect(paginatedFind[0][0].exposureCount).toEqual(2);
 }

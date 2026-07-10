@@ -57,6 +57,7 @@ import { CacheService } from './CacheService';
 import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import dayjs from 'dayjs';
 import { getDateRangeNames } from '../repositories/utils/dateQuery';
+import { FeatureFlagExposure } from '../models/FeatureFlagExposure';
 
 @Service()
 export class FeatureFlagService {
@@ -197,13 +198,16 @@ export class FeatureFlagService {
     const countQueryBuilder = queryBuilder.clone();
 
     queryBuilder = queryBuilder.offset(skip).limit(take);
-
-    // TODO: the type of queryBuilder.getMany() is Promise<FeatureFlag[]>
-    // However, the above query returns Promise<(Omit<FeatureFlag, 'featureFlagExposures'> & { featureFlagExposures: number })[]>
-    // This can be fixed by using a @VirtualColumn in the FeatureFlag entity, when we are on TypeORM 0.3
     const [featureFlagsWithExposures, count] = await Promise.all([
       queryBuilder
-        .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures')
+        .addSelect(
+          (subQuery) =>
+            subQuery
+              .select('COUNT(*)', 'count')
+              .from(FeatureFlagExposure, 'feature_flag_exposure')
+              .where('"feature_flag_exposure"."featureFlagId" = "feature_flag"."id"'),
+          'feature_flag_exposureCount'
+        )
         .getMany(),
       countQueryBuilder.getCount(),
     ]);
@@ -213,9 +217,14 @@ export class FeatureFlagService {
 
     // Get the relevant segment inclusion documents
     const featureFlagWithInclusionSegments = await this.featureFlagRepository.find({
-      select: ['id', 'featureFlagSegmentInclusion'],
+      select: {
+        id: true,
+        featureFlagSegmentInclusion: true,
+      },
       where: { id: In(featureFlagIds) },
-      relations: ['featureFlagSegmentInclusion'],
+      relations: {
+        featureFlagSegmentInclusion: true,
+      },
     });
 
     // Add the inclusion documents to the featureFlagsWithExposures
@@ -519,12 +528,18 @@ export class FeatureFlagService {
       if (filterType === LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
           where: { segment: { id: segmentId } },
-          relations: ['featureFlag', 'segment'],
+          relations: {
+            featureFlag: true,
+            segment: true,
+          },
         });
       } else {
         existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
           where: { segment: { id: segmentId } },
-          relations: ['featureFlag', 'segment'],
+          relations: {
+            featureFlag: true,
+            segment: true,
+          },
         });
       }
 
@@ -589,9 +604,9 @@ export class FeatureFlagService {
         throw error;
       }
 
-      const featureFlags = await manager
-        .getRepository(FeatureFlag)
-        .findByIds(listsInput.map((listInput) => listInput.id));
+      const featureFlags = await manager.getRepository(FeatureFlag).findBy({
+        id: In(listsInput.map((listInput) => listInput.id)),
+      });
 
       const featureFlagSegmentInclusionOrExclusionArray = listsInput.map((listInput) => {
         const featureFlagSegmentInclusionOrExclusion =
@@ -705,12 +720,18 @@ export class FeatureFlagService {
       if (filterType === LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
           where: { featureFlag: { id: listInput.id }, segment: { id: listInput.segment.id } },
-          relations: ['featureFlag', 'segment'],
+          relations: {
+            featureFlag: true,
+            segment: true,
+          },
         });
       } else {
         existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
           where: { featureFlag: { id: listInput.id }, segment: { id: listInput.segment.id } },
-          relations: ['featureFlag', 'segment'],
+          relations: {
+            featureFlag: true,
+            segment: true,
+          },
         });
       }
 

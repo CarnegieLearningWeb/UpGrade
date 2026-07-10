@@ -2,7 +2,6 @@ import Container from 'typedi';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
 import { UserService } from '../../../../src/api/services/UserService';
-import { getRepository } from 'typeorm';
 import { Metric } from '../../../../src/api/models/Metric';
 import { systemUser } from '../../mockData/user/index';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
@@ -17,6 +16,7 @@ import { metrics } from '../../mockData/metric';
 import { AnalyticsService } from '../../../../src/api/services/AnalyticsService';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
+import { DataSource } from 'typeorm';
 
 export default async function LogOperations(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -24,7 +24,7 @@ export default async function LogOperations(): Promise<void> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   let experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
-  const metricRepository = getRepository(Metric);
+  const metricRepository = Container.get(DataSource).getRepository(Metric);
   const metricService = Container.get<MetricService>(MetricService);
   const settingService = Container.get<SettingService>(SettingService);
   const analyticsService = Container.get<AnalyticsService>(AnalyticsService);

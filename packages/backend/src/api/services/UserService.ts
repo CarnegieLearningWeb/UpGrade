@@ -46,7 +46,7 @@ export class UserService {
 
     logger.info({ message: `Upsert a new user => ${JSON.stringify(user, undefined, 2)}` });
 
-    const isUserExists = await this.userRepository.find({ where: { email: user.email } });
+    const isUserExists = await this.userRepository.findBy({ email: user.email });
     const response = await this.userRepository.upsertUser(user);
     if (!isUserExists && response) {
       this.sendWelcomeEmail(user.email, logger);
@@ -102,7 +102,7 @@ export class UserService {
   }
 
   public async getUserByEmail(email: string): Promise<User[]> {
-    return this.userRepository.findByIds([email]);
+    return this.userRepository.findBy({ email });
   }
 
   public async updateUserDetails(

@@ -270,7 +270,7 @@ export default async function RepeatedMeasure(): Promise<void> {
   );
 
   let logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
 
   expect(logData.length).toEqual(1);
@@ -317,7 +317,7 @@ export default async function RepeatedMeasure(): Promise<void> {
   );
 
   logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
   expect(logData.length).toEqual(2);
 
@@ -360,7 +360,7 @@ export default async function RepeatedMeasure(): Promise<void> {
   );
 
   logData = await logRepository.find({
-    relations: ['metrics'],
+    relations: { metrics: true },
   });
   expect(logData.length).toEqual(3);
 

@@ -1,10 +1,14 @@
-import * as Faker from 'faker';
-import { define } from 'typeorm-seeding';
+import { Faker } from '@faker-js/faker';
+import { setSeederFactory } from 'typeorm-extension';
 import { ExperimentUser } from '../../api/models/ExperimentUser';
 
-define(ExperimentUser, (faker: typeof Faker) => {
+export default setSeederFactory(ExperimentUser, (faker: Faker) => {
   const id = crypto.randomUUID();
-  const group: any = { class: faker.random.number(5), teacher: faker.name.firstName(), school: faker.name.findName };
+  const group: any = {
+    class: faker.number.int({ max: 5 }),
+    teacher: faker.person.firstName(),
+    school: faker.person.firstName(),
+  };
 
   const user = new ExperimentUser();
   user.id = id;
