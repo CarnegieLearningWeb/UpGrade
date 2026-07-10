@@ -38,6 +38,7 @@ import {
   actionRemoveExperimentStat,
   actionSetSearchString,
   actionSetSearchKey,
+  actionSetSearchParams,
   actionFetchContextMetaData,
   actionFetchContextMetaDataSuccess,
   actionFetchContextMetaDataFailure,
@@ -1083,6 +1084,28 @@ describe('ExperimentEffects', () => {
       tick(0);
 
       expect(store$.dispatch).not.toHaveBeenCalled();
+    }));
+  });
+
+  describe('#fetchExperimentOnSearchParamsChange$', () => {
+    it('should dispatch actionGetExperiments once if search string is not null', fakeAsync(() => {
+      const searchKey = EXPERIMENT_SEARCH_KEY.DECISION_POINT;
+      const searchString = 'lesson-stream (question-hint)';
+      store$.dispatch = jest.fn();
+
+      service.fetchExperimentOnSearchParamsChange$.subscribe();
+
+      actions$.next(
+        actionSetSearchParams({
+          searchKey,
+          searchString,
+        })
+      );
+
+      tick(0);
+
+      expect(store$.dispatch).toHaveBeenCalledTimes(1);
+      expect(store$.dispatch).toHaveBeenCalledWith(actionGetExperiments({ fromStarting: true }));
     }));
   });
 

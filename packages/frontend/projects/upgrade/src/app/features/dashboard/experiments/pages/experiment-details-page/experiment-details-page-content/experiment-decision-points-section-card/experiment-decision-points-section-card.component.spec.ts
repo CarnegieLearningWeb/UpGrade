@@ -24,7 +24,7 @@ import { ExperimentDecisionPointsSectionCardComponent } from './experiment-decis
 
 describe('ExperimentDecisionPointsSectionCardComponent', () => {
   let component: ExperimentDecisionPointsSectionCardComponent;
-  let experimentService: jest.Mocked<Pick<ExperimentService, 'setSearchKey' | 'setSearchString'>>;
+  let experimentService: jest.Mocked<Pick<ExperimentService, 'setSearchParams'>>;
   let router: jest.Mocked<Pick<Router, 'navigate'>>;
 
   const decisionPoint = {
@@ -41,8 +41,7 @@ describe('ExperimentDecisionPointsSectionCardComponent', () => {
 
   beforeEach(() => {
     experimentService = {
-      setSearchKey: jest.fn(),
-      setSearchString: jest.fn(),
+      setSearchParams: jest.fn(),
     };
     router = {
       navigate: jest.fn(),
@@ -60,8 +59,10 @@ describe('ExperimentDecisionPointsSectionCardComponent', () => {
   it('should filter experiments by clicked decision point and navigate to the experiments root page', () => {
     component.onDecisionPointClick(decisionPoint);
 
-    expect(experimentService.setSearchKey).toHaveBeenCalledWith(EXPERIMENT_SEARCH_KEY.DECISION_POINT);
-    expect(experimentService.setSearchString).toHaveBeenCalledWith('lesson-stream (question-hint)');
+    expect(experimentService.setSearchParams).toHaveBeenCalledWith(
+      EXPERIMENT_SEARCH_KEY.DECISION_POINT,
+      'lesson-stream (question-hint)'
+    );
     expect(router.navigate).toHaveBeenCalledWith(['/home']);
   });
 });

@@ -94,8 +94,10 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
   }
 
   onDecisionPointClick(decisionPoint: ExperimentDecisionPoint): void {
-    this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.DECISION_POINT);
-    this.experimentService.setSearchString(formatDecisionPointDisplay(decisionPoint));
+    this.experimentService.setSearchParams(
+      EXPERIMENT_SEARCH_KEY.DECISION_POINT,
+      formatDecisionPointDisplay(decisionPoint)
+    );
     this.router.navigate(['/home']);
   }
 

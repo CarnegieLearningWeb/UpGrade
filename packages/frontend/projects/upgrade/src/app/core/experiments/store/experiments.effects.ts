@@ -458,6 +458,19 @@ export class ExperimentEffects {
     { dispatch: false }
   );
 
+  fetchExperimentOnSearchParamsChange$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionSetSearchParams),
+        tap(({ searchString }) => {
+          if (searchString !== null) {
+            this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }));
+          }
+        })
+      ),
+    { dispatch: false }
+  );
+
   fetchContextMetaData$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionFetchContextMetaData),
