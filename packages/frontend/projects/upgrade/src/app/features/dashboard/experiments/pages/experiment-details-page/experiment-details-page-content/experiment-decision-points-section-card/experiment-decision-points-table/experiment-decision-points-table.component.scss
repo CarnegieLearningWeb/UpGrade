@@ -65,6 +65,18 @@
     .decision-point-column {
       width: 70%;
       padding-left: 32px;
+
+      .decision-point-link {
+        border: 0;
+        background: transparent;
+        color: var(--black-2);
+        cursor: pointer;
+        font: inherit;
+        max-width: 100%;
+        padding: 0;
+        text-align: left;
+        text-decoration: underline;
+      }
     }
 
     .exclude-if-reached-column {

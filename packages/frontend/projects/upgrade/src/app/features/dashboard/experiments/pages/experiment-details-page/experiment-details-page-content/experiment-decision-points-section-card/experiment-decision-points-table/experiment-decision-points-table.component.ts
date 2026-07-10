@@ -42,6 +42,7 @@ export class ExperimentDecisionPointsTableComponent {
   @Input() actionsTooltip?: string = '';
   @Input() experimentState?: EXPERIMENT_STATE;
   @Output() rowAction = new EventEmitter<ExperimentDecisionPointRowActionEvent>();
+  @Output() decisionPointClick = new EventEmitter<ExperimentDecisionPoint>();
 
   displayedColumns: string[] = ['decisionPoint', 'excludeIfReached', 'actions'];
 
@@ -79,6 +80,10 @@ export class ExperimentDecisionPointsTableComponent {
 
   getDecisionPoint(decisionPoint: ExperimentDecisionPoint): string {
     return formatDecisionPointDisplay(decisionPoint);
+  }
+
+  onDecisionPointClick(decisionPoint: ExperimentDecisionPoint): void {
+    this.decisionPointClick.emit(decisionPoint);
   }
 
   onEditButtonClick(decisionPoint: ExperimentDecisionPoint): void {
