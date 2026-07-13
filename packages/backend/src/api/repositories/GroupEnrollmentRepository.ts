@@ -9,7 +9,11 @@ export class GroupEnrollmentRepository extends Repository<GroupEnrollment> {
   public findEnrollments(groupIds: string[], experimentIds: string[]): Promise<GroupEnrollment[]> {
     return this.find({
       where: { experimentId: In(experimentIds), groupId: In(groupIds) },
-      select: ['groupId', 'experimentId', 'conditionId'],
+      select: {
+        groupId: true,
+        experimentId: true,
+        conditionId: true,
+      },
     });
   }
 

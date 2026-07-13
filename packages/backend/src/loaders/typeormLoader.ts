@@ -4,9 +4,9 @@ import { env } from '../env';
 import { SERVER_ERROR } from 'upgrade_types';
 import { CONNECTION_NAME } from './enums';
 import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 import { Container as tteContainer } from '../typeorm-typedi-extensions';
 import { UpgradeLogger } from '../lib/logger/UpgradeLogger';
+import type { DataSourceOptions } from 'typeorm';
 
 const log = new UpgradeLogger();
 
@@ -56,8 +56,7 @@ const replicaHost: PostgresConnectionCredentialsOptions[] = replicaHosts.map((ho
 });
 
 // connection options:
-const mainDBConnectionOptions: PostgresConnectionOptions = {
-  name: CONNECTION_NAME.MAIN,
+const mainDBConnectionOptions: Extract<DataSourceOptions, { type: 'postgres' }> = {
   type: env.db.type as 'postgres',
   replication: {
     master: masterHost, // use the master connection for all DB read and write operations
@@ -71,8 +70,7 @@ const mainDBConnectionOptions: PostgresConnectionOptions = {
   extra: { max: env.db.maxConnectionPool },
 };
 
-const exportReplicaDBConnectionOptions: PostgresConnectionOptions = {
-  name: CONNECTION_NAME.REPLICA,
+const exportReplicaDBConnectionOptions: Extract<DataSourceOptions, { type: 'postgres' }> = {
   type: env.db.type as 'postgres',
   replication: {
     master: masterHost, // use the master connection for export CSV related write operations if any.

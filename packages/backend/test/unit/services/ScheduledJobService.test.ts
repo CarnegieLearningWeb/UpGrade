@@ -141,7 +141,7 @@ describe('Scheduled Job Service Testing', () => {
     const results = await service.getAllStartExperiment(logger);
     expect(scheduledJobRepo.find).toBeCalledWith({
       where: { type: SCHEDULE_TYPE.START_EXPERIMENT },
-      relations: ['experiment'],
+      relations: { experiment: true },
     });
     expect(results).toEqual(scheduledJobArr);
   });
@@ -150,7 +150,7 @@ describe('Scheduled Job Service Testing', () => {
     const results = await service.getAllEndExperiment(logger);
     expect(scheduledJobRepo.find).toBeCalledWith({
       where: { type: SCHEDULE_TYPE.END_EXPERIMENT },
-      relations: ['experiment'],
+      relations: { experiment: true },
     });
     expect(results).toEqual(scheduledJobArr);
   });

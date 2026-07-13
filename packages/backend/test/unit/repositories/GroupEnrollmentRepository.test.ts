@@ -54,7 +54,7 @@ describe('GroupEnrollmentRepository Testing', () => {
     expect(repo.find).toHaveBeenCalledTimes(1);
     expect(repo.find).toHaveBeenCalledWith({
       where: { experimentId: In([exp.id]), groupId: In([group.id]) },
-      select: ['groupId', 'experimentId', 'conditionId'],
+      select: { groupId: true, experimentId: true, conditionId: true },
     });
 
     expect(res).toEqual(result);
@@ -70,7 +70,7 @@ describe('GroupEnrollmentRepository Testing', () => {
     expect(repo.find).toHaveBeenCalledTimes(1);
     expect(repo.find).toHaveBeenCalledWith({
       where: { experimentId: In([exp.id]), groupId: In([group.id]) },
-      select: ['groupId', 'experimentId', 'conditionId'],
+      select: { groupId: true, experimentId: true, conditionId: true },
     });
   });
 

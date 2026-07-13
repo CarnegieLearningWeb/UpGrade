@@ -152,7 +152,7 @@ describe('Feature Flag Service Testing', () => {
       featureFlag: { id: crypto.randomUUID(), name: 'flag' },
       segment: { id: 'mock-segment-id', name: 'mock-segment-name' },
     }),
-    findByIds: jest.fn().mockResolvedValue([mockFlag1]),
+    findBy: jest.fn().mockResolvedValue([mockFlag1]),
     save: jest.fn().mockResolvedValue({}),
   };
 

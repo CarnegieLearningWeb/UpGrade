@@ -7,14 +7,25 @@ export class IndividualEnrollmentRepository extends Repository<IndividualEnrollm
   public findEnrollments(userId: string, experimentIds: string[]): Promise<IndividualEnrollment[]> {
     return this.find({
       where: { experimentId: In(experimentIds), userId: userId },
-      select: ['id', 'experimentId', 'enrollmentCode', 'conditionId'],
+      select: {
+        id: true,
+        experimentId: true,
+        enrollmentCode: true,
+        conditionId: true,
+      },
     });
   }
 
   public findEnrollmentsForUsers(userIds: string[], experimentIds: string[]): Promise<IndividualEnrollment[]> {
     return this.find({
       where: { experimentId: In(experimentIds), userId: In(userIds) },
-      select: ['id', 'userId', 'experimentId', 'enrollmentCode', 'conditionId'],
+      select: {
+        id: true,
+        userId: true,
+        experimentId: true,
+        enrollmentCode: true,
+        conditionId: true,
+      },
     });
   }
 
