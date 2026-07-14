@@ -204,6 +204,7 @@ export interface ExperimentDecisionPoint {
   versionNumber: number;
   excludeIfReached: boolean;
   pendingActivation?: boolean;
+  usedByCount?: number;
 }
 
 export interface ExperimentFactor {

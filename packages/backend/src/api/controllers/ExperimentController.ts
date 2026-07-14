@@ -477,6 +477,9 @@ interface ExperimentListImportValidation {
  *             description:
  *               type: string
  *               minLength: 1
+ *             usedByCount:
+ *               type: integer
+ *               description: Number of non-archived experiments using this decision point
  *             order: {}
  *       queries:
  *         type: array
