@@ -1,6 +1,7 @@
 import { Container } from 'typedi';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
+import { SegmentService } from '../../../src/api/services/SegmentService';
 import { featureFlag } from '../mockData/featureFlag';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
@@ -119,4 +120,43 @@ export default async function FeatureFlagInclusionExclusionLogic(): Promise<void
     paginatedFind = await featureFlagService.findPaginated(0, 5, new UpgradeLogger());
   }
   expect(paginatedFind[0][0].exposureCount).toEqual(2);
+
+  // --- Details view (findOneForDetails): returns member counts, not the member lists ---
+  const detailsFlag = await featureFlagService.findOneForDetails(flag.id, new UpgradeLogger());
+  const detailsInclusionSegment = detailsFlag.featureFlagSegmentInclusion[0].segment;
+  const detailsExclusionSegment = detailsFlag.featureFlagSegmentExclusion[0].segment;
+  // inclusion list has one group and no individuals; exclusion list has one individual
+  expect(detailsInclusionSegment.groupForSegmentCount).toEqual(1);
+  expect(detailsInclusionSegment.individualForSegmentCount).toEqual(0);
+  expect(detailsExclusionSegment.individualForSegmentCount).toEqual(1);
+  // the counts-only view must not load the (potentially huge) member arrays
+  expect(detailsInclusionSegment.groupForSegment).toBeUndefined();
+  expect(detailsExclusionSegment.individualForSegment).toBeUndefined();
+
+  // --- getSegmentByIdWithMembers: returns a private list together with its members ---
+  const segmentService = Container.get<SegmentService>(SegmentService);
+  const inclusionSegmentId = detailsInclusionSegment.id;
+  const segmentWithMembers = await segmentService.getSegmentByIdWithMembers(inclusionSegmentId, new UpgradeLogger());
+  expect(segmentWithMembers).toBeTruthy();
+  expect(segmentWithMembers.type).toEqual(SEGMENT_TYPE.PRIVATE);
+  expect(segmentWithMembers.groupForSegment.length).toEqual(1);
+  // the plain getSegmentById excludes private lists — which is exactly why /members exists
+  const publicOnlyLookup = await segmentService.getSegmentById(inclusionSegmentId, new UpgradeLogger());
+  expect(publicOnlyLookup).toBeFalsy();
+
+  // --- updateListStatus: toggles enabled without rewriting the segment's members ---
+  const toggledRecord = await featureFlagService.updateListStatus(
+    inclusionSegmentId,
+    false,
+    LIST_FILTER_MODE.INCLUSION,
+    user,
+    new UpgradeLogger()
+  );
+  expect(toggledRecord.enabled).toEqual(false);
+  const flagAfterToggle = await featureFlagService.findOne(flag.id, new UpgradeLogger());
+  const inclusionAfterToggle = flagAfterToggle.featureFlagSegmentInclusion.find(
+    (inclusion) => inclusion.segment.id === inclusionSegmentId
+  );
+  expect(inclusionAfterToggle.enabled).toEqual(false);
+  expect(inclusionAfterToggle.segment.groupForSegment.length).toEqual(1);
 }
