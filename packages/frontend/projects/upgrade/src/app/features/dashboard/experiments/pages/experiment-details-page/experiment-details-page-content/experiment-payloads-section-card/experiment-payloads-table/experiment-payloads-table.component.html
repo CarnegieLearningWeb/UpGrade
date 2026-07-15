@@ -11,7 +11,7 @@
     [ngClass]="{ 'no-data': !conditionPayloads?.length }"
     class="payloads-table"
   >
-    <!-- Decision Point Column (Site + Target stacked) -->
+    <!-- Decision Point Column (Site + Target) -->
     <ng-container matColumnDef="decisionPoint">
       <th mat-header-cell *matHeaderCellDef class="decision-point-column ft-14-600">
         {{ PAYLOAD_TRANSLATION_KEYS.DECISION_POINT | translate }}
@@ -20,7 +20,7 @@
         <span
           [appTextOverflowTooltip]="getDecisionPoint(payload.decisionPoint)"
           matTooltipPosition="above"
-          class="line-clamp-1"
+          class="line-clamp-1 break-all"
         >
           {{ getDecisionPoint(payload.decisionPoint) }}
         </span>
