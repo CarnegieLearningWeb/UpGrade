@@ -98,6 +98,7 @@ import { MoocletExperimentRefRepository } from '../repositories/MoocletExperimen
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { NotFoundException } from '@nestjs/common/exceptions';
+import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegmentService';
 
 const errorRemovePart = 'An instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -140,7 +141,8 @@ export class ExperimentService {
     protected errorService: ErrorService,
     protected cacheService: CacheService,
     protected queryService: QueryService,
-    protected metricService: MetricService
+    protected metricService: MetricService,
+    protected experimentPrecomputedSegmentService: ExperimentPrecomputedSegmentService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -342,6 +344,13 @@ export class ExperimentService {
         )
       );
       await Promise.all(addListPromises);
+    }
+
+    // addList calls above were passed entityManager (non-transactional dataSource.manager), so they
+    // fire recompute per-call. Fire one final recompute to cover any exclusion-only scenarios
+    // where Promise.all is not awaited and to ensure a clean post-add state.
+    if (addListPromises.length > 0) {
+      this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments([createdExperiment.id], logger);
     }
 
     return createdExperiment;
@@ -1343,6 +1352,12 @@ export class ExperimentService {
       let experimentDoc: Experiment;
       try {
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
+        // Seed an empty precomputed-segment row atomically with the experiment so the read path
+        // never encounters a missing row for a freshly created experiment.
+        await this.experimentPrecomputedSegmentService.seedEmptyRowForExperiment(
+          experimentDoc.id,
+          transactionalEntityManager
+        );
         // Store state time log for the experiment in enrolling state.
         if (experimentDoc.state !== EXPERIMENT_STATE.INACTIVE) {
           const stateTimeLogDoc = await this.prepareStateTimeLogDoc(
@@ -2086,13 +2101,21 @@ export class ExperimentService {
     };
 
     if (transactionalEntityManager) {
-      // Use the provided entity manager
-      return await executeTransaction(transactionalEntityManager);
+      // Use the provided entity manager. Data commits as part of the caller's transaction, so
+      // recompute is fired here as fire-and-forget. A caller wrapping multiple addList calls in
+      // one transaction (e.g. importExperimentLists) should also fire an explicit recompute after
+      // its transaction commits to guarantee the final state is correct.
+      const result = await executeTransaction(transactionalEntityManager);
+      this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments([experimentId], logger);
+      return result;
     } else {
-      // Create a new transaction if no entity manager is provided
-      return await this.dataSource.transaction(async (manager) => {
-        return await executeTransaction(manager);
-      });
+      // Standalone path: use withRecompute so the recompute fires AFTER the transaction commits
+      // (not before), ensuring the new segment join row is visible to the recompute query.
+      return this.experimentPrecomputedSegmentService.withRecompute(
+        logger,
+        () => [experimentId],
+        () => this.dataSource.transaction(async (manager) => executeTransaction(manager))
+      );
     }
   }
 
@@ -2106,9 +2129,15 @@ export class ExperimentService {
     if (existingRecords.length === 0) {
       throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
     }
+    // Capture experiment IDs BEFORE the delete — the join rows are gone after segmentService.deleteSegment
+    // commits, so we collect them here while they still exist.
+    const affectedExperimentIds = [...new Set(existingRecords.map((r) => r.experiment.id))];
     await this.createDeleteListAuditLogs(existingRecords, filterType, currentUser);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
-    return this.segmentService.deleteSegment(segmentId, logger);
+    const result = await this.segmentService.deleteSegment(segmentId, logger);
+    // Fire experiment recompute after the segment (and its join row) has been deleted and committed.
+    this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments(affectedExperimentIds, logger);
+    return result;
   }
 
   async createDeleteListAuditLogs(
@@ -2168,7 +2197,7 @@ export class ExperimentService {
   ): Promise<ExperimentSegmentInclusion | ExperimentSegmentExclusion> {
     logger.info({ message: `Update ${filterType} list for experiment` });
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX);
-    return await this.dataSource.transaction(async (transactionalEntityManager) => {
+    const updatedRecord = await this.dataSource.transaction(async (transactionalEntityManager) => {
       // Find the existing record
       let existingRecord: ExperimentSegmentInclusion | ExperimentSegmentExclusion;
       const experiment = await this.experimentRepository.findOne({ where: { id: experimentId } });
@@ -2257,6 +2286,11 @@ export class ExperimentService {
 
       return existingRecord;
     });
+
+    // Fire recompute after the transaction commits so the updated segment members are visible.
+    this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments([experimentId], logger);
+
+    return updatedRecord;
   }
 
   public async importExperimentLists(
@@ -2308,6 +2342,13 @@ export class ExperimentService {
     );
 
     logger.info({ message: 'Imported experiment lists', details: createdLists });
+
+    // Fire a definitive recompute after the outer transaction has committed. The addList calls
+    // above fire recomputes inside the transaction, but those may read stale data (pre-commit).
+    // This post-commit recompute guarantees the final precomputed row reflects all imported lists.
+    if (createdLists.length > 0) {
+      this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments([experimentId], logger);
+    }
 
     fileStatusArray.forEach((fileStatus) => {
       if (fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE) {

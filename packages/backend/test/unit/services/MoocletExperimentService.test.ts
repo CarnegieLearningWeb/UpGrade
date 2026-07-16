@@ -325,7 +325,8 @@ describe('#MoocletExperimentService', () => {
       errorService,
       cacheService,
       queryService,
-      metricService
+      metricService,
+      {} as any // experimentPrecomputedSegmentService
     );
   });
 

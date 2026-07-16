@@ -129,7 +129,8 @@ describe('Experiment Assignment Service Test', () => {
       segmentServiceMock,
       experimentServiceMock,
       cacheServiceMock,
-      moocletExperimentServiceMock
+      moocletExperimentServiceMock,
+      {} as any // experimentPrecomputedSegmentService
     );
 
     testedModule.cacheService.wrap.resolves([]);

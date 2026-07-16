@@ -73,6 +73,7 @@ import { RequestedExperimentUser } from '../controllers/validators/ExperimentUse
 import { In } from 'typeorm';
 import { env } from '../../env';
 import { MoocletExperimentService } from './MoocletExperimentService';
+import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegmentService';
 
 export interface FactorialConditionResult {
   factorialCondition: Omit<ExperimentCondition, 'levelCombinationElements' | 'conditionPayloads'>;
@@ -124,7 +125,8 @@ export class ExperimentAssignmentService {
     public segmentService: SegmentService,
     public experimentService: ExperimentService,
     public cacheService: CacheService,
-    public moocletExperimentService: MoocletExperimentService
+    public moocletExperimentService: MoocletExperimentService,
+    public experimentPrecomputedSegmentService: ExperimentPrecomputedSegmentService
   ) {}
 
   private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
@@ -229,7 +231,11 @@ export class ExperimentAssignmentService {
     }
 
     // 3. Check for experiment level inclusion and exclusion
-    const [, exclusionReason] = await this.experimentLevelExclusionInclusion(experiments, userDoc);
+    const [, exclusionReason] = await this.experimentLevelExclusionInclusionWithPrecomputed(
+      experiments,
+      userDoc,
+      logger
+    );
 
     // find monitored document
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
@@ -378,7 +384,11 @@ export class ExperimentAssignmentService {
       }
 
       // Check for experiment level inclusion and exclusion and return valid inclusion experiments
-      let [filteredExperiments] = await this.experimentLevelExclusionInclusion(validExperiments, experimentUserDoc);
+      let [filteredExperiments] = await this.experimentLevelExclusionInclusionWithPrecomputed(
+        validExperiments,
+        experimentUserDoc,
+        logger
+      );
 
       // 5. Process experiment pools on filtered experiments
       filteredExperiments = this.processExperimentPools(
@@ -2198,6 +2208,98 @@ export class ExperimentAssignmentService {
     });
 
     return [includedExperiments, excludedExperiments];
+  }
+
+  private async experimentLevelExclusionInclusionWithPrecomputed(
+    experiments: Experiment[],
+    experimentUser: ExperimentUser,
+    logger: UpgradeLogger
+  ): Promise<[Experiment[], { experiment: Experiment; reason: string; matchedGroup: boolean }[]]> {
+    const experimentIds = experiments.map((e) => e.id);
+
+    // Attempt to read precomputed rows; fall back gracefully (table not yet migrated, etc.)
+    let precomputedMap: Map<string, { inclusionIds: string[]; exclusionIds: string[] }>;
+    try {
+      precomputedMap = await this.experimentPrecomputedSegmentService.getPrecomputedSets(experimentIds);
+    } catch (err) {
+      logger.error({
+        message: `experimentLevelExclusionInclusionWithPrecomputed: failed to read experiment_precomputed_segment; falling back to on-the-fly resolution for all experiments: ${err}`,
+      });
+      precomputedMap = new Map();
+    }
+
+    // Partition experiments into fast-path (precomputed row exists) and slow-path (missing row)
+    const fastExperiments: Experiment[] = [];
+    const slowExperiments: Experiment[] = [];
+
+    for (const exp of experiments) {
+      if (precomputedMap.has(exp.id)) {
+        fastExperiments.push(exp);
+      } else {
+        slowExperiments.push(exp);
+      }
+    }
+
+    if (slowExperiments.length) {
+      logger.warn({
+        message: `experimentLevelExclusionInclusionWithPrecomputed: ${slowExperiments.length} experiment(s) missing a precomputed row; resolving on-the-fly`,
+        details: { experimentIds: slowExperiments.map((e) => e.id) },
+      });
+    }
+
+    // ── Fast path: reconstruct include/excludeData from precomputed flat arrays ──────────────────
+    // Each precomputed entry stores members as bare userId strings (individuals) or "type:groupId"
+    // strings (groups). Reconstruct the { users, groups } shape that inclusionExclusionLogic expects.
+    const fastIncludeData: Record<string, { users: string[]; groups: { type: string; groupId: string }[] }> = {};
+    const fastExcludeData: Record<string, { users: string[]; groups: { type: string; groupId: string }[] }> = {};
+
+    const parsePrecomputedIds = (ids: string[]): { users: string[]; groups: { type: string; groupId: string }[] } => {
+      const users: string[] = [];
+      const groups: { type: string; groupId: string }[] = [];
+      for (const id of ids) {
+        const colonIdx = id.indexOf(':');
+        if (colonIdx === -1) {
+          users.push(id);
+        } else {
+          groups.push({ type: id.slice(0, colonIdx), groupId: id.slice(colonIdx + 1) });
+        }
+      }
+      return { users, groups };
+    };
+
+    for (const exp of fastExperiments) {
+      const row = precomputedMap.get(exp.id);
+      fastIncludeData[exp.id] = parsePrecomputedIds(row.inclusionIds);
+      fastExcludeData[exp.id] = parsePrecomputedIds(row.exclusionIds);
+    }
+
+    const experimentIdsWithFilter: { id: string; filterMode: FILTER_MODE; group?: string }[] = experiments.map(
+      ({ id, filterMode, group }) => ({ id, filterMode, group })
+    );
+
+    const fastResult =
+      fastExperiments.length > 0
+        ? await this.getIncludedAndExcludedExperiments(
+            fastExperiments,
+            experimentUser,
+            fastIncludeData,
+            fastExcludeData,
+            experimentIdsWithFilter.filter((e) => fastExperiments.some((fe) => fe.id === e.id))
+          )
+        : ([[], []] as [Experiment[], { experiment: Experiment; reason: string; matchedGroup: boolean }[]]);
+
+    // ── Slow path: existing on-the-fly recursive resolution ──────────────────────────────────────
+    const slowResult =
+      slowExperiments.length > 0
+        ? await this.experimentLevelExclusionInclusion(slowExperiments, experimentUser)
+        : ([[], []] as [Experiment[], { experiment: Experiment; reason: string; matchedGroup: boolean }[]]);
+
+    // Merge: preserve the original experiment order for included experiments
+    const includedSet = new Set([...fastResult[0].map((e) => e.id), ...slowResult[0].map((e) => e.id)]);
+    const mergedIncluded = experiments.filter((e) => includedSet.has(e.id));
+    const mergedExcluded = [...fastResult[1], ...slowResult[1]];
+
+    return [mergedIncluded, mergedExcluded];
   }
 
   private async experimentLevelExclusionInclusion(

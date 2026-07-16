@@ -38,6 +38,7 @@ import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFl
 import { getSegmentData, getSegmentsData } from '../controllers/SegmentController';
 import { CacheService } from './CacheService';
 import { FeatureFlagPrecomputedSegmentService } from './FeatureFlagPrecomputedSegmentService';
+import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegmentService';
 import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import path from 'path';
@@ -83,7 +84,8 @@ export class SegmentService {
     @InjectRepository()
     private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
     private cacheService: CacheService,
-    private featureFlagPrecomputedSegmentService: FeatureFlagPrecomputedSegmentService
+    private featureFlagPrecomputedSegmentService: FeatureFlagPrecomputedSegmentService,
+    private experimentPrecomputedSegmentService: ExperimentPrecomputedSegmentService
   ) {}
 
   public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
@@ -443,6 +445,7 @@ export class SegmentService {
     });
 
     this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
+    this.experimentPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
 
     return createdSegment;
   }
@@ -471,6 +474,7 @@ export class SegmentService {
     });
 
     this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
+    this.experimentPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
 
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
@@ -492,18 +496,20 @@ export class SegmentService {
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
 
-    // withRecompute collects the affected flags BEFORE the delete (the join rows are gone after),
-    // runs the delete in its own transaction, then fires a fire-and-forget recompute for those
-    // flags after commit. Keeping the ordering inside the wrapper means a future refactor of this
-    // method can't accidentally break it.
-    const deletedSegment = await this.featureFlagPrecomputedSegmentService.withRecompute(
-      logger,
-      () => this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
-      () =>
-        this.dataSource.transaction((transactionalEntityManager) =>
-          this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
-        )
+    // Collect affected flag and experiment IDs BEFORE the delete — join rows are gone after commit
+    // and we can no longer discover which flags/experiments referenced this segment.
+    const [affectedFlagIds, affectedExperimentIds] = await Promise.all([
+      this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
+      this.experimentPrecomputedSegmentService.getAffectedExperimentIds(id),
+    ]);
+
+    const deletedSegment = await this.dataSource.transaction((transactionalEntityManager) =>
+      this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
     );
+
+    // Fire fire-and-forget recomputes AFTER the transaction commits so both read the new state.
+    this.featureFlagPrecomputedSegmentService.scheduleRecomputeForFlags(affectedFlagIds, logger);
+    this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments(affectedExperimentIds, logger);
 
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
@@ -1044,6 +1050,7 @@ export class SegmentService {
     // reads the old enabled value and its upsert overwrites the correct post-commit result.
     if (!skipScheduleRecompute) {
       this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
+      this.experimentPrecomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
     }
 
     return transactionalEntityManager

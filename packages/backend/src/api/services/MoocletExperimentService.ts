@@ -12,6 +12,7 @@ import {
 } from '../../types/Mooclet';
 import { ExperimentService } from './ExperimentService';
 import { MoocletError } from '../errors/MoocletError';
+import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegmentService';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { InjectRepository, InjectDataSource } from '../../typeorm-typedi-extensions';
@@ -128,7 +129,8 @@ export class MoocletExperimentService extends ExperimentService {
     errorService: ErrorService,
     cacheService: CacheService,
     queryService: QueryService,
-    metricService: MetricService
+    metricService: MetricService,
+    experimentPrecomputedSegmentService: ExperimentPrecomputedSegmentService
   ) {
     super(
       experimentRepository,
@@ -159,7 +161,8 @@ export class MoocletExperimentService extends ExperimentService {
       errorService,
       cacheService,
       queryService,
-      metricService
+      metricService,
+      experimentPrecomputedSegmentService
     );
   }
 
