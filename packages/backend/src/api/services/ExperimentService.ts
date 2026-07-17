@@ -280,11 +280,10 @@ export class ExperimentService {
 
   public async getCachedValidExperiments(context: string): Promise<Experiment[]> {
     const cacheKey = CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context;
-    return this.cacheService
-      .wrap(cacheKey, this.experimentRepository.getValidExperiments.bind(this.experimentRepository, context))
-      .then((validExperiment) => {
-        return JSON.parse(JSON.stringify(validExperiment));
-      });
+    return this.cacheService.wrap(
+      cacheKey,
+      this.experimentRepository.getValidExperiments.bind(this.experimentRepository, context)
+    );
   }
 
   public async create(
@@ -1921,32 +1920,32 @@ export class ExperimentService {
   public formattingConditionPayload(experiment: Experiment): Experiment {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
       const conditionPayload: ConditionPayload[] = [];
-      experiment.conditions.forEach((condition) => {
-        const conditionPayloads = condition.conditionPayloads.map((conditionPayload) => {
-          return { ...conditionPayload, parentCondition: condition };
+      const conditions = experiment.conditions.map((condition) => {
+        const { conditionPayloads: cpList, ...conditionWithout } = condition as any;
+        cpList.forEach((cp) => {
+          conditionPayload.push({ ...cp, parentCondition: conditionWithout });
         });
-        conditionPayload.push(...conditionPayloads);
-        delete condition.conditionPayloads;
+        return conditionWithout;
       });
 
-      return { ...experiment, conditionPayloads: conditionPayload };
+      return { ...experiment, conditions, conditionPayloads: conditionPayload };
     }
 
     const { conditions, partitions } = experiment;
 
     const conditionPayload: ConditionPayload[] = [];
-    partitions.forEach((partition) => {
-      const conditionPayloadData = partition.conditionPayloads;
-      delete partition.conditionPayloads;
+    const newPartitions = partitions.map((partition) => {
+      const { conditionPayloads: cpList, ...partitionWithout } = partition as any;
 
-      conditionPayloadData.sort((a, b) => a.parentCondition.order - b.parentCondition.order);
-      conditionPayloadData.forEach((x) => {
-        if (x && conditions.filter((con) => con.id === x.parentCondition.id).length > 0) {
-          conditionPayload.push({ ...x, decisionPoint: partition });
+      cpList.sort((a, b) => a.parentCondition.order - b.parentCondition.order);
+      cpList.forEach((x) => {
+        if (x && conditions.some((con) => con.id === x.parentCondition.id)) {
+          conditionPayload.push({ ...x, decisionPoint: partitionWithout });
         }
       });
+      return partitionWithout;
     });
-    return { ...experiment, conditionPayloads: conditionPayload };
+    return { ...experiment, partitions: newPartitions, conditionPayloads: conditionPayload };
   }
 
   public reducedConditionPayload(experiment: Experiment): any {

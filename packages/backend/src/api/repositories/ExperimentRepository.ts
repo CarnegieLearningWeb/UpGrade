@@ -156,20 +156,12 @@ export class ExperimentRepository extends Repository<Experiment> {
         }),
       ]);
 
-    const experimentData = experimentConditionLevelPayloadData.map((data) => {
-      const data2 = experimentFactorDecisionPointLevelPayloadData.find((i) => i.id === data.id);
-      return { ...data, ...data2 };
-    });
+    const factorDpMap = new Map(experimentFactorDecisionPointLevelPayloadData.map((d) => [d.id, d]));
+    const segmentMap = new Map(experimentSegmentData.map((d) => [d.id, d]));
 
-    const mergedData = experimentData.map((data) => {
-      const { id } = data;
-      const segmentData = experimentSegmentData.find((segmentData) => {
-        return segmentData.id === id;
-      });
-      return segmentData ? { ...data, ...segmentData } : data;
+    return experimentConditionLevelPayloadData.map((data) => {
+      return { ...data, ...factorDpMap.get(data.id), ...segmentMap.get(data.id) };
     });
-
-    return mergedData;
   }
 
   public async getValidExperimentsForContextAndDecisionPoint(
@@ -313,20 +305,12 @@ export class ExperimentRepository extends Repository<Experiment> {
         }),
       ]);
 
-    const experimentData = experimentConditionLevelPayloadData.map((data) => {
-      const data2 = experimentFactorDecisionPointLevelPayloadData.find((i) => i.id === data.id);
-      return { ...data, ...data2 };
-    });
+    const factorDpMap = new Map(experimentFactorDecisionPointLevelPayloadData.map((d) => [d.id, d]));
+    const segmentMap = new Map(experimentSegmentData.map((d) => [d.id, d]));
 
-    const mergedData = experimentData.map((data) => {
-      const { id } = data;
-      const segmentData = experimentSegmentData.find((segmentData) => {
-        return segmentData.id === id;
-      });
-      return segmentData ? { ...data, ...segmentData } : data;
+    return experimentConditionLevelPayloadData.map((data) => {
+      return { ...data, ...factorDpMap.get(data.id), ...segmentMap.get(data.id) };
     });
-
-    return mergedData;
   }
 
   public async updateState(
