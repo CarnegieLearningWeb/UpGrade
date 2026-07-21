@@ -29,26 +29,38 @@ export class IndividualForSegmentRepository extends Repository<IndividualForSegm
     entityManager: EntityManager,
     logger: UpgradeLogger
   ): Promise<IndividualForSegment[]> {
-    const result = await entityManager
-      .createQueryBuilder()
-      .insert()
-      .into(IndividualForSegment)
-      .values(data)
-      .orIgnore()
-      .returning('*')
-      .execute()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'individualForSegmentRepository',
-          'insertIndividualForSegment',
-          { data },
-          errorMsg
-        );
-        logger.error(errorMsg);
-        throw errorMsgString;
-      });
+    if (!data.length) return [];
 
-    return result.raw;
+    // PostgreSQL's wire protocol supports at most 65535 bind parameters per statement.
+    // IndividualForSegment has 2 bound columns (segmentId, userId), so cap at 5000 rows
+    // per chunk (5000 × 2 = 10000, well under the limit).
+    const CHUNK_SIZE = 5000;
+    const results: IndividualForSegment[] = [];
+
+    for (let i = 0; i < data.length; i += CHUNK_SIZE) {
+      const chunk = data.slice(i, i + CHUNK_SIZE);
+      const result = await entityManager
+        .createQueryBuilder()
+        .insert()
+        .into(IndividualForSegment)
+        .values(chunk)
+        .orIgnore()
+        .returning('*')
+        .execute()
+        .catch((errorMsg: any) => {
+          const errorMsgString = repositoryError(
+            'individualForSegmentRepository',
+            'insertIndividualForSegment',
+            { data: chunk },
+            errorMsg
+          );
+          logger.error(errorMsg);
+          throw errorMsgString;
+        });
+      results.push(...result.raw);
+    }
+
+    return results;
   }
 
   public async deleteIndividualForSegment(

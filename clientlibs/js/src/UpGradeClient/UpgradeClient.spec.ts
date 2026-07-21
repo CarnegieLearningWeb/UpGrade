@@ -284,7 +284,12 @@ describe('UpgradeClient', () => {
     });
 
     it('should call apiService markDecisionPoint using positional arguments', async () => {
-      await upgradeClient.markDecisionPoint('testSite', 'testTarget', 'variant_x', MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
+      await upgradeClient.markDecisionPoint(
+        'testSite',
+        'testTarget',
+        'variant_x',
+        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
+      );
 
       expect(ApiService.prototype.markDecisionPoint).toHaveBeenCalledWith({
         site: 'testSite',
@@ -295,7 +300,6 @@ describe('UpgradeClient', () => {
         clientError: undefined,
       });
     });
-
   });
 
   describe('#hasFeatureFlag', () => {

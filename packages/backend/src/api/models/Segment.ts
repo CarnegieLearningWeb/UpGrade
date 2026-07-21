@@ -48,6 +48,10 @@ export class Segment extends BaseModel {
   @Type(() => GroupForSegment)
   public groupForSegment: GroupForSegment[];
 
+  // Not persisted; populated via loadRelationCountAndMap for counts-only loads (see findOneForDetails).
+  public individualForSegmentCount?: number;
+  public groupForSegmentCount?: number;
+
   @ManyToMany(() => Segment, (segment) => segment.subSegments)
   @JoinTable({
     name: 'segment_for_segment',

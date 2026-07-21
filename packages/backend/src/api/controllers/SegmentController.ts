@@ -414,6 +414,43 @@ export class SegmentController {
 
   /**
    * @swagger
+   * /segments/{segmentId}/members:
+   *    get:
+   *      description: Get a segment (including private lists) by id with its full member lists
+   *      tags:
+   *        - Segment
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: path
+   *          name: segmentId
+   *          description: Segment id
+   *          required: true
+   *          schema:
+   *            type: string
+   *      responses:
+   *        '200':
+   *          description: Get segment with members by id
+   *          schema:
+   *            $ref: '#/definitions/segmentResponse'
+   *        '404':
+   *          description: Segment not found
+   */
+  @Get('/:segmentId/members')
+  public async getSegmentByIdWithMembers(
+    @Params({ validate: true }) { segmentId }: IdValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    const segment = await this.segmentService.getSegmentByIdWithMembers(segmentId, request.logger);
+    if (!segment) {
+      throw new NotFoundException('Segment not found.');
+    }
+
+    return segment;
+  }
+
+  /**
+   * @swagger
    * /segments/status/{segmentId}:
    *    get:
    *      description: Get segment by id with status
