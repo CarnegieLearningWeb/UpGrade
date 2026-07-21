@@ -893,7 +893,7 @@ export class ExperimentAssignmentService {
     repeatedEnrollmentCounts: RepeatedEnrollmentDataCount[],
     logger: UpgradeLogger
   ): IExperimentAssignmentv5[] {
-    // For within-subjects experiments, pre-compute the condition ordering (100 seedrandom calls)
+    // For within-subjects experiments, pre-compute the condition ordering (~100 seedrandom calls)
     // and build a payload lookup Map once, then reuse across all decision points.
     let withinSubjectPrecomputed: ReturnType<typeof buildWithinSubjectOrderedConditions> | null = null;
     let conditionPayloadMap: Map<string, ConditionPayloadDTO> | null = null;
