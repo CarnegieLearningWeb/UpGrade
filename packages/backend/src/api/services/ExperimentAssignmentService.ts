@@ -902,7 +902,7 @@ export class ExperimentAssignmentService {
       const count = repeatedEnrollmentCounts?.find((r) => r.experimentId === experiment.id)?.count || 0;
       withinSubjectPrecomputed = buildWithinSubjectOrderedConditions(experiment, factors, userId, count);
 
-      const isFactorial = type === EXPERIMENT_TYPE.FACTORIAL;
+      const isFactorial = experiment.type === EXPERIMENT_TYPE.FACTORIAL;
       conditionPayloadMap = new Map<string, ConditionPayloadDTO>();
       conditionPayloads.forEach((cp) => {
         const key = isFactorial ? cp.parentCondition.id : `${cp.parentCondition.id}:${cp.decisionPoint.id}`;
