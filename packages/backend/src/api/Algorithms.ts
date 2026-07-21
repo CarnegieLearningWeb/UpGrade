@@ -183,7 +183,7 @@ function convertToAssignedCondition(
  * Pre-computes the ordered condition/factor arrays for a within-subjects experiment
  * without decision-point-specific payloads. Call once per experiment+user, then pass the
  * result to withInSubjectTypeFromPrecomputed for each decision point to avoid repeating
- * the expensive 100-iteration seedrandom loop N times.
+ * the expensive ~100-iteration seedrandom loop N times.
  */
 export function buildWithinSubjectOrderedConditions(
   experiment: Experiment,
