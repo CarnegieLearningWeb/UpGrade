@@ -6,40 +6,6 @@ import { FactorDTO } from './DTO/FactorDTO';
 import { ExperimentCondition } from './models/ExperimentCondition';
 import { DecisionPoint } from './models/DecisionPoint';
 
-export function withInSubjectType(
-  experiment: Experiment,
-  conditionPayloads: ConditionPayloadDTO[],
-  decisionPoint: DecisionPoint,
-  factors: FactorDTO[],
-  userID: string,
-  repeatedEnrollmentLength: number
-): IExperimentAssignmentv5 {
-  let assignedData = convertToAssignedCondition(experiment, conditionPayloads, decisionPoint, factors);
-
-  // passing assigned conditions data converted into queue based on selected algorithm
-  if (assignedData.assignedCondition.length > 1) {
-    switch (experiment.conditionOrder) {
-      case CONDITION_ORDER.RANDOM: {
-        assignedData = randomCondition(experiment, assignedData, userID, repeatedEnrollmentLength);
-        break;
-      }
-      case CONDITION_ORDER.RANDOM_ROUND_ROBIN: {
-        assignedData = randomRoundRobinCondition(experiment, assignedData, userID, repeatedEnrollmentLength);
-        break;
-      }
-      case CONDITION_ORDER.ORDERED_ROUND_ROBIN: {
-        assignedData = rotateElements(assignedData, repeatedEnrollmentLength);
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-  }
-
-  return assignedData;
-}
-
 export function randomCondition(
   experiment,
   assignedData: IExperimentAssignmentv5,
@@ -134,49 +100,6 @@ export function rotateElements(
     }
   }
   return assignedData;
-}
-
-function convertToAssignedCondition(
-  experiment: Experiment,
-  conditionPayloads: ConditionPayloadDTO[],
-  decisionPoint: DecisionPoint,
-  factors: FactorDTO[]
-): IExperimentAssignmentv5 {
-  const assignedConditionArray: IExperimentAssignmentv5['assignedCondition'] = [];
-  const assignedFactorsArray: Record<string, { level: string; payload: IPayload }>[] = [];
-
-  experiment.conditions.forEach((condition) => {
-    let conditionPayload: ConditionPayloadDTO = null;
-    let factorialObject;
-
-    if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
-      // returns factorial alias condition or assigned condition
-      conditionPayload = conditionPayloads.find((cP) => cP.parentCondition.id === condition.id);
-      factorialObject = getAssignedFactor(condition, factors);
-    } else {
-      // checking alias condition for simple experiment
-      conditionPayload = conditionPayloads.find(
-        (cP) => cP.parentCondition.id === condition.id && cP.decisionPoint.id === decisionPoint.id
-      );
-    }
-
-    const assignedCondition = {
-      conditionCode: condition.conditionCode,
-      payload: conditionPayload?.payload,
-      experimentId: experiment.id,
-      id: condition.id,
-    };
-    assignedConditionArray.push(assignedCondition);
-    factorialObject ? assignedFactorsArray.push(factorialObject) : null;
-  });
-
-  return {
-    site: decisionPoint.site,
-    target: decisionPoint.target,
-    assignedCondition: assignedConditionArray,
-    assignedFactor: experiment.type === EXPERIMENT_TYPE.FACTORIAL ? assignedFactorsArray : null,
-    experimentType: experiment.type,
-  };
 }
 
 /**
