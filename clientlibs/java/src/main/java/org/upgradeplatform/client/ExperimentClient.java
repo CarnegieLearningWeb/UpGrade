@@ -343,22 +343,25 @@ public class ExperimentClient implements AutoCloseable {
 				.orElse(new ExperimentsResponse());
 	}
 
-	private void rotateConditions(String site, String target) {
-		if (this.allExperiments != null) {
-			ExperimentsResponse result = this.allExperiments.stream().filter(t -> t.getSite().equalsIgnoreCase(site) &&
-					(isStringNull(target) ? isStringNull(t.getTarget().toString())
-							: t.getTarget().toString().equalsIgnoreCase(target)))
-					.findFirst().orElse(null);
-			if (result != null) {
-				Condition[] rotatedCondition = Arrays.copyOf(result.getAssignedCondition(),
-						result.getAssignedCondition().length);
-				List<Condition> rotatedList = Arrays.asList(rotatedCondition);
-				Collections.rotate(rotatedList, -1);
-				rotatedCondition = rotatedList.toArray(rotatedCondition);
-				result.setAssignedCondition(rotatedCondition);
-				result.setAssignedFactor(result.getAssignedFactor());
-			}
+	private void rotateConditions(String experimentId) {
+		if (this.allExperiments == null || isStringNull(experimentId)) {
+			return;
 		}
+
+		this.allExperiments.stream()
+				.filter(experiment -> experiment.getAssignedCondition() != null
+						&& experiment.getAssignedCondition().length > 0
+						&& Arrays.stream(experiment.getAssignedCondition())
+								.anyMatch(condition -> condition != null
+										&& experimentId.equals(condition.getExperimentId())))
+				.forEach(experiment -> {
+					Condition[] rotatedCondition = Arrays.copyOf(experiment.getAssignedCondition(),
+							experiment.getAssignedCondition().length);
+					List<Condition> rotatedList = Arrays.asList(rotatedCondition);
+					Collections.rotate(rotatedList, -1);
+					experiment.setAssignedCondition(rotatedCondition);
+					experiment.setAssignedFactor(experiment.getAssignedFactor());
+				});
 	}
 
 	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
@@ -437,9 +440,12 @@ public class ExperimentClient implements AutoCloseable {
 							@Override
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-
-									readResponseToCallback(response, callbacks, MarkDecisionPoint.class);
-									rotateConditions(data.getSite(), data.getTarget());
+									readResponseToCallback(response, callbacks, MarkDecisionPoint.class,
+											markDecisionPoint -> {
+												String experimentId = markDecisionPoint.getExperimentId();
+												rotateConditions(experimentId);
+												return markDecisionPoint;
+											});
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 									ErrorResponse error = new ErrorResponse(response.getStatus(),
