@@ -7,6 +7,9 @@ jest.mock('../../../src/env', () => ({
       enabled: false,
       ttl: 60,
       maxKeys: 500,
+      ttlExperiments: 30,
+      ttlFeatureFlags: 45,
+      ttlSegments: 90,
     },
   },
 }));
@@ -61,8 +64,15 @@ describe('CacheService', () => {
     it('stores the value and returns it', async () => {
       const value = { id: 'test' };
       const result = await service.setCache('key', value);
-      expect(mockStore.set).toHaveBeenCalledWith('key', value);
+      // unprefixed key falls back to the global default TTL (60s -> ms)
+      expect(mockStore.set).toHaveBeenCalledWith('key', value, 60000);
       expect(result).toBe(value);
+    });
+
+    it('applies the category TTL derived from the key prefix', async () => {
+      const value = { id: 'flag' };
+      await service.setCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + 'app', value);
+      expect(mockStore.set).toHaveBeenCalledWith(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + 'app', value, 45000);
     });
   });
 
@@ -159,10 +169,14 @@ describe('CacheService', () => {
       const result = await service.wrapFunction(PREFIX, ['a', 'b'], fetchFn);
 
       expect(fetchFn).toHaveBeenCalled();
-      expect(mockStore.store.mset).toHaveBeenCalledWith([
-        [PREFIX + 'a', seg1],
-        [PREFIX + 'b', seg2],
-      ]);
+      // SEGMENT prefix -> segments category TTL (90s -> ms)
+      expect(mockStore.store.mset).toHaveBeenCalledWith(
+        [
+          [PREFIX + 'a', seg1],
+          [PREFIX + 'b', seg2],
+        ],
+        90000
+      );
       expect(result).toEqual([seg1, seg2]);
     });
 
@@ -186,7 +200,7 @@ describe('CacheService', () => {
 
       await service.wrapFunction(PREFIX, ['a', 'b'], fetchFn);
 
-      expect(mockStore.store.mset).toHaveBeenCalledWith([[PREFIX + 'a', seg1]]);
+      expect(mockStore.store.mset).toHaveBeenCalledWith([[PREFIX + 'a', seg1]], 90000);
     });
 
     it('uses the prefixed key when calling mget', async () => {
@@ -196,6 +210,27 @@ describe('CacheService', () => {
       await service.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ['a'], fetchFn);
 
       expect(mockStore.store.mget).toHaveBeenCalledWith(CACHE_PREFIX.SEGMENT_KEY_PREFIX + 'a');
+    });
+  });
+
+  describe('per-category TTL resolution (via wrap)', () => {
+    it.each([
+      [CACHE_PREFIX.EXPERIMENT_KEY_PREFIX, 30000],
+      [CACHE_PREFIX.MARK_KEY_PREFIX, 30000],
+      [CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX, 45000],
+      [CACHE_PREFIX.SEGMENT_KEY_PREFIX, 90000],
+      [CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX, 90000],
+      [CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX, 90000],
+    ])('wraps %s with its category TTL (ms)', async (prefix, expectedTtl) => {
+      const fn = jest.fn().mockResolvedValue('v');
+      await service.wrap(prefix + 'context', fn);
+      expect(mockStore.wrap).toHaveBeenCalledWith(prefix + 'context', fn, expectedTtl);
+    });
+
+    it('falls back to the global default TTL for an unknown prefix', async () => {
+      const fn = jest.fn().mockResolvedValue('v');
+      await service.wrap('unknown-key', fn);
+      expect(mockStore.wrap).toHaveBeenCalledWith('unknown-key', fn, 60000);
     });
   });
 });
