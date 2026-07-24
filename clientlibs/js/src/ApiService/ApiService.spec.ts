@@ -209,6 +209,18 @@ describe('ApiService', () => {
 
       expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
     });
+
+    it('should call sendRequest with context, site and normalized target', async () => {
+      const requestBody: UpGradeClientRequests.IGetAllExperimentConditionsRequestBody = {
+        context: defaultConfig.context,
+        site: 'siteA',
+        target: '',
+      };
+
+      await apiService.getAllExperimentConditions('siteA', undefined);
+
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
+    });
   });
 
   describe('#log', () => {

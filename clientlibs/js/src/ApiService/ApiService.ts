@@ -210,10 +210,15 @@ export default class ApiService {
     });
   }
 
-  public getAllExperimentConditions(): Promise<IExperimentAssignmentv5[]> {
+  public getAllExperimentConditions(site?: string | null, target?: string | null): Promise<IExperimentAssignmentv5[]> {
     const requestBody: UpGradeClientRequests.IGetAllExperimentConditionsRequestBody = {
       context: this.context,
     };
+
+    if (site != null) {
+      requestBody.site = site;
+      requestBody.target = target ?? '';
+    }
 
     return this.sendRequest<IExperimentAssignmentv5[], UpGradeClientRequests.IGetAllExperimentConditionsRequestBody>({
       path: this.api.getAllExperimentConditions,

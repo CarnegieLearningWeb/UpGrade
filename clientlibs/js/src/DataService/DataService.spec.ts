@@ -100,6 +100,71 @@ describe('DataService', () => {
     });
   });
 
+  describe('#upsertExperimentAssignmentData', () => {
+    it('should replace existing decision point assignment', () => {
+      const cachedAssignments: IExperimentAssignmentv5[] = [
+        {
+          site: 'site',
+          target: 'target',
+          assignedCondition: [{ conditionCode: 'control', payload: null, id: '1', experimentId: 'exp1' }],
+          experimentType: EXPERIMENT_TYPE.SIMPLE,
+        },
+      ];
+
+      const fetchedAssignments: IExperimentAssignmentv5[] = [
+        {
+          site: 'site',
+          target: 'target',
+          assignedCondition: [{ conditionCode: 'variant', payload: null, id: '2', experimentId: 'exp1' }],
+          experimentType: EXPERIMENT_TYPE.SIMPLE,
+        },
+      ];
+
+      dataService.setExperimentAssignmentData(cachedAssignments);
+      dataService.upsertExperimentAssignmentData(fetchedAssignments);
+
+      expect(dataService.getExperimentAssignmentData()).toEqual(fetchedAssignments);
+    });
+
+    it('should preserve unrelated decision points while appending new one', () => {
+      const cachedAssignments: IExperimentAssignmentv5[] = [
+        {
+          site: 'siteA',
+          target: 'targetA',
+          assignedCondition: [{ conditionCode: 'control', payload: null, id: '1', experimentId: 'expA' }],
+          experimentType: EXPERIMENT_TYPE.SIMPLE,
+        },
+      ];
+
+      const fetchedAssignments: IExperimentAssignmentv5[] = [
+        {
+          site: 'siteB',
+          target: 'targetB',
+          assignedCondition: [{ conditionCode: 'variant', payload: null, id: '2', experimentId: 'expB' }],
+          experimentType: EXPERIMENT_TYPE.SIMPLE,
+        },
+      ];
+
+      dataService.setExperimentAssignmentData(cachedAssignments);
+      dataService.upsertExperimentAssignmentData(fetchedAssignments);
+
+      expect(dataService.getExperimentAssignmentData()).toEqual([
+        {
+          site: 'siteA',
+          target: 'targetA',
+          assignedCondition: [{ conditionCode: 'control', payload: null, id: '1', experimentId: 'expA' }],
+          experimentType: EXPERIMENT_TYPE.SIMPLE,
+        },
+        {
+          site: 'siteB',
+          target: 'targetB',
+          assignedCondition: [{ conditionCode: 'variant', payload: null, id: '2', experimentId: 'expB' }],
+          experimentType: EXPERIMENT_TYPE.SIMPLE,
+        },
+      ]);
+    });
+  });
+
   describe('#getFeatureFlags', () => {
     it('should return the feature flags', () => {
       const featureFlagsKeys: string[] = ['testFlagKey'];

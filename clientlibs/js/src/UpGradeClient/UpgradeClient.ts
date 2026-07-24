@@ -292,34 +292,66 @@ export default class UpgradeClient {
   }
 
   /**
-   * This will return all the assignment for the given context.
-   * The return object contains site, target, experimentType, assignedCondition array and assignedFactor array(optional)
-   * Here assignedCondition and assignedFactors(For Factorial-experiment) are arrays
-   *    They will return a stack of condition user will be assigned in that order
-   * For With-in subjects these stacks will be contain all conditions according to the chosen `Condition-Order`
-   * For Between subjects experiment both stack will return array containing single condition.
-   * @param options.ignoreCache If true, it will ignore the cached experiment assignments and fetch fresh data from the API.
-   *  This is useful when you want to ensure you have the latest assignments.
-   *  If false, it will return the cached assignments if available.
+   * Returns experiment assignments for the current context.
+   *
+   * When called without `site`, this fetches or returns cached assignments for the full context.
+   * When `site` is provided, this fetches or returns the cached assignment for that decision point.
+   * Decision-point fetches are merged into the in-memory cache and do not replace assignments for other decision points.
+   *
+   * The return value contains objects with `site`, `target`, `experimentType`, `assignedCondition`,
+   * and optionally `assignedFactor`. For factorial experiments, assigned conditions and factors are returned
+   * as ordered stacks. For between-subject experiments, the arrays typically contain a single assignment.
+   *
+   * @param options - Optional fetch settings. Use `ignoreCache` to force a fresh fetch. Use `site` and
+   * `target` to scope the request to a decision point. When `site` is provided and `target` is omitted,
+   * the request uses the empty target.
    * @example
    * ```typescript
    * const userId = "User1"
    * const context = "mathia"
    *
    * const getAllResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions();
+   * const decisionPointResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions({
+   *   site: 'dashboard',
+   *   target: ''
+   * });
    * ```
    */
-  async getAllExperimentConditions(options = { ignoreCache: false }): Promise<IExperimentAssignmentv5[]> {
-    let response: IExperimentAssignmentv5[] = options.ignoreCache
-      ? null
-      : await this.dataService.getExperimentAssignmentData();
-    if (response == null) {
-      response = await this.apiService.getAllExperimentConditions();
-      if (Array.isArray(response)) {
+  async getAllExperimentConditions({
+    ignoreCache = false,
+    site = null,
+    target = null,
+  }: {
+    ignoreCache?: boolean;
+    site?: string | null;
+    target?: string | null;
+  } = {}): Promise<IExperimentAssignmentv5[]> {
+    const hasDecisionPoint = site != null;
+    const cachedAssignments = this.dataService.getExperimentAssignmentData();
+
+    if (!ignoreCache && cachedAssignments != null) {
+      if (!hasDecisionPoint) {
+        return cachedAssignments;
+      }
+
+      const cachedDecisionPointAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(
+        site,
+        target ?? ''
+      );
+      if (cachedDecisionPointAssignment?.experimentType != null) {
+        return cachedAssignments;
+      }
+    }
+
+    const response = await this.apiService.getAllExperimentConditions(site, target);
+    if (Array.isArray(response)) {
+      if (hasDecisionPoint) {
+        this.dataService.upsertExperimentAssignmentData(response);
+      } else {
         this.dataService.setExperimentAssignmentData(response);
       }
     }
-    return response;
+    return this.dataService.getExperimentAssignmentData();
   }
 
   /**
@@ -335,7 +367,10 @@ export default class UpgradeClient {
    */
 
   async getDecisionPointAssignment(site: string, target = ''): Promise<Assignment | null> {
-    await this.getAllExperimentConditions();
+    await this.getAllExperimentConditions({
+      site,
+      target,
+    });
 
     if (this.dataService.getExperimentAssignmentData()) {
       const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);

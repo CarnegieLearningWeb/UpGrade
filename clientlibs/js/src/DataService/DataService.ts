@@ -34,6 +34,31 @@ export class DataService {
     this.experimentAssignmentData = experimentAssignmentData;
   }
 
+  upsertExperimentAssignmentData(experimentAssignmentData: IExperimentAssignmentv5[]) {
+    if (!Array.isArray(experimentAssignmentData) || experimentAssignmentData.length === 0) {
+      return;
+    }
+
+    if (!Array.isArray(this.experimentAssignmentData)) {
+      this.experimentAssignmentData = [...experimentAssignmentData];
+      return;
+    }
+
+    for (const incomingAssignment of experimentAssignmentData) {
+      const incomingTarget = incomingAssignment.target ?? '';
+      const existingIndex = this.experimentAssignmentData.findIndex(
+        (existingAssignment) =>
+          existingAssignment.site === incomingAssignment.site && (existingAssignment.target ?? '') === incomingTarget
+      );
+
+      if (existingIndex >= 0) {
+        this.experimentAssignmentData[existingIndex] = incomingAssignment;
+      } else {
+        this.experimentAssignmentData.push(incomingAssignment);
+      }
+    }
+  }
+
   getFeatureFlags(): string[] {
     return this.featureFlags;
   }
