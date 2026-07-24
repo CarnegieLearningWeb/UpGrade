@@ -14,6 +14,7 @@ import static org.upgradeplatform.utils.Utils.SET_GROUP_MEMBERSHIP;
 import static org.upgradeplatform.utils.Utils.SET_WORKING_GROUP;
 import static org.upgradeplatform.utils.Utils.isStringNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -263,7 +264,7 @@ public class ExperimentClient implements AutoCloseable {
 
 	/** @param site This is matched case-insensitively */
 	public void getExperimentCondition(String site, final ResponseCallback<Assignment> callbacks) {
-		getExperimentCondition(site, null, callbacks);
+		getExperimentCondition(site, null, false, callbacks);
 	}
 
 	/**
@@ -272,11 +273,19 @@ public class ExperimentClient implements AutoCloseable {
 	 */
 	public void getExperimentCondition(String site, String target,
 			final ResponseCallback<Assignment> callbacks) {
-		getAllExperimentConditions(new ResponseCallback<List<ExperimentsResponse>>() {
-			@Override
-			public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
+		getExperimentCondition(site, target, false, callbacks);
+	}
 
-				ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, experiments);
+	/**
+	 * @param site        This is matched case-insensitively
+	 * @param target      This is matched case-insensitively
+	 * @param ignoreCache If true, always fetch from API for this decision point
+	 */
+	public void getExperimentCondition(String site, String target, boolean ignoreCache,
+			final ResponseCallback<Assignment> callbacks) {
+		getAllExperimentConditions(site, target, ignoreCache, new ResponseCallback<ExperimentsResponse>() {
+			@Override
+			public void onSuccess(@NonNull ExperimentsResponse resultExperimentsResponse) {
 				Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null
 						? resultExperimentsResponse.getAssignedFactor()[0]
 						: null;
@@ -303,7 +312,16 @@ public class ExperimentClient implements AutoCloseable {
 	/** @param site This is matched case-insensitively */
 	public void getAllExperimentConditions(String site,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
-		getAllExperimentConditions(site, null, callbacks);
+		getAllExperimentConditions(site, null, false, callbacks);
+	}
+
+	/**
+	 * @param site        This is matched case-insensitively
+	 * @param ignoreCache If true, always fetch from API for this decision point
+	 */
+	public void getAllExperimentConditions(String site, boolean ignoreCache,
+			final ResponseCallback<ExperimentsResponse> callbacks) {
+		getAllExperimentConditions(site, null, ignoreCache, callbacks);
 	}
 
 	/**
@@ -312,35 +330,122 @@ public class ExperimentClient implements AutoCloseable {
 	 */
 	public void getAllExperimentConditions(String site, String target,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
-		getAllExperimentConditions(new ResponseCallback<List<ExperimentsResponse>>() {
-			@Override
-			public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
-
-				ExperimentsResponse resultCondition = findExperimentResponse(site, target, experiments);
-
-				if (callbacks != null) {
-					callbacks.onSuccess(resultCondition);
-				}
-			}
-
-			@Override
-			public void onError(@NonNull ErrorResponse error) {
-				if (callbacks != null)
-					callbacks.onError(error);
-
-			}
-		});
+		getAllExperimentConditions(site, target, false, callbacks);
 	}
 
-	private ExperimentsResponse findExperimentResponse(String site, String target,
+	/**
+	 * @param site        This is matched case-insensitively
+	 * @param target      This is matched case-insensitively
+	 * @param ignoreCache If true, always fetch from API for this decision point
+	 */
+	public void getAllExperimentConditions(String site, String target, boolean ignoreCache,
+			final ResponseCallback<ExperimentsResponse> callbacks) {
+		if (!ignoreCache && this.allExperiments != null) {
+			Optional<ExperimentsResponse> cachedCondition = findExperimentResponseOptional(site, target,
+					this.allExperiments);
+			if (cachedCondition.isPresent()) {
+				if (callbacks != null) {
+					callbacks.onSuccess(cachedCondition.get());
+				}
+				return;
+			}
+		}
+
+		String normalizedTarget = target == null ? "" : target;
+		ExperimentRequest experimentRequest = new ExperimentRequest(this.context, site, normalizedTarget);
+		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
+		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
+
+		invocation.post(requestContent,
+				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+						new InvocationCallback<Response>() {
+
+							@Override
+							public void completed(Response response) {
+								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									response.bufferEntity();
+									try {
+										List<ExperimentsResponse> experiments = response
+												.readEntity(new GenericType<List<ExperimentsResponse>>() {
+												});
+										upsertCachedExperiments(experiments);
+										ExperimentsResponse resultCondition = findExperimentResponse(site, target,
+												experiments);
+										if (callbacks != null) {
+											callbacks.onSuccess(resultCondition);
+										}
+									} catch (ProcessingException pe) {
+										if (callbacks != null) {
+											callbacks.onError(
+													new ErrorResponse(pe.getMessage() + "; cause: " + pe.getCause()
+															+ "; body: " + response.readEntity(String.class)));
+										}
+									}
+								} else {
+									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+									ErrorResponse error = new ErrorResponse(response.getStatus(),
+											response.readEntity(String.class), status);
+									if (callbacks != null)
+										callbacks.onError(error);
+								}
+							}
+
+							@Override
+							public void failed(Throwable throwable) {
+								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+							}
+						}));
+	}
+
+	private Optional<ExperimentsResponse> findExperimentResponseOptional(String site, String target,
 			List<ExperimentsResponse> experiments) {
 		return experiments.stream()
 				.filter(t -> t.getSite().equalsIgnoreCase(site) &&
 						(isStringNull(target) ? isStringNull(t.getTarget().toString())
 								: t.getTarget().toString().equalsIgnoreCase(target)))
 				.findFirst()
-				.map(ExperimentClient::copyExperimentResponse)
+				.map(ExperimentClient::copyExperimentResponse);
+	}
+
+	private ExperimentsResponse findExperimentResponse(String site, String target,
+			List<ExperimentsResponse> experiments) {
+		return findExperimentResponseOptional(site, target, experiments)
 				.orElse(new ExperimentsResponse());
+	}
+
+	private void upsertCachedExperiments(List<ExperimentsResponse> fetchedExperiments) {
+		List<ExperimentsResponse> mergedCache = this.allExperiments == null
+				? new ArrayList<>()
+				: new ArrayList<>(this.allExperiments);
+
+		if (this.allExperiments == null) {
+			this.allExperiments = fetchedExperiments.stream()
+					.map(ExperimentClient::copyExperimentResponse)
+					.toList();
+			return;
+		}
+
+		for (ExperimentsResponse fetched : fetchedExperiments) {
+			String fetchedTarget = fetched.getTarget() == null ? null : fetched.getTarget().toString();
+			boolean updated = false;
+			for (int i = 0; i < mergedCache.size(); i++) {
+				ExperimentsResponse existing = mergedCache.get(i);
+				String existingTarget = existing.getTarget() == null ? null : existing.getTarget().toString();
+				if (existing.getSite().equalsIgnoreCase(fetched.getSite()) &&
+						(isStringNull(existingTarget) ? isStringNull(fetchedTarget)
+								: existingTarget.equalsIgnoreCase(fetchedTarget))) {
+					mergedCache.set(i, copyExperimentResponse(fetched));
+					updated = true;
+					break;
+				}
+			}
+
+			if (!updated) {
+				mergedCache.add(copyExperimentResponse(fetched));
+			}
+		}
+
+		this.allExperiments = mergedCache;
 	}
 
 	private void rotateConditions(String site, String target) {
