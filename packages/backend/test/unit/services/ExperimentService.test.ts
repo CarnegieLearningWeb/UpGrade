@@ -487,6 +487,28 @@ describe('ExperimentService Testing', () => {
       expect(conditionRepo.upsertExperimentCondition).toHaveBeenCalled();
     });
 
+    it('recomputes the precomputed segment row (to empty) after a context change', async () => {
+      const precomputed = module.get<ExperimentPrecomputedSegmentService>(ExperimentPrecomputedSegmentService);
+      (precomputed.scheduleRecomputeForExperiments as jest.Mock).mockClear();
+
+      // The stored experiment is on 'context1' (see mockExperiment). Moving it to 'context2' deletes all
+      // segment lists and forces EXCLUDE_ALL, so the experiment_precomputed_segment row must be
+      // recomputed (to empty) after commit — otherwise it keeps stale inclusion/exclusion IDs.
+      const contextChangeDTO = { ...mockExperimentDTO, context: ['context2'] } as any;
+      await service.update(contextChangeDTO, mockUser, logger);
+
+      expect(precomputed.scheduleRecomputeForExperiments).toHaveBeenCalledWith([mockExperimentDTO.id], logger);
+    });
+
+    it('does not recompute the precomputed segment row on a normal (same-context) update', async () => {
+      const precomputed = module.get<ExperimentPrecomputedSegmentService>(ExperimentPrecomputedSegmentService);
+      (precomputed.scheduleRecomputeForExperiments as jest.Mock).mockClear();
+
+      await service.update(mockExperimentDTO, mockUser, logger);
+
+      expect(precomputed.scheduleRecomputeForExperiments).not.toHaveBeenCalled();
+    });
+
     it('should update condition payloads', async () => {
       const result = await service.update(mockExperimentDTO, mockUser, logger);
 

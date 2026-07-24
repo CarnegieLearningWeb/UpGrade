@@ -1137,18 +1137,21 @@ export class FeatureFlagService {
       // Individual exclusion always wins
       if (exclusionSet.has(experimentUser.id)) return false;
 
-      // Individual inclusion bypasses group checks
-      if (inclusionSet.has(experimentUser.id)) return true;
-
       const inGroupExclusion = userGroupKeys.some((key) => exclusionSet.has(key));
-      const inGroupInclusion = userGroupKeys.some((key) => inclusionSet.has(key));
 
       if (flag.filterMode === FILTER_MODE.INCLUDE_ALL) {
+        // INCLUDE_ALL is not explicit inclusion: include lists are ignored entirely. The user is
+        // included unless a group of theirs is on the exclude list. An individually "included" user
+        // whose group is excluded is still excluded — individual inclusion is not an explicit
+        // override here. Mirrors inclusionExclusionLogic's INCLUDE_ALL branch.
         return !inGroupExclusion;
-      } else {
-        // EXCLUDE_ALL: include only if in inclusion group and not in exclusion group
-        return inGroupInclusion && !inGroupExclusion;
       }
+
+      // EXCLUDE_ALL: individual inclusion bypasses group checks; otherwise include only if in an
+      // inclusion group and not in an exclusion group.
+      if (inclusionSet.has(experimentUser.id)) return true;
+      const inGroupInclusion = userGroupKeys.some((key) => inclusionSet.has(key));
+      return inGroupInclusion && !inGroupExclusion;
     });
   }
 

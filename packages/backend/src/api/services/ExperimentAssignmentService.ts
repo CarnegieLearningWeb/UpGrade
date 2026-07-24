@@ -2456,11 +2456,10 @@ export class ExperimentAssignmentService {
     //
     // If the user or the user's group is on the global exclude list, exclude the user.
     //
-    // ELSE If the entity default is "include all" then
+    // ELSE If the entity default is "include all" then (include lists are ignored — INCLUDE_ALL is
+    //      not explicit inclusion)
     //     If the user is on the exclude list, then exclude the user.
-    //     Else if any of the user's groups is on the exclude list then
-    //           If the user is on the include list, include the user
-    //           Else exclude the user
+    //     Else if any of the user's groups is on the exclude list, then exclude the user.
     //     Else include the user.
     // ELSE If the entity default is "exclude all" then
     //     If the user is on the include list, then include the user.
@@ -2478,10 +2477,13 @@ export class ExperimentAssignmentService {
       let sameGroupExclusionFlag = false;
 
       if (entity.filterMode === FILTER_MODE.INCLUDE_ALL) {
+        // INCLUDE_ALL is not an explicit inclusion, so include lists are ignored entirely here.
+        // Only individual exclusion and group exclusion can remove the user; neither individual nor
+        // group inclusion is consulted. In particular, an individually "included" user whose group
+        // is on the exclude list is still excluded — individual inclusion is not treated as an
+        // explicit override in an INCLUDE_ALL scenario. Mirrors FeatureFlagService's precomputed read path.
         if (explicitIndividualExclusionFilteredData.some((x) => x.id === entity.id)) {
           userExcludedEntities.push({ id: entity.id, reason: 'user' });
-        } else if (explicitIndividualInclusionFilteredData.some((x) => x.id === entity.id)) {
-          userIncludedEntities.push(entity.id);
         } else {
           for (const userGroup of userGroups) {
             const matchingExclusionData = explicitGroupExclusionFilteredData.find(

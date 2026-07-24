@@ -152,13 +152,19 @@ Subclass wrappers (example, feature flag):
 
 ## Phase 0.5 — Don't precompute or cache data that won't be read (cross-cutting) — DEFERRED
 
-> **Status: DEFERRED, do not implement yet.** The old code does not agree with stated requirements,
-> so the INCLUDE_ALL semantics need **product input** before we change anything. Until that lands,
-> **implement experiments identically to feature flags** — compute and store the full inclusion and
-> exclusion arrays regardless of `filterMode`, and accept the same over-caching and the same
-> precomputed-vs-fallback disagreement FF has today. No trimming, no `flattenSegmentMembers` split,
-> no new `filterMode`-change guard beyond whatever the normal update path already does. Revisit this
-> phase (options A/B below) once product confirms the intended INCLUDE_ALL behavior.
+> **Status: SEMANTICS RESOLVED (option B, read-path only); storage trimming still deferred.**
+> Product confirmed: `INCLUDE_ALL` is not an explicit inclusion, so include lists (individual **and**
+> group) are ignored entirely for `INCLUDE_ALL` — only exclusion applies, and an individually-included
+> user whose group is excluded is still excluded. This is now enforced consistently in
+> `ExperimentAssignmentService.inclusionExclusionLogic` (INCLUDE_ALL branch no longer reads the
+> individual/group inclusion lists) and `FeatureFlagService.featureFlagLevelInclusionExclusion` (the
+> individual-inclusion short-circuit now applies only to `EXCLUDE_ALL`), fixing the prior
+> precomputed-vs-fallback disagreement. `EXCLUDE_ALL` is unchanged.
+>
+> The precomputed rows still store the full inclusion arrays; the read paths simply ignore them for
+> `INCLUDE_ALL`, so **no `filterMode`-change recompute is required for correctness**. The remaining
+> deferred work is purely an optimization: trimming the unread inclusion members from `INCLUDE_ALL`
+> rows (the `flattenSegmentMembers` split in options A/B below). Not required for correctness.
 
 **Finding (confirmed in the finalized FF code).** For `INCLUDE_ALL` entities, the flattened inclusion
 array's **group** members are never consulted at assignment time:
@@ -378,7 +384,7 @@ Add a "## Precomputed Segment Lists (Experiments)" section to `packages/backend/
 ## Checklist
 
 - [x] Phase 0: shared helper module (`precomputedSegmentHelpers.ts`) + `PrecomputedSegmentServiceBase` extracted; flag service refactored to extend it; **feature-flag tests green**
-- [ ] Phase 0.5: **DEFERRED (needs product input)** — implemented identical to FF (full arrays, no trimming). Revisit after product confirms INCLUDE_ALL semantics (option A or B).
+- [x] Phase 0.5 (semantics): **RESOLVED — option B.** INCLUDE_ALL ignores include lists entirely (individual + group); only exclusion applies, consistently across all flag/experiment read paths. Tests added for both filter modes. Storage trimming of unread INCLUDE_ALL inclusion members remains an optional, deferred optimization.
 - [x] Phase 1: `ExperimentPrecomputedSegment` entity
 - [x] Phase 2: `ExperimentPrecomputedSegmentRepository`
 - [x] Phase 3: migration written (`1783627365221-experimentPrecomputedSegment.ts`) — **still needs a live `migration:run` to verify**

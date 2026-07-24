@@ -142,10 +142,19 @@ Experiment join tables (`ExperimentSegmentInclusion` / `ExperimentSegmentExclusi
 | Experiment created | `ExperimentService.create` → `await recomputeForExperiment` after lists attach (only when it owns the commit; recompute yields empty arrays for list-less experiments, so no separate empty-seed) |
 | Experiment created inside a Mooclet transaction | `MoocletExperimentService.syncCreate` → `await recomputeForExperiment` after the transaction commits (create deferred it because it ran inside the transaction) |
 | Experiment lists imported | `ExperimentService.importExperimentLists` → `await recomputeForExperiment` after the import transaction commits |
+| Experiment context changed (deletes all its lists) | `ExperimentService.updateExperimentInDB` → `scheduleRecomputeForExperiments` after commit (recomputes to empty; `deleteAllListsFromExperiment` deletes the private segments directly, so the precomputed row would otherwise keep stale IDs). When a caller owns the transaction (`MoocletExperimentService.syncUpdate` / `syncUpdateWithMoocletAlgorithmTransition`), those methods recompute after their own commit — mirrors the flag side's `updateFeatureFlagInDB` → `withRecompute` |
 | Shared segment members/structure changed | `SegmentService.addList` / `deleteList` / `addSegmentDataWithPipeline` → `scheduleRecomputeForSegment` for **both** the flag and experiment services |
 | Segment deleted entirely | `SegmentService.deleteSegment` → collects affected experiment IDs **before** the delete, recomputes **after** commit (flags use `withRecompute` in the same method) |
 | Server startup | `app.ts` → `backfillExperimentPrecomputedSegments` (guarded by `.catch` — a missing table never crashes startup) |
 
 Same invariant as feature flags: recompute **after** the change commits; for deletes, collect affected experiment IDs **before**. All write-path recomputes are fire-and-forget except the `create` / import / Mooclet paths, which `await` so "done" means the row is ready.
 
-> **Known deferred issue (needs product input):** for `INCLUDE_ALL` entities the group-inclusion members are computed and cached but never read at assignment time (see `.claude/plans/precomputed-segments-experiments.md`, Phase 0.5). Experiments currently match the feature-flag behavior (full arrays, no trimming) pending a decision on the intended INCLUDE_ALL semantics.
+### INCLUDE_ALL semantics (resolved)
+
+`INCLUDE_ALL` is **not** an explicit inclusion, so **include lists are ignored entirely** for an `INCLUDE_ALL` flag or experiment — neither individual nor group inclusion is consulted. The only way a user is removed from an `INCLUDE_ALL` entity is via **exclusion**: the user is excluded if they are individually on the exclude list, or if any of their groups is on the exclude list. In particular, an individually "included" user whose group is on the exclude list is still **excluded** — individual inclusion never overrides a group exclusion here. (`EXCLUDE_ALL` is unchanged: individual inclusion is explicit and bypasses group checks.)
+
+This is enforced consistently across all read paths:
+- `ExperimentAssignmentService.inclusionExclusionLogic` — the `INCLUDE_ALL` branch checks individual exclusion, then group exclusion, then includes; it never reads either inclusion list. Shared by both experiment read paths and the flag on-the-fly fallback.
+- `FeatureFlagService.featureFlagLevelInclusionExclusion` — the precomputed read path returns `!inGroupExclusion` for `INCLUDE_ALL` and only consults inclusion in the `EXCLUDE_ALL` branch.
+
+The precomputed rows still store the full inclusion arrays regardless of `filterMode` (the read paths simply ignore them for `INCLUDE_ALL`), so no `filterMode`-change recompute is required for correctness. Trimming the unread inclusion members from `INCLUDE_ALL` rows remains an available storage/cache optimization (the deferred Phase 0.5 in `.claude/plans/precomputed-segments-experiments.md`), not a correctness concern.

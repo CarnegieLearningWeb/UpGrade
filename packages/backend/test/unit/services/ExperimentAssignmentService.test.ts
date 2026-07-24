@@ -30,7 +30,7 @@ import {
   withinSubjectDPExperiment,
 } from '../mockdata';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
-import { ENROLLMENT_CODE, EXPERIMENT_STATE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { ENROLLMENT_CODE, EXPERIMENT_STATE, FILTER_MODE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
@@ -726,6 +726,35 @@ describe('Experiment Assignment Service Test', () => {
     expect(exclusionReason[0].matchedGroup).toEqual(true);
     expect(exclusionReason[0].reason).toEqual('group');
     expect(includedExperiment).toEqual([]);
+  });
+
+  it('[inclusionExclusionLogic] INCLUDE_ALL ignores individual inclusion; a group exclusion still excludes', async () => {
+    // User is individually on the include list AND their group is on the exclude list.
+    const experimentUser = { id: 'u1', group: { classId: ['c1'] }, workingGroup: {} } as any;
+    const includeData = { e1: { users: ['u1'], groups: [] } };
+    const excludeData = { e1: { users: [], groups: [{ groupId: 'c1', type: 'classId' }] } };
+
+    const [included, excluded] = await testedModule.inclusionExclusionLogic(includeData, excludeData, experimentUser, [
+      { id: 'e1', filterMode: FILTER_MODE.INCLUDE_ALL, group: 'classId' },
+    ]);
+
+    // Under INCLUDE_ALL, include lists are not an explicit override -> the group exclusion wins.
+    expect(included).toEqual([]);
+    expect(excluded).toEqual([{ id: 'e1', reason: 'group', matchedGroup: true }]);
+  });
+
+  it('[inclusionExclusionLogic] EXCLUDE_ALL still honors individual inclusion over a group exclusion', async () => {
+    // Same data as the INCLUDE_ALL case above, but EXCLUDE_ALL treats individual inclusion as explicit.
+    const experimentUser = { id: 'u1', group: { classId: ['c1'] }, workingGroup: {} } as any;
+    const includeData = { e1: { users: ['u1'], groups: [] } };
+    const excludeData = { e1: { users: [], groups: [{ groupId: 'c1', type: 'classId' }] } };
+
+    const [included, excluded] = await testedModule.inclusionExclusionLogic(includeData, excludeData, experimentUser, [
+      { id: 'e1', filterMode: FILTER_MODE.EXCLUDE_ALL, group: 'classId' },
+    ]);
+
+    expect(included).toEqual(['e1']);
+    expect(excluded).toEqual([]);
   });
 
   it('[createExperimentPool] should return empty pool of experiments for no active experiments', async () => {

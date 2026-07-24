@@ -774,7 +774,7 @@ export class ExperimentService {
       this.experimentSchedulerService.updateExperimentSchedules(experiment as any, logger);
     }
 
-    return entityManager
+    const updatedExperimentResult = await entityManager
       .transaction(async (transactionalEntityManager) => {
         experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
 
@@ -1220,6 +1220,19 @@ export class ExperimentService {
           experimentSegmentInclusion: includeListsToReturn,
         };
       });
+
+    // If the context changed, deleteAllListsFromExperiment (above) removed every segment list and the
+    // filterMode was forced to EXCLUDE_ALL, but the experiment_precomputed_segment row still holds the
+    // old member IDs. Recompute it (to empty) after commit so the assignment read path never serves
+    // stale inclusion/exclusion data. Mirrors FeatureFlagService.updateFeatureFlagInDB's withRecompute.
+    // When a caller owns the transaction (existingEntityManager, e.g. MoocletExperimentService), the
+    // writes are not committed yet, so the caller recomputes after its own commit (see syncUpdate) —
+    // the same deferral create() uses.
+    if (isChangingContext && !existingEntityManager) {
+      this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments([experiment.id], logger);
+    }
+
+    return updatedExperimentResult;
   }
 
   // private async cleanLogsForQuery(query: Query[]): Promise<void> {
