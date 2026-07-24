@@ -112,6 +112,9 @@ export const env = {
     enabled: toBool(getOsEnvOptional('CACHING_ENABLED')),
     ttl: toNumber(getOsEnvOptional('CACHING_TTL')),
     maxKeys: toNumber(getOsEnvOptional('CACHING_MAX_KEYS')),
+    ttlExperiments: toNumber(getOsEnvOptional('CACHING_TTL_EXPERIMENTS')),
+    ttlFeatureFlags: toNumber(getOsEnvOptional('CACHING_TTL_FEATURE_FLAGS')),
+    ttlSegments: toNumber(getOsEnvOptional('CACHING_TTL_SEGMENTS')),
   },
   clientApi: {
     secret: getOsEnv('CLIENT_API_SECRET'),
