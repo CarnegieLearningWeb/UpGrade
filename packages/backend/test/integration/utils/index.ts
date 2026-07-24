@@ -94,6 +94,8 @@ export async function getAllExperimentCondition(
   return experimentAssignmentService.getAllExperimentConditions(
     { ...experimentUserDoc, requestedUserId: userId },
     context,
+    null,
+    null,
     logger
   );
 }

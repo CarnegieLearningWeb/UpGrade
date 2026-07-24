@@ -331,6 +331,8 @@ export class ExperimentAssignmentService {
   public async getAllExperimentConditions(
     experimentUserDoc: RequestedExperimentUser,
     context: string,
+    site: string,
+    target: string,
     logger: UpgradeLogger
   ): Promise<IExperimentAssignmentv5[]> {
     logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
@@ -347,7 +349,7 @@ export class ExperimentAssignmentService {
      */
 
     // 1. Fetch experiments based on user type & moving conditionPayloads at the root level
-    const experiments: Experiment[] = await this.getExperimentsForUser(previewUser, context);
+    const experiments: Experiment[] = await this.getExperimentsForUser(previewUser, context, site, target);
 
     // 2. Check if user or group is globally excluded
     const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUserDoc, context);
@@ -691,10 +693,15 @@ export class ExperimentAssignmentService {
     }
   }
 
-  private async getExperimentsForUser(previewUser: PreviewUser, context: string): Promise<Experiment[]> {
+  private async getExperimentsForUser(
+    previewUser: PreviewUser,
+    context: string,
+    site: string,
+    target: string
+  ): Promise<Experiment[]> {
     const experiments = previewUser
       ? await this.experimentRepository.getValidExperimentsWithPreview(context)
-      : await this.experimentService.getCachedValidExperiments(context);
+      : await this.experimentService.getCachedValidExperiments(context, site, target);
     // adding conditionPayloads at the root level instead of inside conditions
     return experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
   }

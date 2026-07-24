@@ -276,10 +276,21 @@ export class ExperimentService {
     };
   }
 
-  public async getCachedValidExperiments(context: string): Promise<Experiment[]> {
+  public async getCachedValidExperiments(context: string, site: string, target: string): Promise<Experiment[]> {
     const cacheKey = CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context;
+    const fetchByDecisionPoint = !!site;
     return this.cacheService
-      .wrap(cacheKey, this.experimentRepository.getValidExperiments.bind(this.experimentRepository, context))
+      .wrap(
+        cacheKey,
+        fetchByDecisionPoint
+          ? this.experimentRepository.getValidExperimentsForContextAndDecisionPoint.bind(
+              this.experimentRepository,
+              context,
+              site,
+              target
+            )
+          : this.experimentRepository.getValidExperiments.bind(this.experimentRepository, context)
+      )
       .then((validExperiment) => {
         return JSON.parse(JSON.stringify(validExperiment));
       });
