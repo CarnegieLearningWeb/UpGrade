@@ -528,7 +528,11 @@ export class SegmentService {
   ): Promise<Segment> {
     const segmentDoc = await manager.getRepository(Segment).findOne({
       where: { id: id },
-      relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+      relations: {
+        individualForSegment: true,
+        groupForSegment: true,
+        subSegments: true,
+      },
     });
     if (!segmentDoc) {
       throw new Error(SERVER_ERROR.QUERY_FAILED);
@@ -865,7 +869,11 @@ export class SegmentService {
     } else {
       const segmentDoc = await this.segmentRepository.findOne({
         where: { id: segmentIds[0] },
-        relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+        relations: {
+          individualForSegment: true,
+          groupForSegment: true,
+          subSegments: true,
+        },
       });
       if (!segmentDoc) {
         throw new Error(SERVER_ERROR.QUERY_FAILED);
@@ -1056,9 +1064,10 @@ export class SegmentService {
       this.experimentPrecomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
     }
 
-    return transactionalEntityManager
-      .getRepository(Segment)
-      .findOne({ where: { id: segmentDoc.id }, relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+    return transactionalEntityManager.getRepository(Segment).findOne({
+      where: { id: segmentDoc.id },
+      relations: { subSegments: true, individualForSegment: true, groupForSegment: true },
+    });
   }
 
   private trimAndRemoveHiddenChars(value: string): string {

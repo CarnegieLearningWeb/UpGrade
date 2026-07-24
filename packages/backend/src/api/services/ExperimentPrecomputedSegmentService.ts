@@ -39,11 +39,11 @@ export class ExperimentPrecomputedSegmentService extends PrecomputedSegmentServi
     const [inclusionRecords, exclusionRecords] = await Promise.all([
       this.experimentSegmentInclusionRepository.find({
         where: { experiment: { id: experimentId } },
-        relations: ['segment'],
+        relations: { segment: true },
       }),
       this.experimentSegmentExclusionRepository.find({
         where: { experiment: { id: experimentId } },
-        relations: ['segment'],
+        relations: { segment: true },
       }),
     ]);
 
@@ -57,11 +57,11 @@ export class ExperimentPrecomputedSegmentService extends PrecomputedSegmentServi
     const [inclusionRecords, exclusionRecords] = await Promise.all([
       this.experimentSegmentInclusionRepository.find({
         where: { segment: { id: segmentId } },
-        relations: ['experiment'],
+        relations: { experiment: true },
       }),
       this.experimentSegmentExclusionRepository.find({
         where: { segment: { id: segmentId } },
-        relations: ['experiment'],
+        relations: { experiment: true },
       }),
     ]);
 
@@ -79,12 +79,12 @@ export class ExperimentPrecomputedSegmentService extends PrecomputedSegmentServi
   }
 
   protected async findAllOwnerIds(): Promise<string[]> {
-    const experiments = await this.experimentRepository.find({ select: ['id'] });
+    const experiments = await this.experimentRepository.find({ select: { id: true } });
     return experiments.map((e) => e.id);
   }
 
   protected async findExistingOwnerIds(): Promise<string[]> {
-    const rows = await this.precomputedSegmentRepository.find({ select: ['experimentId'] });
+    const rows = await this.precomputedSegmentRepository.find({ select: { experimentId: true } });
     return rows.map((r) => r.experimentId);
   }
 

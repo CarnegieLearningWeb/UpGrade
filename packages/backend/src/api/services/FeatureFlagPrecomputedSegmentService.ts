@@ -42,11 +42,11 @@ export class FeatureFlagPrecomputedSegmentService extends PrecomputedSegmentServ
     const [inclusionRecords, exclusionRecords] = await Promise.all([
       this.featureFlagSegmentInclusionRepository.find({
         where: { featureFlag: { id: flagId }, enabled: true },
-        relations: ['segment'],
+        relations: { segment: true },
       }),
       this.featureFlagSegmentExclusionRepository.find({
         where: { featureFlag: { id: flagId }, enabled: true },
-        relations: ['segment'],
+        relations: { segment: true },
       }),
     ]);
 
@@ -60,11 +60,11 @@ export class FeatureFlagPrecomputedSegmentService extends PrecomputedSegmentServ
     const [inclusionRecords, exclusionRecords] = await Promise.all([
       this.featureFlagSegmentInclusionRepository.find({
         where: { segment: { id: segmentId } },
-        relations: ['featureFlag'],
+        relations: { featureFlag: true },
       }),
       this.featureFlagSegmentExclusionRepository.find({
         where: { segment: { id: segmentId } },
-        relations: ['featureFlag'],
+        relations: { featureFlag: true },
       }),
     ]);
 
@@ -82,12 +82,12 @@ export class FeatureFlagPrecomputedSegmentService extends PrecomputedSegmentServ
   }
 
   protected async findAllOwnerIds(): Promise<string[]> {
-    const flags = await this.featureFlagRepository.find({ select: ['id'] });
+    const flags = await this.featureFlagRepository.find({ select: { id: true } });
     return flags.map((f) => f.id);
   }
 
   protected async findExistingOwnerIds(): Promise<string[]> {
-    const rows = await this.precomputedSegmentRepository.find({ select: ['featureFlagId'] });
+    const rows = await this.precomputedSegmentRepository.find({ select: { featureFlagId: true } });
     return rows.map((r) => r.featureFlagId);
   }
 

@@ -136,24 +136,6 @@ module.exports = {
       ),
       description: 'Builds the app into the dist directory',
     },
-    /**
-     * Database scripts
-     */
-    db: {
-      seed: {
-        script: series(
-          'nps banner.seed',
-          'nps db.drop',
-          'nps config',
-          runFast('./node_modules/.bin/typeorm-seeding seed')
-        ),
-        description: 'Seeds generated records into the database',
-      },
-      drop: {
-        script: runFast('./node_modules/.bin/typeorm schema:drop'),
-        description: 'Drops the schema of the database',
-      },
-    },
 
     typecheck: {
       default: {

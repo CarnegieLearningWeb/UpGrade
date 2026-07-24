@@ -1,5 +1,5 @@
-import * as Faker from 'faker';
-import { define } from 'typeorm-seeding';
+import { setSeederFactory } from 'typeorm-extension';
+import { Faker } from '@faker-js/faker';
 import { Experiment } from '../../api/models/Experiment';
 import {
   EXPERIMENT_STATE,
@@ -9,10 +9,11 @@ import {
   IEnrollmentCompleteCondition,
 } from 'upgrade_types';
 
-define(Experiment, (faker: typeof Faker) => {
-  const name = faker.name.firstName();
-  const description = faker.name.jobTitle();
-  const state = faker.random.arrayElement([
+export default setSeederFactory(Experiment, (faker: Faker) => {
+  const name = faker.person.firstName();
+  const description = faker.person.jobTitle();
+  const context = ['context_identifier_1'];
+  const state = faker.helpers.arrayElement([
     EXPERIMENT_STATE.CANCELLED,
     EXPERIMENT_STATE.PREVIEW,
     EXPERIMENT_STATE.ENROLLING,
@@ -22,16 +23,16 @@ define(Experiment, (faker: typeof Faker) => {
   ]);
   const startOn = state === EXPERIMENT_STATE.SCHEDULED ? faker.date.future() : undefined;
 
-  const consistencyRule = faker.random.arrayElement([
+  const consistencyRule = faker.helpers.arrayElement([
     CONSISTENCY_RULE.INDIVIDUAL,
     CONSISTENCY_RULE.GROUP,
     CONSISTENCY_RULE.EXPERIMENT,
   ]);
   const assignmentUnit =
     consistencyRule === CONSISTENCY_RULE.GROUP
-      ? faker.random.arrayElement([ASSIGNMENT_UNIT.INDIVIDUAL])
-      : faker.random.arrayElement([ASSIGNMENT_UNIT.GROUP, ASSIGNMENT_UNIT.INDIVIDUAL]);
-  const postExperimentRule = faker.random.arrayElement([POST_EXPERIMENT_RULE.CONTINUE, POST_EXPERIMENT_RULE.ASSIGN]);
+      ? faker.helpers.arrayElement([ASSIGNMENT_UNIT.INDIVIDUAL])
+      : faker.helpers.arrayElement([ASSIGNMENT_UNIT.GROUP, ASSIGNMENT_UNIT.INDIVIDUAL]);
+  const postExperimentRule = faker.helpers.arrayElement([POST_EXPERIMENT_RULE.CONTINUE, POST_EXPERIMENT_RULE.ASSIGN]);
   let enrollmentCompleteCondition: Partial<IEnrollmentCompleteCondition>;
   let endOn: Date;
   if (Math.random() < 0.5) {
@@ -39,23 +40,23 @@ define(Experiment, (faker: typeof Faker) => {
       if (assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
         if (Math.random() < 0.5) {
           enrollmentCompleteCondition = {
-            userCount: faker.random.number(5),
-            groupCount: faker.random.number(3),
+            userCount: faker.number.int({ max: 5 }),
+            groupCount: faker.number.int({ max: 3 }),
           };
         } else {
           if (Math.random() < 0.5) {
             enrollmentCompleteCondition = {
-              userCount: faker.random.number(5),
+              userCount: faker.number.int({ max: 5 }),
             };
           } else {
             enrollmentCompleteCondition = {
-              groupCount: faker.random.number(3),
+              groupCount: faker.number.int({ max: 3 }),
             };
           }
         }
       } else {
         enrollmentCompleteCondition = {
-          userCount: faker.random.number(5),
+          userCount: faker.number.int({ max: 5 }),
         };
       }
     } else {
@@ -64,16 +65,19 @@ define(Experiment, (faker: typeof Faker) => {
   }
 
   const tags = [];
-  for (let i = 0; i < faker.random.number(10); i++) {
-    tags.push(faker.name.firstName());
+  for (let i = 0; i < faker.number.int({ max: 10 }); i++) {
+    tags.push(faker.person.firstName());
   }
-  const group = ASSIGNMENT_UNIT.GROUP ? faker.random.arrayElement(['class', 'teacher', 'school']) : undefined;
+  const group =
+    assignmentUnit === ASSIGNMENT_UNIT.GROUP ? faker.helpers.arrayElement(['class', 'teacher', 'school']) : undefined;
 
   const experiment = new Experiment();
   experiment.id = crypto.randomUUID();
   experiment.name = name;
+  experiment.context = context;
   experiment.description = description;
   experiment.state = state;
+  experiment.backendVersion = '6.6.0';
   if (startOn) {
     experiment.startOn = startOn;
   }

@@ -610,7 +610,7 @@ export class ExperimentService {
   ): Promise<void> {
     const experimentRepo = entityManager ? entityManager.getRepository(Experiment) : this.experimentRepository;
     logger.info({ message: `Updating experiment schedules for experiment ${experimentId}` });
-    const experiment = await experimentRepo.findByIds([experimentId]);
+    const experiment = await experimentRepo.findBy({ id: experimentId });
     if (experiment.length > 0) {
       await this.experimentSchedulerService.updateExperimentSchedules(experiment[0], logger, entityManager);
     }
@@ -618,7 +618,9 @@ export class ExperimentService {
 
   private async getValidMoniteredDecisionPoints(excludeIfReachedDecisionPoints) {
     return await this.monitoredDecisionPointRepository.find({
-      relations: ['user'],
+      relations: {
+        user: true,
+      },
       where: {
         site: In(excludeIfReachedDecisionPoints.map((x) => x.site)),
         target: In(excludeIfReachedDecisionPoints.map((x) => x.target)),
@@ -634,7 +636,9 @@ export class ExperimentService {
     // query all sub-experiment
     const experiment: Experiment = await this.experimentRepository.findOne({
       where: { id: experimentId },
-      relations: ['partitions'],
+      relations: {
+        partitions: true,
+      },
     });
 
     const { consistencyRule, group } = experiment;
@@ -667,7 +671,7 @@ export class ExperimentService {
       return;
     }
 
-    const userDetails = await this.userRepository.findByIds([...uniqueUserIds]);
+    const userDetails = await this.userRepository.findBy({ id: In([...uniqueUserIds]) });
     // populate Individual and Group Exclusion Table
     if (consistencyRule === CONSISTENCY_RULE.GROUP) {
       const workingGroups = userDetails
@@ -1438,7 +1442,10 @@ export class ExperimentService {
       });
 
       const conditionPayloadDocToReturn = await transactionalEntityManager.getRepository(ConditionPayload).find({
-        relations: ['parentCondition', 'decisionPoint'],
+        relations: {
+          parentCondition: true,
+          decisionPoint: true,
+        },
         where: { id: In(conditionPayloadDoc.map((conditionPayload) => conditionPayload.id)) },
       });
 
@@ -1783,14 +1790,23 @@ export class ExperimentService {
   }
   private paginatedSearchString(params: IExperimentSearchParams): string {
     const type = params.key;
-    // escape % and ' characters
-    const searchString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    const searchString = params.string.replace(/'/g, "''");
+    const likeSearchString = searchString.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
     if (type === EXPERIMENT_SEARCH_KEY.ID && !isUUID(searchString)) {
       return '';
     }
 
-    const likeString = `ILIKE '%${searchString}%'`;
+    const likeString = `ILIKE '%${likeSearchString}%' ESCAPE '\\'`;
     const searchArray: string[] = [];
+    const decisionPointDisplaySearch =
+      `(CASE WHEN COALESCE(partitions.target, '') = '' THEN partitions.site ` +
+      `ELSE CONCAT(partitions.site, ' (', partitions.target, ')') END) ${likeString}`;
+    const addDecisionPointSearch = () => {
+      searchArray.push(`partitions.site ${likeString}`);
+      searchArray.push(`partitions.target ${likeString}`);
+      searchArray.push(decisionPointDisplaySearch);
+    };
+
     switch (type) {
       case EXPERIMENT_SEARCH_KEY.NAME:
         searchArray.push(`${type} ${likeString}`);
@@ -1808,16 +1824,14 @@ export class ExperimentService {
         searchArray.push(`experiment.id = '${searchString}'`);
         break;
       case EXPERIMENT_SEARCH_KEY.DECISION_POINT:
-        searchArray.push(`partitions.site ${likeString}`);
-        searchArray.push(`partitions.target ${likeString}`);
+        addDecisionPointSearch();
         break;
       default:
         searchArray.push(`name ${likeString}`);
         searchArray.push(`state::TEXT = '${this.mapStatusStrings(searchString)}'`);
         searchArray.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
         searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
-        searchArray.push(`partitions.site ${likeString}`);
-        searchArray.push(`partitions.target ${likeString}`);
+        addDecisionPointSearch();
         if (isUUID(searchString)) {
           searchArray.push(`experiment.id = '${searchString}'`);
         }
@@ -2113,12 +2127,18 @@ export class ExperimentService {
           if (filterType === LIST_FILTER_MODE.INCLUSION) {
             existingRecord = await this.experimentSegmentInclusionRepository.findOne({
               where: { experiment: { id: experimentId }, segment: { id: listInput.id } },
-              relations: ['experiment', 'segment'],
+              relations: {
+                experiment: true,
+                segment: true,
+              },
             });
           } else {
             existingRecord = await this.experimentSegmentExclusionRepository.findOne({
               where: { experiment: { id: experimentId }, segment: { id: listInput.id } },
-              relations: ['experiment', 'segment'],
+              relations: {
+                experiment: true,
+                segment: true,
+              },
             });
           }
 

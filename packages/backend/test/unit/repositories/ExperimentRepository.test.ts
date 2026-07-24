@@ -40,7 +40,7 @@ beforeEach(() => {
 
   manager = {
     createQueryBuilder: repo.createQueryBuilder,
-    connection: dataSource,
+    dataSource,
   };
 });
 
@@ -396,15 +396,15 @@ describe('ExperimentRepository Testing', () => {
     ];
 
     repo.query = jest.fn().mockResolvedValue({});
-    manager.connection.entityMetadatas = entities;
-    manager.connection.getRepository = jest.fn().mockReturnValue(repo);
+    manager.dataSource.entityMetadatas = entities;
+    manager.dataSource.getRepository = jest.fn().mockReturnValue(repo);
 
     jest.spyOn(globalExcludeSegment, 'createGlobalExcludeSegment').mockResolvedValue(Promise.resolve());
 
     const res = await repo.clearDB(manager, new UpgradeLogger());
 
-    expect(manager.connection.getRepository).toHaveBeenCalledTimes(1);
-    expect(manager.connection.getRepository).toHaveBeenCalledWith('Experiment');
+    expect(manager.dataSource.getRepository).toHaveBeenCalledTimes(1);
+    expect(manager.dataSource.getRepository).toHaveBeenCalledWith('Experiment');
 
     expect(repo.query).toHaveBeenCalledTimes(1);
     expect(repo.query).toHaveBeenCalledWith('TRUNCATE Experiment CASCADE;');
@@ -523,8 +523,8 @@ describe('ExperimentRepository Testing', () => {
     ];
 
     repo.query = jest.fn().mockRejectedValue(err);
-    manager.connection.entityMetadatas = entities;
-    manager.connection.getRepository = jest.fn().mockReturnValue(repo);
+    manager.dataSource.entityMetadatas = entities;
+    manager.dataSource.getRepository = jest.fn().mockReturnValue(repo);
 
     jest.spyOn(globalExcludeSegment, 'createGlobalExcludeSegment').mockResolvedValue(Promise.resolve());
 
@@ -532,8 +532,8 @@ describe('ExperimentRepository Testing', () => {
       await repo.clearDB(manager, new UpgradeLogger());
     }).rejects.toThrow('test error');
 
-    expect(manager.connection.getRepository).toHaveBeenCalledTimes(1);
-    expect(manager.connection.getRepository).toHaveBeenCalledWith('Experiment');
+    expect(manager.dataSource.getRepository).toHaveBeenCalledTimes(1);
+    expect(manager.dataSource.getRepository).toHaveBeenCalledWith('Experiment');
 
     expect(repo.query).toHaveBeenCalledTimes(1);
     expect(repo.query).toHaveBeenCalledWith('TRUNCATE Experiment CASCADE;');

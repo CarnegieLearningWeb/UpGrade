@@ -861,7 +861,9 @@ export class MoocletExperimentService extends ExperimentService {
       this.moocletDataService.getPolicyParameters(currentMoocletExperimentRef.policyParametersId, logger),
       this.experimentRepository.findOne({
         where: { id: incomingExperiment.id },
-        relations: ['conditions'],
+        relations: {
+          conditions: true,
+        },
       }),
     ]);
 
@@ -1318,7 +1320,11 @@ export class MoocletExperimentService extends ExperimentService {
   ): Promise<MoocletExperimentRef | undefined> {
     const moocletExperimentRef = await this.moocletExperimentRefRepository.findOne({
       where: { experimentId: upgradeExperimentId },
-      relations: ['versionConditionMaps', 'versionConditionMaps.experimentCondition'],
+      relations: {
+        versionConditionMaps: {
+          experimentCondition: true,
+        },
+      },
     });
     return moocletExperimentRef;
   }

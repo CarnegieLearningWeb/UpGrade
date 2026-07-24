@@ -8,13 +8,11 @@ import SegmentServiceMock from './mocks/SegmentServiceMock';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { useContainer as ormUseContainer } from 'typeorm';
 
 describe('Segment Controller Testing', () => {
   beforeAll(() => {
     configureLogger();
     routingUseContainer(Container);
-    ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     // set mock container

@@ -27,12 +27,20 @@ export class CheckService {
   ) {}
 
   public getAllGroupAssignments(): Promise<GroupEnrollment[]> {
-    return this.groupEnrollmentRepository.find({ relations: ['condition'] });
+    return this.groupEnrollmentRepository.find({
+      relations: {
+        condition: true,
+      },
+    });
   }
 
   public getAllIndividualAssignment(): Promise<IndividualEnrollment[]> {
     return this.individualEnrollmentRepository.find({
-      relations: ['experiment', 'user', 'condition'],
+      relations: {
+        experiment: true,
+        user: true,
+        condition: true,
+      },
     });
   }
 
@@ -45,6 +53,11 @@ export class CheckService {
   }
 
   public getAllMarkedExperimentPoints(): Promise<MonitoredDecisionPoint[]> {
-    return this.monitoredExperimentPointRepository.find({ relations: ['user', 'monitoredPointLogs'] });
+    return this.monitoredExperimentPointRepository.find({
+      relations: {
+        user: true,
+        monitoredPointLogs: true,
+      },
+    });
   }
 }

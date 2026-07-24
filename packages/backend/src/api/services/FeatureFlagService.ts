@@ -1,6 +1,8 @@
 import { Service } from 'typedi';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { Segment } from '../models/Segment';
+import { IndividualForSegment } from '../models/IndividualForSegment';
+import { GroupForSegment } from '../models/GroupForSegment';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { FeatureFlagPrecomputedSegment } from '../models/FeatureFlagPrecomputedSegment';
@@ -60,6 +62,7 @@ import { EntitySegmentResolutionInput } from '../../types';
 import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import dayjs from 'dayjs';
 import { getDateRangeNames } from '../repositories/utils/dateQuery';
+import { FeatureFlagExposure } from '../models/FeatureFlagExposure';
 
 @Service()
 export class FeatureFlagService {
@@ -182,16 +185,53 @@ export class FeatureFlagService {
       .createQueryBuilder('feature_flag')
       .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
       .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
-      .loadRelationCountAndMap('segmentInclusion.individualForSegmentCount', 'segmentInclusion.individualForSegment')
-      .loadRelationCountAndMap('segmentInclusion.groupForSegmentCount', 'segmentInclusion.groupForSegment')
       .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
       .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
       .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
-      .loadRelationCountAndMap('segmentExclusion.individualForSegmentCount', 'segmentExclusion.individualForSegment')
-      .loadRelationCountAndMap('segmentExclusion.groupForSegmentCount', 'segmentExclusion.groupForSegment')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .where({ id })
       .getOne();
+
+    if (!featureFlag) {
+      return undefined;
+    }
+
+    // loadRelationCountAndMap was removed in TypeORM 1.0; fetch member counts with two batch queries.
+    const segments = [
+      ...(featureFlag.featureFlagSegmentInclusion ?? []).map((r) => r.segment),
+      ...(featureFlag.featureFlagSegmentExclusion ?? []).map((r) => r.segment),
+    ].filter(Boolean);
+
+    if (segments.length > 0) {
+      const segmentIds = segments.map((s) => s.id);
+
+      const [individualCounts, groupCounts] = await Promise.all([
+        this.dataSource
+          .createQueryBuilder()
+          .select('ifs.segmentId', 'segmentId')
+          .addSelect('COUNT(*)', 'count')
+          .from(IndividualForSegment, 'ifs')
+          .where('ifs.segmentId IN (:...segmentIds)', { segmentIds })
+          .groupBy('ifs.segmentId')
+          .getRawMany<{ segmentId: string; count: string }>(),
+        this.dataSource
+          .createQueryBuilder()
+          .select('gfs.segmentId', 'segmentId')
+          .addSelect('COUNT(*)', 'count')
+          .from(GroupForSegment, 'gfs')
+          .where('gfs.segmentId IN (:...segmentIds)', { segmentIds })
+          .groupBy('gfs.segmentId')
+          .getRawMany<{ segmentId: string; count: string }>(),
+      ]);
+
+      const individualCountMap = new Map(individualCounts.map((r) => [r.segmentId, Number.parseInt(r.count, 10)]));
+      const groupCountMap = new Map(groupCounts.map((r) => [r.segmentId, Number.parseInt(r.count, 10)]));
+
+      segments.forEach((segment) => {
+        segment.individualForSegmentCount = individualCountMap.get(segment.id) ?? 0;
+        segment.groupForSegmentCount = groupCountMap.get(segment.id) ?? 0;
+      });
+    }
 
     return featureFlag;
   }
@@ -238,13 +278,16 @@ export class FeatureFlagService {
     const countQueryBuilder = queryBuilder.clone();
 
     queryBuilder = queryBuilder.offset(skip).limit(take);
-
-    // TODO: the type of queryBuilder.getMany() is Promise<FeatureFlag[]>
-    // However, the above query returns Promise<(Omit<FeatureFlag, 'featureFlagExposures'> & { featureFlagExposures: number })[]>
-    // This can be fixed by using a @VirtualColumn in the FeatureFlag entity, when we are on TypeORM 0.3
     const [featureFlagsWithExposures, count] = await Promise.all([
       queryBuilder
-        .loadRelationCountAndMap('feature_flag.featureFlagExposures', 'feature_flag.featureFlagExposures')
+        .addSelect(
+          (subQuery) =>
+            subQuery
+              .select('COUNT(*)', 'count')
+              .from(FeatureFlagExposure, 'feature_flag_exposure')
+              .where('"feature_flag_exposure"."featureFlagId" = "feature_flag"."id"'),
+          'feature_flag_exposureCount'
+        )
         .getMany(),
       countQueryBuilder.getCount(),
     ]);
@@ -254,9 +297,14 @@ export class FeatureFlagService {
 
     // Get the relevant segment inclusion documents
     const featureFlagWithInclusionSegments = await this.featureFlagRepository.find({
-      select: ['id', 'featureFlagSegmentInclusion'],
+      select: {
+        id: true,
+        featureFlagSegmentInclusion: true,
+      },
       where: { id: In(featureFlagIds) },
-      relations: ['featureFlagSegmentInclusion'],
+      relations: {
+        featureFlagSegmentInclusion: true,
+      },
     });
 
     // Add the inclusion documents to the featureFlagsWithExposures
@@ -581,12 +629,18 @@ export class FeatureFlagService {
       if (filterType === LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
           where: { segment: { id: segmentId } },
-          relations: ['featureFlag', 'segment'],
+          relations: {
+            featureFlag: true,
+            segment: true,
+          },
         });
       } else {
         existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
           where: { segment: { id: segmentId } },
-          relations: ['featureFlag', 'segment'],
+          relations: {
+            featureFlag: true,
+            segment: true,
+          },
         });
       }
 
@@ -651,9 +705,9 @@ export class FeatureFlagService {
         throw error;
       }
 
-      const featureFlags = await manager
-        .getRepository(FeatureFlag)
-        .findByIds(listsInput.map((listInput) => listInput.id));
+      const featureFlags = await manager.getRepository(FeatureFlag).findBy({
+        id: In(listsInput.map((listInput) => listInput.id)),
+      });
 
       const featureFlagSegmentInclusionOrExclusionArray = listsInput.map((listInput) => {
         const featureFlagSegmentInclusionOrExclusion =
@@ -776,12 +830,18 @@ export class FeatureFlagService {
       if (filterType === LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
           where: { featureFlag: { id: listInput.id }, segment: { id: listInput.segment.id } },
-          relations: ['featureFlag', 'segment'],
+          relations: {
+            featureFlag: true,
+            segment: true,
+          },
         });
       } else {
         existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
           where: { featureFlag: { id: listInput.id }, segment: { id: listInput.segment.id } },
-          relations: ['featureFlag', 'segment'],
+          relations: {
+            featureFlag: true,
+            segment: true,
+          },
         });
       }
 
@@ -902,12 +962,12 @@ export class FeatureFlagService {
     if (filterType === LIST_FILTER_MODE.INCLUSION) {
       existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
         where: { segment: { id: segmentId } },
-        relations: ['featureFlag', 'segment'],
+        relations: { featureFlag: true, segment: true },
       });
     } else {
       existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
         where: { segment: { id: segmentId } },
-        relations: ['featureFlag', 'segment'],
+        relations: { featureFlag: true, segment: true },
       });
     }
 
