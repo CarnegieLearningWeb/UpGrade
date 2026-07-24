@@ -73,6 +73,10 @@ import { RequestedExperimentUser } from '../controllers/validators/ExperimentUse
 import { In } from 'typeorm';
 import { env } from '../../env';
 import { MoocletExperimentService } from './MoocletExperimentService';
+import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegmentService';
+import { ExperimentPrecomputedSegment } from '../models/ExperimentPrecomputedSegment';
+import { precomputedGroupKey } from './precomputedSegmentHelpers';
+import { EntitySegmentMembers, EntitySegmentResolutionInput, SegmentGroupMember } from '../../types';
 
 export interface FactorialConditionResult {
   factorialCondition: Omit<ExperimentCondition, 'levelCombinationElements' | 'conditionPayloads'>;
@@ -124,7 +128,8 @@ export class ExperimentAssignmentService {
     public segmentService: SegmentService,
     public experimentService: ExperimentService,
     public cacheService: CacheService,
-    public moocletExperimentService: MoocletExperimentService
+    public moocletExperimentService: MoocletExperimentService,
+    public experimentPrecomputedSegmentService: ExperimentPrecomputedSegmentService
   ) {}
 
   private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
@@ -229,7 +234,7 @@ export class ExperimentAssignmentService {
     }
 
     // 3. Check for experiment level inclusion and exclusion
-    const [, exclusionReason] = await this.experimentLevelExclusionInclusion(experiments, userDoc);
+    const [, exclusionReason] = await this.experimentLevelExclusionInclusion(experiments, userDoc, logger);
 
     // find monitored document
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
@@ -378,7 +383,11 @@ export class ExperimentAssignmentService {
       }
 
       // Check for experiment level inclusion and exclusion and return valid inclusion experiments
-      let [filteredExperiments] = await this.experimentLevelExclusionInclusion(validExperiments, experimentUserDoc);
+      let [filteredExperiments] = await this.experimentLevelExclusionInclusion(
+        validExperiments,
+        experimentUserDoc,
+        logger
+      );
 
       // 5. Process experiment pools on filtered experiments
       filteredExperiments = this.processExperimentPools(
@@ -492,7 +501,11 @@ export class ExperimentAssignmentService {
         await this.getAssignmentsAndExclusionsForUsers(filteredUsers, experimentIds);
 
       // Check for experiment level inclusion and exclusion and return valid inclusion experiments for each user
-      const experimentsForUser = await this.experimentLevelExclusionInclusionForUsers(experiments, filteredUsers);
+      const experimentsForUser = await this.experimentLevelExclusionInclusionForUsers(
+        experiments,
+        filteredUsers,
+        logger
+      );
       // Select a single experiment for each user based on enrollments and pooling logic
       const assignedExperimentsForUsers = experimentsForUser.reduce((acc, experimentForUser, index) => {
         const exps = this.processExperimentPools(
@@ -2116,8 +2129,11 @@ export class ExperimentAssignmentService {
     }, Promise.resolve(resolveData));
   }
 
-  private async getSegmentObject(experiments: Experiment[], experimentUsers: ExperimentUser[]): Promise<any> {
-    const segmentObj: Record<string, any> = {};
+  private async getSegmentObject(
+    experiments: Experiment[],
+    experimentUsers: ExperimentUser[]
+  ): Promise<EntitySegmentResolutionInput> {
+    const segmentObj: EntitySegmentResolutionInput = {};
 
     // Creates a segment object for all experiments and users
     const experimentIdsForIndividualConsistency = experiments
@@ -2155,10 +2171,10 @@ export class ExperimentAssignmentService {
   }
 
   public async resolveSegmentsForEntities(
-    segmentObj: Record<string, any>
-  ): Promise<[Record<string, any>, Record<string, any>]> {
-    const includeData: Record<string, any> = {};
-    const excludeData: Record<string, any> = {};
+    segmentObj: EntitySegmentResolutionInput
+  ): Promise<[EntitySegmentMembers, EntitySegmentMembers]> {
+    const includeData: EntitySegmentMembers = {};
+    const excludeData: EntitySegmentMembers = {};
 
     await Promise.all(
       Object.keys(segmentObj).map(async (expId) => {
@@ -2173,8 +2189,8 @@ export class ExperimentAssignmentService {
   private async getIncludedAndExcludedExperiments(
     experiments: Experiment[],
     experimentUser: ExperimentUser,
-    includeData: Record<string, any>,
-    excludeData: Record<string, any>,
+    includeData: EntitySegmentMembers,
+    excludeData: EntitySegmentMembers,
     experimentIdsWithFilter: { id: string; filterMode: FILTER_MODE }[]
   ): Promise<[Experiment[], { experiment: Experiment; reason: string; matchedGroup: boolean }[]]> {
     let includedExperiments: Experiment[] = [];
@@ -2202,10 +2218,20 @@ export class ExperimentAssignmentService {
 
   private async experimentLevelExclusionInclusion(
     experiments: Experiment[],
-    experimentUser: ExperimentUser
+    experimentUser: ExperimentUser,
+    logger: UpgradeLogger
   ): Promise<[Experiment[], { experiment: Experiment; reason: string; matchedGroup: boolean }[]]> {
     const segmentObj = await this.getSegmentObject(experiments, [experimentUser]);
-    const [includeData, excludeData] = await this.resolveSegmentsForEntities(segmentObj);
+    const expIds = Object.keys(segmentObj);
+    const { precomputedMap, fallbackIncludeData, fallbackExcludeData } =
+      await this.fetchExperimentPrecomputedWithFallback(segmentObj, logger);
+    const [includeData, excludeData] = this.buildExperimentIncludeExcludeData(
+      expIds,
+      experimentUser,
+      precomputedMap,
+      fallbackIncludeData,
+      fallbackExcludeData
+    );
     const experimentIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = experiments.map(
       ({ id, filterMode, group }) => ({ id, filterMode, group })
     );
@@ -2221,15 +2247,27 @@ export class ExperimentAssignmentService {
 
   private async experimentLevelExclusionInclusionForUsers(
     experiments: Experiment[],
-    experimentUsers: ExperimentUser[]
+    experimentUsers: ExperimentUser[],
+    logger: UpgradeLogger
   ): Promise<{ userId: string; experiments: Experiment[] }[]> {
     const segmentObj = await this.getSegmentObject(experiments, experimentUsers);
-    const [includeData, excludeData] = await this.resolveSegmentsForEntities(segmentObj);
+    const expIds = Object.keys(segmentObj);
+    // The precomputed rows (and any on-the-fly fallback) are user-independent, so fetch once and
+    // build each user's include/exclude view from them.
+    const { precomputedMap, fallbackIncludeData, fallbackExcludeData } =
+      await this.fetchExperimentPrecomputedWithFallback(segmentObj, logger);
     const experimentIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = experiments.map(
       ({ id, filterMode, group }) => ({ id, filterMode, group })
     );
     return await Promise.all(
       experimentUsers.map(async (experimentUser) => {
+        const [includeData, excludeData] = this.buildExperimentIncludeExcludeData(
+          expIds,
+          experimentUser,
+          precomputedMap,
+          fallbackIncludeData,
+          fallbackExcludeData
+        );
         const [includedExperiments] = await this.getIncludedAndExcludedExperiments(
           experiments,
           experimentUser,
@@ -2245,9 +2283,100 @@ export class ExperimentAssignmentService {
     );
   }
 
+  /**
+   * Read the precomputed experiment segment rows for the experiments in `segmentObj`. Mirrors the
+   * feature-flag read path: a read failure (e.g. the table hasn't been migrated yet) is swallowed and
+   * treated as "every row missing", and any experiment without a precomputed row falls back to
+   * on-the-fly recursive segment resolution so a missing row never silently produces a wrong decision.
+   * The fallback data is user-independent (full member lists), matching `resolveSegment`'s output.
+   */
+  private async fetchExperimentPrecomputedWithFallback(
+    segmentObj: EntitySegmentResolutionInput,
+    logger: UpgradeLogger
+  ): Promise<{
+    precomputedMap: Map<string, ExperimentPrecomputedSegment>;
+    fallbackIncludeData: EntitySegmentMembers;
+    fallbackExcludeData: EntitySegmentMembers;
+  }> {
+    const expIds = Object.keys(segmentObj);
+
+    let precomputedMap: Map<string, ExperimentPrecomputedSegment>;
+    try {
+      precomputedMap = await this.experimentPrecomputedSegmentService.getPrecomputedSets(expIds);
+    } catch (err) {
+      logger.error({
+        message: `experimentLevelExclusionInclusion: failed to read experiment_precomputed_segment; falling back to on-the-fly resolution for all experiments: ${err}`,
+      });
+      precomputedMap = new Map();
+    }
+
+    const missingExpIds = expIds.filter((id) => !precomputedMap.has(id));
+    let fallbackIncludeData: EntitySegmentMembers = {};
+    let fallbackExcludeData: EntitySegmentMembers = {};
+    if (missingExpIds.length) {
+      logger.warn({
+        message: `experimentLevelExclusionInclusion: ${missingExpIds.length} experiment(s) missing an experiment_precomputed_segment row; resolving on-the-fly`,
+        details: { missingExpIds },
+      });
+      const missingSegmentObj: EntitySegmentResolutionInput = {};
+      missingExpIds.forEach((id) => (missingSegmentObj[id] = segmentObj[id]));
+      [fallbackIncludeData, fallbackExcludeData] = await this.resolveSegmentsForEntities(missingSegmentObj);
+    }
+
+    return { precomputedMap, fallbackIncludeData, fallbackExcludeData };
+  }
+
+  /**
+   * Build the `{ users, groups }`-shaped include/exclude data that `inclusionExclusionLogic` consumes,
+   * for a single user, from the precomputed flat arrays. Because `inclusionExclusionLogic` only ever
+   * matches against this user's own id and groups, we include only the user's own matches — the flat
+   * arrays store individuals bare and groups namespaced via `precomputedGroupKey`. Experiments without
+   * a precomputed row use the user-independent on-the-fly fallback data instead.
+   */
+  private buildExperimentIncludeExcludeData(
+    expIds: string[],
+    experimentUser: ExperimentUser,
+    precomputedMap: Map<string, ExperimentPrecomputedSegment>,
+    fallbackIncludeData: EntitySegmentMembers,
+    fallbackExcludeData: EntitySegmentMembers
+  ): [EntitySegmentMembers, EntitySegmentMembers] {
+    const includeData: EntitySegmentMembers = {};
+    const excludeData: EntitySegmentMembers = {};
+
+    const userGroups: SegmentGroupMember[] = [];
+    if (experimentUser.group) {
+      Object.keys(experimentUser.group).forEach((type) => {
+        experimentUser.group[type].forEach((groupId) => userGroups.push({ type, groupId }));
+      });
+    }
+
+    for (const expId of expIds) {
+      const row = precomputedMap.get(expId);
+      if (!row) {
+        if (fallbackIncludeData[expId]) includeData[expId] = fallbackIncludeData[expId];
+        if (fallbackExcludeData[expId]) excludeData[expId] = fallbackExcludeData[expId];
+        continue;
+      }
+
+      const inclusionSet = new Set(row.inclusionIds);
+      const exclusionSet = new Set(row.exclusionIds);
+
+      includeData[expId] = {
+        users: inclusionSet.has(experimentUser.id) ? [experimentUser.id] : [],
+        groups: userGroups.filter((g) => inclusionSet.has(precomputedGroupKey(g.type, g.groupId))),
+      };
+      excludeData[expId] = {
+        users: exclusionSet.has(experimentUser.id) ? [experimentUser.id] : [],
+        groups: userGroups.filter((g) => exclusionSet.has(precomputedGroupKey(g.type, g.groupId))),
+      };
+    }
+
+    return [includeData, excludeData];
+  }
+
   public async inclusionExclusionLogic(
-    includeData: Record<string, any>,
-    excludeData: Record<string, any>,
+    includeData: EntitySegmentMembers,
+    excludeData: EntitySegmentMembers,
     experimentUser: ExperimentUser,
     entityIds: { id: string; filterMode: FILTER_MODE; group?: string }[] // can be experimentIds or FeatureFlagsIds
   ): Promise<[string[], { id: string; reason: string; matchedGroup?: boolean }[]]> {

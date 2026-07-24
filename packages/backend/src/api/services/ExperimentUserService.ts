@@ -13,6 +13,7 @@ import { Experiment } from '../models/Experiment';
 import isEqual from 'lodash/isEqual';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 import { env } from '../../env';
+import { createGlobalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 
 @Service()
 export class ExperimentUserService {
@@ -361,6 +362,11 @@ export class ExperimentUserService {
     await this.dataSource.transaction(async (transactionalEntityManager) => {
       await this.experimentRepository.clearDB(transactionalEntityManager, logger);
     });
+
+    // Recreate the global exclude segment after the truncate commits. This lives here rather than in
+    // ExperimentRepository.clearDB so the repository need not import the seed module (which would form
+    // a module-load cycle through SegmentService -> ExperimentPrecomputedSegmentService -> ExperimentRepository).
+    await createGlobalExcludeSegment(logger);
 
     return 'DB truncate successful';
   }

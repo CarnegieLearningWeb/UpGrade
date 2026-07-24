@@ -13,6 +13,7 @@ import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/reposito
 import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/FeatureFlagPrecomputedSegmentService';
+import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import {
   ListInputValidator,
   SegmentFile,
@@ -211,6 +212,17 @@ describe('Segment Service Testing', () => {
               await resolveAffectedFlagIds();
               return work();
             }),
+          },
+        },
+        {
+          provide: ExperimentPrecomputedSegmentService,
+          useValue: {
+            scheduleRecomputeForSegment: jest.fn(),
+            scheduleRecomputeForExperiments: jest.fn(),
+            recomputeForExperiment: jest.fn().mockResolvedValue(undefined),
+            getAffectedExperimentIds: jest.fn().mockResolvedValue([]),
+            seedEmptyRowForExperiment: jest.fn().mockResolvedValue(undefined),
+            getPrecomputedSets: jest.fn().mockResolvedValue(new Map()),
           },
         },
         {

@@ -56,6 +56,7 @@ import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
 import { FeatureFlagPrecomputedSegmentService, precomputedGroupKey } from './FeatureFlagPrecomputedSegmentService';
+import { EntitySegmentResolutionInput } from '../../types';
 import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import dayjs from 'dayjs';
 import { getDateRangeNames } from '../repositories/utils/dateQuery';
@@ -1118,7 +1119,7 @@ export class FeatureFlagService {
     const getEnabledSegmentIds = (list: (FeatureFlagSegmentExclusion | FeatureFlagSegmentInclusion)[]) =>
       (list ?? []).filter((item) => item.enabled).map((item) => item.segment.id);
 
-    const segmentObjMap: Record<string, any> = {};
+    const segmentObjMap: EntitySegmentResolutionInput = {};
     fullFlags.forEach((flag) => {
       const excludeIds = getEnabledSegmentIds(flag.featureFlagSegmentExclusion);
       // INCLUDE_ALL flags ignore inclusion segments (matches the precomputed-path semantics)

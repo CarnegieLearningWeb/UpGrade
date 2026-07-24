@@ -35,6 +35,7 @@ import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
 import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
+import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import { factorialGroupExperiment, factorialIndividualExperiment } from '../mockdata/raw';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
@@ -71,6 +72,10 @@ describe('Experiment Assignment Service Test', () => {
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
   const cacheServiceMock = sinon.createStubInstance(CacheService);
   const moocletExperimentServiceMock = sinon.createStubInstance(MoocletExperimentService);
+  const experimentPrecomputedSegmentServiceMock = sinon.createStubInstance(ExperimentPrecomputedSegmentService);
+  // Default to "no precomputed rows" so the assignment read path exercises the on-the-fly fallback
+  // (recursive segment resolution) these tests were written against.
+  experimentPrecomputedSegmentServiceMock.getPrecomputedSets.resolves(new Map());
   experimentServiceMock.formattingConditionPayload.restore();
   experimentServiceMock.formattingPayload.restore();
 
@@ -81,7 +86,7 @@ describe('Experiment Assignment Service Test', () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
 
-    loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
+    loggerMock = { info: sandbox.stub(), error: sandbox.stub(), warn: sandbox.stub() };
     decisionPointRepositoryMock = { find: sandbox.stub().resolves([]) };
     individualExclusionRepositoryMock = {
       findExcluded: sandbox.stub().resolves([]),
@@ -129,7 +134,8 @@ describe('Experiment Assignment Service Test', () => {
       segmentServiceMock,
       experimentServiceMock,
       cacheServiceMock,
-      moocletExperimentServiceMock
+      moocletExperimentServiceMock,
+      experimentPrecomputedSegmentServiceMock
     );
 
     testedModule.cacheService.wrap.resolves([]);
@@ -700,7 +706,11 @@ describe('Experiment Assignment Service Test', () => {
     const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc);
     expect(exclusionResult).toEqual([false, false]);
 
-    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
+    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion(
+      [exp],
+      userDoc,
+      loggerMock
+    );
     expect(exclusionReason).toEqual([]);
     expect(includedExperiment).toEqual([exp]);
   });
@@ -708,7 +718,11 @@ describe('Experiment Assignment Service Test', () => {
   it('[experimentLevelExclusionInclusion] should return an exclusion reason if a user or userGroup is on exclusion list', async () => {
     const userDoc = { id: 'user2', group: { teacher: ['teacher1'] }, workingGroup: {} };
     const exp = structuredClone(simpleIndividualAssignmentExperiment);
-    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
+    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion(
+      [exp],
+      userDoc,
+      loggerMock
+    );
     expect(exclusionReason.length).toEqual(1);
     expect(exclusionReason[0].matchedGroup).toEqual(true);
     expect(exclusionReason[0].reason).toEqual('group');
@@ -1486,7 +1500,8 @@ describe('Experiment Assignment Service Test', () => {
 
     const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion(
       [simpleIndividualAssignmentExperiment],
-      userDoc
+      userDoc,
+      loggerMock
     );
     expect(exclusionReason).toEqual([]);
     expect(includedExperiment).toEqual([simpleIndividualAssignmentExperiment]);

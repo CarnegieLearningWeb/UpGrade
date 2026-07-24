@@ -26,6 +26,7 @@ import { StratificationFactorRepository } from '../../../src/api/repositories/St
 import { MoocletExperimentRefRepository } from '../../../src/api/repositories/MoocletExperimentRefRepository';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
+import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import { ExperimentSchedulerService } from '../../../src/api/services/ExperimentSchedulerService';
 import { ErrorService } from '../../../src/api/services/ErrorService';
 import { CacheService } from '../../../src/api/services/CacheService';
@@ -431,6 +432,17 @@ describe('ExperimentService Testing', () => {
         {
           provide: MetricService,
           useValue: {},
+        },
+        {
+          provide: ExperimentPrecomputedSegmentService,
+          useValue: {
+            recomputeForExperiment: jest.fn().mockResolvedValue(undefined),
+            scheduleRecomputeForExperiments: jest.fn(),
+            scheduleRecomputeForSegment: jest.fn(),
+            getAffectedExperimentIds: jest.fn().mockResolvedValue([]),
+            getPrecomputedSets: jest.fn().mockResolvedValue(new Map()),
+            withRecompute: jest.fn(async (_logger: any, _resolve: any, work: any) => work()),
+          },
         },
         {
           provide: MoocletRewardsService,

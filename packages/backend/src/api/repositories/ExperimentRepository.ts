@@ -4,7 +4,6 @@ import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
-import { createGlobalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 import { ExperimentDetailsForCSVData } from './AnalyticsRepository';
 import { StateTimeLog } from '../models/StateTimeLogs';
 import { ConditionPayload } from '../models/ConditionPayload';
@@ -437,8 +436,11 @@ export class ExperimentRepository extends Repository<Experiment> {
           await repository.query(`TRUNCATE ${entity.tableName} CASCADE;`);
         }
       }
-      // Create global exclude segment
-      await createGlobalExcludeSegment(logger);
+      // The global exclude segment is recreated by the caller (ExperimentUserService.clearDB) after
+      // this truncate commits. It is intentionally NOT done here: a repository must not import the
+      // seed module, which would create a module-load cycle
+      // (globalExcludeSegment -> SegmentService -> ExperimentPrecomputedSegmentService -> ExperimentRepository)
+      // that leaves ExperimentRepository half-initialized and degrades reflected DI param types to `Object`.
       return;
     } catch (err) {
       const error = err;
