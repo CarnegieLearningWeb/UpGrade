@@ -5000,7 +5000,7 @@ ansi-to-html@^0.7.2:
   dependencies:
     entities "^2.2.0"
 
-ansis@^4.2.0:
+ansis@^4.3.1:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/ansis/-/ansis-4.3.1.tgz#2815c1ef490adaf0d612ae3a699e90cbcf70a917"
   integrity sha512-BJ8/l4R5LRE7hW9WdSuGYrLSHi2ynxeFpDFbH0K/CgNeY/tyhk+vO6TYxXC5r5CpUhNVX310xzPsN/H9lCdfOA==
@@ -6753,7 +6753,7 @@ dateformat@^3.0.0:
   resolved "https://registry.yarnpkg.com/dateformat/-/dateformat-3.0.3.tgz#a6e37499a4d9a9cf85ef5872044d62901c9889ae"
   integrity sha512-jyCETtSl3VMZMWeRo7iY1FL19ges1t55hMo5yaam4Jrsm5EPL89UQkoQRyiI+Yf4k8r2ZpdngkV8hr1lIdjb3Q==
 
-dayjs@^1.11.2, dayjs@^1.11.20, dayjs@^1.11.7:
+dayjs@^1.11.2, dayjs@^1.11.21, dayjs@^1.11.7:
   version "1.11.21"
   resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.21.tgz#57f87562e62de76f3c704bd2b8d522fc33068eb2"
   integrity sha512-98IT+HOahAisibz/yjKbzuOBwYcjJ7BCLPzARyHiyEBmRz4fatF+KPJszEHXsGYjUG234aH/cOjW1wwTbKUZlA==
@@ -13917,7 +13917,7 @@ tinyglobby@0.2.14:
     fdir "^6.4.4"
     picomatch "^4.0.2"
 
-tinyglobby@^0.2.12, tinyglobby@^0.2.15, tinyglobby@^0.2.16:
+tinyglobby@^0.2.12, tinyglobby@^0.2.15, tinyglobby@^0.2.17:
   version "0.2.17"
   resolved "https://registry.yarnpkg.com/tinyglobby/-/tinyglobby-0.2.17.tgz#562a9a6c9eb2b3b123d39719f9af5bb44fcd7631"
   integrity sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==
@@ -14259,19 +14259,19 @@ typeorm-extension@^3.9.0:
     smob "^1.5.0"
     yargs "^18.0.0"
 
-typeorm@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/typeorm/-/typeorm-1.0.0.tgz#d7a1602f46d2eab253f1973d8f9e42a66d423c5d"
-  integrity sha512-2mSKNqucP8vo+xQLP59xlHUcqLvG6qajxA7q7tnhJgeZjTrA6lK/Ar7LRyiAxdXhyXmGbIPsArPmcUB9Xg+M7w==
+typeorm@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/typeorm/-/typeorm-1.1.0.tgz#cdd218532c9096e502e9ec0aa2b355ce09bcc171"
+  integrity sha512-iX/kvsV42/htCNAQUyElGW87E4Z12neZc6YUFBTEu0BnLiREYDNT5Wfw3wRqZw9vyOEC36zUBAY6Qvywoig06Q==
   dependencies:
     "@sqltools/formatter" "^1.2.5"
-    ansis "^4.2.0"
-    dayjs "^1.11.20"
+    ansis "^4.3.1"
+    dayjs "^1.11.21"
     debug "^4.4.3"
     dedent "^1.7.2"
     reflect-metadata "^0.2.2"
     sql-highlight "^6.1.0"
-    tinyglobby "^0.2.16"
+    tinyglobby "^0.2.17"
     tslib "^2.8.1"
     yargs "^18.0.0"
 
