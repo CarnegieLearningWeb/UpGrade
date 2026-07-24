@@ -220,6 +220,42 @@ class TestGetAllExperimentConditions:
         assert route.call_count == 2
 
     @respx.mock
+    async def test_site_scoped_fetch_sends_default_target(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=[]))
+        await make_client().get_all_experiment_conditions(site="home")
+        body = json.loads(route.calls[0].request.content)
+        assert body["site"] == "home"
+        assert body["target"] == ""
+
+    @respx.mock
+    async def test_site_scoped_fetch_merges_into_warm_cache(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(
+            side_effect=[
+                Response(200, json=ASSIGNMENT_PAYLOAD),
+                Response(200, json=FACTORIAL_PAYLOAD),
+            ]
+        )
+        client = make_client()
+
+        await client.get_all_experiment_conditions()
+        results = await client.get_all_experiment_conditions(site="quiz", target="hint")
+
+        assert route.call_count == 2
+        assert len(results) == 2
+        assert client._data_service.get_assignment("home", "banner") is not None
+        assert client._data_service.get_assignment("quiz", "hint") is not None
+
+    @respx.mock
+    async def test_site_scoped_fetch_uses_cached_decision_point(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        client = make_client()
+
+        await client.get_all_experiment_conditions(site="home", target="banner")
+        await client.get_all_experiment_conditions(site="home", target="banner")
+
+        assert route.call_count == 1
+
+    @respx.mock
     async def test_returns_assignment_objects(self) -> None:
         respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
         from upgrade_client_lib.assignment import Assignment
@@ -266,6 +302,26 @@ class TestGetDecisionPointAssignment:
         assert client._data_service.get_all_assignments() is None
         await client.get_decision_point_assignment("home", "banner")
         assert route.call_count == 1
+
+    @respx.mock
+    async def test_fetches_only_requested_decision_point_when_warm_cache_misses(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(
+            side_effect=[
+                Response(200, json=ASSIGNMENT_PAYLOAD),
+                Response(200, json=FACTORIAL_PAYLOAD),
+            ]
+        )
+        client = make_client()
+
+        await client.get_all_experiment_conditions()
+        result = await client.get_decision_point_assignment("quiz", "hint")
+
+        second_body = json.loads(route.calls[1].request.content)
+        assert result is not None
+        assert route.call_count == 2
+        assert second_body["site"] == "quiz"
+        assert second_body["target"] == "hint"
+        assert client._data_service.get_assignment("home", "banner") is not None
 
     @respx.mock
     async def test_uses_cache_on_second_call(self) -> None:

@@ -108,6 +108,35 @@ class TestAssignmentCache:
         assert result is not None
         assert result.assignedCondition[0].conditionCode == "treatment"
 
+    def test_upsert_replaces_matching_assignment_without_dropping_others(self) -> None:
+        ds = DataService()
+        ds.set_assignments([
+            make_assignment("home", "banner"),
+            make_assignment("checkout", "cta"),
+        ])
+        ds.upsert_assignments(
+            [
+                make_assignment(
+                    "home",
+                    "banner",
+                    conditions=[AssignedCondition(id="cond-new", conditionCode="treatment")],
+                )
+            ]
+        )
+
+        home = ds.get_assignment("home", "banner")
+        checkout = ds.get_assignment("checkout", "cta")
+        assert home is not None
+        assert home.assignedCondition[0].conditionCode == "treatment"
+        assert checkout is not None
+
+    def test_upsert_warms_cold_cache(self) -> None:
+        ds = DataService()
+        ds.upsert_assignments([make_assignment("quiz", "hint")])
+        result = ds.get_assignment("quiz", "hint")
+        assert result is not None
+        assert result.site == "quiz"
+
 
 # ---------------------------------------------------------------------------
 # Feature-flag cache — set / get / has

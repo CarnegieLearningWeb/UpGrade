@@ -39,9 +39,21 @@ class DataService:
     # Assignments
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _assignment_key(site: str, target: str) -> str:
+        return f"{site}|{target}"
+
     def set_assignments(self, assignments: list[ExperimentAssignment]) -> None:
         """Populate the assignment cache from a fresh API response."""
-        self._assignments = {f"{a.site}|{a.target or ''}": a for a in assignments}
+        self._assignments = {self._assignment_key(a.site, a.target or ""): a for a in assignments}
+
+    def upsert_assignments(self, assignments: list[ExperimentAssignment]) -> None:
+        """Merge fresh assignment rows into the cache without dropping other decision points."""
+        if self._assignments is None:
+            self._assignments = {}
+        for assignment in assignments:
+            self._assignments[self._assignment_key(assignment.site, assignment.target or "")] = assignment
+
     def get_all_assignments(self) -> list[ExperimentAssignment] | None:
         """Return all cached assignments, or ``None`` if the cache is cold."""
         if self._assignments is None:
@@ -52,7 +64,7 @@ class DataService:
         """Return the cached assignment for ``site``/``target``, or ``None``."""
         if self._assignments is None:
             return None
-        return self._assignments.get(f"{site}|{target}")
+        return self._assignments.get(self._assignment_key(site, target))
 
     def rotate_assignment(self, assignment: ExperimentAssignment) -> ExperimentAssignment:
         """Round-robin advance the condition (and factor) lists.

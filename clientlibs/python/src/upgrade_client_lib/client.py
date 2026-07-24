@@ -140,25 +140,50 @@ class UpgradeClient:
     # ------------------------------------------------------------------
 
     async def get_all_experiment_conditions(
-        self, ignore_cache: bool = False
+        self,
+        ignore_cache: bool = False,
+        site: str | None = None,
+        target: str | None = None,
     ) -> list[Assignment]:
         """Return all experiment assignments for this user and context.
 
-        Results are cached after the first fetch.  Pass ``ignore_cache=True``
+        Results are cached after the first fetch. Pass ``ignore_cache=True``
         to force a fresh fetch and update the cache.
+
+        When ``site`` is provided, the request is scoped to that decision
+        point. Decision-point fetches are merged into the in-memory cache and
+        do not replace assignments for other decision points.
         """
-        cached = None if ignore_cache else self._data_service.get_all_assignments()
-        if cached is None:
-            fresh = await self._api_service.get_all_experiment_conditions()
+        normalized_target = "" if site is not None and target is None else target
+        cached = self._data_service.get_all_assignments()
+
+        if not ignore_cache and cached is not None:
+            if site is None:
+                return [Assignment(a, self._api_service) for a in cached]
+
+            cached_assignment = self._data_service.get_assignment(site, normalized_target or "")
+            if cached_assignment is not None:
+                return [Assignment(a, self._api_service) for a in cached]
+
+        fresh = await self._api_service.get_all_experiment_conditions(site=site, target=normalized_target)
+        if site is None:
             self._data_service.set_assignments(fresh)
-            cached = fresh
+        else:
+            self._data_service.upsert_assignments(fresh)
+
+        cached = self._data_service.get_all_assignments() or []
         return [Assignment(a, self._api_service) for a in cached]
 
     def get_all_experiment_conditions_sync(
-        self, ignore_cache: bool = False
+        self,
+        ignore_cache: bool = False,
+        site: str | None = None,
+        target: str | None = None,
     ) -> list[Assignment]:
         """Synchronous variant of :meth:`get_all_experiment_conditions`."""
-        return asyncio.run(self.get_all_experiment_conditions(ignore_cache=ignore_cache))
+        return asyncio.run(
+            self.get_all_experiment_conditions(ignore_cache=ignore_cache, site=site, target=target)
+        )
 
     # ------------------------------------------------------------------
     # get_decision_point_assignment
@@ -169,11 +194,10 @@ class UpgradeClient:
     ) -> Assignment | None:
         """Return the :class:`Assignment` for a specific decision point.
 
-        Fetches all experiment conditions first if the cache is cold.
+        Fetches the requested decision point if it is not already cached.
         Returns ``None`` when no experiment is running at this decision point.
         """
-        if self._data_service.get_all_assignments() is None:
-            await self.get_all_experiment_conditions()
+        await self.get_all_experiment_conditions(site=site, target=target)
         raw = self._data_service.get_assignment(site, target)
         if raw is None:
             return None

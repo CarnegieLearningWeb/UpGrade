@@ -113,6 +113,11 @@ class TestAssignRequest:
         assert req.userId == "user-1"
         assert req.context == "my-app"
 
+    def test_valid_with_decision_point(self) -> None:
+        req = AssignRequest(userId="user-1", context="my-app", site="home", target="")
+        assert req.site == "home"
+        assert req.target == ""
+
 
 class TestMarkDecisionPointRequest:
     def test_valid_minimal(self) -> None:

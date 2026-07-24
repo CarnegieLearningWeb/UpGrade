@@ -196,6 +196,16 @@ class TestGetAllExperimentConditions:
         assert body["userId"] == USER_ID
 
     @respx.mock
+    async def test_sends_site_and_default_target_for_decision_point_fetch(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=[]))
+        await make_service().get_all_experiment_conditions(site="home")
+        import json
+
+        body = json.loads(route.calls[0].request.content)
+        assert body["site"] == "home"
+        assert body["target"] == ""
+
+    @respx.mock
     async def test_empty_response(self) -> None:
         respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=[]))
         results = await make_service().get_all_experiment_conditions()

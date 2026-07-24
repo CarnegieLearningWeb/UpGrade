@@ -152,12 +152,24 @@ class ApiService:
     # get_all_experiment_conditions  POST /api/v6/assign
     # ------------------------------------------------------------------
 
-    async def get_all_experiment_conditions(self) -> list[ExperimentAssignment]:
-        data = await self._post_async("assign", {"context": self._context, "userId": self._user_id})
+    async def get_all_experiment_conditions(
+        self, site: str | None = None, target: str | None = None
+    ) -> list[ExperimentAssignment]:
+        body: dict[str, Any] = {"context": self._context, "userId": self._user_id}
+        if site is not None:
+            body["site"] = site
+            body["target"] = target if target is not None else ""
+        data = await self._post_async("assign", body)
         return [ExperimentAssignment.model_validate(item) for item in data]
 
-    def get_all_experiment_conditions_sync(self) -> list[ExperimentAssignment]:
-        data = self._post_sync("assign", {"context": self._context, "userId": self._user_id})
+    def get_all_experiment_conditions_sync(
+        self, site: str | None = None, target: str | None = None
+    ) -> list[ExperimentAssignment]:
+        body: dict[str, Any] = {"context": self._context, "userId": self._user_id}
+        if site is not None:
+            body["site"] = site
+            body["target"] = target if target is not None else ""
+        data = self._post_sync("assign", body)
         return [ExperimentAssignment.model_validate(item) for item in data]
 
     # ------------------------------------------------------------------

@@ -28,6 +28,8 @@ class SetWorkingGroupRequest(BaseModel):
 class AssignRequest(BaseModel):
     userId: str
     context: str
+    site: str | None = None
+    target: str | None = None
 
 
 class MarkDecisionPointCondition(BaseModel):
