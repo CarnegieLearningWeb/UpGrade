@@ -278,7 +278,7 @@ export class ExperimentService {
 
   public async getCachedValidExperiments(context: string, site: string, target: string): Promise<Experiment[]> {
     const cacheKey = CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context;
-    const fetchByDecisionPoint = !!site;
+    const fetchByDecisionPoint = site !== undefined;
     return this.cacheService
       .wrap(
         cacheKey,
