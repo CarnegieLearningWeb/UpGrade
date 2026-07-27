@@ -9,6 +9,10 @@ import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService
 import { MetricService } from '../../../src/api/services/MetricService';
 import { ClientLibMiddleware } from '../../../src/api/middlewares/ClientLibMiddleware';
 import { UserCheckMiddleware } from '../../../src/api/middlewares/UserCheckMiddleware';
+import { useContainer as classValidatorUseContainer } from 'class-validator';
+import { validate } from 'class-validator';
+import { ExperimentClientController } from '../../../src/api/controllers/ExperimentClientController.v6';
+import { ExperimentAssignmentValidatorv6 } from '../../../src/api/controllers/validators/ExperimentAssignmentValidator';
 import ExperimentServiceMock from './mocks/ExperimentServiceMock';
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
 import ExperimentUserServiceMock from './mocks/ExperimentUserServiceMock';
@@ -17,20 +21,42 @@ import MetricServiceMock from './mocks/MetricServiceMock';
 import ClientLibMiddlewareMock from './mocks/ClientLibMiddlewareMock';
 import MockuserCheckMiddleware from './mocks/UserCheckMiddlewareMock';
 
-import { useContainer as classValidatorUseContainer } from 'class-validator';
-
 describe('Experiment Client Controller Testing', () => {
+  const experimentServiceMock = new ExperimentServiceMock();
+  const experimentAssignmentServiceMock = new ExperimentAssignmentServiceMock();
+  const experimentUserServiceMock = new ExperimentUserServiceMock();
+  const featureFlagServiceMock = new FeatureFlagServiceMock();
+  const metricServiceMock = new MetricServiceMock();
+  const clientLibMiddlewareMock = new ClientLibMiddlewareMock();
+  const userCheckMiddlewareMock = new MockuserCheckMiddleware();
+  const controller = new ExperimentClientController(
+    experimentServiceMock as any,
+    experimentAssignmentServiceMock as any,
+    experimentUserServiceMock as any,
+    featureFlagServiceMock as any,
+    metricServiceMock as any,
+    {} as any
+  );
+  const mockRequest = {
+    logger: {
+      info: jest.fn(),
+    },
+    userDoc: {
+      id: 'u21',
+    },
+  } as any;
+
   beforeAll(() => {
     routingUseContainer(Container);
     classValidatorUseContainer(Container);
 
-    Container.set(ExperimentService, new ExperimentServiceMock());
-    Container.set(ExperimentAssignmentService, new ExperimentAssignmentServiceMock());
-    Container.set(ExperimentUserService, new ExperimentUserServiceMock());
-    Container.set(FeatureFlagService, new FeatureFlagServiceMock());
-    Container.set(MetricService, new MetricServiceMock());
-    Container.set(ClientLibMiddleware, new ClientLibMiddlewareMock());
-    Container.set(UserCheckMiddleware, new MockuserCheckMiddleware());
+    Container.set(ExperimentService, experimentServiceMock);
+    Container.set(ExperimentAssignmentService, experimentAssignmentServiceMock);
+    Container.set(ExperimentUserService, experimentUserServiceMock);
+    Container.set(FeatureFlagService, featureFlagServiceMock);
+    Container.set(MetricService, metricServiceMock);
+    Container.set(ClientLibMiddleware, clientLibMiddlewareMock);
+    Container.set(UserCheckMiddleware, userCheckMiddlewareMock);
   });
 
   afterAll(() => {
@@ -58,8 +84,8 @@ describe('Experiment Client Controller Testing', () => {
     ],
   };
 
-  test('Post request for /api/v5/init', () => {
-    return request(app)
+  test('Post request for /api/v5/init', async () => {
+    const response = await request(app)
       .post('/api/v5/init')
       .send({
         id: '123',
@@ -67,10 +93,12 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
+
+    expect(response.status).toBe(200);
   });
 
-  test('Post request for /api/v5/groupmembership', () => {
-    return request(app)
+  test('Post request for /api/v5/groupmembership', async () => {
+    const response = await request(app)
       .patch('/api/v5/groupmembership')
       .send({
         id: 'u21',
@@ -81,10 +109,12 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
+
+    expect(response.status).toBe(200);
   });
 
-  test('Post request for /api/v5/workinggroup', () => {
-    return request(app)
+  test('Post request for /api/v5/workinggroup', async () => {
+    const response = await request(app)
       .patch('/api/v5/workinggroup')
       .send({
         id: 'u21',
@@ -97,10 +127,12 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
+
+    expect(response.status).toBe(200);
   });
 
-  test('Post request for /api/v5/mark', () => {
-    return request(app)
+  test('Post request for /api/v5/mark', async () => {
+    const response = await request(app)
       .post('/api/v5/mark')
       .send({
         userId: 'u21',
@@ -116,10 +148,12 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
+
+    expect(response.status).toBe(200);
   });
 
-  test('Post request for /api/v5/mark with null target', () => {
-    return request(app)
+  test('Post request for /api/v5/mark with null target', async () => {
+    const response = await request(app)
       .post('/api/v5/mark')
       .send({
         userId: 'u21',
@@ -135,10 +169,12 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
+
+    expect(response.status).toBe(200);
   });
 
-  test('Post request for /api/v5/mark with missing target', () => {
-    return request(app)
+  test('Post request for /api/v5/mark with missing target', async () => {
+    const response = await request(app)
       .post('/api/v5/mark')
       .send({
         userId: 'u21',
@@ -153,10 +189,12 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
+
+    expect(response.status).toBe(200);
   });
 
-  test('Post request for /api/v5/assign', () => {
-    return request(app)
+  test('Post request for /api/v5/assign', async () => {
+    const response = await request(app)
       .post('/api/v5/assign')
       .send({
         userId: 'u21',
@@ -165,19 +203,23 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
+
+    expect(response.status).toBe(200);
   });
 
-  test('Post request for /api/v5/log', () => {
-    return request(app)
+  test('Post request for /api/v5/log', async () => {
+    const response = await request(app)
       .post('/api/v5/log')
       .send(logData)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
+
+    expect(response.status).toBe(200);
   });
 
-  test('Post request for /api/v5/useraliases', () => {
-    return request(app)
+  test('Post request for /api/v5/useraliases', async () => {
+    const response = await request(app)
       .patch('/api/v5/useraliases')
       .send({
         userId: 'u21',
@@ -186,5 +228,57 @@ describe('Experiment Client Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
+
+    expect(response.status).toBe(200);
+  });
+
+  describe('Post request for /api/v6/assign', () => {
+    test('rejects target without site', async () => {
+      const validator = Object.assign(new ExperimentAssignmentValidatorv6(), {
+        context: 'abc',
+        target: 'W1',
+      });
+
+      const errors = await validate(validator);
+
+      expect(errors.some((error) => error.property === 'target')).toBe(true);
+    });
+
+    test('rejects null target without site', async () => {
+      const validator = Object.assign(new ExperimentAssignmentValidatorv6(), {
+        context: 'abc',
+        target: null,
+      });
+
+      const errors = await validate(validator);
+
+      expect(errors.some((error) => error.property === 'target')).toBe(true);
+    });
+
+    test('normalizes missing target to an empty string when site is provided', async () => {
+      const getAllExperimentConditionsSpy = jest
+        .spyOn(experimentAssignmentServiceMock as any, 'getAllExperimentConditions')
+        .mockResolvedValue([]);
+
+      const response = await controller.getAllExperimentConditions(
+        mockRequest,
+        Object.assign(new ExperimentAssignmentValidatorv6(), {
+          context: 'abc',
+          site: 'CurriculumSequence',
+        })
+      );
+
+      expect(response).toEqual([]);
+      expect(getAllExperimentConditionsSpy).toHaveBeenCalledTimes(1);
+      expect(getAllExperimentConditionsSpy).toHaveBeenCalledWith(
+        mockRequest.userDoc,
+        'abc',
+        'CurriculumSequence',
+        '',
+        mockRequest.logger
+      );
+
+      getAllExperimentConditionsSpy.mockRestore();
+    });
   });
 });
