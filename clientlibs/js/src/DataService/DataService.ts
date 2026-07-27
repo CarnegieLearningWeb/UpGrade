@@ -35,12 +35,17 @@ export class DataService {
   }
 
   upsertExperimentAssignmentData(experimentAssignmentData: IExperimentAssignmentv5[]) {
-    if (!Array.isArray(experimentAssignmentData) || experimentAssignmentData.length === 0) {
+    if (!Array.isArray(experimentAssignmentData)) {
       return;
     }
 
     if (!Array.isArray(this.experimentAssignmentData)) {
+      // Warm the cache even if this is an empty response.
       this.experimentAssignmentData = [...experimentAssignmentData];
+      return;
+    }
+
+    if (experimentAssignmentData.length === 0) {
       return;
     }
 
