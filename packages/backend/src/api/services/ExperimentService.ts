@@ -1899,6 +1899,10 @@ export class ExperimentService {
     return EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[status] || status;
   }
 
+  // Note: a list whose type can't be determined is dropped from the returned array, so it does
+  // not surface on the details page at all. Only genuinely ambiguous pre-redesign data (mixed
+  // members, or empty) is affected — every list created through the UI carries a listType, and
+  // SegmentListTypeBackfill1785182337410 populated the classifiable legacy rows.
   private inferListTypesForExperimentListForExperimentRedesignDataChange(
     list: ExperimentSegmentExclusion[] | ExperimentSegmentInclusion[]
   ): ExperimentSegmentExclusion[] | ExperimentSegmentInclusion[] {
@@ -1916,26 +1920,25 @@ export class ExperimentService {
     if (segment.listType) {
       return segment.listType;
     }
-    if (
-      segment.individualForSegment?.length > 0 &&
-      segment.groupForSegment?.length === 0 &&
-      segment.subSegments?.length === 0
-    ) {
+
+    // A counts-only load leaves the member arrays undefined and maps row counts instead, so read
+    // whichever of the two this segment carries.
+    const individualCount = segment.individualForSegment?.length ?? segment.individualForSegmentCount ?? 0;
+    const groupCount = segment.groupForSegment?.length ?? segment.groupForSegmentCount ?? 0;
+    const subSegmentCount = segment.subSegments?.length ?? 0;
+
+    if (individualCount > 0 && groupCount === 0 && subSegmentCount === 0) {
       return 'individual';
     }
-    if (
-      segment.individualForSegment?.length === 0 &&
-      segment.groupForSegment?.length > 0 &&
-      segment.subSegments?.length === 0
-    ) {
-      const groupType = segment.groupForSegment[0].type;
-      if (segment.groupForSegment.every((val) => val.type !== 'All' && val.type === groupType)) return groupType;
+    if (individualCount === 0 && groupCount > 0 && subSegmentCount === 0) {
+      // The group type lives on the member rows, so this branch can only resolve from a full
+      // load. Counts-only callers depend on listType already being set.
+      const groupType = segment.groupForSegment?.[0]?.type;
+      if (groupType && segment.groupForSegment.every((val) => val.type !== 'All' && val.type === groupType)) {
+        return groupType;
+      }
     }
-    if (
-      segment.individualForSegment?.length === 0 &&
-      segment.groupForSegment?.length === 0 &&
-      segment.subSegments?.length > 0
-    ) {
+    if (individualCount === 0 && groupCount === 0 && subSegmentCount > 0) {
       return 'segment';
     }
     return null;

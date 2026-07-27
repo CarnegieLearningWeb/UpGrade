@@ -985,6 +985,93 @@ describe('ExperimentService Testing', () => {
     });
   });
 
+  describe('findOne() list type inference', () => {
+    // Returns the inclusion lists findOne() produced for an experiment holding a single list
+    // built from `segment`, so each case can assert on the inferred listType (or on the list
+    // being dropped).
+    const inclusionsFor = async (segment: Partial<Segment>) => {
+      experimentRepo.findOneExperiment = jest.fn().mockResolvedValue({
+        ...mockExperiment,
+        experimentSegmentInclusion: [{ segment: { id: 'segment-1', name: 'list', ...segment } }],
+        experimentSegmentExclusion: [],
+      });
+
+      const experiment = await service.findOne(mockExperiment.id, logger);
+      return experiment.experimentSegmentInclusion;
+    };
+
+    it('should keep a listType that is already set without looking at members', async () => {
+      const inclusions = await inclusionsFor({ listType: 'individual' });
+
+      expect(inclusions).toHaveLength(1);
+      expect(inclusions[0].segment.listType).toEqual('individual');
+    });
+
+    it('should infer individual from loaded members', async () => {
+      const inclusions = await inclusionsFor({
+        individualForSegment: [{ userId: 'user-1' }] as any,
+        groupForSegment: [],
+        subSegments: [],
+      });
+
+      expect(inclusions[0].segment.listType).toEqual('individual');
+    });
+
+    // The reason the details page can load member counts instead of member rows.
+    it('should infer individual from mapped counts when the member arrays were not loaded', async () => {
+      const inclusions = await inclusionsFor({
+        individualForSegmentCount: 20000,
+        groupForSegmentCount: 0,
+        subSegments: [],
+      });
+
+      expect(inclusions).toHaveLength(1);
+      expect(inclusions[0].segment.listType).toEqual('individual');
+    });
+
+    it('should infer segment from sub-segments when the member arrays were not loaded', async () => {
+      const inclusions = await inclusionsFor({
+        individualForSegmentCount: 0,
+        groupForSegmentCount: 0,
+        subSegments: [{ id: 'segment-2' }] as any,
+      });
+
+      expect(inclusions[0].segment.listType).toEqual('segment');
+    });
+
+    it('should infer the group type from loaded members', async () => {
+      const inclusions = await inclusionsFor({
+        individualForSegment: [],
+        groupForSegment: [{ groupId: 'school-1', type: 'schoolId' }] as any,
+        subSegments: [],
+      });
+
+      expect(inclusions[0].segment.listType).toEqual('schoolId');
+    });
+
+    // The group type only exists on the member rows, so a counts-only load cannot recover it.
+    // Such lists depend on SegmentListTypeBackfill1785182337410 having set listType.
+    it('should drop a group list that has neither a listType nor loaded members', async () => {
+      const inclusions = await inclusionsFor({
+        individualForSegmentCount: 0,
+        groupForSegmentCount: 5,
+        subSegments: [],
+      });
+
+      expect(inclusions).toEqual([]);
+    });
+
+    it('should drop an ambiguous legacy list holding more than one member kind', async () => {
+      const inclusions = await inclusionsFor({
+        individualForSegment: [{ userId: 'user-1' }] as any,
+        groupForSegment: [{ groupId: 'school-1', type: 'schoolId' }] as any,
+        subSegments: [],
+      });
+
+      expect(inclusions).toEqual([]);
+    });
+  });
+
   describe('paginatedSearchString()', () => {
     const getSearchClause = (key: EXPERIMENT_SEARCH_KEY, searchString: string): string =>
       service['paginatedSearchString']({ key, string: searchString });
