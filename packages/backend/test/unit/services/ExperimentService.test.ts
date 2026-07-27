@@ -46,6 +46,7 @@ import {
   ASSIGNMENT_UNIT,
   POST_EXPERIMENT_RULE,
   FILTER_MODE,
+  LIST_FILTER_MODE,
   LOG_TYPE,
   PAYLOAD_TYPE,
   IMetricMetaData,
@@ -912,6 +913,49 @@ describe('ExperimentService Testing', () => {
         experimentSegmentInclusion: [],
         experimentSegmentExclusion: [],
       } as any);
+
+    it('awaits exclusion-list attachment before returning, even with no inclusion lists, under a caller-owned transaction', async () => {
+      // Regression: the only `await Promise.all(addListPromises)` used to sit inside the inclusion-list
+      // branch, so an exclusion-only experiment created within a caller-owned transaction
+      // (existingEntityManager, e.g. MoocletExperimentService) returned with its addList insert still in
+      // flight — racing the caller's commit. create() must now await it unconditionally.
+      let resolveAddList: () => void;
+      const addListPending = new Promise<any>((res) => {
+        resolveAddList = () => res({});
+      });
+      jest.spyOn(service, 'addList').mockReturnValue(addListPending);
+
+      const dto = {
+        ...baseCreateDTO(),
+        experimentSegmentInclusion: [],
+        experimentSegmentExclusion: [{ segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } }],
+      } as any;
+
+      let resolved = false;
+      const createPromise = service
+        .create(dto, mockUser, logger, { existingEntityManager: dataSource.manager })
+        .then((r) => {
+          resolved = true;
+          return r;
+        });
+
+      // Flush pending macrotasks; create() must still be pending on the exclusion addList.
+      await new Promise((r) => setImmediate(r));
+      expect(service.addList).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        LIST_FILTER_MODE.EXCLUSION,
+        mockUser,
+        logger,
+        dataSource.manager
+      );
+      expect(resolved).toBe(false);
+
+      // Once the exclusion insert settles, create() resolves.
+      resolveAddList();
+      await createPromise;
+      expect(resolved).toBe(true);
+    });
 
     it('should assign order to queries starting from 1 on create', async () => {
       const q1 = { ...mockQuery, id: 'q1', name: 'query-1', metric: { key: 'test-metric' } };

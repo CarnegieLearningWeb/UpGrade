@@ -343,8 +343,14 @@ export class ExperimentService {
           )
         )
       );
-      await Promise.all(addListPromises);
     }
+
+    // Await EVERY attached list (inclusion AND exclusion) before returning. This must be
+    // unconditional: when a caller owns the transaction (existingEntityManager) these inserts run on
+    // that transaction, so create() must not return with them still in flight or they would race the
+    // caller's commit — and an exclusion-only experiment must still be awaited even though the
+    // inclusion branch above was skipped.
+    await Promise.all(addListPromises);
 
     // Populate the experiment_precomputed_segment row from the just-attached lists. When an
     // existingEntityManager was provided the caller owns the (still-open) transaction, so it — not
@@ -352,7 +358,6 @@ export class ExperimentService {
     // read uncommitted writes. recomputeForExperiment yields empty arrays when the experiment has no
     // lists, so this also seeds list-less experiments (no separate empty-seed needed).
     if (!existingEntityManager) {
-      await Promise.all(addListPromises);
       await this.experimentPrecomputedSegmentService.recomputeForExperiment(createdExperiment.id, logger);
     }
 
