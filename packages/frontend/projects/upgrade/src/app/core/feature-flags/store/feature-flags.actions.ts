@@ -200,6 +200,21 @@ export const actionUpdateFeatureFlagInclusionListFailure = createAction(
   props<{ error: any }>()
 );
 
+export const actionUpdateFeatureFlagInclusionListStatus = createAction(
+  '[Feature Flags] Update Feature Flag Inclusion List Status',
+  props<{ segmentId: string; enabled: boolean }>()
+);
+
+export const actionUpdateFeatureFlagInclusionListStatusSuccess = createAction(
+  '[Feature Flags] Update Feature Flag Inclusion List Status Success',
+  props<{ segmentId: string; enabled: boolean }>()
+);
+
+export const actionUpdateFeatureFlagInclusionListStatusFailure = createAction(
+  '[Feature Flags] Update Feature Flag Inclusion List Status Failure',
+  props<{ error: any }>()
+);
+
 export const actionDeleteFeatureFlagInclusionList = createAction(
   '[Feature Flags] Delete Feature Flag Inclusion List',
   props<{ segmentId: string }>()
@@ -242,6 +257,21 @@ export const actionUpdateFeatureFlagExclusionListSuccess = createAction(
 
 export const actionUpdateFeatureFlagExclusionListFailure = createAction(
   '[Feature Flags] Update Feature Flag Exclusion List Failure',
+  props<{ error: any }>()
+);
+
+export const actionUpdateFeatureFlagExclusionListStatus = createAction(
+  '[Feature Flags] Update Feature Flag Exclusion List Status',
+  props<{ segmentId: string; enabled: boolean }>()
+);
+
+export const actionUpdateFeatureFlagExclusionListStatusSuccess = createAction(
+  '[Feature Flags] Update Feature Flag Exclusion List Status Success',
+  props<{ segmentId: string; enabled: boolean }>()
+);
+
+export const actionUpdateFeatureFlagExclusionListStatusFailure = createAction(
+  '[Feature Flags] Update Feature Flag Exclusion List Status Failure',
   props<{ error: any }>()
 );
 
