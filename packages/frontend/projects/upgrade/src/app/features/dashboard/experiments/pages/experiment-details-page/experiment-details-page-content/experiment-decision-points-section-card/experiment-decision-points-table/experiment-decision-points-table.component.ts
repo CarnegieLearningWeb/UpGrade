@@ -85,7 +85,7 @@ export class ExperimentDecisionPointsTableComponent {
 
   getUsedByCountText(decisionPoint: ExperimentDecisionPoint): string {
     const count = decisionPoint.usedByCount;
-    if (count === undefined || count === null) {
+    if (typeof count !== 'number') {
       return '';
     }
 
