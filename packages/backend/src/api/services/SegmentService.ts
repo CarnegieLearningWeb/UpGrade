@@ -972,7 +972,7 @@ export class SegmentService {
     segment.id = segment.id || crypto.randomUUID();
     const { id, name, description, context, type, listType, tags } = segment;
 
-    let subSegmentData: any[] = [];
+    let subSegmentData: Array<Pick<Segment, 'id'>> = [];
 
     // For non-list segments with subSegmentIds, just verify they exist without loading full relations
     if (type === SEGMENT_TYPE.PUBLIC && segment.subSegments?.some((sub) => sub.type === SEGMENT_TYPE.PRIVATE)) {
