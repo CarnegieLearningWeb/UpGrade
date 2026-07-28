@@ -202,7 +202,7 @@ describe('Experiment Assignment Service Test', () => {
       { id: '77777777-7777-7777-7777-777777777777', subSegments: [], individualForSegment: [], groupForSegment: [] },
     ]);
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, null, null, loggerMock);
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, undefined, loggerMock);
     expect(result).toEqual([]);
     sinon.assert.calledWith(loggerMock.info, {
       message: `getAllExperimentConditions: User: ${userDoc.requestedUserId}`,
@@ -223,7 +223,7 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
     testedModule.experimentUserService = experimentUserServiceMock;
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, null, null, loggerMock);
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, undefined, loggerMock);
     const cond = { ...exp.conditions[0], experimentId: exp.id, payload: undefined };
     expect(result.length).toEqual(1);
     expect(result[0].site).toEqual(exp.partitions[0].site);
@@ -256,7 +256,7 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp1, exp2]);
     testedModule.experimentUserService = experimentUserServiceMock;
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, null, null, loggerMock);
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, undefined, loggerMock);
 
     // Both experiments should independently assign — Exp1's pending DP must not create a pool
     // conflict that causes Exp2 to be excluded. Each experiment should produce its own assignment.
@@ -284,7 +284,7 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
     testedModule.experimentUserService = experimentUserServiceMock;
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, null, null, loggerMock);
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, undefined, loggerMock);
 
     // Only the non-pending partition should produce an assignment
     expect(result.length).toEqual(1);
@@ -306,7 +306,7 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
     testedModule.experimentUserService = experimentUserServiceMock;
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, null, null, loggerMock);
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, undefined, loggerMock);
 
     expect(result.length).toEqual(1);
     expect(result[0].site).toEqual(exp.partitions[0].site);
@@ -329,7 +329,7 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.experimentUserService = experimentUserServiceMock;
     testedModule.previewUserService.findOneFromCache = sandbox.stub().resolves({ id: userDoc.id, assignments: [] });
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, null, null, loggerMock);
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, undefined, loggerMock);
 
     // Both DPs should be returned — pendingActivation must not filter them out for preview experiments
     expect(result.length).toEqual(2);
@@ -347,7 +347,7 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
     testedModule.experimentUserService = experimentUserServiceMock;
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, null, null, loggerMock);
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, undefined, loggerMock);
 
     const factor = {
       Color: {
@@ -387,7 +387,7 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.experimentUserService = experimentUserServiceMock;
     testedModule.repeatedEnrollmentRepositoryMock = repeatedEnrollmentRepositoryMock;
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, null, null, loggerMock);
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, undefined, loggerMock);
     const cond = [
       {
         conditionCode: exp.conditions[0].conditionCode,
@@ -435,7 +435,7 @@ describe('Experiment Assignment Service Test', () => {
     testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
     testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, null, null, loggerMock);
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, undefined, loggerMock);
 
     // Both decision points should be returned
     expect(result.length).toEqual(2);
@@ -484,7 +484,7 @@ describe('Experiment Assignment Service Test', () => {
       .resolves([{ payloadFound: conditionPayloadRepositoryMock, factorialObject: factorRepositoryMock }]);
     testedModule.experimentUserService = experimentUserServiceMock;
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, null, null, loggerMock);
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, undefined, loggerMock);
 
     const cond = { ...exp.conditions[0], experimentId: exp.id, payload: undefined };
     expect(result.length).toEqual(1);
@@ -546,7 +546,7 @@ describe('Experiment Assignment Service Test', () => {
       .resolves([{ payloadFound: conditionPayloadRepositoryMock, factorialObject: factorRepositoryMock }]);
     testedModule.experimentUserService = experimentUserServiceMock;
 
-    const result = await testedModule.getAllExperimentConditions(userDoc, context, null, null, loggerMock);
+    const result = await testedModule.getAllExperimentConditions(userDoc, context, undefined, loggerMock);
     expect(result.length).toEqual(1);
     expect(result[0].site).toEqual(exp.partitions[0].site);
     expect(result[0].target).toEqual(exp.partitions[0].target);

@@ -95,7 +95,6 @@ export async function getAllExperimentCondition(
     { ...experimentUserDoc, requestedUserId: userId },
     context,
     null,
-    null,
     logger
   );
 }

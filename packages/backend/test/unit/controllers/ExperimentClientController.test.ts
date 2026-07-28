@@ -12,7 +12,10 @@ import { UserCheckMiddleware } from '../../../src/api/middlewares/UserCheckMiddl
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { validate } from 'class-validator';
 import { ExperimentClientController } from '../../../src/api/controllers/ExperimentClientController.v6';
-import { ExperimentAssignmentValidatorv6 } from '../../../src/api/controllers/validators/ExperimentAssignmentValidator';
+import {
+  ExperimentAssignmentValidatorv6,
+  DecisionPointValidator,
+} from '../../../src/api/controllers/validators/ExperimentAssignmentValidator';
 import ExperimentServiceMock from './mocks/ExperimentServiceMock';
 import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
 import ExperimentUserServiceMock from './mocks/ExperimentUserServiceMock';
@@ -234,25 +237,33 @@ describe('Experiment Client Controller Testing', () => {
 
   describe('Post request for /api/v6/assign', () => {
     test('rejects target without site', async () => {
-      const validator = Object.assign(new ExperimentAssignmentValidatorv6(), {
-        context: 'abc',
+      const decisionPoint = Object.assign(new DecisionPointValidator(), {
         target: 'W1',
       });
 
-      const errors = await validate(validator);
-
-      expect(errors.some((error) => error.property === 'target')).toBe(true);
-    });
-
-    test('rejects null target without site', async () => {
       const validator = Object.assign(new ExperimentAssignmentValidatorv6(), {
         context: 'abc',
-        target: null,
+        decisionPoint,
       });
 
       const errors = await validate(validator);
 
-      expect(errors.some((error) => error.property === 'target')).toBe(true);
+      expect(errors.some((error) => error.property === 'decisionPoint')).toBe(true);
+    });
+
+    test('rejects null target without site', async () => {
+      const decisionPoint = Object.assign(new DecisionPointValidator(), {
+        target: null,
+      });
+
+      const validator = Object.assign(new ExperimentAssignmentValidatorv6(), {
+        context: 'abc',
+        decisionPoint,
+      });
+
+      const errors = await validate(validator);
+
+      expect(errors.some((error) => error.property === 'decisionPoint')).toBe(true);
     });
 
     test('normalizes missing target to an empty string when site is provided', async () => {
@@ -260,11 +271,15 @@ describe('Experiment Client Controller Testing', () => {
         .spyOn(experimentAssignmentServiceMock as any, 'getAllExperimentConditions')
         .mockResolvedValue([]);
 
+      const decisionPoint = Object.assign(new DecisionPointValidator(), {
+        site: 'CurriculumSequence',
+      });
+
       const response = await controller.getAllExperimentConditions(
         mockRequest,
         Object.assign(new ExperimentAssignmentValidatorv6(), {
           context: 'abc',
-          site: 'CurriculumSequence',
+          decisionPoint,
         })
       );
 
@@ -273,8 +288,7 @@ describe('Experiment Client Controller Testing', () => {
       expect(getAllExperimentConditionsSpy).toHaveBeenCalledWith(
         mockRequest.userDoc,
         'abc',
-        'CurriculumSequence',
-        '',
+        decisionPoint,
         mockRequest.logger
       );
 

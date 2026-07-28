@@ -14,7 +14,6 @@ export const UserNotDefined = async () => {
       { ...experimentUserDoc, requestedUserId: experimentUsers[0].id },
       null,
       null,
-      null,
       new UpgradeLogger()
     )
   ).toEqual(Promise.resolve({}));

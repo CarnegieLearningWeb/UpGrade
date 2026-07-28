@@ -331,13 +331,15 @@ export class ExperimentAssignmentService {
   public async getAllExperimentConditions(
     experimentUserDoc: RequestedExperimentUser,
     context: string,
-    site: string,
-    target: string,
+    decisionPoint: { site?: string; target?: string } | undefined,
     logger: UpgradeLogger
   ): Promise<IExperimentAssignmentv5[]> {
     logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
     const userId = experimentUserDoc.id;
     const previewUser = await this.previewUserService.findOneFromCache(userId, logger);
+
+    const site = decisionPoint?.site;
+    const target = decisionPoint?.target ?? (site !== undefined ? '' : undefined);
 
     /** Below are the detailed steps for the assignment process:
      * 1. Fetch experiments based on user type & moving conditionPayloads at the root level

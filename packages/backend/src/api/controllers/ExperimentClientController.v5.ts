@@ -578,8 +578,7 @@ export class ExperimentClientController {
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
       experimentUserDoc,
       experiment.context,
-      experiment.site,
-      experiment.target,
+      experiment.decisionPoint,
       request.logger
     );
 

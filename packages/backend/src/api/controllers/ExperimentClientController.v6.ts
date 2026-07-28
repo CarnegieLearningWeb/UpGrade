@@ -472,10 +472,24 @@ export class ExperimentClientController {
    *            required: true
    *            schema:
    *             type: object
+   *             required:
+   *               - context
    *             properties:
    *               context:
    *                 type: string
    *                 example: add
+   *               decisionPoint:
+   *                 type: object
+   *                 required:
+   *                   - site
+   *                 properties:
+   *                   site:
+   *                     type: string
+   *                     minLength: 1
+   *                     example: homepage
+   *                   target:
+   *                     type: string
+   *                     example: button
    *            description: User Document
    *       tags:
    *         - Client Side SDK
@@ -542,12 +556,10 @@ export class ExperimentClientController {
   ): Promise<IExperimentAssignmentv5[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
     const experimentUserDoc = request.userDoc;
-    const target = experiment.site !== undefined ? experiment.target ?? '' : experiment.target;
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
       experimentUserDoc,
       experiment.context,
-      experiment.site,
-      target,
+      experiment.decisionPoint,
       request.logger
     );
 
