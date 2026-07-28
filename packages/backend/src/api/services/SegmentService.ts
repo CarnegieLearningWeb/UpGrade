@@ -433,7 +433,7 @@ export class SegmentService {
       const createdSegment = await this.upsertSegmentInPipeline(newList, logger, transactionalEntityManager);
       const segmentRepo = transactionalEntityManager.getRepository(Segment);
 
-      // Load only ID to avoid loading full relationships (which causes cascade issues)
+      // Load only the ID (+ tags) and avoid loading relationships (which can trigger cascade issues)
       const parentSegment = await segmentRepo.findOne({
         where: { id: parentSegmentId },
         select: { id: true, tags: true },
