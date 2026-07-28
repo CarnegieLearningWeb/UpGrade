@@ -979,8 +979,9 @@ export class SegmentService {
       // Public segment with embedded private subsegments (lists) - recursively create them
       subSegmentData = await Promise.all(
         segment.subSegments.map(async (subSegment) => {
-          // Create a new segment input object for the list
+          // Create a new segment input object for the list (cloning, not updating)
           const segmentInput = subSegment as unknown as SegmentInputValidator;
+          segmentInput.id = undefined; // Clear id to create new clone instead of updating existing segment
           segmentInput.userIds = subSegment.individualForSegment?.map((user) => user.userId) || [];
           segmentInput.groups =
             subSegment.groupForSegment?.map((group) => {
