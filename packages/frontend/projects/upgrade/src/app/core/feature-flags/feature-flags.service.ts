@@ -10,6 +10,7 @@ import {
   selectSearchKey,
   selectSearchString,
   selectIsLoadingUpsertFeatureFlag,
+  selectIsLoadingUpsertPrivateSegmentList,
   selectIsLoadingUpdateFeatureFlagStatus,
   selectSelectedFeatureFlag,
   selectSearchFeatureFlagParams,
@@ -61,7 +62,7 @@ export class FeatureFlagsService {
   isLoadingFeatureFlagDelete$ = this.store$.pipe(select(selectIsLoadingFeatureFlagDelete));
   isLoadingImportFeatureFlag$ = this.store$.pipe(select(selectIsLoadingImportFeatureFlag));
   isLoadingUpdateFeatureFlagStatus$ = this.store$.pipe(select(selectIsLoadingUpdateFeatureFlagStatus));
-  isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertFeatureFlag));
+  isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertPrivateSegmentList));
   featureFlags$ = this.store$.pipe(select(selectAllFeatureFlags));
   allFeatureFlags$ = this.store$.pipe(select(selectAllFeatureFlagsSortedByDate));
   appContexts$ = this.store$.pipe(select(selectAppContexts));
@@ -186,6 +187,10 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList({ segmentId }));
   }
 
+  updateFeatureFlagInclusionListStatus(segmentId: string, enabled: boolean) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListStatus({ segmentId, enabled }));
+  }
+
   addFeatureFlagExclusionPrivateSegmentList(list: AddPrivateSegmentListRequest) {
     this.store$.dispatch(FeatureFlagsActions.actionAddFeatureFlagExclusionList({ list }));
   }
@@ -196,6 +201,10 @@ export class FeatureFlagsService {
 
   deleteFeatureFlagExclusionPrivateSegmentList(segmentId: string) {
     this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagExclusionList({ segmentId }));
+  }
+
+  updateFeatureFlagExclusionListStatus(segmentId: string, enabled: boolean) {
+    this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagExclusionListStatus({ segmentId, enabled }));
   }
 
   setGraphRange(range: DATE_RANGE | null, flagId: string, clientOffset: number) {

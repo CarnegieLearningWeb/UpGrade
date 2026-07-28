@@ -125,6 +125,11 @@ export class FeatureFlagsDataService {
     return this.http.delete(url);
   }
 
+  updateInclusionListStatus(segmentId: string, enabled: boolean) {
+    const url = `${API_ENDPOINTS.addFlagInclusionList}/${segmentId}/status`;
+    return this.http.patch(url, { enabled });
+  }
+
   addExclusionList(list: AddPrivateSegmentListRequest): Observable<FeatureFlagSegmentListDetails> {
     const url = API_ENDPOINTS.addFlagExclusionList;
     return this.http.post<FeatureFlagSegmentListDetails>(url, list);
@@ -138,6 +143,11 @@ export class FeatureFlagsDataService {
   deleteExclusionList(segmentId: string) {
     const url = `${API_ENDPOINTS.addFlagExclusionList}/${segmentId}`;
     return this.http.delete(url);
+  }
+
+  updateExclusionListStatus(segmentId: string, enabled: boolean) {
+    const url = `${API_ENDPOINTS.addFlagExclusionList}/${segmentId}/status`;
+    return this.http.patch(url, { enabled });
   }
 
   fetchFeatureFlagGraphInfo(params: { flagId: string; range: DATE_RANGE; clientOffset: number }) {

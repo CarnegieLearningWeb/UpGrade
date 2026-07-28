@@ -1,4 +1,10 @@
-import { CaliperEnvelope, EXPERIMENT_TYPE, ILogRequestBody, MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
+import {
+  CaliperEnvelope,
+  EXPERIMENT_TYPE,
+  ILogRequestBody,
+  MARKED_DECISION_POINT_STATUS,
+  PAYLOAD_TYPE,
+} from 'upgrade_types';
 import ApiService from './ApiService';
 import { UpGradeClientInterfaces } from './../types/Interfaces';
 import { UpGradeClientRequests } from './../types/requests';
@@ -263,7 +269,14 @@ describe('ApiService', () => {
     const mockAssignment = {
       site: 'testSite',
       target: 'testTarget',
-      assignedCondition: [{ conditionCode: 'original_condition', payload: { type: PAYLOAD_TYPE.STRING, value: 'val' }, id: 'id1', experimentId: 'exp1' }],
+      assignedCondition: [
+        {
+          conditionCode: 'original_condition',
+          payload: { type: PAYLOAD_TYPE.STRING, value: 'val' },
+          id: 'id1',
+          experimentId: 'exp1',
+        },
+      ],
       experimentType: EXPERIMENT_TYPE.SIMPLE,
     };
 

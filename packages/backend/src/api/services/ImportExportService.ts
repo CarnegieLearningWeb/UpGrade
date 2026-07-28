@@ -76,31 +76,49 @@ export class ImportExportService {
     logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
     const experimentDetails = await this.experimentRepository.find({
       where: experimentIds ? { id: In(experimentIds) } : undefined,
-      relations: [
-        'partitions',
-        'conditions',
-        'stateTimeLogs',
-        'queries',
-        'queries.metric',
-        'experimentSegmentInclusion',
-        'experimentSegmentInclusion.segment',
-        'experimentSegmentInclusion.segment.individualForSegment',
-        'experimentSegmentInclusion.segment.groupForSegment',
-        'experimentSegmentInclusion.segment.subSegments',
-        'experimentSegmentExclusion',
-        'experimentSegmentExclusion.segment',
-        'experimentSegmentExclusion.segment.individualForSegment',
-        'experimentSegmentExclusion.segment.groupForSegment',
-        'experimentSegmentExclusion.segment.subSegments',
-        'partitions.conditionPayloads',
-        'partitions.conditionPayloads.parentCondition',
-        'factors',
-        'factors.levels',
-        'conditions.conditionPayloads',
-        'conditions.levelCombinationElements',
-        'conditions.levelCombinationElements.level',
-        'stratificationFactor',
-      ],
+      relations: {
+        partitions: {
+          conditionPayloads: {
+            parentCondition: true,
+          },
+        },
+
+        conditions: {
+          conditionPayloads: true,
+
+          levelCombinationElements: {
+            level: true,
+          },
+        },
+
+        stateTimeLogs: true,
+
+        queries: {
+          metric: true,
+        },
+
+        experimentSegmentInclusion: {
+          segment: {
+            individualForSegment: true,
+            groupForSegment: true,
+            subSegments: true,
+          },
+        },
+
+        experimentSegmentExclusion: {
+          segment: {
+            individualForSegment: true,
+            groupForSegment: true,
+            subSegments: true,
+          },
+        },
+
+        factors: {
+          levels: true,
+        },
+
+        stratificationFactor: true,
+      },
     });
 
     const formattedExperiments = await Promise.all(

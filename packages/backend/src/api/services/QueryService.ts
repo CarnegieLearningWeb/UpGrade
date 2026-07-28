@@ -30,7 +30,10 @@ export class QueryService {
   public async find(logger: UpgradeLogger): Promise<Query[]> {
     logger.info({ message: 'Find all query' });
     const queries = await this.queryRepository.find({
-      relations: ['metric', 'experiment'],
+      relations: {
+        metric: true,
+        experiment: true,
+      },
     });
     return queries.map((query) => {
       const { experiment, ...rest } = query;
@@ -41,7 +44,9 @@ export class QueryService {
   public async getArchivedStats(queryIds: string[], logger: UpgradeLogger): Promise<any> {
     logger.info({ message: `Get archivedStats of query with queryIds ${queryIds}` });
     const archiveData = await this.archivedStatsRepository.find({
-      relations: ['query'],
+      relations: {
+        query: true,
+      },
       where: { query: In(queryIds) },
     });
     return archiveData.map((data) => {
@@ -53,14 +58,18 @@ export class QueryService {
     logger.info({ message: `Get analysis of query with queryIds ${queryIds}` });
     const queryList = await this.queryRepository.find({
       where: { id: In(queryIds) },
-      relations: [
-        'metric',
-        'experiment',
-        'experiment.conditions',
-        'experiment.partitions',
-        'experiment.factors',
-        'experiment.factors.levels',
-      ],
+      relations: {
+        metric: true,
+
+        experiment: {
+          conditions: true,
+          partitions: true,
+
+          factors: {
+            levels: true,
+          },
+        },
+      },
     });
     const experiments: Experiment[] = [];
 

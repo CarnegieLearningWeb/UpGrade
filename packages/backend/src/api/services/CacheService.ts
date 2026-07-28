@@ -4,6 +4,17 @@ import { Cache, Store, caching } from 'cache-manager';
 import { CACHE_PREFIX } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
+type CacheBucket = 'experiments' | 'featureFlags' | 'segments';
+
+const PREFIX_CATEGORY: Record<CACHE_PREFIX, CacheBucket> = {
+  [CACHE_PREFIX.EXPERIMENT_KEY_PREFIX]: 'experiments',
+  [CACHE_PREFIX.MARK_KEY_PREFIX]: 'experiments',
+  [CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX]: 'featureFlags',
+  [CACHE_PREFIX.SEGMENT_KEY_PREFIX]: 'segments',
+  [CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX]: 'segments',
+  [CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX]: 'segments',
+};
+
 // this module will get swapped in if caching is enabled but the cache manager fails to initialize as a dummy default deliverer
 const noopStore: Cache<Store> = {
   get: () => Promise.resolve(undefined),
@@ -33,7 +44,13 @@ const noopStore: Cache<Store> = {
 @Service()
 export class CacheService {
   private cache: Cache<Store> = noopStore;
-  private ttl = env.caching.ttl || 900;
+  private defaultTtl = env.caching.ttl || 900;
+  // Per-category TTLs (seconds), each falling back to the global default when its env var is unset.
+  private categoryTtl: Record<CacheBucket, number> = {
+    experiments: env.caching.ttlExperiments || this.defaultTtl,
+    featureFlags: env.caching.ttlFeatureFlags || this.defaultTtl,
+    segments: env.caching.ttlSegments || this.defaultTtl,
+  };
   private initPromise: Promise<void>;
 
   constructor() {
@@ -44,7 +61,7 @@ export class CacheService {
     try {
       this.cache = await caching('memory', {
         max: env.caching?.maxKeys || 500,
-        ttl: this.ttl * 1000,
+        ttl: this.defaultTtl * 1000,
       });
     } catch (err) {
       new UpgradeLogger().error({
@@ -54,12 +71,25 @@ export class CacheService {
     }
   }
 
+  // Resolve the TTL (ms) for a category based on the cache-key prefix.
+  private ttlMsForPrefix(prefix: CACHE_PREFIX): number {
+    const category = PREFIX_CATEGORY[prefix];
+    const ttlSeconds = category ? this.categoryTtl[category] : this.defaultTtl;
+    return ttlSeconds * 1000;
+  }
+
+  // Resolve the TTL (ms) for a full cache key by matching its prefix.
+  private ttlMsForKey(key: string): number {
+    const prefix = Object.values(CACHE_PREFIX).find((p) => key.startsWith(p));
+    return prefix ? this.ttlMsForPrefix(prefix as CACHE_PREFIX) : this.defaultTtl * 1000;
+  }
+
   public async setCache<T>(id: string, value: T): Promise<T> {
     await this.initPromise;
     if (value === null || value === undefined) {
       return null;
     }
-    await this.cache.set(id, value);
+    await this.cache.set(id, value, this.ttlMsForKey(id));
     return value;
   }
 
@@ -94,7 +124,7 @@ export class CacheService {
 
   public async wrap<T>(key: string, fn: () => Promise<T>): Promise<T> {
     await this.initPromise;
-    return this.cache.wrap(key, fn);
+    return this.cache.wrap(key, fn, this.ttlMsForKey(key));
   }
 
   public async wrapFunction<T>(prefix: CACHE_PREFIX, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
@@ -120,7 +150,8 @@ export class CacheService {
             acc.push([prefix + key, data[index]]);
           }
           return acc;
-        }, [])
+        }, []),
+        this.ttlMsForPrefix(prefix)
       );
     }
 

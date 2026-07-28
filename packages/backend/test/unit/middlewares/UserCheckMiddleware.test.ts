@@ -467,12 +467,7 @@ describe('UserCheckMiddleware Tests', () => {
 
       mockExperimentUserService.setMockUser(userId, storedUser);
 
-      const standardUrls = [
-        '/api/v6/assign',
-        '/api/v6/mark',
-        '/api/v6/init',
-        '/api/v5/featureflag', // Different version
-      ];
+      const standardUrls = ['/api/v6/assign', '/api/v6/mark', '/api/v6/init'];
 
       for (const url of standardUrls) {
         mockRequest.url = url;

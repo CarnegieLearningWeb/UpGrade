@@ -8,13 +8,11 @@ import SegmentServiceMock from './mocks/SegmentServiceMock';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
-import { useContainer as ormUseContainer } from 'typeorm';
 
 describe('Segment Controller Testing', () => {
   beforeAll(() => {
     configureLogger();
     routingUseContainer(Container);
-    ormUseContainer(Container);
     classValidatorUseContainer(Container);
 
     // set mock container
@@ -63,6 +61,14 @@ describe('Segment Controller Testing', () => {
   test('Get request for /api/segments/:segmentId', () => {
     return request(app)
       .get(`/api/segments/${crypto.randomUUID()}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+  });
+
+  test('Get request for /api/segments/:segmentId/members', () => {
+    return request(app)
+      .get(`/api/segments/${crypto.randomUUID()}/members`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

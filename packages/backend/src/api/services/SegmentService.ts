@@ -37,11 +37,10 @@ import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFl
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { getSegmentData, getSegmentsData } from '../controllers/SegmentController';
 import { CacheService } from './CacheService';
+import { FeatureFlagPrecomputedSegmentService } from './FeatureFlagPrecomputedSegmentService';
 import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import path from 'path';
-import { IndividualForSegment } from '../models/IndividualForSegment';
-import { GroupForSegment } from '../models/GroupForSegment';
 import { ISegmentSearchParams, ISegmentSortParams } from '../controllers/validators/SegmentPaginatedParamsValidator';
 import { ExperimentSegmentExclusion } from 'src/api/models/ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from 'src/api/models/ExperimentSegmentInclusion';
@@ -83,7 +82,8 @@ export class SegmentService {
     private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
     @InjectRepository()
     private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
-    private cacheService: CacheService
+    private cacheService: CacheService,
+    private featureFlagPrecomputedSegmentService: FeatureFlagPrecomputedSegmentService
   ) {}
 
   public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
@@ -148,6 +148,18 @@ export class SegmentService {
       .getOne();
 
     return segmentDoc;
+  }
+
+  // Like getSegmentById but includes private lists, so a flag/experiment list can be loaded for editing.
+  public async getSegmentByIdWithMembers(id: string, logger: UpgradeLogger): Promise<Segment> {
+    logger.info({ message: `Find segment (including private) with members by id. segmentId: ${id}` });
+    return this.segmentRepository
+      .createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .where({ id })
+      .getOne();
   }
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
@@ -429,6 +441,9 @@ export class SegmentService {
       await transactionalEntityManager.getRepository(Segment).save(parentSegment);
       return createdSegment;
     });
+
+    this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
+
     return createdSegment;
   }
 
@@ -455,6 +470,8 @@ export class SegmentService {
       return deletedSegmentResponse;
     });
 
+    this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
+
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX);
@@ -465,18 +482,28 @@ export class SegmentService {
   public upsertSegmentInPipeline(
     segment: SegmentInputValidator,
     logger: UpgradeLogger,
-    transactionalEntityManager: EntityManager
+    transactionalEntityManager: EntityManager,
+    skipScheduleRecompute = false
   ): Promise<Segment> {
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
-    return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager);
+    return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager, skipScheduleRecompute);
   }
 
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
-    const manager = this.dataSource;
-    const deletedSegment = await manager.transaction(async (transactionalEntityManager) => {
-      return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
-    });
+
+    // withRecompute collects the affected flags BEFORE the delete (the join rows are gone after),
+    // runs the delete in its own transaction, then fires a fire-and-forget recompute for those
+    // flags after commit. Keeping the ordering inside the wrapper means a future refactor of this
+    // method can't accidentally break it.
+    const deletedSegment = await this.featureFlagPrecomputedSegmentService.withRecompute(
+      logger,
+      () => this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
+      () =>
+        this.dataSource.transaction((transactionalEntityManager) =>
+          this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
+        )
+    );
 
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
@@ -492,7 +519,11 @@ export class SegmentService {
   ): Promise<Segment> {
     const segmentDoc = await manager.getRepository(Segment).findOne({
       where: { id: id },
-      relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+      relations: {
+        individualForSegment: true,
+        groupForSegment: true,
+        subSegments: true,
+      },
     });
     if (!segmentDoc) {
       throw new Error(SERVER_ERROR.QUERY_FAILED);
@@ -829,7 +860,11 @@ export class SegmentService {
     } else {
       const segmentDoc = await this.segmentRepository.findOne({
         where: { id: segmentIds[0] },
-        relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
+        relations: {
+          individualForSegment: true,
+          groupForSegment: true,
+          subSegments: true,
+        },
       });
       if (!segmentDoc) {
         throw new Error(SERVER_ERROR.QUERY_FAILED);
@@ -880,35 +915,25 @@ export class SegmentService {
   async addSegmentDataWithPipeline(
     segment: SegmentInputValidator,
     logger: UpgradeLogger,
-    transactionalEntityManager: EntityManager
+    transactionalEntityManager: EntityManager,
+    skipScheduleRecompute = false
   ): Promise<Segment> {
     let segmentDoc: Segment;
 
-    let usersToDelete = [],
-      groupsToDelete = [];
     if (segment.id) {
       try {
-        // get segment by ids
-        segmentDoc = await transactionalEntityManager.getRepository(Segment).findOne({
-          where: { id: segment.id },
-          relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
-        });
-
-        // delete individual for segment
-        if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
-          usersToDelete = segmentDoc.individualForSegment.map((individual) => {
-            return { userId: individual.userId, segment: segment };
-          });
-          await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
-        }
-
-        // delete group for segment
-        if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
-          groupsToDelete = segmentDoc.groupForSegment.map((group) => {
-            return { groupId: group.groupId, type: group.type, segment: segment };
-          });
-          await transactionalEntityManager.getRepository(GroupForSegment).delete(groupsToDelete as any);
-        }
+        // Full replace: clear members with a single delete-by-segmentId per member table. A per-row
+        // criteria array (the previous approach) expands into a giant OR predicate that is very slow
+        // for large lists. The delete is cheap even when there are no members, so we skip the
+        // pre-SELECT that used to load the full member arrays just to decide whether to delete.
+        await Promise.all([
+          this.individualForSegmentRepository.deleteIndividualForSegmentById(
+            segment.id,
+            transactionalEntityManager,
+            logger
+          ),
+          this.groupForSegmentRepository.deleteGroupForSegmentById(segment.id, transactionalEntityManager, logger),
+        ]);
       } catch (err) {
         const error = err as ErrorWithType;
         error.details = 'Error in deleting segment from DB';
@@ -1021,9 +1046,18 @@ export class SegmentService {
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX);
 
-    return transactionalEntityManager
-      .getRepository(Segment)
-      .findOne({ where: { id: segmentDoc.id }, relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+    // Recompute precomputed sets for all flags that reference this segment (fire-and-forget).
+    // Skip when the caller already owns an explicit recomputeForFlag after the transaction —
+    // firing this from inside a transaction risks a stale-read race where the fire-and-forget
+    // reads the old enabled value and its upsert overwrites the correct post-commit result.
+    if (!skipScheduleRecompute) {
+      this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
+    }
+
+    return transactionalEntityManager.getRepository(Segment).findOne({
+      where: { id: segmentDoc.id },
+      relations: { subSegments: true, individualForSegment: true, groupForSegment: true },
+    });
   }
 
   private trimAndRemoveHiddenChars(value: string): string {

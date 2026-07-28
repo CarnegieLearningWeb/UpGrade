@@ -1,9 +1,9 @@
 import { DataSource } from 'typeorm';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
 import { env } from '../../src/env';
 import { CONNECTION_NAME } from '../../src/loaders/enums';
 import { Container as tteContainer } from '../../src/typeorm-typedi-extensions';
+import { PostgresDataSourceOptions } from 'typeorm/driver/postgres/PostgresDataSourceOptions.js';
 
 declare type LoggerOptions =
   | boolean
@@ -11,8 +11,7 @@ declare type LoggerOptions =
   | Array<'query' | 'schema' | 'error' | 'warn' | 'info' | 'log' | 'migration'>;
 
 export const createDatabaseConnection = async (): Promise<DataSource[]> => {
-  const defaultConnection: PostgresConnectionOptions = {
-    name: CONNECTION_NAME.MAIN,
+  const defaultConnection: PostgresDataSourceOptions = {
     type: env.db.type as any, // See createConnection options for valid types
     database: env.db.database,
     host: env.db.host,
@@ -24,8 +23,7 @@ export const createDatabaseConnection = async (): Promise<DataSource[]> => {
     migrations: env.app.dirs.migrations,
   };
 
-  const exportConnection: PostgresConnectionOptions = {
-    name: CONNECTION_NAME.REPLICA,
+  const exportConnection: PostgresDataSourceOptions = {
     type: env.db.type as any, // See createConnection options for valid types
     database: env.db.database,
     host: env.db.host,
@@ -54,7 +52,7 @@ export const synchronizeDatabase = async (connection: DataSource) => {
 
 export const migrateDatabase = async (connection: DataSource) => {
   await connection.dropDatabase();
-  return connection.runMigrations();
+  return connection.runMigrations({ transaction: 'each' });
 };
 
 export const closeDatabase = (connection: DataSource) => {

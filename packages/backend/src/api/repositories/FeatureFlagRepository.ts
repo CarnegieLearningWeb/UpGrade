@@ -135,6 +135,21 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
     return [...includeAllFlags, ...excludeAllFlags];
   }
 
+  // Minimal projection for getKeys — only id, key, filterMode needed; no segment joins
+  public async getFlagsForKeys(context: string): Promise<Pick<FeatureFlag, 'id' | 'key' | 'filterMode'>[]> {
+    const result = await this.createQueryBuilder('feature_flag')
+      .select(['feature_flag.id', 'feature_flag.key', 'feature_flag.filterMode'])
+      .where('feature_flag.context @> :searchContext', { searchContext: [context] })
+      .andWhere('feature_flag.status = :status', { status: FEATURE_FLAG_STATUS.ENABLED })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('FeatureFlagRepository', 'getFlagsForKeys', { context }, errorMsg);
+        throw errorMsgString;
+      });
+
+    return result;
+  }
+
   public async validateUniqueKey(flagDTO: FeatureFlagValidation) {
     const queryBuilder = this.createQueryBuilder('feature_flag')
       .where('feature_flag.key = :key', { key: flagDTO.key })

@@ -2,7 +2,7 @@ import { FeatureFlagsDataService } from '../feature-flags.data.service';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Injectable } from '@angular/core';
 import * as FeatureFlagsActions from './feature-flags.actions';
-import { catchError, switchMap, map, filter, withLatestFrom, tap, first } from 'rxjs/operators';
+import { catchError, switchMap, mergeMap, map, filter, withLatestFrom, tap, first } from 'rxjs/operators';
 import { FeatureFlag, FeatureFlagsPaginationParams, NUMBER_OF_FLAGS } from './feature-flags.model';
 import { DATE_RANGE } from '../../experiments/store/experiments.model';
 import { Router } from '@angular/router';
@@ -221,6 +221,26 @@ export class FeatureFlagsEffects {
     )
   );
 
+  updateFeatureFlagInclusionListStatus$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListStatus),
+      mergeMap(({ segmentId, enabled }) => {
+        return this.featureFlagsDataService.updateInclusionListStatus(segmentId, enabled).pipe(
+          map(() => {
+            this.notificationService.showSuccess(
+              this.translate.instant('feature-flags.inclusions.update-success.text')
+            );
+            return FeatureFlagsActions.actionUpdateFeatureFlagInclusionListStatusSuccess({ segmentId, enabled });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('feature-flags.inclusions.update-error.text'));
+            return of(FeatureFlagsActions.actionUpdateFeatureFlagInclusionListStatusFailure({ error }));
+          })
+        );
+      })
+    )
+  );
+
   deleteFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList),
@@ -430,6 +450,26 @@ export class FeatureFlagsEffects {
           })
         )
       )
+    )
+  );
+
+  updateFeatureFlagExclusionListStatus$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(FeatureFlagsActions.actionUpdateFeatureFlagExclusionListStatus),
+      mergeMap(({ segmentId, enabled }) => {
+        return this.featureFlagsDataService.updateExclusionListStatus(segmentId, enabled).pipe(
+          map(() => {
+            this.notificationService.showSuccess(
+              this.translate.instant('feature-flags.exclusions.update-success.text')
+            );
+            return FeatureFlagsActions.actionUpdateFeatureFlagExclusionListStatusSuccess({ segmentId, enabled });
+          }),
+          catchError((error) => {
+            this.notificationService.showError(this.translate.instant('feature-flags.exclusions.update-error.text'));
+            return of(FeatureFlagsActions.actionUpdateFeatureFlagExclusionListStatusFailure({ error }));
+          })
+        );
+      })
     )
   );
 

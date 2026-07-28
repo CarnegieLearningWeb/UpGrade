@@ -81,8 +81,6 @@ export class CommonDetailsParticipantListTableComponent {
     ACTIONS: 'segments.global-actions.text',
   };
 
-  private readonly MAX_TOOLTIP_VALUES = 10;
-
   ngOnInit() {
     this.displayedColumns =
       this.tableType === LIST_FILTER_MODE.INCLUSION
@@ -94,10 +92,11 @@ export class CommonDetailsParticipantListTableComponent {
     const listType = rowData.listType;
     let count: number;
 
+    // Prefer the count field (counts-only load); fall back to array length when full lists are present.
     if (listType?.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
-      count = rowData.segment.individualForSegment?.length || 0;
+      count = rowData.segment.individualForSegmentCount ?? rowData.segment.individualForSegment?.length ?? 0;
     } else {
-      count = rowData.segment.groupForSegment?.length || 0;
+      count = rowData.segment.groupForSegmentCount ?? rowData.segment.groupForSegment?.length ?? 0;
     }
 
     if (count === 0) {
@@ -107,24 +106,6 @@ export class CommonDetailsParticipantListTableComponent {
     } else {
       return `${count} Values`;
     }
-  }
-
-  getValuesTooltipText(rowData: ParticipantListTableRow): string {
-    const listType = rowData.listType;
-    let values: string[];
-
-    if (listType?.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
-      values = rowData.segment.individualForSegment?.map((item) => item.userId) || [];
-    } else {
-      values = rowData.segment.groupForSegment?.map((item) => item.groupId) || [];
-    }
-
-    // Show only first 10 values if there are more
-    if (values.length > this.MAX_TOOLTIP_VALUES) {
-      return values.slice(0, this.MAX_TOOLTIP_VALUES).join(', ') + '...';
-    }
-
-    return values.join(', ');
   }
 
   getFormattedListType(rowData: ParticipantListTableRow): string {

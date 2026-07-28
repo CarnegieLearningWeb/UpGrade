@@ -65,7 +65,7 @@ import { CaliperLogData } from '../controllers/validators/CaliperLogData';
 import { parse, toSeconds } from 'iso8601-duration';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
-import { withInSubjectType } from '../Algorithms';
+import { buildWithinSubjectOrderedConditions, withInSubjectTypeFromPrecomputed } from '../Algorithms';
 import { CacheService } from './CacheService';
 import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
@@ -135,14 +135,23 @@ export class ExperimentAssignmentService {
           site: site,
           target: target,
         },
-        relations: [
-          'experiment',
-          'experiment.conditions',
-          'experiment.conditions.conditionPayloads',
-          'experiment.partitions',
-          'experiment.experimentSegmentInclusion.segment',
-          'experiment.experimentSegmentExclusion.segment',
-        ],
+        relations: {
+          experiment: {
+            conditions: {
+              conditionPayloads: true,
+            },
+
+            partitions: true,
+
+            experimentSegmentInclusion: {
+              segment: true,
+            },
+
+            experimentSegmentExclusion: {
+              segment: true,
+            },
+          },
+        },
       })
     );
 
@@ -893,6 +902,25 @@ export class ExperimentAssignmentService {
     repeatedEnrollmentCounts: RepeatedEnrollmentDataCount[],
     logger: UpgradeLogger
   ): IExperimentAssignment[] {
+    // For within-subjects experiments, pre-compute the condition ordering (~100 seedrandom calls)
+    // and build a payload lookup Map once, then reuse across all decision points.
+    let withinSubjectPrecomputed: ReturnType<typeof buildWithinSubjectOrderedConditions> | null = null;
+    let conditionPayloadMap: Map<string, ConditionPayloadDTO> | null = null;
+
+    if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
+      const count = repeatedEnrollmentCounts?.find((r) => r.experimentId === experiment.id)?.count || 0;
+      withinSubjectPrecomputed = buildWithinSubjectOrderedConditions(experiment, factors, userId, count);
+
+      const isFactorial = experiment.type === EXPERIMENT_TYPE.FACTORIAL;
+      conditionPayloadMap = new Map<string, ConditionPayloadDTO>();
+      conditionPayloads.forEach((cp) => {
+        const key = isFactorial ? cp.parentCondition.id : `${cp.parentCondition.id}:${cp.decisionPoint.id}`;
+        if (!conditionPayloadMap.has(key)) {
+          conditionPayloadMap.set(key, cp);
+        }
+      });
+    }
+
     return experiment.partitions
       .filter((dp) => !dp.pendingActivation || experiment.state === EXPERIMENT_STATE.PREVIEW)
       .map((decisionPoint) => {
@@ -924,10 +952,13 @@ export class ExperimentAssignmentService {
           };
 
         if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
-          const count =
-            repeatedEnrollmentCounts?.find((repeatedEnrollment) => repeatedEnrollment.experimentId === experiment.id)
-              ?.count || 0;
-          return withInSubjectType(experiment, conditionPayloads, decisionPoint, factors, userId, count);
+          return withInSubjectTypeFromPrecomputed(
+            experiment,
+            withinSubjectPrecomputed.orderedConditions,
+            withinSubjectPrecomputed.orderedFactors,
+            conditionPayloadMap,
+            decisionPoint
+          );
         } else {
           const experimentId = experiment.id;
           return {
@@ -1379,7 +1410,9 @@ export class ExperimentAssignmentService {
     const decisionPoints = experimentDoc.partitions;
     const individualAssignments = await this.individualEnrollmentRepository.find({
       where: { experiment: { id: experimentDoc.id } },
-      relations: ['user'],
+      relations: {
+        user: true,
+      },
     });
 
     // get the monitored document for all the decisionPoints in the experiment
@@ -1413,7 +1446,9 @@ export class ExperimentAssignmentService {
     // fetch all the monitored document if exist
     const monitoredDocuments = await this.monitoredDecisionPointRepository.find({
       where: { id: In(monitoredDocumentIds) },
-      relations: ['user'],
+      relations: {
+        user: true,
+      },
     });
 
     return monitoredDocuments;
