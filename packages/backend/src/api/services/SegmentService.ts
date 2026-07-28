@@ -1023,11 +1023,12 @@ export class SegmentService {
 
       // Manually set the relationship without cascading updates to child segments
       // This prevents TypeORM from overwriting the child segments' own subSegments relationships
-      if (subSegmentData && subSegmentData.length > 0) {
-        // Only reference by ID, don't pass full objects to avoid cascade behavior
-        for (const subSegment of subSegmentData) {
-          await segmentRepo.createQueryBuilder().relation('subSegments').of(segmentDoc).add({ id: subSegment.id });
-        }
+      if (subSegmentData.length > 0) {
+        await segmentRepo
+          .createQueryBuilder()
+          .relation('subSegments')
+          .of(segmentDoc)
+          .add(subSegmentData.map((s) => ({ id: s.id })));
       }
     } catch (err) {
       const error = err as ErrorWithType;
