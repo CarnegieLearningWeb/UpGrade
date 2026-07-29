@@ -181,6 +181,32 @@ describe('ExperimentDataService', () => {
 
       expect(mockHttpClient.put).toHaveBeenCalledWith(expectedUrl, { ...experiment });
     });
+
+    it('should strip decision point usage counts from the update request', () => {
+      const experiment = {
+        ...mockExperiment,
+        partitions: [
+          {
+            id: 'decision-point-1',
+            site: 'lesson-stream',
+            target: 'question-hint',
+            description: '',
+            order: 1,
+            createdAt: 'time',
+            updatedAt: 'time',
+            versionNumber: 1,
+            excludeIfReached: false,
+            usedByCount: 2,
+          },
+        ],
+      } as Experiment;
+
+      service.updateExperiment(experiment);
+
+      const requestBody = mockHttpClient.put.mock.calls[0][1];
+      expect(requestBody.partitions[0]).not.toHaveProperty('usedByCount');
+      expect(requestBody.partitions[0]).toEqual(expect.objectContaining({ id: 'decision-point-1' }));
+    });
   });
 
   describe('#updateExperimentState', () => {

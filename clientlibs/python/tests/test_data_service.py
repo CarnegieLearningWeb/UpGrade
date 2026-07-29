@@ -300,6 +300,46 @@ class TestRotateAssignment:
         assert result is a
 
 
+class TestRotateAssignmentsByExperimentId:
+    def test_rotates_only_matching_assignments(self) -> None:
+        ds = DataService()
+        match_assignment = make_assignment(
+            site="quiz",
+            target="hint",
+            conditions=[
+                AssignedCondition(id="cond-A", conditionCode="A", experimentId="exp-2"),
+                AssignedCondition(id="cond-B", conditionCode="B", experimentId="exp-2"),
+            ],
+            experiment_type=ExperimentType.SIMPLE,
+        )
+        non_match_assignment = make_assignment(
+            site="home",
+            target="banner",
+            conditions=[
+                AssignedCondition(id="cond-1", conditionCode="control", experimentId="exp-1"),
+                AssignedCondition(id="cond-2", conditionCode="treatment", experimentId="exp-1"),
+            ],
+            experiment_type=ExperimentType.SIMPLE,
+        )
+
+        ds.set_assignments([match_assignment, non_match_assignment])
+        ds.rotate_assignments_by_experiment_id("exp-2")
+
+        matched = ds.get_assignment("quiz", "hint")
+        unchanged = ds.get_assignment("home", "banner")
+        assert matched is not None
+        assert unchanged is not None
+        assert matched.assignedCondition[0].id == "cond-B"
+        assert matched.assignedCondition[1].id == "cond-A"
+        assert unchanged.assignedCondition[0].id == "cond-1"
+        assert unchanged.assignedCondition[1].id == "cond-2"
+
+    def test_noop_when_cache_is_cold(self) -> None:
+        ds = DataService()
+        ds.rotate_assignments_by_experiment_id("exp-1")
+        assert ds.get_all_assignments() is None
+
+
 # ---------------------------------------------------------------------------
 # Instance isolation
 # ---------------------------------------------------------------------------

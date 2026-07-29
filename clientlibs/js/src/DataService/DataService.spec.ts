@@ -252,6 +252,73 @@ describe('DataService', () => {
     });
   });
 
+  describe('#rotateAssignmentsByExperimentId', () => {
+    it('should rotate only assignments that contain the provided experiment id', () => {
+      const experimentAssignmentData: IExperimentAssignmentv5[] = [
+        {
+          site: 'siteA',
+          target: 'targetA',
+          assignedCondition: [
+            {
+              conditionCode: 'control',
+              payload: { type: PAYLOAD_TYPE.STRING, value: 'testControlA' },
+              experimentId: 'exp-1',
+              id: 'cond-a1',
+            },
+            {
+              conditionCode: 'variant_x',
+              payload: { type: PAYLOAD_TYPE.STRING, value: 'testVariantA' },
+              experimentId: 'exp-1',
+              id: 'cond-a2',
+            },
+          ],
+          assignedFactor: [
+            {
+              factor1: { level: 'level1', payload: { type: PAYLOAD_TYPE.STRING, value: 'testLevel1' } },
+            },
+            {
+              factor2: { level: 'level2', payload: { type: PAYLOAD_TYPE.STRING, value: 'testLevel2' } },
+            },
+          ],
+          experimentType: EXPERIMENT_TYPE.FACTORIAL,
+        },
+        {
+          site: 'siteB',
+          target: 'targetB',
+          assignedCondition: [
+            {
+              conditionCode: 'control',
+              payload: { type: PAYLOAD_TYPE.STRING, value: 'testControlB' },
+              experimentId: 'exp-2',
+              id: 'cond-b1',
+            },
+            {
+              conditionCode: 'variant_y',
+              payload: { type: PAYLOAD_TYPE.STRING, value: 'testVariantB' },
+              experimentId: 'exp-2',
+              id: 'cond-b2',
+            },
+          ],
+          assignedFactor: [],
+          experimentType: EXPERIMENT_TYPE.SIMPLE,
+        },
+      ];
+
+      dataService.setExperimentAssignmentData(experimentAssignmentData);
+
+      dataService.rotateAssignmentsByExperimentId('exp-1');
+
+      expect(experimentAssignmentData[0].assignedCondition[0].id).toBe('cond-a2');
+      expect(experimentAssignmentData[0].assignedCondition[1].id).toBe('cond-a1');
+      expect(experimentAssignmentData[1].assignedCondition[0].id).toBe('cond-b1');
+      expect(experimentAssignmentData[1].assignedCondition[1].id).toBe('cond-b2');
+    });
+
+    it('should do nothing when there is no cached assignment data', () => {
+      expect(() => dataService.rotateAssignmentsByExperimentId('exp-1')).not.toThrow();
+    });
+  });
+
   describe('#findExperimentAssignmentBySiteAndTarget', () => {
     it('should return the experiment assignment', () => {
       const experimentAssignmentData: IExperimentAssignment[] = [

@@ -89,8 +89,10 @@ export class ExperimentRootSectionCardComponent {
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<EXPERIMENT_SEARCH_KEY>) {
-    this.experimentService.setSearchKey(params.searchKey as EXPERIMENT_SEARCH_KEY);
-    this.experimentService.setSearchString(params.searchString?.trim() || '');
+    this.experimentService.setSearchParams(
+      params.searchKey as EXPERIMENT_SEARCH_KEY,
+      params.searchString?.trim() || ''
+    );
   }
 
   onAddExperimentButtonClick() {

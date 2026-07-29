@@ -35,6 +35,7 @@ vm.experiment.context[0];
     [actionsTooltip]="restrictionTooltip"
     [experimentState]="vm.experiment.state"
     (rowAction)="onRowAction($event, vm.experiment.id, appContext)"
+    (decisionPointClick)="onDecisionPointClick($event)"
   ></app-experiment-decision-points-table>
   }
 </app-common-section-card>

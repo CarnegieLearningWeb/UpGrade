@@ -334,7 +334,19 @@ class TestMarkDecisionPoint:
     async def test_rotation_advances_condition_on_successive_marks(self) -> None:
         """Second mark on a multi-condition assignment should use condition[1]."""
         respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=FACTORIAL_PAYLOAD))
-        mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        mark_route = respx.post(f"{BASE}/mark").mock(
+            return_value=Response(
+                200,
+                json={
+                    "id": "mark-factorial",
+                    "userId": USER,
+                    "site": "quiz",
+                    "target": "hint",
+                    "experimentId": "exp-2",
+                    "condition": "combo-A",
+                },
+            )
+        )
         client = make_client()
         await client.get_all_experiment_conditions()
 
@@ -351,6 +363,39 @@ class TestMarkDecisionPoint:
         # After first mark, rotation advances so the second call sees cond-B's metadata
         assert first_body["data"]["assignedCondition"]["id"] == "cond-A"
         assert second_body["data"]["assignedCondition"]["id"] == "cond-B"
+
+    @respx.mock
+    async def test_mark_response_with_mismatched_experiment_id_does_not_rotate(self) -> None:
+        """Rotation only applies to assignments matching the returned experiment id."""
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=FACTORIAL_PAYLOAD))
+        mark_route = respx.post(f"{BASE}/mark").mock(
+            return_value=Response(
+                200,
+                json={
+                    "id": "mark-mismatch",
+                    "userId": USER,
+                    "site": "quiz",
+                    "target": "hint",
+                    "experimentId": "exp-other",
+                    "condition": "combo-A",
+                },
+            )
+        )
+        client = make_client()
+        await client.get_all_experiment_conditions()
+
+        await client.mark_decision_point(
+            "combo-A", MarkedDecisionPointStatus.CONDITION_APPLIED, "quiz", "hint"
+        )
+        first_body = json.loads(mark_route.calls[0].request.content)
+
+        await client.mark_decision_point(
+            "combo-B", MarkedDecisionPointStatus.CONDITION_APPLIED, "quiz", "hint"
+        )
+        second_body = json.loads(mark_route.calls[1].request.content)
+
+        assert first_body["data"]["assignedCondition"]["id"] == "cond-A"
+        assert second_body["data"]["assignedCondition"]["id"] == "cond-A"
 
     @respx.mock
     async def test_mark_unknown_decision_point_omits_metadata(self) -> None:
