@@ -12,6 +12,7 @@ import { UpGradeClientRequests } from './../types/requests';
 const MockDataService = {
   findExperimentAssignmentBySiteAndTarget: jest.fn(),
   rotateAssignmentList: jest.fn(),
+  rotateAssignmentsByExperimentId: jest.fn(),
 };
 
 const mockHttpClient = {
@@ -282,7 +283,7 @@ describe('ApiService', () => {
 
     beforeEach(() => {
       MockDataService.findExperimentAssignmentBySiteAndTarget.mockReturnValue(mockAssignment);
-      MockDataService.rotateAssignmentList.mockImplementation((a: any) => a);
+      MockDataService.rotateAssignmentsByExperimentId.mockClear();
       mockHttpClient.doPost.mockClear();
     });
 
@@ -348,6 +349,47 @@ describe('ApiService', () => {
       await apiService.markDecisionPoint(params);
 
       expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, expectedRequestBody, expectedOptions);
+    });
+
+    it('should rotate cached assignments for the returned experiment id after marking', async () => {
+      const params = {
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+      };
+
+      mockHttpClient.doPost.mockResolvedValue({
+        id: 'mark123',
+        site: 'testSite',
+        target: 'testTarget',
+        userId: defaultConfig.userId,
+        experimentId: 'exp1',
+      });
+
+      await apiService.markDecisionPoint(params);
+
+      expect(MockDataService.rotateAssignmentsByExperimentId).toHaveBeenCalledWith('exp1');
+    });
+
+    it('should not rotate cached assignments when response has no experiment id', async () => {
+      const params = {
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+      };
+
+      mockHttpClient.doPost.mockResolvedValue({
+        id: 'mark123',
+        site: 'testSite',
+        target: 'testTarget',
+        userId: defaultConfig.userId,
+      });
+
+      await apiService.markDecisionPoint(params);
+
+      expect(MockDataService.rotateAssignmentsByExperimentId).not.toHaveBeenCalled();
     });
   });
 

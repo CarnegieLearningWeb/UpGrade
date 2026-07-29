@@ -16,7 +16,9 @@ Assignment rotation
 The UpGrade backend may return multiple conditions for the same decision
 point (e.g. for gradual roll-outs).  :meth:`rotate_assignment` advances the
 head of the condition/factor lists after each mark so that successive calls
-cycle through them.  This mirrors the behaviour of the JS ``DataService``.
+cycle through them.  :meth:`rotate_assignments_by_experiment_id` applies that
+rotation across every cached assignment that belongs to the marked experiment.
+This mirrors the behaviour of the JS ``DataService``.
 """
 
 from __future__ import annotations
@@ -66,6 +68,15 @@ class DataService:
             if assignment.assignedFactor and len(assignment.assignedFactor) > 1:
                 assignment.assignedFactor.append(assignment.assignedFactor.pop(0))
         return assignment
+
+    def rotate_assignments_by_experiment_id(self, experiment_id: str) -> None:
+        """Rotate every cached assignment whose conditions match ``experiment_id``."""
+        if not experiment_id or self._assignments is None:
+            return
+
+        for assignment in self._assignments.values():
+            if any(c.experimentId == experiment_id for c in assignment.assignedCondition):
+                self.rotate_assignment(assignment)
 
     # ------------------------------------------------------------------
     # Feature flags
