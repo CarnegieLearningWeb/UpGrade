@@ -2,6 +2,12 @@ import { DecisionPoint } from '../models/DecisionPoint';
 import { Repository, EntityManager } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
 import repositoryError from './utils/repositoryError';
+import { EXPERIMENT_STATE } from 'upgrade_types';
+
+export interface DecisionPointUsageCount {
+  decisionPointId: string;
+  usedByCount: number;
+}
 
 @EntityRepository(DecisionPoint)
 export class DecisionPointRepository extends Repository<DecisionPoint> {
@@ -102,6 +108,40 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'partitionPointAndNameId', undefined, errorMsg);
+        throw errorMsgString;
+      });
+  }
+
+  public async getUsageCountsForExperiment(
+    experimentId: string,
+    entityManager?: EntityManager
+  ): Promise<DecisionPointUsageCount[]> {
+    // Treat site-target pairs as case-insensitive and normalize missing targets to empty.
+    const repository = entityManager ? entityManager.getRepository(DecisionPoint) : this;
+
+    return await repository
+      .createQueryBuilder('sourceDecisionPoint')
+      .select('sourceDecisionPoint.id', 'decisionPointId')
+      .addSelect('COUNT(DISTINCT usedByExperiment.id)::int', 'usedByCount')
+      .leftJoin(
+        DecisionPoint,
+        'usedByDecisionPoint',
+        `LOWER(usedByDecisionPoint.site) = LOWER(sourceDecisionPoint.site)
+          AND LOWER(COALESCE(usedByDecisionPoint.target, '')) = LOWER(COALESCE(sourceDecisionPoint.target, ''))`
+      )
+      .leftJoin('usedByDecisionPoint.experiment', 'usedByExperiment', 'usedByExperiment.state != :archivedState', {
+        archivedState: EXPERIMENT_STATE.ARCHIVED,
+      })
+      .where('"sourceDecisionPoint"."experimentId" = :experimentId', { experimentId })
+      .groupBy('sourceDecisionPoint.id')
+      .getRawMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'getUsageCountsForExperiment',
+          { experimentId },
+          errorMsg
+        );
         throw errorMsgString;
       });
   }

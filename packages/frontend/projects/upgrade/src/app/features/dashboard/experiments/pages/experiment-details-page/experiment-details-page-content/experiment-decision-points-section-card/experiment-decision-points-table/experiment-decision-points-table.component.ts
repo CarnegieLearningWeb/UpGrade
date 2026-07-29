@@ -44,10 +44,11 @@ export class ExperimentDecisionPointsTableComponent {
   @Output() rowAction = new EventEmitter<ExperimentDecisionPointRowActionEvent>();
   @Output() decisionPointClick = new EventEmitter<ExperimentDecisionPoint>();
 
-  displayedColumns: string[] = ['decisionPoint', 'excludeIfReached', 'actions'];
+  displayedColumns: string[] = ['decisionPoint', 'usedBy', 'excludeIfReached', 'actions'];
 
   DECISION_POINT_TRANSLATION_KEYS = {
     DECISION_POINT: 'experiments.details.decision-points.decision-point.text',
+    USED_BY: 'experiments.details.decision-points.used-by.text',
     EXCLUDE_IF_REACHED: 'experiments.details.decision-points.exclude-if-reached.text',
     ACTIONS: 'experiments.details.decision-points.actions.text',
   };
@@ -80,6 +81,20 @@ export class ExperimentDecisionPointsTableComponent {
 
   getDecisionPoint(decisionPoint: ExperimentDecisionPoint): string {
     return formatDecisionPointDisplay(decisionPoint);
+  }
+
+  getUsedByCountText(decisionPoint: ExperimentDecisionPoint): string {
+    const count = decisionPoint.usedByCount;
+    if (typeof count !== 'number') {
+      return '';
+    }
+
+    const translationKey =
+      count === 1
+        ? 'experiments.details.decision-points.used-by-count.one.text'
+        : 'experiments.details.decision-points.used-by-count.other.text';
+
+    return this.translate.instant(translationKey, { count });
   }
 
   onDecisionPointClick(decisionPoint: ExperimentDecisionPoint): void {

@@ -214,6 +214,7 @@ describe('ExperimentService Testing', () => {
           return {
             save: jest.fn().mockResolvedValue(mockExperiment),
             findOne: jest.fn().mockResolvedValue(mockExperiment),
+            findBy: jest.fn().mockResolvedValue([mockExperiment]),
           };
         }
         if (entity === StateTimeLog) {
@@ -289,6 +290,7 @@ describe('ExperimentService Testing', () => {
             find: jest.fn().mockResolvedValue([mockDecisionPoint1]),
             save: jest.fn().mockResolvedValue(mockDecisionPoint1),
             findOne: jest.fn().mockResolvedValue(null),
+            getUsageCountsForExperiment: jest.fn().mockResolvedValue([]),
             upsertDecisionPoint: jest.fn().mockImplementation((value) => Promise.resolve(value)),
             deleteDecisionPoint: jest.fn().mockResolvedValue({ affected: 1 }),
             deleteByIds: jest.fn().mockResolvedValue({ affected: 1 }),
@@ -465,6 +467,19 @@ describe('ExperimentService Testing', () => {
           experimentName: mockExperimentDTO.name,
         }),
         mockUser
+      );
+    });
+
+    it('should include current decision point usage counts in the updated experiment response', async () => {
+      decisionPointRepo.getUsageCountsForExperiment = jest
+        .fn()
+        .mockResolvedValue([{ decisionPointId: mockDecisionPoint1.id, usedByCount: 2 }]);
+
+      const result = await service.update(mockExperimentDTO, mockUser, logger);
+
+      expect(decisionPointRepo.getUsageCountsForExperiment).toHaveBeenCalledWith(mockExperimentDTO.id, undefined);
+      expect(result.partitions).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: mockDecisionPoint1.id, usedByCount: 2 })])
       );
     });
 
@@ -982,6 +997,55 @@ describe('ExperimentService Testing', () => {
       await service.updateState(mockExperiment.id, EXPERIMENT_STATE.INACTIVE, mockUser, logger);
 
       expect(decisionPointRepo.setAllPendingActivationFalse).not.toHaveBeenCalled();
+    });
+
+    it('should include current decision point usage counts in the updated state response', async () => {
+      decisionPointRepo.getUsageCountsForExperiment = jest
+        .fn()
+        .mockResolvedValue([{ decisionPointId: mockDecisionPoint1.id, usedByCount: 2 }]);
+
+      const result = await service.updateState(
+        mockExperiment.id,
+        EXPERIMENT_STATE.PAUSED,
+        mockUser,
+        logger,
+        undefined,
+        entityManager
+      );
+
+      expect(decisionPointRepo.getUsageCountsForExperiment).toHaveBeenCalledWith(mockExperiment.id, entityManager);
+      expect(result.partitions).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: mockDecisionPoint1.id, usedByCount: 2 })])
+      );
+    });
+  });
+
+  describe('getSingleExperiment()', () => {
+    it('should attach decision point usage counts to the single experiment response', async () => {
+      const secondDecisionPoint = {
+        ...createMockDecisionPoint1(),
+        id: 'partition-2',
+        site: 'another-site',
+      } as DecisionPoint;
+      const experiment = {
+        ...mockExperiment,
+        partitions: [mockDecisionPoint1 as DecisionPoint, secondDecisionPoint],
+      } as Experiment;
+
+      jest.spyOn(service, 'findOne').mockResolvedValue(experiment);
+      decisionPointRepo.getUsageCountsForExperiment = jest
+        .fn()
+        .mockResolvedValue([{ decisionPointId: mockDecisionPoint1.id, usedByCount: 2 }]);
+
+      const result = await service.getSingleExperiment(mockExperiment.id);
+
+      expect(decisionPointRepo.getUsageCountsForExperiment).toHaveBeenCalledWith(mockExperiment.id);
+      expect(result.partitions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: mockDecisionPoint1.id, usedByCount: 2 }),
+          expect.objectContaining({ id: secondDecisionPoint.id, usedByCount: 0 }),
+        ])
+      );
     });
   });
 

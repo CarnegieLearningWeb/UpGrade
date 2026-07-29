@@ -63,7 +63,7 @@
     }
 
     .decision-point-column {
-      width: 70%;
+      width: 55%;
       padding-left: 32px;
 
       .decision-point-link {
@@ -83,6 +83,11 @@
           outline-offset: 2px;
         }
       }
+    }
+
+    .used-by-column {
+      width: 15%;
+      white-space: nowrap;
     }
 
     .exclude-if-reached-column {
