@@ -458,6 +458,20 @@ export class ExperimentEffects {
     { dispatch: false }
   );
 
+  fetchExperimentOnSearchParamsChange$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionSetSearchParams),
+        tap(() => {
+          const pathname = (this.router.url || '').split('?')[0].split('#')[0];
+          if (pathname === '/home') {
+            this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }));
+          }
+        })
+      ),
+    { dispatch: false }
+  );
+
   fetchContextMetaData$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionFetchContextMetaData),

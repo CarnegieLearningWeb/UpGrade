@@ -28,6 +28,7 @@ import {
   actionGetExperiments,
   actionSetGraphRange,
   actionSetSearchKey,
+  actionSetSearchParams,
   actionSetSearchString,
   actionSetSortingType,
   actionSetSortKey,
@@ -413,6 +414,30 @@ describe('ExperimentService', () => {
       );
       expect(mockStore.dispatch).toHaveBeenCalledWith(
         actionSetSearchString({
+          searchString,
+        })
+      );
+    });
+  });
+
+  describe('#setSearchParams', () => {
+    it('should set localStorage items and dispatch actionSetSearchParams with the given inputs', () => {
+      const searchKey = EXPERIMENT_SEARCH_KEY.DECISION_POINT;
+      const searchString = 'lesson-stream (question-hint)';
+
+      service.setSearchParams(searchKey, searchString);
+
+      expect(mockLocalStorageService.setItem).toHaveBeenCalledWith(
+        ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_KEY,
+        searchKey
+      );
+      expect(mockLocalStorageService.setItem).toHaveBeenCalledWith(
+        ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_STRING,
+        searchString
+      );
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        actionSetSearchParams({
+          searchKey,
           searchString,
         })
       );
