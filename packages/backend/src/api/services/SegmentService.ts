@@ -121,6 +121,12 @@ export class SegmentService {
     );
   }
 
+  // Used by CacheWarmingService — keep the key and query in lockstep with the getter above.
+  public async refreshGlobalExcludeSegmentByContext(context: string): Promise<void> {
+    const segment = await this.segmentRepository.findOneSegmentByContextAndType(context, SEGMENT_TYPE.GLOBAL_EXCLUDE);
+    await this.cacheService.setCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX + context, segment);
+  }
+
   public async getAllPublicSegmentsAndSubsegments(logger: UpgradeLogger): Promise<Segment[]> {
     logger.info({ message: `Find all segments and Subsegments` });
     const queryBuilder = await this.segmentRepository

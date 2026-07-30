@@ -138,6 +138,20 @@ export class FeatureFlagPrecomputedSegmentService {
     return map;
   }
 
+  // Used by CacheWarmingService — keep keys and query in lockstep with getPrecomputedSets above.
+  // findByFlagIds returns index-aligned with flagIds, padding absent rows with null, and setCache
+  // no-ops on null — matching wrapFunction, which also skips null entries when it populates.
+  public async refreshPrecomputedSets(flagIds: string[]): Promise<void> {
+    if (!flagIds.length) return;
+
+    const rows = await this.precomputedSegmentRepository.findByFlagIds(flagIds);
+    await Promise.all(
+      flagIds.map((id, i) =>
+        this.cacheService.setCache(CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX + id, rows[i])
+      )
+    );
+  }
+
   // One-time backfill for all existing flags — call at startup or after migration
   public async recomputeAllFlags(logger: UpgradeLogger): Promise<void> {
     const flags = await this.featureFlagRepository.find({ select: { id: true } });

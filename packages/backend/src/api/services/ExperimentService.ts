@@ -309,6 +309,14 @@ export class ExperimentService {
       });
   }
 
+  // Used by CacheWarmingService. Must stay in lockstep with getCachedValidExperiments above:
+  // same cache key, same repository method, and the raw (unserialized) result — the read path
+  // clones on the way out, so the cached shape has to match what wrap() would have stored.
+  public async refreshCachedValidExperiments(context: string): Promise<void> {
+    const validExperiments = await this.experimentRepository.getValidExperiments(context);
+    await this.cacheService.setCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context, validExperiments);
+  }
+
   public async create(
     experiment: ExperimentDTO,
     currentUser: UserDTO,

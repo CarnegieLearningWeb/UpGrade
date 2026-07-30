@@ -14,6 +14,7 @@ import { publicLoader } from './loaders/publicLoader';
 import { iocLoader } from './loaders/iocLoader';
 import { typeormLoader } from './loaders/typeormLoader';
 import { swaggerLoader } from './loaders/swaggerLoader';
+import { cacheWarmingLoader } from './loaders/cacheWarmingLoader';
 import { CreateSystemUsers } from './init/seed/systemUser';
 import { enableMetricFiltering } from './init/seed/EnableMetricFiltering';
 import { InitMetrics } from './init/seed/initMetrics';
@@ -27,7 +28,16 @@ import { backfillFeatureFlagPrecomputedSegments } from './init/seed/backfillFeat
  */
 const logger = new UpgradeLogger();
 bootstrapMicroframework({
-  loaders: [winstonLoader, iocLoader, typeormLoader, expressLoader, swaggerLoader, homeLoader, publicLoader],
+  loaders: [
+    winstonLoader,
+    iocLoader,
+    typeormLoader,
+    expressLoader,
+    swaggerLoader,
+    homeLoader,
+    publicLoader,
+    cacheWarmingLoader,
+  ],
 })
   .then(() => {
     // logging data after the winston is configured

@@ -146,6 +146,20 @@ export class FeatureFlagService {
     );
   }
 
+  // Used by CacheWarmingService — keep keys and queries in lockstep with the two getters above.
+  // Returns the fresh flag IDs so the warmer can refresh their precomputed segment rows without
+  // a second query, and without warming rows for a flag set that has since changed.
+  public async refreshCachedFlagsForKeys(context: string): Promise<string[]> {
+    const flags = await this.featureFlagRepository.getFlagsForKeys(context);
+    await this.cacheService.setCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + 'keys-' + context, flags);
+    return flags.map((flag) => flag.id);
+  }
+
+  public async refreshCachedFlagsFromContext(context: string): Promise<void> {
+    const flags = await this.featureFlagRepository.getFlagsFromContext(context);
+    await this.cacheService.setCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + context, flags);
+  }
+
   public async clearCachedFlagsForContext(context: string): Promise<void> {
     await this.cacheService.delCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + context);
     await this.cacheService.delCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + 'keys-' + context);
