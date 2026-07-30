@@ -205,6 +205,11 @@ const reducer = createReducer(
   })),
   on(experimentsAction.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
   on(experimentsAction.actionSetSearchString, (state, { searchString }) => ({ ...state, searchString })),
+  on(experimentsAction.actionSetSearchParams, (state, { searchKey, searchString }) => ({
+    ...state,
+    searchKey,
+    searchString,
+  })),
   on(experimentsAction.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
   on(experimentsAction.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
   on(experimentsAction.actionSetSkipExperiment, (state, { skipExperiment }) => ({ ...state, skipExperiment })),

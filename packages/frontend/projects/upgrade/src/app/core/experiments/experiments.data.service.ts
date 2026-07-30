@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
   Experiment,
+  ExperimentDecisionPoint,
   ExperimentStateInfo,
   ExperimentPaginationParams,
   UpdateExperimentFilterModeRequest,
@@ -57,7 +58,14 @@ export class ExperimentDataService {
   private stripVMProperties(experiment: Experiment): Experiment {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { stat, weightingMethod, ...experimentData } = experiment as any;
-    return experimentData;
+    return {
+      ...experimentData,
+      partitions: experimentData.partitions.map((decisionPoint: ExperimentDecisionPoint) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { usedByCount, ...decisionPointData } = decisionPoint;
+        return decisionPointData;
+      }),
+    };
   }
 
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {

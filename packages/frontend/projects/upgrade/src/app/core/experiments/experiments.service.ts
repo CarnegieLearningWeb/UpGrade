@@ -205,6 +205,12 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionSetSearchString({ searchString }));
   }
 
+  setSearchParams(searchKey: EXPERIMENT_SEARCH_KEY, searchString: string) {
+    this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_KEY, searchKey);
+    this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_STRING, searchString);
+    this.store$.dispatch(experimentAction.actionSetSearchParams({ searchKey, searchString }));
+  }
+
   setSortKey(sortKey: EXPERIMENT_SORT_KEY) {
     this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_KEY, sortKey);
     this.store$.dispatch(experimentAction.actionSetSortKey({ sortKey }));

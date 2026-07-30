@@ -224,8 +224,8 @@ class UpgradeClient:
     ) -> MarkDecisionPointResponse:
         """Record that the user encountered a decision point.
 
-        Rotates the cached assignment's condition/factor lists so that
-        successive within-subjects marks cycle through conditions in order.
+        On success, rotates cached assignments that belong to the returned
+        experiment id so successive within-subjects marks cycle in order.
         """
         if self._data_service.get_all_assignments() is None:
             await self.get_all_experiment_conditions()
@@ -244,9 +244,8 @@ class UpgradeClient:
             factor_entry = cached.assignedFactor[0] if cached.assignedFactor else None
             if factor_entry:
                 factor_dict = {k: v.model_dump() for k, v in factor_entry.items()}
-            self._data_service.rotate_assignment(cached)
 
-        return await self._api_service.mark_decision_point(
+        response = await self._api_service.mark_decision_point(
             site=site,
             target=target,
             condition_code=condition,
@@ -258,6 +257,11 @@ class UpgradeClient:
             uniquifier=uniquifier or None,
             client_error=client_error or None,
         )
+
+        if response.experimentId:
+            self._data_service.rotate_assignments_by_experiment_id(response.experimentId)
+
+        return response
 
     def mark_decision_point_sync(
         self,

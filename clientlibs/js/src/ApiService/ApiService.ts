@@ -227,7 +227,7 @@ export default class ApiService {
     });
   }
 
-  public markDecisionPoint({
+  public async markDecisionPoint({
     site,
     target,
     condition,
@@ -236,8 +236,6 @@ export default class ApiService {
     clientError,
   }: UpGradeClientInterfaces.IMarkDecisionPointOptions): Promise<UpGradeClientInterfaces.IMarkDecisionPoint> {
     const assignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
-
-    this.dataService.rotateAssignmentList(assignment);
 
     const data = {
       ...assignment,
@@ -263,7 +261,7 @@ export default class ApiService {
     }
 
     // send request
-    return this.sendRequest<
+    const response = await this.sendRequest<
       UpGradeClientInterfaces.IMarkDecisionPoint,
       UpGradeClientRequests.IMarkDecisionPointRequestBody
     >({
@@ -271,6 +269,12 @@ export default class ApiService {
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });
+
+    if (response?.experimentId) {
+      this.dataService.rotateAssignmentsByExperimentId(response.experimentId);
+    }
+
+    return response;
   }
 
   public log(logData: ILogInput[]): Promise<UpGradeClientInterfaces.ILogResponse[]> {

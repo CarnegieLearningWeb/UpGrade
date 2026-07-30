@@ -94,16 +94,7 @@ export class ExperimentRootSectionCardTableComponent implements AfterViewInit, O
   }
 
   filterExperimentByChips(tagValue: string, type: EXPERIMENT_SEARCH_KEY) {
-    this.setSearchKey(type);
-    this.setSearchString(tagValue);
-  }
-
-  setSearchKey(searchKey: EXPERIMENT_SEARCH_KEY) {
-    this.experimentService.setSearchKey(searchKey);
-  }
-
-  setSearchString(searchString: string) {
-    this.experimentService.setSearchString(searchString);
+    this.experimentService.setSearchParams(type, tagValue);
   }
 
   get EXPERIMENT_STATE() {

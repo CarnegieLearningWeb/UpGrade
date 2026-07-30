@@ -3,6 +3,7 @@ import { DecisionPointRepository } from '../../../src/api/repositories/DecisionP
 import { DecisionPoint } from '../../../src/api/models/DecisionPoint';
 import { Container } from '../../../src/typeorm-typedi-extensions';
 import { initializeMocks } from '../mockdata/mockRepo';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 
 let mock;
 let manager;
@@ -38,6 +39,7 @@ beforeEach(() => {
 
   manager = {
     createQueryBuilder: repo.createQueryBuilder,
+    getRepository: jest.fn().mockReturnValue({ createQueryBuilder: repo.createQueryBuilder }),
   };
 });
 
@@ -194,6 +196,51 @@ describe('DecisionPointRepository Testing', () => {
 
     expect(mock.select).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(1);
+  });
+
+  it('should get distinct non-archived experiment usage counts for each decision point in an experiment', async () => {
+    const usageCounts = [{ decisionPointId: decisionPoint.id, usedByCount: 2 }];
+    mock.getRawMany.mockResolvedValue(usageCounts);
+
+    const res = await repo.getUsageCountsForExperiment('experiment-1');
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledWith('sourceDecisionPoint');
+    expect(mock.select).toHaveBeenCalledWith('sourceDecisionPoint.id', 'decisionPointId');
+    expect(mock.addSelect).toHaveBeenCalledWith('COUNT(DISTINCT usedByExperiment.id)::int', 'usedByCount');
+    expect(mock.leftJoin).toHaveBeenNthCalledWith(
+      1,
+      DecisionPoint,
+      'usedByDecisionPoint',
+      expect.stringContaining('COALESCE(usedByDecisionPoint.target')
+    );
+    expect(mock.leftJoin).toHaveBeenNthCalledWith(
+      2,
+      'usedByDecisionPoint.experiment',
+      'usedByExperiment',
+      'usedByExperiment.state != :archivedState',
+      { archivedState: EXPERIMENT_STATE.ARCHIVED }
+    );
+    expect(mock.where).toHaveBeenCalledWith('"sourceDecisionPoint"."experimentId" = :experimentId', {
+      experimentId: 'experiment-1',
+    });
+    expect(mock.groupBy).toHaveBeenCalledWith('sourceDecisionPoint.id');
+    expect(mock.getRawMany).toHaveBeenCalledTimes(1);
+    expect(res).toEqual(usageCounts);
+  });
+
+  it('should use the provided entity manager to get decision point usage counts within a transaction', async () => {
+    mock.getRawMany.mockResolvedValue([]);
+
+    await repo.getUsageCountsForExperiment('experiment-1', manager);
+
+    expect(manager.getRepository).toHaveBeenCalledWith(DecisionPoint);
+    expect(repo.createQueryBuilder).toHaveBeenCalledWith('sourceDecisionPoint');
+  });
+
+  it('should throw an error when getting decision point usage counts fails', async () => {
+    mock.getRawMany.mockRejectedValue(err);
+
+    await expect(repo.getUsageCountsForExperiment('experiment-1')).rejects.toThrow(err);
   });
 
   describe('setAllPendingActivationFalse', () => {

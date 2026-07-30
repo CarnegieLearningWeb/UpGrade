@@ -12,7 +12,7 @@ import {
 } from '../models/Experiment';
 
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
-import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
+import { DecisionPointRepository, DecisionPointUsageCount } from '../repositories/DecisionPointRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { ExperimentSchedulerService } from './ExperimentSchedulerService';
@@ -232,12 +232,36 @@ export class ExperimentService {
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
-    const experiment = await this.findOne(id, logger);
+    const [experiment, decisionPointUsageCounts] = await Promise.all([
+      this.findOne(id, logger),
+      this.decisionPointRepository.getUsageCountsForExperiment(id),
+    ]);
+
     if (experiment) {
-      return this.reducedConditionPayload(this.formattingPayload(experiment));
+      return this.attachDecisionPointUsageCounts(
+        this.reducedConditionPayload(this.formattingPayload(experiment)),
+        decisionPointUsageCounts
+      );
     } else {
       return undefined;
     }
+  }
+
+  private attachDecisionPointUsageCounts(
+    experiment: ExperimentDTO,
+    decisionPointUsageCounts: DecisionPointUsageCount[]
+  ): ExperimentDTO {
+    const decisionPointUsageCountById = new Map(
+      decisionPointUsageCounts.map(({ decisionPointId, usedByCount }) => [decisionPointId, Number(usedByCount)])
+    );
+
+    return {
+      ...experiment,
+      partitions: experiment.partitions.map((decisionPoint) => ({
+        ...decisionPoint,
+        usedByCount: decisionPointUsageCountById.get(decisionPoint.id) ?? 0,
+      })),
+    };
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
@@ -431,9 +455,15 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
-    return this.reducedConditionPayload(
+    const updatedExperiment = this.reducedConditionPayload(
       await this.updateExperimentInDB(experiment, currentUser, logger, entityManager)
     );
+    const decisionPointUsageCounts = await this.decisionPointRepository.getUsageCountsForExperiment(
+      updatedExperiment.id,
+      entityManager
+    );
+
+    return this.attachDecisionPointUsageCounts(updatedExperiment, decisionPointUsageCounts);
   }
 
   public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {
@@ -553,7 +583,15 @@ export class ExperimentService {
       this.transformStateTimeLogs([responseStateTimeLog])[0],
     ];
 
-    return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(oldExperiment)));
+    const updatedExperiment = this.reducedConditionPayload(
+      this.formattingPayload(this.formattingConditionPayload(oldExperiment))
+    );
+    const decisionPointUsageCounts = await this.decisionPointRepository.getUsageCountsForExperiment(
+      experimentId,
+      entityManager
+    );
+
+    return this.attachDecisionPointUsageCounts(updatedExperiment, decisionPointUsageCounts);
   }
 
   public async verifyExperiments(

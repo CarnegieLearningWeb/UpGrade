@@ -38,6 +38,7 @@ import {
   actionRemoveExperimentStat,
   actionSetSearchString,
   actionSetSearchKey,
+  actionSetSearchParams,
   actionFetchContextMetaData,
   actionFetchContextMetaDataSuccess,
   actionFetchContextMetaDataFailure,
@@ -1077,6 +1078,49 @@ describe('ExperimentEffects', () => {
       actions$.next(
         actionSetSearchKey({
           searchKey,
+        })
+      );
+
+      tick(0);
+
+      expect(store$.dispatch).not.toHaveBeenCalled();
+    }));
+  });
+
+  describe('#fetchExperimentOnSearchParamsChange$', () => {
+    it('should dispatch actionGetExperiments once when search params change on the experiments root page', fakeAsync(() => {
+      const searchKey = EXPERIMENT_SEARCH_KEY.DECISION_POINT;
+      const searchString = 'lesson-stream (question-hint)';
+      router.url = '/home';
+      store$.dispatch = jest.fn();
+
+      service.fetchExperimentOnSearchParamsChange$.subscribe();
+
+      actions$.next(
+        actionSetSearchParams({
+          searchKey,
+          searchString,
+        })
+      );
+
+      tick(0);
+
+      expect(store$.dispatch).toHaveBeenCalledTimes(1);
+      expect(store$.dispatch).toHaveBeenCalledWith(actionGetExperiments({ fromStarting: true }));
+    }));
+
+    it('should not dispatch actionGetExperiments when search params change outside the experiments root page', fakeAsync(() => {
+      const searchKey = EXPERIMENT_SEARCH_KEY.DECISION_POINT;
+      const searchString = 'lesson-stream (question-hint)';
+      router.url = '/home/detail/experiment-id';
+      store$.dispatch = jest.fn();
+
+      service.fetchExperimentOnSearchParamsChange$.subscribe();
+
+      actions$.next(
+        actionSetSearchParams({
+          searchKey,
+          searchString,
         })
       );
 

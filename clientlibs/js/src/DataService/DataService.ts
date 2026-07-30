@@ -82,6 +82,20 @@ export class DataService {
     return assignment;
   }
 
+  public rotateAssignmentsByExperimentId(experimentId: string): void {
+    if (!experimentId || !this.experimentAssignmentData) {
+      return;
+    }
+
+    this.experimentAssignmentData
+      .filter(
+        (assignment) =>
+          Array.isArray(assignment.assignedCondition) &&
+          assignment.assignedCondition.some((condition) => condition?.experimentId === experimentId)
+      )
+      .forEach((assignment) => this.rotateAssignmentList(assignment));
+  }
+
   public findExperimentAssignmentBySiteAndTarget(site: string, target?: string): IExperimentAssignmentv5 {
     const normalizedTarget = target ?? '';
     const assignment = this.experimentAssignmentData.find(
