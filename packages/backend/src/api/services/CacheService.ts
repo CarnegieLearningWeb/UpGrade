@@ -12,7 +12,8 @@ const PREFIX_CATEGORY: Record<CACHE_PREFIX, CacheBucket> = {
   [CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX]: 'featureFlags',
   [CACHE_PREFIX.SEGMENT_KEY_PREFIX]: 'segments',
   [CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX]: 'segments',
-  [CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX]: 'segments',
+  // We want these segments to be subject to the same TTL as feature flags
+  [CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX]: 'featureFlags',
 };
 
 // this module will get swapped in if caching is enabled but the cache manager fails to initialize as a dummy default deliverer
