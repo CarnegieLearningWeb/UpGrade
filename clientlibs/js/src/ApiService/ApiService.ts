@@ -216,8 +216,7 @@ export default class ApiService {
     };
 
     if (site != null) {
-      requestBody.site = site;
-      requestBody.target = target ?? '';
+      requestBody.decisionPoint = { site, target: target ?? '' };
     }
 
     return this.sendRequest<IExperimentAssignmentv5[], UpGradeClientRequests.IGetAllExperimentConditionsRequestBody>({

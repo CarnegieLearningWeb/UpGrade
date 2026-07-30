@@ -214,8 +214,7 @@ describe('ApiService', () => {
     it('should call sendRequest with context, site and normalized target', async () => {
       const requestBody: UpGradeClientRequests.IGetAllExperimentConditionsRequestBody = {
         context: defaultConfig.context,
-        site: 'siteA',
-        target: '',
+        decisionPoint: { site: 'siteA', target: '' },
       };
 
       await apiService.getAllExperimentConditions('siteA', undefined);

@@ -224,8 +224,8 @@ class TestGetAllExperimentConditions:
         route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=[]))
         await make_client().get_all_experiment_conditions(site="home")
         body = json.loads(route.calls[0].request.content)
-        assert body["site"] == "home"
-        assert body["target"] == ""
+        assert body["decisionPoint"]["site"] == "home"
+        assert body["decisionPoint"]["target"] == ""
 
     @respx.mock
     async def test_site_scoped_fetch_merges_into_warm_cache(self) -> None:
@@ -319,8 +319,8 @@ class TestGetDecisionPointAssignment:
         second_body = json.loads(route.calls[1].request.content)
         assert result is not None
         assert route.call_count == 2
-        assert second_body["site"] == "quiz"
-        assert second_body["target"] == "hint"
+        assert second_body["decisionPoint"]["site"] == "quiz"
+        assert second_body["decisionPoint"]["target"] == "hint"
         assert client._data_service.get_assignment("home", "banner") is not None
 
     @respx.mock

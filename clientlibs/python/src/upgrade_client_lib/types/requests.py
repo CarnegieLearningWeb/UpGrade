@@ -25,11 +25,15 @@ class SetWorkingGroupRequest(BaseModel):
     workingGroup: dict[str, str]
 
 
+class DecisionPointRef(BaseModel):
+    site: str
+    target: str | None = None
+
+
 class AssignRequest(BaseModel):
     userId: str
     context: str
-    site: str | None = None
-    target: str | None = None
+    decisionPoint: DecisionPointRef | None = None
 
 
 class MarkDecisionPointCondition(BaseModel):

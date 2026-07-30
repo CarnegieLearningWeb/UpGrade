@@ -194,6 +194,7 @@ class TestGetAllExperimentConditions:
         body = json.loads(route.calls[0].request.content)
         assert body["context"] == CONTEXT
         assert body["userId"] == USER_ID
+        assert "decisionPoint" not in body
 
     @respx.mock
     async def test_sends_site_and_default_target_for_decision_point_fetch(self) -> None:
@@ -202,8 +203,8 @@ class TestGetAllExperimentConditions:
         import json
 
         body = json.loads(route.calls[0].request.content)
-        assert body["site"] == "home"
-        assert body["target"] == ""
+        assert body["decisionPoint"]["site"] == "home"
+        assert body["decisionPoint"]["target"] == ""
 
     @respx.mock
     async def test_empty_response(self) -> None:

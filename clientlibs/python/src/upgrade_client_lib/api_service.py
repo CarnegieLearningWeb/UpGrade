@@ -157,8 +157,7 @@ class ApiService:
     ) -> list[ExperimentAssignment]:
         body: dict[str, Any] = {"context": self._context, "userId": self._user_id}
         if site is not None:
-            body["site"] = site
-            body["target"] = target if target is not None else ""
+            body["decisionPoint"] = {"site": site, "target": target if target is not None else ""}
         data = await self._post_async("assign", body)
         return [ExperimentAssignment.model_validate(item) for item in data]
 
@@ -167,8 +166,7 @@ class ApiService:
     ) -> list[ExperimentAssignment]:
         body: dict[str, Any] = {"context": self._context, "userId": self._user_id}
         if site is not None:
-            body["site"] = site
-            body["target"] = target if target is not None else ""
+            body["decisionPoint"] = {"site": site, "target": target if target is not None else ""}
         data = self._post_sync("assign", body)
         return [ExperimentAssignment.model_validate(item) for item in data]
 
