@@ -23,6 +23,7 @@ import {
   actionSetIsGraphLoading,
   actionSetIsLoadingExperiment,
   actionSetSearchKey,
+  actionSetSearchParams,
   actionSetSearchString,
   actionSetSkipExperiment,
   actionSetSortingType,
@@ -556,6 +557,23 @@ describe('ExperimentsReducer', () => {
 
     expect(newState).not.toBe(previousState);
     expect(newState.searchString).toEqual('test');
+  });
+
+  it('action "actionSetSearchParams" should set search key and search string', () => {
+    const previousState = { ...initialState };
+    previousState.searchKey = EXPERIMENT_SEARCH_KEY.ALL;
+    previousState.searchString = 'previous';
+
+    const testAction: Action = actionSetSearchParams({
+      searchKey: EXPERIMENT_SEARCH_KEY.DECISION_POINT,
+      searchString: 'lesson-stream (question-hint)',
+    });
+
+    const newState = experimentsReducer(previousState, testAction);
+
+    expect(newState).not.toBe(previousState);
+    expect(newState.searchKey).toEqual(EXPERIMENT_SEARCH_KEY.DECISION_POINT);
+    expect(newState.searchString).toEqual('lesson-stream (question-hint)');
   });
 
   it('action "actionSetSortKey" should set sort key', () => {
