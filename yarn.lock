@@ -357,10 +357,10 @@
   resolved "https://registry.yarnpkg.com/@angular/compiler/-/compiler-9.0.0.tgz#87e0bef4c369b6cadae07e3a4295778fc93799d5"
   integrity sha512-ctjwuntPfZZT2mNj2NDIVu51t9cvbhl/16epc5xEwyzyDt76pX9UgwvY+MbXrf/C/FWwdtmNtfP698BKI+9leQ==
 
-"@angular/compiler@^20.3.25":
-  version "20.3.26"
-  resolved "https://registry.yarnpkg.com/@angular/compiler/-/compiler-20.3.26.tgz#d4a7a87401ae1ef3a354c91a82b71156db121801"
-  integrity sha512-H4DVTBCiyM4dGytFi2C8sMGflxXzPnoQ6Ajfs4hJ/Dekg6ypfvW5Ze7BDh4TaMQvaX2joM5LhBYW5jTxBx66hA==
+"@angular/compiler@^20.3.27":
+  version "20.3.27"
+  resolved "https://registry.yarnpkg.com/@angular/compiler/-/compiler-20.3.27.tgz#052a968f3830b9279d299b7ee0d1f248bdf0dc23"
+  integrity sha512-in3THZ678GAYuOR9RZV18+zZz0KGhlGikyUEfLeALLjGf9ZaR3n+t19BmYx6G2VkF/Xqadne1omQ2vbl6PRASA==
   dependencies:
     tslib "^2.3.0"
 
