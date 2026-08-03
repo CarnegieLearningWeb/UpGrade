@@ -34,6 +34,7 @@ import {
   AddSegmentRequest,
   EditPrivateSegmentListRequest,
   LIST_OPTION_TYPE,
+  Segment,
   SegmentInput,
   SegmentLocalStorageKeys,
   UpdateSegmentRequest,
@@ -120,6 +121,11 @@ export class SegmentsService {
 
   fetchSegmentById(segmentId: string) {
     this.store$.dispatch(SegmentsActions.actionGetSegmentById({ segmentId }));
+  }
+
+  // Lazy-loads a list's members for editing (bypasses the store).
+  fetchSegmentWithMembersById(segmentId: string): Observable<Segment> {
+    return this.segmentsDataService.fetchSegmentWithMembersById(segmentId);
   }
 
   refetchCurrentSelectedSegment() {

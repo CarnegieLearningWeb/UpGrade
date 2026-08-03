@@ -23,6 +23,7 @@ import {
   selectAllExperiment,
   selectHasInitialExperimentsDataLoaded,
   selectIsLoadingExperiment,
+  selectIsLoadingUpsertPrivateSegmentList,
   selectSelectedExperiment,
   selectExperimentOverviewDetails,
   selectSearchExperimentParams,
@@ -71,6 +72,7 @@ export class ExperimentService {
   experiments$: Observable<Experiment[]> = this.store$.pipe(select(selectAllExperiment));
   currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
+  isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertPrivateSegmentList));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
   selectedExperimentOverviewDetails$ = this.store$.pipe(select(selectExperimentOverviewDetails));
   searchParams$ = this.store$.pipe(select(selectSearchExperimentParams));
@@ -201,6 +203,12 @@ export class ExperimentService {
   setSearchString(searchString: string) {
     this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_STRING, searchString);
     this.store$.dispatch(experimentAction.actionSetSearchString({ searchString }));
+  }
+
+  setSearchParams(searchKey: EXPERIMENT_SEARCH_KEY, searchString: string) {
+    this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_KEY, searchKey);
+    this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_STRING, searchString);
+    this.store$.dispatch(experimentAction.actionSetSearchParams({ searchKey, searchString }));
   }
 
   setSortKey(sortKey: EXPERIMENT_SORT_KEY) {

@@ -6,7 +6,7 @@ import {
 } from '@shared-component-lib';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { IMenuButtonItem, FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { IMenuButtonItem, FILTER_MODE } from 'upgrade_types';
 import { FeatureFlagInclusionsTableComponent } from './feature-flag-inclusions-table/feature-flag-inclusions-table.component';
 import { FeatureFlagsService } from '../../../../../../../core/feature-flags/feature-flags.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
@@ -21,11 +21,7 @@ import {
   ParticipantListRowActionEvent,
   ParticipantListTableRow,
 } from '../../../../../../../core/feature-flags/store/feature-flags.model';
-import {
-  EditPrivateSegmentListDetails,
-  EditPrivateSegmentListRequest,
-  Segment,
-} from '../../../../../../../core/segments/store/segments.model';
+import { Segment } from '../../../../../../../core/segments/store/segments.model';
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 
@@ -164,10 +160,10 @@ export class FeatureFlagInclusionsSectionCardComponent {
   onRowAction(event: ParticipantListRowActionEvent, flagId: string): void {
     switch (event.action) {
       case PARTICIPANT_LIST_ROW_ACTION.ENABLE:
-        this.onEnableIncludeList(event.rowData, flagId);
+        this.onEnableIncludeList(event.rowData);
         break;
       case PARTICIPANT_LIST_ROW_ACTION.DISABLE:
-        this.onDisableIncludeList(event.rowData, flagId);
+        this.onDisableIncludeList(event.rowData);
         break;
       case PARTICIPANT_LIST_ROW_ACTION.EDIT:
         this.onEditIncludeList(event.rowData, flagId);
@@ -178,62 +174,30 @@ export class FeatureFlagInclusionsSectionCardComponent {
     }
   }
 
-  onEnableIncludeList(rowData: ParticipantListTableRow, flagId: string): void {
+  onEnableIncludeList(rowData: ParticipantListTableRow): void {
     this.dialogService
       .openEnableIncludeListModal(rowData.segment.name)
       .afterClosed()
       .subscribe((confirmClicked) => {
         if (confirmClicked) {
-          this.sendUpdateIncludeListRequest(flagId, true, rowData.listType, rowData.segment);
+          this.featureFlagService.updateFeatureFlagInclusionListStatus(rowData.segment.id, true);
         }
       });
   }
 
-  onDisableIncludeList(rowData: ParticipantListTableRow, flagId: string): void {
+  onDisableIncludeList(rowData: ParticipantListTableRow): void {
     this.dialogService
       .openDisableIncludeListModal(rowData.segment.name)
       .afterClosed()
       .subscribe((confirmClicked) => {
         if (confirmClicked) {
-          this.sendUpdateIncludeListRequest(flagId, false, rowData.listType, rowData.segment);
+          this.featureFlagService.updateFeatureFlagInclusionListStatus(rowData.segment.id, false);
         }
       });
   }
 
   onEditIncludeList(rowData: ParticipantListTableRow, flagId: string): void {
     this.dialogService.openFeatureFlagEditIncludeListModal(rowData, rowData.segment.context, flagId);
-  }
-
-  sendUpdateIncludeListRequest(flagId: string, enabled: boolean, listType: string, segment: Segment): void {
-    const list: EditPrivateSegmentListDetails = this.createEditPrivateSegmentListDetails(segment);
-
-    const listRequest: EditPrivateSegmentListRequest = {
-      id: flagId,
-      enabled,
-      listType,
-      segment: list,
-    };
-
-    this.sendUpdateFeatureFlagInclusionRequest(listRequest);
-  }
-
-  createEditPrivateSegmentListDetails(segment: Segment): EditPrivateSegmentListDetails {
-    const editPrivateSegmentListDetails: EditPrivateSegmentListDetails = {
-      id: segment.id,
-      name: segment.name,
-      description: segment.description,
-      context: segment.context,
-      type: SEGMENT_TYPE.PRIVATE,
-      userIds: segment.individualForSegment.map((individual) => individual.userId),
-      groups: segment.groupForSegment,
-      subSegmentIds: segment.subSegments.map((subSegment) => subSegment.id),
-    };
-
-    return editPrivateSegmentListDetails;
-  }
-
-  sendUpdateFeatureFlagInclusionRequest(request: EditPrivateSegmentListRequest): void {
-    this.featureFlagService.updateFeatureFlagInclusionPrivateSegmentList(request);
   }
 
   onDeleteIncludeList(segment: Segment): void {

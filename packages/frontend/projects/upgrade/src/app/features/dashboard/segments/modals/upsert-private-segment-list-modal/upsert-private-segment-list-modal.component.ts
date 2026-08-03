@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { CommonModalComponent, CommonTagsInputComponent } from '@shared-component-lib';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
@@ -35,7 +35,18 @@ import {
   UpsertPrivateSegmentListParams,
 } from '../../../../../core/segments/store/segments.model';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { BehaviorSubject, combineLatestWith, map, Observable, startWith, Subscription, timer } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  combineLatestWith,
+  EMPTY,
+  map,
+  Observable,
+  startWith,
+  Subscription,
+  timer,
+} from 'rxjs';
 import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
@@ -63,7 +74,18 @@ import { SharedModule } from '../../../../../shared/shared.module';
 export class UpsertPrivateSegmentListModalComponent {
   @ViewChild('typeSelectRef') typeSelectRef: MatSelect;
   listOptionTypes$: Observable<{ value: string; viewValue: string }[]>;
-  isLoadingUpsertFeatureFlagList$ = this.featureFlagService.isLoadingUpsertPrivateSegmentList$;
+  // Disable the primary button while an add/edit is in flight in any of the three stores this
+  // modal drives (flag/experiment/segment), to prevent double-submits.
+  isUpsertLoading$ = combineLatest([
+    this.featureFlagService.isLoadingUpsertPrivateSegmentList$,
+    this.experimentService.isLoadingUpsertPrivateSegmentList$,
+    this.segmentsService.isLoadingSegments$,
+  ]).pipe(map((loadingFlags) => loadingFlags.some(Boolean)));
+  // True while the lazy member fetch (for counts-only edit sources) is in flight. Until it
+  // resolves the form's values control holds only the partial (counts-only) data, so submitting
+  // would send a full-replacement update that drops the unloaded members. Included in
+  // isPrimaryButtonDisabled$ to block saving during the fetch.
+  isLoadingMembers$ = new BehaviorSubject<boolean>(false);
   initialFormValues$ = new BehaviorSubject<PrivateSegmentListFormData>(null);
 
   subscriptions = new Subscription();
@@ -86,6 +108,7 @@ export class UpsertPrivateSegmentListModalComponent {
     private experimentService: ExperimentService,
     private featureFlagService: FeatureFlagsService,
     private commonExportHelpersService: CommonExportHelpersService,
+    private changeDetectorRef: ChangeDetectorRef,
     public dialogRef: MatDialogRef<UpsertPrivateSegmentListModalComponent>
   ) {}
 
@@ -187,13 +210,42 @@ export class UpsertPrivateSegmentListModalComponent {
       return;
     }
 
-    const values = this.determineValues(sourceList.listType, sourceList.segment);
+    this.applyEditFormValues(sourceList.listType, sourceList.segment);
+
+    // Lazy-load the full members when the (counts-only) source list didn't include them.
+    if (this.segmentMembersNeedFetch(sourceList.listType, sourceList.segment)) {
+      // Block saving until the members load; otherwise a submit could full-replace with partial data.
+      this.isLoadingMembers$.next(true);
+      this.subscriptions.add(
+        this.segmentsService
+          .fetchSegmentWithMembersById(sourceList.segment.id)
+          .pipe(
+            catchError(() => {
+              // The HTTP interceptor shows the error; close the modal so a partially-loaded list can't be saved.
+              this.isLoadingMembers$.next(false);
+              this.closeModal();
+              return EMPTY;
+            })
+          )
+          .subscribe((segment) => {
+            if (segment) {
+              this.applyEditFormValues(sourceList.listType, segment);
+              this.changeDetectorRef.markForCheck();
+            }
+            this.isLoadingMembers$.next(false);
+          })
+      );
+    }
+  }
+
+  private applyEditFormValues(listType: string, segment: Segment): void {
+    const values = this.determineValues(listType, segment);
     const formValue: PrivateSegmentListFormData = {
-      listType: sourceList.listType as LIST_OPTION_TYPE,
-      segment: sourceList.segment,
+      listType: listType as LIST_OPTION_TYPE,
+      segment,
       values,
-      name: sourceList.segment.name,
-      description: sourceList.segment.description,
+      name: segment.name,
+      description: segment.description,
     };
 
     this.privateSegmentListForm.patchValue(formValue, { emitEvent: false });
@@ -202,17 +254,28 @@ export class UpsertPrivateSegmentListModalComponent {
     this.initialFormValues$.next(formValue);
 
     // Trigger validators after populating the form
-    this.setValidatorsBasedOnListType(sourceList.listType);
+    this.setValidatorsBasedOnListType(listType);
+  }
+
+  // True when members exist (count > 0) but weren't loaded, so they must be fetched before editing.
+  private segmentMembersNeedFetch(listType: string, segment: Segment): boolean {
+    if (!segment?.id || listType === LIST_OPTION_TYPE.SEGMENT) {
+      return false;
+    }
+    if (listType === LIST_OPTION_TYPE.INDIVIDUAL) {
+      return !segment.individualForSegment?.length && (segment.individualForSegmentCount ?? 0) > 0;
+    }
+    return !segment.groupForSegment?.length && (segment.groupForSegmentCount ?? 0) > 0;
   }
 
   determineValues(listType: string, segment: Segment): string[] {
     switch (listType) {
       case LIST_OPTION_TYPE.INDIVIDUAL:
-        return segment.individualForSegment.map((individual) => individual.userId);
+        return segment.individualForSegment?.map((individual) => individual.userId) ?? [];
       case LIST_OPTION_TYPE.SEGMENT:
         return [];
       default:
-        return segment.groupForSegment.map((group) => group.groupId);
+        return segment.groupForSegment?.map((group) => group.groupId) ?? [];
     }
   }
 
@@ -231,9 +294,12 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   listenForPrimaryButtonDisabled() {
-    this.isPrimaryButtonDisabled$ = this.isLoadingUpsertFeatureFlagList$.pipe(
-      combineLatestWith(this.isInitialFormValueChanged$),
-      map(([isLoading, isInitialFormValueChanged]) => isLoading || !isInitialFormValueChanged)
+    this.isPrimaryButtonDisabled$ = this.isUpsertLoading$.pipe(
+      combineLatestWith(this.isInitialFormValueChanged$, this.isLoadingMembers$),
+      map(
+        ([isLoading, isInitialFormValueChanged, isLoadingMembers]) =>
+          isLoading || isLoadingMembers || !isInitialFormValueChanged
+      )
     );
     this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
   }

@@ -17,8 +17,7 @@ import {
   EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
   EXPERIMENT_STATE,
 } from 'upgrade_types';
-import { Not } from 'typeorm';
-import { EntityManager, DataSource } from 'typeorm';
+import { EntityManager, DataSource, Not, In } from 'typeorm';
 import Papa from 'papaparse';
 import { env } from '../../env';
 
@@ -37,11 +36,10 @@ import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFl
 import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFlagSegmentInclusionRepository';
 import { getSegmentData, getSegmentsData } from '../controllers/SegmentController';
 import { CacheService } from './CacheService';
+import { FeatureFlagPrecomputedSegmentService } from './FeatureFlagPrecomputedSegmentService';
 import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import path from 'path';
-import { IndividualForSegment } from '../models/IndividualForSegment';
-import { GroupForSegment } from '../models/GroupForSegment';
 import { ISegmentSearchParams, ISegmentSortParams } from '../controllers/validators/SegmentPaginatedParamsValidator';
 import { ExperimentSegmentExclusion } from 'src/api/models/ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from 'src/api/models/ExperimentSegmentInclusion';
@@ -83,7 +81,8 @@ export class SegmentService {
     private featureFlagSegmentExclusionRepository: FeatureFlagSegmentExclusionRepository,
     @InjectRepository()
     private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
-    private cacheService: CacheService
+    private cacheService: CacheService,
+    private featureFlagPrecomputedSegmentService: FeatureFlagPrecomputedSegmentService
   ) {}
 
   public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
@@ -148,6 +147,18 @@ export class SegmentService {
       .getOne();
 
     return segmentDoc;
+  }
+
+  // Like getSegmentById but includes private lists, so a flag/experiment list can be loaded for editing.
+  public async getSegmentByIdWithMembers(id: string, logger: UpgradeLogger): Promise<Segment> {
+    logger.info({ message: `Find segment (including private) with members by id. segmentId: ${id}` });
+    return this.segmentRepository
+      .createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .where({ id })
+      .getOne();
   }
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
@@ -420,40 +431,55 @@ export class SegmentService {
     const newList: SegmentInputValidator = { ...segmentInput, type: SEGMENT_TYPE.PRIVATE };
     const createdSegment = await manager.transaction(async (transactionalEntityManager) => {
       const createdSegment = await this.upsertSegmentInPipeline(newList, logger, transactionalEntityManager);
-      const parentSegment = await this.getSegmentById(parentSegmentId, logger);
+      const segmentRepo = transactionalEntityManager.getRepository(Segment);
+
+      // Load only the ID (+ tags) and avoid loading relationships (which can trigger cascade issues)
+      const parentSegment = await segmentRepo.findOne({
+        where: { id: parentSegmentId },
+        select: { id: true, tags: true },
+      });
+
       if (!parentSegment) {
         throw new Error('Parent Segment not found');
       }
-      parentSegment.tags = parentSegment.tags || [];
-      parentSegment.subSegments = [...parentSegment.subSegments, createdSegment];
-      await transactionalEntityManager.getRepository(Segment).save(parentSegment);
+
+      // Update tags if needed
+      if (!parentSegment.tags) {
+        parentSegment.tags = [];
+        await segmentRepo.save(parentSegment);
+      }
+
+      // Use relation API to avoid cascade behavior from loaded entities
+      await segmentRepo.createQueryBuilder().relation('subSegments').of(parentSegment).add(createdSegment);
+
       return createdSegment;
     });
+
+    this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
+
     return createdSegment;
   }
 
   public async deleteList(segmentId: string, parentSegmentId: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Deleting list => ${segmentId} from segment ${parentSegmentId}` });
+
+    const parentSegment = await this.getSegmentById(parentSegmentId, logger);
+    if (!parentSegment || !parentSegment.subSegments.some((subSegment) => subSegment.id === segmentId)) {
+      throw new Error(`List ${segmentId} not found in parent segment ${parentSegmentId}`);
+    }
+
     const manager = this.dataSource;
     const deletedSegmentResponse = await manager.transaction(async (transactionalEntityManager) => {
-      const parentSegment = await this.getSegmentById(parentSegmentId, logger);
-      if (!parentSegment) {
-        throw new Error('Parent Segment  not found');
-      }
-      if (!parentSegment.subSegments.map((subSegment) => subSegment.id).includes(segmentId)) {
-        throw new Error(`List ${segmentId} not found in parent segment ${parentSegmentId}`);
-      }
       const deletedSegmentResponse = await this.segmentRepository.deleteSegments(
         [segmentId],
         logger,
         transactionalEntityManager
       );
 
-      parentSegment.subSegments = parentSegment.subSegments.filter((subSegment) => subSegment.id !== segmentId);
-
-      await transactionalEntityManager.getRepository(Segment).save(parentSegment);
       return deletedSegmentResponse;
     });
+
+    this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
 
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
@@ -465,18 +491,28 @@ export class SegmentService {
   public upsertSegmentInPipeline(
     segment: SegmentInputValidator,
     logger: UpgradeLogger,
-    transactionalEntityManager: EntityManager
+    transactionalEntityManager: EntityManager,
+    skipScheduleRecompute = false
   ): Promise<Segment> {
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
-    return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager);
+    return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager, skipScheduleRecompute);
   }
 
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
-    const manager = this.dataSource;
-    const deletedSegment = await manager.transaction(async (transactionalEntityManager) => {
-      return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
-    });
+
+    // withRecompute collects the affected flags BEFORE the delete (the join rows are gone after),
+    // runs the delete in its own transaction, then fires a fire-and-forget recompute for those
+    // flags after commit. Keeping the ordering inside the wrapper means a future refactor of this
+    // method can't accidentally break it.
+    const deletedSegment = await this.featureFlagPrecomputedSegmentService.withRecompute(
+      logger,
+      () => this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
+      () =>
+        this.dataSource.transaction((transactionalEntityManager) =>
+          this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
+        )
+    );
 
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
@@ -888,39 +924,41 @@ export class SegmentService {
   async addSegmentDataWithPipeline(
     segment: SegmentInputValidator,
     logger: UpgradeLogger,
-    transactionalEntityManager: EntityManager
+    transactionalEntityManager: EntityManager,
+    skipScheduleRecompute = false
   ): Promise<Segment> {
     let segmentDoc: Segment;
+    const segmentRepo = transactionalEntityManager.getRepository(Segment);
 
-    let usersToDelete = [],
-      groupsToDelete = [];
     if (segment.id) {
       try {
-        // get segment by ids
-        segmentDoc = await transactionalEntityManager.getRepository(Segment).findOne({
+        // Full replace: clear members and relationships with a single delete-by-segmentId per table.
+        // A per-row criteria array (the previous approach) expands into a giant OR predicate that
+        // is very slow for large lists. The delete is cheap even when there are no members, so we
+        // skip the pre-SELECT that used to load the full member arrays just to decide whether to delete.
+
+        // Load old subsegments to remove them
+        const oldSegment = await segmentRepo.findOne({
           where: { id: segment.id },
-          relations: {
-            individualForSegment: true,
-            groupForSegment: true,
-            subSegments: true,
-          },
+          relations: { subSegments: true },
         });
 
-        // delete individual for segment
-        if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
-          usersToDelete = segmentDoc.individualForSegment.map((individual) => {
-            return { userId: individual.userId, segment: segment };
-          });
-          await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
-        }
-
-        // delete group for segment
-        if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
-          groupsToDelete = segmentDoc.groupForSegment.map((group) => {
-            return { groupId: group.groupId, type: group.type, segment: segment };
-          });
-          await transactionalEntityManager.getRepository(GroupForSegment).delete(groupsToDelete as any);
-        }
+        await Promise.all([
+          this.individualForSegmentRepository.deleteIndividualForSegmentById(
+            segment.id,
+            transactionalEntityManager,
+            logger
+          ),
+          this.groupForSegmentRepository.deleteGroupForSegmentById(segment.id, transactionalEntityManager, logger),
+          // Remove old subsegment relationships
+          oldSegment && oldSegment.subSegments.length > 0
+            ? segmentRepo
+                .createQueryBuilder()
+                .relation('subSegments')
+                .of({ id: segment.id })
+                .remove(oldSegment.subSegments)
+            : Promise.resolve(),
+        ]);
       } catch (err) {
         const error = err as ErrorWithType;
         error.details = 'Error in deleting segment from DB';
@@ -933,46 +971,47 @@ export class SegmentService {
     // create/update segment document
     segment.id = segment.id || crypto.randomUUID();
     const { id, name, description, context, type, listType, tags } = segment;
-    const segmentsById = await this.getSegmentByIds(segment.subSegmentIds || []);
-    const allSegments = [...segmentsById, ...(segment.subSegments || [])];
-    // If the segment is public and there are private subsegments, they are lists - so we need to clone the data
-    const isListData =
-      type === SEGMENT_TYPE.PUBLIC && allSegments.some((subSegment) => subSegment.type === SEGMENT_TYPE.PRIVATE);
-    let subSegmentData;
-    if (isListData) {
+
+    let subSegmentData: Array<Pick<Segment, 'id'>> = [];
+
+    // For non-list segments with subSegmentIds, just verify they exist without loading full relations
+    if (type === SEGMENT_TYPE.PUBLIC && segment.subSegments?.some((sub) => sub.type === SEGMENT_TYPE.PRIVATE)) {
+      // Public segment with embedded private subsegments (lists) - recursively create them
       subSegmentData = await Promise.all(
-        allSegments.map(async (subSegment) => {
-          // Create a new segment input object for the list
+        segment.subSegments.map(async (subSegment) => {
+          // Create a new segment input object for the list (cloning, not updating)
           const segmentInput = subSegment as unknown as SegmentInputValidator;
-          segmentInput.userIds = subSegment.individualForSegment.map((user) => user.userId);
-          segmentInput.groups = subSegment.groupForSegment.map((group) => {
-            return { type: group.type, groupId: group.groupId };
-          });
-          segmentInput.subSegmentIds = subSegment.subSegments.map((subSegment) => subSegment.id);
-          subSegment.id = undefined;
+          segmentInput.id = undefined; // Clear id to create new clone instead of updating existing segment
+          segmentInput.userIds = subSegment.individualForSegment?.map((user) => user.userId) || [];
+          segmentInput.groups =
+            subSegment.groupForSegment?.map((group) => {
+              return { type: group.type, groupId: group.groupId };
+            }) || [];
+          segmentInput.subSegmentIds = subSegment.subSegments?.map((subSegment) => subSegment.id) || [];
           return await this.addSegmentDataWithPipeline(segmentInput, logger, transactionalEntityManager);
         })
       );
-    } else {
-      subSegmentData =
-        segment.subSegmentIds
-          ?.map((subSegmentId) => {
-            const subSegment = allSegments.find((segment) => subSegmentId === segment.id);
-            if (subSegment) {
-              return subSegment;
-            } else {
-              const error = new Error(
-                'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
-              );
-              (error as any).type = SERVER_ERROR.QUERY_FAILED;
-              logger.error(error);
-              return null;
-            }
-          })
-          ?.filter((subSegment) => subSegment !== null) || []; // filter out null values
+    } else if (segment.subSegmentIds && segment.subSegmentIds.length > 0) {
+      // Just adding references to existing segments - verify existence without loading full relations
+      const existingIds = await segmentRepo.find({
+        where: { id: In(segment.subSegmentIds) },
+        select: { id: true },
+      });
+
+      const existingIdSet = new Set(existingIds.map((s) => s.id));
+
+      for (const subSegmentId of segment.subSegmentIds) {
+        if (!existingIdSet.has(subSegmentId)) {
+          // Skip unknown subsegment references silently — validation already warned about these
+          logger.warn({ message: `SubSegment: ${subSegmentId} not found, skipping reference.` });
+          continue;
+        }
+        subSegmentData.push({ id: subSegmentId });
+      }
     }
+
     try {
-      segmentDoc = await transactionalEntityManager.getRepository(Segment).save({
+      segmentDoc = await segmentRepo.save({
         id,
         name,
         description,
@@ -980,8 +1019,18 @@ export class SegmentService {
         type,
         listType,
         tags,
-        subSegments: subSegmentData,
+        // Don't include subSegments in save to avoid cascade updates
       });
+
+      // Manually set the relationship without cascading updates to child segments
+      // This prevents TypeORM from overwriting the child segments' own subSegments relationships
+      if (subSegmentData.length > 0) {
+        await segmentRepo
+          .createQueryBuilder()
+          .relation('subSegments')
+          .of(segmentDoc)
+          .add(subSegmentData.map((s) => ({ id: s.id })));
+      }
     } catch (err) {
       const error = err as ErrorWithType;
       error.details = 'Error in saving segment in DB';
@@ -1033,13 +1082,17 @@ export class SegmentService {
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX);
 
-    return transactionalEntityManager.getRepository(Segment).findOne({
+    // Recompute precomputed sets for all flags that reference this segment (fire-and-forget).
+    // Skip when the caller already owns an explicit recomputeForFlag after the transaction —
+    // firing this from inside a transaction risks a stale-read race where the fire-and-forget
+    // reads the old enabled value and its upsert overwrites the correct post-commit result.
+    if (!skipScheduleRecompute) {
+      this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
+    }
+
+    return segmentRepo.findOne({
       where: { id: segmentDoc.id },
-      relations: {
-        individualForSegment: true,
-        groupForSegment: true,
-        subSegments: true,
-      },
+      relations: { subSegments: true, individualForSegment: true, groupForSegment: true },
     });
   }
 

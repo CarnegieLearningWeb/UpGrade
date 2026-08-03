@@ -59,6 +59,20 @@ export default class FeatureFlagServiceMock {
     return Promise.resolve([]);
   }
 
+  public findOneForDetails(id: string, logger: UpgradeLogger): Promise<Record<string, unknown>> {
+    return Promise.resolve({});
+  }
+
+  public updateListStatus(
+    segmentId: string,
+    enabled: boolean,
+    filterType: string,
+    currentUser: unknown,
+    logger: UpgradeLogger
+  ): Promise<Record<string, unknown>> {
+    return Promise.resolve({});
+  }
+
   public validateFeatureFlagContext(flag: FeatureFlag): boolean {
     return false;
   }

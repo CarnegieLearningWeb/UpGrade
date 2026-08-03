@@ -107,6 +107,9 @@ export interface Segment {
   individualForSegment: IndividualForSegment[];
   groupForSegment: GroupForSegment[];
   subSegments: Segment[];
+  // Member counts from counts-only loads (e.g. flag details); undefined when full lists are present.
+  individualForSegmentCount?: number;
+  groupForSegmentCount?: number;
   listType?: MemberTypes | string;
   type: SEGMENT_TYPE;
   status: SEGMENT_STATUS;

@@ -204,6 +204,7 @@ export interface ExperimentDecisionPoint {
   versionNumber: number;
   excludeIfReached: boolean;
   pendingActivation?: boolean;
+  usedByCount?: number;
 }
 
 export interface ExperimentFactor {
@@ -627,6 +628,7 @@ export interface ExperimentState {
   isLoadingImportExperiment: boolean;
   isLoadingRewardsSummary: boolean;
   rewardsSummaries: Record<string, ExperimentRewardsSummary>;
+  isLoadingUpsertPrivateSegmentList?: boolean;
 }
 
 export interface State extends AppState {

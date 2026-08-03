@@ -477,6 +477,9 @@ interface ExperimentListImportValidation {
  *             description:
  *               type: string
  *               minLength: 1
+ *             usedByCount:
+ *               type: integer
+ *               description: Number of non-archived experiments using this decision point
  *             order: {}
  *       queries:
  *         type: array
@@ -783,7 +786,7 @@ export class ExperimentController {
    *                properties:
    *                  key:
    *                    type: string
-   *                    enum: [all, name, status, tag]
+   *                    enum: [all, name, status, tag, context, id, decisionPoint]
    *                  string:
    *                    type: string
    *               sortParams:

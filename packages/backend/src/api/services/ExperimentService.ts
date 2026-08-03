@@ -12,7 +12,7 @@ import {
 } from '../models/Experiment';
 
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
-import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
+import { DecisionPointRepository, DecisionPointUsageCount } from '../repositories/DecisionPointRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { ExperimentSchedulerService } from './ExperimentSchedulerService';
@@ -232,12 +232,36 @@ export class ExperimentService {
   }
 
   public async getSingleExperiment(id: string, logger?: UpgradeLogger): Promise<ExperimentDTO | undefined> {
-    const experiment = await this.findOne(id, logger);
+    const [experiment, decisionPointUsageCounts] = await Promise.all([
+      this.findOne(id, logger),
+      this.decisionPointRepository.getUsageCountsForExperiment(id),
+    ]);
+
     if (experiment) {
-      return this.reducedConditionPayload(this.formattingPayload(experiment));
+      return this.attachDecisionPointUsageCounts(
+        this.reducedConditionPayload(this.formattingPayload(experiment)),
+        decisionPointUsageCounts
+      );
     } else {
       return undefined;
     }
+  }
+
+  private attachDecisionPointUsageCounts(
+    experiment: ExperimentDTO,
+    decisionPointUsageCounts: DecisionPointUsageCount[]
+  ): ExperimentDTO {
+    const decisionPointUsageCountById = new Map(
+      decisionPointUsageCounts.map(({ decisionPointId, usedByCount }) => [decisionPointId, Number(usedByCount)])
+    );
+
+    return {
+      ...experiment,
+      partitions: experiment.partitions.map((decisionPoint) => ({
+        ...decisionPoint,
+        usedByCount: decisionPointUsageCountById.get(decisionPoint.id) ?? 0,
+      })),
+    };
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
@@ -415,9 +439,15 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
-    return this.reducedConditionPayload(
+    const updatedExperiment = this.reducedConditionPayload(
       await this.updateExperimentInDB(experiment, currentUser, logger, entityManager)
     );
+    const decisionPointUsageCounts = await this.decisionPointRepository.getUsageCountsForExperiment(
+      updatedExperiment.id,
+      entityManager
+    );
+
+    return this.attachDecisionPointUsageCounts(updatedExperiment, decisionPointUsageCounts);
   }
 
   public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {
@@ -532,7 +562,15 @@ export class ExperimentService {
       this.transformStateTimeLogs([responseStateTimeLog])[0],
     ];
 
-    return this.reducedConditionPayload(this.formattingPayload(this.formattingConditionPayload(oldExperiment)));
+    const updatedExperiment = this.reducedConditionPayload(
+      this.formattingPayload(this.formattingConditionPayload(oldExperiment))
+    );
+    const decisionPointUsageCounts = await this.decisionPointRepository.getUsageCountsForExperiment(
+      experimentId,
+      entityManager
+    );
+
+    return this.attachDecisionPointUsageCounts(updatedExperiment, decisionPointUsageCounts);
   }
 
   public async verifyExperiments(
@@ -1758,14 +1796,23 @@ export class ExperimentService {
   }
   private paginatedSearchString(params: IExperimentSearchParams): string {
     const type = params.key;
-    // escape % and ' characters
-    const searchString = params.string.replace(/%/g, '\\$&').replace(/'/g, "''");
+    const searchString = params.string.replace(/'/g, "''");
+    const likeSearchString = searchString.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
     if (type === EXPERIMENT_SEARCH_KEY.ID && !isUUID(searchString)) {
       return '';
     }
 
-    const likeString = `ILIKE '%${searchString}%'`;
+    const likeString = `ILIKE '%${likeSearchString}%' ESCAPE '\\'`;
     const searchArray: string[] = [];
+    const decisionPointDisplaySearch =
+      `(CASE WHEN COALESCE(partitions.target, '') = '' THEN partitions.site ` +
+      `ELSE CONCAT(partitions.site, ' (', partitions.target, ')') END) ${likeString}`;
+    const addDecisionPointSearch = () => {
+      searchArray.push(`partitions.site ${likeString}`);
+      searchArray.push(`partitions.target ${likeString}`);
+      searchArray.push(decisionPointDisplaySearch);
+    };
+
     switch (type) {
       case EXPERIMENT_SEARCH_KEY.NAME:
         searchArray.push(`${type} ${likeString}`);
@@ -1783,16 +1830,14 @@ export class ExperimentService {
         searchArray.push(`experiment.id = '${searchString}'`);
         break;
       case EXPERIMENT_SEARCH_KEY.DECISION_POINT:
-        searchArray.push(`partitions.site ${likeString}`);
-        searchArray.push(`partitions.target ${likeString}`);
+        addDecisionPointSearch();
         break;
       default:
         searchArray.push(`name ${likeString}`);
         searchArray.push(`state::TEXT = '${this.mapStatusStrings(searchString)}'`);
         searchArray.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
         searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
-        searchArray.push(`partitions.site ${likeString}`);
-        searchArray.push(`partitions.target ${likeString}`);
+        addDecisionPointSearch();
         if (isUUID(searchString)) {
           searchArray.push(`experiment.id = '${searchString}'`);
         }

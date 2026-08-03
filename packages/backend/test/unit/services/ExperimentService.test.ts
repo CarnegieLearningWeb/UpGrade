@@ -48,6 +48,7 @@ import {
   LOG_TYPE,
   PAYLOAD_TYPE,
   IMetricMetaData,
+  EXPERIMENT_SEARCH_KEY,
 } from 'upgrade_types';
 import { StateTimeLog } from '../../../src/api/models/StateTimeLogs';
 import { Query } from '../../../src/api/models/Query';
@@ -213,6 +214,7 @@ describe('ExperimentService Testing', () => {
           return {
             save: jest.fn().mockResolvedValue(mockExperiment),
             findOne: jest.fn().mockResolvedValue(mockExperiment),
+            findBy: jest.fn().mockResolvedValue([mockExperiment]),
           };
         }
         if (entity === StateTimeLog) {
@@ -288,6 +290,7 @@ describe('ExperimentService Testing', () => {
             find: jest.fn().mockResolvedValue([mockDecisionPoint1]),
             save: jest.fn().mockResolvedValue(mockDecisionPoint1),
             findOne: jest.fn().mockResolvedValue(null),
+            getUsageCountsForExperiment: jest.fn().mockResolvedValue([]),
             upsertDecisionPoint: jest.fn().mockImplementation((value) => Promise.resolve(value)),
             deleteDecisionPoint: jest.fn().mockResolvedValue({ affected: 1 }),
             deleteByIds: jest.fn().mockResolvedValue({ affected: 1 }),
@@ -464,6 +467,19 @@ describe('ExperimentService Testing', () => {
           experimentName: mockExperimentDTO.name,
         }),
         mockUser
+      );
+    });
+
+    it('should include current decision point usage counts in the updated experiment response', async () => {
+      decisionPointRepo.getUsageCountsForExperiment = jest
+        .fn()
+        .mockResolvedValue([{ decisionPointId: mockDecisionPoint1.id, usedByCount: 2 }]);
+
+      const result = await service.update(mockExperimentDTO, mockUser, logger);
+
+      expect(decisionPointRepo.getUsageCountsForExperiment).toHaveBeenCalledWith(mockExperimentDTO.id, undefined);
+      expect(result.partitions).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: mockDecisionPoint1.id, usedByCount: 2 })])
       );
     });
 
@@ -981,6 +997,102 @@ describe('ExperimentService Testing', () => {
       await service.updateState(mockExperiment.id, EXPERIMENT_STATE.INACTIVE, mockUser, logger);
 
       expect(decisionPointRepo.setAllPendingActivationFalse).not.toHaveBeenCalled();
+    });
+
+    it('should include current decision point usage counts in the updated state response', async () => {
+      decisionPointRepo.getUsageCountsForExperiment = jest
+        .fn()
+        .mockResolvedValue([{ decisionPointId: mockDecisionPoint1.id, usedByCount: 2 }]);
+
+      const result = await service.updateState(
+        mockExperiment.id,
+        EXPERIMENT_STATE.PAUSED,
+        mockUser,
+        logger,
+        undefined,
+        entityManager
+      );
+
+      expect(decisionPointRepo.getUsageCountsForExperiment).toHaveBeenCalledWith(mockExperiment.id, entityManager);
+      expect(result.partitions).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: mockDecisionPoint1.id, usedByCount: 2 })])
+      );
+    });
+  });
+
+  describe('getSingleExperiment()', () => {
+    it('should attach decision point usage counts to the single experiment response', async () => {
+      const secondDecisionPoint = {
+        ...createMockDecisionPoint1(),
+        id: 'partition-2',
+        site: 'another-site',
+      } as DecisionPoint;
+      const experiment = {
+        ...mockExperiment,
+        partitions: [mockDecisionPoint1 as DecisionPoint, secondDecisionPoint],
+      } as Experiment;
+
+      jest.spyOn(service, 'findOne').mockResolvedValue(experiment);
+      decisionPointRepo.getUsageCountsForExperiment = jest
+        .fn()
+        .mockResolvedValue([{ decisionPointId: mockDecisionPoint1.id, usedByCount: 2 }]);
+
+      const result = await service.getSingleExperiment(mockExperiment.id);
+
+      expect(decisionPointRepo.getUsageCountsForExperiment).toHaveBeenCalledWith(mockExperiment.id);
+      expect(result.partitions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: mockDecisionPoint1.id, usedByCount: 2 }),
+          expect.objectContaining({ id: secondDecisionPoint.id, usedByCount: 0 }),
+        ])
+      );
+    });
+  });
+
+  describe('paginatedSearchString()', () => {
+    const getSearchClause = (key: EXPERIMENT_SEARCH_KEY, searchString: string): string =>
+      service['paginatedSearchString']({ key, string: searchString });
+
+    it('should search decision points by site, target, and displayed site-target pair', () => {
+      const searchString = 'SelectSection (absolute_value_plot_equality)';
+      const escapedSearchString = 'SelectSection (absolute\\_value\\_plot\\_equality)';
+      const likeClause = `ILIKE '%${escapedSearchString}%' ESCAPE '\\'`;
+      const result = getSearchClause(EXPERIMENT_SEARCH_KEY.DECISION_POINT, searchString);
+
+      expect(result).toContain(`partitions.site ${likeClause}`);
+      expect(result).toContain(`partitions.target ${likeClause}`);
+      expect(result).toContain(
+        `(CASE WHEN COALESCE(partitions.target, '') = '' THEN partitions.site ` +
+          `ELSE CONCAT(partitions.site, ' (', partitions.target, ')') END) ${likeClause}`
+      );
+    });
+
+    it('should use site as the decision point display value when target is empty', () => {
+      const likeClause = `ILIKE '%SelectSection%' ESCAPE '\\'`;
+      const result = getSearchClause(EXPERIMENT_SEARCH_KEY.DECISION_POINT, 'SelectSection');
+
+      expect(result).toContain(`COALESCE(partitions.target, '') = '' THEN partitions.site`);
+      expect(result).toContain(`partitions.site ${likeClause}`);
+    });
+
+    it('should include displayed decision point search in all-search results', () => {
+      const searchString = 'SelectSection (absolute_value_plot_equality)';
+      const escapedSearchString = 'SelectSection (absolute\\_value\\_plot\\_equality)';
+      const likeClause = `ILIKE '%${escapedSearchString}%' ESCAPE '\\'`;
+      const result = getSearchClause(EXPERIMENT_SEARCH_KEY.ALL, searchString);
+
+      expect(result).toContain(`partitions.site ${likeClause}`);
+      expect(result).toContain(`partitions.target ${likeClause}`);
+      expect(result).toContain(
+        `(CASE WHEN COALESCE(partitions.target, '') = '' THEN partitions.site ` +
+          `ELSE CONCAT(partitions.site, ' (', partitions.target, ')') END) ${likeClause}`
+      );
+    });
+
+    it('should escape LIKE wildcards and the escape character in search input', () => {
+      const result = getSearchClause(EXPERIMENT_SEARCH_KEY.NAME, '100%_path\\name');
+
+      expect(result).toContain(`name ILIKE '%100\\%\\_path\\\\name%' ESCAPE '\\'`);
     });
   });
 });

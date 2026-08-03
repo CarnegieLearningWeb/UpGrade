@@ -21,6 +21,9 @@ import {
 import { UserPermission } from '../../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../../core/auth/auth.service';
 import { DialogService } from '../../../../../../../shared/services/common-dialog.service';
+import { Router } from '@angular/router';
+import { EXPERIMENT_SEARCH_KEY } from 'upgrade_types';
+import { formatDecisionPointDisplay } from '../../../../experiment-decision-point.utils';
 
 @Component({
   selector: 'app-experiment-decision-points-section-card',
@@ -46,7 +49,8 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
     readonly experimentService: ExperimentService,
     private readonly authService: AuthService,
     private readonly dialogService: DialogService,
-    private readonly decisionPointHelperService: DecisionPointHelperService
+    private readonly decisionPointHelperService: DecisionPointHelperService,
+    private readonly router: Router
   ) {}
 
   ngOnInit() {
@@ -87,6 +91,14 @@ export class ExperimentDecisionPointsSectionCardComponent implements OnInit {
 
   onEditDecisionPoint(decisionPoint: ExperimentDecisionPoint, experimentId: string, context: string): void {
     this.dialogService.openEditDecisionPointModal(decisionPoint, experimentId, context);
+  }
+
+  onDecisionPointClick(decisionPoint: ExperimentDecisionPoint): void {
+    this.experimentService.setSearchParams(
+      EXPERIMENT_SEARCH_KEY.DECISION_POINT,
+      formatDecisionPointDisplay(decisionPoint)
+    );
+    this.router.navigate(['/home']);
   }
 
   onDeleteDecisionPoint(decisionPoint: ExperimentDecisionPoint): void {
