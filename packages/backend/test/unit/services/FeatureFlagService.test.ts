@@ -869,19 +869,38 @@ describe('Feature Flag Service Testing', () => {
       expect(experimentAssignmentService.resolveSegmentsForEntities).not.toHaveBeenCalled();
     });
 
-    it('individual inclusion beats group exclusion on the fast path', async () => {
+    it('INCLUDE_ALL ignores individual inclusion: a group exclusion still excludes the user', async () => {
       const userDoc = { id: 'user123', group: { classId: ['bad-class'] }, workingGroup: {} } as any;
       const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
 
       service.cacheService.wrap = jest.fn().mockResolvedValue([fastFlag]);
-      // stored group IDs are namespaced with their type (classId:bad-class); individuals stay bare
+      // stored group IDs are namespaced with their type (classId:bad-class); individuals stay bare.
+      // The user is individually on the include list AND their group is on the exclude list. Under
+      // INCLUDE_ALL, include lists are not an explicit override, so the group exclusion wins.
       (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
         new Map([[fastFlag.id, { inclusionIds: ['user123'], exclusionIds: ['classId:bad-class'] }]])
       );
 
       const result = await service.getKeys(userDoc, 'context1', logger);
 
-      expect(result).toEqual([fastFlag.key]);
+      expect(result).toEqual([]);
+    });
+
+    it('EXCLUDE_ALL still honors individual inclusion over a group exclusion', async () => {
+      const excludeAllFlag = { id: 'ea-flag-id', key: 'ea-key', filterMode: FILTER_MODE.EXCLUDE_ALL };
+      const userDoc = { id: 'user123', group: { classId: ['bad-class'] }, workingGroup: {} } as any;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([excludeAllFlag]);
+      // Same data as the INCLUDE_ALL case above. Under EXCLUDE_ALL, individual inclusion IS explicit,
+      // so it bypasses the group exclusion and the user is included.
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[excludeAllFlag.id, { inclusionIds: ['user123'], exclusionIds: ['classId:bad-class'] }]])
+      );
+
+      const result = await service.getKeys(userDoc, 'context1', logger);
+
+      expect(result).toEqual([excludeAllFlag.key]);
     });
 
     it('matches a group exclusion only when the group type also matches (type-aware)', async () => {
