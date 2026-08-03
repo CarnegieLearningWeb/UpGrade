@@ -4,6 +4,7 @@
   [primaryActionBtnLabel]="config.primaryActionBtnLabel"
   [primaryActionBtnColor]="config.primaryActionBtnColor"
   [primaryActionBtnDisabled]="isPrimaryButtonDisabled$ | async"
+  contentMaxHeight="calc(100vh - 192px)"
   (primaryActionBtnClicked)="onPrimaryActionBtnClicked()"
 >
   <form [formGroup]="privateSegmentListForm" class="form-standard dense-3">
@@ -45,15 +46,6 @@
       </mat-autocomplete>
     </mat-form-field>
     } @if (selectedListType && selectedListType !== LIST_TYPES.SEGMENT) {
-    <app-common-tags-input
-      formControlName="values"
-      [inputType]="CommonTagInputType.VALUES"
-      [label]="config.valuesLabel"
-      [placeholder]="config.valuesPlaceholder"
-      [forceValidation]="forceValidation"
-      [truncationLength]="72"
-      (downloadRequested)="onDownloadRequested($event)"
-    ></app-common-tags-input>
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Name</mat-label>
       <input matInput formControlName="name" placeholder="e.g., My schools" class="ft-14-400" appTrimInput />
@@ -61,10 +53,15 @@
         {{ config.nameHint | translate }}
       </mat-hint>
     </mat-form-field>
-    <mat-form-field appearance="outline">
-      <mat-label class="ft-14-400">Description (optional)</mat-label>
-      <input matInput formControlName="description" class="ft-14-400" appTrimInput />
-    </mat-form-field>
+    <app-common-list-values-input
+      formControlName="values"
+      [label]="config.valuesLabel"
+      [placeholder]="config.valuesPlaceholder"
+      [loading]="isLoadingMembers$ | async"
+      [loadingCount]="loadingValuesCount"
+      (downloadRequested)="onDownloadRequested($event)"
+      (pendingStateChanged)="onValuesPendingStateChanged($event)"
+    ></app-common-list-values-input>
     }
   </form>
 </app-common-dialog>

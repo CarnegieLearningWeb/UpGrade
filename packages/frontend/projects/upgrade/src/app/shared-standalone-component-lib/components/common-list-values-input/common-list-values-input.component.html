@@ -1,0 +1,185 @@
+<section class="values-section">
+  @if (!showImportHelper) {
+  <mat-form-field class="value-input dense-2" appearance="outline" subscriptSizing="dynamic">
+    <mat-label class="ft-14-400">
+      {{ label | translate }}
+      <span class="required-asterisk">*</span>
+    </mat-label>
+    <input
+      matInput
+      class="ft-14-400"
+      autocomplete="off"
+      [formControl]="pendingValueControl"
+      [placeholder]="placeholder | translate"
+      [readonly]="loading || isDisabled"
+      (keydown)="onPendingValueKeydown($event)"
+      (paste)="onPendingValuePaste($event)"
+      (blur)="markAsTouched()"
+    />
+    @if (hasPendingValue) {
+    <button
+      type="button"
+      mat-icon-button
+      class="field-action-button"
+      [disabled]="loading || isDisabled"
+      [matTooltip]="'lists.values.add.tooltip.text' | translate"
+      [attr.aria-label]="'lists.values.add.tooltip.text' | translate"
+      (click)="commitPendingValues()"
+    >
+      <span class="material-symbols-outlined">add_circle</span>
+    </button>
+    } @else {
+    <button
+      type="button"
+      mat-icon-button
+      class="field-action-button"
+      [disabled]="loading || isDisabled"
+      [matTooltip]="'lists.values.import.tooltip.text' | translate"
+      [attr.aria-label]="'lists.values.import.tooltip.text' | translate"
+      (click)="openImportHelper($event)"
+    >
+      <span class="material-symbols-outlined">upload</span>
+    </button>
+    }
+  </mat-form-field>
+  <p class="ft-12-400 form-hint separator-hint">
+    {{ 'lists.values.separator-hint.text' | translate }}
+  </p>
+  } @else {
+  <div class="drag-drop-container">
+    <app-common-import-container
+      fileType=".csv"
+      buttonLabel="Choose CSV"
+      (closeButtonClick)="closeImportHelper($event)"
+      (filesSelected)="handleFilesSelected($event)"
+      [importFailed]="importFailed"
+    ></app-common-import-container>
+    <p class="ft-12-400 form-hint import-hint">
+      {{ 'feature-flags.upsert-list-modal.import-csv.message.text' | translate }}
+      <app-common-learn-more-link learnMoreLinkKey="guide.add-lists"></app-common-learn-more-link>
+    </p>
+  </div>
+  } @if (feedbackMessage) {
+  <p class="feedback-message ft-12-400">{{ feedbackMessage }}</p>
+  } @if (editErrorMessage) {
+  <p class="feedback-message ft-12-400">{{ editErrorMessage }}</p>
+  }
+
+  <mat-form-field class="search-input dense-3" subscriptSizing="dynamic">
+    <input matInput class="ft-14-400" [formControl]="searchControl" [placeholder]="'global.search.text' | translate" />
+    <mat-icon class="search-icon" matSuffix (click)="refreshSearch()">search</mat-icon>
+  </mat-form-field>
+
+  <div class="values-table-container">
+    @if (loading) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate"></mat-progress-bar>
+    }
+    <table
+      mat-table
+      class="values-table"
+      [dataSource]="filteredRows"
+      [ngClass]="{ 'no-data': !filteredRows.length }"
+      [trackBy]="trackByRowId"
+      [attr.aria-label]="'lists.values.table-label.text' | translate"
+    >
+      <ng-container matColumnDef="value">
+        <th mat-header-cell *matHeaderCellDef class="value-column ft-14-600">
+          {{ 'lists.values.value-header.text' | translate }} ({{ displayedValueCount | number }})
+        </th>
+        <td mat-cell *matCellDef="let row" class="value-column ft-14-400">
+          @if (editingRowId === row.id) {
+          <mat-form-field class="edit-value-input dense-4" appearance="outline" subscriptSizing="dynamic">
+            <input
+              matInput
+              class="ft-14-400"
+              [formControl]="editValueControl"
+              (keydown.enter)="saveEdit(row)"
+              (keydown.escape)="cancelEdit()"
+            />
+          </mat-form-field>
+          } @else {
+          <span class="value-text">{{ row.value }}</span>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="actions-column ft-14-600">
+          <div class="actions-header">
+            <span>{{ 'lists.values.actions-header.text' | translate }}</span>
+            <button
+              type="button"
+              mat-icon-button
+              class="table-action-button export-button"
+              [disabled]="!rows.length || loading || isDisabled"
+              [matTooltip]="'lists.values.export.tooltip.text' | translate"
+              [attr.aria-label]="'lists.values.export.tooltip.text' | translate"
+              (click)="exportValues()"
+            >
+              <span class="material-symbols-outlined">download</span>
+            </button>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row" class="actions-column dense-2">
+          @if (editingRowId === row.id) {
+          <button
+            type="button"
+            mat-icon-button
+            class="table-action-button"
+            [matTooltip]="'lists.values.confirm-edit.tooltip.text' | translate"
+            [attr.aria-label]="'lists.values.confirm-edit.tooltip.text' | translate"
+            (click)="saveEdit(row)"
+          >
+            <mat-icon>check</mat-icon>
+          </button>
+          <button
+            type="button"
+            mat-icon-button
+            class="table-action-button"
+            [matTooltip]="'lists.values.cancel-edit.tooltip.text' | translate"
+            [attr.aria-label]="'lists.values.cancel-edit.tooltip.text' | translate"
+            (click)="cancelEdit()"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+          } @else {
+          <button
+            type="button"
+            mat-icon-button
+            class="table-action-button"
+            [disabled]="loading || isDisabled"
+            [matTooltip]="'lists.values.edit.tooltip.text' | translate"
+            [attr.aria-label]="'lists.values.edit.tooltip.text' | translate"
+            (click)="startEdit(row)"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button
+            type="button"
+            mat-icon-button
+            class="table-action-button"
+            [disabled]="loading || isDisabled"
+            [matTooltip]="'lists.values.delete.tooltip.text' | translate"
+            [attr.aria-label]="'lists.values.delete.tooltip.text' | translate"
+            (click)="deleteValue(row)"
+          >
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <tr *matNoDataRow>
+        <td class="ft-14-400" [attr.colspan]="displayedColumns.length">
+          @if (loading) {
+          {{ 'lists.values.loading.text' | translate }}
+          } @else {
+          {{ (rows.length ? 'lists.values.no-search-results.text' : 'lists.values.no-values.text') | translate }}
+          }
+        </td>
+      </tr>
+    </table>
+  </div>
+</section>

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
-import { CommonModalComponent, CommonTagsInputComponent } from '@shared-component-lib';
+import { CommonListValuesInputComponent, CommonModalComponent } from '@shared-component-lib';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import {
@@ -51,7 +51,6 @@ import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
-import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
@@ -62,7 +61,7 @@ import { SharedModule } from '../../../../../shared/shared.module';
     MatFormFieldModule,
     MatInputModule,
     MatAutocompleteModule,
-    CommonTagsInputComponent,
+    CommonListValuesInputComponent,
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
@@ -73,6 +72,7 @@ import { SharedModule } from '../../../../../shared/shared.module';
 })
 export class UpsertPrivateSegmentListModalComponent {
   @ViewChild('typeSelectRef') typeSelectRef: MatSelect;
+  @ViewChild(CommonListValuesInputComponent) valuesInputComponent?: CommonListValuesInputComponent;
   listOptionTypes$: Observable<{ value: string; viewValue: string }[]>;
   // Disable the primary button while an add/edit is in flight in any of the three stores this
   // modal drives (flag/experiment/segment), to prevent double-submits.
@@ -86,6 +86,7 @@ export class UpsertPrivateSegmentListModalComponent {
   // would send a full-replacement update that drops the unloaded members. Included in
   // isPrimaryButtonDisabled$ to block saving during the fetch.
   isLoadingMembers$ = new BehaviorSubject<boolean>(false);
+  valuesPending$ = new BehaviorSubject<boolean>(false);
   initialFormValues$ = new BehaviorSubject<PrivateSegmentListFormData>(null);
 
   subscriptions = new Subscription();
@@ -96,8 +97,6 @@ export class UpsertPrivateSegmentListModalComponent {
   isSegmentsListTypeDisabled$: Observable<boolean>;
 
   privateSegmentListForm: FormGroup;
-  CommonTagInputType = CommonTagInputType;
-  forceValidation = false;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -151,6 +150,17 @@ export class UpsertPrivateSegmentListModalComponent {
 
   get valuesFormControl() {
     return this.privateSegmentListForm?.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.VALUES);
+  }
+
+  get loadingValuesCount(): number | null {
+    const sourceList = this.config.params.sourceList;
+    if (!sourceList?.segment) {
+      return null;
+    }
+
+    return sourceList.listType?.toLowerCase() === LIST_OPTION_TYPE.INDIVIDUAL.toLowerCase()
+      ? sourceList.segment.individualForSegmentCount ?? sourceList.segment.individualForSegment?.length ?? 0
+      : sourceList.segment.groupForSegmentCount ?? sourceList.segment.groupForSegment?.length ?? 0;
   }
 
   private segmentObjectValidator(): ValidatorFn {
@@ -295,10 +305,14 @@ export class UpsertPrivateSegmentListModalComponent {
 
   listenForPrimaryButtonDisabled() {
     this.isPrimaryButtonDisabled$ = this.isUpsertLoading$.pipe(
-      combineLatestWith(this.isInitialFormValueChanged$, this.isLoadingMembers$),
+      combineLatestWith(this.isInitialFormValueChanged$, this.isLoadingMembers$, this.valuesPending$),
       map(
-        ([isLoading, isInitialFormValueChanged, isLoadingMembers]) =>
-          isLoading || isLoadingMembers || !isInitialFormValueChanged
+        ([isLoading, isInitialFormValueChanged, isLoadingMembers, valuesPending]) =>
+          isLoading ||
+          isLoadingMembers ||
+          valuesPending ||
+          this.privateSegmentListForm.invalid ||
+          !isInitialFormValueChanged
       )
     );
     this.subscriptions.add(this.isPrimaryButtonDisabled$.subscribe());
@@ -329,6 +343,7 @@ export class UpsertPrivateSegmentListModalComponent {
   listenToListTypeChanges(): void {
     this.subscriptions.add(
       this.privateSegmentListForm.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.LIST_TYPE).valueChanges.subscribe((listType) => {
+        this.valuesPending$.next(false);
         this.resetFormExceptSelectedListType(listType);
         this.setValidatorsBasedOnListType(listType);
       })
@@ -377,13 +392,19 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   onPrimaryActionBtnClicked(): void {
-    this.forceValidation = true;
+    if (this.valuesInputComponent && !this.valuesInputComponent.commitPendingChanges()) {
+      return;
+    }
     if (this.privateSegmentListForm.valid) {
       this.sendRequest(this.config.params.action);
     } else {
       // If the form is invalid, manually mark all form controls as touched
       CommonFormHelpersService.triggerTouchedToDisplayErrors(this.privateSegmentListForm);
     }
+  }
+
+  onValuesPendingStateChanged(valuesPending: boolean): void {
+    this.valuesPending$.next(valuesPending);
   }
 
   sendRequest(action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION): void {

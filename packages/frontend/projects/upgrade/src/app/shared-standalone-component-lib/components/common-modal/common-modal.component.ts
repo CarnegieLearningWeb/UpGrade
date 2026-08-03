@@ -31,6 +31,7 @@ export class CommonModalComponent {
   @Input() primaryActionBtnColor = 'primary';
   @Input() hideFooter = false;
   @Input() primaryActionBtnDisabled = false;
+  @Input() contentMaxHeight = '480px';
   @Output() primaryActionBtnClicked = new EventEmitter<string>();
 
   onPrimaryActionBtnClicked() {
