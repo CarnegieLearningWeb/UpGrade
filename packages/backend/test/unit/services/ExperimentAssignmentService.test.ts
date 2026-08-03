@@ -30,11 +30,12 @@ import {
   withinSubjectDPExperiment,
 } from '../mockdata';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
-import { ENROLLMENT_CODE, EXPERIMENT_STATE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { ENROLLMENT_CODE, EXPERIMENT_STATE, FILTER_MODE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
 import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
+import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import { factorialGroupExperiment, factorialIndividualExperiment } from '../mockdata/raw';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ConditionPayloadRepository } from '../../../src/api/repositories/ConditionPayloadRepository';
@@ -71,6 +72,10 @@ describe('Experiment Assignment Service Test', () => {
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
   const cacheServiceMock = sinon.createStubInstance(CacheService);
   const moocletExperimentServiceMock = sinon.createStubInstance(MoocletExperimentService);
+  const experimentPrecomputedSegmentServiceMock = sinon.createStubInstance(ExperimentPrecomputedSegmentService);
+  // Default to "no precomputed rows" so the assignment read path exercises the on-the-fly fallback
+  // (recursive segment resolution) these tests were written against.
+  experimentPrecomputedSegmentServiceMock.getPrecomputedSets.resolves(new Map());
   experimentServiceMock.formattingConditionPayload.restore();
   experimentServiceMock.formattingPayload.restore();
 
@@ -81,7 +86,7 @@ describe('Experiment Assignment Service Test', () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
 
-    loggerMock = { info: sandbox.stub(), error: sandbox.stub() };
+    loggerMock = { info: sandbox.stub(), error: sandbox.stub(), warn: sandbox.stub() };
     decisionPointRepositoryMock = { find: sandbox.stub().resolves([]) };
     individualExclusionRepositoryMock = {
       findExcluded: sandbox.stub().resolves([]),
@@ -129,7 +134,8 @@ describe('Experiment Assignment Service Test', () => {
       segmentServiceMock,
       experimentServiceMock,
       cacheServiceMock,
-      moocletExperimentServiceMock
+      moocletExperimentServiceMock,
+      experimentPrecomputedSegmentServiceMock
     );
 
     testedModule.cacheService.wrap.resolves([]);
@@ -699,7 +705,11 @@ describe('Experiment Assignment Service Test', () => {
     const exclusionResult = await testedModule.checkUserOrGroupIsGloballyExcluded(userDoc);
     expect(exclusionResult).toEqual([false, false]);
 
-    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
+    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion(
+      [exp],
+      userDoc,
+      loggerMock
+    );
     expect(exclusionReason).toEqual([]);
     expect(includedExperiment).toEqual([exp]);
   });
@@ -707,11 +717,44 @@ describe('Experiment Assignment Service Test', () => {
   it('[experimentLevelExclusionInclusion] should return an exclusion reason if a user or userGroup is on exclusion list', async () => {
     const userDoc = { id: 'user2', group: { teacher: ['teacher1'] }, workingGroup: {} };
     const exp = structuredClone(simpleIndividualAssignmentExperiment);
-    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion([exp], userDoc);
+    const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion(
+      [exp],
+      userDoc,
+      loggerMock
+    );
     expect(exclusionReason.length).toEqual(1);
     expect(exclusionReason[0].matchedGroup).toEqual(true);
     expect(exclusionReason[0].reason).toEqual('group');
     expect(includedExperiment).toEqual([]);
+  });
+
+  it('[inclusionExclusionLogic] INCLUDE_ALL ignores individual inclusion; a group exclusion still excludes', async () => {
+    // User is individually on the include list AND their group is on the exclude list.
+    const experimentUser = { id: 'u1', group: { classId: ['c1'] }, workingGroup: {} } as any;
+    const includeData = { e1: { users: ['u1'], groups: [] } };
+    const excludeData = { e1: { users: [], groups: [{ groupId: 'c1', type: 'classId' }] } };
+
+    const [included, excluded] = await testedModule.inclusionExclusionLogic(includeData, excludeData, experimentUser, [
+      { id: 'e1', filterMode: FILTER_MODE.INCLUDE_ALL, group: 'classId' },
+    ]);
+
+    // Under INCLUDE_ALL, include lists are not an explicit override -> the group exclusion wins.
+    expect(included).toEqual([]);
+    expect(excluded).toEqual([{ id: 'e1', reason: 'group', matchedGroup: true }]);
+  });
+
+  it('[inclusionExclusionLogic] EXCLUDE_ALL still honors individual inclusion over a group exclusion', async () => {
+    // Same data as the INCLUDE_ALL case above, but EXCLUDE_ALL treats individual inclusion as explicit.
+    const experimentUser = { id: 'u1', group: { classId: ['c1'] }, workingGroup: {} } as any;
+    const includeData = { e1: { users: ['u1'], groups: [] } };
+    const excludeData = { e1: { users: [], groups: [{ groupId: 'c1', type: 'classId' }] } };
+
+    const [included, excluded] = await testedModule.inclusionExclusionLogic(includeData, excludeData, experimentUser, [
+      { id: 'e1', filterMode: FILTER_MODE.EXCLUDE_ALL, group: 'classId' },
+    ]);
+
+    expect(included).toEqual(['e1']);
+    expect(excluded).toEqual([]);
   });
 
   it('[createExperimentPool] should return empty pool of experiments for no active experiments', async () => {
@@ -1473,7 +1516,8 @@ describe('Experiment Assignment Service Test', () => {
 
     const [includedExperiment, exclusionReason] = await testedModule.experimentLevelExclusionInclusion(
       [simpleIndividualAssignmentExperiment],
-      userDoc
+      userDoc,
+      loggerMock
     );
     expect(exclusionReason).toEqual([]);
     expect(includedExperiment).toEqual([simpleIndividualAssignmentExperiment]);

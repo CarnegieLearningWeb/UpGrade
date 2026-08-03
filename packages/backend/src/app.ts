@@ -20,6 +20,7 @@ import { InitMetrics } from './init/seed/initMetrics';
 import { banner } from './lib/banner';
 import { createGlobalExcludeSegment } from './init/seed/globalExcludeSegment';
 import { backfillFeatureFlagPrecomputedSegments } from './init/seed/backfillFeatureFlagPrecomputedSegments';
+import { backfillExperimentPrecomputedSegments } from './init/seed/backfillExperimentPrecomputedSegments';
 
 /*
  * EXPRESS TYPESCRIPT BOILERPLATE
@@ -58,6 +59,19 @@ bootstrapMicroframework({
     return backfillFeatureFlagPrecomputedSegments(logger).catch((err) => {
       logger.error({
         message: `feature_flag_precomputed_segment backfill failed at startup; continuing with on-the-fly fallback: ${err}`,
+      });
+    });
+  })
+  .then(() => {
+    // Same best-effort contract as the feature-flag backfill above: if the
+    // experiment_precomputed_segment table hasn't been migrated yet (or the backfill otherwise
+    // fails), log and continue rather than crashing startup. The experiment assignment read path
+    // falls back to on-the-fly segment resolution when a precomputed row — or the whole table — is
+    // unavailable, so the server stays fully functional; rows self-heal on a later restart
+    // (backfill) or list mutation (recompute).
+    return backfillExperimentPrecomputedSegments(logger).catch((err) => {
+      logger.error({
+        message: `experiment_precomputed_segment backfill failed at startup; continuing with on-the-fly fallback: ${err}`,
       });
     });
   });

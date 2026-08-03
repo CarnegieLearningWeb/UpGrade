@@ -61,6 +61,7 @@ import { IndividualExclusion } from '../models/IndividualExclusion';
 import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import { Segment } from '../models/Segment';
 import { SegmentService } from './SegmentService';
+import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegmentService';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
@@ -140,7 +141,8 @@ export class ExperimentService {
     protected errorService: ErrorService,
     protected cacheService: CacheService,
     protected queryService: QueryService,
-    protected metricService: MetricService
+    protected metricService: MetricService,
+    protected experimentPrecomputedSegmentService: ExperimentPrecomputedSegmentService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<ExperimentDTO[]> {
@@ -369,7 +371,22 @@ export class ExperimentService {
           )
         )
       );
-      await Promise.all(addListPromises);
+    }
+
+    // Await EVERY attached list (inclusion AND exclusion) before returning. This must be
+    // unconditional: when a caller owns the transaction (existingEntityManager) these inserts run on
+    // that transaction, so create() must not return with them still in flight or they would race the
+    // caller's commit — and an exclusion-only experiment must still be awaited even though the
+    // inclusion branch above was skipped.
+    await Promise.all(addListPromises);
+
+    // Populate the experiment_precomputed_segment row from the just-attached lists. When an
+    // existingEntityManager was provided the caller owns the (still-open) transaction, so it — not
+    // create — must recompute after commit (see MoocletExperimentService); recomputing here would
+    // read uncommitted writes. recomputeForExperiment yields empty arrays when the experiment has no
+    // lists, so this also seeds list-less experiments (no separate empty-seed needed).
+    if (!existingEntityManager) {
+      await this.experimentPrecomputedSegmentService.recomputeForExperiment(createdExperiment.id, logger);
     }
 
     return createdExperiment;
@@ -789,7 +806,7 @@ export class ExperimentService {
       this.experimentSchedulerService.updateExperimentSchedules(experiment as any, logger);
     }
 
-    return entityManager
+    const updatedExperimentResult = await entityManager
       .transaction(async (transactionalEntityManager) => {
         experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
 
@@ -1235,6 +1252,19 @@ export class ExperimentService {
           experimentSegmentInclusion: includeListsToReturn,
         };
       });
+
+    // If the context changed, deleteAllListsFromExperiment (above) removed every segment list and the
+    // filterMode was forced to EXCLUDE_ALL, but the experiment_precomputed_segment row still holds the
+    // old member IDs. Recompute it (to empty) after commit so the assignment read path never serves
+    // stale inclusion/exclusion data. Mirrors FeatureFlagService.updateFeatureFlagInDB's withRecompute.
+    // When a caller owns the transaction (existingEntityManager, e.g. MoocletExperimentService), the
+    // writes are not committed yet, so the caller recomputes after its own commit (see syncUpdate) —
+    // the same deferral create() uses.
+    if (isChangingContext && !existingEntityManager) {
+      this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments([experiment.id], logger);
+    }
+
+    return updatedExperimentResult;
   }
 
   // private async cleanLogsForQuery(query: Query[]): Promise<void> {
@@ -2035,13 +2065,19 @@ export class ExperimentService {
     };
 
     if (transactionalEntityManager) {
-      // Use the provided entity manager
+      // The caller owns the outer transaction. We must NOT recompute here: recomputeForExperiment
+      // reads through its own repositories and cannot see this transaction's uncommitted writes, so
+      // it would persist a stale experiment_precomputed_segment row that never self-heals. The caller
+      // (create / importExperimentLists / MoocletExperimentService) recomputes after it commits.
       return await executeTransaction(transactionalEntityManager);
     } else {
-      // Create a new transaction if no entity manager is provided
-      return await this.dataSource.transaction(async (manager) => {
-        return await executeTransaction(manager);
-      });
+      // withRecompute runs the mutation in its own transaction, then fires a fire-and-forget
+      // recompute for the affected experiment after commit — the caller never awaits it.
+      return await this.experimentPrecomputedSegmentService.withRecompute(
+        logger,
+        () => [experimentId],
+        () => this.dataSource.transaction(async (manager) => executeTransaction(manager))
+      );
     }
   }
 
@@ -2117,101 +2153,112 @@ export class ExperimentService {
   ): Promise<ExperimentSegmentInclusion | ExperimentSegmentExclusion> {
     logger.info({ message: `Update ${filterType} list for experiment` });
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX);
-    return await this.dataSource.transaction(async (transactionalEntityManager) => {
-      // Find the existing record
-      let existingRecord: ExperimentSegmentInclusion | ExperimentSegmentExclusion;
-      const experiment = await this.experimentRepository.findOne({ where: { id: experimentId } });
+    // withRecompute runs the update transaction, then fires a fire-and-forget recompute for the
+    // affected experiment after commit — the caller never awaits it.
+    return await this.experimentPrecomputedSegmentService.withRecompute(
+      logger,
+      () => [experimentId],
+      () =>
+        this.dataSource.transaction(async (transactionalEntityManager) => {
+          // Find the existing record
+          let existingRecord: ExperimentSegmentInclusion | ExperimentSegmentExclusion;
+          const experiment = await this.experimentRepository.findOne({ where: { id: experimentId } });
 
-      if (filterType === LIST_FILTER_MODE.INCLUSION) {
-        existingRecord = await this.experimentSegmentInclusionRepository.findOne({
-          where: { experiment: { id: experimentId }, segment: { id: listInput.id } },
-          relations: {
-            experiment: true,
-            segment: true,
-          },
-        });
-      } else {
-        existingRecord = await this.experimentSegmentExclusionRepository.findOne({
-          where: { experiment: { id: experimentId }, segment: { id: listInput.id } },
-          relations: {
-            experiment: true,
-            segment: true,
-          },
-        });
-      }
+          if (filterType === LIST_FILTER_MODE.INCLUSION) {
+            existingRecord = await this.experimentSegmentInclusionRepository.findOne({
+              where: { experiment: { id: experimentId }, segment: { id: listInput.id } },
+              relations: {
+                experiment: true,
+                segment: true,
+              },
+            });
+          } else {
+            existingRecord = await this.experimentSegmentExclusionRepository.findOne({
+              where: { experiment: { id: experimentId }, segment: { id: listInput.id } },
+              relations: {
+                experiment: true,
+                segment: true,
+              },
+            });
+          }
 
-      if (!existingRecord) {
-        throw new Error(
-          `No existing ${filterType} record found for experiment ${listInput.id} and segment ${listInput.id}`
-        );
-      }
+          if (!existingRecord) {
+            throw new Error(
+              `No existing ${filterType} record found for experiment ${listInput.id} and segment ${listInput.id}`
+            );
+          }
 
-      const { versionNumber, createdAt, updatedAt, type, ...oldSegmentDoc } = existingRecord.segment;
+          const { versionNumber, createdAt, updatedAt, type, ...oldSegmentDoc } = existingRecord.segment;
 
-      const oldSegmentDocClone = JSON.parse(JSON.stringify(oldSegmentDoc));
-      let newSegmentDocClone;
+          const oldSegmentDocClone = JSON.parse(JSON.stringify(oldSegmentDoc));
+          let newSegmentDocClone;
 
-      // Update the segment
-      try {
-        const updatedSegment = await this.segmentService.upsertSegmentInPipeline(
-          listInput,
-          logger,
-          transactionalEntityManager
-        );
-        existingRecord.segment = updatedSegment;
+          // Update the segment
+          try {
+            // Pass skipScheduleRecompute=true because updateList recomputes the affected experiment via
+            // withRecompute after this transaction commits — firing scheduleRecomputeForSegment from
+            // inside the transaction risks a stale-read race (reading pre-update members).
+            const updatedSegment = await this.segmentService.upsertSegmentInPipeline(
+              listInput,
+              logger,
+              transactionalEntityManager,
+              true
+            );
+            existingRecord.segment = updatedSegment;
 
-        const {
-          featureFlagSegmentExclusion,
-          featureFlagSegmentInclusion,
-          experimentSegmentInclusion,
-          experimentSegmentExclusion,
-          versionNumber,
-          createdAt,
-          updatedAt,
-          type,
-          ...newSegmentDoc
-        } = updatedSegment;
-        newSegmentDocClone = JSON.parse(JSON.stringify(newSegmentDoc));
-      } catch (err) {
-        const error = new Error(`Error in updating private segment for experiment ${filterType} list: ${err}`);
-        (error as any).type = SERVER_ERROR.QUERY_FAILED;
-        logger.error(error);
-        throw error;
-      }
+            const {
+              featureFlagSegmentExclusion,
+              featureFlagSegmentInclusion,
+              experimentSegmentInclusion,
+              experimentSegmentExclusion,
+              versionNumber,
+              createdAt,
+              updatedAt,
+              type,
+              ...newSegmentDoc
+            } = updatedSegment;
+            newSegmentDocClone = JSON.parse(JSON.stringify(newSegmentDoc));
+          } catch (err) {
+            const error = new Error(`Error in updating private segment for experiment ${filterType} list: ${err}`);
+            (error as any).type = SERVER_ERROR.QUERY_FAILED;
+            logger.error(error);
+            throw error;
+          }
 
-      // Save the updated record
-      try {
-        if (filterType === LIST_FILTER_MODE.INCLUSION) {
-          await transactionalEntityManager.save(ExperimentSegmentInclusion, existingRecord);
-        } else {
-          await transactionalEntityManager.save(ExperimentSegmentExclusion, existingRecord);
-        }
-      } catch (err) {
-        const error = new Error(`Error in updating segment for experiment ${filterType} list: ${err}`);
-        (error as any).type = SERVER_ERROR.QUERY_FAILED;
-        logger.error(error);
-        throw error;
-      }
+          // Save the updated record
+          try {
+            if (filterType === LIST_FILTER_MODE.INCLUSION) {
+              await transactionalEntityManager.save(ExperimentSegmentInclusion, existingRecord);
+            } else {
+              await transactionalEntityManager.save(ExperimentSegmentExclusion, existingRecord);
+            }
+          } catch (err) {
+            const error = new Error(`Error in updating segment for experiment ${filterType} list: ${err}`);
+            (error as any).type = SERVER_ERROR.QUERY_FAILED;
+            logger.error(error);
+            throw error;
+          }
 
-      const listData = {
-        listId: existingRecord.segment.id,
-        listName: existingRecord.segment.name,
-        filterType: filterType,
-        operation: EXPERIMENT_LIST_OPERATION.UPDATED,
-        diff: diffString(oldSegmentDocClone, newSegmentDocClone),
-      };
+          const listData = {
+            listId: existingRecord.segment.id,
+            listName: existingRecord.segment.name,
+            filterType: filterType,
+            operation: EXPERIMENT_LIST_OPERATION.UPDATED,
+            diff: diffString(oldSegmentDocClone, newSegmentDocClone),
+          };
 
-      // update list AuditLogs here
-      const updateAuditLog: AuditLogData = {
-        experimentId: experiment.id,
-        experimentName: experiment.name,
-        list: listData,
-      };
+          // update list AuditLogs here
+          const updateAuditLog: AuditLogData = {
+            experimentId: experiment.id,
+            experimentName: experiment.name,
+            list: listData,
+          };
 
-      await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, currentUser);
+          await this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, currentUser);
 
-      return existingRecord;
-    });
+          return existingRecord;
+        })
+    );
   }
 
   public async importExperimentLists(
@@ -2263,6 +2310,12 @@ export class ExperimentService {
     );
 
     logger.info({ message: 'Imported experiment lists', details: createdLists });
+
+    // Unlike the interactive write paths (which fire-and-forget via withRecompute), import
+    // intentionally awaits the recompute so "import complete" means the experiment_precomputed_segment
+    // row is ready. The addList calls above ran inside the (now-committed) transaction, so their
+    // writes are visible to this read.
+    await this.experimentPrecomputedSegmentService.recomputeForExperiment(experimentId, logger);
 
     fileStatusArray.forEach((fileStatus) => {
       if (fileStatus.error !== IMPORT_COMPATIBILITY_TYPE.INCOMPATIBLE) {

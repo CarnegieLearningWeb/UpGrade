@@ -220,7 +220,10 @@ describe('CacheService', () => {
       [CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX, 45000],
       [CACHE_PREFIX.SEGMENT_KEY_PREFIX, 90000],
       [CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX, 90000],
-      [CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX, 90000],
+      // Precomputed membership is owner-scoped, not shared-segment data, so each tracks its
+      // owner's TTL rather than the segments TTL
+      [CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX, 45000],
+      [CACHE_PREFIX.EXPERIMENT_PRECOMPUTED_SEGMENT_KEY_PREFIX, 30000],
     ])('wraps %s with its category TTL (ms)', async (prefix, expectedTtl) => {
       const fn = jest.fn().mockResolvedValue('v');
       await service.wrap(prefix + 'context', fn);

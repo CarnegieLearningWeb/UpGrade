@@ -37,6 +37,7 @@ import { FeatureFlagSegmentInclusionRepository } from '../repositories/FeatureFl
 import { getSegmentData, getSegmentsData } from '../controllers/SegmentController';
 import { CacheService } from './CacheService';
 import { FeatureFlagPrecomputedSegmentService } from './FeatureFlagPrecomputedSegmentService';
+import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegmentService';
 import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import path from 'path';
@@ -82,7 +83,8 @@ export class SegmentService {
     @InjectRepository()
     private featureFlagSegmentInclusionRepository: FeatureFlagSegmentInclusionRepository,
     private cacheService: CacheService,
-    private featureFlagPrecomputedSegmentService: FeatureFlagPrecomputedSegmentService
+    private featureFlagPrecomputedSegmentService: FeatureFlagPrecomputedSegmentService,
+    private experimentPrecomputedSegmentService: ExperimentPrecomputedSegmentService
   ) {}
 
   public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
@@ -456,6 +458,7 @@ export class SegmentService {
     });
 
     this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
+    this.experimentPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
 
     return createdSegment;
   }
@@ -480,6 +483,7 @@ export class SegmentService {
     });
 
     this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
+    this.experimentPrecomputedSegmentService.scheduleRecomputeForSegment(parentSegmentId, logger);
 
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
@@ -501,10 +505,13 @@ export class SegmentService {
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
 
-    // withRecompute collects the affected flags BEFORE the delete (the join rows are gone after),
-    // runs the delete in its own transaction, then fires a fire-and-forget recompute for those
-    // flags after commit. Keeping the ordering inside the wrapper means a future refactor of this
-    // method can't accidentally break it.
+    // Both flags and experiments can reference this segment, so both precomputed tables must be
+    // refreshed. The affected experiment IDs must be collected BEFORE the delete (the join rows are
+    // gone after), so resolve them here; the fire-and-forget recompute is fired after the delete
+    // transaction below commits. Flags use withRecompute, which enforces the same
+    // resolve-before -> delete -> recompute-after ordering internally.
+    const affectedExperimentIds = await this.experimentPrecomputedSegmentService.getAffectedExperimentIds(id);
+
     const deletedSegment = await this.featureFlagPrecomputedSegmentService.withRecompute(
       logger,
       () => this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
@@ -513,6 +520,8 @@ export class SegmentService {
           this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
         )
     );
+
+    this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments(affectedExperimentIds, logger);
 
     // reset cache
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
@@ -1088,6 +1097,7 @@ export class SegmentService {
     // reads the old enabled value and its upsert overwrites the correct post-commit result.
     if (!skipScheduleRecompute) {
       this.featureFlagPrecomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
+      this.experimentPrecomputedSegmentService.scheduleRecomputeForSegment(segmentDoc.id, logger);
     }
 
     return segmentRepo.findOne({
