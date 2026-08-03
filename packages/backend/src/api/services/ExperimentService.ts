@@ -309,6 +309,10 @@ export class ExperimentService {
       });
   }
 
+  public async getFirstValidContextByDecisionPoint(site: string, target: string): Promise<string | null> {
+    return this.experimentRepository.findFirstValidContextByDecisionPoint(site, target);
+  }
+
   public async create(
     experiment: ExperimentDTO,
     currentUser: UserDTO,

@@ -13,6 +13,13 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {
+  private getAssignValidExperimentBaseWhereClause(): string {
+    return (
+      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) ' +
+      'AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL)'
+    );
+  }
+
   public async findAllExperiments(): Promise<Experiment[]> {
     const experimentConditionLevelPayloadQuery = this.buildConditionLevelPayloadQuery();
 
@@ -98,9 +105,22 @@ export class ExperimentRepository extends Repository<Experiment> {
       });
   }
 
+  public async findContextByExperimentId(id: string): Promise<string | null> {
+    const experiment = await this.createQueryBuilder('experiment')
+      .select(['experiment.id', 'experiment.context'])
+      .where('experiment.id = :id', { id })
+      .getOne()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('ExperimentRepository', 'findContextByExperimentId', { id }, errorMsg);
+        throw errorMsgString;
+      });
+
+    return experiment?.context?.[0] ?? null;
+  }
+
   public async getValidExperiments(context: string): Promise<Experiment[]> {
     const whereExperimentsClause =
-      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context])';
+      this.getAssignValidExperimentBaseWhereClause() + ' AND :context ILIKE ANY (ARRAY[experiment.context])';
     const whereClauseParams = {
       enrolling: 'enrolling',
       enrollmentComplete: 'enrollmentComplete',
@@ -178,7 +198,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     target: string
   ): Promise<Experiment[]> {
     const baseWhereClause =
-      '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND NOT (experiment.state = :enrollmentComplete AND experiment.postExperimentRule = :assign AND experiment.revertTo IS NULL) AND :context ILIKE ANY (ARRAY[experiment.context])';
+      this.getAssignValidExperimentBaseWhereClause() + ' AND :context ILIKE ANY (ARRAY[experiment.context])';
     const decisionPointWhereClause =
       baseWhereClause +
       ' AND partitions.site = :site AND partitions.target = :target AND partitions.pendingActivation = false';
@@ -252,6 +272,42 @@ export class ExperimentRepository extends Repository<Experiment> {
       const seg = segmentData.find((s) => s.id === data.id);
       return seg ? { ...data, ...seg } : data;
     });
+  }
+
+  public async findFirstValidContextByDecisionPoint(site: string, target: string): Promise<string | null> {
+    const baseWhereClause = this.getAssignValidExperimentBaseWhereClause();
+    const whereClauseParams = {
+      enrolling: EXPERIMENT_STATE.ENROLLING,
+      enrollmentComplete: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+      assign: 'assign',
+      site,
+      target,
+    };
+
+    const experiment = await this.createQueryBuilder('experiment')
+      .innerJoin('experiment.partitions', 'partitions')
+      .select(['experiment.id', 'experiment.context'])
+      .where(
+        new Brackets((qb) => {
+          qb.where(baseWhereClause, whereClauseParams)
+            .andWhere('partitions.site = :site', whereClauseParams)
+            .andWhere('partitions.target = :target', whereClauseParams)
+            .andWhere('partitions.pendingActivation = false');
+        })
+      )
+      .orderBy('experiment.updatedAt', 'DESC')
+      .getOne()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'findFirstValidContextByDecisionPoint',
+          { site, target },
+          errorMsg
+        );
+        throw errorMsgString;
+      });
+
+    return experiment?.context?.[0] ?? null;
   }
 
   public async getValidExperimentsWithPreview(context: string): Promise<Experiment[]> {

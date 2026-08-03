@@ -322,6 +322,19 @@ export class ExperimentAssignmentService {
       message: `markExperimentPoint: Site: ${site}, Target: ${target}, Condition: ${condition}, Status: "${status}" for User: ${userId}`,
     });
 
+    // REMOVE WHEN ALL CLIENTS ARE UPDATED TO SEND CONTEXT
+    let infereredContextToSupportLegacyAPI = context;
+
+    if (!context) {
+      if (experimentId) {
+        infereredContextToSupportLegacyAPI = await this.experimentRepository.findContextByExperimentId(experimentId);
+      } else {
+        infereredContextToSupportLegacyAPI = await this.experimentService.getFirstValidContextByDecisionPoint(
+          site,
+          target
+        );
+      }
+    }
     // 1-3. Resolve which experiment to mark, applying the same filtering and pooling logic as getAllExperimentConditions
     //      so that the two methods are guaranteed to agree on the selected experiment.
     const {
@@ -330,7 +343,15 @@ export class ExperimentAssignmentService {
       isUserExcluded,
       isGroupExcluded,
       exclusionReason,
-    } = await this.resolveExperimentForMarkPoint(site, target, context, experimentId, userDoc, previewUser, logger);
+    } = await this.resolveExperimentForMarkPoint(
+      site,
+      target,
+      infereredContextToSupportLegacyAPI,
+      experimentId,
+      userDoc,
+      previewUser,
+      logger
+    );
     const experiments = resolvedExperiments;
     experimentId = resolvedExperimentId;
 
