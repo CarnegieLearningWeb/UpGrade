@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
-import { CommonModalComponent, CommonTagsInputComponent } from '@shared-component-lib';
+import { CommonModalComponent } from '@shared-component-lib';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import {
@@ -14,7 +14,6 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { CommonFormHelpersService } from '../../../../../shared/services/common-form-helpers.service';
-import { CommonExportHelpersService } from '../../../../../shared/services/common-export-helpers.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MatInputModule } from '@angular/material/input';
@@ -51,7 +50,6 @@ import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
-import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { SharedModule } from '../../../../../shared/shared.module';
 
 @Component({
@@ -62,7 +60,6 @@ import { SharedModule } from '../../../../../shared/shared.module';
     MatFormFieldModule,
     MatInputModule,
     MatAutocompleteModule,
-    CommonTagsInputComponent,
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
@@ -96,9 +93,6 @@ export class UpsertPrivateSegmentListModalComponent {
   isSegmentsListTypeDisabled$: Observable<boolean>;
 
   privateSegmentListForm: FormGroup;
-  CommonTagInputType = CommonTagInputType;
-  forceValidation = false;
-
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public config: CommonModalConfig<UpsertPrivateSegmentListParams>,
@@ -107,7 +101,6 @@ export class UpsertPrivateSegmentListModalComponent {
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
     private featureFlagService: FeatureFlagsService,
-    private commonExportHelpersService: CommonExportHelpersService,
     private changeDetectorRef: ChangeDetectorRef,
     public dialogRef: MatDialogRef<UpsertPrivateSegmentListModalComponent>
   ) {}
@@ -153,6 +146,16 @@ export class UpsertPrivateSegmentListModalComponent {
     return this.privateSegmentListForm?.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.VALUES);
   }
 
+  get isEditAction(): boolean {
+    return [
+      UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
+      UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
+      UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_INCLUDE_LIST,
+      UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_EXCLUDE_LIST,
+      UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_SEGMENT_LIST,
+    ].includes(this.config.params.action);
+  }
+
   private segmentObjectValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value;
@@ -193,15 +196,7 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   populateFormForEdit(): void {
-    if (
-      ![
-        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_INCLUDE_LIST,
-        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_FLAG_EXCLUDE_LIST,
-        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_INCLUDE_LIST,
-        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_EXPERIMENT_EXCLUDE_LIST,
-        UPSERT_PRIVATE_SEGMENT_LIST_ACTION.EDIT_SEGMENT_LIST,
-      ].includes(this.config.params.action)
-    ) {
+    if (!this.isEditAction) {
       return;
     }
 
@@ -211,6 +206,7 @@ export class UpsertPrivateSegmentListModalComponent {
     }
 
     this.applyEditFormValues(sourceList.listType, sourceList.segment);
+    this.privateSegmentListForm.get(PRIVATE_SEGMENT_LIST_FORM_FIELDS.LIST_TYPE).disable({ emitEvent: false });
 
     // Lazy-load the full members when the (counts-only) source list didn't include them.
     if (this.segmentMembersNeedFetch(sourceList.listType, sourceList.segment)) {
@@ -242,7 +238,7 @@ export class UpsertPrivateSegmentListModalComponent {
     const values = this.determineValues(listType, segment);
     const formValue: PrivateSegmentListFormData = {
       listType: listType as LIST_OPTION_TYPE,
-      segment,
+      segment: listType === LIST_OPTION_TYPE.SEGMENT ? segment.subSegments?.[0] : segment,
       values,
       name: segment.name,
       description: segment.description,
@@ -306,8 +302,8 @@ export class UpsertPrivateSegmentListModalComponent {
 
   listenForIsInitialFormValueChanged() {
     this.isInitialFormValueChanged$ = this.privateSegmentListForm.valueChanges.pipe(
-      startWith(this.privateSegmentListForm.value),
-      map(() => !isEqual(this.privateSegmentListForm.value, this.initialFormValues$.value))
+      startWith(this.privateSegmentListForm.getRawValue()),
+      map(() => !isEqual(this.privateSegmentListForm.getRawValue(), this.initialFormValues$.value))
     );
     this.subscriptions.add(this.isInitialFormValueChanged$.subscribe());
   }
@@ -366,7 +362,6 @@ export class UpsertPrivateSegmentListModalComponent {
         this.segmentObjectValidator(),
       ]);
     } else {
-      CommonFormHelpersService.setFieldValidators(this.privateSegmentListForm, valuesField, [Validators.required]);
       CommonFormHelpersService.setFieldValidators(this.privateSegmentListForm, nameField, [Validators.required]);
     }
   }
@@ -377,7 +372,6 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   onPrimaryActionBtnClicked(): void {
-    this.forceValidation = true;
     if (this.privateSegmentListForm.valid) {
       this.sendRequest(this.config.params.action);
     } else {
@@ -387,7 +381,7 @@ export class UpsertPrivateSegmentListModalComponent {
   }
 
   sendRequest(action: UPSERT_PRIVATE_SEGMENT_LIST_ACTION): void {
-    const formData = this.privateSegmentListForm.value;
+    const formData = this.privateSegmentListForm.getRawValue();
     const listType = formData.listType;
     const isExcludeList = [
       UPSERT_PRIVATE_SEGMENT_LIST_ACTION.ADD_FLAG_EXCLUDE_LIST,
@@ -530,14 +524,6 @@ export class UpsertPrivateSegmentListModalComponent {
 
   sendUpdateSegmentListRequest(editListRequest: EditPrivateSegmentListRequest): void {
     this.segmentsService.updatePrivateSegmentList(editListRequest);
-  }
-
-  onDownloadRequested(values: string[]) {
-    if (this.privateSegmentListForm.get('name').valid) {
-      this.commonExportHelpersService.downloadValuesAsCSV(values, this.privateSegmentListForm.get('name').value);
-    } else {
-      this.privateSegmentListForm.get('name').markAsTouched();
-    }
   }
 
   closeModal() {

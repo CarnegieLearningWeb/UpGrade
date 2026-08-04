@@ -6,7 +6,7 @@
   [ngClass]="{ 'drag-over': (isDragOver | async) }"
 >
   <div class="close-btn-container dense-4">
-    @if (fileType === FILE_TYPE.CSV) {
+    @if (fileType === FILE_TYPE.CSV && showCloseButton) {
     <button mat-icon-button class="close-btn" (click)="onCloseButtonClick($event)">
       <mat-icon class="close-icon">close</mat-icon>
     </button>

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { DashboardRootComponent } from './dashboard-root/dashboard-root.component';
+import { LIST_OWNER_TYPE } from '../../core/segments/store/segments.model';
 
 // Conditionally define segments routes based on the toggle
 const segmentsRoutes = [
@@ -10,6 +11,15 @@ const segmentsRoutes = [
       import('./segments/pages/segment-root-page/segment-root-page.component').then((c) => c.SegmentRootPageComponent),
     data: {
       title: 'app-header.title.segments',
+    },
+  },
+  {
+    path: 'segments/detail/:segmentId/list/:filterMode/:listId',
+    loadComponent: () =>
+      import('./segments/pages/list-details-page/list-details-page.component').then((c) => c.ListDetailsPageComponent),
+    data: {
+      title: 'app-header.title.segments',
+      listOwnerType: LIST_OWNER_TYPE.SEGMENT,
     },
   },
   {
@@ -42,6 +52,17 @@ const routes: Routes = [
           ),
         data: {
           title: 'app-header.title.experiments',
+        },
+      },
+      {
+        path: 'home/detail/:experimentId/list/:filterMode/:listId',
+        loadComponent: () =>
+          import('./segments/pages/list-details-page/list-details-page.component').then(
+            (c) => c.ListDetailsPageComponent
+          ),
+        data: {
+          title: 'app-header.title.experiments',
+          listOwnerType: LIST_OWNER_TYPE.EXPERIMENT,
         },
       },
       {
@@ -81,6 +102,17 @@ const routes: Routes = [
           ),
         data: {
           title: 'app-header.title.feature-flag',
+        },
+      },
+      {
+        path: 'featureflags/detail/:flagId/list/:filterMode/:listId',
+        loadComponent: () =>
+          import('./segments/pages/list-details-page/list-details-page.component').then(
+            (c) => c.ListDetailsPageComponent
+          ),
+        data: {
+          title: 'app-header.title.feature-flag',
+          listOwnerType: LIST_OWNER_TYPE.FEATURE_FLAG,
         },
       },
       {

@@ -20,6 +20,7 @@ export class ExperimentInclusionsTableComponent {
   @Output() rowAction = new EventEmitter<ParticipantListRowActionEvent>();
 
   tableType = LIST_FILTER_MODE.EXCLUSION; // Use EXCLUSION to hide enable column for experiments
+  listFilterMode = LIST_FILTER_MODE.INCLUSION;
   dataSource$ = this.experimentService.selectExperimentInclusions$;
   isLoading$ = this.experimentService.isLoadingExperiment$;
 

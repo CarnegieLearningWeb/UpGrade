@@ -1,0 +1,60 @@
+<app-common-dialog
+  [title]="title"
+  cancelBtnLabel="Cancel"
+  [primaryActionBtnLabel]="primaryActionLabel"
+  primaryActionBtnColor="primary"
+  [primaryActionBtnDisabled]="isPrimaryActionDisabled"
+  (primaryActionBtnClicked)="submit()"
+>
+  <div class="form-standard values-form dense-3">
+    @if (data.importOnly) { @if (!fileName || errorMessage) {
+    <div class="drag-drop-container">
+      <app-common-import-container
+        [fileType]="FILE_TYPE.CSV"
+        buttonLabel="Choose CSV"
+        [showCloseButton]="false"
+        [importFailed]="!!errorMessage"
+        (filesSelected)="onFilesSelected($event)"
+      ></app-common-import-container>
+      <p class="ft-12-400 form-hint import-message">
+        {{ 'feature-flags.upsert-list-modal.import-csv.message.text' | translate }}
+        <app-common-learn-more-link learnMoreLinkKey="guide.add-lists"></app-common-learn-more-link>
+      </p>
+    </div>
+    } @else {
+    <div class="file-summary">
+      <span class="ft-14-400">{{ fileName }} — {{ importedValues.length }} values</span>
+      <button type="button" class="remove-file-button" aria-label="Remove selected CSV" (click)="clearImportedFile()">
+        ×
+      </button>
+    </div>
+    } @if (importDuplicateCount) {
+    <div class="duplicate-message ft-12-400">
+      <mat-icon>info_outline</mat-icon>
+      {{ importDuplicateCount }} {{ importDuplicateCount === 1 ? 'duplicate was' : 'duplicates were' }} skipped.
+    </div>
+    }
+    <div class="import-behavior-section dense-1">
+      <mat-radio-group [(ngModel)]="updateMode">
+        <span class="section-label ft-14-600">Import behavior</span>
+        <mat-radio-button [value]="UPDATE_MODE.APPEND">Append to existing values</mat-radio-button>
+        <mat-radio-button [value]="UPDATE_MODE.REPLACE">Replace existing values</mat-radio-button>
+      </mat-radio-group>
+    </div>
+    } @else {
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">Values</mat-label>
+      <textarea
+        matInput
+        rows="4"
+        class="ft-14-400"
+        [(ngModel)]="rawValues"
+        placeholder="Type or paste comma-separated values..."
+      ></textarea>
+    </mat-form-field>
+    <p class="entry-hint ft-12-400">Separate values with commas or new lines.</p>
+    @if (exceedsValueLimit) {
+    <span class="error-message ft-12-400">A list can contain up to 3,000 values.</span>
+    } }
+  </div>
+</app-common-dialog>

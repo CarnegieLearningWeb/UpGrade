@@ -1,0 +1,67 @@
+.values-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.entry-hint {
+  margin: -8px 0 0;
+  color: var(--dark-grey);
+}
+
+.drag-drop-container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 2px;
+
+  .import-message {
+    margin: 0;
+    text-indent: 18px;
+  }
+}
+
+.duplicate-message {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dark-grey);
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+}
+
+.error-message {
+  display: block;
+}
+
+.file-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .remove-file-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--dark-grey);
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1;
+    cursor: pointer;
+  }
+}
+
+.error-message {
+  color: var(--red);
+}
+
+.import-behavior-section {
+  padding: 4px 0;
+}

@@ -1,0 +1,20 @@
+<app-common-dialog
+  title="Edit Value"
+  cancelBtnLabel="Cancel"
+  primaryActionBtnLabel="Save"
+  primaryActionBtnColor="primary"
+  [primaryActionBtnDisabled]="valueControl.invalid || valueControl.value.trim() === data.value"
+  (primaryActionBtnClicked)="submit()"
+>
+  <div class="form-standard dense-3">
+    <mat-form-field appearance="outline">
+      <mat-label>Value</mat-label>
+      <input matInput [formControl]="valueControl" />
+      @if (valueControl.hasError('required')) {
+      <mat-error>Value is required.</mat-error>
+      } @else if (valueControl.hasError('duplicate')) {
+      <mat-error>This value already exists in the list.</mat-error>
+      }
+    </mat-form-field>
+  </div>
+</app-common-dialog>

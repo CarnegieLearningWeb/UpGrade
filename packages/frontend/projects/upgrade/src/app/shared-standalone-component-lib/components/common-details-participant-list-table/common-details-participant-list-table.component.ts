@@ -52,6 +52,7 @@ import { SharedModule } from '../../../shared/shared.module';
 })
 export class CommonDetailsParticipantListTableComponent {
   @Input() tableType: LIST_FILTER_MODE;
+  @Input() listFilterMode?: LIST_FILTER_MODE;
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
   @Input() slideToggleDisabled?: boolean = false;
@@ -132,6 +133,14 @@ export class CommonDetailsParticipantListTableComponent {
       rowData.listType?.toLowerCase() === this.memberTypes.SEGMENT.toLowerCase() &&
       rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC
     );
+  }
+
+  isDirectValueList(rowData: ParticipantListTableRow): boolean {
+    return rowData.listType?.toLowerCase() !== this.memberTypes.SEGMENT.toLowerCase();
+  }
+
+  get detailsFilterMode(): LIST_FILTER_MODE {
+    return this.listFilterMode ?? this.tableType;
   }
 
   onSlideToggleChange(event: MatSlideToggleChange, rowData: ParticipantListTableRow): void {

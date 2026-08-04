@@ -25,4 +25,6 @@ export class CommonDetailsPageHeaderComponent {
   @Input() rootName!: string;
   @Input() detailsName!: string;
   @Input() rootLink!: string;
+  @Input() parentName?: string;
+  @Input() parentLink?: any[];
 }
