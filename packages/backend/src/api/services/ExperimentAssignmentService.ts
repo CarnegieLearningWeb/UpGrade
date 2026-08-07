@@ -708,7 +708,8 @@ export class ExperimentAssignmentService {
     const experiments = previewUser
       ? await this.experimentRepository.getValidExperimentsWithPreview(context)
       : await this.experimentService.getCachedValidExperiments(context);
-    // adding conditionPayloads at the root level instead of inside conditions
+    // adding conditionPayloads at the root level instead of inside conditions.
+    // formattingConditionPayload does not mutate, so the cached experiments above stay pristine.
     return experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
   }
 

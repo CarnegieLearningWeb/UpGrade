@@ -302,13 +302,22 @@ export class ExperimentService {
     };
   }
 
+  /**
+   * Returns the valid experiments for a context.
+   *
+   * The cache is an in-memory store, so this hands back the same object reference on every hit. That
+   * used to require a defensive `JSON.parse(JSON.stringify(...))` deep copy on every assignment
+   * request, because `formattingConditionPayload` mutated what it was given. That function now builds
+   * new objects instead, so the cached graph is never written to and the per-request copy is gone.
+   *
+   * Callers must keep it that way: treat this result, and everything reachable from it, as read-only.
+   */
   public async getCachedValidExperiments(context: string): Promise<Experiment[]> {
     const cacheKey = CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context;
-    return this.cacheService
-      .wrap(cacheKey, this.experimentRepository.getValidExperiments.bind(this.experimentRepository, context))
-      .then((validExperiment) => {
-        return JSON.parse(JSON.stringify(validExperiment));
-      });
+    return this.cacheService.wrap(
+      cacheKey,
+      this.experimentRepository.getValidExperiments.bind(this.experimentRepository, context)
+    );
   }
 
   public async create(
@@ -1898,35 +1907,47 @@ export class ExperimentService {
     return searchStringConcatenated;
   }
 
+  /**
+   * Hoists conditionPayloads from conditions (factorial) or decision points (everything else) up to
+   * the root of the experiment.
+   *
+   * This does not mutate `experiment` or anything reachable from it. That matters because the
+   * assignment read path calls this on experiments handed out by the in-memory cache, which returns
+   * the same object reference to every request: mutating here would corrupt the cached graph for all
+   * subsequent requests, which is why this call site previously needed a full deep copy of the
+   * experiment on every request. Stripped conditions/partitions are rebuilt as new objects instead,
+   * and the `parentCondition`/`decisionPoint` back-references point at those same rebuilt objects, so
+   * reference identity within the returned experiment matches what the old in-place version produced.
+   */
   public formattingConditionPayload(experiment: Experiment): Experiment {
     if (experiment.type === EXPERIMENT_TYPE.FACTORIAL) {
       const conditionPayload: ConditionPayload[] = [];
-      experiment.conditions.forEach((condition) => {
-        const conditionPayloads = condition.conditionPayloads.map((conditionPayload) => {
-          return { ...conditionPayload, parentCondition: condition };
+      const conditions = experiment.conditions.map(({ conditionPayloads, ...rest }) => rest as ExperimentCondition);
+
+      experiment.conditions.forEach((condition, index) => {
+        (condition.conditionPayloads || []).forEach((payload) => {
+          conditionPayload.push({ ...payload, parentCondition: conditions[index] });
         });
-        conditionPayload.push(...conditionPayloads);
-        delete condition.conditionPayloads;
       });
 
-      return { ...experiment, conditionPayloads: conditionPayload };
+      return { ...experiment, conditions, conditionPayloads: conditionPayload };
     }
 
-    const { conditions, partitions } = experiment;
+    const partitions = experiment.partitions.map(({ conditionPayloads, ...rest }) => rest as DecisionPoint);
 
     const conditionPayload: ConditionPayload[] = [];
-    partitions.forEach((partition) => {
-      const conditionPayloadData = partition.conditionPayloads;
-      delete partition.conditionPayloads;
+    experiment.partitions.forEach((partition, index) => {
+      // Copy before sorting — the source array belongs to the (possibly cached) experiment.
+      const conditionPayloadData = [...(partition.conditionPayloads || [])];
 
       conditionPayloadData.sort((a, b) => a.parentCondition.order - b.parentCondition.order);
       conditionPayloadData.forEach((x) => {
-        if (x && conditions.filter((con) => con.id === x.parentCondition.id).length > 0) {
-          conditionPayload.push({ ...x, decisionPoint: partition });
+        if (x && experiment.conditions.some((con) => con.id === x.parentCondition.id)) {
+          conditionPayload.push({ ...x, decisionPoint: partitions[index] });
         }
       });
     });
-    return { ...experiment, conditionPayloads: conditionPayload };
+    return { ...experiment, partitions, conditionPayloads: conditionPayload };
   }
 
   public reducedConditionPayload(experiment: Experiment): any {
