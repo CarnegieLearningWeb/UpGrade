@@ -134,7 +134,7 @@ export class ExperimentAssignmentService {
 
   private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
     const cacheKey = CACHE_PREFIX.MARK_KEY_PREFIX + '-' + site + '-' + target;
-    const cached = await this.cacheService.wrap(cacheKey, async () => {
+    const dpExperiments = await this.cacheService.wrap(cacheKey, async () => {
       // Keep the decision-point query minimal; hydrate heavy experiment relations separately.
       const decisionPoints = await this.decisionPointRepository.find({
         where: {
@@ -159,7 +159,7 @@ export class ExperimentAssignmentService {
       );
 
       if (experimentIds.length === 0) {
-        return { dpExperiments: [] as DecisionPoint[], experiments: [] as Experiment[] };
+        return [] as DecisionPoint[];
       }
 
       const experiments = await this.experimentRepository.find({
@@ -181,18 +181,16 @@ export class ExperimentAssignmentService {
 
       const experimentById = new Map(experiments.map((experiment) => [experiment.id, experiment]));
 
-      const dpExperiments = decisionPoints
+      return decisionPoints
         .map((dp) => {
           const experiment = experimentById.get(dp.experiment?.id);
           if (!experiment) return null;
           return { ...dp, experiment } as DecisionPoint;
         })
         .filter((dp): dp is DecisionPoint => dp !== null);
-
-      return { dpExperiments, experiments };
     });
 
-    return [cached.dpExperiments, cached.experiments];
+    return [dpExperiments, dpExperiments.map((dp) => dp.experiment)];
   }
 
   public async markExperimentPoint(
