@@ -77,6 +77,7 @@ import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegm
 import { ExperimentPrecomputedSegment } from '../models/ExperimentPrecomputedSegment';
 import { precomputedGroupKey } from './precomputedSegmentHelpers';
 import { EntitySegmentMembers, EntitySegmentResolutionInput, SegmentGroupMember } from '../../types';
+import { tracePerfAsync, tracePerfSync } from '../../lib/perf/perfTrace';
 
 export interface FactorialConditionResult {
   factorialCondition: Omit<ExperimentCondition, 'levelCombinationElements' | 'conditionPayloads'>;
@@ -340,7 +341,9 @@ export class ExperimentAssignmentService {
   ): Promise<IExperimentAssignmentv5[]> {
     logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
     const userId = experimentUserDoc.id;
-    const previewUser = await this.previewUserService.findOneFromCache(userId, logger);
+    const previewUser = await tracePerfAsync('previewUserService.findOneFromCache', () =>
+      this.previewUserService.findOneFromCache(userId, logger)
+    );
 
     /** Below are the detailed steps for the assignment process:
      * 1. Fetch experiments based on user type & moving conditionPayloads at the root level
@@ -355,7 +358,9 @@ export class ExperimentAssignmentService {
     const experiments: Experiment[] = await this.getExperimentsForUser(previewUser, context);
 
     // 2. Check if user or group is globally excluded
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUserDoc, context);
+    const [isUserExcluded, isGroupExcluded] = await tracePerfAsync('checkUserOrGroupIsGloballyExcluded', () =>
+      this.checkUserOrGroupIsGloballyExcluded(experimentUserDoc, context)
+    );
 
     // return empty assignments if the user or group is excluded from the experiment
     if (isUserExcluded || isGroupExcluded) {
@@ -363,7 +368,9 @@ export class ExperimentAssignmentService {
     }
 
     // 3. Filter out valid group experiments that doesn't have invalid group/workingGroup which are not enrolled yet
-    const validExperiments = await this.filterAndProcessGroupExperiments(experiments, experimentUserDoc, logger);
+    const validExperiments = await tracePerfAsync('filterAndProcessGroupExperiments', () =>
+      this.filterAndProcessGroupExperiments(experiments, experimentUserDoc, logger)
+    );
 
     // 4. Process assignments and exclusions
     try {
@@ -374,9 +381,12 @@ export class ExperimentAssignmentService {
 
       const experimentIds = validExperiments.map((experiment) => experiment.id);
 
-      // Query assignments and exclusions for the user
-      const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
-        await this.getAssignmentsAndExclusionsForUser(experimentUserDoc, experimentIds);
+      // Query assignments and exclusions for the user.
+      // Experiment count is in the label because it sizes the IN (...) list on all four queries.
+      const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] = await tracePerfAsync(
+        `getAssignmentsAndExclusionsForUser(experiments=${experimentIds.length})`,
+        () => this.getAssignmentsAndExclusionsForUser(experimentUserDoc, experimentIds)
+      );
 
       let mergedIndividualAssignment = individualEnrollments;
       // add assignments for individual assignments if preview user
@@ -392,21 +402,21 @@ export class ExperimentAssignmentService {
       }
 
       // Check for experiment level inclusion and exclusion and return valid inclusion experiments
-      let [filteredExperiments] = await this.experimentLevelExclusionInclusion(
-        validExperiments,
-        experimentUserDoc,
-        logger
+      let [filteredExperiments] = await tracePerfAsync('experimentLevelExclusionInclusion', () =>
+        this.experimentLevelExclusionInclusion(validExperiments, experimentUserDoc, logger)
       );
 
       // 5. Process experiment pools on filtered experiments
-      filteredExperiments = this.processExperimentPools(
-        filteredExperiments,
-        mergedIndividualAssignment,
-        groupEnrollments,
-        individualExclusions,
-        groupExclusions,
-        experimentUserDoc,
-        previewUser
+      filteredExperiments = tracePerfSync('processExperimentPools', () =>
+        this.processExperimentPools(
+          filteredExperiments,
+          mergedIndividualAssignment,
+          groupEnrollments,
+          individualExclusions,
+          groupExclusions,
+          experimentUserDoc,
+          previewUser
+        )
       );
 
       // return empty if no experiments
@@ -415,34 +425,47 @@ export class ExperimentAssignmentService {
       }
 
       // 6. Assign condition from the remaining experiment (Use the updated filtered experiments for further processing)
-      const experimentAssignment = await Promise.all(
-        filteredExperiments.map(async (experiment) => {
-          const individualEnrollment = mergedIndividualAssignment.find((assignment) => {
-            return assignment.experimentId === experiment.id;
-          });
+      // Traced as a whole and per-experiment: assignExperiment writes enrollment/exclusion rows, so
+      // this block is where the post-query DB cost lives. Per-experiment spans stay quiet unless one
+      // of them individually crosses the threshold, which is what identifies a single slow experiment.
+      const experimentAssignment = await tracePerfAsync(
+        `assignExperiments(experiments=${filteredExperiments.length})`,
+        () =>
+          Promise.all(
+            filteredExperiments.map(async (experiment) => {
+              const individualEnrollment = mergedIndividualAssignment.find((assignment) => {
+                return assignment.experimentId === experiment.id;
+              });
 
-          const assignmentRecords = this.findAssignmentAndExclusionRecordsExceptIndividualEnrollment(
-            experimentUserDoc,
-            experiment,
-            groupEnrollments,
-            individualExclusions,
-            groupExclusions
-          );
+              const assignmentRecords = this.findAssignmentAndExclusionRecordsExceptIndividualEnrollment(
+                experimentUserDoc,
+                experiment,
+                groupEnrollments,
+                individualExclusions,
+                groupExclusions
+              );
 
-          let enrollmentCountPerCondition = null;
-          if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
-            enrollmentCountPerCondition = await this.getEnrollmentCountPerCondition(experiment, userId);
-          }
-          return await this.assignExperiment(
-            experimentUserDoc,
-            experiment,
-            individualEnrollment,
-            assignmentRecords.groupEnrollment,
-            assignmentRecords.individualExclusion,
-            assignmentRecords.groupExclusion,
-            enrollmentCountPerCondition
-          );
-        })
+              let enrollmentCountPerCondition = null;
+              if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+                enrollmentCountPerCondition = await tracePerfAsync(
+                  `getEnrollmentCountPerCondition(${experiment.id})`,
+                  () => this.getEnrollmentCountPerCondition(experiment, userId)
+                );
+              }
+
+              return await tracePerfAsync(`assignExperiment(${experiment.id})`, () =>
+                this.assignExperiment(
+                  experimentUserDoc,
+                  experiment,
+                  individualEnrollment,
+                  assignmentRecords.groupEnrollment,
+                  assignmentRecords.individualExclusion,
+                  assignmentRecords.groupExclusion,
+                  enrollmentCountPerCondition
+                )
+              );
+            })
+          )
       );
       let repeatedEnrollmentCounts: RepeatedEnrollmentDataCount[] = [];
       if (filteredExperiments.some((experiment) => experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS)) {
@@ -450,32 +473,40 @@ export class ExperimentAssignmentService {
           (experiment) => experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
         );
 
-        repeatedEnrollmentCounts = await this.repeatedEnrollmentRepository.getRepeatedEnrollmentCount(
-          userId,
-          filteredWithinSubjectExperiments.map((experiment) => experiment.id),
-          logger
+        repeatedEnrollmentCounts = await tracePerfAsync('getRepeatedEnrollmentCount', () =>
+          this.repeatedEnrollmentRepository.getRepeatedEnrollmentCount(
+            userId,
+            filteredWithinSubjectExperiments.map((experiment) => experiment.id),
+            logger
+          )
         );
       }
-      return filteredExperiments.reduce((accumulator, experiment, index) => {
-        const assignment = experimentAssignment[index];
-        const { conditionPayloads, type, factors } = this.experimentService.formattingPayload(experiment);
 
-        if (assignment) {
-          const decisionPoints = this.mapDecisionPoints(
-            experiment,
-            assignment,
-            userId,
-            conditionPayloads,
-            type,
-            factors,
-            repeatedEnrollmentCounts,
-            logger
-          );
-          return [...accumulator, ...decisionPoints];
-        } else {
-          return accumulator;
-        }
-      }, []);
+      // Synchronous CPU: formattingPayload + mapDecisionPoints per experiment. Worth watching because
+      // blocking work here delays every other request's awaited callbacks, not just this one.
+      const allDecisionPoints = tracePerfSync('buildDecisionPoints', () =>
+        filteredExperiments.reduce((accumulator, experiment, index) => {
+          const assignment = experimentAssignment[index];
+          const { conditionPayloads, type, factors } = this.experimentService.formattingPayload(experiment);
+
+          if (assignment) {
+            const decisionPoints = this.mapDecisionPoints(
+              experiment,
+              assignment,
+              userId,
+              conditionPayloads,
+              type,
+              factors,
+              repeatedEnrollmentCounts,
+              logger
+            );
+            return [...accumulator, ...decisionPoints];
+          } else {
+            return accumulator;
+          }
+        }, [])
+      );
+      return allDecisionPoints;
     } catch (err) {
       const error = err as ErrorWithType;
       error.details = 'Error in assignment';
@@ -705,11 +736,13 @@ export class ExperimentAssignmentService {
   }
 
   private async getExperimentsForUser(previewUser: PreviewUser, context: string): Promise<Experiment[]> {
-    const experiments = previewUser
-      ? await this.experimentRepository.getValidExperimentsWithPreview(context)
-      : await this.experimentService.getCachedValidExperiments(context);
-    // adding conditionPayloads at the root level instead of inside conditions
-    return experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
+    return tracePerfAsync('getExperimentsForUser', async () => {
+      const experiments = previewUser
+        ? await this.experimentRepository.getValidExperimentsWithPreview(context)
+        : await this.experimentService.getCachedValidExperiments(context);
+      // adding conditionPayloads at the root level instead of inside conditions
+      return experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
+    });
   }
 
   private async getExperimentsForContextAndDecisionPoint(

@@ -31,6 +31,7 @@ import { UserCheckMiddleware } from '../middlewares/UserCheckMiddleware';
 import { RewardValidator } from './validators/RewardValidator';
 import { IRewardResponse, MoocletRewardsService } from '../services/MoocletRewardsService';
 import { env } from '../../env';
+import { tracePerfSync } from '../../lib/perf/perfTrace';
 
 interface IMonitoredDecisionPoint {
   id: string;
@@ -542,13 +543,14 @@ export class ExperimentClientController {
   ): Promise<IExperimentAssignmentv5[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
     const experimentUserDoc = request.userDoc;
+
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
       experimentUserDoc,
       experiment.context,
       request.logger
     );
 
-    return this.experimentAssignmentService.formatAssignments(assignedData);
+    return tracePerfSync('formatAssignments', () => this.experimentAssignmentService.formatAssignments(assignedData));
   }
 
   /**

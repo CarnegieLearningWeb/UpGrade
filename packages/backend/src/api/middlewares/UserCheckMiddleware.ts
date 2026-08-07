@@ -5,6 +5,7 @@ import { AppRequest } from '../../types';
 import { Service } from 'typedi';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
+import { tracePerfAsync } from '../../lib/perf/perfTrace';
 
 @Service()
 export class UserCheckMiddleware {
@@ -27,9 +28,13 @@ export class UserCheckMiddleware {
       let experimentUserDoc: RequestedExperimentUser;
 
       if (req.url.endsWith('/v6/featureflag')) {
-        experimentUserDoc = await this.handleProvidedGroupsForSession(req, user_id);
+        experimentUserDoc = await tracePerfAsync('UserCheckMiddleware.handleProvidedGroupsForSession', () =>
+          this.handleProvidedGroupsForSession(req, user_id)
+        );
       } else {
-        experimentUserDoc = await this.experimentUserService.getUserDoc(user_id, req.logger);
+        experimentUserDoc = await tracePerfAsync('UserCheckMiddleware.getUserDoc', () =>
+          this.experimentUserService.getUserDoc(user_id, req.logger)
+        );
       }
 
       if (!req.url.endsWith('/init') && !experimentUserDoc) {
