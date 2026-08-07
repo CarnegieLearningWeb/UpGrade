@@ -123,10 +123,31 @@ This placement is the whole point. A span registered inside a handler misses the
 middleware, body parsing, class-validator, and response serialization — which is precisely the gap
 between what the trace reports and what an external client measures.
 
+Make this edit with the Edit tool, then **verify it landed**:
+
+```bash
+grep -n "createExpressServer\|useExpressServer\|perfTraceMiddleware" packages/backend/src/loaders/app/index.ts
+```
+
+Expect `useExpressServer` and `perfTraceMiddleware`, and no `createExpressServer`. Scripted
+search-and-replace on this file has silently no-op'd before; a failed edit here is easy to miss
+because everything still compiles and runs — you just get no `[perf]` output at all.
+
 ## Step 5 — Configure the local .env
 
 `packages/backend/.env` only (gitignored). **Never touch `.env.example` or `.env.test`** — those are
 tracked, and this harness must leave no committed trace.
+
+**Check for an existing block first and replace it rather than appending:**
+
+```bash
+grep -n "PERF_TRACE" packages/backend/.env
+```
+
+`.env` is gitignored, so it does *not* reset when you switch branches. A previous install's block
+will still be sitting there, and blindly appending gives you duplicate keys — dotenv takes the
+first, so a stale `PERF_TRACE_PATHS` silently wins and you spend an hour wondering why isolation
+isn't working. If a block exists, edit it in place; only append when there is none.
 
 ```bash
 PERF_TRACE_ENABLED=true
@@ -139,6 +160,8 @@ PERF_TRACE_PATHS=
 # Applied after PERF_TRACE_PATHS, so an exclusion always wins. e.g. /v6/log,/v6/mark
 PERF_TRACE_EXCLUDE_PATHS=
 ```
+
+After writing, re-run the grep and confirm each key appears exactly once.
 
 ## Step 6 — Verify
 
