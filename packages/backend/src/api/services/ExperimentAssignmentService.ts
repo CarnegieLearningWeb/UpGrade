@@ -192,11 +192,15 @@ export class ExperimentAssignmentService {
     }
 
     const userId = userDoc.id;
-    const previewUser: PreviewUser = await this.previewUserService.findOneFromCache(userId, logger);
+    const previewUser: PreviewUser = await tracePerfAsync('previewUserService.findOneFromCache', () =>
+      this.previewUserService.findOneFromCache(userId, logger)
+    );
     const { workingGroup } = userDoc;
 
     // 1. Search decision points in experiments cache and return relevant experiments and decisionPoints data
-    const experimentsResult = await this.getCachedExperiments(site, target);
+    const experimentsResult = await tracePerfAsync('getCachedExperiments', () =>
+      this.getCachedExperiments(site, target)
+    );
     const dpExperiments = experimentsResult[0];
     let experiments = experimentsResult[1];
 
@@ -229,7 +233,9 @@ export class ExperimentAssignmentService {
     const context: string | null = experiments?.[0]?.context?.[0] ?? null;
 
     // 2. Check if user or group is globally excluded
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
+    const [isUserExcluded, isGroupExcluded] = await tracePerfAsync('checkUserOrGroupIsGloballyExcluded', () =>
+      this.checkUserOrGroupIsGloballyExcluded(userDoc, context)
+    );
 
     // empty assignments if the user or group is excluded from the experiment
     if (isUserExcluded || isGroupExcluded) {
@@ -244,20 +250,26 @@ export class ExperimentAssignmentService {
     }
 
     // 3. Check for experiment level inclusion and exclusion
-    const [, exclusionReason] = await this.experimentLevelExclusionInclusion(experiments, userDoc, logger);
+    const [, exclusionReason] = await tracePerfAsync('experimentLevelExclusionInclusion', () =>
+      this.experimentLevelExclusionInclusion(experiments, userDoc, logger)
+    );
 
     // find monitored document
-    let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
-      where: {
-        site: site,
-        target: target,
-        user: { id: userDoc.id },
-      },
-    });
+    let monitoredDocument: MonitoredDecisionPoint = await tracePerfAsync(
+      'monitoredDecisionPointRepository.findOne',
+      () =>
+        this.monitoredDecisionPointRepository.findOne({
+          where: {
+            site: site,
+            target: target,
+            user: { id: userDoc.id },
+          },
+        })
+    );
 
     // 4. Store indirect group exclusion documents (if exclusion has consistency-group, exclude direct group of user belongs)
     if (exclusionReason.length && exclusionReason[0].reason === 'group' && !exclusionReason[0].matchedGroup) {
-      await this.saveGroupExclusionDoc(exclusionReason, userDoc);
+      await tracePerfAsync('saveGroupExclusionDoc', () => this.saveGroupExclusionDoc(exclusionReason, userDoc));
     }
 
     if (experiments.length) {
@@ -281,18 +293,20 @@ export class ExperimentAssignmentService {
           experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) &&
         !previewUser
       ) {
-        await this.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria(
-          selectedExperimentDP,
-          userDoc,
-          experiment,
-          workingGroup,
-          isUserExcluded,
-          isGroupExcluded,
-          exclusionReason,
-          status,
-          condition,
-          uniquifier,
-          logger
+        await tracePerfAsync('updateEnrollmentExclusionDocumentsAndCheckEndingCriteria', () =>
+          this.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria(
+            selectedExperimentDP,
+            userDoc,
+            experiment,
+            workingGroup,
+            isUserExcluded,
+            isGroupExcluded,
+            exclusionReason,
+            status,
+            condition,
+            uniquifier,
+            logger
+          )
         );
       }
     }
@@ -302,14 +316,16 @@ export class ExperimentAssignmentService {
       experiments?.length > 0
         ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0].assignmentUnit
         : null;
-    monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
-      id: monitoredDocument?.id || crypto.randomUUID(),
-      experimentId: experimentId,
-      condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? null : condition,
-      user: userDoc,
-      site: site,
-      target: target,
-    });
+    monitoredDocument = await tracePerfAsync('monitoredDecisionPointRepository.saveRawJson', () =>
+      this.monitoredDecisionPointRepository.saveRawJson({
+        id: monitoredDocument?.id || crypto.randomUUID(),
+        experimentId: experimentId,
+        condition: assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ? null : condition,
+        user: userDoc,
+        site: site,
+        target: target,
+      })
+    );
 
     return {
       ...monitoredDocument,
@@ -1221,11 +1237,13 @@ export class ExperimentAssignmentService {
     const keyUniqueArray: { key: string; uniquifier: string }[] = [];
 
     // extract the array value
-    const promise = jsonLog.map(async (individualMetrics) => {
-      return this.createLog(individualMetrics, keyUniqueArray, userDoc, logger);
+    const promise = jsonLog.map(async (individualMetrics, index) => {
+      return tracePerfAsync(`createLog[${index}]`, () =>
+        this.createLog(individualMetrics, keyUniqueArray, userDoc, logger)
+      );
     });
 
-    const logsToReturn = await Promise.all(promise);
+    const logsToReturn = await tracePerfAsync(`createLogs(logs=${jsonLog.length})`, () => Promise.all(promise));
     return flatten(logsToReturn);
   }
 

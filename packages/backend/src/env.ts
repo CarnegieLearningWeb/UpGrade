@@ -3,7 +3,7 @@ import path from 'path';
 import pkg from '../package.json';
 
 import { getOsEnv, getOsPath, getOsPaths, normalizePort, toBool } from './lib/env';
-import { getOsEnvOptional, toNumber, toNumberWithDefault, parseAdminUsers, getOsEnvArray } from './lib/env/utils';
+import { getOsEnvOptional, toNumber, parseAdminUsers, getOsEnvArray } from './lib/env/utils';
 
 /**
  * Load .env file or for tests the .env.test file.
@@ -47,15 +47,6 @@ export const env = {
     level: getOsEnv('LOG_LEVEL'),
     json: toBool(getOsEnvOptional('LOG_JSON')),
     output: getOsEnv('LOG_OUTPUT'),
-  },
-  // Request-correlated hot-path tracing. Off by default; see lib/perf/perfTrace.ts.
-  perfTrace: {
-    enabled: toBool(getOsEnvOptional('PERF_TRACE_ENABLED')),
-    // Only spans at or above this duration are logged, so tracing does not itself add
-    // console.log overhead to every request. 0 logs every span.
-    thresholdMs: toNumberWithDefault(getOsEnvOptional('PERF_TRACE_THRESHOLD_MS'), 5),
-    // URL substrings to trace. Empty traces every request.
-    paths: getOsEnvArray('PERF_TRACE_PATHS'),
   },
   // Use this when want log directly from the console
   splunk: {

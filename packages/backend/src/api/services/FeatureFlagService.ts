@@ -63,6 +63,7 @@ import { SegmentFile, SegmentInputValidator } from '../controllers/validators/Se
 import dayjs from 'dayjs';
 import { getDateRangeNames } from '../repositories/utils/dateQuery';
 import { FeatureFlagExposure } from '../models/FeatureFlagExposure';
+import { tracePerfAsync } from '../../lib/perf/perfTrace';
 
 @Service()
 export class FeatureFlagService {
@@ -106,13 +107,13 @@ export class FeatureFlagService {
       throw error;
     }
 
-    const filteredFeatureFlags = await this.getCachedFlagsForKeys(context);
+    const filteredFeatureFlags = await tracePerfAsync('getCachedFlagsForKeys', () =>
+      this.getCachedFlagsForKeys(context)
+    );
 
-    const includedFeatureFlags = await this.featureFlagLevelInclusionExclusion(
-      filteredFeatureFlags,
-      experimentUserDoc,
-      context,
-      logger
+    const includedFeatureFlags = await tracePerfAsync(
+      `featureFlagLevelInclusionExclusion(flags=${filteredFeatureFlags.length})`,
+      () => this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, experimentUserDoc, context, logger)
     );
 
     // save exposures in db

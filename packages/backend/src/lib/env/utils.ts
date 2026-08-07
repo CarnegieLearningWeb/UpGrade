@@ -40,12 +40,6 @@ export function toNumber(value: string): number {
   return parseInt(value, 10);
 }
 
-// toNumber yields NaN for unset optional vars; use this when a real fallback is needed.
-export function toNumberWithDefault(value: string, defaultValue: number): number {
-  const parsed = parseInt(value, 10);
-  return Number.isNaN(parsed) ? defaultValue : parsed;
-}
-
 export function toBool(value: string): boolean {
   return value === 'true';
 }

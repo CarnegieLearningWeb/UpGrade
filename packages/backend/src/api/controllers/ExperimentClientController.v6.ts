@@ -31,7 +31,7 @@ import { UserCheckMiddleware } from '../middlewares/UserCheckMiddleware';
 import { RewardValidator } from './validators/RewardValidator';
 import { IRewardResponse, MoocletRewardsService } from '../services/MoocletRewardsService';
 import { env } from '../../env';
-import { tracePerfSync } from '../../lib/perf/perfTrace';
+import { tracePerfAsync, tracePerfSync } from '../../lib/perf/perfTrace';
 
 interface IMonitoredDecisionPoint {
   id: string;
@@ -185,10 +185,8 @@ export class ExperimentClientController {
       request.logger.info({ message: 'Got the original user doc' });
     }
 
-    const upsertResult = await this.experimentUserService.upsertOnChange(
-      experimentUserDoc,
-      { id, ...experimentUser },
-      request.logger
+    const upsertResult = await tracePerfAsync('experimentUserService.upsertOnChange', () =>
+      this.experimentUserService.upsertOnChange(experimentUserDoc, { id, ...experimentUser }, request.logger)
     );
 
     if (!upsertResult) {
@@ -263,13 +261,11 @@ export class ExperimentClientController {
     // getOriginalUserDoc call for alias
     const experimentUserDoc = request.userDoc;
 
-    const updateResult = await this.experimentUserService.updateGroupMembership(
-      experimentUserDoc.requestedUserId,
-      experimentUser.group,
-      {
+    const updateResult = await tracePerfAsync('experimentUserService.updateGroupMembership', () =>
+      this.experimentUserService.updateGroupMembership(experimentUserDoc.requestedUserId, experimentUser.group, {
         logger: request.logger,
         userDoc: experimentUserDoc,
-      }
+      })
     );
     if (!updateResult) {
       request.logger.error({
@@ -337,13 +333,15 @@ export class ExperimentClientController {
     // getOriginalUserDoc call for alias
     const experimentUserDoc = request.userDoc;
 
-    const updateResult = await this.experimentUserService.updateWorkingGroup(
-      experimentUserDoc.requestedUserId,
-      workingGroupParams.workingGroup,
-      {
-        logger: request.logger,
-        userDoc: experimentUserDoc,
-      }
+    const updateResult = await tracePerfAsync('experimentUserService.updateWorkingGroup', () =>
+      this.experimentUserService.updateWorkingGroup(
+        experimentUserDoc.requestedUserId,
+        workingGroupParams.workingGroup,
+        {
+          logger: request.logger,
+          userDoc: experimentUserDoc,
+        }
+      )
     );
     if (!updateResult) {
       request.logger.error({
@@ -446,16 +444,20 @@ export class ExperimentClientController {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = request.userDoc;
-    const { createdAt, updatedAt, versionNumber, ...rest } = await this.experimentAssignmentService.markExperimentPoint(
-      experimentUserDoc,
-      experiment.data.site,
-      experiment.status,
-      experiment.data.assignedCondition?.conditionCode ?? null,
-      request.logger,
-      experiment.data.assignedCondition?.experimentId ?? null,
-      experiment.data.target,
-      experiment.uniquifier ? experiment.uniquifier : null,
-      experiment.clientError ? experiment.clientError : null
+    const { createdAt, updatedAt, versionNumber, ...rest } = await tracePerfAsync(
+      'experimentAssignmentService.markExperimentPoint',
+      () =>
+        this.experimentAssignmentService.markExperimentPoint(
+          experimentUserDoc,
+          experiment.data.site,
+          experiment.status,
+          experiment.data.assignedCondition?.conditionCode ?? null,
+          request.logger,
+          experiment.data.assignedCondition?.experimentId ?? null,
+          experiment.data.target,
+          experiment.uniquifier ? experiment.uniquifier : null,
+          experiment.clientError ? experiment.clientError : null
+        )
     );
     return rest;
   }
@@ -640,7 +642,10 @@ export class ExperimentClientController {
     request.logger.info({ message: 'Starting the log call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = request.userDoc;
-    const logs = await this.experimentAssignmentService.dataLog(experimentUserDoc, logData.value, request.logger);
+    // Log count is in the label because dataLog fans out one createLog per entry.
+    const logs = await tracePerfAsync(`experimentAssignmentService.dataLog(logs=${logData.value?.length ?? 0})`, () =>
+      this.experimentAssignmentService.dataLog(experimentUserDoc, logData.value, request.logger)
+    );
     return logs.map(({ createdAt, updatedAt, versionNumber, ...rest }) => {
       return rest;
     });
@@ -760,7 +765,9 @@ export class ExperimentClientController {
     featureFlagRequest: FeatureFlagRequestValidator
   ): Promise<string[]> {
     const experimentUserDoc = request.userDoc;
-    return this.featureFlagService.getKeys(experimentUserDoc, featureFlagRequest.context, request.logger);
+    return tracePerfAsync('featureFlagService.getKeys', () =>
+      this.featureFlagService.getKeys(experimentUserDoc, featureFlagRequest.context, request.logger)
+    );
   }
 
   /**
@@ -822,7 +829,9 @@ export class ExperimentClientController {
     user: ExperimentUserAliasesValidatorv6
   ): Promise<IUserAliases> {
     const experimentUserDoc = request.userDoc;
-    return this.experimentUserService.setAliasesForUser(experimentUserDoc, user.aliases, request.logger);
+    return tracePerfAsync(`experimentUserService.setAliasesForUser(aliases=${user.aliases?.length ?? 0})`, () =>
+      this.experimentUserService.setAliasesForUser(experimentUserDoc, user.aliases, request.logger)
+    );
   }
 
   /**
@@ -960,7 +969,9 @@ export class ExperimentClientController {
     }
 
     const experimentUserDoc = request.userDoc;
-    return this.moocletRewardsService.sendReward(experimentUserDoc, rewardData, request.logger);
+    return tracePerfAsync('moocletRewardsService.sendReward', () =>
+      this.moocletRewardsService.sendReward(experimentUserDoc, rewardData, request.logger)
+    );
   }
 
   /**
