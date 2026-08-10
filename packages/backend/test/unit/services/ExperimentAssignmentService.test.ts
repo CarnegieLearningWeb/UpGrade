@@ -238,6 +238,97 @@ describe('Experiment Assignment Service Test', () => {
     expect(result[0].assignedCondition[0]).toEqual(cond);
   });
 
+  describe('cached experiment graph is never mutated', () => {
+    // getCachedValidExperiments hands the SAME object graph to every request — the cache is an
+    // in-memory store and the per-request `JSON.parse(JSON.stringify(...))` defensive copy was removed
+    // for performance (it cost ~8ms of blocking CPU per request on a production-sized payload).
+    //
+    // That makes non-mutation a load-bearing invariant rather than a nicety: an in-place write here
+    // (`.sort()`, `.splice()`, `delete`, a nested field assignment) corrupts the graph for every
+    // subsequent request in that context until the cache entry expires, silently and with no error.
+    // It also will not reproduce in local dev, where caching is typically off and every request gets
+    // a freshly loaded graph. These tests fail loudly instead.
+    //
+    // Note that top-level writes are safe by construction — formattingConditionPayload returns a
+    // `{...experiment}` shallow copy — so what these guard is mutation one or more levels down.
+    const expectNoMutation = async (exp: any, run: () => Promise<unknown>) => {
+      const snapshot = JSON.parse(JSON.stringify(exp));
+
+      // Twice: a mutation that is idempotent (an in-place sort, say) can still be caught on the first
+      // pass, and running twice also covers request N+1 seeing what request N left behind.
+      await run();
+      await run();
+
+      expect(JSON.parse(JSON.stringify(exp))).toEqual(snapshot);
+    };
+
+    it('should not mutate the cached experiment for a simple individual experiment', async () => {
+      const context = 'context';
+      const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
+
+      testedModule.cacheService.wrap = sandbox.stub().resolves([exp]);
+      testedModule.experimentRepository.getValidExperimentsWithPreview = sandbox.stub().resolves([]);
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+      testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+
+      await expectNoMutation(exp, () => testedModule.getAllExperimentConditions(userDoc, context, loggerMock));
+    });
+
+    it('should not reorder the cached conditions of a simple group experiment', async () => {
+      // This fixture stores its conditions out of `order` on purpose, so an in-place sort on the
+      // assignment path — which is exactly the bug this guards — shows up as a reordering.
+      const context = 'context';
+      const userDoc = {
+        id: 'user123',
+        group: { 'add-group1': ['school1'] },
+        workingGroup: { 'add-group1': 'school1' },
+      };
+      const exp: any = structuredClone(simpleGroupAssignmentExperiment);
+      expect(exp.conditions.map((condition) => condition.order)).toEqual([2, 1]);
+
+      const groupEnrollment = new GroupEnrollment();
+      groupEnrollment.experiment = exp;
+      groupEnrollment.condition = exp.conditions[0];
+      groupEnrollment.groupId = 'add-group1';
+
+      groupEnrollmentRepositoryMock = {
+        findEnrollments: sandbox.stub().resolves([groupEnrollment]),
+        delete: sandbox.stub().resolves(),
+      };
+
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+      testedModule.experimentService.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+      testedModule.experimentService.getAssignmentsAndExclusionsForUser = sandbox
+        .stub()
+        .resolves([
+          individualEnrollmentRepositoryMock,
+          groupEnrollmentRepositoryMock,
+          individualExclusionRepositoryMock,
+          groupExclusionRepositoryMock,
+        ]);
+      testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+
+      await expectNoMutation(exp, () => testedModule.getAllExperimentConditions(userDoc, context, loggerMock));
+    });
+
+    it('should not mutate the cached experiment for a factorial group experiment', async () => {
+      const context = 'context';
+      const userDoc = {
+        id: 'user123',
+        group: { 'add-group1': ['school1'] },
+        workingGroup: { 'add-group1': 'school1' },
+      };
+      const exp: any = structuredClone(factorialGroupAssignmentExperiment);
+
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+      testedModule.experimentService.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+      testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+
+      await expectNoMutation(exp, () => testedModule.getAllExperimentConditions(userDoc, context, loggerMock));
+    });
+  });
+
   it('should not pool experiments together due to a shared pending decision point site/target', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
@@ -492,12 +583,18 @@ describe('Experiment Assignment Service Test', () => {
 
     const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
 
-    const cond = { ...exp.conditions[0], experimentId: exp.id, payload: undefined };
+    // Assignment picks from the conditions sorted by `order`, and this fixture is deliberately stored
+    // out of order. Name the expected condition by its order rather than by fixture position — the
+    // assignment path must not reorder `exp.conditions` in place (it can be the cached array).
+    const lowestOrderCondition = [...exp.conditions].sort((a, b) => a.order - b.order)[0];
+    const cond = { ...lowestOrderCondition, experimentId: exp.id, payload: undefined };
     expect(result.length).toEqual(1);
     expect(result[0].site).toEqual(exp.partitions[0].site);
     expect(result[0].target).toEqual(exp.partitions[0].target);
     expect(result[0].assignedFactor).toBeNull();
     expect(result[0].assignedCondition[0]).toEqual(cond);
+    // the fixture order is untouched by the assignment path
+    expect(exp.conditions.map((condition) => condition.conditionCode)).toEqual(['add-con2', 'add-con1']);
   });
 
   it('should return the assigned condition for a factorial group experiment', async () => {
@@ -1795,13 +1892,17 @@ describe('Experiment Assignment Service Test', () => {
 
       expect(Object.keys(result)).toHaveLength(2);
 
+      // Assignment picks from the conditions sorted by `order`, and this fixture is deliberately
+      // stored out of order — the assignment path must not reorder `exp.conditions` in place.
+      const lowestOrderCondition = [...exp.conditions].sort((a, b) => a.order - b.order)[0];
+
       // Both users should get same assignment since they're in same group
       for (const userId of ['user1', 'user2']) {
         expect(result[userId]).toBeDefined();
         expect(result[userId].site).toEqual(site);
         expect(result[userId].target).toEqual(target);
         expect(result[userId].assignedCondition[0].experimentId).toEqual(exp.id);
-        expect(result[userId].assignedCondition[0].conditionCode).toEqual(exp.conditions[0].conditionCode);
+        expect(result[userId].assignedCondition[0].conditionCode).toEqual(lowestOrderCondition.conditionCode);
       }
     });
 

@@ -709,7 +709,6 @@ export class ExperimentAssignmentService {
       ? await this.experimentRepository.getValidExperimentsWithPreview(context)
       : await this.experimentService.getCachedValidExperiments(context);
     // adding conditionPayloads at the root level instead of inside conditions.
-    // formattingConditionPayload does not mutate, so the cached experiments above stay pristine.
     return experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
   }
 
@@ -2068,7 +2067,8 @@ export class ExperimentAssignmentService {
         ? `${experiment.id}_${user.id}`
         : `${experiment.id}_${user.workingGroup?.[experiment.group]}`;
 
-    const sortedExperimentCondition = experiment.conditions.sort(
+    // Make a copy before sorting so we don't mutate the original array
+    const sortedExperimentCondition = [...experiment.conditions].sort(
       (condition1, condition2) => condition1.order - condition2.order
     );
     let spec = sortedExperimentCondition.map((condition) => condition.assignmentWeight);
@@ -2086,7 +2086,10 @@ export class ExperimentAssignmentService {
         break;
       }
     }
-    const experimentalCondition = experiment.conditions[randomConditions];
+    // Index the sorted copy: `randomConditions` is an index into `spec`, which is derived from it.
+    // (This used to read `experiment.conditions`, which was equivalent only because the sort above
+    // mutated that array in place.)
+    const experimentalCondition = sortedExperimentCondition[randomConditions];
     return experimentalCondition;
   }
 
