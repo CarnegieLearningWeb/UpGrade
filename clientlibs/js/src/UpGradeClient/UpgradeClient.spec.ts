@@ -155,6 +155,58 @@ describe('UpgradeClient', () => {
 
       expect(ApiService.prototype.setFeatureFlagUserGroupsForSession).toHaveBeenCalledWith(undefined, undefined);
     });
+
+    it('should clear the cached feature flags', () => {
+      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
+      const clearFeatureFlags = jest.spyOn(DataService.prototype, 'clearFeatureFlags');
+
+      upgradeClient.setFeatureFlagUserGroupsForSession({
+        groupsForSession: { classId: ['classB'] },
+        includeStoredUserGroups: false,
+      });
+
+      expect(clearFeatureFlags).toHaveBeenCalled();
+      clearFeatureFlags.mockRestore();
+    });
+
+    it('should not clear the cached feature flags when the options are invalid', () => {
+      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
+      const clearFeatureFlags = jest.spyOn(DataService.prototype, 'clearFeatureFlags');
+
+      expect(() => {
+        upgradeClient.setFeatureFlagUserGroupsForSession({ groupsForSession: null, includeStoredUserGroups: false });
+      }).toThrow();
+
+      expect(clearFeatureFlags).not.toHaveBeenCalled();
+      clearFeatureFlags.mockRestore();
+    });
+
+    it('should cause the next getAllFeatureFlags call to refetch against the new groups', async () => {
+      // the real DataService cache is left unmocked here, since invalidating it is the behavior under test
+      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
+      const getAllFeatureFlags = jest
+        .spyOn(ApiService.prototype, 'getAllFeatureFlags')
+        .mockResolvedValue(['classAFlag']);
+
+      // baseline: the first call fetches and caches, the second is served from the cache
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classAFlag']);
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classAFlag']);
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(1);
+
+      getAllFeatureFlags.mockResolvedValue(['classBFlag']);
+      upgradeClient.setFeatureFlagUserGroupsForSession({
+        groupsForSession: { classId: ['classB'] },
+        includeStoredUserGroups: false,
+      });
+
+      // the cleared cache forces exactly one refetch, whose result becomes the new cached value
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classBFlag']);
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classBFlag']);
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+
+      getAllFeatureFlags.mockRestore();
+    });
   });
 
   describe('#getAllExperimentConditions', () => {
