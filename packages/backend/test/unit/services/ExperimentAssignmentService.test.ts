@@ -27,6 +27,7 @@ import {
   factorialIndividualAssignmentExperiment,
   simpleDPExperiment,
   simpleWithinSubjectOrderedRoundRobinExperiment,
+  simpleWithinSubjectRandomRoundRobinExperiment,
   withinSubjectDPExperiment,
 } from '../mockdata';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
@@ -326,6 +327,108 @@ describe('Experiment Assignment Service Test', () => {
       testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
 
       await expectNoMutation(exp, () => testedModule.getAllExperimentConditions(userDoc, context, loggerMock));
+    });
+  });
+
+  describe('assignment does not depend on the order rows come back from the database', () => {
+    // `getValidExperiments` — the assignment read path — has no `ORDER BY conditions.order`; only the
+    // admin-side `findOneExperiment` does. So the sequence conditions arrive in is whatever Postgres
+    // felt like, and it can change as rows are updated.
+    //
+    // For a long time one caller got away with depending on arrival order: the within-subjects
+    // builder read `experiment.conditions` positionally and was correct only because `assignRandom`
+    // had sorted that array in place earlier in the same request. These tests state the invariant
+    // directly — same input, shuffled, must produce the same assignment — so the next caller that
+    // leans on arrival order fails here rather than in CI's integration suite or in production data.
+    const expectOrderIndependence = async (
+      buildExperiment: () => any,
+      setup: (exp: any, userDoc: any) => void,
+      userDoc: any
+    ) => {
+      const context = 'context';
+
+      const run = async (reverseConditions: boolean) => {
+        const exp = buildExperiment();
+        if (reverseConditions) {
+          exp.conditions = [...exp.conditions].reverse();
+        }
+        setup(exp, userDoc);
+        return testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+      };
+
+      const asStored = await run(false);
+      const reversed = await run(true);
+
+      expect(reversed).toEqual(asStored);
+      // guard the guard: a fixture with one condition would make this vacuous
+      expect(buildExperiment().conditions.length).toBeGreaterThan(1);
+    };
+
+    it('should assign the same condition for a simple individual experiment', async () => {
+      const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+
+      await expectOrderIndependence(
+        () => structuredClone(simpleIndividualAssignmentExperiment),
+        (exp) => {
+          testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+          testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+        },
+        userDoc
+      );
+    });
+
+    it('should produce the same rotation for a within-subjects ORDERED_ROUND_ROBIN experiment', async () => {
+      // The unit-level analogue of the integration failure: rotation is anchored to each condition's
+      // `order`, so reversing the incoming array must not change the sequence the user receives.
+      const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+
+      await expectOrderIndependence(
+        () => structuredClone(simpleWithinSubjectOrderedRoundRobinExperiment),
+        (exp) => {
+          testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+          testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+          // a non-zero count so the rotation actually advances rather than sitting at position 0
+          testedModule.repeatedEnrollmentRepository = {
+            getRepeatedEnrollmentCount: sandbox
+              .stub()
+              .resolves([{ userId: userDoc.id, experimentId: exp.id, count: 1 }]),
+          };
+        },
+        userDoc
+      );
+    });
+
+    it('should produce the same rotation for a within-subjects RANDOM_ROUND_ROBIN experiment', async () => {
+      // The seeded shuffles consume the array too, so their output is order-dependent unless the
+      // input is normalized first.
+      const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+
+      await expectOrderIndependence(
+        () => structuredClone(simpleWithinSubjectRandomRoundRobinExperiment),
+        (exp) => {
+          testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+          testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+          testedModule.repeatedEnrollmentRepository = {
+            getRepeatedEnrollmentCount: sandbox
+              .stub()
+              .resolves([{ userId: userDoc.id, experimentId: exp.id, count: 1 }]),
+          };
+        },
+        userDoc
+      );
+    });
+
+    it('should assign the same condition and factors for a factorial individual experiment', async () => {
+      const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+
+      await expectOrderIndependence(
+        () => structuredClone(factorialIndividualAssignmentExperiment),
+        (exp) => {
+          testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+          testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+        },
+        userDoc
+      );
     });
   });
 
