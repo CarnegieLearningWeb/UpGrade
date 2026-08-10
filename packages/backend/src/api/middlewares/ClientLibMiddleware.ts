@@ -8,6 +8,7 @@ import isequal from 'lodash.isequal';
 import { env } from '../../env';
 import { AppRequest } from '../../types';
 import { Service } from 'typedi';
+import { tracePerfAsync, tracePerfSync } from '../../lib/perf/perfTrace';
 
 @Service()
 export class ClientLibMiddleware implements ExpressMiddlewareInterface {
@@ -17,7 +18,9 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
     try {
       const authorization = req.header('authorization');
       const token = authorization && authorization.replace('Bearer ', '').trim();
-      const setting = await this.settingService.getClientCheck(req.logger);
+      const setting = await tracePerfAsync('ClientLibMiddleware.getClientCheck', () =>
+        this.settingService.getClientCheck(req.logger)
+      );
       // const data = {
       //   APIKey: 'key',
       // };
@@ -44,7 +47,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
         const { secret, key } = env.clientApi;
         let decodeToken: any;
         try {
-          decodeToken = jwt.verify(token, secret);
+          decodeToken = tracePerfSync('ClientLibMiddleware.jwtVerify', () => jwt.verify(token, secret));
         } catch (err) {
           const error = err as ErrorWithType;
           (error as any).type = SERVER_ERROR.TOKEN_VALIDATION_FAILED;
