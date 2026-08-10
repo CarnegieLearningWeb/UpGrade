@@ -90,22 +90,25 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
     return result.raw;
   }
 
+  /**
+   * Enabled flags for a context with their segment lists attached, but *without* the list membership.
+   *
+   * The only consumer is the on-the-fly fallback in FeatureFlagService, which reads nothing but
+   * `enabled` and `segment.id` off these lists — the members themselves are resolved separately
+   * through SegmentService's cache. Joining them here would pull a row per member (multiplied out
+   * across the individual/group/sub-segment joins) into a payload that then sits in the flag cache
+   * unread, and the fallback only runs when precomputed rows are already missing.
+   */
   public async getFlagsFromContext(context: string): Promise<FeatureFlag[]> {
     const addExclusionJoins = (qb: SelectQueryBuilder<FeatureFlag>) =>
       qb
         .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
-        .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
-        .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
-        .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
-        .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion');
+        .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion');
 
     const addInclusionJoins = (qb: SelectQueryBuilder<FeatureFlag>) =>
       qb
         .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
-        .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
-        .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
-        .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
-        .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment');
+        .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion');
 
     const addBaseConditions = (qb: SelectQueryBuilder<FeatureFlag>) =>
       qb

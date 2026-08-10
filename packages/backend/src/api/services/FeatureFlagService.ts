@@ -57,7 +57,11 @@ import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
-import { FeatureFlagPrecomputedSegmentService, precomputedGroupKey } from './FeatureFlagPrecomputedSegmentService';
+import {
+  FeatureFlagPrecomputedSegmentService,
+  precomputedGroupKey,
+  getPrecomputedMemberSets,
+} from './FeatureFlagPrecomputedSegmentService';
 import { EntitySegmentResolutionInput } from '../../types';
 import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import dayjs from 'dayjs';
@@ -128,15 +132,22 @@ export class FeatureFlagService {
     return includedFeatureFlags.map((flags) => flags.key);
   }
 
+  /**
+   * Enabled flags for a context with their segment lists (no list membership — see
+   * FeatureFlagRepository.getFlagsFromContext).
+   *
+   * The cache is an in-memory store, so this hands back the same object reference on every hit.
+   * There is deliberately no defensive deep copy: the sole caller (resolveFlagsOnTheFly) only reads.
+   * Callers must keep it that way — treat this result, and everything reachable from it, as
+   * read-only. Mirrors ExperimentService.getCachedValidExperiments.
+   */
   public async getCachedFlagsFromContext(context: string): Promise<FeatureFlag[]> {
     const cacheKey = CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + context;
 
-    const flags = await this.cacheService.wrap(
+    return this.cacheService.wrap(
       cacheKey,
       this.featureFlagRepository.getFlagsFromContext.bind(this.featureFlagRepository, context)
     );
-
-    return JSON.parse(JSON.stringify(flags));
   }
 
   public async getCachedFlagsForKeys(context: string): Promise<Pick<FeatureFlag, 'id' | 'key' | 'filterMode'>[]> {
@@ -1131,8 +1142,8 @@ export class FeatureFlagService {
         return onTheFlyIncludedIds.has(flag.id);
       }
 
-      const exclusionSet = new Set(computed.exclusionIds);
-      const inclusionSet = new Set(computed.inclusionIds);
+      // Memoized against the cached row rather than rebuilt per request — see getPrecomputedMemberSets.
+      const { inclusionSet, exclusionSet } = getPrecomputedMemberSets(computed);
 
       // Individual exclusion always wins
       if (exclusionSet.has(experimentUser.id)) return false;

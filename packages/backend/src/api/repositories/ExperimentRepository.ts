@@ -118,7 +118,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       })
     );
 
-    const experimentSegmentQuery = this.buildSegmentQuery().where(
+    const experimentSegmentQuery = this.buildSegmentListQuery().where(
       new Brackets((qb) => {
         qb.where(whereExperimentsClause, whereClauseParams);
       })
@@ -204,7 +204,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       })
     );
 
-    const segmentQuery = this.buildSegmentQuery()
+    const segmentQuery = this.buildSegmentListQuery()
       .leftJoin('experiment.partitions', 'partitions')
       .where(
         new Brackets((qb) => {
@@ -275,7 +275,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       })
     );
 
-    const experimentSegmentQuery = this.buildSegmentQuery().where(
+    const experimentSegmentQuery = this.buildSegmentListQuery().where(
       new Brackets((qb) => {
         qb.where(whereExperimentsClause, whereClauseParams);
       })
@@ -468,16 +468,33 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('factors.levels', 'levels');
   }
 
-  private buildSegmentQuery() {
+  /**
+   * Segment lists attached to an experiment, without their membership.
+   *
+   * This is what the assignment paths need: they only ever read `segment.id` off these lists (see
+   * ExperimentAssignmentService.getSegmentObject) — membership comes from the precomputed segment
+   * rows, or from SegmentService's own cache on the on-the-fly fallback. Selecting the members here
+   * costs a row per member (and a cartesian product across the individual/group/sub-segment joins),
+   * all of which then sits in the cached experiment payload unread. A single 20k-member list is
+   * enough to push that payload into the megabytes.
+   *
+   * Use buildSegmentQuery instead wherever the membership itself is part of the response.
+   */
+  private buildSegmentListQuery() {
     return this.createQueryBuilder('experiment')
       .select('experiment.id')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
+      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion');
+  }
+
+  /** Segment lists plus their full membership — for admin/read APIs that return segment contents. */
+  private buildSegmentQuery() {
+    return this.buildSegmentListQuery()
       .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
-      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion');

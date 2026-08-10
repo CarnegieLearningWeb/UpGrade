@@ -209,24 +209,22 @@ describe('FeatureFlagRepository Testing', () => {
       });
     });
 
-    it('should not join inclusion segment member data for INCLUDE_ALL flags', async () => {
+    it('should not join inclusion segment lists for INCLUDE_ALL flags', async () => {
       await repo.getFlagsFromContext(context);
 
       // Collect all first-args passed to leftJoinAndSelect across both queries
       const joinedRelations = mock.leftJoinAndSelect.mock.calls.map(([relation]) => relation);
 
-      // Inclusion-side member joins should appear exactly once (only from the EXCLUDE_ALL query)
-      expect(joinedRelations.filter((r) => r === 'segmentInclusion.individualForSegment')).toHaveLength(1);
-      expect(joinedRelations.filter((r) => r === 'segmentInclusion.groupForSegment')).toHaveLength(1);
-      expect(joinedRelations.filter((r) => r === 'segmentInclusion.subSegments')).toHaveLength(1);
+      // Inclusion-side joins should appear exactly once (only from the EXCLUDE_ALL query)
+      expect(joinedRelations.filter((r) => r === 'feature_flag.featureFlagSegmentInclusion')).toHaveLength(1);
+      expect(joinedRelations.filter((r) => r === 'featureFlagSegmentInclusion.segment')).toHaveLength(1);
 
-      // Exclusion-side member joins should appear twice (once per query)
-      expect(joinedRelations.filter((r) => r === 'segmentExclusion.individualForSegment')).toHaveLength(2);
-      expect(joinedRelations.filter((r) => r === 'segmentExclusion.groupForSegment')).toHaveLength(2);
-      expect(joinedRelations.filter((r) => r === 'segmentExclusion.subSegments')).toHaveLength(2);
+      // Exclusion-side joins should appear twice (once per query)
+      expect(joinedRelations.filter((r) => r === 'feature_flag.featureFlagSegmentExclusion')).toHaveLength(2);
+      expect(joinedRelations.filter((r) => r === 'featureFlagSegmentExclusion.segment')).toHaveLength(2);
     });
 
-    it('should join inclusion segment member data for EXCLUDE_ALL flags', async () => {
+    it('should join inclusion segment lists for EXCLUDE_ALL flags', async () => {
       await repo.getFlagsFromContext(context);
 
       expect(mock.leftJoinAndSelect).toHaveBeenCalledWith(
@@ -234,12 +232,24 @@ describe('FeatureFlagRepository Testing', () => {
         'featureFlagSegmentInclusion'
       );
       expect(mock.leftJoinAndSelect).toHaveBeenCalledWith('featureFlagSegmentInclusion.segment', 'segmentInclusion');
-      expect(mock.leftJoinAndSelect).toHaveBeenCalledWith(
+    });
+
+    // The on-the-fly fallback reads only `enabled` and `segment.id`; membership is resolved through
+    // SegmentService's cache. Joining it here would pull an unread row-per-member payload into the
+    // flag cache, on a path that only runs when precomputed rows are already missing.
+    it('should not join segment membership on either query', async () => {
+      await repo.getFlagsFromContext(context);
+
+      const joinedRelations = mock.leftJoinAndSelect.mock.calls.map(([relation]) => relation);
+
+      [
         'segmentInclusion.individualForSegment',
-        'individualForSegment'
-      );
-      expect(mock.leftJoinAndSelect).toHaveBeenCalledWith('segmentInclusion.groupForSegment', 'groupForSegment');
-      expect(mock.leftJoinAndSelect).toHaveBeenCalledWith('segmentInclusion.subSegments', 'subSegment');
+        'segmentInclusion.groupForSegment',
+        'segmentInclusion.subSegments',
+        'segmentExclusion.individualForSegment',
+        'segmentExclusion.groupForSegment',
+        'segmentExclusion.subSegments',
+      ].forEach((relation) => expect(joinedRelations).not.toContain(relation));
     });
 
     it('should combine results from both queries', async () => {

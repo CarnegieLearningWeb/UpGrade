@@ -215,7 +215,7 @@ describe('ExperimentRepository Testing', () => {
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(3);
 
-    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(20);
+    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(14);
     expect(mock.where).toHaveBeenCalledTimes(3);
     expect(mock.select).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(3);
@@ -232,7 +232,7 @@ describe('ExperimentRepository Testing', () => {
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(3);
 
-    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(20);
+    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(14);
     expect(mock.where).toHaveBeenCalledTimes(3);
     expect(mock.select).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(3);
@@ -246,7 +246,7 @@ describe('ExperimentRepository Testing', () => {
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(3);
 
-    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(20);
+    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(14);
     expect(mock.where).toHaveBeenCalledTimes(3);
     expect(mock.select).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(3);
@@ -263,10 +263,43 @@ describe('ExperimentRepository Testing', () => {
 
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(3);
 
-    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(20);
+    expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(14);
     expect(mock.where).toHaveBeenCalledTimes(3);
     expect(mock.select).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(3);
+  });
+
+  // The assignment paths read nothing but segment.id off these lists — membership comes from the
+  // precomputed rows or SegmentService's cache. Joining it here lands an unread row-per-member
+  // payload in the experiment cache, so guard against it creeping back in.
+  describe.each([
+    ['getValidExperiments', () => repo.getValidExperiments('context')],
+    ['getValidExperimentsWithPreview', () => repo.getValidExperimentsWithPreview('context')],
+    [
+      'getValidExperimentsForContextAndDecisionPoint',
+      () => repo.getValidExperimentsForContextAndDecisionPoint('context', 'site1', 'target1'),
+    ],
+  ])('%s segment joins', (_name, run) => {
+    const memberRelations = [
+      'segmentInclusion.individualForSegment',
+      'segmentInclusion.groupForSegment',
+      'segmentInclusion.subSegments',
+      'segmentExclusion.individualForSegment',
+      'segmentExclusion.groupForSegment',
+      'segmentExclusion.subSegments',
+    ];
+
+    it('attaches the segment lists but not their membership', async () => {
+      mock.getMany.mockResolvedValue([experiment]);
+
+      await run();
+
+      const joined = mock.leftJoinAndSelect.mock.calls.map(([relation]) => relation);
+
+      expect(joined).toEqual(expect.arrayContaining(['experimentSegmentInclusion.segment']));
+      expect(joined).toEqual(expect.arrayContaining(['experimentSegmentExclusion.segment']));
+      memberRelations.forEach((relation) => expect(joined).not.toContain(relation));
+    });
   });
 
   it('should update experiment state', async () => {
@@ -419,8 +452,8 @@ describe('ExperimentRepository Testing', () => {
       const res = await repo.getValidExperimentsForContextAndDecisionPoint('context', 'site1', 'target1');
 
       expect(repo.createQueryBuilder).toHaveBeenCalledTimes(3);
-      // 4 (conditionLevel) + 6 (factorDecisionPoint) + 10 (segment) = 20
-      expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(20);
+      // 4 (conditionLevel) + 6 (factorDecisionPoint) + 4 (segment lists, no membership) = 14
+      expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(14);
       // conditionLevelPayloadQuery and segmentQuery each add a non-selecting leftJoin for partition filtering
       expect(mock.leftJoin).toHaveBeenCalledTimes(2);
       expect(mock.leftJoin).toHaveBeenCalledWith('experiment.partitions', 'partitions');

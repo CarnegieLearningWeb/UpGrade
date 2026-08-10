@@ -15,7 +15,11 @@ import { PrecomputedSegmentServiceBase } from './PrecomputedSegmentServiceBase';
 // Re-exported for the read path (FeatureFlagService) and any other consumers that historically
 // imported these from this module. The definitions now live in the shared helpers module so the
 // feature-flag write path and read path use the exact same key composition.
-export { PRECOMPUTED_GROUP_DELIMITER, precomputedGroupKey } from './precomputedSegmentHelpers';
+export {
+  PRECOMPUTED_GROUP_DELIMITER,
+  precomputedGroupKey,
+  getPrecomputedMemberSets,
+} from './precomputedSegmentHelpers';
 
 @Service()
 export class FeatureFlagPrecomputedSegmentService extends PrecomputedSegmentServiceBase<FeatureFlagPrecomputedSegment> {

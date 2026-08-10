@@ -75,7 +75,7 @@ import { env } from '../../env';
 import { MoocletExperimentService } from './MoocletExperimentService';
 import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegmentService';
 import { ExperimentPrecomputedSegment } from '../models/ExperimentPrecomputedSegment';
-import { precomputedGroupKey } from './precomputedSegmentHelpers';
+import { precomputedGroupKey, getPrecomputedMemberSets } from './precomputedSegmentHelpers';
 import { EntitySegmentMembers, EntitySegmentResolutionInput, SegmentGroupMember } from '../../types';
 
 export interface FactorialConditionResult {
@@ -2068,7 +2068,9 @@ export class ExperimentAssignmentService {
         ? `${experiment.id}_${user.id}`
         : `${experiment.id}_${user.workingGroup?.[experiment.group]}`;
 
-    const sortedExperimentCondition = experiment.conditions.sort(
+    // Copy before sorting. `experiment` may be a cached object shared by every request (see
+    // ExperimentService.getCachedValidExperiments) and Array.prototype.sort mutates in place.
+    const sortedExperimentCondition = [...experiment.conditions].sort(
       (condition1, condition2) => condition1.order - condition2.order
     );
     let spec = sortedExperimentCondition.map((condition) => condition.assignmentWeight);
@@ -2372,8 +2374,10 @@ export class ExperimentAssignmentService {
         continue;
       }
 
-      const inclusionSet = new Set(row.inclusionIds);
-      const exclusionSet = new Set(row.exclusionIds);
+      // Memoized against the cached row rather than rebuilt per request — see getPrecomputedMemberSets.
+      // This matters most for the multi-user path, which calls this method once per user over the
+      // same user-independent rows.
+      const { inclusionSet, exclusionSet } = getPrecomputedMemberSets(row);
 
       includeData[expId] = {
         users: inclusionSet.has(experimentUser.id) ? [experimentUser.id] : [],
