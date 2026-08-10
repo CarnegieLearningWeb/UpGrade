@@ -52,6 +52,12 @@ export class CacheService {
     featureFlags: env.caching.ttlFeatureFlags || this.defaultTtl,
     segments: env.caching.ttlSegments || this.defaultTtl,
   };
+  // How often (seconds) a `wrap` key is re-read from source while it keeps getting traffic. Once an
+  // entry reaches this age, the next hit returns the cached value immediately and refreshes the
+  // entry in the background, so no request pays for the refill. This — not the TTL — is what bounds
+  // staleness; the TTL is only the hard expiry for a key that stops being read. 0 (the default)
+  // disables background refresh, leaving plain TTL expiry.
+  private refreshThreshold = env.caching.refreshThreshold || 0;
   private initPromise: Promise<void>;
 
   constructor() {
@@ -63,6 +69,11 @@ export class CacheService {
       this.cache = await caching('memory', {
         max: env.caching?.maxKeys || 500,
         ttl: this.defaultTtl * 1000,
+        // A background refresh has no caller to return a rejection to. Without this hook
+        // cache-manager rethrows from inside its own catch, which surfaces as an unhandled
+        // rejection instead of a log line; the stale-but-served value is unaffected either way.
+        onBackgroundRefreshError: (err) =>
+          new UpgradeLogger().error({ message: 'CacheService background refresh failed', error: err }),
       });
     } catch (err) {
       new UpgradeLogger().error({
@@ -123,9 +134,21 @@ export class CacheService {
     return this.cache.store.keys();
   }
 
+  // This deliberately allows an interval far shorter than the TTL (e.g. refresh every 45s on a
+  // 1-hour TTL): the TTL then only decides how long a value survives once traffic stops, and has no
+  // say in freshness. An interval at or above the TTL means the TTL already expires first, so there
+  // is nothing to refresh ahead of — 0 leaves plain TTL expiry for that bucket.
+  private refreshThresholdMsForTtl(ttlMs: number): number {
+    if (!this.refreshThreshold) {
+      return 0;
+    }
+    return Math.max(0, ttlMs - this.refreshThreshold * 1000);
+  }
+
   public async wrap<T>(key: string, fn: () => Promise<T>): Promise<T> {
     await this.initPromise;
-    return this.cache.wrap(key, fn, this.ttlMsForKey(key));
+    const ttlMs = this.ttlMsForKey(key);
+    return this.cache.wrap(key, fn, ttlMs, this.refreshThresholdMsForTtl(ttlMs));
   }
 
   public async wrapFunction<T>(prefix: CACHE_PREFIX, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
