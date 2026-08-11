@@ -127,32 +127,55 @@ function canonical(value) {
 }
 
 /**
+ * GET the cache report. Counts only unless `data` is asked for — the full payloads are megabytes, so
+ * a watch loop that pulled them every second would perturb the thing it is measuring.
+ */
+async function cacheReport(instance, { prefix = null, data = false } = {}) {
+  const query = new URLSearchParams();
+  if (prefix) query.set('prefix', prefix);
+  if (data) query.set('data', 'true');
+  const suffix = query.size ? `?${query}` : '';
+  const response = await fetch(`${instance}/api/experiments/cache${suffix}`);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
+
+/** The entries the report returned for one prefix bucket: [{ key, expiresInSeconds, data? }]. */
+const bucketEntries = (report, bucket) => report?.summary?.[bucket]?.keys ?? [];
+
+/**
  * Summarize one instance's cached valid-experiments for `context`.
  * state is 'hash' | 'absent' | 'error'; 'absent' means cold — expired, evicted, or never populated.
  */
 async function fingerprint(instance, context) {
-  let summary;
+  let report;
   try {
-    const response = await fetch(`${instance}/api/experiments/cache`);
-    if (!response.ok) return { state: 'error', detail: `HTTP ${response.status}`, totalKeys: null };
-    summary = await response.json();
+    report = await cacheReport(instance, { prefix: EXPERIMENT_BUCKET, data: true });
   } catch (err) {
-    return { state: 'error', detail: String(err.message).slice(0, 40), totalKeys: null };
+    return { state: 'error', detail: String(err.message).slice(0, 40), totalKeys: null, instanceId: null };
   }
 
-  // Endpoint shape: { totalKeysInCache, allKeys, summary: { <BUCKET>: { prefix, count, keys, data } } }
   // totalKeys is worth carrying: if it pins at CACHING_MAX_KEYS the store is evicting, and mark keys
   // share the experiments bucket, so under load they can push valid-experiments out.
-  const totalKeys = summary?.totalKeysInCache ?? null;
-  const bucket = summary?.summary?.[EXPERIMENT_BUCKET] ?? {};
-  const entry = (bucket.data ?? []).find((item) => item.key === (bucket.prefix ?? '') + context);
-  if (!entry) return { state: 'absent', detail: '-', totalKeys };
+  // instanceId comes from the process, not the address — the identity survives a round-robin and
+  // changes only when the process is replaced.
+  const common = { totalKeys: report?.totalKeysInCache ?? null, instanceId: report?.instanceId ?? null };
+  const prefix = report?.summary?.[EXPERIMENT_BUCKET]?.prefix ?? '';
+  const entry = bucketEntries(report, EXPERIMENT_BUCKET).find((item) => item.key === prefix + context);
+  if (!entry) return { state: 'absent', detail: '-', ...common };
 
   const experiments = entry.data ?? [];
   const digest = createHash('sha1').update(canonical(experiments)).digest('hex').slice(0, 8);
   // `detail` stays the comparison key everywhere; count and digest exist so the renderer never has
   // to parse it back apart.
-  return { state: 'hash', detail: `${experiments.length}exp:${digest}`, count: experiments.length, digest, totalKeys };
+  return {
+    state: 'hash',
+    detail: `${experiments.length}exp:${digest}`,
+    count: experiments.length,
+    digest,
+    expiresInSeconds: entry.expiresInSeconds,
+    ...common,
+  };
 }
 
 const snapshot = (instances, context) => Promise.all(instances.map((i) => fingerprint(i, context)));
@@ -188,21 +211,37 @@ function renderBlock(snap, { instances, heading = '', events = [], showKeys = fa
   const lines = [heading ? `${RULE}  ${heading}` : RULE];
 
   snap.forEach((entry, index) => {
+    // Address and identity are different facts: the address is where we sent the request, the id is
+    // which process answered. Locally they track each other; behind a load balancer only the id means
+    // anything, and a changed id is a restarted process rather than a colder cache.
     const name = shortName(instances[index]).padEnd(nameWidth);
+    const id = (entry.instanceId ?? '?'.repeat(8)).padEnd(8);
     const keys = showKeys && entry.totalKeys != null ? `   ${entry.totalKeys} keys cached` : '';
     const event = eventFor.has(index) ? `   <- ${eventFor.get(index)}` : '';
-    lines.push(`  instance ${index + 1}   ${name}   ${describe(entry).padEnd(36)}${keys}${event}`.trimEnd());
+    lines.push(`  instance ${index + 1}   ${name}  ${id}  ${describe(entry).padEnd(36)}${keys}${event}`.trimEnd());
   });
   return lines.join('\n');
 }
 
-/** Label what moved between two snapshots, so a long log says why a block differs from the last. */
-function diffEvents(previous, current) {
+/**
+ * Label what moved between two snapshots, so a long log says why a block differs from the last.
+ *
+ * `lastIds` holds the last id each instance reported, which is deliberately not the same as the
+ * previous snapshot's: a restart is normally observed as reachable -> unreachable -> reachable, and
+ * the poll on either side of the gap is the only pair that shows the id changing.
+ */
+function diffEvents(previous, current, lastIds = new Map()) {
   if (!previous) return [];
   const events = [];
   current.forEach((entry, index) => {
     const before = previous[index];
-    if (before.state === 'hash' && entry.state === 'hash' && before.detail !== entry.detail) {
+    const lastId = lastIds.get(index);
+    // Checked first: a new process explains an empty cache that would otherwise read as an eviction.
+    if (lastId && entry.instanceId && lastId !== entry.instanceId) {
+      events.push({ index, text: `RESTARTED (new process ${entry.instanceId})` });
+    } else if (before.state === 'error' && entry.state !== 'error') {
+      events.push({ index, text: 'reachable again' });
+    } else if (before.state === 'hash' && entry.state === 'hash' && before.detail !== entry.detail) {
       events.push({ index, text: 'changed' });
     } else if (before.state === 'hash' && entry.state === 'absent') {
       events.push({ index, text: 'WENT COLD' });
@@ -262,25 +301,29 @@ async function withDb(backendEnv, fn) {
 
 /** The experiment ids actually present in an instance's cached payload for `context`. */
 async function cachedExperimentIds(instance, context) {
-  const response = await fetch(`${instance}/api/experiments/cache`);
-  if (!response.ok) return [];
-  const summary = await response.json();
-  const bucket = summary?.summary?.[EXPERIMENT_BUCKET] ?? {};
-  const entry = (bucket.data ?? []).find((item) => item.key === (bucket.prefix ?? '') + context);
-  return (entry?.data ?? []).map((exp) => exp.id);
+  try {
+    const report = await cacheReport(instance, { prefix: EXPERIMENT_BUCKET, data: true });
+    const prefix = report?.summary?.[EXPERIMENT_BUCKET]?.prefix ?? '';
+    const entry = bucketEntries(report, EXPERIMENT_BUCKET).find((item) => item.key === prefix + context);
+    return (entry?.data ?? []).map((exp) => exp.id);
+  } catch {
+    return [];
+  }
 }
 
 /** Which valid-experiments keys an instance currently holds, whatever the context. */
 async function cachedContexts(instance) {
   try {
-    const response = await fetch(`${instance}/api/experiments/cache`);
-    if (!response.ok) return null;
-    const summary = await response.json();
-    const bucket = summary?.summary?.[EXPERIMENT_BUCKET] ?? {};
-    return (bucket.data ?? []).map((item) => ({
-      context: item.key.replace(bucket.prefix ?? '', ''),
-      count: (item.data ?? []).length,
-    }));
+    const report = await cacheReport(instance, { prefix: EXPERIMENT_BUCKET, data: true });
+    const prefix = report?.summary?.[EXPERIMENT_BUCKET]?.prefix ?? '';
+    return {
+      instanceId: report?.instanceId ?? null,
+      entries: bucketEntries(report, EXPERIMENT_BUCKET).map((item) => ({
+        context: item.key.replace(prefix, ''),
+        count: (item.data ?? []).length,
+        expiresInSeconds: item.expiresInSeconds,
+      })),
+    };
   } catch {
     return null;
   }
@@ -343,6 +386,7 @@ async function cmdWatch({ instances, userId, context, rps, interval, duration, f
     console.log(`watching context '${context}' — edits to experiments in OTHER contexts will not show here.`);
     console.log('');
     console.log('  Instances holding the same fingerprint agree on what is cached.');
+    console.log('  The 8-character id is the process that answered — it changes only on a restart.');
     console.log('  "cold" means the entry is absent: expired, evicted, or never populated.');
     console.log('  Anything that moved since the previous poll is called out at the end of its line.');
     if (keys) console.log('  "N keys cached" is the whole store — pinned at CACHING_MAX_KEYS means eviction.');
@@ -352,10 +396,12 @@ async function cmdWatch({ instances, userId, context, rps, interval, duration, f
 
   const started = Date.now();
   let previous = null;
+  const lastIds = new Map();
   // duration 0 runs until interrupted — the usual case when shadowing a load test of unknown length.
   while (duration <= 0 || Date.now() - started < duration * 1000) {
     const snap = await snapshot(instances, context);
-    const events = diffEvents(previous, snap);
+    const events = diffEvents(previous, snap, lastIds);
+    snap.forEach((entry, index) => entry.instanceId && lastIds.set(index, entry.instanceId));
     const stamp = new Date().toISOString();
 
     if (jsonl) {
@@ -368,8 +414,12 @@ async function cmdWatch({ instances, userId, context, rps, interval, duration, f
           instances: snap.map((entry, index) => ({
             instance: index + 1,
             url: instances[index],
+            // The id, not the url, is what identifies the process across a restart or behind a load
+            // balancer — group by it when correlating these records with anything else.
+            instanceId: entry.instanceId,
             state: entry.state,
             fingerprint: entry.state === 'hash' ? entry.detail : null,
+            expiresInSeconds: entry.expiresInSeconds ?? null,
             totalKeys: entry.totalKeys,
           })),
           events: events.map(eventSentence),
@@ -444,13 +494,19 @@ async function cmdRefreshes({ backendEnv, window: windowSeconds }) {
 async function cmdContexts({ instances, backendEnv }) {
   console.log('cached right now (only contexts that have received traffic appear):');
   for (const [index, instance] of instances.entries()) {
-    const entries = await cachedContexts(instance);
-    if (entries === null) {
-      console.log(`  instance ${index + 1}  unreachable`);
-    } else if (entries.length === 0) {
-      console.log(`  instance ${index + 1}  (nothing cached)`);
+    const report = await cachedContexts(instance);
+    const label = `  instance ${index + 1}   ${shortName(instance).padEnd(6)}  ${(
+      report?.instanceId ?? '?'.repeat(8)
+    ).padEnd(8)}`;
+    if (report === null) {
+      console.log(`${label}  unreachable`);
+    } else if (report.entries.length === 0) {
+      console.log(`${label}  (nothing cached)`);
     } else {
-      console.log(`  instance ${index + 1}  ${entries.map((e) => `${e.context}=${e.count}exp`).join('  ')}`);
+      const cached = report.entries
+        .map((e) => `${e.context} = ${e.count} experiments, expires in ${e.expiresInSeconds}s`)
+        .join('\n'.padEnd(label.length + 3));
+      console.log(`${label}  ${cached}`);
     }
   }
 

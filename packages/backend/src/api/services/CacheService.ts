@@ -136,6 +136,37 @@ export class CacheService {
     return this.cache.store.keys();
   }
 
+  /** Milliseconds until `id` expires. Null when the store cannot say, or the key is gone. */
+  public async getRemainingTtl(id: string): Promise<number | null> {
+    await this.initPromise;
+    try {
+      const remaining = await this.cache.store.ttl(id);
+      return typeof remaining === 'number' ? remaining : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Which TTL bucket a prefix falls in — the report groups by this, since one TTL covers several prefixes. */
+  public bucketForPrefix(prefix: CACHE_PREFIX): CacheBucket | null {
+    return PREFIX_CATEGORY[prefix] ?? null;
+  }
+
+  /**
+   * The cache knobs this process resolved at boot. `available` is the one that is not simply an echo
+   * of the environment: caching can be enabled and still be a no-op store if initialization failed,
+   * and a report of 0 keys means something very different in that case.
+   */
+  public getConfig() {
+    return {
+      enabled: !!env.caching.enabled,
+      available: this.cache !== noopStore,
+      maxKeys: env.caching?.maxKeys || 500,
+      refreshThresholdSeconds: this.refreshThreshold,
+      ttlSeconds: { default: this.defaultTtl, ...this.categoryTtl },
+    };
+  }
+
   // This deliberately allows an interval far shorter than the TTL (e.g. refresh every 45s on a
   // 1-hour TTL): the TTL then only decides how long a value survives once traffic stops, and has no
   // say in freshness. An interval at or above the TTL means the TTL already expires first, so there
