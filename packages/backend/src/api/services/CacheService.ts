@@ -4,7 +4,7 @@ import { Cache, Store, caching } from 'cache-manager';
 import { CACHE_PREFIX } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
-type CacheBucket = 'experiments' | 'featureFlags' | 'segments';
+type CacheBucket = 'experiments' | 'featureFlags' | 'segments' | 'settings';
 
 const PREFIX_CATEGORY: Record<CACHE_PREFIX, CacheBucket> = {
   [CACHE_PREFIX.EXPERIMENT_KEY_PREFIX]: 'experiments',
@@ -14,6 +14,7 @@ const PREFIX_CATEGORY: Record<CACHE_PREFIX, CacheBucket> = {
   [CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX]: 'segments',
   [CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX]: 'featureFlags',
   [CACHE_PREFIX.EXPERIMENT_PRECOMPUTED_SEGMENT_KEY_PREFIX]: 'experiments',
+  [CACHE_PREFIX.SETTING_KEY_PREFIX]: 'settings',
 };
 
 // this module will get swapped in if caching is enabled but the cache manager fails to initialize as a dummy default deliverer
@@ -51,6 +52,7 @@ export class CacheService {
     experiments: env.caching.ttlExperiments || this.defaultTtl,
     featureFlags: env.caching.ttlFeatureFlags || this.defaultTtl,
     segments: env.caching.ttlSegments || this.defaultTtl,
+    settings: env.caching.ttlSettings || this.defaultTtl,
   };
   private initPromise: Promise<void>;
 
