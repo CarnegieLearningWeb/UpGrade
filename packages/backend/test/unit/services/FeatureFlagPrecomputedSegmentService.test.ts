@@ -50,7 +50,7 @@ describe('FeatureFlagPrecomputedSegmentService', () => {
     segmentRepository = makeSegmentRepoMock({});
     cacheService = {
       delCache: jest.fn().mockResolvedValue(undefined),
-      wrapFunction: jest.fn(),
+      wrapMany: jest.fn(),
     };
 
     service = new FeatureFlagPrecomputedSegmentService(
@@ -161,12 +161,12 @@ describe('FeatureFlagPrecomputedSegmentService', () => {
       const result = await service.getPrecomputedSets([]);
 
       expect(result.size).toEqual(0);
-      expect(cacheService.wrapFunction).not.toHaveBeenCalled();
+      expect(cacheService.wrapMany).not.toHaveBeenCalled();
     });
 
     it('maps flag ids to rows positionally and skips missing (null) rows', async () => {
       const rowA = { featureFlagId: 'fa', inclusionIds: ['u1'], exclusionIds: [] };
-      cacheService.wrapFunction = jest.fn().mockResolvedValue([rowA, null]);
+      cacheService.wrapMany = jest.fn().mockResolvedValue([rowA, null]);
 
       const result = await service.getPrecomputedSets(['fa', 'fb']);
 

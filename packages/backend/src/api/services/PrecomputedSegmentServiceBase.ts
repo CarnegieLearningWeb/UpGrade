@@ -119,8 +119,8 @@ export abstract class PrecomputedSegmentServiceBase<TEntity extends PrecomputedS
   public async getPrecomputedSets(ownerIds: string[]): Promise<Map<string, TEntity>> {
     if (!ownerIds.length) return new Map();
 
-    const results = await this.cacheService.wrapFunction(this.cachePrefix, ownerIds, () =>
-      this.findRowsByOwnerIds(ownerIds)
+    const results = await this.cacheService.wrapMany<TEntity>(this.cachePrefix, ownerIds, (idsToLoad) =>
+      this.findRowsByOwnerIds(idsToLoad)
     );
 
     const map = new Map<string, TEntity>();

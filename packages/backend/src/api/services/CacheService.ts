@@ -184,34 +184,77 @@ export class CacheService {
     return this.cache.wrap(key, fn, ttlMs, this.refreshThresholdMsForTtl(ttlMs));
   }
 
-  public async wrapFunction<T>(prefix: CACHE_PREFIX, keys: string[], functionToCall: () => Promise<T[]>): Promise<T[]> {
+  /**
+   * Cache-Manager doesn't have a built-in batch loading mechanism,
+   * The previous implementation tried to emulate it, unfortunately it had major issues that were
+   * made worse now that we want to lean on "cache.wrap" for proper efficient background refresh
+   *
+   * 1) did not actually use "cache.wrap", so no background refresh managed by cache-manager internally
+   * 2) it treated a single missing key as a complete batch miss, which could lead to unnecessary source lookups for keys that were actually cached
+   * 3) keys that were missing after source lookup were never noted, so subsequent lookups would repeatedly query the source unnecessarily
+   *
+   * Two step process to process a batch of keys efficiently:
+   * 1. first read what is already cached
+   * 2. then lookup the missing keys from the source FIRST before wrapping each key individually so we can batch this part
+   * 3. then we "wrap" each key individually so that we can get the background refresh / TTL behavior per key (so an individual key lookup per refresh needed)
+   * (the previous "wrapFunction" did not actualy use it)
+   *
+   * Note: `loadByKeys` function provided by caller describes *how* to fetch or refresh keys from the source,
+   * and must return results index-aligned with the keys it was handed, using null/undefined for keys that have no value.
+   */
+  public async wrapMany<T>(
+    prefix: CACHE_PREFIX,
+    keys: string[],
+    loadByKeys: (keysToLoad: string[]) => Promise<(T | null | undefined)[]>
+  ): Promise<(T | null)[]> {
     await this.initPromise;
     if (!keys.length) {
       return [];
     }
 
-    const keysWithPrefix = keys.map((key) => prefix + key);
-    const cachedData = (await this.cache.store.mget(...keysWithPrefix)) as (T | undefined)[];
+    const ttlMs = this.ttlMsForPrefix(prefix);
+    const refreshThresholdMs = this.refreshThresholdMsForTtl(ttlMs);
 
-    const allCachedFound = cachedData.length > 0 && cachedData.every((cached) => !!cached);
-    if (allCachedFound) {
-      return cachedData as T[];
-    }
+    // read all the cached keys
+    const cached = await this.cache.store.mget(...keys.map((key) => prefix + key));
 
-    const data = await functionToCall();
+    // find keys that are not in the cache (null means we previously loaded and found nothing, undefined means missing)
+    const missingKeys = keys.filter((_key, index) => cached[index] === undefined);
 
-    if (data.length > 0) {
-      await this.cache.store.mset(
-        keys.reduce((acc, key, index) => {
-          if (data[index] != null) {
-            acc.push([prefix + key, data[index]]);
-          }
-          return acc;
-        }, []),
-        this.ttlMsForPrefix(prefix)
-      );
-    }
+    // if there are missing keys, load them from the source
+    const loadedMissingKeys = missingKeys.length ? await loadByKeys(missingKeys) : [];
+    const loadedMissingKeysMap = new Map<string, T | null>();
 
-    return data;
+    // populate the loadedMissingKeysMap map with the results from the source, using null for any missing rows
+    missingKeys.forEach((key, index) => loadedMissingKeysMap.set(key, loadedMissingKeys[index] ?? null));
+
+    // write to the cache
+    // 1. If the key was already fetch by the missing keys load, return that value.
+    // 2. If not, that means it was already cached, so the .wrap call can be used to refresh it if necessary.
+    return Promise.all(
+      // for each key, either return the cached value or fetch it if it was not preloaded
+      keys.map((key) =>
+        this.cache.wrap<T | null>(
+          prefix + key,
+          async () => {
+            // 1. if the key was among the missing keys we just loaded, return the loaded value directly
+            if (loadedMissingKeysMap.has(key)) {
+              return loadedMissingKeysMap.get(key);
+            }
+
+            // 2. if the key was in the cache already, this is how it will be fetched IF it needs to be refreshed.
+            // Note that this is passed to the "wrap" function and will only be called if refreshThreshold or ttl is exceeded.
+            const [row] = await loadByKeys([key]);
+
+            // we will now cache nulls to indicate that the key was confirmed by db to not exist
+            // this null key value gets the same treatment as any other cached value, including TTL and refresh threshold.
+            // so things we looked up and confirmed nothing found will not repeatedly be treated as a cache-miss
+            return row ?? null;
+          },
+          ttlMs,
+          refreshThresholdMs
+        )
+      )
+    );
   }
 }
