@@ -30,25 +30,27 @@ describe('list value search helpers', () => {
   it('matches experiments through inclusion and exclusion lists', () => {
     const predicate = getListValueSearchPredicate('experiment');
 
+    expect(predicate).toContain('experiment.id IN (');
     expect(predicate).toContain('FROM "experiment_segment_inclusion"');
     expect(predicate).toContain('FROM "experiment_segment_exclusion"');
-    expect(predicate).toContain('"experimentId" AS "ownerId"');
-    expect(predicate).toContain('"attachedList"."ownerId" = experiment.id');
+    expect(predicate).toContain('INNER JOIN "experiment" "listValueOwner"');
+    expect(predicate).toContain('ON "listValueOwner".id = "listValueInclusion"."experimentId"');
+    expect(predicate).not.toContain('EXISTS (');
     expect(predicate).not.toContain('"enabled"');
-    expect(predicate).toContain('"attachedList"."isInclusion" = FALSE');
-    expect(predicate).toContain(`experiment."filterMode" <> 'includeAll'`);
+    expect(predicate).toContain(`"listValueOwner"."filterMode" <> 'includeAll'`);
   });
 
   it('matches feature flags through attached lists regardless of list enabled state', () => {
     const predicate = getListValueSearchPredicate('featureFlag');
 
+    expect(predicate).toContain('feature_flag.id IN (');
     expect(predicate).toContain('FROM "feature_flag_segment_inclusion"');
     expect(predicate).toContain('FROM "feature_flag_segment_exclusion"');
-    expect(predicate).toContain('"featureFlagId" AS "ownerId"');
-    expect(predicate).toContain('"attachedList"."ownerId" = feature_flag.id');
+    expect(predicate).toContain('INNER JOIN "feature_flag" "listValueOwner"');
+    expect(predicate).toContain('ON "listValueOwner".id = "listValueInclusion"."featureFlagId"');
+    expect(predicate).not.toContain('EXISTS (');
     expect(predicate).not.toContain('"enabled"');
-    expect(predicate).toContain('"attachedList"."isInclusion" = FALSE');
-    expect(predicate).toContain(`feature_flag."filterMode" <> 'includeAll'`);
+    expect(predicate).toContain(`"listValueOwner"."filterMode" <> 'includeAll'`);
   });
 
   it('only identifies list-value and all-search keys as list-value searches', () => {

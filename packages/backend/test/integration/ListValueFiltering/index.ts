@@ -80,7 +80,7 @@ export async function ListValueFiltering(): Promise<void> {
   });
   const nestedExperimentList = dataSource.getRepository(Segment).create({
     id: crypto.randomUUID(),
-    name: 'Nested public segment',
+    name: 'Nested experiment list',
     description: '',
     context,
     type: SEGMENT_TYPE.PRIVATE,
@@ -89,7 +89,7 @@ export async function ListValueFiltering(): Promise<void> {
   });
   const includeAllNestedExperimentList = dataSource.getRepository(Segment).create({
     id: crypto.randomUUID(),
-    name: 'Nested public segment',
+    name: 'Include-all nested experiment list',
     description: '',
     context,
     type: SEGMENT_TYPE.PRIVATE,
@@ -98,7 +98,7 @@ export async function ListValueFiltering(): Promise<void> {
   });
   const activeNestedFeatureFlagList = dataSource.getRepository(Segment).create({
     id: crypto.randomUUID(),
-    name: 'Nested public segment',
+    name: 'Active nested feature flag list',
     description: '',
     context,
     type: SEGMENT_TYPE.PRIVATE,
@@ -107,7 +107,7 @@ export async function ListValueFiltering(): Promise<void> {
   });
   const includeAllNestedFeatureFlagList = dataSource.getRepository(Segment).create({
     id: crypto.randomUUID(),
-    name: 'Nested public segment',
+    name: 'Include-all nested feature flag list',
     description: '',
     context,
     type: SEGMENT_TYPE.PRIVATE,
@@ -116,7 +116,7 @@ export async function ListValueFiltering(): Promise<void> {
   });
   const disabledNestedFeatureFlagList = dataSource.getRepository(Segment).create({
     id: crypto.randomUUID(),
-    name: 'Nested public segment',
+    name: 'Disabled nested feature flag list',
     description: '',
     context,
     type: SEGMENT_TYPE.PRIVATE,

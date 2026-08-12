@@ -1174,9 +1174,10 @@ describe('ExperimentService Testing', () => {
       expect(result).toContain('FROM "experiment_segment_exclusion"');
       expect(result).toContain('"userId" ILIKE :listValueSearchPattern');
       expect(result).toContain('"groupId" ILIKE :listValueSearchPattern');
-      expect(result).not.toContain('"attachedList"."enabled"');
-      expect(result).toContain('"attachedList"."isInclusion" = FALSE');
-      expect(result).toContain(`experiment."filterMode" <> 'includeAll'`);
+      expect(result).toContain('experiment.id IN (');
+      expect(result).not.toContain('EXISTS (');
+      expect(result).not.toContain('"enabled"');
+      expect(result).toContain(`"listValueOwner"."filterMode" <> 'includeAll'`);
     });
 
     it('should include list values in all-search results', () => {

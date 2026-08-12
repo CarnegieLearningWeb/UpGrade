@@ -315,7 +315,7 @@ export class SegmentController {
    *                properties:
    *                  key:
    *                    type: string
-   *                    enum: [all, name, tag, context, listValue]
+   *                    enum: [all, name, tag, context, id, listValue]
    *                  string:
    *                    type: string
    *               sortParams:

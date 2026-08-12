@@ -4,8 +4,7 @@ export const LIST_VALUE_SEARCH_PATTERN_PARAMETER = 'listValueSearchPattern';
 
 export type ListValueSearchTarget = 'experiment' | 'featureFlag' | 'segment';
 
-const matchingSegmentIdsQuery = `
-  WITH RECURSIVE "directListValueSegments" AS (
+const matchingSegmentIdsCte = `WITH RECURSIVE "directListValueSegments" AS (
     SELECT "segmentId" AS "id"
     FROM "individual_for_segment"
     WHERE "userId" ILIKE :${LIST_VALUE_SEARCH_PATTERN_PARAMETER} ESCAPE '\\'
@@ -22,20 +21,19 @@ const matchingSegmentIdsQuery = `
     FROM "segment_for_segment" "segmentRelation"
     INNER JOIN "matchingListValueSegments" "matchedSegment"
       ON "segmentRelation"."childSegmentId" = "matchedSegment"."id"
-  )
-  SELECT "id"
-  FROM "matchingListValueSegments"
-`;
+  )`;
 
 const ownerSearchConfig = {
   experiment: {
     ownerAlias: 'experiment',
+    ownerTable: 'experiment',
     ownerIdColumn: 'experimentId',
     inclusionTable: 'experiment_segment_inclusion',
     exclusionTable: 'experiment_segment_exclusion',
   },
   featureFlag: {
     ownerAlias: 'feature_flag',
+    ownerTable: 'feature_flag',
     ownerIdColumn: 'featureFlagId',
     inclusionTable: 'feature_flag_segment_inclusion',
     exclusionTable: 'feature_flag_segment_exclusion',
@@ -53,26 +51,33 @@ export function isListValueSearchKey(searchKey: string): boolean {
 
 export function getListValueSearchPredicate(target: ListValueSearchTarget): string {
   if (target === 'segment') {
-    return `segment.id IN (${matchingSegmentIdsQuery})`;
+    return `segment.id IN (
+    ${matchingSegmentIdsCte}
+    SELECT "id"
+    FROM "matchingListValueSegments"
+  )`;
   }
 
   const config = ownerSearchConfig[target];
-  return `EXISTS (
-    SELECT 1
-    FROM (
-      SELECT "segmentId", "${config.ownerIdColumn}" AS "ownerId",
-        TRUE AS "isInclusion"
-      FROM "${config.inclusionTable}"
-      UNION ALL
-      SELECT "segmentId", "${config.ownerIdColumn}" AS "ownerId",
-        FALSE AS "isInclusion"
-      FROM "${config.exclusionTable}"
-    ) "attachedList"
-    WHERE "attachedList"."ownerId" = ${config.ownerAlias}.id
-      AND (
-        "attachedList"."isInclusion" = FALSE
-        OR ${config.ownerAlias}."filterMode" <> '${FILTER_MODE.INCLUDE_ALL}'
+  // Include All makes inclusion lists inapplicable. Feature flag list enabled state is intentionally
+  // ignored because this search discovers attached configuration, not assignment eligibility.
+  return `${config.ownerAlias}.id IN (
+    ${matchingSegmentIdsCte}
+    SELECT "listValueInclusion"."${config.ownerIdColumn}"
+    FROM "${config.inclusionTable}" "listValueInclusion"
+    INNER JOIN "${config.ownerTable}" "listValueOwner"
+      ON "listValueOwner".id = "listValueInclusion"."${config.ownerIdColumn}"
+    WHERE "listValueOwner"."filterMode" <> '${FILTER_MODE.INCLUDE_ALL}'
+      AND "listValueInclusion"."segmentId" IN (
+        SELECT "id"
+        FROM "matchingListValueSegments"
       )
-      AND "attachedList"."segmentId" IN (${matchingSegmentIdsQuery})
+    UNION
+    SELECT "listValueExclusion"."${config.ownerIdColumn}"
+    FROM "${config.exclusionTable}" "listValueExclusion"
+    WHERE "listValueExclusion"."segmentId" IN (
+      SELECT "id"
+      FROM "matchingListValueSegments"
+    )
   )`;
 }

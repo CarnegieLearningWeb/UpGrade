@@ -462,9 +462,10 @@ describe('Feature Flag Service Testing', () => {
       expect(result).toContain('FROM "feature_flag_segment_exclusion"');
       expect(result).toContain('"userId" ILIKE :listValueSearchPattern');
       expect(result).toContain('"groupId" ILIKE :listValueSearchPattern');
-      expect(result).not.toContain('"attachedList"."enabled"');
-      expect(result).toContain('"attachedList"."isInclusion" = FALSE');
-      expect(result).toContain(`feature_flag."filterMode" <> 'includeAll'`);
+      expect(result).toContain('feature_flag.id IN (');
+      expect(result).not.toContain('EXISTS (');
+      expect(result).not.toContain('"enabled"');
+      expect(result).toContain(`"listValueOwner"."filterMode" <> 'includeAll'`);
     });
 
     it('should include list values in all-search results', () => {
