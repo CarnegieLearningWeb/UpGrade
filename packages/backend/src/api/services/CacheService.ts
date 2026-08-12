@@ -85,7 +85,9 @@ export class CacheService {
         error: err,
       });
     }
-    this.warnOnBucketsWithoutRefresh();
+    if (this.cache !== noopStore) {
+      this.warnOnBucketsWithoutRefresh();
+    }
   }
 
   /**
