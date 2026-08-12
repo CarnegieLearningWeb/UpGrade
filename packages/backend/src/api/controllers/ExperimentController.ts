@@ -786,7 +786,7 @@ export class ExperimentController {
    *                properties:
    *                  key:
    *                    type: string
-   *                    enum: [all, name, status, tag, context, id, decisionPoint]
+   *                    enum: [all, name, status, tag, context, id, decisionPoint, listValue]
    *                  string:
    *                    type: string
    *               sortParams:

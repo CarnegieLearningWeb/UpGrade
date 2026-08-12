@@ -1167,6 +1167,32 @@ describe('ExperimentService Testing', () => {
       );
     });
 
+    it('should search experiments by applicable attached list values', () => {
+      const result = getSearchClause(EXPERIMENT_SEARCH_KEY.LIST_VALUE, 'school-id');
+
+      expect(result).toContain('FROM "experiment_segment_inclusion"');
+      expect(result).toContain('FROM "experiment_segment_exclusion"');
+      expect(result).toContain('"userId" ILIKE :listValueSearchPattern');
+      expect(result).toContain('"groupId" ILIKE :listValueSearchPattern');
+      expect(result).not.toContain('"attachedList"."enabled"');
+      expect(result).toContain('"attachedList"."isInclusion" = FALSE');
+      expect(result).toContain(`experiment."filterMode" <> 'includeAll'`);
+    });
+
+    it('should include list values in all-search results', () => {
+      const result = getSearchClause(EXPERIMENT_SEARCH_KEY.ALL, 'school-id');
+
+      expect(result).toContain('FROM "experiment_segment_inclusion"');
+      expect(result).toContain('FROM "experiment_segment_exclusion"');
+    });
+
+    it('should not include list values in unrelated dedicated searches', () => {
+      const result = getSearchClause(EXPERIMENT_SEARCH_KEY.NAME, 'school-id');
+
+      expect(result).not.toContain('individual_for_segment');
+      expect(result).not.toContain('group_for_segment');
+    });
+
     it('should escape LIKE wildcards and the escape character in search input', () => {
       const result = getSearchClause(EXPERIMENT_SEARCH_KEY.NAME, '100%_path\\name');
 

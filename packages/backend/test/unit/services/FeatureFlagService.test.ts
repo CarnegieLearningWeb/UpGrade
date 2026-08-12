@@ -451,6 +451,46 @@ describe('Feature Flag Service Testing', () => {
     expect(results).toEqual([mockFlagArr, 3]);
   });
 
+  describe('paginated list-value search', () => {
+    const getSearchClause = (key: FLAG_SEARCH_KEY, searchString: string): string =>
+      service['paginatedSearchString']({ key, string: searchString });
+
+    it('should search feature flags through attached list values regardless of list enabled state', () => {
+      const result = getSearchClause(FLAG_SEARCH_KEY.LIST_VALUE, 'school-id');
+
+      expect(result).toContain('FROM "feature_flag_segment_inclusion"');
+      expect(result).toContain('FROM "feature_flag_segment_exclusion"');
+      expect(result).toContain('"userId" ILIKE :listValueSearchPattern');
+      expect(result).toContain('"groupId" ILIKE :listValueSearchPattern');
+      expect(result).not.toContain('"attachedList"."enabled"');
+      expect(result).toContain('"attachedList"."isInclusion" = FALSE');
+      expect(result).toContain(`feature_flag."filterMode" <> 'includeAll'`);
+    });
+
+    it('should include list values in all-search results', () => {
+      const result = getSearchClause(FLAG_SEARCH_KEY.ALL, 'school-id');
+
+      expect(result).toContain('FROM "feature_flag_segment_inclusion"');
+      expect(result).toContain('FROM "feature_flag_segment_exclusion"');
+    });
+
+    it('should not include list values in unrelated dedicated searches', () => {
+      const result = getSearchClause(FLAG_SEARCH_KEY.KEY, 'school-id');
+
+      expect(result).not.toContain('individual_for_segment');
+      expect(result).not.toContain('group_for_segment');
+    });
+
+    it('should skip search query generation for an empty search string', async () => {
+      const searchSpy = jest.spyOn(service as any, 'paginatedSearchString');
+
+      await service.findPaginated(0, 10, logger, { key: FLAG_SEARCH_KEY.LIST_VALUE, string: '' });
+
+      expect(searchSpy).not.toHaveBeenCalled();
+      searchSpy.mockRestore();
+    });
+  });
+
   it('should update the flag', async () => {
     const results = await service.update(mockFlag2, mockUser1, logger);
     expect(isUUID(results.id)).toBeTruthy();

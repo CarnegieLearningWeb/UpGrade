@@ -976,6 +976,44 @@ describe('Segment Service Testing', () => {
     expect(results).toEqual(res);
   });
 
+  describe('paginated list-value search', () => {
+    const getSearchClause = (key: SEGMENT_SEARCH_KEY, searchString: string): string =>
+      service['paginatedSearchString']({ key, string: searchString });
+
+    it('should search segments by direct and nested list values', () => {
+      const result = getSearchClause(SEGMENT_SEARCH_KEY.LIST_VALUE, 'school-id');
+
+      expect(result).toContain('segment.id IN');
+      expect(result).toContain('"userId" ILIKE :listValueSearchPattern');
+      expect(result).toContain('"groupId" ILIKE :listValueSearchPattern');
+      expect(result).toContain('SELECT "segmentRelation"."parentSegmentId" AS "id"');
+    });
+
+    it('should include list values in all-search results', () => {
+      const result = getSearchClause(SEGMENT_SEARCH_KEY.ALL, 'school-id');
+
+      expect(result).toContain('segment.id IN');
+      expect(result).toContain('individual_for_segment');
+      expect(result).toContain('group_for_segment');
+    });
+
+    it('should not include list values in unrelated dedicated searches', () => {
+      const result = getSearchClause(SEGMENT_SEARCH_KEY.CONTEXT, 'school-id');
+
+      expect(result).not.toContain('individual_for_segment');
+      expect(result).not.toContain('group_for_segment');
+    });
+
+    it('should skip search query generation for an empty search string', async () => {
+      const searchSpy = jest.spyOn(service as any, 'paginatedSearchString');
+
+      await service.findPaginated(0, 10, logger, { key: SEGMENT_SEARCH_KEY.LIST_VALUE, string: '' });
+
+      expect(searchSpy).not.toHaveBeenCalled();
+      searchSpy.mockRestore();
+    });
+  });
+
   describe('Private segment cloning behavior', () => {
     it('should clone private subsegments when they are lists of a public segment', async () => {
       // Create a public segment with private subsegments (lists)

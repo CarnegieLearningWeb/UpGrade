@@ -122,6 +122,7 @@ import {
 } from './Experiment/exclusionCode';
 import { ExperimentValidation } from './Experiment/validation';
 import { FeatureFlagInclusionExclusion } from './FeatureFlags';
+import { ListValueFiltering } from './ListValueFiltering';
 
 describe('Integration Tests', () => {
   jest.setTimeout(100000000);
@@ -563,6 +564,10 @@ describe('Integration Tests', () => {
 
   test('Inclusion and Exclusion of user in FeatureFlags', () => {
     return FeatureFlagInclusionExclusion();
+  });
+
+  test('List value filtering across root pages', () => {
+    return ListValueFiltering();
   });
 
   // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', () => {

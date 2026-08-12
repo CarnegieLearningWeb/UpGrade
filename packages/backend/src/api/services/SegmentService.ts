@@ -12,7 +12,6 @@ import {
   CACHE_PREFIX,
   IMPORT_COMPATIBILITY_TYPE,
   ValidatedImportResponse,
-  SEGMENT_SEARCH_KEY,
   DuplicateSegmentNameError,
   EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
   EXPERIMENT_STATE,
@@ -41,9 +40,19 @@ import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegm
 import { isUUID, validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import path from 'path';
-import { ISegmentSearchParams, ISegmentSortParams } from '../controllers/validators/SegmentPaginatedParamsValidator';
+import {
+  ISegmentSearchParams,
+  ISegmentSortParams,
+  SEGMENT_SEARCH_KEY,
+} from '../controllers/validators/SegmentPaginatedParamsValidator';
 import { ExperimentSegmentExclusion } from 'src/api/models/ExperimentSegmentExclusion';
 import { ExperimentSegmentInclusion } from 'src/api/models/ExperimentSegmentInclusion';
+import {
+  LIST_VALUE_SEARCH_PATTERN_PARAMETER,
+  buildListValueSearchPattern,
+  getListValueSearchPredicate,
+  isListValueSearchKey,
+} from './listValueSearchHelpers';
 
 interface IsSegmentValidWithError {
   missingProperty: string;
@@ -214,10 +223,18 @@ export class SegmentService {
       .subQuery()
       .from(Segment, 'segment')
       .select('segment.id');
+    let listValueSearchPattern: string | undefined;
 
-    if (searchParams) {
+    if (searchParams && searchParams.string !== '') {
       const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.where(whereClause);
+      if (isListValueSearchKey(searchParams.key)) {
+        listValueSearchPattern = buildListValueSearchPattern(searchParams.string);
+        paginatedParentSubQuery = paginatedParentSubQuery.setParameter(
+          LIST_VALUE_SEARCH_PATTERN_PARAMETER,
+          listValueSearchPattern
+        );
+      }
     }
 
     if (sortParams) {
@@ -241,6 +258,10 @@ export class SegmentService {
       .setParameter('type', SEGMENT_TYPE.PUBLIC)
       .where(`segment.id IN ${paginatedParentSubQuery.getQuery()}`);
 
+    if (listValueSearchPattern) {
+      segmentsDataQuery = segmentsDataQuery.setParameter(LIST_VALUE_SEARCH_PATTERN_PARAMETER, listValueSearchPattern);
+    }
+
     if (sortParams) {
       segmentsDataQuery = segmentsDataQuery
         .addOrderBy(`segment.${sortParams.key}`, sortParams.sortAs)
@@ -261,6 +282,7 @@ export class SegmentService {
     }
     const likeString = `ILIKE '%${searchString}%'`;
     const searchArray: string[] = [];
+    const listValueSearch = getListValueSearchPredicate('segment');
     switch (type) {
       case SEGMENT_SEARCH_KEY.NAME || SEGMENT_SEARCH_KEY.CONTEXT:
         searchArray.push(`${type} ${likeString}`);
@@ -271,10 +293,16 @@ export class SegmentService {
       case SEGMENT_SEARCH_KEY.ID:
         searchArray.push(`segment.id = '${searchString}'`);
         break;
+      case SEGMENT_SEARCH_KEY.LIST_VALUE:
+        searchArray.push(listValueSearch);
+        break;
       default:
         searchArray.push(`${SEGMENT_SEARCH_KEY.NAME} ${likeString}`);
         searchArray.push(`${SEGMENT_SEARCH_KEY.CONTEXT} ${likeString}`);
         searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        if (type === SEGMENT_SEARCH_KEY.ALL) {
+          searchArray.push(listValueSearch);
+        }
         if (isUUID(searchString)) {
           searchArray.push(`segment.id = '${searchString}'`);
         }
