@@ -116,6 +116,7 @@ export const env = {
     ttlFeatureFlags: toNumber(getOsEnvOptional('CACHING_TTL_FEATURE_FLAGS')),
     ttlSegments: toNumber(getOsEnvOptional('CACHING_TTL_SEGMENTS')),
     ttlSettings: toNumber(getOsEnvOptional('CACHING_TTL_SETTINGS')),
+    refreshThreshold: toNumber(getOsEnvOptional('CACHING_REFRESH_THRESHOLD')),
   },
   clientApi: {
     secret: getOsEnv('CLIENT_API_SECRET'),
