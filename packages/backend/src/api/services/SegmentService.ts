@@ -16,6 +16,7 @@ import {
   DuplicateSegmentNameError,
   EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
   EXPERIMENT_STATE,
+  normalizeStandardListType,
 } from 'upgrade_types';
 import { EntityManager, DataSource, Not, In } from 'typeorm';
 import Papa from 'papaparse';
@@ -938,6 +939,10 @@ export class SegmentService {
   ): Promise<Segment> {
     let segmentDoc: Segment;
     const segmentRepo = transactionalEntityManager.getRepository(Segment);
+
+    if (segment.listType) {
+      segment.listType = normalizeStandardListType(segment.listType);
+    }
 
     if (segment.id) {
       try {
