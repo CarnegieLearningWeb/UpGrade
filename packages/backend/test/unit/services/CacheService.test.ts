@@ -1,5 +1,6 @@
 import { CacheService } from '../../../src/api/services/CacheService';
 import { CACHE_PREFIX } from 'upgrade_types';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 // Resolves to the mock below; tests that need non-default caching config mutate it before
 // constructing a CacheService, since the service reads env once in its constructor.
 import { env as mockedEnv } from '../../../src/env';
@@ -51,6 +52,14 @@ describe('CacheService', () => {
     };
     (service as any).cache = mockStore;
   });
+
+  // `wrap` is handed a ttl *function* rather than a number, because the jitter has to resolve at write
+  // time. Assertions read the ttl by invoking it.
+  const lastWrapCall = () => {
+    const calls = mockStore.wrap.mock.calls;
+    const [key, fn, ttl, refreshThreshold] = calls[calls.length - 1];
+    return { key, fn, ttl, ttlMs: typeof ttl === 'function' ? ttl() : ttl, refreshThreshold };
+  };
 
   describe('setCache', () => {
     it('returns null and skips set when value is null', async () => {
@@ -247,7 +256,7 @@ describe('CacheService', () => {
       await service.wrapMany(PREFIX, ['a'], loadByKeys);
 
       // SEGMENT prefix -> segments category TTL (90s -> ms), no refresh interval configured
-      expect(mockStore.wrap).toHaveBeenCalledWith(PREFIX + 'a', expect.any(Function), 90000, 0);
+      expect(lastWrapCall()).toMatchObject({ key: PREFIX + 'a', ttlMs: 90000, refreshThreshold: 0 });
     });
   });
 
@@ -265,13 +274,14 @@ describe('CacheService', () => {
     ])('wraps %s with its category TTL (ms)', async (prefix, expectedTtl) => {
       const fn = jest.fn().mockResolvedValue('v');
       await service.wrap(prefix + 'context', fn);
-      expect(mockStore.wrap).toHaveBeenCalledWith(prefix + 'context', fn, expectedTtl, 0);
+      // no refresh interval configured here, so the jitter is a no-op and the TTL is exact
+      expect(lastWrapCall()).toMatchObject({ key: prefix + 'context', fn, ttlMs: expectedTtl, refreshThreshold: 0 });
     });
 
     it('falls back to the global default TTL for an unknown prefix', async () => {
       const fn = jest.fn().mockResolvedValue('v');
       await service.wrap('unknown-key', fn);
-      expect(mockStore.wrap).toHaveBeenCalledWith('unknown-key', fn, 60000, 0);
+      expect(lastWrapCall()).toMatchObject({ key: 'unknown-key', fn, ttlMs: 60000, refreshThreshold: 0 });
     });
   });
 
@@ -288,17 +298,27 @@ describe('CacheService', () => {
       mockedEnv.caching.refreshThreshold = 0;
     });
 
+    // With an interval configured the TTL is jittered, so these check the threshold exactly (that is
+    // what the conversion is about) and the TTL against its jitter band.
+    const expectTtlWithin = (ttlMs: number, base: number, spread: number) => {
+      expect(ttlMs).toBeGreaterThanOrEqual(base - spread);
+      expect(ttlMs).toBeLessThanOrEqual(base + spread);
+    };
+
     it('passes no threshold when the env var is unset', async () => {
       const fn = jest.fn().mockResolvedValue('v');
       await serviceWithInterval(0).wrap(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', fn);
-      expect(mockStore.wrap).toHaveBeenCalledWith(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', fn, 30000, 0);
+      // no interval means no jitter either, so the TTL is exact
+      expect(lastWrapCall()).toMatchObject({ ttlMs: 30000, refreshThreshold: 0 });
     });
 
     it('converts the interval to a threshold of ttl - interval', async () => {
       const fn = jest.fn().mockResolvedValue('v');
       // refresh every 10s on the 30s experiments TTL -> refresh once 20s of life remains
       await serviceWithInterval(10).wrap(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', fn);
-      expect(mockStore.wrap).toHaveBeenCalledWith(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', fn, 30000, 20000);
+      const call = lastWrapCall();
+      expect(call.refreshThreshold).toBe(20000);
+      expectTtlWithin(call.ttlMs, 30000, 2500); // 25% of the 10s interval
     });
 
     it('allows an interval far below half the TTL — the case the old cap blocked', async () => {
@@ -307,7 +327,9 @@ describe('CacheService', () => {
       const service = serviceWithInterval(45); // refresh every 45s
       await service.wrap(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', fn);
       // 3600s - 45s: a long hard expiry with a short staleness bound
-      expect(mockStore.wrap).toHaveBeenCalledWith(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', fn, 3600000, 3555000);
+      const call = lastWrapCall();
+      expect(call.refreshThreshold).toBe(3555000);
+      expectTtlWithin(call.ttlMs, 3600000, 11250);
       mockedEnv.caching.ttlExperiments = 30;
     });
 
@@ -315,9 +337,11 @@ describe('CacheService', () => {
       const fn = jest.fn().mockResolvedValue('v');
       const service = serviceWithInterval(20);
       await service.wrap(CACHE_PREFIX.SEGMENT_KEY_PREFIX + 'a', fn);
-      expect(mockStore.wrap).toHaveBeenCalledWith(CACHE_PREFIX.SEGMENT_KEY_PREFIX + 'a', fn, 90000, 70000);
+      expect(lastWrapCall().refreshThreshold).toBe(70000);
+      expectTtlWithin(lastWrapCall().ttlMs, 90000, 5000);
       await service.wrap(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + 'app', fn);
-      expect(mockStore.wrap).toHaveBeenCalledWith(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + 'app', fn, 45000, 25000);
+      expect(lastWrapCall().refreshThreshold).toBe(25000);
+      expectTtlWithin(lastWrapCall().ttlMs, 45000, 5000);
     });
 
     it('disables refresh for a bucket whose TTL is shorter than the interval', async () => {
@@ -325,7 +349,110 @@ describe('CacheService', () => {
       // 45s interval vs the 30s experiments TTL: the TTL expires first, so there is nothing to
       // refresh ahead of. Threshold 0 = plain TTL expiry, never a negative threshold.
       await serviceWithInterval(45).wrap(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', fn);
-      expect(mockStore.wrap).toHaveBeenCalledWith(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', fn, 30000, 0);
+      const call = lastWrapCall();
+      expect(call.refreshThreshold).toBe(0);
+      // still jittered, so the hard expiry of a batch is spread out even with refresh off; clamped to
+      // the TTL rather than the larger interval
+      expectTtlWithin(call.ttlMs, 30000, 7500);
+    });
+  });
+
+  describe('TTL jitter', () => {
+    const serviceWithInterval = (refreshThreshold: number): CacheService => {
+      mockedEnv.caching.refreshThreshold = refreshThreshold;
+      const instance = new CacheService();
+      (instance as any).cache = mockStore;
+      return instance;
+    };
+
+    afterEach(() => {
+      mockedEnv.caching.refreshThreshold = 0;
+    });
+
+    it('passes the TTL as a function, so the jitter resolves at write time rather than per read', async () => {
+      // The property the whole mechanism rests on. Resolving the jitter once per request and passing a
+      // number would give every reader its own idea of when the key is due, and under load the lowest
+      // draw wins almost immediately — collapsing the range and desynchronising nothing. If someone
+      // "simplifies" this back to a number, this test is what should stop them.
+      await serviceWithInterval(10).wrap(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', jest.fn().mockResolvedValue('v'));
+
+      const { ttl } = lastWrapCall();
+      expect(typeof ttl).toBe('function');
+      const draws = new Set(Array.from({ length: 50 }, () => (ttl as () => number)()));
+      expect(draws.size).toBeGreaterThan(1);
+    });
+
+    it('spreads the TTL around the base by a fraction of the refresh interval', async () => {
+      await serviceWithInterval(10).wrap(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', jest.fn().mockResolvedValue('v'));
+      const { ttl } = lastWrapCall();
+
+      // 25% of the 10s interval -> the 30s TTL lands in 27.5s..32.5s, so the refresh point moves
+      // within a 5s window instead of every key coming due at exactly 20s of remaining life
+      const draws = Array.from({ length: 300 }, () => (ttl as () => number)());
+      expect(Math.min(...draws)).toBeGreaterThanOrEqual(27500);
+      expect(Math.max(...draws)).toBeLessThanOrEqual(32500);
+      // and it genuinely covers the range rather than hugging the base
+      expect(Math.max(...draws) - Math.min(...draws)).toBeGreaterThan(2500);
+    });
+
+    it('does not jitter at all when no refresh interval is configured', async () => {
+      await service.wrap(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', jest.fn().mockResolvedValue('v'));
+      const { ttl } = lastWrapCall();
+      expect(new Set(Array.from({ length: 20 }, () => (ttl as () => number)()))).toEqual(new Set([30000]));
+    });
+
+    it('clamps the spread to the TTL when the interval is larger than it', async () => {
+      // 45s interval on a 30s TTL: scaling to the interval alone would swing a 30s entry by +/-11s.
+      await serviceWithInterval(45).wrap(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'app', jest.fn().mockResolvedValue('v'));
+      const { ttl } = lastWrapCall();
+
+      const draws = Array.from({ length: 300 }, () => (ttl as () => number)());
+      expect(Math.min(...draws)).toBeGreaterThanOrEqual(22500); // 25% of the 30s TTL, not of 45s
+      expect(Math.max(...draws)).toBeLessThanOrEqual(37500);
+    });
+  });
+
+  describe('boot warning for buckets without background refresh', () => {
+    let warnSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      warnSpy = jest.spyOn(UpgradeLogger.prototype, 'warn').mockImplementation(() => undefined);
+      mockedEnv.caching.enabled = true;
+    });
+
+    afterEach(() => {
+      warnSpy.mockRestore();
+      mockedEnv.caching.enabled = false;
+      mockedEnv.caching.refreshThreshold = 0;
+    });
+
+    const bootWith = async (refreshThreshold: number): Promise<void> => {
+      mockedEnv.caching.refreshThreshold = refreshThreshold;
+      const instance = new CacheService();
+      await (instance as any).initPromise;
+    };
+
+    it('names every bucket whose TTL is at or below the refresh interval', async () => {
+      // TTLs here are experiments 30s, featureFlags 45s, segments 90s, settings 60s (the default).
+      // A 60s interval leaves only segments with any room to refresh ahead of its expiry.
+      await bootWith(60);
+
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      const { message } = warnSpy.mock.calls[0][0];
+      expect(message).toContain('experiments');
+      expect(message).toContain('featureFlags');
+      expect(message).toContain('settings');
+      expect(message).not.toContain('segments');
+    });
+
+    it('stays quiet when every bucket has room to refresh', async () => {
+      await bootWith(10);
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+
+    it('stays quiet when no refresh interval is configured', async () => {
+      await bootWith(0);
+      expect(warnSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -336,11 +463,16 @@ describe('CacheService', () => {
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
     const key = CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'realstore';
 
+    // The interval is kept small relative to the TTL on purpose. The TTL is jittered, and the jitter
+    // scales with the interval, so a large interval would move the refresh age around enough to make
+    // a fixed sleep race it. Here: TTL 2000ms +/-62ms, threshold 1750ms, so an entry is due for
+    // refresh somewhere in 187-312ms and hard-expires no earlier than 1937ms. A 500ms sleep sits
+    // comfortably between the two.
     beforeEach(() => {
       mockedEnv.caching.enabled = true;
-      mockedEnv.caching.ttl = 1; // 1s global default
-      mockedEnv.caching.ttlExperiments = 1; // 1s hard expiry
-      mockedEnv.caching.refreshThreshold = 0.5; // refresh once an entry is 500ms old
+      mockedEnv.caching.ttl = 2; // 2s global default
+      mockedEnv.caching.ttlExperiments = 2; // 2s hard expiry
+      mockedEnv.caching.refreshThreshold = 0.25; // refresh once an entry is ~250ms old
     });
 
     afterEach(() => {
@@ -358,8 +490,8 @@ describe('CacheService', () => {
       expect(await realService.wrap(key, fetch)).toBe('v1');
       expect(fetch).toHaveBeenCalledTimes(1);
 
-      // 600ms in, the entry has <500ms left, so this hit is past the refresh line
-      await sleep(600);
+      // 500ms in, the entry is past its refresh age but nowhere near expiry
+      await sleep(500);
       expect(await realService.wrap(key, fetch)).toBe('v1'); // served the stale value, did not block
       expect(fetch).toHaveBeenCalledTimes(2); // ...while kicking off a refresh
 
@@ -375,7 +507,7 @@ describe('CacheService', () => {
 
       expect(await realService.wrap(key, fetch)).toBe('v1');
 
-      await sleep(600);
+      await sleep(500);
       expect(await realService.wrap(key, fetch)).toBe('v1');
       await sleep(50);
       // The failed refresh is logged via onBackgroundRefreshError, not rethrown, and the old value
@@ -397,6 +529,25 @@ describe('CacheService', () => {
 
     afterEach(() => {
       mockedEnv.caching.enabled = false;
+      mockedEnv.caching.refreshThreshold = 0;
+    });
+
+    // The payoff, end to end. Every key here is written by one wrapMany call, which is exactly the
+    // shape that used to come due in a single instant: 20 flag rows written together, then 20
+    // background refreshes firing at the same moment every interval on every instance.
+    it('gives keys written in one batch staggered expiries', async () => {
+      mockedEnv.caching.refreshThreshold = 30; // 30s interval against the 90s segments TTL
+      const realService = new CacheService();
+      const keys = Array.from({ length: 20 }, (_key, i) => `k${i}`);
+
+      await realService.wrapMany(PREFIX, keys, loadEach());
+      const remaining = await Promise.all(keys.map((key) => realService.getRemainingTtl(PREFIX + key)));
+
+      // 25% of the 30s interval -> a 15s window around the 90s TTL, and the draws spread across it
+      expect(Math.min(...remaining)).toBeGreaterThan(82000);
+      expect(Math.max(...remaining)).toBeLessThanOrEqual(97500);
+      expect(new Set(remaining).size).toBeGreaterThan(15);
+      expect(Math.max(...remaining) - Math.min(...remaining)).toBeGreaterThan(5000);
     });
 
     it('loads every cold key in a single query', async () => {
@@ -445,9 +596,11 @@ describe('CacheService', () => {
     describe('a key the prefetch did not cover', () => {
       const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+      // Interval kept small relative to the TTL so the jitter cannot race the sleep below: TTL 2000ms
+      // +/-62ms, threshold 1750ms, so refresh is due in 187-312ms and expiry is no earlier than 1937ms.
       beforeEach(() => {
-        mockedEnv.caching.ttlSegments = 1; // 1s hard expiry
-        mockedEnv.caching.refreshThreshold = 0.5; // refresh once an entry is 500ms old
+        mockedEnv.caching.ttlSegments = 2; // 2s hard expiry
+        mockedEnv.caching.refreshThreshold = 0.25; // refresh once an entry is ~250ms old
       });
 
       afterEach(() => {
@@ -476,7 +629,7 @@ describe('CacheService', () => {
 
         // Past the refresh line. Both keys are still cached, so the prefetch skips them and `wrap`
         // serves each immediately while refreshing it through the fallback — one key at a time.
-        await sleep(600);
+        await sleep(500);
         expect(await realService.wrapMany(PREFIX, ['a', 'b'], loadByKeys)).toEqual([
           { id: 'a', load: 1 },
           { id: 'b', load: 1 },
