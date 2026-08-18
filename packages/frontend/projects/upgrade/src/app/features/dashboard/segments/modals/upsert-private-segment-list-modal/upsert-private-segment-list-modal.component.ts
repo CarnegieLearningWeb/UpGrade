@@ -53,6 +53,7 @@ import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-f
 import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import { CommonTagInputType } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { SharedModule } from '../../../../../shared/shared.module';
+import { getSegmentListEditData, SegmentListEditData } from '../../../../../core/segments/segment-list.helper';
 
 @Component({
   selector: 'upsert-private-segment-list-modal',
@@ -210,10 +211,12 @@ export class UpsertPrivateSegmentListModalComponent {
       return;
     }
 
-    this.applyEditFormValues(sourceList.listType, sourceList.segment);
+    const editData = getSegmentListEditData(sourceList.listType, sourceList.segment);
+
+    this.applyEditFormValues(editData, sourceList.segment);
 
     // Lazy-load the full members when the (counts-only) source list didn't include them.
-    if (this.segmentMembersNeedFetch(sourceList.listType, sourceList.segment)) {
+    if (editData.membersNeedFetch) {
       // Block saving until the members load; otherwise a submit could full-replace with partial data.
       this.isLoadingMembers$.next(true);
       this.subscriptions.add(
@@ -229,7 +232,8 @@ export class UpsertPrivateSegmentListModalComponent {
           )
           .subscribe((segment) => {
             if (segment) {
-              this.applyEditFormValues(sourceList.listType, segment);
+              const loadedEditData = getSegmentListEditData(editData.listType, segment);
+              this.applyEditFormValues(loadedEditData, segment);
               this.changeDetectorRef.markForCheck();
             }
             this.isLoadingMembers$.next(false);
@@ -238,12 +242,11 @@ export class UpsertPrivateSegmentListModalComponent {
     }
   }
 
-  private applyEditFormValues(listType: string, segment: Segment): void {
-    const values = this.determineValues(listType, segment);
+  private applyEditFormValues(editData: SegmentListEditData, segment: Segment): void {
     const formValue: PrivateSegmentListFormData = {
-      listType: listType as LIST_OPTION_TYPE,
-      segment,
-      values,
+      listType: editData.listType,
+      segment: editData.formSegment,
+      values: editData.values,
       name: segment.name,
       description: segment.description,
     };
@@ -254,29 +257,7 @@ export class UpsertPrivateSegmentListModalComponent {
     this.initialFormValues$.next(formValue);
 
     // Trigger validators after populating the form
-    this.setValidatorsBasedOnListType(listType);
-  }
-
-  // True when members exist (count > 0) but weren't loaded, so they must be fetched before editing.
-  private segmentMembersNeedFetch(listType: string, segment: Segment): boolean {
-    if (!segment?.id || listType === LIST_OPTION_TYPE.SEGMENT) {
-      return false;
-    }
-    if (listType === LIST_OPTION_TYPE.INDIVIDUAL) {
-      return !segment.individualForSegment?.length && (segment.individualForSegmentCount ?? 0) > 0;
-    }
-    return !segment.groupForSegment?.length && (segment.groupForSegmentCount ?? 0) > 0;
-  }
-
-  determineValues(listType: string, segment: Segment): string[] {
-    switch (listType) {
-      case LIST_OPTION_TYPE.INDIVIDUAL:
-        return segment.individualForSegment?.map((individual) => individual.userId) ?? [];
-      case LIST_OPTION_TYPE.SEGMENT:
-        return [];
-      default:
-        return segment.groupForSegment?.map((group) => group.groupId) ?? [];
-    }
+    this.setValidatorsBasedOnListType(editData.listType);
   }
 
   listenForSegments() {

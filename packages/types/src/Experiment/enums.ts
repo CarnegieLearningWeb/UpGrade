@@ -175,6 +175,30 @@ export enum LIST_FILTER_MODE {
   EXCLUSION = 'exclusion',
 }
 
+export enum STANDARD_LIST_TYPE {
+  INDIVIDUAL = 'Individual',
+  SEGMENT = 'Segment',
+}
+
+/** Canonicalizes built-in list types while preserving context-defined group types. */
+export function normalizeStandardListType(listType: string | null | undefined): string {
+  if (!listType) {
+    return '';
+  }
+
+  const normalizedListType = listType.toLowerCase();
+
+  if (normalizedListType === STANDARD_LIST_TYPE.INDIVIDUAL.toLowerCase()) {
+    return STANDARD_LIST_TYPE.INDIVIDUAL;
+  }
+
+  if (normalizedListType === STANDARD_LIST_TYPE.SEGMENT.toLowerCase()) {
+    return STANDARD_LIST_TYPE.SEGMENT;
+  }
+
+  return listType;
+}
+
 export enum EXPERIMENT_LIST_OPERATION {
   CREATED = 'created',
   UPDATED = 'updated',

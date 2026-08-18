@@ -51,6 +51,7 @@ import {
   PAYLOAD_TYPE,
   IMetricMetaData,
   EXPERIMENT_SEARCH_KEY,
+  STANDARD_LIST_TYPE,
 } from 'upgrade_types';
 import { StateTimeLog } from '../../../src/api/models/StateTimeLogs';
 import { Query } from '../../../src/api/models/Query';
@@ -466,6 +467,38 @@ describe('ExperimentService Testing', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('legacy list type inference', () => {
+    it('normalizes an existing standard list type', () => {
+      const segment = { listType: 'iNdIvIdUaL' } as Segment;
+
+      expect(service['inferListType'](segment)).toBe(STANDARD_LIST_TYPE.INDIVIDUAL);
+    });
+
+    it('infers canonical standard list types', () => {
+      const individualList = {
+        individualForSegment: [{ userId: 'student-1' }],
+        groupForSegment: [],
+        subSegments: [],
+      } as Segment;
+      const segmentList = {
+        individualForSegment: [],
+        groupForSegment: [],
+        subSegments: [{ id: 'segment-1' }],
+      } as Segment;
+
+      expect(service['inferListType'](individualList)).toBe(STANDARD_LIST_TYPE.INDIVIDUAL);
+      expect(service['inferListType'](segmentList)).toBe(STANDARD_LIST_TYPE.SEGMENT);
+    });
+
+    it('preserves context-specific group list types', () => {
+      const groupList = {
+        listType: 'schoolId',
+      } as Segment;
+
+      expect(service['inferListType'](groupList)).toBe('schoolId');
+    });
   });
 
   describe('update()', () => {

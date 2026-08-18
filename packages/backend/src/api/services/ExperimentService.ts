@@ -38,6 +38,8 @@ import {
   POST_EXPERIMENT_RULE,
   EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
   EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES,
+  STANDARD_LIST_TYPE,
+  normalizeStandardListType,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -1982,14 +1984,14 @@ export class ExperimentService {
 
   private inferListType(segment: Segment) {
     if (segment.listType) {
-      return segment.listType;
+      return normalizeStandardListType(segment.listType);
     }
     if (
       segment.individualForSegment?.length > 0 &&
       segment.groupForSegment?.length === 0 &&
       segment.subSegments?.length === 0
     ) {
-      return 'individual';
+      return STANDARD_LIST_TYPE.INDIVIDUAL;
     }
     if (
       segment.individualForSegment?.length === 0 &&
@@ -2004,7 +2006,7 @@ export class ExperimentService {
       segment.groupForSegment?.length === 0 &&
       segment.subSegments?.length > 0
     ) {
-      return 'segment';
+      return STANDARD_LIST_TYPE.SEGMENT;
     }
     return null;
   }

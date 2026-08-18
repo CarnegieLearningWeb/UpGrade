@@ -94,6 +94,7 @@ export class FeatureFlagListImportValidator {
   public enabled: boolean;
 
   @IsNotEmpty()
+  @IsString()
   public listType: string;
 
   @ValidateNested()
