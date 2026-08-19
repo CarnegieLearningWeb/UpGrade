@@ -366,6 +366,7 @@ export enum CACHE_PREFIX {
   FEATURE_FLAG_KEY_PREFIX = 'featureFlags-',
   FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX = 'featureFlagPrecomputedSegments-',
   EXPERIMENT_PRECOMPUTED_SEGMENT_KEY_PREFIX = 'experimentPrecomputedSegments-',
+  SETTING_KEY_PREFIX = 'setting-',
 }
 
 export enum STATUS_INDICATOR_CHIP_TYPE {

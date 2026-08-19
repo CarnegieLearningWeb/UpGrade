@@ -42,6 +42,10 @@ export class DataService {
     this.featureFlags = featureFlags;
   }
 
+  clearFeatureFlags() {
+    this.featureFlags = null;
+  }
+
   public rotateAssignmentList(assignment: IExperimentAssignmentv5) {
     if (assignment.assignedCondition.length > 1) {
       assignment.assignedCondition.push(assignment.assignedCondition.shift());
