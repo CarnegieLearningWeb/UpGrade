@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsDefined, IsUUID, IsBoolean, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsDefined, IsUUID, IsBoolean, IsString, ValidateNested } from 'class-validator';
 import { SegmentInputValidator } from './SegmentInputValidator';
 
 export class FeatureFlagListValidator {
@@ -12,6 +12,7 @@ export class FeatureFlagListValidator {
   public enabled: boolean;
 
   @IsNotEmpty()
+  @IsString()
   public listType: string;
 
   @ValidateNested()

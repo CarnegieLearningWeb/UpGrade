@@ -8,7 +8,6 @@ import { IndividualEnrollment } from '../models/IndividualEnrollment';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { DecisionPoint } from '../models/DecisionPoint';
-import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import {
   EXPERIMENT_STATE,
   CONSISTENCY_RULE,
@@ -69,7 +68,7 @@ import { CacheService } from './CacheService';
 import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
-import { In } from 'typeorm';
+import { Brackets, In } from 'typeorm';
 import { env } from '../../env';
 import { MoocletExperimentService } from './MoocletExperimentService';
 import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegmentService';
@@ -89,8 +88,6 @@ export class ExperimentAssignmentService {
   constructor(
     @InjectRepository()
     private experimentRepository: ExperimentRepository,
-    @InjectRepository()
-    private decisionPointRepository: DecisionPointRepository,
     @InjectRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
     @InjectRepository()
@@ -787,7 +784,7 @@ export class ExperimentAssignmentService {
     const experiments = previewUser
       ? await this.experimentRepository.getValidExperimentsWithPreview(context)
       : await this.experimentService.getCachedValidExperiments(context);
-    // adding conditionPayloads at the root level instead of inside conditions
+    // adding conditionPayloads at the root level instead of inside conditions.
     return experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
   }
 
@@ -1523,50 +1520,47 @@ export class ExperimentAssignmentService {
   }
 
   private async getMonitoredDocumentOfExperiment(experimentDoc: Experiment): Promise<MonitoredDecisionPoint[]> {
-    // get groupAssignment and individual assignment details
-    const decisionPoints = experimentDoc.partitions;
-    const individualAssignments = await this.individualEnrollmentRepository.find({
+    const userEnrollments = await this.individualEnrollmentRepository.find({
       where: { experiment: { id: experimentDoc.id } },
-      relations: {
-        user: true,
+      select: {
+        userId: true,
       },
     });
 
-    // get the monitored document for all the decisionPoints in the experiment
-    const experimentDecisionPointIds = decisionPoints.map(async (decisionPoint) => {
-      const target = decisionPoint.target;
-      const site = decisionPoint.site;
-      const decisionPointId = await this.decisionPointRepository.findOne({
-        where: {
-          site: site,
-          target: target,
-        },
-      });
-      return decisionPointId;
+    const userIds = Array.from(new Set(userEnrollments.map((enrollment) => enrollment.userId).filter(Boolean)));
+    if (userIds.length === 0 || experimentDoc.partitions.length === 0) {
+      return [];
+    }
+
+    const decisionPointPairs = Array.from(
+      new Set(experimentDoc.partitions.map((dp) => `${dp.site}__${dp.target ?? ''}`))
+    ).map((pair) => {
+      const [site, ...targetParts] = pair.split('__');
+      return { site, target: targetParts.join('__') };
     });
 
-    const monitoredDocumentIds = [];
-    individualAssignments.forEach((individualAssignment) => {
-      experimentDecisionPointIds.forEach(async (experimentDecisionPointId) => {
-        monitoredDocumentIds.push(
-          await this.monitoredDecisionPointRepository.findOne({
-            where: {
-              site: (await experimentDecisionPointId).site,
-              target: (await experimentDecisionPointId).target,
-              user: { id: individualAssignment.user.id },
-            },
-          })
-        );
-      });
-    });
+    if (decisionPointPairs.length === 0) {
+      return [];
+    }
 
-    // fetch all the monitored document if exist
-    const monitoredDocuments = await this.monitoredDecisionPointRepository.find({
-      where: { id: In(monitoredDocumentIds) },
-      relations: {
-        user: true,
-      },
-    });
+    const monitoredDocuments = await this.monitoredDecisionPointRepository
+      .createQueryBuilder('monitoredDecisionPoint')
+      .leftJoinAndSelect('monitoredDecisionPoint.user', 'user')
+      .where('user.id IN (:...userIds)', { userIds })
+      .andWhere(
+        new Brackets((qb) => {
+          decisionPointPairs.forEach((dp, index) => {
+            qb.orWhere(
+              `monitoredDecisionPoint.site = :site${index} AND COALESCE(monitoredDecisionPoint.target, '') = :target${index}`,
+              {
+                [`site${index}`]: dp.site,
+                [`target${index}`]: dp.target,
+              }
+            );
+          });
+        })
+      )
+      .getMany();
 
     return monitoredDocuments;
   }
@@ -2146,7 +2140,8 @@ export class ExperimentAssignmentService {
         ? `${experiment.id}_${user.id}`
         : `${experiment.id}_${user.workingGroup?.[experiment.group]}`;
 
-    const sortedExperimentCondition = experiment.conditions.sort(
+    // Make a copy before sorting so we don't mutate the original array
+    const sortedExperimentCondition = [...experiment.conditions].sort(
       (condition1, condition2) => condition1.order - condition2.order
     );
     let spec = sortedExperimentCondition.map((condition) => condition.assignmentWeight);
@@ -2164,7 +2159,10 @@ export class ExperimentAssignmentService {
         break;
       }
     }
-    const experimentalCondition = experiment.conditions[randomConditions];
+    // Index the sorted copy: `randomConditions` is an index into `spec`, which is derived from it.
+    // (This used to read `experiment.conditions`, which was equivalent only because the sort above
+    // mutated that array in place.)
+    const experimentalCondition = sortedExperimentCondition[randomConditions];
     return experimentalCondition;
   }
 

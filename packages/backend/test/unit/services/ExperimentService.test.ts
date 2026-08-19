@@ -51,6 +51,7 @@ import {
   PAYLOAD_TYPE,
   IMetricMetaData,
   EXPERIMENT_SEARCH_KEY,
+  STANDARD_LIST_TYPE,
 } from 'upgrade_types';
 import { StateTimeLog } from '../../../src/api/models/StateTimeLogs';
 import { Query } from '../../../src/api/models/Query';
@@ -466,6 +467,38 @@ describe('ExperimentService Testing', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('legacy list type inference', () => {
+    it('normalizes an existing standard list type', () => {
+      const segment = { listType: 'iNdIvIdUaL' } as Segment;
+
+      expect(service['inferListType'](segment)).toBe(STANDARD_LIST_TYPE.INDIVIDUAL);
+    });
+
+    it('infers canonical standard list types', () => {
+      const individualList = {
+        individualForSegment: [{ userId: 'student-1' }],
+        groupForSegment: [],
+        subSegments: [],
+      } as Segment;
+      const segmentList = {
+        individualForSegment: [],
+        groupForSegment: [],
+        subSegments: [{ id: 'segment-1' }],
+      } as Segment;
+
+      expect(service['inferListType'](individualList)).toBe(STANDARD_LIST_TYPE.INDIVIDUAL);
+      expect(service['inferListType'](segmentList)).toBe(STANDARD_LIST_TYPE.SEGMENT);
+    });
+
+    it('preserves context-specific group list types', () => {
+      const groupList = {
+        listType: 'schoolId',
+      } as Segment;
+
+      expect(service['inferListType'](groupList)).toBe('schoolId');
+    });
   });
 
   describe('update()', () => {
@@ -1171,6 +1204,92 @@ describe('ExperimentService Testing', () => {
       const result = getSearchClause(EXPERIMENT_SEARCH_KEY.NAME, '100%_path\\name');
 
       expect(result).toContain(`name ILIKE '%100\\%\\_path\\\\name%' ESCAPE '\\'`);
+    });
+  });
+
+  describe('formattingConditionPayload()', () => {
+    // The assignment read path calls this on experiments handed out by the in-memory cache, which
+    // returns the same object reference to every request. Mutating the input would corrupt the cached
+    // graph for every subsequent request — which is exactly why this call site used to need a full
+    // deep copy of the experiment per request. These tests guard the invariant that removed it.
+    const buildSimpleExperiment = (): Experiment => {
+      const conditionA = { id: 'condition-a', order: 1 } as ExperimentCondition;
+      const conditionB = { id: 'condition-b', order: 2 } as ExperimentCondition;
+      const decisionPoint = { id: 'dp-1', site: 'SelectSection', target: 'target-1' } as DecisionPoint;
+
+      // Deliberately out of order so the sort inside the formatter has something to do.
+      decisionPoint.conditionPayloads = [
+        { id: 'payload-b', parentCondition: conditionB } as ConditionPayload,
+        { id: 'payload-a', parentCondition: conditionA } as ConditionPayload,
+      ];
+
+      return {
+        id: 'experiment-1',
+        type: EXPERIMENT_TYPE.SIMPLE,
+        conditions: [conditionA, conditionB],
+        partitions: [decisionPoint],
+      } as Experiment;
+    };
+
+    const buildFactorialExperiment = (): Experiment => {
+      const condition = { id: 'condition-a', order: 1 } as ExperimentCondition;
+      condition.conditionPayloads = [{ id: 'payload-a' } as ConditionPayload];
+
+      return {
+        id: 'experiment-2',
+        type: EXPERIMENT_TYPE.FACTORIAL,
+        conditions: [condition],
+        partitions: [],
+      } as Experiment;
+    };
+
+    it('should not mutate the input experiment for a simple experiment', () => {
+      const experiment = buildSimpleExperiment();
+      const snapshot = JSON.parse(JSON.stringify(experiment));
+
+      service.formattingConditionPayload(experiment);
+
+      expect(JSON.parse(JSON.stringify(experiment))).toEqual(snapshot);
+      expect(experiment.partitions[0].conditionPayloads).toHaveLength(2);
+    });
+
+    it('should not mutate the input experiment for a factorial experiment', () => {
+      const experiment = buildFactorialExperiment();
+      const snapshot = JSON.parse(JSON.stringify(experiment));
+
+      service.formattingConditionPayload(experiment);
+
+      expect(JSON.parse(JSON.stringify(experiment))).toEqual(snapshot);
+      expect(experiment.conditions[0].conditionPayloads).toHaveLength(1);
+    });
+
+    it('should hoist payloads to the root, strip them from decision points, and sort by condition order', () => {
+      const result = service.formattingConditionPayload(buildSimpleExperiment());
+
+      expect(result.conditionPayloads.map((payload) => payload.id)).toEqual(['payload-a', 'payload-b']);
+      expect(result.partitions[0].conditionPayloads).toBeUndefined();
+      // decisionPoint back-references must point at the stripped partition on the returned experiment
+      expect(result.conditionPayloads[0].decisionPoint).toBe(result.partitions[0]);
+    });
+
+    it('should hoist payloads to the root and strip them from conditions for a factorial experiment', () => {
+      const result = service.formattingConditionPayload(buildFactorialExperiment());
+
+      expect(result.conditionPayloads.map((payload) => payload.id)).toEqual(['payload-a']);
+      expect(result.conditions[0].conditionPayloads).toBeUndefined();
+      // parentCondition back-references must point at the stripped condition on the returned experiment
+      expect(result.conditionPayloads[0].parentCondition).toBe(result.conditions[0]);
+    });
+
+    it('should leave repeated formatting of the same cached experiment stable', () => {
+      const experiment = buildSimpleExperiment();
+
+      const first = service.formattingConditionPayload(experiment);
+      const second = service.formattingConditionPayload(experiment);
+
+      expect(second.conditionPayloads.map((payload) => payload.id)).toEqual(
+        first.conditionPayloads.map((payload) => payload.id)
+      );
     });
   });
 });

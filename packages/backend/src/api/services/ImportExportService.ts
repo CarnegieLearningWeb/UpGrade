@@ -76,6 +76,7 @@ export class ImportExportService {
     logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
     const experimentDetails = await this.experimentRepository.find({
       where: experimentIds ? { id: In(experimentIds) } : undefined,
+      relationLoadStrategy: 'query',
       relations: {
         partitions: {
           conditionPayloads: {

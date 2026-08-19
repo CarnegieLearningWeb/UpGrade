@@ -36,6 +36,7 @@ import {
   IMPORT_COMPATIBILITY_TYPE,
   SORT_AS_DIRECTION,
   CACHE_PREFIX,
+  STANDARD_LIST_TYPE,
 } from 'upgrade_types';
 import { configureLogger } from '../../utils/logger';
 import { ExperimentSegmentExclusion } from '../../../src/api/models/ExperimentSegmentExclusion';
@@ -377,6 +378,45 @@ describe('Segment Service Testing', () => {
 
   it('should have the repo mocked', async () => {
     expect(await repo.find()).toEqual(segmentArr);
+  });
+
+  describe('list type normalization', () => {
+    it.each([
+      ['individual', STANDARD_LIST_TYPE.INDIVIDUAL],
+      ['SeGmEnT', STANDARD_LIST_TYPE.SEGMENT],
+    ])('stores %s as %s', async (listType, expectedListType) => {
+      await service.addSegmentDataInDB(
+        {
+          name: 'standard list',
+          context: 'add',
+          type: SEGMENT_TYPE.PRIVATE,
+          listType,
+          userIds: [],
+          groups: [],
+          subSegmentIds: [],
+        },
+        logger
+      );
+
+      expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({ listType: expectedListType }));
+    });
+
+    it('preserves context-specific group list types', async () => {
+      await service.addSegmentDataInDB(
+        {
+          name: 'group list',
+          context: 'add',
+          type: SEGMENT_TYPE.PRIVATE,
+          listType: 'schoolId',
+          userIds: [],
+          groups: [],
+          subSegmentIds: [],
+        },
+        logger
+      );
+
+      expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({ listType: 'schoolId' }));
+    });
   });
 
   it('should return all segments', async () => {

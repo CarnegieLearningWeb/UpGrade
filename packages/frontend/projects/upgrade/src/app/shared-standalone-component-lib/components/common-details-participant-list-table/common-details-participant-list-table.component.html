@@ -26,7 +26,7 @@
         {{ PARTICIPANT_LIST_TRANSLATION_KEYS.VALUES | translate }}
       </th>
       <td mat-cell *matCellDef="let rowData" class="values-column ft-14-400">
-        @if (rowData?.segment && rowData.listType?.toLowerCase() !== memberTypes.SEGMENT.toLowerCase()) {
+        @if (rowData?.segment && !isSegmentListType(rowData)) {
         <span>
           {{ getValuesText(rowData) }}
         </span>
