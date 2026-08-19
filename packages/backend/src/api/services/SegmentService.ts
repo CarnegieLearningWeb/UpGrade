@@ -165,23 +165,27 @@ export class SegmentService {
   }
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
-    return this.cacheService.wrapFunction(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ids, async () => {
-      const result = await this.segmentRepository
-        .createQueryBuilder('segment')
-        .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
-        .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
-        .leftJoinAndSelect('segment.subSegments', 'subSegment')
-        .leftJoinAndSelect('segment.experimentSegmentInclusion', 'experimentSegmentInclusion')
-        .leftJoinAndSelect('segment.experimentSegmentExclusion', 'experimentSegmentExclusion')
-        .where('segment.id IN (:...ids)', { ids })
-        .getMany();
+    const segments = await this.cacheService.wrapMany<Segment>(
+      CACHE_PREFIX.SEGMENT_KEY_PREFIX,
+      ids,
+      async (idsToLoad) => {
+        const result = await this.segmentRepository
+          .createQueryBuilder('segment')
+          .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+          .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+          .leftJoinAndSelect('segment.subSegments', 'subSegment')
+          .leftJoinAndSelect('segment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+          .leftJoinAndSelect('segment.experimentSegmentExclusion', 'experimentSegmentExclusion')
+          .where('segment.id IN (:...ids)', { ids: idsToLoad })
+          .getMany();
 
-      if (!result.length) {
-        return [];
+        return idsToLoad.map((id) => result.find((data) => data.id === id));
       }
+    );
 
-      return ids.map((id) => result.find((data) => data.id === id));
-    });
+    // An id with no segment is cached as a null so it stops being re-queried; callers all want the
+    // dense list of what was actually found, and several of them dereference entries unguarded.
+    return segments.filter((segment): segment is Segment => !!segment);
   }
 
   public async getSingleSegmentWithStatus(segmentId: string, logger: UpgradeLogger): Promise<getSegmentData | null> {

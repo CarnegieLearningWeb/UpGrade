@@ -70,7 +70,7 @@ import { CacheService } from './CacheService';
 import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
-import { In } from 'typeorm';
+import { Brackets, In } from 'typeorm';
 import { env } from '../../env';
 import { MoocletExperimentService } from './MoocletExperimentService';
 import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegmentService';
@@ -134,31 +134,61 @@ export class ExperimentAssignmentService {
 
   private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
     const cacheKey = CACHE_PREFIX.MARK_KEY_PREFIX + '-' + site + '-' + target;
-    const dpExperiments = await this.cacheService.wrap(cacheKey, () =>
-      this.decisionPointRepository.find({
+    const dpExperiments = await this.cacheService.wrap(cacheKey, async () => {
+      // Keep the decision-point query minimal; hydrate heavy experiment relations separately.
+      const decisionPoints = await this.decisionPointRepository.find({
         where: {
-          site: site,
-          target: target,
+          site,
+          target,
         },
-        relations: {
+        select: {
+          id: true,
+          site: true,
+          target: true,
           experiment: {
-            conditions: {
-              conditionPayloads: true,
-            },
-
-            partitions: true,
-
-            experimentSegmentInclusion: {
-              segment: true,
-            },
-
-            experimentSegmentExclusion: {
-              segment: true,
-            },
+            id: true,
           },
         },
-      })
-    );
+        relations: {
+          experiment: true,
+        },
+      });
+
+      const experimentIds = Array.from(
+        new Set(decisionPoints.map((dp) => dp.experiment?.id).filter((id): id is string => Boolean(id)))
+      );
+
+      if (experimentIds.length === 0) {
+        return [] as DecisionPoint[];
+      }
+
+      const experiments = await this.experimentRepository.find({
+        where: { id: In(experimentIds) },
+        relationLoadStrategy: 'query',
+        relations: {
+          conditions: {
+            conditionPayloads: true,
+          },
+          partitions: true,
+          experimentSegmentInclusion: {
+            segment: true,
+          },
+          experimentSegmentExclusion: {
+            segment: true,
+          },
+        },
+      });
+
+      const experimentById = new Map(experiments.map((experiment) => [experiment.id, experiment]));
+
+      return decisionPoints
+        .map((dp) => {
+          const experiment = experimentById.get(dp.experiment?.id);
+          if (!experiment) return null;
+          return { ...dp, experiment } as DecisionPoint;
+        })
+        .filter((dp): dp is DecisionPoint => dp !== null);
+    });
 
     return [dpExperiments, dpExperiments.map((dp) => dp.experiment)];
   }
@@ -708,7 +738,7 @@ export class ExperimentAssignmentService {
     const experiments = previewUser
       ? await this.experimentRepository.getValidExperimentsWithPreview(context)
       : await this.experimentService.getCachedValidExperiments(context);
-    // adding conditionPayloads at the root level instead of inside conditions
+    // adding conditionPayloads at the root level instead of inside conditions.
     return experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
   }
 
@@ -1444,50 +1474,47 @@ export class ExperimentAssignmentService {
   }
 
   private async getMonitoredDocumentOfExperiment(experimentDoc: Experiment): Promise<MonitoredDecisionPoint[]> {
-    // get groupAssignment and individual assignment details
-    const decisionPoints = experimentDoc.partitions;
-    const individualAssignments = await this.individualEnrollmentRepository.find({
+    const userEnrollments = await this.individualEnrollmentRepository.find({
       where: { experiment: { id: experimentDoc.id } },
-      relations: {
-        user: true,
+      select: {
+        userId: true,
       },
     });
 
-    // get the monitored document for all the decisionPoints in the experiment
-    const experimentDecisionPointIds = decisionPoints.map(async (decisionPoint) => {
-      const target = decisionPoint.target;
-      const site = decisionPoint.site;
-      const decisionPointId = await this.decisionPointRepository.findOne({
-        where: {
-          site: site,
-          target: target,
-        },
-      });
-      return decisionPointId;
+    const userIds = Array.from(new Set(userEnrollments.map((enrollment) => enrollment.userId).filter(Boolean)));
+    if (userIds.length === 0 || experimentDoc.partitions.length === 0) {
+      return [];
+    }
+
+    const decisionPointPairs = Array.from(
+      new Set(experimentDoc.partitions.map((dp) => `${dp.site}__${dp.target ?? ''}`))
+    ).map((pair) => {
+      const [site, ...targetParts] = pair.split('__');
+      return { site, target: targetParts.join('__') };
     });
 
-    const monitoredDocumentIds = [];
-    individualAssignments.forEach((individualAssignment) => {
-      experimentDecisionPointIds.forEach(async (experimentDecisionPointId) => {
-        monitoredDocumentIds.push(
-          await this.monitoredDecisionPointRepository.findOne({
-            where: {
-              site: (await experimentDecisionPointId).site,
-              target: (await experimentDecisionPointId).target,
-              user: { id: individualAssignment.user.id },
-            },
-          })
-        );
-      });
-    });
+    if (decisionPointPairs.length === 0) {
+      return [];
+    }
 
-    // fetch all the monitored document if exist
-    const monitoredDocuments = await this.monitoredDecisionPointRepository.find({
-      where: { id: In(monitoredDocumentIds) },
-      relations: {
-        user: true,
-      },
-    });
+    const monitoredDocuments = await this.monitoredDecisionPointRepository
+      .createQueryBuilder('monitoredDecisionPoint')
+      .leftJoinAndSelect('monitoredDecisionPoint.user', 'user')
+      .where('user.id IN (:...userIds)', { userIds })
+      .andWhere(
+        new Brackets((qb) => {
+          decisionPointPairs.forEach((dp, index) => {
+            qb.orWhere(
+              `monitoredDecisionPoint.site = :site${index} AND COALESCE(monitoredDecisionPoint.target, '') = :target${index}`,
+              {
+                [`site${index}`]: dp.site,
+                [`target${index}`]: dp.target,
+              }
+            );
+          });
+        })
+      )
+      .getMany();
 
     return monitoredDocuments;
   }
@@ -2067,7 +2094,8 @@ export class ExperimentAssignmentService {
         ? `${experiment.id}_${user.id}`
         : `${experiment.id}_${user.workingGroup?.[experiment.group]}`;
 
-    const sortedExperimentCondition = experiment.conditions.sort(
+    // Make a copy before sorting so we don't mutate the original array
+    const sortedExperimentCondition = [...experiment.conditions].sort(
       (condition1, condition2) => condition1.order - condition2.order
     );
     let spec = sortedExperimentCondition.map((condition) => condition.assignmentWeight);
@@ -2085,7 +2113,10 @@ export class ExperimentAssignmentService {
         break;
       }
     }
-    const experimentalCondition = experiment.conditions[randomConditions];
+    // Index the sorted copy: `randomConditions` is an index into `spec`, which is derived from it.
+    // (This used to read `experiment.conditions`, which was equivalent only because the sort above
+    // mutated that array in place.)
+    const experimentalCondition = sortedExperimentCondition[randomConditions];
     return experimentalCondition;
   }
 
