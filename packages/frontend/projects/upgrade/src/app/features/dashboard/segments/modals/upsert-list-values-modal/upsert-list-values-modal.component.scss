@@ -39,6 +39,7 @@
 
 .error-message {
   display: block;
+  color: var(--red);
 }
 
 .file-summary {
@@ -56,10 +57,6 @@
     line-height: 1;
     cursor: pointer;
   }
-}
-
-.error-message {
-  color: var(--red);
 }
 
 .import-behavior-section {

@@ -80,7 +80,7 @@ export class CommonSectionCardSearchHeaderComponent implements OnInit, OnChanges
   @Input() searchString: string;
   @Input() searchKey: string;
   @Input() showFilterOptions = true;
-  @Input() searchInputWidth = '240px';
+  @Input() searchInputWidth?: string;
   @Output() search = new EventEmitter<CommonSearchWidgetSearchParams<string>>();
 
   standaloneOptions: FilterOption[] = [];

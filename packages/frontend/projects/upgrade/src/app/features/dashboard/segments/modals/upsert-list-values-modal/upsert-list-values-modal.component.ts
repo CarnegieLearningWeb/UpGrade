@@ -80,10 +80,9 @@ export class UpsertListValuesModalComponent {
   }
 
   get exceedsValueLimit(): boolean {
-    if (this.data.importOnly) {
-      return false;
-    }
-    return exceedsListValueLimit(this.data.existingValues ?? [], this.values);
+    const existingValues =
+      this.data.importOnly && this.updateMode === LIST_VALUES_UPDATE_MODE.REPLACE ? [] : this.data.existingValues ?? [];
+    return exceedsListValueLimit(existingValues, this.values);
   }
 
   get isPrimaryActionDisabled(): boolean {

@@ -30,6 +30,9 @@ export class EditListValueModalComponent {
 
   private uniqueValueValidator(control: FormControl<string>) {
     const value = control.value.trim();
+    if (!value) {
+      return { required: true };
+    }
     return value !== this.data.value && this.data.existingValues.includes(value) ? { duplicate: true } : null;
   }
 

@@ -122,7 +122,7 @@ export class CommonDetailsParticipantListTableComponent {
   }
 
   isDirectValueList(rowData: ParticipantListTableRow): boolean {
-    return rowData.listType?.toLowerCase() !== this.memberTypes.SEGMENT.toLowerCase();
+    return !this.isSegmentListType(rowData);
   }
 
   get detailsFilterMode(): LIST_FILTER_MODE {

@@ -169,6 +169,33 @@ describe('ExperimentRepository Testing', () => {
     expect(res).toEqual(result);
   });
 
+  it('should merge separately loaded inclusion and exclusion segment data', async () => {
+    const conditionData = { id: 'exp-a', name: 'Experiment A', conditions: ['condition'] } as any;
+    const factorData = { id: 'exp-a', partitions: ['partition'] } as any;
+    const metricData = { id: 'exp-a', queries: ['query'] } as any;
+    const inclusionData = { id: 'exp-a', experimentSegmentInclusion: ['inclusion'] } as any;
+    const exclusionData = { id: 'exp-a', experimentSegmentExclusion: ['exclusion'] } as any;
+
+    mock.getMany
+      .mockResolvedValueOnce([conditionData])
+      .mockResolvedValueOnce([factorData])
+      .mockResolvedValueOnce([metricData])
+      .mockResolvedValueOnce([inclusionData])
+      .mockResolvedValueOnce([exclusionData]);
+
+    const [res] = await repo.findAllExperiments();
+
+    expect(res).toMatchObject({
+      id: 'exp-a',
+      name: 'Experiment A',
+      conditions: ['condition'],
+      partitions: ['partition'],
+      queries: ['query'],
+      experimentSegmentInclusion: ['inclusion'],
+      experimentSegmentExclusion: ['exclusion'],
+    });
+  });
+
   it('should throw an error when find all experiments fails', async () => {
     mock.getMany.mockRejectedValue(err);
 
@@ -381,6 +408,33 @@ describe('ExperimentRepository Testing', () => {
     expect(mock.getOne).toHaveBeenCalledTimes(5);
 
     expect(res).toEqual(experiment);
+  });
+
+  it('should merge separately loaded segment data when finding one experiment', async () => {
+    const conditionData = { id: 'exp-a', name: 'Experiment A', conditions: ['condition'] } as any;
+    const factorData = { id: 'exp-a', partitions: ['partition'] } as any;
+    const metricData = { id: 'exp-a', queries: ['query'] } as any;
+    const inclusionData = { id: 'exp-a', experimentSegmentInclusion: ['inclusion'] } as any;
+    const exclusionData = { id: 'exp-a', experimentSegmentExclusion: ['exclusion'] } as any;
+
+    mock.getOne
+      .mockResolvedValueOnce(conditionData)
+      .mockResolvedValueOnce(factorData)
+      .mockResolvedValueOnce(metricData)
+      .mockResolvedValueOnce(inclusionData)
+      .mockResolvedValueOnce(exclusionData);
+
+    const res = await repo.findOneExperiment('exp-a');
+
+    expect(res).toMatchObject({
+      id: 'exp-a',
+      name: 'Experiment A',
+      conditions: ['condition'],
+      partitions: ['partition'],
+      queries: ['query'],
+      experimentSegmentInclusion: ['inclusion'],
+      experimentSegmentExclusion: ['exclusion'],
+    });
   });
 
   it('should clear the database', async () => {

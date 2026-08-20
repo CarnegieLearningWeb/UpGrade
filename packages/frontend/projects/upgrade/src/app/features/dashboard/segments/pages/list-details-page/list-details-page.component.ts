@@ -249,7 +249,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(UpsertListValuesModalComponent, {
       data: { importOnly: true, existingValues: this.values },
       width: ModalSize.STANDARD,
-      autoFocus: false,
+      autoFocus: '.choose-file-btn',
       disableClose: true,
     });
     this.subscriptions.add(dialogRef.afterClosed().subscribe((result) => this.applyValuesResult(result)));
@@ -288,6 +288,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(EditListValueModalComponent, {
       data: { value: row.value, existingValues: this.values },
       width: ModalSize.SMALL,
+      autoFocus: 'input',
       disableClose: true,
     });
     this.subscriptions.add(
