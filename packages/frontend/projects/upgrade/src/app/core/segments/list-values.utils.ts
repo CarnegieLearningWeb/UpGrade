@@ -15,6 +15,11 @@ export function splitListValues(rawValue: string): string[] {
     .filter(Boolean);
 }
 
+/** True when a single value contains characters that the add/import pipelines treat as separators. */
+export function containsListValueSeparator(value: string): boolean {
+  return VALUE_SEPARATORS.test(value);
+}
+
 export function mergeUniqueListValues(existingValues: string[], incomingValues: string[]): MergeListValuesResult {
   const seenValues = new Set(existingValues);
   const addedValues: string[] = [];

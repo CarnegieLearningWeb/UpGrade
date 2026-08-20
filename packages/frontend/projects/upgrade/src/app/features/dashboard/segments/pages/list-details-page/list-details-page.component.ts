@@ -98,11 +98,12 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
   isValuesMenuDisabled = true;
   isLoading = true;
   isSaving = false;
-  canManage = false;
-  canDelete = false;
+  isOwnerReadOnly = false;
   areSectionCardsExpanded = true;
   isValuesSectionExpanded = true;
 
+  private hasUpdatePermission = false;
+  private hasDeletePermission = false;
   private subscriptions = new Subscription();
 
   constructor(
@@ -124,12 +125,16 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
     this.ownerId = this.getOwnerId();
     this.listId = this.route.snapshot.paramMap.get('listId') ?? '';
     this.filterMode =
-      (this.route.snapshot.paramMap.get('filterMode') as LIST_FILTER_MODE) ?? LIST_FILTER_MODE.EXCLUSION;
+      this.route.snapshot.paramMap.get('filterMode')?.toLowerCase() === LIST_FILTER_MODE.INCLUSION
+        ? LIST_FILTER_MODE.INCLUSION
+        : LIST_FILTER_MODE.EXCLUSION;
 
     this.subscriptions.add(
+      // List management is gated on segment permissions across all owner pages (see the
+      // inclusion/exclusion/lists section cards), so this page must match.
       this.authService.userPermissions$.subscribe((permissions) => {
-        this.canManage = !!permissions?.[this.permissionKey]?.update;
-        this.canDelete = !!permissions?.[this.permissionKey]?.delete;
+        this.hasUpdatePermission = !!permissions?.segments?.update;
+        this.hasDeletePermission = !!permissions?.segments?.delete;
         this.updateMetadataMenuButtonItems();
         this.updateValuesMenuButtonItems();
         this.changeDetectorRef.markForCheck();
@@ -170,11 +175,15 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
   }
 
   get listSummarySubtitle(): string {
-    const filterLabel = this.filterMode === LIST_FILTER_MODE.INCLUSION ? 'Include' : 'Exclude';
     const typeLabel =
       this.listType.toLowerCase() === LIST_OPTION_TYPE.INDIVIDUAL.toLowerCase()
         ? LIST_OPTION_TYPE.INDIVIDUAL
         : `Group: ${this.listType}`;
+    // Lists of a regular segment are plain member lists, not include/exclude lists.
+    if (this.isPlainSegmentList) {
+      return typeLabel;
+    }
+    const filterLabel = this.filterMode === LIST_FILTER_MODE.INCLUSION ? 'Include' : 'Exclude';
     return `${filterLabel} · ${typeLabel}`;
   }
 
@@ -184,15 +193,16 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
     };
   }
 
-  get permissionKey(): 'experiments' | 'featureFlags' | 'segments' {
-    switch (this.ownerType) {
-      case LIST_OWNER_TYPE.EXPERIMENT:
-        return 'experiments';
-      case LIST_OWNER_TYPE.FEATURE_FLAG:
-        return 'featureFlags';
-      default:
-        return 'segments';
-    }
+  get canManage(): boolean {
+    return this.hasUpdatePermission && !this.isOwnerReadOnly;
+  }
+
+  get canDelete(): boolean {
+    return this.hasDeletePermission && !this.isOwnerReadOnly;
+  }
+
+  private get isPlainSegmentList(): boolean {
+    return this.ownerType === LIST_OWNER_TYPE.SEGMENT && this.owner?.segmentType !== SEGMENT_TYPE.GLOBAL_EXCLUDE;
   }
 
   loadDetails(): void {
@@ -201,6 +211,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
+    this.changeDetectorRef.markForCheck();
     this.subscriptions.add(
       forkJoin({
         list: this.listDetailsDataService.fetchList(this.listId),
@@ -216,7 +227,8 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
           next: ({ list, owner }) => {
             this.list = list;
             this.owner = owner;
-            this.listType = list.listType ?? '';
+            this.isOwnerReadOnly = !!owner.isReadOnly;
+            this.listType = list.listType ?? owner.listType ?? '';
             this.listEnabled = owner.listEnabled ?? this.filterMode === LIST_FILTER_MODE.EXCLUSION;
             this.setValues(this.determineValues(list));
             this.updateMetadataMenuButtonItems();
@@ -325,6 +337,13 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
   }
 
   editMetadata(): void {
+    // The edit modal saves a full member replacement keyed on the list type, so opening it
+    // without a known type could wipe the list's real members (same guard as saveValues).
+    if (!this.listType) {
+      this.notificationService.showError('Unable to edit this list because the list type is unknown.');
+      return;
+    }
+
     const sourceList: ParticipantListTableRow = {
       listType: this.listType,
       segment: this.list,
@@ -371,6 +390,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
           return;
         }
         this.isSaving = true;
+        this.changeDetectorRef.markForCheck();
         this.subscriptions.add(
           this.listDetailsDataService.deleteList(this.ownerType, this.filterMode, this.ownerId, this.listId).subscribe({
             next: () => {
@@ -417,7 +437,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
   }
 
   private getMetadataActionTarget(): string {
-    if (this.ownerType === LIST_OWNER_TYPE.SEGMENT && this.owner?.segmentType !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+    if (this.isPlainSegmentList) {
       return 'List';
     }
     return this.filterMode === LIST_FILTER_MODE.INCLUSION ? 'Include List' : 'Exclude List';
@@ -514,22 +534,28 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Without a known list type the update payload can't be built safely; a full-replacement
+    // save with the wrong member kind would wipe the list's real members.
+    if (!this.listType) {
+      this.notificationService.showError('Unable to update list values because the list type is unknown.');
+      return;
+    }
+
+    const isIndividualList = this.listType.toLowerCase() === LIST_OPTION_TYPE.INDIVIDUAL.toLowerCase();
     const segment: EditPrivateSegmentListDetails = {
       id: this.list.id,
       name: this.list.name,
       description: this.list.description ?? '',
       context: this.list.context,
       type: SEGMENT_TYPE.PRIVATE,
-      userIds: this.listType.toLowerCase() === LIST_OPTION_TYPE.INDIVIDUAL.toLowerCase() ? values : [],
-      groups:
-        this.listType.toLowerCase() === LIST_OPTION_TYPE.INDIVIDUAL.toLowerCase()
-          ? []
-          : values.map((groupId) => ({ groupId, type: this.listType })),
+      userIds: isIndividualList ? values : [],
+      groups: isIndividualList ? [] : values.map((groupId) => ({ groupId, type: this.listType })),
       subSegmentIds: [],
       listType: this.listType,
     };
 
     this.isSaving = true;
+    this.changeDetectorRef.markForCheck();
     this.listDetailsDataService
       .updateList(this.ownerType, this.filterMode, this.ownerId, this.listEnabled, this.listType, segment)
       .pipe(
@@ -540,6 +566,8 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (updatedList) => {
+          // The update response re-fetches the segment with its member relations, so this
+          // keeps this.list (the metadata edit modal's full-replacement source) up to date.
           this.list = { ...this.list, ...updatedList, listType: this.listType };
           this.setValues(values);
           this.notificationService.showSuccess(successMessage);

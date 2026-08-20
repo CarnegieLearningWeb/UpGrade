@@ -322,6 +322,11 @@ export interface ListDetailsOwner {
   type: LIST_OWNER_TYPE;
   segmentType?: SEGMENT_TYPE;
   listEnabled?: boolean;
+  // Owner-side list type, used as a fallback when the list's own segment row predates
+  // the listType column (flag join rows store it; experiment responses infer it).
+  listType?: string;
+  // True when the owner disallows list changes (e.g. completed/archived experiments).
+  isReadOnly?: boolean;
 }
 
 export const PRIVATE_SEGMENT_LIST_FORM_FIELDS = {

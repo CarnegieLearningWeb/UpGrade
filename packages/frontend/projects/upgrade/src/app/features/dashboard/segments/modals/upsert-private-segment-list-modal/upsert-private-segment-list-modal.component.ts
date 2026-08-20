@@ -46,7 +46,7 @@ import {
   Subscription,
   timer,
 } from 'rxjs';
-import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
+import { SEGMENT_TYPE } from 'upgrade_types';
 import isEqual from 'lodash.isequal';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
@@ -375,7 +375,7 @@ export class UpsertPrivateSegmentListModalComponent {
 
     const listRequest: PrivateSegmentListRequest = {
       id: this.config.params.id,
-      enabled: this.config.params.sourceList?.enabled || isExcludeList, // Maintain existing status for edits, default to false for new include lists, true for all exclude lists
+      enabled: this.config.params.sourceList?.enabled ?? isExcludeList, // Maintain existing status for edits, default to false for new include lists, true for all exclude lists
       listType,
       segment: { ...list, listType },
     };

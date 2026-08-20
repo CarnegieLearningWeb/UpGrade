@@ -1,5 +1,6 @@
 import {
   MAX_LIST_VALUES,
+  containsListValueSeparator,
   exceedsListValueLimit,
   mergeUniqueListValues,
   parseSingleColumnCSV,
@@ -14,6 +15,15 @@ describe('list values utilities', () => {
 
     it('trims values and drops empty entries', () => {
       expect(splitListValues(' one, ,\n two ')).toEqual(['one', 'two']);
+    });
+  });
+
+  describe('containsListValueSeparator', () => {
+    it('flags values that the add/import pipelines would split or reject', () => {
+      expect(containsListValueSeparator('schoolA,schoolB')).toBe(true);
+      expect(containsListValueSeparator('school\tA')).toBe(true);
+      expect(containsListValueSeparator('school\nA')).toBe(true);
+      expect(containsListValueSeparator('school-A_1')).toBe(false);
     });
   });
 

@@ -1,5 +1,5 @@
 import { of } from 'rxjs';
-import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { EXPERIMENT_STATE, LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { ExperimentDataService } from '../experiments/experiments.data.service';
 import { FeatureFlagsDataService } from '../feature-flags/feature-flags.data.service';
 import { ListDetailsDataService } from './list-details.data.service';
@@ -62,12 +62,12 @@ describe('ListDetailsDataService', () => {
     );
   });
 
-  it('loads a feature flag owner and preserves the include-list enabled state', (done) => {
+  it('loads a feature flag owner and preserves the include-list enabled state and list type', (done) => {
     featureFlagsDataService.fetchFeatureFlagById.mockReturnValue(
       of({
         id: 'flag-id',
         name: 'Test flag',
-        featureFlagSegmentInclusion: [{ segment, enabled: true }],
+        featureFlagSegmentInclusion: [{ segment, enabled: true, listType: 'Individual' }],
         featureFlagSegmentExclusion: [],
       })
     );
@@ -80,7 +80,55 @@ describe('ListDetailsDataService', () => {
           name: 'Test flag',
           type: LIST_OWNER_TYPE.FEATURE_FLAG,
           listEnabled: true,
+          listType: 'Individual',
         });
+        done();
+      });
+  });
+
+  it('loads an experiment owner with the inferred owner-side list type', (done) => {
+    experimentDataService.getExperimentById.mockReturnValue(
+      of({
+        id: 'experiment-id',
+        name: 'Test experiment',
+        state: EXPERIMENT_STATE.ENROLLING,
+        // The experiment response carries the (possibly inferred) list type even when
+        // the list's own segment row predates the listType column.
+        experimentSegmentInclusion: [{ segment: { ...segment, listType: 'Individual' } }],
+        experimentSegmentExclusion: [],
+      })
+    );
+
+    service
+      .fetchOwner(LIST_OWNER_TYPE.EXPERIMENT, 'experiment-id', LIST_FILTER_MODE.INCLUSION, segment.id)
+      .subscribe((owner) => {
+        expect(owner).toEqual({
+          id: 'experiment-id',
+          name: 'Test experiment',
+          type: LIST_OWNER_TYPE.EXPERIMENT,
+          listType: 'Individual',
+          isReadOnly: false,
+        });
+        done();
+      });
+  });
+
+  it('marks completed and archived experiment owners as read-only', (done) => {
+    experimentDataService.getExperimentById.mockReturnValue(
+      of({
+        id: 'experiment-id',
+        name: 'Test experiment',
+        state: EXPERIMENT_STATE.COMPLETED,
+        experimentSegmentInclusion: [],
+        experimentSegmentExclusion: [{ segment }],
+      })
+    );
+
+    service
+      .fetchOwner(LIST_OWNER_TYPE.EXPERIMENT, 'experiment-id', LIST_FILTER_MODE.EXCLUSION, segment.id)
+      .subscribe((owner) => {
+        expect(owner.isReadOnly).toBe(true);
+        expect(owner.listType).toBe(segment.listType);
         done();
       });
   });

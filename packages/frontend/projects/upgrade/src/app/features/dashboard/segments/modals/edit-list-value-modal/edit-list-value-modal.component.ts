@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModalComponent } from '@shared-component-lib';
+import { containsListValueSeparator } from '../../../../../core/segments/list-values.utils';
 
 export interface EditListValueModalData {
   value: string;
@@ -32,6 +33,11 @@ export class EditListValueModalComponent {
     const value = control.value.trim();
     if (!value) {
       return { required: true };
+    }
+    // The add/import pipelines split on these characters, so a value containing them
+    // could not round-trip through paste or CSV export/import.
+    if (containsListValueSeparator(value)) {
+      return { separator: true };
     }
     return value !== this.data.value && this.data.existingValues.includes(value) ? { duplicate: true } : null;
   }

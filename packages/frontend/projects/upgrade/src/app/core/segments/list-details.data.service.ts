@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { LIST_FILTER_MODE } from 'upgrade_types';
+import { EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
 import { ExperimentDataService } from '../experiments/experiments.data.service';
 import { Experiment } from '../experiments/store/experiments.model';
 import { FeatureFlagsDataService } from '../feature-flags/feature-flags.data.service';
@@ -36,11 +36,22 @@ export class ListDetailsDataService {
     switch (ownerType) {
       case LIST_OWNER_TYPE.EXPERIMENT:
         return this.experimentDataService.getExperimentById(ownerId).pipe(
-          map((experiment: Experiment) => ({
-            id: experiment.id,
-            name: experiment.name,
-            type: ownerType,
-          }))
+          map((experiment: Experiment) => {
+            const lists =
+              filterMode === LIST_FILTER_MODE.INCLUSION
+                ? experiment.experimentSegmentInclusion
+                : experiment.experimentSegmentExclusion;
+            return {
+              id: experiment.id,
+              name: experiment.name,
+              type: ownerType,
+              // The experiment response carries the inferred list type for legacy lists
+              // whose own segment row predates the listType column.
+              listType: lists?.find((list) => list.segment?.id === listId)?.segment?.listType,
+              // The owner details page locks list changes for these states, so lock them here too.
+              isReadOnly: [EXPERIMENT_STATE.COMPLETED, EXPERIMENT_STATE.ARCHIVED].includes(experiment.state),
+            };
+          })
         );
       case LIST_OWNER_TYPE.FEATURE_FLAG:
         return this.featureFlagsDataService.fetchFeatureFlagById(ownerId).pipe(
@@ -49,11 +60,13 @@ export class ListDetailsDataService {
               filterMode === LIST_FILTER_MODE.INCLUSION
                 ? featureFlag.featureFlagSegmentInclusion
                 : featureFlag.featureFlagSegmentExclusion;
+            const list = lists?.find((entry) => entry.segment.id === listId);
             return {
               id: featureFlag.id,
               name: featureFlag.name,
               type: ownerType,
-              listEnabled: lists?.find((list) => list.segment.id === listId)?.enabled,
+              listEnabled: list?.enabled,
+              listType: list?.listType,
             };
           })
         );
@@ -64,6 +77,7 @@ export class ListDetailsDataService {
             name: response.segment.name,
             type: ownerType,
             segmentType: response.segment.type,
+            listType: response.segment.subSegments?.find((subSegment) => subSegment.id === listId)?.listType,
           }))
         );
     }
