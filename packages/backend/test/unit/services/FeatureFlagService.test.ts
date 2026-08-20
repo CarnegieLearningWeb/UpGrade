@@ -21,6 +21,7 @@ import {
   IMPORT_COMPATIBILITY_TYPE,
   SEGMENT_TYPE,
   SORT_AS_DIRECTION,
+  STANDARD_LIST_TYPE,
 } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 
@@ -565,9 +566,43 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should add an include list', async () => {
+    const inclusionRepo = module.get(
+      getRepositoryToken(FeatureFlagSegmentInclusionRepository)
+    ) as FeatureFlagSegmentInclusionRepository;
     const result = await service.addList([mockList], LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
 
     expect(result).toBeTruthy();
+    expect(inclusionRepo.insertData).toHaveBeenCalledWith(
+      [expect.objectContaining({ listType: STANDARD_LIST_TYPE.INDIVIDUAL })],
+      logger,
+      expect.anything()
+    );
+  });
+
+  it('should normalize the list type when updating an include list', async () => {
+    const inclusionRepo = module.get(
+      getRepositoryToken(FeatureFlagSegmentInclusionRepository)
+    ) as FeatureFlagSegmentInclusionRepository;
+    const existingRecord = {
+      enabled: true,
+      listType: 'individual',
+      featureFlag: mockFlag1,
+      segment: { ...mockSegment, listType: 'individual' },
+    };
+    inclusionRepo.findOne = jest.fn().mockResolvedValue(existingRecord);
+
+    const result = await service.updateList(
+      { ...mockList, listType: 'iNdIvIdUaL' },
+      LIST_FILTER_MODE.INCLUSION,
+      mockUser1,
+      logger
+    );
+
+    expect(result.listType).toBe(STANDARD_LIST_TYPE.INDIVIDUAL);
+    expect(entityManagerMock.save).toHaveBeenCalledWith(
+      FeatureFlagSegmentInclusion,
+      expect.objectContaining({ listType: STANDARD_LIST_TYPE.INDIVIDUAL })
+    );
   });
 
   it('should delete an include list', async () => {

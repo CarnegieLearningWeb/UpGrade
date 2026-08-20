@@ -7,6 +7,7 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { SettingService } from '../../../src/api/services/SettingService';
 import { MetricRepository } from '../../../src/api/repositories/MetricRepository';
 import { SettingRepository } from '../../../src/api/repositories/SettingRepository';
+import { CacheService } from '../../../src/api/services/CacheService';
 import { configureLogger } from '../../utils/logger';
 
 describe('Audit Service Testing', () => {
@@ -88,6 +89,16 @@ describe('Audit Service Testing', () => {
           provide: getRepositoryToken(SettingRepository),
           useValue: {
             find: jest.fn().mockResolvedValue(settingRes),
+          },
+        },
+        {
+          // Pass-through, mirroring CacheService's behaviour when CACHING_ENABLED is false. These
+          // tests swap the setting repository mock between assertions, so a caching stub would
+          // change what they exercise.
+          provide: CacheService,
+          useValue: {
+            wrap: jest.fn((_key: string, fn: () => Promise<unknown>) => fn()),
+            delCache: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],

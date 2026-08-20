@@ -14,7 +14,7 @@ import {
   ParticipantListTableRow,
 } from '../../../core/feature-flags/store/feature-flags.model';
 import { MemberTypes } from '../../../core/segments/store/segments.model';
-import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { LIST_FILTER_MODE, SEGMENT_TYPE, normalizeStandardListType } from 'upgrade_types';
 import { SharedModule } from '../../../shared/shared.module';
 
 /**
@@ -90,11 +90,11 @@ export class CommonDetailsParticipantListTableComponent {
   }
 
   getValuesText(rowData: ParticipantListTableRow): string {
-    const listType = rowData.listType;
+    const listType = normalizeStandardListType(rowData.listType);
     let count: number;
 
     // Prefer the count field (counts-only load); fall back to array length when full lists are present.
-    if (listType?.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
+    if (listType === this.memberTypes.INDIVIDUAL) {
       count = rowData.segment.individualForSegmentCount ?? rowData.segment.individualForSegment?.length ?? 0;
     } else {
       count = rowData.segment.groupForSegmentCount ?? rowData.segment.groupForSegment?.length ?? 0;
@@ -110,29 +110,15 @@ export class CommonDetailsParticipantListTableComponent {
   }
 
   getFormattedListType(rowData: ParticipantListTableRow): string {
-    const listType = rowData.listType;
+    return normalizeStandardListType(rowData.listType);
+  }
 
-    if (!listType) {
-      return '';
-    }
-
-    // For standard types (Individual, Segment), apply title case
-    if (listType.toLowerCase() === this.memberTypes.INDIVIDUAL.toLowerCase()) {
-      return this.memberTypes.INDIVIDUAL;
-    }
-
-    if (listType.toLowerCase() === this.memberTypes.SEGMENT.toLowerCase()) {
-      return this.memberTypes.SEGMENT;
-    }
-
-    return listType;
+  isSegmentListType(rowData: ParticipantListTableRow): boolean {
+    return normalizeStandardListType(rowData.listType) === this.memberTypes.SEGMENT;
   }
 
   isPublicSegment(rowData: ParticipantListTableRow): boolean {
-    return (
-      rowData.listType?.toLowerCase() === this.memberTypes.SEGMENT.toLowerCase() &&
-      rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC
-    );
+    return this.isSegmentListType(rowData) && rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC;
   }
 
   isDirectValueList(rowData: ParticipantListTableRow): boolean {

@@ -50,7 +50,7 @@ describe('ExperimentPrecomputedSegmentService', () => {
     segmentRepository = makeSegmentRepoMock({});
     cacheService = {
       delCache: jest.fn().mockResolvedValue(undefined),
-      wrapFunction: jest.fn(),
+      wrapMany: jest.fn(),
     };
 
     service = new ExperimentPrecomputedSegmentService(
@@ -165,12 +165,12 @@ describe('ExperimentPrecomputedSegmentService', () => {
       const result = await service.getPrecomputedSets([]);
 
       expect(result.size).toEqual(0);
-      expect(cacheService.wrapFunction).not.toHaveBeenCalled();
+      expect(cacheService.wrapMany).not.toHaveBeenCalled();
     });
 
     it('maps experiment ids to rows positionally and skips missing (null) rows', async () => {
       const rowA = { experimentId: 'ea', inclusionIds: ['u1'], exclusionIds: [] };
-      cacheService.wrapFunction = jest.fn().mockResolvedValue([rowA, null]);
+      cacheService.wrapMany = jest.fn().mockResolvedValue([rowA, null]);
 
       const result = await service.getPrecomputedSets(['ea', 'eb']);
 

@@ -341,7 +341,7 @@ export const PRIVATE_SEGMENT_LIST_FORM_DEFAULTS = {
 };
 
 export interface PrivateSegmentListFormData {
-  listType: LIST_OPTION_TYPE;
+  listType: string;
   segment?: Segment;
   values?: string[];
   name: string;

@@ -39,6 +39,7 @@ import {
   ValidatedImportResponse,
   IMPORT_COMPATIBILITY_TYPE,
   DATE_RANGE,
+  normalizeStandardListType,
 } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
@@ -713,7 +714,7 @@ export class FeatureFlagService {
         const featureFlagSegmentInclusionOrExclusion =
           filterType === 'inclusion' ? new FeatureFlagSegmentInclusion() : new FeatureFlagSegmentExclusion();
         featureFlagSegmentInclusionOrExclusion.enabled = listInput.enabled;
-        featureFlagSegmentInclusionOrExclusion.listType = listInput.listType;
+        featureFlagSegmentInclusionOrExclusion.listType = normalizeStandardListType(listInput.listType);
         featureFlagSegmentInclusionOrExclusion.featureFlag = featureFlags.find((flag) => flag.id === listInput.id);
         featureFlagSegmentInclusionOrExclusion.segment = newSegments.find(
           (segment) => segment.id === listInput.segment.id
@@ -854,7 +855,7 @@ export class FeatureFlagService {
       const statusChanged = existingRecord.enabled !== listInput.enabled;
       // Update the existing record
       existingRecord.enabled = listInput.enabled;
-      existingRecord.listType = listInput.listType;
+      existingRecord.listType = normalizeStandardListType(listInput.listType);
 
       const { versionNumber, createdAt, updatedAt, type, ...oldSegmentDoc } = existingRecord.segment;
 
