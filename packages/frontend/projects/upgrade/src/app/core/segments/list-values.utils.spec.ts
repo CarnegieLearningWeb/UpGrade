@@ -1,7 +1,5 @@
 import {
-  MAX_LIST_VALUES,
   containsListValueSeparator,
-  exceedsListValueLimit,
   mergeUniqueListValues,
   parseSingleColumnCSV,
   splitListValues,
@@ -34,24 +32,6 @@ describe('list values utilities', () => {
         addedValues: ['three'],
         duplicateValues: ['two', 'three'],
       });
-    });
-
-    it('handles the 3,000-value WIP target', () => {
-      const values = Array.from({ length: MAX_LIST_VALUES }, (_, index) => `value-${index}`);
-
-      expect(mergeUniqueListValues([], values).values).toHaveLength(MAX_LIST_VALUES);
-    });
-  });
-
-  describe('exceedsListValueLimit', () => {
-    const existingValues = Array.from({ length: MAX_LIST_VALUES }, (_, index) => `value-${index}`);
-
-    it('allows duplicate input when the list is already at the limit', () => {
-      expect(exceedsListValueLimit(existingValues, ['value-0'])).toBe(false);
-    });
-
-    it('blocks a new value when the list is already at the limit', () => {
-      expect(exceedsListValueLimit(existingValues, ['new-value'])).toBe(true);
     });
   });
 

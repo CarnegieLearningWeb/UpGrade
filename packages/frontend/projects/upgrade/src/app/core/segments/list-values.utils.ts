@@ -4,8 +4,6 @@ export interface MergeListValuesResult {
   duplicateValues: string[];
 }
 
-export const MAX_LIST_VALUES = 3000;
-
 const VALUE_SEPARATORS = /[,\t\r\n]+/;
 
 export function splitListValues(rawValue: string): string[] {
@@ -45,10 +43,6 @@ export function mergeUniqueListValues(existingValues: string[], incomingValues: 
     addedValues,
     duplicateValues,
   };
-}
-
-export function exceedsListValueLimit(existingValues: string[], incomingValues: string[]): boolean {
-  return mergeUniqueListValues(existingValues, incomingValues).values.length > MAX_LIST_VALUES;
 }
 
 export function parseSingleColumnCSV(content: string): string[] {

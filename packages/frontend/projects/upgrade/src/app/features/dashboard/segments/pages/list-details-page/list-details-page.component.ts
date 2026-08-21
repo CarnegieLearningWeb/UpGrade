@@ -38,7 +38,7 @@ import {
   ModalSize,
   SimpleConfirmationModalParams,
 } from '@shared-component-lib/common-modal/common-modal.types';
-import { MAX_LIST_VALUES, mergeUniqueListValues } from '../../../../../core/segments/list-values.utils';
+import { mergeUniqueListValues } from '../../../../../core/segments/list-values.utils';
 import {
   LIST_VALUES_UPDATE_MODE,
   UpsertListValuesModalComponent,
@@ -247,7 +247,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
 
   openAddValuesModal(): void {
     const dialogRef = this.dialog.open(UpsertListValuesModalComponent, {
-      data: { importOnly: false, existingValues: this.values },
+      data: { importOnly: false },
       width: ModalSize.STANDARD,
       autoFocus: 'textarea',
       disableClose: true,
@@ -257,7 +257,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
 
   openImportValuesModal(): void {
     const dialogRef = this.dialog.open(UpsertListValuesModalComponent, {
-      data: { importOnly: true, existingValues: this.values },
+      data: { importOnly: true },
       width: ModalSize.STANDARD,
       autoFocus: '.choose-file-btn',
       disableClose: true,
@@ -481,11 +481,6 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
       result.mode === LIST_VALUES_UPDATE_MODE.REPLACE
         ? mergeUniqueListValues([], result.values)
         : mergeUniqueListValues(this.values, result.values);
-
-    if (mergeResult.values.length > MAX_LIST_VALUES) {
-      this.notificationService.showError(`A list can contain up to ${MAX_LIST_VALUES.toLocaleString()} values.`);
-      return;
-    }
 
     if (!mergeResult.addedValues.length && result.mode === LIST_VALUES_UPDATE_MODE.APPEND) {
       this.notificationService.showInfo(this.getAddedValuesMessage(0, mergeResult.duplicateValues.length));

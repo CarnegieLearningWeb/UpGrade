@@ -11,7 +11,6 @@ import { CommonLearnMoreLinkComponent, CommonModalComponent } from '@shared-comp
 import { CommonImportContainerComponent } from '@shared-component-lib/common-import-container/common-import-container.component';
 import { FILE_TYPE } from 'upgrade_types';
 import {
-  exceedsListValueLimit,
   mergeUniqueListValues,
   parseSingleColumnCSV,
   splitListValues,
@@ -24,7 +23,6 @@ export enum LIST_VALUES_UPDATE_MODE {
 
 export interface UpsertListValuesModalData {
   importOnly?: boolean;
-  existingValues?: string[];
 }
 
 export interface UpsertListValuesModalResult {
@@ -79,14 +77,8 @@ export class UpsertListValuesModalComponent {
     return this.data.importOnly ? 'Import' : 'Add';
   }
 
-  get exceedsValueLimit(): boolean {
-    const existingValues =
-      this.data.importOnly && this.updateMode === LIST_VALUES_UPDATE_MODE.REPLACE ? [] : this.data.existingValues ?? [];
-    return exceedsListValueLimit(existingValues, this.values);
-  }
-
   get isPrimaryActionDisabled(): boolean {
-    return this.values.length === 0 || this.exceedsValueLimit || !!this.errorMessage;
+    return this.values.length === 0 || !!this.errorMessage;
   }
 
   onFilesSelected(files: File[]): void {
