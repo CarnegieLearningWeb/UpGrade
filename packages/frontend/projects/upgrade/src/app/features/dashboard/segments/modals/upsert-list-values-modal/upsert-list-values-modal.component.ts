@@ -5,16 +5,11 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
-import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonLearnMoreLinkComponent, CommonModalComponent } from '@shared-component-lib';
 import { CommonImportContainerComponent } from '@shared-component-lib/common-import-container/common-import-container.component';
 import { FILE_TYPE } from 'upgrade_types';
-import {
-  mergeUniqueListValues,
-  parseSingleColumnCSV,
-  splitListValues,
-} from '../../../../../core/segments/list-values.utils';
+import { parseSingleColumnCSV, splitListValues } from '../../../../../core/segments/list-values.utils';
 
 export enum LIST_VALUES_UPDATE_MODE {
   APPEND = 'append',
@@ -37,7 +32,6 @@ export interface UpsertListValuesModalResult {
     CommonModule,
     FormsModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatRadioModule,
     TranslateModule,
@@ -52,7 +46,6 @@ export interface UpsertListValuesModalResult {
 export class UpsertListValuesModalComponent {
   rawValues = '';
   importedValues: string[] = [];
-  importDuplicateCount = 0;
   fileName = '';
   errorMessage = '';
   updateMode = LIST_VALUES_UPDATE_MODE.APPEND;
@@ -85,7 +78,6 @@ export class UpsertListValuesModalComponent {
     const file = files[0];
     this.errorMessage = '';
     this.importedValues = [];
-    this.importDuplicateCount = 0;
     this.fileName = file?.name ?? '';
 
     if (!file) {
@@ -95,10 +87,7 @@ export class UpsertListValuesModalComponent {
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const parsedValues = parseSingleColumnCSV(String(reader.result ?? ''));
-        const mergeResult = mergeUniqueListValues([], parsedValues);
-        this.importedValues = mergeResult.values;
-        this.importDuplicateCount = mergeResult.duplicateValues.length;
+        this.importedValues = parseSingleColumnCSV(String(reader.result ?? ''));
       } catch (error) {
         this.errorMessage = error instanceof Error ? error.message : 'Unable to read CSV file';
       }
@@ -114,7 +103,6 @@ export class UpsertListValuesModalComponent {
   clearImportedFile(): void {
     this.fileName = '';
     this.importedValues = [];
-    this.importDuplicateCount = 0;
     this.errorMessage = '';
   }
 

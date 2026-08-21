@@ -28,11 +28,6 @@
         ×
       </button>
     </div>
-    } @if (importDuplicateCount) {
-    <div class="duplicate-message ft-12-400">
-      <mat-icon>info_outline</mat-icon>
-      {{ importDuplicateCount }} {{ importDuplicateCount === 1 ? 'duplicate was' : 'duplicates were' }} skipped.
-    </div>
     }
     <div class="import-behavior-section dense-1">
       <mat-radio-group [(ngModel)]="updateMode">

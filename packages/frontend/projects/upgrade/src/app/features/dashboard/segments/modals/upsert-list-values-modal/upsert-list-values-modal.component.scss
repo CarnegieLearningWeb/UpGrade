@@ -24,19 +24,6 @@
   }
 }
 
-.duplicate-message {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--dark-grey);
-
-  mat-icon {
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-  }
-}
-
 .file-summary {
   display: flex;
   align-items: center;

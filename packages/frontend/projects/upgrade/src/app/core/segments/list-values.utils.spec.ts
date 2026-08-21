@@ -41,6 +41,18 @@ describe('list values utilities', () => {
       expect(parseSingleColumnCSV('one\ntwo\r\nthree')).toEqual(['one', 'two', 'three']);
     });
 
+    it('preserves duplicate rows for post-operation reporting', () => {
+      expect(parseSingleColumnCSV('one\none\ntwo')).toEqual(['one', 'one', 'two']);
+    });
+
+    it('reports both CSV and existing-list duplicates when parsed rows are merged', () => {
+      expect(mergeUniqueListValues(['one'], parseSingleColumnCSV('one\none\ntwo'))).toEqual({
+        values: ['one', 'two'],
+        addedValues: ['two'],
+        duplicateValues: ['one', 'one'],
+      });
+    });
+
     it('parses quoted values, escaped quotes, commas, and embedded line breaks', () => {
       expect(parseSingleColumnCSV('one\n"say ""hello"""\n"school,one"\n"line\r\nbreak"')).toEqual([
         'one',
