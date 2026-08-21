@@ -1,15 +1,17 @@
 import { Injectable } from '@angular/core';
 import JSZip from 'jszip';
 
-const SPREADSHEET_FORMULA_PREFIX = /^[=+\-@\t\r]/;
+// Prefixing an apostrophe is the spreadsheet convention for treating formula-like cells as text.
+// Match existing apostrophes too so adding one remains reversible when the CSV is imported again.
+const SPREADSHEET_FORMULA_PREFIX = /^'*[=+\-@\t\r\n＝＋－＠]/;
 
 function escapeCSVField(value: string): string {
   const safeValue = SPREADSHEET_FORMULA_PREFIX.test(value) ? `'${value}` : value;
-  return /[",\r\n]/.test(safeValue) ? `"${safeValue.replace(/"/g, '""')}"` : safeValue;
+  return `"${safeValue.replace(/"/g, '""')}"`;
 }
 
 export function serializeValuesAsCSV(values: string[]): string {
-  return values.map(escapeCSVField).join('\n');
+  return values.map(escapeCSVField).join('\r\n');
 }
 
 @Injectable({

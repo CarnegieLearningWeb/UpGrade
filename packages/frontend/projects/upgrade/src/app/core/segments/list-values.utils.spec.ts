@@ -50,10 +50,34 @@ describe('list values utilities', () => {
       ]);
     });
 
-    it('round-trips CSV-quoted values produced by the exporter', () => {
-      const values = ['plain', 'say "hello"', 'school,one', 'line\nbreak'];
+    it('round-trips values produced by the CSV exporter', () => {
+      const values = [
+        'plain',
+        'say "hello"',
+        'school,one',
+        'line\nbreak',
+        '=SUM(A1:A2)',
+        '+cmd',
+        '-1+2',
+        '@SUM(A1:A2)',
+        '\tformula',
+        '\rformula',
+        '\nformula',
+        '＝SUM(A1:A2)',
+        "'=SUM(A1:A2)",
+        "''=SUM(A1:A2)",
+        "'school",
+      ];
 
       expect(parseSingleColumnCSV(serializeValuesAsCSV(values))).toEqual(values);
+    });
+
+    it('decodes formula escapes without removing genuine leading apostrophes', () => {
+      expect(parseSingleColumnCSV("'=SUM(A1:A2)\n''=SUM(A1:A2)\n'school")).toEqual([
+        '=SUM(A1:A2)',
+        "'=SUM(A1:A2)",
+        "'school",
+      ]);
     });
 
     it('rejects empty and multi-column CSV files', () => {
