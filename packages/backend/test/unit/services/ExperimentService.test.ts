@@ -377,14 +377,12 @@ describe('ExperimentService Testing', () => {
           provide: getRepositoryToken(ExperimentSegmentInclusionRepository),
           useValue: {
             findOne: jest.fn().mockResolvedValue(null),
-            getExistingSegments: jest.fn().mockResolvedValue([]),
           },
         },
         {
           provide: getRepositoryToken(ExperimentSegmentExclusionRepository),
           useValue: {
             findOne: jest.fn().mockResolvedValue(null),
-            getExistingSegments: jest.fn().mockResolvedValue([]),
           },
         },
         {
@@ -418,9 +416,7 @@ describe('ExperimentService Testing', () => {
         },
         {
           provide: SegmentService,
-          useValue: {
-            deleteSegment: jest.fn().mockResolvedValue({ id: 'list-1' }),
-          },
+          useValue: {},
         },
         {
           provide: ExperimentSchedulerService,
