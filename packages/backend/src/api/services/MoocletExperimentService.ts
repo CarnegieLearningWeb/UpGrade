@@ -11,6 +11,7 @@ import {
   MoocletVersionResponseDetails,
 } from '../../types/Mooclet';
 import { ExperimentService } from './ExperimentService';
+import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegmentService';
 import { MoocletError } from '../errors/MoocletError';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
@@ -128,7 +129,8 @@ export class MoocletExperimentService extends ExperimentService {
     errorService: ErrorService,
     cacheService: CacheService,
     queryService: QueryService,
-    metricService: MetricService
+    metricService: MetricService,
+    experimentPrecomputedSegmentService: ExperimentPrecomputedSegmentService
   ) {
     super(
       experimentRepository,
@@ -159,24 +161,39 @@ export class MoocletExperimentService extends ExperimentService {
       errorService,
       cacheService,
       queryService,
-      metricService
+      metricService,
+      experimentPrecomputedSegmentService
     );
   }
 
   public async syncCreate(params: SyncCreateParams): Promise<ExperimentDTO> {
-    return this.dataSource.transaction(async (manager) => {
+    const experiment = await this.dataSource.transaction(async (manager) => {
       const experimentResponse = await this.createUpgradeExperiment(manager, params);
       params.experimentDTO = experimentResponse;
       return this.handleCreateMoocletTransaction(manager, params);
     });
+
+    // create() ran inside the transaction above (via existingEntityManager), so it deferred the
+    // precomputed recompute to us. Now that the transaction has committed, populate the
+    // experiment_precomputed_segment row (awaited, mirroring create()).
+    await this.experimentPrecomputedSegmentService.recomputeForExperiment(experiment.id, params.logger);
+    return experiment;
   }
 
   public async syncUpdate(params: SyncEditParams): Promise<ExperimentDTO> {
-    return this.dataSource.transaction((manager) => this.handleEditMoocletTransaction(manager, params));
+    const experiment = await this.dataSource.transaction((manager) =>
+      this.handleEditMoocletTransaction(manager, params)
+    );
+
+    // super.update() ran inside the transaction above (caller-owned entityManager), so it deferred the
+    // precomputed recompute to us. Recompute after commit so a context change — which deletes all
+    // segment lists — can't leave a stale experiment_precomputed_segment row. Fire-and-forget.
+    this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments([experiment.id], params.logger);
+    return experiment;
   }
 
   public async syncUpdateWithMoocletAlgorithmTransition(params: SyncEditParams): Promise<ExperimentDTO> {
-    return this.dataSource.transaction(async (manager) => {
+    const experiment = await this.dataSource.transaction(async (manager) => {
       const updatedExperiment = await this.updateUpgradeExperiment(manager, params);
 
       // when transitioning away from Mooclet, delete the old refs after successful experiment update
@@ -192,6 +209,10 @@ export class MoocletExperimentService extends ExperimentService {
 
       return updatedExperiment;
     });
+
+    // Same deferral as syncUpdate: super.update() ran inside the transaction, so recompute after commit.
+    this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments([experiment.id], params.logger);
+    return experiment;
   }
 
   public async syncDelete(params: SyncDeleteParams): Promise<Experiment> {

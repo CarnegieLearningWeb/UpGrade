@@ -118,6 +118,16 @@ describe('DataService', () => {
     });
   });
 
+  describe('#clearFeatureFlags', () => {
+    it('should clear previously set feature flags', () => {
+      dataService.setFeatureFlags(['testFlagKey']);
+
+      dataService.clearFeatureFlags();
+
+      expect(dataService.getFeatureFlags()).toBeNull();
+    });
+  });
+
   describe('#rotateAssignmentList', () => {
     it('should return the rotated assignment list', () => {
       const assignmentList: IExperimentAssignment = {

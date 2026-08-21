@@ -117,7 +117,16 @@ export function buildWithinSubjectOrderedConditions(
   orderedConditions: IExperimentAssignment['assignedCondition'];
   orderedFactors: Record<string, { level: string; payload: IPayload }>[] | null;
 } {
-  const baseConditions: IExperimentAssignment['assignedCondition'] = experiment.conditions.map((condition) => ({
+  // Order matters here: ORDERED_ROUND_ROBIN rotates this array directly, and the RANDOM /
+  // RANDOM_ROUND_ROBIN shuffles are seeded, so their output depends on the input sequence too.
+  // `getValidExperiments` (the assignment read path) does not ORDER BY conditions.order — only
+  // `findOneExperiment` does — so sort explicitly rather than inheriting whatever order the DB
+  // returned. Sort a copy: `experiment.conditions` can be the array owned by the in-memory cache.
+  const orderedExperimentConditions = [...experiment.conditions].sort(
+    (condition1, condition2) => condition1.order - condition2.order
+  );
+
+  const baseConditions: IExperimentAssignment['assignedCondition'] = orderedExperimentConditions.map((condition) => ({
     conditionCode: condition.conditionCode,
     payload: undefined,
     experimentId: experiment.id,
@@ -126,7 +135,7 @@ export function buildWithinSubjectOrderedConditions(
 
   const baseFactors: Record<string, { level: string; payload: IPayload }>[] | null =
     experiment.type === EXPERIMENT_TYPE.FACTORIAL
-      ? experiment.conditions.map((condition) => getAssignedFactor(condition, factors))
+      ? orderedExperimentConditions.map((condition) => getAssignedFactor(condition, factors))
       : null;
 
   let assignedData: IExperimentAssignment = {

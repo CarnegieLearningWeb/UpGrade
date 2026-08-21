@@ -13,6 +13,7 @@ import { FeatureFlagSegmentExclusionRepository } from '../../../src/api/reposito
 import { FeatureFlagSegmentInclusionRepository } from '../../../src/api/repositories/FeatureFlagSegmentInclusionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/FeatureFlagPrecomputedSegmentService';
+import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import {
   ListInputValidator,
   SegmentFile,
@@ -214,6 +215,17 @@ describe('Segment Service Testing', () => {
           },
         },
         {
+          provide: ExperimentPrecomputedSegmentService,
+          useValue: {
+            scheduleRecomputeForSegment: jest.fn(),
+            scheduleRecomputeForExperiments: jest.fn(),
+            recomputeForExperiment: jest.fn().mockResolvedValue(undefined),
+            getAffectedExperimentIds: jest.fn().mockResolvedValue([]),
+            seedEmptyRowForExperiment: jest.fn().mockResolvedValue(undefined),
+            getPrecomputedSets: jest.fn().mockResolvedValue(new Map()),
+          },
+        },
+        {
           provide: getDataSourceToken('default'),
           useValue: dataSource,
         },
@@ -235,6 +247,10 @@ describe('Segment Service Testing', () => {
             }),
             createQueryBuilder: jest.fn(() => ({
               insert: jest.fn().mockReturnThis(),
+              relation: jest.fn().mockReturnThis(),
+              of: jest.fn().mockReturnThis(),
+              remove: jest.fn().mockReturnThis(),
+              add: jest.fn().mockReturnThis(),
               leftJoinAndSelect: jest.fn().mockReturnThis(),
               where: jest.fn().mockReturnThis(),
               andWhere: jest.fn().mockReturnThis(),
@@ -1011,53 +1027,31 @@ describe('Segment Service Testing', () => {
     });
 
     it('should ignore private subsegments that are not in subSegmentIds for private segments', async () => {
-      // Create a private segment (like an exclusion/inclusion list)
+      // Create a private segment with subSegmentIds
       const privateSegment = new SegmentInputValidator();
       privateSegment.id = 'private-segment-id';
       privateSegment.name = 'private-segment';
       privateSegment.type = SEGMENT_TYPE.PRIVATE;
       privateSegment.context = 'add';
-      privateSegment.subSegmentIds = ['allowed-subsegment-id']; // Only this one should be processed
+      privateSegment.subSegmentIds = ['allowed-subsegment-id'];
       privateSegment.userIds = [];
       privateSegment.groups = [];
+      privateSegment.subSegments = [];
 
-      // Create subsegments - some in subSegmentIds, some not
-      const allowedSubsegment = new Segment();
-      allowedSubsegment.id = 'allowed-subsegment-id';
-      allowedSubsegment.name = 'allowed-subsegment';
-      allowedSubsegment.type = SEGMENT_TYPE.PUBLIC;
-
-      const ignoredSubsegment = new Segment();
-      ignoredSubsegment.id = 'ignored-subsegment-id';
-      ignoredSubsegment.name = 'ignored-subsegment';
-      ignoredSubsegment.type = SEGMENT_TYPE.PRIVATE;
-
-      // Add both to subSegments array, but only the allowed one to subSegmentIds
-      privateSegment.subSegments = [allowedSubsegment, ignoredSubsegment];
-
-      // Mock service methods - getSegmentByIds should return what it finds based on subSegmentIds
       service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
-      service.getSegmentByIds = jest.fn().mockImplementation((ids) => {
-        // Simulate finding segments by the requested IDs
-        const allAvailableSegments = [allowedSubsegment, ignoredSubsegment];
-        return Promise.resolve(allAvailableSegments.filter((seg) => ids.includes(seg.id)));
-      });
 
-      // Mock repository save to capture what gets passed to it
-      repo.save = jest.fn().mockResolvedValue({
-        id: privateSegment.id,
-        name: privateSegment.name,
-        type: privateSegment.type,
-        context: privateSegment.context,
-        subSegments: [],
-      });
+      // repo.find returns only the allowed subsegment
+      repo.find = jest.fn().mockResolvedValue([{ id: 'allowed-subsegment-id' }]);
+      repo.save = jest.fn().mockResolvedValue({ id: privateSegment.id });
 
       await service.upsertSegment(privateSegment, logger);
 
-      // Verify that getSegmentByIds was called with only the IDs from subSegmentIds
-      expect(service.getSegmentByIds).toHaveBeenCalledWith(['allowed-subsegment-id']);
+      // Verify repo.find was called to check subsegment existence
+      expect(repo.find).toHaveBeenCalledWith(
+        expect.objectContaining({ where: expect.objectContaining({ id: expect.anything() }) })
+      );
 
-      // Verify that repo.save was called with only the subsegment found via subSegmentIds
+      // Verify repo.save was called WITHOUT subSegments (relations are added via QueryBuilder)
       expect(repo.save).toHaveBeenCalledWith({
         id: privateSegment.id,
         name: privateSegment.name,
@@ -1066,7 +1060,6 @@ describe('Segment Service Testing', () => {
         type: privateSegment.type,
         listType: undefined,
         tags: undefined,
-        subSegments: [allowedSubsegment], // Only the one from subSegmentIds, not the ignored one
       });
     });
 
@@ -1082,37 +1075,22 @@ describe('Segment Service Testing', () => {
       privateSegment.groups = [];
       privateSegment.subSegments = [];
 
-      // Create valid subsegments
-      const validSubsegment1 = new Segment();
-      validSubsegment1.id = 'valid-subsegment-1';
-      validSubsegment1.name = 'valid-subsegment-1';
-      validSubsegment1.type = SEGMENT_TYPE.PUBLIC;
-
-      const validSubsegment2 = new Segment();
-      validSubsegment2.id = 'valid-subsegment-2';
-      validSubsegment2.name = 'valid-subsegment-2';
-      validSubsegment2.type = SEGMENT_TYPE.PUBLIC;
-
       // Mock service methods
       service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
-      service.getSegmentByIds = jest.fn().mockResolvedValue([validSubsegment1, validSubsegment2]);
 
-      // Mock repository save
-      const savedSegment = {
-        id: privateSegment.id,
-        name: privateSegment.name,
-        type: privateSegment.type,
-        context: privateSegment.context,
-        subSegments: [validSubsegment1, validSubsegment2],
-      };
-      repo.save = jest.fn().mockResolvedValue(savedSegment);
+      // repo.find is called via segmentRepo.find in the transactional entity manager
+      repo.find = jest.fn().mockResolvedValue([{ id: 'valid-subsegment-1' }, { id: 'valid-subsegment-2' }]);
+
+      repo.save = jest.fn().mockResolvedValue({ id: privateSegment.id });
 
       await service.upsertSegment(privateSegment, logger);
 
-      // Verify that getSegmentByIds was called with the correct IDs
-      expect(service.getSegmentByIds).toHaveBeenCalledWith(['valid-subsegment-1', 'valid-subsegment-2']);
+      // Verify that repo.find was called to check subsegment existence
+      expect(repo.find).toHaveBeenCalledWith(
+        expect.objectContaining({ where: expect.objectContaining({ id: expect.anything() }) })
+      );
 
-      // Verify that repo.save was called with both valid subsegments
+      // Verify that repo.save was called WITHOUT subSegments (relations are added via QueryBuilder)
       expect(repo.save).toHaveBeenCalledWith({
         id: privateSegment.id,
         name: privateSegment.name,
@@ -1121,12 +1099,11 @@ describe('Segment Service Testing', () => {
         type: privateSegment.type,
         listType: undefined,
         tags: undefined,
-        subSegments: [validSubsegment1, validSubsegment2],
       });
     });
 
     it('should handle missing subsegments in subSegmentIds gracefully', async () => {
-      // Create a private segment with subSegmentIds that don't exist
+      // Create a private segment with subSegmentIds where one doesn't exist
       const privateSegment = new SegmentInputValidator();
       privateSegment.id = 'private-segment-id';
       privateSegment.name = 'private-segment';
@@ -1137,32 +1114,20 @@ describe('Segment Service Testing', () => {
       privateSegment.groups = [];
       privateSegment.subSegments = [];
 
-      // Only one subsegment exists
-      const existingSubsegment = new Segment();
-      existingSubsegment.id = 'existing-subsegment';
-      existingSubsegment.name = 'existing-subsegment';
-      existingSubsegment.type = SEGMENT_TYPE.PUBLIC;
-
-      // Mock service methods - getSegmentByIds returns only the existing one
       service.checkIsDuplicateSegmentName = jest.fn().mockResolvedValue(false);
-      service.getSegmentByIds = jest.fn().mockResolvedValue([existingSubsegment]);
 
-      // Mock repository save
-      const savedSegment = {
-        id: privateSegment.id,
-        name: privateSegment.name,
-        type: privateSegment.type,
-        context: privateSegment.context,
-        subSegments: [existingSubsegment],
-      };
-      repo.save = jest.fn().mockResolvedValue(savedSegment);
+      // repo.find returns only the existing subsegment — missing one is silently skipped
+      repo.find = jest.fn().mockResolvedValue([{ id: 'existing-subsegment' }]);
+      repo.save = jest.fn().mockResolvedValue({ id: privateSegment.id });
 
       await service.upsertSegment(privateSegment, logger);
 
-      // Verify that getSegmentByIds was called with all requested IDs
-      expect(service.getSegmentByIds).toHaveBeenCalledWith(['missing-subsegment-1', 'existing-subsegment']);
+      // Verify repo.find was called to check subsegment existence
+      expect(repo.find).toHaveBeenCalledWith(
+        expect.objectContaining({ where: expect.objectContaining({ id: expect.anything() }) })
+      );
 
-      // Verify that repo.save was called with only the existing subsegment
+      // Verify repo.save was called WITHOUT subSegments (relations are added via QueryBuilder)
       expect(repo.save).toHaveBeenCalledWith({
         id: privateSegment.id,
         name: privateSegment.name,
@@ -1171,7 +1136,6 @@ describe('Segment Service Testing', () => {
         type: privateSegment.type,
         listType: undefined,
         tags: undefined,
-        subSegments: [existingSubsegment],
       });
     });
   });

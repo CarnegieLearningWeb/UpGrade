@@ -50,7 +50,7 @@ describe('FeatureFlagPrecomputedSegmentService', () => {
     segmentRepository = makeSegmentRepoMock({});
     cacheService = {
       delCache: jest.fn().mockResolvedValue(undefined),
-      wrapFunction: jest.fn(),
+      wrapMany: jest.fn(),
     };
 
     service = new FeatureFlagPrecomputedSegmentService(
@@ -161,12 +161,12 @@ describe('FeatureFlagPrecomputedSegmentService', () => {
       const result = await service.getPrecomputedSets([]);
 
       expect(result.size).toEqual(0);
-      expect(cacheService.wrapFunction).not.toHaveBeenCalled();
+      expect(cacheService.wrapMany).not.toHaveBeenCalled();
     });
 
     it('maps flag ids to rows positionally and skips missing (null) rows', async () => {
       const rowA = { featureFlagId: 'fa', inclusionIds: ['u1'], exclusionIds: [] };
-      cacheService.wrapFunction = jest.fn().mockResolvedValue([rowA, null]);
+      cacheService.wrapMany = jest.fn().mockResolvedValue([rowA, null]);
 
       const result = await service.getPrecomputedSets(['fa', 'fb']);
 
@@ -201,7 +201,8 @@ describe('FeatureFlagPrecomputedSegmentService', () => {
     it('recomputes only flags that have no precomputed row yet', async () => {
       featureFlagRepository.find = jest.fn().mockResolvedValue([{ id: 'f1' }, { id: 'f2' }]);
       precomputedSegmentRepository.find = jest.fn().mockResolvedValue([{ featureFlagId: 'f1' }]);
-      const recomputeSpy = jest.spyOn(service, 'recomputeForFlag').mockResolvedValue(undefined);
+      // backfill fans out through the shared base's recomputeOwner (recomputeForFlag is a thin wrapper over it)
+      const recomputeSpy = jest.spyOn(service, 'recomputeOwner').mockResolvedValue(undefined);
 
       await service.backfillMissingFlags(logger);
 
@@ -263,7 +264,7 @@ describe('FeatureFlagPrecomputedSegmentService', () => {
       // let the fire-and-forget .catch settle so the rejection is handled (no unhandled rejection)
       await new Promise((r) => setImmediate(r));
       expect(errorSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: expect.stringContaining('scheduleRecomputeForFlags') })
+        expect.objectContaining({ message: expect.stringContaining('scheduleRecomputeForOwners') })
       );
       errorSpy.mockRestore();
     });

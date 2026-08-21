@@ -26,6 +26,7 @@ import { StratificationFactorRepository } from '../../../src/api/repositories/St
 import { MoocletExperimentRefRepository } from '../../../src/api/repositories/MoocletExperimentRefRepository';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
+import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import { ExperimentSchedulerService } from '../../../src/api/services/ExperimentSchedulerService';
 import { ErrorService } from '../../../src/api/services/ErrorService';
 import { CacheService } from '../../../src/api/services/CacheService';
@@ -45,6 +46,7 @@ import {
   ASSIGNMENT_UNIT,
   POST_EXPERIMENT_RULE,
   FILTER_MODE,
+  LIST_FILTER_MODE,
   LOG_TYPE,
   PAYLOAD_TYPE,
   IMetricMetaData,
@@ -436,6 +438,17 @@ describe('ExperimentService Testing', () => {
           useValue: {},
         },
         {
+          provide: ExperimentPrecomputedSegmentService,
+          useValue: {
+            recomputeForExperiment: jest.fn().mockResolvedValue(undefined),
+            scheduleRecomputeForExperiments: jest.fn(),
+            scheduleRecomputeForSegment: jest.fn(),
+            getAffectedExperimentIds: jest.fn().mockResolvedValue([]),
+            getPrecomputedSets: jest.fn().mockResolvedValue(new Map()),
+            withRecompute: jest.fn(async (_logger: any, _resolve: any, work: any) => work()),
+          },
+        },
+        {
           provide: MoocletRewardsService,
           useValue: {},
         },
@@ -488,6 +501,28 @@ describe('ExperimentService Testing', () => {
 
       expect(result.conditions).toHaveLength(2);
       expect(conditionRepo.upsertExperimentCondition).toHaveBeenCalled();
+    });
+
+    it('recomputes the precomputed segment row (to empty) after a context change', async () => {
+      const precomputed = module.get<ExperimentPrecomputedSegmentService>(ExperimentPrecomputedSegmentService);
+      (precomputed.scheduleRecomputeForExperiments as jest.Mock).mockClear();
+
+      // The stored experiment is on 'context1' (see mockExperiment). Moving it to 'context2' deletes all
+      // segment lists and forces EXCLUDE_ALL, so the experiment_precomputed_segment row must be
+      // recomputed (to empty) after commit — otherwise it keeps stale inclusion/exclusion IDs.
+      const contextChangeDTO = { ...mockExperimentDTO, context: ['context2'] } as any;
+      await service.update(contextChangeDTO, mockUser, logger);
+
+      expect(precomputed.scheduleRecomputeForExperiments).toHaveBeenCalledWith([mockExperimentDTO.id], logger);
+    });
+
+    it('does not recompute the precomputed segment row on a normal (same-context) update', async () => {
+      const precomputed = module.get<ExperimentPrecomputedSegmentService>(ExperimentPrecomputedSegmentService);
+      (precomputed.scheduleRecomputeForExperiments as jest.Mock).mockClear();
+
+      await service.update(mockExperimentDTO, mockUser, logger);
+
+      expect(precomputed.scheduleRecomputeForExperiments).not.toHaveBeenCalled();
     });
 
     it('should update condition payloads', async () => {
@@ -894,6 +929,49 @@ describe('ExperimentService Testing', () => {
         experimentSegmentExclusion: [],
       } as any);
 
+    it('awaits exclusion-list attachment before returning, even with no inclusion lists, under a caller-owned transaction', async () => {
+      // Regression: the only `await Promise.all(addListPromises)` used to sit inside the inclusion-list
+      // branch, so an exclusion-only experiment created within a caller-owned transaction
+      // (existingEntityManager, e.g. MoocletExperimentService) returned with its addList insert still in
+      // flight — racing the caller's commit. create() must now await it unconditionally.
+      let resolveAddList: () => void;
+      const addListPending = new Promise<any>((res) => {
+        resolveAddList = () => res({});
+      });
+      jest.spyOn(service, 'addList').mockReturnValue(addListPending);
+
+      const dto = {
+        ...baseCreateDTO(),
+        experimentSegmentInclusion: [],
+        experimentSegmentExclusion: [{ segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } }],
+      } as any;
+
+      let resolved = false;
+      const createPromise = service
+        .create(dto, mockUser, logger, { existingEntityManager: dataSource.manager })
+        .then((r) => {
+          resolved = true;
+          return r;
+        });
+
+      // Flush pending macrotasks; create() must still be pending on the exclusion addList.
+      await new Promise((r) => setImmediate(r));
+      expect(service.addList).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        LIST_FILTER_MODE.EXCLUSION,
+        mockUser,
+        logger,
+        dataSource.manager
+      );
+      expect(resolved).toBe(false);
+
+      // Once the exclusion insert settles, create() resolves.
+      resolveAddList();
+      await createPromise;
+      expect(resolved).toBe(true);
+    });
+
     it('should assign order to queries starting from 1 on create', async () => {
       const q1 = { ...mockQuery, id: 'q1', name: 'query-1', metric: { key: 'test-metric' } };
       const dto = { ...baseCreateDTO(), queries: [q1] as any };
@@ -1093,6 +1171,92 @@ describe('ExperimentService Testing', () => {
       const result = getSearchClause(EXPERIMENT_SEARCH_KEY.NAME, '100%_path\\name');
 
       expect(result).toContain(`name ILIKE '%100\\%\\_path\\\\name%' ESCAPE '\\'`);
+    });
+  });
+
+  describe('formattingConditionPayload()', () => {
+    // The assignment read path calls this on experiments handed out by the in-memory cache, which
+    // returns the same object reference to every request. Mutating the input would corrupt the cached
+    // graph for every subsequent request — which is exactly why this call site used to need a full
+    // deep copy of the experiment per request. These tests guard the invariant that removed it.
+    const buildSimpleExperiment = (): Experiment => {
+      const conditionA = { id: 'condition-a', order: 1 } as ExperimentCondition;
+      const conditionB = { id: 'condition-b', order: 2 } as ExperimentCondition;
+      const decisionPoint = { id: 'dp-1', site: 'SelectSection', target: 'target-1' } as DecisionPoint;
+
+      // Deliberately out of order so the sort inside the formatter has something to do.
+      decisionPoint.conditionPayloads = [
+        { id: 'payload-b', parentCondition: conditionB } as ConditionPayload,
+        { id: 'payload-a', parentCondition: conditionA } as ConditionPayload,
+      ];
+
+      return {
+        id: 'experiment-1',
+        type: EXPERIMENT_TYPE.SIMPLE,
+        conditions: [conditionA, conditionB],
+        partitions: [decisionPoint],
+      } as Experiment;
+    };
+
+    const buildFactorialExperiment = (): Experiment => {
+      const condition = { id: 'condition-a', order: 1 } as ExperimentCondition;
+      condition.conditionPayloads = [{ id: 'payload-a' } as ConditionPayload];
+
+      return {
+        id: 'experiment-2',
+        type: EXPERIMENT_TYPE.FACTORIAL,
+        conditions: [condition],
+        partitions: [],
+      } as Experiment;
+    };
+
+    it('should not mutate the input experiment for a simple experiment', () => {
+      const experiment = buildSimpleExperiment();
+      const snapshot = JSON.parse(JSON.stringify(experiment));
+
+      service.formattingConditionPayload(experiment);
+
+      expect(JSON.parse(JSON.stringify(experiment))).toEqual(snapshot);
+      expect(experiment.partitions[0].conditionPayloads).toHaveLength(2);
+    });
+
+    it('should not mutate the input experiment for a factorial experiment', () => {
+      const experiment = buildFactorialExperiment();
+      const snapshot = JSON.parse(JSON.stringify(experiment));
+
+      service.formattingConditionPayload(experiment);
+
+      expect(JSON.parse(JSON.stringify(experiment))).toEqual(snapshot);
+      expect(experiment.conditions[0].conditionPayloads).toHaveLength(1);
+    });
+
+    it('should hoist payloads to the root, strip them from decision points, and sort by condition order', () => {
+      const result = service.formattingConditionPayload(buildSimpleExperiment());
+
+      expect(result.conditionPayloads.map((payload) => payload.id)).toEqual(['payload-a', 'payload-b']);
+      expect(result.partitions[0].conditionPayloads).toBeUndefined();
+      // decisionPoint back-references must point at the stripped partition on the returned experiment
+      expect(result.conditionPayloads[0].decisionPoint).toBe(result.partitions[0]);
+    });
+
+    it('should hoist payloads to the root and strip them from conditions for a factorial experiment', () => {
+      const result = service.formattingConditionPayload(buildFactorialExperiment());
+
+      expect(result.conditionPayloads.map((payload) => payload.id)).toEqual(['payload-a']);
+      expect(result.conditions[0].conditionPayloads).toBeUndefined();
+      // parentCondition back-references must point at the stripped condition on the returned experiment
+      expect(result.conditionPayloads[0].parentCondition).toBe(result.conditions[0]);
+    });
+
+    it('should leave repeated formatting of the same cached experiment stable', () => {
+      const experiment = buildSimpleExperiment();
+
+      const first = service.formattingConditionPayload(experiment);
+      const second = service.formattingConditionPayload(experiment);
+
+      expect(second.conditionPayloads.map((payload) => payload.id)).toEqual(
+        first.conditionPayloads.map((payload) => payload.id)
+      );
     });
   });
 });

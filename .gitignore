@@ -1,9 +1,15 @@
 .DS_Store
 .dccache
 node_modules
+# .claude holds local Claude Code state (settings, perftrace snapshots). Ignored by default, with
+# the committed subdirectories re-included below. Order matters: the directory has to be unignored
+# before git will descend into it, then its contents re-ignored, then the keepers negated.
 .claude*
+!.claude/
+.claude/*
+!.claude/skills/
+!.claude/plans/
 .vscode
-.claude
 setup_upgrade.sh
 .idea
 *.iml

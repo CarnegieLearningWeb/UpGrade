@@ -9,6 +9,7 @@ import {
   Authorized,
   CurrentUser,
   Req,
+  QueryParam,
   QueryParams,
   Params,
   BadRequestError,
@@ -39,6 +40,7 @@ import {
   SUPPORTED_MOOCLET_ALGORITHMS,
 } from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
+import { getInstanceId } from '../../lib/instanceIdentity';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { SegmentInputValidator } from './validators/SegmentInputValidator';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
@@ -1949,40 +1951,70 @@ export class ExperimentController {
     return this.moocletRewardService.getRewardsSummaryForExperiment(id, request.logger);
   }
 
-  // debugging endpoint, will read all keys in cache and return a summary
+  /**
+   * Debugging endpoint: a cache report for THIS instance.
+   *
+   * The cache is per-process and in-memory, so a report only ever describes the instance that
+   * answered the request — never the fleet. Behind a load balancer, where every task answers on the
+   * same host and port, the `instance` block is the only way to tell two reports apart or to notice
+   * that repeated polls landed on the same task.
+   *
+   * Counts only by default, because the cached payloads run to megabytes:
+   *   ?keys=true                     add the key names
+   *   ?data=true                     add the key names and their cached values
+   *   ?prefix=EXPERIMENT_KEY_PREFIX  restrict keys/data to one prefix (counts stay store-wide)
+   */
   @Get('/cache')
-  async debugCache(): Promise<any> {
-    const prefixes = Object.fromEntries(Object.entries(CACHE_PREFIX));
+  async debugCache(
+    @QueryParam('keys') includeKeys?: boolean,
+    @QueryParam('data') includeData?: boolean,
+    @QueryParam('prefix') prefixFilter?: string
+  ): Promise<any> {
+    const names = Object.keys(CACHE_PREFIX);
+    if (prefixFilter && !names.includes(prefixFilter)) {
+      throw new BadRequestError(`unknown prefix '${prefixFilter}'. Expected one of: ${names.join(', ')}`);
+    }
+    const withKeys = !!includeKeys || !!includeData;
 
-    // Get all keys from cache
-    const allKeys = await this.cacheService.getKeys();
+    const allKeys = (await this.cacheService.getKeys()).sort();
+    const config = this.cacheService.getConfig();
 
-    // Build summary for each prefix
     const summary = {};
-
-    for (const [name, prefix] of Object.entries(prefixes)) {
+    for (const [name, prefix] of Object.entries(CACHE_PREFIX)) {
       const keys = allKeys.filter((key: string) => key.startsWith(prefix));
-      const data = await Promise.all(
-        keys.map(async (key: string) => {
-          const cachedData = await this.cacheService.getCache(key);
-          return {
-            key,
-            data: cachedData,
-          };
-        })
-      );
-
-      summary[name] = {
+      const bucket = this.cacheService.bucketForPrefix(prefix);
+      const entry: Record<string, unknown> = {
         prefix,
+        // Which TTL governs this prefix, so a report explains its own expiries without a second lookup.
+        bucket,
+        ttlSeconds: config.ttlSeconds[bucket] ?? config.ttlSeconds.default,
         count: keys.length,
-        keys,
-        data,
       };
+
+      if (withKeys && (!prefixFilter || prefixFilter === name)) {
+        entry.keys = await Promise.all(
+          keys.map(async (key: string) => {
+            const remainingTtlMs = await this.cacheService.getRemainingTtl(key);
+            return {
+              key,
+              expiresInSeconds: remainingTtlMs === null ? null : Math.round(remainingTtlMs / 1000),
+              ...(includeData ? { data: await this.cacheService.getCache(key) } : {}),
+            };
+          })
+        );
+      }
+      summary[name] = entry;
     }
 
     return {
+      // Which instance answered, and nothing more about it — see lib/instanceIdentity.
+      instanceId: getInstanceId(),
+      reportedAt: new Date().toISOString(),
+      config,
       totalKeysInCache: allKeys.length,
-      allKeys,
+      // Filling up means eviction, and eviction is indiscriminate: a hot valid-experiments entry can
+      // be dropped to make room for a mark key.
+      capacityUsedPercent: Math.round((allKeys.length / config.maxKeys) * 100),
       summary,
     };
   }

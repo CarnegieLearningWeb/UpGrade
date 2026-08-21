@@ -35,6 +35,7 @@ import {
   SyncEditParams,
   SyncDeleteParams,
 } from '../../../src/api/services/MoocletExperimentService';
+import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { QueryService } from '../../../src/api/services/QueryService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
@@ -263,6 +264,7 @@ describe('#MoocletExperimentService', () => {
   let cacheService: CacheService;
   let queryService: QueryService;
   let metricService: MetricService;
+  let experimentPrecomputedSegmentService: ExperimentPrecomputedSegmentService;
 
   beforeEach(() => {
     moocletDataService = {
@@ -278,6 +280,14 @@ describe('#MoocletExperimentService', () => {
       saveAllMetrics: jest.fn(),
       delete: jest.fn(),
     } as unknown as MetricService;
+    experimentPrecomputedSegmentService = {
+      recomputeForExperiment: jest.fn().mockResolvedValue(undefined),
+      scheduleRecomputeForExperiments: jest.fn(),
+      scheduleRecomputeForSegment: jest.fn(),
+      getAffectedExperimentIds: jest.fn().mockResolvedValue([]),
+      getPrecomputedSets: jest.fn().mockResolvedValue(new Map()),
+      withRecompute: jest.fn(async (_logger, _resolve, work) => work()),
+    } as unknown as ExperimentPrecomputedSegmentService;
 
     cacheService = {
       delCache: jest.fn().mockResolvedValue(undefined),
@@ -325,7 +335,8 @@ describe('#MoocletExperimentService', () => {
       errorService,
       cacheService,
       queryService,
-      metricService
+      metricService,
+      experimentPrecomputedSegmentService
     );
   });
 

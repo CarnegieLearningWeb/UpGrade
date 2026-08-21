@@ -176,6 +176,11 @@ export default class UpgradeClient {
    * Note: This is a convenience method, this can also be set directly in the constructor of UpgradeClient.
    * See example usage in the constructor documentation.
    *
+   * Note: Calling this clears any cached feature flags, since those were resolved against the previous
+   * groups. The next `getAllFeatureFlags()`/`hasFeatureFlag()` call will refetch against the new groups.
+   * If you need to retain flags for the previous groups, capture the array returned by
+   * `getAllFeatureFlags()` before switching.
+   *
    * @example
    * ```typescript
    *
@@ -211,6 +216,8 @@ export default class UpgradeClient {
       featureFlagOptions?.groupsForSession,
       featureFlagOptions?.includeStoredUserGroups
     );
+
+    this.dataService.clearFeatureFlags();
   }
 
   /**
@@ -515,7 +522,7 @@ export default class UpgradeClient {
    */
 
   async getAllFeatureFlags(options = { ignoreCache: false }): Promise<string[]> {
-    let response = options.ignoreCache ? null : await this.dataService.getFeatureFlags();
+    let response = options.ignoreCache ? null : this.dataService.getFeatureFlags();
     if (response == null) {
       response = await this.apiService.getAllFeatureFlags();
       if (Array.isArray(response)) {
