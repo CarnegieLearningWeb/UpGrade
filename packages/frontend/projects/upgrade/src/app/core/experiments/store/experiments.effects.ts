@@ -605,8 +605,9 @@ export class ExperimentEffects {
   deleteExperimentInclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionDeleteExperimentInclusionList),
-      switchMap(({ segmentId, experimentId }) => {
-        return this.experimentDataService.deleteInclusionList(segmentId, experimentId).pipe(
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.experimentDataService.deleteInclusionList(segmentId).pipe(
           map(() => {
             this.notificationService.showSuccess(this.translate.instant('experiments.inclusions.delete-success.text'));
             return experimentAction.actionDeleteExperimentInclusionListSuccess({ segmentId });
@@ -671,8 +672,9 @@ export class ExperimentEffects {
   deleteExperimentExclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionDeleteExperimentExclusionList),
-      switchMap(({ segmentId, experimentId }) => {
-        return this.experimentDataService.deleteExclusionList(segmentId, experimentId).pipe(
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.experimentDataService.deleteExclusionList(segmentId).pipe(
           map(() => {
             this.notificationService.showSuccess(this.translate.instant('experiments.exclusions.delete-success.text'));
             return experimentAction.actionDeleteExperimentExclusionListSuccess({ segmentId });

@@ -255,8 +255,9 @@ export class FeatureFlagsEffects {
   deleteFeatureFlagInclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList),
-      switchMap(({ segmentId, flagId }) => {
-        return this.featureFlagsDataService.deleteInclusionList(segmentId, flagId).pipe(
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.featureFlagsDataService.deleteInclusionList(segmentId).pipe(
           map(() => {
             this.notificationService.showSuccess(
               this.translate.instant('feature-flags.inclusions.delete-success.text')
@@ -325,8 +326,9 @@ export class FeatureFlagsEffects {
   deleteFeatureFlagExclusionList$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionDeleteFeatureFlagExclusionList),
-      switchMap(({ segmentId, flagId }) => {
-        return this.featureFlagsDataService.deleteExclusionList(segmentId, flagId).pipe(
+      map((action) => action.segmentId),
+      switchMap((segmentId) => {
+        return this.featureFlagsDataService.deleteExclusionList(segmentId).pipe(
           map(() => {
             this.notificationService.showSuccess(
               this.translate.instant('feature-flags.exclusions.delete-success.text')

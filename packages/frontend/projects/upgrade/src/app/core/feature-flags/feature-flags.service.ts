@@ -183,8 +183,8 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagInclusionList({ list }));
   }
 
-  deleteFeatureFlagInclusionPrivateSegmentList(segmentId: string, flagId: string) {
-    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList({ segmentId, flagId }));
+  deleteFeatureFlagInclusionPrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagInclusionList({ segmentId }));
   }
 
   updateFeatureFlagInclusionListStatus(segmentId: string, enabled: boolean) {
@@ -199,8 +199,8 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionUpdateFeatureFlagExclusionList({ list }));
   }
 
-  deleteFeatureFlagExclusionPrivateSegmentList(segmentId: string, flagId: string) {
-    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagExclusionList({ segmentId, flagId }));
+  deleteFeatureFlagExclusionPrivateSegmentList(segmentId: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionDeleteFeatureFlagExclusionList({ segmentId }));
   }
 
   updateFeatureFlagExclusionListStatus(segmentId: string, enabled: boolean) {

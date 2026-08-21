@@ -544,17 +544,13 @@ export class FeatureFlagService {
         // Create delete audit logs for inclusion and exclusion lists
         if (includeListIds.length) {
           promises.push(
-            this.createDeleteListAuditLogs(includeListIds, LIST_FILTER_MODE.INCLUSION, user, {
-              entityManager: transactionalEntityManager,
-            })
+            this.createDeleteListAuditLogs(includeListIds, LIST_FILTER_MODE.INCLUSION, user, transactionalEntityManager)
           );
         }
 
         if (excludeListIds.length) {
           promises.push(
-            this.createDeleteListAuditLogs(excludeListIds, LIST_FILTER_MODE.EXCLUSION, user, {
-              entityManager: transactionalEntityManager,
-            })
+            this.createDeleteListAuditLogs(excludeListIds, LIST_FILTER_MODE.EXCLUSION, user, transactionalEntityManager)
           );
         }
 
@@ -608,12 +604,11 @@ export class FeatureFlagService {
 
   public async deleteList(
     segmentId: string,
-    featureFlagId: string,
     filterType: LIST_FILTER_MODE,
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Segment> {
-    await this.createDeleteListAuditLogs([segmentId], filterType, currentUser, { featureFlagId });
+    await this.createDeleteListAuditLogs([segmentId], filterType, currentUser);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
 
     // segmentService.deleteSegment collects the affected flags before deletion and fires the
@@ -625,9 +620,8 @@ export class FeatureFlagService {
     segmentIds: string[],
     filterType: LIST_FILTER_MODE,
     currentUser: UserDTO,
-    options: { entityManager?: EntityManager; featureFlagId?: string } = {}
+    entityManager?: EntityManager
   ): Promise<void> {
-    const { entityManager, featureFlagId } = options;
     const auditLogPromises = [];
 
     for (const segmentId of segmentIds) {
@@ -635,10 +629,7 @@ export class FeatureFlagService {
 
       if (filterType === LIST_FILTER_MODE.INCLUSION) {
         existingRecord = await this.featureFlagSegmentInclusionRepository.findOne({
-          where: {
-            segment: { id: segmentId },
-            ...(featureFlagId ? { featureFlag: { id: featureFlagId } } : {}),
-          },
+          where: { segment: { id: segmentId } },
           relations: {
             featureFlag: true,
             segment: true,
@@ -646,10 +637,7 @@ export class FeatureFlagService {
         });
       } else {
         existingRecord = await this.featureFlagSegmentExclusionRepository.findOne({
-          where: {
-            segment: { id: segmentId },
-            ...(featureFlagId ? { featureFlag: { id: featureFlagId } } : {}),
-          },
+          where: { segment: { id: segmentId } },
           relations: {
             featureFlag: true,
             segment: true,

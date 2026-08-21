@@ -105,7 +105,6 @@ export default async function testCase(): Promise<void> {
 
   await experimentService.deleteList(
     experimentObject.experimentSegmentExclusion[0].segment.id,
-    experimentId,
     LIST_FILTER_MODE.EXCLUSION,
     user,
     new UpgradeLogger()

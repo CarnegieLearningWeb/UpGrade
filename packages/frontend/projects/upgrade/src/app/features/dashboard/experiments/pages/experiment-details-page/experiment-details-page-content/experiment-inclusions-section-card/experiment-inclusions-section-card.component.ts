@@ -219,7 +219,7 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
         this.onEditIncludeList(event.rowData, experimentId);
         break;
       case PARTICIPANT_LIST_ROW_ACTION.DELETE:
-        this.onDeleteIncludeList(event.rowData.segment, experimentId);
+        this.onDeleteIncludeList(event.rowData.segment);
         break;
       default:
         console.log('Unknown action:', event.action);
@@ -230,14 +230,14 @@ export class ExperimentInclusionsSectionCardComponent implements OnInit, OnDestr
     this.dialogService.openExperimentEditIncludeListModal(rowData, rowData.segment.context, experimentId);
   }
 
-  onDeleteIncludeList(segment: Segment, experimentId: string): void {
+  onDeleteIncludeList(segment: Segment): void {
     this.dialogService
       .openDeleteIncludeListModal(segment.name)
       .afterClosed()
       .pipe(take(1))
       .subscribe((confirmClicked) => {
         if (confirmClicked) {
-          this.experimentService.deleteExperimentInclusionPrivateSegmentList(segment.id, experimentId);
+          this.experimentService.deleteExperimentInclusionPrivateSegmentList(segment.id);
         }
       });
   }

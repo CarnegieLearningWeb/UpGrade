@@ -463,10 +463,6 @@
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ownerId\": \"{{flagId}}\"\n}"
-            },
             "url": {
               "raw": "{{baseUrl}}/flags/inclusionList/segment-001",
               "host": ["{{baseUrl}}"],
@@ -480,10 +476,6 @@
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ownerId\": \"{{flagId}}\"\n}"
-            },
             "url": {
               "raw": "{{baseUrl}}/flags/exclusionList/segment-002",
               "host": ["{{baseUrl}}"],

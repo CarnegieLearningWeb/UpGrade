@@ -120,9 +120,9 @@ export class FeatureFlagsDataService {
     return this.http.put<FeatureFlagSegmentListDetails>(url, list);
   }
 
-  deleteInclusionList(segmentId: string, flagId: string) {
+  deleteInclusionList(segmentId: string) {
     const url = `${API_ENDPOINTS.addFlagInclusionList}/${segmentId}`;
-    return this.http.delete(url, { body: { ownerId: flagId } });
+    return this.http.delete(url);
   }
 
   updateInclusionListStatus(segmentId: string, enabled: boolean) {
@@ -140,9 +140,9 @@ export class FeatureFlagsDataService {
     return this.http.put<FeatureFlagSegmentListDetails>(url, list);
   }
 
-  deleteExclusionList(segmentId: string, flagId: string) {
+  deleteExclusionList(segmentId: string) {
     const url = `${API_ENDPOINTS.addFlagExclusionList}/${segmentId}`;
-    return this.http.delete(url, { body: { ownerId: flagId } });
+    return this.http.delete(url);
   }
 
   updateExclusionListStatus(segmentId: string, enabled: boolean) {

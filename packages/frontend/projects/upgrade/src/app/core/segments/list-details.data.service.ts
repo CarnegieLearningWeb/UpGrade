@@ -152,14 +152,14 @@ export class ListDetailsDataService {
   deleteList(ownerType: LIST_OWNER_TYPE, filterMode: LIST_FILTER_MODE, ownerId: string, listId: string) {
     if (ownerType === LIST_OWNER_TYPE.EXPERIMENT) {
       return filterMode === LIST_FILTER_MODE.INCLUSION
-        ? this.experimentDataService.deleteInclusionList(listId, ownerId)
-        : this.experimentDataService.deleteExclusionList(listId, ownerId);
+        ? this.experimentDataService.deleteInclusionList(listId)
+        : this.experimentDataService.deleteExclusionList(listId);
     }
 
     if (ownerType === LIST_OWNER_TYPE.FEATURE_FLAG) {
       return filterMode === LIST_FILTER_MODE.INCLUSION
-        ? this.featureFlagsDataService.deleteInclusionList(listId, ownerId)
-        : this.featureFlagsDataService.deleteExclusionList(listId, ownerId);
+        ? this.featureFlagsDataService.deleteInclusionList(listId)
+        : this.featureFlagsDataService.deleteExclusionList(listId);
     }
 
     return this.segmentsDataService.deleteSegmentList(listId, ownerId);

@@ -249,7 +249,7 @@ describe('ListDetailsDataService', () => {
     service
       .deleteList(LIST_OWNER_TYPE.EXPERIMENT, LIST_FILTER_MODE.INCLUSION, 'experiment-id', segment.id)
       .subscribe(() => {
-        expect(experimentDataService.deleteInclusionList).toHaveBeenCalledWith(segment.id, 'experiment-id');
+        expect(experimentDataService.deleteInclusionList).toHaveBeenCalledWith(segment.id);
         done();
       });
   });
@@ -260,7 +260,7 @@ describe('ListDetailsDataService', () => {
     service
       .deleteList(LIST_OWNER_TYPE.FEATURE_FLAG, LIST_FILTER_MODE.EXCLUSION, 'flag-id', segment.id)
       .subscribe(() => {
-        expect(featureFlagsDataService.deleteExclusionList).toHaveBeenCalledWith(segment.id, 'flag-id');
+        expect(featureFlagsDataService.deleteExclusionList).toHaveBeenCalledWith(segment.id);
         done();
       });
   });
