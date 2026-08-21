@@ -264,7 +264,7 @@ describe('DataService', () => {
 
   describe('#rotateAssignmentsByExperimentId', () => {
     it('should rotate only assignments that contain the provided experiment id', () => {
-      const experimentAssignmentData: IExperimentAssignmentv5[] = [
+      const experimentAssignmentData: IExperimentAssignment[] = [
         {
           site: 'siteA',
           target: 'targetA',
