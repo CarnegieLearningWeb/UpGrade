@@ -1,6 +1,17 @@
 import { Injectable } from '@angular/core';
 import JSZip from 'jszip';
 
+const SPREADSHEET_FORMULA_PREFIX = /^[=+\-@\t\r]/;
+
+function escapeCSVField(value: string): string {
+  const safeValue = SPREADSHEET_FORMULA_PREFIX.test(value) ? `'${value}` : value;
+  return /[",\r\n]/.test(safeValue) ? `"${safeValue.replace(/"/g, '""')}"` : safeValue;
+}
+
+export function serializeValuesAsCSV(values: string[]): string {
+  return values.map(escapeCSVField).join('\n');
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -34,7 +45,7 @@ export class CommonExportHelpersService {
   }
 
   downloadValuesAsCSV(values: string[], fileName: string): void {
-    const csvContent = values.join('\n');
+    const csvContent = serializeValuesAsCSV(values);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     if (link.download !== undefined) {
