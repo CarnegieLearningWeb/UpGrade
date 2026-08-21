@@ -180,6 +180,7 @@ describe('Feature Flag Controller Testing', () => {
   test('Delete request for /api/flags/inclusionList/id', () => {
     return request(app)
       .delete('/api/flags/inclusionList/' + crypto.randomUUID())
+      .send({ ownerId: crypto.randomUUID() })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -188,6 +189,7 @@ describe('Feature Flag Controller Testing', () => {
   test('Delete request for /api/flags/exclusionList/id', () => {
     return request(app)
       .delete('/api/flags/exclusionList/' + crypto.randomUUID())
+      .send({ ownerId: crypto.randomUUID() })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

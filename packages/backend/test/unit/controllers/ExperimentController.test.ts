@@ -305,6 +305,7 @@ describe('Experiment Controller Testing', () => {
   test('Delete request for /api/experiments/inclusionList/id', () => {
     return request(app)
       .delete('/api/experiments/inclusionList/' + crypto.randomUUID())
+      .send({ ownerId: crypto.randomUUID() })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -313,6 +314,7 @@ describe('Experiment Controller Testing', () => {
   test('Delete request for /api/experiments/exclusionList/id', () => {
     return request(app)
       .delete('/api/experiments/exclusionList/' + crypto.randomUUID())
+      .send({ ownerId: crypto.randomUUID() })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

@@ -377,12 +377,14 @@ describe('ExperimentService Testing', () => {
           provide: getRepositoryToken(ExperimentSegmentInclusionRepository),
           useValue: {
             findOne: jest.fn().mockResolvedValue(null),
+            getExistingSegments: jest.fn().mockResolvedValue([]),
           },
         },
         {
           provide: getRepositoryToken(ExperimentSegmentExclusionRepository),
           useValue: {
             findOne: jest.fn().mockResolvedValue(null),
+            getExistingSegments: jest.fn().mockResolvedValue([]),
           },
         },
         {
@@ -416,7 +418,9 @@ describe('ExperimentService Testing', () => {
         },
         {
           provide: SegmentService,
-          useValue: {},
+          useValue: {
+            deleteSegment: jest.fn().mockResolvedValue({ id: 'list-1' }),
+          },
         },
         {
           provide: ExperimentSchedulerService,
@@ -467,6 +471,45 @@ describe('ExperimentService Testing', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('deleteList', () => {
+    it('deletes a list attached to the requested experiment and filter mode', async () => {
+      const inclusionRepo = module.get<ExperimentSegmentInclusionRepository>(
+        getRepositoryToken(ExperimentSegmentInclusionRepository)
+      );
+      const segmentService = module.get<SegmentService>(SegmentService);
+      (inclusionRepo.getExistingSegments as jest.Mock).mockResolvedValue([
+        {
+          experiment: { id: mockExperiment.id, name: mockExperiment.name },
+          segment: { id: 'list-1', name: 'List 1' },
+        },
+      ]);
+
+      await service.deleteList('list-1', mockExperiment.id, LIST_FILTER_MODE.INCLUSION, mockUser, logger);
+
+      expect(segmentService.deleteSegment).toHaveBeenCalledWith('list-1', logger);
+    });
+
+    it('does not delete a list attached to a different experiment', async () => {
+      const inclusionRepo = module.get<ExperimentSegmentInclusionRepository>(
+        getRepositoryToken(ExperimentSegmentInclusionRepository)
+      );
+      const segmentService = module.get<SegmentService>(SegmentService);
+      (inclusionRepo.getExistingSegments as jest.Mock).mockResolvedValue([
+        {
+          experiment: { id: 'different-experiment', name: 'Different experiment' },
+          segment: { id: 'list-1', name: 'List 1' },
+        },
+      ]);
+
+      await expect(
+        service.deleteList('list-1', mockExperiment.id, LIST_FILTER_MODE.INCLUSION, mockUser, logger)
+      ).rejects.toThrow(
+        `Segment with ID list-1 not found for experiment ${mockExperiment.id} and ${LIST_FILTER_MODE.INCLUSION}`
+      );
+      expect(segmentService.deleteSegment).not.toHaveBeenCalled();
+    });
   });
 
   describe('legacy list type inference', () => {

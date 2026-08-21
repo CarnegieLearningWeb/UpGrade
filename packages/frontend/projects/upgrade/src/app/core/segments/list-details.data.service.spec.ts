@@ -1,4 +1,4 @@
-import { of } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
 import { EXPERIMENT_STATE, LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { ExperimentDataService } from '../experiments/experiments.data.service';
 import { FeatureFlagsDataService } from '../feature-flags/feature-flags.data.service';
@@ -133,6 +133,62 @@ describe('ListDetailsDataService', () => {
       });
   });
 
+  it('rejects an experiment list that is not attached to the requested owner and filter mode', async () => {
+    experimentDataService.getExperimentById.mockReturnValue(
+      of({
+        id: 'experiment-id',
+        name: 'Test experiment',
+        state: EXPERIMENT_STATE.ENROLLING,
+        experimentSegmentInclusion: [],
+        experimentSegmentExclusion: [{ segment }],
+      })
+    );
+
+    await expect(
+      firstValueFrom(
+        service.fetchListDetails(LIST_OWNER_TYPE.EXPERIMENT, 'experiment-id', LIST_FILTER_MODE.INCLUSION, segment.id)
+      )
+    ).rejects.toThrow(`List ${segment.id} does not belong to owner experiment-id.`);
+    expect(segmentsDataService.fetchSegmentWithMembersById).not.toHaveBeenCalled();
+  });
+
+  it('rejects a feature flag list that is not attached to the requested owner', async () => {
+    featureFlagsDataService.fetchFeatureFlagById.mockReturnValue(
+      of({
+        id: 'flag-id',
+        name: 'Test flag',
+        featureFlagSegmentInclusion: [],
+        featureFlagSegmentExclusion: [],
+      })
+    );
+
+    await expect(
+      firstValueFrom(
+        service.fetchOwner(LIST_OWNER_TYPE.FEATURE_FLAG, 'flag-id', LIST_FILTER_MODE.INCLUSION, segment.id)
+      )
+    ).rejects.toThrow(`List ${segment.id} does not belong to owner flag-id.`);
+  });
+
+  it('rejects a nested list that is not attached to the requested segment', async () => {
+    segmentsDataService.getSegmentById.mockReturnValue(
+      of({ segment: { id: 'parent-id', name: 'Parent segment', subSegments: [] } })
+    );
+
+    await expect(
+      firstValueFrom(service.fetchOwner(LIST_OWNER_TYPE.SEGMENT, 'parent-id', LIST_FILTER_MODE.EXCLUSION, segment.id))
+    ).rejects.toThrow(`List ${segment.id} does not belong to owner parent-id.`);
+  });
+
+  it('rejects an inclusion URL for a nested segment list', async () => {
+    segmentsDataService.getSegmentById.mockReturnValue(
+      of({ segment: { id: 'parent-id', name: 'Parent segment', subSegments: [segment] } })
+    );
+
+    await expect(
+      firstValueFrom(service.fetchOwner(LIST_OWNER_TYPE.SEGMENT, 'parent-id', LIST_FILTER_MODE.INCLUSION, segment.id))
+    ).rejects.toThrow(`List ${segment.id} does not belong to owner parent-id for ${LIST_FILTER_MODE.INCLUSION}.`);
+  });
+
   it('uses the experiment inclusion endpoint with the existing full-list payload', (done) => {
     experimentDataService.updateInclusionList.mockReturnValue(of({ segment }));
 
@@ -185,5 +241,27 @@ describe('ListDetailsDataService', () => {
       expect(segmentsDataService.deleteSegmentList).toHaveBeenCalledWith(segment.id, 'parent-id');
       done();
     });
+  });
+
+  it('deletes an experiment list with its owner id', (done) => {
+    experimentDataService.deleteInclusionList.mockReturnValue(of(undefined));
+
+    service
+      .deleteList(LIST_OWNER_TYPE.EXPERIMENT, LIST_FILTER_MODE.INCLUSION, 'experiment-id', segment.id)
+      .subscribe(() => {
+        expect(experimentDataService.deleteInclusionList).toHaveBeenCalledWith(segment.id, 'experiment-id');
+        done();
+      });
+  });
+
+  it('deletes a feature flag list with its owner id', (done) => {
+    featureFlagsDataService.deleteExclusionList.mockReturnValue(of(undefined));
+
+    service
+      .deleteList(LIST_OWNER_TYPE.FEATURE_FLAG, LIST_FILTER_MODE.EXCLUSION, 'flag-id', segment.id)
+      .subscribe(() => {
+        expect(featureFlagsDataService.deleteExclusionList).toHaveBeenCalledWith(segment.id, 'flag-id');
+        done();
+      });
   });
 });

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, map, switchMap } from 'rxjs';
 import { EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
 import { ExperimentDataService } from '../experiments/experiments.data.service';
 import { Experiment } from '../experiments/store/experiments.model';
@@ -23,8 +23,17 @@ export class ListDetailsDataService {
     private segmentsDataService: SegmentsDataService
   ) {}
 
-  fetchList(listId: string): Observable<Segment> {
-    return this.segmentsDataService.fetchSegmentWithMembersById(listId);
+  fetchListDetails(
+    ownerType: LIST_OWNER_TYPE,
+    ownerId: string,
+    filterMode: LIST_FILTER_MODE,
+    listId: string
+  ): Observable<{ list: Segment; owner: ListDetailsOwner }> {
+    return this.fetchOwner(ownerType, ownerId, filterMode, listId).pipe(
+      switchMap((owner) =>
+        this.segmentsDataService.fetchSegmentWithMembersById(listId).pipe(map((list) => ({ list, owner })))
+      )
+    );
   }
 
   fetchOwner(
@@ -41,13 +50,18 @@ export class ListDetailsDataService {
               filterMode === LIST_FILTER_MODE.INCLUSION
                 ? experiment.experimentSegmentInclusion
                 : experiment.experimentSegmentExclusion;
+            const list = this.requireOwnedList(
+              lists?.find((entry) => entry.segment?.id === listId),
+              listId,
+              ownerId
+            );
             return {
               id: experiment.id,
               name: experiment.name,
               type: ownerType,
               // The experiment response carries the inferred list type for legacy lists
               // whose own segment row predates the listType column.
-              listType: lists?.find((list) => list.segment?.id === listId)?.segment?.listType,
+              listType: list.segment?.listType,
               // The owner details page locks list changes for these states, so lock them here too.
               isReadOnly: [EXPERIMENT_STATE.COMPLETED, EXPERIMENT_STATE.ARCHIVED].includes(experiment.state),
             };
@@ -60,7 +74,11 @@ export class ListDetailsDataService {
               filterMode === LIST_FILTER_MODE.INCLUSION
                 ? featureFlag.featureFlagSegmentInclusion
                 : featureFlag.featureFlagSegmentExclusion;
-            const list = lists?.find((entry) => entry.segment.id === listId);
+            const list = this.requireOwnedList(
+              lists?.find((entry) => entry.segment.id === listId),
+              listId,
+              ownerId
+            );
             return {
               id: featureFlag.id,
               name: featureFlag.name,
@@ -72,13 +90,23 @@ export class ListDetailsDataService {
         );
       case LIST_OWNER_TYPE.SEGMENT:
         return this.segmentsDataService.getSegmentById(ownerId).pipe(
-          map((response: { segment: Segment }) => ({
-            id: response.segment.id,
-            name: response.segment.name,
-            type: ownerType,
-            segmentType: response.segment.type,
-            listType: response.segment.subSegments?.find((subSegment) => subSegment.id === listId)?.listType,
-          }))
+          map((response: { segment: Segment }) => {
+            if (filterMode !== LIST_FILTER_MODE.EXCLUSION) {
+              throw new Error(`List ${listId} does not belong to owner ${ownerId} for ${filterMode}.`);
+            }
+            const list = this.requireOwnedList(
+              response.segment.subSegments?.find((subSegment) => subSegment.id === listId),
+              listId,
+              ownerId
+            );
+            return {
+              id: response.segment.id,
+              name: response.segment.name,
+              type: ownerType,
+              segmentType: response.segment.type,
+              listType: list.listType,
+            };
+          })
         );
     }
   }
@@ -124,16 +152,23 @@ export class ListDetailsDataService {
   deleteList(ownerType: LIST_OWNER_TYPE, filterMode: LIST_FILTER_MODE, ownerId: string, listId: string) {
     if (ownerType === LIST_OWNER_TYPE.EXPERIMENT) {
       return filterMode === LIST_FILTER_MODE.INCLUSION
-        ? this.experimentDataService.deleteInclusionList(listId)
-        : this.experimentDataService.deleteExclusionList(listId);
+        ? this.experimentDataService.deleteInclusionList(listId, ownerId)
+        : this.experimentDataService.deleteExclusionList(listId, ownerId);
     }
 
     if (ownerType === LIST_OWNER_TYPE.FEATURE_FLAG) {
       return filterMode === LIST_FILTER_MODE.INCLUSION
-        ? this.featureFlagsDataService.deleteInclusionList(listId)
-        : this.featureFlagsDataService.deleteExclusionList(listId);
+        ? this.featureFlagsDataService.deleteInclusionList(listId, ownerId)
+        : this.featureFlagsDataService.deleteExclusionList(listId, ownerId);
     }
 
     return this.segmentsDataService.deleteSegmentList(listId, ownerId);
+  }
+
+  private requireOwnedList<T>(list: T | undefined, listId: string, ownerId: string): T {
+    if (!list) {
+      throw new Error(`List ${listId} does not belong to owner ${ownerId}.`);
+    }
+    return list;
   }
 }

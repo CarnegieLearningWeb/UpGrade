@@ -18,7 +18,7 @@ import {
 } from '@shared-component-lib';
 import { KeyValueFormat } from '@shared-component-lib/common-section-card-overview-details/common-section-card-overview-details.component';
 import { CommonSearchWidgetSearchParams } from '@shared-component-lib/common-section-card-search-header/common-section-card-search-header.component';
-import { finalize, forkJoin, Subscription } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import { IMenuButtonItem, LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { NotificationService } from '../../../../../core/core.module';
@@ -213,10 +213,8 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.changeDetectorRef.markForCheck();
     this.subscriptions.add(
-      forkJoin({
-        list: this.listDetailsDataService.fetchList(this.listId),
-        owner: this.listDetailsDataService.fetchOwner(this.ownerType, this.ownerId, this.filterMode, this.listId),
-      })
+      this.listDetailsDataService
+        .fetchListDetails(this.ownerType, this.ownerId, this.filterMode, this.listId)
         .pipe(
           finalize(() => {
             this.isLoading = false;

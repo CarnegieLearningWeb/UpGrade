@@ -169,7 +169,7 @@ export class FeatureFlagInclusionsSectionCardComponent {
         this.onEditIncludeList(event.rowData, flagId);
         break;
       case PARTICIPANT_LIST_ROW_ACTION.DELETE:
-        this.onDeleteIncludeList(event.rowData.segment);
+        this.onDeleteIncludeList(event.rowData.segment, flagId);
         break;
     }
   }
@@ -200,13 +200,13 @@ export class FeatureFlagInclusionsSectionCardComponent {
     this.dialogService.openFeatureFlagEditIncludeListModal(rowData, rowData.segment.context, flagId);
   }
 
-  onDeleteIncludeList(segment: Segment): void {
+  onDeleteIncludeList(segment: Segment, flagId: string): void {
     this.dialogService
       .openDeleteIncludeListModal(segment.name)
       .afterClosed()
       .subscribe((confirmClicked) => {
         if (confirmClicked) {
-          this.featureFlagService.deleteFeatureFlagInclusionPrivateSegmentList(segment.id);
+          this.featureFlagService.deleteFeatureFlagInclusionPrivateSegmentList(segment.id, flagId);
         }
       });
   }

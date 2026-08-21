@@ -217,7 +217,7 @@ export const actionUpdateFeatureFlagInclusionListStatusFailure = createAction(
 
 export const actionDeleteFeatureFlagInclusionList = createAction(
   '[Feature Flags] Delete Feature Flag Inclusion List',
-  props<{ segmentId: string }>()
+  props<{ segmentId: string; flagId: string }>()
 );
 
 export const actionDeleteFeatureFlagInclusionListSuccess = createAction(
@@ -277,7 +277,7 @@ export const actionUpdateFeatureFlagExclusionListStatusFailure = createAction(
 
 export const actionDeleteFeatureFlagExclusionList = createAction(
   '[Feature Flags] Delete Feature Flag Exclusion List',
-  props<{ segmentId: string }>()
+  props<{ segmentId: string; flagId: string }>()
 );
 
 export const actionDeleteFeatureFlagExclusionListSuccess = createAction(

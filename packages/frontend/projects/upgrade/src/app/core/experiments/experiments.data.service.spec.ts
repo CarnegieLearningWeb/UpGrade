@@ -321,4 +321,26 @@ describe('ExperimentDataService', () => {
       expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl);
     });
   });
+
+  describe('#deleteInclusionList', () => {
+    it('includes the experiment id in the delete request', () => {
+      const segmentId = 'segment-id';
+      const expectedUrl = `${API_ENDPOINTS.addExperimentInclusionList}/${segmentId}`;
+
+      service.deleteInclusionList(segmentId, mockExperimentId);
+
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(expectedUrl, { body: { ownerId: mockExperimentId } });
+    });
+  });
+
+  describe('#deleteExclusionList', () => {
+    it('includes the experiment id in the delete request', () => {
+      const segmentId = 'segment-id';
+      const expectedUrl = `${API_ENDPOINTS.addExperimentExclusionList}/${segmentId}`;
+
+      service.deleteExclusionList(segmentId, mockExperimentId);
+
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(expectedUrl, { body: { ownerId: mockExperimentId } });
+    });
+  });
 });

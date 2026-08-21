@@ -606,9 +606,26 @@ describe('Feature Flag Service Testing', () => {
   });
 
   it('should delete an include list', async () => {
-    const result = await service.deleteList(mockList.segment.id, LIST_FILTER_MODE.INCLUSION, mockUser1, logger);
+    const result = await service.deleteList(
+      mockList.segment.id,
+      mockFlag1.id,
+      LIST_FILTER_MODE.INCLUSION,
+      mockUser1,
+      logger
+    );
 
     expect(result).toBeTruthy();
+  });
+
+  it('should not delete an include list from a different feature flag', async () => {
+    const inclusionRepo = module.get(getRepositoryToken(FeatureFlagSegmentInclusionRepository)) as any;
+    const segmentService = module.get<SegmentService>(SegmentService);
+    inclusionRepo.findOne = jest.fn().mockResolvedValue(undefined);
+
+    await expect(
+      service.deleteList(mockList.segment.id, mockFlag1.id, LIST_FILTER_MODE.INCLUSION, mockUser1, logger)
+    ).rejects.toThrow(`Segment with ID ${mockList.segment.id} not found for ${LIST_FILTER_MODE.INCLUSION}`);
+    expect(segmentService.deleteSegment).not.toHaveBeenCalled();
   });
 
   it('should find one flag for the details view', async () => {

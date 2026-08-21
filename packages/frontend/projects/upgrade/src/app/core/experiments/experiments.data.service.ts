@@ -136,9 +136,9 @@ export class ExperimentDataService {
     return this.http.put<ExperimentSegmentListResponse>(url, list);
   }
 
-  deleteInclusionList(segmentId: string) {
+  deleteInclusionList(segmentId: string, experimentId: string) {
     const url = `${API_ENDPOINTS.addExperimentInclusionList}/${segmentId}`;
-    return this.http.delete(url);
+    return this.http.delete(url, { body: { ownerId: experimentId } });
   }
 
   addExclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
@@ -151,9 +151,9 @@ export class ExperimentDataService {
     return this.http.put<ExperimentSegmentListResponse>(url, list);
   }
 
-  deleteExclusionList(segmentId: string) {
+  deleteExclusionList(segmentId: string, experimentId: string) {
     const url = `${API_ENDPOINTS.addExperimentExclusionList}/${segmentId}`;
-    return this.http.delete(url);
+    return this.http.delete(url, { body: { ownerId: experimentId } });
   }
 
   fetchContextMetaData() {

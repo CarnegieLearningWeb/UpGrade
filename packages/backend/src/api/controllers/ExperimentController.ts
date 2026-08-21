@@ -49,6 +49,7 @@ import { Segment } from '../models/Segment';
 import { MoocletRewardsService } from '../services/MoocletRewardsService';
 import { ExperimentRewardsSummary } from 'upgrade_types';
 import { CacheService } from '../services/CacheService';
+import { ListOwnerInputValidator } from './validators/ListOwnerInputValidator';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
@@ -1747,6 +1748,18 @@ export class ExperimentController {
    *           schema:
    *             type: string
    *           description: Segment Id of private segment
+   *         - in: body
+   *           name: owner
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - ownerId
+   *             properties:
+   *               ownerId:
+   *                 type: string
+   *                 format: uuid
+   *           description: Experiment that owns the list
    *       tags:
    *         - Experiments
    *       produces:
@@ -1758,10 +1771,11 @@ export class ExperimentController {
   @Delete('/inclusionList/:id')
   public async deleteInclusionList(
     @Params({ validate: true }) { id }: IdValidator,
+    @Body({ validate: true }) { ownerId }: ListOwnerInputValidator,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.experimentService.deleteList(id, LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
+    return this.experimentService.deleteList(id, ownerId, LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
   }
 
   /**
@@ -1778,6 +1792,18 @@ export class ExperimentController {
    *           schema:
    *             type: string
    *           description: Segment Id of private segment
+   *         - in: body
+   *           name: owner
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - ownerId
+   *             properties:
+   *               ownerId:
+   *                 type: string
+   *                 format: uuid
+   *           description: Experiment that owns the list
    *       tags:
    *         - Experiments
    *       produces:
@@ -1789,10 +1815,11 @@ export class ExperimentController {
   @Delete('/exclusionList/:id')
   public async deleteExclusionList(
     @Params({ validate: true }) { id }: IdValidator,
+    @Body({ validate: true }) { ownerId }: ListOwnerInputValidator,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.experimentService.deleteList(id, LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
+    return this.experimentService.deleteList(id, ownerId, LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
   }
 
   /**

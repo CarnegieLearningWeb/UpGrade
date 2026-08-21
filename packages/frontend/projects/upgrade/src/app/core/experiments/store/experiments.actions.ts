@@ -306,7 +306,7 @@ export const actionUpdateExperimentInclusionListFailure = createAction(
 
 export const actionDeleteExperimentInclusionList = createAction(
   '[Experiment] Delete Experiment Inclusion List',
-  props<{ segmentId: string }>()
+  props<{ segmentId: string; experimentId: string }>()
 );
 
 export const actionDeleteExperimentInclusionListSuccess = createAction(
@@ -351,7 +351,7 @@ export const actionUpdateExperimentExclusionListFailure = createAction(
 
 export const actionDeleteExperimentExclusionList = createAction(
   '[Experiment] Delete Experiment Exclusion List',
-  props<{ segmentId: string }>()
+  props<{ segmentId: string; experimentId: string }>()
 );
 
 export const actionDeleteExperimentExclusionListSuccess = createAction(

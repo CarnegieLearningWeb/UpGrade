@@ -257,8 +257,8 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionUpdateExperimentInclusionList({ list }));
   }
 
-  deleteExperimentInclusionPrivateSegmentList(segmentId: string) {
-    this.store$.dispatch(experimentAction.actionDeleteExperimentInclusionList({ segmentId }));
+  deleteExperimentInclusionPrivateSegmentList(segmentId: string, experimentId: string) {
+    this.store$.dispatch(experimentAction.actionDeleteExperimentInclusionList({ segmentId, experimentId }));
   }
 
   addExperimentExclusionPrivateSegmentList(list: ExperimentSegmentListRequest) {
@@ -269,8 +269,8 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionUpdateExperimentExclusionList({ list }));
   }
 
-  deleteExperimentExclusionPrivateSegmentList(segmentId: string) {
-    this.store$.dispatch(experimentAction.actionDeleteExperimentExclusionList({ segmentId }));
+  deleteExperimentExclusionPrivateSegmentList(segmentId: string, experimentId: string) {
+    this.store$.dispatch(experimentAction.actionDeleteExperimentExclusionList({ segmentId, experimentId }));
   }
 
   updateExperimentConditionWeights(experiment: ExperimentVM, weightUpdates: ConditionWeightUpdate[]): void {

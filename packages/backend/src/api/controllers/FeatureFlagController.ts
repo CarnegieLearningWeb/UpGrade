@@ -36,6 +36,7 @@ import { Response } from 'express';
 import { UserDTO } from '../DTO/UserDTO';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { SegmentInputValidator } from './validators/SegmentInputValidator';
+import { ListOwnerInputValidator } from './validators/ListOwnerInputValidator';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
   nodes: FeatureFlag[];
@@ -724,7 +725,7 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags/inclusionList:
+   * /flags/inclusionList/{id}:
    *    delete:
    *       description: Delete Feature Flag Inclusion List
    *       consumes:
@@ -736,6 +737,18 @@ export class FeatureFlagsController {
    *           schema:
    *             type: string
    *           description: Segment Id of private segment
+   *         - in: body
+   *           name: owner
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - ownerId
+   *             properties:
+   *               ownerId:
+   *                 type: string
+   *                 format: uuid
+   *           description: Feature flag that owns the list
    *       tags:
    *         - Feature Flags
    *       produces:
@@ -747,15 +760,16 @@ export class FeatureFlagsController {
   @Delete('/inclusionList/:id')
   public async deleteInclusionList(
     @Params({ validate: true }) { id }: IdValidator,
+    @Body({ validate: true }) { ownerId }: ListOwnerInputValidator,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.featureFlagService.deleteList(id, LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
+    return this.featureFlagService.deleteList(id, ownerId, LIST_FILTER_MODE.INCLUSION, currentUser, request.logger);
   }
 
   /**
    * @swagger
-   * /flags/exclusionList:
+   * /flags/exclusionList/{id}:
    *    delete:
    *       description: Delete Feature Flag Exclusion List
    *       consumes:
@@ -767,6 +781,18 @@ export class FeatureFlagsController {
    *           schema:
    *             type: string
    *           description: Segment Id of private segment
+   *         - in: body
+   *           name: owner
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - ownerId
+   *             properties:
+   *               ownerId:
+   *                 type: string
+   *                 format: uuid
+   *           description: Feature flag that owns the list
    *       tags:
    *         - Feature Flags
    *       produces:
@@ -778,10 +804,11 @@ export class FeatureFlagsController {
   @Delete('/exclusionList/:id')
   public async deleteExclusionList(
     @Params({ validate: true }) { id }: IdValidator,
+    @Body({ validate: true }) { ownerId }: ListOwnerInputValidator,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.featureFlagService.deleteList(id, LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
+    return this.featureFlagService.deleteList(id, ownerId, LIST_FILTER_MODE.EXCLUSION, currentUser, request.logger);
   }
 
   /**

@@ -2122,15 +2122,17 @@ export class ExperimentService {
 
   public async deleteList(
     segmentId: string,
+    experimentId: string,
     filterType: LIST_FILTER_MODE,
     currentUser: UserDTO,
     logger: UpgradeLogger
   ): Promise<Segment> {
     const existingRecords = await this.getExistingInclusionExclusionSegments([segmentId], filterType);
-    if (existingRecords.length === 0) {
-      throw new Error(`Segment with ID ${segmentId} not found for ${filterType}`);
+    const existingRecord = existingRecords.find((record) => record.experiment.id === experimentId);
+    if (!existingRecord) {
+      throw new Error(`Segment with ID ${segmentId} not found for experiment ${experimentId} and ${filterType}`);
     }
-    await this.createDeleteListAuditLogs(existingRecords, filterType, currentUser);
+    await this.createDeleteListAuditLogs([existingRecord], filterType, currentUser);
     await this.cacheService.resetPrefixCache(CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX);
     return this.segmentService.deleteSegment(segmentId, logger);
   }
