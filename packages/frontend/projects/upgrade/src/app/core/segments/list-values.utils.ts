@@ -57,6 +57,9 @@ export function parseSingleColumnCSV(content: string): string[] {
   const addValue = (): void => {
     const normalizedValue = value.trim();
     if (normalizedValue) {
+      if (containsListValueSeparator(normalizedValue)) {
+        throw new Error('CSV values cannot contain commas, tabs, or line breaks');
+      }
       values.push(normalizedValue.replace(ESCAPED_SPREADSHEET_FORMULA_PREFIX, ''));
     }
     value = '';

@@ -53,28 +53,30 @@ describe('list values utilities', () => {
       });
     });
 
-    it('parses quoted values, escaped quotes, commas, and embedded line breaks', () => {
-      expect(parseSingleColumnCSV('one\n"say ""hello"""\n"school,one"\n"line\r\nbreak"')).toEqual([
-        'one',
-        'say "hello"',
-        'school,one',
-        'line\r\nbreak',
-      ]);
+    it('parses quoted values and escaped quotes', () => {
+      expect(parseSingleColumnCSV('one\n"say ""hello"""')).toEqual(['one', 'say "hello"']);
+    });
+
+    it('rejects separators inside quoted values', () => {
+      expect(() => parseSingleColumnCSV('"school,one"')).toThrow(
+        'CSV values cannot contain commas, tabs, or line breaks'
+      );
+      expect(() => parseSingleColumnCSV('"school\tone"')).toThrow(
+        'CSV values cannot contain commas, tabs, or line breaks'
+      );
+      expect(() => parseSingleColumnCSV('"school\r\none"')).toThrow(
+        'CSV values cannot contain commas, tabs, or line breaks'
+      );
     });
 
     it('round-trips values produced by the CSV exporter', () => {
       const values = [
         'plain',
         'say "hello"',
-        'school,one',
-        'line\nbreak',
         '=SUM(A1:A2)',
         '+cmd',
         '-1+2',
         '@SUM(A1:A2)',
-        '\tformula',
-        '\rformula',
-        '\nformula',
         '＝SUM(A1:A2)',
         "'=SUM(A1:A2)",
         "''=SUM(A1:A2)",
