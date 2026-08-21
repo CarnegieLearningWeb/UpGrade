@@ -5,8 +5,6 @@ export interface MergeListValuesResult {
 }
 
 const VALUE_SEPARATORS = /[,\t\r\n]+/;
-// The exporter adds one apostrophe before formula-like values, including values that already begin with apostrophes.
-const ESCAPED_SPREADSHEET_FORMULA_PREFIX = /^'(?='*[=+\-@\t\r\n＝＋－＠])/;
 
 export function splitListValues(rawValue: string): string[] {
   return rawValue
@@ -60,7 +58,7 @@ export function parseSingleColumnCSV(content: string): string[] {
       if (containsListValueSeparator(normalizedValue)) {
         throw new Error('CSV values cannot contain commas, tabs, or line breaks');
       }
-      values.push(normalizedValue.replace(ESCAPED_SPREADSHEET_FORMULA_PREFIX, ''));
+      values.push(normalizedValue);
     }
     value = '';
     hasClosedQuote = false;

@@ -7,6 +7,38 @@ import {
 import { serializeValuesAsCSV } from '../../shared/services/common-export-helpers.service';
 
 describe('list values utilities', () => {
+  describe('serializeValuesAsCSV', () => {
+    it('applies CSV quoting without changing list values', () => {
+      expect(
+        serializeValuesAsCSV([
+          'plain',
+          'say "hello"',
+          '=SUM(A1:A2)',
+          '+cmd',
+          '-1+2',
+          '@SUM(A1:A2)',
+          '＝SUM(A1:A2)',
+          "'=SUM(A1:A2)",
+          "''=SUM(A1:A2)",
+          "'school",
+        ])
+      ).toBe(
+        [
+          '"plain"',
+          '"say ""hello"""',
+          '"=SUM(A1:A2)"',
+          '"+cmd"',
+          '"-1+2"',
+          '"@SUM(A1:A2)"',
+          '"＝SUM(A1:A2)"',
+          '"\'=SUM(A1:A2)"',
+          '"\'\'=SUM(A1:A2)"',
+          '"\'school"',
+        ].join('\r\n')
+      );
+    });
+  });
+
   describe('splitListValues', () => {
     it('splits pasted values on commas, tabs, and new lines', () => {
       expect(splitListValues('one, two\tthree\nfour\r\nfive')).toEqual(['one', 'two', 'three', 'four', 'five']);
@@ -86,12 +118,10 @@ describe('list values utilities', () => {
       expect(parseSingleColumnCSV(serializeValuesAsCSV(values))).toEqual(values);
     });
 
-    it('decodes formula escapes without removing genuine leading apostrophes', () => {
-      expect(parseSingleColumnCSV("'=SUM(A1:A2)\n''=SUM(A1:A2)\n'school")).toEqual([
-        '=SUM(A1:A2)',
-        "'=SUM(A1:A2)",
-        "'school",
-      ]);
+    it('preserves formula-like prefixes and leading apostrophes', () => {
+      expect(
+        parseSingleColumnCSV("=SUM(A1:A2)\n+cmd\n-1+2\n@SUM(A1:A2)\n'=SUM(A1:A2)\n''=SUM(A1:A2)\n'school")
+      ).toEqual(['=SUM(A1:A2)', '+cmd', '-1+2', '@SUM(A1:A2)', "'=SUM(A1:A2)", "''=SUM(A1:A2)", "'school"]);
     });
 
     it('rejects empty and multi-column CSV files', () => {
