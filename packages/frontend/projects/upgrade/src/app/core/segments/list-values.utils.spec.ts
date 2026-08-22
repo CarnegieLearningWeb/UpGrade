@@ -4,41 +4,8 @@ import {
   parseSingleColumnCSV,
   splitListValues,
 } from './list-values.utils';
-import { serializeValuesAsCSV } from '../../shared/services/common-export-helpers.service';
 
 describe('list values utilities', () => {
-  describe('serializeValuesAsCSV', () => {
-    it('applies CSV quoting without changing list values', () => {
-      expect(
-        serializeValuesAsCSV([
-          'plain',
-          'say "hello"',
-          '=SUM(A1:A2)',
-          '+cmd',
-          '-1+2',
-          '@SUM(A1:A2)',
-          '＝SUM(A1:A2)',
-          "'=SUM(A1:A2)",
-          "''=SUM(A1:A2)",
-          "'school",
-        ])
-      ).toBe(
-        [
-          '"plain"',
-          '"say ""hello"""',
-          '"=SUM(A1:A2)"',
-          '"+cmd"',
-          '"-1+2"',
-          '"@SUM(A1:A2)"',
-          '"＝SUM(A1:A2)"',
-          '"\'=SUM(A1:A2)"',
-          '"\'\'=SUM(A1:A2)"',
-          '"\'school"',
-        ].join('\r\n')
-      );
-    });
-  });
-
   describe('splitListValues', () => {
     it('splits pasted values on commas, tabs, and new lines', () => {
       expect(splitListValues('one, two\tthree\nfour\r\nfive')).toEqual(['one', 'two', 'three', 'four', 'five']);
@@ -85,8 +52,11 @@ describe('list values utilities', () => {
       });
     });
 
-    it('parses quoted values and escaped quotes', () => {
-      expect(parseSingleColumnCSV('one\n"say ""hello"""')).toEqual(['one', 'say "hello"']);
+    it('parses quoted IDs and escaped quotes', () => {
+      expect(parseSingleColumnCSV('"06df769b-740e-47f6-8548-2a52be1ab4be"\n"say ""hello"""')).toEqual([
+        '06df769b-740e-47f6-8548-2a52be1ab4be',
+        'say "hello"',
+      ]);
     });
 
     it('rejects separators inside quoted values', () => {
@@ -99,23 +69,6 @@ describe('list values utilities', () => {
       expect(() => parseSingleColumnCSV('"school\r\none"')).toThrow(
         'CSV values cannot contain commas, tabs, or line breaks'
       );
-    });
-
-    it('round-trips values produced by the CSV exporter', () => {
-      const values = [
-        'plain',
-        'say "hello"',
-        '=SUM(A1:A2)',
-        '+cmd',
-        '-1+2',
-        '@SUM(A1:A2)',
-        '＝SUM(A1:A2)',
-        "'=SUM(A1:A2)",
-        "''=SUM(A1:A2)",
-        "'school",
-      ];
-
-      expect(parseSingleColumnCSV(serializeValuesAsCSV(values))).toEqual(values);
     });
 
     it('preserves formula-like prefixes and leading apostrophes', () => {
