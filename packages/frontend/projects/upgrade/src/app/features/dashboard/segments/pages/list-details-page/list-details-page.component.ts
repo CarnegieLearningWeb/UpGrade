@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ErrorHandler, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -115,7 +115,8 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private notificationService: NotificationService,
     private commonExportHelpersService: CommonExportHelpersService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private errorHandler: ErrorHandler
   ) {
     this.dataSource.filterPredicate = (row, filter) => row.value.toLowerCase().includes(filter);
   }
@@ -124,11 +125,10 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
     this.ownerType = this.route.snapshot.data['listOwnerType'];
     this.ownerId = this.getOwnerId();
     this.listId = this.route.snapshot.paramMap.get('listId') ?? '';
-    const filterMode = parseListFilterMode(this.route.snapshot.paramMap.get('filterMode'));
+    const rawFilterMode = this.route.snapshot.paramMap.get('filterMode');
+    const filterMode = parseListFilterMode(rawFilterMode);
     if (!filterMode) {
-      this.isLoading = false;
-      this.notificationService.showError('Unable to load list details.');
-      this.router.navigate(this.parentLink);
+      this.handleLoadError(new Error(`Invalid list filter mode: ${rawFilterMode ?? ''}`));
       return;
     }
     this.filterMode = filterMode;
@@ -206,6 +206,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
 
   loadDetails(): void {
     if (!this.ownerId || !this.listId) {
+      this.handleLoadError(new Error('List owner ID and list ID are required.'));
       return;
     }
 
@@ -231,12 +232,15 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
             this.updateMetadataMenuButtonItems();
             this.changeDetectorRef.markForCheck();
           },
-          error: () => {
-            this.notificationService.showError('Unable to load list details.');
-            this.changeDetectorRef.markForCheck();
-          },
+          error: (error) => this.handleLoadError(error),
         })
     );
+  }
+
+  private handleLoadError(error: unknown): void {
+    this.isLoading = false;
+    this.changeDetectorRef.markForCheck();
+    this.errorHandler.handleError(error);
   }
 
   search(searchParams: CommonSearchWidgetSearchParams<string>): void {
