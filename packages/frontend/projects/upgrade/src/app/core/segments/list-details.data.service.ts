@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, map, switchMap } from 'rxjs';
-import { EXPERIMENT_STATE, LIST_FILTER_MODE } from 'upgrade_types';
+import { EXPERIMENT_STATE, LIST_FILTER_MODE, STANDARD_LIST_TYPE, normalizeStandardListType } from 'upgrade_types';
 import { ExperimentDataService } from '../experiments/experiments.data.service';
 import { Experiment } from '../experiments/store/experiments.model';
 import { FeatureFlagsDataService } from '../feature-flags/feature-flags.data.service';
@@ -30,9 +30,17 @@ export class ListDetailsDataService {
     listId: string
   ): Observable<{ list: Segment; owner: ListDetailsOwner }> {
     return this.fetchOwner(ownerType, ownerId, filterMode, listId).pipe(
-      switchMap((owner) =>
-        this.segmentsDataService.fetchSegmentWithMembersById(listId).pipe(map((list) => ({ list, owner })))
-      )
+      switchMap((owner) => {
+        this.requireDirectValueList(owner.listType, listId);
+        return this.segmentsDataService.fetchSegmentWithMembersById(listId).pipe(
+          map((list) => {
+            // Legacy wrappers may not have listType populated, but their subsegment
+            // relationship still identifies them as Segment-backed lists.
+            this.requireDirectValueList(list.listType ?? owner.listType, listId, list.subSegments);
+            return { list, owner };
+          })
+        );
+      })
     );
   }
 
@@ -170,5 +178,12 @@ export class ListDetailsDataService {
       throw new Error(`List ${listId} does not belong to owner ${ownerId}.`);
     }
     return list;
+  }
+
+  private requireDirectValueList(listType: string | undefined, listId: string, subSegments?: Segment[]): void {
+    const normalizedListType = normalizeStandardListType(listType);
+    if (normalizedListType === STANDARD_LIST_TYPE.SEGMENT || (!normalizedListType && (subSegments?.length ?? 0) > 0)) {
+      throw new Error(`Segment-backed list ${listId} cannot be opened in List Details.`);
+    }
   }
 }

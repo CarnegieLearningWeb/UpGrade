@@ -21,6 +21,18 @@ describe('ListDetailsDataService', () => {
     listType: 'Individual',
   } as Segment;
 
+  const referencedSegment = {
+    id: 'referenced-segment-id',
+    name: 'Referenced segment',
+    type: SEGMENT_TYPE.PUBLIC,
+  } as Segment;
+
+  const segmentBackedList = {
+    ...segment,
+    listType: 'Segment',
+    subSegments: [referencedSegment],
+  } as Segment;
+
   const segmentRequest: EditPrivateSegmentListDetails = {
     id: segment.id,
     name: segment.name,
@@ -187,6 +199,91 @@ describe('ListDetailsDataService', () => {
     await expect(
       firstValueFrom(service.fetchOwner(LIST_OWNER_TYPE.SEGMENT, 'parent-id', LIST_FILTER_MODE.INCLUSION, segment.id))
     ).rejects.toThrow(`List ${segment.id} does not belong to owner parent-id for ${LIST_FILTER_MODE.INCLUSION}.`);
+  });
+
+  it('rejects a Segment-backed experiment list before loading its members', async () => {
+    experimentDataService.getExperimentById.mockReturnValue(
+      of({
+        id: 'experiment-id',
+        name: 'Test experiment',
+        state: EXPERIMENT_STATE.ENROLLING,
+        experimentSegmentInclusion: [{ segment: segmentBackedList }],
+        experimentSegmentExclusion: [],
+      })
+    );
+
+    await expect(
+      firstValueFrom(
+        service.fetchListDetails(
+          LIST_OWNER_TYPE.EXPERIMENT,
+          'experiment-id',
+          LIST_FILTER_MODE.INCLUSION,
+          segmentBackedList.id
+        )
+      )
+    ).rejects.toThrow(`Segment-backed list ${segmentBackedList.id} cannot be opened in List Details.`);
+    expect(segmentsDataService.fetchSegmentWithMembersById).not.toHaveBeenCalled();
+  });
+
+  it('rejects a Segment-backed feature flag list before loading its members', async () => {
+    featureFlagsDataService.fetchFeatureFlagById.mockReturnValue(
+      of({
+        id: 'flag-id',
+        name: 'Test flag',
+        featureFlagSegmentInclusion: [{ segment: segmentBackedList, enabled: true, listType: 'Segment' }],
+        featureFlagSegmentExclusion: [],
+      })
+    );
+
+    await expect(
+      firstValueFrom(
+        service.fetchListDetails(
+          LIST_OWNER_TYPE.FEATURE_FLAG,
+          'flag-id',
+          LIST_FILTER_MODE.INCLUSION,
+          segmentBackedList.id
+        )
+      )
+    ).rejects.toThrow(`Segment-backed list ${segmentBackedList.id} cannot be opened in List Details.`);
+    expect(segmentsDataService.fetchSegmentWithMembersById).not.toHaveBeenCalled();
+  });
+
+  it('rejects a Segment-backed nested list before loading its members', async () => {
+    segmentsDataService.getSegmentById.mockReturnValue(
+      of({ segment: { id: 'parent-id', name: 'Parent segment', subSegments: [segmentBackedList] } })
+    );
+
+    await expect(
+      firstValueFrom(
+        service.fetchListDetails(LIST_OWNER_TYPE.SEGMENT, 'parent-id', LIST_FILTER_MODE.EXCLUSION, segmentBackedList.id)
+      )
+    ).rejects.toThrow(`Segment-backed list ${segmentBackedList.id} cannot be opened in List Details.`);
+    expect(segmentsDataService.fetchSegmentWithMembersById).not.toHaveBeenCalled();
+  });
+
+  it('rejects a legacy Segment-backed list inferred from its subsegment relationship', async () => {
+    const legacySegmentBackedList = { ...segmentBackedList, listType: undefined };
+    experimentDataService.getExperimentById.mockReturnValue(
+      of({
+        id: 'experiment-id',
+        name: 'Test experiment',
+        state: EXPERIMENT_STATE.ENROLLING,
+        experimentSegmentInclusion: [{ segment: legacySegmentBackedList }],
+        experimentSegmentExclusion: [],
+      })
+    );
+    segmentsDataService.fetchSegmentWithMembersById.mockReturnValue(of(legacySegmentBackedList));
+
+    await expect(
+      firstValueFrom(
+        service.fetchListDetails(
+          LIST_OWNER_TYPE.EXPERIMENT,
+          'experiment-id',
+          LIST_FILTER_MODE.INCLUSION,
+          legacySegmentBackedList.id
+        )
+      )
+    ).rejects.toThrow(`Segment-backed list ${legacySegmentBackedList.id} cannot be opened in List Details.`);
   });
 
   it('uses the experiment inclusion endpoint with the existing full-list payload', (done) => {
