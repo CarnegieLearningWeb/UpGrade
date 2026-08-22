@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -43,7 +43,7 @@ export interface UpsertListValuesModalResult {
   styleUrl: './upsert-list-values-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UpsertListValuesModalComponent {
+export class UpsertListValuesModalComponent implements OnDestroy {
   rawValues = '';
   importedValues: string[] = [];
   fileName = '';
@@ -51,6 +51,7 @@ export class UpsertListValuesModalComponent {
   updateMode = LIST_VALUES_UPDATE_MODE.APPEND;
   readonly UPDATE_MODE = LIST_VALUES_UPDATE_MODE;
   readonly FILE_TYPE = FILE_TYPE;
+  private activeFileReader?: FileReader;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: UpsertListValuesModalData,
@@ -71,10 +72,12 @@ export class UpsertListValuesModalComponent {
   }
 
   get isPrimaryActionDisabled(): boolean {
-    return this.values.length === 0 || !!this.errorMessage;
+    return this.values.length === 0 || !!this.errorMessage || (this.data.importOnly && !this.fileName);
   }
 
   onFilesSelected(files: File[]): void {
+    this.cancelActiveFileRead();
+
     const file = files[0];
     this.errorMessage = '';
     this.importedValues = [];
@@ -85,15 +88,27 @@ export class UpsertListValuesModalComponent {
     }
 
     const reader = new FileReader();
+    this.activeFileReader = reader;
     reader.onload = () => {
+      if (this.activeFileReader !== reader) {
+        return;
+      }
+
       try {
         this.importedValues = parseSingleColumnCSV(String(reader.result ?? ''));
       } catch (error) {
         this.errorMessage = error instanceof Error ? error.message : 'Unable to read CSV file';
+      } finally {
+        this.activeFileReader = undefined;
+        this.changeDetectorRef.markForCheck();
       }
-      this.changeDetectorRef.markForCheck();
     };
     reader.onerror = () => {
+      if (this.activeFileReader !== reader) {
+        return;
+      }
+
+      this.activeFileReader = undefined;
       this.errorMessage = 'Unable to read CSV file';
       this.changeDetectorRef.markForCheck();
     };
@@ -101,9 +116,14 @@ export class UpsertListValuesModalComponent {
   }
 
   clearImportedFile(): void {
+    this.cancelActiveFileRead();
     this.fileName = '';
     this.importedValues = [];
     this.errorMessage = '';
+  }
+
+  ngOnDestroy(): void {
+    this.cancelActiveFileRead();
   }
 
   submit(): void {
@@ -112,5 +132,21 @@ export class UpsertListValuesModalComponent {
     }
 
     this.dialogRef.close({ values: this.values, mode: this.updateMode, fileName: this.fileName });
+  }
+
+  private cancelActiveFileRead(): void {
+    const reader = this.activeFileReader;
+    this.activeFileReader = undefined;
+
+    if (!reader) {
+      return;
+    }
+
+    reader.onload = null;
+    reader.onerror = null;
+
+    if (reader.readyState === FileReader.LOADING) {
+      reader.abort();
+    }
   }
 }
