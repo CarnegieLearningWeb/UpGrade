@@ -23,6 +23,7 @@ import { IMenuButtonItem, LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { NotificationService } from '../../../../../core/core.module';
 import { ListDetailsDataService } from '../../../../../core/segments/list-details.data.service';
+import { parseListFilterMode } from '../../../../../core/segments/list-details.utils';
 import {
   EditPrivateSegmentListDetails,
   LIST_OPTION_TYPE,
@@ -85,7 +86,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
   ownerType: LIST_OWNER_TYPE;
   ownerId = '';
   listId = '';
-  filterMode = LIST_FILTER_MODE.EXCLUSION;
+  filterMode: LIST_FILTER_MODE;
   owner: ListDetailsOwner;
   list: Segment;
   listType = '';
@@ -124,10 +125,14 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
     this.ownerType = this.route.snapshot.data['listOwnerType'];
     this.ownerId = this.getOwnerId();
     this.listId = this.route.snapshot.paramMap.get('listId') ?? '';
-    this.filterMode =
-      this.route.snapshot.paramMap.get('filterMode')?.toLowerCase() === LIST_FILTER_MODE.INCLUSION
-        ? LIST_FILTER_MODE.INCLUSION
-        : LIST_FILTER_MODE.EXCLUSION;
+    const filterMode = parseListFilterMode(this.route.snapshot.paramMap.get('filterMode'));
+    if (!filterMode) {
+      this.isLoading = false;
+      this.notificationService.showError('Unable to load list details.');
+      this.router.navigate(this.parentLink);
+      return;
+    }
+    this.filterMode = filterMode;
 
     this.subscriptions.add(
       // List management is gated on segment permissions across all owner pages (see the
