@@ -104,7 +104,6 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
   isValuesSectionExpanded = true;
 
   private hasUpdatePermission = false;
-  private hasDeletePermission = false;
   private subscriptions = new Subscription();
 
   constructor(
@@ -139,7 +138,6 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
       // inclusion/exclusion/lists section cards), so this page must match.
       this.authService.userPermissions$.subscribe((permissions) => {
         this.hasUpdatePermission = !!permissions?.segments?.update;
-        this.hasDeletePermission = !!permissions?.segments?.delete;
         this.updateMetadataMenuButtonItems();
         this.updateValuesMenuButtonItems();
         this.changeDetectorRef.markForCheck();
@@ -200,10 +198,6 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
 
   get canManage(): boolean {
     return this.hasUpdatePermission && !this.isOwnerReadOnly;
-  }
-
-  get canDelete(): boolean {
-    return this.hasDeletePermission && !this.isOwnerReadOnly;
   }
 
   private get isPlainSegmentList(): boolean {
@@ -432,7 +426,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
       },
       {
         action: LIST_DETAILS_ACTION.DELETE,
-        disabled: !this.canDelete,
+        disabled: !this.canManage,
         label: `Delete ${actionTarget}`,
       },
     ];
