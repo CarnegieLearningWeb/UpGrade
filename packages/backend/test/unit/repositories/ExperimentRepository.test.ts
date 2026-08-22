@@ -155,11 +155,11 @@ describe('ExperimentRepository Testing', () => {
 
     const res = await repo.findAllExperiments();
 
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(5);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
 
     expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(23);
-    expect(mock.select).toHaveBeenCalledTimes(2);
-    expect(mock.getMany).toHaveBeenCalledTimes(5);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(4);
 
     // queries are ordered by `order` ASC (NULLS LAST) then `createdAt` ASC as a stable fallback
     expect(mock.addOrderBy).toHaveBeenCalledTimes(2);
@@ -169,33 +169,6 @@ describe('ExperimentRepository Testing', () => {
     expect(res).toEqual(result);
   });
 
-  it('should merge separately loaded inclusion and exclusion segment data', async () => {
-    const conditionData = { id: 'exp-a', name: 'Experiment A', conditions: ['condition'] } as any;
-    const factorData = { id: 'exp-a', partitions: ['partition'] } as any;
-    const metricData = { id: 'exp-a', queries: ['query'] } as any;
-    const inclusionData = { id: 'exp-a', experimentSegmentInclusion: ['inclusion'] } as any;
-    const exclusionData = { id: 'exp-a', experimentSegmentExclusion: ['exclusion'] } as any;
-
-    mock.getMany
-      .mockResolvedValueOnce([conditionData])
-      .mockResolvedValueOnce([factorData])
-      .mockResolvedValueOnce([metricData])
-      .mockResolvedValueOnce([inclusionData])
-      .mockResolvedValueOnce([exclusionData]);
-
-    const [res] = await repo.findAllExperiments();
-
-    expect(res).toMatchObject({
-      id: 'exp-a',
-      name: 'Experiment A',
-      conditions: ['condition'],
-      partitions: ['partition'],
-      queries: ['query'],
-      experimentSegmentInclusion: ['inclusion'],
-      experimentSegmentExclusion: ['exclusion'],
-    });
-  });
-
   it('should throw an error when find all experiments fails', async () => {
     mock.getMany.mockRejectedValue(err);
 
@@ -203,11 +176,11 @@ describe('ExperimentRepository Testing', () => {
       await repo.findAllExperiments();
     }).rejects.toThrow(err);
 
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(5);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
 
     expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(23);
-    expect(mock.select).toHaveBeenCalledTimes(2);
-    expect(mock.getMany).toHaveBeenCalledTimes(5);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(4);
   });
 
   it('should find all experiments by name', async () => {
@@ -240,12 +213,12 @@ describe('ExperimentRepository Testing', () => {
 
     const res = await repo.getValidExperiments('context');
 
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(3);
 
     expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(20);
-    expect(mock.where).toHaveBeenCalledTimes(4);
-    expect(mock.select).toHaveBeenCalledTimes(2);
-    expect(mock.getMany).toHaveBeenCalledTimes(4);
+    expect(mock.where).toHaveBeenCalledTimes(3);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(3);
 
     expect(res).toEqual(result);
   });
@@ -257,12 +230,12 @@ describe('ExperimentRepository Testing', () => {
       await repo.getValidExperiments('context');
     }).rejects.toThrow(err);
 
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(3);
 
     expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(20);
-    expect(mock.where).toHaveBeenCalledTimes(4);
-    expect(mock.select).toHaveBeenCalledTimes(2);
-    expect(mock.getMany).toHaveBeenCalledTimes(4);
+    expect(mock.where).toHaveBeenCalledTimes(3);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(3);
   });
 
   it('should get valid experiments with preview', async () => {
@@ -271,12 +244,12 @@ describe('ExperimentRepository Testing', () => {
 
     const res = await repo.getValidExperimentsWithPreview('context');
 
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(3);
 
     expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(20);
-    expect(mock.where).toHaveBeenCalledTimes(4);
-    expect(mock.select).toHaveBeenCalledTimes(2);
-    expect(mock.getMany).toHaveBeenCalledTimes(4);
+    expect(mock.where).toHaveBeenCalledTimes(3);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(3);
 
     expect(res).toEqual(result);
   });
@@ -288,12 +261,12 @@ describe('ExperimentRepository Testing', () => {
       await repo.getValidExperimentsWithPreview('context');
     }).rejects.toThrow(err);
 
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(3);
 
     expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(20);
-    expect(mock.where).toHaveBeenCalledTimes(4);
-    expect(mock.select).toHaveBeenCalledTimes(2);
-    expect(mock.getMany).toHaveBeenCalledTimes(4);
+    expect(mock.where).toHaveBeenCalledTimes(3);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getMany).toHaveBeenCalledTimes(3);
   });
 
   it('should update experiment state', async () => {
@@ -396,45 +369,18 @@ describe('ExperimentRepository Testing', () => {
   it('should find one experiment ordered by queries.order then createdAt', async () => {
     const res = await repo.findOneExperiment(experiment.id);
 
-    // 5 parallel queries: conditionLevelPayload, factorDecisionPointPayload, metric, inclusion, exclusion
-    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(5);
+    // 4 parallel queries: conditionLevelPayload, factorDecisionPointPayload, metric, segment
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
 
     // conditions(1) + partitions+factors+levels(3) + queries.order+createdAt(2) = 6 addOrderBy calls
     expect(mock.addOrderBy).toHaveBeenCalledTimes(6);
     expect(mock.addOrderBy).toHaveBeenCalledWith('queries.order', 'ASC', 'NULLS LAST');
     expect(mock.addOrderBy).toHaveBeenCalledWith('queries.createdAt', 'ASC');
 
-    expect(mock.where).toHaveBeenCalledTimes(5);
-    expect(mock.getOne).toHaveBeenCalledTimes(5);
+    expect(mock.where).toHaveBeenCalledTimes(4);
+    expect(mock.getOne).toHaveBeenCalledTimes(4);
 
     expect(res).toEqual(experiment);
-  });
-
-  it('should merge separately loaded segment data when finding one experiment', async () => {
-    const conditionData = { id: 'exp-a', name: 'Experiment A', conditions: ['condition'] } as any;
-    const factorData = { id: 'exp-a', partitions: ['partition'] } as any;
-    const metricData = { id: 'exp-a', queries: ['query'] } as any;
-    const inclusionData = { id: 'exp-a', experimentSegmentInclusion: ['inclusion'] } as any;
-    const exclusionData = { id: 'exp-a', experimentSegmentExclusion: ['exclusion'] } as any;
-
-    mock.getOne
-      .mockResolvedValueOnce(conditionData)
-      .mockResolvedValueOnce(factorData)
-      .mockResolvedValueOnce(metricData)
-      .mockResolvedValueOnce(inclusionData)
-      .mockResolvedValueOnce(exclusionData);
-
-    const res = await repo.findOneExperiment('exp-a');
-
-    expect(res).toMatchObject({
-      id: 'exp-a',
-      name: 'Experiment A',
-      conditions: ['condition'],
-      partitions: ['partition'],
-      queries: ['query'],
-      experimentSegmentInclusion: ['inclusion'],
-      experimentSegmentExclusion: ['exclusion'],
-    });
   });
 
   it('should clear the database', async () => {
@@ -466,33 +412,29 @@ describe('ExperimentRepository Testing', () => {
   });
 
   describe('getValidExperimentsForContextAndDecisionPoint', () => {
-    it('should build four queries and add a leftJoin on partitions for the condition and segment queries', async () => {
+    it('should build three queries and add a leftJoin on partitions (decision points) for the condition and segment queries', async () => {
       const result = [experiment];
       mock.getMany.mockResolvedValue(result);
 
       const res = await repo.getValidExperimentsForContextAndDecisionPoint('context', 'site1', 'target1');
 
-      expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
-      // 4 (conditionLevel) + 6 (factorDecisionPoint) + 5 (inclusion) + 5 (exclusion) = 20
+      expect(repo.createQueryBuilder).toHaveBeenCalledTimes(3);
+      // 4 (conditionLevel) + 6 (factorDecisionPoint) + 10 (segment) = 20
       expect(mock.leftJoinAndSelect).toHaveBeenCalledTimes(20);
-      // conditionLevelPayloadQuery and both segment queries add a non-selecting leftJoin for partition filtering
-      expect(mock.leftJoin).toHaveBeenCalledTimes(3);
+      // conditionLevelPayloadQuery and segmentQuery each add a non-selecting leftJoin for partition filtering
+      expect(mock.leftJoin).toHaveBeenCalledTimes(2);
       expect(mock.leftJoin).toHaveBeenCalledWith('experiment.partitions', 'partitions');
-      // Both segment queries call .select('experiment.id')
-      expect(mock.select).toHaveBeenCalledTimes(2);
-      expect(mock.where).toHaveBeenCalledTimes(4);
-      expect(mock.getMany).toHaveBeenCalledTimes(4);
+      // buildSegmentQuery calls .select('experiment.id')
+      expect(mock.select).toHaveBeenCalledTimes(1);
+      expect(mock.where).toHaveBeenCalledTimes(3);
+      expect(mock.getMany).toHaveBeenCalledTimes(3);
 
       expect(res).toEqual(result);
     });
 
     it('should return empty array when no experiments match the site/target', async () => {
       // conditionLevel and segment find experiments, but factorDecisionPoint finds none at this site/target
-      mock.getMany
-        .mockResolvedValueOnce([experiment])
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([experiment])
-        .mockResolvedValueOnce([experiment]);
+      mock.getMany.mockResolvedValueOnce([experiment]).mockResolvedValueOnce([]).mockResolvedValueOnce([experiment]);
 
       const res = await repo.getValidExperimentsForContextAndDecisionPoint('context', 'site1', 'target1');
 
@@ -509,7 +451,6 @@ describe('ExperimentRepository Testing', () => {
       mock.getMany
         .mockResolvedValueOnce([expA, expB])
         .mockResolvedValueOnce([expA])
-        .mockResolvedValueOnce([expA, expB])
         .mockResolvedValueOnce([expA, expB]);
 
       const res = await repo.getValidExperimentsForContextAndDecisionPoint('context', 'site1', 'target1');
@@ -521,14 +462,12 @@ describe('ExperimentRepository Testing', () => {
     it('should merge condition, partition, and segment data onto each result experiment', async () => {
       const condData = { id: 'exp-a', conditions: ['cond1'] } as any;
       const factorData = { id: 'exp-a', partitions: ['part1'] } as any;
-      const inclusionData = { id: 'exp-a', experimentSegmentInclusion: ['seg1'] } as any;
-      const exclusionData = { id: 'exp-a', experimentSegmentExclusion: ['seg2'] } as any;
+      const segData = { id: 'exp-a', experimentSegmentInclusion: ['seg1'] } as any;
 
       mock.getMany
         .mockResolvedValueOnce([condData])
         .mockResolvedValueOnce([factorData])
-        .mockResolvedValueOnce([inclusionData])
-        .mockResolvedValueOnce([exclusionData]);
+        .mockResolvedValueOnce([segData]);
 
       const [result] = await repo.getValidExperimentsForContextAndDecisionPoint('context', 'site1', 'target1');
 
@@ -537,7 +476,6 @@ describe('ExperimentRepository Testing', () => {
         conditions: ['cond1'],
         partitions: ['part1'],
         experimentSegmentInclusion: ['seg1'],
-        experimentSegmentExclusion: ['seg2'],
       });
     });
 
@@ -545,11 +483,7 @@ describe('ExperimentRepository Testing', () => {
       const condData = { id: 'exp-a', conditions: ['cond1'] } as any;
       const factorData = { id: 'exp-a', partitions: ['part1'] } as any;
 
-      mock.getMany
-        .mockResolvedValueOnce([condData])
-        .mockResolvedValueOnce([factorData])
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([]);
+      mock.getMany.mockResolvedValueOnce([condData]).mockResolvedValueOnce([factorData]).mockResolvedValueOnce([]);
 
       const [result] = await repo.getValidExperimentsForContextAndDecisionPoint('context', 'site1', 'target1');
 
@@ -558,23 +492,13 @@ describe('ExperimentRepository Testing', () => {
 
     it('should return factorDecisionPoint data even when conditionLevel query returns no match', async () => {
       const factorData = { id: 'exp-a', partitions: ['part1'] } as any;
-      const inclusionData = { id: 'exp-a', experimentSegmentInclusion: ['seg1'] } as any;
-      const exclusionData = { id: 'exp-a', experimentSegmentExclusion: ['seg2'] } as any;
+      const segData = { id: 'exp-a', experimentSegmentInclusion: ['seg1'] } as any;
 
-      mock.getMany
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([factorData])
-        .mockResolvedValueOnce([inclusionData])
-        .mockResolvedValueOnce([exclusionData]);
+      mock.getMany.mockResolvedValueOnce([]).mockResolvedValueOnce([factorData]).mockResolvedValueOnce([segData]);
 
       const [result] = await repo.getValidExperimentsForContextAndDecisionPoint('context', 'site1', 'target1');
 
-      expect(result).toMatchObject({
-        id: 'exp-a',
-        partitions: ['part1'],
-        experimentSegmentInclusion: ['seg1'],
-        experimentSegmentExclusion: ['seg2'],
-      });
+      expect(result).toMatchObject({ id: 'exp-a', partitions: ['part1'], experimentSegmentInclusion: ['seg1'] });
     });
 
     it('should throw an error when a sub-query fails', async () => {
@@ -582,7 +506,7 @@ describe('ExperimentRepository Testing', () => {
 
       await expect(repo.getValidExperimentsForContextAndDecisionPoint('context', 'site1', 'target1')).rejects.toThrow();
 
-      expect(repo.createQueryBuilder).toHaveBeenCalledTimes(4);
+      expect(repo.createQueryBuilder).toHaveBeenCalledTimes(3);
     });
   });
 
