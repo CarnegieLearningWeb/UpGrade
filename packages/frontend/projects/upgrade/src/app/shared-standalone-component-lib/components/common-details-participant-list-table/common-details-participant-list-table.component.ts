@@ -110,11 +110,11 @@ export class CommonDetailsParticipantListTableComponent {
   }
 
   getFormattedListType(rowData: ParticipantListTableRow): string {
-    return normalizeStandardListType(rowData.listType);
+    return this.getResolvedListType(rowData);
   }
 
   isSegmentListType(rowData: ParticipantListTableRow): boolean {
-    return normalizeStandardListType(rowData.listType) === this.memberTypes.SEGMENT;
+    return this.getResolvedListType(rowData) === this.memberTypes.SEGMENT;
   }
 
   isPublicSegment(rowData: ParticipantListTableRow): boolean {
@@ -127,6 +127,11 @@ export class CommonDetailsParticipantListTableComponent {
 
   get detailsFilterMode(): LIST_FILTER_MODE {
     return this.listFilterMode ?? this.tableType;
+  }
+
+  private getResolvedListType(rowData: ParticipantListTableRow): string {
+    const listType = normalizeStandardListType(rowData.listType);
+    return listType || (rowData.segment?.subSegments?.length ? this.memberTypes.SEGMENT : '');
   }
 
   onSlideToggleChange(event: MatSlideToggleChange, rowData: ParticipantListTableRow): void {

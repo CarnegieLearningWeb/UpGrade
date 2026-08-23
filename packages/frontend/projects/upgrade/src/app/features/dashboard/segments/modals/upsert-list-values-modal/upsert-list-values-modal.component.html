@@ -23,15 +23,17 @@
     </div>
     } @else {
     <div class="file-summary">
-      <span class="ft-14-400">{{ fileName }} — {{ importedValues.length }} values</span>
+      <span class="ft-14-400">
+        {{ fileName }} — {{ importedValues.length }} {{ importedValues.length === 1 ? 'value' : 'values' }}
+      </span>
       <button type="button" class="remove-file-button" aria-label="Remove selected CSV" (click)="clearImportedFile()">
         ×
       </button>
     </div>
     }
     <div class="import-behavior-section dense-1">
-      <mat-radio-group [(ngModel)]="updateMode">
-        <span class="section-label ft-14-600">Import behavior</span>
+      <mat-radio-group [(ngModel)]="updateMode" aria-labelledby="import-behavior-label">
+        <span id="import-behavior-label" class="section-label ft-14-600">Import behavior</span>
         <mat-radio-button [value]="UPDATE_MODE.APPEND">Append to existing values</mat-radio-button>
         <mat-radio-button [value]="UPDATE_MODE.REPLACE">Replace existing values</mat-radio-button>
       </mat-radio-group>
