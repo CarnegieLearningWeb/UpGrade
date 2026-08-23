@@ -7,8 +7,13 @@ import {
 
 describe('list values utilities', () => {
   describe('splitListValues', () => {
-    it('splits pasted values on commas, tabs, and new lines', () => {
-      expect(splitListValues('one, two\tthree\nfour\r\nfive')).toEqual(['one', 'two', 'three', 'four', 'five']);
+    it('splits pasted values on commas and new lines while preserving internal whitespace', () => {
+      expect(splitListValues('one, two\tthree\nhello    world\r\nfive')).toEqual([
+        'one',
+        'two\tthree',
+        'hello    world',
+        'five',
+      ]);
     });
 
     it('trims values and drops empty entries', () => {
@@ -19,7 +24,7 @@ describe('list values utilities', () => {
   describe('containsListValueSeparator', () => {
     it('flags values that the add/import pipelines would split or reject', () => {
       expect(containsListValueSeparator('schoolA,schoolB')).toBe(true);
-      expect(containsListValueSeparator('school\tA')).toBe(true);
+      expect(containsListValueSeparator('school\tA')).toBe(false);
       expect(containsListValueSeparator('school\nA')).toBe(true);
       expect(containsListValueSeparator('school-A_1')).toBe(false);
     });
@@ -66,9 +71,12 @@ describe('list values utilities', () => {
       expect(parseSingleColumnCSV(values.join('\n'))).toEqual(values);
     });
 
-    it('rejects commas and tabs within values', () => {
+    it('preserves internal whitespace', () => {
+      expect(parseSingleColumnCSV('hello    world\nschool\tone')).toEqual(['hello    world', 'school\tone']);
+    });
+
+    it('rejects multiple columns', () => {
       expect(() => parseSingleColumnCSV('school,one')).toThrow('CSV should contain only one column');
-      expect(() => parseSingleColumnCSV('school\tone')).toThrow('CSV values cannot contain tabs');
     });
 
     it('preserves formula-like prefixes and leading apostrophes', () => {

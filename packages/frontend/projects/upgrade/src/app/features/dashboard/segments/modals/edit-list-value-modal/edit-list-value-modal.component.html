@@ -13,7 +13,7 @@
       @if (valueControl.hasError('required')) {
       <mat-error>Value is required.</mat-error>
       } @else if (valueControl.hasError('separator')) {
-      <mat-error>Value cannot contain commas, tabs, or line breaks.</mat-error>
+      <mat-error>Value cannot contain commas or line breaks.</mat-error>
       } @else if (valueControl.hasError('duplicate')) {
       <mat-error>This value already exists in the list.</mat-error>
       }

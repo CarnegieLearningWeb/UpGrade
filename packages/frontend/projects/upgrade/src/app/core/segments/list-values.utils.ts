@@ -4,7 +4,7 @@ export interface MergeListValuesResult {
   duplicateValues: string[];
 }
 
-const VALUE_SEPARATORS = /[,\t\r\n]+/;
+const VALUE_SEPARATORS = /[,\r\n]+/;
 
 export function splitListValues(rawValue: string): string[] {
   return rawValue
@@ -46,22 +46,12 @@ export function mergeUniqueListValues(existingValues: string[], incomingValues: 
 }
 
 export function parseSingleColumnCSV(content: string): string[] {
-  const values = content
-    .split(/\r?\n/)
-    .map((value) => value.trim())
+  const lines = content
+    .split('\n')
+    .map((line) => line.trim())
     .filter(Boolean);
 
-  if (!values.length) {
-    throw new Error('CSV file is empty');
-  }
-
-  if (values.some((value) => value.includes(','))) {
-    throw new Error('CSV should contain only one column');
-  }
-
-  if (values.some((value) => value.includes('\t'))) {
-    throw new Error('CSV values cannot contain tabs');
-  }
-
-  return values;
+  if (lines.length === 0) throw new Error('CSV file is empty');
+  if (lines.some((line) => line.includes(','))) throw new Error('CSV should contain only one column');
+  return lines;
 }
