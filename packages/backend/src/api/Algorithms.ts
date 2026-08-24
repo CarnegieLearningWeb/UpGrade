@@ -1,18 +1,18 @@
 import seedrandom from 'seedrandom';
 import { ConditionPayloadDTO } from './DTO/ConditionPayloadDTO';
 import { Experiment } from './models/Experiment';
-import { CONDITION_ORDER, EXPERIMENT_TYPE, IExperimentAssignmentv5, IPayload } from 'upgrade_types';
+import { CONDITION_ORDER, EXPERIMENT_TYPE, IExperimentAssignment, IPayload } from 'upgrade_types';
 import { FactorDTO } from './DTO/FactorDTO';
 import { ExperimentCondition } from './models/ExperimentCondition';
 import { DecisionPoint } from './models/DecisionPoint';
 
 export function randomCondition(
   experiment,
-  assignedData: IExperimentAssignmentv5,
+  assignedData: IExperimentAssignment,
   userID: string,
   repeatedEnrollmentLength: number
-): IExperimentAssignmentv5 {
-  const randomConditionArray: IExperimentAssignmentv5['assignedCondition'] = [];
+): IExperimentAssignment {
+  const randomConditionArray: IExperimentAssignment['assignedCondition'] = [];
   const assignedFactorsArray: Record<string, { level: string; payload: IPayload }>[] = [];
 
   // create 100 elements array of random condition
@@ -27,7 +27,7 @@ export function randomCondition(
     }
   }
 
-  const randomAssignData: IExperimentAssignmentv5 = {
+  const randomAssignData: IExperimentAssignment = {
     site: assignedData.site,
     target: assignedData.target,
     assignedCondition: randomConditionArray,
@@ -41,17 +41,17 @@ export function randomCondition(
 
 export function randomRoundRobinCondition(
   experiment,
-  assignedData: IExperimentAssignmentv5,
+  assignedData: IExperimentAssignment,
   userID: string,
   repeatedEnrollmentLength: number
-): IExperimentAssignmentv5 {
-  const randomRoundRobinConditionArray: IExperimentAssignmentv5['assignedCondition'] = [];
+): IExperimentAssignment {
+  const randomRoundRobinConditionArray: IExperimentAssignment['assignedCondition'] = [];
   const assignedFactorsArray: Record<string, { level: string; payload: IPayload }>[] = [];
   const totalLoopsInQueue = Math.ceil(100 / assignedData.assignedCondition.length);
 
   // create array of random ordered conditions pairs
   for (let i = 0; i < totalLoopsInQueue; i++) {
-    const tempConditionArray: IExperimentAssignmentv5['assignedCondition'] = [...assignedData.assignedCondition];
+    const tempConditionArray: IExperimentAssignment['assignedCondition'] = [...assignedData.assignedCondition];
     const tempFactorArray: Record<string, { level: string; payload: IPayload }>[] =
       experiment.type === EXPERIMENT_TYPE.FACTORIAL ? [...assignedData.assignedFactor] : [];
 
@@ -70,7 +70,7 @@ export function randomRoundRobinCondition(
     }
   }
 
-  const randomRoundRobinAssignData: IExperimentAssignmentv5 = {
+  const randomRoundRobinAssignData: IExperimentAssignment = {
     site: assignedData.site,
     target: assignedData.target,
     assignedCondition: randomRoundRobinConditionArray,
@@ -83,9 +83,9 @@ export function randomRoundRobinCondition(
 }
 
 export function rotateElements(
-  assignedData: IExperimentAssignmentv5,
+  assignedData: IExperimentAssignment,
   repeatedEnrollmentLength: number
-): IExperimentAssignmentv5 {
+): IExperimentAssignment {
   if (repeatedEnrollmentLength > 0 && assignedData.assignedCondition.length >= 2) {
     const totalloopIteration = repeatedEnrollmentLength % assignedData.assignedCondition.length;
 
@@ -114,7 +114,7 @@ export function buildWithinSubjectOrderedConditions(
   userId: string,
   repeatedEnrollmentLength: number
 ): {
-  orderedConditions: IExperimentAssignmentv5['assignedCondition'];
+  orderedConditions: IExperimentAssignment['assignedCondition'];
   orderedFactors: Record<string, { level: string; payload: IPayload }>[] | null;
 } {
   // Order matters here: ORDERED_ROUND_ROBIN rotates this array directly, and the RANDOM /
@@ -126,7 +126,7 @@ export function buildWithinSubjectOrderedConditions(
     (condition1, condition2) => condition1.order - condition2.order
   );
 
-  const baseConditions: IExperimentAssignmentv5['assignedCondition'] = orderedExperimentConditions.map((condition) => ({
+  const baseConditions: IExperimentAssignment['assignedCondition'] = orderedExperimentConditions.map((condition) => ({
     conditionCode: condition.conditionCode,
     payload: undefined,
     experimentId: experiment.id,
@@ -138,7 +138,7 @@ export function buildWithinSubjectOrderedConditions(
       ? orderedExperimentConditions.map((condition) => getAssignedFactor(condition, factors))
       : null;
 
-  let assignedData: IExperimentAssignmentv5 = {
+  let assignedData: IExperimentAssignment = {
     site: '',
     target: '',
     assignedCondition: baseConditions,
@@ -175,11 +175,11 @@ export function buildWithinSubjectOrderedConditions(
  */
 export function withInSubjectTypeFromPrecomputed(
   experiment: Experiment,
-  orderedConditions: IExperimentAssignmentv5['assignedCondition'],
+  orderedConditions: IExperimentAssignment['assignedCondition'],
   orderedFactors: Record<string, { level: string; payload: IPayload }>[] | null,
   conditionPayloadMap: Map<string, ConditionPayloadDTO>,
   decisionPoint: DecisionPoint
-): IExperimentAssignmentv5 {
+): IExperimentAssignment {
   const isFactorial = experiment.type === EXPERIMENT_TYPE.FACTORIAL;
 
   const assignedCondition = orderedConditions.map((condition) => {

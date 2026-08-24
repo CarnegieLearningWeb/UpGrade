@@ -17,7 +17,7 @@ import { FeatureFlagRequestValidator } from './validators/FeatureFlagRequestVali
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidatorv6 } from './validators/UpdateWorkingGroupValidator';
-import { IExperimentAssignmentv5, IGroupMembership, IUserAliases, IWorkingGroup } from 'upgrade_types';
+import { IExperimentAssignment, IGroupMembership, IUserAliases, IWorkingGroup } from 'upgrade_types';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidatorv6 } from './validators/LogValidator';
@@ -540,7 +540,7 @@ export class ExperimentClientController {
     request: AppRequest,
     @Body({ validate: true })
     experiment: ExperimentAssignmentValidatorv6
-  ): Promise<IExperimentAssignmentv5[]> {
+  ): Promise<IExperimentAssignment[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
     const experimentUserDoc = request.userDoc;
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(

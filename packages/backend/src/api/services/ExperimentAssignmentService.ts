@@ -20,7 +20,7 @@ import {
   EXPERIMENT_TYPE,
   SUPPORTED_CALIPER_PROFILES,
   SUPPORTED_CALIPER_EVENTS,
-  IExperimentAssignmentv5,
+  IExperimentAssignment,
   ASSIGNMENT_ALGORITHM,
   IPayload,
   PAYLOAD_TYPE,
@@ -450,7 +450,7 @@ export class ExperimentAssignmentService {
     experimentUserDoc: RequestedExperimentUser,
     context: string,
     logger: UpgradeLogger
-  ): Promise<IExperimentAssignmentv5[]> {
+  ): Promise<IExperimentAssignment[]> {
     logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
     const userId = experimentUserDoc.id;
     const previewUser = await this.previewUserService.findOneFromCache(userId, logger);
@@ -567,7 +567,7 @@ export class ExperimentAssignmentService {
     site: string,
     target: string,
     logger: UpgradeLogger
-  ): Promise<Record<string, IExperimentAssignmentv5 | null>> {
+  ): Promise<Record<string, IExperimentAssignment | null>> {
     logger.info({
       message: `getAllExperimentConditions: User: ${experimentUserDocs.map((doc) => doc.id).join(', ')}`,
     });
@@ -635,7 +635,7 @@ export class ExperimentAssignmentService {
             assignmentRecords.groupExclusion,
             enrollmentCountPerCondition
           );
-          let fullAssignment: IExperimentAssignmentv5[] | null = null;
+          let fullAssignment: IExperimentAssignment[] | null = null;
           if (assignedCondition) {
             const { conditionPayloads, type, factors } = this.experimentService.formattingPayload(experiment);
             fullAssignment = this.mapDecisionPoints(
@@ -666,7 +666,7 @@ export class ExperimentAssignmentService {
     }
   }
 
-  public formatAssignments(assignedData: IExperimentAssignmentv5[]): IExperimentAssignmentv5[] {
+  public formatAssignments(assignedData: IExperimentAssignment[]): IExperimentAssignment[] {
     return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
       const finalFactorData = assignedFactor?.map((factor) => {
         const updatedAssignedFactor: Record<string, { level: string; payload: IPayload }> = {};
@@ -990,7 +990,7 @@ export class ExperimentAssignmentService {
     factors: FactorDTO[],
     repeatedEnrollmentCounts: RepeatedEnrollmentDataCount[],
     logger: UpgradeLogger
-  ): IExperimentAssignmentv5[] {
+  ): IExperimentAssignment[] {
     // For within-subjects experiments, pre-compute the condition ordering (~100 seedrandom calls)
     // and build a payload lookup Map once, then reuse across all decision points.
     let withinSubjectPrecomputed: ReturnType<typeof buildWithinSubjectOrderedConditions> | null = null;
@@ -1202,31 +1202,6 @@ export class ExperimentAssignmentService {
         : excludeData.groups;
 
     return [userExcluded !== undefined, groupExcluded.length > 0];
-  }
-
-  // When browser will be sending the blob data
-  public async blobDataLog(
-    userDoc: RequestedExperimentUser,
-    blobLog: ILogInput[],
-    logger: UpgradeLogger
-  ): Promise<Log[]> {
-    const userId = userDoc.id;
-    logger.info({ message: `Add blob data userId ${userId}`, details: blobLog });
-    const keyUniqueArray = [];
-
-    // throw error if user not defined
-    if (!userDoc) {
-      logger.error({ message: `User not found in blobDataLog, userId => ${userId}`, details: blobLog });
-      throw new Error(`User not defined in blobDataLog: ${userId}`);
-    }
-
-    // extract the array value
-    const promise = blobLog.map(async (individualMetrics) => {
-      return this.createLog(individualMetrics, keyUniqueArray, userDoc, logger);
-    });
-
-    const logsToReturn = await Promise.all(promise);
-    return flatten(logsToReturn);
   }
 
   public async caliperDataLog(

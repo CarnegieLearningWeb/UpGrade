@@ -104,12 +104,12 @@ Internally this uses the `context` and `userId` to query conditions for all elig
 **`Example`**
 
 ```typescript
-const allExperimentConditionsResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions(workingGroup);
+const allExperimentConditionsResponse: IExperimentAssignment[] = await upgradeClient.getAllExperimentConditions(workingGroup);
 ```
 
 #### Returns
 
-`Promise`<`IExperimentAssignmentv5`[]\>
+`Promise`<`IExperimentAssignment`[]\>
 
 #### Defined in
 
@@ -128,7 +128,7 @@ NOTE ALSO: If getAllExperimentConditions() has been called, this will return the
 **`Example`**
 
 ```typescript
-const allExperimentConditionsResponse: IExperimentAssignmentv5[] = await upgradeClient.getAllExperimentConditions(workingGroup);
+const allExperimentConditionsResponse: IExperimentAssignment[] = await upgradeClient.getAllExperimentConditions(workingGroup);
 ```
 
 #### Parameters

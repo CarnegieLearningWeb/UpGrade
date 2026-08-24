@@ -1,5 +1,5 @@
 import { UpGradeClientEnums, UpGradeClientInterfaces, UpGradeClientRequests } from '../types';
-import { CaliperEnvelope, IExperimentAssignmentv5, ILogInput, IUserAliases, ILogRequestBody } from 'upgrade_types';
+import { CaliperEnvelope, IExperimentAssignment, ILogInput, IUserAliases, ILogRequestBody } from 'upgrade_types';
 import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
 
@@ -210,12 +210,12 @@ export default class ApiService {
     });
   }
 
-  public getAllExperimentConditions(): Promise<IExperimentAssignmentv5[]> {
+  public getAllExperimentConditions(): Promise<IExperimentAssignment[]> {
     const requestBody: UpGradeClientRequests.IGetAllExperimentConditionsRequestBody = {
       context: this.context,
     };
 
-    return this.sendRequest<IExperimentAssignmentv5[], UpGradeClientRequests.IGetAllExperimentConditionsRequestBody>({
+    return this.sendRequest<IExperimentAssignment[], UpGradeClientRequests.IGetAllExperimentConditionsRequestBody>({
       path: this.api.getAllExperimentConditions,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
