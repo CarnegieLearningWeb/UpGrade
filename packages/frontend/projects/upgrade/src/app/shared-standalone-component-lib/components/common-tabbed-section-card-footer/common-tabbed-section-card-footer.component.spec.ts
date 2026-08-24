@@ -55,10 +55,6 @@ describe('CommonTabbedSectionCardFooterComponent', () => {
     host.onSelectedTabChange.mockClear();
   });
 
-  it('should create', () => {
-    expect(fixture.componentInstance).toBeTruthy();
-  });
-
   it('should not navigate when tabLabels is replaced with equal labels but new object identities', async () => {
     // Simulates a details page re-emitting tab labels after a store update (e.g. a list
     // was added and the parent entity was replaced). The rebuilt labels must not cause a

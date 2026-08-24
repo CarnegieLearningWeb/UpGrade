@@ -125,25 +125,27 @@ describe('ListDetailsDataService', () => {
       });
   });
 
-  it('marks completed and archived experiment owners as read-only', (done) => {
-    experimentDataService.getExperimentById.mockReturnValue(
-      of({
-        id: 'experiment-id',
-        name: 'Test experiment',
-        state: EXPERIMENT_STATE.COMPLETED,
-        experimentSegmentInclusion: [],
-        experimentSegmentExclusion: [{ segment }],
-      })
-    );
+  it.each([EXPERIMENT_STATE.COMPLETED, EXPERIMENT_STATE.ARCHIVED])(
+    'marks %s experiment owners as read-only',
+    async (state) => {
+      experimentDataService.getExperimentById.mockReturnValue(
+        of({
+          id: 'experiment-id',
+          name: 'Test experiment',
+          state,
+          experimentSegmentInclusion: [],
+          experimentSegmentExclusion: [{ segment }],
+        })
+      );
 
-    service
-      .fetchOwner(LIST_OWNER_TYPE.EXPERIMENT, 'experiment-id', LIST_FILTER_MODE.EXCLUSION, segment.id)
-      .subscribe((owner) => {
-        expect(owner.isReadOnly).toBe(true);
-        expect(owner.listType).toBe(segment.listType);
-        done();
-      });
-  });
+      const owner = await firstValueFrom(
+        service.fetchOwner(LIST_OWNER_TYPE.EXPERIMENT, 'experiment-id', LIST_FILTER_MODE.EXCLUSION, segment.id)
+      );
+
+      expect(owner.isReadOnly).toBe(true);
+      expect(owner.listType).toBe(segment.listType);
+    }
+  );
 
   it('rejects an experiment list that is not attached to the requested owner and filter mode', async () => {
     experimentDataService.getExperimentById.mockReturnValue(
@@ -340,7 +342,7 @@ describe('ListDetailsDataService', () => {
     });
   });
 
-  it('deletes an experiment list with its owner id', (done) => {
+  it('uses the experiment inclusion delete endpoint', (done) => {
     experimentDataService.deleteInclusionList.mockReturnValue(of(undefined));
 
     service
@@ -351,7 +353,7 @@ describe('ListDetailsDataService', () => {
       });
   });
 
-  it('deletes a feature flag list with its owner id', (done) => {
+  it('uses the feature flag exclusion delete endpoint', (done) => {
     featureFlagsDataService.deleteExclusionList.mockReturnValue(of(undefined));
 
     service
