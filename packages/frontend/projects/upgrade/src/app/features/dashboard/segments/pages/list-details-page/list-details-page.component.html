@@ -114,6 +114,14 @@
               </td>
             </tr>
           </table>
+          @if (dataSource.filteredData.length > valuesPageSize) {
+          <mat-paginator
+            class="ft-12-400"
+            [hidePageSize]="true"
+            [pageSize]="valuesPageSize"
+            aria-label="Select values page"
+          ></mat-paginator>
+          }
         </div>
         }
       </app-common-section-card>

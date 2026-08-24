@@ -1,8 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ErrorHandler, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ErrorHandler,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -73,6 +82,7 @@ enum LIST_DETAILS_ACTION {
     CommonSectionCardActionButtonsComponent,
     MatButtonModule,
     MatIconModule,
+    MatPaginatorModule,
     MatProgressBarModule,
     MatTableModule,
   ],
@@ -82,6 +92,7 @@ enum LIST_DETAILS_ACTION {
 })
 export class ListDetailsPageComponent implements OnInit, OnDestroy {
   readonly displayedColumns = ['value', 'actions'];
+  readonly valuesPageSize = 10;
   readonly dataSource = new MatTableDataSource<ListValueTableRow>([]);
   ownerType: LIST_OWNER_TYPE;
   ownerId = '';
@@ -105,6 +116,10 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
 
   private hasUpdatePermission = false;
   private subscriptions = new Subscription();
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator | undefined) {
+    this.dataSource.paginator = paginator ?? null;
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -246,6 +261,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
   search(searchParams: CommonSearchWidgetSearchParams<string>): void {
     this.valuesSearchString = searchParams.searchString;
     this.dataSource.filter = this.valuesSearchString.trim().toLowerCase();
+    this.dataSource.paginator?.firstPage();
   }
 
   openAddValuesModal(): void {
