@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -9,7 +9,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonLearnMoreLinkComponent, CommonModalComponent } from '@shared-component-lib';
 import { CommonImportContainerComponent } from '@shared-component-lib/common-import-container/common-import-container.component';
 import { FILE_TYPE } from 'upgrade_types';
-import { parseSingleColumnCSV, splitListValues } from '../../../../../core/segments/list-values.utils';
+import {
+  containsTabCharacter,
+  parseSingleColumnCSV,
+  splitListValues,
+} from '../../../../../core/segments/list-values.utils';
 
 export enum LIST_VALUES_UPDATE_MODE {
   APPEND = 'append',
@@ -31,6 +35,7 @@ export interface UpsertListValuesModalResult {
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatRadioModule,
@@ -44,7 +49,10 @@ export interface UpsertListValuesModalResult {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpsertListValuesModalComponent implements OnDestroy {
-  rawValues = '';
+  readonly rawValuesControl = new FormControl('', {
+    nonNullable: true,
+    validators: [(control) => (containsTabCharacter(control.value) ? { tab: true } : null)],
+  });
   importedValues: string[] = [];
   fileName = '';
   errorMessage = '';
@@ -64,15 +72,24 @@ export class UpsertListValuesModalComponent implements OnDestroy {
   }
 
   get values(): string[] {
-    return this.data.importOnly ? this.importedValues : splitListValues(this.rawValues);
+    return this.data.importOnly ? this.importedValues : splitListValues(this.rawValuesControl.value);
   }
 
   get primaryActionLabel(): string {
     return this.data.importOnly ? 'Import' : 'Add';
   }
 
+  get hasUnsupportedTab(): boolean {
+    return !this.data.importOnly && this.rawValuesControl.hasError('tab');
+  }
+
   get isPrimaryActionDisabled(): boolean {
-    return this.values.length === 0 || !!this.errorMessage || (this.data.importOnly && !this.fileName);
+    return (
+      this.values.length === 0 ||
+      this.hasUnsupportedTab ||
+      !!this.errorMessage ||
+      (this.data.importOnly && !this.fileName)
+    );
   }
 
   onFilesSelected(files: File[]): void {

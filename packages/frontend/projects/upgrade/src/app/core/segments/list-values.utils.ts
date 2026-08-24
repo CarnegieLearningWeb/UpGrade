@@ -6,6 +6,10 @@ export interface MergeListValuesResult {
 
 const VALUE_SEPARATORS = /[,\r\n]+/;
 
+export function containsTabCharacter(value: string): boolean {
+  return value.includes('\t');
+}
+
 export function splitListValues(rawValue: string): string[] {
   return rawValue
     .split(VALUE_SEPARATORS)
@@ -13,9 +17,9 @@ export function splitListValues(rawValue: string): string[] {
     .filter(Boolean);
 }
 
-/** True when a single value contains characters that the add/import pipelines treat as separators. */
+/** True when a single value contains a delimiter or a tab that the backend cannot preserve. */
 export function containsListValueSeparator(value: string): boolean {
-  return VALUE_SEPARATORS.test(value);
+  return VALUE_SEPARATORS.test(value) || containsTabCharacter(value);
 }
 
 export function mergeUniqueListValues(existingValues: string[], incomingValues: string[]): MergeListValuesResult {
@@ -46,8 +50,10 @@ export function mergeUniqueListValues(existingValues: string[], incomingValues: 
 }
 
 export function parseSingleColumnCSV(content: string): string[] {
+  if (containsTabCharacter(content)) throw new Error('CSV values cannot contain tabs');
+
   const lines = content
-    .split('\n')
+    .split(/\r\n|\n|\r/)
     .map((line) => line.trim())
     .filter(Boolean);
 

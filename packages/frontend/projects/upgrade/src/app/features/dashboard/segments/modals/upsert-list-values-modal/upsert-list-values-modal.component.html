@@ -45,11 +45,14 @@
         matInput
         rows="4"
         class="ft-14-400"
-        [(ngModel)]="rawValues"
+        [formControl]="rawValuesControl"
         placeholder="Type or paste comma-separated values..."
       ></textarea>
+      <mat-hint class="form-hint ft-12-400">Separate values with commas or new lines.</mat-hint>
+      @if (rawValuesControl.hasError('tab')) {
+      <mat-error>Values cannot contain tabs.</mat-error>
+      }
     </mat-form-field>
-    <p class="entry-hint ft-12-400">Separate values with commas or new lines.</p>
     }
   </div>
 </app-common-dialog>

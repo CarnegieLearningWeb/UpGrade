@@ -25,6 +25,7 @@ describe('list values utilities', () => {
     it('flags values that the add/import pipelines would split or reject', () => {
       expect(containsListValueSeparator('schoolA,schoolB')).toBe(true);
       expect(containsListValueSeparator('school\nA')).toBe(true);
+      expect(containsListValueSeparator('school\tA')).toBe(true);
       expect(containsListValueSeparator('school-A_1')).toBe(false);
     });
   });
@@ -41,7 +42,7 @@ describe('list values utilities', () => {
 
   describe('parseSingleColumnCSV', () => {
     it('parses a single-column CSV without a header', () => {
-      expect(parseSingleColumnCSV('one\ntwo\r\nthree')).toEqual(['one', 'two', 'three']);
+      expect(parseSingleColumnCSV('one\ntwo\r\nthree\rfour')).toEqual(['one', 'two', 'three', 'four']);
     });
 
     it('preserves duplicate rows for post-operation reporting', () => {
@@ -54,6 +55,10 @@ describe('list values utilities', () => {
 
     it('rejects multiple columns', () => {
       expect(() => parseSingleColumnCSV('school,one')).toThrow('CSV should contain only one column');
+    });
+
+    it.each(['school\tone', '\tschool'])('rejects tab characters before normalizing values', (content) => {
+      expect(() => parseSingleColumnCSV(content)).toThrow('CSV values cannot contain tabs');
     });
 
     it('rejects an empty CSV file', () => {
