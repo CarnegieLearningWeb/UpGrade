@@ -14,7 +14,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import {
   CommonDetailsPageHeaderComponent,
   CommonPageComponent,
@@ -38,6 +40,7 @@ import {
   LIST_OPTION_TYPE,
   LIST_OWNER_TYPE,
   ListDetailsOwner,
+  ListDetailsOwnerRestriction,
   ParticipantListTableRow,
   Segment,
 } from '../../../../../core/segments/store/segments.model';
@@ -85,6 +88,8 @@ enum LIST_DETAILS_ACTION {
     MatPaginatorModule,
     MatProgressBarModule,
     MatTableModule,
+    MatTooltipModule,
+    TranslateModule,
   ],
   templateUrl: './list-details-page.component.html',
   styleUrl: './list-details-page.component.scss',
@@ -110,7 +115,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
   isValuesMenuDisabled = true;
   isLoading = true;
   isSaving = false;
-  isOwnerReadOnly = false;
+  ownerRestriction: ListDetailsOwnerRestriction = { isDisabled: false };
   areSectionCardsExpanded = true;
   isValuesSectionExpanded = true;
 
@@ -212,7 +217,15 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
   }
 
   get canManage(): boolean {
-    return this.hasUpdatePermission && !this.isOwnerReadOnly;
+    return this.canShowMutationActions && !this.ownerRestriction.isDisabled;
+  }
+
+  get canShowMutationActions(): boolean {
+    return this.hasUpdatePermission && !this.ownerRestriction.shouldHideActions;
+  }
+
+  get showValuesMenuButton(): boolean {
+    return this.canShowMutationActions || !this.isValuesMenuDisabled;
   }
 
   private get isPlainSegmentList(): boolean {
@@ -240,7 +253,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
           next: ({ list, owner }) => {
             this.list = list;
             this.owner = owner;
-            this.isOwnerReadOnly = !!owner.isReadOnly;
+            this.ownerRestriction = owner.restriction ?? { isDisabled: false };
             this.listType = list.listType ?? owner.listType ?? '';
             this.listEnabled = owner.listEnabled ?? this.filterMode === LIST_FILTER_MODE.EXCLUSION;
             this.setValues(this.determineValues(list));
@@ -450,7 +463,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
         label: `Delete ${actionTarget}`,
       },
     ];
-    this.showMetadataMenuButton = this.metadataMenuButtonItems.some((item) => !item.disabled);
+    this.showMetadataMenuButton = this.canShowMutationActions;
   }
 
   private getMetadataActionTarget(): string {

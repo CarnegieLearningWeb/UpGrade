@@ -12,6 +12,7 @@ import {
   ExperimentSegmentListRequest,
   LIST_OWNER_TYPE,
   ListDetailsOwner,
+  ListDetailsOwnerRestriction,
   Segment,
 } from './store/segments.model';
 
@@ -70,8 +71,7 @@ export class ListDetailsDataService {
               // The experiment response carries the inferred list type for legacy lists
               // whose own segment row predates the listType column.
               listType: list.segment?.listType,
-              // The owner details page locks list changes for these states, so lock them here too.
-              isReadOnly: [EXPERIMENT_STATE.COMPLETED, EXPERIMENT_STATE.ARCHIVED].includes(experiment.state),
+              restriction: this.getExperimentListRestriction(experiment.state),
             };
           })
         );
@@ -117,6 +117,27 @@ export class ListDetailsDataService {
           })
         );
     }
+  }
+
+  private getExperimentListRestriction(state: EXPERIMENT_STATE): ListDetailsOwnerRestriction {
+    // Match the Experiment Details section-card behavior: completed actions remain
+    // visible but disabled, while archived actions are hidden.
+    if (state === EXPERIMENT_STATE.ARCHIVED) {
+      return {
+        isDisabled: true,
+        shouldHideActions: true,
+        tooltipKey: 'experiments.details.restrictions.experiment-archived.text',
+      };
+    }
+
+    if (state === EXPERIMENT_STATE.COMPLETED) {
+      return {
+        isDisabled: true,
+        tooltipKey: 'experiments.details.restrictions.experiment-completed.text',
+      };
+    }
+
+    return { isDisabled: false };
   }
 
   updateList(

@@ -11,7 +11,7 @@
   <div content>
     @if (isLoading) {
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    } @if (list && owner) {
+    } @if (list && owner) { @let restrictionTooltip = ownerRestriction.tooltipKey | translate;
     <app-common-section-card-list>
       <app-common-section-card section-card>
         <app-common-section-card-title-header
@@ -24,7 +24,8 @@
           header-right
           [showMenuButton]="showMetadataMenuButton"
           [menuButtonItems]="metadataMenuButtonItems"
-          [menuButtonDisabled]="isSaving"
+          [menuButtonDisabled]="isSaving || ownerRestriction.isDisabled"
+          [menuButtonTooltip]="restrictionTooltip"
           [isSectionCardExpanded]="areSectionCardsExpanded"
           (menuButtonItemClick)="onMetadataAction($event)"
           (sectionCardExpandChange)="onOverviewSectionExpandChange($event)"
@@ -53,12 +54,14 @@
 
         <app-common-section-card-action-buttons
           header-right
-          [showPrimaryButton]="canManage"
+          [showPrimaryButton]="canShowMutationActions"
           primaryButtonText="Add Values"
-          [primaryActionBtnDisabled]="isSaving"
-          [showMenuButton]="true"
+          [primaryActionBtnDisabled]="isSaving || ownerRestriction.isDisabled"
+          [primaryButtonTooltip]="restrictionTooltip"
+          [showMenuButton]="showValuesMenuButton"
           [menuButtonItems]="valuesMenuButtonItems"
           [menuButtonDisabled]="isSaving || isValuesMenuDisabled"
+          [menuButtonTooltip]="restrictionTooltip"
           [isSectionCardExpanded]="isValuesSectionExpanded"
           (primaryButtonClick)="openAddValuesModal()"
           (menuButtonItemClick)="onValuesMenuAction($event)"
@@ -77,25 +80,37 @@
             </ng-container>
 
             <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef class="actions-column ft-14-600">@if (canManage) { Actions }</th>
+              <th mat-header-cell *matHeaderCellDef class="actions-column ft-14-600">
+                @if (canShowMutationActions) { Actions }
+              </th>
               <td mat-cell *matCellDef="let row" class="actions-column dense-2">
-                @if (canManage) {
-                <div class="button-wrapper">
+                @if (canShowMutationActions) {
+                <div
+                  class="button-wrapper"
+                  [matTooltip]="restrictionTooltip"
+                  [matTooltipDisabled]="!ownerRestriction.isDisabled"
+                  matTooltipPosition="above"
+                >
                   <button
                     mat-icon-button
                     class="action-button"
-                    [disabled]="isSaving"
+                    [disabled]="isSaving || ownerRestriction.isDisabled"
                     aria-label="Edit value"
                     (click)="editValue(row)"
                   >
                     <mat-icon>edit</mat-icon>
                   </button>
                 </div>
-                <div class="button-wrapper">
+                <div
+                  class="button-wrapper"
+                  [matTooltip]="restrictionTooltip"
+                  [matTooltipDisabled]="!ownerRestriction.isDisabled"
+                  matTooltipPosition="above"
+                >
                   <button
                     mat-icon-button
                     class="action-button"
-                    [disabled]="isSaving"
+                    [disabled]="isSaving || ownerRestriction.isDisabled"
                     aria-label="Delete value"
                     (click)="deleteValue(row)"
                   >

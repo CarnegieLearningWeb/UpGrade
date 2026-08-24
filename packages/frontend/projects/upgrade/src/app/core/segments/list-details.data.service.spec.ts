@@ -119,33 +119,56 @@ describe('ListDetailsDataService', () => {
           name: 'Test experiment',
           type: LIST_OWNER_TYPE.EXPERIMENT,
           listType: 'Individual',
-          isReadOnly: false,
+          restriction: { isDisabled: false },
         });
         done();
       });
   });
 
-  it.each([EXPERIMENT_STATE.COMPLETED, EXPERIMENT_STATE.ARCHIVED])(
-    'marks %s experiment owners as read-only',
-    async (state) => {
-      experimentDataService.getExperimentById.mockReturnValue(
-        of({
-          id: 'experiment-id',
-          name: 'Test experiment',
-          state,
-          experimentSegmentInclusion: [],
-          experimentSegmentExclusion: [{ segment }],
-        })
-      );
+  it('disables completed experiment list actions without hiding them', async () => {
+    experimentDataService.getExperimentById.mockReturnValue(
+      of({
+        id: 'experiment-id',
+        name: 'Test experiment',
+        state: EXPERIMENT_STATE.COMPLETED,
+        experimentSegmentInclusion: [],
+        experimentSegmentExclusion: [{ segment }],
+      })
+    );
 
-      const owner = await firstValueFrom(
-        service.fetchOwner(LIST_OWNER_TYPE.EXPERIMENT, 'experiment-id', LIST_FILTER_MODE.EXCLUSION, segment.id)
-      );
+    const owner = await firstValueFrom(
+      service.fetchOwner(LIST_OWNER_TYPE.EXPERIMENT, 'experiment-id', LIST_FILTER_MODE.EXCLUSION, segment.id)
+    );
 
-      expect(owner.isReadOnly).toBe(true);
-      expect(owner.listType).toBe(segment.listType);
-    }
-  );
+    expect(owner.restriction).toEqual({
+      isDisabled: true,
+      tooltipKey: 'experiments.details.restrictions.experiment-completed.text',
+    });
+    expect(owner.listType).toBe(segment.listType);
+  });
+
+  it('hides archived experiment list actions', async () => {
+    experimentDataService.getExperimentById.mockReturnValue(
+      of({
+        id: 'experiment-id',
+        name: 'Test experiment',
+        state: EXPERIMENT_STATE.ARCHIVED,
+        experimentSegmentInclusion: [],
+        experimentSegmentExclusion: [{ segment }],
+      })
+    );
+
+    const owner = await firstValueFrom(
+      service.fetchOwner(LIST_OWNER_TYPE.EXPERIMENT, 'experiment-id', LIST_FILTER_MODE.EXCLUSION, segment.id)
+    );
+
+    expect(owner.restriction).toEqual({
+      isDisabled: true,
+      shouldHideActions: true,
+      tooltipKey: 'experiments.details.restrictions.experiment-archived.text',
+    });
+    expect(owner.listType).toBe(segment.listType);
+  });
 
   it('rejects an experiment list that is not attached to the requested owner and filter mode', async () => {
     experimentDataService.getExperimentById.mockReturnValue(
