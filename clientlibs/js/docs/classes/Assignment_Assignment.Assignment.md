@@ -31,7 +31,7 @@
 
 | Name | Type |
 | :------ | :------ |
-| `«destructured»` | `IExperimentAssignmentv5` |
+| `«destructured»` | `IExperimentAssignment` |
 | `apiService` | `default` |
 
 #### Defined in

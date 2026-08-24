@@ -1,5 +1,5 @@
 import { UpGradeClientInterfaces } from '../types';
-import { IExperimentAssignmentv5 } from 'upgrade_types';
+import { IExperimentAssignment } from 'upgrade_types';
 
 /**
  * Synchronous data store
@@ -7,7 +7,7 @@ import { IExperimentAssignmentv5 } from 'upgrade_types';
 export class DataService {
   private group: UpGradeClientInterfaces.IExperimentUserGroup = null;
   private workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup = null;
-  private experimentAssignmentData: IExperimentAssignmentv5[] = null;
+  private experimentAssignmentData: IExperimentAssignment[] = null;
   private featureFlags: string[] = null;
 
   getGroup(): UpGradeClientInterfaces.IExperimentUserGroup {
@@ -26,11 +26,11 @@ export class DataService {
     this.workingGroup = workingGroup;
   }
 
-  getExperimentAssignmentData(): IExperimentAssignmentv5[] {
+  getExperimentAssignmentData(): IExperimentAssignment[] {
     return this.experimentAssignmentData;
   }
 
-  setExperimentAssignmentData(experimentAssignmentData: IExperimentAssignmentv5[]) {
+  setExperimentAssignmentData(experimentAssignmentData: IExperimentAssignment[]) {
     this.experimentAssignmentData = experimentAssignmentData;
   }
 
@@ -46,7 +46,7 @@ export class DataService {
     this.featureFlags = null;
   }
 
-  public rotateAssignmentList(assignment: IExperimentAssignmentv5) {
+  public rotateAssignmentList(assignment: IExperimentAssignment) {
     if (assignment.assignedCondition.length > 1) {
       assignment.assignedCondition.push(assignment.assignedCondition.shift());
       if (assignment.assignedFactor) {
@@ -70,13 +70,13 @@ export class DataService {
       .forEach((assignment) => this.rotateAssignmentList(assignment));
   }
 
-  public findExperimentAssignmentBySiteAndTarget(site: string, target?: string): IExperimentAssignmentv5 {
+  public findExperimentAssignmentBySiteAndTarget(site: string, target?: string): IExperimentAssignment {
     const normalizedTarget = target ?? '';
     const assignment = this.experimentAssignmentData.find(
       (assignment) => assignment.site === site && assignment.target === normalizedTarget
     );
 
-    const emptyAssignment: IExperimentAssignmentv5 = {
+    const emptyAssignment: IExperimentAssignment = {
       site: site,
       target: normalizedTarget,
       assignedCondition: [

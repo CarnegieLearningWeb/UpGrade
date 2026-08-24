@@ -3,7 +3,7 @@ import { AppRequest } from '../../types';
 import { BatchAssignValidator } from './validators/BatchAssignValidator';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { ExperimentUserService } from '../services/ExperimentUserService';
-import { IExperimentAssignmentv5 } from 'upgrade_types';
+import { IExperimentAssignment } from 'upgrade_types';
 
 @Authorized()
 @JsonController('/batch-assign')
@@ -113,7 +113,7 @@ export class BatchAssignController {
   public async getBatchAssignments(
     @Body({ validate: true }) requestBody: BatchAssignValidator,
     @Req() request: AppRequest
-  ): Promise<Record<string, IExperimentAssignmentv5 | null>> {
+  ): Promise<Record<string, IExperimentAssignment | null>> {
     request.logger.info({ message: 'Request received for batch assignments' });
     const { context, site, target, userIds } = requestBody;
     request.logger.info({

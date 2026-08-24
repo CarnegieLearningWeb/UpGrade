@@ -1,6 +1,6 @@
 import {
   EXPERIMENT_TYPE,
-  IExperimentAssignmentv5,
+  IExperimentAssignment,
   IPayload,
   MARKED_DECISION_POINT_STATUS,
   PAYLOAD_TYPE,
@@ -8,7 +8,7 @@ import {
 import Assignment from './Assignment';
 import { UpGradeClientInterfaces } from 'types/Interfaces';
 
-const defaultMockAssignment: IExperimentAssignmentv5 = {
+const defaultMockAssignment: IExperimentAssignment = {
   site: 'site',
   target: 'target',
   assignedCondition: [

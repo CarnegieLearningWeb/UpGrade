@@ -92,9 +92,3 @@ export class LogValidatorv6 implements ILogRequestBody {
   @Type(() => ILogInputValidator)
   public value: ILogInput[];
 }
-
-export class LogValidator extends LogValidatorv6 implements ILogRequestBody {
-  @IsNotEmpty()
-  @IsString()
-  public userId: string;
-}
