@@ -581,7 +581,7 @@ export class ListDetailsPageComponent implements OnInit, OnDestroy {
           // The update response re-fetches the segment with its member relations, so this
           // keeps this.list (the metadata edit modal's full-replacement source) up to date.
           this.list = { ...this.list, ...updatedList, listType: this.listType };
-          this.setValues(values);
+          this.setValues(this.determineValues(this.list));
           this.notificationService.showSuccess(successMessage);
           this.changeDetectorRef.markForCheck();
         },
