@@ -311,6 +311,89 @@ describe('ListDetailsDataService', () => {
     ).rejects.toThrow(`Segment-backed list ${legacySegmentBackedList.id} cannot be opened in List Details.`);
   });
 
+  it('infers an Individual type for a legacy Segment-owned list with only individual members', async () => {
+    const legacyIndividualList = {
+      ...segment,
+      listType: undefined,
+      individualForSegment: [{ userId: 'student-1', segmentId: segment.id }],
+      groupForSegment: [],
+      subSegments: [],
+    };
+    segmentsDataService.getSegmentById.mockReturnValue(
+      of({ segment: { id: 'parent-id', name: 'Parent segment', subSegments: [legacyIndividualList] } })
+    );
+    segmentsDataService.fetchSegmentWithMembersById.mockReturnValue(of(legacyIndividualList));
+
+    const result = await firstValueFrom(
+      service.fetchListDetails(LIST_OWNER_TYPE.SEGMENT, 'parent-id', LIST_FILTER_MODE.EXCLUSION, segment.id)
+    );
+
+    expect(result.list.listType).toBe('Individual');
+    expect(result.list.individualForSegment).toEqual(legacyIndividualList.individualForSegment);
+  });
+
+  it('infers the common group type for a legacy Segment-owned list with only same-type group members', async () => {
+    const legacyGroupList = {
+      ...segment,
+      listType: undefined,
+      individualForSegment: [],
+      groupForSegment: [
+        { groupId: 'school-1', type: 'schoolId', segmentId: segment.id },
+        { groupId: 'school-2', type: 'schoolId', segmentId: segment.id },
+      ],
+      subSegments: [],
+    };
+    segmentsDataService.getSegmentById.mockReturnValue(
+      of({ segment: { id: 'parent-id', name: 'Parent segment', subSegments: [legacyGroupList] } })
+    );
+    segmentsDataService.fetchSegmentWithMembersById.mockReturnValue(of(legacyGroupList));
+
+    const result = await firstValueFrom(
+      service.fetchListDetails(LIST_OWNER_TYPE.SEGMENT, 'parent-id', LIST_FILTER_MODE.EXCLUSION, segment.id)
+    );
+
+    expect(result.list.listType).toBe('schoolId');
+    expect(result.list.groupForSegment).toEqual(legacyGroupList.groupForSegment);
+  });
+
+  it.each([
+    {
+      name: 'empty',
+      individualForSegment: [],
+      groupForSegment: [],
+    },
+    {
+      name: 'mixed-member',
+      individualForSegment: [{ userId: 'student-1', segmentId: segment.id }],
+      groupForSegment: [{ groupId: 'school-1', type: 'schoolId', segmentId: segment.id }],
+    },
+    {
+      name: 'mixed-group-type',
+      individualForSegment: [],
+      groupForSegment: [
+        { groupId: 'school-1', type: 'schoolId', segmentId: segment.id },
+        { groupId: 'class-1', type: 'classId', segmentId: segment.id },
+      ],
+    },
+  ])('does not infer a type for an ambiguous $name legacy Segment-owned list', async (members) => {
+    const ambiguousList = {
+      ...segment,
+      listType: undefined,
+      ...members,
+      subSegments: [],
+    };
+    segmentsDataService.getSegmentById.mockReturnValue(
+      of({ segment: { id: 'parent-id', name: 'Parent segment', subSegments: [ambiguousList] } })
+    );
+    segmentsDataService.fetchSegmentWithMembersById.mockReturnValue(of(ambiguousList));
+
+    await expect(
+      firstValueFrom(
+        service.fetchListDetails(LIST_OWNER_TYPE.SEGMENT, 'parent-id', LIST_FILTER_MODE.EXCLUSION, segment.id)
+      )
+    ).rejects.toThrow(`List type for ${segment.id} cannot be determined from its members.`);
+  });
+
   it('uses the experiment inclusion endpoint with the existing full-list payload', (done) => {
     experimentDataService.updateInclusionList.mockReturnValue(of({ segment }));
 

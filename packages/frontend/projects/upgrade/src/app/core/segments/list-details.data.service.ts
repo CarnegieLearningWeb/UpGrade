@@ -35,10 +35,15 @@ export class ListDetailsDataService {
         this.requireDirectValueList(owner.listType, listId);
         return this.segmentsDataService.fetchSegmentWithMembersById(listId).pipe(
           map((list) => {
-            // Legacy wrappers may not have listType populated, but their subsegment
-            // relationship still identifies them as Segment-backed lists.
-            this.requireDirectValueList(list.listType ?? owner.listType, listId, list.subSegments);
-            return { list, owner };
+            const declaredListType = normalizeStandardListType(list.listType) || owner.listType;
+            const resolvedListType = this.resolveListType(declaredListType, list);
+
+            this.requireDirectValueList(resolvedListType, listId, list.subSegments);
+            if (!resolvedListType) {
+              throw new Error(`List type for ${listId} cannot be determined from its members.`);
+            }
+
+            return { list: { ...list, listType: resolvedListType }, owner };
           })
         );
       })
@@ -206,5 +211,35 @@ export class ListDetailsDataService {
     if (normalizedListType === STANDARD_LIST_TYPE.SEGMENT || (!normalizedListType && (subSegments?.length ?? 0) > 0)) {
       throw new Error(`Segment-backed list ${listId} cannot be opened in List Details.`);
     }
+  }
+
+  private resolveListType(listType: string | undefined, list: Segment): string {
+    const normalizedListType = normalizeStandardListType(listType);
+    if (normalizedListType) {
+      return normalizedListType;
+    }
+
+    const individuals = list.individualForSegment ?? [];
+    const groups = list.groupForSegment ?? [];
+    const subSegments = list.subSegments ?? [];
+
+    // Legacy rows predate segment.listType. Match the existing backend compatibility
+    // rule and infer only member sets that identify one unambiguous list type.
+    if (individuals.length > 0 && groups.length === 0 && subSegments.length === 0) {
+      return STANDARD_LIST_TYPE.INDIVIDUAL;
+    }
+
+    if (individuals.length === 0 && groups.length > 0 && subSegments.length === 0) {
+      const groupType = groups[0].type;
+      if (groups.every((group) => group.type !== 'All' && group.type === groupType)) {
+        return groupType;
+      }
+    }
+
+    if (individuals.length === 0 && groups.length === 0 && subSegments.length > 0) {
+      return STANDARD_LIST_TYPE.SEGMENT;
+    }
+
+    return '';
   }
 }
