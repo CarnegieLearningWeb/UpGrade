@@ -12,6 +12,7 @@ import { FILE_TYPE } from 'upgrade_types';
  * The component accepts the following inputs:
  * - `fileType`: A string representing the accepted file type (e.g., '.json'). Only files with this extension can be selected or dropped.
  * - `buttonLabel`: A string representing the label text of the button. Defaults to 'Upload File'.
+ * - `importFailedMessage`: An optional specific error message. The existing generic message is used when omitted.
  * - `showCloseButton`: Whether to show the CSV close button. Defaults to true.
  *
  * The component emits the following outputs:
@@ -39,6 +40,7 @@ export class CommonImportContainerComponent {
   @Input() fileType!: FILE_TYPE;
   @Input() buttonLabel!: string;
   @Input() importFailed = false;
+  @Input() importFailedMessage = '';
   @Input() showCloseButton = true;
   @Output() closeButtonClick = new EventEmitter<MouseEvent>();
   @Output() filesSelected = new EventEmitter<File[]>();
