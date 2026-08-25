@@ -407,7 +407,11 @@ describe('ExperimentRepository Testing', () => {
     expect(mock.where).toHaveBeenCalledTimes(5);
     expect(mock.getOne).toHaveBeenCalledTimes(5);
 
-    expect(res).toEqual(experiment);
+    expect(res).toEqual({
+      ...experiment,
+      experimentSegmentInclusion: [],
+      experimentSegmentExclusion: [],
+    });
   });
 
   it('should merge separately loaded segment data when finding one experiment', async () => {

@@ -660,12 +660,13 @@ export class ExperimentRepository extends Repository<Experiment> {
       return undefined;
     }
 
-    const [segmentData] = this.mergeSegmentData(
-      inclusionData ? [inclusionData] : [],
-      exclusionData ? [exclusionData] : []
-    );
-
-    return { ...conditionLevelPayloadData, ...factorDecisionPointPayloadData, ...metricData, ...segmentData };
+    return {
+      ...conditionLevelPayloadData,
+      ...factorDecisionPointPayloadData,
+      ...metricData,
+      experimentSegmentInclusion: inclusionData?.experimentSegmentInclusion ?? [],
+      experimentSegmentExclusion: exclusionData?.experimentSegmentExclusion ?? [],
+    };
   }
 
   public async fetchExperimentDetailsForCSVDataExport(experimentId: string): Promise<ExperimentDetailsForCSVData[]> {
