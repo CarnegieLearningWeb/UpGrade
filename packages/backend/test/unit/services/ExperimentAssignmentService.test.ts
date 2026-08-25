@@ -1900,7 +1900,7 @@ describe('Experiment Assignment Service Test', () => {
         loggerMock
       );
 
-      expect(result.experiments).toEqual([]);
+      expect(result.experiment).toBeNull();
       expect(result.experimentId).toBeNull();
       expect(result.isUserExcluded).toBe(false);
       expect(result.isGroupExcluded).toBe(false);
@@ -1922,7 +1922,7 @@ describe('Experiment Assignment Service Test', () => {
         loggerMock
       );
 
-      expect(result.experiments).toEqual([]);
+      expect(result.experiment).toBeNull();
       expect(result.isUserExcluded).toBe(true);
       expect(result.isGroupExcluded).toBe(false);
     });
@@ -1942,7 +1942,7 @@ describe('Experiment Assignment Service Test', () => {
         loggerMock
       );
 
-      expect(result.experiments).toEqual([exp]);
+      expect(result.experiment).toEqual(exp);
       expect(result.experimentId).toEqual(exp.id);
       expect(result.isUserExcluded).toBe(false);
       expect(result.isGroupExcluded).toBe(false);
@@ -1986,7 +1986,7 @@ describe('Experiment Assignment Service Test', () => {
         loggerMock
       );
 
-      expect(result.experiments).toEqual([exp]);
+      expect(result.experiment).toBe(exp);
       expect(result.experimentId).toEqual(exp.id);
       expect(result.isUserExcluded).toBe(false);
       expect(result.isGroupExcluded).toBe(false);
@@ -2010,7 +2010,7 @@ describe('Experiment Assignment Service Test', () => {
         loggerMock
       );
 
-      expect(result.experiments).toEqual([]);
+      expect(result.experiment).toBeNull();
       expect(result.experimentId).toBeNull();
       expect(result.exclusionReason).toHaveLength(1);
       expect(result.exclusionReason[0]).toEqual(exclusion);

@@ -221,7 +221,7 @@ export class ExperimentAssignmentService {
     previewUser: PreviewUser,
     logger: UpgradeLogger
   ): Promise<{
-    experiments: Experiment[];
+    experiment: Experiment | null;
     experimentId: string | null;
     isUserExcluded: boolean;
     isGroupExcluded: boolean;
@@ -234,7 +234,7 @@ export class ExperimentAssignmentService {
 
     if (allExperimentsAtDP.length === 0) {
       return {
-        experiments: [],
+        experiment: null,
         experimentId: null,
         isUserExcluded: false,
         isGroupExcluded: false,
@@ -245,13 +245,13 @@ export class ExperimentAssignmentService {
     const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
 
     if (isUserExcluded || isGroupExcluded) {
-      return { experiments: [], experimentId, isUserExcluded, isGroupExcluded, exclusionReason: [] };
+      return { experiment: null, experimentId, isUserExcluded, isGroupExcluded, exclusionReason: [] };
     }
 
     if (experimentId) {
       // Experiment ID provided: validate it exists at this decision point then run exclusion checks.
-      const dpExpExists = allExperimentsAtDP.filter((exp) => exp.id === experimentId);
-      if (!dpExpExists.length) {
+      const dpExpExists = allExperimentsAtDP.find((exp) => exp.id === experimentId);
+      if (!dpExpExists) {
         const error = new Error(
           `Experiment ID not found among valid experiments at this decision point in markExperimentPoint: ${userDoc.id}`
         );
@@ -260,9 +260,9 @@ export class ExperimentAssignmentService {
         logger.error(error);
         throw error;
       }
-      const [, exclusionReason] = await this.experimentLevelExclusionInclusion(dpExpExists, userDoc, logger);
+      const [, exclusionReason] = await this.experimentLevelExclusionInclusion([dpExpExists], userDoc, logger);
       return {
-        experiments: dpExpExists,
+        experiment: dpExpExists,
         experimentId,
         isUserExcluded,
         isGroupExcluded,
@@ -278,10 +278,10 @@ export class ExperimentAssignmentService {
       logger
     );
 
-    const experiments = selectedExperiments.length > 0 ? [selectedExperiments[0]] : [];
-    const resolvedExperimentId = experiments[0]?.id ?? null;
+    const experiment = selectedExperiments.length > 0 ? selectedExperiments[0] : null;
+    const resolvedExperimentId = experiment?.id ?? null;
     return {
-      experiments,
+      experiment,
       experimentId: resolvedExperimentId,
       isUserExcluded,
       isGroupExcluded,
@@ -326,13 +326,13 @@ export class ExperimentAssignmentService {
     });
 
     // REMOVE WHEN ALL CLIENTS ARE UPDATED TO SEND CONTEXT
-    let infereredContextToSupportLegacyAPI = context;
+    let inferredContextToSupportLegacyAPI = context;
 
     if (!context) {
       if (experimentId) {
-        infereredContextToSupportLegacyAPI = await this.experimentRepository.findContextByExperimentId(experimentId);
+        inferredContextToSupportLegacyAPI = await this.experimentRepository.findContextByExperimentId(experimentId);
       } else {
-        infereredContextToSupportLegacyAPI = await this.experimentService.getFirstValidContextByDecisionPoint(
+        inferredContextToSupportLegacyAPI = await this.experimentService.getFirstValidContextByDecisionPoint(
           site,
           target
         );
@@ -341,7 +341,7 @@ export class ExperimentAssignmentService {
     // 1-3. Resolve which experiment to mark, applying the same filtering and pooling logic as getAllExperimentConditions
     //      so that the two methods are guaranteed to agree on the selected experiment.
     const {
-      experiments: resolvedExperiments,
+      experiment: resolvedExperiment,
       experimentId: resolvedExperimentId,
       isUserExcluded,
       isGroupExcluded,
@@ -349,13 +349,13 @@ export class ExperimentAssignmentService {
     } = await this.resolveExperimentForMarkPoint(
       site,
       target,
-      infereredContextToSupportLegacyAPI,
+      inferredContextToSupportLegacyAPI,
       experimentId,
       userDoc,
       previewUser,
       logger
     );
-    const experiments = resolvedExperiments;
+    const experiment = resolvedExperiment;
     experimentId = resolvedExperimentId;
 
     // find monitored document
@@ -372,9 +372,8 @@ export class ExperimentAssignmentService {
       await this.saveGroupExclusionDoc(exclusionReason, userDoc);
     }
 
-    if (experiments.length) {
-      const selectedExperimentDP = experiments[0]?.partitions.find((p) => p.site === site && p.target === target);
-      const experiment = experiments[0];
+    if (experiment) {
+      const selectedExperimentDP = experiment?.partitions.find((p) => p.site === site && p.target === target);
       const { conditions } = experiment;
       const payloadCondition = conditions.flatMap((condition) => condition.conditionPayloads);
 
@@ -410,10 +409,7 @@ export class ExperimentAssignmentService {
     }
 
     // 6. Storing new/updated monitored decision point document
-    const assignmentUnit =
-      experiments?.length > 0
-        ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0].assignmentUnit
-        : null;
+    const assignmentUnit = experiment ? experiment.assignmentUnit : null;
     monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
       id: monitoredDocument?.id || crypto.randomUUID(),
       experimentId: experimentId,
