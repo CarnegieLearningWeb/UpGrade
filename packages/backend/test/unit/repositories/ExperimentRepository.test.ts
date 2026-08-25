@@ -15,6 +15,8 @@ const err = new Error('test error');
 
 const experiment = new Experiment();
 experiment.id = 'id1';
+experiment.experimentSegmentInclusion = [];
+experiment.experimentSegmentExclusion = [];
 
 const result = {
   identifiers: [{ id: experiment.id }],
@@ -194,6 +196,34 @@ describe('ExperimentRepository Testing', () => {
       experimentSegmentInclusion: ['inclusion'],
       experimentSegmentExclusion: ['exclusion'],
     });
+  });
+
+  it('should default segment data missing from either query to an empty array', async () => {
+    const baseData = [{ id: 'exp-a' }, { id: 'exp-b' }] as any;
+    const inclusionData = [{ id: 'exp-a', experimentSegmentInclusion: ['inclusion'] }] as any;
+    const exclusionData = [{ id: 'exp-b', experimentSegmentExclusion: ['exclusion'] }] as any;
+
+    mock.getMany
+      .mockResolvedValueOnce(baseData)
+      .mockResolvedValueOnce(baseData)
+      .mockResolvedValueOnce(baseData)
+      .mockResolvedValueOnce(inclusionData)
+      .mockResolvedValueOnce(exclusionData);
+
+    const res = await repo.findAllExperiments();
+
+    expect(res).toEqual([
+      {
+        id: 'exp-a',
+        experimentSegmentInclusion: ['inclusion'],
+        experimentSegmentExclusion: [],
+      },
+      {
+        id: 'exp-b',
+        experimentSegmentInclusion: [],
+        experimentSegmentExclusion: ['exclusion'],
+      },
+    ]);
   });
 
   it('should throw an error when find all experiments fails', async () => {

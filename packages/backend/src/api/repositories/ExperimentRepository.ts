@@ -10,6 +10,10 @@ import { ConditionPayload } from '../models/ConditionPayload';
 import { DecisionPoint } from '../models/DecisionPoint';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 
+type SegmentInclusionFragment = Pick<Experiment, 'id' | 'experimentSegmentInclusion'>;
+type SegmentExclusionFragment = Pick<Experiment, 'id' | 'experimentSegmentExclusion'>;
+type SegmentFragment = SegmentInclusionFragment & SegmentExclusionFragment;
+
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {
   public async findAllExperiments(): Promise<Experiment[]> {
@@ -563,26 +567,19 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion');
   }
 
-  private mergeSegmentData(inclusionData: Experiment[], exclusionData: Experiment[]): Experiment[] {
+  private mergeSegmentData(
+    inclusionData: SegmentInclusionFragment[],
+    exclusionData: SegmentExclusionFragment[]
+  ): SegmentFragment[] {
     const inclusionById = new Map(inclusionData.map((experiment) => [experiment.id, experiment]));
     const exclusionById = new Map(exclusionData.map((experiment) => [experiment.id, experiment]));
     const experimentIds = new Set([...inclusionById.keys(), ...exclusionById.keys()]);
 
-    return [...experimentIds].map((experimentId) => {
-      const inclusion = inclusionById.get(experimentId);
-      const exclusion = exclusionById.get(experimentId);
-
-      return {
-        ...inclusion,
-        ...exclusion,
-        ...(inclusion?.experimentSegmentInclusion !== undefined
-          ? { experimentSegmentInclusion: inclusion.experimentSegmentInclusion }
-          : {}),
-        ...(exclusion?.experimentSegmentExclusion !== undefined
-          ? { experimentSegmentExclusion: exclusion.experimentSegmentExclusion }
-          : {}),
-      } as Experiment;
-    });
+    return [...experimentIds].map((id) => ({
+      id,
+      experimentSegmentInclusion: inclusionById.get(id)?.experimentSegmentInclusion ?? [],
+      experimentSegmentExclusion: exclusionById.get(id)?.experimentSegmentExclusion ?? [],
+    }));
   }
 
   public async findOneExperiment(id: string): Promise<Experiment | undefined> {
