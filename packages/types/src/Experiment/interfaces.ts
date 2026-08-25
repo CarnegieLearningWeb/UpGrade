@@ -50,13 +50,20 @@ export interface IExperimentEnrollmentDetailStats {
   conditions: IConditionEnrollmentStats[];
 }
 
-export interface IExperimentAssignmentv5 {
+export interface IExperimentAssignment {
   site: string;
   target: string;
   assignedCondition: AssignedCondition[];
   assignedFactor?: Record<string, { level: string; payload: IPayload }>[];
   experimentType: EXPERIMENT_TYPE;
 }
+
+/**
+ * @deprecated Use `IExperimentAssignment` instead. Retained as an alias so existing
+ * `upgrade_client_lib` / `upgrade_types` consumers keep compiling; will be removed in
+ * a future major version.
+ */
+export type IExperimentAssignmentv5 = IExperimentAssignment;
 
 export interface AssignedCondition {
   conditionCode: string;

@@ -1,5 +1,5 @@
 import {
-  IExperimentAssignmentv5,
+  IExperimentAssignment,
   PAYLOAD_TYPE,
   EXPERIMENT_TYPE,
   IPayload,
@@ -18,7 +18,7 @@ export default class Assignment {
   private _assignedFactor: Record<string, { level: string; payload: IPayload | null }>;
 
   constructor(
-    { site, target, assignedCondition, assignedFactor, experimentType }: IExperimentAssignmentv5,
+    { site, target, assignedCondition, assignedFactor, experimentType }: IExperimentAssignment,
     private apiService: ApiService
   ) {
     this._site = site;

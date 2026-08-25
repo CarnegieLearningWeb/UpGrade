@@ -1,4 +1,4 @@
-import { EXPERIMENT_TYPE, IExperimentAssignmentv5, IFeatureFlag, PAYLOAD_TYPE } from 'upgrade_types';
+import { EXPERIMENT_TYPE, IExperimentAssignment, IFeatureFlag, PAYLOAD_TYPE } from 'upgrade_types';
 import { DataService } from './DataService';
 
 describe('DataService', () => {
@@ -130,7 +130,7 @@ describe('DataService', () => {
 
   describe('#rotateAssignmentList', () => {
     it('should return the rotated assignment list', () => {
-      const assignmentList: IExperimentAssignmentv5 = {
+      const assignmentList: IExperimentAssignment = {
         site: 'site',
         target: 'target',
         assignedCondition: [
@@ -158,7 +158,7 @@ describe('DataService', () => {
         experimentType: EXPERIMENT_TYPE.FACTORIAL,
       };
 
-      const expectedRotatedAssignmentList: IExperimentAssignmentv5 = {
+      const expectedRotatedAssignmentList: IExperimentAssignment = {
         site: 'site',
         target: 'target',
         assignedCondition: [
@@ -192,7 +192,7 @@ describe('DataService', () => {
     });
 
     it('should return the rotated assignment list with no assigned factors', () => {
-      const assignmentList: IExperimentAssignmentv5 = {
+      const assignmentList: IExperimentAssignment = {
         site: 'site',
         target: 'target',
         assignedCondition: [
@@ -213,7 +213,7 @@ describe('DataService', () => {
         experimentType: EXPERIMENT_TYPE.SIMPLE,
       };
 
-      const expectedRotatedAssignmentList: IExperimentAssignmentv5 = {
+      const expectedRotatedAssignmentList: IExperimentAssignment = {
         site: 'site',
         target: 'target',
         assignedCondition: [
@@ -240,7 +240,7 @@ describe('DataService', () => {
     });
 
     it('should return the rotated assignment list with no assigned conditions', () => {
-      const assignmentList: IExperimentAssignmentv5 = {
+      const assignmentList: IExperimentAssignment = {
         site: 'site',
         target: 'target',
         assignedCondition: [],
@@ -248,7 +248,7 @@ describe('DataService', () => {
         experimentType: EXPERIMENT_TYPE.SIMPLE,
       };
 
-      const expectedRotatedAssignmentList: IExperimentAssignmentv5 = {
+      const expectedRotatedAssignmentList: IExperimentAssignment = {
         site: 'site',
         target: 'target',
         assignedCondition: [],
@@ -264,7 +264,7 @@ describe('DataService', () => {
 
   describe('#rotateAssignmentsByExperimentId', () => {
     it('should rotate only assignments that contain the provided experiment id', () => {
-      const experimentAssignmentData: IExperimentAssignmentv5[] = [
+      const experimentAssignmentData: IExperimentAssignment[] = [
         {
           site: 'siteA',
           target: 'targetA',
@@ -331,7 +331,7 @@ describe('DataService', () => {
 
   describe('#findExperimentAssignmentBySiteAndTarget', () => {
     it('should return the experiment assignment', () => {
-      const experimentAssignmentData: IExperimentAssignmentv5[] = [
+      const experimentAssignmentData: IExperimentAssignment[] = [
         {
           site: 'site',
           target: 'target',
@@ -359,7 +359,7 @@ describe('DataService', () => {
     });
 
     it('should normalize undefined target to empty string and return empty assignment', () => {
-      const experimentAssignmentData: IExperimentAssignmentv5[] = [
+      const experimentAssignmentData: IExperimentAssignment[] = [
         {
           site: 'site',
           target: 'target',
@@ -375,7 +375,7 @@ describe('DataService', () => {
           experimentType: EXPERIMENT_TYPE.SIMPLE,
         },
       ];
-      const emptyAssignment: IExperimentAssignmentv5 = {
+      const emptyAssignment: IExperimentAssignment = {
         site: 'site',
         target: '',
         assignedCondition: [
@@ -392,7 +392,7 @@ describe('DataService', () => {
     });
 
     it('should return undefined if no site + target match is found', () => {
-      const experimentAssignmentData: IExperimentAssignmentv5[] = [
+      const experimentAssignmentData: IExperimentAssignment[] = [
         {
           site: 'site',
           target: 'target',
@@ -412,7 +412,7 @@ describe('DataService', () => {
           experimentType: EXPERIMENT_TYPE.FACTORIAL,
         },
       ];
-      const emptyAssignment: IExperimentAssignmentv5 = {
+      const emptyAssignment: IExperimentAssignment = {
         site: 'site',
         target: 'target1',
         assignedCondition: [

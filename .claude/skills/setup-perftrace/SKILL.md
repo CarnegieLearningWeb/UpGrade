@@ -13,8 +13,8 @@ env-var driven. Keeping the footprint at two files is what makes teardown reliab
 
 ## Scope
 
-The UpGrade backend client hot path — the `/v6` (and `/v5`) client controllers and the services they
-call. The outer envelope is registered globally, so it will cover any express route; the guidance
+The UpGrade backend client hot path — the `/v6` client controller and the services it
+calls. The outer envelope is registered globally, so it will cover any express route; the guidance
 below is about the *client* endpoints because that is where load-test latency lives.
 
 ## The reference implementation is the source of truth
