@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { UpsertMetrics } from './store/analysis.models';
 import { API_ENDPOINTS } from '../api-endpoints.constants';
+import { SKIP_NAVIGATION_CANCEL } from '../http-interceptors/http-cancel.interceptor';
 
 @Injectable()
 export class AnalysisDataService {
@@ -9,7 +10,10 @@ export class AnalysisDataService {
 
   fetchMetrics() {
     const url = API_ENDPOINTS.metrics;
-    return this.http.get(url);
+    // The metrics catalog is app-wide state kept fresh reactively (e.g. after an experiment is
+    // deleted or its metrics change), not data scoped to whichever page triggered the fetch, so
+    // it shouldn't be aborted by HttpCancelInterceptor if the user navigates before it resolves.
+    return this.http.get(url, { context: new HttpContext().set(SKIP_NAVIGATION_CANCEL, true) });
   }
 
   upsertMetrics(metrics: UpsertMetrics) {

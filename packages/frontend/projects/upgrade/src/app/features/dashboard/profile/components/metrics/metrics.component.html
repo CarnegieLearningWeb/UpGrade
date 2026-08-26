@@ -57,8 +57,16 @@
             <mat-tree-node *matTreeNodeDef="let node">
               <mat-icon class="leaf-node-icon">fiber_manual_record</mat-icon>
               {{ node.key }}
-              @if (permissions.metrics.delete && keyEditMode) {
-              <mat-icon class="delete-icon" (click)="deleteNode(node, index)"> delete_outline </mat-icon>
+              @if (permissions.metrics.delete && keyEditMode && node.isTopLevel) {
+              <mat-icon
+                class="delete-icon"
+                [class.disabled]="node.hasQuery"
+                [matTooltip]="node.hasQuery ? ('metric.delete-metric.disabled-tooltip.text' | translate) : ''"
+                [matTooltipDisabled]="!node.hasQuery"
+                (click)="!node.hasQuery && deleteNode(node, index)"
+              >
+                delete_outline
+              </mat-icon>
               }
             </mat-tree-node>
             <!-- Expandable node template -->
@@ -70,8 +78,15 @@
                   </mat-icon>
                 </button>
                 {{ node.key }}
-                @if (permissions.metrics.delete && keyEditMode) {
-                <mat-icon class="delete-icon" (click)="deleteNode(node, index)">delete_outline</mat-icon>
+                @if (permissions.metrics.delete && keyEditMode && node.isTopLevel) {
+                <mat-icon
+                  class="delete-icon"
+                  [class.disabled]="node.hasQuery"
+                  [matTooltip]="node.hasQuery ? ('metric.delete-metric.disabled-tooltip.text' | translate) : ''"
+                  [matTooltipDisabled]="!node.hasQuery"
+                  (click)="!node.hasQuery && deleteNode(node, index)"
+                  >delete_outline</mat-icon
+                >
                 }
               </div>
               @if (nestedTreeControl.isExpanded(node)) {

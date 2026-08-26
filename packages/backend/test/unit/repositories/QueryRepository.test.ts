@@ -179,4 +179,31 @@ describe('QueryRepository Testing', () => {
     expect(mock.where).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
+
+  it('should return the distinct metric keys referenced by queries', async () => {
+    mock.getRawMany.mockResolvedValue([{ metricKey: 'metric1' }, { metricKey: 'metric2' }]);
+    const res = await repo.getMetricKeysWithQueries();
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getRawMany).toHaveBeenCalledTimes(1);
+
+    expect(res).toEqual(['metric1', 'metric2']);
+  });
+
+  it('should throw an error when getting metric keys with queries fails', async () => {
+    mock.getRawMany.mockRejectedValue(err);
+
+    expect(async () => {
+      await repo.getMetricKeysWithQueries();
+    }).rejects.toThrow(err);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getRawMany).toHaveBeenCalledTimes(1);
+  });
 });

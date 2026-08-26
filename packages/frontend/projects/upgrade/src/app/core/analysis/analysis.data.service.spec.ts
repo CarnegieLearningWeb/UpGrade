@@ -25,7 +25,10 @@ describe('AnalysisDataService', () => {
 
       service.fetchMetrics();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        expectedUrl,
+        expect.objectContaining({ context: expect.anything() })
+      );
     });
   });
 

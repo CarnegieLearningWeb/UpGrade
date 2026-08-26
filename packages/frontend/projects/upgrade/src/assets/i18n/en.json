@@ -844,6 +844,7 @@
   "metrics.subtitle.text": "Manage metrics here",
   "metric.delete-metric.message.text": "Type the metric path separated by space to confirm deletion:",
   "metric.delete-metric.input-placeholder.text": "Metric path",
+  "metric.delete-metric.disabled-tooltip.text": "This metric is currently being used by an experiment",
   "metric.read-mode.text": "Read mode",
   "metric.add-metrics.text": "ADD METRICS",
   "query.table-id.text": "ID",

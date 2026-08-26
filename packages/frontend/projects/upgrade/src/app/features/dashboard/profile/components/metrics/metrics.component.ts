@@ -83,11 +83,12 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     !!node.loadChildren || (node.children && node.children.length > 0);
 
   // Process a single metric node, setting up lazy loading for its children
-  private insertNode(metric: IMetricUnit): LazyLoadingMetric {
+  private insertNode(metric: IMetricUnit, isTopLevel = false): LazyLoadingMetric {
     const processedMetric: LazyLoadingMetric = {
       ...metric,
       id: this.insertNodeIndex++,
       children: [],
+      isTopLevel,
     };
 
     if (metric.children && metric.children.length > 0) {
@@ -112,7 +113,7 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   // Process the entire metrics data to prepare for lazy loading
   private processMetricsData(metrics: IMetricUnit[]): LazyLoadingMetric[] {
     this.insertNodeIndex = 0;
-    return metrics.map((item) => this.insertNode(item));
+    return metrics.map((item) => this.insertNode(item, true));
   }
 
   openAddMetricDialog() {
@@ -125,6 +126,9 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   deleteNode(nodeToBeDeleted: LazyLoadingMetric, index: number) {
+    if (nodeToBeDeleted.hasQuery) {
+      return;
+    }
     const data = {
       children: [this.allMetrics.data[index]],
     };

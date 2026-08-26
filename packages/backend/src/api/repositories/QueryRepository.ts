@@ -66,4 +66,17 @@ export class QueryRepository extends Repository<Query> {
 
     return queryResult.length > 0 ? true : false;
   }
+
+  public async getMetricKeysWithQueries(): Promise<string[]> {
+    const queryResult = await this.createQueryBuilder('query')
+      .innerJoin('query.metric', 'metric')
+      .select('DISTINCT metric.key', 'metricKey')
+      .getRawMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('QueryRepository', 'getMetricKeysWithQueries', {}, errorMsg);
+        throw errorMsgString;
+      });
+
+    return queryResult.map((row: { metricKey: string }) => row.metricKey);
+  }
 }
