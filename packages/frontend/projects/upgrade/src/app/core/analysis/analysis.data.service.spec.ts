@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { of } from 'rxjs';
 import { AnalysisDataService } from './analysis.data.service';
 import { UpsertMetrics } from './store/analysis.models';
 import { API_ENDPOINTS } from '../api-endpoints.constants';
+import { SKIP_NAVIGATION_CANCEL } from '../http-interceptors/http-cancel.interceptor';
 
 class MockHTTPClient {
   get = jest.fn().mockReturnValue(of());
@@ -27,8 +28,11 @@ describe('AnalysisDataService', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
         expectedUrl,
-        expect.objectContaining({ context: expect.anything() })
+        expect.objectContaining({ context: expect.any(HttpContext) })
       );
+
+      const [, options] = mockHttpClient.get.mock.calls[0];
+      expect(options.context.get(SKIP_NAVIGATION_CANCEL)).toBe(true);
     });
   });
 
