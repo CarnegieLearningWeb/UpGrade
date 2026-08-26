@@ -229,7 +229,7 @@ export class ExperimentAssignmentService {
   }> {
     const allExperimentsForContext = await this.experimentService.getCachedValidExperiments(context);
     const allExperimentsAtDP = allExperimentsForContext.filter((exp) =>
-      exp.partitions.some((p) => p.site === site && p.target === target)
+      this.getActiveDecisionPoints(exp).some((p) => p.site === site && p.target === target)
     );
 
     if (allExperimentsAtDP.length === 0) {
@@ -278,7 +278,7 @@ export class ExperimentAssignmentService {
       logger
     );
 
-    const experiment = selectedExperiments.length > 0 ? selectedExperiments[0] : exclusionReason[0].experiment || null;
+    const experiment = selectedExperiments.length > 0 ? selectedExperiments[0] : exclusionReason[0]?.experiment || null;
     const resolvedExperimentId = experiment?.id ?? null;
     const resolvedExclusionReason = exclusionReason.filter((reason) => reason.experiment?.id === resolvedExperimentId);
 
