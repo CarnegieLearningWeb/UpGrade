@@ -92,6 +92,8 @@ describe('Experiment Assignment Service Test', () => {
     individualExclusionRepositoryMock = {
       findExcluded: sandbox.stub().resolves([]),
       findExcludedForUsers: sandbox.stub().resolves([]),
+      findOne: sandbox.stub().resolves(undefined),
+      saveRawJson: sandbox.stub().resolves(undefined),
     };
     groupExclusionRepositoryMock = {
       findExcluded: sandbox.stub().resolves([]),
@@ -101,6 +103,7 @@ describe('Experiment Assignment Service Test', () => {
       findEnrollmentsForUsers: sandbox.stub().resolves([]),
 
       find: sandbox.stub().resolves([]),
+      findOne: sandbox.stub().resolves(undefined),
     };
     groupEnrollmentRepositoryMock = {
       findEnrollments: sandbox.stub().resolves([]),
@@ -1746,7 +1749,7 @@ describe('Experiment Assignment Service Test', () => {
     const userId = 'user2';
     const site = 'CurriculumSequence';
     const target = 'W1';
-    const condition = 'conditionA';
+    const condition = 'ConditionA';
     const monitoredDocument = {
       site: site,
       target: target,
@@ -1757,7 +1760,7 @@ describe('Experiment Assignment Service Test', () => {
     };
     testedModule.experimentLevelExclusionInclusion = sandbox
       .stub()
-      .resolves([[], [{ matchedGroup: false, reason: 'group' }]]);
+      .resolves([[], [{ experiment: simpleIndividualAssignmentExperiment, matchedGroup: false, reason: 'group' }]]);
 
     const decisionPointRepositoryMock = { find: sandbox.stub().resolves([simpleIndividualAssignmentExperiment]) };
     const monitoredDecisionPointRepositoryMock = {
@@ -1993,7 +1996,7 @@ describe('Experiment Assignment Service Test', () => {
       expect(result.exclusionReason).toEqual([]);
     });
 
-    it('should return empty experiments and an exclusion reason when user is excluded at experiment level', async () => {
+    it('should return experiment and an exclusion reason when user is excluded at experiment level', async () => {
       const exp = structuredClone(simpleIndividualAssignmentExperiment);
       const exclusion = { experiment: exp, reason: 'group', matchedGroup: true };
       testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
@@ -2010,8 +2013,8 @@ describe('Experiment Assignment Service Test', () => {
         loggerMock
       );
 
-      expect(result.experiment).toBeNull();
-      expect(result.experimentId).toBeNull();
+      expect(result.experiment).toBe(exp);
+      expect(result.experimentId).toEqual(exp.id);
       expect(result.exclusionReason).toHaveLength(1);
       expect(result.exclusionReason[0]).toEqual(exclusion);
     });

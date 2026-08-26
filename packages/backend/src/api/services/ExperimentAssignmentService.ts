@@ -278,14 +278,16 @@ export class ExperimentAssignmentService {
       logger
     );
 
-    const experiment = selectedExperiments.length > 0 ? selectedExperiments[0] : null;
+    const experiment = selectedExperiments.length > 0 ? selectedExperiments[0] : exclusionReason[0].experiment || null;
     const resolvedExperimentId = experiment?.id ?? null;
+    const resolvedExclusionReason = exclusionReason.filter((reason) => reason.experiment?.id === resolvedExperimentId);
+
     return {
       experiment,
       experimentId: resolvedExperimentId,
       isUserExcluded,
       isGroupExcluded,
-      exclusionReason,
+      exclusionReason: resolvedExclusionReason,
     };
   }
 
