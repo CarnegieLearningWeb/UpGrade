@@ -33,7 +33,7 @@ import {
 import { MainAuditLog } from './Experiment/auditLogs';
 import { NoPartitionPoint } from './Experiment/onlyExperimentPoint';
 // import { StatsGroupExperiment } from './ExperimentStats';
-import { NoExperiment } from './Experiment/markExperimentPoint';
+import { NoExperiment, CancelledExperimentStateFilter, ContextContamination } from './Experiment/markExperimentPoint';
 import {
   NoPreviewUser,
   PreviewAssignments,
@@ -163,6 +163,14 @@ describe('Integration Tests', () => {
 
   test('Mark Experiment before experiment is created', () => {
     return NoExperiment();
+  });
+
+  test('Mark Experiment with cancelled experiment is excluded by state filter', () => {
+    return CancelledExperimentStateFilter();
+  });
+
+  test('Mark Experiment scopes experiment pool to context — no cross-context contamination', () => {
+    return ContextContamination();
   });
 
   test('No Group for Experiment', () => {

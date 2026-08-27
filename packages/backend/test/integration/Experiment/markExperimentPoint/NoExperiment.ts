@@ -35,7 +35,8 @@ export default async function NoExperiment(): Promise<void> {
     experimentPoint,
     condition,
     experimentID,
-    new UpgradeLogger()
+    new UpgradeLogger(),
+    experimentObject.context[0]
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 

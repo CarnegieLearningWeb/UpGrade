@@ -32,6 +32,11 @@ class Data {
 }
 
 export class MarkExperimentValidatorv6 {
+  // MAKE CONTEXT REQUIRED WHEN ALL CLIENTS ARE UPDATED. FOR NOW, KEEPING IT OPTIONAL TO SUPPORT PRE-6.6 CLIENTS THAT DON'T SEND CONTEXT IN THE REQUEST BODY.
+  @IsString()
+  @IsOptional()
+  public context?: string;
+
   @IsDefined()
   @ValidateNested()
   @Type(() => Data)

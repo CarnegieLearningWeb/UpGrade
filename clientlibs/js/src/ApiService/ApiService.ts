@@ -238,6 +238,7 @@ export default class ApiService {
     };
 
     let requestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+      context: this.context,
       status,
       data,
     };
