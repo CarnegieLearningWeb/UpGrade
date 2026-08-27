@@ -90,6 +90,12 @@ import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
 import { CacheService } from './CacheService';
 import { QueryService } from './QueryService';
+import {
+  LIST_VALUE_SEARCH_PATTERN_PARAMETER,
+  buildListValueSearchPattern,
+  getListValueSearchPredicate,
+  isListValueSearchKey,
+} from './listValueSearchHelpers';
 import { ArchivedStats } from '../models/ArchivedStats';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
 import { isUUID, validate } from 'class-validator';
@@ -180,10 +186,18 @@ export class ExperimentService {
       .select('experiment.id')
       .leftJoin('experiment.partitions', 'partitions')
       .groupBy('experiment.id');
+    let listValueSearchPattern: string | undefined;
 
     if (searchParams && searchParams.string !== '') {
       const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
+      if (isListValueSearchKey(searchParams.key)) {
+        listValueSearchPattern = buildListValueSearchPattern(searchParams.string);
+        paginatedParentSubQuery = paginatedParentSubQuery.setParameter(
+          LIST_VALUE_SEARCH_PATTERN_PARAMETER,
+          listValueSearchPattern
+        );
+      }
     }
 
     // Filter out archived experiments unless specifically searching by status
@@ -212,6 +226,13 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .where(`experiment.id IN ${paginatedParentSubQuery.getQuery()}`);
+
+    if (listValueSearchPattern) {
+      queryBuilderToReturn = queryBuilderToReturn.setParameter(
+        LIST_VALUE_SEARCH_PATTERN_PARAMETER,
+        listValueSearchPattern
+      );
+    }
 
     if (sortParams) {
       queryBuilderToReturn = queryBuilderToReturn
@@ -1857,6 +1878,7 @@ export class ExperimentService {
       searchArray.push(`partitions.target ${likeString}`);
       searchArray.push(decisionPointDisplaySearch);
     };
+    const listValueSearch = getListValueSearchPredicate('experiment');
 
     switch (type) {
       case EXPERIMENT_SEARCH_KEY.NAME:
@@ -1877,12 +1899,18 @@ export class ExperimentService {
       case EXPERIMENT_SEARCH_KEY.DECISION_POINT:
         addDecisionPointSearch();
         break;
+      case EXPERIMENT_SEARCH_KEY.LIST_VALUE:
+        searchArray.push(listValueSearch);
+        break;
       default:
         searchArray.push(`name ${likeString}`);
         searchArray.push(`state::TEXT = '${this.mapStatusStrings(searchString)}'`);
         searchArray.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
         searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         addDecisionPointSearch();
+        if (type === EXPERIMENT_SEARCH_KEY.ALL) {
+          searchArray.push(listValueSearch);
+        }
         if (isUUID(searchString)) {
           searchArray.push(`experiment.id = '${searchString}'`);
         }

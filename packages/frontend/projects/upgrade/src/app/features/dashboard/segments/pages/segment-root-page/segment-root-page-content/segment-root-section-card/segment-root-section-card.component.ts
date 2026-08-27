@@ -51,6 +51,7 @@ export class SegmentRootSectionCardComponent {
     { value: SEGMENT_SEARCH_KEY.ID },
     { value: SEGMENT_SEARCH_KEY.CONTEXT },
     { value: SEGMENT_SEARCH_KEY.TAG },
+    { value: SEGMENT_SEARCH_KEY.LIST_VALUE, label: 'List Value' },
   ];
   isSectionCardExpanded = true;
 
