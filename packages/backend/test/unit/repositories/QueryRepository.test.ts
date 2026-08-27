@@ -187,6 +187,8 @@ describe('QueryRepository Testing', () => {
     expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
 
     expect(mock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(mock.distinct).toHaveBeenCalledTimes(1);
+    expect(mock.distinct).toHaveBeenCalledWith(true);
     expect(mock.select).toHaveBeenCalledTimes(1);
     expect(mock.getRawMany).toHaveBeenCalledTimes(1);
 
@@ -204,6 +206,37 @@ describe('QueryRepository Testing', () => {
 
     expect(mock.innerJoin).toHaveBeenCalledTimes(1);
     expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getRawMany).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return the experiments using a metric key', async () => {
+    mock.getRawMany.mockResolvedValue([{ id: 'exp1', name: 'Experiment 1' }]);
+    const res = await repo.getExperimentsUsingMetricKey('metric1', '@__@');
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.distinct).toHaveBeenCalledTimes(1);
+    expect(mock.distinct).toHaveBeenCalledWith(true);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.addSelect).toHaveBeenCalledTimes(1);
+    expect(mock.getRawMany).toHaveBeenCalledTimes(1);
+
+    expect(res).toEqual([{ id: 'exp1', name: 'Experiment 1' }]);
+  });
+
+  it('should throw an error when getting experiments using a metric key fails', async () => {
+    mock.getRawMany.mockRejectedValue(err);
+
+    expect(async () => {
+      await repo.getExperimentsUsingMetricKey('metric1', '@__@');
+    }).rejects.toThrow(err);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(1);
     expect(mock.getRawMany).toHaveBeenCalledTimes(1);
   });
 });

@@ -56,6 +56,14 @@ export class MetricService {
 
   public async deleteMetric(key: string, logger: UpgradeLogger): Promise<IMetricUnit[]> {
     logger.info({ message: `Delete metric by key ${key}` });
+    const experimentsUsingMetric = await this.queryRepository.getExperimentsUsingMetricKey(key, METRICS_JOIN_TEXT);
+    if (experimentsUsingMetric.length) {
+      const experimentNames = experimentsUsingMetric.map(({ name }) => name).join(', ');
+      throw new HttpError(
+        409,
+        `Metric key ${key} cannot be deleted because it is used by the following experiment(s): ${experimentNames}`
+      );
+    }
     const result = await this.metricRepository.deleteMetricsByKeys(key, METRICS_JOIN_TEXT);
     if (!result.length) {
       throw new HttpError(404, `Metric key not found: ${key}`);

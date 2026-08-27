@@ -70,7 +70,8 @@ export class QueryRepository extends Repository<Query> {
   public async getMetricKeysWithQueries(): Promise<string[]> {
     const queryResult = await this.createQueryBuilder('query')
       .innerJoin('query.metric', 'metric')
-      .select('DISTINCT metric.key', 'metricKey')
+      .distinct(true)
+      .select('metric.key', 'metricKey')
       .getRawMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('QueryRepository', 'getMetricKeysWithQueries', {}, errorMsg);
@@ -78,5 +79,25 @@ export class QueryRepository extends Repository<Query> {
       });
 
     return queryResult.map((row: { metricKey: string }) => row.metricKey);
+  }
+
+  public async getExperimentsUsingMetricKey(
+    key: string,
+    metricJoinText: string
+  ): Promise<Array<{ id: string; name: string }>> {
+    const queryResult = await this.createQueryBuilder('query')
+      .innerJoin('query.metric', 'metric')
+      .innerJoin('query.experiment', 'experiment')
+      .where('metric.key = :keyValue OR metric.key LIKE :key', { keyValue: key, key: `${key}${metricJoinText}%` })
+      .distinct(true)
+      .select('experiment.id', 'id')
+      .addSelect('experiment.name', 'name')
+      .getRawMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('QueryRepository', 'getExperimentsUsingMetricKey', { key }, errorMsg);
+        throw errorMsgString;
+      });
+
+    return queryResult;
   }
 }

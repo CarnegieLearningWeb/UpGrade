@@ -1,5 +1,4 @@
 import { MetricService, METRICS_JOIN_TEXT } from '../../../src/api/services/MetricService';
-import { Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { IGroupMetric, IMetricMetaData, ISingleMetric } from 'upgrade_types';
@@ -13,8 +12,8 @@ import { configureLogger } from '../../utils/logger';
 
 describe('Audit Service Testing', () => {
   let service: MetricService;
-  let repo: Repository<MetricRepository>;
-  let queryRepositoryMock: { getMetricKeysWithQueries: jest.Mock };
+  let repo: MetricRepository;
+  let queryRepositoryMock: { getMetricKeysWithQueries: jest.Mock; getExperimentsUsingMetricKey: jest.Mock };
   let module: TestingModule;
   const settingRes = [{ id: 'id', toCheckAuth: false, toFilterMetric: true }];
 
@@ -98,6 +97,7 @@ describe('Audit Service Testing', () => {
           provide: getRepositoryToken(QueryRepository),
           useValue: {
             getMetricKeysWithQueries: jest.fn().mockResolvedValue(['totalProblemsCompleted']),
+            getExperimentsUsingMetricKey: jest.fn().mockResolvedValue([]),
           },
         },
         {
@@ -120,7 +120,7 @@ describe('Audit Service Testing', () => {
     }).compile();
 
     service = module.get<MetricService>(MetricService);
-    repo = module.get<Repository<MetricRepository>>(getRepositoryToken(MetricRepository));
+    repo = module.get<MetricRepository>(getRepositoryToken(MetricRepository));
     queryRepositoryMock = module.get(getRepositoryToken(QueryRepository));
   });
 
@@ -198,6 +198,15 @@ describe('Audit Service Testing', () => {
   it('should delete a specific metric', async () => {
     const res = await service.deleteMetric('totalProblemsCompleted', new UpgradeLogger());
     expect(res).toEqual(metricResult);
+  });
+
+  it('should throw an error when deleting a metric used by an experiment', async () => {
+    queryRepositoryMock.getExperimentsUsingMetricKey.mockResolvedValueOnce([{ id: 'exp1', name: 'Experiment 1' }]);
+
+    await expect(service.deleteMetric('totalProblemsCompleted', new UpgradeLogger())).rejects.toThrow(
+      'Metric key totalProblemsCompleted cannot be deleted because it is used by the following experiment(s): Experiment 1'
+    );
+    expect(repo.deleteMetricsByKeys).not.toHaveBeenCalled();
   });
 
   it('should throw an error when metrics filter not enabled', async () => {
