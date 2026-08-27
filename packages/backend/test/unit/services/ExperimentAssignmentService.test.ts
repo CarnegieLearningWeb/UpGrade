@@ -77,6 +77,32 @@ describe('Experiment Assignment Service Test', () => {
   // Default to "no precomputed rows" so the assignment read path exercises the on-the-fly fallback
   // (recursive segment resolution) these tests were written against.
   experimentPrecomputedSegmentServiceMock.getPrecomputedSets.resolves(new Map());
+  // ExperimentAssignmentService now fetches inclusion/exclusion segment ids lazily, scoped to just the
+  // experiment ids that miss the precomputed cache (see ExperimentRepository.getSegmentIdsForExperiments),
+  // instead of reading them off the experiments returned by getValidExperiments*. Mirror that lookup
+  // here against the known mock fixtures so existing tests don't each need their own stub for it.
+  const allMockExperimentsForSegmentLookup: any[] = [
+    simpleIndividualAssignmentExperiment,
+    simpleIndividualAssignmentExperiment2,
+    simpleGroupAssignmentExperiment,
+    factorialGroupAssignmentExperiment,
+    factorialIndividualAssignmentExperiment,
+    simpleDPExperiment,
+    simpleWithinSubjectOrderedRoundRobinExperiment,
+    simpleWithinSubjectRandomRoundRobinExperiment,
+    withinSubjectDPExperiment,
+    factorialGroupExperiment,
+    factorialIndividualExperiment,
+  ];
+  experimentRepositoryMock.getSegmentIdsForExperiments.callsFake(async (experimentIds: string[]) =>
+    allMockExperimentsForSegmentLookup
+      .filter((exp) => experimentIds.includes(exp.id))
+      .map((exp) => ({
+        id: exp.id,
+        experimentSegmentInclusion: exp.experimentSegmentInclusion,
+        experimentSegmentExclusion: exp.experimentSegmentExclusion,
+      }))
+  );
   experimentServiceMock.formattingConditionPayload.restore();
   experimentServiceMock.formattingPayload.restore();
 
