@@ -168,7 +168,8 @@ export class LogRepository extends Repository<Log> {
       .andWhere('"logs"."userId"="individualEnrollment"."userId"')
       .getRawMany()
       .catch((errorMsg: any) => {
-        throw errorMsg;
+        const errorMsgString = repositoryError('LogRepository', 'getLogPerExperimentQuery', { experimentId }, errorMsg);
+        throw errorMsgString;
       });
   }
 
