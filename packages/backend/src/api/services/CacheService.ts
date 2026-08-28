@@ -8,7 +8,6 @@ type CacheBucket = 'experiments' | 'featureFlags' | 'segments' | 'settings';
 
 const PREFIX_CATEGORY: Record<CACHE_PREFIX, CacheBucket> = {
   [CACHE_PREFIX.EXPERIMENT_KEY_PREFIX]: 'experiments',
-  [CACHE_PREFIX.MARK_KEY_PREFIX]: 'experiments',
   [CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX]: 'featureFlags',
   [CACHE_PREFIX.SEGMENT_KEY_PREFIX]: 'segments',
   [CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX]: 'segments',
