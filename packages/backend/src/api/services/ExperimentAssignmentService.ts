@@ -2369,9 +2369,10 @@ export class ExperimentAssignmentService {
         details: { missingExpIds },
       });
       const missingSegmentIdData = await this.experimentRepository.getSegmentIdsForExperiments(missingExpIds);
+      const missingSegmentIdDataMap = new Map(missingSegmentIdData.map((data) => [data.id, data]));
       const missingSegmentObj: EntitySegmentResolutionInput = {};
       missingExpIds.forEach((id) => {
-        const segmentIdData = missingSegmentIdData.find((data) => data.id === id);
+        const segmentIdData = missingSegmentIdDataMap.get(id);
         const includeIds =
           segmentIdData?.experimentSegmentInclusion?.map((segmentInclusion) => segmentInclusion.segmentId) || [];
         const excludeIds =
