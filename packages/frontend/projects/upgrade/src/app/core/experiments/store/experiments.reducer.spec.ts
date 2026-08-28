@@ -1,5 +1,6 @@
 import { initialState, experimentsReducer } from './experiments.reducer';
 import { Action } from '@ngrx/store';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
   actionDeleteExperimentSuccess,
   actionFetchAllExperimentNamesSuccess,
@@ -118,15 +119,30 @@ describe('ExperimentsReducer', () => {
     expect(newState.isLoadingExperiment).toEqual(false);
   });
 
-  it('action "actionGetExperimentByIdFailure" should set loading to false', () => {
+  it('action "actionGetExperimentByIdFailure" should set loading to false and set the details page error', () => {
     const previousState = { ...initialState };
     previousState.isLoadingExperiment = true;
-    const testAction: Action = actionGetExperimentByIdFailure();
+    const testAction: Action = actionGetExperimentByIdFailure({
+      experimentId: 'abc123',
+      errorType: PAGE_ERROR_TYPE.NOT_FOUND,
+    });
 
     const newState = experimentsReducer(previousState, testAction);
 
     expect(newState).not.toBe(previousState);
     expect(newState.isLoadingExperiment).toEqual(false);
+    expect(newState.detailsPageError).toEqual({ entityId: 'abc123', errorType: PAGE_ERROR_TYPE.NOT_FOUND });
+  });
+
+  it('action "actionGetExperimentById" should clear the details page error', () => {
+    const previousState = { ...initialState };
+    previousState.detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.NOT_FOUND };
+    const testAction: Action = actionGetExperimentById({ experimentId: 'abc123' });
+
+    const newState = experimentsReducer(previousState, testAction);
+
+    expect(newState).not.toBe(previousState);
+    expect(newState.detailsPageError).toBeNull();
   });
 
   it('action "actionUpsertExperimentFailure" should set loading to false', () => {

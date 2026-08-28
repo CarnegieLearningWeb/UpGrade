@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
   Experiment,
   UpsertExperimentType,
@@ -56,7 +57,10 @@ export const actionGetExperimentByIdSuccess = createAction(
   props<{ experiment: Experiment }>()
 );
 
-export const actionGetExperimentByIdFailure = createAction('[Experiment] Get Experiment By Id Failure');
+export const actionGetExperimentByIdFailure = createAction(
+  '[Experiment] Get Experiment By Id Failure',
+  props<{ experimentId: string; errorType: PAGE_ERROR_TYPE }>()
+);
 
 export const actionUpsertExperiment = createAction(
   '[Experiment] Upsert Experiment',

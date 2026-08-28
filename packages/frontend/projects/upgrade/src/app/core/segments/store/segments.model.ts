@@ -1,4 +1,5 @@
 import { AppState } from '../../core.state';
+import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 export { SEGMENT_STATUS };
 
@@ -249,6 +250,8 @@ export interface SegmentState {
   sortKey: SEGMENT_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;
   listSegmentOptions: ListSegmentOption[];
+  // Details page fetch error state - drives the not-found / load-failed page
+  detailsPageError: DetailsPageError | null;
 }
 
 export interface ListSegmentOption {

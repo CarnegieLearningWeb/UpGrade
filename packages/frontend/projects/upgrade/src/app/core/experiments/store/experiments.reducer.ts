@@ -31,6 +31,7 @@ export const initialState: ExperimentState = {
   isLoadingRewardsSummary: false,
   rewardsSummaries: {},
   isLoadingUpsertPrivateSegmentList: false,
+  detailsPageError: null,
 };
 
 const reducer = createReducer(
@@ -55,12 +56,16 @@ const reducer = createReducer(
   }),
   on(
     experimentsAction.actionGetExperimentsFailure,
-    experimentsAction.actionGetExperimentByIdFailure,
     experimentsAction.actionUpsertExperimentFailure,
     experimentsAction.actionUpdateExperimentFilterModeFailure,
     experimentsAction.actionUpdateExperimentStateFailure,
     (state) => ({ ...state, isLoadingExperiment: false })
   ),
+  on(experimentsAction.actionGetExperimentByIdFailure, (state, { experimentId, errorType }) => ({
+    ...state,
+    isLoadingExperiment: false,
+    detailsPageError: { entityId: experimentId, errorType },
+  })),
   on(experimentsAction.actionUpsertExperimentSuccess, (state, { experiment }) => {
     // Update experiment if it exists, otherwise don't add to list (let refetch handle it)
     const updatedExperiments = state.experiments.map((exp) => (exp.id === experiment.id ? experiment : exp));
@@ -95,6 +100,7 @@ const reducer = createReducer(
   on(experimentsAction.actionUpsertExperiment, experimentsAction.actionGetExperimentById, (state) => ({
     ...state,
     isLoadingExperiment: true,
+    detailsPageError: null,
     // If the total count is unknown, assume at least one experiment is loading so the root page skips the empty state.
     // Preserve 0 because it means the backend already confirmed an empty list.
     totalExperiments: state.totalExperiments ?? 1,

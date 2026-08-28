@@ -34,6 +34,7 @@ import JSZip from 'jszip';
 import { TranslateService } from '@ngx-translate/core';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
+import { isValidEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 @Injectable()
 export class ExperimentEffects {
   constructor(
@@ -305,8 +306,13 @@ export class ExperimentEffects {
       map((action) => action.experimentId),
       filter((experimentId) => !!experimentId),
       withLatestFrom(this.store$.pipe(select(selectExperimentStats))),
-      mergeMap(([experimentId, experimentStats]) =>
-        this.experimentDataService.getExperimentById(experimentId).pipe(
+      mergeMap(([experimentId, experimentStats]) => {
+        if (!isValidEntityId(experimentId)) {
+          return of(
+            experimentAction.actionGetExperimentByIdFailure({ experimentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND })
+          );
+        }
+        return this.experimentDataService.getExperimentById(experimentId).pipe(
           switchMap((data: Experiment) =>
             this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
               switchMap((stat: IExperimentEnrollmentStats) => {
@@ -315,11 +321,19 @@ export class ExperimentEffects {
                   experimentAction.actionGetExperimentByIdSuccess({ experiment: data }),
                   experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                 ];
-              })
+              }),
+              // Stats are auxiliary - still show the experiment if only the stats call fails
+              catchError(() => [experimentAction.actionGetExperimentByIdSuccess({ experiment: data })])
             )
-          )
-        )
-      )
+          ),
+          catchError((error) => [
+            experimentAction.actionGetExperimentByIdFailure({
+              experimentId,
+              errorType: error?.status === 404 ? PAGE_ERROR_TYPE.NOT_FOUND : PAGE_ERROR_TYPE.LOAD_FAILED,
+            }),
+          ])
+        );
+      })
     )
   );
 

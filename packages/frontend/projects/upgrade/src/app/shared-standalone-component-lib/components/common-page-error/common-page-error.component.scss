@@ -1,0 +1,40 @@
+.page-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 120px 32px;
+
+  .page-error-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    margin-bottom: 16px;
+    border-radius: 50%;
+    background-color: var(--zircon);
+
+    .material-symbols-outlined {
+      font-size: 60px;
+      color: var(--blue);
+    }
+  }
+
+  .page-error-title {
+    margin: 0 0 8px;
+    color: var(--light-black);
+  }
+
+  .page-error-subtitle {
+    max-width: 560px;
+    margin: 0 0 32px;
+    color: var(--grey-message);
+  }
+
+  .page-error-actions {
+    display: flex;
+    gap: 16px;
+  }
+}

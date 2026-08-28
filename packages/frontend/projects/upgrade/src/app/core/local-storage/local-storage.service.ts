@@ -59,6 +59,7 @@ export class LocalStorageService {
       isLoadingRewardsSummary: false,
       rewardsSummaries: {},
       hasInitialExperimentsDataLoaded: false,
+      detailsPageError: null,
     };
 
     const featureFlagState: FeatureFlagState = {
@@ -82,6 +83,7 @@ export class LocalStorageService {
       graphInfo: null,
       isGraphLoading: false,
       totalExposures: null,
+      detailsPageError: null,
     };
 
     const segmentState: SegmentState = {
@@ -101,6 +103,7 @@ export class LocalStorageService {
       sortAs: (segmentSortType as SORT_AS_DIRECTION) || SORT_AS_DIRECTION.ASCENDING,
       isLoadingUpsertSegment: false,
       listSegmentOptions: [],
+      detailsPageError: null,
     };
 
     const state = {

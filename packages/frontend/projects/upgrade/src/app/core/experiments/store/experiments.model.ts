@@ -1,4 +1,5 @@
 import { AppState } from '../../core.module';
+import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
@@ -629,6 +630,8 @@ export interface ExperimentState {
   isLoadingRewardsSummary: boolean;
   rewardsSummaries: Record<string, ExperimentRewardsSummary>;
   isLoadingUpsertPrivateSegmentList?: boolean;
+  // Details page fetch error state - drives the not-found / load-failed page
+  detailsPageError: DetailsPageError | null;
 }
 
 export interface State extends AppState {

@@ -596,7 +596,8 @@ describe('ExperimentEffects', () => {
   });
 
   describe('#getExperimentById$', () => {
-    const experimentId = 'testId';
+    // Must be a valid UUID - the effect short-circuits malformed ids to a not-found failure
+    const experimentId = '11111111-2222-4333-8444-555555555555';
     const experiment = {
       id: 'test1',
       stat: [

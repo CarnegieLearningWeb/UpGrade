@@ -15,6 +15,7 @@ import { CommonExportHelpersService } from '../../../shared/services/common-expo
 import { of } from 'rxjs';
 import { SERVER_ERROR } from 'upgrade_types';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
+import { isValidEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 
 @Injectable()
 export class FeatureFlagsEffects {
@@ -357,14 +358,34 @@ export class FeatureFlagsEffects {
       ofType(FeatureFlagsActions.actionFetchFeatureFlagById),
       map((action) => action.featureFlagId),
       filter((featureFlagId) => !!featureFlagId),
-      switchMap((featureFlagId) =>
-        this.featureFlagsDataService.fetchFeatureFlagById(featureFlagId).pipe(
+      switchMap((featureFlagId) => {
+        if (!isValidEntityId(featureFlagId)) {
+          return of(
+            FeatureFlagsActions.actionFetchFeatureFlagByIdFailure({
+              featureFlagId,
+              errorType: PAGE_ERROR_TYPE.NOT_FOUND,
+            })
+          );
+        }
+        return this.featureFlagsDataService.fetchFeatureFlagById(featureFlagId).pipe(
           map((data: FeatureFlag) => {
+            // The backend responds with 204 (empty body) rather than 404 when the flag doesn't exist
+            if (!data) {
+              return FeatureFlagsActions.actionFetchFeatureFlagByIdFailure({
+                featureFlagId,
+                errorType: PAGE_ERROR_TYPE.NOT_FOUND,
+              });
+            }
             return FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess({ flag: data });
           }),
-          catchError(() => [FeatureFlagsActions.actionFetchFeatureFlagByIdFailure()])
-        )
-      )
+          catchError((error) => [
+            FeatureFlagsActions.actionFetchFeatureFlagByIdFailure({
+              featureFlagId,
+              errorType: error?.status === 404 ? PAGE_ERROR_TYPE.NOT_FOUND : PAGE_ERROR_TYPE.LOAD_FAILED,
+            }),
+          ])
+        );
+      })
     )
   );
 

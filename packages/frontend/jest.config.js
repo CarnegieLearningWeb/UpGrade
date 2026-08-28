@@ -11,6 +11,8 @@ module.exports = {
     '^zone.js/testing$': '<rootDir>/../../node_modules/zone.js/bundles/zone-testing.umd.js',
     // Keep other path mappings from tsconfig
     '^upgrade_types(.*)$': '<rootDir>/../../../types$1',
+    '^@shared-component-lib$': '<rootDir>/src/app/shared-standalone-component-lib/components',
+    '^@shared-component-lib/(.*)$': '<rootDir>/src/app/shared-standalone-component-lib/components/$1',
   },
 
   // Updated transform configuration

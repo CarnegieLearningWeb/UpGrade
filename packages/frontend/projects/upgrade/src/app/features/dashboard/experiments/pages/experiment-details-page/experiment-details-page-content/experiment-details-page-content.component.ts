@@ -1,5 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonSectionCardListComponent } from '@shared-component-lib';
+import { CommonPageErrorComponent, CommonSectionCardListComponent } from '@shared-component-lib';
+import {
+  CommonPageErrorConfig,
+  DetailsPageError,
+} from '@shared-component-lib/common-page-error/common-page-error.model';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../../../../shared/shared.module';
 import { ExperimentOverviewDetailsSectionCardComponent } from './experiment-overview-details-section-card/experiment-overview-details-section-card.component';
@@ -27,6 +31,7 @@ import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
   imports: [
     CommonModule,
     SharedModule,
+    CommonPageErrorComponent,
     CommonSectionCardListComponent,
     ExperimentOverviewDetailsSectionCardComponent,
     ExperimentDecisionPointsSectionCardComponent,
@@ -48,8 +53,18 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
   isSectionCardExpanded = true;
   activeTabIndex = 0; // 0 for Design, 1 for Data, 2 for Logs
   experiment$: Observable<Experiment>;
+  detailsPageError$: Observable<DetailsPageError | null>;
   experimentIdSub: Subscription;
   shouldShowRewardFeedback$: Observable<boolean>;
+
+  readonly pageErrorConfig: CommonPageErrorConfig = {
+    notFoundTitleKey: 'experiments.details-page-error.not-found.title.text',
+    notFoundSubtitleKey: 'experiments.details-page-error.not-found.subtitle.text',
+    loadFailedTitleKey: 'experiments.details-page-error.load-failed.title.text',
+    loadFailedSubtitleKey: 'experiments.details-page-error.load-failed.subtitle.text',
+    backButtonKey: 'experiments.details-page-error.back-button.text',
+    backRoute: '/home',
+  };
 
   constructor(
     private readonly experimentsService: ExperimentService,
@@ -83,6 +98,7 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
     });
 
     this.experiment$ = this.experimentsService.selectedExperiment$;
+    this.detailsPageError$ = this.experimentsService.experimentDetailsPageError$;
     this.segmentService.fetchAllSegmentListOptions();
 
     // Determine if reward feedback card should be shown
@@ -105,6 +121,10 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
 
   onTabChange(tabIndex: number): void {
     this.activeTabIndex = tabIndex;
+  }
+
+  onRetry(experimentId: string): void {
+    this.experimentsService.fetchExperimentById(experimentId);
   }
 
   ngOnDestroy() {

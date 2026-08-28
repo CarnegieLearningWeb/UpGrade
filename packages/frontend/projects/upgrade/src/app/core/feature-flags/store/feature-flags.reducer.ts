@@ -24,6 +24,7 @@ export const initialState: FeatureFlagState = {
   isLoadingFeatureFlagDelete: false,
   isLoadingUpsertPrivateSegmentList: false,
   duplicateKeyFound: false,
+  detailsPageError: null,
 
   // Graph state
   graphInfo: null,
@@ -73,15 +74,17 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionFetchFeatureFlagById, (state) => ({
     ...state,
     isLoadingSelectedFeatureFlag: true,
+    detailsPageError: null,
   })),
   on(FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess, (state, { flag }) => ({
     ...state,
     selectedFlag: flag,
     isLoadingSelectedFeatureFlag: false,
   })),
-  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state) => ({
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state, { featureFlagId, errorType }) => ({
     ...state,
     isLoadingSelectedFeatureFlag: false,
+    detailsPageError: { entityId: featureFlagId, errorType },
   })),
 
   // Feature Flag Upsert Actions (Add/Update both = upsert result)

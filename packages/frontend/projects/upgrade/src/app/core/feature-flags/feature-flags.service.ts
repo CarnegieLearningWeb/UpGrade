@@ -13,6 +13,7 @@ import {
   selectIsLoadingUpsertPrivateSegmentList,
   selectIsLoadingUpdateFeatureFlagStatus,
   selectSelectedFeatureFlag,
+  selectFeatureFlagDetailsPageError,
   selectSearchFeatureFlagParams,
   selectRootTableState,
   selectFeatureFlagOverviewDetails,
@@ -78,6 +79,7 @@ export class FeatureFlagsService {
   featureFlagTotalExposures$ = this.store$.pipe(select(selectFeatureFlagTotalExposures));
   selectedFlagOverviewDetails = this.store$.pipe(select(selectFeatureFlagOverviewDetails));
   selectedFeatureFlag$ = this.store$.pipe(select(selectSelectedFeatureFlag));
+  featureFlagDetailsPageError$ = this.store$.pipe(select(selectFeatureFlagDetailsPageError));
   searchParams$ = this.store$.pipe(select(selectSearchFeatureFlagParams));
   selectRootTableState$ = this.store$.select(selectRootTableState);
   selectFeatureFlagInclusions$ = this.store$.pipe(select(selectFeatureFlagInclusions));

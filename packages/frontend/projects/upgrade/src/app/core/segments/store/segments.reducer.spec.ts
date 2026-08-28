@@ -2,6 +2,7 @@ import { segmentsReducer, initialState } from './segments.reducer';
 import * as SegmentsActions from './segments.actions';
 import { Segment } from './segments.model';
 import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 
 describe('SegmentsReducer', () => {
   describe('actions to kick off requests w/ isLoadingSegments ', () => {
@@ -22,11 +23,38 @@ describe('SegmentsReducer', () => {
     }
   });
 
+  describe('actionGetSegmentByIdFailure', () => {
+    it('should set isLoadingSegments to false and set the details page error', () => {
+      const previousState = { ...initialState };
+      previousState.isLoadingSegments = true;
+      const testAction = SegmentsActions.actionGetSegmentByIdFailure({
+        segmentId: 'abc123',
+        errorType: PAGE_ERROR_TYPE.NOT_FOUND,
+      });
+
+      const newState = segmentsReducer(previousState, testAction);
+
+      expect(newState.isLoadingSegments).toEqual(false);
+      expect(newState.detailsPageError).toEqual({ entityId: 'abc123', errorType: PAGE_ERROR_TYPE.NOT_FOUND });
+    });
+  });
+
+  describe('actionGetSegmentById', () => {
+    it('should clear the details page error', () => {
+      const previousState = { ...initialState };
+      previousState.detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.NOT_FOUND };
+      const testAction = SegmentsActions.actionGetSegmentById({ segmentId: 'abc123' });
+
+      const newState = segmentsReducer(previousState, testAction);
+
+      expect(newState.detailsPageError).toBeNull();
+    });
+  });
+
   describe('actions to request failures to set isloadingSegments to false', () => {
     const testActions = {
       actionFetchSegmentsFailure: SegmentsActions.actionFetchSegmentsFailure,
       actionUpsertSegmentFailure: SegmentsActions.actionUpsertSegmentFailure,
-      actionGetSegmentByIdFailure: SegmentsActions.actionGetSegmentByIdFailure,
     };
 
     for (const actionKey in testActions) {

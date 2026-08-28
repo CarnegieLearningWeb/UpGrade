@@ -1,5 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
-import { CommonSectionCardListComponent } from '@shared-component-lib';
+import { CommonPageErrorComponent, CommonSectionCardListComponent } from '@shared-component-lib';
+import {
+  CommonPageErrorConfig,
+  DetailsPageError,
+} from '@shared-component-lib/common-page-error/common-page-error.model';
 import { CommonModule } from '@angular/common';
 import { FeatureFlagInclusionsSectionCardComponent } from './feature-flag-inclusions-section-card/feature-flag-inclusions-section-card.component';
 import { FeatureFlagExclusionsSectionCardComponent } from './feature-flag-exclusions-section-card/feature-flag-exclusions-section-card.component';
@@ -18,6 +22,7 @@ import { filter, map, startWith } from 'rxjs/operators';
   selector: 'app-feature-flag-details-page-content',
   imports: [
     CommonModule,
+    CommonPageErrorComponent,
     CommonSectionCardListComponent,
     FeatureFlagInclusionsSectionCardComponent,
     FeatureFlagExclusionsSectionCardComponent,
@@ -34,8 +39,18 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
   isSectionCardExpanded = true;
   activeTabIndex = 0;
   featureFlag$: Observable<FeatureFlag>;
+  detailsPageError$: Observable<DetailsPageError | null>;
 
   featureFlagIdSub: Subscription;
+
+  readonly pageErrorConfig: CommonPageErrorConfig = {
+    notFoundTitleKey: 'feature-flags.details-page-error.not-found.title.text',
+    notFoundSubtitleKey: 'feature-flags.details-page-error.not-found.subtitle.text',
+    loadFailedTitleKey: 'feature-flags.details-page-error.load-failed.title.text',
+    loadFailedSubtitleKey: 'feature-flags.details-page-error.load-failed.subtitle.text',
+    backButtonKey: 'feature-flags.details-page-error.back-button.text',
+    backRoute: '/featureflags',
+  };
 
   constructor(
     private featureFlagsService: FeatureFlagsService,
@@ -66,6 +81,7 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
     });
 
     this.featureFlag$ = this.featureFlagsService.selectedFeatureFlag$;
+    this.detailsPageError$ = this.featureFlagsService.featureFlagDetailsPageError$;
     this.segmentService.fetchAllSegmentListOptions();
   }
 
@@ -75,6 +91,10 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
 
   onTabChange(tabIndex: number): void {
     this.activeTabIndex = tabIndex;
+  }
+
+  onRetry(featureFlagId: string): void {
+    this.featureFlagsService.fetchFeatureFlagById(featureFlagId);
   }
 
   ngOnDestroy() {

@@ -25,6 +25,7 @@ import {
   selectIsLoadingExperiment,
   selectIsLoadingUpsertPrivateSegmentList,
   selectSelectedExperiment,
+  selectExperimentDetailsPageError,
   selectExperimentOverviewDetails,
   selectSearchExperimentParams,
   selectRootTableState,
@@ -74,6 +75,7 @@ export class ExperimentService {
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
   isLoadingUpsertPrivateSegmentList$ = this.store$.pipe(select(selectIsLoadingUpsertPrivateSegmentList));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
+  experimentDetailsPageError$ = this.store$.pipe(select(selectExperimentDetailsPageError));
   selectedExperimentOverviewDetails$ = this.store$.pipe(select(selectExperimentOverviewDetails));
   searchParams$ = this.store$.pipe(select(selectSearchExperimentParams));
   selectRootTableState$ = this.store$.pipe(select(selectRootTableState));

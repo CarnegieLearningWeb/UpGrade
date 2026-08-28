@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
   FeatureFlag,
   UpdateFeatureFlagStatusRequest,
@@ -34,7 +35,10 @@ export const actionFetchFeatureFlagByIdSuccess = createAction(
   props<{ flag: FeatureFlag }>()
 );
 
-export const actionFetchFeatureFlagByIdFailure = createAction('[Feature Flags] Fetch Feature Flags By Id Failure');
+export const actionFetchFeatureFlagByIdFailure = createAction(
+  '[Feature Flags] Fetch Feature Flags By Id Failure',
+  props<{ featureFlagId: string; errorType: PAGE_ERROR_TYPE }>()
+);
 export const actionAddFeatureFlag = createAction(
   '[Feature Flags] Add Feature Flag',
   props<{ addFeatureFlagRequest: AddFeatureFlagRequest }>()

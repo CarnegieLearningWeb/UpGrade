@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { DashboardRootComponent } from './dashboard-root/dashboard-root.component';
+import { requireRouteParam } from './require-route-param.guard';
 
 // Conditionally define segments routes based on the toggle
 const segmentsRoutes = [
@@ -14,6 +15,7 @@ const segmentsRoutes = [
   },
   {
     path: 'segments/detail/:segmentId',
+    canActivate: [requireRouteParam('segmentId', '/segments')],
     loadComponent: () =>
       import('./segments/pages/segment-details-page/segment-details-page.component').then(
         (c) => c.SegmentDetailsPageComponent
@@ -46,6 +48,7 @@ const routes: Routes = [
       },
       {
         path: 'home/detail/:experimentId',
+        canActivate: [requireRouteParam('experimentId', '/home')],
         loadComponent: () =>
           import('./experiments/pages/experiment-details-page/experiment-details-page.component').then(
             (c) => c.ExperimentDetailsPageComponent
@@ -85,6 +88,7 @@ const routes: Routes = [
       },
       {
         path: 'featureflags/detail/:flagId',
+        canActivate: [requireRouteParam('flagId', '/featureflags')],
         loadComponent: () =>
           import('./feature-flags/pages/feature-flag-details-page/feature-flag-details-page.component').then(
             (c) => c.FeatureFlagDetailsPageComponent

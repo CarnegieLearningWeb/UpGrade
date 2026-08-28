@@ -10,7 +10,8 @@ import {
   ExperimentSegmentListResponse,
   UpdateExperimentConditionsRequest,
 } from './store/experiments.model';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
+import { HANDLES_404_CONTEXTUALLY } from '../http-interceptors/http-context-tokens';
 import { API_ENDPOINTS } from '../api-endpoints.constants';
 import { Observable } from 'rxjs';
 import { ExperimentSegmentListRequest, SegmentFile } from '../segments/store/segments.model';
@@ -84,7 +85,8 @@ export class ExperimentDataService {
 
   getExperimentById(experimentId: string) {
     const url = `${API_ENDPOINTS.getExperimentById}/${experimentId}`;
-    return this.http.get(url);
+    // The details page renders its own not-found state, so skip the generic 404 notification
+    return this.http.get(url, { context: new HttpContext().set(HANDLES_404_CONTEXTUALLY, true) });
   }
 
   fetchAllPartitions() {

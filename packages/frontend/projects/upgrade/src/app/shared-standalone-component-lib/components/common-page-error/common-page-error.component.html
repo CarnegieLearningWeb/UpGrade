@@ -1,0 +1,21 @@
+<div class="page-error">
+  <div class="page-error-icon" aria-hidden="true">
+    <span class="material-symbols-outlined">{{ icon }}</span>
+  </div>
+  <h1 class="page-error-title ft-26-700">{{ titleKey | translate }}</h1>
+  <p class="page-error-subtitle ft-16-400">{{ subtitleKey | translate }}</p>
+  <div class="page-error-actions">
+    @if (isNotFound) {
+    <button mat-flat-button color="primary" [routerLink]="config.backRoute">
+      {{ config.backButtonKey | translate }}
+    </button>
+    } @else {
+    <button mat-flat-button color="primary" (click)="retry.emit()">
+      {{ 'global.try-again.text' | translate }}
+    </button>
+    <button mat-stroked-button [routerLink]="config.backRoute">
+      {{ config.backButtonKey | translate }}
+    </button>
+    }
+  </div>
+</div>
