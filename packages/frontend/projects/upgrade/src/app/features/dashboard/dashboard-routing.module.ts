@@ -32,7 +32,8 @@ const segmentsRoutes: Routes = [
   },
 ];
 
-const routes: Routes = [
+// Exported for dashboard-routing.spec.ts
+export const routes: Routes = [
   {
     path: '',
     component: DashboardRootComponent,

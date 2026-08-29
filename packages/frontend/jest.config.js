@@ -36,7 +36,8 @@ module.exports = {
     '<rootDir>/dist/',
     '<rootDir>/e2e/',
     '<rootDir>/src/environments/',
-    '<rootDir>/src/app/features/dashboard/',
+    // Dashboard specs are excluded except the routing spec, which guards subtle redirect behavior
+    '<rootDir>/src/app/features/dashboard/(?!dashboard-routing\\.spec)',
     '<rootDir>/src/app/shared/',
   ],
 
