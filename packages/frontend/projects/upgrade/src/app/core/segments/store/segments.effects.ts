@@ -16,7 +16,7 @@ import {
 } from './segments.selectors';
 import JSZip from 'jszip';
 import { of } from 'rxjs';
-import { isValidEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import { SEGMENT_STATUS, SERVER_ERROR } from 'upgrade_types';
 import { SegmentsService } from '../segments.service';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
@@ -135,7 +135,7 @@ export class SegmentsEffects {
       map((action) => action.segmentId),
       filter((segmentId) => !!segmentId),
       switchMap((segmentId) => {
-        if (!isValidEntityId(segmentId)) {
+        if (!isCanonicalEntityId(segmentId)) {
           return of(SegmentsActions.actionGetSegmentByIdFailure({ segmentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND }));
         }
         return this.segmentsDataService.getSegmentById(segmentId).pipe(

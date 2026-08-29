@@ -34,7 +34,9 @@ import {
   selectTotalExperiment,
   selectRewardsDataForSelectedExperiment,
   selectIsLoadingRewardsSummary,
+  selectExperimentDetailsPageError,
 } from './experiments.selectors';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 
 describe('Experiments Selectors', () => {
   const mockState: ExperimentState = {
@@ -923,6 +925,35 @@ describe('Experiments Selectors', () => {
       const result = selectIsLoadingRewardsSummary.projector(state);
 
       expect(result).toEqual(false);
+    });
+  });
+
+  describe('#selectExperimentDetailsPageError', () => {
+    const detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.NOT_FOUND };
+    const routerStateFor = (experimentId: string) => ({ state: { params: { experimentId } } } as any);
+
+    it('should return the error when it belongs to the experiment in the route', () => {
+      const previousState = { ...mockState, detailsPageError };
+
+      const result = selectExperimentDetailsPageError.projector(routerStateFor('abc123'), previousState);
+
+      expect(result).toEqual(detailsPageError);
+    });
+
+    it('should return null when the error belongs to a different experiment', () => {
+      const previousState = { ...mockState, detailsPageError };
+
+      const result = selectExperimentDetailsPageError.projector(routerStateFor('other-id'), previousState);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when there is no error', () => {
+      const previousState = { ...mockState, detailsPageError: null };
+
+      const result = selectExperimentDetailsPageError.projector(routerStateFor('abc123'), previousState);
+
+      expect(result).toBeNull();
     });
   });
 });

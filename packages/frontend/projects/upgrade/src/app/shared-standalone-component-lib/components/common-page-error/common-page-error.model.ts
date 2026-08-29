@@ -17,12 +17,15 @@ export interface CommonPageErrorConfig {
   backRoute: string;
 }
 
-// Lowercase-only on purpose: the app always generates lowercase UUIDs, and the selectors
-// compare the route param against entity ids case-sensitively.
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+// The canonical form of an entity id in this app: the lowercase subset of what the
+// backend's @IsUUID() accepts (UUID versions 1-8 plus the nil/max UUIDs). Lowercase-only
+// on purpose - the app always generates lowercase UUID URLs, and the selectors compare
+// the route param against entity ids case-sensitively.
+const CANONICAL_UUID_PATTERN =
+  /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/;
 
-// A malformed id in the URL can never identify an entity, so details pages treat it as
-// NOT_FOUND without a network call (the backend would reject it with 400, not 404).
-export function isValidEntityId(id: string): boolean {
-  return UUID_PATTERN.test(id);
+// Detail routes intentionally support canonical lowercase ids only; other forms are
+// treated as NOT_FOUND without a network call to keep route/store comparisons deterministic.
+export function isCanonicalEntityId(id: string): boolean {
+  return CANONICAL_UUID_PATTERN.test(id);
 }

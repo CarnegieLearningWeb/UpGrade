@@ -15,7 +15,7 @@ import { CommonExportHelpersService } from '../../../shared/services/common-expo
 import { of } from 'rxjs';
 import { SERVER_ERROR } from 'upgrade_types';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
-import { isValidEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 
 @Injectable()
 export class FeatureFlagsEffects {
@@ -359,7 +359,7 @@ export class FeatureFlagsEffects {
       map((action) => action.featureFlagId),
       filter((featureFlagId) => !!featureFlagId),
       switchMap((featureFlagId) => {
-        if (!isValidEntityId(featureFlagId)) {
+        if (!isCanonicalEntityId(featureFlagId)) {
           return of(
             FeatureFlagsActions.actionFetchFeatureFlagByIdFailure({
               featureFlagId,

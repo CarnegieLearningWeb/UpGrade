@@ -34,7 +34,7 @@ import JSZip from 'jszip';
 import { TranslateService } from '@ngx-translate/core';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
-import { isValidEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 @Injectable()
 export class ExperimentEffects {
   constructor(
@@ -307,7 +307,7 @@ export class ExperimentEffects {
       filter((experimentId) => !!experimentId),
       withLatestFrom(this.store$.pipe(select(selectExperimentStats))),
       mergeMap(([experimentId, experimentStats]) => {
-        if (!isValidEntityId(experimentId)) {
+        if (!isCanonicalEntityId(experimentId)) {
           return of(
             experimentAction.actionGetExperimentByIdFailure({ experimentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND })
           );

@@ -22,6 +22,7 @@ import {
   actionDeleteExperimentFailure,
   actionGetExperimentById,
   actionGetExperimentByIdSuccess,
+  actionGetExperimentByIdFailure,
   actionFetchExperimentDetailStatSuccess,
   actionFetchExperimentDetailStat,
   actionGetExperimentsSuccess,
@@ -67,6 +68,7 @@ import { actionExecuteQuery, actionFetchMetrics } from '../../analysis/store/ana
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { UserRole } from '../../users/store/users.model';
 import { Environment } from '../../../../environments/environment-types';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 
 describe('ExperimentEffects', () => {
   let service: ExperimentEffects;
@@ -596,7 +598,7 @@ describe('ExperimentEffects', () => {
   });
 
   describe('#getExperimentById$', () => {
-    // Must be a valid UUID - the effect short-circuits malformed ids to a not-found failure
+    // Must be a canonical (lowercase) UUID - the effect short-circuits non-canonical ids to a not-found failure
     const experimentId = '11111111-2222-4333-8444-555555555555';
     const experiment = {
       id: 'test1',
@@ -642,6 +644,58 @@ describe('ExperimentEffects', () => {
       });
 
       actions$.next(actionGetExperimentById({ experimentId }));
+    }));
+
+    it('should dispatch a not-found failure without calling the API when the id is not a canonical UUID', fakeAsync(() => {
+      experimentDataService.getExperimentById = jest.fn();
+      Selectors.selectExperimentStats.setResult({});
+      let result: any;
+      service.getExperimentById$.subscribe((action: any) => (result = action));
+
+      actions$.next(actionGetExperimentById({ experimentId: 'not-a-uuid' }));
+      tick(0);
+
+      expect(result).toEqual(
+        actionGetExperimentByIdFailure({ experimentId: 'not-a-uuid', errorType: PAGE_ERROR_TYPE.NOT_FOUND })
+      );
+      expect(experimentDataService.getExperimentById).not.toHaveBeenCalled();
+    }));
+
+    it('should dispatch a not-found failure when the fetch fails with 404', fakeAsync(() => {
+      experimentDataService.getExperimentById = jest.fn().mockReturnValue(throwError(() => ({ status: 404 })));
+      Selectors.selectExperimentStats.setResult({});
+      let result: any;
+      service.getExperimentById$.subscribe((action: any) => (result = action));
+
+      actions$.next(actionGetExperimentById({ experimentId }));
+      tick(0);
+
+      expect(result).toEqual(actionGetExperimentByIdFailure({ experimentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND }));
+    }));
+
+    it('should dispatch a load-failed failure when the fetch fails with an unexpected error', fakeAsync(() => {
+      experimentDataService.getExperimentById = jest.fn().mockReturnValue(throwError(() => ({ status: 500 })));
+      Selectors.selectExperimentStats.setResult({});
+      let result: any;
+      service.getExperimentById$.subscribe((action: any) => (result = action));
+
+      actions$.next(actionGetExperimentById({ experimentId }));
+      tick(0);
+
+      expect(result).toEqual(actionGetExperimentByIdFailure({ experimentId, errorType: PAGE_ERROR_TYPE.LOAD_FAILED }));
+    }));
+
+    it('should still dispatch success without stats when only the stats call fails', fakeAsync(() => {
+      experimentDataService.getExperimentById = jest.fn().mockReturnValue(of(experiment));
+      experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(throwError(() => ({ status: 500 })));
+      Selectors.selectExperimentStats.setResult({});
+      let result: any;
+      service.getExperimentById$.subscribe((action: any) => (result = action));
+
+      actions$.next(actionGetExperimentById({ experimentId }));
+      tick(0);
+
+      expect(result).toEqual(actionGetExperimentByIdSuccess({ experiment }));
     }));
   });
 
