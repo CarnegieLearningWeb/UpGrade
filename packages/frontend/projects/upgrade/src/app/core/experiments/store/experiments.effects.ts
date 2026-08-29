@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import * as analysisActions from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
-import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap } from 'rxjs/operators';
+import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap, takeUntil } from 'rxjs/operators';
 import {
   UpsertExperimentType,
   IExperimentEnrollmentStats,
@@ -303,10 +303,10 @@ export class ExperimentEffects {
   getExperimentById$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionGetExperimentById),
-      map((action) => action.experimentId),
-      filter((experimentId) => !!experimentId),
+      filter((action) => !!action.experimentId),
       withLatestFrom(this.store$.pipe(select(selectExperimentStats))),
-      mergeMap(([experimentId, experimentStats]) => {
+      mergeMap(([action, experimentStats]) => {
+        const { experimentId } = action;
         if (!isCanonicalEntityId(experimentId)) {
           return of(
             experimentAction.actionGetExperimentByIdFailure({ experimentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND })
@@ -331,7 +331,18 @@ export class ExperimentEffects {
               experimentId,
               errorType: error?.status === 404 ? PAGE_ERROR_TYPE.NOT_FOUND : PAGE_ERROR_TYPE.LOAD_FAILED,
             }),
-          ])
+          ]),
+          // A newer fetch for the same experiment supersedes this one - cancel it so a late
+          // failure can't set detailsPageError after the newer request has succeeded.
+          // mergeMap is kept because preview-user loads several different experiments concurrently,
+          // and the reference check excludes the triggering action itself, which BehaviorSubject-backed
+          // action streams (e.g. ActionsSubject in tests) replay on subscription.
+          takeUntil(
+            this.actions$.pipe(
+              ofType(experimentAction.actionGetExperimentById),
+              filter((newerAction) => newerAction !== action && newerAction.experimentId === experimentId)
+            )
+          )
         );
       })
     )

@@ -1,7 +1,7 @@
 import { fakeAsync, tick } from '@angular/core/testing';
 import { ActionsSubject } from '@ngrx/store';
-import { BehaviorSubject, of, throwError } from 'rxjs';
-import { last, pairwise, scan, take } from 'rxjs/operators';
+import { BehaviorSubject, of, throwError, timer } from 'rxjs';
+import { delay, last, mergeMap, pairwise, scan, take } from 'rxjs/operators';
 import {
   actionDeleteExperimentSuccess,
   actionFetchAllExperimentNames,
@@ -696,6 +696,49 @@ describe('ExperimentEffects', () => {
       tick(0);
 
       expect(result).toEqual(actionGetExperimentByIdSuccess({ experiment }));
+    }));
+
+    it('should cancel a stale request when a newer fetch for the same id is dispatched', fakeAsync(() => {
+      // The first (stale) request fails slowly; the second succeeds immediately.
+      // The stale failure must not surface after the newer request has succeeded.
+      experimentDataService.getExperimentById = jest
+        .fn()
+        .mockReturnValueOnce(timer(100).pipe(mergeMap(() => throwError(() => ({ status: 500 })))))
+        .mockReturnValueOnce(of(experiment));
+      experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(stats));
+      Selectors.selectExperimentStats.setResult({});
+      const results: any[] = [];
+      service.getExperimentById$.subscribe((action: any) => results.push(action));
+
+      actions$.next(actionGetExperimentById({ experimentId }));
+      actions$.next(actionGetExperimentById({ experimentId }));
+      tick(200);
+
+      expect(results).toContainEqual(actionGetExperimentByIdSuccess({ experiment }));
+      expect(results).not.toContainEqual(
+        actionGetExperimentByIdFailure({ experimentId, errorType: PAGE_ERROR_TYPE.LOAD_FAILED })
+      );
+    }));
+
+    it('should keep concurrent fetches for different experiment ids', fakeAsync(() => {
+      // preview-user loads several different experiments at once - one fetch must not cancel another
+      const otherExperimentId = '22222222-3333-4333-8444-555555555555';
+      const otherExperiment = { ...experiment, id: 'test2' } as any;
+      experimentDataService.getExperimentById = jest
+        .fn()
+        .mockReturnValueOnce(of(experiment).pipe(delay(50)))
+        .mockReturnValueOnce(of(otherExperiment));
+      experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(stats));
+      Selectors.selectExperimentStats.setResult({});
+      const results: any[] = [];
+      service.getExperimentById$.subscribe((action: any) => results.push(action));
+
+      actions$.next(actionGetExperimentById({ experimentId }));
+      actions$.next(actionGetExperimentById({ experimentId: otherExperimentId }));
+      tick(100);
+
+      expect(results).toContainEqual(actionGetExperimentByIdSuccess({ experiment }));
+      expect(results).toContainEqual(actionGetExperimentByIdSuccess({ experiment: otherExperiment }));
     }));
   });
 
