@@ -4,7 +4,7 @@ import { DashboardRootComponent } from './dashboard-root/dashboard-root.componen
 import { requireRouteParam } from './require-route-param.guard';
 
 // Conditionally define segments routes based on the toggle
-const segmentsRoutes = [
+const segmentsRoutes: Routes = [
   {
     path: 'segments',
     loadComponent: () =>
@@ -12,6 +12,12 @@ const segmentsRoutes = [
     data: {
       title: 'app-header.title.segments',
     },
+  },
+  {
+    // An id-less detail URL should land on the list page, not fall through the global wildcard to /home
+    path: 'segments/detail',
+    redirectTo: '/segments',
+    pathMatch: 'full',
   },
   {
     path: 'segments/detail/:segmentId',
@@ -45,6 +51,11 @@ const routes: Routes = [
         data: {
           title: 'app-header.title.experiments',
         },
+      },
+      {
+        path: 'home/detail',
+        redirectTo: '/home',
+        pathMatch: 'full',
       },
       {
         path: 'home/detail/:experimentId',
@@ -85,6 +96,11 @@ const routes: Routes = [
         data: {
           title: 'app-header.title.feature-flag',
         },
+      },
+      {
+        path: 'featureflags/detail',
+        redirectTo: '/featureflags',
+        pathMatch: 'full',
       },
       {
         path: 'featureflags/detail/:flagId',

@@ -155,14 +155,15 @@ export class ExperimentService {
     );
   }
 
-  fetchExperimentById(experimentId: string) {
-    this.store$.dispatch(experimentAction.actionGetExperimentById({ experimentId }));
+  fetchExperimentById(experimentId: string, handles404Contextually = false) {
+    this.store$.dispatch(experimentAction.actionGetExperimentById({ experimentId, handles404Contextually }));
   }
 
   refetchCurrentSelectedExperiment() {
     this.selectedExperiment$.pipe(take(1)).subscribe((experiment) => {
       if (experiment) {
-        this.fetchExperimentById(experiment.id);
+        // selectedExperiment$ only resolves on the details page, which renders its own error state
+        this.fetchExperimentById(experiment.id, true);
       }
     });
   }

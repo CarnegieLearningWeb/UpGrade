@@ -49,7 +49,9 @@ export const actionRemoveExperimentStat = createAction(
 
 export const actionGetExperimentById = createAction(
   '[Experiment] Get Experiment By Id',
-  props<{ experimentId: string }>()
+  // handles404Contextually: set by details-page callers that render their own not-found state,
+  // so the generic 404 notification is suppressed for them only (e.g. preview-user keeps it)
+  props<{ experimentId: string; handles404Contextually?: boolean }>()
 );
 
 export const actionGetExperimentByIdSuccess = createAction(

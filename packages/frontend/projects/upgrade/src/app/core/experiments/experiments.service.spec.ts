@@ -347,7 +347,7 @@ describe('ExperimentService', () => {
   });
 
   describe('#fetchExperimentById', () => {
-    it('should dispatch actionGetExperimentById with the given input', () => {
+    it('should dispatch actionGetExperimentById without contextual 404 handling by default', () => {
       const experimentId = 'abc123';
 
       service.fetchExperimentById(experimentId);
@@ -355,6 +355,20 @@ describe('ExperimentService', () => {
       expect(mockStore.dispatch).toHaveBeenCalledWith(
         actionGetExperimentById({
           experimentId,
+          handles404Contextually: false,
+        })
+      );
+    });
+
+    it('should dispatch actionGetExperimentById with contextual 404 handling when requested', () => {
+      const experimentId = 'abc123';
+
+      service.fetchExperimentById(experimentId, true);
+
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        actionGetExperimentById({
+          experimentId,
+          handles404Contextually: true,
         })
       );
     });

@@ -83,10 +83,11 @@ export class ExperimentDataService {
     return this.http.delete(url);
   }
 
-  getExperimentById(experimentId: string) {
+  getExperimentById(experimentId: string, handles404Contextually = false) {
     const url = `${API_ENDPOINTS.getExperimentById}/${experimentId}`;
-    // The details page renders its own not-found state, so skip the generic 404 notification
-    return this.http.get(url, { context: new HttpContext().set(HANDLES_404_CONTEXTUALLY, true) });
+    // Details-page callers render their own not-found state, so they skip the generic 404
+    // notification; other callers (e.g. preview-user) keep it
+    return this.http.get(url, { context: new HttpContext().set(HANDLES_404_CONTEXTUALLY, handles404Contextually) });
   }
 
   fetchAllPartitions() {

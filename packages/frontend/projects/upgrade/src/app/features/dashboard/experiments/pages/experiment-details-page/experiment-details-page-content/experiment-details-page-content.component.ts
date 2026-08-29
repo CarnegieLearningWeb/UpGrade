@@ -94,7 +94,7 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
     );
 
     this.experimentIdSub = experimentId$.subscribe((experimentId) => {
-      this.experimentsService.fetchExperimentById(experimentId);
+      this.experimentsService.fetchExperimentById(experimentId, true);
     });
 
     this.experiment$ = this.experimentsService.selectedExperiment$;
@@ -124,7 +124,7 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
   }
 
   onRetry(experimentId: string): void {
-    this.experimentsService.fetchExperimentById(experimentId);
+    this.experimentsService.fetchExperimentById(experimentId, true);
   }
 
   ngOnDestroy() {

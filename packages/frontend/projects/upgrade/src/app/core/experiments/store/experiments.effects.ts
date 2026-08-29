@@ -312,7 +312,7 @@ export class ExperimentEffects {
             experimentAction.actionGetExperimentByIdFailure({ experimentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND })
           );
         }
-        return this.experimentDataService.getExperimentById(experimentId).pipe(
+        return this.experimentDataService.getExperimentById(experimentId, action.handles404Contextually ?? false).pipe(
           switchMap((data: Experiment) =>
             this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
               switchMap((stat: IExperimentEnrollmentStats) => {
