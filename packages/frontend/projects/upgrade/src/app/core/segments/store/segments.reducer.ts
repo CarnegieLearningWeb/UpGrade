@@ -33,7 +33,6 @@ const reducer = createReducer(
   on(SegmentsActions.actionUpsertSegment, SegmentsActions.actionGetSegmentById, (state) => ({
     ...state,
     isLoadingSegments: true,
-    detailsPageError: null,
   })),
   on(
     SegmentsActions.actionFetchSegmentsSuccess,
@@ -137,6 +136,9 @@ const reducer = createReducer(
         allFeatureFlagSegmentsExclusion: featureFlagSegmentExclusion,
         allParentSegments,
         isLoadingSegments: false,
+        // The error is retained while a retry is in flight (so the error page doesn't fall back to a
+        // stale cached segment) and only cleared once a fetch for that same segment succeeds
+        detailsPageError: state.detailsPageError?.entityId === segment.id ? null : state.detailsPageError,
       };
       return newState;
     }

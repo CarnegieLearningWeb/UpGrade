@@ -149,21 +149,30 @@ describe('ExperimentsReducer', () => {
     expect(newState.detailsPageError).toEqual(detailsPageError);
   });
 
-  it('action "actionGetExperimentById" of a details-page fetch should clear the details page error', () => {
-    const previousState = { ...initialState };
-    previousState.detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.NOT_FOUND };
+  it('action "actionGetExperimentById" should retain the details page error while a retry is in flight', () => {
+    const detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.LOAD_FAILED };
+    const previousState = { ...initialState, detailsPageError };
     const testAction: Action = actionGetExperimentById({ experimentId: 'abc123', handles404Contextually: true });
 
     const newState = experimentsReducer(previousState, testAction);
 
-    expect(newState).not.toBe(previousState);
+    expect(newState.detailsPageError).toEqual(detailsPageError);
+  });
+
+  it('action "actionGetExperimentByIdSuccess" should clear the details page error of that experiment', () => {
+    const previousState = { ...initialState };
+    previousState.detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.LOAD_FAILED };
+    const testAction: Action = actionGetExperimentByIdSuccess({ experiment: { id: 'abc123' } as any });
+
+    const newState = experimentsReducer(previousState, testAction);
+
     expect(newState.detailsPageError).toBeNull();
   });
 
-  it('action "actionGetExperimentById" of a background fetch should not clear the details page error', () => {
-    const detailsPageError = { entityId: 'current-details-id', errorType: PAGE_ERROR_TYPE.NOT_FOUND };
+  it('action "actionGetExperimentByIdSuccess" of another experiment should not clear the details page error', () => {
+    const detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.LOAD_FAILED };
     const previousState = { ...initialState, detailsPageError };
-    const testAction: Action = actionGetExperimentById({ experimentId: 'background-id' });
+    const testAction: Action = actionGetExperimentByIdSuccess({ experiment: { id: 'other-id' } as any });
 
     const newState = experimentsReducer(previousState, testAction);
 

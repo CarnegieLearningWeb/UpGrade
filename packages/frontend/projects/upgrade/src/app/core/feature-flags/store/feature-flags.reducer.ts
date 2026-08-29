@@ -74,12 +74,14 @@ const reducer = createReducer(
   on(FeatureFlagsActions.actionFetchFeatureFlagById, (state) => ({
     ...state,
     isLoadingSelectedFeatureFlag: true,
-    detailsPageError: null,
   })),
   on(FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess, (state, { flag }) => ({
     ...state,
     selectedFlag: flag,
     isLoadingSelectedFeatureFlag: false,
+    // The error is retained while a retry is in flight (so the error page doesn't fall back to a
+    // stale cached flag) and only cleared once a fetch for that same flag succeeds
+    detailsPageError: state.detailsPageError?.entityId === flag.id ? null : state.detailsPageError,
   })),
   on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state, { featureFlagId, errorType }) => ({
     ...state,

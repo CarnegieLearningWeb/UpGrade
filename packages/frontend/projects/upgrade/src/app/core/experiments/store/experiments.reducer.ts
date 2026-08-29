@@ -109,12 +109,9 @@ const reducer = createReducer(
     // Preserve 0 because it means the backend already confirmed an empty list.
     totalExperiments: state.totalExperiments ?? 1,
   })),
-  on(experimentsAction.actionGetExperimentById, (state, { handles404Contextually }) => ({
+  on(experimentsAction.actionGetExperimentById, (state) => ({
     ...state,
     isLoadingExperiment: true,
-    // Only details-page fetches own the details error state - background fetches (e.g. preview-user)
-    // must not clear an error the details page is currently showing
-    detailsPageError: handles404Contextually ? null : state.detailsPageError,
     // If the total count is unknown, assume at least one experiment is loading so the root page skips the empty state.
     // Preserve 0 because it means the backend already confirmed an empty list.
     totalExperiments: state.totalExperiments ?? 1,
@@ -136,6 +133,9 @@ const reducer = createReducer(
       ...state,
       experiments: updatedExperiments,
       isLoadingExperiment: false,
+      // The error is retained while a retry is in flight (so the error page doesn't fall back to a
+      // stale cached entity) and only cleared once a fetch for that same experiment succeeds
+      detailsPageError: state.detailsPageError?.entityId === experiment.id ? null : state.detailsPageError,
     };
   }),
   // Experiment Delete Actions

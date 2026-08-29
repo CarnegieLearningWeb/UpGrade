@@ -40,14 +40,44 @@ describe('SegmentsReducer', () => {
   });
 
   describe('actionGetSegmentById', () => {
-    it('should clear the details page error', () => {
-      const previousState = { ...initialState };
-      previousState.detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.NOT_FOUND };
+    it('should retain the details page error while a retry is in flight', () => {
+      const detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.LOAD_FAILED };
+      const previousState = { ...initialState, detailsPageError };
       const testAction = SegmentsActions.actionGetSegmentById({ segmentId: 'abc123' });
 
       const newState = segmentsReducer(previousState, testAction);
 
+      expect(newState.detailsPageError).toEqual(detailsPageError);
+    });
+  });
+
+  describe('actionGetSegmentByIdSuccess', () => {
+    const successActionFor = (segmentId: string) =>
+      SegmentsActions.actionGetSegmentByIdSuccess({
+        segment: { id: segmentId } as Segment,
+        experimentSegmentInclusion: null,
+        experimentSegmentExclusion: null,
+        featureFlagSegmentInclusion: null,
+        featureFlagSegmentExclusion: null,
+        allParentSegments: null,
+      });
+
+    it('should clear the details page error of that segment', () => {
+      const previousState = { ...initialState };
+      previousState.detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.LOAD_FAILED };
+
+      const newState = segmentsReducer(previousState, successActionFor('abc123'));
+
       expect(newState.detailsPageError).toBeNull();
+    });
+
+    it('should not clear the details page error of another segment', () => {
+      const detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.LOAD_FAILED };
+      const previousState = { ...initialState, detailsPageError };
+
+      const newState = segmentsReducer(previousState, successActionFor('other-id'));
+
+      expect(newState.detailsPageError).toEqual(detailsPageError);
     });
   });
 
