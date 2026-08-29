@@ -306,13 +306,17 @@ export class ExperimentEffects {
       filter((action) => !!action.experimentId),
       withLatestFrom(this.store$.pipe(select(selectExperimentStats))),
       mergeMap(([action, experimentStats]) => {
-        const { experimentId } = action;
+        const { experimentId, handles404Contextually } = action;
         if (!isCanonicalEntityId(experimentId)) {
           return of(
-            experimentAction.actionGetExperimentByIdFailure({ experimentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND })
+            experimentAction.actionGetExperimentByIdFailure({
+              experimentId,
+              errorType: PAGE_ERROR_TYPE.NOT_FOUND,
+              handles404Contextually,
+            })
           );
         }
-        return this.experimentDataService.getExperimentById(experimentId, action.handles404Contextually ?? false).pipe(
+        return this.experimentDataService.getExperimentById(experimentId, handles404Contextually ?? false).pipe(
           switchMap((data: Experiment) =>
             this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
               switchMap((stat: IExperimentEnrollmentStats) => {
@@ -330,17 +334,24 @@ export class ExperimentEffects {
             experimentAction.actionGetExperimentByIdFailure({
               experimentId,
               errorType: error?.status === 404 ? PAGE_ERROR_TYPE.NOT_FOUND : PAGE_ERROR_TYPE.LOAD_FAILED,
+              handles404Contextually,
             }),
           ]),
-          // A newer fetch for the same experiment supersedes this one - cancel it so a late
-          // failure can't set detailsPageError after the newer request has succeeded.
-          // mergeMap is kept because preview-user loads several different experiments concurrently,
-          // and the reference check excludes the triggering action itself, which BehaviorSubject-backed
-          // action streams (e.g. ActionsSubject in tests) replay on subscription.
+          // A newer fetch supersedes this one when it targets the same experiment, or when both are
+          // details-page fetches (the details page shows one experiment at a time, and a stale failure
+          // must not overwrite the current route's detailsPageError). Cancelling instead of switchMap
+          // keeps preview-user's concurrent fetches for different experiments alive. The reference
+          // check excludes the triggering action itself, which BehaviorSubject-backed action streams
+          // (e.g. ActionsSubject in tests) replay on subscription.
           takeUntil(
             this.actions$.pipe(
               ofType(experimentAction.actionGetExperimentById),
-              filter((newerAction) => newerAction !== action && newerAction.experimentId === experimentId)
+              filter(
+                (newerAction) =>
+                  newerAction !== action &&
+                  (newerAction.experimentId === experimentId ||
+                    !!(handles404Contextually && newerAction.handles404Contextually))
+              )
             )
           )
         );

@@ -61,11 +61,16 @@ const reducer = createReducer(
     experimentsAction.actionUpdateExperimentStateFailure,
     (state) => ({ ...state, isLoadingExperiment: false })
   ),
-  on(experimentsAction.actionGetExperimentByIdFailure, (state, { experimentId, errorType }) => ({
-    ...state,
-    isLoadingExperiment: false,
-    detailsPageError: { entityId: experimentId, errorType },
-  })),
+  on(
+    experimentsAction.actionGetExperimentByIdFailure,
+    (state, { experimentId, errorType, handles404Contextually }) => ({
+      ...state,
+      isLoadingExperiment: false,
+      // Only details-page fetches own the details error state - a background failure (e.g. preview-user)
+      // must not overwrite the error of the experiment the details page is currently showing
+      detailsPageError: handles404Contextually ? { entityId: experimentId, errorType } : state.detailsPageError,
+    })
+  ),
   on(experimentsAction.actionUpsertExperimentSuccess, (state, { experiment }) => {
     // Update experiment if it exists, otherwise don't add to list (let refetch handle it)
     const updatedExperiments = state.experiments.map((exp) => (exp.id === experiment.id ? experiment : exp));
@@ -97,10 +102,19 @@ const reducer = createReducer(
     delete stats[experimentStatId];
     return { ...state, stats };
   }),
-  on(experimentsAction.actionUpsertExperiment, experimentsAction.actionGetExperimentById, (state) => ({
+  on(experimentsAction.actionUpsertExperiment, (state) => ({
     ...state,
     isLoadingExperiment: true,
-    detailsPageError: null,
+    // If the total count is unknown, assume at least one experiment is loading so the root page skips the empty state.
+    // Preserve 0 because it means the backend already confirmed an empty list.
+    totalExperiments: state.totalExperiments ?? 1,
+  })),
+  on(experimentsAction.actionGetExperimentById, (state, { handles404Contextually }) => ({
+    ...state,
+    isLoadingExperiment: true,
+    // Only details-page fetches own the details error state - background fetches (e.g. preview-user)
+    // must not clear an error the details page is currently showing
+    detailsPageError: handles404Contextually ? null : state.detailsPageError,
     // If the total count is unknown, assume at least one experiment is loading so the root page skips the empty state.
     // Preserve 0 because it means the backend already confirmed an empty list.
     totalExperiments: state.totalExperiments ?? 1,

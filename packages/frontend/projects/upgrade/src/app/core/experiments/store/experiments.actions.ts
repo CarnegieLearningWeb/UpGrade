@@ -61,7 +61,8 @@ export const actionGetExperimentByIdSuccess = createAction(
 
 export const actionGetExperimentByIdFailure = createAction(
   '[Experiment] Get Experiment By Id Failure',
-  props<{ experimentId: string; errorType: PAGE_ERROR_TYPE }>()
+  // Only failures of details-page fetches (handles404Contextually) may write detailsPageError
+  props<{ experimentId: string; errorType: PAGE_ERROR_TYPE; handles404Contextually?: boolean }>()
 );
 
 export const actionUpsertExperiment = createAction(

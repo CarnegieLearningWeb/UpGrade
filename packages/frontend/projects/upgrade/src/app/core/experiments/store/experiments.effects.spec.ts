@@ -720,8 +720,37 @@ describe('ExperimentEffects', () => {
       );
     }));
 
-    it('should keep concurrent fetches for different experiment ids', fakeAsync(() => {
-      // preview-user loads several different experiments at once - one fetch must not cancel another
+    it('should cancel a previous details-page fetch when a newer details-page fetch for another id starts', fakeAsync(() => {
+      // Simulates navigating from details page A to details page B: A's slow failure must not
+      // surface, or it would overwrite B's detailsPageError and bring the spinner back on B.
+      const otherExperimentId = '22222222-3333-4333-8444-555555555555';
+      const otherExperiment = { ...experiment, id: 'test2' } as any;
+      experimentDataService.getExperimentById = jest
+        .fn()
+        .mockReturnValueOnce(timer(100).pipe(mergeMap(() => throwError(() => ({ status: 500 })))))
+        .mockReturnValueOnce(of(otherExperiment));
+      experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(stats));
+      Selectors.selectExperimentStats.setResult({});
+      const results: any[] = [];
+      service.getExperimentById$.subscribe((action: any) => results.push(action));
+
+      actions$.next(actionGetExperimentById({ experimentId, handles404Contextually: true }));
+      actions$.next(actionGetExperimentById({ experimentId: otherExperimentId, handles404Contextually: true }));
+      tick(200);
+
+      expect(results).toContainEqual(actionGetExperimentByIdSuccess({ experiment: otherExperiment }));
+      expect(results).not.toContainEqual(
+        actionGetExperimentByIdFailure({
+          experimentId,
+          errorType: PAGE_ERROR_TYPE.LOAD_FAILED,
+          handles404Contextually: true,
+        })
+      );
+    }));
+
+    it('should keep concurrent background fetches for different experiment ids', fakeAsync(() => {
+      // preview-user loads several different experiments at once (without contextual 404 handling) -
+      // one fetch must not cancel another
       const otherExperimentId = '22222222-3333-4333-8444-555555555555';
       const otherExperiment = { ...experiment, id: 'test2' } as any;
       experimentDataService.getExperimentById = jest
