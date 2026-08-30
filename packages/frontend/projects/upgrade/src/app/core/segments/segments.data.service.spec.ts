@@ -1,6 +1,7 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { of } from 'rxjs';
 import { SegmentsDataService } from './segments.data.service';
+import { HANDLES_404_CONTEXTUALLY } from '../http-interceptors/http-context-tokens';
 import {
   AddPrivateSegmentListRequest,
   EditPrivateSegmentListRequest,
@@ -288,6 +289,18 @@ describe('SegmentDataService', () => {
       service.deleteSegmentList(segmentId, parentSegmentId);
 
       expect(mockHttpClient.delete).toHaveBeenCalledWith(expectedUrl, { body: { parentSegmentId } });
+    });
+  });
+
+  describe('#getSegmentById', () => {
+    it('should get the segment status observable with contextual 404 handling', () => {
+      const expectedUrl = `${API_ENDPOINTS.segments}/status/${mockSegmentId}`;
+
+      service.getSegmentById(mockSegmentId);
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl, { context: expect.any(HttpContext) });
+      const context: HttpContext = (mockHttpClient.get as jest.Mock).mock.calls[0][1].context;
+      expect(context.get(HANDLES_404_CONTEXTUALLY)).toBe(true);
     });
   });
 });
