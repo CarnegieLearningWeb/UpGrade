@@ -1,5 +1,5 @@
 import { EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
-import { Repository, EntityManager, Brackets } from 'typeorm';
+import { Repository, EntityManager, Brackets, SelectQueryBuilder } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
@@ -155,24 +155,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       })
     );
 
-    const experimentInclusionSegmentQuery = this.buildInclusionSegmentQuery().where(
-      new Brackets((qb) => {
-        qb.where(whereExperimentsClause, whereClauseParams);
-      })
-    );
-
-    const experimentExclusionSegmentQuery = this.buildExclusionSegmentQuery().where(
-      new Brackets((qb) => {
-        qb.where(whereExperimentsClause, whereClauseParams);
-      })
-    );
-
-    const [
-      experimentConditionLevelPayloadData,
-      experimentFactorDecisionPointLevelPayloadData,
-      experimentInclusionSegmentData,
-      experimentExclusionSegmentData,
-    ] = await Promise.all([
+    const [experimentConditionLevelPayloadData, experimentFactorDecisionPointLevelPayloadData] = await Promise.all([
       experimentConditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'ExperimentRepository',
@@ -191,42 +174,19 @@ export class ExperimentRepository extends Repository<Experiment> {
         );
         throw errorMsgString;
       }),
-      experimentInclusionSegmentQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentRepository',
-          'getValidExperiments-experimentInclusionSegmentQuery',
-          {},
-          errorMsg
-        );
-        throw errorMsgString;
-      }),
-      experimentExclusionSegmentQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentRepository',
-          'getValidExperiments-experimentExclusionSegmentQuery',
-          {},
-          errorMsg
-        );
-        throw errorMsgString;
-      }),
     ]);
 
-    const experimentSegmentData = this.mergeSegmentData(experimentInclusionSegmentData, experimentExclusionSegmentData);
-
-    const experimentData = experimentConditionLevelPayloadData.map((data) => {
+    // Inclusion/exclusion segment ids are intentionally NOT joined in here: they're only ever needed
+    // by ExperimentAssignmentService for an experiment that has no row in the experiment_precomputed_segment
+    // table, which is the uncommon case (not an in-memory cache miss — the in-memory cache transparently
+    // re-reads Postgres for experiments that DO have a row, regardless of cache state; only a genuine
+    // absence of the row itself, whether freshly confirmed or served from a cached negative result, counts).
+    // See ExperimentRepository.getSegmentIdsForExperiments, which fetches them lazily and scoped to just
+    // the experiment ids that actually need them.
+    return experimentConditionLevelPayloadData.map((data) => {
       const data2 = experimentFactorDecisionPointLevelPayloadData.find((i) => i.id === data.id);
       return { ...data, ...data2 };
     });
-
-    const mergedData = experimentData.map((data) => {
-      const { id } = data;
-      const segmentData = experimentSegmentData.find((segmentData) => {
-        return segmentData.id === id;
-      });
-      return segmentData ? { ...data, ...segmentData } : data;
-    });
-
-    return mergedData;
   }
 
   public async getValidExperimentsForContextAndDecisionPoint(
@@ -262,72 +222,32 @@ export class ExperimentRepository extends Repository<Experiment> {
       })
     );
 
-    const inclusionSegmentQuery = this.buildInclusionSegmentQuery()
-      .leftJoin('experiment.partitions', 'partitions')
-      .where(
-        new Brackets((qb) => {
-          qb.where(decisionPointWhereClause, whereClauseParams);
-        })
-      );
+    const [conditionLevelPayloadData, factorDecisionPointPayloadData] = await Promise.all([
+      conditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperimentsForContextAndDecisionPoint-conditionLevelPayloadData',
+          {},
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+      factorDecisionPointPayloadQuery.getMany().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getValidExperimentsForContextAndDecisionPoint-factorDecisionPointPayloadData',
+          {},
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+    ]);
 
-    const exclusionSegmentQuery = this.buildExclusionSegmentQuery()
-      .leftJoin('experiment.partitions', 'partitions')
-      .where(
-        new Brackets((qb) => {
-          qb.where(decisionPointWhereClause, whereClauseParams);
-        })
-      );
-
-    const [conditionLevelPayloadData, factorDecisionPointPayloadData, inclusionSegmentData, exclusionSegmentData] =
-      await Promise.all([
-        conditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
-          const errorMsgString = repositoryError(
-            'ExperimentRepository',
-            'getValidExperimentsForContextAndDecisionPoint-conditionLevelPayloadData',
-            {},
-            errorMsg
-          );
-          throw errorMsgString;
-        }),
-        factorDecisionPointPayloadQuery.getMany().catch((errorMsg: any) => {
-          const errorMsgString = repositoryError(
-            'ExperimentRepository',
-            'getValidExperimentsForContextAndDecisionPoint-factorDecisionPointPayloadData',
-            {},
-            errorMsg
-          );
-          throw errorMsgString;
-        }),
-        inclusionSegmentQuery.getMany().catch((errorMsg: any) => {
-          const errorMsgString = repositoryError(
-            'ExperimentRepository',
-            'getValidExperimentsForContextAndDecisionPoint-inclusionSegmentData',
-            {},
-            errorMsg
-          );
-          throw errorMsgString;
-        }),
-        exclusionSegmentQuery.getMany().catch((errorMsg: any) => {
-          const errorMsgString = repositoryError(
-            'ExperimentRepository',
-            'getValidExperimentsForContextAndDecisionPoint-exclusionSegmentData',
-            {},
-            errorMsg
-          );
-          throw errorMsgString;
-        }),
-      ]);
-
-    const segmentData = this.mergeSegmentData(inclusionSegmentData, exclusionSegmentData);
-
-    const experimentData = factorDecisionPointPayloadData.map((data) => {
+    // See the comment in getValidExperiments: inclusion/exclusion segment ids are fetched lazily via
+    // getSegmentIdsForExperiments instead of being joined in here.
+    return factorDecisionPointPayloadData.map((data) => {
       const condData = conditionLevelPayloadData.find((i) => i.id === data.id);
       return { ...condData, ...data };
-    });
-
-    return experimentData.map((data) => {
-      const seg = segmentData.find((s) => s.id === data.id);
-      return seg ? { ...data, ...seg } : data;
     });
   }
 
@@ -389,24 +309,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       })
     );
 
-    const experimentInclusionSegmentQuery = this.buildInclusionSegmentQuery().where(
-      new Brackets((qb) => {
-        qb.where(whereExperimentsClause, whereClauseParams);
-      })
-    );
-
-    const experimentExclusionSegmentQuery = this.buildExclusionSegmentQuery().where(
-      new Brackets((qb) => {
-        qb.where(whereExperimentsClause, whereClauseParams);
-      })
-    );
-
-    const [
-      experimentConditionLevelPayloadData,
-      experimentFactorDecisionPointLevelPayloadData,
-      experimentInclusionSegmentData,
-      experimentExclusionSegmentData,
-    ] = await Promise.all([
+    const [experimentConditionLevelPayloadData, experimentFactorDecisionPointLevelPayloadData] = await Promise.all([
       experimentConditionLevelPayloadQuery.getMany().catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'ExperimentRepository',
@@ -425,42 +328,14 @@ export class ExperimentRepository extends Repository<Experiment> {
         );
         throw errorMsgString;
       }),
-      experimentInclusionSegmentQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentRepository',
-          'getValidExperimentsWithPreview-experimentInclusionSegmentQuery',
-          {},
-          errorMsg
-        );
-        throw errorMsgString;
-      }),
-      experimentExclusionSegmentQuery.getMany().catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentRepository',
-          'getValidExperimentsWithPreview-experimentExclusionSegmentQuery',
-          {},
-          errorMsg
-        );
-        throw errorMsgString;
-      }),
     ]);
 
-    const experimentSegmentData = this.mergeSegmentData(experimentInclusionSegmentData, experimentExclusionSegmentData);
-
-    const experimentData = experimentConditionLevelPayloadData.map((data) => {
+    // See the comment in getValidExperiments: inclusion/exclusion segment ids are fetched lazily via
+    // getSegmentIdsForExperiments instead of being joined in here.
+    return experimentConditionLevelPayloadData.map((data) => {
       const data2 = experimentFactorDecisionPointLevelPayloadData.find((i) => i.id === data.id);
       return { ...data, ...data2 };
     });
-
-    const mergedData = experimentData.map((data) => {
-      const { id } = data;
-      const segmentData = experimentSegmentData.find((segmentData) => {
-        return segmentData.id === id;
-      });
-      return segmentData ? { ...data, ...segmentData } : data;
-    });
-
-    return mergedData;
   }
 
   public async updateState(
@@ -621,6 +496,82 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion');
+  }
+
+  // Lightweight variants for the assignment read path: only the referenced segment `id`s are ever
+  // consumed downstream (ExperimentAssignmentService reads `.segmentId` off the junction row);
+  // actual membership resolution comes either from the experiment_precomputed_segment table (keyed
+  // by experiment id, not these relations) or, when an experiment has no row there, from a fresh
+  // independent lookup via SegmentService.getSegmentByIds. So the deep
+  // individualForSegment/groupForSegment/subSegments hydration above is never read on this path. No
+  // join to the `segment` table is needed either: `segmentId` is already a plain column on the
+  // junction entity itself (ExperimentSegmentInclusion/ExperimentSegmentExclusion), populated via
+  // their OneToOne @JoinColumn.
+  //
+  // These are only ever invoked scoped to a specific set of experiment ids (see
+  // getSegmentIdsForExperiments below), not eagerly for every valid experiment: since the data is
+  // usually unused (the experiment already has a precomputed row), joining it in for every experiment
+  // on every getValidExperiments*/-ForContextAndDecisionPoint/-WithPreview call would be wasted work.
+  // Return types are asserted to the narrowed fragment shape (rather than the inferred
+  // `SelectQueryBuilder<Experiment>`) because only `id` and the joined relation are actually
+  // selected/hydrated here; the rest of `Experiment`'s fields are never populated by this query.
+  private buildInclusionSegmentIdQuery(): SelectQueryBuilder<SegmentInclusionFragment> {
+    return this.createQueryBuilder('experiment')
+      .select('experiment.id')
+      .leftJoinAndSelect(
+        'experiment.experimentSegmentInclusion',
+        'experimentSegmentInclusion'
+      ) as SelectQueryBuilder<SegmentInclusionFragment>;
+  }
+
+  private buildExclusionSegmentIdQuery(): SelectQueryBuilder<SegmentExclusionFragment> {
+    return this.createQueryBuilder('experiment')
+      .select('experiment.id')
+      .leftJoinAndSelect(
+        'experiment.experimentSegmentExclusion',
+        'experimentSegmentExclusion'
+      ) as SelectQueryBuilder<SegmentExclusionFragment>;
+  }
+
+  /**
+   * Fetch inclusion/exclusion segment ids for a specific, known set of experiment ids. Intended to be
+   * called lazily by ExperimentAssignmentService only for experiments that have no row in the
+   * experiment_precomputed_segment table, rather than eagerly for the full valid-experiment set.
+   */
+  public async getSegmentIdsForExperiments(experimentIds: string[]): Promise<SegmentFragment[]> {
+    if (experimentIds.length === 0) {
+      return [];
+    }
+
+    const inclusionSegmentQuery = this.buildInclusionSegmentIdQuery().where('experiment.id IN (:...experimentIds)', {
+      experimentIds,
+    });
+    const exclusionSegmentQuery = this.buildExclusionSegmentIdQuery().where('experiment.id IN (:...experimentIds)', {
+      experimentIds,
+    });
+
+    const [inclusionSegmentData, exclusionSegmentData] = await Promise.all([
+      inclusionSegmentQuery.getMany().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getSegmentIdsForExperiments-inclusionSegmentQuery',
+          { experimentIds },
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+      exclusionSegmentQuery.getMany().catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getSegmentIdsForExperiments-exclusionSegmentQuery',
+          { experimentIds },
+          errorMsg
+        );
+        throw errorMsgString;
+      }),
+    ]);
+
+    return this.mergeSegmentData(inclusionSegmentData, exclusionSegmentData);
   }
 
   private mergeSegmentData(
