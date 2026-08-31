@@ -52,6 +52,7 @@ import { SharedModule } from '../../../shared/shared.module';
 })
 export class CommonDetailsParticipantListTableComponent {
   @Input() tableType: LIST_FILTER_MODE;
+  @Input() listFilterMode?: LIST_FILTER_MODE;
   @Input() dataSource: any[];
   @Input() noDataRowText: string;
   @Input() slideToggleDisabled?: boolean = false;
@@ -109,15 +110,28 @@ export class CommonDetailsParticipantListTableComponent {
   }
 
   getFormattedListType(rowData: ParticipantListTableRow): string {
-    return normalizeStandardListType(rowData.listType);
+    return this.getResolvedListType(rowData);
   }
 
   isSegmentListType(rowData: ParticipantListTableRow): boolean {
-    return normalizeStandardListType(rowData.listType) === this.memberTypes.SEGMENT;
+    return this.getResolvedListType(rowData) === this.memberTypes.SEGMENT;
   }
 
   isPublicSegment(rowData: ParticipantListTableRow): boolean {
     return this.isSegmentListType(rowData) && rowData.segment?.subSegments?.[0]?.type === SEGMENT_TYPE.PUBLIC;
+  }
+
+  isDirectValueList(rowData: ParticipantListTableRow): boolean {
+    return !this.isSegmentListType(rowData);
+  }
+
+  get detailsFilterMode(): LIST_FILTER_MODE {
+    return this.listFilterMode ?? this.tableType;
+  }
+
+  private getResolvedListType(rowData: ParticipantListTableRow): string {
+    const listType = normalizeStandardListType(rowData.listType);
+    return listType || (rowData.segment?.subSegments?.length ? this.memberTypes.SEGMENT : '');
   }
 
   onSlideToggleChange(event: MatSlideToggleChange, rowData: ParticipantListTableRow): void {

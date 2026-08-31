@@ -310,6 +310,31 @@ export enum LIST_OPTION_TYPE {
   SEGMENT = 'Segment',
 }
 
+export enum LIST_OWNER_TYPE {
+  EXPERIMENT = 'experiment',
+  FEATURE_FLAG = 'featureFlag',
+  SEGMENT = 'segment',
+}
+
+export interface ListDetailsOwnerRestriction {
+  isDisabled: boolean;
+  tooltipKey?: string;
+  shouldHideActions?: boolean;
+}
+
+export interface ListDetailsOwner {
+  id: string;
+  name: string;
+  type: LIST_OWNER_TYPE;
+  segmentType?: SEGMENT_TYPE;
+  listEnabled?: boolean;
+  // Owner-side list type, used as a fallback when the list's own segment row predates
+  // the listType column (flag join rows store it; experiment responses infer it).
+  listType?: string;
+  // Mirrors the owner details page's disabled/hidden action behavior.
+  restriction?: ListDetailsOwnerRestriction;
+}
+
 export const PRIVATE_SEGMENT_LIST_FORM_FIELDS = {
   LIST_TYPE: 'listType',
   SEGMENT: 'segment',

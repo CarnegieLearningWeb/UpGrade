@@ -7,7 +7,13 @@ import { AppState, NotificationService } from '../../core.module';
 import { TranslateService } from '@ngx-translate/core';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
-import { NUMBER_OF_SEGMENTS, Segment, SegmentsPaginationParams, UpsertSegmentType } from './segments.model';
+import {
+  LIST_OPTION_TYPE,
+  NUMBER_OF_SEGMENTS,
+  Segment,
+  SegmentsPaginationParams,
+  UpsertSegmentType,
+} from './segments.model';
 import {
   selectAllSegments,
   selectGlobalSegments,
@@ -16,7 +22,7 @@ import {
 } from './segments.selectors';
 import JSZip from 'jszip';
 import { of } from 'rxjs';
-import { SEGMENT_STATUS, SERVER_ERROR } from 'upgrade_types';
+import { LIST_FILTER_MODE, SEGMENT_STATUS, SERVER_ERROR } from 'upgrade_types';
 import { SegmentsService } from '../segments.service';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
 
@@ -301,6 +307,16 @@ export class SegmentsEffects {
           map((listResponse) => {
             this.notificationService.showSuccess(this.translate.instant('segments.lists.add-success.text'));
             this.commonModalEventService.forceCloseModal();
+            if (action.list.listType?.toLowerCase() !== LIST_OPTION_TYPE.SEGMENT.toLowerCase()) {
+              this.router.navigate([
+                '/segments',
+                'detail',
+                action.list.id,
+                'list',
+                LIST_FILTER_MODE.EXCLUSION,
+                listResponse.segment.id,
+              ]);
+            }
             return SegmentsActions.actionAddSegmentListSuccess({ listResponse });
           }),
           catchError((error) => {

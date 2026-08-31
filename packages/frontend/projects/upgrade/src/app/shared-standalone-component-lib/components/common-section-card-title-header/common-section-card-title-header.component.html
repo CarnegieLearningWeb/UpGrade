@@ -1,8 +1,6 @@
 <div class="title-header">
   <h5 class="title ft-18-700">
-    {{ title | translate }} &nbsp;@if (tableRowCount > 0) {
-    <span> ({{ tableRowCount }}) </span>
-    } @if (chipClass) {
+    {{ title | translate }}{{ tableRowCount > 0 ? ' (' + tableRowCount + ')' : '' }}@if (chipClass) {
     <app-common-status-indicator-chip
       [chipClass]="chipClass"
       [warningMessageKeys]="warningMessageKeys"
@@ -12,6 +10,7 @@
     <app-common-warning-icon [warningMessageKeys]="warningMessageKeys" class="warning-icon"></app-common-warning-icon>
     }
   </h5>
+  @if (subtitle || (createdAt && updatedAt)) {
   <p class="subtitle">
     @if (subtitle) {
     <span class="ft-14-400">
@@ -34,7 +33,7 @@
     </button>
     } }
   </p>
-  @if (id) {
+  } @if (id) {
   <span class="item-id ft-10-400">ID: {{ id }}</span>
   }
 </div>
