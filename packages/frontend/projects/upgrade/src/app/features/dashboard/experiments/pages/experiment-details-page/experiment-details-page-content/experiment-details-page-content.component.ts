@@ -91,7 +91,7 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
         if (!experiment) {
           return false;
         }
-        return experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING;
+        return this.thompsonSamplingHelperService.isThompsonSamplingAlgorithm(experiment.assignmentAlgorithm);
       })
     );
   }
