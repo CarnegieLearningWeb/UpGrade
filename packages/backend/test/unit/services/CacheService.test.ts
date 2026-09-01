@@ -263,7 +263,6 @@ describe('CacheService', () => {
   describe('per-category TTL resolution (via wrap)', () => {
     it.each([
       [CACHE_PREFIX.EXPERIMENT_KEY_PREFIX, 30000],
-      [CACHE_PREFIX.MARK_KEY_PREFIX, 30000],
       [CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX, 45000],
       [CACHE_PREFIX.SEGMENT_KEY_PREFIX, 90000],
       [CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX, 90000],

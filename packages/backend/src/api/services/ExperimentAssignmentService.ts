@@ -8,7 +8,6 @@ import { IndividualEnrollment } from '../models/IndividualEnrollment';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { DecisionPoint } from '../models/DecisionPoint';
-import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import {
   EXPERIMENT_STATE,
   CONSISTENCY_RULE,
@@ -22,7 +21,6 @@ import {
   SUPPORTED_CALIPER_PROFILES,
   SUPPORTED_CALIPER_EVENTS,
   IExperimentAssignment,
-  CACHE_PREFIX,
   ASSIGNMENT_ALGORITHM,
   IPayload,
   PAYLOAD_TYPE,
@@ -91,8 +89,6 @@ export class ExperimentAssignmentService {
     @InjectRepository()
     private experimentRepository: ExperimentRepository,
     @InjectRepository()
-    private decisionPointRepository: DecisionPointRepository,
-    @InjectRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
     @InjectRepository()
     private groupExclusionRepository: GroupExclusionRepository,
@@ -132,65 +128,167 @@ export class ExperimentAssignmentService {
     public experimentPrecomputedSegmentService: ExperimentPrecomputedSegmentService
   ) {}
 
-  private async getCachedExperiments(site: string, target: string): Promise<[DecisionPoint[], Experiment[]]> {
-    const cacheKey = CACHE_PREFIX.MARK_KEY_PREFIX + '-' + site + '-' + target;
-    const dpExperiments = await this.cacheService.wrap(cacheKey, async () => {
-      // Keep the decision-point query minimal; hydrate heavy experiment relations separately.
-      const decisionPoints = await this.decisionPointRepository.find({
-        where: {
-          site,
-          target,
-        },
-        select: {
-          id: true,
-          site: true,
-          target: true,
-          experiment: {
-            id: true,
-          },
-        },
-        relations: {
-          experiment: true,
-        },
+  /**
+   * Runs the shared experiment-selection pipeline: group-experiment filtering →
+   * enrollment/exclusion queries → preview-assignment merging →
+   * experiment-level inclusion/exclusion → pool selection.
+   *
+   * Used by both getAllExperimentConditions and resolveExperimentForMarkPoint so the
+   * two code paths are guaranteed to agree on which experiment is selected.
+   */
+  private async selectExperimentsForUser(
+    experiments: Experiment[],
+    userDoc: RequestedExperimentUser,
+    previewUser: PreviewUser | null,
+    logger: UpgradeLogger
+  ): Promise<{
+    selectedExperiments: Experiment[];
+    exclusionReason: { experiment: Experiment; reason: string; matchedGroup: boolean }[];
+    mergedIndividualEnrollments: IndividualEnrollment[];
+    groupEnrollments: GroupEnrollment[];
+    individualExclusions: IndividualExclusion[];
+    groupExclusions: GroupExclusion[];
+  }> {
+    const validExperiments = await this.filterAndProcessGroupExperiments(experiments, userDoc, logger);
+
+    if (validExperiments.length === 0) {
+      return {
+        selectedExperiments: [],
+        exclusionReason: [],
+        mergedIndividualEnrollments: [],
+        groupEnrollments: [],
+        individualExclusions: [],
+        groupExclusions: [],
+      };
+    }
+
+    const experimentIds = validExperiments.map((experiment) => experiment.id);
+    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
+      await this.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
+
+    let mergedIndividualEnrollments = individualEnrollments;
+    if (previewUser && previewUser.assignments) {
+      const previewAssignment: IndividualEnrollment[] = previewUser.assignments.map((assignment) => {
+        return {
+          user: userDoc,
+          condition: assignment.experimentCondition,
+          ...assignment,
+        } as any; // any is used because we don't have decisionPoint in the preview assignment
       });
+      mergedIndividualEnrollments = [...previewAssignment, ...mergedIndividualEnrollments];
+    }
 
-      const experimentIds = Array.from(
-        new Set(decisionPoints.map((dp) => dp.experiment?.id).filter((id): id is string => Boolean(id)))
-      );
+    const [filteredExperiments, exclusionReason] = await this.experimentLevelExclusionInclusion(
+      validExperiments,
+      userDoc,
+      logger
+    );
 
-      if (experimentIds.length === 0) {
-        return [] as DecisionPoint[];
+    const selectedExperiments = this.processExperimentPools(
+      filteredExperiments,
+      mergedIndividualEnrollments,
+      groupEnrollments,
+      individualExclusions,
+      groupExclusions,
+      userDoc,
+      previewUser
+    );
+
+    return {
+      selectedExperiments,
+      exclusionReason,
+      mergedIndividualEnrollments,
+      groupEnrollments,
+      individualExclusions,
+      groupExclusions,
+    };
+  }
+
+  /**
+   * Shared experiment-selection logic used by markExperimentPoint.
+   *
+   * When experimentId is supplied the method validates it and returns that single experiment after running
+   * exclusion checks.  When experimentId is absent it delegates to selectExperimentsForUser so the selected
+   * experiment is guaranteed to match what getAllExperimentConditions would return for the same user and
+   * decision point.
+   */
+  private async resolveExperimentForMarkPoint(
+    site: string,
+    target: string,
+    context: string,
+    experimentId: string,
+    userDoc: RequestedExperimentUser,
+    previewUser: PreviewUser,
+    logger: UpgradeLogger
+  ): Promise<{
+    experiment: Experiment | null;
+    experimentId: string | null;
+    isUserExcluded: boolean;
+    isGroupExcluded: boolean;
+    exclusionReason: { experiment: Experiment; reason: string; matchedGroup: boolean }[];
+  }> {
+    const allExperimentsForContext = await this.experimentService.getCachedValidExperiments(context);
+    const allExperimentsAtDP = allExperimentsForContext.filter((exp) =>
+      this.getActiveDecisionPoints(exp).some((p) => p.site === site && p.target === target)
+    );
+
+    if (allExperimentsAtDP.length === 0) {
+      return {
+        experiment: null,
+        experimentId: null,
+        isUserExcluded: false,
+        isGroupExcluded: false,
+        exclusionReason: [],
+      };
+    }
+
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
+
+    if (isUserExcluded || isGroupExcluded) {
+      return { experiment: null, experimentId, isUserExcluded, isGroupExcluded, exclusionReason: [] };
+    }
+
+    if (experimentId) {
+      // Experiment ID provided: validate it exists at this decision point then run exclusion checks.
+      const dpExpExists = allExperimentsAtDP.find((exp) => exp.id === experimentId);
+      if (!dpExpExists) {
+        const error = new Error(
+          `Experiment ID not found among valid experiments at this decision point in markExperimentPoint: ${userDoc.id}`
+        );
+        (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
+        (error as any).httpCode = 404;
+        logger.error(error);
+        throw error;
       }
+      const [, exclusionReason] = await this.experimentLevelExclusionInclusion([dpExpExists], userDoc, logger);
+      return {
+        experiment: dpExpExists,
+        experimentId,
+        isUserExcluded,
+        isGroupExcluded,
+        exclusionReason,
+      };
+    }
 
-      const experiments = await this.experimentRepository.find({
-        where: { id: In(experimentIds) },
-        relationLoadStrategy: 'query',
-        relations: {
-          conditions: {
-            conditionPayloads: true,
-          },
-          partitions: true,
-          experimentSegmentInclusion: {
-            segment: true,
-          },
-          experimentSegmentExclusion: {
-            segment: true,
-          },
-        },
-      });
+    // No experiment ID: delegate to the shared selection pipeline so this method always agrees with getAllExperimentConditions.
+    const { selectedExperiments, exclusionReason } = await this.selectExperimentsForUser(
+      allExperimentsAtDP,
+      userDoc,
+      previewUser,
+      logger
+    );
 
-      const experimentById = new Map(experiments.map((experiment) => [experiment.id, experiment]));
+    const experiment = selectedExperiments.length > 0 ? selectedExperiments[0] : exclusionReason[0]?.experiment || null;
+    const resolvedExperimentId = experiment?.id ?? null;
+    const resolvedExclusionReason = exclusionReason.filter((reason) => reason.experiment?.id === resolvedExperimentId);
 
-      return decisionPoints
-        .map((dp) => {
-          const experiment = experimentById.get(dp.experiment?.id);
-          if (!experiment) return null;
-          return { ...dp, experiment } as DecisionPoint;
-        })
-        .filter((dp): dp is DecisionPoint => dp !== null);
-    });
-
-    return [dpExperiments, dpExperiments.map((dp) => dp.experiment)];
+    return {
+      experiment,
+      experimentId: resolvedExperimentId,
+      isUserExcluded,
+      isGroupExcluded,
+      exclusionReason: resolvedExclusionReason,
+    };
   }
 
   public async markExperimentPoint(
@@ -199,6 +297,7 @@ export class ExperimentAssignmentService {
     status: MARKED_DECISION_POINT_STATUS | undefined,
     condition: string | null,
     logger: UpgradeLogger,
+    context: string,
     experimentId: string,
     target = '',
     uniquifier?: string,
@@ -224,56 +323,42 @@ export class ExperimentAssignmentService {
     const previewUser: PreviewUser = await this.previewUserService.findOneFromCache(userId, logger);
     const { workingGroup } = userDoc;
 
-    // 1. Search decision points in experiments cache and return relevant experiments and decisionPoints data
-    const experimentsResult = await this.getCachedExperiments(site, target);
-    const dpExperiments = experimentsResult[0];
-    let experiments = experimentsResult[1];
-
     logger.info({
       message: `markExperimentPoint: Site: ${site}, Target: ${target}, Condition: ${condition}, Status: "${status}" for User: ${userId}`,
     });
 
-    if (experiments.length) {
-      if (experimentId) {
-        const dpExpExists = experiments.filter((exp) => exp.id === experimentId);
+    // REMOVE WHEN ALL CLIENTS ARE UPDATED TO SEND CONTEXT
+    let inferredContextToSupportLegacyAPI = context;
 
-        if (!dpExpExists.length) {
-          const error = new Error(
-            `Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`
-          );
-          (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
-          (error as any).httpCode = 404;
-          logger.error(error);
-          throw error;
-        }
-        experiments = dpExpExists;
+    if (!context) {
+      if (experimentId) {
+        inferredContextToSupportLegacyAPI = await this.experimentRepository.findContextByExperimentId(experimentId);
       } else {
-        const random = seedrandom(userId)();
-        experiments = [experiments[Math.floor(random * experiments.length)]];
-        experimentId = experiments[0]?.id;
+        inferredContextToSupportLegacyAPI = await this.experimentService.getFirstValidContextByDecisionPoint(
+          site,
+          target
+        );
       }
     }
-
-    // We are sure that either experiment length will not be greater than 1
-    const context: string | null = experiments?.[0]?.context?.[0] ?? null;
-
-    // 2. Check if user or group is globally excluded
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
-
-    // empty assignments if the user or group is excluded from the experiment
-    if (isUserExcluded || isGroupExcluded) {
-      experiments = [];
-    }
-
-    const experimentIds = experiments.map((experiment) => experiment.id);
-
-    // no experiments
-    if (experimentIds.length === 0) {
-      experiments = [];
-    }
-
-    // 3. Check for experiment level inclusion and exclusion
-    const [, exclusionReason] = await this.experimentLevelExclusionInclusion(experiments, userDoc, logger);
+    // 1-3. Resolve which experiment to mark, applying the same filtering and pooling logic as getAllExperimentConditions
+    //      so that the two methods are guaranteed to agree on the selected experiment.
+    const {
+      experiment: resolvedExperiment,
+      experimentId: resolvedExperimentId,
+      isUserExcluded,
+      isGroupExcluded,
+      exclusionReason,
+    } = await this.resolveExperimentForMarkPoint(
+      site,
+      target,
+      inferredContextToSupportLegacyAPI,
+      experimentId,
+      userDoc,
+      previewUser,
+      logger
+    );
+    const experiment = resolvedExperiment;
+    experimentId = resolvedExperimentId;
 
     // find monitored document
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
@@ -289,9 +374,8 @@ export class ExperimentAssignmentService {
       await this.saveGroupExclusionDoc(exclusionReason, userDoc);
     }
 
-    if (experiments.length) {
-      const selectedExperimentDP = dpExperiments.find((dp) => dp.experiment.id === experimentId);
-      const experiment = experiments[0];
+    if (experiment) {
+      const selectedExperimentDP = experiment?.partitions.find((p) => p.site === site && p.target === target);
       const { conditions } = experiment;
       const payloadCondition = conditions.flatMap((condition) => condition.conditionPayloads);
 
@@ -327,10 +411,7 @@ export class ExperimentAssignmentService {
     }
 
     // 6. Storing new/updated monitored decision point document
-    const assignmentUnit =
-      experiments?.length > 0
-        ? experiments.find((exp) => exp.id === experimentId)?.assignmentUnit || experiments[0].assignmentUnit
-        : null;
+    const assignmentUnit = experiment ? experiment.assignmentUnit : null;
     monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
       id: monitoredDocument?.id || crypto.randomUUID(),
       experimentId: experimentId,
@@ -392,52 +473,15 @@ export class ExperimentAssignmentService {
       return [];
     }
 
-    // 3. Filter out valid group experiments that doesn't have invalid group/workingGroup which are not enrolled yet
-    const validExperiments = await this.filterAndProcessGroupExperiments(experiments, experimentUserDoc, logger);
-
-    // 4. Process assignments and exclusions
+    // 3-5. Filter group experiments, check exclusions, and select from pools via the shared pipeline
     try {
-      // return empty assignments if there are no valid experiments
-      if (validExperiments.length === 0) {
-        return [];
-      }
-
-      const experimentIds = validExperiments.map((experiment) => experiment.id);
-
-      // Query assignments and exclusions for the user
-      const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
-        await this.getAssignmentsAndExclusionsForUser(experimentUserDoc, experimentIds);
-
-      let mergedIndividualAssignment = individualEnrollments;
-      // add assignments for individual assignments if preview user
-      if (previewUser && previewUser.assignments) {
-        const previewAssignment: IndividualEnrollment[] = previewUser.assignments.map((assignment) => {
-          return {
-            user: experimentUserDoc,
-            condition: assignment.experimentCondition,
-            ...assignment,
-          } as any; // any is used because we don't have decisionPoint in the preview assignment
-        });
-        mergedIndividualAssignment = [...previewAssignment, ...mergedIndividualAssignment];
-      }
-
-      // Check for experiment level inclusion and exclusion and return valid inclusion experiments
-      let [filteredExperiments] = await this.experimentLevelExclusionInclusion(
-        validExperiments,
-        experimentUserDoc,
-        logger
-      );
-
-      // 5. Process experiment pools on filtered experiments
-      filteredExperiments = this.processExperimentPools(
-        filteredExperiments,
-        mergedIndividualAssignment,
+      const {
+        selectedExperiments: filteredExperiments,
+        mergedIndividualEnrollments: mergedIndividualAssignment,
         groupEnrollments,
         individualExclusions,
         groupExclusions,
-        experimentUserDoc,
-        previewUser
-      );
+      } = await this.selectExperimentsForUser(experiments, experimentUserDoc, previewUser, logger);
 
       // return empty if no experiments
       if (filteredExperiments.length === 0) {
@@ -2148,13 +2192,18 @@ export class ExperimentAssignmentService {
     }, Promise.resolve(resolveData));
   }
 
-  private async getSegmentObject(
+  /**
+   * Determines which experiments need segment inclusion/exclusion resolution for these users (those
+   * already individually enrolled under a GROUP/INDIVIDUAL-consistency experiment are skipped). Only
+   * returns the experiment ids: the segment ids themselves are resolved lazily and only for whichever
+   * of these ids have no row in the experiment_precomputed_segment table (see
+   * fetchExperimentPrecomputedWithFallback / ExperimentRepository.getSegmentIdsForExperiments) rather
+   * than eagerly for every experiment here, since that data goes unused when a precomputed row exists.
+   */
+  private async getExperimentIdsForSegmentResolution(
     experiments: Experiment[],
     experimentUsers: ExperimentUser[]
-  ): Promise<EntitySegmentResolutionInput> {
-    const segmentObj: EntitySegmentResolutionInput = {};
-
-    // Creates a segment object for all experiments and users
+  ): Promise<string[]> {
     const experimentIdsForIndividualConsistency = experiments
       .filter(
         (experiment) =>
@@ -2170,23 +2219,7 @@ export class ExperimentAssignmentService {
     });
     const experimentsEnrolledIds = experimentsEnrolled.map((enrollment) => enrollment.experimentId);
 
-    // creates segment Object for all experiments
-    experiments.forEach((exp) => {
-      if (!experimentsEnrolledIds.includes(exp.id)) {
-        const includeIds = exp.experimentSegmentInclusion?.map((segmentInclusion) => segmentInclusion.segment.id) || [];
-        const excludeIds = exp.experimentSegmentExclusion?.map((segmentExclusion) => segmentExclusion.segment.id) || [];
-
-        segmentObj[exp.id] = {
-          segmentIdsQueue: [...includeIds, ...excludeIds],
-          currentIncludedSegmentIds: includeIds,
-          currentExcludedSegmentIds: excludeIds,
-          allIncludedSegmentIds: includeIds,
-          allExcludedSegmentIds: excludeIds,
-        };
-      }
-    });
-
-    return segmentObj;
+    return experiments.filter((exp) => !experimentsEnrolledIds.includes(exp.id)).map((exp) => exp.id);
   }
 
   public async resolveSegmentsForEntities(
@@ -2240,10 +2273,9 @@ export class ExperimentAssignmentService {
     experimentUser: ExperimentUser,
     logger: UpgradeLogger
   ): Promise<[Experiment[], { experiment: Experiment; reason: string; matchedGroup: boolean }[]]> {
-    const segmentObj = await this.getSegmentObject(experiments, [experimentUser]);
-    const expIds = Object.keys(segmentObj);
+    const expIds = await this.getExperimentIdsForSegmentResolution(experiments, [experimentUser]);
     const { precomputedMap, fallbackIncludeData, fallbackExcludeData } =
-      await this.fetchExperimentPrecomputedWithFallback(segmentObj, logger);
+      await this.fetchExperimentPrecomputedWithFallback(expIds, logger);
     const [includeData, excludeData] = this.buildExperimentIncludeExcludeData(
       expIds,
       experimentUser,
@@ -2269,12 +2301,11 @@ export class ExperimentAssignmentService {
     experimentUsers: ExperimentUser[],
     logger: UpgradeLogger
   ): Promise<{ userId: string; experiments: Experiment[] }[]> {
-    const segmentObj = await this.getSegmentObject(experiments, experimentUsers);
-    const expIds = Object.keys(segmentObj);
+    const expIds = await this.getExperimentIdsForSegmentResolution(experiments, experimentUsers);
     // The precomputed rows (and any on-the-fly fallback) are user-independent, so fetch once and
     // build each user's include/exclude view from them.
     const { precomputedMap, fallbackIncludeData, fallbackExcludeData } =
-      await this.fetchExperimentPrecomputedWithFallback(segmentObj, logger);
+      await this.fetchExperimentPrecomputedWithFallback(expIds, logger);
     const experimentIdsWithFilter: { id: string; filterMode: FILTER_MODE }[] = experiments.map(
       ({ id, filterMode, group }) => ({ id, filterMode, group })
     );
@@ -2303,22 +2334,22 @@ export class ExperimentAssignmentService {
   }
 
   /**
-   * Read the precomputed experiment segment rows for the experiments in `segmentObj`. Mirrors the
-   * feature-flag read path: a read failure (e.g. the table hasn't been migrated yet) is swallowed and
-   * treated as "every row missing", and any experiment without a precomputed row falls back to
-   * on-the-fly recursive segment resolution so a missing row never silently produces a wrong decision.
-   * The fallback data is user-independent (full member lists), matching `resolveSegment`'s output.
+   * Read the precomputed experiment segment rows for `expIds`. Mirrors the feature-flag read path: a
+   * read failure (e.g. the table hasn't been migrated yet) is swallowed and treated as "every row
+   * missing", and any experiment without a precomputed row falls back to on-the-fly recursive segment
+   * resolution so a missing row never silently produces a wrong decision. Segment ids for the
+   * fallback set are fetched lazily here, scoped to just `missingExpIds`, rather than eagerly for
+   * every experiment in `expIds` up front. The fallback data is user-independent (full member lists),
+   * matching `resolveSegment`'s output.
    */
   private async fetchExperimentPrecomputedWithFallback(
-    segmentObj: EntitySegmentResolutionInput,
+    expIds: string[],
     logger: UpgradeLogger
   ): Promise<{
     precomputedMap: Map<string, ExperimentPrecomputedSegment>;
     fallbackIncludeData: EntitySegmentMembers;
     fallbackExcludeData: EntitySegmentMembers;
   }> {
-    const expIds = Object.keys(segmentObj);
-
     let precomputedMap: Map<string, ExperimentPrecomputedSegment>;
     try {
       precomputedMap = await this.experimentPrecomputedSegmentService.getPrecomputedSets(expIds);
@@ -2337,8 +2368,23 @@ export class ExperimentAssignmentService {
         message: `experimentLevelExclusionInclusion: ${missingExpIds.length} experiment(s) missing an experiment_precomputed_segment row; resolving on-the-fly`,
         details: { missingExpIds },
       });
+      const missingSegmentIdData = await this.experimentRepository.getSegmentIdsForExperiments(missingExpIds);
+      const missingSegmentIdDataMap = new Map(missingSegmentIdData.map((data) => [data.id, data]));
       const missingSegmentObj: EntitySegmentResolutionInput = {};
-      missingExpIds.forEach((id) => (missingSegmentObj[id] = segmentObj[id]));
+      missingExpIds.forEach((id) => {
+        const segmentIdData = missingSegmentIdDataMap.get(id);
+        const includeIds =
+          segmentIdData?.experimentSegmentInclusion?.map((segmentInclusion) => segmentInclusion.segmentId) || [];
+        const excludeIds =
+          segmentIdData?.experimentSegmentExclusion?.map((segmentExclusion) => segmentExclusion.segmentId) || [];
+        missingSegmentObj[id] = {
+          segmentIdsQueue: [...includeIds, ...excludeIds],
+          currentIncludedSegmentIds: includeIds,
+          currentExcludedSegmentIds: excludeIds,
+          allIncludedSegmentIds: includeIds,
+          allExcludedSegmentIds: excludeIds,
+        };
+      });
       [fallbackIncludeData, fallbackExcludeData] = await this.resolveSegmentsForEntities(missingSegmentObj);
     }
 
