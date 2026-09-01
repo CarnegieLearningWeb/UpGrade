@@ -1,7 +1,8 @@
+import { DOCUMENT } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { CommonPageErrorComponent } from './common-page-error.component';
 import { CommonPageErrorConfig, PAGE_ERROR_TYPE } from './common-page-error.model';
@@ -60,6 +61,19 @@ describe('CommonPageErrorComponent', () => {
 
     it('should announce the error state to screen readers', () => {
       expect(fixture.debugElement.query(By.css('.page-error')).attributes['role']).toBe('alert');
+    });
+
+    it('should interpolate the current hostname in the subtitle', () => {
+      const translate = TestBed.inject(TranslateService);
+      translate.setTranslation('en', {
+        'test.not-found.subtitle': 'We could not find this entity on {{ hostname }}.',
+      });
+      translate.use('en');
+
+      fixture.detectChanges();
+
+      const hostname = TestBed.inject(DOCUMENT).location.hostname;
+      expect(text()).toContain(`We could not find this entity on ${hostname}.`);
     });
   });
 

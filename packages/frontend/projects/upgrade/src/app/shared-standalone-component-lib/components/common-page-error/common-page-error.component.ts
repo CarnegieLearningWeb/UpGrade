@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -32,6 +33,8 @@ export class CommonPageErrorComponent {
   @Input() errorType: PAGE_ERROR_TYPE = PAGE_ERROR_TYPE.NOT_FOUND;
   @Input() config!: CommonPageErrorConfig;
   @Output() retry = new EventEmitter<void>();
+
+  readonly translationParams = { hostname: inject(DOCUMENT).location.hostname };
 
   get isNotFound(): boolean {
     return this.errorType === PAGE_ERROR_TYPE.NOT_FOUND;
