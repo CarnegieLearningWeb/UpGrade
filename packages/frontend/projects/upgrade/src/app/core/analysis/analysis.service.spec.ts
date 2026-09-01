@@ -123,22 +123,20 @@ describe('AnalysisService', () => {
   });
 
   describe('#findParents', () => {
-    it('should return empty array if node.id equals searchForKey', () => {
+    it('should return empty array if node.id equals the target id', () => {
       const mockNode = { id: 'test', key: 'parent', children: [] };
-      const mockSearchForKey = 'test';
-      const expectedReturnValue = [];
 
-      const actualReturnValue = service.findParents(mockNode, mockSearchForKey);
+      const actualReturnValue = service.findParents(mockNode, 'test');
 
-      expect(actualReturnValue).toEqual(expectedReturnValue);
+      expect(actualReturnValue).toEqual([]);
     });
 
     it('should return undefined if node.children is not an array', () => {
       const mockNode = { id: '1', key: 'parent', children: null };
-      const mockSearchForKey = 'test';
+      const mockTargetId = 'test';
       const expectedReturnValue = undefined;
 
-      const actualReturnValue = service.findParents(mockNode, mockSearchForKey);
+      const actualReturnValue = service.findParents(mockNode, mockTargetId);
 
       expect(actualReturnValue).toEqual(expectedReturnValue);
     });
@@ -149,10 +147,10 @@ describe('AnalysisService', () => {
         key: 'parent',
         children: [{ id: '2', key: 'child', children: null }],
       };
-      const mockSearchForKey = 'test';
+      const mockTargetId = 'test';
       const expectedReturnValue = undefined;
 
-      const actualReturnValue = service.findParents(mockNode, mockSearchForKey);
+      const actualReturnValue = service.findParents(mockNode, mockTargetId);
 
       expect(actualReturnValue).toEqual(expectedReturnValue);
     });
@@ -181,10 +179,33 @@ describe('AnalysisService', () => {
           },
         ],
       };
-      const mockSearchForKey = '4';
       const expectedReturnValue = ['child', 'grandchild', 'greatgrandchild'];
 
-      const actualReturnValue = service.findParents(mockNode, mockSearchForKey);
+      const actualReturnValue = service.findParents(mockNode, '4');
+
+      expect(actualReturnValue).toEqual(expectedReturnValue);
+    });
+
+    it('should find the correct node when duplicate keys exist at different branches', () => {
+      const mockNode = {
+        id: 'root',
+        key: 'root',
+        children: [
+          {
+            id: 'a',
+            key: 'groupA',
+            children: [{ id: 'a1', key: 'leaf', children: null }],
+          },
+          {
+            id: 'b',
+            key: 'groupB',
+            children: [{ id: 'b2', key: 'leaf', children: null }],
+          },
+        ],
+      };
+      const expectedReturnValue = ['groupB', 'leaf'];
+
+      const actualReturnValue = service.findParents(mockNode, 'b2');
 
       expect(actualReturnValue).toEqual(expectedReturnValue);
     });

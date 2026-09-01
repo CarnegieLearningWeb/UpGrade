@@ -70,7 +70,8 @@ export class MetricService {
     }
     const rootKey = key.split(METRICS_JOIN_TEXT);
     const updatedMetric = await this.metricRepository.getMetricsByKeys(rootKey[0], METRICS_JOIN_TEXT);
-    return this.metricDocumentToJson(updatedMetric);
+    const metricKeysWithQueries = await this.queryRepository.getMetricKeysWithQueries();
+    return this.metricDocumentToJson(updatedMetric, new Set(metricKeysWithQueries));
   }
 
   private async addAllMetrics(
@@ -159,9 +160,9 @@ export class MetricService {
     metrics.forEach((metric) => {
       const keyArray = metric.key.split(METRICS_JOIN_TEXT);
       let metricPointer = metricUnitArray;
-      let topLevelMetric: IMetricUnit;
+      const pathUnits: IMetricUnit[] = [];
 
-      keyArray.forEach((key, index) => {
+      keyArray.forEach((key) => {
         let unit = metricPointer.find((candidate) => candidate?.key === key);
 
         if (!unit) {
@@ -173,23 +174,23 @@ export class MetricService {
             allowedData: metric.allowedData,
             context: metric.context,
           };
-          if (index === 0 && metricKeysWithQueries) {
+          if (metricKeysWithQueries) {
             unit.hasQuery = false;
           }
           metricPointer.push(unit);
         }
 
-        if (index === 0) {
-          topLevelMetric = unit;
-        }
-
+        pathUnits.push(unit);
         metricPointer = unit.children;
       });
 
-      // Only the top-level (grouped or simple) metric object carries hasQuery, true if any
-      // of the keys nested under it are referenced by a query.
-      if (topLevelMetric && metricKeysWithQueries?.has(metric.key)) {
-        topLevelMetric.hasQuery = true;
+      // Every metric object along this metric's path (grouped or simple) carries hasQuery,
+      // true if the metric itself is referenced by a query, since deleting any of them
+      // would delete the metric that the query depends on.
+      if (metricKeysWithQueries?.has(metric.key)) {
+        pathUnits.forEach((unit) => {
+          unit.hasQuery = true;
+        });
       }
     });
     return metricUnitArray;

@@ -137,7 +137,7 @@ describe('Audit Service Testing', () => {
     expect(res).toEqual(metricResultWithHasQuery);
   });
 
-  it('should only set hasQuery on the top-level metric object for grouped metrics', async () => {
+  it('should set hasQuery on every level of the path for grouped metrics', async () => {
     const groupKey = `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`;
     const groupedMetricRows = [
       {
@@ -162,12 +162,14 @@ describe('Audit Service Testing', () => {
         children: [
           {
             key: 'calculating_area_figures',
+            hasQuery: true,
             allowedData: [],
             context: ['home'],
             metadata: { type: IMetricMetaData.CONTINUOUS },
             children: [
               {
                 key: 'timeSeconds',
+                hasQuery: true,
                 allowedData: [],
                 context: ['home'],
                 metadata: { type: IMetricMetaData.CONTINUOUS },
@@ -197,7 +199,7 @@ describe('Audit Service Testing', () => {
 
   it('should delete a specific metric', async () => {
     const res = await service.deleteMetric('totalProblemsCompleted', new UpgradeLogger());
-    expect(res).toEqual(metricResult);
+    expect(res).toEqual(metricResultWithHasQuery);
   });
 
   it('should throw an error when deleting a metric used by an experiment', async () => {

@@ -83,16 +83,25 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     !!node.loadChildren || (node.children && node.children.length > 0);
 
   // Process a single metric node, setting up lazy loading for its children
-  private insertNode(metric: IMetricUnit, isTopLevel = false): LazyLoadingMetric {
+  private insertNode(metric: IMetricUnit): LazyLoadingMetric {
     const processedMetric: LazyLoadingMetric = {
       ...metric,
       id: this.insertNodeIndex++,
       children: [],
-      isTopLevel,
     };
 
     if (metric.children && metric.children.length > 0) {
-      processedMetric.loadChildren = () => of(metric.children?.map((child) => this.insertNode(child)));
+      // Memoize the loaded children so repeated calls (the tree control can invoke
+      // loadChildren more than once per node) return the same node instances instead
+      // of rebuilding new objects each time. Without this, any reference (or id) captured
+      // from a rendered node can go stale before it's used, e.g. in deleteNode/findParents.
+      let loadedChildren: LazyLoadingMetric[];
+      processedMetric.loadChildren = () => {
+        if (!loadedChildren) {
+          loadedChildren = metric.children.map((child) => this.insertNode(child));
+        }
+        return of(loadedChildren);
+      };
     }
 
     return processedMetric;
@@ -113,7 +122,7 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   // Process the entire metrics data to prepare for lazy loading
   private processMetricsData(metrics: IMetricUnit[]): LazyLoadingMetric[] {
     this.insertNodeIndex = 0;
-    return metrics.map((item) => this.insertNode(item, true));
+    return metrics.map((item) => this.insertNode(item));
   }
 
   openAddMetricDialog() {

@@ -5,5 +5,4 @@ export interface LazyLoadingMetric extends IMetricUnit {
   id: number;
   children: LazyLoadingMetric[];
   loadChildren?: () => Observable<LazyLoadingMetric[]>;
-  isTopLevel?: boolean;
 }
