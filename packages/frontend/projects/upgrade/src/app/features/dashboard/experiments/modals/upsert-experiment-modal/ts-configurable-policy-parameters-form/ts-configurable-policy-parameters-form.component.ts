@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { TranslateModule } from '@ngx-translate/core';
-import { BehaviorSubject, map, Observable, of, startWith, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, map, Observable, startWith, Subject, Subscription } from 'rxjs';
 import { ThompsonSamplingConfigDTO } from '../../../../../../core/experiments/store/experiments.model';
 import {
   EditableThompsonSamplingConfig,
