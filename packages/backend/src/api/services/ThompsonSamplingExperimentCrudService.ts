@@ -65,6 +65,27 @@ export class ThompsonSamplingExperimentCrudService {
         batchSize: params.batchSize ?? null,
       }
     );
+
+    if (!params.priors) {
+      return;
+    }
+
+    const config = await this.configRepository.findByExperimentId(experimentId);
+    if (!config) {
+      return;
+    }
+
+    await Promise.all(
+      Object.entries(params.priors).map(([conditionId, prior]) =>
+        this.posteriorStateRepository.update(
+          { configId: config.id, conditionId },
+          {
+            priorSuccess: prior?.success ?? 1,
+            priorFailure: prior?.failure ?? 1,
+          }
+        )
+      )
+    );
   }
 
   /**
