@@ -9,6 +9,9 @@ import ApiService from './ApiService';
 import { UpGradeClientInterfaces } from './../types/Interfaces';
 import { UpGradeClientRequests } from './../types/requests';
 
+// this global is injected by webpack at build time (see ApiService.ts) and mocked in jest.config.ts for tests
+declare const CLIENT_VERSION: string;
+
 const MockDataService = {
   findExperimentAssignmentBySiteAndTarget: jest.fn(),
   rotateAssignmentList: jest.fn(),
@@ -51,6 +54,8 @@ describe('ApiService', () => {
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
         'User-Id': defaultConfig.userId,
+        'Client-Context': defaultConfig.context,
+        'Client-Version': CLIENT_VERSION,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
@@ -116,6 +121,8 @@ describe('ApiService', () => {
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
         'User-Id': defaultConfig.userId,
+        'Client-Context': defaultConfig.context,
+        'Client-Version': CLIENT_VERSION,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
@@ -144,6 +151,8 @@ describe('ApiService', () => {
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
         'User-Id': defaultConfig.userId,
+        'Client-Context': defaultConfig.context,
+        'Client-Version': CLIENT_VERSION,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
@@ -171,6 +180,8 @@ describe('ApiService', () => {
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
         'User-Id': defaultConfig.userId,
+        'Client-Context': defaultConfig.context,
+        'Client-Version': CLIENT_VERSION,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
@@ -196,6 +207,8 @@ describe('ApiService', () => {
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
         'User-Id': defaultConfig.userId,
+        'Client-Context': defaultConfig.context,
+        'Client-Version': CLIENT_VERSION,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
@@ -220,6 +233,8 @@ describe('ApiService', () => {
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
         'User-Id': defaultConfig.userId,
+        'Client-Context': defaultConfig.context,
+        'Client-Version': CLIENT_VERSION,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
@@ -262,6 +277,8 @@ describe('ApiService', () => {
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
         'User-Id': defaultConfig.userId,
+        'Client-Context': defaultConfig.context,
+        'Client-Version': CLIENT_VERSION,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
@@ -552,6 +569,8 @@ describe('ApiService', () => {
         'Session-Id': 'testClientSessionId',
         URL: expectedUrl,
         'User-Id': defaultConfig.userId,
+        'Client-Context': defaultConfig.context,
+        'Client-Version': CLIENT_VERSION,
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,

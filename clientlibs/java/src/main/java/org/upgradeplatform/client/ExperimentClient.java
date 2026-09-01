@@ -94,7 +94,7 @@ public class ExperimentClient implements AutoCloseable {
 			throw new IllegalArgumentException("Context cannot be null or empty");
 		}
 		this.context = context;
-		this.apiService = new APIService(baseUrl, authToken, sessionId, userId, properties);
+		this.apiService = new APIService(baseUrl, authToken, sessionId, userId, context, properties);
 	}
 
 	// To close jax-rs client connection open when calling ExperimentClient

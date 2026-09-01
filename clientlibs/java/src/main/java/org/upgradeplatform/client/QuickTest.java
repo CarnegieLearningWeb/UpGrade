@@ -21,7 +21,7 @@ public class QuickTest {
     private static final String userId = "quicktest_user_" + System.currentTimeMillis();
     private static final String group = "test_class_group";
     private static final String alias = "alias" + userId;
-    private static final String hostUrl = ECS_STAGING_URL;
+    private static final String hostUrl = LOCAL_URL;
     private static final String context = "upgrade-internal";
     private static final String site = "SelectSection";
     private static final String target = "my_fave_workspace";
