@@ -3,6 +3,8 @@ import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../../src/api/services/CheckService';
 import TestCase1 from './NoExperiment';
+import TestCase2 from './CancelledExperimentStateFilter';
+import TestCase3 from './ContextContamination';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 const initialChecks = async () => {
@@ -42,4 +44,14 @@ const initialChecks = async () => {
 export const NoExperiment = async () => {
   await initialChecks();
   await TestCase1();
+};
+
+export const CancelledExperimentStateFilter = async () => {
+  await initialChecks();
+  await TestCase2();
+};
+
+export const ContextContamination = async () => {
+  await initialChecks();
+  await TestCase3();
 };

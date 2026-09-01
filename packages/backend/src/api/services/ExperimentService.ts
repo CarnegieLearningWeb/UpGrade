@@ -90,6 +90,12 @@ import { FactorDTO } from '../DTO/FactorDTO';
 import { LevelDTO } from '../DTO/LevelDTO';
 import { CacheService } from './CacheService';
 import { QueryService } from './QueryService';
+import {
+  LIST_VALUE_SEARCH_PATTERN_PARAMETER,
+  buildListValueSearchPattern,
+  getListValueSearchPredicate,
+  isListValueSearchKey,
+} from './listValueSearchHelpers';
 import { ArchivedStats } from '../models/ArchivedStats';
 import { ArchivedStatsRepository } from '../repositories/ArchivedStatsRepository';
 import { isUUID, validate } from 'class-validator';
@@ -180,10 +186,18 @@ export class ExperimentService {
       .select('experiment.id')
       .leftJoin('experiment.partitions', 'partitions')
       .groupBy('experiment.id');
+    let listValueSearchPattern: string | undefined;
 
     if (searchParams && searchParams.string !== '') {
       const whereClause = this.paginatedSearchString(searchParams);
       paginatedParentSubQuery = paginatedParentSubQuery.andWhere(whereClause);
+      if (isListValueSearchKey(searchParams.key)) {
+        listValueSearchPattern = buildListValueSearchPattern(searchParams.string);
+        paginatedParentSubQuery = paginatedParentSubQuery.setParameter(
+          LIST_VALUE_SEARCH_PATTERN_PARAMETER,
+          listValueSearchPattern
+        );
+      }
     }
 
     // Filter out archived experiments unless specifically searching by status
@@ -212,6 +226,13 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .where(`experiment.id IN ${paginatedParentSubQuery.getQuery()}`);
+
+    if (listValueSearchPattern) {
+      queryBuilderToReturn = queryBuilderToReturn.setParameter(
+        LIST_VALUE_SEARCH_PATTERN_PARAMETER,
+        listValueSearchPattern
+      );
+    }
 
     if (sortParams) {
       queryBuilderToReturn = queryBuilderToReturn
@@ -322,6 +343,10 @@ export class ExperimentService {
     );
   }
 
+  public async getFirstValidContextByDecisionPoint(site: string, target: string): Promise<string | null> {
+    return this.experimentRepository.findFirstValidContextByDecisionPoint(site, target);
+  }
+
   public async create(
     experiment: ExperimentDTO,
     currentUser: UserDTO,
@@ -413,12 +438,7 @@ export class ExperimentService {
       const experiment = await this.experimentRepository.findOneExperiment(experimentId);
 
       if (experiment) {
-        await this.clearExperimentCacheDetail(
-          experiment.context[0],
-          experiment.partitions.map((partition) => {
-            return { site: partition.site, target: partition.target };
-          })
-        );
+        await this.clearExperimentCacheDetail(experiment.context[0]);
 
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
 
@@ -525,12 +545,7 @@ export class ExperimentService {
     entityManager?: EntityManager
   ): Promise<ExperimentDTO> {
     const oldExperiment = await this.experimentRepository.findOneExperiment(experimentId);
-    await this.clearExperimentCacheDetail(
-      oldExperiment.context[0],
-      oldExperiment.partitions.map((partition) => {
-        return { site: partition.site, target: partition.target };
-      })
-    );
+    await this.clearExperimentCacheDetail(oldExperiment.context[0]);
     state = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[state] || state;
 
     // Exclude the user only when the experiment is enrolling. For Preview state we don't need to exclude the user. The client need to provide explicit assignment for preview user to work correctly.
@@ -792,12 +807,7 @@ export class ExperimentService {
   ): Promise<Experiment> {
     const entityManager = existingEntityManager || this.dataSource.manager;
 
-    await this.clearExperimentCacheDetail(
-      experiment.context[0],
-      experiment.partitions.map((partition) => {
-        return { site: partition.site, target: partition.target };
-      })
-    );
+    await this.clearExperimentCacheDetail(experiment.context[0]);
     experiment.state = EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[experiment.state] || experiment.state;
 
     // get old experiment document
@@ -1310,12 +1320,7 @@ export class ExperimentService {
     logger: UpgradeLogger,
     entityManager: EntityManager
   ): Promise<ExperimentDTO> {
-    await this.clearExperimentCacheDetail(
-      experiment.context[0],
-      experiment.partitions.map((partition) => {
-        return { site: partition.site, target: partition.target };
-      })
-    );
+    await this.clearExperimentCacheDetail(experiment.context[0]);
 
     const createdExperiment = await entityManager.transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || crypto.randomUUID();
@@ -1873,6 +1878,7 @@ export class ExperimentService {
       searchArray.push(`partitions.target ${likeString}`);
       searchArray.push(decisionPointDisplaySearch);
     };
+    const listValueSearch = getListValueSearchPredicate('experiment');
 
     switch (type) {
       case EXPERIMENT_SEARCH_KEY.NAME:
@@ -1893,12 +1899,18 @@ export class ExperimentService {
       case EXPERIMENT_SEARCH_KEY.DECISION_POINT:
         addDecisionPointSearch();
         break;
+      case EXPERIMENT_SEARCH_KEY.LIST_VALUE:
+        searchArray.push(listValueSearch);
+        break;
       default:
         searchArray.push(`name ${likeString}`);
         searchArray.push(`state::TEXT = '${this.mapStatusStrings(searchString)}'`);
         searchArray.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
         searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
         addDecisionPointSearch();
+        if (type === EXPERIMENT_SEARCH_KEY.ALL) {
+          searchArray.push(listValueSearch);
+        }
         if (isUUID(searchString)) {
           searchArray.push(`experiment.id = '${searchString}'`);
         }
@@ -2552,16 +2564,8 @@ export class ExperimentService {
     };
   }
 
-  private async clearExperimentCacheDetail(
-    context: string,
-    partitions: { site: string; target: string }[]
-  ): Promise<void> {
+  private async clearExperimentCacheDetail(context: string): Promise<void> {
     await this.cacheService.delCache(CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + context);
-    const deletedCache = partitions.map(async (partition) => {
-      await this.cacheService.delCache(CACHE_PREFIX.MARK_KEY_PREFIX + '-' + partition.site + '-' + partition.target);
-    });
-    await Promise.all(deletedCache);
-    return;
   }
 
   private async deleteAllListsFromExperiment(

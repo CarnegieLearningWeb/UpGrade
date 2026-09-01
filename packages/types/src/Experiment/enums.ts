@@ -213,6 +213,7 @@ export enum EXPERIMENT_SEARCH_KEY {
   CONTEXT = 'context',
   ID = 'id',
   DECISION_POINT = 'decisionPoint',
+  LIST_VALUE = 'listValue',
 }
 
 export enum EXPERIMENT_SORT_KEY {
@@ -300,6 +301,7 @@ export enum SEGMENT_SEARCH_KEY {
   STATUS = 'status',
   CONTEXT = 'context',
   ID = 'id',
+  LIST_VALUE = 'listValue',
 }
 
 export enum SEGMENT_SORT_KEY {
@@ -315,6 +317,7 @@ export enum FLAG_SEARCH_KEY {
   TAG = 'tag',
   CONTEXT = 'context',
   ID = 'id',
+  LIST_VALUE = 'listValue',
 }
 
 export enum METRIC_SEARCH_KEY {
@@ -362,7 +365,6 @@ export enum CACHE_PREFIX {
   EXPERIMENT_KEY_PREFIX = 'validExperiments-',
   SEGMENT_KEY_PREFIX = 'segments-',
   GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX = 'globalExcludeSegment-',
-  MARK_KEY_PREFIX = 'markExperiments-',
   FEATURE_FLAG_KEY_PREFIX = 'featureFlags-',
   FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX = 'featureFlagPrecomputedSegments-',
   EXPERIMENT_PRECOMPUTED_SEGMENT_KEY_PREFIX = 'experimentPrecomputedSegments-',

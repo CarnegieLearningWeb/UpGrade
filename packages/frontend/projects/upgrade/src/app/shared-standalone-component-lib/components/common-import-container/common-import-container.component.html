@@ -6,7 +6,7 @@
   [ngClass]="{ 'drag-over': (isDragOver | async) }"
 >
   <div class="close-btn-container dense-4">
-    @if (fileType === FILE_TYPE.CSV) {
+    @if (fileType === FILE_TYPE.CSV && showCloseButton) {
     <button mat-icon-button class="close-btn" (click)="onCloseButtonClick($event)">
       <mat-icon class="close-icon">close</mat-icon>
     </button>
@@ -19,7 +19,7 @@
   </button>
   @if (importFailed) {
   <span class="ft-12-400 import-failed-msg">
-    {{ 'feature-flags.upsert-list-modal.import-csv.error.message.text' | translate }}
+    {{ importFailedMessage || ('feature-flags.upsert-list-modal.import-csv.error.message.text' | translate) }}
   </span>
   }
   <input [accept]="fileType" type="file" multiple #fileInput style="display: none" (change)="onFileSelected($event)" />

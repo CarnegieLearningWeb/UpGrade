@@ -7,7 +7,10 @@
     (selectedTabChange)="onSelectedTabChange($event)"
     class="new-tab-group"
   >
-    @for (tab of tabLabels; track tab) {
+    <!-- Track by label so re-emitted label arrays (new object identities, same content) reuse the
+         existing mat-tabs. Recreating them makes MatTabGroup re-emit selectedTabChange, which would
+         trigger a tab query-param navigation that cancels any in-flight route navigation. -->
+    @for (tab of tabLabels; track tab.label) {
     <mat-tab [disabled]="tab.disabled">
       <ng-template mat-tab-label>
         <span class="ft-18-600">

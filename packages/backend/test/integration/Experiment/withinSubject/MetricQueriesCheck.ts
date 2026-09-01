@@ -436,6 +436,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
     condition,
     experimentId,
     new UpgradeLogger(),
+    'home',
     '1'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
@@ -475,6 +476,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
     condition,
     experimentId,
     new UpgradeLogger(),
+    'home',
     '2'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
@@ -513,6 +515,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
     condition,
     experimentId,
     new UpgradeLogger(),
+    'home',
     '3'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
@@ -552,6 +555,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
     condition2,
     experimentId,
     new UpgradeLogger(),
+    'home',
     '4'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
@@ -591,6 +595,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
     condition2,
     experimentId,
     new UpgradeLogger(),
+    'home',
     '5'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentTarget, experimentPoint);
@@ -629,6 +634,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
     condition,
     experimentId,
     new UpgradeLogger(),
+    'home',
     '6'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentTarget, experimentPoint);
@@ -668,6 +674,7 @@ export default async function MetricQueriesCheck(): Promise<void> {
     condition2,
     experimentId,
     new UpgradeLogger(),
+    'home',
     '7'
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentTarget, experimentPoint);

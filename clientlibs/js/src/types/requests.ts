@@ -35,6 +35,7 @@ export namespace UpGradeClientRequests {
       };
 
   export interface IMarkDecisionPointRequestBody {
+    context: string;
     status: MARKED_DECISION_POINT_STATUS;
     data: {
       site: string;
