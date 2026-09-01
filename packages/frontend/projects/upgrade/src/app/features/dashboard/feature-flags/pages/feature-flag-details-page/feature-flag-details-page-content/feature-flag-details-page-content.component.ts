@@ -46,7 +46,7 @@ export class FeatureFlagDetailsPageContentComponent implements OnInit, OnDestroy
   readonly pageErrorConfig: CommonPageErrorConfig = {
     notFoundTitleKey: 'feature-flags.details-page-error.not-found.title.text',
     notFoundSubtitleKey: 'feature-flags.details-page-error.not-found.subtitle.text',
-    loadFailedTitleKey: 'feature-flags.details-page-error.load-failed.title.text',
+    loadFailedTitleKey: 'global.details-page-error.load-failed.title.text',
     loadFailedSubtitleKey: 'feature-flags.details-page-error.load-failed.subtitle.text',
     backButtonKey: 'feature-flags.details-page-error.back-button.text',
     backRoute: '/featureflags',

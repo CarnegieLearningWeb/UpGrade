@@ -60,7 +60,7 @@ export class ExperimentDetailsPageContentComponent implements OnInit, OnDestroy 
   readonly pageErrorConfig: CommonPageErrorConfig = {
     notFoundTitleKey: 'experiments.details-page-error.not-found.title.text',
     notFoundSubtitleKey: 'experiments.details-page-error.not-found.subtitle.text',
-    loadFailedTitleKey: 'experiments.details-page-error.load-failed.title.text',
+    loadFailedTitleKey: 'global.details-page-error.load-failed.title.text',
     loadFailedSubtitleKey: 'experiments.details-page-error.load-failed.subtitle.text',
     backButtonKey: 'experiments.details-page-error.back-button.text',
     backRoute: '/home',

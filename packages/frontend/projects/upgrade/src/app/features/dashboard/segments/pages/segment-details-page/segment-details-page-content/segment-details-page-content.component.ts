@@ -37,7 +37,7 @@ export class SegmentDetailsPageContentComponent implements OnInit {
   readonly pageErrorConfig: CommonPageErrorConfig = {
     notFoundTitleKey: 'segments.details-page-error.not-found.title.text',
     notFoundSubtitleKey: 'segments.details-page-error.not-found.subtitle.text',
-    loadFailedTitleKey: 'segments.details-page-error.load-failed.title.text',
+    loadFailedTitleKey: 'global.details-page-error.load-failed.title.text',
     loadFailedSubtitleKey: 'segments.details-page-error.load-failed.subtitle.text',
     backButtonKey: 'segments.details-page-error.back-button.text',
     backRoute: '/segments',
