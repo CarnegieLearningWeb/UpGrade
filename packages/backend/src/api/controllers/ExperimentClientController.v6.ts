@@ -90,9 +90,9 @@ interface IMonitoredDecisionPoint {
  */
 
 @JsonController('/v6/')
-@UseBefore(ClientContextMiddleware)
 @UseBefore(ClientLibMiddleware)
 @UseBefore(UserCheckMiddleware)
+@UseBefore(ClientContextMiddleware)
 export class ExperimentClientController {
   constructor(
     public experimentService: ExperimentService,
