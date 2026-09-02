@@ -3,7 +3,6 @@ import express from 'express';
 import morgan from 'morgan';
 import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { addCustomAttribute } from '../../lib/newrelic';
 
 @Middleware({ type: 'before' })
 export class LogMiddleware implements ExpressMiddlewareInterface {
@@ -28,25 +27,14 @@ export class LogMiddleware implements ExpressMiddlewareInterface {
     const id = oldValue === undefined ? crypto.randomUUID() : oldValue;
     res.set(headerName, id);
 
-    // the context the clientlib was configured for, sent on every client request.
-    // Older clientlibs don't send it, so report those as 'unknown' rather than dropping the field.
-    const clientContext = req.get('Client-Context') || 'unknown';
-    const clientVersion = req.get('Client-Version') || 'unknown';
-
     // child logger creation
     const logger = new UpgradeLogger();
     logger.child({
       request_id: id,
       endpoint: req.url,
       request_method_type: req.method,
-      client_context: clientContext,
-      client_version: clientVersion,
     });
     req.logger = logger;
-
-    // makes `clientContext`/`clientVersion` available as FACETs on New Relic transactions
-    addCustomAttribute('clientContext', clientContext);
-    addCustomAttribute('clientVersion', clientVersion);
 
     return morgan(this.jsonFormat, {
       stream: {
