@@ -1972,10 +1972,16 @@ export class ExperimentController {
     if (experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
       const config = await this.thompsonSamplingCrudService.getConfigForExperiment(experiment.id);
       if (config) {
+        const priors: Record<string, { success: number; failure: number }> = {};
+        (config.conditionPosteriorStates ?? []).forEach((state) => {
+          priors[state.conditionId] = { success: state.priorSuccess, failure: state.priorFailure };
+        });
+
         experiment.thompsonSamplingConfig = {
           warmupThreshold: config.warmupThreshold,
           minimumDrawDifference: config.minimumDrawDifference,
           batchSize: config.batchSize,
+          priors,
         };
       }
     }

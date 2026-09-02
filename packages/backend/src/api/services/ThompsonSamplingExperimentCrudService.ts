@@ -104,10 +104,10 @@ export class ThompsonSamplingExperimentCrudService {
 
     const rows = config.conditionPosteriorStates.map((state) => {
       const successes = state.successCount;
-      const failures = state.totalCount - state.successCount;
+      const failures = state.failureCount;
       const successRate = state.totalCount > 0 ? ((successes / state.totalCount) * 100).toFixed(1) + '%' : '0.0%';
       const alpha = state.priorSuccess + state.successCount;
-      const beta = state.priorFailure + (state.totalCount - state.successCount);
+      const beta = state.priorFailure + state.failureCount;
       return {
         code: state.condition?.conditionCode ?? state.conditionId,
         alpha,

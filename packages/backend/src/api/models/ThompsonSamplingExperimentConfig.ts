@@ -15,7 +15,7 @@ export class ThompsonSamplingExperimentConfig extends BaseModel {
   @Column({ nullable: true })
   experimentId?: string;
 
-  /** Use uniform random selection until total enrollments exceed this count. */
+  /** Use uniform random selection until total reward observations exceed this count. */
   @Column({ nullable: true })
   warmupThreshold?: number;
 

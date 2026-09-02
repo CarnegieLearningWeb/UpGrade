@@ -47,8 +47,8 @@ describe('ThompsonSamplingService', () => {
         const conditions = ['A', 'B'];
         // A has an overwhelmingly dominant posterior; without warmup it would always win
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'A', successCount: 1000, totalCount: 1000 },
-          { conditionCode: 'B', successCount: 0, totalCount: 1000 },
+          { conditionCode: 'A', successCount: 1000, failureCount: 0, totalCount: 1000 },
+          { conditionCode: 'B', successCount: 0, failureCount: 1000, totalCount: 1000 },
         ];
         const config: ThompsonSamplingConfig = { warmupThreshold: 50 };
 
@@ -60,11 +60,11 @@ describe('ThompsonSamplingService', () => {
         expect(results.has('B')).toBe(true);
       });
 
-      it('exits warmup once enrollment exceeds threshold', () => {
+      it('exits warmup once reward count exceeds threshold', () => {
         const conditions = ['A', 'B'];
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'A', successCount: 1000, totalCount: 1000 },
-          { conditionCode: 'B', successCount: 0, totalCount: 1000 },
+          { conditionCode: 'A', successCount: 1000, failureCount: 0, totalCount: 1000 },
+          { conditionCode: 'B', successCount: 0, failureCount: 1000, totalCount: 1000 },
         ];
         const config: ThompsonSamplingConfig = { warmupThreshold: 10 };
 
@@ -84,8 +84,8 @@ describe('ThompsonSamplingService', () => {
       it('selects the condition with a better reward history reliably', () => {
         const conditions = ['good', 'bad'];
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'good', successCount: 90, totalCount: 100 },
-          { conditionCode: 'bad', successCount: 10, totalCount: 100 },
+          { conditionCode: 'good', successCount: 90, failureCount: 10, totalCount: 100 },
+          { conditionCode: 'bad', successCount: 10, failureCount: 90, totalCount: 100 },
         ];
 
         let goodCount = 0;
@@ -101,10 +101,10 @@ describe('ThompsonSamplingService', () => {
       it('handles three or more conditions — clear winner dominates', () => {
         const conditions = ['A', 'B', 'C', 'D'];
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'A', successCount: 5, totalCount: 100 },
-          { conditionCode: 'B', successCount: 90, totalCount: 100 },
-          { conditionCode: 'C', successCount: 10, totalCount: 100 },
-          { conditionCode: 'D', successCount: 5, totalCount: 100 },
+          { conditionCode: 'A', successCount: 5, failureCount: 95, totalCount: 100 },
+          { conditionCode: 'B', successCount: 90, failureCount: 10, totalCount: 100 },
+          { conditionCode: 'C', successCount: 10, failureCount: 90, totalCount: 100 },
+          { conditionCode: 'D', successCount: 5, failureCount: 95, totalCount: 100 },
         ];
 
         let bCount = 0;
@@ -158,7 +158,7 @@ describe('ThompsonSamplingService', () => {
       it('handles a condition with no reward summary entry (defaults to prior)', () => {
         const conditions = ['A', 'B'];
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'A', successCount: 50, totalCount: 100 },
+          { conditionCode: 'A', successCount: 50, failureCount: 50, totalCount: 100 },
           // B has no entry — treated as zero rewards, uses prior only
         ];
 
@@ -185,8 +185,8 @@ describe('ThompsonSamplingService', () => {
       it('does not interfere when threshold is zero', () => {
         const conditions = ['A', 'B'];
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'A', successCount: 90, totalCount: 100 },
-          { conditionCode: 'B', successCount: 10, totalCount: 100 },
+          { conditionCode: 'A', successCount: 90, failureCount: 10, totalCount: 100 },
+          { conditionCode: 'B', successCount: 10, failureCount: 90, totalCount: 100 },
         ];
         const config: ThompsonSamplingConfig = { minimumDrawDifference: 0 };
 

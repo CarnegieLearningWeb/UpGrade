@@ -11,6 +11,8 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
+  Min,
   ValidateIf,
   ValidateNested,
   ValidationArguments,
@@ -495,6 +497,74 @@ function IsAssignmentUnitGroupConsistent(validationOptions?: ValidationOptions) 
   };
 }
 
+const MAX_NUMBER_INPUT = 1_000_000;
+const MIN_PRIOR_VALUE = 1;
+
+function IsThompsonSamplingPriorsRecord(validationOptions?: ValidationOptions) {
+  return function (object: any, propertyName: string) {
+    registerDecorator({
+      name: 'isThompsonSamplingPriorsRecord',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any) {
+          if (value === undefined || value === null) {
+            return true;
+          }
+          if (typeof value !== 'object' || Array.isArray(value)) {
+            return false;
+          }
+          return Object.values(value).every((prior: any) => {
+            if (typeof prior !== 'object' || prior === null) {
+              return false;
+            }
+            const { success, failure } = prior;
+            return (
+              Number.isInteger(success) &&
+              success >= MIN_PRIOR_VALUE &&
+              success <= MAX_NUMBER_INPUT &&
+              Number.isInteger(failure) &&
+              failure >= MIN_PRIOR_VALUE &&
+              failure <= MAX_NUMBER_INPUT
+            );
+          });
+        },
+        defaultMessage() {
+          return (
+            'Each entry in priors must have integer success/failure values between ' +
+            `${MIN_PRIOR_VALUE} and ${MAX_NUMBER_INPUT}.`
+          );
+        },
+      },
+    });
+  };
+}
+
+class ThompsonSamplingConfigValidator {
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(MAX_NUMBER_INPUT)
+  public warmupThreshold?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  public minimumDrawDifference?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(MAX_NUMBER_INPUT)
+  public batchSize?: number;
+
+  @IsOptional()
+  @IsThompsonSamplingPriorsRecord()
+  public priors?: Record<string, { success: number; failure: number }>;
+}
+
 export class ExperimentDTO extends BaseExperimentWithoutPayload {
   @IsOptional()
   @IsArray()
@@ -503,12 +573,9 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
   public conditionPayloads?: ConditionPayloadValidator[];
 
   @IsOptional()
-  public thompsonSamplingConfig?: {
-    warmupThreshold?: number;
-    minimumDrawDifference?: number;
-    batchSize?: number;
-    priors?: Record<string, { success: number; failure: number }>;
-  };
+  @ValidateNested()
+  @Type(() => ThompsonSamplingConfigValidator)
+  public thompsonSamplingConfig?: ThompsonSamplingConfigValidator;
 }
 
 export class OldExperimentDTO extends BaseExperimentWithoutPayload {

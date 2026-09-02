@@ -8,13 +8,14 @@ export interface ConditionPrior {
 export interface ConditionRewardSummary {
   conditionCode: string;
   successCount: number;
+  failureCount: number;
   totalCount: number;
 }
 
 export interface ThompsonSamplingConfig {
   /** Per-condition Beta distribution priors. Conditions without an entry use DEFAULT_PRIOR. */
   priors?: Record<string, ConditionPrior>;
-  /** Use uniform random selection until total enrollments exceed this count. */
+  /** Use uniform random selection until total reward observations exceed this count. */
   warmupThreshold?: number;
   /** Fall back to uniform when the top two sampled draws differ by less than this value. */
   minimumDrawDifference?: number;
@@ -24,14 +25,6 @@ export const DEFAULT_PRIOR: ConditionPrior = { success: 1, failure: 1 };
 
 @Service()
 export class ThompsonSamplingService {
-  /**
-   * Select a condition using Thompson Sampling.
-   *
-   * @param conditionCodes - All eligible condition codes for this experiment
-   * @param rewardSummaries - Accumulated reward counts per condition
-   * @param totalEnrollments - Total number of enrollments across all conditions
-   * @param config - Optional algorithm parameters (priors, warmup, thresholds)
-   */
   /**
    * Estimate how often each condition would "win" a Thompson Sampling draw given current posteriors.
    *
@@ -81,10 +74,18 @@ export class ThompsonSamplingService {
     return result;
   }
 
+  /**
+   * Select a condition using Thompson Sampling.
+   *
+   * @param conditionCodes - All eligible condition codes for this experiment
+   * @param rewardSummaries - Accumulated reward counts per condition
+   * @param totalRewardCount - Total number of reward observations across all conditions
+   * @param config - Optional algorithm parameters (priors, warmup, thresholds)
+   */
   selectCondition(
     conditionCodes: string[],
     rewardSummaries: ConditionRewardSummary[],
-    totalEnrollments: number,
+    totalRewardCount: number,
     config: ThompsonSamplingConfig = {}
   ): string {
     if (conditionCodes.length === 0) {
@@ -94,8 +95,10 @@ export class ThompsonSamplingService {
       return conditionCodes[0];
     }
 
-    // Warmup phase: use uniform random until sufficient data has been collected
-    if (config.warmupThreshold !== undefined && totalEnrollments <= config.warmupThreshold) {
+    // Warmup phase: use uniform random until sufficient reward evidence has been collected.
+    // Gated on reward observations (not assignments) — the posteriors only move when rewards
+    // arrive, so that's the right measure of "how much evidence do we actually have."
+    if (config.warmupThreshold !== undefined && totalRewardCount <= config.warmupThreshold) {
       return this.uniformRandom(conditionCodes);
     }
 
@@ -105,7 +108,7 @@ export class ThompsonSamplingService {
       const summary = summaryMap.get(code);
       const prior = config.priors?.[code] ?? DEFAULT_PRIOR;
       const alpha = prior.success + (summary?.successCount ?? 0);
-      const beta = prior.failure + (summary ? summary.totalCount - summary.successCount : 0);
+      const beta = prior.failure + (summary?.failureCount ?? 0);
       return { code, draw: this.sampleBeta(alpha, beta) };
     });
 

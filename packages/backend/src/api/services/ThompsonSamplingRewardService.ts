@@ -79,11 +79,7 @@ export class ThompsonSamplingRewardService {
         );
       }
 
-      // Increment counts atomically; successCount only increments on success
-      await this.posteriorStateRepository.increment({ id: state.id }, 'totalCount', 1);
-      if (success) {
-        await this.posteriorStateRepository.increment({ id: state.id }, 'successCount', 1);
-      }
+      await this.applyOrBufferReward(state.id, success, config.batchSize);
 
       logger.info({
         message: 'Thompson Sampling reward recorded',
@@ -102,6 +98,63 @@ export class ThompsonSamplingRewardService {
         logger
       );
     }
+  }
+
+  /**
+   * Fold a reward into the posterior (successCount/totalCount), or buffer it as pending until
+   * batchSize reward observations have accumulated for this condition. The raw event is always
+   * persisted to ThompsonSamplingReward regardless of batching — batching only delays when a
+   * reward affects which condition gets sampled next, it never drops data.
+   */
+  private async applyOrBufferReward(stateId: string, success: boolean, batchSize?: number): Promise<void> {
+    const effectiveBatchSize = batchSize && batchSize > 1 ? batchSize : 1;
+
+    if (effectiveBatchSize <= 1) {
+      await this.posteriorStateRepository.increment({ id: stateId }, 'totalCount', 1);
+      if (success) {
+        await this.posteriorStateRepository.increment({ id: stateId }, 'successCount', 1);
+      } else {
+        await this.posteriorStateRepository.increment({ id: stateId }, 'failureCount', 1);
+      }
+      return;
+    }
+
+    await this.posteriorStateRepository.increment({ id: stateId }, 'pendingTotalCount', 1);
+    if (success) {
+      await this.posteriorStateRepository.increment({ id: stateId }, 'pendingSuccessCount', 1);
+    } else {
+      await this.posteriorStateRepository.increment({ id: stateId }, 'pendingFailureCount', 1);
+    }
+
+    const refreshedState = await this.posteriorStateRepository.findOne({ where: { id: stateId } });
+
+    if (refreshedState.pendingTotalCount >= effectiveBatchSize) {
+      await this.flushPendingRewards(
+        stateId,
+        refreshedState.pendingSuccessCount,
+        refreshedState.pendingFailureCount,
+        refreshedState.pendingTotalCount
+      );
+    }
+  }
+
+  private async flushPendingRewards(
+    stateId: string,
+    pendingSuccessCount: number,
+    pendingFailureCount: number,
+    pendingTotalCount: number
+  ): Promise<void> {
+    await this.posteriorStateRepository.increment({ id: stateId }, 'totalCount', pendingTotalCount);
+    if (pendingSuccessCount > 0) {
+      await this.posteriorStateRepository.increment({ id: stateId }, 'successCount', pendingSuccessCount);
+    }
+    if (pendingFailureCount > 0) {
+      await this.posteriorStateRepository.increment({ id: stateId }, 'failureCount', pendingFailureCount);
+    }
+    await this.posteriorStateRepository.update(
+      { id: stateId },
+      { pendingSuccessCount: 0, pendingFailureCount: 0, pendingTotalCount: 0 }
+    );
   }
 
   private async findConfigById(

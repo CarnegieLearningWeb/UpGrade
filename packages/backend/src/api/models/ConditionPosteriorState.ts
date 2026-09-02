@@ -37,7 +37,25 @@ export class ConditionPosteriorState extends BaseModel {
   @Column({ type: 'int', default: 0 })
   successCount: number;
 
+  /** Accumulated failures since the experiment started. Always equal to totalCount - successCount;
+   *  stored (not derived) so callers can read it directly rather than recomputing it everywhere. */
+  @Column({ type: 'int', default: 0 })
+  failureCount: number;
+
   /** Total rewards received for this condition (successes + failures). */
   @Column({ type: 'int', default: 0 })
   totalCount: number;
+
+  /** Successes recorded since the last batch flush; folded into successCount once batchSize is reached. */
+  @Column({ type: 'int', default: 0 })
+  pendingSuccessCount: number;
+
+  /** Failures recorded since the last batch flush; folded into failureCount once batchSize is reached.
+   *  Always equal to pendingTotalCount - pendingSuccessCount; stored for the same reason as failureCount. */
+  @Column({ type: 'int', default: 0 })
+  pendingFailureCount: number;
+
+  /** Rewards recorded since the last batch flush; folded into totalCount once batchSize is reached. */
+  @Column({ type: 'int', default: 0 })
+  pendingTotalCount: number;
 }

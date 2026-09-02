@@ -2094,6 +2094,7 @@ export class ExperimentAssignmentService {
       const rewardSummaries: ConditionRewardSummary[] = config.conditionPosteriorStates.map((state) => ({
         conditionCode: state.conditionId,
         successCount: state.successCount,
+        failureCount: state.failureCount,
         totalCount: state.totalCount,
       }));
 
@@ -2102,7 +2103,7 @@ export class ExperimentAssignmentService {
         priors[state.conditionId] = { success: state.priorSuccess, failure: state.priorFailure };
       });
 
-      const totalEnrollments = config.conditionPosteriorStates.reduce((sum, s) => sum + s.totalCount, 0);
+      const totalRewardCount = config.conditionPosteriorStates.reduce((sum, s) => sum + s.totalCount, 0);
 
       const tsConfig: ThompsonSamplingConfig = {
         priors,
@@ -2113,7 +2114,7 @@ export class ExperimentAssignmentService {
       const selectedConditionId = this.thompsonSamplingService.selectCondition(
         conditionIds,
         rewardSummaries,
-        totalEnrollments,
+        totalRewardCount,
         tsConfig
       );
 
