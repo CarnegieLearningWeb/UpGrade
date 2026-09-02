@@ -134,12 +134,15 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  deleteNode(nodeToBeDeleted: LazyLoadingMetric, index: number) {
+  deleteNode(nodeToBeDeleted: LazyLoadingMetric, element: LazyLoadingMetric) {
     if (nodeToBeDeleted.hasQuery) {
       return;
     }
+    // `element` is the root metric for the row being rendered (from the filtered
+    // table dataSource), not looked up by index, since row index in the filtered
+    // results does not correspond to allMetrics.data's unfiltered indices.
     const data = {
-      children: [this.allMetrics.data[index]],
+      children: [element],
     };
     const key = this.analysisService.findParents(data, nodeToBeDeleted.id);
     const dialogRef = this.dialog.open(DeleteComponent, {

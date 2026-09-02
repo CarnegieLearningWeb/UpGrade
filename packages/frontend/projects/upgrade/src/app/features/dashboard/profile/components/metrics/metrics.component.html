@@ -50,7 +50,7 @@
         <th mat-header-cell *matHeaderCellDef class="ft-12-700">
           {{ 'query.metric.text' | translate }}
         </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+        <td class="ft-12-600" mat-cell *matCellDef="let element">
           @if (element) {
           <mat-tree [dataSource]="[element]" [treeControl]="nestedTreeControl" class="mat-nested-tree">
             <!-- Leaf node template -->
@@ -64,7 +64,7 @@
                 [matTooltip]="node.hasQuery ? ('metric.delete-metric.disabled-tooltip.text' | translate) : ''"
                 [matTooltipDisabled]="!node.hasQuery"
                 matTooltipPosition="right"
-                (click)="!node.hasQuery && deleteNode(node, index)"
+                (click)="!node.hasQuery && deleteNode(node, element)"
               >
                 delete_outline
               </mat-icon>
@@ -86,7 +86,7 @@
                   [matTooltip]="node.hasQuery ? ('metric.delete-metric.disabled-tooltip.text' | translate) : ''"
                   [matTooltipDisabled]="!node.hasQuery"
                   matTooltipPosition="right"
-                  (click)="!node.hasQuery && deleteNode(node, index)"
+                  (click)="!node.hasQuery && deleteNode(node, element)"
                   >delete_outline</mat-icon
                 >
                 }
