@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
+import { HANDLES_404_CONTEXTUALLY } from '../http-interceptors/http-context-tokens';
 import {
   AddFeatureFlagRequest,
   FeatureFlag,
@@ -34,7 +35,8 @@ export class FeatureFlagsDataService {
 
   fetchFeatureFlagById(id: string) {
     const url = `${API_ENDPOINTS.featureFlag}/${id}`;
-    return this.http.get(url);
+    // The details page renders its own not-found state, so skip the generic 404 notification
+    return this.http.get(url, { context: new HttpContext().set(HANDLES_404_CONTEXTUALLY, true) });
   }
 
   updateFeatureFlagStatus(params: UpdateFeatureFlagStatusRequest): Observable<FeatureFlag> {

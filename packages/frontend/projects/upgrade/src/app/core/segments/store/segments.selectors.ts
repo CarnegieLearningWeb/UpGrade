@@ -1,4 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
+import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
   SegmentState,
   ParticipantListTableRow,
@@ -97,6 +98,18 @@ export const selectSelectedSegment = createSelector(
       return allSegments.find((segment) => segment.id === params.segmentId);
     }
     return undefined;
+  }
+);
+
+export const selectSegmentDetailsPageError = createSelector(
+  selectRouterState,
+  selectSegmentsState,
+  (routerState, segmentState): DetailsPageError | null => {
+    const segmentId = routerState?.state?.params?.segmentId;
+    const detailsPageError = segmentState?.detailsPageError;
+
+    // Only surface the error if it belongs to the segment currently in the route
+    return detailsPageError && detailsPageError.entityId === segmentId ? detailsPageError : null;
   }
 );
 

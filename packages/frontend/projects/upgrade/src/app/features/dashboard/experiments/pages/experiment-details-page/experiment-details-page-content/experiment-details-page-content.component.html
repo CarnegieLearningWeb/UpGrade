@@ -1,5 +1,13 @@
 <div class="content-container">
-  @if (experiment$ | async; as experiment) {
+  <!-- The error state comes first: the selected-entity selector can still resolve a stale cached
+       list row (e.g. an experiment deleted by another user) after the details fetch has failed -->
+  @if (detailsPageError$ | async; as detailsPageError) {
+  <app-common-page-error
+    [errorType]="detailsPageError.errorType"
+    [config]="pageErrorConfig"
+    (retry)="onRetry(detailsPageError.entityId)"
+  ></app-common-page-error>
+  } @else if (experiment$ | async; as experiment) {
   <app-common-section-card-list class="common-section-card-list">
     <app-experiment-overview-details-section-card
       [isSectionCardExpanded]="isSectionCardExpanded"

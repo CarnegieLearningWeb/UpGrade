@@ -14,6 +14,7 @@ import {
 import { selectAllSegments } from './segments.selectors';
 import * as SegmentsActions from './segments.actions';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 
 describe('SegmentsEffects', () => {
   let store$: any;
@@ -328,6 +329,51 @@ describe('SegmentsEffects', () => {
       actions$.next(SegmentsActions.actionDeleteSegment({ segmentId: { ...mockSegment }.id }));
 
       tick(0);
+    }));
+  });
+
+  describe('#getSegmentById$', () => {
+    // Must be a canonical (lowercase) UUID - the effect short-circuits non-canonical ids to a not-found failure
+    const segmentId = '11111111-2222-4333-8444-555555555555';
+
+    it('should dispatch a not-found failure without calling the API when the id is not a canonical UUID', fakeAsync(() => {
+      segmentsDataService.getSegmentById = jest.fn();
+      let result: any;
+      service.getSegmentById$.subscribe((action: any) => (result = action));
+
+      actions$.next(SegmentsActions.actionGetSegmentById({ segmentId: 'not-a-uuid' }));
+      tick(0);
+
+      expect(result).toEqual(
+        SegmentsActions.actionGetSegmentByIdFailure({ segmentId: 'not-a-uuid', errorType: PAGE_ERROR_TYPE.NOT_FOUND })
+      );
+      expect(segmentsDataService.getSegmentById).not.toHaveBeenCalled();
+    }));
+
+    it('should dispatch a not-found failure when the fetch fails with 404', fakeAsync(() => {
+      segmentsDataService.getSegmentById = jest.fn().mockReturnValue(throwError(() => ({ status: 404 })));
+      let result: any;
+      service.getSegmentById$.subscribe((action: any) => (result = action));
+
+      actions$.next(SegmentsActions.actionGetSegmentById({ segmentId }));
+      tick(0);
+
+      expect(result).toEqual(
+        SegmentsActions.actionGetSegmentByIdFailure({ segmentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND })
+      );
+    }));
+
+    it('should dispatch a load-failed failure when the fetch fails with an unexpected error', fakeAsync(() => {
+      segmentsDataService.getSegmentById = jest.fn().mockReturnValue(throwError(() => ({ status: 500 })));
+      let result: any;
+      service.getSegmentById$.subscribe((action: any) => (result = action));
+
+      actions$.next(SegmentsActions.actionGetSegmentById({ segmentId }));
+      tick(0);
+
+      expect(result).toEqual(
+        SegmentsActions.actionGetSegmentByIdFailure({ segmentId, errorType: PAGE_ERROR_TYPE.LOAD_FAILED })
+      );
     }));
   });
 });

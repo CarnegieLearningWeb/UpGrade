@@ -24,6 +24,7 @@ export const initialState: FeatureFlagState = {
   isLoadingFeatureFlagDelete: false,
   isLoadingUpsertPrivateSegmentList: false,
   duplicateKeyFound: false,
+  detailsPageError: null,
 
   // Graph state
   graphInfo: null,
@@ -78,10 +79,14 @@ const reducer = createReducer(
     ...state,
     selectedFlag: flag,
     isLoadingSelectedFeatureFlag: false,
+    // The error is retained while a retry is in flight (so the error page doesn't fall back to a
+    // stale cached flag) and only cleared once a fetch for that same flag succeeds
+    detailsPageError: state.detailsPageError?.entityId === flag.id ? null : state.detailsPageError,
   })),
-  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state) => ({
+  on(FeatureFlagsActions.actionFetchFeatureFlagByIdFailure, (state, { featureFlagId, errorType }) => ({
     ...state,
     isLoadingSelectedFeatureFlag: false,
+    detailsPageError: { entityId: featureFlagId, errorType },
   })),
 
   // Feature Flag Upsert Actions (Add/Update both = upsert result)

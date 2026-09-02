@@ -1,5 +1,13 @@
 <div class="content-container">
-  @if (segment$ | async; as segment) {
+  <!-- The error state comes first: the selected-entity selector can still resolve a stale cached
+       list row (e.g. a segment deleted by another user) after the details fetch has failed -->
+  @if (detailsPageError$ | async; as detailsPageError) {
+  <app-common-page-error
+    [errorType]="detailsPageError.errorType"
+    [config]="pageErrorConfig"
+    (retry)="onRetry(detailsPageError.entityId)"
+  ></app-common-page-error>
+  } @else if (segment$ | async; as segment) {
   <app-common-section-card-list class="common-section-card-list">
     <app-segment-overview-details-section-card
       [data]="segment"

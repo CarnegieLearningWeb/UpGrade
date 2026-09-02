@@ -10,7 +10,8 @@ import {
   ExperimentSegmentListResponse,
   UpdateExperimentConditionsRequest,
 } from './store/experiments.model';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
+import { HANDLES_404_CONTEXTUALLY } from '../http-interceptors/http-context-tokens';
 import { API_ENDPOINTS } from '../api-endpoints.constants';
 import { Observable } from 'rxjs';
 import { ExperimentSegmentListRequest, SegmentFile } from '../segments/store/segments.model';
@@ -82,9 +83,11 @@ export class ExperimentDataService {
     return this.http.delete(url);
   }
 
-  getExperimentById(experimentId: string) {
+  getExperimentById(experimentId: string, handles404Contextually = false) {
     const url = `${API_ENDPOINTS.getExperimentById}/${experimentId}`;
-    return this.http.get(url);
+    // Details-page callers render their own not-found state, so they skip the generic 404
+    // notification; other callers (e.g. preview-user) keep it
+    return this.http.get(url, { context: new HttpContext().set(HANDLES_404_CONTEXTUALLY, handles404Contextually) });
   }
 
   fetchAllPartitions() {

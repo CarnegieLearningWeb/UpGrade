@@ -7,6 +7,7 @@ import {
   selectIsLoadingSegments,
   selectAllSegments,
   selectSelectedSegment,
+  selectSegmentDetailsPageError,
   selectRootTableState,
   selectSegmentOverviewDetails,
   selectExperimentSegmentsInclusion,
@@ -63,6 +64,7 @@ export class SegmentsService {
   isLoadingGlobalSegments$ = this.store$.pipe(select(selectIsLoadingGlobalSegments));
   selectAllSegments$ = this.store$.pipe(select(selectAllSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
+  segmentDetailsPageError$ = this.store$.pipe(select(selectSegmentDetailsPageError));
   selectRootTableState$ = this.store$.pipe(select(selectRootTableState));
   selectGlobalTableState$ = this.store$.pipe(select(selectGlobalTableState));
   selectedSegmentOverviewDetails = this.store$.pipe(select(selectSegmentOverviewDetails));

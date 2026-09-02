@@ -16,6 +16,7 @@ import { of } from 'rxjs';
 import { LIST_FILTER_MODE, SERVER_ERROR } from 'upgrade_types';
 import { LIST_OPTION_TYPE } from '../../segments/store/segments.model';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
+import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 
 @Injectable()
 export class FeatureFlagsEffects {
@@ -378,14 +379,25 @@ export class FeatureFlagsEffects {
       ofType(FeatureFlagsActions.actionFetchFeatureFlagById),
       map((action) => action.featureFlagId),
       filter((featureFlagId) => !!featureFlagId),
-      switchMap((featureFlagId) =>
-        this.featureFlagsDataService.fetchFeatureFlagById(featureFlagId).pipe(
-          map((data: FeatureFlag) => {
-            return FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess({ flag: data });
-          }),
-          catchError(() => [FeatureFlagsActions.actionFetchFeatureFlagByIdFailure()])
-        )
-      )
+      switchMap((featureFlagId) => {
+        if (!isCanonicalEntityId(featureFlagId)) {
+          return of(
+            FeatureFlagsActions.actionFetchFeatureFlagByIdFailure({
+              featureFlagId,
+              errorType: PAGE_ERROR_TYPE.NOT_FOUND,
+            })
+          );
+        }
+        return this.featureFlagsDataService.fetchFeatureFlagById(featureFlagId).pipe(
+          map((data: FeatureFlag) => FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess({ flag: data })),
+          catchError((error) => [
+            FeatureFlagsActions.actionFetchFeatureFlagByIdFailure({
+              featureFlagId,
+              errorType: error?.status === 404 ? PAGE_ERROR_TYPE.NOT_FOUND : PAGE_ERROR_TYPE.LOAD_FAILED,
+            }),
+          ])
+        );
+      })
     )
   );
 

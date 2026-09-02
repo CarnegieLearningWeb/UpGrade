@@ -1,8 +1,10 @@
+import { HttpContext } from '@angular/common/http';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { NotificationType } from 'angular2-notifications';
 import { of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { HttpErrorInterceptor } from './http-error.interceptor';
+import { HANDLES_404_CONTEXTUALLY } from './http-context-tokens';
 
 class MockAuthService {}
 
@@ -116,6 +118,67 @@ describe('HttpErrorInterceptor', () => {
 
       expect(service.openPopup).toHaveBeenCalled();
       expect(mockAuthService.authLogout).not.toHaveBeenCalled();
+    }));
+
+    it('should NOT open popup for a 404 on a request that handles 404 contextually', fakeAsync(() => {
+      const mockError = { status: 404, message: 'test' };
+      const mockRequest: any = { context: new HttpContext().set(HANDLES_404_CONTEXTUALLY, true) };
+      const mockNextHandler = {
+        handle: jest.fn().mockReturnValue(throwError(() => mockError)),
+      };
+      mockAuthService.authLogout = jest.fn();
+      service.openPopup = jest.fn();
+
+      service.intercept(mockRequest, mockNextHandler).subscribe({
+        error: (error: Error) => {
+          expect(error).toEqual(mockError);
+        },
+      });
+
+      tick(0);
+
+      expect(service.openPopup).not.toHaveBeenCalled();
+      expect(mockAuthService.authLogout).not.toHaveBeenCalled();
+    }));
+
+    it('should open popup for a 404 on a request that does NOT handle 404 contextually', fakeAsync(() => {
+      const mockError = { status: 404, message: 'test' };
+      const mockRequest: any = { context: new HttpContext() };
+      const mockNextHandler = {
+        handle: jest.fn().mockReturnValue(throwError(() => mockError)),
+      };
+      mockAuthService.authLogout = jest.fn();
+      service.openPopup = jest.fn();
+
+      service.intercept(mockRequest, mockNextHandler).subscribe({
+        error: (error: Error) => {
+          expect(error).toEqual(mockError);
+        },
+      });
+
+      tick(0);
+
+      expect(service.openPopup).toHaveBeenCalled();
+    }));
+
+    it('should open popup for a non-404 error even when the request handles 404 contextually', fakeAsync(() => {
+      const mockError = { status: 500, message: 'test' };
+      const mockRequest: any = { context: new HttpContext().set(HANDLES_404_CONTEXTUALLY, true) };
+      const mockNextHandler = {
+        handle: jest.fn().mockReturnValue(throwError(() => mockError)),
+      };
+      mockAuthService.authLogout = jest.fn();
+      service.openPopup = jest.fn();
+
+      service.intercept(mockRequest, mockNextHandler).subscribe({
+        error: (error: Error) => {
+          expect(error).toEqual(mockError);
+        },
+      });
+
+      tick(0);
+
+      expect(service.openPopup).toHaveBeenCalled();
     }));
 
     it('should NOT logout or open popup if no error', fakeAsync(() => {

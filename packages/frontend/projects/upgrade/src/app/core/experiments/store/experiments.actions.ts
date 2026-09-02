@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
   Experiment,
   UpsertExperimentType,
@@ -48,7 +49,9 @@ export const actionRemoveExperimentStat = createAction(
 
 export const actionGetExperimentById = createAction(
   '[Experiment] Get Experiment By Id',
-  props<{ experimentId: string }>()
+  // handles404Contextually: set by details-page callers that render their own not-found state,
+  // so the generic 404 notification is suppressed for them only (e.g. preview-user keeps it)
+  props<{ experimentId: string; handles404Contextually?: boolean }>()
 );
 
 export const actionGetExperimentByIdSuccess = createAction(
@@ -56,7 +59,11 @@ export const actionGetExperimentByIdSuccess = createAction(
   props<{ experiment: Experiment }>()
 );
 
-export const actionGetExperimentByIdFailure = createAction('[Experiment] Get Experiment By Id Failure');
+export const actionGetExperimentByIdFailure = createAction(
+  '[Experiment] Get Experiment By Id Failure',
+  // Only failures of details-page fetches (handles404Contextually) may write detailsPageError
+  props<{ experimentId: string; errorType: PAGE_ERROR_TYPE; handles404Contextually?: boolean }>()
+);
 
 export const actionUpsertExperiment = createAction(
   '[Experiment] Upsert Experiment',

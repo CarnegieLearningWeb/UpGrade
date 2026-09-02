@@ -1,4 +1,5 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
+import { HANDLES_404_CONTEXTUALLY } from '../http-interceptors/http-context-tokens';
 import { of } from 'rxjs';
 import {
   ASSIGNMENT_ALGORITHM,
@@ -240,13 +241,26 @@ describe('ExperimentDataService', () => {
   });
 
   describe('#getExperimentById', () => {
-    it('should get the getExperimentById http observable', () => {
+    it('should get the getExperimentById http observable with contextual 404 handling when requested', () => {
+      const experimentId = mockExperimentId;
+      const expectedUrl = `${API_ENDPOINTS.getExperimentById}/${experimentId}`;
+
+      service.getExperimentById(experimentId, true);
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl, { context: expect.any(HttpContext) });
+      const context: HttpContext = (mockHttpClient.get as jest.Mock).mock.calls[0][1].context;
+      expect(context.get(HANDLES_404_CONTEXTUALLY)).toBe(true);
+    });
+
+    it('should keep the generic 404 notification by default (e.g. for preview-user callers)', () => {
       const experimentId = mockExperimentId;
       const expectedUrl = `${API_ENDPOINTS.getExperimentById}/${experimentId}`;
 
       service.getExperimentById(experimentId);
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl, { context: expect.any(HttpContext) });
+      const context: HttpContext = (mockHttpClient.get as jest.Mock).mock.calls[0][1].context;
+      expect(context.get(HANDLES_404_CONTEXTUALLY)).toBe(false);
     });
   });
 

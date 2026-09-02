@@ -22,6 +22,7 @@ import {
 } from './segments.selectors';
 import JSZip from 'jszip';
 import { of } from 'rxjs';
+import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import { LIST_FILTER_MODE, SEGMENT_STATUS, SERVER_ERROR } from 'upgrade_types';
 import { SegmentsService } from '../segments.service';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
@@ -139,8 +140,11 @@ export class SegmentsEffects {
       ofType(SegmentsActions.actionGetSegmentById),
       map((action) => action.segmentId),
       filter((segmentId) => !!segmentId),
-      switchMap((segmentId) =>
-        this.segmentsDataService.getSegmentById(segmentId).pipe(
+      switchMap((segmentId) => {
+        if (!isCanonicalEntityId(segmentId)) {
+          return of(SegmentsActions.actionGetSegmentByIdFailure({ segmentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND }));
+        }
+        return this.segmentsDataService.getSegmentById(segmentId).pipe(
           map((data: any) => {
             return SegmentsActions.actionGetSegmentByIdSuccess({
               segment: data.segment,
@@ -151,9 +155,14 @@ export class SegmentsEffects {
               allParentSegments: data.allParentSegments,
             });
           }),
-          catchError(() => [SegmentsActions.actionGetSegmentByIdFailure()])
-        )
-      )
+          catchError((error) => [
+            SegmentsActions.actionGetSegmentByIdFailure({
+              segmentId,
+              errorType: error?.status === 404 ? PAGE_ERROR_TYPE.NOT_FOUND : PAGE_ERROR_TYPE.LOAD_FAILED,
+            }),
+          ])
+        );
+      })
     )
   );
 

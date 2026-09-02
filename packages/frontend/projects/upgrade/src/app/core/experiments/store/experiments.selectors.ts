@@ -28,6 +28,7 @@ import {
 import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
 import { formatTSConfigurablePolicyParamDetails } from '../mooclet-helper.service';
 import { KeyValueFormat } from '@shared-component-lib/common-section-card-overview-details/common-section-card-overview-details.component';
+import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
 
@@ -79,6 +80,18 @@ export const selectSelectedExperiment = createSelector(
       return { ...experiment, stat, weightingMethod };
     }
     return undefined;
+  }
+);
+
+export const selectExperimentDetailsPageError = createSelector(
+  selectRouterState,
+  selectExperimentState,
+  (routerState, experimentState): DetailsPageError | null => {
+    const experimentId = routerState?.state?.params?.experimentId;
+    const detailsPageError = experimentState?.detailsPageError;
+
+    // Only surface the error if it belongs to the experiment currently in the route
+    return detailsPageError && detailsPageError.entityId === experimentId ? detailsPageError : null;
   }
 );
 

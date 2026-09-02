@@ -10,7 +10,8 @@ import {
   SegmentsPaginationParams,
 } from './store/segments.model';
 import { map, Observable } from 'rxjs';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
+import { HANDLES_404_CONTEXTUALLY } from '../http-interceptors/http-context-tokens';
 import { FeatureFlagSegmentListDetails } from '../feature-flags/store/feature-flags.model';
 import { API_ENDPOINTS } from '../api-endpoints.constants';
 
@@ -45,7 +46,8 @@ export class SegmentsDataService {
 
   getSegmentById(id: string) {
     const url = `${API_ENDPOINTS.segments}/status/${id}`;
-    return this.http.get(url);
+    // The details page renders its own not-found state, so skip the generic 404 notification
+    return this.http.get(url, { context: new HttpContext().set(HANDLES_404_CONTEXTUALLY, true) });
   }
 
   // Lazy-loads a list's members for editing; the /members endpoint also returns private lists.
