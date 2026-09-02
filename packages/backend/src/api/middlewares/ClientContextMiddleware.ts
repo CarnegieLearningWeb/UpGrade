@@ -2,7 +2,7 @@ import * as express from 'express';
 import { ExpressMiddlewareInterface } from 'routing-controllers';
 import { Service } from 'typedi';
 import { AppRequest } from '../../types';
-import { addCustomAttribute } from '../../lib/newrelic';
+import { addCustomAttribute, sanitizeCustomAttributeValue } from '../../lib/newrelic';
 
 // Scoped (via @UseBefore) to the client-SDK controller only, so admin/UI traffic never
 // carries this facet. Older clientlibs on v6 routes don't send these headers yet, so we
@@ -10,8 +10,8 @@ import { addCustomAttribute } from '../../lib/newrelic';
 @Service()
 export class ClientContextMiddleware implements ExpressMiddlewareInterface {
   public use(req: AppRequest, res: express.Response, next: express.NextFunction): void {
-    const clientContext = req.get('Client-Context') || 'unknown';
-    const clientVersion = req.get('Client-Version') || 'unknown';
+    const clientContext = sanitizeCustomAttributeValue(req.get('Client-Context'));
+    const clientVersion = sanitizeCustomAttributeValue(req.get('Client-Version'));
 
     req.logger.child({ client_context: clientContext, client_version: clientVersion });
 

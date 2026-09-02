@@ -40,3 +40,22 @@ export function addCustomAttribute(key: string, value: string | number | boolean
     // no-op — e.g. called outside an active transaction
   }
 }
+
+// New Relic silently truncates custom attribute values at 255 chars, so cap here too —
+// otherwise the same request shows a truncated value in NR but the untruncated one in logs.
+const MAX_CUSTOM_ATTRIBUTE_LENGTH = 255;
+
+// Strip control/non-printable characters: values reported here often come straight off
+// request headers on public endpoints, and neither NR nor our log fields sanitize them.
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARS = /[\x00-\x1f\x7f]/g;
+
+/**
+ * Normalize a raw string (e.g. a request header) before it's used as both a log field and an
+ * NR custom attribute value: strips control characters, trims, caps length to match NR's own
+ * truncation limit, and falls back to `fallback` when nothing meaningful is left.
+ */
+export function sanitizeCustomAttributeValue(value: string | undefined, fallback = 'unknown'): string {
+  const cleaned = (value ?? '').replace(CONTROL_CHARS, '').trim();
+  return cleaned ? cleaned.slice(0, MAX_CUSTOM_ATTRIBUTE_LENGTH) : fallback;
+}
