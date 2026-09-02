@@ -389,16 +389,7 @@ export class FeatureFlagsEffects {
           );
         }
         return this.featureFlagsDataService.fetchFeatureFlagById(featureFlagId).pipe(
-          map((data: FeatureFlag) => {
-            // The backend responds with 204 (empty body) rather than 404 when the flag doesn't exist
-            if (!data) {
-              return FeatureFlagsActions.actionFetchFeatureFlagByIdFailure({
-                featureFlagId,
-                errorType: PAGE_ERROR_TYPE.NOT_FOUND,
-              });
-            }
-            return FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess({ flag: data });
-          }),
+          map((data: FeatureFlag) => FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess({ flag: data })),
           catchError((error) => [
             FeatureFlagsActions.actionFetchFeatureFlagByIdFailure({
               featureFlagId,

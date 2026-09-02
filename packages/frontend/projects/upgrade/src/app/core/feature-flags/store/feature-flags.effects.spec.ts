@@ -65,19 +65,6 @@ describe('FeatureFlagsEffects', () => {
       expect(result).toEqual(FeatureFlagsActions.actionFetchFeatureFlagByIdSuccess({ flag }));
     }));
 
-    it('should dispatch a not-found failure when the backend returns an empty body (204) for an unknown id', fakeAsync(() => {
-      featureFlagsDataService.fetchFeatureFlagById = jest.fn().mockReturnValue(of(null));
-      let result: any;
-      service.fetchFeatureFlagById$.subscribe((action: any) => (result = action));
-
-      actions$.next(FeatureFlagsActions.actionFetchFeatureFlagById({ featureFlagId }));
-      tick(0);
-
-      expect(result).toEqual(
-        FeatureFlagsActions.actionFetchFeatureFlagByIdFailure({ featureFlagId, errorType: PAGE_ERROR_TYPE.NOT_FOUND })
-      );
-    }));
-
     it('should dispatch a not-found failure when the fetch fails with 404', fakeAsync(() => {
       featureFlagsDataService.fetchFeatureFlagById = jest.fn().mockReturnValue(throwError(() => ({ status: 404 })));
       let result: any;
