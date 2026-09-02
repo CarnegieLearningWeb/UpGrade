@@ -1,9 +1,16 @@
 import { fakeAsync, tick } from '@angular/core/testing';
 import { ActionsSubject } from '@ngrx/store';
 import { BehaviorSubject, of, throwError } from 'rxjs';
-import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
+import { LIST_FILTER_MODE, SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
 import { SegmentsEffects } from './segments.effects';
-import { Segment, SegmentFile, SegmentInput, UpsertSegmentType } from './segments.model';
+import {
+  AddPrivateSegmentListRequest,
+  LIST_OPTION_TYPE,
+  Segment,
+  SegmentFile,
+  SegmentInput,
+  UpsertSegmentType,
+} from './segments.model';
 import { selectAllSegments } from './segments.selectors';
 import * as SegmentsActions from './segments.actions';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
@@ -163,6 +170,67 @@ describe('SegmentsEffects', () => {
           actionType: UpsertSegmentType.UPDATE_SEGMENT,
         })
       );
+
+      tick(0);
+    }));
+  });
+
+  describe('addSegmentList$', () => {
+    const parentSegmentId = 'parent-segment-id';
+    const listId = 'list-id';
+    const listResponse = { segment: { ...mockSegment, id: listId } } as any;
+
+    const createListRequest = (listType: string): AddPrivateSegmentListRequest => ({
+      id: parentSegmentId,
+      enabled: true,
+      listType,
+      segment: {
+        name: 'Test list',
+        description: '',
+        context: 'test',
+        type: SEGMENT_TYPE.PRIVATE,
+        userIds: [],
+        groups: [],
+        subSegmentIds: [],
+        listType,
+      },
+    });
+
+    it('should navigate a direct-value list to its List Details page', fakeAsync(() => {
+      const list = createListRequest(LIST_OPTION_TYPE.INDIVIDUAL);
+      segmentsDataService.addSegmentList = jest.fn().mockReturnValue(of(listResponse));
+
+      const expectedAction = SegmentsActions.actionAddSegmentListSuccess({ listResponse });
+
+      service.addSegmentList$.subscribe((result) => {
+        expect(result).toEqual(expectedAction);
+        expect(router.navigate).toHaveBeenCalledWith([
+          '/segments',
+          'detail',
+          parentSegmentId,
+          'list',
+          LIST_FILTER_MODE.EXCLUSION,
+          listId,
+        ]);
+      });
+
+      actions$.next(SegmentsActions.actionAddSegmentList({ list }));
+
+      tick(0);
+    }));
+
+    it('should keep a Segment-backed list on the owner page', fakeAsync(() => {
+      const list = createListRequest(LIST_OPTION_TYPE.SEGMENT);
+      segmentsDataService.addSegmentList = jest.fn().mockReturnValue(of(listResponse));
+
+      const expectedAction = SegmentsActions.actionAddSegmentListSuccess({ listResponse });
+
+      service.addSegmentList$.subscribe((result) => {
+        expect(result).toEqual(expectedAction);
+        expect(router.navigate).not.toHaveBeenCalled();
+      });
+
+      actions$.next(SegmentsActions.actionAddSegmentList({ list }));
 
       tick(0);
     }));

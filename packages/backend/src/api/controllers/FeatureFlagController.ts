@@ -204,17 +204,22 @@ export class FeatureFlagsController {
    *                $ref: '#/definitions/FeatureFlag'
    *          '401':
    *            description: AuthorizationRequiredError
-   *          '204':
-   *            description: No content
+   *          '404':
+   *            description: Feature flag not found
    *          '400':
    *            description: id should be of type UUID
    */
   @Get('/:id')
-  public findOne(
+  public async findOne(
     @Params({ validate: true }) { id }: IdValidator,
     @Req() request: AppRequest
-  ): Promise<FeatureFlag | undefined> {
-    return this.featureFlagService.findOneForDetails(id, request.logger);
+  ): Promise<FeatureFlag> {
+    const featureFlag = await this.featureFlagService.findOneForDetails(id, request.logger);
+
+    if (!featureFlag) {
+      throw new NotFoundException('Feature flag not found.');
+    }
+    return featureFlag;
   }
 
   /**
@@ -418,15 +423,22 @@ export class FeatureFlagsController {
    *       responses:
    *          '200':
    *            description: Delete Feature flag By Id
+   *          '404':
+   *            description: Feature flag not found
    */
 
   @Delete('/:id')
-  public delete(
+  public async delete(
     @Params({ validate: true }) { id }: IdValidator,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
-  ): Promise<FeatureFlag | undefined> {
-    return this.featureFlagService.delete(id, currentUser, request.logger);
+  ): Promise<FeatureFlag> {
+    const featureFlag = await this.featureFlagService.delete(id, currentUser, request.logger);
+
+    if (!featureFlag) {
+      throw new NotFoundException('Feature flag not found.');
+    }
+    return featureFlag;
   }
 
   /**
@@ -457,9 +469,11 @@ export class FeatureFlagsController {
    *       responses:
    *          '200':
    *            description: Feature flags is updated
+   *          '404':
+   *            description: Feature flag not found
    */
   @Put('/:id')
-  public update(
+  public async update(
     @Params({ validate: true }) { id }: IdValidator,
     @Body({ validate: true })
     flag: FeatureFlagValidation,
@@ -469,6 +483,11 @@ export class FeatureFlagsController {
     const contextValidationError = this.featureFlagService.validateFeatureFlagContext(flag);
     if (contextValidationError) {
       throw new BadRequestError(contextValidationError);
+    }
+
+    const existingFeatureFlag = await this.featureFlagService.findOneForDetails(id, request.logger);
+    if (!existingFeatureFlag) {
+      throw new NotFoundException('Feature flag not found.');
     }
 
     return this.featureFlagService.update({ ...flag, id }, currentUser, request.logger);

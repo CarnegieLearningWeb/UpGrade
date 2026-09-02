@@ -35,6 +35,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
 import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { LIST_FILTER_MODE } from 'upgrade_types';
+import { LIST_OPTION_TYPE } from '../../segments/store/segments.model';
 @Injectable()
 export class ExperimentEffects {
   constructor(
@@ -596,6 +598,16 @@ export class ExperimentEffects {
           map((listResponse) => {
             this.notificationService.showSuccess(this.translate.instant('experiments.inclusions.add-success.text'));
             this.commonModalEvents.forceCloseModal();
+            if (action.list.list.listType?.toLowerCase() !== LIST_OPTION_TYPE.SEGMENT.toLowerCase()) {
+              this.router.navigate([
+                '/home',
+                'detail',
+                action.list.experimentId,
+                'list',
+                LIST_FILTER_MODE.INCLUSION,
+                listResponse.segment.id,
+              ]);
+            }
             return experimentAction.actionAddExperimentInclusionListSuccess({ listResponse });
           }),
           catchError((error) => {
@@ -653,6 +665,16 @@ export class ExperimentEffects {
           map((listResponse) => {
             this.notificationService.showSuccess(this.translate.instant('experiments.exclusions.add-success.text'));
             this.commonModalEvents.forceCloseModal();
+            if (action.list.list.listType?.toLowerCase() !== LIST_OPTION_TYPE.SEGMENT.toLowerCase()) {
+              this.router.navigate([
+                '/home',
+                'detail',
+                action.list.experimentId,
+                'list',
+                LIST_FILTER_MODE.EXCLUSION,
+                listResponse.segment.id,
+              ]);
+            }
             return experimentAction.actionAddExperimentExclusionListSuccess({ listResponse });
           }),
           catchError((error) => {

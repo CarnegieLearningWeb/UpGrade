@@ -63,7 +63,9 @@
     <mat-menu #menu="matMenu">
       @for (item of menuButtonItems; track item) { @if (!item.disabled) {
       <button mat-menu-item (click)="onMenuButtonItemClick(item.action)">
-        <span class="ft-14-400">{{ item.label | translate | titlecase }}</span>
+        <span class="ft-14-400">
+          {{ item.preserveCase ? (item.label | translate) : (item.label | translate | titlecase) }}
+        </span>
       </button>
       } }
     </mat-menu>

@@ -163,9 +163,14 @@ export class LogRepository extends Repository<Log> {
       .innerJoin(IndividualEnrollment, 'individualEnrollment', '"individualEnrollment"."experimentId"=experiment.id')
       .innerJoin('experiment.queries', 'queries')
       .innerJoin('queries.metric', 'metric')
-      .innerJoin('metric.logs', 'logs', '"logs"."userId"="individualEnrollment"."userId"')
+      .innerJoin('metric.logs', 'logs')
       .where('experiment.id=:experimentId', { experimentId })
-      .execute();
+      .andWhere('"logs"."userId"="individualEnrollment"."userId"')
+      .getRawMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('LogRepository', 'getLogPerExperimentQuery', { experimentId }, errorMsg);
+        throw errorMsgString;
+      });
   }
 
   public prepareMetricString(metricId: string[]) {

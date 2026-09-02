@@ -52,6 +52,10 @@ import {
   actionFetchRewardsDataForExperiment,
   actionFetchRewardsDataForExperimentSuccess,
   actionFetchRewardsDataForExperimentFailure,
+  actionAddExperimentInclusionList,
+  actionAddExperimentInclusionListSuccess,
+  actionAddExperimentExclusionList,
+  actionAddExperimentExclusionListSuccess,
 } from './experiments.actions';
 import { ExperimentEffects } from './experiments.effects';
 import {
@@ -69,6 +73,8 @@ import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { UserRole } from '../../users/store/users.model';
 import { Environment } from '../../../../environments/environment-types';
 import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { ExperimentSegmentListRequest, LIST_OPTION_TYPE } from '../../segments/store/segments.model';
 
 describe('ExperimentEffects', () => {
   let service: ExperimentEffects;
@@ -1501,6 +1507,108 @@ describe('ExperimentEffects', () => {
 
       tick(0);
     }));
+  });
+
+  describe('add experiment lists', () => {
+    const experimentId = 'experiment-id';
+    const listId = 'list-id';
+    const listResponse = { segment: { id: listId } } as any;
+
+    const createListRequest = (listType: string): ExperimentSegmentListRequest => ({
+      experimentId,
+      list: {
+        name: 'Test list',
+        description: '',
+        context: 'test',
+        type: SEGMENT_TYPE.PRIVATE,
+        userIds: [],
+        groups: [],
+        subSegmentIds: [],
+        listType,
+      },
+    });
+
+    describe('addExperimentInclusionList$', () => {
+      it('should navigate a direct-value list to its List Details page', fakeAsync(() => {
+        const list = createListRequest(LIST_OPTION_TYPE.INDIVIDUAL);
+        experimentDataService.addInclusionList = jest.fn().mockReturnValue(of(listResponse));
+
+        const expectedAction = actionAddExperimentInclusionListSuccess({ listResponse });
+
+        service.addExperimentInclusionList$.subscribe((result) => {
+          expect(result).toEqual(expectedAction);
+          expect(router.navigate).toHaveBeenCalledWith([
+            '/home',
+            'detail',
+            experimentId,
+            'list',
+            LIST_FILTER_MODE.INCLUSION,
+            listId,
+          ]);
+        });
+
+        actions$.next(actionAddExperimentInclusionList({ list }));
+
+        tick(0);
+      }));
+
+      it('should keep a Segment-backed list on the owner page', fakeAsync(() => {
+        const list = createListRequest(LIST_OPTION_TYPE.SEGMENT);
+        experimentDataService.addInclusionList = jest.fn().mockReturnValue(of(listResponse));
+
+        const expectedAction = actionAddExperimentInclusionListSuccess({ listResponse });
+
+        service.addExperimentInclusionList$.subscribe((result) => {
+          expect(result).toEqual(expectedAction);
+          expect(router.navigate).not.toHaveBeenCalled();
+        });
+
+        actions$.next(actionAddExperimentInclusionList({ list }));
+
+        tick(0);
+      }));
+    });
+
+    describe('addExperimentExclusionList$', () => {
+      it('should navigate a direct-value list to its List Details page', fakeAsync(() => {
+        const list = createListRequest(LIST_OPTION_TYPE.INDIVIDUAL);
+        experimentDataService.addExclusionList = jest.fn().mockReturnValue(of(listResponse));
+
+        const expectedAction = actionAddExperimentExclusionListSuccess({ listResponse });
+
+        service.addExperimentExclusionList$.subscribe((result) => {
+          expect(result).toEqual(expectedAction);
+          expect(router.navigate).toHaveBeenCalledWith([
+            '/home',
+            'detail',
+            experimentId,
+            'list',
+            LIST_FILTER_MODE.EXCLUSION,
+            listId,
+          ]);
+        });
+
+        actions$.next(actionAddExperimentExclusionList({ list }));
+
+        tick(0);
+      }));
+
+      it('should keep a Segment-backed list on the owner page', fakeAsync(() => {
+        const list = createListRequest(LIST_OPTION_TYPE.SEGMENT);
+        experimentDataService.addExclusionList = jest.fn().mockReturnValue(of(listResponse));
+
+        const expectedAction = actionAddExperimentExclusionListSuccess({ listResponse });
+
+        service.addExperimentExclusionList$.subscribe((result) => {
+          expect(result).toEqual(expectedAction);
+          expect(router.navigate).not.toHaveBeenCalled();
+        });
+
+        actions$.next(actionAddExperimentExclusionList({ list }));
+
+        tick(0);
+      }));
+    });
   });
 
   describe('fetchRewardsDataForExperiment$', () => {

@@ -1,0 +1,41 @@
+.values-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.drag-drop-container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 2px;
+
+  .import-message {
+    margin: 0;
+    text-indent: 18px;
+  }
+}
+
+.file-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .remove-file-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--dark-grey);
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1;
+    cursor: pointer;
+  }
+}
+
+.import-behavior-section {
+  padding: 4px 0;
+}

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { DashboardRootComponent } from './dashboard-root/dashboard-root.component';
 import { requireRouteParam } from './require-route-param.guard';
+import { LIST_OWNER_TYPE } from '../../core/segments/store/segments.model';
 
 // Conditionally define segments routes based on the toggle
 const segmentsRoutes: Routes = [
@@ -18,6 +19,15 @@ const segmentsRoutes: Routes = [
     path: 'segments/detail',
     redirectTo: '/segments',
     pathMatch: 'full',
+  },
+  {
+    path: 'segments/detail/:segmentId/list/:filterMode/:listId',
+    loadComponent: () =>
+      import('./segments/pages/list-details-page/list-details-page.component').then((c) => c.ListDetailsPageComponent),
+    data: {
+      title: 'app-header.title.segments',
+      listOwnerType: LIST_OWNER_TYPE.SEGMENT,
+    },
   },
   {
     path: 'segments/detail/:segmentId',
@@ -57,6 +67,17 @@ export const routes: Routes = [
         path: 'home/detail',
         redirectTo: '/home',
         pathMatch: 'full',
+      },
+      {
+        path: 'home/detail/:experimentId/list/:filterMode/:listId',
+        loadComponent: () =>
+          import('./segments/pages/list-details-page/list-details-page.component').then(
+            (c) => c.ListDetailsPageComponent
+          ),
+        data: {
+          title: 'app-header.title.experiments',
+          listOwnerType: LIST_OWNER_TYPE.EXPERIMENT,
+        },
       },
       {
         path: 'home/detail/:experimentId',
@@ -102,6 +123,17 @@ export const routes: Routes = [
         path: 'featureflags/detail',
         redirectTo: '/featureflags',
         pathMatch: 'full',
+      },
+      {
+        path: 'featureflags/detail/:flagId/list/:filterMode/:listId',
+        loadComponent: () =>
+          import('./segments/pages/list-details-page/list-details-page.component').then(
+            (c) => c.ListDetailsPageComponent
+          ),
+        data: {
+          title: 'app-header.title.feature-flag',
+          listOwnerType: LIST_OWNER_TYPE.FEATURE_FLAG,
+        },
       },
       {
         path: 'featureflags/detail/:flagId',
