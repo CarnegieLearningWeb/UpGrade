@@ -269,9 +269,14 @@ export class ExperimentEffects {
       ofType(experimentAction.actionUpdateExperimentMetrics),
       switchMap((action) => {
         return this.experimentDataService.updateExperimentMetrics(action.updateExperimentMetricsRequest).pipe(
-          map((experiment) => {
+          switchMap((experiment) => {
             this.notificationService.showSuccess(this.translate.instant('experiments.metrics.update-success.text'));
-            return experimentAction.actionUpdateExperimentMetricsSuccess({ experiment });
+            // A metric may have been added, edited, or removed from the experiment, which can
+            // change whether a catalog metric still has a query associated with it.
+            return [
+              experimentAction.actionUpdateExperimentMetricsSuccess({ experiment }),
+              analysisActions.actionFetchMetrics(),
+            ];
           }),
           catchError(() => {
             this.notificationService.showError(this.translate.instant('experiments.metrics.update-error.text'));
@@ -291,9 +296,12 @@ export class ExperimentEffects {
         this.experimentDataService.deleteExperiment(experimentId).pipe(
           switchMap(() => {
             this.notificationService.showSuccess(this.translate.instant('global.delete-experiments.message.text'));
+            // Deleting an experiment also deletes its queries, which can change whether a
+            // catalog metric still has a query associated with it.
             return [
               experimentAction.actionDeleteExperimentSuccess({ experimentId }),
               experimentAction.actionFetchAllDecisionPoints(),
+              analysisActions.actionFetchMetrics(),
             ];
           }),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])

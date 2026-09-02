@@ -69,9 +69,8 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
       // Process metrics data to prepare for lazy loading
       this.allMetrics.data = this.processMetricsData(metrics);
       this.extractContext(this.allMetrics.data);
+      this.applyFilter(this.searchValue);
     });
-
-    this.applyFilter(this.searchValue);
   }
 
   get MetricSearchKey() {
@@ -91,7 +90,17 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     };
 
     if (metric.children && metric.children.length > 0) {
-      processedMetric.loadChildren = () => of(metric.children?.map((child) => this.insertNode(child)));
+      // Memoize the loaded children so repeated calls (the tree control can invoke
+      // loadChildren more than once per node) return the same node instances instead
+      // of rebuilding new objects each time. Without this, any reference (or id) captured
+      // from a rendered node can go stale before it's used, e.g. in deleteNode/findParents.
+      let loadedChildren: LazyLoadingMetric[];
+      processedMetric.loadChildren = () => {
+        if (!loadedChildren) {
+          loadedChildren = metric.children.map((child) => this.insertNode(child));
+        }
+        return of(loadedChildren);
+      };
     }
 
     return processedMetric;
@@ -124,9 +133,15 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  deleteNode(nodeToBeDeleted: LazyLoadingMetric, index: number) {
+  deleteNode(nodeToBeDeleted: LazyLoadingMetric, element: LazyLoadingMetric) {
+    if (nodeToBeDeleted.hasQuery) {
+      return;
+    }
+    // `element` is the root metric for the row being rendered (from the filtered
+    // table dataSource), not looked up by index, since row index in the filtered
+    // results does not correspond to allMetrics.data's unfiltered indices.
     const data = {
-      children: [this.allMetrics.data[index]],
+      children: [element],
     };
     const key = this.analysisService.findParents(data, nodeToBeDeleted.id);
     const dialogRef = this.dialog.open(DeleteComponent, {

@@ -133,6 +133,8 @@ export class MetricController {
    *            description: Delete metric by key
    *          '404':
    *            description: Metrics key not found
+   *          '409':
+   *            description: Metric is used by one or more experiments and cannot be deleted
    */
   @Delete('/:key')
   public delete(

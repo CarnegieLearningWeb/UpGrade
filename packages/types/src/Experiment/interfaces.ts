@@ -167,6 +167,7 @@ export interface IMetricUnit {
   children?: IMetricUnit[];
   metadata?: { type: IMetricMetaData };
   allowedData?: string[];
+  hasQuery?: boolean;
 }
 
 export type ExperimentQueryComparator = '=' | '<>' | '!=';

@@ -54,11 +54,13 @@ export class AnalysisService {
     this.store$.dispatch(AnalysisActions.actionSetQueryResult({ queryResult }));
   }
 
-  // Used to get path from root to leaf node
-  findParents(node, searchForKey) {
-    // If current node name matches the search name, return
+  // Used to get path from root to a specific node. Node keys are not guaranteed to be
+  // unique across the tree (e.g. sibling groups can share a leaf name), so the target
+  // node is matched by its (stable) id rather than by key.
+  findParents(node, targetId) {
+    // If current node is the node we're looking for, return
     // empty array which is the beginning of our parent result
-    if (node.id === searchForKey) {
+    if (node.id === targetId) {
       return [];
     }
 
@@ -69,7 +71,7 @@ export class AnalysisService {
         // Recursively process treeNode. If an array result is
         // returned, then add the treeNode.key to that result
         // and return recursively
-        const childResult = this.findParents(treeNode, searchForKey);
+        const childResult = this.findParents(treeNode, targetId);
 
         if (Array.isArray(childResult)) {
           return [treeNode.key].concat(childResult);

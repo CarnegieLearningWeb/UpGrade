@@ -179,4 +179,64 @@ describe('QueryRepository Testing', () => {
     expect(mock.where).toHaveBeenCalledTimes(1);
     expect(mock.getMany).toHaveBeenCalledTimes(1);
   });
+
+  it('should return the distinct metric keys referenced by queries', async () => {
+    mock.getRawMany.mockResolvedValue([{ metricKey: 'metric1' }, { metricKey: 'metric2' }]);
+    const res = await repo.getMetricKeysWithQueries();
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(mock.distinct).toHaveBeenCalledTimes(1);
+    expect(mock.distinct).toHaveBeenCalledWith(true);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getRawMany).toHaveBeenCalledTimes(1);
+
+    expect(res).toEqual(['metric1', 'metric2']);
+  });
+
+  it('should throw an error when getting metric keys with queries fails', async () => {
+    mock.getRawMany.mockRejectedValue(err);
+
+    expect(async () => {
+      await repo.getMetricKeysWithQueries();
+    }).rejects.toThrow(err);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoin).toHaveBeenCalledTimes(1);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.getRawMany).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return the experiments using a metric key', async () => {
+    mock.getRawMany.mockResolvedValue([{ id: 'exp1', name: 'Experiment 1' }]);
+    const res = await repo.getExperimentsUsingMetricKey('metric1', '@__@');
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.distinct).toHaveBeenCalledTimes(1);
+    expect(mock.distinct).toHaveBeenCalledWith(true);
+    expect(mock.select).toHaveBeenCalledTimes(1);
+    expect(mock.addSelect).toHaveBeenCalledTimes(1);
+    expect(mock.getRawMany).toHaveBeenCalledTimes(1);
+
+    expect(res).toEqual([{ id: 'exp1', name: 'Experiment 1' }]);
+  });
+
+  it('should throw an error when getting experiments using a metric key fails', async () => {
+    mock.getRawMany.mockRejectedValue(err);
+
+    expect(async () => {
+      await repo.getExperimentsUsingMetricKey('metric1', '@__@');
+    }).rejects.toThrow(err);
+
+    expect(repo.createQueryBuilder).toHaveBeenCalledTimes(1);
+
+    expect(mock.innerJoin).toHaveBeenCalledTimes(2);
+    expect(mock.where).toHaveBeenCalledTimes(1);
+    expect(mock.getRawMany).toHaveBeenCalledTimes(1);
+  });
 });

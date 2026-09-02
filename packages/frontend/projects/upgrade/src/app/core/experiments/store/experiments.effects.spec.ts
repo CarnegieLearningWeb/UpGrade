@@ -52,6 +52,9 @@ import {
   actionFetchRewardsDataForExperiment,
   actionFetchRewardsDataForExperimentSuccess,
   actionFetchRewardsDataForExperimentFailure,
+  actionUpdateExperimentMetrics,
+  actionUpdateExperimentMetricsSuccess,
+  actionUpdateExperimentMetricsFailure,
   actionAddExperimentInclusionList,
   actionAddExperimentInclusionListSuccess,
   actionAddExperimentExclusionList,
@@ -600,6 +603,38 @@ describe('ExperimentEffects', () => {
       });
 
       actions$.next(actionDeleteExperiment({ experimentId }));
+    }));
+  });
+
+  describe('#updateExperimentMetrics$', () => {
+    const experiment = { id: 'test1' } as any;
+    const updateExperimentMetricsRequest = { experiment, metrics: [] } as any;
+
+    it('should return an array with actionUpdateExperimentMetricsSuccess and actionFetchMetrics', fakeAsync(() => {
+      experimentDataService.updateExperimentMetrics = jest.fn().mockReturnValue(of(experiment));
+
+      service.updateExperimentMetrics$.pipe(take(2), pairwise()).subscribe((result: any) => {
+        const successAction = actionUpdateExperimentMetricsSuccess({ experiment });
+        const fetchAction = actionFetchMetrics();
+
+        tick(0);
+        expect(result).toEqual([successAction, fetchAction]);
+      });
+
+      actions$.next(actionUpdateExperimentMetrics({ updateExperimentMetricsRequest }));
+    }));
+
+    it('should throw an error with actionUpdateExperimentMetricsFailure on error', fakeAsync(() => {
+      experimentDataService.updateExperimentMetrics = jest.fn().mockReturnValue(throwError('testError'));
+
+      service.updateExperimentMetrics$.subscribe((result: any) => {
+        const failureAction = actionUpdateExperimentMetricsFailure();
+
+        tick(0);
+        expect(result).toEqual(failureAction);
+      });
+
+      actions$.next(actionUpdateExperimentMetrics({ updateExperimentMetricsRequest }));
     }));
   });
 
