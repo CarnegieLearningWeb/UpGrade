@@ -69,9 +69,8 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
       // Process metrics data to prepare for lazy loading
       this.allMetrics.data = this.processMetricsData(metrics);
       this.extractContext(this.allMetrics.data);
+      this.applyFilter(this.searchValue);
     });
-
-    this.applyFilter(this.searchValue);
   }
 
   get MetricSearchKey() {
