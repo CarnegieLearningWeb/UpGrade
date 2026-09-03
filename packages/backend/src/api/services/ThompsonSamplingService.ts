@@ -32,6 +32,9 @@ export class ThompsonSamplingService {
    * awards the round to the highest draw. Win counts are converted to integer percentages via the
    * Largest Remainder Method so the result always sums to exactly 100.
    *
+   * When every condition shares the same alpha/beta (e.g. equal priors and no reward data yet),
+   * the true win rate is exactly uniform by symmetry — skip the simulation and its sampling noise.
+   *
    * @param conditions - Each condition with its current posterior alpha and beta parameters
    * @param numDraws   - Number of simulated draws (default 10 000)
    * @returns Map of conditionCode → integer percentage in [0, 100]; sums to 100
@@ -42,6 +45,10 @@ export class ThompsonSamplingService {
   ): Record<string, number> {
     if (conditions.length === 0) return {};
     if (conditions.length === 1) return { [conditions[0].code]: 100 };
+
+    if (conditions.every((c) => c.alpha === conditions[0].alpha && c.beta === conditions[0].beta)) {
+      return this.distributeEvenly(conditions.map((c) => c.code));
+    }
 
     const wins = new Map<string, number>(conditions.map((c) => [c.code, 0]));
 
@@ -58,17 +65,29 @@ export class ThompsonSamplingService {
       wins.set(winner, (wins.get(winner) ?? 0) + 1);
     }
 
-    // Largest Remainder Method: floor each raw percentage then distribute the
-    // remaining integer points to the conditions with the largest fractional parts.
-    const rawPcts = conditions.map((c) => {
-      const raw = ((wins.get(c.code) ?? 0) / numDraws) * 100;
-      return { code: c.code, floor: Math.floor(raw), remainder: raw - Math.floor(raw) };
-    });
-    const pointsLeft = 100 - rawPcts.reduce((sum, r) => sum + r.floor, 0);
-    rawPcts.sort((a, b) => b.remainder - a.remainder);
+    return this.toIntegerPercentages(
+      conditions.map((c) => ({ code: c.code, raw: ((wins.get(c.code) ?? 0) / numDraws) * 100 }))
+    );
+  }
+
+  // Splits 100 points evenly across codes (Largest Remainder Method handles the non-divisible case).
+  private distributeEvenly(codes: string[]): Record<string, number> {
+    return this.toIntegerPercentages(codes.map((code) => ({ code, raw: 100 / codes.length })));
+  }
+
+  // Largest Remainder Method: floor each raw percentage then distribute the
+  // remaining integer points to the entries with the largest fractional parts.
+  private toIntegerPercentages(raws: Array<{ code: string; raw: number }>): Record<string, number> {
+    const withFloors = raws.map(({ code, raw }) => ({
+      code,
+      floor: Math.floor(raw),
+      remainder: raw - Math.floor(raw),
+    }));
+    const pointsLeft = 100 - withFloors.reduce((sum, r) => sum + r.floor, 0);
+    withFloors.sort((a, b) => b.remainder - a.remainder);
 
     const result: Record<string, number> = {};
-    rawPcts.forEach((r, i) => {
+    withFloors.forEach((r, i) => {
       result[r.code] = r.floor + (i < pointsLeft ? 1 : 0);
     });
     return result;
@@ -79,7 +98,8 @@ export class ThompsonSamplingService {
    *
    * @param conditionCodes - All eligible condition codes for this experiment
    * @param rewardSummaries - Accumulated reward counts per condition
-   * @param totalRewardCount - Total number of reward observations across all conditions
+   * @param totalRewardCount - Total number of reward observations collected across all conditions,
+   *   including any not yet folded into the posteriors by a pending batch flush
    * @param config - Optional algorithm parameters (priors, warmup, thresholds)
    */
   selectCondition(
@@ -116,7 +136,7 @@ export class ThompsonSamplingService {
 
     // Fall back to uniform when the top two draws are too close to distinguish
     if (
-      config.minimumDrawDifference !== undefined &&
+      config.minimumDrawDifference &&
       draws.length >= 2 &&
       draws[0].draw - draws[1].draw < config.minimumDrawDifference
     ) {

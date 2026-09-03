@@ -31,7 +31,13 @@ import {
   withinSubjectDPExperiment,
 } from '../mockdata';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
-import { ENROLLMENT_CODE, EXPERIMENT_STATE, FILTER_MODE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import {
+  ASSIGNMENT_ALGORITHM,
+  ENROLLMENT_CODE,
+  EXPERIMENT_STATE,
+  FILTER_MODE,
+  MARKED_DECISION_POINT_STATUS,
+} from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
@@ -2243,6 +2249,49 @@ describe('Experiment Assignment Service Test', () => {
       sinon.assert.calledWith(loggerMock.info, {
         message: `getAllExperimentConditions: User: user1`,
       });
+    });
+  });
+
+  describe('[assignThompsonSampling] warmup evidence', () => {
+    const thompsonExperiment: any = {
+      id: 'ts-experiment-1',
+      assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+      conditions: [{ id: 'condition-a' }, { id: 'condition-b' }],
+    };
+    const thompsonUser: any = { id: 'user-1' };
+
+    function makePosteriorState(conditionId: string, totalCount: number, pendingTotalCount: number) {
+      return {
+        conditionId,
+        successCount: 0,
+        failureCount: 0,
+        totalCount,
+        pendingTotalCount,
+        priorSuccess: 1,
+        priorFailure: 1,
+      };
+    }
+
+    it('counts rewards still sitting in a pending batch toward totalRewardCount, not just flushed ones', async () => {
+      testedModule.thompsonSamplingConfigRepository = {
+        findByExperimentId: sandbox.stub().resolves({
+          warmupThreshold: 9,
+          minimumDrawDifference: undefined,
+          conditionPosteriorStates: [
+            makePosteriorState('condition-a', 2, 3), // 2 flushed + 3 pending
+            makePosteriorState('condition-b', 1, 4), // 1 flushed + 4 pending
+          ],
+        }),
+      };
+      testedModule.thompsonSamplingService = { selectCondition: sandbox.stub().returns('condition-a') };
+
+      await (testedModule as any).assignThompsonSampling(thompsonExperiment, thompsonUser, loggerMock);
+
+      // Flushed-only totals (2 + 1 = 3) would wrongly stay inside a warmupThreshold of 9.
+      // The real reward evidence collected so far also includes the pending buffers
+      // (3 + 4 = 7), for a true total of 10 — past warmup.
+      const totalRewardCountArg = testedModule.thompsonSamplingService.selectCondition.getCall(0).args[2];
+      expect(totalRewardCountArg).toBe(10);
     });
   });
 });

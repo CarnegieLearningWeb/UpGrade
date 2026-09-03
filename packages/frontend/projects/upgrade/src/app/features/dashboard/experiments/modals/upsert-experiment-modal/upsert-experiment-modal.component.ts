@@ -180,6 +180,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       description:
         'experiments.upsert-experiment-modal.assignment-algorithm-stratified-random-sampling-description.text',
     },
+    {
+      value: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+      description: 'experiments.upsert-experiment-modal.assignment-algorithm-thompson-sampling-description.text',
+    },
   ];
 
   constructor(
@@ -199,10 +203,6 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
         description: 'Condition will be assigned within subjects (e.g., participant sees multiple conditions).',
       });
     }
-    this.assignmentAlgorithms.push({
-      value: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
-      description: ASSIGNMENT_ALGORITHM_DISPLAY_MAP[ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING],
-    });
   }
 
   ngOnInit(): void {

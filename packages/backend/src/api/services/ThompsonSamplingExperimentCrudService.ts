@@ -4,7 +4,8 @@ import { ThompsonSamplingExperimentConfigRepository } from '../repositories/Thom
 import { ConditionPosteriorStateRepository } from '../repositories/ConditionPosteriorStateRepository';
 import { ThompsonSamplingExperimentConfig } from '../models/ThompsonSamplingExperimentConfig';
 import { ThompsonSamplingService } from './ThompsonSamplingService';
-import { ExperimentRewardsSummary } from 'upgrade_types';
+import { CacheService } from './CacheService';
+import { CACHE_PREFIX, ExperimentRewardsSummary } from 'upgrade_types';
 
 type ConditionRef = { id: string };
 
@@ -21,7 +22,8 @@ export class ThompsonSamplingExperimentCrudService {
   constructor(
     @InjectRepository() private configRepository: ThompsonSamplingExperimentConfigRepository,
     @InjectRepository() private posteriorStateRepository: ConditionPosteriorStateRepository,
-    private thompsonSamplingService: ThompsonSamplingService
+    private thompsonSamplingService: ThompsonSamplingService,
+    private cacheService: CacheService
   ) {}
 
   public async getConfigForExperiment(experimentId: string): Promise<ThompsonSamplingExperimentConfig | null> {
@@ -53,6 +55,8 @@ export class ThompsonSamplingExperimentCrudService {
       )
     );
 
+    await this.invalidateConfigCache();
+
     return config;
   }
 
@@ -65,6 +69,8 @@ export class ThompsonSamplingExperimentCrudService {
         batchSize: params.batchSize ?? null,
       }
     );
+
+    await this.invalidateConfigCache();
 
     if (!params.priors) {
       return;
@@ -159,5 +165,17 @@ export class ThompsonSamplingExperimentCrudService {
     if (toRemove.length > 0) {
       await this.posteriorStateRepository.remove(toRemove);
     }
+  }
+
+  /**
+   * Clears every cached config lookup ThompsonSamplingRewardService may have made — both the
+   * by-experimentId and by-decision-point keys share this prefix. A targeted delete of just the
+   * affected experimentId key isn't enough on its own: the decision-point-keyed entries embed the
+   * same config fields and there's no cheap way to know which context/site/target keys reference
+   * this experiment, so the whole prefix is reset instead (same approach ExperimentService.updateList
+   * uses for validExperiments- when a similar can't-cheaply-target-one-key situation comes up).
+   */
+  private async invalidateConfigCache(): Promise<void> {
+    await this.cacheService.resetPrefixCache(CACHE_PREFIX.THOMPSON_SAMPLING_CONFIG_KEY_PREFIX);
   }
 }

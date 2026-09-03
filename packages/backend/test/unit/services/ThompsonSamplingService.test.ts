@@ -236,26 +236,40 @@ describe('ThompsonSamplingService', () => {
       }
     });
 
-    it('two equal Beta(1,1) arms split near 50/50', () => {
+    it('two equal Beta(1,1) arms split exactly 50/50 (skips simulation by symmetry)', () => {
       const conditions = [
         { code: 'A', alpha: 1, beta: 1 },
         { code: 'B', alpha: 1, beta: 1 },
       ];
       const weights = service.estimateConditionWeights(conditions);
-      // With 10k draws and σ≈0.5%, ±10% is ~20σ — essentially never flaky
-      expect(weights['A']).toBeGreaterThanOrEqual(40);
-      expect(weights['A']).toBeLessThanOrEqual(60);
-      expect(weights['B']).toBeGreaterThanOrEqual(40);
-      expect(weights['B']).toBeLessThanOrEqual(60);
+      expect(weights).toEqual({ A: 50, B: 50 });
     });
 
-    it('four equal arms each get roughly 25%', () => {
+    it('four equal arms each get exactly 25% regardless of the shared prior strength', () => {
       const conditions = ['A', 'B', 'C', 'D'].map((code) => ({ code, alpha: 2, beta: 2 }));
       const weights = service.estimateConditionWeights(conditions);
+      expect(weights).toEqual({ A: 25, B: 25, C: 25, D: 25 });
+    });
+
+    it('three equal arms split evenly and still sum to 100', () => {
+      const conditions = ['A', 'B', 'C'].map((code) => ({ code, alpha: 4, beta: 6 }));
+      const weights = service.estimateConditionWeights(conditions);
+      const total = Object.values(weights).reduce((sum, w) => sum + w, 0);
+      expect(total).toBe(100);
       for (const w of Object.values(weights)) {
-        expect(w).toBeGreaterThanOrEqual(15);
-        expect(w).toBeLessThanOrEqual(35);
+        expect(w).toBeGreaterThanOrEqual(33);
+        expect(w).toBeLessThanOrEqual(34);
       }
+    });
+
+    it('unequal alpha/beta still runs the simulation (not the equal-posterior shortcut)', () => {
+      const conditions = [
+        { code: 'A', alpha: 5, beta: 3 },
+        { code: 'B', alpha: 3, beta: 5 },
+      ];
+      const weights = service.estimateConditionWeights(conditions);
+      expect(weights['A']).toBeGreaterThan(50);
+      expect(weights['B']).toBeLessThan(50);
     });
 
     it('dominant condition (90 successes / 10 failures) captures most weight', () => {

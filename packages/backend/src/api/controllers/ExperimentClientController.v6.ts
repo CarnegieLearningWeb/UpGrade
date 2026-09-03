@@ -843,6 +843,11 @@ export class ExperimentClientController {
    *         2. **Decision Point Lookup** - Provide `context` and `decisionPoint` (site and target) to look up the experiment
    *
    *         At least one of these methods must be provided.
+   *
+   *         **Asynchronous processing:** This endpoint acknowledges receipt immediately and records the reward
+   *         (config/enrollment lookup, posterior update) in the background — the response does not wait on it.
+   *         A problem with the reward itself (unknown experiment, no matching enrollment, experiment no longer
+   *         enrolling, etc.) is therefore not returned to the caller; it is only visible in server-side logs.
    *       consumes:
    *         - application/json
    *       parameters:
@@ -909,14 +914,16 @@ export class ExperimentClientController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Reward successfully sent to the adaptive experiment
+   *            description: |
+   *              Reward received and queued for processing. This does not guarantee the reward was recorded -
+   *              see "Asynchronous processing" above.
    *            schema:
    *              type: object
    *              properties:
    *                message:
    *                  type: string
-   *                  example: Reward sent successfully
-   *                  description: Success message
+   *                  example: Reward received and is being processed.
+   *                  description: Receipt message
    *                request:
    *                  type: object
    *                  description: Echo of the original request data
@@ -939,10 +946,6 @@ export class ExperimentClientController {
    *            description: BadRequestError - Invalid parameters (e.g., missing required fields, invalid rewardValue)
    *          '401':
    *            description: AuthorizationRequiredError
-   *          '409':
-   *            description: Conflict - Data conflict (e.g., site or target not found, enrollment data not found, etc)
-   *          '500':
-   *            description: Internal Server Error
    */
   @Post('reward')
   public async sendReward(
@@ -952,7 +955,7 @@ export class ExperimentClientController {
     rewardData: RewardValidator
   ): Promise<IThompsonSamplingRewardResponse> {
     request.logger.info({ message: 'Starting the sendReward call for user' });
-    return this.thompsonSamplingRewardService.recordReward(request.userDoc, rewardData, request.logger);
+    return this.thompsonSamplingRewardService.acceptReward(request.userDoc, rewardData, request.logger);
   }
 
   /**

@@ -2103,7 +2103,13 @@ export class ExperimentAssignmentService {
         priors[state.conditionId] = { success: state.priorSuccess, failure: state.priorFailure };
       });
 
-      const totalRewardCount = config.conditionPosteriorStates.reduce((sum, s) => sum + s.totalCount, 0);
+      // Include pendingTotalCount so a batchSize buffer awaiting flush still counts toward
+      // warmup evidence — rewards are "collected" as soon as recordReward() persists them,
+      // even if batching hasn't folded them into totalCount/successCount/failureCount yet.
+      const totalRewardCount = config.conditionPosteriorStates.reduce(
+        (sum, s) => sum + s.totalCount + s.pendingTotalCount,
+        0
+      );
 
       const tsConfig: ThompsonSamplingConfig = {
         priors,
