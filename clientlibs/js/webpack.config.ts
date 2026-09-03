@@ -3,6 +3,7 @@ import webpack = require('webpack');
 import packageJson = require('./package.json');
 
 const version = packageJson.version.split('.')[0];
+const clientVersion = JSON.stringify(packageJson.version);
 
 const generalConfiguration = {
   mode: 'production',
@@ -25,6 +26,7 @@ const generalConfiguration = {
   plugins: [
     new webpack.DefinePlugin({
       API_VERSION: version,
+      CLIENT_VERSION: clientVersion,
     }),
   ],
 };
@@ -44,6 +46,7 @@ const createConfig = (target: string, outputPath: string, useCustomHttpClient: b
   plugins: [
     new webpack.DefinePlugin({
       API_VERSION: version,
+      CLIENT_VERSION: clientVersion,
       USE_CUSTOM_HTTP_CLIENT: JSON.stringify(useCustomHttpClient),
     }),
   ],
