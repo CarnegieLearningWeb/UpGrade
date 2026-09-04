@@ -3,7 +3,7 @@ import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
 
 describe('ImportExportService', () => {
   let experimentService: any;
-  let thompsonSamplingCrudService: any;
+  let adaptiveExperimentConfigDispatcher: any;
   let service: ImportExportService;
   let logger: any;
 
@@ -11,12 +11,12 @@ describe('ImportExportService', () => {
     experimentService = {
       create: jest.fn().mockImplementation((experiment) => Promise.resolve({ ...experiment })),
     };
-    thompsonSamplingCrudService = {
+    adaptiveExperimentConfigDispatcher = {
       createConfigIfApplicable: jest.fn().mockResolvedValue(undefined),
       attachConfigToExperiment: jest.fn().mockImplementation((experiment) => Promise.resolve(experiment)),
     };
     logger = { info: jest.fn(), error: jest.fn() };
-    service = new ImportExportService({} as any, {} as any, experimentService, thompsonSamplingCrudService);
+    service = new ImportExportService({} as any, {} as any, experimentService, adaptiveExperimentConfigDispatcher);
   });
 
   describe('addBulkExperiments', () => {
@@ -33,7 +33,7 @@ describe('ImportExportService', () => {
       // Without this call, an imported/batch-created THOMPSON_SAMPLING experiment previously got no
       // ThompsonSamplingExperimentConfig/ConditionPosteriorState rows at all (only the single-experiment
       // POST /experiments controller path wired this up), so assignment could never select a condition.
-      expect(thompsonSamplingCrudService.createConfigIfApplicable).toHaveBeenCalledWith(
+      expect(adaptiveExperimentConfigDispatcher.createConfigIfApplicable).toHaveBeenCalledWith(
         experiment,
         expect.objectContaining({ id: 'experiment-1' })
       );
@@ -45,7 +45,7 @@ describe('ImportExportService', () => {
         assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
         conditions: [{ id: 'condition-1' }],
       } as any;
-      thompsonSamplingCrudService.attachConfigToExperiment.mockImplementation((exp: any) =>
+      adaptiveExperimentConfigDispatcher.attachConfigToExperiment.mockImplementation((exp: any) =>
         Promise.resolve({ ...exp, thompsonSamplingConfig: { priors: { 'condition-1': { success: 1, failure: 1 } } } })
       );
 

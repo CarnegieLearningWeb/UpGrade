@@ -7,6 +7,7 @@ import { ThompsonSamplingService } from './ThompsonSamplingService';
 import { CacheService } from './CacheService';
 import { ASSIGNMENT_ALGORITHM, CACHE_PREFIX, ExperimentRewardsSummary } from 'upgrade_types';
 import { ExperimentDTO } from '../DTO/ExperimentDTO';
+import { AdaptiveExperimentConfigService } from './AdaptiveExperimentConfigService';
 
 type ConditionRef = { id: string };
 
@@ -19,7 +20,7 @@ export interface ThompsonSamplingConfigParams {
 }
 
 @Service()
-export class ThompsonSamplingExperimentCrudService {
+export class ThompsonSamplingExperimentCrudService implements AdaptiveExperimentConfigService {
   constructor(
     @InjectRepository() private configRepository: ThompsonSamplingExperimentConfigRepository,
     @InjectRepository() private posteriorStateRepository: ConditionPosteriorStateRepository,

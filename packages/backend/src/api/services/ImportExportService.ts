@@ -9,7 +9,7 @@ import { In } from 'typeorm';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
-import { ThompsonSamplingExperimentCrudService } from './ThompsonSamplingExperimentCrudService';
+import { AdaptiveExperimentConfigDispatcherService } from './AdaptiveExperimentConfigDispatcherService';
 
 @Service()
 export class ImportExportService {
@@ -17,7 +17,7 @@ export class ImportExportService {
     @InjectRepository() protected experimentRepository: ExperimentRepository,
     @InjectRepository() protected experimentAuditLogRepository: ExperimentAuditLogRepository,
     protected experimentService: ExperimentService,
-    protected thompsonSamplingCrudService: ThompsonSamplingExperimentCrudService
+    protected adaptiveExperimentConfigDispatcher: AdaptiveExperimentConfigDispatcherService
   ) {}
 
   public async importExperiments(experiments: ExperimentFile[], user: UserDTO, logger: UpgradeLogger) {
@@ -42,8 +42,8 @@ export class ImportExportService {
       experiments.map(async (experiment) => {
         try {
           const result = await this.experimentService.create(experiment, currentUser, logger);
-          await this.thompsonSamplingCrudService.createConfigIfApplicable(experiment, result);
-          createdExperiments.push(await this.thompsonSamplingCrudService.attachConfigToExperiment(result));
+          await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(experiment, result);
+          createdExperiments.push(await this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(result));
         } catch (error) {
           logger.error({
             message: 'Failed to create experiment during import',
@@ -123,7 +123,7 @@ export class ImportExportService {
           return a.order - b.order;
         });
 
-        const experimentRecord = await this.thompsonSamplingCrudService.attachConfigToExperiment(
+        const experimentRecord = await this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(
           this.experimentService.reducedConditionPayload(
             this.experimentService.formattingPayload(this.experimentService.formattingConditionPayload(experiment))
           )

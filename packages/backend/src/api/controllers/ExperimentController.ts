@@ -28,6 +28,7 @@ import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
 import { ThompsonSamplingExperimentCrudService } from '../services/ThompsonSamplingExperimentCrudService';
+import { AdaptiveExperimentConfigDispatcherService } from '../services/AdaptiveExperimentConfigDispatcherService';
 import { Response } from 'express';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
@@ -654,7 +655,8 @@ export class ExperimentController {
     public experimentAssignmentService: ExperimentAssignmentService,
     public importExportService: ImportExportService,
     public cacheService: CacheService,
-    public thompsonSamplingCrudService: ThompsonSamplingExperimentCrudService
+    public thompsonSamplingCrudService: ThompsonSamplingExperimentCrudService,
+    public adaptiveExperimentConfigDispatcher: AdaptiveExperimentConfigDispatcherService
   ) {}
 
   /**
@@ -910,7 +912,7 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
     const experiment = await this.experimentService.getSingleExperiment(id, request.logger);
-    return this.thompsonSamplingCrudService.attachConfigToExperiment(experiment);
+    return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(experiment);
   }
 
   @Get('/rewards/:id')
@@ -1047,9 +1049,9 @@ export class ExperimentController {
 
     const createdExperiment = await this.experimentService.create(experiment, currentUser, request.logger);
 
-    await this.thompsonSamplingCrudService.createConfigIfApplicable(experiment, createdExperiment);
+    await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(experiment, createdExperiment);
 
-    return this.thompsonSamplingCrudService.attachConfigToExperiment(createdExperiment);
+    return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(createdExperiment);
   }
 
   /**
@@ -1239,9 +1241,9 @@ export class ExperimentController {
 
     const updatedExperiment = await this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
 
-    await this.thompsonSamplingCrudService.syncConfigIfApplicable(experiment, updatedExperiment);
+    await this.adaptiveExperimentConfigDispatcher.syncConfigIfApplicable(experiment, updatedExperiment);
 
-    return this.thompsonSamplingCrudService.attachConfigToExperiment(updatedExperiment);
+    return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(updatedExperiment);
   }
 
   /**
