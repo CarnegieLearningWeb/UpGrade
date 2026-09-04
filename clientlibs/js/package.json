@@ -50,8 +50,8 @@
     "docs:markdown": "typedoc --options typedoc.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "quicktest": "([ -d dist ] || yarn build) && ts-node quickTest.ts",
-    "quicktest:lite": "([ -d dist ] || yarn build) && ts-node quickTest.ts lite"
+    "quicktest": "([ -f dist/node/index.js ] || yarn build) && ts-node quickTest.ts",
+    "quicktest:lite": "([ -f dist/lite/index.js ] || yarn build) && ts-node quickTest.ts lite"
   },
   "keywords": [],
   "author": "",
