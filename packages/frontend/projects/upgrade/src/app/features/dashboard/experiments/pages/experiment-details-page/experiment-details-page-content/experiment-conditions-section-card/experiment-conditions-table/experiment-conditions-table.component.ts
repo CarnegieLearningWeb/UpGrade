@@ -11,6 +11,7 @@ import {
   ExperimentCondition,
   ExperimentConditionRowActionEvent,
   EXPERIMENT_ROW_ACTION,
+  THOMPSON_SAMPLING_WEIGHT_TOOLTIP_KEY,
 } from '../../../../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { Prior } from 'upgrade_types';
@@ -49,6 +50,8 @@ export class ExperimentConditionsTableComponent {
     }
     return ['condition', 'weight', 'weightEdit', 'description', 'actions'];
   }
+
+  readonly WEIGHT_ADAPTIVE_TOOLTIP_KEY = THOMPSON_SAMPLING_WEIGHT_TOOLTIP_KEY;
 
   CONDITION_TRANSLATION_KEYS = {
     CONDITION: 'experiments.details.conditions.condition.text',

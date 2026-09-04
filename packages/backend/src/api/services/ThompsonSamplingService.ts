@@ -6,7 +6,7 @@ export interface ConditionPrior {
 }
 
 export interface ConditionRewardSummary {
-  conditionCode: string;
+  conditionId: string;
   successCount: number;
   failureCount: number;
   totalCount: number;
@@ -96,40 +96,44 @@ export class ThompsonSamplingService {
   /**
    * Select a condition using Thompson Sampling.
    *
-   * @param conditionCodes - All eligible condition codes for this experiment
+   * @param conditionIds - All eligible condition IDs for this experiment
    * @param rewardSummaries - Accumulated reward counts per condition
    * @param totalRewardCount - Total number of reward observations collected across all conditions,
    *   including any not yet folded into the posteriors by a pending batch flush
    * @param config - Optional algorithm parameters (priors, warmup, thresholds)
    */
   selectCondition(
-    conditionCodes: string[],
+    conditionIds: string[],
     rewardSummaries: ConditionRewardSummary[],
     totalRewardCount: number,
     config: ThompsonSamplingConfig = {}
   ): string {
-    if (conditionCodes.length === 0) {
+    if (conditionIds.length === 0) {
       throw new Error('Cannot select from an empty condition list');
     }
-    if (conditionCodes.length === 1) {
-      return conditionCodes[0];
+    if (conditionIds.length === 1) {
+      return conditionIds[0];
     }
 
     // Warmup phase: use uniform random until sufficient reward evidence has been collected.
     // Gated on reward observations (not assignments) — the posteriors only move when rewards
     // arrive, so that's the right measure of "how much evidence do we actually have."
     if (config.warmupThreshold !== undefined && totalRewardCount <= config.warmupThreshold) {
-      return this.uniformRandom(conditionCodes);
+      return this.uniformRandom(conditionIds);
     }
 
-    const summaryMap = new Map(rewardSummaries.map((s) => [s.conditionCode, s]));
+    const summaryMap = new Map(rewardSummaries.map((s) => [s.conditionId, s]));
 
-    const draws = conditionCodes.map((code) => {
-      const summary = summaryMap.get(code);
-      const prior = config.priors?.[code] ?? DEFAULT_PRIOR;
-      const alpha = prior.success + (summary?.successCount ?? 0);
-      const beta = prior.failure + (summary?.failureCount ?? 0);
-      return { code, draw: this.sampleBeta(alpha, beta) };
+    const draws = conditionIds.map((conditionId) => {
+      const summary = summaryMap.get(conditionId);
+      const prior = config.priors?.[conditionId] ?? DEFAULT_PRIOR;
+      const { alpha, beta } = this.computePosterior(
+        prior.success,
+        prior.failure,
+        summary?.successCount ?? 0,
+        summary?.failureCount ?? 0
+      );
+      return { conditionId, draw: this.sampleBeta(alpha, beta) };
     });
 
     draws.sort((a, b) => b.draw - a.draw);
@@ -140,14 +144,44 @@ export class ThompsonSamplingService {
       draws.length >= 2 &&
       draws[0].draw - draws[1].draw < config.minimumDrawDifference
     ) {
-      return this.uniformRandom(conditionCodes);
+      return this.uniformRandom(conditionIds);
     }
 
-    return draws[0].code;
+    return draws[0].conditionId;
   }
 
-  private uniformRandom(conditionCodes: string[]): string {
-    return conditionCodes[Math.floor(Math.random() * conditionCodes.length)];
+  /**
+   * Beta posterior parameters for a condition, given its Beta(priorSuccess, priorFailure) prior and
+   * its accumulated success/failure counts. Shared by selectCondition() (which condition to draw)
+   * and ThompsonSamplingExperimentCrudService.getRewardsSummary() (the same math, for display) so
+   * a future correction to this formula can't be applied to one and missed in the other.
+   */
+  computePosterior(
+    priorSuccess: number,
+    priorFailure: number,
+    successCount: number,
+    failureCount: number
+  ): { alpha: number; beta: number } {
+    return { alpha: priorSuccess + successCount, beta: priorFailure + failureCount };
+  }
+
+  /**
+   * Builds a `{ [conditionId]: { success, failure } }` prior record from posterior state rows.
+   * Shared by ExperimentAssignmentService (feeding the algorithm's config) and
+   * ThompsonSamplingExperimentCrudService (attaching config to API responses/export).
+   */
+  buildPriorsRecord(
+    states: Array<{ conditionId: string; priorSuccess: number; priorFailure: number }>
+  ): Record<string, ConditionPrior> {
+    const priors: Record<string, ConditionPrior> = {};
+    states.forEach((state) => {
+      priors[state.conditionId] = { success: state.priorSuccess, failure: state.priorFailure };
+    });
+    return priors;
+  }
+
+  private uniformRandom(conditionIds: string[]): string {
+    return conditionIds[Math.floor(Math.random() * conditionIds.length)];
   }
 
   // Beta(α, β) sampled as the ratio of two independent Gamma samples

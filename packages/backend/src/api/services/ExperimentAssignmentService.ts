@@ -73,12 +73,7 @@ import { ExperimentPrecomputedSegmentService } from './ExperimentPrecomputedSegm
 import { ExperimentPrecomputedSegment } from '../models/ExperimentPrecomputedSegment';
 import { precomputedGroupKey } from './precomputedSegmentHelpers';
 import { EntitySegmentMembers, EntitySegmentResolutionInput, SegmentGroupMember } from '../../types';
-import {
-  ThompsonSamplingService,
-  ConditionPrior,
-  ThompsonSamplingConfig,
-  ConditionRewardSummary,
-} from './ThompsonSamplingService';
+import { ThompsonSamplingService, ThompsonSamplingConfig, ConditionRewardSummary } from './ThompsonSamplingService';
 import { ThompsonSamplingExperimentConfigRepository } from '../repositories/ThompsonSamplingExperimentConfigRepository';
 
 export interface FactorialConditionResult {
@@ -2092,16 +2087,13 @@ export class ExperimentAssignmentService {
       const conditionIds = experiment.conditions.map((c) => c.id);
 
       const rewardSummaries: ConditionRewardSummary[] = config.conditionPosteriorStates.map((state) => ({
-        conditionCode: state.conditionId,
+        conditionId: state.conditionId,
         successCount: state.successCount,
         failureCount: state.failureCount,
         totalCount: state.totalCount,
       }));
 
-      const priors: Record<string, ConditionPrior> = {};
-      config.conditionPosteriorStates.forEach((state) => {
-        priors[state.conditionId] = { success: state.priorSuccess, failure: state.priorFailure };
-      });
+      const priors = this.thompsonSamplingService.buildPriorsRecord(config.conditionPosteriorStates);
 
       // Include pendingTotalCount so a batchSize buffer awaiting flush still counts toward
       // warmup evidence — rewards are "collected" as soon as recordReward() persists them,

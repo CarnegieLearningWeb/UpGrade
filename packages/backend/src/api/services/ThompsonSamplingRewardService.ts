@@ -127,13 +127,13 @@ export class ThompsonSamplingRewardService {
 
   /**
    * Fold a reward into the posterior (successCount/totalCount), or buffer it as pending until
-   * batchSize reward observations have accumulated across the whole experiment (all conditions
-   * combined, not just this one) — batchSize paces how often posteriors move, and a reward for
-   * any condition is evidence toward that same shared cadence. Once the threshold is hit, every
-   * condition's pending buffer is flushed, not just the one that tipped it over, so a condition
-   * with few rewards still gets its pending counts folded in as soon as the batch closes. The raw
-   * event is always persisted to ThompsonSamplingReward regardless of batching — batching only
-   * delays when a reward affects which condition gets sampled next, it never drops data.
+   * batchSize reward observations have accumulated across the whole experiment — see
+   * flushIfBatchReady() for why that check spans every condition, not just this one. The raw event
+   * is always persisted to ThompsonSamplingReward regardless of batching (in processReward(),
+   * before this is called) — batching only delays when a reward affects which condition gets
+   * sampled next, it never drops data. An unset/≤1 batchSize applies the reward immediately, via
+   * the same flushPendingRewards() a real batch flush uses, so there's one code path for "fold a
+   * reward's counts into successCount/failureCount/totalCount."
    */
   private async applyOrBufferReward(
     state: Pick<ConditionPosteriorState, 'id' | 'configId'>,
@@ -143,12 +143,7 @@ export class ThompsonSamplingRewardService {
     const effectiveBatchSize = batchSize && batchSize > 1 ? batchSize : 1;
 
     if (effectiveBatchSize <= 1) {
-      await this.posteriorStateRepository.increment({ id: state.id }, 'totalCount', 1);
-      if (success) {
-        await this.posteriorStateRepository.increment({ id: state.id }, 'successCount', 1);
-      } else {
-        await this.posteriorStateRepository.increment({ id: state.id }, 'failureCount', 1);
-      }
+      await this.flushPendingRewards(state.id, success ? 1 : 0, success ? 0 : 1, 1);
       return;
     }
 
@@ -159,16 +154,30 @@ export class ThompsonSamplingRewardService {
       await this.posteriorStateRepository.increment({ id: state.id }, 'pendingFailureCount', 1);
     }
 
-    const experimentStates = await this.posteriorStateRepository.findByConfigId(state.configId);
+    await this.flushIfBatchReady(state.configId, effectiveBatchSize);
+  }
+
+  /**
+   * batchSize paces how often posteriors move for the experiment as a whole, and a reward for any
+   * condition is evidence toward that same shared cadence — so the pending count is summed across
+   * every condition in the config, not just the one that just received a reward. Once the shared
+   * total reaches batchSize, every condition's pending buffer is flushed, not just the one that
+   * tipped it over, so a low-volume condition still gets its pending counts folded in as soon as
+   * the batch closes.
+   */
+  private async flushIfBatchReady(configId: string, effectiveBatchSize: number): Promise<void> {
+    const experimentStates = await this.posteriorStateRepository.findByConfigId(configId);
     const totalPending = experimentStates.reduce((sum, s) => sum + s.pendingTotalCount, 0);
 
-    if (totalPending >= effectiveBatchSize) {
-      await Promise.all(
-        experimentStates
-          .filter((s) => s.pendingTotalCount > 0)
-          .map((s) => this.flushPendingRewards(s.id, s.pendingSuccessCount, s.pendingFailureCount, s.pendingTotalCount))
-      );
+    if (totalPending < effectiveBatchSize) {
+      return;
     }
+
+    await Promise.all(
+      experimentStates
+        .filter((s) => s.pendingTotalCount > 0)
+        .map((s) => this.flushPendingRewards(s.id, s.pendingSuccessCount, s.pendingFailureCount, s.pendingTotalCount))
+    );
   }
 
   private async flushPendingRewards(

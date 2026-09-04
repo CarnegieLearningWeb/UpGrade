@@ -34,7 +34,11 @@ describe('Experiment Controller Testing', () => {
     Container.set(ExperimentService, new ExperimentServiceMock());
     Container.set(ExperimentAssignmentService, new ExperimentAssignmentServiceMock());
     Container.set(ImportExportService, new ImportExportServiceMock());
-    Container.set(ThompsonSamplingExperimentCrudService, {} as any);
+    Container.set(ThompsonSamplingExperimentCrudService, {
+      createConfigIfApplicable: jest.fn().mockResolvedValue(undefined),
+      syncConfigIfApplicable: jest.fn().mockResolvedValue(undefined),
+      attachConfigToExperiment: jest.fn().mockImplementation((experiment) => Promise.resolve(experiment)),
+    } as any);
   });
 
   afterAll(() => {

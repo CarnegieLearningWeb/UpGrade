@@ -80,7 +80,7 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
   }
 
   isThompsonSamplingExperiment(experiment: Experiment) {
-    return this.thompsonSamplingHelperService.isThompsonSamplingAlgorithm(experiment?.assignmentAlgorithm);
+    return this.thompsonSamplingHelperService.isThompsonSamplingExperiment(experiment);
   }
 
   onAddConditionClick(appContext: string, experimentId: string): void {

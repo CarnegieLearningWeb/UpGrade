@@ -12,6 +12,18 @@ export class ThompsonSamplingExperimentConfigRepository extends Repository<Thomp
       .getOne();
   }
 
+  /**
+   * Same as findByExperimentId, but also joins each posterior state's condition — needed to display
+   * the condition's code/order alongside its reward counts (e.g. the rewards summary endpoint).
+   */
+  public async findByExperimentIdWithConditions(experimentId: string): Promise<ThompsonSamplingExperimentConfig> {
+    return this.createQueryBuilder('config')
+      .leftJoinAndSelect('config.conditionPosteriorStates', 'conditionPosteriorStates')
+      .leftJoinAndSelect('conditionPosteriorStates.condition', 'condition')
+      .where('config.experimentId = :experimentId', { experimentId })
+      .getOne();
+  }
+
   public async findByDecisionPoint(
     context: string,
     site: string,

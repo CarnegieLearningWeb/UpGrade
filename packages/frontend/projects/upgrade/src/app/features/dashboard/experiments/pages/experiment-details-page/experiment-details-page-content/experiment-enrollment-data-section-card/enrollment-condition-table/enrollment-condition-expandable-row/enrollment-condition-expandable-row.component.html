@@ -10,7 +10,7 @@
         style="justify-content: left; padding-left: 16px"
         class="ft-14-600"
         *matHeaderCellDef
-        [matTooltip]="'experiments.details.conditions.weight-adaptive-tooltip.text' | translate"
+        [matTooltip]="WEIGHT_ADAPTIVE_TOOLTIP_KEY | translate"
         [matTooltipDisabled]="!isThompsonSamplingExperiment(experiment)"
         matTooltipPosition="above"
       >
@@ -28,7 +28,7 @@
         style="justify-content: left"
         class="ft-14-400"
         *matCellDef="let element; let i = dataIndex"
-        [matTooltip]="'experiments.details.conditions.weight-adaptive-tooltip.text' | translate"
+        [matTooltip]="WEIGHT_ADAPTIVE_TOOLTIP_KEY | translate"
         [matTooltipDisabled]="!isThompsonSamplingExperiment(experiment)"
         matTooltipPosition="above"
       >

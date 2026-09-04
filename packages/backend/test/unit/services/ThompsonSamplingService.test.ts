@@ -47,8 +47,8 @@ describe('ThompsonSamplingService', () => {
         const conditions = ['A', 'B'];
         // A has an overwhelmingly dominant posterior; without warmup it would always win
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'A', successCount: 1000, failureCount: 0, totalCount: 1000 },
-          { conditionCode: 'B', successCount: 0, failureCount: 1000, totalCount: 1000 },
+          { conditionId: 'A', successCount: 1000, failureCount: 0, totalCount: 1000 },
+          { conditionId: 'B', successCount: 0, failureCount: 1000, totalCount: 1000 },
         ];
         const config: ThompsonSamplingConfig = { warmupThreshold: 50 };
 
@@ -63,8 +63,8 @@ describe('ThompsonSamplingService', () => {
       it('exits warmup once reward count exceeds threshold', () => {
         const conditions = ['A', 'B'];
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'A', successCount: 1000, failureCount: 0, totalCount: 1000 },
-          { conditionCode: 'B', successCount: 0, failureCount: 1000, totalCount: 1000 },
+          { conditionId: 'A', successCount: 1000, failureCount: 0, totalCount: 1000 },
+          { conditionId: 'B', successCount: 0, failureCount: 1000, totalCount: 1000 },
         ];
         const config: ThompsonSamplingConfig = { warmupThreshold: 10 };
 
@@ -84,8 +84,8 @@ describe('ThompsonSamplingService', () => {
       it('selects the condition with a better reward history reliably', () => {
         const conditions = ['good', 'bad'];
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'good', successCount: 90, failureCount: 10, totalCount: 100 },
-          { conditionCode: 'bad', successCount: 10, failureCount: 90, totalCount: 100 },
+          { conditionId: 'good', successCount: 90, failureCount: 10, totalCount: 100 },
+          { conditionId: 'bad', successCount: 10, failureCount: 90, totalCount: 100 },
         ];
 
         let goodCount = 0;
@@ -101,10 +101,10 @@ describe('ThompsonSamplingService', () => {
       it('handles three or more conditions — clear winner dominates', () => {
         const conditions = ['A', 'B', 'C', 'D'];
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'A', successCount: 5, failureCount: 95, totalCount: 100 },
-          { conditionCode: 'B', successCount: 90, failureCount: 10, totalCount: 100 },
-          { conditionCode: 'C', successCount: 10, failureCount: 90, totalCount: 100 },
-          { conditionCode: 'D', successCount: 5, failureCount: 95, totalCount: 100 },
+          { conditionId: 'A', successCount: 5, failureCount: 95, totalCount: 100 },
+          { conditionId: 'B', successCount: 90, failureCount: 10, totalCount: 100 },
+          { conditionId: 'C', successCount: 10, failureCount: 90, totalCount: 100 },
+          { conditionId: 'D', successCount: 5, failureCount: 95, totalCount: 100 },
         ];
 
         let bCount = 0;
@@ -158,7 +158,7 @@ describe('ThompsonSamplingService', () => {
       it('handles a condition with no reward summary entry (defaults to prior)', () => {
         const conditions = ['A', 'B'];
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'A', successCount: 50, failureCount: 50, totalCount: 100 },
+          { conditionId: 'A', successCount: 50, failureCount: 50, totalCount: 100 },
           // B has no entry — treated as zero rewards, uses prior only
         ];
 
@@ -185,8 +185,8 @@ describe('ThompsonSamplingService', () => {
       it('does not interfere when threshold is zero', () => {
         const conditions = ['A', 'B'];
         const rewardSummaries: ConditionRewardSummary[] = [
-          { conditionCode: 'A', successCount: 90, failureCount: 10, totalCount: 100 },
-          { conditionCode: 'B', successCount: 10, failureCount: 90, totalCount: 100 },
+          { conditionId: 'A', successCount: 90, failureCount: 10, totalCount: 100 },
+          { conditionId: 'B', successCount: 10, failureCount: 90, totalCount: 100 },
         ];
         const config: ThompsonSamplingConfig = { minimumDrawDifference: 0 };
 
@@ -198,6 +198,36 @@ describe('ThompsonSamplingService', () => {
           }
         }
         expect(aCount / runs).toBeGreaterThan(0.85);
+      });
+
+      it('compares the top two draws by value, not the first two conditions by list order', () => {
+        // The MoocLet reference this threshold is based on (tspostdiff_thresh) hardcodes "the
+        // first two versions" for its diff check, which only happens to work because it assumes
+        // exactly 2 arms. With 3+ conditions that would mean comparing whichever two conditions
+        // come first in the list, not the two that are actually closest. Here B's posterior is far
+        // below A/C's, so a "first two by list order" comparison (B vs A) would see a huge gap and
+        // almost never fall back to uniform — even though A and C (identically strong) draw values
+        // within minimumDrawDifference of each other very often and should trigger the fallback.
+        const conditions = ['B', 'A', 'C'];
+        const rewardSummaries: ConditionRewardSummary[] = [
+          { conditionId: 'A', successCount: 99, failureCount: 0, totalCount: 99 },
+          { conditionId: 'B', successCount: 0, failureCount: 99, totalCount: 99 },
+          { conditionId: 'C', successCount: 99, failureCount: 0, totalCount: 99 },
+        ];
+        const config: ThompsonSamplingConfig = { minimumDrawDifference: 0.3 };
+
+        let bCount = 0;
+        const runs = 500;
+        for (let i = 0; i < runs; i++) {
+          if (service.selectCondition(conditions, rewardSummaries, runs, config) === 'B') {
+            bCount++;
+          }
+        }
+
+        // B only ever wins via the uniform fallback, so a meaningful rate here proves the
+        // fallback is firing off of A/C's close draws — a first-two-by-list-order comparison
+        // would keep this near zero instead.
+        expect(bCount / runs).toBeGreaterThan(0.05);
       });
     });
   });

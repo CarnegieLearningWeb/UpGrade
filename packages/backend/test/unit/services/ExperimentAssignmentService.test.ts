@@ -2283,7 +2283,10 @@ describe('Experiment Assignment Service Test', () => {
           ],
         }),
       };
-      testedModule.thompsonSamplingService = { selectCondition: sandbox.stub().returns('condition-a') };
+      testedModule.thompsonSamplingService = {
+        selectCondition: sandbox.stub().returns('condition-a'),
+        buildPriorsRecord: sandbox.stub().returns({}),
+      };
 
       await (testedModule as any).assignThompsonSampling(thompsonExperiment, thompsonUser, loggerMock);
 

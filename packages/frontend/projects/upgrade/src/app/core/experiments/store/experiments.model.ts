@@ -604,6 +604,10 @@ export const THOMPSON_SAMPLING_OVERVIEW_PARAM_LABELS = {
   MINIMUM_DRAW_DIFFERENCE: 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.label.text',
 };
 
+// Shared by the conditions table and the enrollment expandable row — both hide/tooltip the weight
+// column the same way for adaptive experiments, and must reference the same translation key.
+export const THOMPSON_SAMPLING_WEIGHT_TOOLTIP_KEY = 'experiments.details.conditions.weight-adaptive-tooltip.text';
+
 export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
 
 export interface ExperimentState {

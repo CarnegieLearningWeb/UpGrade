@@ -1,5 +1,8 @@
 import { Component, ChangeDetectionStrategy, Input, OnDestroy, forwardRef } from '@angular/core';
-import { ExperimentVM } from '../../../../../../../../../core/experiments/store/experiments.model';
+import {
+  ExperimentVM,
+  THOMPSON_SAMPLING_WEIGHT_TOOLTIP_KEY,
+} from '../../../../../../../../../core/experiments/store/experiments.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,6 +30,8 @@ export class EnrollmentConditionExpandableRowComponent implements OnDestroy {
   @Input() displayedColumns: string[];
   @Input() referenceId: string;
   @Input() experiment: ExperimentVM;
+
+  readonly WEIGHT_ADAPTIVE_TOOLTIP_KEY = THOMPSON_SAMPLING_WEIGHT_TOOLTIP_KEY;
 
   expandedId = '';
   columnHeaders = {};
@@ -56,7 +61,7 @@ export class EnrollmentConditionExpandableRowComponent implements OnDestroy {
   }
 
   isThompsonSamplingExperiment(experiment: ExperimentVM): boolean {
-    return this.thompsonSamplingHelperService.isThompsonSamplingAlgorithm(experiment?.assignmentAlgorithm);
+    return this.thompsonSamplingHelperService.isThompsonSamplingExperiment(experiment);
   }
 
   toggleExpandableSymbol(id: string): void {

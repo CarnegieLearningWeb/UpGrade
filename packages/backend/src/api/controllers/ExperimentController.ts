@@ -31,14 +31,7 @@ import { ThompsonSamplingExperimentCrudService } from '../services/ThompsonSampl
 import { Response } from 'express';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
-import {
-  ASSIGNMENT_ALGORITHM,
-  CACHE_PREFIX,
-  IImportError,
-  LIST_FILTER_MODE,
-  SERVER_ERROR,
-  ExperimentRewardsSummary,
-} from 'upgrade_types';
+import { CACHE_PREFIX, IImportError, LIST_FILTER_MODE, SERVER_ERROR, ExperimentRewardsSummary } from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
 import { getInstanceId } from '../../lib/instanceIdentity';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
@@ -917,7 +910,7 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
     const experiment = await this.experimentService.getSingleExperiment(id, request.logger);
-    return this.attachThompsonSamplingConfig(experiment);
+    return this.thompsonSamplingCrudService.attachConfigToExperiment(experiment);
   }
 
   @Get('/rewards/:id')
@@ -1054,15 +1047,9 @@ export class ExperimentController {
 
     const createdExperiment = await this.experimentService.create(experiment, currentUser, request.logger);
 
-    if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
-      await this.thompsonSamplingCrudService.createConfig(
-        createdExperiment.id,
-        createdExperiment.conditions,
-        experiment.thompsonSamplingConfig ?? {}
-      );
-    }
+    await this.thompsonSamplingCrudService.createConfigIfApplicable(experiment, createdExperiment);
 
-    return this.attachThompsonSamplingConfig(createdExperiment);
+    return this.thompsonSamplingCrudService.attachConfigToExperiment(createdExperiment);
   }
 
   /**
@@ -1252,14 +1239,9 @@ export class ExperimentController {
 
     const updatedExperiment = await this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
 
-    if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
-      await this.thompsonSamplingCrudService.syncConditions(id, updatedExperiment.conditions);
-      if (experiment.thompsonSamplingConfig) {
-        await this.thompsonSamplingCrudService.updateConfig(id, experiment.thompsonSamplingConfig);
-      }
-    }
+    await this.thompsonSamplingCrudService.syncConfigIfApplicable(experiment, updatedExperiment);
 
-    return this.attachThompsonSamplingConfig(updatedExperiment);
+    return this.thompsonSamplingCrudService.attachConfigToExperiment(updatedExperiment);
   }
 
   /**
@@ -1966,25 +1948,5 @@ export class ExperimentController {
       capacityUsedPercent: Math.round((allKeys.length / config.maxKeys) * 100),
       summary,
     };
-  }
-
-  private async attachThompsonSamplingConfig(experiment: ExperimentDTO): Promise<ExperimentDTO> {
-    if (experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
-      const config = await this.thompsonSamplingCrudService.getConfigForExperiment(experiment.id);
-      if (config) {
-        const priors: Record<string, { success: number; failure: number }> = {};
-        (config.conditionPosteriorStates ?? []).forEach((state) => {
-          priors[state.conditionId] = { success: state.priorSuccess, failure: state.priorFailure };
-        });
-
-        experiment.thompsonSamplingConfig = {
-          warmupThreshold: config.warmupThreshold,
-          minimumDrawDifference: config.minimumDrawDifference,
-          batchSize: config.batchSize,
-          priors,
-        };
-      }
-    }
-    return experiment;
   }
 }

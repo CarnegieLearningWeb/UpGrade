@@ -5,7 +5,8 @@ import { ConditionPosteriorStateRepository } from '../repositories/ConditionPost
 import { ThompsonSamplingExperimentConfig } from '../models/ThompsonSamplingExperimentConfig';
 import { ThompsonSamplingService } from './ThompsonSamplingService';
 import { CacheService } from './CacheService';
-import { CACHE_PREFIX, ExperimentRewardsSummary } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, CACHE_PREFIX, ExperimentRewardsSummary } from 'upgrade_types';
+import { ExperimentDTO } from '../DTO/ExperimentDTO';
 
 type ConditionRef = { id: string };
 
@@ -28,6 +29,63 @@ export class ThompsonSamplingExperimentCrudService {
 
   public async getConfigForExperiment(experimentId: string): Promise<ThompsonSamplingExperimentConfig | null> {
     return this.configRepository.findByExperimentId(experimentId);
+  }
+
+  /**
+   * Single gate for "does this experiment need a Thompson Sampling config", so every experiment
+   * creation path (single create, bulk import, batch create) gets config/posterior rows the same
+   * way instead of each caller re-checking assignmentAlgorithm itself. Only `priors`/`warmupThreshold`/
+   * `batchSize`/`minimumDrawDifference` from `experiment.thompsonSamplingConfig` are ever read here —
+   * there is no field for success/failure counts, so posterior state always starts at zero regardless
+   * of what the caller's source experiment (e.g. an imported/exported one) previously accumulated.
+   */
+  public async createConfigIfApplicable(experiment: ExperimentDTO, createdExperiment: ExperimentDTO): Promise<void> {
+    if (experiment.assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+      return;
+    }
+    await this.createConfig(
+      createdExperiment.id,
+      createdExperiment.conditions,
+      experiment.thompsonSamplingConfig ?? {}
+    );
+  }
+
+  /**
+   * Update-path counterpart to createConfigIfApplicable: keeps posterior rows in sync with the
+   * current condition list and applies any prior/threshold changes, only for Thompson Sampling
+   * experiments.
+   */
+  public async syncConfigIfApplicable(experiment: ExperimentDTO, updatedExperiment: ExperimentDTO): Promise<void> {
+    if (experiment.assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+      return;
+    }
+    await this.syncConditions(updatedExperiment.id, updatedExperiment.conditions);
+    if (experiment.thompsonSamplingConfig) {
+      await this.updateConfig(updatedExperiment.id, experiment.thompsonSamplingConfig);
+    }
+  }
+
+  /**
+   * Populates `experiment.thompsonSamplingConfig` from the stored config/posterior rows for API
+   * responses and experiment export. Only ever reads `priorSuccess`/`priorFailure` (the Beta seed) —
+   * never `successCount`/`failureCount` — so exporting an experiment and re-importing it carries the
+   * configured priors forward without also carrying forward accumulated reward evidence.
+   */
+  public async attachConfigToExperiment<T extends ExperimentDTO>(experiment: T): Promise<T> {
+    if (experiment?.assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+      return experiment;
+    }
+    const config = await this.getConfigForExperiment(experiment.id);
+    if (!config) {
+      return experiment;
+    }
+    experiment.thompsonSamplingConfig = {
+      warmupThreshold: config.warmupThreshold,
+      minimumDrawDifference: config.minimumDrawDifference,
+      batchSize: config.batchSize,
+      priors: this.thompsonSamplingService.buildPriorsRecord(config.conditionPosteriorStates ?? []),
+    };
+    return experiment;
   }
 
   public async createConfig(
@@ -95,16 +153,12 @@ export class ThompsonSamplingExperimentCrudService {
   }
 
   /**
-   * Keeps ConditionPosteriorState rows in sync with the experiment's current conditions.
-   * Adds rows for new conditions (using default priors) and removes rows for deleted conditions.
+   * Per-condition reward totals and estimated win-rate weight for the experiment overview/summary
+   * display. Read-only aggregation — does not touch ConditionPosteriorState rows (see
+   * syncConditions() for that).
    */
   public async getRewardsSummary(experimentId: string): Promise<ExperimentRewardsSummary> {
-    const config = await this.configRepository
-      .createQueryBuilder('config')
-      .leftJoinAndSelect('config.conditionPosteriorStates', 'states')
-      .leftJoinAndSelect('states.condition', 'condition')
-      .where('config.experimentId = :experimentId', { experimentId })
-      .getOne();
+    const config = await this.configRepository.findByExperimentIdWithConditions(experimentId);
 
     if (!config) return [];
 
@@ -112,8 +166,12 @@ export class ThompsonSamplingExperimentCrudService {
       const successes = state.successCount;
       const failures = state.failureCount;
       const successRate = state.totalCount > 0 ? ((successes / state.totalCount) * 100).toFixed(1) + '%' : '0.0%';
-      const alpha = state.priorSuccess + state.successCount;
-      const beta = state.priorFailure + state.failureCount;
+      const { alpha, beta } = this.thompsonSamplingService.computePosterior(
+        state.priorSuccess,
+        state.priorFailure,
+        state.successCount,
+        state.failureCount
+      );
       return {
         code: state.condition?.conditionCode ?? state.conditionId,
         alpha,
@@ -140,6 +198,10 @@ export class ThompsonSamplingExperimentCrudService {
       .sort((a, b) => a.order - b.order);
   }
 
+  /**
+   * Keeps ConditionPosteriorState rows in sync with the experiment's current conditions.
+   * Adds rows for new conditions (using default priors) and removes rows for deleted conditions.
+   */
   public async syncConditions(experimentId: string, currentConditions: ConditionRef[]): Promise<void> {
     const config = await this.configRepository.findByExperimentId(experimentId);
     if (!config) return;
