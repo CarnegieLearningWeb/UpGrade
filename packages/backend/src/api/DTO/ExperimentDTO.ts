@@ -381,6 +381,7 @@ abstract class BaseExperimentWithoutPayload {
 
   @IsOptional()
   @IsEnum(ASSIGNMENT_ALGORITHM)
+  @IsAssignmentAlgorithmCompatibleWithUnit()
   public assignmentAlgorithm?: ASSIGNMENT_ALGORITHM;
 
   // TODO add conditional validity here ie endOn is null
@@ -491,6 +492,37 @@ function IsAssignmentUnitGroupConsistent(validationOptions?: ValidationOptions) 
         },
         defaultMessage(args: ValidationArguments) {
           return 'When assignmentUnit is GROUP, group must be defined. When assignmentUnit is not GROUP, group must be null or undefined.';
+        },
+      },
+    });
+  };
+}
+
+/**
+ * Within-Subjects assignment never runs through assignExperiment()/assignThompsonSampling() --
+ * the individual enrollment's condition is always stored as null, with the per-repeat condition
+ * tracked separately via RepeatedEnrollment instead. Thompson Sampling's reward path then reads
+ * that null conditionId when trying to record a reward, which can never succeed. Reject the
+ * combination outright rather than let it silently produce an experiment whose rewards can never
+ * be recorded.
+ */
+function IsAssignmentAlgorithmCompatibleWithUnit(validationOptions?: ValidationOptions) {
+  return function (object: any, propertyName: string) {
+    registerDecorator({
+      name: 'isAssignmentAlgorithmCompatibleWithUnit',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(assignmentAlgorithmValue: any, args: ValidationArguments) {
+          const experiment = args.object as any;
+          return !(
+            assignmentAlgorithmValue === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING &&
+            experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+          );
+        },
+        defaultMessage() {
+          return 'Thompson Sampling cannot be used with Within-Subjects assignment: rewards cannot be attributed to a condition under that assignment unit.';
         },
       },
     });

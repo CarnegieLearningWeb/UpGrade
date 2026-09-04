@@ -42,7 +42,14 @@ export class ImportExportService {
       experiments.map(async (experiment) => {
         try {
           const result = await this.experimentService.create(experiment, currentUser, logger);
-          await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(experiment, result);
+          try {
+            await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(experiment, result);
+          } catch (configError) {
+            // Same reasoning as the single-experiment POST /experiments path: don't leave an
+            // orphaned, config-less Thompson Sampling experiment behind when this step fails.
+            await this.experimentService.delete(result.id, currentUser, { logger });
+            throw configError;
+          }
           createdExperiments.push(await this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(result));
         } catch (error) {
           logger.error({

@@ -1,4 +1,5 @@
 import { Service } from 'typedi';
+import { EntityManager } from 'typeorm';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { BinaryRewardAllowedValue, CACHE_PREFIX, EXPERIMENT_STATE } from 'upgrade_types';
@@ -127,13 +128,22 @@ export class ThompsonSamplingRewardService {
 
   /**
    * Fold a reward into the posterior (successCount/totalCount), or buffer it as pending until
-   * batchSize reward observations have accumulated across the whole experiment — see
-   * flushIfBatchReady() for why that check spans every condition, not just this one. The raw event
-   * is always persisted to ThompsonSamplingReward regardless of batching (in processReward(),
-   * before this is called) — batching only delays when a reward affects which condition gets
-   * sampled next, it never drops data. An unset/≤1 batchSize applies the reward immediately, via
-   * the same flushPendingRewards() a real batch flush uses, so there's one code path for "fold a
-   * reward's counts into successCount/failureCount/totalCount."
+   * batchSize reward observations have accumulated across the whole experiment. The raw event is
+   * always persisted to ThompsonSamplingReward regardless of batching (in processReward(), before
+   * this is called) — batching only delays when a reward affects which condition gets sampled
+   * next, it never drops data. An unset/≤1 batchSize applies the reward immediately.
+   *
+   * Everything below runs inside one transaction that takes a pessimistic write lock on every
+   * ConditionPosteriorState row for this config up front (ordered by id, to avoid deadlocking
+   * against a concurrent reward that locks the same rows). batchSize paces how often posteriors
+   * move for the experiment as a whole, and a reward for any condition is evidence toward that
+   * same shared cadence, so the "is the batch ready" check has to see a consistent snapshot across
+   * every condition, not just the one that just received a reward — without the lock, two rewards
+   * arriving close together could both read the same pending totals and double-apply them, or one
+   * could have its just-buffered increment silently overwritten by the other's flush-reset. Once
+   * the shared total reaches batchSize, every condition's pending buffer is flushed, not just the
+   * one that tipped it over, so a low-volume condition still gets its pending counts folded in as
+   * soon as the batch closes.
    */
   private async applyOrBufferReward(
     state: Pick<ConditionPosteriorState, 'id' | 'configId'>,
@@ -142,61 +152,52 @@ export class ThompsonSamplingRewardService {
   ): Promise<void> {
     const effectiveBatchSize = batchSize && batchSize > 1 ? batchSize : 1;
 
-    if (effectiveBatchSize <= 1) {
-      await this.flushPendingRewards(state.id, success ? 1 : 0, success ? 0 : 1, 1);
-      return;
-    }
+    await this.posteriorStateRepository.manager.transaction(async (manager) => {
+      const experimentStates = await manager
+        .createQueryBuilder(ConditionPosteriorState, 'state')
+        .where('state.configId = :configId', { configId: state.configId })
+        .orderBy('state.id', 'ASC')
+        .setLock('pessimistic_write')
+        .getMany();
 
-    await this.posteriorStateRepository.increment({ id: state.id }, 'pendingTotalCount', 1);
-    if (success) {
-      await this.posteriorStateRepository.increment({ id: state.id }, 'pendingSuccessCount', 1);
-    } else {
-      await this.posteriorStateRepository.increment({ id: state.id }, 'pendingFailureCount', 1);
-    }
+      const current = experimentStates.find((s) => s.id === state.id);
+      if (!current) {
+        return;
+      }
 
-    await this.flushIfBatchReady(state.configId, effectiveBatchSize);
+      current.pendingTotalCount += 1;
+      if (success) {
+        current.pendingSuccessCount += 1;
+      } else {
+        current.pendingFailureCount += 1;
+      }
+
+      if (effectiveBatchSize <= 1) {
+        await this.flushPendingRewards(manager, current);
+        return;
+      }
+
+      await manager.save(current);
+
+      const totalPending = experimentStates.reduce((sum, s) => sum + s.pendingTotalCount, 0);
+      if (totalPending < effectiveBatchSize) {
+        return;
+      }
+
+      await Promise.all(
+        experimentStates.filter((s) => s.pendingTotalCount > 0).map((s) => this.flushPendingRewards(manager, s))
+      );
+    });
   }
 
-  /**
-   * batchSize paces how often posteriors move for the experiment as a whole, and a reward for any
-   * condition is evidence toward that same shared cadence — so the pending count is summed across
-   * every condition in the config, not just the one that just received a reward. Once the shared
-   * total reaches batchSize, every condition's pending buffer is flushed, not just the one that
-   * tipped it over, so a low-volume condition still gets its pending counts folded in as soon as
-   * the batch closes.
-   */
-  private async flushIfBatchReady(configId: string, effectiveBatchSize: number): Promise<void> {
-    const experimentStates = await this.posteriorStateRepository.findByConfigId(configId);
-    const totalPending = experimentStates.reduce((sum, s) => sum + s.pendingTotalCount, 0);
-
-    if (totalPending < effectiveBatchSize) {
-      return;
-    }
-
-    await Promise.all(
-      experimentStates
-        .filter((s) => s.pendingTotalCount > 0)
-        .map((s) => this.flushPendingRewards(s.id, s.pendingSuccessCount, s.pendingFailureCount, s.pendingTotalCount))
-    );
-  }
-
-  private async flushPendingRewards(
-    stateId: string,
-    pendingSuccessCount: number,
-    pendingFailureCount: number,
-    pendingTotalCount: number
-  ): Promise<void> {
-    await this.posteriorStateRepository.increment({ id: stateId }, 'totalCount', pendingTotalCount);
-    if (pendingSuccessCount > 0) {
-      await this.posteriorStateRepository.increment({ id: stateId }, 'successCount', pendingSuccessCount);
-    }
-    if (pendingFailureCount > 0) {
-      await this.posteriorStateRepository.increment({ id: stateId }, 'failureCount', pendingFailureCount);
-    }
-    await this.posteriorStateRepository.update(
-      { id: stateId },
-      { pendingSuccessCount: 0, pendingFailureCount: 0, pendingTotalCount: 0 }
-    );
+  private async flushPendingRewards(manager: EntityManager, state: ConditionPosteriorState): Promise<void> {
+    state.totalCount += state.pendingTotalCount;
+    state.successCount += state.pendingSuccessCount;
+    state.failureCount += state.pendingFailureCount;
+    state.pendingTotalCount = 0;
+    state.pendingSuccessCount = 0;
+    state.pendingFailureCount = 0;
+    await manager.save(state);
   }
 
   /**

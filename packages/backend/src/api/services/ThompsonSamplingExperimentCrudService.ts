@@ -54,12 +54,28 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
   /**
    * Update-path counterpart to createConfigIfApplicable: keeps posterior rows in sync with the
    * current condition list and applies any prior/threshold changes, only for Thompson Sampling
-   * experiments.
+   * experiments. Also handles both directions of an algorithm change on an existing experiment:
+   * switching TO Thompson Sampling creates the config that createConfigIfApplicable never got a
+   * chance to (this is an update, not the original create), and switching AWAY FROM it deletes any
+   * config left over from before, so the reward path can't keep treating a now-non-adaptive
+   * experiment as Thompson Sampling.
    */
   public async syncConfigIfApplicable(experiment: ExperimentDTO, updatedExperiment: ExperimentDTO): Promise<void> {
     if (experiment.assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+      await this.deleteConfigIfExists(updatedExperiment.id);
       return;
     }
+
+    const existingConfig = await this.getConfigForExperiment(updatedExperiment.id);
+    if (!existingConfig) {
+      await this.createConfig(
+        updatedExperiment.id,
+        updatedExperiment.conditions,
+        experiment.thompsonSamplingConfig ?? {}
+      );
+      return;
+    }
+
     await this.syncConditions(updatedExperiment.id, updatedExperiment.conditions);
     if (experiment.thompsonSamplingConfig) {
       await this.updateConfig(updatedExperiment.id, experiment.thompsonSamplingConfig);
@@ -120,14 +136,24 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
   }
 
   public async updateConfig(experimentId: string, params: ThompsonSamplingConfigParams): Promise<void> {
-    await this.configRepository.update(
-      { experimentId },
-      {
-        warmupThreshold: params.warmupThreshold ?? null,
-        minimumDrawDifference: params.minimumDrawDifference ?? null,
-        batchSize: params.batchSize ?? null,
-      }
-    );
+    // Only touch fields the caller actually provided -- `params.field ?? null` would otherwise
+    // silently clear any field a partial payload omits, since each is independently optional.
+    const fieldsToUpdate: Partial<
+      Pick<ThompsonSamplingExperimentConfig, 'warmupThreshold' | 'minimumDrawDifference' | 'batchSize'>
+    > = {};
+    if (params.warmupThreshold !== undefined) {
+      fieldsToUpdate.warmupThreshold = params.warmupThreshold;
+    }
+    if (params.minimumDrawDifference !== undefined) {
+      fieldsToUpdate.minimumDrawDifference = params.minimumDrawDifference;
+    }
+    if (params.batchSize !== undefined) {
+      fieldsToUpdate.batchSize = params.batchSize;
+    }
+
+    if (Object.keys(fieldsToUpdate).length > 0) {
+      await this.configRepository.update({ experimentId }, fieldsToUpdate);
+    }
 
     await this.invalidateConfigCache();
 
@@ -174,7 +200,7 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
         state.failureCount
       );
       return {
-        code: state.condition?.conditionCode ?? state.conditionId,
+        conditionId: state.conditionId,
         alpha,
         beta,
         conditionCode: state.condition?.conditionCode ?? state.conditionId,
@@ -187,14 +213,17 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
       };
     });
 
+    // Keyed by conditionId, not conditionCode: conditionCode has no uniqueness constraint (only
+    // ExperimentCondition.twoCharacterId is unique), so two conditions sharing a code would
+    // otherwise collide in the weight map and silently swap estimatedWeight values.
     const weightMap = this.thompsonSamplingService.estimateConditionWeights(
-      rows.map((r) => ({ code: r.code, alpha: r.alpha, beta: r.beta }))
+      rows.map((r) => ({ code: r.conditionId, alpha: r.alpha, beta: r.beta }))
     );
 
     return rows
-      .map(({ code: _code, alpha: _alpha, beta: _beta, ...rest }) => ({
+      .map(({ conditionId, alpha: _alpha, beta: _beta, ...rest }) => ({
         ...rest,
-        estimatedWeight: weightMap[rest.conditionCode],
+        estimatedWeight: weightMap[conditionId],
       }))
       .sort((a, b) => a.order - b.order);
   }
@@ -228,6 +257,22 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
     if (toRemove.length > 0) {
       await this.posteriorStateRepository.remove(toRemove);
     }
+  }
+
+  /**
+   * Deletes the config (and, via ON DELETE CASCADE, its posterior-state rows) when an experiment
+   * that used to be Thompson Sampling is switched to a different algorithm. Without this, the
+   * config row would linger and ThompsonSamplingExperimentConfigRepository's enrolling-state-only
+   * queries would keep finding it, letting the reward path treat a now-non-adaptive experiment as
+   * if it were still Thompson Sampling.
+   */
+  private async deleteConfigIfExists(experimentId: string): Promise<void> {
+    const config = await this.configRepository.findByExperimentId(experimentId);
+    if (!config) {
+      return;
+    }
+    await this.configRepository.remove(config);
+    await this.invalidateConfigCache();
   }
 
   /**

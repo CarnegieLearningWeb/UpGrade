@@ -1049,7 +1049,15 @@ export class ExperimentController {
 
     const createdExperiment = await this.experimentService.create(experiment, currentUser, request.logger);
 
-    await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(experiment, createdExperiment);
+    try {
+      await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(experiment, createdExperiment);
+    } catch (error) {
+      // The experiment row already committed above. Without this, a failed adaptive-config write
+      // would leave a Thompson Sampling experiment with no config/posterior rows behind -- invisible
+      // and permanently unable to assign a condition. Remove it rather than leave it orphaned.
+      await this.experimentService.delete(createdExperiment.id, currentUser, { logger: request.logger });
+      throw error;
+    }
 
     return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(createdExperiment);
   }

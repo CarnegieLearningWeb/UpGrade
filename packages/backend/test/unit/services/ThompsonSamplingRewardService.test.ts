@@ -116,6 +116,36 @@ describe('ThompsonSamplingRewardService', () => {
     return allStates().find((row) => row.id === id);
   }
 
+  // Fakes just enough of TypeORM's EntityManager for applyOrBufferReward()'s transaction: a
+  // transaction() that runs the callback inline (no real DB transaction/lock semantics -- those
+  // aren't meaningfully unit-testable without a real Postgres instance), a createQueryBuilder()
+  // that filters the in-memory rows by configId (the only clause the service issues), and a
+  // save() that persists in-memory since getMany() already hands back references into
+  // statesByCondition, not copies.
+  function makeFakeManager() {
+    const manager: any = {
+      transaction: (work: (m: any) => Promise<void>) => work(manager),
+      createQueryBuilder: () => {
+        let configIdFilter: string | undefined;
+        const builder: any = {
+          where: (_cond: string, params: { configId: string }) => {
+            configIdFilter = params.configId;
+            return builder;
+          },
+          orderBy: () => builder,
+          setLock: () => builder,
+          getMany: () => Promise.resolve(allStates().filter((row) => row.configId === configIdFilter)),
+        };
+        return builder;
+      },
+      save: jest.fn((entity: PosteriorStateRow) => {
+        Object.assign(findRowById(entity.id), entity);
+        return Promise.resolve(entity);
+      }),
+    };
+    return manager;
+  }
+
   beforeEach(() => {
     statesByCondition = {
       [CONDITION_ID]: makeStateRow('state-1', CONDITION_ID),
@@ -125,18 +155,7 @@ describe('ThompsonSamplingRewardService', () => {
 
     posteriorStateRepository = {
       findByConditionId: jest.fn((conditionId: string) => Promise.resolve(statesByCondition[conditionId])),
-      findByConfigId: jest.fn((configId: string) =>
-        Promise.resolve(allStates().filter((row) => row.configId === configId))
-      ),
-      increment: jest.fn((criteria: { id: string }, column: keyof PosteriorStateRow, amount: number) => {
-        const row = findRowById(criteria.id);
-        (row[column] as number) += amount;
-        return Promise.resolve(undefined);
-      }),
-      update: jest.fn((criteria: { id: string }, partial: Partial<PosteriorStateRow>) => {
-        Object.assign(findRowById(criteria.id), partial);
-        return Promise.resolve(undefined);
-      }),
+      manager: makeFakeManager(),
     };
 
     tsConfigRepository = {
@@ -366,7 +385,9 @@ describe('ThompsonSamplingRewardService', () => {
       const stateB = statesByCondition[CONDITION_B_ID];
       expect(stateB.totalCount).toBe(0);
       expect(stateB.pendingTotalCount).toBe(0);
-      expect(posteriorStateRepository.update).not.toHaveBeenCalledWith({ id: stateB.id }, expect.anything());
+      expect(posteriorStateRepository.manager.save).not.toHaveBeenCalledWith(
+        expect.objectContaining({ id: stateB.id })
+      );
     });
   });
 

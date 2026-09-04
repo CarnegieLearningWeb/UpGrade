@@ -209,6 +209,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     this.experimentService.fetchContextMetaData();
     this.stratificationFactorsService.fetchStratificationFactors(true);
     this.createExperimentForm();
+    this.updateAssignmentAlgorithms();
 
     // Set up subscriptions
     this.listenForContextMetaData();
@@ -480,6 +481,18 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
         groupTypeControl?.updateValueAndValidity();
         consistencyRuleControl?.updateValueAndValidity();
         conditionOrderControl?.updateValueAndValidity();
+
+        // Thompson Sampling can't attribute rewards under Within-Subjects assignment (see
+        // updateAssignmentAlgorithms()) -- disable it going forward, and bump an already-selected
+        // Thompson Sampling algorithm back to Random rather than leave an invalid combination
+        // sitting in the form.
+        this.updateAssignmentAlgorithms();
+        if (
+          assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS &&
+          this.assignmentAlgorithmValue === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING
+        ) {
+          this.experimentForm.get('assignmentAlgorithm')?.setValue(ASSIGNMENT_ALGORITHM.RANDOM);
+        }
       })
     );
   }
@@ -495,6 +508,12 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       }
     } else {
       this.thompsonSamplingConfigFormValue = undefined;
+      // The TS sub-form is about to be removed from the DOM (its @if goes false) without emitting
+      // a final validity event. Without resetting these, a form that was invalid at the moment of
+      // switching away would leave isTSFormValid$ stuck at false, permanently disabling Save for
+      // an otherwise-valid non-TS experiment until the modal is reopened.
+      this.isTSFormValid$.next(true);
+      this.isTSFormChanged$.next(false);
     }
   }
 
@@ -506,6 +525,17 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
     if (stratifiedAlgorithm) {
       (stratifiedAlgorithm as any).disabled = this.allStratificationFactors.length === 0;
+    }
+
+    // Thompson Sampling can't be used with Within-Subjects assignment: that assignment unit never
+    // stores a condition on the individual enrollment (it's tracked per-repeat instead), which is
+    // what Thompson Sampling's reward path reads to attribute a reward to a condition.
+    const thompsonSamplingAlgorithm = this.assignmentAlgorithms.find(
+      (alg) => alg.value === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING
+    );
+
+    if (thompsonSamplingAlgorithm) {
+      (thompsonSamplingAlgorithm as any).disabled = this.unitOfAssignmentValue === ASSIGNMENT_UNIT.WITHIN_SUBJECTS;
     }
   }
 
