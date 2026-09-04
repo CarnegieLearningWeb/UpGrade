@@ -11,6 +11,7 @@ import {
   ExperimentCondition,
   ExperimentConditionRowActionEvent,
   EXPERIMENT_ROW_ACTION,
+  THOMPSON_SAMPLING_WEIGHT_TOOLTIP_KEY,
 } from '../../../../../../../../core/experiments/store/experiments.model';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { Prior } from 'upgrade_types';
@@ -37,18 +38,20 @@ export class ExperimentConditionsTableComponent {
   @Input() showActions?: boolean = false;
   @Input() actionsDisabled?: boolean = false;
   @Input() actionsTooltip?: string = '';
-  @Input() isMoocletExperiment = false;
+  @Input() isThompsonSamplingExperiment = false;
   @Input() prior?: Record<string, Prior>;
   @Output() rowAction = new EventEmitter<ExperimentConditionRowActionEvent>();
   @Output() editWeights = new EventEmitter<ExperimentCondition[]>();
   @Output() editPrior = new EventEmitter<ExperimentCondition[]>();
 
   get displayedColumns(): string[] {
-    if (this.isMoocletExperiment) {
+    if (this.isThompsonSamplingExperiment) {
       return ['condition', 'priorSuccesses', 'priorFailures', 'priorEdit', 'description', 'actions'];
     }
     return ['condition', 'weight', 'weightEdit', 'description', 'actions'];
   }
+
+  readonly WEIGHT_ADAPTIVE_TOOLTIP_KEY = THOMPSON_SAMPLING_WEIGHT_TOOLTIP_KEY;
 
   CONDITION_TRANSLATION_KEYS = {
     CONDITION: 'experiments.details.conditions.condition.text',

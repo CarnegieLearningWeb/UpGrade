@@ -18,5 +18,4 @@ export const environment = {
   withinSubjectExperimentSupportToggle: false,
   errorLogsToggle: false,
   metricAnalyticsExperimentDisplayToggle: true,
-  moocletToggle: true,
 };

@@ -63,7 +63,7 @@ import { map, take, tap } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { ExperimentSegmentListRequest } from '../segments/store/segments.model';
 import { ConditionWeightUpdate } from '../../features/dashboard/experiments/modals/edit-condition-weights-modal/edit-condition-weights-modal.component';
-import { MoocletTSConfigurablePolicyParametersDTO, Prior } from 'upgrade_types';
+import { Prior } from 'upgrade_types';
 import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 
 @Injectable()
@@ -304,10 +304,10 @@ export class ExperimentService {
   updateExperimentConditionPrior(experiment: ExperimentVM, prior: Record<string, Prior>): void {
     const updatedExperiment: ExperimentVM = {
       ...experiment,
-      moocletPolicyParameters: {
-        ...experiment.moocletPolicyParameters,
-        prior,
-      } as MoocletTSConfigurablePolicyParametersDTO,
+      thompsonSamplingConfig: {
+        ...experiment.thompsonSamplingConfig,
+        priors: prior,
+      },
     };
     this.store$.dispatch(
       experimentAction.actionUpsertExperiment({

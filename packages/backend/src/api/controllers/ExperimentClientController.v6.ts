@@ -8,7 +8,6 @@ import {
   Delete,
   Patch,
   Authorized,
-  BadRequestError,
 } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
@@ -30,8 +29,10 @@ import { Log } from '../models/Log';
 import { ExperimentUserValidatorv6 } from './validators/ExperimentUserValidator';
 import { UserCheckMiddleware } from '../middlewares/UserCheckMiddleware';
 import { RewardValidator } from './validators/RewardValidator';
-import { IRewardResponse, MoocletRewardsService } from '../services/MoocletRewardsService';
-import { env } from '../../env';
+import {
+  IThompsonSamplingRewardResponse,
+  ThompsonSamplingRewardService,
+} from '../services/ThompsonSamplingRewardService';
 
 interface IMonitoredDecisionPoint {
   id: string;
@@ -100,7 +101,7 @@ export class ExperimentClientController {
     public experimentUserService: ExperimentUserService,
     public featureFlagService: FeatureFlagService,
     public metricService: MetricService,
-    public moocletRewardsService: MoocletRewardsService
+    public thompsonSamplingRewardService: ThompsonSamplingRewardService
   ) {}
 
   /**
@@ -831,7 +832,7 @@ export class ExperimentClientController {
    * /v6/reward:
    *    post:
    *       description: |
-   *         Send a reward signal for an adaptive experiment (Mooclet).
+   *         Send a reward signal for an adaptive (Thompson Sampling) experiment.
    *
    *         This endpoint allows sending binary reward feedback (SUCCESS or FAILURE) for adaptive experiments.
    *         The reward is used by the adaptive algorithm to update its learning model and improve future assignments.
@@ -844,6 +845,11 @@ export class ExperimentClientController {
    *         2. **Decision Point Lookup** - Provide `context` and `decisionPoint` (site and target) to look up the experiment
    *
    *         At least one of these methods must be provided.
+   *
+   *         **Asynchronous processing:** This endpoint acknowledges receipt immediately and records the reward
+   *         (config/enrollment lookup, posterior update) in the background — the response does not wait on it.
+   *         A problem with the reward itself (unknown experiment, no matching enrollment, experiment no longer
+   *         enrolling, etc.) is therefore not returned to the caller; it is only visible in server-side logs.
    *       consumes:
    *         - application/json
    *       parameters:
@@ -910,14 +916,16 @@ export class ExperimentClientController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Reward successfully sent to the adaptive experiment
+   *            description: |
+   *              Reward received and queued for processing. This does not guarantee the reward was recorded -
+   *              see "Asynchronous processing" above.
    *            schema:
    *              type: object
    *              properties:
    *                message:
    *                  type: string
-   *                  example: Reward sent successfully
-   *                  description: Success message
+   *                  example: Reward received and is being processed.
+   *                  description: Receipt message
    *                request:
    *                  type: object
    *                  description: Echo of the original request data
@@ -936,17 +944,10 @@ export class ExperimentClientController {
    *                          type: string
    *                        target:
    *                          type: string
-   *                reward:
-   *                  type: object
-   *                  description: The reward data that was sent to the Mooclet API
    *          '400':
    *            description: BadRequestError - Invalid parameters (e.g., missing required fields, invalid rewardValue)
    *          '401':
    *            description: AuthorizationRequiredError
-   *          '409':
-   *            description: Conflict - Data conflict (e.g., site or target not found, enrollment data not found, etc)
-   *          '500':
-   *            description: Internal Server Error
    */
   @Post('reward')
   public async sendReward(
@@ -954,14 +955,9 @@ export class ExperimentClientController {
     request: AppRequest,
     @Body({ validate: true })
     rewardData: RewardValidator
-  ): Promise<IRewardResponse> {
+  ): Promise<IThompsonSamplingRewardResponse> {
     request.logger.info({ message: 'Starting the sendReward call for user' });
-    if (!env.mooclets?.enabled) {
-      throw new BadRequestError('Failed to send reward: mooclet is not currently enabled on backend.');
-    }
-
-    const experimentUserDoc = request.userDoc;
-    return this.moocletRewardsService.sendReward(experimentUserDoc, rewardData, request.logger);
+    return this.thompsonSamplingRewardService.acceptReward(request.userDoc, rewardData, request.logger);
   }
 
   /**

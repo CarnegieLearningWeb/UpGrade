@@ -335,3 +335,32 @@ export interface DuplicateSegmentNameError {
   context: string;
   httpCode: 400;
 }
+
+export interface Prior {
+  success: number;
+  failure: number;
+}
+
+export enum BinaryRewardAllowedValue {
+  SUCCESS = 'SUCCESS',
+  FAILURE = 'FAILURE',
+}
+
+export const BinaryRewardValueMap = {
+  [BinaryRewardAllowedValue.SUCCESS]: 1,
+  [BinaryRewardAllowedValue.FAILURE]: 0,
+};
+
+export interface ExperimentRewardsByCondition {
+  conditionCode: string;
+  successes: number;
+  failures: number;
+  successRate: string;
+  order: number;
+  priorSuccess?: number;
+  priorFailure?: number;
+  /** Estimated probability of winning a Thompson Sampling draw, as an integer percentage (0–100). */
+  estimatedWeight?: number;
+}
+
+export type ExperimentRewardsSummary = Array<ExperimentRewardsByCondition>;

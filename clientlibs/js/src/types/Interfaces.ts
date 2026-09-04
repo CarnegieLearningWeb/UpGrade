@@ -109,13 +109,6 @@ export namespace UpGradeClientInterfaces {
       context?: string;
       decisionPoint?: IDecisionPoint;
     };
-    reward: {
-      variable: string;
-      value: number;
-      mooclet: number;
-      version: number;
-      learner: string;
-    };
   }
 
   export interface IHttpClientWrapperRequestConfig {

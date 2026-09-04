@@ -330,7 +330,7 @@ class UpgradeClient:
         context: str | None = None,
         decision_point: dict[str, str] | None = None,
     ) -> SendRewardResponse:
-        """Send a binary reward signal for an adaptive (Mooclet) experiment."""
+        """Send a binary reward signal for an adaptive experiment."""
         return await self._api_service.send_reward(
             reward_value=reward_value,
             experiment_id=experiment_id,

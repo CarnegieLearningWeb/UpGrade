@@ -3,13 +3,13 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { ExperimentService } from './ExperimentService';
 import { ExperimentDTO, ExperimentFile } from '../DTO/ExperimentDTO';
 import { env } from '../../env';
-import { MoocletExperimentService } from './MoocletExperimentService';
 import { UserDTO } from '../DTO/UserDTO';
-import { LOG_TYPE, SUPPORTED_MOOCLET_ALGORITHMS } from 'upgrade_types';
+import { LOG_TYPE } from 'upgrade_types';
 import { In } from 'typeorm';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
+import { AdaptiveExperimentConfigDispatcherService } from './AdaptiveExperimentConfigDispatcherService';
 
 @Service()
 export class ImportExportService {
@@ -17,7 +17,7 @@ export class ImportExportService {
     @InjectRepository() protected experimentRepository: ExperimentRepository,
     @InjectRepository() protected experimentAuditLogRepository: ExperimentAuditLogRepository,
     protected experimentService: ExperimentService,
-    protected moocletExperimentService: MoocletExperimentService
+    protected adaptiveExperimentConfigDispatcher: AdaptiveExperimentConfigDispatcherService
   ) {}
 
   public async importExperiments(experiments: ExperimentFile[], user: UserDTO, logger: UpgradeLogger) {
@@ -41,19 +41,16 @@ export class ImportExportService {
     await Promise.all(
       experiments.map(async (experiment) => {
         try {
-          if (this.moocletExperimentService.isMoocletExperiment(experiment.assignmentAlgorithm)) {
-            if (!env.mooclets.enabled) {
-              throw new Error('Attempting to import a moclet experiment, but mooclets are not enabled');
-            }
-            await this.moocletExperimentService.syncCreate({
-              experimentDTO: experiment,
-              currentUser,
-              logger,
-            });
-          } else {
-            const result = await this.experimentService.create(experiment, currentUser, logger);
-            createdExperiments.push(result);
+          const result = await this.experimentService.create(experiment, currentUser, logger);
+          try {
+            await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(experiment, result);
+          } catch (configError) {
+            // Same reasoning as the single-experiment POST /experiments path: don't leave an
+            // orphaned, config-less Thompson Sampling experiment behind when this step fails.
+            await this.experimentService.delete(result.id, currentUser, { logger });
+            throw configError;
           }
+          createdExperiments.push(await this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(result));
         } catch (error) {
           logger.error({
             message: 'Failed to create experiment during import',
@@ -133,31 +130,11 @@ export class ImportExportService {
           return a.order - b.order;
         });
 
-        let experimentRecord = this.experimentService.reducedConditionPayload(
-          this.experimentService.formattingPayload(this.experimentService.formattingConditionPayload(experiment))
+        const experimentRecord = await this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(
+          this.experimentService.reducedConditionPayload(
+            this.experimentService.formattingPayload(this.experimentService.formattingConditionPayload(experiment))
+          )
         );
-
-        // If it's a mooclet experiment, policy parameters
-        if (SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment.assignmentAlgorithm)) {
-          try {
-            experimentRecord = await this.moocletExperimentService.attachPolicyParamsToExperimentDTO(
-              experimentRecord,
-              logger
-            );
-          } catch (error) {
-            logger.error({
-              message: 'Failed to get mooclet data for experiment',
-              error: error,
-              experiment: experiment,
-              user: user,
-            });
-            throw error;
-          }
-          // remove currentPosteriors from moocletPolicyParameters for export
-          const { current_posteriors: _, ...filteredPolictParameters } = experimentRecord.moocletPolicyParameters;
-
-          experimentRecord.moocletPolicyParameters = filteredPolictParameters;
-        }
 
         this.experimentAuditLogRepository.saveRawJson(
           LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,

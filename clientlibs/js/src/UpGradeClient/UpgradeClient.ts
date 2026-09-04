@@ -630,7 +630,7 @@ export default class UpgradeClient {
   }
 
   /**
-   * Sends a binary reward signal for an adaptive experiment (Mooclet).
+   * Sends a binary reward signal for an adaptive experiment.
    *
    * This method allows sending reward feedback (SUCCESS or FAILURE) for adaptive experiments.
    * The reward is used by the adaptive algorithm to update its learning model and improve future assignments.
