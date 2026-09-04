@@ -1,12 +1,6 @@
-import { UpGradeClientInterfaces } from '../types';
-import {
-  ILogInput,
-  CaliperEnvelope,
-  IExperimentAssignment,
-  MARKED_DECISION_POINT_STATUS,
-  IUserAliases,
-  BinaryRewardAllowedValue,
-} from 'upgrade_types';
+import { UpGradeClientEnums, UpGradeClientInterfaces } from '../types';
+import { ILogInput, CaliperEnvelope, IExperimentAssignment, IUserAliases } from 'upgrade_types/Experiment/interfaces';
+import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types/Experiment/enums';
 import Assignment from '../Assignment/Assignment';
 import ApiService from '../ApiService/ApiService';
 import { DataService } from '../DataService/DataService';
@@ -75,7 +69,7 @@ export default class UpgradeClient {
 
   // allow BINARY_REWARD_VALUE to be exposed on the client a la UpgradeClient.BINARY_REWARD_VALUE
   // this will allow js users who are not using the upgrade types package to use this enum for sendReward()
-  public static BINARY_REWARD_VALUE = BinaryRewardAllowedValue;
+  public static BINARY_REWARD_VALUE = UpGradeClientEnums.BINARY_REWARD_VALUE;
 
   /**
    * When constructing UpgradeClient, the user id, api host url, and "context" identifier are required.

@@ -19,6 +19,11 @@ const generalConfiguration = {
   resolve: {
     alias: {
       upgrade_types: path.resolve(__dirname, '../../packages/types/src'),
+      // packages/types is outside this package's node_modules, so its own
+      // tslib resolves from the repo-root install while files under src/
+      // resolve tslib from this package's local install. Force both to the
+      // same physical module so webpack doesn't bundle it twice.
+      tslib: path.resolve(__dirname, 'node_modules/tslib'),
     },
     extensions: ['.tsx', '.ts', '.js'],
   },

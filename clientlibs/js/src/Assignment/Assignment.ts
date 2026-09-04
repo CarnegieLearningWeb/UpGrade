@@ -1,10 +1,5 @@
-import {
-  IExperimentAssignment,
-  PAYLOAD_TYPE,
-  EXPERIMENT_TYPE,
-  IPayload,
-  MARKED_DECISION_POINT_STATUS,
-} from 'upgrade_types';
+import { IExperimentAssignment, IPayload } from 'upgrade_types/Experiment/interfaces';
+import { PAYLOAD_TYPE, EXPERIMENT_TYPE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types/Experiment/enums';
 import { UpGradeClientInterfaces } from '../types';
 import ApiService from '../ApiService/ApiService';
 
