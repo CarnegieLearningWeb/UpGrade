@@ -579,13 +579,11 @@ export class SegmentService {
     if (!segmentDoc) {
       throw new Error(SERVER_ERROR.QUERY_FAILED);
     }
-    await Promise.all(
-      segmentDoc.subSegments.map((subSegment) => {
-        if (subSegment.type === SEGMENT_TYPE.PRIVATE) {
-          this.deleteSegmentAndPrivateSubsegments(subSegment.id, logger, manager);
-        }
-      })
-    );
+    for (const subSegment of segmentDoc.subSegments) {
+      if (subSegment.type === SEGMENT_TYPE.PRIVATE) {
+        await this.deleteSegmentAndPrivateSubsegments(subSegment.id, logger, manager);
+      }
+    }
     const deletedSegmentResponse = await this.segmentRepository.deleteSegments([id], logger, manager);
     return deletedSegmentResponse[0];
   }

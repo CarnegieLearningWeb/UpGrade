@@ -123,6 +123,7 @@ import {
 import { ExperimentValidation } from './Experiment/validation';
 import { FeatureFlagInclusionExclusion } from './FeatureFlags';
 import { ListValueFiltering } from './ListValueFiltering';
+import { FeatureFlagDeleteCleanup, SegmentDeleteCleanup } from './DeleteCleanup';
 
 describe('Integration Tests', () => {
   jest.setTimeout(100000000);
@@ -466,6 +467,14 @@ describe('Integration Tests', () => {
     return SegmentDelete();
   });
 
+  test('Delete cleanup - nested private segments complete before success and public children survive', () => {
+    return SegmentDeleteCleanup(defaultConnection);
+  });
+
+  test('Delete cleanup - nested private segment failure rolls back earlier deletions', () => {
+    return SegmentDeleteCleanup(defaultConnection, true);
+  });
+
   test('Enrollment of User of Segment', () => {
     return SegmentMemberUserEnrollment();
   });
@@ -573,6 +582,17 @@ describe('Integration Tests', () => {
   test('Inclusion and Exclusion of user in FeatureFlags', () => {
     return FeatureFlagInclusionExclusion();
   });
+
+  test('Delete cleanup - feature flag deletion removes owned lists and preserves public segments', () => {
+    return FeatureFlagDeleteCleanup(defaultConnection);
+  });
+
+  test.each(['inclusion', 'exclusion'] as const)(
+    'Delete cleanup - feature flag %s failure rolls back deletion',
+    (list) => {
+      return FeatureFlagDeleteCleanup(defaultConnection, list);
+    }
+  );
 
   test('List value filtering across root pages', () => {
     return ListValueFiltering();
