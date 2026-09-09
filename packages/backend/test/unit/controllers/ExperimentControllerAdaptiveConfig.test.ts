@@ -99,7 +99,12 @@ describe('ExperimentController adaptive config wiring', () => {
       );
 
       // First update is the caller's requested change; second is the revert back to the pre-update state.
-      expect(experimentService.update).toHaveBeenNthCalledWith(1, { ...experiment, id: 'experiment-1' }, {}, request.logger);
+      expect(experimentService.update).toHaveBeenNthCalledWith(
+        1,
+        { ...experiment, id: 'experiment-1' },
+        {},
+        request.logger
+      );
       expect(experimentService.update).toHaveBeenNthCalledWith(2, previousExperiment, {}, request.logger);
       // First sync is the caller's requested change (which failed); second cleans up against the reverted state.
       expect(adaptiveExperimentConfigDispatcher.syncConfigIfApplicable).toHaveBeenNthCalledWith(
@@ -121,9 +126,7 @@ describe('ExperimentController adaptive config wiring', () => {
       const revertError = new Error('revert update failed');
 
       experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
-      experimentService.update
-        .mockResolvedValueOnce({ id: 'experiment-1' })
-        .mockRejectedValueOnce(revertError);
+      experimentService.update.mockResolvedValueOnce({ id: 'experiment-1' }).mockRejectedValueOnce(revertError);
       adaptiveExperimentConfigDispatcher.syncConfigIfApplicable.mockRejectedValue(syncError);
 
       await expect(controller.update({ id: 'experiment-1' } as any, experiment, {} as any, request)).rejects.toThrow(
