@@ -41,9 +41,17 @@ export class ImportExportService {
     await Promise.all(
       experiments.map(async (experiment) => {
         try {
+          // Captured before create() runs -- see ExperimentController.create() for why: create()
+          // mutates condition ids in place, so this is the last point they still match whatever ids
+          // (from the import file, or a batch-create caller) thompsonSamplingConfig.priors is keyed by.
+          const originalConditionIds = experiment.conditions?.map((condition) => condition.id);
           const result = await this.experimentService.create(experiment, currentUser, logger);
           try {
-            await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(experiment, result);
+            await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(
+              experiment,
+              result,
+              originalConditionIds
+            );
           } catch (configError) {
             // Same reasoning as the single-experiment POST /experiments path: don't leave an
             // orphaned, config-less Thompson Sampling experiment behind when this step fails.

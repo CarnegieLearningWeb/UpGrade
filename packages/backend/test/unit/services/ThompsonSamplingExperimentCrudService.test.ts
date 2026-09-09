@@ -124,6 +124,69 @@ describe('ThompsonSamplingExperimentCrudService', () => {
         totalCount: 0,
       });
     });
+
+    it('remaps priors keyed by pre-creation condition ids onto the actual created condition ids', async () => {
+      // ExperimentService.create()/deduceConditions() regenerate every condition id in place, so the
+      // client-submitted (or previously-exported) ids the priors record is keyed by never match
+      // createdExperiment.conditions[].id on their own -- without originalConditionIds to remap
+      // through, this would silently fall back to the default Beta(1,1) prior for every condition.
+      const experiment = {
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+        thompsonSamplingConfig: {
+          priors: {
+            'client-temp-id-1': { success: 7, failure: 4 },
+            'client-temp-id-2': { success: 3, failure: 9 },
+          },
+        },
+      } as any;
+
+      await service.createConfigIfApplicable(
+        experiment,
+        {
+          id: 'experiment-1',
+          conditions: [{ id: 'server-id-1' }, { id: 'server-id-2' }],
+        } as any,
+        ['client-temp-id-1', 'client-temp-id-2']
+      );
+
+      expect(posteriorStateRepository.save).toHaveBeenCalledWith({
+        configId: 'config-1',
+        conditionId: 'server-id-1',
+        priorSuccess: 7,
+        priorFailure: 4,
+        successCount: 0,
+        totalCount: 0,
+      });
+      expect(posteriorStateRepository.save).toHaveBeenCalledWith({
+        configId: 'config-1',
+        conditionId: 'server-id-2',
+        priorSuccess: 3,
+        priorFailure: 9,
+        successCount: 0,
+        totalCount: 0,
+      });
+    });
+
+    it('falls back to default priors when originalConditionIds is not provided', async () => {
+      const experiment = {
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+        thompsonSamplingConfig: { priors: { 'client-temp-id-1': { success: 7, failure: 4 } } },
+      } as any;
+
+      await service.createConfigIfApplicable(experiment, {
+        id: 'experiment-1',
+        conditions: [{ id: 'server-id-1' }],
+      } as any);
+
+      expect(posteriorStateRepository.save).toHaveBeenCalledWith({
+        configId: 'config-1',
+        conditionId: 'server-id-1',
+        priorSuccess: 1,
+        priorFailure: 1,
+        successCount: 0,
+        totalCount: 0,
+      });
+    });
   });
 
   describe('syncConfigIfApplicable', () => {

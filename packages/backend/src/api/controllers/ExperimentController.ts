@@ -1047,10 +1047,18 @@ export class ExperimentController {
       throw new BadRequestError(contextValidationError);
     }
 
+    // Captured before create() runs: ExperimentService.create() replaces every condition's id with
+    // a freshly generated one in place, so `experiment.conditions[].id` no longer matches whatever
+    // ids the client used to key thompsonSamplingConfig.priors by the time create() returns.
+    const originalConditionIds = experiment.conditions?.map((condition) => condition.id);
     const createdExperiment = await this.experimentService.create(experiment, currentUser, request.logger);
 
     try {
-      await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(experiment, createdExperiment);
+      await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(
+        experiment,
+        createdExperiment,
+        originalConditionIds
+      );
     } catch (error) {
       // The experiment row already committed above. Without this, a failed adaptive-config write
       // would leave a Thompson Sampling experiment with no config/posterior rows behind -- invisible
@@ -1247,9 +1255,37 @@ export class ExperimentController {
       throw new BadRequestError(contextValidationError);
     }
 
+    const previousExperiment = await this.experimentService.getSingleExperiment(id, request.logger);
+
     const updatedExperiment = await this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
 
-    await this.adaptiveExperimentConfigDispatcher.syncConfigIfApplicable(experiment, updatedExperiment);
+    try {
+      await this.adaptiveExperimentConfigDispatcher.syncConfigIfApplicable(experiment, updatedExperiment);
+    } catch (error) {
+      // The base experiment update above already committed (e.g. assignmentAlgorithm switched to
+      // THOMPSON_SAMPLING). Without reverting, a failed config sync would leave that change in place
+      // with no config/posterior rows -- invisible and permanently unable to assign a condition, the
+      // same failure mode create() already guards against by deleting the just-created experiment.
+      // Restore the pre-update experiment, then re-run the config sync against the reverted state so
+      // any config/posterior rows the failed attempt did manage to write get cleaned up too. Best
+      // effort: a failure here is logged rather than allowed to replace/mask the original error.
+      if (previousExperiment) {
+        try {
+          const revertedExperiment = await this.experimentService.update(
+            previousExperiment,
+            currentUser,
+            request.logger
+          );
+          await this.adaptiveExperimentConfigDispatcher.syncConfigIfApplicable(previousExperiment, revertedExperiment);
+        } catch (revertError) {
+          request.logger.error({
+            message: `Failed to fully revert experiment ${id} after adaptive config sync failure`,
+            error: revertError,
+          });
+        }
+      }
+      throw error;
+    }
 
     return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(updatedExperiment);
   }

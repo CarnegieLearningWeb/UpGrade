@@ -39,16 +39,58 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
    * `batchSize`/`minimumDrawDifference` from `experiment.thompsonSamplingConfig` are ever read here —
    * there is no field for success/failure counts, so posterior state always starts at zero regardless
    * of what the caller's source experiment (e.g. an imported/exported one) previously accumulated.
+   *
+   * `priors` is keyed by whatever condition IDs the caller submitted (client-generated temp IDs on
+   * create, or the previously-exported IDs on import), but ExperimentService.create()/deduceConditions()
+   * replace every condition ID with a freshly generated one before/while persisting — so those keys
+   * never match `createdExperiment.conditions[].id` on their own. `originalConditionIds` (captured by
+   * the caller before create() ran) lets remapPriorsToNewConditionIds() translate them.
    */
-  public async createConfigIfApplicable(experiment: ExperimentDTO, createdExperiment: ExperimentDTO): Promise<void> {
+  public async createConfigIfApplicable(
+    experiment: ExperimentDTO,
+    createdExperiment: ExperimentDTO,
+    originalConditionIds?: string[]
+  ): Promise<void> {
     if (experiment.assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
       return;
     }
-    await this.createConfig(
-      createdExperiment.id,
-      createdExperiment.conditions,
-      experiment.thompsonSamplingConfig ?? {}
+    const remappedConfig = this.remapPriorsToNewConditionIds(
+      experiment.thompsonSamplingConfig,
+      originalConditionIds,
+      createdExperiment.conditions
     );
+    await this.createConfig(createdExperiment.id, createdExperiment.conditions, remappedConfig ?? {});
+  }
+
+  /**
+   * Translates a priors record keyed by pre-creation condition IDs onto the condition IDs the
+   * experiment actually ended up with. Both `originalConditionIds` and `newConditions` are produced
+   * by order-preserving map/forEach transforms all the way through ExperimentService's create/import
+   * pipeline (conditions are never reordered, only replaced in place), so corresponding entries at the
+   * same array index refer to the same condition — there is no other stable, unique-per-condition key
+   * available to correlate on (ExperimentCondition.twoCharacterId was removed; conditionCode is not
+   * guaranteed unique). Without this, every condition would silently fall back to the default
+   * Beta(1,1) prior whenever the caller's condition IDs get regenerated.
+   */
+  private remapPriorsToNewConditionIds(
+    config: ThompsonSamplingConfigParams | undefined,
+    originalConditionIds: string[] | undefined,
+    newConditions: ConditionRef[]
+  ): ThompsonSamplingConfigParams | undefined {
+    if (!config?.priors || !originalConditionIds) {
+      return config;
+    }
+
+    const remappedPriors: Record<string, { success: number; failure: number }> = {};
+    originalConditionIds.forEach((oldId, index) => {
+      const prior = config.priors?.[oldId];
+      const newId = newConditions[index]?.id;
+      if (prior && newId) {
+        remappedPriors[newId] = prior;
+      }
+    });
+
+    return { ...config, priors: remappedPriors };
   }
 
   /**

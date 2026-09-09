@@ -17,9 +17,13 @@ export class AdaptiveExperimentConfigDispatcherService implements AdaptiveExperi
     this.services = [thompsonSamplingCrudService];
   }
 
-  public async createConfigIfApplicable(experiment: ExperimentDTO, createdExperiment: ExperimentDTO): Promise<void> {
+  public async createConfigIfApplicable(
+    experiment: ExperimentDTO,
+    createdExperiment: ExperimentDTO,
+    originalConditionIds?: string[]
+  ): Promise<void> {
     for (const service of this.services) {
-      await service.createConfigIfApplicable(experiment, createdExperiment);
+      await service.createConfigIfApplicable(experiment, createdExperiment, originalConditionIds);
     }
   }
 
