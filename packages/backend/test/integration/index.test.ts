@@ -124,6 +124,7 @@ import { ExperimentValidation } from './Experiment/validation';
 import { FeatureFlagInclusionExclusion } from './FeatureFlags';
 import { ListValueFiltering } from './ListValueFiltering';
 import { FeatureFlagDeleteCleanup, SegmentDeleteCleanup } from './DeleteCleanup';
+import { registerSegmentDeletionGuardTests } from './SegmentDeletionGuard';
 
 describe('Integration Tests', () => {
   jest.setTimeout(100000000);
@@ -133,6 +134,7 @@ describe('Integration Tests', () => {
 
   let defaultConnection: DataSource;
   let exportConnection: DataSource;
+  registerSegmentDeletionGuardTests(() => [defaultConnection, exportConnection]);
   beforeAll(async () => {
     configureLogger();
     [defaultConnection, exportConnection] = await createDatabaseConnection();

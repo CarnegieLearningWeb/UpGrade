@@ -535,7 +535,11 @@ export class SegmentService {
     return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager, skipScheduleRecompute);
   }
 
-  public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
+  public async deleteSegment(
+    id: string,
+    logger: UpgradeLogger,
+    beforeDelete?: (manager: EntityManager) => Promise<void>
+  ): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
 
     // Both flags and experiments can reference this segment, so both precomputed tables must be
@@ -549,9 +553,10 @@ export class SegmentService {
       logger,
       () => this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
       () =>
-        this.dataSource.transaction((transactionalEntityManager) =>
-          this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
-        )
+        this.dataSource.transaction(async (transactionalEntityManager) => {
+          await beforeDelete?.(transactionalEntityManager);
+          return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
+        })
     );
 
     this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments(affectedExperimentIds, logger);
