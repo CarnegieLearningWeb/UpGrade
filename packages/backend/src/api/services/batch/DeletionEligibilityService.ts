@@ -1,16 +1,16 @@
-import { Service } from 'typedi';
+import { Inject, Service } from 'typedi';
 import { DataSource, In } from 'typeorm';
 import { UnauthorizedError } from 'routing-controllers';
 import {
   DeletionEligibilityItem,
   DeletionEligibilityResult,
   DeletionReasonCode,
-  EXPERIMENT_STATE,
-  EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
-  FEATURE_FLAG_STATUS,
+  getExperimentDeletionState,
+  getExperimentDeletionReason,
+  getFlagDeletionReason,
+  hasBatchDeletePermission,
   SEGMENT_STATUS,
   SEGMENT_TYPE,
-  UserRole,
 } from 'upgrade_types';
 import { InjectDataSource } from '../../../typeorm-typedi-extensions';
 import { UserDTO } from '../../DTO/UserDTO';
@@ -21,18 +21,13 @@ import { SegmentService, SegmentWithStatus } from '../SegmentService';
 
 type EligibilitySummary = Omit<DeletionEligibilityItem, 'id' | 'canDelete'>;
 
-const deletableExperimentStates = new Set([
-  EXPERIMENT_STATE.INACTIVE,
-  EXPERIMENT_STATE.RUNNING,
-  EXPERIMENT_STATE.PAUSED,
-  EXPERIMENT_STATE.COMPLETED,
-  EXPERIMENT_STATE.ARCHIVED,
-]);
-
 /** Read-only batch checks, also used by the initial batch-delete preflight. */
 @Service()
 export class DeletionEligibilityService {
-  constructor(@InjectDataSource() private dataSource: DataSource, private segmentService: SegmentService) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @Inject(() => SegmentService) private segmentService: SegmentService
+  ) {}
 
   public async experiments(ids: string[], user: UserDTO): Promise<DeletionEligibilityResult> {
     const permission = this.permissionReason(user);
@@ -41,14 +36,12 @@ export class DeletionEligibilityService {
       select: { id: true, name: true, state: true },
     });
     return this.result(ids, rows, (row) => {
-      const state = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[row.state] || row.state;
+      const state = getExperimentDeletionState(row.state);
       return {
         availability: 'present',
         name: row.name,
         stateOrStatus: state,
-        reasonCode:
-          permission ||
-          (deletableExperimentStates.has(state) ? undefined : DeletionReasonCode.EXPERIMENT_STATE_UNSUPPORTED),
+        reasonCode: permission || getExperimentDeletionReason(row.state),
       };
     });
   }
@@ -63,13 +56,7 @@ export class DeletionEligibilityService {
       availability: 'present',
       name: row.name,
       stateOrStatus: row.status,
-      reasonCode:
-        permission ||
-        (row.status === FEATURE_FLAG_STATUS.ENABLED
-          ? DeletionReasonCode.FEATURE_FLAG_ENABLED
-          : [FEATURE_FLAG_STATUS.DISABLED, FEATURE_FLAG_STATUS.ARCHIVED].includes(row.status)
-          ? undefined
-          : DeletionReasonCode.FEATURE_FLAG_STATUS_UNSUPPORTED),
+      reasonCode: permission || getFlagDeletionReason(row.status),
     }));
   }
 
@@ -114,10 +101,7 @@ export class DeletionEligibilityService {
 
   private permissionReason(user: UserDTO, segments = false): DeletionReasonCode | undefined {
     if (!user) throw new UnauthorizedError('A current user is required');
-    const allowed =
-      user.role === UserRole.ADMIN ||
-      user.role === UserRole.CREATOR ||
-      (segments && user.role === UserRole.USER_MANAGER);
+    const allowed = hasBatchDeletePermission(user.role, segments ? 'segments' : 'experiments');
     return allowed ? undefined : DeletionReasonCode.MISSING_PERMISSION;
   }
 

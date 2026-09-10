@@ -126,6 +126,7 @@ import { ListValueFiltering } from './ListValueFiltering';
 import { FeatureFlagDeleteCleanup, SegmentDeleteCleanup } from './DeleteCleanup';
 import { registerSegmentDeletionGuardTests } from './SegmentDeletionGuard';
 import { registerDeletionEligibilityTests } from './DeletionEligibility';
+import { registerBatchDeleteTests } from './BatchDelete';
 
 describe('Integration Tests', () => {
   jest.setTimeout(100000000);
@@ -137,6 +138,7 @@ describe('Integration Tests', () => {
   let exportConnection: DataSource;
   registerSegmentDeletionGuardTests(() => [defaultConnection, exportConnection]);
   registerDeletionEligibilityTests(() => [defaultConnection, exportConnection]);
+  registerBatchDeleteTests(() => [defaultConnection, exportConnection]);
   beforeAll(async () => {
     configureLogger();
     [defaultConnection, exportConnection] = await createDatabaseConnection();

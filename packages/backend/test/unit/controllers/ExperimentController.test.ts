@@ -1,4 +1,5 @@
 import { DeletionEligibilityService } from '../../../src/api/services/batch/DeletionEligibilityService';
+import { BatchDeleteService } from '../../../src/api/services/batch/BatchDeleteService';
 import app from '../../utils/expressApp';
 import request from 'supertest';
 import { configureLogger } from '../../utils/logger';
@@ -36,6 +37,7 @@ describe('Experiment Controller Testing', () => {
     routingUseContainer(Container);
     classValidatorUseContainer(Container);
     Container.set(DeletionEligibilityService, {} as DeletionEligibilityService);
+    Container.set(BatchDeleteService, {} as BatchDeleteService);
 
     // set mock container
     Container.set(ExperimentService, new ExperimentServiceMock());

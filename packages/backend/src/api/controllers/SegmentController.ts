@@ -1,5 +1,7 @@
 import { UserDTO } from '../DTO/UserDTO';
-import { DeletionEligibilityResult } from 'upgrade_types';
+import { DeletionEligibilityResult, BatchDeleteResult } from 'upgrade_types';
+import { Inject } from 'typedi';
+import { BatchDeleteService } from '../services/batch/BatchDeleteService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import { DeletionEligibilityService } from '../services/batch/DeletionEligibilityService';
 import {
@@ -54,6 +56,30 @@ interface SegmentPaginationInfo extends PaginationResponse {
 /**
  * @swagger
  * definitions:
+ *   BatchDeleteItemResult:
+ *     type: object
+ *     required: [id, outcome]
+ *     properties:
+ *       id:
+ *         type: string
+ *         format: uuid
+ *       outcome:
+ *         type: string
+ *         enum: [deleted, not_found, ineligible, forbidden, failed, unknown, not_attempted]
+ *       reasonCode:
+ *         type: string
+ *         enum: [not_found, missing_permission, experiment_state_unsupported, feature_flag_enabled, feature_flag_status_unsupported, segment_in_use, protected_segment_type, eligibility_unavailable, delete_failed, lock_timeout, external_sync_failed, outcome_unknown, post_delete_failed, batch_budget_exceeded]
+ *   BatchDeleteResult:
+ *     type: object
+ *     required: [phase, results]
+ *     properties:
+ *       phase:
+ *         type: string
+ *         enum: [rejected, executed]
+ *       results:
+ *         type: array
+ *         items:
+ *           $ref: '#/definitions/BatchDeleteItemResult'
  *   BatchEntityIdsRequest:
  *     type: object
  *     required: [ids]
@@ -281,7 +307,11 @@ interface SegmentPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/segments')
 export class SegmentController {
-  constructor(public segmentService: SegmentService, private deletionEligibilityService: DeletionEligibilityService) {}
+  constructor(
+    public segmentService: SegmentService,
+    private deletionEligibilityService: DeletionEligibilityService,
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
+  ) {}
 
   /**
    * @swagger
@@ -313,6 +343,41 @@ export class SegmentController {
     @CurrentUser({ required: true }) currentUser: UserDTO
   ): Promise<DeletionEligibilityResult> {
     return this.deletionEligibilityService.segments(ids, currentUser);
+  }
+
+  /**
+   * @swagger
+   * /segments/batch-delete:
+   *   post:
+   *     summary: Delete the selected segments
+   *     description: Checks the entire selection before mutation, then deletes sequentially. Stops after the first failure and returns one result per ID.
+   *     tags:
+   *       - Segment
+   *     parameters:
+   *       - in: body
+   *         name: selection
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/BatchEntityIdsRequest'
+   *     responses:
+   *       '200':
+   *         description: Inspect phase and per-ID outcomes; rejected means no deletions were performed.
+   *         schema:
+   *           $ref: '#/definitions/BatchDeleteResult'
+   *       '400':
+   *         description: Expected a nonempty array of unique UUIDs.
+   *       '401':
+   *         description: A current authenticated user is required.
+   *       '403':
+   *         description: The current user cannot delete this entity type.
+   */
+  @Post('/batch-delete')
+  public batchDelete(
+    @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
+    @CurrentUser({ required: true }) currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<BatchDeleteResult> {
+    return this.batchDeleteService.delete('segments', ids, currentUser, request.logger);
   }
 
   /**

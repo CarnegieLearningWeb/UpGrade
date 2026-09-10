@@ -96,6 +96,11 @@ export {
 export { SYSTEM_USER_EMAIL, DEV_USER_EMAIL, FAKE_DEV_CREDENTIAL } from './User';
 export {
   BatchEntityIdsRequest,
+  BatchDeleteEntity,
+  hasBatchDeletePermission,
+  getExperimentDeletionState,
+  getExperimentDeletionReason,
+  getFlagDeletionReason,
   DeletionReasonCode,
   DeletionEligibilityItem,
   DeletionEligibilityResult,

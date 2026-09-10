@@ -1,4 +1,6 @@
-import { DeletionEligibilityResult } from 'upgrade_types';
+import { DeletionEligibilityResult, BatchDeleteResult } from 'upgrade_types';
+import { Inject } from 'typedi';
+import { BatchDeleteService } from '../services/batch/BatchDeleteService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import { DeletionEligibilityService } from '../services/batch/DeletionEligibilityService';
 import {
@@ -160,7 +162,8 @@ export class FeatureFlagsController {
   constructor(
     public featureFlagService: FeatureFlagService,
     public experimentUserService: ExperimentUserService,
-    private deletionEligibilityService: DeletionEligibilityService
+    private deletionEligibilityService: DeletionEligibilityService,
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
   ) {}
 
   /**
@@ -193,6 +196,41 @@ export class FeatureFlagsController {
     @CurrentUser({ required: true }) currentUser: UserDTO
   ): Promise<DeletionEligibilityResult> {
     return this.deletionEligibilityService.flags(ids, currentUser);
+  }
+
+  /**
+   * @swagger
+   * /flags/batch-delete:
+   *   post:
+   *     summary: Delete the selected flags
+   *     description: Checks the entire selection before mutation, then deletes sequentially. Stops after the first failure and returns one result per ID.
+   *     tags:
+   *       - Feature Flags
+   *     parameters:
+   *       - in: body
+   *         name: selection
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/BatchEntityIdsRequest'
+   *     responses:
+   *       '200':
+   *         description: Inspect phase and per-ID outcomes; rejected means no deletions were performed.
+   *         schema:
+   *           $ref: '#/definitions/BatchDeleteResult'
+   *       '400':
+   *         description: Expected a nonempty array of unique UUIDs.
+   *       '401':
+   *         description: A current authenticated user is required.
+   *       '403':
+   *         description: The current user cannot delete this entity type.
+   */
+  @Post('/batch-delete')
+  public batchDelete(
+    @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
+    @CurrentUser({ required: true }) currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<BatchDeleteResult> {
+    return this.batchDeleteService.delete('flags', ids, currentUser, request.logger);
   }
 
   /**
