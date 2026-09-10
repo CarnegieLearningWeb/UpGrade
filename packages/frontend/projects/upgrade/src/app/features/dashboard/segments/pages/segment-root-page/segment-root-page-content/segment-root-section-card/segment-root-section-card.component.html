@@ -1,4 +1,11 @@
-<app-common-section-card>
+<app-common-section-card
+  appRootBatchActions
+  [batchFacade]="batch"
+  batchEntity="segments"
+  [batchExpandedTags]="expandedTagsMap"
+  #batchUi="rootBatchActions"
+>
+  @let batchView = (batchUi.view$ | async);
   <!-- header-left -->
   <app-common-section-card-search-header
     header-left
@@ -13,8 +20,10 @@
     header-right
     [showPrimaryButton]="(permissions$ | async)?.segments.create"
     [primaryButtonText]="'segments.add-segments.text' | translate | titlecase"
-    [menuButtonItems]="menuButtonItems"
-    [showMenuButton]="(permissions$ | async)?.segments.create"
+    [menuButtonItems]="batchView?.selectedCount ? batchView.menuItems : menuButtonItems"
+    [showMenuButton]="!!batchView?.selectedCount || (permissions$ | async)?.segments.create"
+    [menuButtonDisabled]="!!batchView?.selectedCount && batchView.menuDisabled"
+    [menuButtonTooltip]="batchView?.messageKey | translate"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddSegmentButtonClick()"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"
@@ -24,7 +33,8 @@
   <!-- content -->
   @if (isSectionCardExpanded) {
   <ng-container content>
-    @if (!(isInitialLoading$ | async)) {
+    <app-common-batch-selection-status [view]="batchView" (reload)="reloadBatchList()" />
+    @if (!(isInitialLoading$ | async) && !batchView?.selectedCount) {
     <div class="mat-spinner-container">
       <mat-spinner diameter="60"></mat-spinner>
     </div>

@@ -1,0 +1,26 @@
+.batch-delete-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px 32px 16px;
+  color: var(--dark-grey);
+
+  p {
+    margin: 0;
+  }
+  mat-progress-bar {
+    margin-top: 12px;
+  }
+}
+
+.batch-results {
+  padding-left: 20px;
+  margin: 0;
+  li {
+    margin-bottom: 12px;
+    overflow-wrap: anywhere;
+  }
+  span {
+    display: block;
+  }
+}

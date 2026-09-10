@@ -1,17 +1,12 @@
 import {
-  selectionFocusEffect,
-  eligibilityAbsenceEffect,
-  eligibilityEffect,
   batchDeleteEffect,
   reconcileBatchEffect,
   batchFinishedEffect,
-  refreshSelectedEffect,
   trackedListRequest,
 } from '../../batch-actions/batch-actions.effects';
-import { isBatchBusy, newBatchRequestId } from '../../batch-actions/batch-actions.models';
+import { isBatchBusy } from '../../batch-actions/batch-actions.models';
 import { batchResultCounts } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectSegmentsState } from './segments.selectors';
-import { batchInvalidationTypes } from '../../batch-actions/batch-actions.invalidation';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
@@ -32,17 +27,6 @@ import { CommonModalEventsService } from '../../../shared/services/common-modal-
 
 @Injectable()
 export class SegmentsEffects {
-  focusBatchEligibility$ = createEffect(() =>
-    selectionFocusEffect(this.store$.pipe(select(selectRootBatch)), SegmentsActions.batchActions)
-  );
-  batchEligibility$ = createEffect(() =>
-    eligibilityEffect(
-      this.actions$,
-      this.store$.pipe(select(selectRootBatch)),
-      SegmentsActions.batchActions,
-      this.segmentsDataService
-    )
-  );
   batchDelete$ = createEffect(() =>
     batchDeleteEffect(
       this.actions$,
@@ -57,13 +41,6 @@ export class SegmentsEffects {
       this.store$.pipe(select(selectRootBatch)),
       SegmentsActions.batchActions,
       this.segmentsDataService
-    )
-  );
-  refreshBatchEligibility$ = createEffect(() =>
-    refreshSelectedEffect(
-      this.actions$,
-      SegmentsActions.batchActions,
-      batchInvalidationTypes.filter((type) => type !== SegmentsActions.batchActions.batchDeleteCompleted.type)
     )
   );
   finishBatch$ = createEffect(() =>
@@ -86,18 +63,6 @@ export class SegmentsEffects {
           SegmentsActions.actionFetchSegments({ fromStarting: true, batchRefresh: true }),
           ...(counts.deleted || counts.absent ? [SegmentsActions.actionFetchListSegmentOptions()] : []),
         ];
-      }
-    )
-  );
-
-  reconcileMissingSelections$ = createEffect(() =>
-    eligibilityAbsenceEffect(
-      this.actions$,
-      this.store$.pipe(select(selectRootBatch)),
-      SegmentsActions.batchActions,
-      (count) => {
-        this.notificationService.showInfo(this.translate.instant('batch-delete.selection.absent', { count }));
-        return [SegmentsActions.actionFetchSegments({ fromStarting: true, batchRefresh: true })];
       }
     )
   );
@@ -153,26 +118,8 @@ export class SegmentsEffects {
               fromStarting,
               batchListRequestId: requestId,
             }),
-            ...(action.batchRefresh
-              ? [
-                  SegmentsActions.batchActions.refreshEligibility({
-                    requestId: newBatchRequestId(),
-                    forConfirmation: false,
-                  }),
-                ]
-              : []),
           ],
-          () => [
-            SegmentsActions.actionFetchSegmentsFailure(),
-            ...(action.batchRefresh
-              ? [
-                  SegmentsActions.batchActions.refreshEligibility({
-                    requestId: newBatchRequestId(),
-                    forConfirmation: false,
-                  }),
-                ]
-              : []),
-          ]
+          () => [SegmentsActions.actionFetchSegmentsFailure()]
         );
       })
     )

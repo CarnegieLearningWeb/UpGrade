@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import {
   ChangeDetectionStrategy,
@@ -30,6 +31,7 @@ import {
 @Component({
   selector: 'app-segment-root-section-card-table',
   imports: [
+    MatCheckboxModule,
     MatTableModule,
     AsyncPipe,
     SharedModule,
@@ -55,6 +57,7 @@ export class SegmentRootSectionCardTableComponent implements AfterViewInit, OnDe
   @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
 
   private observer: IntersectionObserver;
+  readonly batch = this.segmentsService.batch;
 
   constructor(private segmentsService: SegmentsService) {}
 

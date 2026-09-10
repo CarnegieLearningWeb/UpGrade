@@ -36,8 +36,8 @@ module.exports = {
     '<rootDir>/dist/',
     '<rootDir>/e2e/',
     '<rootDir>/src/environments/',
-    // Dashboard specs are excluded except the routing spec, which guards subtle redirect behavior
-    '<rootDir>/src/app/features/dashboard/(?!dashboard-routing\\.spec)',
+    // Keep the routing and batch root UI integration specs discoverable.
+    '<rootDir>/src/app/features/dashboard/(?!dashboard-routing\\.spec|batch-delete-ui\\.spec)',
     '<rootDir>/src/app/shared/',
   ],
 

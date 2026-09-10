@@ -41,6 +41,8 @@
   @include custom-components-theme($light-theme);
 }
 
+@import './styles/batch-selection';
+
 .dense-1 {
   @include mat.all-component-densities(-1);
 }

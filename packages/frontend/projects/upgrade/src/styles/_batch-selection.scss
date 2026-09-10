@@ -1,0 +1,56 @@
+@use '@angular/material' as mat;
+
+.batch-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.batch-name-text {
+  flex: 1;
+  min-width: 0;
+}
+
+// Match the theme's checkbox specificity; this partial is loaded after the theme.
+.batch-name-cell .mat-mdc-checkbox.batch-checkbox {
+  flex: 0 0 40px;
+  width: 40px;
+
+  @include mat.checkbox-overrides(
+    (
+      unselected-icon-color: #adadad,
+      unselected-hover-icon-color: #adadad,
+      unselected-focus-icon-color: #adadad,
+      selected-hover-state-layer-opacity: 0,
+      unselected-hover-state-layer-opacity: 0,
+      selected-focus-state-layer-opacity: 0,
+      unselected-focus-state-layer-opacity: 0,
+      selected-pressed-state-layer-opacity: 0,
+      unselected-pressed-state-layer-opacity: 0,
+    )
+  );
+
+  // Keep keyboard focus visible without leaving a circle after a pointer click.
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--blue);
+    outline-offset: -4px;
+    border-radius: 4px;
+  }
+}
+
+.batch-name-sort {
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .batch-checkbox {
+    opacity: 0;
+  }
+  .mat-mdc-row:hover .batch-checkbox,
+  .mat-mdc-header-row:hover .batch-checkbox,
+  .batch-checkbox:has(input:focus-visible),
+  .has-batch-selection .batch-checkbox {
+    opacity: 1;
+  }
+}

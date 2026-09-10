@@ -1,7 +1,6 @@
 import { Action } from '@ngrx/store';
-import { EMPTY, Observable, concat, defer, fromEvent, merge, of } from 'rxjs';
+import { Observable, concat, defer, of } from 'rxjs';
 import {
-  auditTime,
   catchError,
   distinctUntilChanged,
   exhaustMap,
@@ -15,40 +14,12 @@ import {
 } from 'rxjs/operators';
 import { BatchDeleteResult, DeletionEligibilityResult } from 'upgrade_types';
 import { RootBatchActions } from './batch-actions.actions';
-import { RootBatchState, isBatchBusy, newBatchRequestId } from './batch-actions.models';
+import { RootBatchState, newBatchRequestId } from './batch-actions.models';
 import { validateBatchResponse, validateEligibilityResponse } from './batch-actions.helpers';
 
 export interface BatchDataSource {
   checkDeletionEligibility(ids: string[]): Observable<DeletionEligibilityResult>;
   batchDelete(ids: string[]): Observable<BatchDeleteResult>;
-}
-
-export function eligibilityEffect(
-  events: Observable<Action>,
-  state$: Observable<RootBatchState>,
-  actions: RootBatchActions,
-  data: BatchDataSource
-) {
-  return events.pipe(
-    filter((action) => action.type === actions.refreshEligibility.type),
-    withLatestFrom(state$),
-    filter(
-      ([action, state]) =>
-        (action as ReturnType<typeof actions.refreshEligibility>).requestId === state.eligibility.requestId
-    ),
-    switchMap(([, state]) => {
-      const { requestId, revision } = state.eligibility;
-      const ids = Object.keys(state.selectedById);
-      return defer(() => data.checkDeletionEligibility(ids)).pipe(
-        throwIfEmpty(),
-        map((result) =>
-          actions.eligibilitySucceeded({ requestId, revision, result: validateEligibilityResponse(result, ids) })
-        ),
-        catchError(() => of(actions.eligibilityFailed({ requestId, revision }))),
-        takeUntil(state$.pipe(filter((current) => current.eligibility.requestId !== requestId)))
-      );
-    })
-  );
 }
 
 export function batchDeleteEffect(
@@ -142,55 +113,6 @@ export function batchFinishedEffect(
       (previous, current) => previous[1].operation.snapshot.operationId === current[1].operation.snapshot.operationId
     ),
     switchMap(([, state]) => finish(state))
-  );
-}
-
-/** Invalidation changes the revision before the read is dispatched. Coalescing is enforced in the reducer. */
-export function refreshSelectedEffect(
-  events: Observable<Action>,
-  actions: RootBatchActions,
-  invalidatingTypes: string[]
-) {
-  return events.pipe(
-    filter((action) => invalidatingTypes.includes(action.type)),
-    switchMap(() => [
-      actions.invalidateEligibility(),
-      actions.refreshEligibility({ requestId: newBatchRequestId(), forConfirmation: false }),
-    ])
-  );
-}
-
-export function selectionFocusEffect(state$: Observable<RootBatchState>, actions: RootBatchActions) {
-  return defer(() =>
-    typeof window === 'undefined'
-      ? EMPTY
-      : merge(
-          fromEvent(window, 'focus'),
-          fromEvent(document, 'visibilitychange').pipe(filter(() => document.visibilityState === 'visible'))
-        )
-  ).pipe(
-    auditTime(100),
-    withLatestFrom(state$),
-    filter(([, state]) => !!Object.keys(state.selectedById).length && !isBatchBusy(state)),
-    map(() => actions.refreshEligibility({ requestId: newBatchRequestId(), forConfirmation: false }))
-  );
-}
-
-export function eligibilityAbsenceEffect(
-  events: Observable<Action>,
-  state$: Observable<RootBatchState>,
-  actions: RootBatchActions,
-  finish: (count: number) => Action[]
-) {
-  return events.pipe(
-    filter((action) => action.type === actions.eligibilitySucceeded.type),
-    withLatestFrom(state$),
-    filter(
-      ([action, state]) =>
-        (action as ReturnType<typeof actions.eligibilitySucceeded>).requestId === state.eligibility.requestId &&
-        !!state.eligibility.absentIds?.length
-    ),
-    switchMap(([, state]) => finish(state.eligibility.absentIds.length))
   );
 }
 

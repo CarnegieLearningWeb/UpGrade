@@ -1,8 +1,14 @@
 <mat-card class="common-modal">
   <!-- top part of the dialog -->
   <header class="header-container dense-2">
-    <h4 class="ft-22-700 header-title">{{ title | translate }}</h4>
-    <button mat-icon-button mat-dialog-close class="close-btn">
+    <h4 class="ft-22-700 header-title" [attr.id]="titleId">{{ title | translate }}</h4>
+    <button
+      mat-icon-button
+      mat-dialog-close
+      class="close-btn"
+      [disabled]="dismissalDisabled"
+      [attr.aria-label]="'global.close-dialog.text' | translate"
+    >
       <mat-icon>close</mat-icon>
     </button>
   </header>
@@ -14,9 +20,10 @@
   <!-- bottom part of the dialog -->
   @if (!hideFooter) {
   <section class="footer-container">
-    <button mat-flat-button mat-dialog-close class="dialog-action-btn cancel-btn">
+    <button mat-flat-button mat-dialog-close class="dialog-action-btn cancel-btn" [disabled]="dismissalDisabled">
       {{ cancelBtnLabel | translate }}
     </button>
+    @if (!hidePrimaryAction) {
     <button
       class="dialog-action-btn"
       mat-flat-button
@@ -26,6 +33,7 @@
     >
       {{ primaryActionBtnLabel | translate }}
     </button>
+    }
   </section>
   }
 </mat-card>

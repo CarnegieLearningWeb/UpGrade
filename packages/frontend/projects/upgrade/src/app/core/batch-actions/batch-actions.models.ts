@@ -22,14 +22,6 @@ export interface RootBatchState {
   listLoading: boolean;
   listRefreshFailed: boolean;
   removedIds: string[];
-  eligibility: {
-    status: 'idle' | 'checking' | 'ready' | 'failed';
-    requestId?: string;
-    revision?: number;
-    forConfirmation?: boolean;
-    allDeletable?: boolean;
-    absentIds?: string[];
-  };
   confirmation: BatchDeleteSnapshot | null;
   operation: {
     snapshot: BatchDeleteSnapshot;
@@ -51,7 +43,6 @@ export const initialRootBatchState: RootBatchState = {
   listLoading: false,
   listRefreshFailed: false,
   removedIds: [],
-  eligibility: { status: 'idle' },
   confirmation: null,
   operation: null,
 };

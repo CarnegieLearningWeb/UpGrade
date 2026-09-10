@@ -9,16 +9,7 @@ export function createBatchActions(source: string) {
     toggleHeader: createAction(`${prefix} Toggle Header`, props<{ items: RootSelectionItem[] }>()),
     clearSelection: createAction(`${prefix} Clear Selection`),
     confirmedRemoved: createAction(`${prefix} Confirmed Removed`, props<{ ids: string[] }>()),
-    invalidateEligibility: createAction(`${prefix} Invalidate Eligibility`),
-    refreshEligibility: createAction(
-      `${prefix} Refresh Eligibility`,
-      props<{ requestId: string; forConfirmation: boolean }>()
-    ),
-    eligibilitySucceeded: createAction(
-      `${prefix} Eligibility Succeeded`,
-      props<{ requestId: string; revision: number; result: DeletionEligibilityResult }>()
-    ),
-    eligibilityFailed: createAction(`${prefix} Eligibility Failed`, props<{ requestId: string; revision: number }>()),
+    prepareConfirmation: createAction(`${prefix} Prepare Confirmation`, props<{ operationId: string }>()),
     dismissConfirmation: createAction(`${prefix} Dismiss Confirmation`),
     batchDeleteRequested: createAction(`${prefix} Delete Requested`, props<{ snapshot: BatchDeleteSnapshot }>()),
     batchDeleteCompleted: createAction(

@@ -1,17 +1,12 @@
 import {
-  selectionFocusEffect,
-  eligibilityAbsenceEffect,
-  eligibilityEffect,
   batchDeleteEffect,
   reconcileBatchEffect,
   batchFinishedEffect,
-  refreshSelectedEffect,
   trackedListRequest,
 } from '../../batch-actions/batch-actions.effects';
-import { isBatchBusy, newBatchRequestId } from '../../batch-actions/batch-actions.models';
+import { isBatchBusy } from '../../batch-actions/batch-actions.models';
 import { batchResultCounts } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectFeatureFlagsState } from './feature-flags.selectors';
-import { batchInvalidationTypes } from '../../batch-actions/batch-actions.invalidation';
 import { actionFetchListSegmentOptions } from '../../segments/store/segments.actions';
 import { FeatureFlagsDataService } from '../feature-flags.data.service';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
@@ -35,17 +30,6 @@ import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/comm
 
 @Injectable()
 export class FeatureFlagsEffects {
-  focusBatchEligibility$ = createEffect(() =>
-    selectionFocusEffect(this.store$.pipe(select(selectRootBatch)), FeatureFlagsActions.batchActions)
-  );
-  batchEligibility$ = createEffect(() =>
-    eligibilityEffect(
-      this.actions$,
-      this.store$.pipe(select(selectRootBatch)),
-      FeatureFlagsActions.batchActions,
-      this.featureFlagsDataService
-    )
-  );
   batchDelete$ = createEffect(() =>
     batchDeleteEffect(
       this.actions$,
@@ -60,13 +44,6 @@ export class FeatureFlagsEffects {
       this.store$.pipe(select(selectRootBatch)),
       FeatureFlagsActions.batchActions,
       this.featureFlagsDataService
-    )
-  );
-  refreshBatchEligibility$ = createEffect(() =>
-    refreshSelectedEffect(
-      this.actions$,
-      FeatureFlagsActions.batchActions,
-      batchInvalidationTypes.filter((type) => type !== FeatureFlagsActions.batchActions.batchDeleteCompleted.type)
     )
   );
   finishBatch$ = createEffect(() =>
@@ -89,18 +66,6 @@ export class FeatureFlagsEffects {
           FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting: true, batchRefresh: true }),
           ...(counts.deleted || counts.absent ? [actionFetchListSegmentOptions()] : []),
         ];
-      }
-    )
-  );
-
-  reconcileMissingSelections$ = createEffect(() =>
-    eligibilityAbsenceEffect(
-      this.actions$,
-      this.store$.pipe(select(selectRootBatch)),
-      FeatureFlagsActions.batchActions,
-      (count) => {
-        this.notificationService.showInfo(this.translate.instant('batch-delete.selection.absent', { count }));
-        return [FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting: true, batchRefresh: true })];
       }
     )
   );
@@ -151,26 +116,8 @@ export class FeatureFlagsEffects {
               fromStarting,
               batchListRequestId: requestId,
             }),
-            ...(action.batchRefresh
-              ? [
-                  FeatureFlagsActions.batchActions.refreshEligibility({
-                    requestId: newBatchRequestId(),
-                    forConfirmation: false,
-                  }),
-                ]
-              : []),
           ],
-          () => [
-            FeatureFlagsActions.actionFetchFeatureFlagsFailure(),
-            ...(action.batchRefresh
-              ? [
-                  FeatureFlagsActions.batchActions.refreshEligibility({
-                    requestId: newBatchRequestId(),
-                    forConfirmation: false,
-                  }),
-                ]
-              : []),
-          ]
+          () => [FeatureFlagsActions.actionFetchFeatureFlagsFailure()]
         );
       })
     )

@@ -13,7 +13,7 @@ function matches<C extends { type: string; (...args: any[]): Action }>(
 }
 
 export function invalidateSelection(state: RootBatchState): RootBatchState {
-  return { ...state, revision: state.revision + 1, eligibility: { status: 'idle' }, confirmation: null };
+  return { ...state, revision: state.revision + 1, confirmation: null };
 }
 
 function removeConfirmed(state: RootBatchState, ids: string[]): RootBatchState {
@@ -94,7 +94,6 @@ export function reduceRootBatch(
     return action.requestId === state.listRequestId
       ? { ...state, listLoading: false, listRefreshFailed: action.batchRefresh }
       : state;
-  if (matches(action, actions.invalidateEligibility)) return invalidateSelection(state);
   if (matches(action, actions.confirmedRemoved)) return removeConfirmed(state, action.ids);
   if (
     matches(action, actions.clearSelection) ||
@@ -126,67 +125,17 @@ export function reduceRootBatch(
     }
     return { ...invalidateSelection(state), selectedById };
   }
-  if (matches(action, actions.refreshEligibility)) {
-    if (isBatchBusy(state) || !Object.keys(state.selectedById).length) return state;
-    if (state.confirmation && !action.forConfirmation) return state;
-    if (state.eligibility.status === 'checking' && state.eligibility.revision === state.revision) {
-      return {
-        ...state,
-        eligibility: {
-          ...state.eligibility,
-          forConfirmation: state.eligibility.forConfirmation || action.forConfirmation,
-        },
-      };
-    }
+  if (matches(action, actions.prepareConfirmation)) {
+    const selection = selectionView(state, entity);
+    if (state.confirmation || !selection.canRequestConfirmation) return state;
+    // Use retained row metadata, including hidden selections. The delete endpoint validates current eligibility.
     return {
       ...state,
-      confirmation: null,
-      eligibility: {
-        status: 'checking',
-        requestId: action.requestId,
+      confirmation: {
+        operationId: action.operationId,
         revision: state.revision,
-        forConfirmation: action.forConfirmation,
-      },
-    };
-  }
-  if (matches(action, actions.eligibilitySucceeded) || matches(action, actions.eligibilityFailed)) {
-    if (action.requestId !== state.eligibility.requestId || action.revision !== state.revision) return state;
-    if (matches(action, actions.eligibilityFailed))
-      return { ...state, confirmation: null, eligibility: { status: 'failed' } };
-    const selectedById = { ...state.selectedById };
-    for (const item of action.result.items) {
-      if (selectedById[item.id]) {
-        const { id, name, stateOrStatus, segmentType, availability, reasonCode } = item;
-        selectedById[id] = {
-          id,
-          name: name || selectedById[id].name,
-          stateOrStatus,
-          segmentType,
-          availability,
-          reasonCode,
-        };
-      }
-    }
-    const allDeletable = action.result.allDeletable && hasBatchDeletePermission(state.role, entity);
-    const confirmation =
-      state.eligibility.forConfirmation && allDeletable
-        ? {
-            operationId: action.requestId,
-            revision: state.revision,
-            items: Object.values(selectedById).map((item) => ({ ...item })),
-            notShownCount: selectionView(state, entity).notShownCount,
-          }
-        : null;
-    const absentIds = action.result.items.filter((item) => item.availability === 'not_found').map((item) => item.id);
-    return {
-      ...removeConfirmed({ ...state, selectedById }, absentIds),
-      confirmation: absentIds.length ? null : confirmation,
-      eligibility: {
-        status: 'ready',
-        requestId: action.requestId,
-        revision: action.revision,
-        allDeletable: allDeletable && !absentIds.length,
-        absentIds,
+        items: selection.items.map((item) => ({ ...item })),
+        notShownCount: selection.notShownCount,
       },
     };
   }

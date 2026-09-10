@@ -26,11 +26,14 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class CommonModalComponent {
   @Input() title = '';
+  @Input() titleId?: string;
   @Input() cancelBtnLabel = 'Cancel';
   @Input() primaryActionBtnLabel = 'Submit';
   @Input() primaryActionBtnColor = 'primary';
   @Input() hideFooter = false;
   @Input() primaryActionBtnDisabled = false;
+  @Input() dismissalDisabled = false;
+  @Input() hidePrimaryAction = false;
   @Output() primaryActionBtnClicked = new EventEmitter<string>();
 
   onPrimaryActionBtnClicked() {

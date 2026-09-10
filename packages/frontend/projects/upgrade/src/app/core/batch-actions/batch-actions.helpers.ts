@@ -56,7 +56,6 @@ export function selectionView(state: RootBatchState, entity: BatchDeleteEntity) 
     canToggleHeader: !isBatchBusy(state) && (items.length > 0 || (!state.listLoading && loaded.size > 0)),
     canRequestConfirmation: items.length > 0 && !reasons.length && !isBatchBusy(state),
     reasonCode: reasons[0],
-    checking: state.eligibility.status === 'checking',
     busy: isBatchBusy(state),
   };
 }

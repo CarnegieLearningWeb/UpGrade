@@ -1,17 +1,12 @@
 import {
-  selectionFocusEffect,
-  eligibilityAbsenceEffect,
-  eligibilityEffect,
   batchDeleteEffect,
   reconcileBatchEffect,
   batchFinishedEffect,
-  refreshSelectedEffect,
   trackedListRequest,
 } from '../../batch-actions/batch-actions.effects';
-import { isBatchBusy, newBatchRequestId } from '../../batch-actions/batch-actions.models';
+import { isBatchBusy } from '../../batch-actions/batch-actions.models';
 import { batchResultCounts } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectExperimentState } from './experiments.selectors';
-import { batchInvalidationTypes } from '../../batch-actions/batch-actions.invalidation';
 import { actionFetchListSegmentOptions } from '../../segments/store/segments.actions';
 import { Inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
@@ -48,17 +43,6 @@ import { LIST_FILTER_MODE } from 'upgrade_types';
 import { LIST_OPTION_TYPE } from '../../segments/store/segments.model';
 @Injectable()
 export class ExperimentEffects {
-  focusBatchEligibility$ = createEffect(() =>
-    selectionFocusEffect(this.store$.pipe(select(selectRootBatch)), experimentAction.batchActions)
-  );
-  batchEligibility$ = createEffect(() =>
-    eligibilityEffect(
-      this.actions$,
-      this.store$.pipe(select(selectRootBatch)),
-      experimentAction.batchActions,
-      this.experimentDataService
-    )
-  );
   batchDelete$ = createEffect(() =>
     batchDeleteEffect(
       this.actions$,
@@ -73,13 +57,6 @@ export class ExperimentEffects {
       this.store$.pipe(select(selectRootBatch)),
       experimentAction.batchActions,
       this.experimentDataService
-    )
-  );
-  refreshBatchEligibility$ = createEffect(() =>
-    refreshSelectedEffect(
-      this.actions$,
-      experimentAction.batchActions,
-      batchInvalidationTypes.filter((type) => type !== experimentAction.batchActions.batchDeleteCompleted.type)
     )
   );
   finishBatch$ = createEffect(() =>
@@ -109,18 +86,6 @@ export class ExperimentEffects {
               ]
             : []),
         ];
-      }
-    )
-  );
-
-  reconcileMissingSelections$ = createEffect(() =>
-    eligibilityAbsenceEffect(
-      this.actions$,
-      this.store$.pipe(select(selectRootBatch)),
-      experimentAction.batchActions,
-      (count) => {
-        this.notificationService.showInfo(this.translate.instant('batch-delete.selection.absent', { count }));
-        return [experimentAction.actionGetExperiments({ fromStarting: true, batchRefresh: true })];
       }
     )
   );
@@ -173,26 +138,8 @@ export class ExperimentEffects {
               batchListRequestId: requestId,
             }),
             experimentAction.actionFetchExperimentStats({ experimentIds: data.nodes.map((row) => row.id) }),
-            ...(action.batchRefresh
-              ? [
-                  experimentAction.batchActions.refreshEligibility({
-                    requestId: newBatchRequestId(),
-                    forConfirmation: false,
-                  }),
-                ]
-              : []),
           ],
-          () => [
-            experimentAction.actionGetExperimentsFailure({ error: null }),
-            ...(action.batchRefresh
-              ? [
-                  experimentAction.batchActions.refreshEligibility({
-                    requestId: newBatchRequestId(),
-                    forConfirmation: false,
-                  }),
-                ]
-              : []),
-          ]
+          () => [experimentAction.actionGetExperimentsFailure({ error: null })]
         );
       })
     )

@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import {
   ChangeDetectionStrategy,
@@ -31,6 +32,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 @Component({
   selector: 'app-experiment-root-section-card-table',
   imports: [
+    MatCheckboxModule,
     MatTableModule,
     AsyncPipe,
     SharedModule,
@@ -58,6 +60,7 @@ export class ExperimentRootSectionCardTableComponent implements AfterViewInit, O
   @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
 
   private observer: IntersectionObserver;
+  readonly batch = this.experimentService.batch;
 
   constructor(private readonly experimentService: ExperimentService) {}
 

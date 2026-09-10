@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { RootBatchActionsDirective } from '../../../../../../../shared/directives/root-batch-actions.directive';
+import { CommonBatchSelectionStatusComponent } from '@shared-component-lib/common-batch-selection-status/common-batch-selection-status.component';
 import {
   CommonSectionCardComponent,
   CommonSectionCardSearchHeaderComponent,
@@ -23,6 +25,8 @@ import { StratificationFactorsService } from '../../../../../../../core/stratifi
 @Component({
   selector: 'app-experiment-root-section-card',
   imports: [
+    RootBatchActionsDirective,
+    CommonBatchSelectionStatusComponent,
     CommonSectionCardComponent,
     CommonSectionCardSearchHeaderComponent,
     CommonSectionCardActionButtonsComponent,
@@ -37,6 +41,12 @@ import { StratificationFactorsService } from '../../../../../../../core/stratifi
 })
 export class ExperimentRootSectionCardComponent {
   permissions$: Observable<UserPermission>;
+  readonly batch = this.experimentService.batch;
+  @ViewChild(RootBatchActionsDirective) batchUi: RootBatchActionsDirective;
+
+  reloadBatchList() {
+    this.experimentService.loadExperiments(true);
+  }
   experiments$ = this.experimentService.experiments$;
   isLoadingExperiments$ = this.experimentService.isLoadingExperiment$;
   isInitialLoading$ = this.experimentService.haveInitialExperimentsLoaded();
@@ -101,6 +111,10 @@ export class ExperimentRootSectionCardComponent {
   }
 
   onMenuButtonItemClick(action: string) {
+    if (action === 'batch-delete') {
+      this.batchUi.requestDelete();
+      return;
+    }
     if (action === EXPERIMENT_BUTTON_ACTION.IMPORT) {
       this.dialogService.openImportExperimentModal();
     }

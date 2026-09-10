@@ -24,10 +24,7 @@ export function createBatchFacade(
         .pipe(select(selectRows), take(1))
         .subscribe((rows) => store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }))),
     clear: () => store.dispatch(actions.clearSelection()),
-    refresh: () =>
-      store.dispatch(actions.refreshEligibility({ requestId: newBatchRequestId(), forConfirmation: false })),
-    prepareConfirmation: () =>
-      store.dispatch(actions.refreshEligibility({ requestId: newBatchRequestId(), forConfirmation: true })),
+    prepareConfirmation: () => store.dispatch(actions.prepareConfirmation({ operationId: newBatchRequestId() })),
     dismissConfirmation: () => store.dispatch(actions.dismissConfirmation()),
     submit: (operationId: string) =>
       state$.pipe(take(1)).subscribe((state) => {
@@ -36,3 +33,5 @@ export function createBatchFacade(
       }),
   };
 }
+
+export type BatchFacade = ReturnType<typeof createBatchFacade>;

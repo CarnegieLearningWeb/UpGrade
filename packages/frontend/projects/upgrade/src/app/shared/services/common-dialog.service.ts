@@ -71,6 +71,10 @@ import {
   EditPayloadModalParams,
 } from '../../features/dashboard/experiments/modals/edit-payload-modal/edit-payload-modal.component';
 import { Observable } from 'rxjs';
+import { BatchDeleteEntity } from 'upgrade_types';
+import { BatchFacade } from '../../core/batch-actions/batch-actions.facade';
+import { BatchDeleteSnapshot } from '../../core/batch-actions/batch-actions.models';
+import { CommonBatchDeleteModalComponent } from '@shared-component-lib/common-batch-delete-modal/common-batch-delete-modal.component';
 
 export interface ImportModalParams {
   importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
@@ -108,6 +112,17 @@ export interface UpsertMetricModalParams {
 })
 export class DialogService {
   constructor(private dialog: MatDialog) {}
+
+  openBatchDeleteModal(entity: BatchDeleteEntity, snapshot: BatchDeleteSnapshot, facade: BatchFacade) {
+    return this.dialog.open(CommonBatchDeleteModalComponent, {
+      data: { entity, snapshot, facade },
+      width: ModalSize.MEDIUM,
+      autoFocus: '#batch-delete-keyword',
+      ariaLabelledBy: 'batch-delete-title',
+      disableClose: false,
+      restoreFocus: false,
+    });
+  }
 
   openAddExperimentModal() {
     const commonModalConfig: CommonModalConfig = {
