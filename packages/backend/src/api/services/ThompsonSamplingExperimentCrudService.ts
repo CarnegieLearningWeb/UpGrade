@@ -154,9 +154,9 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
   ): Promise<ThompsonSamplingExperimentConfig> {
     const config = await this.configRepository.save({
       experimentId,
-      warmupThreshold: params.warmupThreshold ?? null,
-      minimumDrawDifference: params.minimumDrawDifference ?? null,
-      batchSize: params.batchSize ?? null,
+      warmupThreshold: params.warmupThreshold ?? 0,
+      minimumDrawDifference: params.minimumDrawDifference ?? 0,
+      batchSize: params.batchSize ?? 1,
     });
 
     await Promise.all(

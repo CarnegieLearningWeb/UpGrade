@@ -34,7 +34,7 @@ export function formatThompsonSamplingConfigDetails(
     { labelKey: THOMPSON_SAMPLING_OVERVIEW_PARAM_LABELS.WARMUP_THRESHOLD, value: config?.warmupThreshold },
     {
       labelKey: THOMPSON_SAMPLING_OVERVIEW_PARAM_LABELS.MINIMUM_DRAW_DIFFERENCE,
-      value: config?.minimumDrawDifference,
+      value: config?.minimumDrawDifference?.toFixed(1),
     },
   ];
 }

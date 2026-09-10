@@ -20,7 +20,7 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
       `ALTER TYPE "public"."experiment_assignmentalgorithm_enum" RENAME TO "experiment_assignmentalgorithm_enum_old"`
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."experiment_assignmentalgorithm_enum" AS ENUM('random', 'stratified random sampling', 'uniform_random', 'thompson_sampling')`
+      `CREATE TYPE "public"."experiment_assignmentalgorithm_enum" AS ENUM('random', 'stratified random sampling', 'thompson_sampling')`
     );
     await queryRunner.query(`ALTER TABLE "experiment" ALTER COLUMN "assignmentAlgorithm" DROP DEFAULT`);
     await queryRunner.query(`
@@ -44,9 +44,9 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
       `CREATE TABLE "thompson_sampling_experiment_config" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
         "experimentId" uuid,
-        "warmupThreshold" integer,
-        "minimumDrawDifference" double precision,
-        "batchSize" integer,
+        "warmupThreshold" integer NOT NULL DEFAULT 0,
+        "minimumDrawDifference" double precision NOT NULL DEFAULT 0,
+        "batchSize" integer NOT NULL DEFAULT 1,
         "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
         "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
         "versionNumber" integer NOT NULL,
@@ -157,7 +157,7 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
       `ALTER TYPE "public"."experiment_assignmentalgorithm_enum" RENAME TO "experiment_assignmentalgorithm_enum_old"`
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."experiment_assignmentalgorithm_enum" AS ENUM('random', 'stratified random sampling', 'uniform_random', 'ts_configurable')`
+      `CREATE TYPE "public"."experiment_assignmentalgorithm_enum" AS ENUM('random', 'stratified random sampling', 'ts_configurable')`
     );
     await queryRunner.query(`ALTER TABLE "experiment" ALTER COLUMN "assignmentAlgorithm" DROP DEFAULT`);
     await queryRunner.query(

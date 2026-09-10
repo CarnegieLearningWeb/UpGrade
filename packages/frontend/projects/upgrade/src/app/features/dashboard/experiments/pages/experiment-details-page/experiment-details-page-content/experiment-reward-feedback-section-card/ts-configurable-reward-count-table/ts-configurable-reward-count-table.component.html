@@ -8,7 +8,7 @@
   <table mat-table [dataSource]="dataSource" [ngClass]="{ 'no-data': !dataSource?.length }">
     <!-- Condition Column -->
     <ng-container matColumnDef="conditionCode">
-      <th mat-header-cell *matHeaderCellDef class="condition-column ft-14-600">
+      <th mat-header-cell *matHeaderCellDef [attr.rowspan]="2" class="condition-column ft-14-600">
         {{ 'experiments.details.posteriors.condition.text' | translate }}
       </th>
       <td mat-cell *matCellDef="let row" class="condition-column ft-14-400">
@@ -16,10 +16,17 @@
       </td>
     </ng-container>
 
+    <!-- Successes Group Header -->
+    <ng-container matColumnDef="successesGroup">
+      <th mat-header-cell *matHeaderCellDef [attr.colspan]="3" class="data-column group-header ft-14-600">
+        {{ 'experiments.details.posteriors.successes.text' | translate }}
+      </th>
+    </ng-container>
+
     <!-- Successes Column -->
     <ng-container matColumnDef="successes">
       <th mat-header-cell *matHeaderCellDef class="successes-column data-column ft-14-600">
-        {{ 'experiments.details.posteriors.successes.text' | translate }}
+        {{ 'experiments.details.posteriors.count.text' | translate }}
       </th>
       <td mat-cell *matCellDef="let row" class="successes-column data-column ft-14-400">
         {{ row.successes }}
@@ -48,14 +55,21 @@
 
     <!-- Spacer Column -->
     <ng-container matColumnDef="spacer">
-      <th mat-header-cell *matHeaderCellDef class="spacer-column"></th>
+      <th mat-header-cell *matHeaderCellDef [attr.rowspan]="2" class="spacer-column"></th>
       <td mat-cell *matCellDef="let row" class="spacer-column"></td>
+    </ng-container>
+
+    <!-- Failures Group Header -->
+    <ng-container matColumnDef="failuresGroup">
+      <th mat-header-cell *matHeaderCellDef [attr.colspan]="3" class="data-column group-header ft-14-600">
+        {{ 'experiments.details.posteriors.failures.text' | translate }}
+      </th>
     </ng-container>
 
     <!-- Failures Column -->
     <ng-container matColumnDef="failures">
       <th mat-header-cell *matHeaderCellDef class="failures-column data-column ft-14-600">
-        {{ 'experiments.details.posteriors.failures.text' | translate }}
+        {{ 'experiments.details.posteriors.count.text' | translate }}
       </th>
       <td mat-cell *matCellDef="let row" class="failures-column data-column ft-14-400">
         {{ row.failures }}
@@ -87,6 +101,7 @@
       <th
         mat-header-cell
         *matHeaderCellDef
+        [attr.rowspan]="2"
         class="estimated-weight-column data-column ft-14-600"
         [matTooltip]="'experiments.details.posteriors.estimated-weight-tooltip.text' | translate"
         matTooltipPosition="above"
@@ -99,7 +114,8 @@
     </ng-container>
 
     <!-- Header and Row Definitions -->
-    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-header-row *matHeaderRowDef="groupHeaderColumns; sticky: true"></tr>
+    <tr mat-header-row *matHeaderRowDef="subHeaderColumns; sticky: true"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
     <!-- No Data Row -->

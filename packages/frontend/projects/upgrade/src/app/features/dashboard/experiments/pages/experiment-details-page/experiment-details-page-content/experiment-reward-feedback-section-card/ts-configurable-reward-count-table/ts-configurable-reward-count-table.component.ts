@@ -18,6 +18,10 @@ export class TSConfigurableRewardCountTableComponent {
   @Input() dataSource: ExperimentRewardsSummary = [];
   @Input() isLoading = false;
 
+  groupHeaderColumns = ['conditionCode', 'successesGroup', 'spacer', 'failuresGroup', 'estimatedWeight'];
+
+  subHeaderColumns = ['successes', 'successPrior', 'successPosterior', 'failures', 'failurePrior', 'failurePosterior'];
+
   displayedColumns = [
     'conditionCode',
     'successes',

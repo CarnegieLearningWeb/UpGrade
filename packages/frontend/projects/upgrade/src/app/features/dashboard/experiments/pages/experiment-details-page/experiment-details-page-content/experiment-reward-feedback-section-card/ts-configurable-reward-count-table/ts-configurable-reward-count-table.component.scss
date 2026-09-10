@@ -28,7 +28,10 @@
         th {
           padding-left: 0;
           color: var(--darker-grey);
+          vertical-align: bottom;
+        }
 
+        &:first-of-type th {
           &:first-child {
             border-top-left-radius: 4px;
           }
@@ -37,6 +40,14 @@
             border-top-right-radius: 4px;
           }
         }
+
+        &:last-of-type th {
+          border-top: 1px solid var(--light-grey-2);
+        }
+      }
+
+      .group-header {
+        text-align: center;
       }
     }
 

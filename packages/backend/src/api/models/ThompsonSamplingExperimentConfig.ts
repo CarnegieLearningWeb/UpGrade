@@ -16,16 +16,16 @@ export class ThompsonSamplingExperimentConfig extends BaseModel {
   experimentId?: string;
 
   /** Use uniform random selection until total reward observations exceed this count. */
-  @Column({ nullable: true })
-  warmupThreshold?: number;
+  @Column({ default: 0 })
+  warmupThreshold: number;
 
   /** Fall back to uniform when the top two sampled draws differ by less than this value. */
-  @Column({ nullable: true, type: 'float' })
-  minimumDrawDifference?: number;
+  @Column({ type: 'float', default: 0 })
+  minimumDrawDifference: number;
 
   /** Update posteriors every N reward events rather than on every reward. */
-  @Column({ nullable: true })
-  batchSize?: number;
+  @Column({ default: 1 })
+  batchSize: number;
 
   @OneToMany(() => ConditionPosteriorState, (state) => state.config, {
     cascade: true,

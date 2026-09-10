@@ -578,6 +578,7 @@
   "experiments.details.export-metrics-data.menu-item.text": "Export Metrics Data",
   "experiments.details.posteriors.condition.text": "Condition",
   "experiments.details.posteriors.successes.text": "Successes",
+  "experiments.details.posteriors.count.text": "Count",
   "experiments.details.posteriors.prior.text": "Prior",
   "experiments.details.posteriors.posterior.text": "Posterior",
   "experiments.details.posteriors.failures.text": "Failures",
