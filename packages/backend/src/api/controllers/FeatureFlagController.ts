@@ -1,3 +1,6 @@
+import { DeletionEligibilityResult } from 'upgrade_types';
+import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
+import { DeletionEligibilityService } from '../services/batch/DeletionEligibilityService';
 import {
   JsonController,
   Authorized,
@@ -154,7 +157,43 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/flags')
 export class FeatureFlagsController {
-  constructor(public featureFlagService: FeatureFlagService, public experimentUserService: ExperimentUserService) {}
+  constructor(
+    public featureFlagService: FeatureFlagService,
+    public experimentUserService: ExperimentUserService,
+    private deletionEligibilityService: DeletionEligibilityService
+  ) {}
+
+  /**
+   * @swagger
+   * /flags/deletion-eligibility:
+   *   post:
+   *     summary: Check deletion eligibility for the selected flags
+   *     description: Read-only; returns one result per ID, including hidden selections. Does not reserve or delete items.
+   *     tags:
+   *       - Feature Flags
+   *     parameters:
+   *       - in: body
+   *         name: selection
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/BatchEntityIdsRequest'
+   *     responses:
+   *       '200':
+   *         description: Eligibility and reasons, in request order; users without delete permission receive canDelete=false.
+   *         schema:
+   *           $ref: '#/definitions/DeletionEligibilityResult'
+   *       '400':
+   *         description: Expected a nonempty array of unique UUIDs.
+   *       '401':
+   *         description: A current authenticated user is required.
+   */
+  @Post('/deletion-eligibility')
+  public getDeletionEligibility(
+    @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
+    @CurrentUser({ required: true }) currentUser: UserDTO
+  ): Promise<DeletionEligibilityResult> {
+    return this.deletionEligibilityService.flags(ids, currentUser);
+  }
 
   /**
    * @swagger

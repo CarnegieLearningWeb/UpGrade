@@ -1,3 +1,4 @@
+import { DeletionEligibilityService } from '../../../src/api/services/batch/DeletionEligibilityService';
 import app from '../../utils/expressApp';
 import request from 'supertest';
 import { configureLogger } from '../../utils/logger';
@@ -34,6 +35,7 @@ describe('Experiment Controller Testing', () => {
     configureLogger();
     routingUseContainer(Container);
     classValidatorUseContainer(Container);
+    Container.set(DeletionEligibilityService, {} as DeletionEligibilityService);
 
     // set mock container
     Container.set(ExperimentService, new ExperimentServiceMock());
