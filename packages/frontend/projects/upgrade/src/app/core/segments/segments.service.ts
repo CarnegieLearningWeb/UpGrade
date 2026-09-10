@@ -1,3 +1,6 @@
+import { createBatchFacade } from '../batch-actions/batch-actions.facade';
+import { batchActions } from './store/segments.actions';
+import { selectRootBatch } from './store/segments.selectors';
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
@@ -52,6 +55,8 @@ import { actionFetchContextMetaData } from '../experiments/store/experiments.act
 
 @Injectable({ providedIn: 'root' })
 export class SegmentsService {
+  readonly batch = createBatchFacade(this.store$, 'segments', batchActions, selectRootBatch, selectAllSegments);
+
   constructor(
     private readonly store$: Store<AppState>,
     private readonly segmentsDataService: SegmentsDataService,

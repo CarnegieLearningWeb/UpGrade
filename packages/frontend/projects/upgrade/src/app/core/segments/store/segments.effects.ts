@@ -1,3 +1,17 @@
+import {
+  selectionFocusEffect,
+  eligibilityAbsenceEffect,
+  eligibilityEffect,
+  batchDeleteEffect,
+  reconcileBatchEffect,
+  batchFinishedEffect,
+  refreshSelectedEffect,
+  trackedListRequest,
+} from '../../batch-actions/batch-actions.effects';
+import { isBatchBusy, newBatchRequestId } from '../../batch-actions/batch-actions.models';
+import { batchResultCounts } from '../../batch-actions/batch-actions.helpers';
+import { selectRootBatch, selectSegmentsState } from './segments.selectors';
+import { batchInvalidationTypes } from '../../batch-actions/batch-actions.invalidation';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
@@ -7,19 +21,8 @@ import { AppState, NotificationService } from '../../core.module';
 import { TranslateService } from '@ngx-translate/core';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
-import {
-  LIST_OPTION_TYPE,
-  NUMBER_OF_SEGMENTS,
-  Segment,
-  SegmentsPaginationParams,
-  UpsertSegmentType,
-} from './segments.model';
-import {
-  selectAllSegments,
-  selectGlobalSegments,
-  selectSearchString,
-  selectSegmentPaginationParams,
-} from './segments.selectors';
+import { LIST_OPTION_TYPE, NUMBER_OF_SEGMENTS, Segment, UpsertSegmentType } from './segments.model';
+import { selectAllSegments, selectGlobalSegments, selectSearchString } from './segments.selectors';
 import JSZip from 'jszip';
 import { of } from 'rxjs';
 import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
@@ -29,6 +32,76 @@ import { CommonModalEventsService } from '../../../shared/services/common-modal-
 
 @Injectable()
 export class SegmentsEffects {
+  focusBatchEligibility$ = createEffect(() =>
+    selectionFocusEffect(this.store$.pipe(select(selectRootBatch)), SegmentsActions.batchActions)
+  );
+  batchEligibility$ = createEffect(() =>
+    eligibilityEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      SegmentsActions.batchActions,
+      this.segmentsDataService
+    )
+  );
+  batchDelete$ = createEffect(() =>
+    batchDeleteEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      SegmentsActions.batchActions,
+      this.segmentsDataService
+    )
+  );
+  reconcileBatch$ = createEffect(() =>
+    reconcileBatchEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      SegmentsActions.batchActions,
+      this.segmentsDataService
+    )
+  );
+  refreshBatchEligibility$ = createEffect(() =>
+    refreshSelectedEffect(
+      this.actions$,
+      SegmentsActions.batchActions,
+      batchInvalidationTypes.filter((type) => type !== SegmentsActions.batchActions.batchDeleteCompleted.type)
+    )
+  );
+  finishBatch$ = createEffect(() =>
+    batchFinishedEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      SegmentsActions.batchActions,
+      (state) => {
+        const counts = batchResultCounts(state);
+        const hasWarnings = counts.hasErrors || counts.uncertain;
+        const messageKey = hasWarnings
+          ? 'batch-delete.result.segments'
+          : `batch-delete.success.segments.${counts.deleted === 1 ? 'one' : 'other'}`;
+        const message =
+          this.translate.instant(messageKey, counts) +
+          (counts.uncertain ? ' ' + this.translate.instant('batch-delete.result.uncertain') : '');
+        if (hasWarnings) this.notificationService.showWarning(message);
+        else this.notificationService.showSuccess(message);
+        return [
+          SegmentsActions.actionFetchSegments({ fromStarting: true, batchRefresh: true }),
+          ...(counts.deleted || counts.absent ? [SegmentsActions.actionFetchListSegmentOptions()] : []),
+        ];
+      }
+    )
+  );
+
+  reconcileMissingSelections$ = createEffect(() =>
+    eligibilityAbsenceEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      SegmentsActions.batchActions,
+      (count) => {
+        this.notificationService.showInfo(this.translate.instant('batch-delete.selection.absent', { count }));
+        return [SegmentsActions.actionFetchSegments({ fromStarting: true, batchRefresh: true })];
+      }
+    )
+  );
+
   constructor(
     private store$: Store<AppState>,
     private actions$: Actions,
@@ -43,55 +116,63 @@ export class SegmentsEffects {
   fetchSegmentsPaginated$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionFetchSegments),
-      map((action) => action.fromStarting),
-      withLatestFrom(this.store$.pipe(select(selectSegmentPaginationParams))),
-      filter(([fromStarting, pagination]) => {
-        return (
-          !pagination.areAllFetched || pagination.skip < pagination.total || pagination.total === null || fromStarting
-        );
-      }),
-      tap(() => {
-        this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments: true }));
-      }),
-      switchMap(([fromStarting, pagination]) => {
-        let params: SegmentsPaginationParams = {
-          skip: fromStarting ? 0 : pagination.skip,
+      withLatestFrom(this.store$.pipe(select(selectSegmentsState))),
+      filter(
+        ([action, state]) =>
+          !isBatchBusy(state.rootBatch) &&
+          (!state.rootBatch.listLoading || action.fromStarting) &&
+          (action.fromStarting || state.totalSegments === null || state.skipSegments < state.totalSegments)
+      ),
+      switchMap(([action, state]) => {
+        const fromStarting = !!action.fromStarting;
+        const params = {
+          skip: fromStarting ? 0 : state.skipSegments,
           take: NUMBER_OF_SEGMENTS,
+          ...(state.sortKey ? { sortParams: { key: state.sortKey, sortAs: state.sortAs } } : {}),
+          ...(state.searchString ? { searchParams: { key: state.searchKey, string: state.searchString } } : {}),
         };
-        if (pagination.sortKey) {
-          params = {
-            ...params,
-            sortParams: {
-              key: pagination.sortKey,
-              sortAs: pagination.sortAs,
-            },
-          };
-        }
-        if (pagination.searchString) {
-          params = {
-            ...params,
-            searchParams: {
-              key: pagination.searchKey,
-              string: pagination.searchString,
-            },
-          };
-        }
-        return this.segmentsDataService.fetchSegmentsPaginated(params).pipe(
-          switchMap((data: any) => {
-            return [
-              SegmentsActions.actionFetchSegmentsSuccess({
-                segments: data.nodes.segmentsData,
-                totalSegments: data.total,
-                experimentSegmentInclusion: data.nodes.experimentSegmentInclusionData,
-                experimentSegmentExclusion: data.nodes.experimentSegmentExclusionData,
-                featureFlagSegmentInclusion: data.nodes.featureFlagSegmentInclusionData,
-                featureFlagSegmentExclusion: data.nodes.featureFlagSegmentExclusionData,
-                allParentSegments: data.nodes.allParentSegments,
-                fromStarting,
-              }),
-            ];
-          }),
-          catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
+        return trackedListRequest(
+          this.store$.pipe(select(selectRootBatch)),
+          SegmentsActions.batchActions,
+          (event) => this.store$.dispatch(event),
+          fromStarting,
+          !!action.batchRefresh,
+          () => {
+            this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments: true }));
+            return this.segmentsDataService.fetchSegmentsPaginated(params, !!action.batchRefresh);
+          },
+          (data: any, requestId) => [
+            SegmentsActions.actionFetchSegmentsSuccess({
+              segments: data.nodes.segmentsData,
+              totalSegments: data.total,
+              experimentSegmentInclusion: data.nodes.experimentSegmentInclusionData,
+              experimentSegmentExclusion: data.nodes.experimentSegmentExclusionData,
+              featureFlagSegmentInclusion: data.nodes.featureFlagSegmentInclusionData,
+              featureFlagSegmentExclusion: data.nodes.featureFlagSegmentExclusionData,
+              allParentSegments: data.nodes.allParentSegments,
+              fromStarting,
+              batchListRequestId: requestId,
+            }),
+            ...(action.batchRefresh
+              ? [
+                  SegmentsActions.batchActions.refreshEligibility({
+                    requestId: newBatchRequestId(),
+                    forConfirmation: false,
+                  }),
+                ]
+              : []),
+          ],
+          () => [
+            SegmentsActions.actionFetchSegmentsFailure(),
+            ...(action.batchRefresh
+              ? [
+                  SegmentsActions.batchActions.refreshEligibility({
+                    requestId: newBatchRequestId(),
+                    forConfirmation: false,
+                  }),
+                ]
+              : []),
+          ]
         );
       })
     )

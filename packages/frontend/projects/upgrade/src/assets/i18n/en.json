@@ -1,4 +1,16 @@
 {
+  "batch-delete.selection.absent": "{{count}} selected items are already absent and were removed from the selection.",
+  "batch-delete.success.experiments.one": "1 experiment deleted.",
+  "batch-delete.success.experiments.other": "{{deleted}} experiments deleted.",
+  "batch-delete.success.flags.one": "1 feature flag deleted.",
+  "batch-delete.success.flags.other": "{{deleted}} feature flags deleted.",
+  "batch-delete.success.segments.one": "1 segment deleted.",
+  "batch-delete.success.segments.other": "{{deleted}} segments deleted.",
+  "batch-delete.result.experiments": "Experiments: {{deleted}} deleted. {{absent}} already absent. {{failed}} could not be deleted. {{notAttempted}} not attempted. {{remaining}} remain selected.",
+  "batch-delete.result.flags": "Feature flags: {{deleted}} deleted. {{absent}} already absent. {{failed}} could not be deleted. {{notAttempted}} not attempted. {{remaining}} remain selected.",
+  "batch-delete.result.segments": "Segments: {{deleted}} deleted. {{absent}} already absent. {{failed}} could not be deleted. {{notAttempted}} not attempted. {{remaining}} remain selected.",
+  "batch-delete.result.uncertain": "Some outcomes could not be confirmed. No deletion was retried automatically.",
+
   "global.app.name": "UpGrade",
   "global.app.description": "Open Source A/B Testing Platform for Education Software",
   "global.experiment.title": "Experiments",

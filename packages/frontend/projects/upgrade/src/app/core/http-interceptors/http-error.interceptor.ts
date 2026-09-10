@@ -6,7 +6,7 @@ import { catchError } from 'rxjs/operators';
 import { ENV, Environment } from '../../../environments/environment-types';
 import { AuthService } from '../auth/auth.service';
 import { SERVER_ERROR } from 'upgrade_types';
-import { HANDLES_404_CONTEXTUALLY } from './http-context-tokens';
+import { HANDLES_404_CONTEXTUALLY, HANDLES_BATCH_ERRORS_CONTEXTUALLY } from './http-context-tokens';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
@@ -34,7 +34,10 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         if (err.status === 401) {
           // auto logout if 401 response returned from api
           this.authService.authLogout();
-        } else if (!(err.status === 404 && request.context.get(HANDLES_404_CONTEXTUALLY))) {
+        } else if (
+          !request.context?.get(HANDLES_BATCH_ERRORS_CONTEXTUALLY) &&
+          !(err.status === 404 && request.context?.get(HANDLES_404_CONTEXTUALLY))
+        ) {
           this.openPopup(err);
         }
         // re-throw to allow the error to be caught by the calling code

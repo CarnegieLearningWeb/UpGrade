@@ -1,3 +1,4 @@
+import { createBatchActions } from '../../batch-actions/batch-actions.actions';
 import { createAction, props } from '@ngrx/store';
 import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
@@ -15,12 +16,12 @@ import { AddPrivateSegmentListRequest, EditPrivateSegmentListRequest } from '../
 
 export const actionFetchFeatureFlags = createAction(
   '[Feature Flags] Fetch Feature Flags Paginated',
-  props<{ fromStarting?: boolean }>()
+  props<{ fromStarting?: boolean; batchRefresh?: boolean }>()
 );
 
 export const actionFetchFeatureFlagsSuccess = createAction(
   '[Feature Flags] Fetch Feature Flags Paginated Success',
-  props<{ flags: FeatureFlag[]; totalFlags: number }>()
+  props<{ batchListRequestId?: string; flags: FeatureFlag[]; totalFlags: number; fromStarting?: boolean }>()
 );
 
 export const actionFetchFeatureFlagsFailure = createAction('[Feature Flags] Fetch Feature Flags Paginated Failure');
@@ -337,3 +338,5 @@ export const actionSetFeatureFlagTotalExposures = createAction(
   '[Feature Flags] Set Feature Flag Total Exposures',
   props<{ totalExposures: number | null }>()
 );
+
+export const batchActions = createBatchActions('flags');

@@ -1,3 +1,5 @@
+import { initialRootBatchState } from '../../batch-actions/batch-actions.models';
+import { withRootBatch } from '../../batch-actions/batch-actions.store';
 import { createReducer, Action, on } from '@ngrx/store';
 import { SegmentState, GlobalSegmentState } from './segments.model';
 import * as SegmentsActions from './segments.actions';
@@ -8,6 +10,7 @@ import {
 } from '../../../../../../../../types/src/Experiment/enums';
 
 export const initialState: SegmentState = {
+  rootBatch: initialRootBatchState,
   // List page data - plain array preserves backend sort order
   segments: [],
   isLoadingSegments: false,
@@ -187,8 +190,29 @@ const reducer = createReducer(
   }))
 );
 
+const batchReducer = withRootBatch(reducer, initialState, {
+  entity: 'segments',
+  actions: SegmentsActions.batchActions,
+  rowsKey: 'segments',
+  skipKey: 'skipSegments',
+  totalKey: 'totalSegments',
+  queryTypes: [
+    SegmentsActions.actionSetSearchKey.type,
+    SegmentsActions.actionSetSearchString.type,
+    SegmentsActions.actionSetSortKey.type,
+    SegmentsActions.actionSetSortingType.type,
+  ],
+  deletedId: (action) => {
+    if (action.type !== SegmentsActions.actionDeleteSegmentSuccess.type) return undefined;
+    const response = (action as ReturnType<typeof SegmentsActions.actionDeleteSegmentSuccess>).segment;
+    return (Array.isArray(response) ? response[0] : response)?.id;
+  },
+  listSuccessType: SegmentsActions.actionFetchSegmentsSuccess.type,
+  responseRowsKey: 'segments',
+});
+
 export function segmentsReducer(state: SegmentState | undefined, action: Action) {
-  return reducer(state, action);
+  return batchReducer(state, action);
 }
 
 export const initalGlobalState: GlobalSegmentState = {

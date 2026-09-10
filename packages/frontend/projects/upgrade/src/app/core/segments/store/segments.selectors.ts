@@ -1,3 +1,4 @@
+import { selectionView } from '../../batch-actions/batch-actions.helpers';
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
@@ -328,3 +329,6 @@ function processParentSegments(segmentData: Segment[], segmentId: string, result
     }
   });
 }
+
+export const selectRootBatch = createSelector(selectSegmentsState, (state) => state.rootBatch);
+export const selectRootSelection = createSelector(selectRootBatch, (state) => selectionView(state, 'segments'));

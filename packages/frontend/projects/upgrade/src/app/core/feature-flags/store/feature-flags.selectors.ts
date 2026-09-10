@@ -1,3 +1,4 @@
+import { selectionView } from '../../batch-actions/batch-actions.helpers';
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 import { FeatureFlag, FeatureFlagState, ParticipantListTableRow } from './feature-flags.model';
@@ -247,3 +248,6 @@ export const selectWarningKeysForAllFlags = createSelector(selectFeatureFlagsSta
   });
   return warningKeys;
 });
+
+export const selectRootBatch = createSelector(selectFeatureFlagsState, (state) => state.rootBatch);
+export const selectRootSelection = createSelector(selectRootBatch, (state) => selectionView(state, 'flags'));

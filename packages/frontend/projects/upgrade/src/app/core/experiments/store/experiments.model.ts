@@ -1,3 +1,4 @@
+import { RootBatchState } from '../../batch-actions/batch-actions.models';
 import { AppState } from '../../core.module';
 import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
@@ -603,6 +604,7 @@ export const TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS = {
 export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
 
 export interface ExperimentState {
+  rootBatch: RootBatchState;
   // List page data - plain array preserves backend sort order
   experiments: ExperimentVM[];
   isLoadingExperiment: boolean;

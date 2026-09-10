@@ -1,3 +1,5 @@
+import { BatchDeleteResult, DeletionEligibilityResult } from 'upgrade_types';
+import { batchHttpContext } from '../batch-actions/batch-actions.http';
 import { Injectable } from '@angular/core';
 import {
   AddPrivateSegmentListRequest,
@@ -17,6 +19,22 @@ import { API_ENDPOINTS } from '../api-endpoints.constants';
 
 @Injectable()
 export class SegmentsDataService {
+  checkDeletionEligibility(ids: string[]): Observable<DeletionEligibilityResult> {
+    return this.http.post<DeletionEligibilityResult>(
+      API_ENDPOINTS.segmentsDeletionEligibility,
+      { ids },
+      { context: batchHttpContext() }
+    );
+  }
+
+  batchDelete(ids: string[]): Observable<BatchDeleteResult> {
+    return this.http.post<BatchDeleteResult>(
+      API_ENDPOINTS.segmentsBatchDelete,
+      { ids },
+      { context: batchHttpContext() }
+    );
+  }
+
   constructor(private http: HttpClient) {}
 
   fetchAllSegments() {
@@ -24,9 +42,11 @@ export class SegmentsDataService {
     return this.http.get(url);
   }
 
-  fetchSegmentsPaginated(params: SegmentsPaginationParams): Observable<SegmentsPaginationInfo> {
+  fetchSegmentsPaginated(params: SegmentsPaginationParams, batchRefresh = false): Observable<SegmentsPaginationInfo> {
     const url = API_ENDPOINTS.getPaginatedSegments;
-    return this.http.post<SegmentsPaginationInfo>(url, params);
+    return batchRefresh
+      ? this.http.post<SegmentsPaginationInfo>(url, params, { context: batchHttpContext() })
+      : this.http.post<SegmentsPaginationInfo>(url, params);
   }
 
   fetchGlobalSegments() {

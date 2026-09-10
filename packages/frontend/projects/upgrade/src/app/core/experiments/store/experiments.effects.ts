@@ -1,3 +1,18 @@
+import {
+  selectionFocusEffect,
+  eligibilityAbsenceEffect,
+  eligibilityEffect,
+  batchDeleteEffect,
+  reconcileBatchEffect,
+  batchFinishedEffect,
+  refreshSelectedEffect,
+  trackedListRequest,
+} from '../../batch-actions/batch-actions.effects';
+import { isBatchBusy, newBatchRequestId } from '../../batch-actions/batch-actions.models';
+import { batchResultCounts } from '../../batch-actions/batch-actions.helpers';
+import { selectRootBatch, selectExperimentState } from './experiments.selectors';
+import { batchInvalidationTypes } from '../../batch-actions/batch-actions.invalidation';
+import { actionFetchListSegmentOptions } from '../../segments/store/segments.actions';
 import { Inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
@@ -9,7 +24,6 @@ import {
   IExperimentEnrollmentStats,
   Experiment,
   NUMBER_OF_EXPERIMENTS,
-  ExperimentPaginationParams,
   IExperimentEnrollmentDetailStats,
   IContextMetaData,
 } from './experiments.model';
@@ -18,11 +32,6 @@ import { Store, select } from '@ngrx/store';
 import { AppState, NotificationService } from '../../core.module';
 import {
   selectExperimentStats,
-  selectSkipExperiment,
-  selectSearchKey,
-  selectSortAs,
-  selectSortKey,
-  selectTotalExperiment,
   selectSearchString,
   selectExperimentGraphInfo,
   selectContextMetaData,
@@ -39,6 +48,83 @@ import { LIST_FILTER_MODE } from 'upgrade_types';
 import { LIST_OPTION_TYPE } from '../../segments/store/segments.model';
 @Injectable()
 export class ExperimentEffects {
+  focusBatchEligibility$ = createEffect(() =>
+    selectionFocusEffect(this.store$.pipe(select(selectRootBatch)), experimentAction.batchActions)
+  );
+  batchEligibility$ = createEffect(() =>
+    eligibilityEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      experimentAction.batchActions,
+      this.experimentDataService
+    )
+  );
+  batchDelete$ = createEffect(() =>
+    batchDeleteEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      experimentAction.batchActions,
+      this.experimentDataService
+    )
+  );
+  reconcileBatch$ = createEffect(() =>
+    reconcileBatchEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      experimentAction.batchActions,
+      this.experimentDataService
+    )
+  );
+  refreshBatchEligibility$ = createEffect(() =>
+    refreshSelectedEffect(
+      this.actions$,
+      experimentAction.batchActions,
+      batchInvalidationTypes.filter((type) => type !== experimentAction.batchActions.batchDeleteCompleted.type)
+    )
+  );
+  finishBatch$ = createEffect(() =>
+    batchFinishedEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      experimentAction.batchActions,
+      (state) => {
+        const counts = batchResultCounts(state);
+        const hasWarnings = counts.hasErrors || counts.uncertain;
+        const messageKey = hasWarnings
+          ? 'batch-delete.result.experiments'
+          : `batch-delete.success.experiments.${counts.deleted === 1 ? 'one' : 'other'}`;
+        const message =
+          this.translate.instant(messageKey, counts) +
+          (counts.uncertain ? ' ' + this.translate.instant('batch-delete.result.uncertain') : '');
+        if (hasWarnings) this.notificationService.showWarning(message);
+        else this.notificationService.showSuccess(message);
+        return [
+          experimentAction.actionGetExperiments({ fromStarting: true, batchRefresh: true }),
+          ...(counts.deleted || counts.absent
+            ? [
+                experimentAction.actionFetchAllDecisionPoints(),
+                analysisActions.actionFetchMetrics(),
+                experimentAction.actionFetchAllExperimentNames(),
+                actionFetchListSegmentOptions(),
+              ]
+            : []),
+        ];
+      }
+    )
+  );
+
+  reconcileMissingSelections$ = createEffect(() =>
+    eligibilityAbsenceEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      experimentAction.batchActions,
+      (count) => {
+        this.notificationService.showInfo(this.translate.instant('batch-delete.selection.absent', { count }));
+        return [experimentAction.actionGetExperiments({ fromStarting: true, batchRefresh: true })];
+      }
+    )
+  );
+
   constructor(
     private actions$: Actions,
     private store$: Store<AppState>,
@@ -54,59 +140,59 @@ export class ExperimentEffects {
   getPaginatedExperiment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionGetExperiments),
-      map((action) => action.fromStarting),
-      withLatestFrom(
-        this.store$.pipe(select(selectSkipExperiment)),
-        this.store$.pipe(select(selectTotalExperiment)),
-        this.store$.pipe(select(selectSearchKey)),
-        this.store$.pipe(select(selectSortKey)),
-        this.store$.pipe(select(selectSortAs))
+      withLatestFrom(this.store$.pipe(select(selectExperimentState))),
+      filter(
+        ([action, state]) =>
+          !isBatchBusy(state.rootBatch) &&
+          (!state.rootBatch.listLoading || action.fromStarting) &&
+          (action.fromStarting || state.totalExperiments === null || state.skipExperiment < state.totalExperiments)
       ),
-      filter(([fromStarting, skip, total]) => skip < total || total === null || fromStarting),
-      tap(() => {
-        this.store$.dispatch(experimentAction.actionSetIsLoadingExperiment({ isLoadingExperiment: true }));
-      }),
-      switchMap(([fromStarting, skip, _, searchKey, sortKey, sortAs]) => {
-        let searchString = null;
-        // As withLatestFrom does not support more than 5 arguments
-        // TODO: Find alternative
-        this.getSearchString$().subscribe((searchInput) => {
-          searchString = searchInput;
-        });
-        let params: ExperimentPaginationParams = {
-          skip: fromStarting ? 0 : skip,
+      switchMap(([action, state]) => {
+        const fromStarting = !!action.fromStarting;
+        const params = {
+          skip: fromStarting ? 0 : state.skipExperiment,
           take: NUMBER_OF_EXPERIMENTS,
+          ...(state.sortKey ? { sortParams: { key: state.sortKey, sortAs: state.sortAs } } : {}),
+          searchParams: { key: state.searchKey, string: state.searchString || '' },
         };
-        if (sortKey) {
-          params = {
-            ...params,
-            sortParams: {
-              key: sortKey,
-              sortAs,
-            },
-          };
-        }
-        // Always send searchParams for experiments, even when searchString is blank
-        params = {
-          ...params,
-          searchParams: {
-            key: searchKey,
-            string: searchString || '',
+        return trackedListRequest(
+          this.store$.pipe(select(selectRootBatch)),
+          experimentAction.batchActions,
+          (event) => this.store$.dispatch(event),
+          fromStarting,
+          !!action.batchRefresh,
+          () => {
+            this.store$.dispatch(experimentAction.actionSetIsLoadingExperiment({ isLoadingExperiment: true }));
+            return this.experimentDataService.getAllExperiment(params, !!action.batchRefresh);
           },
-        };
-        return this.experimentDataService.getAllExperiment(params).pipe(
-          switchMap((data: any) => {
-            const experiments = data.nodes;
-            const experimentIds = experiments.map((experiment) => experiment.id);
-            const actions = fromStarting ? [experimentAction.actionSetSkipExperiment({ skipExperiment: 0 })] : [];
-
-            return [
-              ...actions,
-              experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total, fromStarting }),
-              experimentAction.actionFetchExperimentStats({ experimentIds }),
-            ];
-          }),
-          catchError((error) => [experimentAction.actionGetExperimentsFailure(error)])
+          (data: any, requestId) => [
+            experimentAction.actionGetExperimentsSuccess({
+              experiments: data.nodes,
+              totalExperiments: data.total,
+              fromStarting,
+              batchListRequestId: requestId,
+            }),
+            experimentAction.actionFetchExperimentStats({ experimentIds: data.nodes.map((row) => row.id) }),
+            ...(action.batchRefresh
+              ? [
+                  experimentAction.batchActions.refreshEligibility({
+                    requestId: newBatchRequestId(),
+                    forConfirmation: false,
+                  }),
+                ]
+              : []),
+          ],
+          () => [
+            experimentAction.actionGetExperimentsFailure({ error: null }),
+            ...(action.batchRefresh
+              ? [
+                  experimentAction.batchActions.refreshEligibility({
+                    requestId: newBatchRequestId(),
+                    forConfirmation: false,
+                  }),
+                ]
+              : []),
+          ]
         );
       })
     )
