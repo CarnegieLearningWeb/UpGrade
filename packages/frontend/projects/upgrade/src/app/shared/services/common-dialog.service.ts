@@ -623,9 +623,10 @@ export class DialogService {
     existingPrior?: Record<string, Prior>
   ): Observable<Record<string, Prior>> {
     const conditionPriorUpdates: ConditionPriorUpdate[] = conditions.map((condition) => ({
+      conditionId: condition.id,
       conditionCode: condition.conditionCode,
-      successes: existingPrior?.[condition.conditionCode]?.success ?? 1,
-      failures: existingPrior?.[condition.conditionCode]?.failure ?? 1,
+      successes: existingPrior?.[condition.id]?.success ?? 1,
+      failures: existingPrior?.[condition.id]?.failure ?? 1,
     }));
 
     const dialogRef = this.dialog.open(EditConditionPriorModalComponent, {

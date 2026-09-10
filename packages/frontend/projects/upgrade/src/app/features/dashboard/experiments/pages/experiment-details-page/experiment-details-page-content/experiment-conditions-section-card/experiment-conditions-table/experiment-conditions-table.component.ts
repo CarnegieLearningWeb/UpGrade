@@ -63,11 +63,11 @@ export class ExperimentConditionsTableComponent {
   };
 
   getPriorSuccesses(condition: ExperimentCondition): number {
-    return this.prior?.[condition.conditionCode]?.success ?? 1;
+    return this.prior?.[condition.id]?.success ?? 1;
   }
 
   getPriorFailures(condition: ExperimentCondition): number {
-    return this.prior?.[condition.conditionCode]?.failure ?? 1;
+    return this.prior?.[condition.id]?.failure ?? 1;
   }
 
   onEditButtonClick(condition: ExperimentCondition): void {

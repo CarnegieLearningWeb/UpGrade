@@ -16,6 +16,7 @@ import { Prior } from 'upgrade_types';
 import { SharedModule } from '../../../../../shared/shared.module';
 
 export interface ConditionPriorUpdate {
+  conditionId: string;
   conditionCode: string;
   successes: number;
   failures: number;
@@ -65,7 +66,7 @@ export class EditConditionPriorModalComponent implements OnInit {
     const conditionsFormArray = this.formBuilder.array(
       this.conditions.map((condition) =>
         this.formBuilder.group({
-          conditionCode: [condition.conditionCode],
+          conditionId: [condition.conditionId],
           successes: [condition.successes, validators.successes],
           failures: [condition.failures, validators.failures],
         })
@@ -96,8 +97,8 @@ export class EditConditionPriorModalComponent implements OnInit {
     if (this.priorForm.valid) {
       const result: Record<string, Prior> = {};
       this.conditionsFormArray.controls.forEach((control) => {
-        const conditionCode = control.get('conditionCode')?.value;
-        result[conditionCode] = {
+        const conditionId = control.get('conditionId')?.value;
+        result[conditionId] = {
           success: control.get('successes')?.value,
           failure: control.get('failures')?.value,
         };
