@@ -3,6 +3,7 @@ import { Inject } from 'typedi';
 import { BatchDeleteService } from '../services/batch/BatchDeleteService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import { DeletionEligibilityService } from '../services/batch/DeletionEligibilityService';
+import { DeletionStateService } from '../services/DeletionStateService';
 import {
   JsonController,
   Authorized,
@@ -163,7 +164,8 @@ export class FeatureFlagsController {
     public featureFlagService: FeatureFlagService,
     public experimentUserService: ExperimentUserService,
     private deletionEligibilityService: DeletionEligibilityService,
-    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
+    private deletionStateService: DeletionStateService
   ) {}
 
   /**
@@ -500,6 +502,8 @@ export class FeatureFlagsController {
    *       responses:
    *          '200':
    *            description: Delete Feature flag By Id
+   *          '400':
+   *            description: Invalid UUID or feature flag is not disabled
    *          '404':
    *            description: Feature flag not found
    */
@@ -510,7 +514,12 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    const featureFlag = await this.featureFlagService.delete(id, currentUser, request.logger);
+    const featureFlag = await this.featureFlagService.delete(
+      id,
+      currentUser,
+      request.logger,
+      this.deletionStateService.transactionFor('flags', id)
+    );
 
     if (!featureFlag) {
       throw new NotFoundException('Feature flag not found.');

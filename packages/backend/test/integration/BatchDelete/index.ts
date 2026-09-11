@@ -387,20 +387,173 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       }
     );
 
-    test.each(entities)('%s single-delete route keeps its existing policy and response shape', async (entity) => {
-      await db.getRepository(User).update(SYSTEM_USER_EMAIL, { role: UserRole.READER });
+    test.each(entities)(
+      '%s single-delete route keeps its existing roles, cleanup and success response',
+      async (entity) => {
+        await db.getRepository(User).update(SYSTEM_USER_EMAIL, { role: UserRole.READER });
+        const [row] = await create(entity);
+        const [child] = await create('segments');
+        const list = await ownedList(entity, row.id, child.id);
+        const { body } = await request(app).delete(`/api/${entity}/${row.id}`).expect(200);
+        expect(body).toEqual(
+          entity === 'segments' ? expect.objectContaining({ id: row.id }) : [expect.objectContaining({ id: row.id })]
+        );
+        expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(0);
+        expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(0);
+        expect(await db.getRepository(IndividualForSegment).countBy({ segmentId: list.id })).toBe(0);
+        expect(await db.getRepository(Segment).countBy({ id: child.id })).toBe(1);
+      }
+    );
+
+    test.each(entities)('%s single-delete rejects an ineligible target before removing owned lists', async (entity) => {
       const [row] = await create(entity);
+      const list = await ownedList(entity, row.id);
       if (entity === 'experiments')
         await db.getRepository(Experiment).update(row.id, { state: EXPERIMENT_STATE.DRAFT });
       else if (entity === 'flags')
         await db.getRepository(FeatureFlag).update(row.id, { status: FEATURE_FLAG_STATUS.ENABLED });
-      else await db.getRepository(Segment).update(row.id, { type: SEGMENT_TYPE.PRIVATE });
-      const { body } = await request(app).delete(`/api/${entity}/${row.id}`).expect(200);
-      expect(body).toEqual(
-        entity === 'segments' ? expect.objectContaining({ id: row.id }) : [expect.objectContaining({ id: row.id })]
-      );
-      expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(0);
+      else {
+        const [flag] = await create('flags');
+        await ownedList('flags', flag.id, row.id);
+      }
+      const messages = {
+        experiments: 'The experiment cannot be deleted in its current state.',
+        flags: 'Disable the feature flag before deleting it.',
+        segments: 'The segment is in use and cannot be deleted.',
+      };
+      const { body } = await request(app).delete(`/api/${entity}/${row.id}`).expect(400);
+      expect(body.message).toBe(messages[entity]);
+      expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(1);
+      expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(1);
+      expect(await db.getRepository(IndividualForSegment).countBy({ segmentId: list.id })).toBe(1);
     });
+
+    test.each(entities)('%s single-delete reports a missing target as 404', async (entity) => {
+      const { body } = await request(app).delete(`/api/${entity}/${randomUUID()}`).expect(404);
+      expect(body.message).toBe('The item no longer exists.');
+    });
+
+    test.each(['experiments', 'flags'] as const)(
+      '%s single-delete waits for a concurrent state edit and rejects its committed state',
+      async (entity) => {
+        const [row] = await create(entity);
+        const blocker = writer.createQueryRunner();
+        await blocker.connect();
+        await blocker.startTransaction();
+        let pending: Promise<request.Response>;
+        try {
+          if (entity === 'experiments')
+            await blocker.manager.getRepository(Experiment).update(row.id, { state: EXPERIMENT_STATE.DRAFT });
+          else await blocker.manager.getRepository(FeatureFlag).update(row.id, { status: FEATURE_FLAG_STATUS.ENABLED });
+          const [{ pid: writerPid }] = await blocker.query('SELECT pg_backend_pid() AS pid');
+          let started: (pid: number) => void;
+          const transactionStarted = new Promise<number>((resolve) => {
+            started = resolve;
+          });
+          const original = db.createQueryRunner.bind(db);
+          jest.spyOn(db, 'createQueryRunner').mockImplementation((...args) => {
+            const runner = original(...args);
+            const start = runner.startTransaction.bind(runner);
+            jest.spyOn(runner, 'startTransaction').mockImplementation(async (...startArgs) => {
+              await start(...startArgs);
+              const [{ pid }] = await runner.query('SELECT pg_backend_pid() AS pid');
+              started(pid);
+            });
+            return runner;
+          });
+          pending = request(app)
+            .delete(`/api/${entity}/${row.id}`)
+            .then((response) => response);
+          const deletionPid = await Promise.race([
+            transactionStarted,
+            pending.then(() => {
+              throw new Error('Deletion finished before starting its transaction');
+            }),
+          ]);
+          let waiting = false;
+          const deadline = Date.now() + 4000;
+          while (!waiting && Date.now() < deadline) {
+            [{ waiting }] = await blocker.query('SELECT $2::integer = ANY(pg_blocking_pids($1::integer)) AS waiting', [
+              deletionPid,
+              writerPid,
+            ]);
+            if (!waiting) await new Promise<void>((resolve) => setImmediate(resolve));
+          }
+          expect(waiting).toBe(true);
+          await blocker.commitTransaction();
+          expect((await pending).status).toBe(400);
+          expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(1);
+        } finally {
+          if (blocker.isTransactionActive) await blocker.rollbackTransaction();
+          await pending;
+          await blocker.release();
+        }
+      },
+      10000
+    );
+
+    test.each([SEGMENT_TYPE.PRIVATE, SEGMENT_TYPE.GLOBAL_EXCLUDE])(
+      'single-delete rejects a %s segment through the ordinary root endpoint',
+      async (type) => {
+        const [row] = await create('segments');
+        await db.getRepository(Segment).update(row.id, { type });
+        await request(app).delete(`/api/segments/${row.id}`).expect(400);
+        expect(await db.getRepository(Segment).countBy({ id: row.id })).toBe(1);
+      }
+    );
+
+    test.each(entities)(
+      '%s private-list endpoint still deletes lists and preserves their public children',
+      async (entity) => {
+        const [owner] = await create(entity);
+        const [child] = await create('segments');
+        const list = await ownedList(entity, owner.id, child.id);
+        const path = entity === 'segments' ? 'list' : 'inclusionList';
+        await request(app)
+          .delete(`/api/${entity}/${path}/${list.id}`)
+          .send(entity === 'segments' ? { parentSegmentId: owner.id } : {})
+          .expect(200);
+        expect(await db.getRepository(model[entity]).countBy({ id: owner.id })).toBe(1);
+        expect(await db.getRepository(Segment).countBy({ id: child.id })).toBe(1);
+        expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(0);
+        expect(await db.getRepository(IndividualForSegment).countBy({ segmentId: list.id })).toBe(0);
+      }
+    );
+
+    test('single Mooclet deletion rejects an ineligible experiment before local or remote deletion', async () => {
+      env.mooclets.enabled = true;
+      const [row] = await create('experiments');
+      await db.getRepository(Experiment).update(row.id, { state: EXPERIMENT_STATE.DRAFT });
+      const service = Container.get(MoocletExperimentService);
+      jest
+        .spyOn(service, 'getMoocletExperimentRefByUpgradeExperimentId')
+        .mockResolvedValue({ id: randomUUID() } as MoocletExperimentRef);
+      const remote = jest.spyOn(service, 'orchestrateDeleteMoocletResources').mockResolvedValue(true);
+      await request(app).delete(`/api/experiments/${row.id}`).expect(400);
+      expect(remote).not.toHaveBeenCalled();
+      expect(await db.getRepository(Experiment).countBy({ id: row.id })).toBe(1);
+    });
+
+    test.each([true, false])(
+      'single Mooclet deletion preserves commit/rollback when remote deletion returns %s',
+      async (success) => {
+        env.mooclets.enabled = true;
+        const [row] = await create('experiments');
+        const list = await ownedList('experiments', row.id);
+        const service = Container.get(MoocletExperimentService);
+        jest
+          .spyOn(service, 'getMoocletExperimentRefByUpgradeExperimentId')
+          .mockResolvedValue({ id: randomUUID() } as MoocletExperimentRef);
+        const remote = jest.spyOn(service, 'orchestrateDeleteMoocletResources').mockResolvedValue(success);
+        const { body } = await request(app)
+          .delete(`/api/experiments/${row.id}`)
+          .expect(success ? 200 : 500);
+        if (success) expect(body).toEqual([expect.objectContaining({ id: row.id })]);
+        expect(remote).toHaveBeenCalledTimes(1);
+        expect(await db.getRepository(Experiment).countBy({ id: row.id })).toBe(success ? 0 : 1);
+        expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(success ? 0 : 1);
+      }
+    );
 
     test.each(entities.flatMap((entity) => [20, 100, 500].map((count) => ({ entity, count }))))(
       '$entity deletes $count selections without repeating global eligibility reads per item',

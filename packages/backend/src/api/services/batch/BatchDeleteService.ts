@@ -9,8 +9,6 @@ import {
   DeletionEligibilityItem,
   DeletionEligibilityResult,
   DeletionReasonCode,
-  getExperimentDeletionReason,
-  getFlagDeletionReason,
   hasBatchDeletePermission,
 } from 'upgrade_types';
 import { env } from '../../../env';
@@ -19,24 +17,16 @@ import { InjectDataSource } from '../../../typeorm-typedi-extensions';
 import { DeletionTransaction } from '../../../types/DeletionTransaction';
 import { UserDTO } from '../../DTO/UserDTO';
 import { MoocletError } from '../../errors/MoocletError';
-import { Experiment } from '../../models/Experiment';
-import { FeatureFlag } from '../../models/FeatureFlag';
 import { ExperimentService } from '../ExperimentService';
 import { FeatureFlagService } from '../FeatureFlagService';
 import { MoocletExperimentService } from '../MoocletExperimentService';
 import { SegmentService } from '../SegmentService';
 import { DeletionEligibilityService } from './DeletionEligibilityService';
-import { assertSegmentDeletionAllowed, SegmentDeletionBlockedError } from './SegmentDeletionGuard';
+import { assertDeletionStateAllowed, DeletionBlockedError } from '../DeletionStateService';
 
 // Admission budget: never abandon an in-flight deletion or claim it has been cancelled.
 // Check before starting another item and again after acquiring its eligibility locks.
 export const BATCH_DELETE_START_BUDGET_MS = 60_000;
-
-class DeletionBlockedError extends Error {
-  constructor(public readonly result: BatchDeleteItemResult) {
-    super(result.reasonCode);
-  }
-}
 
 @Service()
 export class BatchDeleteService {
@@ -121,24 +111,6 @@ export class BatchDeleteService {
     return { id: item.id, outcome, reasonCode: item.reasonCode || DeletionReasonCode.ELIGIBILITY_UNAVAILABLE };
   }
 
-  private async guard(entity: BatchDeleteEntity, id: string, manager: EntityManager): Promise<void> {
-    if (entity === 'segments') return; // The existing segment hook runs inside this same transaction.
-    const row =
-      entity === 'experiments'
-        ? await manager
-            .getRepository(Experiment)
-            .findOne({ where: { id }, select: { id: true, state: true }, lock: { mode: 'pessimistic_write' } })
-        : await manager
-            .getRepository(FeatureFlag)
-            .findOne({ where: { id }, select: { id: true, status: true }, lock: { mode: 'pessimistic_write' } });
-    if (!row) throw new DeletionBlockedError({ id, outcome: 'not_found', reasonCode: DeletionReasonCode.NOT_FOUND });
-    const reason =
-      entity === 'experiments'
-        ? getExperimentDeletionReason((row as Experiment).state)
-        : getFlagDeletionReason((row as FeatureFlag).status);
-    if (reason) throw new DeletionBlockedError({ id, outcome: 'ineligible', reasonCode: reason });
-  }
-
   private async deleteOne(
     entity: BatchDeleteEntity,
     id: string,
@@ -157,11 +129,8 @@ export class BatchDeleteService {
       try {
         await runner.connect();
         await runner.startTransaction('READ COMMITTED');
-        await runner.manager.query(`SELECT set_config('lock_timeout', CASE
-          WHEN current_setting('lock_timeout')::interval = interval '0'
-            OR current_setting('lock_timeout')::interval > interval '5 seconds'
-          THEN '5s' ELSE current_setting('lock_timeout') END, true)`);
-        await this.guard(entity, id, runner.manager);
+        // Segments use the existing beforeDelete hook inside this transaction.
+        if (entity !== 'segments') await assertDeletionStateAllowed(entity, id, runner.manager);
         if (performance.now() >= deadline) {
           throw new DeletionBlockedError({
             id,
@@ -219,7 +188,7 @@ export class BatchDeleteService {
           id,
           logger,
           async (manager) => {
-            await assertSegmentDeletionAllowed(id, manager);
+            await assertDeletionStateAllowed(entity, id, manager);
             if (performance.now() >= deadline) {
               throw new DeletionBlockedError({
                 id,
@@ -242,18 +211,6 @@ export class BatchDeleteService {
         return { id, outcome: 'unknown', reasonCode: DeletionReasonCode.OUTCOME_UNKNOWN };
       }
       if (error instanceof DeletionBlockedError) return error.result;
-      if (error instanceof SegmentDeletionBlockedError) {
-        return {
-          id,
-          outcome: error.reason === 'missing' ? 'not_found' : 'ineligible',
-          reasonCode:
-            error.reason === 'missing'
-              ? DeletionReasonCode.NOT_FOUND
-              : error.reason === 'protected'
-              ? DeletionReasonCode.PROTECTED_SEGMENT_TYPE
-              : DeletionReasonCode.SEGMENT_IN_USE,
-        };
-      }
       return {
         id,
         outcome: 'failed',

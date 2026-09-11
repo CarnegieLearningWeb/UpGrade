@@ -4,6 +4,7 @@ import { Inject } from 'typedi';
 import { BatchDeleteService } from '../services/batch/BatchDeleteService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import { DeletionEligibilityService } from '../services/batch/DeletionEligibilityService';
+import { DeletionStateService } from '../services/DeletionStateService';
 import {
   JsonController,
   CurrentUser,
@@ -310,7 +311,8 @@ export class SegmentController {
   constructor(
     public segmentService: SegmentService,
     private deletionEligibilityService: DeletionEligibilityService,
-    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
+    private deletionStateService: DeletionStateService
   ) {}
 
   /**
@@ -736,14 +738,23 @@ export class SegmentController {
    *        '401':
    *          description: Authorization Required Error
    *        '500':
-   *          description: Internal Server Error, SegmentId is not valid
+   *          description: Internal Server Error
+   *        '400':
+   *          description: Invalid UUID, segment is in use, or segment is not an ordinary public segment
+   *        '404':
+   *          description: Segment not found
    */
   @Delete('/:segmentId')
   public deleteSegment(
     @Params({ validate: true }) { segmentId }: SegmentIdValidator,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.segmentService.deleteSegment(segmentId, request.logger);
+    return this.segmentService.deleteSegment(
+      segmentId,
+      request.logger,
+      undefined,
+      this.deletionStateService.transactionFor('segments', segmentId)
+    );
   }
 
   /**

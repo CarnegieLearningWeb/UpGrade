@@ -3,6 +3,7 @@ import { Inject } from 'typedi';
 import { BatchDeleteService } from '../services/batch/BatchDeleteService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import { DeletionEligibilityService } from '../services/batch/DeletionEligibilityService';
+import { DeletionStateService } from '../services/DeletionStateService';
 import {
   Body,
   Get,
@@ -671,7 +672,8 @@ export class ExperimentController {
     public importExportService: ImportExportService,
     public cacheService: CacheService,
     private deletionEligibilityService: DeletionEligibilityService,
-    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
+    private deletionStateService: DeletionStateService
   ) {}
 
   /**
@@ -1212,7 +1214,7 @@ export class ExperimentController {
    *            schema:
    *              $ref: '#/definitions/ExperimentResponse'
    *          '400':
-   *            description: ExperimentId should be a valid UUID.
+   *            description: Invalid UUID or experiment state does not allow deletion.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -1229,21 +1231,23 @@ export class ExperimentController {
   ): Promise<Experiment | undefined> {
     request.logger.child({ user: currentUser });
 
+    const executeTransaction = this.deletionStateService.transactionFor('experiments', id);
     // Manually check if the experiment has a mooclet ref
     if (env.mooclets.enabled) {
       const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(id);
 
       if (moocletExperimentRef) {
-        return await this.moocletExperimentService.syncDelete({
-          moocletExperimentRef,
-          experimentId: id,
-          currentUser,
-          logger: request.logger,
-        });
+        return await this.moocletExperimentService.syncDelete(
+          { moocletExperimentRef, experimentId: id, currentUser, logger: request.logger },
+          executeTransaction
+        );
       }
     }
 
-    const experiment = await this.experimentService.delete(id, currentUser, { logger: request.logger });
+    const experiment = await this.experimentService.delete(id, currentUser, {
+      logger: request.logger,
+      executeTransaction,
+    });
 
     if (!experiment) {
       throw new NotFoundException('Experiment not found.');

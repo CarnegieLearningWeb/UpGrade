@@ -19,7 +19,7 @@ const ancestorQuery = `
   SELECT id FROM ancestors ORDER BY id
 `;
 
-/** Batch-only guard. Call inside the transaction that will delete this segment. */
+/** Guard for ordinary public-segment deletion. Call inside the transaction that will delete this segment. */
 export async function assertSegmentDeletionAllowed(id: string, manager: EntityManager): Promise<void> {
   if (!manager.queryRunner?.isTransactionActive) {
     throw new Error('Segment deletion guard requires an active transaction');
