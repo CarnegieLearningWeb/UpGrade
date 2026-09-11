@@ -7,8 +7,10 @@ import {
   DeletionReasonCode,
   EXPERIMENT_STATE,
   FEATURE_FLAG_STATUS,
+  FLAG_SEARCH_KEY,
   SEGMENT_STATUS,
   SEGMENT_TYPE,
+  SORT_AS_DIRECTION,
   UserRole,
 } from 'upgrade_types';
 import * as experimentActions from '../experiments/store/experiments.actions';
@@ -19,6 +21,8 @@ import { featureFlagsReducer } from '../feature-flags/store/feature-flags.reduce
 import { segmentsReducer } from '../segments/store/segments.reducer';
 import { ExperimentEffects } from '../experiments/store/experiments.effects';
 import { FeatureFlagsEffects } from '../feature-flags/store/feature-flags.effects';
+import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
+import { FeatureFlagRootSectionCardComponent } from '../../features/dashboard/feature-flags/pages/feature-flag-root-page/feature-flag-root-page-content/feature-flag-root-section-card/feature-flag-root-section-card.component';
 import { SegmentsEffects } from '../segments/store/segments.effects';
 import { actionLogoutStart, actionSetUserInfo } from '../auth/store/auth.actions';
 import { batchResultCounts, selectionItem, selectionView } from './batch-actions.helpers';
@@ -176,6 +180,32 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     TestBed.resetTestingModule();
   });
 
+  if (config.entity === 'flags') {
+    it('clears the search through the root handler without cancelling the unfiltered request', () => {
+      subscriptions.add(effects.fetchFeatureFlagsOnSearchString$.subscribe());
+      subscriptions.add(effects.fetchFlagsOnSearchKeyChange$.subscribe());
+      const featureFlagService = new FeatureFlagsService(store as any, { setItem: jest.fn() } as any);
+      const search = (searchString: string) =>
+        FeatureFlagRootSectionCardComponent.prototype.onSearch.call({ featureFlagService } as any, {
+          searchKey: FLAG_SEARCH_KEY.NAME,
+          searchString,
+        });
+      data[config.fetchMethod].mockReturnValue(of(page([rows[0]])));
+      search('a');
+      const unfiltered = new Subject<any>();
+      data[config.fetchMethod].mockReturnValue(unfiltered);
+      search('');
+      expect(state.featureFlags.searchValue).toBe('');
+      expect(data[config.fetchMethod].mock.calls.at(-1)[0].searchParams).toBeUndefined();
+      unfiltered.next(page());
+      unfiltered.complete();
+      expect(currentRows().map(({ id }) => id)).toEqual(rows.map(({ id }) => id));
+      expect(batch().loadedIds).toHaveLength(3);
+      expect(batch().listLoading).toBe(false);
+      expect(state.featureFlags.isLoadingFeatureFlags).toBe(false);
+    });
+  }
+
   it('selects loaded rows, retains hidden selections across replacement reads, and clears all from the header', () => {
     expect(batch().loadedIds).toHaveLength(3); // Also exercises NgRx's queued list-start dispatch.
     selectRows(2);
@@ -311,6 +341,44 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
+  it.each(['search', 'sort'])(
+    'applies a user-requested %s while deletion is pending even if deletion fails',
+    (change) => {
+      selectRows();
+      const snapshot = prepare();
+      store.dispatch(actions.batchDeleteRequested({ snapshot }));
+      const pendingList = new Subject<any>();
+      data[config.fetchMethod].mockReturnValueOnce(pendingList);
+      if (change === 'search') {
+        store.dispatch(config.actions.actionSetSearchString({ searchString: 'b' }));
+      } else {
+        store.dispatch(config.actions.actionSetSortingType({ sortingType: SORT_AS_DIRECTION.DESCENDING }));
+      }
+      store.dispatch(config.fetch({ fromStarting: true }));
+      expect(data[config.fetchMethod]).toHaveBeenCalledTimes(2);
+      expect(data[config.fetchMethod]).toHaveBeenLastCalledWith(
+        expect.objectContaining(
+          change === 'search'
+            ? { searchParams: expect.objectContaining({ string: 'b' }) }
+            : { sortParams: expect.objectContaining({ sortAs: SORT_AS_DIRECTION.DESCENDING }) }
+        ),
+        false
+      );
+      response.error({ status: 0 });
+      const resultRows = change === 'search' ? [rows[1]] : [...rows].reverse();
+      pendingList.next(page(resultRows));
+      pendingList.complete();
+      expect(currentRows().map(({ id }) => id)).toEqual(resultRows.map(({ id }) => id));
+      expect(batch().loadedIds).toEqual(resultRows.map(({ id }) => id));
+      expect(batch().listLoading).toBe(false);
+      expect(Object.keys(batch().selectedById)).toHaveLength(3);
+      expect(data[config.fetchMethod]).toHaveBeenCalledTimes(2);
+      expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
+      expect(notifications.showWarning).not.toHaveBeenCalled();
+      expect(notifications.showSuccess).not.toHaveBeenCalled();
+    }
+  );
+
   it('removes two successful deletions and retains only the selection whose state changed', () => {
     selectRows();
     const snapshot = prepare();
@@ -349,7 +417,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(data.batchDelete).toHaveBeenCalledWith([rows[0].id, rows[1].id]);
   }));
 
-  it.each([1, 3])('reports %i deletions once and ignores a list response from before deletion', (count) => {
+  it.each([1, 3])('reports %i deletions once and ignores stale reads started before or during deletion', (count) => {
     selectRows(count);
     const snapshot = prepare();
     const pending = new Subject<any>();
@@ -357,8 +425,12 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     store.dispatch(config.fetch({ fromStarting: true }));
     const oldRequestId = batch().listRequestId;
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
+    const duringDeletion = new Subject<any>();
+    data[config.fetchMethod].mockReturnValueOnce(duringDeletion);
+    store.dispatch(config.fetch({ fromStarting: true }));
     response.next({ phase: 'executed', results: rows.slice(0, count).map(({ id }) => ({ id, outcome: 'deleted' })) });
     pending.next(page());
+    duringDeletion.next(page());
     const oldSuccess = events.find(
       (action: any) => action.batchListRequestId && action.type.includes('Success')
     ) as any;

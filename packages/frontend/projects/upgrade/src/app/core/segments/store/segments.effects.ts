@@ -4,7 +4,6 @@ import {
   batchFinishedEffect,
   trackedListRequest,
 } from '../../batch-actions/batch-actions.effects';
-import { isBatchBusy } from '../../batch-actions/batch-actions.models';
 import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectSegmentsState } from './segments.selectors';
 import { Injectable } from '@angular/core';
@@ -79,7 +78,6 @@ export class SegmentsEffects {
       withLatestFrom(this.store$.pipe(select(selectSegmentsState))),
       filter(
         ([action, state]) =>
-          !isBatchBusy(state.rootBatch) &&
           (!state.rootBatch.listLoading || action.fromStarting) &&
           (action.fromStarting || state.totalSegments === null || state.skipSegments < state.totalSegments)
       ),

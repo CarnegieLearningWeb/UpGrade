@@ -92,8 +92,8 @@ export class FeatureFlagRootSectionCardComponent {
   }
 
   onSearch(params: CommonSearchWidgetSearchParams<FLAG_SEARCH_KEY>) {
-    this.featureFlagService.setSearchString(params.searchString?.trim() || '');
     this.featureFlagService.setSearchKey(params.searchKey as FLAG_SEARCH_KEY);
+    this.featureFlagService.setSearchString(params.searchString?.trim() || '');
   }
 
   onAddFeatureFlagButtonClick() {

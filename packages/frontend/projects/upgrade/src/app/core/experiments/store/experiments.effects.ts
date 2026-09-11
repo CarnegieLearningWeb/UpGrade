@@ -4,7 +4,6 @@ import {
   batchFinishedEffect,
   trackedListRequest,
 } from '../../batch-actions/batch-actions.effects';
-import { isBatchBusy } from '../../batch-actions/batch-actions.models';
 import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectExperimentState } from './experiments.selectors';
 import { actionFetchListSegmentOptions } from '../../segments/store/segments.actions';
@@ -103,7 +102,6 @@ export class ExperimentEffects {
       withLatestFrom(this.store$.pipe(select(selectExperimentState))),
       filter(
         ([action, state]) =>
-          !isBatchBusy(state.rootBatch) &&
           (!state.rootBatch.listLoading || action.fromStarting) &&
           (action.fromStarting || state.totalExperiments === null || state.skipExperiment < state.totalExperiments)
       ),
