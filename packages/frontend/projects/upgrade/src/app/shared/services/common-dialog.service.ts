@@ -70,11 +70,11 @@ import {
   EditPayloadModalComponent,
   EditPayloadModalParams,
 } from '../../features/dashboard/experiments/modals/edit-payload-modal/edit-payload-modal.component';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
 import { BatchDeleteEntity } from 'upgrade_types';
 import { BatchFacade } from '../../core/batch-actions/batch-actions.facade';
 import { BatchDeleteSnapshot } from '../../core/batch-actions/batch-actions.models';
-import { CommonBatchDeleteModalComponent } from '@shared-component-lib/common-batch-delete-modal/common-batch-delete-modal.component';
 
 export interface ImportModalParams {
   importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
@@ -111,17 +111,31 @@ export interface UpsertMetricModalParams {
   providedIn: 'root',
 })
 export class DialogService {
-  constructor(private dialog: MatDialog) {}
+  constructor(private dialog: MatDialog, private translate: TranslateService) {}
 
   openBatchDeleteModal(entity: BatchDeleteEntity, snapshot: BatchDeleteSnapshot, facade: BatchFacade) {
-    return this.dialog.open(CommonBatchDeleteModalComponent, {
-      data: { entity, snapshot, facade },
-      width: ModalSize.MEDIUM,
-      autoFocus: '#batch-delete-keyword',
-      ariaLabelledBy: 'batch-delete-title',
-      disableClose: false,
-      restoreFocus: false,
-    });
+    const config: CommonModalConfig<TextValidatedConfirmationModalParams> = {
+      title: `batch-delete.dialog.${entity}.title`,
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: this.translate.instant(
+          `batch-delete.dialog.${entity}.${snapshot.items.length === 1 ? 'one' : 'other'}`,
+          { count: snapshot.items.length }
+        ),
+        subMessage: snapshot.notShownCount
+          ? this.translate.instant(`batch-delete.dialog.hidden.${snapshot.notShownCount === 1 ? 'one' : 'other'}`, {
+              count: snapshot.notShownCount,
+            })
+          : undefined,
+        validationKeyword: 'delete',
+        validationPlaceholder: 'Type delete',
+        isLoading$: facade.state$.pipe(map((state) => state.confirmation?.operationId !== snapshot.operationId)),
+      },
+    };
+    // Do not restore focus to the menu that launched the dialog, matching existing menu-based dialogs.
+    return this.openTextValidatedConfirmationModal(config, ModalSize.SMALL, false);
   }
 
   openAddExperimentModal() {
@@ -1334,13 +1348,15 @@ export class DialogService {
 
   openTextValidatedConfirmationModal(
     commonModalConfig: CommonModalConfig<TextValidatedConfirmationModalParams>,
-    modalSize: ModalSize = ModalSize.MEDIUM
+    modalSize: ModalSize = ModalSize.MEDIUM,
+    restoreFocus = true
   ): MatDialogRef<CommonSimpleTextValidatedConfirmationModalComponent, boolean> {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: modalSize,
       autoFocus: 'input',
       disableClose: true,
+      restoreFocus,
     };
 
     return this.dialog.open(CommonSimpleTextValidatedConfirmationModalComponent, config);

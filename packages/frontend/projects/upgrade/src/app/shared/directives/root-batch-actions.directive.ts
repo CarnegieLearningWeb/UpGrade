@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { Directive, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Observable, Subscription, map, shareReplay } from 'rxjs';
 import { BatchDeleteEntity, IMenuButtonItem } from 'upgrade_types';
@@ -6,7 +6,7 @@ import { BatchFacade } from '../../core/batch-actions/batch-actions.facade';
 import { selectionView } from '../../core/batch-actions/batch-actions.helpers';
 import { RootBatchState } from '../../core/batch-actions/batch-actions.models';
 import { DialogService } from '../services/common-dialog.service';
-import { CommonBatchDeleteModalComponent } from '../../shared-standalone-component-lib/components/common-batch-delete-modal/common-batch-delete-modal.component';
+import { CommonSimpleTextValidatedConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-text-validated-confirmation-modal/common-simple-text-validated-confirmation-modal.component';
 
 export function rootBatchView(state: RootBatchState, entity: BatchDeleteEntity) {
   const selection = selectionView(state, entity);
@@ -22,7 +22,7 @@ export function rootBatchView(state: RootBatchState, entity: BatchDeleteEntity) 
     menuDisabled: !selection.canRequestConfirmation || !!messageKey,
     menuItems: [
       {
-        label: `batch-delete.menu.${entity}.${selection.selectedCount === 1 ? 'one' : 'other'}`,
+        label: `batch-delete.dialog.${entity}.title`,
         action: 'batch-delete',
         disabled: false,
       },
@@ -40,10 +40,8 @@ export class RootBatchActionsDirective implements OnInit, OnDestroy {
   @Input() batchExpandedTags: Map<string, boolean>;
   view$: Observable<RootBatchView>;
   private subscriptions = new Subscription();
-  private dialogRef?: MatDialogRef<CommonBatchDeleteModalComponent>;
-  private destroyed = false;
-
-  constructor(private dialogs: DialogService, private host: ElementRef<HTMLElement>) {}
+  private dialogRef?: MatDialogRef<CommonSimpleTextValidatedConfirmationModalComponent, boolean>;
+  constructor(private dialogs: DialogService) {}
 
   ngOnInit() {
     this.view$ = this.batchFacade.state$.pipe(
@@ -55,17 +53,13 @@ export class RootBatchActionsDirective implements OnInit, OnDestroy {
         state.removedIds.forEach((id) => this.batchExpandedTags?.delete(id));
         if (!state.confirmation || this.dialogRef) return;
         const ref = this.dialogs.openBatchDeleteModal(this.batchEntity, state.confirmation, this.batchFacade);
+        const operationId = state.confirmation.operationId;
         this.dialogRef = ref;
         this.subscriptions.add(
-          ref.afterClosed().subscribe(() => {
+          ref.afterClosed().subscribe((confirmed) => {
             this.dialogRef = undefined;
+            if (confirmed) this.batchFacade.submit(operationId);
             this.batchFacade.dismissConfirmation();
-            if (!this.destroyed) {
-              const target = this.host.nativeElement.querySelector<HTMLElement>(
-                '.section-card-menu-trigger:not(:disabled), .batch-name-sort .mat-sort-header-container'
-              );
-              target?.focus();
-            }
           })
         );
       })
@@ -77,9 +71,8 @@ export class RootBatchActionsDirective implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.destroyed = true;
     this.subscriptions.unsubscribe();
     this.dialogRef?.close();
-    this.batchFacade.dismissConfirmation();
+    this.batchFacade.leaveRootPage();
   }
 }

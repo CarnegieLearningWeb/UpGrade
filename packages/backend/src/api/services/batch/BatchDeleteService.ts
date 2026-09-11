@@ -62,13 +62,15 @@ export class BatchDeleteService {
         })),
       };
     }
-    if (!preflight.allDeletable) {
-      return { phase: 'rejected', results: preflight.items.map((item) => this.preflightResult(item)) };
-    }
-
+    const eligibilityById = new Map(preflight.items.map((item) => [item.id, item]));
     const results: BatchDeleteItemResult[] = [];
     let phase: BatchDeleteResult['phase'] = 'rejected';
     for (const id of ids) {
+      const eligibility = eligibilityById.get(id);
+      if (!eligibility.canDelete) {
+        results.push(this.preflightResult(eligibility));
+        continue;
+      }
       if (performance.now() >= deadline) {
         results.push(
           ...ids.slice(results.length).map(
@@ -84,6 +86,8 @@ export class BatchDeleteService {
       phase = 'executed';
       const result = await this.deleteOne(entity, id, user, logger, deadline);
       results.push(result);
+      // A changed state or an already absent target does not prevent independent items from being deleted.
+      if (result.outcome === 'ineligible' || result.outcome === 'not_found') continue;
       // A committed item with a post-delete failure must not be retried, but still stops this batch.
       if (result.outcome !== 'deleted' || result.reasonCode) {
         results.push(
@@ -101,7 +105,6 @@ export class BatchDeleteService {
   }
 
   private preflightResult(item: DeletionEligibilityItem): BatchDeleteItemResult {
-    if (item.canDelete) return { id: item.id, outcome: 'not_attempted' };
     const outcome =
       item.availability === 'not_found'
         ? 'not_found'
@@ -210,7 +213,7 @@ export class BatchDeleteService {
       if (commitAttempted || (mutationStarted && !rolledBack)) {
         return { id, outcome: 'unknown', reasonCode: DeletionReasonCode.OUTCOME_UNKNOWN };
       }
-      if (error instanceof DeletionBlockedError) return error.result;
+      if (error instanceof DeletionBlockedError && rolledBack) return error.result;
       return {
         id,
         outcome: 'failed',

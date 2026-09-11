@@ -3,6 +3,7 @@ import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { OverlayContainer } from '@angular/cdk/overlay';
+import { MatDialog } from '@angular/material/dialog';
 import { Store, StoreModule } from '@ngrx/store';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, Subject, Subscription, of } from 'rxjs';
@@ -58,7 +59,7 @@ describe.each(cases)('$entity root batch UI', (config) => {
   let subscription: Subscription;
   let service: any;
   let dialogs: any;
-  let closed: Subject<void>;
+  let closed: Subject<boolean | undefined>;
   let overlay: OverlayContainer;
   let permissions$: BehaviorSubject<any>;
   const actions = config.actions.batchActions;
@@ -276,7 +277,7 @@ describe.each(cases)('$entity root batch UI', (config) => {
     expect(entity).toBe(config.entity);
     expect(snapshot.items.map((item) => item.id)).toEqual(rows.map((row) => row.id));
     expect(snapshot.notShownCount).toBe(1);
-    closed.next();
+    closed.next(undefined);
     fixture.detectChanges();
     expect(Object.keys(batch().selectedById)).toHaveLength(2);
     expect(batch().confirmation).toBeNull();
@@ -309,6 +310,90 @@ describe.each(cases)('$entity root batch UI', (config) => {
     expect(fixture.componentInstance.expandedTagsMap.has(rows[1].id)).toBe(true);
     expect(fixture.debugElement.query(By.directive(RootBatchActionsDirective))).toBeTruthy();
   });
+
+  it('clears selection on leaving the root page and starts empty when returning', () => {
+    selectFirst();
+    fixture.destroy();
+    expect(Object.keys(batch().selectedById)).toHaveLength(0);
+    expect(batch().confirmation).toBeNull();
+    fixture = TestBed.createComponent(config.component as any);
+    fixture.detectChanges();
+    expect(checkboxes().every((input) => !input.checked && !input.indeterminate)).toBe(true);
+  });
+
+  it('clears navigation selection without discarding an in-flight deletion or its result', () => {
+    selectFirst();
+    service.batch.prepareConfirmation();
+    const snapshot = batch().confirmation;
+    service.batch.submit(snapshot.operationId);
+    fixture.destroy();
+    expect(Object.keys(batch().selectedById)).toHaveLength(0);
+    expect(batch().operation.snapshot).toEqual(snapshot);
+    expect(batch().operation.status).toBe('submitting');
+    store.dispatch(
+      actions.batchDeleteCompleted({
+        operationId: snapshot.operationId,
+        result: { phase: 'executed', results: [{ id: rows[0].id, outcome: 'deleted' }] },
+      })
+    );
+    expect(batch().operation.status).toBe('complete');
+    expect(batch().removedIds).toContain(rows[0].id);
+  });
+
+  it('starts deletion only after the common dialog closes with confirmation', fakeAsync(() => {
+    selectFirst();
+    service.batch.prepareConfirmation();
+    const snapshot = batch().confirmation;
+    expect(batch().operation?.status).not.toBe('submitting');
+    closed.next(true);
+    fixture.detectChanges();
+    expect(batch().operation.snapshot).toEqual(snapshot);
+    expect(batch().operation.status).toBe('submitting');
+    expect(batch().confirmation).toBeNull();
+    service.batch.prepareConfirmation();
+    expect(dialogs.openBatchDeleteModal).toHaveBeenCalledTimes(1);
+  }));
+
+  it.each(['cancel', 'close', 'confirm'] as const)(
+    'uses the common dialog and does not refocus the menu trigger after %s',
+    fakeAsync((action) => {
+      const realDialogs = new DialogService(TestBed.inject(MatDialog), TestBed.inject(TranslateService));
+      dialogs.openBatchDeleteModal.mockImplementation((entity, snapshot, facade) =>
+        realDialogs.openBatchDeleteModal(entity, snapshot, facade)
+      );
+      selectFirst();
+      openMenu();
+      const item = overlay.getContainerElement().querySelector('button[mat-menu-item]') as HTMLButtonElement;
+      expect(item.textContent.trim()).toBe(translations[`batch-delete.dialog.${config.entity}.title`]);
+      item.focus();
+      item.click();
+      fixture.detectChanges();
+      tick();
+      const ref = dialogs.openBatchDeleteModal.mock.results[0].value;
+      const container = overlay.getContainerElement();
+      const input = container.querySelector('input') as HTMLInputElement;
+      input.focus();
+      const trigger = fixture.nativeElement.querySelector('.section-card-menu-trigger') as HTMLButtonElement;
+      const focus = jest.spyOn(trigger, 'focus');
+      if (action === 'confirm') {
+        input.value = 'delete';
+        input.dispatchEvent(new Event('input'));
+        ref.componentRef.changeDetectorRef.detectChanges();
+        tick();
+        (container.querySelector('.footer-container button:not(.cancel-btn)') as HTMLButtonElement).click();
+      } else {
+        (container.querySelector(`.${action}-btn`) as HTMLButtonElement).click();
+      }
+      tick();
+      fixture.detectChanges();
+      expect(TestBed.inject(MatDialog).openDialogs).toHaveLength(0);
+      expect(focus).not.toHaveBeenCalled();
+      expect(document.activeElement).not.toBe(trigger);
+      expect(batch().confirmation).toBeNull();
+      expect(batch().operation?.status === 'submitting').toBe(action === 'confirm');
+      focus.mockRestore();
+    })
+  );
 
   it('separates User Manager delete permission from create permission', () => {
     permissions$.next({ experiments: { create: false }, featureFlags: { create: false }, segments: { create: false } });

@@ -5,7 +5,7 @@ import {
   trackedListRequest,
 } from '../../batch-actions/batch-actions.effects';
 import { isBatchBusy } from '../../batch-actions/batch-actions.models';
-import { batchResultCounts } from '../../batch-actions/batch-actions.helpers';
+import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectExperimentState } from './experiments.selectors';
 import { actionFetchListSegmentOptions } from '../../segments/store/segments.actions';
 import { Inject, Injectable } from '@angular/core';
@@ -67,12 +67,7 @@ export class ExperimentEffects {
       (state) => {
         const counts = batchResultCounts(state);
         const hasWarnings = counts.hasErrors || counts.uncertain;
-        const messageKey = hasWarnings
-          ? 'batch-delete.result.experiments'
-          : `batch-delete.success.experiments.${counts.deleted === 1 ? 'one' : 'other'}`;
-        const message =
-          this.translate.instant(messageKey, counts) +
-          (counts.uncertain ? ' ' + this.translate.instant('batch-delete.result.uncertain') : '');
+        const message = batchResultMessage('experiments', counts, (key, params) => this.translate.instant(key, params));
         if (hasWarnings) this.notificationService.showWarning(message);
         else this.notificationService.showSuccess(message);
         return [

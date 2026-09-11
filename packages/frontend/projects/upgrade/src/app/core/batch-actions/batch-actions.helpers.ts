@@ -118,5 +118,28 @@ export function batchResultCounts(state: RootBatchState) {
     failed: results.filter((item) => ['failed', 'ineligible', 'forbidden'].includes(item.outcome)).length,
     notAttempted: results.filter((item) => item.outcome === 'not_attempted').length,
     hasErrors: results.some((item) => item.outcome !== 'deleted' || item.reasonCode),
+    postDeleteFailed: results.some((item) => item.reasonCode === DeletionReasonCode.POST_DELETE_FAILED),
   };
+}
+
+/** One existing snackbar, with only the counts that apply to this result. */
+export function batchResultMessage(
+  entity: BatchDeleteEntity,
+  counts: ReturnType<typeof batchResultCounts>,
+  translate: (key: string, params?: Record<string, number>) => string
+): string {
+  const parts: string[] = [];
+  if (counts.deleted || !counts.hasErrors)
+    parts.push(
+      translate(`batch-delete.success.${entity}.${counts.deleted === 1 ? 'one' : 'other'}`, { deleted: counts.deleted })
+    );
+  for (const key of ['absent', 'failed', 'notAttempted'] as const) {
+    if (counts[key])
+      parts.push(
+        translate(`batch-delete.result.${key}.${counts[key] === 1 ? 'one' : 'other'}`, { count: counts[key] })
+      );
+  }
+  if (counts.postDeleteFailed) parts.push(translate('batch-delete.result.post-delete-failed'));
+  if (counts.uncertain) parts.push(translate('batch-delete.result.uncertain'));
+  return parts.join(' ');
 }

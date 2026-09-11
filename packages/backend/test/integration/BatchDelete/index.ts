@@ -186,7 +186,7 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       expect(await db.getRepository(Segment).countBy({ id: child.id })).toBe(1);
     });
 
-    test.each(entities)('%s rejects the entire selection when an ID is missing', async (entity) => {
+    test.each(entities)('%s skips a missing ID and deletes the remaining selection', async (entity) => {
       const [row] = await create(entity);
       const missing = randomUUID();
       const { body } = await request(app)
@@ -194,16 +194,16 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         .send({ ids: [row.id, missing] })
         .expect(200);
       expect(body).toEqual({
-        phase: 'rejected',
+        phase: 'executed',
         results: [
-          { id: row.id, outcome: 'not_attempted' },
+          { id: row.id, outcome: 'deleted' },
           { id: missing, outcome: 'not_found', reasonCode: DeletionReasonCode.NOT_FOUND },
         ],
       });
-      expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(1);
+      expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(0);
     });
 
-    test('a hidden Used segment blocks deletion of otherwise eligible selections', async () => {
+    test('skips a hidden Used segment and deletes an eligible selection', async () => {
       const [unused, child, parent] = await create('segments', 3);
       await ownedList('segments', parent.id, child.id);
       const [experiment] = await create('experiments');
@@ -215,16 +215,17 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
           searchParams: { key: 'name', string: unused.name },
         })
         .expect(200);
-      expect(body.phase).toBe('rejected');
+      expect(body.phase).toBe('executed');
       expect(body.results).toEqual([
-        { id: unused.id, outcome: 'not_attempted' },
+        { id: unused.id, outcome: 'deleted' },
         { id: child.id, outcome: 'ineligible', reasonCode: DeletionReasonCode.SEGMENT_IN_USE },
       ]);
-      expect(await db.getRepository(Segment).countBy({ id: In([unused.id, child.id]) })).toBe(2);
+      expect(await db.getRepository(Segment).countBy({ id: unused.id })).toBe(0);
+      expect(await db.getRepository(Segment).countBy({ id: child.id })).toBe(1);
     });
 
     test.each(entities)('%s rechecks eligibility after preflight using the mutation transaction', async (entity) => {
-      const [row] = await create(entity);
+      const [before, row, after] = await create(entity, 3);
       const service = Container.get(DeletionEligibilityService);
       const original = service[entity].bind(service);
       jest.spyOn(service, entity).mockImplementationOnce(async (ids, user) => {
@@ -242,11 +243,12 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       });
       const { body } = await request(app)
         .post(route(entity))
-        .send({ ids: [row.id] })
+        .send({ ids: [before.id, row.id, after.id] })
         .expect(200);
       expect(body).toEqual({
         phase: 'executed',
         results: [
+          { id: before.id, outcome: 'deleted' },
           {
             id: row.id,
             outcome: 'ineligible',
@@ -257,10 +259,44 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
                 ? DeletionReasonCode.FEATURE_FLAG_ENABLED
                 : DeletionReasonCode.SEGMENT_IN_USE,
           },
+          { id: after.id, outcome: 'deleted' },
         ],
       });
       expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(1);
+      expect(await db.getRepository(model[entity]).countBy({ id: In([before.id, after.id]) })).toBe(0);
     });
+
+    test.each(entities.flatMap((entity) => [0, 1, 2].map((blockedIndex) => ({ entity, blockedIndex }))))(
+      '$entity skips an ineligible selection at position $blockedIndex and deletes the other two',
+      async ({ entity, blockedIndex }) => {
+        const rows = await create(entity, 3);
+        const blocked = rows[blockedIndex];
+        const lists = [];
+        for (const row of rows) lists.push(await ownedList(entity, row.id));
+        if (entity === 'experiments')
+          await writer.getRepository(Experiment).update(blocked.id, { state: EXPERIMENT_STATE.DRAFT });
+        else if (entity === 'flags')
+          await writer.getRepository(FeatureFlag).update(blocked.id, { status: FEATURE_FLAG_STATUS.ENABLED });
+        else {
+          const [flag] = await create('flags');
+          await ownedList('flags', flag.id, blocked.id, writer);
+        }
+        const { body } = await request(app)
+          .post(route(entity))
+          .send({ ids: rows.map((row) => row.id) })
+          .expect(200);
+        expect(body.phase).toBe('executed');
+        expect(body.results.map((item) => ({ id: item.id, outcome: item.outcome }))).toEqual(
+          rows.map((row, index) => ({ id: row.id, outcome: index === blockedIndex ? 'ineligible' : 'deleted' }))
+        );
+        for (const [index, row] of rows.entries()) {
+          const remaining = index === blockedIndex ? 1 : 0;
+          expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(remaining);
+          expect(await db.getRepository(Segment).countBy({ id: lists[index].id })).toBe(remaining);
+          expect(await db.getRepository(IndividualForSegment).countBy({ segmentId: lists[index].id })).toBe(remaining);
+        }
+      }
+    );
 
     test('reports an owned-list cleanup rollback after a committed success and stops the remaining items', async () => {
       const rows = await create('flags', 3);

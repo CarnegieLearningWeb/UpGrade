@@ -129,7 +129,7 @@ describe('BatchDeleteService transaction outcomes', () => {
     }
   });
 
-  test('rejects the whole selection when a hidden item cannot be deleted', async () => {
+  test('skips ineligible and missing selections while deleting eligible items', async () => {
     eligibility.segments.mockResolvedValue({
       allDeletable: false,
       items: [
@@ -139,10 +139,10 @@ describe('BatchDeleteService transaction outcomes', () => {
       ],
     });
     const result = await service.delete('segments', ids, user, logger);
-    expect(result.phase).toBe('rejected');
-    expect(result.results.map((item) => item.outcome)).toEqual(['not_attempted', 'ineligible', 'not_found']);
-    expect(createQueryRunner).not.toHaveBeenCalled();
-    expect(mutations).toEqual([]);
+    expect(result.phase).toBe('executed');
+    expect(result.results.map((item) => item.outcome)).toEqual(['deleted', 'ineligible', 'not_found']);
+    expect(createQueryRunner).toHaveBeenCalledTimes(1);
+    expect(mutations).toEqual([ids[0]]);
   });
 
   test('returns a no-mutation result when preflight cannot be completed', async () => {
@@ -156,6 +156,35 @@ describe('BatchDeleteService transaction outcomes', () => {
       })),
     });
     expect(createQueryRunner).not.toHaveBeenCalled();
+  });
+
+  test('does not start transactions when every selection is ineligible', async () => {
+    eligibility.flags.mockResolvedValue({
+      allDeletable: false,
+      items: ids.map((id) => ({
+        id,
+        canDelete: false,
+        availability: 'present',
+        reasonCode: DeletionReasonCode.FEATURE_FLAG_ENABLED,
+      })),
+    });
+    const result = await service.delete('flags', ids, user, logger);
+    expect(result.phase).toBe('rejected');
+    expect(result.results.map((item) => item.outcome)).toEqual(['ineligible', 'ineligible', 'ineligible']);
+    expect(createQueryRunner).not.toHaveBeenCalled();
+  });
+
+  test('stops when rollback fails even if the target was rejected before mutation', async () => {
+    configureRunner = (runner) => {
+      (runner.manager.getRepository as jest.Mock).mockReturnValue({
+        findOne: jest.fn().mockResolvedValue({ status: 'enabled' }),
+      });
+      (runner.rollbackTransaction as jest.Mock).mockRejectedValue(new Error('connection lost'));
+    };
+    const result = await service.delete('flags', ids, user, logger);
+    expect(result.results.map((item) => item.outcome)).toEqual(['failed', 'not_attempted', 'not_attempted']);
+    expect(mutations).toEqual([]);
+    expect(createQueryRunner).toHaveBeenCalledTimes(1);
   });
 
   test.each([0, 1])('stops after item %i fails and preserves earlier commits', async (index) => {
@@ -174,14 +203,16 @@ describe('BatchDeleteService transaction outcomes', () => {
   });
 
   test.each(['missing', 'enabled'])('rejects a %s flag found by the locked mutation check', async (changed) => {
-    configureRunner = (runner) => {
+    configureRunner = (runner, index) => {
+      if (index !== 0) return;
       (runner.manager.getRepository as jest.Mock).mockReturnValue({
         findOne: jest.fn().mockResolvedValue(changed === 'missing' ? null : { id: ids[0], status: 'enabled' }),
       });
     };
     const result = await service.delete('flags', ids, user, logger);
     expect(result.results[0].outcome).toBe(changed === 'missing' ? 'not_found' : 'ineligible');
-    expect(mutations).toEqual([]);
+    expect(result.results.slice(1).map((item) => item.outcome)).toEqual(['deleted', 'deleted']);
+    expect(mutations).toEqual(ids.slice(1));
   });
 
   test('reports a lock timeout only after a confirmed rollback', async () => {
@@ -196,7 +227,7 @@ describe('BatchDeleteService transaction outcomes', () => {
     async (reason) => {
       jest
         .spyOn(segmentGuard, 'assertSegmentDeletionAllowed')
-        .mockRejectedValue(new segmentGuard.SegmentDeletionBlockedError(ids[0], reason));
+        .mockRejectedValueOnce(new segmentGuard.SegmentDeletionBlockedError(ids[0], reason));
       const result = await service.delete('segments', ids, user, logger);
       expect(result.results[0]).toEqual({
         id: ids[0],
@@ -208,8 +239,8 @@ describe('BatchDeleteService transaction outcomes', () => {
             ? DeletionReasonCode.PROTECTED_SEGMENT_TYPE
             : DeletionReasonCode.SEGMENT_IN_USE,
       });
-      expect(result.results.slice(1).every((item) => item.outcome === 'not_attempted')).toBe(true);
-      expect(mutations).toEqual([]);
+      expect(result.results.slice(1).every((item) => item.outcome === 'deleted')).toBe(true);
+      expect(mutations).toEqual(ids.slice(1));
       expect(runners[0].rollbackTransaction).toHaveBeenCalled();
     }
   );

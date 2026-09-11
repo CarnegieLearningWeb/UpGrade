@@ -5,7 +5,7 @@ import {
   trackedListRequest,
 } from '../../batch-actions/batch-actions.effects';
 import { isBatchBusy } from '../../batch-actions/batch-actions.models';
-import { batchResultCounts } from '../../batch-actions/batch-actions.helpers';
+import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectFeatureFlagsState } from './feature-flags.selectors';
 import { actionFetchListSegmentOptions } from '../../segments/store/segments.actions';
 import { FeatureFlagsDataService } from '../feature-flags.data.service';
@@ -54,12 +54,7 @@ export class FeatureFlagsEffects {
       (state) => {
         const counts = batchResultCounts(state);
         const hasWarnings = counts.hasErrors || counts.uncertain;
-        const messageKey = hasWarnings
-          ? 'batch-delete.result.flags'
-          : `batch-delete.success.flags.${counts.deleted === 1 ? 'one' : 'other'}`;
-        const message =
-          this.translate.instant(messageKey, counts) +
-          (counts.uncertain ? ' ' + this.translate.instant('batch-delete.result.uncertain') : '');
+        const message = batchResultMessage('flags', counts, (key, params) => this.translate.instant(key, params));
         if (hasWarnings) this.notificationService.showWarning(message);
         else this.notificationService.showSuccess(message);
         return [

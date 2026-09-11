@@ -95,6 +95,8 @@ export function reduceRootBatch(
       ? { ...state, listLoading: false, listRefreshFailed: action.batchRefresh }
       : state;
   if (matches(action, actions.confirmedRemoved)) return removeConfirmed(state, action.ids);
+  // Navigation clears the UI selection, but keeps any submitted operation and its result tracking alive.
+  if (matches(action, actions.rootPageLeft)) return { ...invalidateSelection(state), selectedById: {} };
   if (
     matches(action, actions.clearSelection) ||
     matches(action, actions.toggleHeader) ||

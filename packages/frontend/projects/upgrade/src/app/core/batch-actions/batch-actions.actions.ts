@@ -8,6 +8,7 @@ export function createBatchActions(source: string) {
     toggleRow: createAction(`${prefix} Toggle Row`, props<{ item: RootSelectionItem }>()),
     toggleHeader: createAction(`${prefix} Toggle Header`, props<{ items: RootSelectionItem[] }>()),
     clearSelection: createAction(`${prefix} Clear Selection`),
+    rootPageLeft: createAction(`${prefix} Root Page Left`),
     confirmedRemoved: createAction(`${prefix} Confirmed Removed`, props<{ ids: string[] }>()),
     prepareConfirmation: createAction(`${prefix} Prepare Confirmation`, props<{ operationId: string }>()),
     dismissConfirmation: createAction(`${prefix} Dismiss Confirmation`),

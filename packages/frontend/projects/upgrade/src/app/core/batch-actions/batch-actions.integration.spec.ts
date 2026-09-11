@@ -299,12 +299,39 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     });
     expect(batch().selectedById[rows[0].id]).toBeUndefined();
     expect(Object.keys(batch().selectedById)).toEqual([rows[1].id, rows[2].id]);
+    const noun = { experiments: 'experiment', flags: 'feature flag', segments: 'segment' }[config.entity];
+    expect(notifications.showWarning).toHaveBeenCalledWith(
+      `1 ${noun} deleted. 1 item could not be deleted. 1 item was not attempted.`
+    );
     expect(data[config.fetchMethod]).toHaveBeenLastCalledWith(
       expect.objectContaining({ skip: 0, searchParams: expect.objectContaining({ string: 'latest query' }) }),
       true
     );
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
     expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('removes two successful deletions and retains only the selection whose state changed', () => {
+    selectRows();
+    const snapshot = prepare();
+    const blocked = {
+      ...rows[1],
+      state: config.entity === 'experiments' ? EXPERIMENT_STATE.DRAFT : undefined,
+      status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
+    };
+    data[config.fetchMethod].mockReturnValueOnce(of(page([blocked])));
+    store.dispatch(actions.batchDeleteRequested({ snapshot }));
+    response.next({
+      phase: 'executed',
+      results: rows.map(({ id }, index) => ({ id, outcome: index === 1 ? 'ineligible' : 'deleted' })),
+    });
+    expect(Object.keys(batch().selectedById)).toEqual([rows[1].id]);
+    expect(currentRows().map((row) => row.id)).toEqual([rows[1].id]);
+    expect(selectionView(batch(), config.entity).canRequestConfirmation).toBe(false);
+    const noun = { experiments: 'experiments', flags: 'feature flags', segments: 'segments' }[config.entity];
+    expect(notifications.showWarning).toHaveBeenCalledTimes(1);
+    expect(notifications.showWarning).toHaveBeenCalledWith(`2 ${noun} deleted. 1 item could not be deleted.`);
+    expect(data.batchDelete).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the displayed confirmation snapshot when updated rows arrive or focus returns', fakeAsync(() => {
@@ -358,6 +385,9 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       )
     );
     expect(batchResultCounts(batch())).toMatchObject({ deleted: 0, absent: 1, remaining: 2, uncertain: true });
+    expect(notifications.showWarning).toHaveBeenCalledWith(
+      '1 item was already absent. Some outcomes could not be confirmed. Check the list before retrying.'
+    );
     expect(data.checkDeletionEligibility).toHaveBeenCalledTimes(1);
     expect(data.checkDeletionEligibility).toHaveBeenCalledWith(rows.map((row) => row.id));
     expect(data.batchDelete).toHaveBeenCalledTimes(1);
@@ -401,6 +431,10 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       phase: 'executed',
       results: [{ id: rows[0].id, outcome: 'deleted', reasonCode: 'post_delete_failed' }],
     });
+    const noun = { experiments: 'experiment', flags: 'feature flag', segments: 'segment' }[config.entity];
+    expect(notifications.showWarning).toHaveBeenCalledWith(
+      `1 ${noun} deleted. Related updates could not be completed.`
+    );
     expect(batch().selectedById[rows[0].id]).toBeUndefined();
     expect(batch().operation.result.results[0].outcome).toBe('deleted');
     expect(batch().listRefreshFailed).toBe(true);
