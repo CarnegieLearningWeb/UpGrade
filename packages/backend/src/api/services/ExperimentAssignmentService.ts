@@ -572,7 +572,15 @@ export class ExperimentAssignmentService {
     logger.info({
       message: `getAllExperimentConditions: User: ${experimentUserDocs.map((doc) => doc.id).join(', ')}`,
     });
-    const experiments: Experiment[] = await this.getExperimentsForContextAndDecisionPoint(context, site, target);
+    // Adaptive algorithms (currently just Thompson Sampling) are deliberately excluded from batch-assign.
+    // This endpoint neither persists an enrollment nor is paired with a /mark call, so an adaptive draw here
+    // is a live, non-deterministic bandit sample disconnected from reward learning and from whatever /assign
+    // or /mark would separately say for the same user -- there's no coherent product meaning for it. This
+    // endpoint has no current callers, so rather than design that seam now, adaptive experiments are just
+    // filtered out until a real use case forces the question.
+    const experiments: Experiment[] = (
+      await this.getExperimentsForContextAndDecisionPoint(context, site, target)
+    ).filter((experiment) => experiment.assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING);
 
     if (experiments.length === 0) {
       return {};
@@ -1847,7 +1855,10 @@ export class ExperimentAssignmentService {
         const promiseArray = [];
         let conditionAssigned;
         if (!noGroupSpecified && !invalidGroup) {
-          if (experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING) {
+          if (
+            experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING ||
+            experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING
+          ) {
             conditionAssigned = experiment.conditions.find((expCondition) => expCondition.conditionCode === condition);
           } else {
             conditionAssigned = await this.assignExperiment(
@@ -1944,14 +1955,17 @@ export class ExperimentAssignmentService {
         };
         await this.repeatedEnrollmentRepository.save(RepeatedEnrollmentDocument);
       } else {
-        const conditionAssigned = await this.assignExperiment(
-          user,
-          experiment,
-          individualEnrollment,
-          groupEnrollment,
-          individualExclusion,
-          groupExclusion
-        );
+        const conditionAssigned =
+          experiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING
+            ? experiment.conditions.find((expCondition) => expCondition.conditionCode === condition)
+            : await this.assignExperiment(
+                user,
+                experiment,
+                individualEnrollment,
+                groupEnrollment,
+                individualExclusion,
+                groupExclusion
+              );
         if (!individualEnrollment && !individualExclusion && conditionAssigned) {
           const individualEnrollmentDocument: Omit<IndividualEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> =
             {

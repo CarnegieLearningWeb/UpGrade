@@ -2038,6 +2038,21 @@ describe('Experiment Assignment Service Test', () => {
       expect(result).toEqual({});
     });
 
+    it('should exclude Thompson Sampling (adaptive) experiments from batch assignment', async () => {
+      const context = 'home';
+      const site = 'CurriculumSequence';
+      const target = 'W1';
+      const userDocs = [{ id: 'user1', group: { schoolId: ['school1'] }, workingGroup: {} }];
+      const exp = structuredClone(simpleIndividualAssignmentExperiment) as any;
+      exp.assignmentAlgorithm = ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING;
+
+      testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([exp]);
+
+      const result = await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
+
+      expect(result).toEqual({});
+    });
+
     it('should return batch experiment conditions for multiple users with simple individual experiment', async () => {
       const context = 'home';
       const site = 'CurriculumSequence';
@@ -2295,6 +2310,56 @@ describe('Experiment Assignment Service Test', () => {
       // (3 + 4 = 7), for a true total of 10 — past warmup.
       const totalRewardCountArg = testedModule.thompsonSamplingService.selectCondition.getCall(0).args[2];
       expect(totalRewardCountArg).toBe(10);
+    });
+  });
+
+  describe('[updateEnrollmentExclusion] Thompson Sampling trusts the client-reported condition', () => {
+    const experiment: any = {
+      id: 'ts-experiment-2',
+      assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+      assignmentUnit: 'individual',
+      consistencyRule: 'individual',
+      state: 'enrolling',
+      conditions: [
+        { id: 'condition-a', conditionCode: 'ConditionA' },
+        { id: 'condition-b', conditionCode: 'ConditionB' },
+      ],
+    };
+    const user: any = { id: 'user-1', workingGroup: {} };
+    const decisionPoint: any = { id: 'dp-1', site: 'site1', target: 'target1' };
+
+    it('persists the client-reported condition on first mark without re-running assignThompsonSampling', async () => {
+      testedModule.individualEnrollmentRepository.save = sandbox.stub().resolves(undefined);
+      // If mark ever falls back to assignExperiment() -> assignThompsonSampling() for this algorithm,
+      // this stub throws -- proving the fix (trusting the client-reported condition, like stratified
+      // random and within-subjects) rather than silently passing on an incidental TypeError.
+      testedModule.thompsonSamplingConfigRepository = {
+        findByExperimentId: sandbox
+          .stub()
+          .rejects(new Error('assignThompsonSampling should not run when mark trusts the client condition')),
+      };
+
+      await (testedModule as any).updateEnrollmentExclusion(
+        user,
+        experiment,
+        decisionPoint,
+        {
+          individualEnrollment: undefined,
+          individualExclusion: undefined,
+          groupEnrollment: undefined,
+          groupExclusion: undefined,
+        },
+        { isUserExcluded: false, isGroupExcluded: false },
+        [],
+        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        'ConditionB',
+        undefined,
+        loggerMock
+      );
+
+      sinon.assert.calledOnce(testedModule.individualEnrollmentRepository.save);
+      const savedDoc = testedModule.individualEnrollmentRepository.save.getCall(0).args[0];
+      expect(savedDoc.condition).toEqual(experiment.conditions[1]);
     });
   });
 });
