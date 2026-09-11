@@ -401,6 +401,7 @@ const batchReducer = withRootBatch(reducer, initialState, {
   entity: 'flags',
   actions: FeatureFlagsActions.batchActions,
   rowsKey: 'featureFlags',
+  loadingKey: 'isLoadingFeatureFlags',
   skipKey: 'skipFlags',
   totalKey: 'totalFlags',
   queryTypes: [

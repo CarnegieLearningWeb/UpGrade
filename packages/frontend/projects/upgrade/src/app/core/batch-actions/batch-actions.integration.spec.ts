@@ -32,6 +32,7 @@ const fixtures = [
   {
     entity: 'experiments',
     key: 'experiments',
+    loadingKey: 'isLoadingExperiment',
     actions: experimentActions,
     fetchEffect: 'getPaginatedExperiment$',
     fetchMethod: 'getAllExperiment',
@@ -40,6 +41,7 @@ const fixtures = [
   {
     entity: 'flags',
     key: 'featureFlags',
+    loadingKey: 'isLoadingFeatureFlags',
     actions: flagActions,
     fetchEffect: 'fetchFeatureFlags$',
     fetchMethod: 'fetchFeatureFlagsPaginated',
@@ -48,6 +50,7 @@ const fixtures = [
   {
     entity: 'segments',
     key: 'segments',
+    loadingKey: 'isLoadingSegments',
     actions: segmentActions,
     fetchEffect: 'fetchSegmentsPaginated$',
     fetchMethod: 'fetchSegmentsPaginated',
@@ -365,12 +368,14 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
         false
       );
       response.error({ status: 0 });
+      expect(state[config.key][config.loadingKey]).toBe(true);
       const resultRows = change === 'search' ? [rows[1]] : [...rows].reverse();
       pendingList.next(page(resultRows));
       pendingList.complete();
       expect(currentRows().map(({ id }) => id)).toEqual(resultRows.map(({ id }) => id));
       expect(batch().loadedIds).toEqual(resultRows.map(({ id }) => id));
       expect(batch().listLoading).toBe(false);
+      expect(state[config.key][config.loadingKey]).toBe(false);
       expect(Object.keys(batch().selectedById)).toHaveLength(3);
       expect(data[config.fetchMethod]).toHaveBeenCalledTimes(2);
       expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
@@ -468,16 +473,24 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
   });
 
   it.each([0, 400, 403, 500, 504])(
-    'releases selection after HTTP %i without another request or result snackbar',
+    'clears cancelled list loading and releases selection after HTTP %i without another request or snackbar',
     (status) => {
       selectRows();
       const snapshot = prepare();
+      const pendingList = new Subject<any>();
+      data[config.fetchMethod].mockReturnValueOnce(pendingList);
+      store.dispatch(config.fetch({ fromStarting: true }));
+      expect(state[config.key][config.loadingKey]).toBe(true);
       const fetchCount = data[config.fetchMethod].mock.calls.length;
       const beforeRows = currentRows();
       const loadedIds = [...batch().loadedIds];
       store.dispatch(actions.batchDeleteRequested({ snapshot }));
       response.error({ status });
+      pendingList.next(page([]));
+      pendingList.complete();
       expect(batch().operation.status).toBe('complete');
+      expect(batch().listLoading).toBe(false);
+      expect(state[config.key][config.loadingKey]).toBe(false);
       expect(currentRows()).toEqual(beforeRows);
       expect(batch().loadedIds).toEqual(loadedIds);
       expect(data.checkDeletionEligibility).not.toHaveBeenCalled();

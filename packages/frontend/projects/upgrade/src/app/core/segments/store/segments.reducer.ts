@@ -194,6 +194,7 @@ const batchReducer = withRootBatch(reducer, initialState, {
   entity: 'segments',
   actions: SegmentsActions.batchActions,
   rowsKey: 'segments',
+  loadingKey: 'isLoadingSegments',
   skipKey: 'skipSegments',
   totalKey: 'totalSegments',
   queryTypes: [

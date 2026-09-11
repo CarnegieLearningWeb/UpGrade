@@ -535,6 +535,7 @@ const batchReducer = withRootBatch(reducer, initialState, {
   entity: 'experiments',
   actions: experimentsAction.batchActions,
   rowsKey: 'experiments',
+  loadingKey: 'isLoadingExperiment',
   skipKey: 'skipExperiment',
   totalKey: 'totalExperiments',
   queryTypes: [

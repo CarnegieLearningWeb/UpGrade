@@ -9,6 +9,7 @@ interface RootListConfig {
   entity: BatchDeleteEntity;
   actions: RootBatchActions;
   rowsKey: string;
+  loadingKey: string;
   skipKey: string;
   totalKey: string;
   queryTypes: string[];
@@ -53,6 +54,9 @@ export function withRootBatch<S extends { rootBatch: RootBatchState }>(
     // Tombstones also protect against late detail/stat responses, whose IDs are not tied to a root query.
     const removed = new Set(rootBatch.removedIds);
     let result = next;
+    // A cancelled tracked read cannot dispatch its usual success/failure action to clear loading.
+    if (state.rootBatch.listLoading && state.rootBatch.listRequestId && !rootBatch.listRequestId)
+      result = { ...result, [config.loadingKey]: false };
     if (action.type === config.listSuccessType) {
       const rows = result[config.rowsKey];
       const distinct = new Map(rows.map((row) => [row.id, row]));
