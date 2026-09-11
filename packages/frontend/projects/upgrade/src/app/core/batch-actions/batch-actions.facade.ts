@@ -23,7 +23,6 @@ export function createBatchFacade(
       store
         .pipe(select(selectRows), take(1))
         .subscribe((rows) => store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }))),
-    clear: () => store.dispatch(actions.clearSelection()),
     leaveRootPage: () => store.dispatch(actions.rootPageLeft()),
     prepareConfirmation: () => store.dispatch(actions.prepareConfirmation({ operationId: newBatchRequestId() })),
     dismissConfirmation: () => store.dispatch(actions.dismissConfirmation()),

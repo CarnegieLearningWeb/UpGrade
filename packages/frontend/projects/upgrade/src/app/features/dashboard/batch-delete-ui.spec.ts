@@ -422,7 +422,7 @@ describe.each(cases)('$entity root batch UI', (config) => {
     fixture.detectChanges();
     expect(Object.keys(batch().selectedById)).toHaveLength(1);
 
-    store.dispatch(actions.listRequested({ requestId: 'failed-refresh', fromStarting: true }));
+    store.dispatch(actions.listRequested({ requestId: 'failed-refresh' }));
     store.dispatch(actions.listFailed({ requestId: 'failed-refresh' }));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-common-batch-selection-status')).toBeNull();

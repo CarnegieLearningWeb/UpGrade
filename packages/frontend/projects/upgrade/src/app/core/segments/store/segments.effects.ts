@@ -11,13 +11,13 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, concatMap, filter, first, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { catchError, concatMap, filter, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import { AppState, NotificationService } from '../../core.module';
 import { TranslateService } from '@ngx-translate/core';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
 import { LIST_OPTION_TYPE, NUMBER_OF_SEGMENTS, Segment, UpsertSegmentType } from './segments.model';
-import { selectAllSegments, selectGlobalSegments, selectSearchString } from './segments.selectors';
+import { selectGlobalSegments } from './segments.selectors';
 import JSZip from 'jszip';
 import { of } from 'rxjs';
 import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
@@ -95,7 +95,6 @@ export class SegmentsEffects {
           this.store$.pipe(select(selectRootBatch)),
           SegmentsActions.batchActions,
           (event) => this.store$.dispatch(event),
-          fromStarting,
           () => {
             this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments: true }));
             return this.segmentsDataService.fetchSegmentsPaginated(params, !!action.batchRefresh);
@@ -314,8 +313,6 @@ export class SegmentsEffects {
       )
     )
   );
-
-  private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
 
   // TODO: this should be replaced with the common download() method in common-export-helpers service in new experience
   private download(filename, text, isZip: boolean) {

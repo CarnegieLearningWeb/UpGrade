@@ -315,7 +315,7 @@ export function registerDeletionEligibilityTests(connections: () => [DataSource,
     });
 
     test.each(entities.flatMap((entity) => [20, 100, 500].map((count) => ({ entity, count }))))(
-      '$entity accepts $count IDs in one read-only HTTP request with fixed query count',
+      '$entity accepts $count IDs in one read-only HTTP request without per-ID queries',
       async ({ entity, count }) => {
         const rows = await create(entity, count);
         const ids = rows.map((row) => row.id).reverse();
@@ -331,8 +331,11 @@ export function registerDeletionEligibilityTests(connections: () => [DataSource,
         expect(queries.filter((sql) => /^(INSERT|UPDATE|DELETE|ALTER|CREATE)|FOR (UPDATE|SHARE)/i.test(sql))).toEqual(
           []
         );
-        // Includes the real auth check's user lookup and, for segments, BEGIN/COMMIT plus the five shared reads.
-        expect(queries).toHaveLength(entity === 'segments' ? 9 : 2);
+        // Count selection reads, not background recomputation started by the global-segment seed.
+        const selectionQueries = querySpy.mock.calls.filter(([, parameters]) =>
+          parameters?.some((parameter) => ids.includes(parameter))
+        );
+        expect(selectionQueries).toHaveLength(1);
         expect(statusSpy).toHaveBeenCalledTimes(entity === 'segments' ? 1 : 0);
         expect(detailsSpy).not.toHaveBeenCalled();
         expect(membersSpy).not.toHaveBeenCalled();

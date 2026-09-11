@@ -352,7 +352,7 @@ export class SegmentController {
    * /segments/batch-delete:
    *   post:
    *     summary: Delete the selected segments
-   *     description: Checks the entire selection before mutation, then deletes sequentially. Stops after the first failure and returns one result per ID.
+   *     description: Checks the selection, skips missing or ineligible items, and deletes eligible items sequentially. Other execution failures stop the remaining items. Returns one result per ID.
    *     tags:
    *       - Segment
    *     parameters:

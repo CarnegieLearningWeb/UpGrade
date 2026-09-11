@@ -1,9 +1,6 @@
 import { BatchDeleteResult, DeletionEligibilityItem, UserRole } from 'upgrade_types';
 
-export type RootSelectionItem = Pick<DeletionEligibilityItem, 'id' | 'name' | 'stateOrStatus' | 'segmentType'> & {
-  availability?: DeletionEligibilityItem['availability'];
-  reasonCode?: DeletionEligibilityItem['reasonCode'];
-};
+export type RootSelectionItem = Pick<DeletionEligibilityItem, 'id' | 'name' | 'stateOrStatus' | 'segmentType'>;
 
 export interface BatchDeleteSnapshot {
   operationId: string;

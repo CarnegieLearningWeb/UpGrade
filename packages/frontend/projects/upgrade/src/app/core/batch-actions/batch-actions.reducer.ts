@@ -68,18 +68,7 @@ export function reduceRootBatch(
     const email = action.user?.email || null;
     const role = action.user?.role || null;
     if (state.userEmail !== email) return { ...initialRootBatchState, userEmail: email, role };
-    return state.role === role
-      ? state
-      : {
-          ...invalidateSelection(state),
-          role,
-          selectedById: Object.fromEntries(
-            Object.entries(state.selectedById).map(([id, item]) => [
-              id,
-              item.reasonCode === DeletionReasonCode.MISSING_PERMISSION ? { ...item, reasonCode: undefined } : item,
-            ])
-          ),
-        };
+    return state.role === role ? state : { ...invalidateSelection(state), role };
   }
   if (matches(action, actions.listRequested))
     return {
@@ -94,17 +83,10 @@ export function reduceRootBatch(
   if (matches(action, actions.confirmedRemoved)) return removeConfirmed(state, action.ids);
   // Navigation clears the UI selection, but keeps any submitted operation and its result tracking alive.
   if (matches(action, actions.rootPageLeft)) return { ...invalidateSelection(state), selectedById: {} };
-  if (
-    matches(action, actions.clearSelection) ||
-    matches(action, actions.toggleHeader) ||
-    matches(action, actions.toggleRow)
-  ) {
+  if (matches(action, actions.toggleHeader) || matches(action, actions.toggleRow)) {
     if (isBatchBusy(state)) return state;
     let selectedById = { ...state.selectedById };
-    if (
-      matches(action, actions.clearSelection) ||
-      (matches(action, actions.toggleHeader) && Object.keys(selectedById).length)
-    ) {
+    if (matches(action, actions.toggleHeader) && Object.keys(selectedById).length) {
       selectedById = {};
     } else {
       const items = matches(action, actions.toggleRow)

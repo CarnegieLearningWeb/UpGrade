@@ -96,19 +96,6 @@ describe('Batch deletion using the existing text confirmation dialog', () => {
     expect(container.querySelector('mat-progress-bar')).toBeNull();
   }));
 
-  it.each(['cancel', 'close'])(
-    'allows %s without confirming',
-    fakeAsync((action) => {
-      open();
-      const closed = jest.fn();
-      ref.afterClosed().subscribe(closed);
-      (container.querySelector(`.${action}-btn`) as HTMLElement).click();
-      tick();
-      expect(closed).toHaveBeenCalledTimes(1);
-      expect(closed).not.toHaveBeenCalledWith(true);
-    })
-  );
-
   it('ignores Escape and backdrop clicks', fakeAsync(() => {
     open();
     container

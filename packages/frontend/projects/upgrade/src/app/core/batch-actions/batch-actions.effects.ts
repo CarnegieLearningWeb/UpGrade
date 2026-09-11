@@ -135,14 +135,13 @@ export function trackedListRequest<T>(
   state$: Observable<RootBatchState>,
   actions: RootBatchActions,
   dispatch: (action: Action) => void,
-  fromStarting: boolean,
   request: () => Observable<T>,
   success: (data: T, requestId: string) => Action[],
   failure: () => Action[]
 ) {
   return defer(() => {
     const requestId = newBatchRequestId();
-    dispatch(actions.listRequested({ requestId, fromStarting }));
+    dispatch(actions.listRequested({ requestId }));
     return request().pipe(
       switchMap((data) => success(data, requestId)),
       catchError(() => concat(of(actions.listFailed({ requestId })), of(...failure()))),

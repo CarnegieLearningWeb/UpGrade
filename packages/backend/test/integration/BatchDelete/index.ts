@@ -1,5 +1,4 @@
 import { randomUUID } from 'crypto';
-import { performance } from 'perf_hooks';
 import { Application } from 'express';
 import request from 'supertest';
 import Container from 'typedi';
@@ -597,17 +596,10 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         const rows = await create(entity, count);
         const ids = rows.map((row) => row.id).reverse();
         const status = jest.spyOn(Container.get(SegmentService), 'getSegmentStatus');
-        const queries = jest.spyOn(db.logger, 'logQuery');
-        const start = performance.now();
         const { body } = await request(app).post(route(entity)).send({ ids }).expect(200);
-        const durationMs = Math.round(performance.now() - start);
-        const queryCount = queries.mock.calls.length;
         expect(body).toEqual({ phase: 'executed', results: ids.map((id) => ({ id, outcome: 'deleted' })) });
         expect(status).toHaveBeenCalledTimes(entity === 'segments' ? 1 : 0);
         expect(await db.getRepository(model[entity]).countBy({ id: In(ids) })).toBe(0);
-        // Opt-in local measurement; keep CI output quiet and avoid machine-dependent timing assertions.
-        if (process.env.BATCH_DELETE_MEASURE === 'true')
-          console.info(JSON.stringify({ entity, count, durationMs, queryCount }));
       }
     );
   });

@@ -7,7 +7,6 @@ export function createBatchActions(source: string) {
   return {
     toggleRow: createAction(`${prefix} Toggle Row`, props<{ item: RootSelectionItem }>()),
     toggleHeader: createAction(`${prefix} Toggle Header`, props<{ items: RootSelectionItem[] }>()),
-    clearSelection: createAction(`${prefix} Clear Selection`),
     rootPageLeft: createAction(`${prefix} Root Page Left`),
     confirmedRemoved: createAction(`${prefix} Confirmed Removed`, props<{ ids: string[] }>()),
     prepareConfirmation: createAction(`${prefix} Prepare Confirmation`, props<{ operationId: string }>()),
@@ -25,7 +24,7 @@ export function createBatchActions(source: string) {
       `${prefix} Reconciliation Completed`,
       props<{ operationId: string; result: DeletionEligibilityResult | null }>()
     ),
-    listRequested: createAction(`${prefix} List Requested`, props<{ requestId: string; fromStarting: boolean }>()),
+    listRequested: createAction(`${prefix} List Requested`, props<{ requestId: string }>()),
     listFailed: createAction(`${prefix} List Failed`, props<{ requestId: string }>()),
   };
 }

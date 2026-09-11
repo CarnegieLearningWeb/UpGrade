@@ -17,9 +17,8 @@ export function rootBatchView(state: RootBatchState, entity: BatchDeleteEntity) 
     : '';
   return {
     ...selection,
-    state,
     messageKey,
-    menuDisabled: !selection.canRequestConfirmation || !!messageKey,
+    menuDisabled: !selection.canRequestConfirmation,
     menuItems: [
       {
         label: `batch-delete.dialog.${entity}.title`,

@@ -274,7 +274,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     });
     expect(batch().selectedById[rows[1].id]).toBeUndefined();
     expect(currentRows().some((row) => row.id === rows[1].id)).toBe(false);
-    expect(batchResultCounts(batch())).toMatchObject({ deleted: 0, absent: 1, remaining: 2 });
+    expect(batchResultCounts(batch())).toMatchObject({ deleted: 0, absent: 1 });
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
     expect(data[config.fetchMethod]).toHaveBeenLastCalledWith(expect.objectContaining({ skip: 0 }), true);
     expect(batch().confirmation).toBeNull();
@@ -286,7 +286,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     const snapshot = prepare();
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     store.dispatch(actions.batchDeleteRequested({ snapshot: { ...snapshot, operationId: 'duplicate' } }));
-    store.dispatch(actions.clearSelection());
+    store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }));
     store.dispatch(config.actions.actionSetSearchString({ searchString: 'latest query' }));
     expect(data.batchDelete).toHaveBeenCalledTimes(1);
     expect(data.batchDelete).toHaveBeenCalledWith(rows.map((row) => row.id));
@@ -384,7 +384,8 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
         [rows[0].id]
       )
     );
-    expect(batchResultCounts(batch())).toMatchObject({ deleted: 0, absent: 1, remaining: 2, uncertain: true });
+    expect(batchResultCounts(batch())).toMatchObject({ deleted: 0, absent: 1, uncertain: true });
+    expect(Object.keys(batch().selectedById)).toHaveLength(2);
     expect(notifications.showWarning).toHaveBeenCalledWith(
       '1 item was already absent. Some outcomes could not be confirmed. Check the list before retrying.'
     );

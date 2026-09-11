@@ -34,7 +34,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         if (err.status === 401) {
           // auto logout if 401 response returned from api
           this.authService.authLogout();
-        } else if (!(err.status === 404 && request.context?.get(HANDLES_404_CONTEXTUALLY))) {
+        } else if (!(err.status === 404 && request.context.get(HANDLES_404_CONTEXTUALLY))) {
           this.openPopup(err);
         }
         // re-throw to allow the error to be caught by the calling code

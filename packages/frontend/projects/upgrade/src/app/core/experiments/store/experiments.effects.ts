@@ -13,7 +13,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import * as analysisActions from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
-import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap, takeUntil } from 'rxjs/operators';
+import { map, filter, switchMap, catchError, tap, withLatestFrom, mergeMap, takeUntil } from 'rxjs/operators';
 import {
   UpsertExperimentType,
   IExperimentEnrollmentStats,
@@ -119,7 +119,6 @@ export class ExperimentEffects {
           this.store$.pipe(select(selectRootBatch)),
           experimentAction.batchActions,
           (event) => this.store$.dispatch(event),
-          fromStarting,
           () => {
             this.store$.dispatch(experimentAction.actionSetIsLoadingExperiment({ isLoadingExperiment: true }));
             return this.experimentDataService.getAllExperiment(params, !!action.batchRefresh);
@@ -832,5 +831,4 @@ export class ExperimentEffects {
     element.click();
     document.body.removeChild(element);
   }
-  private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
 }

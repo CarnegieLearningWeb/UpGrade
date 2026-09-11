@@ -12,7 +12,7 @@ import { FeatureFlagsDataService } from '../feature-flags.data.service';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Injectable } from '@angular/core';
 import * as FeatureFlagsActions from './feature-flags.actions';
-import { catchError, switchMap, mergeMap, map, filter, withLatestFrom, tap, first } from 'rxjs/operators';
+import { catchError, switchMap, mergeMap, map, filter, withLatestFrom, tap } from 'rxjs/operators';
 import { FeatureFlag, NUMBER_OF_FLAGS } from './feature-flags.model';
 import { DATE_RANGE } from '../../experiments/store/experiments.model';
 import { Router } from '@angular/router';
@@ -98,7 +98,6 @@ export class FeatureFlagsEffects {
           this.store$.pipe(select(selectRootBatch)),
           FeatureFlagsActions.batchActions,
           (event) => this.store$.dispatch(event),
-          fromStarting,
           () => {
             this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
             return this.featureFlagsDataService.fetchFeatureFlagsPaginated(params, !!action.batchRefresh);
@@ -580,6 +579,4 @@ export class FeatureFlagsEffects {
       )
     )
   );
-
-  private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
 }
