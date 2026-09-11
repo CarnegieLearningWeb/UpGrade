@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { RootBatchActionsDirective } from '../../../../../../../shared/directives/root-batch-actions.directive';
-import { CommonBatchSelectionStatusComponent } from '@shared-component-lib/common-batch-selection-status/common-batch-selection-status.component';
 import {
   CommonSectionCardComponent,
   CommonSectionCardSearchHeaderComponent,
@@ -24,7 +23,6 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
   selector: 'app-segment-root-section-card',
   imports: [
     RootBatchActionsDirective,
-    CommonBatchSelectionStatusComponent,
     CommonSectionCardComponent,
     CommonSectionCardSearchHeaderComponent,
     CommonSectionCardActionButtonsComponent,
@@ -44,9 +42,6 @@ export class SegmentRootSectionCardComponent {
   readonly batch = this.segmentsService.batch;
   @ViewChild(RootBatchActionsDirective) batchUi: RootBatchActionsDirective;
 
-  reloadBatchList() {
-    this.segmentsService.fetchSegmentsPaginated(true);
-  }
   segments$ = this.segmentsService.selectAllSegments$;
   isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
   isInitialLoading$ = this.segmentsService.isInitialSegmentsLoading();

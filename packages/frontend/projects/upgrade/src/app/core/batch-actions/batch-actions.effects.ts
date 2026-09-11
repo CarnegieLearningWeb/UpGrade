@@ -12,7 +12,7 @@ import {
   throwIfEmpty,
   withLatestFrom,
 } from 'rxjs/operators';
-import { BatchDeleteResult, DeletionEligibilityResult } from 'upgrade_types';
+import { BatchDeleteResult, DeletionEligibilityResult, DeletionReasonCode } from 'upgrade_types';
 import { RootBatchActions } from './batch-actions.actions';
 import { RootBatchState, newBatchRequestId } from './batch-actions.models';
 import { validateBatchResponse, validateEligibilityResponse } from './batch-actions.helpers';
@@ -49,7 +49,22 @@ export function batchDeleteEffect(
           })
         ),
         catchError((error) =>
-          of(actions.batchDeleteRequestFailed({ operationId: snapshot.operationId, status: error?.status || 0 }))
+          of(
+            error?.status !== undefined
+              ? actions.batchDeleteRequestFailed({ operationId: snapshot.operationId, status: error.status })
+              : actions.batchDeleteCompleted({
+                  operationId: snapshot.operationId,
+                  // An invalid/empty successful response has no HTTP error for the interceptor to report.
+                  result: {
+                    phase: 'executed',
+                    results: ids.map((id) => ({
+                      id,
+                      outcome: 'unknown',
+                      reasonCode: DeletionReasonCode.OUTCOME_UNKNOWN,
+                    })),
+                  },
+                })
+          )
         ),
         // Logout/user replacement discards session state. Navigation alone never cancels this request.
         takeUntil(state$.pipe(filter((current) => current.userEmail !== state.userEmail || !current.operation)))
@@ -65,9 +80,7 @@ export function reconcileBatchEffect(
   data: BatchDataSource
 ) {
   return events.pipe(
-    filter((action) =>
-      [actions.batchDeleteCompleted.type, actions.batchDeleteRequestFailed.type].some((type) => type === action.type)
-    ),
+    filter((action) => action.type === actions.batchDeleteCompleted.type),
     withLatestFrom(state$),
     filter(
       ([action, state]) =>
@@ -112,7 +125,8 @@ export function batchFinishedEffect(
     distinctUntilChanged(
       (previous, current) => previous[1].operation.snapshot.operationId === current[1].operation.snapshot.operationId
     ),
-    switchMap(([, state]) => finish(state))
+    // HTTP failures already use the same error notification as single deletion. Do not refresh or notify twice.
+    switchMap(([, state]) => (state.operation.transportStatus !== undefined ? [] : finish(state)))
   );
 }
 
@@ -122,7 +136,6 @@ export function trackedListRequest<T>(
   actions: RootBatchActions,
   dispatch: (action: Action) => void,
   fromStarting: boolean,
-  batchRefresh: boolean,
   request: () => Observable<T>,
   success: (data: T, requestId: string) => Action[],
   failure: () => Action[]
@@ -132,7 +145,7 @@ export function trackedListRequest<T>(
     dispatch(actions.listRequested({ requestId, fromStarting }));
     return request().pipe(
       switchMap((data) => success(data, requestId)),
-      catchError(() => concat(of(actions.listFailed({ requestId, batchRefresh })), of(...failure()))),
+      catchError(() => concat(of(actions.listFailed({ requestId })), of(...failure()))),
       // NgRx queues a nested dispatch until the current action finishes. Observe our start before
       // treating a different token (including null on deletion/logout) as cancellation.
       takeUntil(

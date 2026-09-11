@@ -135,7 +135,7 @@ describe('ExperimentEffects', () => {
       const subscription = service.getPaginatedExperiment$.subscribe((result) => results.push(result));
       actions$.next(actionGetExperiments({}));
       expect(results).toEqual([
-        batchActions.listFailed({ requestId: expect.any(String), batchRefresh: false }),
+        batchActions.listFailed({ requestId: expect.any(String) }),
         actionGetExperimentsFailure({ error: null }),
       ]);
       subscription.unsubscribe();

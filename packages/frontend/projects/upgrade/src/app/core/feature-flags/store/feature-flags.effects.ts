@@ -99,7 +99,6 @@ export class FeatureFlagsEffects {
           FeatureFlagsActions.batchActions,
           (event) => this.store$.dispatch(event),
           fromStarting,
-          !!action.batchRefresh,
           () => {
             this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
             return this.featureFlagsDataService.fetchFeatureFlagsPaginated(params, !!action.batchRefresh);

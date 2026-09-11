@@ -120,7 +120,6 @@ export class ExperimentEffects {
           experimentAction.batchActions,
           (event) => this.store$.dispatch(event),
           fromStarting,
-          !!action.batchRefresh,
           () => {
             this.store$.dispatch(experimentAction.actionSetIsLoadingExperiment({ isLoadingExperiment: true }));
             return this.experimentDataService.getAllExperiment(params, !!action.batchRefresh);

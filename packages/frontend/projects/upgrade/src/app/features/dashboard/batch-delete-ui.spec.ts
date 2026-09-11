@@ -406,6 +406,33 @@ describe.each(cases)('$entity root batch UI', (config) => {
     expect(trigger.disabled).toBe(config.entity !== 'segments');
   });
 
+  it('keeps checkboxes usable without a banner or reload button after request and refresh failures', () => {
+    selectFirst();
+    store.dispatch(actions.prepareConfirmation({ operationId: 'offline-delete' }));
+    store.dispatch(actions.batchDeleteRequested({ snapshot: batch().confirmation }));
+    fixture.detectChanges();
+    expect(checkboxes()[1].disabled).toBe(true);
+    store.dispatch(actions.batchDeleteRequestFailed({ operationId: 'offline-delete', status: 0 }));
+    fixture.detectChanges();
+    expect(checkboxes().every((input) => !input.disabled)).toBe(true);
+    checkboxes()[1].click();
+    fixture.detectChanges();
+    expect(Object.keys(batch().selectedById)).toHaveLength(0);
+    checkboxes()[1].click();
+    fixture.detectChanges();
+    expect(Object.keys(batch().selectedById)).toHaveLength(1);
+
+    store.dispatch(actions.listRequested({ requestId: 'failed-refresh', fromStarting: true }));
+    store.dispatch(actions.listFailed({ requestId: 'failed-refresh' }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-common-batch-selection-status')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.selection-status')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Reload list');
+    checkboxes()[2].click();
+    fixture.detectChanges();
+    expect(Object.keys(batch().selectedById)).toHaveLength(2);
+  });
+
   it('explains a hidden restriction only in the menu tooltip without inserting a status row', () => {
     load([
       {

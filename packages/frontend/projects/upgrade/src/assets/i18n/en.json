@@ -9,8 +9,6 @@
   "batch-delete.selection.flags.row": "Select feature flag {{name}}",
   "batch-delete.selection.segments.row": "Select segment {{name}}",
   "batch-delete.selection.busy": "Deletion is in progress. Please wait for the result.",
-  "batch-delete.selection.list-refresh-failed": "The list could not be refreshed. Reload it to see its current contents.",
-  "batch-delete.selection.reload": "Reload list",
   "batch-delete.dialog.experiments.title": "Delete Experiments",
   "batch-delete.dialog.experiments.one": "Are you sure you want to delete 1 experiment?",
   "batch-delete.dialog.experiments.other": "Are you sure you want to delete {{count}} experiments?",

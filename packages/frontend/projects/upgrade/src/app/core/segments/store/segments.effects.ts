@@ -96,7 +96,6 @@ export class SegmentsEffects {
           SegmentsActions.batchActions,
           (event) => this.store$.dispatch(event),
           fromStarting,
-          !!action.batchRefresh,
           () => {
             this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments: true }));
             return this.segmentsDataService.fetchSegmentsPaginated(params, !!action.batchRefresh);

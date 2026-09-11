@@ -49,7 +49,6 @@ export function receiveListRows(
     selectedById,
     loadedIds: [...new Set([...(fromStarting ? [] : state.loadedIds), ...rows.map((item) => item.id)])],
     listLoading: false,
-    listRefreshFailed: false,
   };
 }
 
@@ -86,14 +85,12 @@ export function reduceRootBatch(
     return {
       ...state,
       listRequestId: action.requestId,
-      loadedIds: action.fromStarting ? [] : state.loadedIds,
+      // Keep IDs for displayed rows until replacement rows arrive. Query changes clear them separately.
+      loadedIds: state.loadedIds,
       listLoading: true,
-      listRefreshFailed: false,
     };
   if (matches(action, actions.listFailed))
-    return action.requestId === state.listRequestId
-      ? { ...state, listLoading: false, listRefreshFailed: action.batchRefresh }
-      : state;
+    return action.requestId === state.listRequestId ? { ...state, listLoading: false } : state;
   if (matches(action, actions.confirmedRemoved)) return removeConfirmed(state, action.ids);
   // Navigation clears the UI selection, but keeps any submitted operation and its result tracking alive.
   if (matches(action, actions.rootPageLeft)) return { ...invalidateSelection(state), selectedById: {} };
@@ -190,7 +187,8 @@ export function reduceRootBatch(
         operation: {
           ...state.operation,
           transportStatus: action.status,
-          status: rejected ? 'complete' : 'reconciling',
+          // The shared HTTP interceptor reports request errors. Release controls without follow-up requests.
+          status: 'complete',
           result: {
             phase: rejected ? 'rejected' : 'executed',
             results: state.operation.snapshot.items.map(({ id }) => ({

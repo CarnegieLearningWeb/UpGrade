@@ -369,13 +369,13 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(notifications.showSuccess).toHaveBeenCalledWith(`${count} ${noun}${count === 1 ? '' : 's'} deleted.`);
   });
 
-  it('reconciles a lost response with one bulk read, counts absence separately, and never retries deletion', () => {
+  it('reconciles an explicit unknown server result with one bulk read and never retries deletion', () => {
     selectRows();
     const snapshot = prepare();
     const reconcile = new Subject<any>();
     data.checkDeletionEligibility.mockReturnValueOnce(reconcile);
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
-    response.error({ status: 0 });
+    response.next({ phase: 'executed', results: rows.map(({ id }) => ({ id, outcome: 'unknown' })) });
     expect(batch().operation.status).toBe('reconciling');
     expect(Object.keys(batch().selectedById)).toHaveLength(3);
     reconcile.next(
@@ -394,19 +394,35 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
   });
 
-  it('retains all unknown items if reconciliation fails and distinguishes a subsequent list-refresh failure', () => {
-    selectRows();
-    const snapshot = prepare();
-    data.checkDeletionEligibility.mockReturnValue(throwError(() => new Error('metadata unavailable')));
-    data[config.fetchMethod].mockReturnValue(throwError(() => new Error('list unavailable')));
-    store.dispatch(actions.batchDeleteRequested({ snapshot }));
-    response.error({ status: 504 });
-    expect(batch().operation.status).toBe('complete');
-    expect(batch().operation.reconciliationFailed).toBe(true);
-    expect(batch().listRefreshFailed).toBe(true);
-    expect(Object.keys(batch().selectedById)).toHaveLength(3);
-    expect(data.batchDelete).toHaveBeenCalledTimes(1);
-  });
+  it.each([0, 400, 403, 500, 504])(
+    'releases selection after HTTP %i without another request or result snackbar',
+    (status) => {
+      selectRows();
+      const snapshot = prepare();
+      const fetchCount = data[config.fetchMethod].mock.calls.length;
+      const beforeRows = currentRows();
+      const loadedIds = [...batch().loadedIds];
+      store.dispatch(actions.batchDeleteRequested({ snapshot }));
+      response.error({ status });
+      expect(batch().operation.status).toBe('complete');
+      expect(currentRows()).toEqual(beforeRows);
+      expect(batch().loadedIds).toEqual(loadedIds);
+      expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
+      expect(data[config.fetchMethod]).toHaveBeenCalledTimes(fetchCount);
+      expect(notifications.showWarning).not.toHaveBeenCalled();
+      expect(notifications.showSuccess).not.toHaveBeenCalled();
+      expect(Object.keys(batch().selectedById)).toHaveLength(3);
+      expect(data.batchDelete).toHaveBeenCalledTimes(1);
+      store.dispatch(actions.toggleRow({ item: selectionItem(rows[0]) }));
+      expect(batch().selectedById[rows[0].id]).toBeUndefined();
+      store.dispatch(actions.toggleRow({ item: selectionItem(rows[0]) }));
+      expect(batch().selectedById[rows[0].id]).toBeDefined();
+      store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }));
+      expect(Object.keys(batch().selectedById)).toHaveLength(0);
+      store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }));
+      expect(Object.keys(batch().selectedById)).toHaveLength(3);
+    }
+  );
 
   it('reports a preflight rejection without removing any selected or hidden row', () => {
     selectRows();
@@ -437,11 +453,14 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     );
     expect(batch().selectedById[rows[0].id]).toBeUndefined();
     expect(batch().operation.result.results[0].outcome).toBe('deleted');
-    expect(batch().listRefreshFailed).toBe(true);
+    expect(batch().listLoading).toBe(false);
+    expect(batch().loadedIds).toEqual([rows[1].id, rows[2].id]);
+    store.dispatch(actions.toggleRow({ item: selectionItem(rows[1]) }));
+    expect(batch().selectedById[rows[1].id]).toBeDefined();
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
   });
 
-  it('treats a malformed successful response as unknown and reconciles instead of retrying', () => {
+  it('retains unknown items after a malformed response without retrying deletion', () => {
     selectRows();
     const snapshot = prepare();
     store.dispatch(actions.batchDeleteRequested({ snapshot }));

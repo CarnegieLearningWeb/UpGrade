@@ -33,7 +33,6 @@
   <!-- content -->
   @if (isSectionCardExpanded) {
   <ng-container content>
-    <app-common-batch-selection-status [view]="batchView" (reload)="reloadBatchList()" />
     @if (!(isInitialLoading$ | async) && !batchView?.selectedCount) {
     <div class="mat-spinner-container">
       <mat-spinner diameter="60"></mat-spinner>

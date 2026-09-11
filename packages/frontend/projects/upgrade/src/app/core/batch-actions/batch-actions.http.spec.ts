@@ -8,7 +8,6 @@ import { FeatureFlagsDataService } from '../feature-flags/feature-flags.data.ser
 import { SegmentsDataService } from '../segments/segments.data.service';
 import { HttpCancelInterceptor, SKIP_NAVIGATION_CANCEL } from '../http-interceptors/http-cancel.interceptor';
 import { HttpErrorInterceptor } from '../http-interceptors/http-error.interceptor';
-import { HANDLES_BATCH_ERRORS_CONTEXTUALLY } from '../http-interceptors/http-context-tokens';
 import { batchHttpContext } from './batch-actions.http';
 
 describe('Batch HTTP contracts', () => {
@@ -40,7 +39,6 @@ describe('Batch HTTP contracts', () => {
       const read = http.expectOne(`/${entity}/deletion-eligibility`);
       expect(read.request.method).toBe('POST');
       expect(read.request.body).toEqual({ ids });
-      expect(read.request.context.get(HANDLES_BATCH_ERRORS_CONTEXTUALLY)).toBe(true);
       expect(read.request.context.get(SKIP_NAVIGATION_CANCEL)).toBe(true);
       read.flush({ items: [], allDeletable: false });
       service.batchDelete(ids).subscribe();
@@ -69,7 +67,7 @@ describe('Batch HTTP contracts', () => {
     navigation.complete();
   });
 
-  it.each([0, 400, 403, 404, 500, 504])('lets the batch UI handle HTTP %i without a duplicate popup', (status) => {
+  it.each([0, 400, 403, 404, 500, 504])('reports HTTP %i using the existing error popup', (status) => {
     const notification = { create: jest.fn() };
     const auth = { authLogout: jest.fn() };
     const interceptor = new HttpErrorInterceptor(auth as any, notification as any, {} as any);
@@ -80,11 +78,12 @@ describe('Batch HTTP contracts', () => {
         handle: () => throwError(() => error),
       })
       .subscribe({ error: failed });
-    expect(notification.create).not.toHaveBeenCalled();
+    expect(notification.create).toHaveBeenCalledTimes(1);
+    expect(notification.create.mock.calls[0][0]).toBe('Network call failed. See console for details.');
     expect(failed).toHaveBeenCalledWith(error);
   });
 
-  it('preserves automatic logout for a contextual 401', () => {
+  it('preserves automatic logout for a batch 401', () => {
     const auth = { authLogout: jest.fn() };
     const interceptor = new HttpErrorInterceptor(auth as any, { create: jest.fn() } as any, {} as any);
     interceptor

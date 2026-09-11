@@ -20,7 +20,6 @@ export interface RootBatchState {
   loadedIds: string[];
   listRequestId: string | null;
   listLoading: boolean;
-  listRefreshFailed: boolean;
   removedIds: string[];
   confirmation: BatchDeleteSnapshot | null;
   operation: {
@@ -41,7 +40,6 @@ export const initialRootBatchState: RootBatchState = {
   loadedIds: [],
   listRequestId: null,
   listLoading: false,
-  listRefreshFailed: false,
   removedIds: [],
   confirmation: null,
   operation: null,

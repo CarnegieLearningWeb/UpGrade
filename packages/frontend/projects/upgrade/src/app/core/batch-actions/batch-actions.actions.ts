@@ -26,7 +26,7 @@ export function createBatchActions(source: string) {
       props<{ operationId: string; result: DeletionEligibilityResult | null }>()
     ),
     listRequested: createAction(`${prefix} List Requested`, props<{ requestId: string; fromStarting: boolean }>()),
-    listFailed: createAction(`${prefix} List Failed`, props<{ requestId: string; batchRefresh: boolean }>()),
+    listFailed: createAction(`${prefix} List Failed`, props<{ requestId: string }>()),
   };
 }
 

@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { RootBatchActionsDirective } from '../../../../../../../shared/directives/root-batch-actions.directive';
-import { CommonBatchSelectionStatusComponent } from '@shared-component-lib/common-batch-selection-status/common-batch-selection-status.component';
 import {
   CommonSectionCardComponent,
   CommonSectionCardSearchHeaderComponent,
@@ -26,7 +25,6 @@ import { StratificationFactorsService } from '../../../../../../../core/stratifi
   selector: 'app-experiment-root-section-card',
   imports: [
     RootBatchActionsDirective,
-    CommonBatchSelectionStatusComponent,
     CommonSectionCardComponent,
     CommonSectionCardSearchHeaderComponent,
     CommonSectionCardActionButtonsComponent,
@@ -44,9 +42,6 @@ export class ExperimentRootSectionCardComponent {
   readonly batch = this.experimentService.batch;
   @ViewChild(RootBatchActionsDirective) batchUi: RootBatchActionsDirective;
 
-  reloadBatchList() {
-    this.experimentService.loadExperiments(true);
-  }
   experiments$ = this.experimentService.experiments$;
   isLoadingExperiments$ = this.experimentService.isLoadingExperiment$;
   isInitialLoading$ = this.experimentService.haveInitialExperimentsLoaded();

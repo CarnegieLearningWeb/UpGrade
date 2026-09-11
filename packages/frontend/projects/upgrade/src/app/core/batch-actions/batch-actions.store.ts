@@ -77,7 +77,9 @@ export function withRootBatch<S extends { rootBatch: RootBatchState }>(
     }
     if (
       rootBatch.removedIds.length > state.rootBatch.removedIds.length ||
-      (isBatchBusy(state.rootBatch) && rootBatch.operation?.status === 'complete')
+      (isBatchBusy(state.rootBatch) &&
+        rootBatch.operation?.status === 'complete' &&
+        rootBatch.operation.transportStatus === undefined)
     ) {
       result = { ...result, [config.skipKey]: 0, [config.totalKey]: null };
     }
