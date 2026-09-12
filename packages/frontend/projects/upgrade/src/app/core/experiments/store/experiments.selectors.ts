@@ -347,23 +347,33 @@ export const selectRewardsDataForSelectedExperiment = createSelector(
   selectSelectedExperiment,
   selectExperimentState,
   (experiment: ExperimentVM, state: ExperimentState): ExperimentRewardsSummary => {
+    const emptySummary: ExperimentRewardsSummary = {
+      conditions: [],
+      pendingRewardsCount: 0,
+      totalRewardCount: 0,
+      warmupThreshold: 0,
+      batchSize: 1,
+    };
+
     if (!experiment || !experiment.id) {
-      return [];
+      return emptySummary;
     }
     const rewardsSummary = state.rewardsSummaries[experiment.id];
 
     if (!rewardsSummary) {
-      const defaultRewardsSummary: ExperimentRewardsSummary = experiment.conditions.map((condition) => {
-        return {
+      return {
+        ...emptySummary,
+        conditions: experiment.conditions.map((condition) => ({
           conditionCode: condition.conditionCode,
           successes: 0,
           failures: 0,
           total: 0,
           successRate: 'n/a',
           order: condition.order,
-        };
-      });
-      return defaultRewardsSummary;
+        })),
+        warmupThreshold: experiment.thompsonSamplingConfig?.warmupThreshold ?? 0,
+        batchSize: experiment.thompsonSamplingConfig?.batchSize ?? 1,
+      };
     }
 
     return rewardsSummary;

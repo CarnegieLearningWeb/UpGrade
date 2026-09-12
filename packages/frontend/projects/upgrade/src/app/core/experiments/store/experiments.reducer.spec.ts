@@ -736,24 +736,30 @@ describe('ExperimentsReducer', () => {
       previousState.isLoadingRewardsSummary = true;
       previousState.rewardsSummaries = {};
 
-      const mockRewardsSummary = [
-        {
-          conditionCode: 'Control',
-          successes: 10,
-          failures: 5,
-          total: 15,
-          successRate: '66.7%',
-          order: 0,
-        },
-        {
-          conditionCode: 'Treatment',
-          successes: 8,
-          failures: 7,
-          total: 15,
-          successRate: '53.3%',
-          order: 1,
-        },
-      ];
+      const mockRewardsSummary = {
+        conditions: [
+          {
+            conditionCode: 'Control',
+            successes: 10,
+            failures: 5,
+            total: 15,
+            successRate: '66.7%',
+            order: 0,
+          },
+          {
+            conditionCode: 'Treatment',
+            successes: 8,
+            failures: 7,
+            total: 15,
+            successRate: '53.3%',
+            order: 1,
+          },
+        ],
+        pendingRewardsCount: 0,
+        totalRewardCount: 30,
+        warmupThreshold: 0,
+        batchSize: 1,
+      };
 
       const testAction: Action = actionFetchRewardsDataForExperimentSuccess({
         experimentId: 'exp-123',
@@ -768,32 +774,44 @@ describe('ExperimentsReducer', () => {
     });
 
     it('action "actionFetchRewardsDataForExperimentSuccess" should update existing rewards summary', () => {
-      const oldSummary = [
-        {
-          conditionCode: 'Control',
-          successes: 5,
-          failures: 5,
-          total: 10,
-          successRate: '50.0%',
-          order: 0,
-        },
-      ];
+      const oldSummary = {
+        conditions: [
+          {
+            conditionCode: 'Control',
+            successes: 5,
+            failures: 5,
+            total: 10,
+            successRate: '50.0%',
+            order: 0,
+          },
+        ],
+        pendingRewardsCount: 0,
+        totalRewardCount: 10,
+        warmupThreshold: 0,
+        batchSize: 1,
+      };
 
       const previousState = { ...initialState };
       previousState.rewardsSummaries = {
         'exp-123': oldSummary,
       };
 
-      const newSummary = [
-        {
-          conditionCode: 'Control',
-          successes: 10,
-          failures: 5,
-          total: 15,
-          successRate: '66.7%',
-          order: 0,
-        },
-      ];
+      const newSummary = {
+        conditions: [
+          {
+            conditionCode: 'Control',
+            successes: 10,
+            failures: 5,
+            total: 15,
+            successRate: '66.7%',
+            order: 0,
+          },
+        ],
+        pendingRewardsCount: 0,
+        totalRewardCount: 15,
+        warmupThreshold: 0,
+        batchSize: 1,
+      };
 
       const testAction: Action = actionFetchRewardsDataForExperimentSuccess({
         experimentId: 'exp-123',
@@ -807,8 +825,20 @@ describe('ExperimentsReducer', () => {
     });
 
     it('action "actionFetchRewardsDataForExperimentSuccess" should preserve other experiment summaries', () => {
-      const summary1 = [{ conditionCode: 'A', successes: 1, failures: 0, total: 1, successRate: '100%', order: 0 }];
-      const summary2 = [{ conditionCode: 'B', successes: 2, failures: 0, total: 2, successRate: '100%', order: 0 }];
+      const summary1 = {
+        conditions: [{ conditionCode: 'A', successes: 1, failures: 0, total: 1, successRate: '100%', order: 0 }],
+        pendingRewardsCount: 0,
+        totalRewardCount: 1,
+        warmupThreshold: 0,
+        batchSize: 1,
+      };
+      const summary2 = {
+        conditions: [{ conditionCode: 'B', successes: 2, failures: 0, total: 2, successRate: '100%', order: 0 }],
+        pendingRewardsCount: 0,
+        totalRewardCount: 2,
+        warmupThreshold: 0,
+        batchSize: 1,
+      };
 
       const previousState = { ...initialState };
       previousState.rewardsSummaries = {
@@ -841,9 +871,13 @@ describe('ExperimentsReducer', () => {
     });
 
     it('action "actionFetchRewardsDataForExperimentFailure" should not modify rewardsSummaries', () => {
-      const existingSummary = [
-        { conditionCode: 'A', successes: 1, failures: 0, total: 1, successRate: '100%', order: 0 },
-      ];
+      const existingSummary = {
+        conditions: [{ conditionCode: 'A', successes: 1, failures: 0, total: 1, successRate: '100%', order: 0 }],
+        pendingRewardsCount: 0,
+        totalRewardCount: 1,
+        warmupThreshold: 0,
+        batchSize: 1,
+      };
 
       const previousState = { ...initialState };
       previousState.rewardsSummaries = {

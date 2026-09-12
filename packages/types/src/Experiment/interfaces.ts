@@ -361,4 +361,16 @@ export interface ExperimentRewardsByCondition {
   estimatedWeight?: number;
 }
 
-export type ExperimentRewardsSummary = Array<ExperimentRewardsByCondition>;
+export interface ExperimentRewardsSummary {
+  conditions: ExperimentRewardsByCondition[];
+  /**
+   * Rewards buffered since the last batch flush, summed across all conditions. Cycles from 0 up
+   * to (but never reaching) batchSize, resetting to 0 once the shared batch closes. Always 0 when
+   * batchSize is 1 or less, since a reward is applied immediately rather than buffered.
+   */
+  pendingRewardsCount: number;
+  /** Reward evidence collected so far (flushed + pending), the same measure warmupThreshold gates on. */
+  totalRewardCount: number;
+  warmupThreshold: number;
+  batchSize: number;
+}

@@ -222,14 +222,27 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
   }
 
   /**
-   * Per-condition reward totals and estimated win-rate weight for the experiment overview/summary
-   * display. Read-only aggregation — does not touch ConditionPosteriorState rows (see
-   * syncConditions() for that).
+   * Per-condition reward totals and estimated win-rate weight, plus experiment-wide batch/warmup
+   * progress, for the reward feedback card display. Read-only aggregation — does not touch
+   * ConditionPosteriorState rows (see syncConditions() for that).
    */
   public async getRewardsSummary(experimentId: string): Promise<ExperimentRewardsSummary> {
     const config = await this.configRepository.findByExperimentIdWithConditions(experimentId);
 
-    if (!config) return [];
+    if (!config) {
+      return { conditions: [], pendingRewardsCount: 0, totalRewardCount: 0, warmupThreshold: 0, batchSize: 1 };
+    }
+
+    // A reward is only ever buffered (pendingTotalCount > 0) when batchSize > 1 -- unset/<=1 applies
+    // immediately, so there's nothing to sum and no batch to cycle through.
+    const pendingRewardsCount =
+      config.batchSize > 1 ? config.conditionPosteriorStates.reduce((sum, s) => sum + s.pendingTotalCount, 0) : 0;
+    // Same measure warmupThreshold gates on in ThompsonSamplingService/ExperimentAssignmentService:
+    // flushed evidence plus whatever's still sitting in a pending batch.
+    const totalRewardCount = config.conditionPosteriorStates.reduce(
+      (sum, s) => sum + s.totalCount + s.pendingTotalCount,
+      0
+    );
 
     const rows = config.conditionPosteriorStates.map((state) => {
       const successes = state.successCount;
@@ -262,12 +275,20 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
       rows.map((r) => ({ code: r.conditionId, alpha: r.alpha, beta: r.beta }))
     );
 
-    return rows
+    const conditions = rows
       .map(({ conditionId, alpha: _alpha, beta: _beta, ...rest }) => ({
         ...rest,
         estimatedWeight: weightMap[conditionId],
       }))
       .sort((a, b) => a.order - b.order);
+
+    return {
+      conditions,
+      pendingRewardsCount,
+      totalRewardCount,
+      warmupThreshold: config.warmupThreshold,
+      batchSize: config.batchSize,
+    };
   }
 
   /**

@@ -6,9 +6,16 @@
 
   <!-- Table -->
   <table mat-table [dataSource]="dataSource" [ngClass]="{ 'no-data': !dataSource?.length }">
+    <!-- Condition Group Header (blank -- Condition has no upper label, but still needs a row1
+         cell so its row2 label sits in the same single-row cell as Count/Prior/Posterior, giving
+         it the same vertical-align: middle center point instead of centering across a rowspan) -->
+    <ng-container matColumnDef="conditionGroup">
+      <th mat-header-cell *matHeaderCellDef class="condition-column"></th>
+    </ng-container>
+
     <!-- Condition Column -->
     <ng-container matColumnDef="conditionCode">
-      <th mat-header-cell *matHeaderCellDef [attr.rowspan]="2" class="condition-column ft-14-600">
+      <th mat-header-cell *matHeaderCellDef class="condition-column ft-14-600">
         {{ 'experiments.details.posteriors.condition.text' | translate }}
       </th>
       <td mat-cell *matCellDef="let row" class="condition-column ft-14-400">
@@ -53,9 +60,27 @@
       </td>
     </ng-container>
 
+    <!-- Spacer Group Header (blank -- given a real row2 cell too, like conditionGroup, so the
+         row1/row2 divider border-top carries all the way across the table instead of stopping. -->
+    <ng-container matColumnDef="spacerGroup">
+      <th mat-header-cell *matHeaderCellDef class="spacer-column"></th>
+    </ng-container>
+
     <!-- Spacer Column -->
     <ng-container matColumnDef="spacer">
-      <th mat-header-cell *matHeaderCellDef [attr.rowspan]="2" class="spacer-column"></th>
+      <th mat-header-cell *matHeaderCellDef class="spacer-column"></th>
+      <td mat-cell *matCellDef="let row" class="spacer-column"></td>
+    </ng-container>
+
+    <!-- Second Spacer Group Header -- breathing room between the Failures group and Est. Weight,
+         matching the gap the first spacer already gives Successes/Failures. -->
+    <ng-container matColumnDef="spacer2Group">
+      <th mat-header-cell *matHeaderCellDef class="spacer-column"></th>
+    </ng-container>
+
+    <!-- Second Spacer Column -->
+    <ng-container matColumnDef="spacer2">
+      <th mat-header-cell *matHeaderCellDef class="spacer-column"></th>
       <td mat-cell *matCellDef="let row" class="spacer-column"></td>
     </ng-container>
 
@@ -96,12 +121,16 @@
       </td>
     </ng-container>
 
+    <!-- Estimated Weight Group Header (blank -- see conditionGroup for why) -->
+    <ng-container matColumnDef="estimatedWeightGroup">
+      <th mat-header-cell *matHeaderCellDef class="estimated-weight-column data-column"></th>
+    </ng-container>
+
     <!-- Estimated Weight Column -->
     <ng-container matColumnDef="estimatedWeight">
       <th
         mat-header-cell
         *matHeaderCellDef
-        [attr.rowspan]="2"
         class="estimated-weight-column data-column ft-14-600"
         [matTooltip]="'experiments.details.posteriors.estimated-weight-tooltip.text' | translate"
         matTooltipPosition="above"

@@ -4,7 +4,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
-import { ExperimentRewardsSummary } from 'upgrade_types';
+import { ExperimentRewardsByCondition } from 'upgrade_types';
 
 @Component({
   selector: 'app-ts-configurable-reward-count-table',
@@ -15,12 +15,34 @@ import { ExperimentRewardsSummary } from 'upgrade_types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TSConfigurableRewardCountTableComponent {
-  @Input() dataSource: ExperimentRewardsSummary = [];
+  @Input() dataSource: ExperimentRewardsByCondition[] = [];
   @Input() isLoading = false;
 
-  groupHeaderColumns = ['conditionCode', 'successesGroup', 'spacer', 'failuresGroup', 'estimatedWeight'];
+  groupHeaderColumns = [
+    'conditionGroup',
+    'successesGroup',
+    'spacerGroup',
+    'failuresGroup',
+    'spacer2Group',
+    'estimatedWeightGroup',
+  ];
 
-  subHeaderColumns = ['successes', 'successPrior', 'successPosterior', 'failures', 'failurePrior', 'failurePosterior'];
+  // Condition/spacer/spacer2/estimatedWeight get real (if blank-topped) cells in both header rows
+  // rather than a rowspan, so their label sits in the same single-row cell as Count/Prior/Posterior
+  // -- that's what makes a shared `vertical-align: middle` center all of them on the same line, and
+  // lets the row1/row2 divider border-top carry all the way across instead of stopping at a rowspan.
+  subHeaderColumns = [
+    'conditionCode',
+    'successes',
+    'successPrior',
+    'successPosterior',
+    'spacer',
+    'failures',
+    'failurePrior',
+    'failurePosterior',
+    'spacer2',
+    'estimatedWeight',
+  ];
 
   displayedColumns = [
     'conditionCode',
@@ -31,6 +53,7 @@ export class TSConfigurableRewardCountTableComponent {
     'failures',
     'failurePrior',
     'failurePosterior',
+    'spacer2',
     'estimatedWeight',
   ];
 }

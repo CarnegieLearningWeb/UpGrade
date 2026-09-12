@@ -305,12 +305,20 @@ describe('ThompsonSamplingExperimentCrudService', () => {
     it('returns an empty summary when no config exists', async () => {
       const result = await service.getRewardsSummary('experiment-1');
 
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        conditions: [],
+        pendingRewardsCount: 0,
+        totalRewardCount: 0,
+        warmupThreshold: 0,
+        batchSize: 1,
+      });
       expect(configRepository.findByExperimentIdWithConditions).toHaveBeenCalledWith('experiment-1');
     });
 
     it('computes alpha/beta from priors + counts and sorts by condition order', async () => {
       configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        warmupThreshold: 100,
+        batchSize: 1,
         conditionPosteriorStates: [
           {
             conditionId: 'condition-2',
@@ -319,6 +327,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
             successCount: 5,
             failureCount: 5,
             totalCount: 10,
+            pendingTotalCount: 0,
             condition: { conditionCode: 'B', order: 1 },
           },
           {
@@ -328,6 +337,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
             successCount: 8,
             failureCount: 2,
             totalCount: 10,
+            pendingTotalCount: 0,
             condition: { conditionCode: 'A', order: 0 },
           },
         ],
@@ -335,8 +345,8 @@ describe('ThompsonSamplingExperimentCrudService', () => {
 
       const result = await service.getRewardsSummary('experiment-1');
 
-      expect(result.map((r) => r.conditionCode)).toEqual(['A', 'B']);
-      const [conditionA] = result;
+      expect(result.conditions.map((r) => r.conditionCode)).toEqual(['A', 'B']);
+      const [conditionA] = result.conditions;
       expect(conditionA).toMatchObject({
         conditionCode: 'A',
         successes: 8,
@@ -345,6 +355,9 @@ describe('ThompsonSamplingExperimentCrudService', () => {
         priorSuccess: 2,
         priorFailure: 3,
       });
+      expect(result.totalRewardCount).toBe(20);
+      expect(result.warmupThreshold).toBe(100);
+      expect(result.batchSize).toBe(1);
     });
 
     it('keys weight estimation by conditionId, not conditionCode, so two conditions sharing a code do not collide', async () => {
@@ -352,6 +365,8 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       // vastly different posteriors, so a code-keyed weight map (the bug) would collapse them into
       // a single shared value instead of each reflecting its own evidence.
       configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        warmupThreshold: 0,
+        batchSize: 1,
         conditionPosteriorStates: [
           {
             conditionId: 'condition-1',
@@ -360,6 +375,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
             successCount: 0,
             failureCount: 0,
             totalCount: 0,
+            pendingTotalCount: 0,
             condition: { conditionCode: 'DUPLICATE', order: 0 },
           },
           {
@@ -369,15 +385,75 @@ describe('ThompsonSamplingExperimentCrudService', () => {
             successCount: 0,
             failureCount: 0,
             totalCount: 0,
+            pendingTotalCount: 0,
             condition: { conditionCode: 'DUPLICATE', order: 1 },
           },
         ],
       });
 
-      const [strong, weak] = await service.getRewardsSummary('experiment-1');
+      const {
+        conditions: [strong, weak],
+      } = await service.getRewardsSummary('experiment-1');
 
       expect(strong.estimatedWeight).toBeGreaterThan(90);
       expect(weak.estimatedWeight).toBeLessThan(10);
+    });
+
+    it('sums pendingTotalCount across conditions when batchSize > 1', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        warmupThreshold: 0,
+        batchSize: 5,
+        conditionPosteriorStates: [
+          {
+            conditionId: 'condition-1',
+            priorSuccess: 1,
+            priorFailure: 1,
+            successCount: 0,
+            failureCount: 0,
+            totalCount: 0,
+            pendingTotalCount: 2,
+            condition: { conditionCode: 'A', order: 0 },
+          },
+          {
+            conditionId: 'condition-2',
+            priorSuccess: 1,
+            priorFailure: 1,
+            successCount: 0,
+            failureCount: 0,
+            totalCount: 0,
+            pendingTotalCount: 1,
+            condition: { conditionCode: 'B', order: 1 },
+          },
+        ],
+      });
+
+      const result = await service.getRewardsSummary('experiment-1');
+
+      expect(result.pendingRewardsCount).toBe(3);
+      expect(result.totalRewardCount).toBe(3);
+    });
+
+    it('always reports 0 pending rewards when batchSize is 1, even if a row has a stale pendingTotalCount', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        warmupThreshold: 0,
+        batchSize: 1,
+        conditionPosteriorStates: [
+          {
+            conditionId: 'condition-1',
+            priorSuccess: 1,
+            priorFailure: 1,
+            successCount: 0,
+            failureCount: 0,
+            totalCount: 0,
+            pendingTotalCount: 3,
+            condition: { conditionCode: 'A', order: 0 },
+          },
+        ],
+      });
+
+      const result = await service.getRewardsSummary('experiment-1');
+
+      expect(result.pendingRewardsCount).toBe(0);
     });
   });
 });

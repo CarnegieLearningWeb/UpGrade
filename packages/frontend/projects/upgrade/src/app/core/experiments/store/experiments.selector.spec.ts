@@ -821,24 +821,30 @@ describe('Experiments Selectors', () => {
 
   describe('#selectRewardsDataForSelectedExperiment', () => {
     it('should return rewards summary for selected experiment', () => {
-      const mockRewardsSummary = [
-        {
-          conditionCode: 'Control',
-          successes: 10,
-          failures: 5,
-          total: 15,
-          successRate: '66.7%',
-          order: 0,
-        },
-        {
-          conditionCode: 'Treatment',
-          successes: 8,
-          failures: 7,
-          total: 15,
-          successRate: '53.3%',
-          order: 1,
-        },
-      ];
+      const mockRewardsSummary = {
+        conditions: [
+          {
+            conditionCode: 'Control',
+            successes: 10,
+            failures: 5,
+            total: 15,
+            successRate: '66.7%',
+            order: 0,
+          },
+          {
+            conditionCode: 'Treatment',
+            successes: 8,
+            failures: 7,
+            total: 15,
+            successRate: '53.3%',
+            order: 1,
+          },
+        ],
+        pendingRewardsCount: 0,
+        totalRewardCount: 30,
+        warmupThreshold: 0,
+        batchSize: 1,
+      };
 
       const state = {
         ...mockState,
@@ -860,24 +866,30 @@ describe('Experiments Selectors', () => {
         rewardsSummaries: {},
       };
 
-      const expectedDefault = [
-        {
-          conditionCode: 'control',
-          failures: 0,
-          order: 1,
-          successRate: 'n/a',
-          successes: 0,
-          total: 0,
-        },
-        {
-          conditionCode: 'variant',
-          failures: 0,
-          order: 2,
-          successRate: 'n/a',
-          successes: 0,
-          total: 0,
-        },
-      ];
+      const expectedDefault = {
+        conditions: [
+          {
+            conditionCode: 'control',
+            failures: 0,
+            order: 1,
+            successRate: 'n/a',
+            successes: 0,
+            total: 0,
+          },
+          {
+            conditionCode: 'variant',
+            failures: 0,
+            order: 2,
+            successRate: 'n/a',
+            successes: 0,
+            total: 0,
+          },
+        ],
+        pendingRewardsCount: 0,
+        totalRewardCount: 0,
+        warmupThreshold: 0,
+        batchSize: 1,
+      };
 
       const selectedExperiment = state.experiments.find((exp) => exp.id === '1f12cd8f-7ff9-4731-a4eb-7104918ed252');
 
@@ -886,11 +898,17 @@ describe('Experiments Selectors', () => {
       expect(result).toEqual(expectedDefault);
     });
 
-    it('should return empty array when experiment is null', () => {
+    it('should return an empty summary when experiment is null', () => {
       const state = {
         ...mockState,
         rewardsSummaries: {
-          'some-id': [],
+          'some-id': {
+            conditions: [],
+            pendingRewardsCount: 0,
+            totalRewardCount: 0,
+            warmupThreshold: 0,
+            batchSize: 1,
+          },
         },
       };
 
@@ -898,7 +916,13 @@ describe('Experiments Selectors', () => {
 
       const result = selectRewardsDataForSelectedExperiment.projector(selectedExperiment, state);
 
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        conditions: [],
+        pendingRewardsCount: 0,
+        totalRewardCount: 0,
+        warmupThreshold: 0,
+        batchSize: 1,
+      });
     });
   });
 

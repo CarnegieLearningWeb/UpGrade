@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CommonSectionCardComponent } from '@shared-component-lib/common-section-card/common-section-card.component';
 import { CommonSectionCardTitleHeaderComponent } from '@shared-component-lib/common-section-card-title-header/common-section-card-title-header.component';
 import { CommonSectionCardActionButtonsComponent } from '@shared-component-lib/common-section-card-action-buttons/common-section-card-action-buttons.component';
@@ -18,9 +19,11 @@ import { ExperimentRewardsSummary } from 'upgrade_types';
     CommonSectionCardTitleHeaderComponent,
     CommonSectionCardActionButtonsComponent,
     TranslateModule,
+    MatTooltipModule,
     TSConfigurableRewardCountTableComponent,
   ],
   templateUrl: './experiment-reward-feedback-section-card.component.html',
+  styleUrl: './experiment-reward-feedback-section-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperimentRewardFeedbackSectionCardComponent {
