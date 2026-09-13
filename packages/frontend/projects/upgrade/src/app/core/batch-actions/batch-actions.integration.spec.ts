@@ -1,4 +1,5 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { HttpErrorResponse, HttpRequest } from '@angular/common/http';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Actions, getEffectsMetadata } from '@ngrx/effects';
 import { Action, ScannedActionsSubject, Store, StoreModule } from '@ngrx/store';
@@ -25,6 +26,7 @@ import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 import { FeatureFlagRootSectionCardComponent } from '../../features/dashboard/feature-flags/pages/feature-flag-root-page/feature-flag-root-page-content/feature-flag-root-section-card/feature-flag-root-section-card.component';
 import { SegmentsEffects } from '../segments/store/segments.effects';
 import { actionLogoutStart, actionSetUserInfo } from '../auth/store/auth.actions';
+import { HttpErrorInterceptor } from '../http-interceptors/http-error.interceptor';
 import { batchResultCounts, selectionItem, selectionView } from './batch-actions.helpers';
 import { RootBatchState, newBatchRequestId } from './batch-actions.models';
 
@@ -482,6 +484,35 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
   });
 
+  it.each([0, 500])('uses only the existing error notification when reconciliation fails with HTTP %i', (status) => {
+    selectRows();
+    const snapshot = prepare();
+    const popup = { create: jest.fn() };
+    const interceptor = new HttpErrorInterceptor({ authLogout: jest.fn() } as any, popup as any, {} as any);
+    data.checkDeletionEligibility.mockReturnValue(
+      interceptor.intercept(new HttpRequest('POST', `/${config.entity}/deletion-eligibility`, {}), {
+        handle: () => throwError(() => new HttpErrorResponse({ status })),
+      })
+    );
+    const fetchCount = data[config.fetchMethod].mock.calls.length;
+    store.dispatch(actions.batchDeleteRequested({ snapshot }));
+    response.next({
+      phase: 'executed',
+      results: rows.map(({ id }, index) => ({ id, outcome: index === 0 ? 'deleted' : 'unknown' })),
+    });
+    expect(popup.create).toHaveBeenCalledTimes(1);
+    expect(popup.create.mock.calls[0][0]).toBe('Network call failed. See console for details.');
+    expect(notifications.showWarning).not.toHaveBeenCalled();
+    expect(notifications.showSuccess).not.toHaveBeenCalled();
+    expect(data[config.fetchMethod]).toHaveBeenCalledTimes(fetchCount);
+    expect(data.checkDeletionEligibility).toHaveBeenCalledTimes(1);
+    expect(data.batchDelete).toHaveBeenCalledTimes(1);
+    expect(batch().operation.status).toBe('complete');
+    expect(currentRows().map(({ id }) => id)).toEqual(rows.slice(1).map(({ id }) => id));
+    expect(Object.keys(batch().selectedById)).toEqual(rows.slice(1).map(({ id }) => id));
+    expect(selectionView(batch(), config.entity).canToggleHeader).toBe(true);
+  });
+
   it.each([0, 400, 403, 500, 504])(
     'clears cancelled list loading and releases selection after HTTP %i without another request or snackbar',
     (status) => {
@@ -556,14 +587,17 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
   });
 
-  it('retains unknown items after a malformed response without retrying deletion', () => {
+  it('warns about malformed delete and reconciliation responses without retrying deletion', () => {
     selectRows();
     const snapshot = prepare();
+    data.checkDeletionEligibility.mockReturnValueOnce(of({ items: [], allDeletable: false }));
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     response.next({ phase: 'executed', results: [] });
     expect(batch().operation.result.results.every((result) => result.outcome === 'unknown')).toBe(true);
     expect(Object.keys(batch().selectedById)).toHaveLength(3);
     expect(data.batchDelete).toHaveBeenCalledTimes(1);
+    expect(data.checkDeletionEligibility).toHaveBeenCalledTimes(1);
+    expect(notifications.showWarning).toHaveBeenCalledTimes(1);
   });
 
   it('requires a new confirmation and sends only retained IDs on an explicit retry', () => {

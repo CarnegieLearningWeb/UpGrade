@@ -22,7 +22,7 @@ export function createBatchActions(source: string) {
     ),
     reconciliationCompleted: createAction(
       `${prefix} Reconciliation Completed`,
-      props<{ operationId: string; result: DeletionEligibilityResult | null }>()
+      props<{ operationId: string; result: DeletionEligibilityResult | null; status?: number }>()
     ),
     listRequested: createAction(`${prefix} List Requested`, props<{ requestId: string }>()),
     listFailed: createAction(`${prefix} List Failed`, props<{ requestId: string }>()),

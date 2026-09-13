@@ -95,7 +95,9 @@ export function reconcileBatchEffect(
         map((result) =>
           actions.reconciliationCompleted({ operationId, result: validateEligibilityResponse(result, ids) })
         ),
-        catchError(() => of(actions.reconciliationCompleted({ operationId, result: null }))),
+        catchError((error) =>
+          of(actions.reconciliationCompleted({ operationId, result: null, status: error?.status }))
+        ),
         takeUntil(state$.pipe(filter((current) => current.userEmail !== state.userEmail || !current.operation)))
       );
     })

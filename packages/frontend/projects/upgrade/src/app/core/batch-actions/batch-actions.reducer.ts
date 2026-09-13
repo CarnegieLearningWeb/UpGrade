@@ -196,6 +196,8 @@ export function reduceRootBatch(
         status: 'complete',
         reconciledAbsentIds: absent.filter((id) => !confirmedRemovedIds(state.operation.result).includes(id)),
         reconciliationFailed: !action.result,
+        // Reuse the HTTP-failure completion path: the interceptor already reported this error.
+        transportStatus: action.status,
       },
     };
   }
