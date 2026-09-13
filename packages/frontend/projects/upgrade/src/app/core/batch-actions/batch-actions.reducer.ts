@@ -91,7 +91,7 @@ export function reduceRootBatch(
     } else {
       const items = matches(action, actions.toggleRow)
         ? [action.item]
-        : matches(action, actions.toggleHeader) && !state.listLoading
+        : matches(action, actions.toggleHeader)
         ? action.items
         : [];
       for (const item of items) {

@@ -222,15 +222,25 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     });
     store.dispatch(actions.toggleHeader({ items: [selectionItem(rows[0])] }));
     expect(Object.keys(batch().selectedById)).toEqual([]);
+    store.dispatch(config.actions.actionSetSearchString({ searchString: 'replacement query' }));
+    expect(selectionView(batch(), config.entity).canToggleHeader).toBe(false);
+    store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }));
+    expect(Object.keys(batch().selectedById)).toEqual([]);
   });
 
-  it('keeps newly appended rows unselected and deduplicates overlapping responses', () => {
+  it('selects loaded rows during incremental loading and leaves newly appended rows unselected', () => {
     data[config.fetchMethod].mockReturnValueOnce(of({ ...page(rows.slice(0, 2)), total: 3 }));
     store.dispatch(config.fetch({ fromStarting: true }));
-    store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }));
-    data[config.fetchMethod].mockReturnValueOnce(of({ ...page(rows.slice(1)), total: 3 }));
+    const nextPage = new Subject<any>();
+    data[config.fetchMethod].mockReturnValueOnce(nextPage);
     store.dispatch(config.fetch({ fromStarting: false }));
     expect(data[config.fetchMethod]).toHaveBeenLastCalledWith(expect.objectContaining({ skip: 2 }), false);
+    expect(batch().listLoading).toBe(true);
+    expect(selectionView(batch(), config.entity).canToggleHeader).toBe(true);
+    store.dispatch(actions.toggleHeader({ items: currentRows().map(selectionItem) }));
+    expect(Object.keys(batch().selectedById)).toEqual(rows.slice(0, 2).map(({ id }) => id));
+    nextPage.next({ ...page(rows.slice(1)), total: 3 });
+    nextPage.complete();
     expect(batch().loadedIds).toHaveLength(3);
     expect(currentRows()).toHaveLength(3);
     expect(selectionView(batch(), config.entity)).toMatchObject({
