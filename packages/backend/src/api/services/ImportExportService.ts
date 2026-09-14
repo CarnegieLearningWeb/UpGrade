@@ -43,7 +43,6 @@ export class ImportExportService {
         try {
           // Captured before create() runs -- see ExperimentController.create() for why: create()
           // mutates condition ids in place, so this is the last point they still match whatever ids
-          // (from the import file, or a batch-create caller) thompsonSamplingConfig.priors is keyed by.
           const originalConditionIds = experiment.conditions?.map((condition) => condition.id);
           const result = await this.experimentService.create(experiment, currentUser, logger);
           try {

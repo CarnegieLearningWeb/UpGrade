@@ -1256,6 +1256,9 @@ export class ExperimentController {
     }
 
     const previousExperiment = await this.experimentService.getSingleExperiment(id, request.logger);
+    if (previousExperiment) {
+      await this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(previousExperiment);
+    }
 
     const updatedExperiment = await this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
 

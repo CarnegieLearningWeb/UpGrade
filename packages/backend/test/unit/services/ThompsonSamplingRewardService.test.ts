@@ -86,7 +86,6 @@ describe('ThompsonSamplingRewardService', () => {
     configureLogger();
   });
 
-  let tsRewardRepository: any;
   let posteriorStateRepository: any;
   let tsConfigRepository: any;
   let individualEnrollmentRepository: any;
@@ -99,6 +98,11 @@ describe('ThompsonSamplingRewardService', () => {
   // findByConditionId(conditionId), so the enrollment mock's conditionId is what
   // selects which row a given call mutates.
   let statesByCondition: Record<string, PosteriorStateRow>;
+
+  // ThompsonSamplingReward audit rows saved via manager.save(ThompsonSamplingReward, plainObject) --
+  // the two-arg form, distinct from the single-arg save(entityInstance) used for
+  // ConditionPosteriorState updates. Tests assert against this instead of a repository mock.
+  let savedRewards: Array<{ experimentId: string; conditionId: string; userId: string; success: boolean }>;
 
   function makeConfig(batchSize?: number) {
     return {
@@ -116,12 +120,14 @@ describe('ThompsonSamplingRewardService', () => {
     return allStates().find((row) => row.id === id);
   }
 
-  // Fakes just enough of TypeORM's EntityManager for applyOrBufferReward()'s transaction: a
+  // Fakes just enough of TypeORM's EntityManager for recordRewardAtomically()'s transaction: a
   // transaction() that runs the callback inline (no real DB transaction/lock semantics -- those
   // aren't meaningfully unit-testable without a real Postgres instance), a createQueryBuilder()
   // that filters the in-memory rows by configId (the only clause the service issues), and a
-  // save() that persists in-memory since getMany() already hands back references into
-  // statesByCondition, not copies.
+  // save() that handles both call shapes the service uses: the single-arg entity-instance form
+  // for ConditionPosteriorState updates (persisted in-memory, since getMany() already hands back
+  // references into statesByCondition, not copies), and the two-arg (EntityClass, plainObject)
+  // form for the ThompsonSamplingReward audit insert (recorded into savedRewards).
   function makeFakeManager() {
     const manager: any = {
       transaction: (work: (m: any) => Promise<void>) => work(manager),
@@ -138,9 +144,13 @@ describe('ThompsonSamplingRewardService', () => {
         };
         return builder;
       },
-      save: jest.fn((entity: PosteriorStateRow) => {
-        Object.assign(findRowById(entity.id), entity);
-        return Promise.resolve(entity);
+      save: jest.fn((entityOrClass: any, maybeEntity?: any) => {
+        if (maybeEntity !== undefined) {
+          savedRewards.push(maybeEntity);
+          return Promise.resolve(maybeEntity);
+        }
+        Object.assign(findRowById(entityOrClass.id), entityOrClass);
+        return Promise.resolve(entityOrClass);
       }),
     };
     return manager;
@@ -151,7 +161,7 @@ describe('ThompsonSamplingRewardService', () => {
       [CONDITION_ID]: makeStateRow('state-1', CONDITION_ID),
     };
 
-    tsRewardRepository = { save: jest.fn().mockResolvedValue(undefined) };
+    savedRewards = [];
 
     posteriorStateRepository = {
       findByConditionId: jest.fn((conditionId: string) => Promise.resolve(statesByCondition[conditionId])),
@@ -170,12 +180,39 @@ describe('ThompsonSamplingRewardService', () => {
     cacheService = makePassthroughCacheService();
 
     service = new ThompsonSamplingRewardService(
-      tsRewardRepository,
       posteriorStateRepository,
       tsConfigRepository,
       individualEnrollmentRepository,
       cacheService as any
     );
+  });
+
+  describe('recordRewardAtomically (audit row + posterior update as one unit)', () => {
+    it('propagates a posterior-update failure instead of leaving the audit row committed on its own', async () => {
+      const dbError = new Error('connection reset mid-transaction');
+      // Fail only the ConditionPosteriorState save (single-arg form); the ThompsonSamplingReward
+      // audit save (two-arg form) still succeeds first, same as the real save order in
+      // recordRewardAtomically().
+      posteriorStateRepository.manager.save = jest.fn((entityOrClass: any, maybeEntity?: any) => {
+        if (maybeEntity !== undefined) {
+          savedRewards.push(maybeEntity);
+          return Promise.resolve(maybeEntity);
+        }
+        return Promise.reject(dbError);
+      });
+
+      await expect(
+        (service as any).processReward(makeUser(), makeRequest(BinaryRewardAllowedValue.SUCCESS), logger)
+      ).rejects.toThrow(dbError);
+
+      // Both saves ran through the one manager passed into posteriorStateRepository.manager.transaction()
+      // -- in a real transaction, this failure rolls the audit insert back with it, rather than
+      // leaving an "acknowledged" reward whose audit row is durable but never reached the posteriors.
+      // makeFakeManager() has no real rollback semantics (see its own comment), so this proves the two
+      // writes are coupled in one atomic unit and that a failure surfaces instead of being swallowed --
+      // not that the in-memory rollback itself occurs.
+      expect(savedRewards).toHaveLength(1);
+    });
   });
 
   describe('warmup threshold (reward count)', () => {
@@ -184,7 +221,7 @@ describe('ThompsonSamplingRewardService', () => {
 
       await (service as any).processReward(makeUser(), makeRequest(BinaryRewardAllowedValue.SUCCESS), logger);
 
-      expect(tsRewardRepository.save).toHaveBeenCalledWith({
+      expect(savedRewards).toContainEqual({
         experimentId: EXPERIMENT_ID,
         conditionId: CONDITION_ID,
         userId: USER_ID,
@@ -327,7 +364,7 @@ describe('ThompsonSamplingRewardService', () => {
 
       const state = statesByCondition[CONDITION_ID];
       expect(state.totalCount + state.pendingTotalCount).toBe(values.length);
-      expect(tsRewardRepository.save).toHaveBeenCalledTimes(values.length);
+      expect(savedRewards).toHaveLength(values.length);
     });
   });
 
@@ -436,11 +473,11 @@ describe('ThompsonSamplingRewardService', () => {
     it('still records the reward in the background after returning the receipt', async () => {
       const result = service.acceptReward(makeUser(), makeRequest(BinaryRewardAllowedValue.SUCCESS), logger);
       expect(result.message).toBe('Reward received and is being processed.');
-      expect(tsRewardRepository.save).not.toHaveBeenCalled();
+      expect(savedRewards).toHaveLength(0);
 
       await flushPromises();
 
-      expect(tsRewardRepository.save).toHaveBeenCalledWith({
+      expect(savedRewards).toContainEqual({
         experimentId: EXPERIMENT_ID,
         conditionId: CONDITION_ID,
         userId: USER_ID,
@@ -453,7 +490,6 @@ describe('ThompsonSamplingRewardService', () => {
     beforeEach(() => {
       cacheService = makeMemoizingCacheService();
       service = new ThompsonSamplingRewardService(
-        tsRewardRepository,
         posteriorStateRepository,
         tsConfigRepository,
         individualEnrollmentRepository,
@@ -469,7 +505,7 @@ describe('ThompsonSamplingRewardService', () => {
 
       expect(tsConfigRepository.findOne).toHaveBeenCalledTimes(1);
       // Only the config lookup is cached — the reward itself is still recorded every time.
-      expect(tsRewardRepository.save).toHaveBeenCalledTimes(2);
+      expect(savedRewards).toHaveLength(2);
     });
 
     it('reuses a cached decision-point lookup across rewards instead of re-querying the DB', async () => {

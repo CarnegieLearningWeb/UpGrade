@@ -3,12 +3,12 @@ import { EntityManager } from 'typeorm';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { BinaryRewardAllowedValue, CACHE_PREFIX, EXPERIMENT_STATE } from 'upgrade_types';
-import { ThompsonSamplingRewardRepository } from '../repositories/ThompsonSamplingRewardRepository';
 import { ConditionPosteriorStateRepository } from '../repositories/ConditionPosteriorStateRepository';
 import { ThompsonSamplingExperimentConfigRepository } from '../repositories/ThompsonSamplingExperimentConfigRepository';
 import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
 import { ThompsonSamplingExperimentConfig } from '../models/ThompsonSamplingExperimentConfig';
 import { ConditionPosteriorState } from '../models/ConditionPosteriorState';
+import { ThompsonSamplingReward } from '../models/ThompsonSamplingReward';
 import { CacheService } from './CacheService';
 import { RewardValidator } from '../controllers/validators/RewardValidator';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
@@ -28,8 +28,6 @@ class RewardProcessingAborted extends Error {}
 @Service()
 export class ThompsonSamplingRewardService {
   constructor(
-    @InjectRepository()
-    private tsRewardRepository: ThompsonSamplingRewardRepository,
     @InjectRepository()
     private posteriorStateRepository: ConditionPosteriorStateRepository,
     @InjectRepository()
@@ -98,13 +96,6 @@ export class ThompsonSamplingRewardService {
 
     const { conditionId } = enrollments[0];
 
-    await this.tsRewardRepository.save({
-      experimentId: config.experimentId,
-      conditionId,
-      userId: user.id,
-      success,
-    });
-
     const state = await this.posteriorStateRepository.findByConditionId(conditionId);
 
     if (!state) {
@@ -115,7 +106,7 @@ export class ThompsonSamplingRewardService {
       );
     }
 
-    await this.applyOrBufferReward(state, success, config.batchSize);
+    await this.recordRewardAtomically(config.experimentId, conditionId, user.id, success, state, config.batchSize);
 
     logger.info({
       message: 'Thompson Sampling reward recorded',
@@ -127,32 +118,42 @@ export class ThompsonSamplingRewardService {
   }
 
   /**
-   * Fold a reward into the posterior (successCount/totalCount), or buffer it as pending until
-   * batchSize reward observations have accumulated across the whole experiment. The raw event is
-   * always persisted to ThompsonSamplingReward regardless of batching (in processReward(), before
-   * this is called) — batching only delays when a reward affects which condition gets sampled
-   * next, it never drops data. An unset/≤1 batchSize applies the reward immediately.
+   * Writes the ThompsonSamplingReward audit row and folds the reward into the posterior
+   * (successCount/totalCount) -- or buffers it as pending until batchSize reward observations have
+   * accumulated across the whole experiment -- inside one transaction. Committing both together
+   * means a failure partway through (the locked query, a save) rolls back the audit row too, so
+   * there's no window where a reward is durably recorded but never reflected in the posteriors.
+   * An unset/≤1 batchSize applies the reward immediately.
    *
-   * Everything below runs inside one transaction that takes a pessimistic write lock on every
-   * ConditionPosteriorState row for this config up front (ordered by id, to avoid deadlocking
-   * against a concurrent reward that locks the same rows). batchSize paces how often posteriors
-   * move for the experiment as a whole, and a reward for any condition is evidence toward that
-   * same shared cadence, so the "is the batch ready" check has to see a consistent snapshot across
-   * every condition, not just the one that just received a reward — without the lock, two rewards
-   * arriving close together could both read the same pending totals and double-apply them, or one
-   * could have its just-buffered increment silently overwritten by the other's flush-reset. Once
-   * the shared total reaches batchSize, every condition's pending buffer is flushed, not just the
-   * one that tipped it over, so a low-volume condition still gets its pending counts folded in as
-   * soon as the batch closes.
+   * The posterior update takes a pessimistic write lock on every ConditionPosteriorState row for
+   * this config up front (ordered by id, to avoid deadlocking against a concurrent reward that
+   * locks the same rows). batchSize paces how often posteriors move for the experiment as a whole,
+   * and a reward for any condition is evidence toward that same shared cadence, so the "is the
+   * batch ready" check has to see a consistent snapshot across every condition, not just the one
+   * that just received a reward — without the lock, two rewards arriving close together could both
+   * read the same pending totals and double-apply them, or one could have its just-buffered
+   * increment silently overwritten by the other's flush-reset. Once the shared total reaches
+   * batchSize, every condition's pending buffer is flushed, not just the one that tipped it over,
+   * so a low-volume condition still gets its pending counts folded in as soon as the batch closes.
    */
-  private async applyOrBufferReward(
-    state: Pick<ConditionPosteriorState, 'id' | 'configId'>,
+  private async recordRewardAtomically(
+    experimentId: string,
+    conditionId: string,
+    userId: string,
     success: boolean,
+    state: Pick<ConditionPosteriorState, 'id' | 'configId'>,
     batchSize?: number
   ): Promise<void> {
     const effectiveBatchSize = batchSize && batchSize > 1 ? batchSize : 1;
 
     await this.posteriorStateRepository.manager.transaction(async (manager) => {
+      await manager.save(ThompsonSamplingReward, {
+        experimentId,
+        conditionId,
+        userId,
+        success,
+      });
+
       const experimentStates = await manager
         .createQueryBuilder(ConditionPosteriorState, 'state')
         .where('state.configId = :configId', { configId: state.configId })

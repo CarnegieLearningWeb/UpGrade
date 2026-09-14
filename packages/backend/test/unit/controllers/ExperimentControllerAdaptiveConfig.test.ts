@@ -119,6 +119,46 @@ describe('ExperimentController adaptive config wiring', () => {
       );
     });
 
+    it('snapshots thompsonSamplingConfig onto the previous experiment before the forward update runs, so a revert restores it', async () => {
+      const experiment = { assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING, conditions: [] } as any;
+      const previousExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING };
+      const updatedExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING };
+      const revertedExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING };
+      const syncError = new Error('config sync failed');
+      const originalConfig = { warmupThreshold: 42, batchSize: 3, minimumDrawDifference: 0.1, priors: {} };
+      const callOrder: string[] = [];
+
+      experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
+      experimentService.update.mockImplementation(() => {
+        callOrder.push('update');
+        return Promise.resolve(
+          callOrder.filter((c) => c === 'update').length === 1 ? updatedExperiment : revertedExperiment
+        );
+      });
+      // Mimics attachConfigToExperiment()'s real behavior: mutate the passed-in object in place.
+      // If this ran fresh inside the catch block instead of up front, it would see whatever a
+      // partially-failed sync had already committed to the DB -- not the true pre-update values.
+      adaptiveExperimentConfigDispatcher.attachConfigToExperiment.mockImplementation((exp: any) => {
+        callOrder.push('attachConfig');
+        exp.thompsonSamplingConfig = originalConfig;
+        return Promise.resolve(exp);
+      });
+      adaptiveExperimentConfigDispatcher.syncConfigIfApplicable
+        .mockRejectedValueOnce(syncError)
+        .mockResolvedValueOnce(undefined);
+
+      await expect(controller.update({ id: 'experiment-1' } as any, experiment, {} as any, request)).rejects.toThrow(
+        syncError
+      );
+
+      expect(callOrder).toEqual(['attachConfig', 'update', 'update']);
+      expect(adaptiveExperimentConfigDispatcher.syncConfigIfApplicable).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ thompsonSamplingConfig: originalConfig }),
+        revertedExperiment
+      );
+    });
+
     it('still throws the original error, logged rather than masked, when the revert attempt itself fails', async () => {
       const experiment = { assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING, conditions: [] } as any;
       const previousExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM };

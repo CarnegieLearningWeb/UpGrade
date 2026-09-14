@@ -1724,6 +1724,16 @@ export class ExperimentService {
     if (result.revertTo && this.allIdMap[result.revertTo]) {
       result.revertTo = this.allIdMap[result.revertTo];
     }
+    if (result.thompsonSamplingConfig?.priors) {
+      const remappedPriors = {};
+      Object.entries(result.thompsonSamplingConfig.priors).forEach(([oldConditionId, prior]) => {
+        const newConditionId = this.allIdMap[oldConditionId];
+        if (newConditionId) {
+          remappedPriors[newConditionId] = prior;
+        }
+      });
+      result.thompsonSamplingConfig.priors = remappedPriors;
+    }
   }
 
   deduceConditionPayload(result) {

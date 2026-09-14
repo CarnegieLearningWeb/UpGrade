@@ -491,6 +491,43 @@ describe('ExperimentService Testing', () => {
     });
   });
 
+  describe('deduceConditions()', () => {
+    it('remaps thompsonSamplingConfig.priors onto the newly generated condition ids', () => {
+      const result: any = {
+        conditions: [
+          { id: 'old-condition-1', levelCombinationElements: [] },
+          { id: 'old-condition-2', levelCombinationElements: [] },
+        ],
+        thompsonSamplingConfig: {
+          priors: {
+            'old-condition-1': { success: 3, failure: 1 },
+            'old-condition-2': { success: 1, failure: 5 },
+          },
+        },
+      };
+
+      service.deduceConditions(result);
+
+      const [newCondition1, newCondition2] = result.conditions;
+      expect(newCondition1.id).not.toBe('old-condition-1');
+      expect(newCondition2.id).not.toBe('old-condition-2');
+      expect(result.thompsonSamplingConfig.priors).toEqual({
+        [newCondition1.id]: { success: 3, failure: 1 },
+        [newCondition2.id]: { success: 1, failure: 5 },
+      });
+      expect(result.thompsonSamplingConfig.priors['old-condition-1']).toBeUndefined();
+    });
+
+    it('leaves experiments without a thompsonSamplingConfig unaffected', () => {
+      const result: any = {
+        conditions: [{ id: 'old-condition-1', levelCombinationElements: [] }],
+      };
+
+      expect(() => service.deduceConditions(result)).not.toThrow();
+      expect(result.thompsonSamplingConfig).toBeUndefined();
+    });
+  });
+
   describe('update()', () => {
     it('should successfully update an experiment with basic changes', async () => {
       const result = await service.update(mockExperimentDTO, mockUser, logger);
