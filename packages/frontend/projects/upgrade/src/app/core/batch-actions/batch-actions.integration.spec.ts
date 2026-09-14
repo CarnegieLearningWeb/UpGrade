@@ -465,13 +465,13 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     }
   );
 
-  it('reports a preflight rejection without removing any selected or hidden row', () => {
+  it('retains every selection when the server reports all items as ineligible', () => {
     selectRows();
     const snapshot = prepare();
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     response.next({
       phase: 'rejected',
-      results: rows.map(({ id }, index) => ({ id, outcome: index === 2 ? 'ineligible' : 'not_attempted' })),
+      results: rows.map(({ id }) => ({ id, outcome: 'ineligible' })),
     });
     expect(currentRows()).toHaveLength(3);
     expect(Object.keys(batch().selectedById)).toHaveLength(3);

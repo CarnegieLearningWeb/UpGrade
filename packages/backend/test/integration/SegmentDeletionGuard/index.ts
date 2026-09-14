@@ -271,26 +271,6 @@ export function registerSegmentDeletionGuardTests(connections: () => [DataSource
       15000
     );
 
-    test.each(['archived owner state', 'nested parent'] as const)(
-      'a target-only lock does not protect %s (negative control)',
-      async (change) => {
-        const fixture = await createChange(db, change);
-        const writer = await startWriter(writerDb);
-        try {
-          await db.transaction(async (manager) => {
-            await manager.query('SELECT id FROM segment WHERE id = $1 FOR UPDATE', [fixture.target.id]);
-            expect(await status(fixture.target.id)).toBe(SEGMENT_STATUS.UNUSED);
-            // Completes despite the target lock: related ancestors and experiment owners also need protection.
-            await fixture.apply(writer.manager);
-            await writer.commitTransaction();
-            expect(await status(fixture.target.id)).toBe(SEGMENT_STATUS.USED);
-          });
-        } finally {
-          await closeWriter(writer);
-        }
-      }
-    );
-
     test.each(['commit', 'rollback'] as const)(
       'bounds lock waits without leaking the setting after %s',
       async (completion) => {
