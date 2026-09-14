@@ -1,9 +1,12 @@
 import { randomUUID } from 'crypto';
 import { performance } from 'perf_hooks';
 import { DataSource, QueryRunner } from 'typeorm';
-import { BatchDeleteEntity, DeletionEligibilityResult, DeletionReasonCode, UserRole } from 'upgrade_types';
+import { BatchDeleteEntity, DeletionReasonCode, UserRole } from 'upgrade_types';
 import { BatchDeleteService } from '../../../../src/api/services/batch/BatchDeleteService';
-import { DeletionEligibilityService } from '../../../../src/api/services/batch/DeletionEligibilityService';
+import {
+  DeletionEligibilityService,
+  DeletionEligibilityResult,
+} from '../../../../src/api/services/batch/DeletionEligibilityService';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { FeatureFlagService } from '../../../../src/api/services/FeatureFlagService';
 import { SegmentService } from '../../../../src/api/services/SegmentService';
@@ -42,7 +45,6 @@ describe('BatchDeleteService transaction outcomes', () => {
     env.mooclets.enabled = false;
     jest.spyOn(segmentGuard, 'assertSegmentDeletionAllowed').mockResolvedValue(undefined);
     const eligible = async (requested: string[]): Promise<DeletionEligibilityResult> => ({
-      allDeletable: true,
       items: requested.map((id) => ({ id, availability: 'present', canDelete: true })),
     });
     eligibility = { experiments: jest.fn(eligible), flags: jest.fn(eligible), segments: jest.fn(eligible) };
@@ -131,7 +133,6 @@ describe('BatchDeleteService transaction outcomes', () => {
 
   test('skips ineligible and missing selections while deleting eligible items', async () => {
     eligibility.segments.mockResolvedValue({
-      allDeletable: false,
       items: [
         { id: ids[0], canDelete: true, availability: 'present' },
         { id: ids[1], canDelete: false, availability: 'present', reasonCode: DeletionReasonCode.SEGMENT_IN_USE },
@@ -160,7 +161,6 @@ describe('BatchDeleteService transaction outcomes', () => {
 
   test('does not start transactions when every selection is ineligible', async () => {
     eligibility.flags.mockResolvedValue({
-      allDeletable: false,
       items: ids.map((id) => ({
         id,
         canDelete: false,

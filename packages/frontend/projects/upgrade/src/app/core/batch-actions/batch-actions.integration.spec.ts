@@ -1,5 +1,4 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { HttpErrorResponse, HttpRequest } from '@angular/common/http';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Actions, getEffectsMetadata } from '@ngrx/effects';
 import { Action, ScannedActionsSubject, Store, StoreModule } from '@ngrx/store';
@@ -26,7 +25,6 @@ import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 import { FeatureFlagRootSectionCardComponent } from '../../features/dashboard/feature-flags/pages/feature-flag-root-page/feature-flag-root-page-content/feature-flag-root-section-card/feature-flag-root-section-card.component';
 import { SegmentsEffects } from '../segments/store/segments.effects';
 import { actionLogoutStart, actionSetUserInfo } from '../auth/store/auth.actions';
-import { HttpErrorInterceptor } from '../http-interceptors/http-error.interceptor';
 import { batchResultCounts, selectionItem, selectionView } from './batch-actions.helpers';
 import { RootBatchState, newBatchRequestId } from './batch-actions.models';
 
@@ -94,14 +92,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
           },
         }
       : { total: items.length, nodes: items };
-  const eligibility = (ids: string[], absent: string[] = []) => ({
-    allDeletable: !absent.length,
-    items: ids.map((id) =>
-      absent.includes(id)
-        ? { id, availability: 'not_found', canDelete: false, reasonCode: DeletionReasonCode.NOT_FOUND }
-        : { ...selectionItem(rows.find((row) => row.id === id)), availability: 'present', canDelete: true }
-    ),
-  });
   const selectRows = (count = rows.length) =>
     rows.slice(0, count).forEach((row) => store.dispatch(actions.toggleRow({ item: selectionItem(row) })));
   const prepare = () => {
@@ -129,7 +119,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     subscriptions.add(events$.subscribe((action) => events.push(action)));
     response = new Subject();
     data = {
-      checkDeletionEligibility: jest.fn((ids) => of(eligibility(ids))),
       batchDelete: jest.fn(() => response),
       [config.fetchMethod]: jest.fn(() => of(page(rows.filter((row) => !batch().removedIds.includes(row.id))))),
     };
@@ -172,7 +161,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
             translate as any,
             {} as any
           );
-    // Include every batch effect so reintroducing a focus/refresh effect cannot escape the no-read assertions.
+    // Include every batch effect to exercise submission and completion together.
     const batchEffects = Object.keys(getEffectsMetadata(effects)).filter((field) => /batch/i.test(field));
     for (const field of [...batchEffects, config.fetchEffect]) {
       subscriptions.add(effects[field].subscribe((action) => store.dispatch(action)));
@@ -264,29 +253,10 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     store.dispatch(actions.toggleRow({ item: selectionItem(rows[0]) }));
     expect(batch().confirmation).toBeNull();
     expect(batch().selectedById[rows[0].id]).toBeUndefined();
-    expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
+
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     expect(data.batchDelete).not.toHaveBeenCalled();
   });
-
-  it('does not fetch eligibility on app/tab focus, opening confirmation, or a related mutation', fakeAsync(() => {
-    window.dispatchEvent(new Event('focus'));
-    tick(100);
-    expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
-    selectRows();
-    window.dispatchEvent(new Event('focus'));
-    document.dispatchEvent(new Event('visibilitychange'));
-    store.dispatch(flagActions.actionDeleteFeatureFlagSuccess({ flag: { id: 'other' } as any }));
-    tick(100);
-    expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
-    const snapshot = prepare();
-    store.dispatch(actions.batchDeleteRequested({ snapshot }));
-    window.dispatchEvent(new Event('focus'));
-    document.dispatchEvent(new Event('visibilitychange'));
-    tick(100);
-    expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
-    expect(data.batchDelete).toHaveBeenCalledTimes(1);
-  }));
 
   it('uses updated page data to block a hidden restriction without an eligibility request', () => {
     selectRows();
@@ -303,7 +273,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(batch().confirmation).toBeNull();
     expect(Object.keys(batch().selectedById)).toHaveLength(3);
     expect(selectionView(batch(), config.entity).canRequestConfirmation).toBe(false);
-    expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
+
     expect(data.batchDelete).not.toHaveBeenCalled();
   });
 
@@ -311,7 +281,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     selectRows();
     const snapshot = prepare();
     expect(snapshot.items).toHaveLength(3);
-    expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
+
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     response.next({
       phase: 'rejected',
@@ -323,7 +293,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
     expect(data[config.fetchMethod]).toHaveBeenLastCalledWith(expect.objectContaining({ skip: 0 }), true);
     expect(batch().confirmation).toBeNull();
-    expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
   });
 
   it('freezes the request, rejects duplicate submits, and preserves failures while refreshing the current query', () => {
@@ -390,7 +359,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       expect(state[config.key][config.loadingKey]).toBe(false);
       expect(Object.keys(batch().selectedById)).toHaveLength(3);
       expect(data[config.fetchMethod]).toHaveBeenCalledTimes(2);
-      expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
+
       expect(notifications.showWarning).not.toHaveBeenCalled();
       expect(notifications.showSuccess).not.toHaveBeenCalled();
     }
@@ -429,7 +398,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(batch().confirmation).toBe(snapshot);
     expect(snapshot.items.map(({ name }) => name)).toEqual(['a', 'b']);
     expect(batch().selectedById[rows[0].id].name).toBe('renamed');
-    expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
+
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     expect(data.batchDelete).toHaveBeenCalledWith([rows[0].id, rows[1].id]);
   }));
@@ -458,61 +427,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(notifications.showSuccess).toHaveBeenCalledWith(`${count} ${noun}${count === 1 ? '' : 's'} deleted.`);
   });
 
-  it('reconciles an explicit unknown server result with one bulk read and never retries deletion', () => {
-    selectRows();
-    const snapshot = prepare();
-    const reconcile = new Subject<any>();
-    data.checkDeletionEligibility.mockReturnValueOnce(reconcile);
-    store.dispatch(actions.batchDeleteRequested({ snapshot }));
-    response.next({ phase: 'executed', results: rows.map(({ id }) => ({ id, outcome: 'unknown' })) });
-    expect(batch().operation.status).toBe('reconciling');
-    expect(Object.keys(batch().selectedById)).toHaveLength(3);
-    reconcile.next(
-      eligibility(
-        rows.map((row) => row.id),
-        [rows[0].id]
-      )
-    );
-    expect(batchResultCounts(batch())).toMatchObject({ deleted: 0, absent: 1, uncertain: true });
-    expect(Object.keys(batch().selectedById)).toHaveLength(2);
-    expect(notifications.showWarning).toHaveBeenCalledWith(
-      '1 item was already absent. Some outcomes could not be confirmed. Check the list before retrying.'
-    );
-    expect(data.checkDeletionEligibility).toHaveBeenCalledTimes(1);
-    expect(data.checkDeletionEligibility).toHaveBeenCalledWith(rows.map((row) => row.id));
-    expect(data.batchDelete).toHaveBeenCalledTimes(1);
-    expect(notifications.showWarning).toHaveBeenCalledTimes(1);
-  });
-
-  it.each([0, 500])('uses only the existing error notification when reconciliation fails with HTTP %i', (status) => {
-    selectRows();
-    const snapshot = prepare();
-    const popup = { create: jest.fn() };
-    const interceptor = new HttpErrorInterceptor({ authLogout: jest.fn() } as any, popup as any, {} as any);
-    data.checkDeletionEligibility.mockReturnValue(
-      interceptor.intercept(new HttpRequest('POST', `/${config.entity}/deletion-eligibility`, {}), {
-        handle: () => throwError(() => new HttpErrorResponse({ status })),
-      })
-    );
-    const fetchCount = data[config.fetchMethod].mock.calls.length;
-    store.dispatch(actions.batchDeleteRequested({ snapshot }));
-    response.next({
-      phase: 'executed',
-      results: rows.map(({ id }, index) => ({ id, outcome: index === 0 ? 'deleted' : 'unknown' })),
-    });
-    expect(popup.create).toHaveBeenCalledTimes(1);
-    expect(popup.create.mock.calls[0][0]).toBe('Network call failed. See console for details.');
-    expect(notifications.showWarning).not.toHaveBeenCalled();
-    expect(notifications.showSuccess).not.toHaveBeenCalled();
-    expect(data[config.fetchMethod]).toHaveBeenCalledTimes(fetchCount);
-    expect(data.checkDeletionEligibility).toHaveBeenCalledTimes(1);
-    expect(data.batchDelete).toHaveBeenCalledTimes(1);
-    expect(batch().operation.status).toBe('complete');
-    expect(currentRows().map(({ id }) => id)).toEqual(rows.slice(1).map(({ id }) => id));
-    expect(Object.keys(batch().selectedById)).toEqual(rows.slice(1).map(({ id }) => id));
-    expect(selectionView(batch(), config.entity).canToggleHeader).toBe(true);
-  });
-
   it.each([0, 400, 403, 500, 504])(
     'clears cancelled list loading and releases selection after HTTP %i without another request or snackbar',
     (status) => {
@@ -534,7 +448,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       expect(state[config.key][config.loadingKey]).toBe(false);
       expect(currentRows()).toEqual(beforeRows);
       expect(batch().loadedIds).toEqual(loadedIds);
-      expect(data.checkDeletionEligibility).not.toHaveBeenCalled();
+
       expect(data[config.fetchMethod]).toHaveBeenCalledTimes(fetchCount);
       expect(notifications.showWarning).not.toHaveBeenCalled();
       expect(notifications.showSuccess).not.toHaveBeenCalled();
@@ -587,16 +501,45 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
   });
 
-  it('warns about malformed delete and reconciliation responses without retrying deletion', () => {
+  it('retains an unknown item after refreshing the list and reports the confirmed results once', () => {
     selectRows();
     const snapshot = prepare();
-    data.checkDeletionEligibility.mockReturnValueOnce(of({ items: [], allDeletable: false }));
+    const fetchCount = data[config.fetchMethod].mock.calls.length;
+    data[config.fetchMethod].mockReturnValueOnce(of(page([rows[2]])));
+    store.dispatch(actions.batchDeleteRequested({ snapshot }));
+    response.next({
+      phase: 'executed',
+      results: [
+        { id: rows[0].id, outcome: 'deleted' },
+        { id: rows[1].id, outcome: 'unknown' },
+        { id: rows[2].id, outcome: 'not_attempted' },
+      ],
+    });
+    expect(batch().operation.status).toBe('complete');
+    expect(Object.keys(batch().selectedById)).toEqual([rows[1].id, rows[2].id]);
+    expect(batchResultCounts(batch())).toMatchObject({ deleted: 1, absent: 0, uncertain: true, notAttempted: 1 });
+    expect(selectionView(batch(), config.entity)).toMatchObject({ busy: false, notShownCount: 1 });
+    const noun = { experiments: 'experiment', flags: 'feature flag', segments: 'segment' }[config.entity];
+    expect(notifications.showWarning).toHaveBeenCalledWith(
+      `1 ${noun} deleted. 1 item was not attempted. Some outcomes could not be confirmed. Check the list before retrying.`
+    );
+    expect(notifications.showWarning).toHaveBeenCalledTimes(1);
+    expect(notifications.showSuccess).not.toHaveBeenCalled();
+    expect(data.batchDelete).toHaveBeenCalledTimes(1);
+    expect(data[config.fetchMethod]).toHaveBeenCalledTimes(fetchCount + 1);
+  });
+
+  it('retains uncertain selections and warns once about a malformed deletion response', () => {
+    selectRows();
+    const snapshot = prepare();
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     response.next({ phase: 'executed', results: [] });
     expect(batch().operation.result.results.every((result) => result.outcome === 'unknown')).toBe(true);
     expect(Object.keys(batch().selectedById)).toHaveLength(3);
+    expect(batch().operation.status).toBe('complete');
+    expect(selectionView(batch(), config.entity).busy).toBe(false);
     expect(data.batchDelete).toHaveBeenCalledTimes(1);
-    expect(data.checkDeletionEligibility).toHaveBeenCalledTimes(1);
+    expect(notifications.showSuccess).not.toHaveBeenCalled();
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
   });
 

@@ -1,7 +1,6 @@
 import {
   BatchDeleteEntity,
   BatchDeleteResult,
-  DeletionEligibilityResult,
   DeletionReasonCode,
   EXPERIMENT_STATE,
   FEATURE_FLAG_STATUS,
@@ -61,30 +60,6 @@ export const confirmedRemovedIds = (result?: BatchDeleteResult) =>
   result?.results.filter((item) => item.outcome === 'deleted' || item.outcome === 'not_found').map((item) => item.id) ||
   [];
 
-export function validateEligibilityResponse(
-  result: DeletionEligibilityResult,
-  ids: string[]
-): DeletionEligibilityResult {
-  if (
-    !result ||
-    !Array.isArray(result.items) ||
-    result.items.length !== ids.length ||
-    new Set(result.items.map((item) => item.id)).size !== ids.length ||
-    ids.some((id) => !result.items.some((item) => item.id === id)) ||
-    result.items.some(
-      (item) =>
-        !['present', 'not_found', 'unavailable'].includes(item.availability) || typeof item.canDelete !== 'boolean'
-    )
-  ) {
-    throw new Error('Incomplete deletion eligibility response');
-  }
-  return {
-    ...result,
-    allDeletable:
-      result.items.length > 0 && result.items.every((item) => item.availability === 'present' && item.canDelete),
-  };
-}
-
 export function validateBatchResponse(result: BatchDeleteResult, ids: string[]): BatchDeleteResult {
   const outcomes = ['deleted', 'not_found', 'ineligible', 'forbidden', 'failed', 'unknown', 'not_attempted'];
   if (
@@ -103,14 +78,10 @@ export function validateBatchResponse(result: BatchDeleteResult, ids: string[]):
 
 export function batchResultCounts(state: RootBatchState) {
   const results = state.operation?.result?.results || [];
-  const absent = new Set([
-    ...results.filter((item) => item.outcome === 'not_found').map((item) => item.id),
-    ...(state.operation?.reconciledAbsentIds || []),
-  ]);
   return {
     deleted: results.filter((item) => item.outcome === 'deleted').length,
-    absent: absent.size,
-    uncertain: results.some((item) => item.outcome === 'unknown') || !!state.operation?.reconciliationFailed,
+    absent: results.filter((item) => item.outcome === 'not_found').length,
+    uncertain: results.some((item) => item.outcome === 'unknown'),
     failed: results.filter((item) => ['failed', 'ineligible', 'forbidden'].includes(item.outcome)).length,
     notAttempted: results.filter((item) => item.outcome === 'not_attempted').length,
     hasErrors: results.some((item) => item.outcome !== 'deleted' || item.reasonCode),

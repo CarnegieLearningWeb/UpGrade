@@ -1,8 +1,7 @@
-import { DeletionEligibilityResult, BatchDeleteResult } from 'upgrade_types';
+import { BatchDeleteResult } from 'upgrade_types';
 import { Inject } from 'typedi';
 import { BatchDeleteService } from '../services/batch/BatchDeleteService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
-import { DeletionEligibilityService } from '../services/batch/DeletionEligibilityService';
 import { DeletionStateService } from '../services/DeletionStateService';
 import {
   Body,
@@ -671,42 +670,9 @@ export class ExperimentController {
     public moocletRewardService: MoocletRewardsService,
     public importExportService: ImportExportService,
     public cacheService: CacheService,
-    private deletionEligibilityService: DeletionEligibilityService,
     @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
     private deletionStateService: DeletionStateService
   ) {}
-
-  /**
-   * @swagger
-   * /experiments/deletion-eligibility:
-   *   post:
-   *     summary: Check deletion eligibility for the selected experiments
-   *     description: Read-only; returns one result per ID, including hidden selections. Does not reserve or delete items.
-   *     tags:
-   *       - Experiments
-   *     parameters:
-   *       - in: body
-   *         name: selection
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/BatchEntityIdsRequest'
-   *     responses:
-   *       '200':
-   *         description: Eligibility and reasons, in request order; users without delete permission receive canDelete=false.
-   *         schema:
-   *           $ref: '#/definitions/DeletionEligibilityResult'
-   *       '400':
-   *         description: Expected a nonempty array of unique UUIDs.
-   *       '401':
-   *         description: A current authenticated user is required.
-   */
-  @Post('/deletion-eligibility')
-  public getDeletionEligibility(
-    @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
-    @CurrentUser({ required: true }) currentUser: UserDTO
-  ): Promise<DeletionEligibilityResult> {
-    return this.deletionEligibilityService.experiments(ids, currentUser);
-  }
 
   /**
    * @swagger

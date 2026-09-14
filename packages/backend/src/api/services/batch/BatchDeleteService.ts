@@ -6,8 +6,6 @@ import {
   BatchDeleteEntity,
   BatchDeleteItemResult,
   BatchDeleteResult,
-  DeletionEligibilityItem,
-  DeletionEligibilityResult,
   DeletionReasonCode,
   hasBatchDeletePermission,
 } from 'upgrade_types';
@@ -21,7 +19,11 @@ import { ExperimentService } from '../ExperimentService';
 import { FeatureFlagService } from '../FeatureFlagService';
 import { MoocletExperimentService } from '../MoocletExperimentService';
 import { SegmentService } from '../SegmentService';
-import { DeletionEligibilityService } from './DeletionEligibilityService';
+import {
+  DeletionEligibilityService,
+  DeletionEligibilityItem,
+  DeletionEligibilityResult,
+} from './DeletionEligibilityService';
 import { assertDeletionStateAllowed, DeletionBlockedError } from '../DeletionStateService';
 
 // Admission budget: never abandon an in-flight deletion or claim it has been cancelled.
@@ -50,7 +52,7 @@ export class BatchDeleteService {
     const deadline = performance.now() + BATCH_DELETE_START_BUDGET_MS;
     let preflight: DeletionEligibilityResult;
     try {
-      preflight = await this.eligibility[entity](ids, user);
+      preflight = await this.eligibility[entity](ids);
     } catch (error) {
       logger.error({ message: 'Batch deletion preflight failed', entity, error });
       return {
@@ -105,12 +107,7 @@ export class BatchDeleteService {
   }
 
   private preflightResult(item: DeletionEligibilityItem): BatchDeleteItemResult {
-    const outcome =
-      item.availability === 'not_found'
-        ? 'not_found'
-        : item.reasonCode === DeletionReasonCode.MISSING_PERMISSION
-        ? 'forbidden'
-        : 'ineligible';
+    const outcome = item.availability === 'not_found' ? 'not_found' : 'ineligible';
     return { id: item.id, outcome, reasonCode: item.reasonCode || DeletionReasonCode.ELIGIBILITY_UNAVAILABLE };
   }
 

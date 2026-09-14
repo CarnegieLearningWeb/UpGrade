@@ -1,4 +1,3 @@
-import { DeletionEligibilityService } from '../../../src/api/services/batch/DeletionEligibilityService';
 import { BatchDeleteService } from '../../../src/api/services/batch/BatchDeleteService';
 import app from '../../utils/expressApp';
 import request from 'supertest';
@@ -20,7 +19,6 @@ describe('Feature Flag Controller Testing', () => {
     configureLogger();
     routingUseContainer(Container);
     classValidatorUseContainer(Container);
-    Container.set(DeletionEligibilityService, {} as DeletionEligibilityService);
     Container.set(BatchDeleteService, {} as BatchDeleteService);
 
     Container.set(FeatureFlagService, new FeatureFlagServiceMock());

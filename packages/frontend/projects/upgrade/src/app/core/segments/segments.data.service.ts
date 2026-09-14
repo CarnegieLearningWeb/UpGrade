@@ -1,4 +1,4 @@
-import { BatchDeleteResult, DeletionEligibilityResult } from 'upgrade_types';
+import { BatchDeleteResult } from 'upgrade_types';
 import { batchHttpContext } from '../batch-actions/batch-actions.http';
 import { Injectable } from '@angular/core';
 import {
@@ -19,14 +19,6 @@ import { API_ENDPOINTS } from '../api-endpoints.constants';
 
 @Injectable()
 export class SegmentsDataService {
-  checkDeletionEligibility(ids: string[]): Observable<DeletionEligibilityResult> {
-    return this.http.post<DeletionEligibilityResult>(
-      API_ENDPOINTS.segmentsDeletionEligibility,
-      { ids },
-      { context: batchHttpContext() }
-    );
-  }
-
   batchDelete(ids: string[]): Observable<BatchDeleteResult> {
     return this.http.post<BatchDeleteResult>(
       API_ENDPOINTS.segmentsBatchDelete,

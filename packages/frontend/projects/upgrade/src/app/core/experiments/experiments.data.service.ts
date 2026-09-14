@@ -1,4 +1,4 @@
-import { BatchDeleteResult, DeletionEligibilityResult } from 'upgrade_types';
+import { BatchDeleteResult } from 'upgrade_types';
 import { batchHttpContext } from '../batch-actions/batch-actions.http';
 import { Injectable } from '@angular/core';
 import {
@@ -21,14 +21,6 @@ import { IImportFile, LIST_FILTER_MODE, ExperimentRewardsSummary } from 'upgrade
 
 @Injectable()
 export class ExperimentDataService {
-  checkDeletionEligibility(ids: string[]): Observable<DeletionEligibilityResult> {
-    return this.http.post<DeletionEligibilityResult>(
-      API_ENDPOINTS.experimentsDeletionEligibility,
-      { ids },
-      { context: batchHttpContext() }
-    );
-  }
-
   batchDelete(ids: string[]): Observable<BatchDeleteResult> {
     return this.http.post<BatchDeleteResult>(
       API_ENDPOINTS.experimentsBatchDelete,

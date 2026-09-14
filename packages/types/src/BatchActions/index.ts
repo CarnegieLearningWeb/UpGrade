@@ -2,8 +2,6 @@ import {
   EXPERIMENT_STATE,
   EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
   FEATURE_FLAG_STATUS,
-  SEGMENT_STATUS,
-  SEGMENT_TYPE,
   UserRole,
 } from '../Experiment/enums';
 
@@ -29,21 +27,6 @@ export enum DeletionReasonCode {
 }
 
 export type BatchDeleteEntity = 'experiments' | 'flags' | 'segments';
-
-export interface DeletionEligibilityItem {
-  id: string;
-  availability: 'present' | 'not_found' | 'unavailable';
-  name?: string;
-  stateOrStatus?: EXPERIMENT_STATE | FEATURE_FLAG_STATUS | SEGMENT_STATUS;
-  segmentType?: SEGMENT_TYPE;
-  canDelete: boolean;
-  reasonCode?: DeletionReasonCode;
-}
-
-export interface DeletionEligibilityResult {
-  items: DeletionEligibilityItem[];
-  allDeletable: boolean;
-}
 
 export type BatchDeleteRequest = BatchEntityIdsRequest;
 
@@ -73,7 +56,7 @@ export function hasBatchDeletePermission(role: UserRole, entity: BatchDeleteEnti
   );
 }
 
-export function getExperimentDeletionState(state: EXPERIMENT_STATE): EXPERIMENT_STATE {
+function getExperimentDeletionState(state: EXPERIMENT_STATE): EXPERIMENT_STATE {
   return EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[state] || state;
 }
 

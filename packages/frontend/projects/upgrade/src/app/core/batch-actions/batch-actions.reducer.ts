@@ -137,14 +137,10 @@ export function reduceRootBatch(
       listRequestId: null,
       listLoading: false,
       confirmation: null,
-      operation: { snapshot, status: 'submitting', reconciledAbsentIds: [] },
+      operation: { snapshot, status: 'submitting' },
     };
   }
-  if (
-    matches(action, actions.batchDeleteCompleted) ||
-    matches(action, actions.batchDeleteRequestFailed) ||
-    matches(action, actions.reconciliationCompleted)
-  ) {
+  if (matches(action, actions.batchDeleteCompleted) || matches(action, actions.batchDeleteRequestFailed)) {
     if (
       !state.operation ||
       action.operationId !== state.operation.snapshot.operationId ||
@@ -158,7 +154,7 @@ export function reduceRootBatch(
         operation: {
           ...state.operation,
           result: action.result,
-          status: action.result.results.some((item) => item.outcome === 'unknown') ? 'reconciling' : 'complete',
+          status: 'complete',
         },
       };
     }
@@ -187,19 +183,6 @@ export function reduceRootBatch(
         },
       };
     }
-    const absent =
-      action.result?.items.filter((item) => item.availability === 'not_found').map((item) => item.id) || [];
-    return {
-      ...removeConfirmed(state, absent),
-      operation: {
-        ...state.operation,
-        status: 'complete',
-        reconciledAbsentIds: absent.filter((id) => !confirmedRemovedIds(state.operation.result).includes(id)),
-        reconciliationFailed: !action.result,
-        // Reuse the HTTP-failure completion path: the interceptor already reported this error.
-        transportStatus: action.status,
-      },
-    };
   }
   return state;
 }

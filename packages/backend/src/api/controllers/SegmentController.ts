@@ -1,9 +1,8 @@
 import { UserDTO } from '../DTO/UserDTO';
-import { DeletionEligibilityResult, BatchDeleteResult } from 'upgrade_types';
+import { BatchDeleteResult } from 'upgrade_types';
 import { Inject } from 'typedi';
 import { BatchDeleteService } from '../services/batch/BatchDeleteService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
-import { DeletionEligibilityService } from '../services/batch/DeletionEligibilityService';
 import { DeletionStateService } from '../services/DeletionStateService';
 import {
   JsonController,
@@ -92,38 +91,6 @@ interface SegmentPaginationInfo extends PaginationResponse {
  *         items:
  *           type: string
  *           format: uuid
- *   DeletionEligibilityItem:
- *     type: object
- *     required: [id, availability, canDelete]
- *     properties:
- *       id:
- *         type: string
- *         format: uuid
- *       availability:
- *         type: string
- *         enum: [present, not_found, unavailable]
- *       name:
- *         type: string
- *       stateOrStatus:
- *         type: string
- *       segmentType:
- *         type: string
- *         enum: [public, private, global_exclude]
- *       canDelete:
- *         type: boolean
- *       reasonCode:
- *         type: string
- *         enum: [not_found, missing_permission, experiment_state_unsupported, feature_flag_enabled, feature_flag_status_unsupported, segment_in_use, protected_segment_type, eligibility_unavailable]
- *   DeletionEligibilityResult:
- *     type: object
- *     required: [items, allDeletable]
- *     properties:
- *       items:
- *         type: array
- *         items:
- *           $ref: '#/definitions/DeletionEligibilityItem'
- *       allDeletable:
- *         type: boolean
  *   Segment:
  *     required:
  *       - name
@@ -310,42 +277,9 @@ interface SegmentPaginationInfo extends PaginationResponse {
 export class SegmentController {
   constructor(
     public segmentService: SegmentService,
-    private deletionEligibilityService: DeletionEligibilityService,
     @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
     private deletionStateService: DeletionStateService
   ) {}
-
-  /**
-   * @swagger
-   * /segments/deletion-eligibility:
-   *   post:
-   *     summary: Check deletion eligibility for the selected segments
-   *     description: Read-only; returns one result per ID, including hidden selections. Does not reserve or delete items.
-   *     tags:
-   *       - Segment
-   *     parameters:
-   *       - in: body
-   *         name: selection
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/BatchEntityIdsRequest'
-   *     responses:
-   *       '200':
-   *         description: Eligibility and reasons, in request order; users without delete permission receive canDelete=false.
-   *         schema:
-   *           $ref: '#/definitions/DeletionEligibilityResult'
-   *       '400':
-   *         description: Expected a nonempty array of unique UUIDs.
-   *       '401':
-   *         description: A current authenticated user is required.
-   */
-  @Post('/deletion-eligibility')
-  public getDeletionEligibility(
-    @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
-    @CurrentUser({ required: true }) currentUser: UserDTO
-  ): Promise<DeletionEligibilityResult> {
-    return this.deletionEligibilityService.segments(ids, currentUser);
-  }
 
   /**
    * @swagger

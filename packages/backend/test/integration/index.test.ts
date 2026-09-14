@@ -125,7 +125,6 @@ import { FeatureFlagInclusionExclusion } from './FeatureFlags';
 import { ListValueFiltering } from './ListValueFiltering';
 import { FeatureFlagDeleteCleanup, SegmentDeleteCleanup } from './DeleteCleanup';
 import { registerSegmentDeletionGuardTests } from './SegmentDeletionGuard';
-import { registerDeletionEligibilityTests } from './DeletionEligibility';
 import { registerBatchDeleteTests } from './BatchDelete';
 
 describe('Integration Tests', () => {
@@ -137,7 +136,6 @@ describe('Integration Tests', () => {
   let defaultConnection: DataSource;
   let exportConnection: DataSource;
   registerSegmentDeletionGuardTests(() => [defaultConnection, exportConnection]);
-  registerDeletionEligibilityTests(() => [defaultConnection, exportConnection]);
   registerBatchDeleteTests(() => [defaultConnection, exportConnection]);
   beforeAll(async () => {
     configureLogger();

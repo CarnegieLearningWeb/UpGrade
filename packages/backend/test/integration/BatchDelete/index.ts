@@ -227,8 +227,8 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       const [before, row, after] = await create(entity, 3);
       const service = Container.get(DeletionEligibilityService);
       const original = service[entity].bind(service);
-      jest.spyOn(service, entity).mockImplementationOnce(async (ids, user) => {
-        const result = await original(ids, user);
+      jest.spyOn(service, entity).mockImplementationOnce(async (ids) => {
+        const result = await original(ids);
         // A separate connection commits a normal edit after the bulk read, before deletion begins.
         if (entity === 'experiments')
           await writer.getRepository(Experiment).update(row.id, { state: EXPERIMENT_STATE.DRAFT });

@@ -1,6 +1,18 @@
-import { BatchDeleteResult, DeletionEligibilityItem, UserRole } from 'upgrade_types';
+import {
+  BatchDeleteResult,
+  EXPERIMENT_STATE,
+  FEATURE_FLAG_STATUS,
+  SEGMENT_STATUS,
+  SEGMENT_TYPE,
+  UserRole,
+} from 'upgrade_types';
 
-export type RootSelectionItem = Pick<DeletionEligibilityItem, 'id' | 'name' | 'stateOrStatus' | 'segmentType'>;
+export interface RootSelectionItem {
+  id: string;
+  name?: string;
+  stateOrStatus?: EXPERIMENT_STATE | FEATURE_FLAG_STATUS | SEGMENT_STATUS;
+  segmentType?: SEGMENT_TYPE;
+}
 
 export interface BatchDeleteSnapshot {
   operationId: string;
@@ -21,11 +33,9 @@ export interface RootBatchState {
   confirmation: BatchDeleteSnapshot | null;
   operation: {
     snapshot: BatchDeleteSnapshot;
-    status: 'submitting' | 'reconciling' | 'complete';
+    status: 'submitting' | 'complete';
     result?: BatchDeleteResult;
     transportStatus?: number;
-    reconciledAbsentIds: string[];
-    reconciliationFailed?: boolean;
   } | null;
 }
 
@@ -44,5 +54,4 @@ export const initialRootBatchState: RootBatchState = {
 
 let requestSequence = 0;
 export const newBatchRequestId = () => `batch-${++requestSequence}`;
-export const isBatchBusy = (state: RootBatchState) =>
-  state.operation?.status === 'submitting' || state.operation?.status === 'reconciling';
+export const isBatchBusy = (state: RootBatchState) => state.operation?.status === 'submitting';

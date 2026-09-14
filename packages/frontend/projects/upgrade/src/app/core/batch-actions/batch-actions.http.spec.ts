@@ -28,19 +28,13 @@ describe('Batch HTTP contracts', () => {
     ['experiments', ExperimentDataService],
     ['flags', FeatureFlagsDataService],
     ['segments', SegmentsDataService],
-  ] as const)('%s sends the complete selection in one read or delete request', (entity, token) => {
+  ] as const)('%s sends the complete selection in one deletion request', (entity, token) => {
     const service = TestBed.inject(token as typeof ExperimentDataService);
     for (const count of [20, 100, 500]) {
       const ids = Array.from(
         { length: count },
         (_, index) => `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`
       );
-      service.checkDeletionEligibility(ids).subscribe();
-      const read = http.expectOne(`/${entity}/deletion-eligibility`);
-      expect(read.request.method).toBe('POST');
-      expect(read.request.body).toEqual({ ids });
-      expect(read.request.context.get(SKIP_NAVIGATION_CANCEL)).toBe(true);
-      read.flush({ items: [], allDeletable: false });
       service.batchDelete(ids).subscribe();
       const deletion = http.expectOne(`/${entity}/batch-delete`);
       expect(deletion.request.method).toBe('POST');

@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { BatchDeleteResult, DeletionEligibilityResult } from 'upgrade_types';
+import { BatchDeleteResult } from 'upgrade_types';
 import { BatchDeleteSnapshot, RootSelectionItem } from './batch-actions.models';
 
 export function createBatchActions(source: string) {
@@ -19,10 +19,6 @@ export function createBatchActions(source: string) {
     batchDeleteRequestFailed: createAction(
       `${prefix} Delete Request Failed`,
       props<{ operationId: string; status: number }>()
-    ),
-    reconciliationCompleted: createAction(
-      `${prefix} Reconciliation Completed`,
-      props<{ operationId: string; result: DeletionEligibilityResult | null; status?: number }>()
     ),
     listRequested: createAction(`${prefix} List Requested`, props<{ requestId: string }>()),
     listFailed: createAction(`${prefix} List Failed`, props<{ requestId: string }>()),

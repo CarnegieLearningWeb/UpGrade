@@ -1,9 +1,4 @@
-import {
-  batchDeleteEffect,
-  reconcileBatchEffect,
-  batchFinishedEffect,
-  trackedListRequest,
-} from '../../batch-actions/batch-actions.effects';
+import { batchDeleteEffect, batchFinishedEffect, trackedListRequest } from '../../batch-actions/batch-actions.effects';
 import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectSegmentsState } from './segments.selectors';
 import { Injectable } from '@angular/core';
@@ -28,14 +23,6 @@ import { CommonModalEventsService } from '../../../shared/services/common-modal-
 export class SegmentsEffects {
   batchDelete$ = createEffect(() =>
     batchDeleteEffect(
-      this.actions$,
-      this.store$.pipe(select(selectRootBatch)),
-      SegmentsActions.batchActions,
-      this.segmentsDataService
-    )
-  );
-  reconcileBatch$ = createEffect(() =>
-    reconcileBatchEffect(
       this.actions$,
       this.store$.pipe(select(selectRootBatch)),
       SegmentsActions.batchActions,

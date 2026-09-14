@@ -12,13 +12,12 @@ import {
   throwIfEmpty,
   withLatestFrom,
 } from 'rxjs/operators';
-import { BatchDeleteResult, DeletionEligibilityResult, DeletionReasonCode } from 'upgrade_types';
+import { BatchDeleteResult, DeletionReasonCode } from 'upgrade_types';
 import { RootBatchActions } from './batch-actions.actions';
 import { RootBatchState, newBatchRequestId } from './batch-actions.models';
-import { validateBatchResponse, validateEligibilityResponse } from './batch-actions.helpers';
+import { validateBatchResponse } from './batch-actions.helpers';
 
 export interface BatchDataSource {
-  checkDeletionEligibility(ids: string[]): Observable<DeletionEligibilityResult>;
   batchDelete(ids: string[]): Observable<BatchDeleteResult>;
 }
 
@@ -73,37 +72,6 @@ export function batchDeleteEffect(
   );
 }
 
-export function reconcileBatchEffect(
-  events: Observable<Action>,
-  state$: Observable<RootBatchState>,
-  actions: RootBatchActions,
-  data: BatchDataSource
-) {
-  return events.pipe(
-    filter((action) => action.type === actions.batchDeleteCompleted.type),
-    withLatestFrom(state$),
-    filter(
-      ([action, state]) =>
-        state.operation?.status === 'reconciling' &&
-        state.operation.snapshot.operationId === (action as ReturnType<typeof actions.batchDeleteCompleted>).operationId
-    ),
-    exhaustMap(([, state]) => {
-      const operationId = state.operation.snapshot.operationId;
-      const ids = state.operation.snapshot.items.map((item) => item.id);
-      return defer(() => data.checkDeletionEligibility(ids)).pipe(
-        throwIfEmpty(),
-        map((result) =>
-          actions.reconciliationCompleted({ operationId, result: validateEligibilityResponse(result, ids) })
-        ),
-        catchError((error) =>
-          of(actions.reconciliationCompleted({ operationId, result: null, status: error?.status }))
-        ),
-        takeUntil(state$.pipe(filter((current) => current.userEmail !== state.userEmail || !current.operation)))
-      );
-    })
-  );
-}
-
 export function batchFinishedEffect(
   events: Observable<Action>,
   state$: Observable<RootBatchState>,
@@ -112,11 +80,7 @@ export function batchFinishedEffect(
 ) {
   return events.pipe(
     filter((action) =>
-      [
-        actions.batchDeleteCompleted.type,
-        actions.batchDeleteRequestFailed.type,
-        actions.reconciliationCompleted.type,
-      ].some((type) => type === action.type)
+      [actions.batchDeleteCompleted.type, actions.batchDeleteRequestFailed.type].some((type) => type === action.type)
     ),
     withLatestFrom(state$),
     filter(

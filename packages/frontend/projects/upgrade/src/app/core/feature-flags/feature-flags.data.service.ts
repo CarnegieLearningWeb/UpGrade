@@ -1,4 +1,4 @@
-import { BatchDeleteResult, DeletionEligibilityResult } from 'upgrade_types';
+import { BatchDeleteResult } from 'upgrade_types';
 import { batchHttpContext } from '../batch-actions/batch-actions.http';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
@@ -27,14 +27,6 @@ import { IImportFile, LIST_FILTER_MODE } from 'upgrade_types';
 
 @Injectable()
 export class FeatureFlagsDataService {
-  checkDeletionEligibility(ids: string[]): Observable<DeletionEligibilityResult> {
-    return this.http.post<DeletionEligibilityResult>(
-      API_ENDPOINTS.flagsDeletionEligibility,
-      { ids },
-      { context: batchHttpContext() }
-    );
-  }
-
   batchDelete(ids: string[]): Observable<BatchDeleteResult> {
     return this.http.post<BatchDeleteResult>(API_ENDPOINTS.flagsBatchDelete, { ids }, { context: batchHttpContext() });
   }

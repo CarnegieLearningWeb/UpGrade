@@ -1,9 +1,4 @@
-import {
-  batchDeleteEffect,
-  reconcileBatchEffect,
-  batchFinishedEffect,
-  trackedListRequest,
-} from '../../batch-actions/batch-actions.effects';
+import { batchDeleteEffect, batchFinishedEffect, trackedListRequest } from '../../batch-actions/batch-actions.effects';
 import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectExperimentState } from './experiments.selectors';
 import { actionFetchListSegmentOptions } from '../../segments/store/segments.actions';
@@ -44,14 +39,6 @@ import { LIST_OPTION_TYPE } from '../../segments/store/segments.model';
 export class ExperimentEffects {
   batchDelete$ = createEffect(() =>
     batchDeleteEffect(
-      this.actions$,
-      this.store$.pipe(select(selectRootBatch)),
-      experimentAction.batchActions,
-      this.experimentDataService
-    )
-  );
-  reconcileBatch$ = createEffect(() =>
-    reconcileBatchEffect(
       this.actions$,
       this.store$.pipe(select(selectRootBatch)),
       experimentAction.batchActions,

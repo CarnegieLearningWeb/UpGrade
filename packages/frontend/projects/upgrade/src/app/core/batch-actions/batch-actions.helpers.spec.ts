@@ -8,12 +8,7 @@ import {
   UserRole,
 } from 'upgrade_types';
 import { createBatchActions } from './batch-actions.actions';
-import {
-  localDeletionReason,
-  selectionView,
-  validateBatchResponse,
-  validateEligibilityResponse,
-} from './batch-actions.helpers';
+import { localDeletionReason, selectionView, validateBatchResponse } from './batch-actions.helpers';
 import { RootBatchState, RootSelectionItem, initialRootBatchState } from './batch-actions.models';
 import { reduceRootBatch } from './batch-actions.reducer';
 
@@ -122,8 +117,7 @@ describe('Root selection rules', () => {
     }
   );
 
-  it('treats an incomplete or duplicate eligibility/deletion response as uncertain rather than silently removing rows', () => {
-    expect(() => validateEligibilityResponse({ items: [], allDeletable: true }, ['a'])).toThrow();
+  it('treats an incomplete or duplicate deletion response as uncertain rather than silently removing rows', () => {
     expect(() =>
       validateBatchResponse({ phase: 'executed', results: [{ id: 'a', outcome: 'deleted' }] }, ['a', 'b'])
     ).toThrow();

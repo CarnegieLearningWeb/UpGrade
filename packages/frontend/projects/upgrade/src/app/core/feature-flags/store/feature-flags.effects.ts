@@ -1,9 +1,4 @@
-import {
-  batchDeleteEffect,
-  reconcileBatchEffect,
-  batchFinishedEffect,
-  trackedListRequest,
-} from '../../batch-actions/batch-actions.effects';
+import { batchDeleteEffect, batchFinishedEffect, trackedListRequest } from '../../batch-actions/batch-actions.effects';
 import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectFeatureFlagsState } from './feature-flags.selectors';
 import { actionFetchListSegmentOptions } from '../../segments/store/segments.actions';
@@ -31,14 +26,6 @@ import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/comm
 export class FeatureFlagsEffects {
   batchDelete$ = createEffect(() =>
     batchDeleteEffect(
-      this.actions$,
-      this.store$.pipe(select(selectRootBatch)),
-      FeatureFlagsActions.batchActions,
-      this.featureFlagsDataService
-    )
-  );
-  reconcileBatch$ = createEffect(() =>
-    reconcileBatchEffect(
       this.actions$,
       this.store$.pipe(select(selectRootBatch)),
       FeatureFlagsActions.batchActions,
