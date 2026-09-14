@@ -144,8 +144,19 @@ export function reduceRootBatch(
       return state;
     if (matches(action, actions.batchDeleteCompleted)) {
       const next = removeConfirmed(state, confirmedRemovedIds(action.result));
+      const selectedById = { ...next.selectedById };
+      // Retain a known restriction even when the current-query refresh omits the item or fails.
+      for (const { id, outcome, reasonCode } of action.result.results) {
+        if (outcome === 'ineligible' && selectedById[id]) {
+          selectedById[id] = {
+            ...selectedById[id],
+            reasonCode: reasonCode || DeletionReasonCode.ELIGIBILITY_UNAVAILABLE,
+          };
+        }
+      }
       return {
         ...invalidateSelection(next),
+        selectedById,
         operation: {
           ...state.operation,
           result: action.result,

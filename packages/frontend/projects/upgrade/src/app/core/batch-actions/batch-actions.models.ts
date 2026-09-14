@@ -1,5 +1,6 @@
 import {
   BatchDeleteResult,
+  DeletionReasonCode,
   EXPERIMENT_STATE,
   FEATURE_FLAG_STATUS,
   SEGMENT_STATUS,
@@ -12,6 +13,7 @@ export interface RootSelectionItem {
   name?: string;
   stateOrStatus?: EXPERIMENT_STATE | FEATURE_FLAG_STATUS | SEGMENT_STATUS;
   segmentType?: SEGMENT_TYPE;
+  reasonCode?: DeletionReasonCode;
 }
 
 export interface BatchDeleteSnapshot {

@@ -28,6 +28,7 @@ export function localDeletionReason(
   role: RootBatchState['role']
 ): DeletionReasonCode | undefined {
   if (!hasBatchDeletePermission(role, entity)) return DeletionReasonCode.MISSING_PERMISSION;
+  if (item.reasonCode) return item.reasonCode;
   if (entity === 'experiments') return getExperimentDeletionReason(item.stateOrStatus as EXPERIMENT_STATE);
   if (entity === 'flags') return getFlagDeletionReason(item.stateOrStatus as FEATURE_FLAG_STATUS);
   if (item.segmentType !== SEGMENT_TYPE.PUBLIC) return DeletionReasonCode.PROTECTED_SEGMENT_TYPE;

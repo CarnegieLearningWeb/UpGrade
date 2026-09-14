@@ -365,28 +365,59 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     }
   );
 
-  it('removes two successful deletions and retains only the selection whose state changed', () => {
-    selectRows();
-    const snapshot = prepare();
-    const blocked = {
-      ...rows[1],
-      state: config.entity === 'experiments' ? EXPERIMENT_STATE.DRAFT : undefined,
-      status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
-    };
-    data[config.fetchMethod].mockReturnValueOnce(of(page([blocked])));
-    store.dispatch(actions.batchDeleteRequested({ snapshot }));
-    response.next({
-      phase: 'executed',
-      results: rows.map(({ id }, index) => ({ id, outcome: index === 1 ? 'ineligible' : 'deleted' })),
-    });
-    expect(Object.keys(batch().selectedById)).toEqual([rows[1].id]);
-    expect(currentRows().map((row) => row.id)).toEqual([rows[1].id]);
-    expect(selectionView(batch(), config.entity).canRequestConfirmation).toBe(false);
-    const noun = { experiments: 'experiments', flags: 'feature flags', segments: 'segments' }[config.entity];
-    expect(notifications.showWarning).toHaveBeenCalledTimes(1);
-    expect(notifications.showWarning).toHaveBeenCalledWith(`2 ${noun} deleted. 1 item could not be deleted.`);
-    expect(data.batchDelete).toHaveBeenCalledTimes(1);
-  });
+  it.each(['visible', 'hidden', 'refresh failure'])(
+    'retains the server restriction until fresh row data arrives (%s)',
+    (mode) => {
+      selectRows();
+      if (mode === 'hidden') {
+        data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0], rows[2]])));
+        store.dispatch(config.fetch({ fromStarting: true }));
+      }
+      const snapshot = prepare();
+      expect(snapshot.notShownCount).toBe(mode === 'hidden' ? 1 : 0);
+      const blocked = {
+        ...rows[1],
+        state: config.entity === 'experiments' ? EXPERIMENT_STATE.DRAFT : undefined,
+        status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
+      };
+      const reasonCode = {
+        experiments: DeletionReasonCode.EXPERIMENT_STATE_UNSUPPORTED,
+        flags: DeletionReasonCode.FEATURE_FLAG_ENABLED,
+        segments: DeletionReasonCode.SEGMENT_IN_USE,
+      }[config.entity];
+      data[config.fetchMethod].mockReturnValueOnce(
+        mode === 'refresh failure'
+          ? throwError(() => new Error('refresh unavailable'))
+          : of(page(mode === 'hidden' ? [] : [blocked]))
+      );
+      store.dispatch(actions.batchDeleteRequested({ snapshot }));
+      response.next({
+        phase: 'executed',
+        results: rows.map(({ id }, index) => ({
+          id,
+          outcome: index === 1 ? 'ineligible' : 'deleted',
+          reasonCode: index === 1 ? reasonCode : undefined,
+        })),
+      });
+      response.complete();
+      expect(Object.keys(batch().selectedById)).toEqual([rows[1].id]);
+      expect(currentRows().map((row) => row.id)).toEqual(mode === 'hidden' ? [] : [rows[1].id]);
+      expect(selectionView(batch(), config.entity)).toMatchObject({ canRequestConfirmation: false, reasonCode });
+      store.dispatch(actions.prepareConfirmation({ operationId: 'retry-before-refresh' }));
+      expect(batch().confirmation).toBeNull();
+      const noun = { experiments: 'experiments', flags: 'feature flags', segments: 'segments' }[config.entity];
+      expect(notifications.showWarning).toHaveBeenCalledTimes(1);
+      expect(notifications.showWarning).toHaveBeenCalledWith(`2 ${noun} deleted. 1 item could not be deleted.`);
+      expect(data.batchDelete).toHaveBeenCalledTimes(1);
+
+      data[config.fetchMethod].mockReturnValueOnce(of(page([rows[1]])));
+      store.dispatch(config.fetch({ fromStarting: true }));
+      expect(selectionView(batch(), config.entity)).toMatchObject({
+        canRequestConfirmation: true,
+        reasonCode: undefined,
+      });
+    }
+  );
 
   it('keeps the displayed confirmation snapshot when updated rows arrive or focus returns', fakeAsync(() => {
     selectRows(2);
