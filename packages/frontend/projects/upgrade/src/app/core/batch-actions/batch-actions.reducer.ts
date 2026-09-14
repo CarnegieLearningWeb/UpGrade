@@ -12,8 +12,8 @@ function matches<C extends { type: string; (...args: any[]): Action }>(
   return action.type === creator.type;
 }
 
-export function invalidateSelection(state: RootBatchState): RootBatchState {
-  return { ...state, revision: state.revision + 1, confirmation: null };
+function invalidateSelection(state: RootBatchState): RootBatchState {
+  return { ...state, confirmation: null };
 }
 
 function removeConfirmed(state: RootBatchState, ids: string[]): RootBatchState {
@@ -35,17 +35,14 @@ export function receiveListRows(
   const removed = new Set(state.removedIds);
   const rows = items.filter((item) => !removed.has(item.id));
   const selectedById = { ...state.selectedById };
-  let changed = false;
   rows.forEach((item) => {
     if (selectedById[item.id]) {
-      changed = changed || JSON.stringify(selectedById[item.id]) !== JSON.stringify(item);
       selectedById[item.id] = item;
     }
   });
   return {
-    ...(changed ? invalidateSelection(state) : state),
     // A background page refresh must not replace the snapshot already shown in the dialog.
-    confirmation: state.confirmation,
+    ...state,
     selectedById,
     loadedIds: [...new Set([...(fromStarting ? [] : state.loadedIds), ...rows.map((item) => item.id)])],
     listLoading: false,
@@ -114,7 +111,6 @@ export function reduceRootBatch(
       ...state,
       confirmation: {
         operationId: action.operationId,
-        revision: state.revision,
         items: selection.items.map((item) => ({ ...item })),
         notShownCount: selection.notShownCount,
       },
@@ -128,7 +124,6 @@ export function reduceRootBatch(
       isBatchBusy(state) ||
       !snapshot ||
       snapshot.operationId !== action.snapshot.operationId ||
-      snapshot.revision !== action.snapshot.revision ||
       !hasBatchDeletePermission(state.role, entity)
     )
       return state;

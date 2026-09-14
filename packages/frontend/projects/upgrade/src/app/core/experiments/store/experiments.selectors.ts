@@ -1,4 +1,3 @@
-import { selectionView } from '../../batch-actions/batch-actions.helpers';
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import {
   EXPERIMENT_SEARCH_KEY,
@@ -590,4 +589,3 @@ export const selectExperimentMenuItems = createSelector(
 );
 
 export const selectRootBatch = createSelector(selectExperimentState, (state) => state.rootBatch);
-export const selectRootSelection = createSelector(selectRootBatch, (state) => selectionView(state, 'experiments'));

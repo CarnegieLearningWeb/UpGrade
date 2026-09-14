@@ -23,7 +23,6 @@ describe('Batch deletion using the existing text confirmation dialog', () => {
   function open(entity: BatchDeleteEntity = 'experiments', count = 1, hidden = 0) {
     const snapshot = {
       operationId: 'operation',
-      revision: 1,
       notShownCount: hidden,
       items: Array.from({ length: count }, (_, index) => ({ id: String(index), name: `Item ${index}` })),
     };

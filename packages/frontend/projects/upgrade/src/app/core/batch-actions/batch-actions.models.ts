@@ -16,14 +16,12 @@ export interface RootSelectionItem {
 
 export interface BatchDeleteSnapshot {
   operationId: string;
-  revision: number;
   items: RootSelectionItem[];
   notShownCount: number;
 }
 
 export interface RootBatchState {
   selectedById: Record<string, RootSelectionItem>;
-  revision: number;
   userEmail: string | null;
   role: UserRole | null;
   loadedIds: string[];
@@ -41,7 +39,6 @@ export interface RootBatchState {
 
 export const initialRootBatchState: RootBatchState = {
   selectedById: {},
-  revision: 0,
   userEmail: null,
   role: null,
   loadedIds: [],

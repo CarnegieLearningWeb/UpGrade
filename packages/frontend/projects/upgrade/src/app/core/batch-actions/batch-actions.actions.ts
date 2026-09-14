@@ -26,4 +26,3 @@ export function createBatchActions(source: string) {
 }
 
 export type RootBatchActions = ReturnType<typeof createBatchActions>;
-export type RootBatchAction = ReturnType<RootBatchActions[keyof RootBatchActions]>;

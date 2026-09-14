@@ -502,7 +502,7 @@ describe('ExperimentsReducer', () => {
     expect(newState).not.toBe(previousState);
     expect(newState).toEqual({
       ...previousState,
-      rootBatch: { ...previousState.rootBatch, removedIds: ['1'], revision: 1 },
+      rootBatch: { ...previousState.rootBatch, removedIds: ['1'] },
       stats: {},
       experiments: [],
       isLoadingExperimentDelete: false,
