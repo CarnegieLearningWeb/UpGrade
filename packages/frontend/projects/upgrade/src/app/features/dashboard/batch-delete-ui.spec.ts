@@ -62,6 +62,7 @@ describe.each(cases)('$entity root batch UI', (config) => {
   let closed: Subject<boolean | undefined>;
   let overlay: OverlayContainer;
   let permissions$: BehaviorSubject<any>;
+  let listLoading$: BehaviorSubject<boolean>;
   const actions = config.actions.batchActions;
   const rows = ['Alpha', 'Beta'].map((name, index) => ({
     id: `11111111-2222-4333-8444-${String(index + 1).padStart(12, '0')}`,
@@ -149,14 +150,15 @@ describe.each(cases)('$entity root batch UI', (config) => {
       (s) => s[config.key][config.key]
     );
     const rows$ = store.select((s) => s[config.key][config.key]);
+    listLoading$ = new BehaviorSubject(false);
     service = {
       batch: batchFacade,
       experiments$: rows$,
       featureFlags$: rows$,
       selectAllSegments$: rows$,
-      isLoadingExperiment$: of(false),
-      isLoadingFeatureFlags$: of(false),
-      isLoadingSegments$: of(false),
+      isLoadingExperiment$: listLoading$,
+      isLoadingFeatureFlags$: listLoading$,
+      isLoadingSegments$: listLoading$,
       haveInitialExperimentsLoaded: () => of(true),
       isInitialFeatureFlagsLoading$: of(true),
       isInitialSegmentsLoading: () => of(true),
@@ -406,15 +408,45 @@ describe.each(cases)('$entity root batch UI', (config) => {
     expect(trigger.disabled).toBe(config.entity !== 'segments');
   });
 
+  it.each(['list', 'deletion'])('keeps the existing progress bar until both requests finish (%s first)', (first) => {
+    const progressBar = () => fixture.nativeElement.querySelector('mat-progress-bar');
+    selectFirst();
+    expect(progressBar()).toBeNull();
+    store.dispatch(actions.prepareConfirmation({ operationId: 'pending-delete' }));
+    store.dispatch(actions.batchDeleteRequested({ snapshot: batch().confirmation }));
+    fixture.detectChanges();
+    expect(progressBar()).not.toBeNull();
+
+    listLoading$.next(true);
+    const finishDeletion = () =>
+      store.dispatch(
+        actions.batchDeleteCompleted({
+          operationId: 'pending-delete',
+          result: { phase: 'executed', results: [{ id: rows[0].id, outcome: 'deleted' }] },
+        })
+      );
+    if (first === 'list') listLoading$.next(false);
+    else finishDeletion();
+    fixture.detectChanges();
+    expect(progressBar()).not.toBeNull();
+
+    if (first === 'list') finishDeletion();
+    else listLoading$.next(false);
+    fixture.detectChanges();
+    expect(progressBar()).toBeNull();
+  });
+
   it('keeps checkboxes usable without a banner or reload button after request and refresh failures', () => {
     selectFirst();
     store.dispatch(actions.prepareConfirmation({ operationId: 'offline-delete' }));
     store.dispatch(actions.batchDeleteRequested({ snapshot: batch().confirmation }));
     fixture.detectChanges();
     expect(checkboxes()[1].disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('mat-progress-bar')).not.toBeNull();
     store.dispatch(actions.batchDeleteRequestFailed({ operationId: 'offline-delete', status: 0 }));
     fixture.detectChanges();
     expect(checkboxes().every((input) => !input.disabled)).toBe(true);
+    expect(fixture.nativeElement.querySelector('mat-progress-bar')).toBeNull();
     checkboxes()[1].click();
     fixture.detectChanges();
     expect(Object.keys(batch().selectedById)).toHaveLength(0);

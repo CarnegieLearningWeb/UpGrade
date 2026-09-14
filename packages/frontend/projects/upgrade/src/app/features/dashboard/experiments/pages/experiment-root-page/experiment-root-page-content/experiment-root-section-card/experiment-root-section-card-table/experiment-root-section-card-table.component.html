@@ -1,6 +1,6 @@
 @let selection = (batch.selection$ | async); @let batchState = (batch.state$ | async);
 <div class="experiment-list-table-container" #tableContainer>
-  @if (isLoading$ | async) {
+  @if ((isLoading$ | async) || selection?.busy) {
   <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
   }
   <table
