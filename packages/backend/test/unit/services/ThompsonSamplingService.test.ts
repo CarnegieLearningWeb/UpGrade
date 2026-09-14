@@ -78,6 +78,27 @@ describe('ThompsonSamplingService', () => {
         // After warmup, A's dominant posterior should win nearly every draw
         expect(aCount / runs).toBeGreaterThan(0.95);
       });
+
+      it('treats warmupThreshold of 0 as disabled, not a one-draw warmup, even with no rewards yet', () => {
+        const conditions = ['A', 'B'];
+        const rewardSummaries: ConditionRewardSummary[] = [
+          { conditionId: 'A', successCount: 1000, failureCount: 0, totalCount: 1000 },
+          { conditionId: 'B', successCount: 0, failureCount: 1000, totalCount: 1000 },
+        ];
+        const config: ThompsonSamplingConfig = { warmupThreshold: 0 };
+
+        let aCount = 0;
+        const runs = 100;
+        for (let i = 0; i < runs; i++) {
+          if (service.selectCondition(conditions, rewardSummaries, 0, config) === 'A') {
+            aCount++;
+          }
+        }
+        // Matches the frontend's isWarmupConfigured (warmupThreshold > 0): at totalRewardCount 0
+        // with warmupThreshold 0, real Thompson Sampling should already be in effect, not one
+        // forced uniform draw.
+        expect(aCount / runs).toBeGreaterThan(0.95);
+      });
     });
 
     describe('Thompson Sampling selection', () => {

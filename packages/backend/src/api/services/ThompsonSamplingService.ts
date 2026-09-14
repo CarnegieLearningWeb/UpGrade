@@ -118,7 +118,14 @@ export class ThompsonSamplingService {
     // Warmup phase: use uniform random until sufficient reward evidence has been collected.
     // Gated on reward observations (not assignments) — the posteriors only move when rewards
     // arrive, so that's the right measure of "how much evidence do we actually have."
-    if (config.warmupThreshold !== undefined && totalRewardCount <= config.warmupThreshold) {
+    // warmupThreshold === 0 means warmup is disabled (matches the frontend's isWarmupConfigured
+    // check) — without the > 0 guard, totalRewardCount <= 0 would still force one uniform draw
+    // before any reward ever arrives, contradicting a UI that already reports TS as active at 0/0.
+    if (
+      config.warmupThreshold !== undefined &&
+      config.warmupThreshold > 0 &&
+      totalRewardCount <= config.warmupThreshold
+    ) {
       return this.uniformRandom(conditionIds);
     }
 
