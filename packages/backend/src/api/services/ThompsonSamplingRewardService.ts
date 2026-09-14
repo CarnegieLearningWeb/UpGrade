@@ -163,7 +163,7 @@ export class ThompsonSamplingRewardService {
 
       const current = experimentStates.find((s) => s.id === state.id);
       if (!current) {
-        return;
+        throw new Error(`Posterior state ${state.id} no longer exists`);
       }
 
       current.pendingTotalCount += 1;
