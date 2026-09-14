@@ -43,6 +43,11 @@
   white-space: nowrap;
 }
 
+// Keep the header aligned; hidden selections must still be available to clear.
+.no-data:not(.has-batch-selection) .mat-mdc-header-row .batch-checkbox {
+  visibility: hidden;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .batch-checkbox {
     opacity: 0;
