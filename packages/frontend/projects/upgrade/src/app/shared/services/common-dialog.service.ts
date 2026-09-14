@@ -134,7 +134,7 @@ export class DialogService {
         isLoading$: facade.state$.pipe(map((state) => state.confirmation?.operationId !== snapshot.operationId)),
       },
     };
-    // Do not restore focus to the menu that launched the dialog, matching existing menu-based dialogs.
+    // Restoring focus here leaves the root menu trigger's focus circle visible after Cancel or Close.
     return this.openTextValidatedConfirmationModal(config, ModalSize.SMALL, false);
   }
 

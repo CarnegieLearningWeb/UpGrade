@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { DeletionReasonCode, EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
 import { DeletionEligibilityService } from '../../../../src/api/services/batch/DeletionEligibilityService';
 import { SegmentService } from '../../../../src/api/services/SegmentService';
+import { SegmentRepository } from '../../../../src/api/repositories/SegmentRepository';
 
 const methods = ['experiments', 'flags', 'segments'] as const;
 
@@ -10,7 +11,7 @@ describe('Internal batch deletion eligibility', () => {
   const id = randomUUID();
   let service: DeletionEligibilityService;
   let find: jest.Mock;
-  let getMany: jest.Mock;
+  let findForDeletionEligibility: jest.Mock;
   let getRepository: jest.Mock;
   let getSegmentStatus: jest.Mock;
   beforeEach(() => {
@@ -23,18 +24,13 @@ describe('Internal batch deletion eligibility', () => {
       subSegments: [],
     };
     find = jest.fn().mockResolvedValue([row]);
-    getMany = jest.fn().mockResolvedValue([row]);
-    const builder = {
-      leftJoin: jest.fn().mockReturnThis(),
-      select: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      getMany,
-    };
-    getRepository = jest.fn().mockReturnValue({ find, createQueryBuilder: () => builder });
+    findForDeletionEligibility = jest.fn().mockResolvedValue([row]);
+    getRepository = jest.fn().mockReturnValue({ find });
     getSegmentStatus = jest.fn().mockResolvedValue({ segmentsData: [{ ...row, status: SEGMENT_STATUS.UNUSED }] });
     service = new DeletionEligibilityService(
       { getRepository } as unknown as DataSource,
-      { getSegmentStatus } as unknown as SegmentService
+      { getSegmentStatus } as unknown as SegmentService,
+      { findForDeletionEligibility } as unknown as SegmentRepository
     );
   });
 
@@ -81,7 +77,7 @@ describe('Internal batch deletion eligibility', () => {
   test.each(methods)('%s propagates database failure instead of reporting absence', async (method) => {
     const failure = new Error('Database unavailable');
     find.mockRejectedValue(failure);
-    getMany.mockRejectedValue(failure);
+    findForDeletionEligibility.mockRejectedValue(failure);
     await expect(service[method]([id])).rejects.toBe(failure);
     expect(getSegmentStatus).not.toHaveBeenCalled();
   });
@@ -104,7 +100,7 @@ describe('Internal batch deletion eligibility', () => {
   });
 
   test('does not run global status reads when no selected segment exists', async () => {
-    getMany.mockResolvedValue([]);
+    findForDeletionEligibility.mockResolvedValue([]);
     const result = await service.segments([id]);
     expect(result.items[0]).toMatchObject({ availability: 'not_found', canDelete: false });
     expect(getSegmentStatus).not.toHaveBeenCalled();

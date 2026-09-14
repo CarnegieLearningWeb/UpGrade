@@ -7,10 +7,10 @@ import {
   SEGMENT_STATUS,
   SEGMENT_TYPE,
 } from 'upgrade_types';
-import { InjectDataSource } from '../../../typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../../typeorm-typedi-extensions';
 import { Experiment } from '../../models/Experiment';
 import { FeatureFlag } from '../../models/FeatureFlag';
-import { Segment } from '../../models/Segment';
+import { SegmentRepository } from '../../repositories/SegmentRepository';
 import { SegmentService, SegmentWithStatus } from '../SegmentService';
 
 export interface DeletionEligibilityItem {
@@ -31,7 +31,8 @@ type EligibilitySummary = Omit<DeletionEligibilityItem, 'id' | 'canDelete'>;
 export class DeletionEligibilityService {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
-    @Inject(() => SegmentService) private segmentService: SegmentService
+    @Inject(() => SegmentService) private segmentService: SegmentService,
+    @InjectRepository() private segmentRepository: SegmentRepository
   ) {}
 
   public async experiments(ids: string[]): Promise<DeletionEligibilityResult> {
@@ -57,13 +58,7 @@ export class DeletionEligibilityService {
   }
 
   public async segments(ids: string[]): Promise<DeletionEligibilityResult> {
-    const rows = await this.dataSource
-      .getRepository(Segment)
-      .createQueryBuilder('segment')
-      .leftJoin('segment.subSegments', 'child')
-      .select(['segment.id', 'segment.type', 'child.id'])
-      .where('segment.id IN (:...ids)', { ids })
-      .getMany();
+    const rows = await this.segmentRepository.findForDeletionEligibility(ids);
     const publicRows = rows.filter((row) => row.type === SEGMENT_TYPE.PUBLIC);
     // One evaluation for the entire selection; no per-ID detail/member loads or mutation locks.
     const statuses = publicRows.length
