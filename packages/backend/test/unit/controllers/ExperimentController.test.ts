@@ -1,4 +1,5 @@
 import { BatchDeleteService } from '../../../src/api/services/batch/BatchDeleteService';
+import { DeletionStateService } from '../../../src/api/services/DeletionStateService';
 import app from '../../utils/expressApp';
 import request from 'supertest';
 import { configureLogger } from '../../utils/logger';
@@ -36,6 +37,7 @@ describe('Experiment Controller Testing', () => {
     routingUseContainer(Container);
     classValidatorUseContainer(Container);
     Container.set(BatchDeleteService, {} as BatchDeleteService);
+    Container.set(DeletionStateService, { transactionFor: jest.fn() } as unknown as DeletionStateService);
 
     // set mock container
     Container.set(ExperimentService, new ExperimentServiceMock());

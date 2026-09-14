@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { performance } from 'perf_hooks';
-import { DataSource, QueryRunner } from 'typeorm';
+import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 import { BatchDeleteEntity, DeletionReasonCode, UserRole } from 'upgrade_types';
 import { BatchDeleteService } from '../../../../src/api/services/batch/BatchDeleteService';
 import {
@@ -15,6 +15,7 @@ import { MoocletError } from '../../../../src/api/errors/MoocletError';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { env } from '../../../../src/env';
 import * as segmentGuard from '../../../../src/api/services/batch/SegmentDeletionGuard';
+import { DeletionRepository } from '../../../../src/api/repositories/DeletionRepository';
 
 jest.mock('perf_hooks', () => ({ performance: { now: jest.fn(() => 0) } }));
 
@@ -102,7 +103,8 @@ describe('BatchDeleteService transaction outcomes', () => {
       experiments as unknown as ExperimentService,
       flags as unknown as FeatureFlagService,
       segments as unknown as SegmentService,
-      mooclets as unknown as MoocletExperimentService
+      mooclets as unknown as MoocletExperimentService,
+      new DeletionRepository(DeletionRepository, {} as EntityManager)
     );
   });
   afterEach(() => {

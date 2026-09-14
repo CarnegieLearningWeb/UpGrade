@@ -469,7 +469,7 @@ export class FeatureFlagsController {
    *          '200':
    *            description: Delete Feature flag By Id
    *          '400':
-   *            description: Invalid UUID or feature flag is not disabled
+   *            description: Invalid UUID or feature flag is neither Disabled nor Archived
    *          '404':
    *            description: Feature flag not found
    */

@@ -18,7 +18,9 @@ import { FeatureFlagSegmentExclusion } from '../../../src/api/models/FeatureFlag
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 import { Segment } from '../../../src/api/models/Segment';
 import { SegmentService, SegmentWithStatus } from '../../../src/api/services/SegmentService';
-import { assertSegmentDeletionAllowed } from '../../../src/api/services/batch/SegmentDeletionGuard';
+import { assertSegmentDeletionAllowed as assertAllowed } from '../../../src/api/services/batch/SegmentDeletionGuard';
+import { DeletionRepository } from '../../../src/api/repositories/DeletionRepository';
+import { Container as repositoryContainer } from '../../../src/typeorm-typedi-extensions';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 const changes = [
@@ -166,9 +168,13 @@ export function registerSegmentDeletionGuardTests(connections: () => [DataSource
     let db: DataSource;
     let writerDb: DataSource;
     let service: SegmentService;
+    let deletionRepository: DeletionRepository;
+    const assertSegmentDeletionAllowed = (id: string, manager: EntityManager) =>
+      assertAllowed(id, manager, deletionRepository);
     beforeEach(() => {
       [db, writerDb] = connections();
       service = Container.get(SegmentService);
+      deletionRepository = repositoryContainer.getCustomRepository(DeletionRepository);
     });
 
     const status = async (id: string) => {

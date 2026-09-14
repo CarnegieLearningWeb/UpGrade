@@ -8,10 +8,11 @@ import {
   getExperimentDeletionReason,
   getFlagDeletionReason,
 } from 'upgrade_types';
-import { InjectDataSource } from '../../typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { DeletionTransaction } from '../../types/DeletionTransaction';
 import { Experiment } from '../models/Experiment';
 import { FeatureFlag } from '../models/FeatureFlag';
+import { DeletionRepository } from '../repositories/DeletionRepository';
 import { assertSegmentDeletionAllowed, SegmentDeletionBlockedError } from './batch/SegmentDeletionGuard';
 
 export class DeletionBlockedError extends Error {
@@ -24,11 +25,12 @@ export class DeletionBlockedError extends Error {
 export async function assertDeletionStateAllowed(
   entity: BatchDeleteEntity,
   id: string,
-  manager: EntityManager
+  manager: EntityManager,
+  repository: DeletionRepository
 ): Promise<void> {
   if (entity === 'segments') {
     try {
-      await assertSegmentDeletionAllowed(id, manager);
+      await assertSegmentDeletionAllowed(id, manager, repository);
     } catch (error) {
       if (!(error instanceof SegmentDeletionBlockedError)) throw error;
       throw new DeletionBlockedError({
@@ -45,18 +47,8 @@ export async function assertDeletionStateAllowed(
     return;
   }
 
-  await manager.query(`SELECT set_config('lock_timeout', CASE
-    WHEN current_setting('lock_timeout')::interval = interval '0'
-      OR current_setting('lock_timeout')::interval > interval '5 seconds'
-    THEN '5s' ELSE current_setting('lock_timeout') END, true)`);
-  const row =
-    entity === 'experiments'
-      ? await manager
-          .getRepository(Experiment)
-          .findOne({ where: { id }, select: { id: true, state: true }, lock: { mode: 'pessimistic_write' } })
-      : await manager
-          .getRepository(FeatureFlag)
-          .findOne({ where: { id }, select: { id: true, status: true }, lock: { mode: 'pessimistic_write' } });
+  await repository.setLockTimeout(manager);
+  const row = await repository.findDeletionState(entity, id, manager);
   if (!row) throw new DeletionBlockedError({ id, outcome: 'not_found', reasonCode: DeletionReasonCode.NOT_FOUND });
   const reason =
     entity === 'experiments'
@@ -77,13 +69,16 @@ const rejectionMessages: Partial<Record<DeletionReasonCode, string>> = {
 /** Opt in at the three single-item API boundaries, not in services also used for internal list cleanup. */
 @Service()
 export class DeletionStateService {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository() private deletionRepository: DeletionRepository
+  ) {}
 
   transactionFor(entity: BatchDeleteEntity, id: string): DeletionTransaction {
     return async (work) => {
       try {
         return await this.dataSource.transaction('READ COMMITTED', async (manager) => {
-          await assertDeletionStateAllowed(entity, id, manager);
+          await assertDeletionStateAllowed(entity, id, manager, this.deletionRepository);
           return work(manager);
         });
       } catch (error) {

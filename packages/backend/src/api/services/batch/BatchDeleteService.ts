@@ -11,7 +11,7 @@ import {
 } from 'upgrade_types';
 import { env } from '../../../env';
 import { UpgradeLogger } from '../../../lib/logger/UpgradeLogger';
-import { InjectDataSource } from '../../../typeorm-typedi-extensions';
+import { InjectDataSource, InjectRepository } from '../../../typeorm-typedi-extensions';
 import { DeletionTransaction } from '../../../types/DeletionTransaction';
 import { UserDTO } from '../../DTO/UserDTO';
 import { MoocletError } from '../../errors/MoocletError';
@@ -25,6 +25,7 @@ import {
   DeletionEligibilityResult,
 } from './DeletionEligibilityService';
 import { assertDeletionStateAllowed, DeletionBlockedError } from '../DeletionStateService';
+import { DeletionRepository } from '../../repositories/DeletionRepository';
 
 // Admission budget: never abandon an in-flight deletion or claim it has been cancelled.
 // Check before starting another item and again after acquiring its eligibility locks.
@@ -38,7 +39,8 @@ export class BatchDeleteService {
     @Inject(() => ExperimentService) private experiments: ExperimentService,
     @Inject(() => FeatureFlagService) private flags: FeatureFlagService,
     @Inject(() => SegmentService) private segments: SegmentService,
-    @Inject(() => MoocletExperimentService) private mooclets: MoocletExperimentService
+    @Inject(() => MoocletExperimentService) private mooclets: MoocletExperimentService,
+    @InjectRepository() private deletionRepository: DeletionRepository
   ) {}
 
   public async delete(
@@ -130,7 +132,8 @@ export class BatchDeleteService {
         await runner.connect();
         await runner.startTransaction('READ COMMITTED');
         // Segments use the existing beforeDelete hook inside this transaction.
-        if (entity !== 'segments') await assertDeletionStateAllowed(entity, id, runner.manager);
+        if (entity !== 'segments')
+          await assertDeletionStateAllowed(entity, id, runner.manager, this.deletionRepository);
         if (performance.now() >= deadline) {
           throw new DeletionBlockedError({
             id,
@@ -188,7 +191,7 @@ export class BatchDeleteService {
           id,
           logger,
           async (manager) => {
-            await assertDeletionStateAllowed(entity, id, manager);
+            await assertDeletionStateAllowed(entity, id, manager, this.deletionRepository);
             if (performance.now() >= deadline) {
               throw new DeletionBlockedError({
                 id,
