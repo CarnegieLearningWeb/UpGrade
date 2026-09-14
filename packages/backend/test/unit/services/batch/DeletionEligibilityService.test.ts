@@ -1,8 +1,9 @@
 import { randomUUID } from 'crypto';
-import { DataSource } from 'typeorm';
 import { DeletionReasonCode, EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
 import { DeletionEligibilityService } from '../../../../src/api/services/batch/DeletionEligibilityService';
 import { SegmentService } from '../../../../src/api/services/SegmentService';
+import { ExperimentRepository } from '../../../../src/api/repositories/ExperimentRepository';
+import { FeatureFlagRepository } from '../../../../src/api/repositories/FeatureFlagRepository';
 import { SegmentRepository } from '../../../../src/api/repositories/SegmentRepository';
 
 const methods = ['experiments', 'flags', 'segments'] as const;
@@ -10,9 +11,9 @@ const methods = ['experiments', 'flags', 'segments'] as const;
 describe('Internal batch deletion eligibility', () => {
   const id = randomUUID();
   let service: DeletionEligibilityService;
-  let find: jest.Mock;
-  let findForDeletionEligibility: jest.Mock;
-  let getRepository: jest.Mock;
+  let findExperiments: jest.Mock;
+  let findFlags: jest.Mock;
+  let findSegments: jest.Mock;
   let getSegmentStatus: jest.Mock;
   beforeEach(() => {
     const row = {
@@ -23,14 +24,15 @@ describe('Internal batch deletion eligibility', () => {
       type: SEGMENT_TYPE.PUBLIC,
       subSegments: [],
     };
-    find = jest.fn().mockResolvedValue([row]);
-    findForDeletionEligibility = jest.fn().mockResolvedValue([row]);
-    getRepository = jest.fn().mockReturnValue({ find });
+    findExperiments = jest.fn().mockResolvedValue([row]);
+    findFlags = jest.fn().mockResolvedValue([row]);
+    findSegments = jest.fn().mockResolvedValue([row]);
     getSegmentStatus = jest.fn().mockResolvedValue({ segmentsData: [{ ...row, status: SEGMENT_STATUS.UNUSED }] });
     service = new DeletionEligibilityService(
-      { getRepository } as unknown as DataSource,
+      { findForDeletionEligibility: findExperiments } as unknown as ExperimentRepository,
+      { findForDeletionEligibility: findFlags } as unknown as FeatureFlagRepository,
       { getSegmentStatus } as unknown as SegmentService,
-      { findForDeletionEligibility } as unknown as SegmentRepository
+      { findForDeletionEligibility: findSegments } as unknown as SegmentRepository
     );
   });
 
@@ -46,7 +48,7 @@ describe('Internal batch deletion eligibility', () => {
       EXPERIMENT_STATE.SCHEDULED,
     ];
     const rows = states.map((state) => ({ id: randomUUID(), state }));
-    find.mockResolvedValue([...rows].reverse());
+    findExperiments.mockResolvedValue([...rows].reverse());
     const ids = [...rows.map((row) => row.id.toUpperCase()), randomUUID()];
     const result = await service.experiments(ids);
     expect(result.items.map((item) => item.id)).toEqual(ids);
@@ -68,7 +70,7 @@ describe('Internal batch deletion eligibility', () => {
     const rows = [FEATURE_FLAG_STATUS.DISABLED, FEATURE_FLAG_STATUS.ARCHIVED, FEATURE_FLAG_STATUS.ENABLED].map(
       (status) => ({ id: randomUUID(), status })
     );
-    find.mockResolvedValue(rows);
+    findFlags.mockResolvedValue(rows);
     const result = await service.flags(rows.map((row) => row.id));
     expect(result.items.map((item) => item.canDelete)).toEqual([true, true, false]);
     expect(result.items[2].reasonCode).toBe(DeletionReasonCode.FEATURE_FLAG_ENABLED);
@@ -76,8 +78,9 @@ describe('Internal batch deletion eligibility', () => {
 
   test.each(methods)('%s propagates database failure instead of reporting absence', async (method) => {
     const failure = new Error('Database unavailable');
-    find.mockRejectedValue(failure);
-    findForDeletionEligibility.mockRejectedValue(failure);
+    findExperiments.mockRejectedValue(failure);
+    findFlags.mockRejectedValue(failure);
+    findSegments.mockRejectedValue(failure);
     await expect(service[method]([id])).rejects.toBe(failure);
     expect(getSegmentStatus).not.toHaveBeenCalled();
   });
@@ -100,7 +103,7 @@ describe('Internal batch deletion eligibility', () => {
   });
 
   test('does not run global status reads when no selected segment exists', async () => {
-    findForDeletionEligibility.mockResolvedValue([]);
+    findSegments.mockResolvedValue([]);
     const result = await service.segments([id]);
     expect(result.items[0]).toMatchObject({ availability: 'not_found', canDelete: false });
     expect(getSegmentStatus).not.toHaveBeenCalled();

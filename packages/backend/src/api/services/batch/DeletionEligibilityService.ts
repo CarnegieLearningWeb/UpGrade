@@ -1,5 +1,4 @@
 import { Inject, Service } from 'typedi';
-import { DataSource, In } from 'typeorm';
 import {
   DeletionReasonCode,
   getExperimentDeletionReason,
@@ -7,9 +6,9 @@ import {
   SEGMENT_STATUS,
   SEGMENT_TYPE,
 } from 'upgrade_types';
-import { InjectDataSource, InjectRepository } from '../../../typeorm-typedi-extensions';
-import { Experiment } from '../../models/Experiment';
-import { FeatureFlag } from '../../models/FeatureFlag';
+import { InjectRepository } from '../../../typeorm-typedi-extensions';
+import { ExperimentRepository } from '../../repositories/ExperimentRepository';
+import { FeatureFlagRepository } from '../../repositories/FeatureFlagRepository';
 import { SegmentRepository } from '../../repositories/SegmentRepository';
 import { SegmentService, SegmentWithStatus } from '../SegmentService';
 
@@ -30,16 +29,14 @@ type EligibilitySummary = Omit<DeletionEligibilityItem, 'id' | 'canDelete'>;
 @Service()
 export class DeletionEligibilityService {
   constructor(
-    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository() private experimentRepository: ExperimentRepository,
+    @InjectRepository() private featureFlagRepository: FeatureFlagRepository,
     @Inject(() => SegmentService) private segmentService: SegmentService,
     @InjectRepository() private segmentRepository: SegmentRepository
   ) {}
 
   public async experiments(ids: string[]): Promise<DeletionEligibilityResult> {
-    const rows = await this.dataSource.getRepository(Experiment).find({
-      where: { id: In(ids) },
-      select: { id: true, state: true },
-    });
+    const rows = await this.experimentRepository.findForDeletionEligibility(ids);
     return this.result(ids, rows, (row) => ({
       availability: 'present',
       reasonCode: getExperimentDeletionReason(row.state),
@@ -47,10 +44,7 @@ export class DeletionEligibilityService {
   }
 
   public async flags(ids: string[]): Promise<DeletionEligibilityResult> {
-    const rows = await this.dataSource.getRepository(FeatureFlag).find({
-      where: { id: In(ids) },
-      select: { id: true, status: true },
-    });
+    const rows = await this.featureFlagRepository.findForDeletionEligibility(ids);
     return this.result(ids, rows, (row) => ({
       availability: 'present',
       reasonCode: getFlagDeletionReason(row.status),
