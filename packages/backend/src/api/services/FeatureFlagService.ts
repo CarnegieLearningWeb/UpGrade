@@ -135,6 +135,78 @@ export class FeatureFlagService {
     return includedFeatureFlags.map((flags) => flags.key);
   }
 
+  /**
+   * `useMultipleGroupSets` counterpart to {@link getKeys}: evaluates the same set of flags against
+   * an optional mainGroupset plus one or more named subGroupsets (all belonging to the same
+   * authenticated user — see `UserCheckMiddleware.handleMultipleGroupSets`), in one pass.
+   *
+   * The cached flag list ({@link getCachedFlagsForKeys}) and precomputed-set fetch are naturally
+   * shared across every entry since `featureFlagLevelInclusionExclusion` itself caches per flag id,
+   * not per user — so this does not multiply DB/cache work by the number of groupsets. Exposure
+   * recording is deduped once per unique included flag across the whole batch (mainGroupset and
+   * subGroupsets alike), same as {@link getKeys} does for one user.
+   */
+  public async getKeysForMultipleGroupSets(
+    mainDoc: RequestedExperimentUser | undefined,
+    subDocs: Record<string, RequestedExperimentUser>,
+    context: string,
+    logger: UpgradeLogger
+  ): Promise<{ mainGroupset?: string[]; subGroupsets: Record<string, string[]> }> {
+    const entries: { groupsetId?: string; doc: RequestedExperimentUser }[] = [
+      ...(mainDoc ? [{ doc: mainDoc }] : []),
+      ...Object.entries(subDocs).map(([groupsetId, doc]) => ({ groupsetId, doc })),
+    ];
+
+    logger.info({
+      message: `getKeysForMultipleGroupSets: mainGroupset=${Boolean(mainDoc)}, ${
+        Object.keys(subDocs).length
+      } subGroupset(s)`,
+    });
+
+    const filteredFeatureFlags = await this.getCachedFlagsForKeys(context);
+
+    const resolvedEntries = await Promise.all(
+      entries.map(async ({ groupsetId, doc }) => {
+        if (!doc || !doc.id) {
+          logger.error({
+            message: `User not defined in getKeysForMultipleGroupSets for "${groupsetId ?? 'mainGroupset'}"`,
+          });
+          const error = new Error(
+            JSON.stringify({
+              type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+              message: 'User not defined in getKeysForMultipleGroupSets',
+            })
+          );
+          (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+          (error as any).httpCode = 404;
+          throw error;
+        }
+
+        const included = await this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, doc, context, logger);
+        return { groupsetId, userId: doc.id, ids: included.map((f) => f.id), keys: included.map((f) => f.key) };
+      })
+    );
+
+    const result: { mainGroupset?: string[]; subGroupsets: Record<string, string[]> } = { subGroupsets: {} };
+    resolvedEntries.forEach(({ groupsetId, keys }) => {
+      if (groupsetId === undefined) {
+        result.mainGroupset = keys;
+      } else {
+        result.subGroupsets[groupsetId] = keys;
+      }
+    });
+
+    const allIncludedFlagIds = new Set(resolvedEntries.flatMap((entry) => entry.ids));
+    const anyUserId = resolvedEntries[0]?.userId;
+    if (allIncludedFlagIds.size > 0 && anyUserId) {
+      this.featureFlagExposureRepository
+        .recordExposureIfNotExists(Array.from(allIncludedFlagIds), anyUserId)
+        .catch((err) => logger.error({ message: 'Error saving FF exposures', err }));
+    }
+
+    return result;
+  }
+
   public async getCachedFlagsFromContext(context: string): Promise<FeatureFlag[]> {
     const cacheKey = CACHE_PREFIX.FEATURE_FLAG_KEY_PREFIX + context;
 
