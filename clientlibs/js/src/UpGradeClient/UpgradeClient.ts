@@ -275,6 +275,7 @@ export default class UpgradeClient {
     options: UpGradeClientInterfaces.IFeatureFlagGroupOptions | null | undefined
   ): void {
     if (options == null) {
+      this.dataService.clearFeatureFlagsForGroupset(DEFAULT_GROUPSET_ID);
       this.dataService.registerGroupsetDefinition(DEFAULT_GROUPSET_ID, {});
       this.activeConfig = { kind: 'single', groupsetId: DEFAULT_GROUPSET_ID };
       return;
