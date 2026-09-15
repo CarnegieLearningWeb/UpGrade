@@ -17,7 +17,7 @@ import { RootBatchActions } from './batch-actions.actions';
 import { RootBatchState, newBatchRequestId } from './batch-actions.models';
 import { validateBatchResponse } from './batch-actions.helpers';
 
-export interface BatchDataSource {
+interface BatchDataSource {
   batchDelete(ids: string[]): Observable<BatchDeleteResult>;
 }
 

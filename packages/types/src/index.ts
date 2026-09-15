@@ -101,7 +101,6 @@ export {
   getExperimentDeletionReason,
   getFlagDeletionReason,
   DeletionReasonCode,
-  BatchDeleteRequest,
   BatchDeleteItemOutcome,
   BatchDeleteItemResult,
   BatchDeleteResult,

@@ -28,8 +28,6 @@ export enum DeletionReasonCode {
 
 export type BatchDeleteEntity = 'experiments' | 'flags' | 'segments';
 
-export type BatchDeleteRequest = BatchEntityIdsRequest;
-
 export type BatchDeleteItemOutcome =
   | 'deleted'
   | 'not_found'
