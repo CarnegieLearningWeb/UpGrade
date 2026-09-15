@@ -11,6 +11,7 @@ import {
   DeletionReasonCode,
   EXPERIMENT_STATE,
   FEATURE_FLAG_STATUS,
+  LOG_TYPE,
   POST_EXPERIMENT_RULE,
   SEGMENT_TYPE,
   STANDARD_LIST_TYPE,
@@ -23,6 +24,7 @@ import { SegmentController } from '../../../src/api/controllers/SegmentControlle
 import { ErrorHandlerMiddleware } from '../../../src/api/middlewares/ErrorHandlerMiddleware';
 import { LogMiddleware } from '../../../src/api/middlewares/LogMiddleware';
 import { Experiment } from '../../../src/api/models/Experiment';
+import { ExperimentAuditLog } from '../../../src/api/models/ExperimentAuditLog';
 import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
 import { FeatureFlagSegmentInclusion } from '../../../src/api/models/FeatureFlagSegmentInclusion';
@@ -331,6 +333,36 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       }
     });
 
+    test('rolls back an experiment after an audit insert failure and stops the remaining items', async () => {
+      const rows = await create('experiments', 3);
+      const list = await ownedList('experiments', rows[1].id);
+      try {
+        await db.query(`CREATE OR REPLACE FUNCTION batch_test_reject_audit() RETURNS trigger AS $$
+          BEGIN IF NEW.data->>'experimentId' = TG_ARGV[0] THEN RAISE EXCEPTION 'batch audit failure'; END IF;
+          RETURN NEW; END; $$ LANGUAGE plpgsql`);
+        // The interpolated UUID is generated only by this fixture.
+        await db.query(`CREATE TRIGGER batch_test_reject_audit BEFORE INSERT ON experiment_audit_log
+          FOR EACH ROW EXECUTE FUNCTION batch_test_reject_audit('${rows[1].id}')`);
+        const { body } = await request(app)
+          .post(route('experiments'))
+          .send({ ids: rows.map((row) => row.id) })
+          .expect(200);
+        expect(body.results).toEqual([
+          { id: rows[0].id, outcome: 'deleted' },
+          { id: rows[1].id, outcome: 'failed', reasonCode: DeletionReasonCode.DELETE_FAILED },
+          { id: rows[2].id, outcome: 'not_attempted' },
+        ]);
+        expect(await db.getRepository(Experiment).countBy({ id: rows[0].id })).toBe(0);
+        expect(await db.getRepository(Experiment).countBy({ id: In(rows.slice(1).map((row) => row.id)) })).toBe(2);
+        expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(1);
+        expect(await db.getRepository(ExperimentSegmentInclusion).countBy({ segmentId: list.id })).toBe(1);
+        expect(await db.getRepository(ExperimentAuditLog).countBy({ type: LOG_TYPE.EXPERIMENT_DELETED })).toBe(1);
+      } finally {
+        await db.query('DROP TRIGGER IF EXISTS batch_test_reject_audit ON experiment_audit_log');
+        await db.query('DROP FUNCTION IF EXISTS batch_test_reject_audit()');
+      }
+    });
+
     test('bounds a guard lock wait and reports a confirmed failure without deleting', async () => {
       const [row] = await create('flags');
       const blocker = writer.createQueryRunner();
@@ -419,6 +451,9 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         expect(remote).toHaveBeenCalledWith(ref, expect.anything());
         expect(await db.getRepository(Experiment).countBy({ id: row.id })).toBe(success ? 0 : 1);
         expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(success ? 0 : 1);
+        expect(await db.getRepository(ExperimentAuditLog).countBy({ type: LOG_TYPE.EXPERIMENT_DELETED })).toBe(
+          success ? 1 : 0
+        );
       }
     );
 
@@ -587,6 +622,9 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         expect(remote).toHaveBeenCalledTimes(1);
         expect(await db.getRepository(Experiment).countBy({ id: row.id })).toBe(success ? 0 : 1);
         expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(success ? 0 : 1);
+        expect(await db.getRepository(ExperimentAuditLog).countBy({ type: LOG_TYPE.EXPERIMENT_DELETED })).toBe(
+          success ? 1 : 0
+        );
       }
     );
 

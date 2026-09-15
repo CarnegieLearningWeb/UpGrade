@@ -455,7 +455,12 @@ export class ExperimentService {
         };
 
         // Add log for experiment deleted
-        this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_DELETED, deleteAuditLogData, currentUser);
+        await this.experimentAuditLogRepository.saveRawJson(
+          LOG_TYPE.EXPERIMENT_DELETED,
+          deleteAuditLogData,
+          currentUser,
+          transactionalEntityManager
+        );
 
         await Promise.all(
           experiment.experimentSegmentInclusion.map(async (segmentInclusion) => {
