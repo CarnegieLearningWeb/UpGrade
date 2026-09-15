@@ -10,11 +10,7 @@ import { CommonSimpleTextValidatedConfirmationModalComponent } from '../../share
 
 export function rootBatchView(state: RootBatchState, entity: BatchDeleteEntity) {
   const selection = selectionView(state, entity);
-  const messageKey = selection.busy
-    ? 'batch-delete.selection.busy'
-    : selection.reasonCode
-    ? `batch-delete.reason.${selection.reasonCode}`
-    : '';
+  const messageKey = !selection.busy && selection.reasonCode ? `batch-delete.reason.${selection.reasonCode}` : '';
   return {
     ...selection,
     messageKey,

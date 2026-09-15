@@ -209,7 +209,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       selectedCount: 2,
       checked: true,
       indeterminate: false,
-      notShownCount: 1,
     });
     store.dispatch(actions.toggleHeader({ items: [selectionItem(rows[0])] }));
     expect(Object.keys(batch().selectedById)).toEqual([]);
@@ -374,7 +373,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
         store.dispatch(config.fetch({ fromStarting: true }));
       }
       const snapshot = prepare();
-      expect(snapshot.notShownCount).toBe(mode === 'hidden' ? 1 : 0);
+      expect(snapshot.items.map(({ id }) => id)).toEqual(rows.map(({ id }) => id));
       const blocked = {
         ...rows[1],
         state: config.entity === 'experiments' ? EXPERIMENT_STATE.DRAFT : undefined,
@@ -520,9 +519,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       results: [{ id: rows[0].id, outcome: 'deleted', reasonCode: 'post_delete_failed' }],
     });
     const noun = { experiments: 'experiment', flags: 'feature flag', segments: 'segment' }[config.entity];
-    expect(notifications.showWarning).toHaveBeenCalledWith(
-      `1 ${noun} deleted. Related updates could not be completed.`
-    );
+    expect(notifications.showWarning).toHaveBeenCalledWith(`1 ${noun} deleted. An error occurred after deletion.`);
     expect(batch().selectedById[rows[0].id]).toBeUndefined();
     expect(batch().operation.result.results[0].outcome).toBe('deleted');
     expect(batch().listLoading).toBe(false);
@@ -549,10 +546,10 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(batch().operation.status).toBe('complete');
     expect(Object.keys(batch().selectedById)).toEqual([rows[1].id, rows[2].id]);
     expect(batchResultCounts(batch())).toMatchObject({ deleted: 1, absent: 0, uncertain: true, notAttempted: 1 });
-    expect(selectionView(batch(), config.entity)).toMatchObject({ busy: false, notShownCount: 1 });
+    expect(selectionView(batch(), config.entity).busy).toBe(false);
     const noun = { experiments: 'experiment', flags: 'feature flag', segments: 'segment' }[config.entity];
     expect(notifications.showWarning).toHaveBeenCalledWith(
-      `1 ${noun} deleted. 1 item was not attempted. Some outcomes could not be confirmed. Check the list before retrying.`
+      `1 ${noun} deleted. 1 item was not attempted. Deletion could not be confirmed for some items.`
     );
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
     expect(notifications.showSuccess).not.toHaveBeenCalled();

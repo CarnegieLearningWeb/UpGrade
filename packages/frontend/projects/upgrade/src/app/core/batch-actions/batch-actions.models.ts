@@ -19,7 +19,6 @@ export interface RootSelectionItem {
 export interface BatchDeleteSnapshot {
   operationId: string;
   items: RootSelectionItem[];
-  notShownCount: number;
 }
 
 export interface RootBatchState {

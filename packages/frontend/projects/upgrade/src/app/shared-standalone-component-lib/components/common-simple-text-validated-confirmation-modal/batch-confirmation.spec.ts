@@ -20,10 +20,9 @@ describe('Batch deletion using the existing text confirmation dialog', () => {
     ref.componentRef.changeDetectorRef.detectChanges();
     tick();
   }
-  function open(entity: BatchDeleteEntity = 'experiments', count = 1, hidden = 0) {
+  function open(entity: BatchDeleteEntity = 'experiments', count = 1) {
     const snapshot = {
       operationId: 'operation',
-      notShownCount: hidden,
       items: Array.from({ length: count }, (_, index) => ({ id: String(index), name: `Item ${index}` })),
     };
     state$ = new BehaviorSubject({ ...initialRootBatchState, confirmation: snapshot });
@@ -66,11 +65,11 @@ describe('Batch deletion using the existing text confirmation dialog', () => {
   ] as const)(
     'uses common confirmation for %s with %i items',
     fakeAsync((entity, count, title, phrase) => {
-      open(entity, count, 1);
+      open(entity, count);
       expect(ref.componentInstance).toBeInstanceOf(CommonSimpleTextValidatedConfirmationModalComponent);
       expect(container.querySelector('h4').textContent).toBe(title);
       expect(container.textContent).toContain(`Are you sure you want to delete ${phrase}?`);
-      expect(container.textContent).toContain('1 selected item is not shown');
+      expect(container.querySelectorAll('.validation-modal-content > p')).toHaveLength(1);
       expect((container.querySelector('.cdk-overlay-pane') as HTMLElement).style.width).toBe('480px');
       expect(container.querySelector('input').autocomplete).toBe('off');
       expect(primary().classList.contains('mat-warn')).toBe(true);

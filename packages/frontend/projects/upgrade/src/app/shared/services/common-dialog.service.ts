@@ -124,11 +124,6 @@ export class DialogService {
           `batch-delete.dialog.${entity}.${snapshot.items.length === 1 ? 'one' : 'other'}`,
           { count: snapshot.items.length }
         ),
-        subMessage: snapshot.notShownCount
-          ? this.translate.instant(`batch-delete.dialog.hidden.${snapshot.notShownCount === 1 ? 'one' : 'other'}`, {
-              count: snapshot.notShownCount,
-            })
-          : undefined,
         validationKeyword: 'delete',
         validationPlaceholder: 'Type delete',
         isLoading$: facade.state$.pipe(map((state) => state.confirmation?.operationId !== snapshot.operationId)),

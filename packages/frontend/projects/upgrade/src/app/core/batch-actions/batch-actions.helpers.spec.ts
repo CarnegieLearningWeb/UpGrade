@@ -28,18 +28,17 @@ describe('Root selection rules', () => {
   });
 
   it.each([
-    [[], [], false, false, 0],
-    [['a'], ['a', 'b'], false, true, 0],
-    [['a', 'b'], ['a', 'b'], true, false, 0],
-    [['a', 'b', 'hidden'], ['a', 'b'], true, false, 1],
-    [['a', 'hidden'], [], false, true, 2],
+    [[], [], false, false],
+    [['a'], ['a', 'b'], false, true],
+    [['a', 'b'], ['a', 'b'], true, false],
+    [['a', 'b', 'hidden'], ['a', 'b'], true, false],
+    [['a', 'hidden'], [], false, true],
   ])(
     'derives the header from selected=%j and loaded=%j',
-    (selected: string[], loaded: string[], checked: boolean, indeterminate: boolean, notShownCount: number) => {
+    (selected: string[], loaded: string[], checked: boolean, indeterminate: boolean) => {
       expect(selectionView(state(selected, loaded), 'segments')).toMatchObject({
         checked,
         indeterminate,
-        notShownCount,
       });
     }
   );

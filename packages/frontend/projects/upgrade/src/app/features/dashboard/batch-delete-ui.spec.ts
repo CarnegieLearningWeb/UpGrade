@@ -4,6 +4,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { MatDialog } from '@angular/material/dialog';
+import { MatTooltip } from '@angular/material/tooltip';
 import { Store, StoreModule } from '@ngrx/store';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, Subject, Subscription, of } from 'rxjs';
@@ -278,7 +279,6 @@ describe.each(cases)('$entity root batch UI', (config) => {
     const [entity, snapshot] = dialogs.openBatchDeleteModal.mock.calls[0];
     expect(entity).toBe(config.entity);
     expect(snapshot.items.map((item) => item.id)).toEqual(rows.map((row) => row.id));
-    expect(snapshot.notShownCount).toBe(1);
     closed.next(undefined);
     fixture.detectChanges();
     expect(Object.keys(batch().selectedById)).toHaveLength(2);
@@ -416,6 +416,9 @@ describe.each(cases)('$entity root batch UI', (config) => {
     store.dispatch(actions.batchDeleteRequested({ snapshot: batch().confirmation }));
     fixture.detectChanges();
     expect(progressBar()).not.toBeNull();
+    const trigger = fixture.debugElement.query(By.css('.section-card-menu-trigger'));
+    expect(trigger.nativeElement.disabled).toBe(true);
+    expect(trigger.parent.injector.get(MatTooltip).message).toBe('');
 
     listLoading$.next(true);
     const finishDeletion = () =>

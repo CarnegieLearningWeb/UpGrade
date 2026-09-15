@@ -49,7 +49,6 @@ export function selectionView(state: RootBatchState, entity: BatchDeleteEntity) 
     selectedCount: items.length,
     checked,
     indeterminate: items.length > 0 && !checked,
-    notShownCount: items.filter((item) => !loaded.has(item.id)).length,
     canToggleHeader: !isBatchBusy(state) && (items.length > 0 || loaded.size > 0),
     canRequestConfirmation: items.length > 0 && !reasons.length && !isBatchBusy(state),
     reasonCode: reasons[0],

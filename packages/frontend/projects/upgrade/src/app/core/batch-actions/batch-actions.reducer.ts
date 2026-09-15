@@ -112,7 +112,6 @@ export function reduceRootBatch(
       confirmation: {
         operationId: action.operationId,
         items: selection.items.map((item) => ({ ...item })),
-        notShownCount: selection.notShownCount,
       },
     };
   }
