@@ -222,10 +222,15 @@ export default class UpgradeClient {
     if (!entry.groups) {
       throw new Error(`subGroupsets entry "${entry.groupsetId}" requires groups.`);
     }
-    this.dataService.registerGroupsetDefinition(entry.groupsetId, {
+    const definition: IGroupsetDefinition = {
       groups: entry.groups,
       includeStoredUserGroups: entry.includeStoredUserGroups,
-    });
+    };
+    const previous = this.dataService.getGroupsetDefinition(entry.groupsetId);
+    if (previous && JSON.stringify(previous) !== JSON.stringify(definition)) {
+      this.dataService.clearFeatureFlagsForGroupset(entry.groupsetId);
+    }
+    this.dataService.registerGroupsetDefinition(entry.groupsetId, definition);
     return entry.groupsetId;
   }
 
