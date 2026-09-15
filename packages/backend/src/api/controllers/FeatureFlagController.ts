@@ -1,3 +1,8 @@
+import { BatchDeleteResult } from 'upgrade_types';
+import { Inject } from 'typedi';
+import { BatchDeleteService } from '../services/batch/BatchDeleteService';
+import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
+import { DeletionStateService } from '../services/DeletionStateService';
 import {
   JsonController,
   Authorized,
@@ -154,7 +159,47 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/flags')
 export class FeatureFlagsController {
-  constructor(public featureFlagService: FeatureFlagService, public experimentUserService: ExperimentUserService) {}
+  constructor(
+    public featureFlagService: FeatureFlagService,
+    public experimentUserService: ExperimentUserService,
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
+    private deletionStateService: DeletionStateService
+  ) {}
+
+  /**
+   * @swagger
+   * /flags/batch-delete:
+   *   post:
+   *     summary: Delete the selected flags
+   *     description: Checks the selection, skips missing or ineligible items, and deletes eligible items sequentially. Other execution failures stop the remaining items. Returns one result per ID.
+   *     tags:
+   *       - Feature Flags
+   *     parameters:
+   *       - in: body
+   *         name: selection
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/BatchEntityIdsRequest'
+   *     responses:
+   *       '200':
+   *         description: Inspect phase and per-ID outcomes; rejected means no deletions were performed.
+   *         schema:
+   *           $ref: '#/definitions/BatchDeleteResult'
+   *       '400':
+   *         description: Expected a nonempty array of unique UUIDs.
+   *       '401':
+   *         description: A current authenticated user is required.
+   *       '403':
+   *         description: The current user cannot delete this entity type.
+   */
+  @Post('/batch-delete')
+  public batchDelete(
+    @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
+    @CurrentUser({ required: true }) currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<BatchDeleteResult> {
+    return this.batchDeleteService.delete('flags', ids, currentUser, request.logger);
+  }
 
   /**
    * @swagger
@@ -423,6 +468,8 @@ export class FeatureFlagsController {
    *       responses:
    *          '200':
    *            description: Delete Feature flag By Id
+   *          '400':
+   *            description: Invalid UUID or feature flag is neither Disabled nor Archived
    *          '404':
    *            description: Feature flag not found
    */
@@ -433,7 +480,12 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    const featureFlag = await this.featureFlagService.delete(id, currentUser, request.logger);
+    const featureFlag = await this.featureFlagService.delete(
+      id,
+      currentUser,
+      request.logger,
+      this.deletionStateService.transactionFor('flags', id)
+    );
 
     if (!featureFlag) {
       throw new NotFoundException('Feature flag not found.');

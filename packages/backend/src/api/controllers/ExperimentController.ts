@@ -1,3 +1,8 @@
+import { BatchDeleteResult } from 'upgrade_types';
+import { Inject } from 'typedi';
+import { BatchDeleteService } from '../services/batch/BatchDeleteService';
+import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
+import { DeletionStateService } from '../services/DeletionStateService';
 import {
   Body,
   Get,
@@ -664,8 +669,45 @@ export class ExperimentController {
     public moocletExperimentService: MoocletExperimentService,
     public moocletRewardService: MoocletRewardsService,
     public importExportService: ImportExportService,
-    public cacheService: CacheService
+    public cacheService: CacheService,
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
+    private deletionStateService: DeletionStateService
   ) {}
+
+  /**
+   * @swagger
+   * /experiments/batch-delete:
+   *   post:
+   *     summary: Delete the selected experiments
+   *     description: Checks the selection, skips missing or ineligible items, and deletes eligible items sequentially. Other execution failures stop the remaining items. Returns one result per ID.
+   *     tags:
+   *       - Experiments
+   *     parameters:
+   *       - in: body
+   *         name: selection
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/BatchEntityIdsRequest'
+   *     responses:
+   *       '200':
+   *         description: Inspect phase and per-ID outcomes; rejected means no deletions were performed.
+   *         schema:
+   *           $ref: '#/definitions/BatchDeleteResult'
+   *       '400':
+   *         description: Expected a nonempty array of unique UUIDs.
+   *       '401':
+   *         description: A current authenticated user is required.
+   *       '403':
+   *         description: The current user cannot delete this entity type.
+   */
+  @Post('/batch-delete')
+  public batchDelete(
+    @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
+    @CurrentUser({ required: true }) currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<BatchDeleteResult> {
+    return this.batchDeleteService.delete('experiments', ids, currentUser, request.logger);
+  }
 
   /**
    * @swagger
@@ -1138,7 +1180,7 @@ export class ExperimentController {
    *            schema:
    *              $ref: '#/definitions/ExperimentResponse'
    *          '400':
-   *            description: ExperimentId should be a valid UUID.
+   *            description: Invalid UUID or experiment state does not allow deletion.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -1155,21 +1197,23 @@ export class ExperimentController {
   ): Promise<Experiment | undefined> {
     request.logger.child({ user: currentUser });
 
+    const executeTransaction = this.deletionStateService.transactionFor('experiments', id);
     // Manually check if the experiment has a mooclet ref
     if (env.mooclets.enabled) {
       const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(id);
 
       if (moocletExperimentRef) {
-        return await this.moocletExperimentService.syncDelete({
-          moocletExperimentRef,
-          experimentId: id,
-          currentUser,
-          logger: request.logger,
-        });
+        return await this.moocletExperimentService.syncDelete(
+          { moocletExperimentRef, experimentId: id, currentUser, logger: request.logger },
+          executeTransaction
+        );
       }
     }
 
-    const experiment = await this.experimentService.delete(id, currentUser, { logger: request.logger });
+    const experiment = await this.experimentService.delete(id, currentUser, {
+      logger: request.logger,
+      executeTransaction,
+    });
 
     if (!experiment) {
       throw new NotFoundException('Experiment not found.');

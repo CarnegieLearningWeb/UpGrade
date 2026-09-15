@@ -587,3 +587,5 @@ export const selectExperimentMenuItems = createSelector(
     ];
   }
 );
+
+export const selectRootBatch = createSelector(selectExperimentState, (state) => state.rootBatch);

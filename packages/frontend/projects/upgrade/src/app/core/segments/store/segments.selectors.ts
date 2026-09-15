@@ -328,3 +328,5 @@ function processParentSegments(segmentData: Segment[], segmentId: string, result
     }
   });
 }
+
+export const selectRootBatch = createSelector(selectSegmentsState, (state) => state.rootBatch);

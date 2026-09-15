@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import {
   ChangeDetectionStrategy,
@@ -30,6 +31,7 @@ import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
   imports: [
+    MatCheckboxModule,
     MatTableModule,
     AsyncPipe,
     SharedModule,
@@ -56,6 +58,7 @@ export class FeatureFlagRootSectionCardTableComponent implements AfterViewInit, 
   @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
 
   private observer: IntersectionObserver;
+  readonly batch = this.featureFlagsService.batch;
 
   constructor(private featureFlagsService: FeatureFlagsService) {}
 

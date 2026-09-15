@@ -60,6 +60,7 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
 import { FeatureFlagPrecomputedSegmentService, precomputedGroupKey } from './FeatureFlagPrecomputedSegmentService';
 import { EntitySegmentResolutionInput } from '../../types';
+import { DeletionTransaction } from '../../types/DeletionTransaction';
 import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import dayjs from 'dayjs';
 import { getDateRangeNames } from '../repositories/utils/dateQuery';
@@ -342,10 +343,12 @@ export class FeatureFlagService {
   public async delete(
     featureFlagId: string,
     currentUser: UserDTO,
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    executeTransaction?: DeletionTransaction
   ): Promise<FeatureFlag | undefined> {
     logger.info({ message: `Delete Feature Flag => ${featureFlagId}` });
-    return await this.dataSource.transaction(async (transactionalEntityManager) => {
+    const transaction: DeletionTransaction = executeTransaction || ((work) => this.dataSource.transaction(work));
+    return await transaction(async (transactionalEntityManager) => {
       const featureFlag = await this.findOneForDetails(featureFlagId, logger);
 
       if (featureFlag) {
@@ -381,7 +384,8 @@ export class FeatureFlagService {
         await this.experimentAuditLogRepository.saveRawJson(
           LOG_TYPE.FEATURE_FLAG_DELETED,
           createAuditLogData,
-          currentUser
+          currentUser,
+          transactionalEntityManager
         );
         return deletedFlag;
       }

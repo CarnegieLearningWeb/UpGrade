@@ -247,3 +247,5 @@ export const selectWarningKeysForAllFlags = createSelector(selectFeatureFlagsSta
   });
   return warningKeys;
 });
+
+export const selectRootBatch = createSelector(selectFeatureFlagsState, (state) => state.rootBatch);

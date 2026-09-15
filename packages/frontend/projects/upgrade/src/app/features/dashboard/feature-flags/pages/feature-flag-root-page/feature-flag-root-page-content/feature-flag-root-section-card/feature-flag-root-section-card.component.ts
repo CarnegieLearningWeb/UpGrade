@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { RootBatchActionsDirective } from '../../../../../../../shared/directives/root-batch-actions.directive';
 import {
   CommonSectionCardComponent,
   CommonSectionCardSearchHeaderComponent,
@@ -24,6 +25,7 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 @Component({
   selector: 'app-feature-flag-root-section-card',
   imports: [
+    RootBatchActionsDirective,
     CommonSectionCardComponent,
     CommonSectionCardSearchHeaderComponent,
     CommonSectionCardActionButtonsComponent,
@@ -39,7 +41,10 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 })
 export class FeatureFlagRootSectionCardComponent {
   permissions$: Observable<UserPermission>;
-  featureFlags$: Observable<FeatureFlag[]>;
+  readonly batch = this.featureFlagService.batch;
+  @ViewChild(RootBatchActionsDirective) batchUi: RootBatchActionsDirective;
+
+  featureFlags$: Observable<FeatureFlag[]> = this.featureFlagService.featureFlags$;
   isLoadingFeatureFlags$ = this.featureFlagService.isLoadingFeatureFlags$;
   isInitialLoading$ = this.featureFlagService.isInitialFeatureFlagsLoading$;
   isAllFlagsFetched$ = this.featureFlagService.isAllFlagsFetched$;
@@ -86,13 +91,9 @@ export class FeatureFlagRootSectionCardComponent {
     this.featureFlagService.fetchFeatureFlags(true);
   }
 
-  ngAfterViewInit() {
-    this.featureFlags$ = this.featureFlagService.featureFlags$;
-  }
-
   onSearch(params: CommonSearchWidgetSearchParams<FLAG_SEARCH_KEY>) {
-    this.featureFlagService.setSearchString(params.searchString?.trim() || '');
     this.featureFlagService.setSearchKey(params.searchKey as FLAG_SEARCH_KEY);
+    this.featureFlagService.setSearchString(params.searchString?.trim() || '');
   }
 
   onAddFeatureFlagButtonClick() {
@@ -100,6 +101,10 @@ export class FeatureFlagRootSectionCardComponent {
   }
 
   onMenuButtonItemClick(action: string) {
+    if (action === 'batch-delete') {
+      this.batchUi.requestDelete();
+      return;
+    }
     if (action === FEATURE_FLAG_BUTTON_ACTION.IMPORT) {
       this.dialogService.openImportFeatureFlagModal();
     }

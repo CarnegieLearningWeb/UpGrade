@@ -1,3 +1,5 @@
+import { initialState as initialExperimentState } from './experiments.reducer';
+import { batchActions } from './experiments.actions';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { ActionsSubject } from '@ngrx/store';
 import { BehaviorSubject, of, throwError, timer } from 'rxjs';
@@ -26,7 +28,6 @@ import {
   actionFetchExperimentDetailStatSuccess,
   actionFetchExperimentDetailStat,
   actionGetExperimentsSuccess,
-  actionSetSkipExperiment,
   actionFetchExperimentGraphInfo,
   actionUpsertExperiment,
   actionUpsertExperimentFailure,
@@ -61,14 +62,7 @@ import {
   actionAddExperimentExclusionListSuccess,
 } from './experiments.actions';
 import { ExperimentEffects } from './experiments.effects';
-import {
-  DATE_RANGE,
-  EXPERIMENT_SEARCH_KEY,
-  SORT_AS_DIRECTION,
-  EXPERIMENT_SORT_KEY,
-  EXPERIMENT_STATE,
-  UpsertExperimentType,
-} from './experiments.model';
+import { DATE_RANGE, EXPERIMENT_SEARCH_KEY, EXPERIMENT_STATE, UpsertExperimentType } from './experiments.model';
 import * as Selectors from './experiments.selectors';
 import { environment } from '../../../../environments/environment';
 import { actionExecuteQuery, actionFetchMetrics } from '../../analysis/store/analysis.actions';
@@ -130,122 +124,47 @@ describe('ExperimentEffects', () => {
   });
 
   describe('#getPaginatedExperiment$', () => {
-    it('should catch and dispatch actionGetExperimentsFailure on error and exercise skip<total filter', fakeAsync(() => {
-      experimentDataService.getAllExperiment = jest.fn().mockReturnValue(throwError('testError'));
-      Selectors.selectSkipExperiment.setResult(0);
-      Selectors.selectTotalExperiment.setResult(1);
-      Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
-      Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
-      Selectors.selectSearchString.setResult('test');
+    beforeEach(() => {
+      store$.next({ experiments: { ...initialExperimentState, totalExperiments: 1, searchString: 'test' } });
+    });
 
-      service.getPaginatedExperiment$.subscribe((result: any) => {
-        tick(0);
-
-        const failureAction = actionGetExperimentsFailure(result);
-
-        expect(result).toEqual(failureAction);
-      });
-
+    it.each([1, null])('reports a tracked list failure when total is %s', (totalExperiments) => {
+      store$.next({ experiments: { ...initialExperimentState, totalExperiments } });
+      experimentDataService.getAllExperiment = jest.fn().mockReturnValue(throwError(() => 'testError'));
+      const results = [];
+      const subscription = service.getPaginatedExperiment$.subscribe((result) => results.push(result));
       actions$.next(actionGetExperiments({}));
-    }));
+      expect(results).toEqual([
+        batchActions.listFailed({ requestId: expect.any(String) }),
+        actionGetExperimentsFailure({ error: null }),
+      ]);
+      subscription.unsubscribe();
+    });
 
-    it('should catch and dispatch actionGetExperimentsFailure on error and exercise total=null filter', fakeAsync(() => {
-      experimentDataService.getAllExperiment = jest.fn().mockReturnValue(throwError('testError'));
-      Selectors.selectSkipExperiment.setResult(0);
-      Selectors.selectTotalExperiment.setResult(null);
-      Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
-      Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
-      Selectors.selectSearchString.setResult('test');
-
-      service.getPaginatedExperiment$.subscribe((result: any) => {
-        tick(0);
-
-        const failureAction = actionGetExperimentsFailure(result);
-
-        expect(result).toEqual(failureAction);
-      });
-
-      actions$.next(actionGetExperiments({}));
-    }));
-
-    it('should dispatch actionGetExperimentsSuccess and actionFetchExperimentStats when fromStaring is undefined', fakeAsync(() => {
-      const experiments = [
-        {
-          id: 'test1',
-        } as any,
-      ];
-
-      const experimentIds = ['test1'];
-      const totalExperiments = 1;
-
-      experimentDataService.getAllExperiment = jest.fn().mockReturnValue(of({ nodes: experiments, total: 1 }));
-      Selectors.selectSkipExperiment.setResult(0);
-      Selectors.selectTotalExperiment.setResult(1);
-      Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
-      Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
-      Selectors.selectSearchString.setResult('test');
-
-      service.getPaginatedExperiment$.pipe(take(2), pairwise()).subscribe((result: any) => {
-        tick(0);
-
-        const successAction = actionGetExperimentsSuccess({ experiments, totalExperiments });
-        const fetchAction = actionFetchExperimentStats({ experimentIds });
-
-        expect(result).toEqual([successAction, fetchAction]);
-      });
-
-      actions$.next(actionGetExperiments({}));
-      tick(0);
-    }));
-
-    it('should dispatch actionSetSkipExperiment, actionGetExperimentsSuccess and actionFetchExperimentStats when fromStaring is true', fakeAsync(() => {
-      const experiments = [
-        {
-          id: 'test1',
-        } as any,
-      ];
-
-      const experimentIds = ['test1'];
-      const totalExperiments = 1;
-
-      experimentDataService.getAllExperiment = jest.fn().mockReturnValue(of({ nodes: experiments, total: 1 }));
-      Selectors.selectSkipExperiment.setResult(2);
-      Selectors.selectTotalExperiment.setResult(1);
-      Selectors.selectSearchKey.setResult(EXPERIMENT_SEARCH_KEY.ALL);
-      Selectors.selectSortKey.setResult(EXPERIMENT_SORT_KEY.UPDATED_AT);
-      Selectors.selectSortAs.setResult(SORT_AS_DIRECTION.ASCENDING);
-      Selectors.selectSearchString.setResult('test');
-
-      service.getPaginatedExperiment$
-        .pipe(
-          take(3),
-          scan((acc, val) => {
-            acc.unshift(val);
-            acc.splice(3);
-            return acc;
-          }, []),
-          last()
-        )
-        .subscribe((result: any) => {
-          tick(0);
-
-          const skipAction = actionSetSkipExperiment({ skipExperiment: 0 });
-          const successAction = actionGetExperimentsSuccess({
+    it.each([false, true])(
+      'correlates root rows with the request and fetches stats (replacement=%s)',
+      (fromStarting) => {
+        const experiments = [{ id: 'test1' } as any];
+        experimentDataService.getAllExperiment = jest.fn().mockReturnValue(of({ nodes: experiments, total: 1 }));
+        const results = [];
+        const subscription = service.getPaginatedExperiment$.subscribe((result) => results.push(result));
+        actions$.next(actionGetExperiments({ fromStarting }));
+        expect(results).toEqual([
+          actionGetExperimentsSuccess({
             experiments,
-            fromStarting: true,
-            totalExperiments,
-          });
-          const fetchAction = actionFetchExperimentStats({ experimentIds });
-
-          expect(result.reverse()).toEqual([skipAction, successAction, fetchAction]);
-        });
-
-      actions$.next(actionGetExperiments({ fromStarting: true }));
-      tick(0);
-    }));
+            totalExperiments: 1,
+            fromStarting,
+            batchListRequestId: expect.any(String),
+          }),
+          actionFetchExperimentStats({ experimentIds: ['test1'] }),
+        ]);
+        expect(experimentDataService.getAllExperiment).toHaveBeenCalledWith(
+          expect.objectContaining({ skip: 0, searchParams: { key: initialExperimentState.searchKey, string: 'test' } }),
+          false
+        );
+        subscription.unsubscribe();
+      }
+    );
   });
 
   describe('#fetchExperimentStatsForHome$', () => {

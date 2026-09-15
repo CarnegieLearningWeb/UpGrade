@@ -59,6 +59,7 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 import { MetricService } from './MetricService';
 import { env } from '../../env';
 import { ExperimentSchedulerService } from './ExperimentSchedulerService';
+import { DeletionTransaction } from '../../types/DeletionTransaction';
 
 export interface SyncCreateParams {
   experimentDTO: ExperimentDTO;
@@ -215,8 +216,9 @@ export class MoocletExperimentService extends ExperimentService {
     return experiment;
   }
 
-  public async syncDelete(params: SyncDeleteParams): Promise<Experiment> {
-    return this.dataSource.transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
+  public async syncDelete(params: SyncDeleteParams, executeTransaction?: DeletionTransaction): Promise<Experiment> {
+    const transaction: DeletionTransaction = executeTransaction || ((work) => this.dataSource.transaction(work));
+    return transaction((manager) => this.handleDeleteMoocletTransaction(manager, params));
   }
 
   /**

@@ -95,6 +95,17 @@ export {
 } from './Experiment/interfaces';
 export { SYSTEM_USER_EMAIL, DEV_USER_EMAIL, FAKE_DEV_CREDENTIAL } from './User';
 export {
+  BatchEntityIdsRequest,
+  BatchDeleteEntity,
+  hasBatchDeletePermission,
+  getExperimentDeletionReason,
+  getFlagDeletionReason,
+  DeletionReasonCode,
+  BatchDeleteItemOutcome,
+  BatchDeleteItemResult,
+  BatchDeleteResult,
+} from './BatchActions';
+export {
   Prior,
   CurrentPosteriors,
   MoocletPolicyParametersDTO,

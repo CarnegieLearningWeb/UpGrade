@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { RootBatchActionsDirective } from '../../../../../../../shared/directives/root-batch-actions.directive';
 import {
   CommonSectionCardComponent,
   CommonSectionCardSearchHeaderComponent,
@@ -21,6 +22,7 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 @Component({
   selector: 'app-segment-root-section-card',
   imports: [
+    RootBatchActionsDirective,
     CommonSectionCardComponent,
     CommonSectionCardSearchHeaderComponent,
     CommonSectionCardActionButtonsComponent,
@@ -37,6 +39,9 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 })
 export class SegmentRootSectionCardComponent {
   permissions$: Observable<UserPermission>;
+  readonly batch = this.segmentsService.batch;
+  @ViewChild(RootBatchActionsDirective) batchUi: RootBatchActionsDirective;
+
   segments$ = this.segmentsService.selectAllSegments$;
   isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
   isInitialLoading$ = this.segmentsService.isInitialSegmentsLoading();
@@ -90,6 +95,10 @@ export class SegmentRootSectionCardComponent {
   }
 
   onMenuButtonItemClick(action: string) {
+    if (action === 'batch-delete') {
+      this.batchUi.requestDelete();
+      return;
+    }
     if (action === SEGMENTS_BUTTON_ACTION.IMPORT) {
       this.dialogService.openImportSegmentModal();
     } else if (action === SEGMENTS_BUTTON_ACTION.EXPORT_ALL) {

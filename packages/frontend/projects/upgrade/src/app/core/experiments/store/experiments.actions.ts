@@ -1,3 +1,4 @@
+import { createBatchActions } from '../../batch-actions/batch-actions.actions';
 import { createAction, props } from '@ngrx/store';
 import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
@@ -21,11 +22,14 @@ import {
 import { ExperimentSegmentListRequest } from '../../segments/store/segments.model';
 import { ExperimentRewardsSummary } from 'upgrade_types';
 
-export const actionGetExperiments = createAction('[Experiment] Get Experiments', props<{ fromStarting?: boolean }>());
+export const actionGetExperiments = createAction(
+  '[Experiment] Get Experiments',
+  props<{ fromStarting?: boolean; batchRefresh?: boolean }>()
+);
 
 export const actionGetExperimentsSuccess = createAction(
   '[Experiment] Get Experiments Success',
-  props<{ experiments: Experiment[]; totalExperiments: number; fromStarting?: boolean }>()
+  props<{ batchListRequestId?: string; experiments: Experiment[]; totalExperiments: number; fromStarting?: boolean }>()
 );
 
 export const actionGetExperimentsFailure = createAction('[Experiment] Get Experiment Failure', props<{ error: any }>());
@@ -428,3 +432,5 @@ export const actionFetchRewardsDataForExperimentFailure = createAction(
   '[Experiment] Fetch Rewards Data For Experiment Failure',
   props<{ error: any }>()
 );
+
+export const batchActions = createBatchActions('experiments');

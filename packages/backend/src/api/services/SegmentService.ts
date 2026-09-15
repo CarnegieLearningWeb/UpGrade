@@ -18,6 +18,7 @@ import {
   normalizeStandardListType,
 } from 'upgrade_types';
 import { EntityManager, DataSource, Not, In } from 'typeorm';
+import { DeletionTransaction } from '../../types/DeletionTransaction';
 import Papa from 'papaparse';
 import { env } from '../../env';
 
@@ -535,7 +536,12 @@ export class SegmentService {
     return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager, skipScheduleRecompute);
   }
 
-  public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
+  public async deleteSegment(
+    id: string,
+    logger: UpgradeLogger,
+    beforeDelete?: (manager: EntityManager) => Promise<void>,
+    executeTransaction?: DeletionTransaction
+  ): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
 
     // Both flags and experiments can reference this segment, so both precomputed tables must be
@@ -544,14 +550,16 @@ export class SegmentService {
     // transaction below commits. Flags use withRecompute, which enforces the same
     // resolve-before -> delete -> recompute-after ordering internally.
     const affectedExperimentIds = await this.experimentPrecomputedSegmentService.getAffectedExperimentIds(id);
+    const transaction: DeletionTransaction = executeTransaction || ((work) => this.dataSource.transaction(work));
 
     const deletedSegment = await this.featureFlagPrecomputedSegmentService.withRecompute(
       logger,
       () => this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
       () =>
-        this.dataSource.transaction((transactionalEntityManager) =>
-          this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
-        )
+        transaction(async (transactionalEntityManager) => {
+          await beforeDelete?.(transactionalEntityManager);
+          return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
+        })
     );
 
     this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments(affectedExperimentIds, logger);

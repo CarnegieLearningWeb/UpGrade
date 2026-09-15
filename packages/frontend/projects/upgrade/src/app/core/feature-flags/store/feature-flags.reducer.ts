@@ -1,9 +1,12 @@
+import { initialRootBatchState } from '../../batch-actions/batch-actions.models';
+import { withRootBatch } from '../../batch-actions/batch-actions.store';
 import { createReducer, Action, on } from '@ngrx/store';
 import { FeatureFlagState } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 
 export const initialState: FeatureFlagState = {
+  rootBatch: initialRootBatchState,
   // List page state
   featureFlags: [],
   isLoadingFeatureFlags: false,
@@ -52,10 +55,10 @@ const mergeSelectedFlagWithPartialResponse = (
 
 const reducer = createReducer(
   initialState,
-  on(FeatureFlagsActions.actionFetchFeatureFlagsSuccess, (state, { flags, totalFlags }) => {
+  on(FeatureFlagsActions.actionFetchFeatureFlagsSuccess, (state, { flags, totalFlags, fromStarting }) => {
     // Replace entire array with backend data - preserves exact sort order
     const featureFlags =
-      state.skipFlags === 0
+      fromStarting || state.skipFlags === 0
         ? flags // First fetch - use backend data directly
         : [...state.featureFlags, ...flags]; // Pagination - append to existing
 
@@ -63,7 +66,7 @@ const reducer = createReducer(
       ...state,
       featureFlags,
       totalFlags,
-      skipFlags: state.skipFlags + flags.length,
+      skipFlags: fromStarting ? flags.length : state.skipFlags + flags.length,
       isLoadingFeatureFlags: false,
       hasInitialFeatureFlagsDataLoaded: true,
     };
@@ -394,6 +397,28 @@ const reducer = createReducer(
   }))
 );
 
+const batchReducer = withRootBatch(reducer, initialState, {
+  entity: 'flags',
+  actions: FeatureFlagsActions.batchActions,
+  rowsKey: 'featureFlags',
+  loadingKey: 'isLoadingFeatureFlags',
+  skipKey: 'skipFlags',
+  totalKey: 'totalFlags',
+  queryTypes: [
+    FeatureFlagsActions.actionSetSearchKey.type,
+    FeatureFlagsActions.actionSetSearchString.type,
+    FeatureFlagsActions.actionSetSortKey.type,
+    FeatureFlagsActions.actionSetSortingType.type,
+  ],
+  deletedId: (action) => {
+    if (action.type !== FeatureFlagsActions.actionDeleteFeatureFlagSuccess.type) return undefined;
+    const response = (action as ReturnType<typeof FeatureFlagsActions.actionDeleteFeatureFlagSuccess>).flag;
+    return (Array.isArray(response) ? response[0] : response)?.id;
+  },
+  listSuccessType: FeatureFlagsActions.actionFetchFeatureFlagsSuccess.type,
+  responseRowsKey: 'flags',
+});
+
 export function featureFlagsReducer(state: FeatureFlagState | undefined, action: Action) {
-  return reducer(state, action);
+  return batchReducer(state, action);
 }

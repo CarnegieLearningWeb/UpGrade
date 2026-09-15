@@ -1,5 +1,12 @@
+import { UserDTO } from '../DTO/UserDTO';
+import { BatchDeleteResult } from 'upgrade_types';
+import { Inject } from 'typedi';
+import { BatchDeleteService } from '../services/batch/BatchDeleteService';
+import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
+import { DeletionStateService } from '../services/DeletionStateService';
 import {
   JsonController,
+  CurrentUser,
   Get,
   Delete,
   Authorized,
@@ -49,6 +56,41 @@ interface SegmentPaginationInfo extends PaginationResponse {
 /**
  * @swagger
  * definitions:
+ *   BatchDeleteItemResult:
+ *     type: object
+ *     required: [id, outcome]
+ *     properties:
+ *       id:
+ *         type: string
+ *         format: uuid
+ *       outcome:
+ *         type: string
+ *         enum: [deleted, not_found, ineligible, failed, unknown, not_attempted]
+ *       reasonCode:
+ *         type: string
+ *         enum: [not_found, missing_permission, experiment_state_unsupported, feature_flag_enabled, feature_flag_status_unsupported, segment_in_use, protected_segment_type, eligibility_unavailable, delete_failed, lock_timeout, external_sync_failed, outcome_unknown, post_delete_failed, batch_budget_exceeded]
+ *   BatchDeleteResult:
+ *     type: object
+ *     required: [phase, results]
+ *     properties:
+ *       phase:
+ *         type: string
+ *         enum: [rejected, executed]
+ *       results:
+ *         type: array
+ *         items:
+ *           $ref: '#/definitions/BatchDeleteItemResult'
+ *   BatchEntityIdsRequest:
+ *     type: object
+ *     required: [ids]
+ *     properties:
+ *       ids:
+ *         type: array
+ *         minItems: 1
+ *         uniqueItems: true
+ *         items:
+ *           type: string
+ *           format: uuid
  *   Segment:
  *     required:
  *       - name
@@ -233,7 +275,46 @@ interface SegmentPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/segments')
 export class SegmentController {
-  constructor(public segmentService: SegmentService) {}
+  constructor(
+    public segmentService: SegmentService,
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
+    private deletionStateService: DeletionStateService
+  ) {}
+
+  /**
+   * @swagger
+   * /segments/batch-delete:
+   *   post:
+   *     summary: Delete the selected segments
+   *     description: Checks the selection, skips missing or ineligible items, and deletes eligible items sequentially. Other execution failures stop the remaining items. Returns one result per ID.
+   *     tags:
+   *       - Segment
+   *     parameters:
+   *       - in: body
+   *         name: selection
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/BatchEntityIdsRequest'
+   *     responses:
+   *       '200':
+   *         description: Inspect phase and per-ID outcomes; rejected means no deletions were performed.
+   *         schema:
+   *           $ref: '#/definitions/BatchDeleteResult'
+   *       '400':
+   *         description: Expected a nonempty array of unique UUIDs.
+   *       '401':
+   *         description: A current authenticated user is required.
+   *       '403':
+   *         description: The current user cannot delete this entity type.
+   */
+  @Post('/batch-delete')
+  public batchDelete(
+    @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
+    @CurrentUser({ required: true }) currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<BatchDeleteResult> {
+    return this.batchDeleteService.delete('segments', ids, currentUser, request.logger);
+  }
 
   /**
    * @swagger
@@ -591,14 +672,23 @@ export class SegmentController {
    *        '401':
    *          description: Authorization Required Error
    *        '500':
-   *          description: Internal Server Error, SegmentId is not valid
+   *          description: Internal Server Error
+   *        '400':
+   *          description: Invalid UUID, segment is in use, or segment is not an ordinary public segment
+   *        '404':
+   *          description: Segment not found
    */
   @Delete('/:segmentId')
   public deleteSegment(
     @Params({ validate: true }) { segmentId }: SegmentIdValidator,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.segmentService.deleteSegment(segmentId, request.logger);
+    return this.segmentService.deleteSegment(
+      segmentId,
+      request.logger,
+      undefined,
+      this.deletionStateService.transactionFor('segments', segmentId)
+    );
   }
 
   /**

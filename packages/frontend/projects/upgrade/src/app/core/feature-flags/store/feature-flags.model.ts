@@ -1,3 +1,4 @@
+import { RootBatchState } from '../../batch-actions/batch-actions.models';
 import { AppState } from '../../core.state';
 import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
@@ -190,6 +191,7 @@ export interface IExposureStatByDate {
 }
 
 export interface FeatureFlagState {
+  rootBatch: RootBatchState;
   // List page data - plain array preserves backend sort order
   featureFlags: FeatureFlag[];
   isLoadingFeatureFlags: boolean;
