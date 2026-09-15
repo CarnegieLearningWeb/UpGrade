@@ -304,8 +304,7 @@ export default class UpgradeClient {
     }
 
     // A truthy but empty options object — treat the same as null (reset to default).
-    this.dataService.registerGroupsetDefinition(DEFAULT_GROUPSET_ID, {});
-    this.activeConfig = { kind: 'single', groupsetId: DEFAULT_GROUPSET_ID };
+    this.setFeatureFlagGroupOptions(null);
   }
 
   /**
