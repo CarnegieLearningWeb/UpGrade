@@ -28,14 +28,7 @@ export enum DeletionReasonCode {
 
 export type BatchDeleteEntity = 'experiments' | 'flags' | 'segments';
 
-export type BatchDeleteItemOutcome =
-  | 'deleted'
-  | 'not_found'
-  | 'ineligible'
-  | 'forbidden'
-  | 'failed'
-  | 'unknown'
-  | 'not_attempted';
+export type BatchDeleteItemOutcome = 'deleted' | 'not_found' | 'ineligible' | 'failed' | 'unknown' | 'not_attempted';
 
 export interface BatchDeleteItemResult {
   id: string;

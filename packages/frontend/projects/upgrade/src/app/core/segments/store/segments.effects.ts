@@ -46,7 +46,6 @@ export class SegmentsEffects {
           ...(pathname === '/segments'
             ? [SegmentsActions.actionFetchSegments({ fromStarting: true, batchRefresh: true })]
             : []),
-          ...(counts.deleted || counts.absent ? [SegmentsActions.actionFetchListSegmentOptions()] : []),
         ];
       }
     )

@@ -1,7 +1,6 @@
 import { batchDeleteEffect, batchFinishedEffect, trackedListRequest } from '../../batch-actions/batch-actions.effects';
 import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectExperimentState } from './experiments.selectors';
-import { actionFetchListSegmentOptions } from '../../segments/store/segments.actions';
 import { Inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
@@ -63,12 +62,7 @@ export class ExperimentEffects {
             ? [experimentAction.actionGetExperiments({ fromStarting: true, batchRefresh: true })]
             : []),
           ...(counts.deleted || counts.absent
-            ? [
-                experimentAction.actionFetchAllDecisionPoints(),
-                analysisActions.actionFetchMetrics(),
-                experimentAction.actionFetchAllExperimentNames(),
-                actionFetchListSegmentOptions(),
-              ]
+            ? [experimentAction.actionFetchAllDecisionPoints(), analysisActions.actionFetchMetrics()]
             : []),
         ];
       }

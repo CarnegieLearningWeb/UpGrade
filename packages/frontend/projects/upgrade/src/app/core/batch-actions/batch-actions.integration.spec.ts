@@ -474,6 +474,9 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
   }));
 
   it.each([1, 3])('reports %i deletions once and ignores stale reads started before or during deletion', (count) => {
+    const options = rows.map(({ id, name }) => ({ id, name, context: 'home' }));
+    store.dispatch(experimentActions.actionFetchAllExperimentNamesSuccess({ allExperimentNames: options }));
+    store.dispatch(segmentActions.actionFetchListSegmentOptionsSuccess({ listSegmentOptions: options }));
     selectRows(count);
     const snapshot = prepare();
     const pending = new Subject<any>();
@@ -492,6 +495,13 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     ) as any;
     store.dispatch({ ...oldSuccess, batchListRequestId: oldRequestId });
     expect(currentRows().some((row) => row.id === rows[0].id)).toBe(false);
+    expect(state.experiments.allExperimentNames).toEqual(
+      config.entity === 'experiments' ? options.slice(count) : options
+    );
+    expect(state.segments.listSegmentOptions).toEqual(config.entity === 'segments' ? options.slice(count) : options);
+    const eventTypes = events.map((action) => action.type);
+    expect(eventTypes).not.toContain(experimentActions.actionFetchAllExperimentNames.type);
+    expect(eventTypes).not.toContain(segmentActions.actionFetchListSegmentOptions.type);
     expect(notifications.showSuccess).toHaveBeenCalledTimes(1);
     const noun = { experiments: 'experiment', flags: 'feature flag', segments: 'segment' }[config.entity];
     expect(notifications.showSuccess).toHaveBeenCalledWith(`${count} ${noun}${count === 1 ? '' : 's'} deleted.`);

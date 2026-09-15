@@ -165,7 +165,6 @@ export function reduceRootBatch(
       };
     }
     if (matches(action, actions.batchDeleteRequestFailed)) {
-      const rejected = [400, 401, 403].includes(action.status);
       return {
         ...invalidateSelection(state),
         operation: {
@@ -173,19 +172,6 @@ export function reduceRootBatch(
           transportStatus: action.status,
           // The shared HTTP interceptor reports request errors. Release controls without follow-up requests.
           status: 'complete',
-          result: {
-            phase: rejected ? 'rejected' : 'executed',
-            results: state.operation.snapshot.items.map(({ id }) => ({
-              id,
-              outcome: action.status === 403 ? 'forbidden' : rejected ? 'not_attempted' : 'unknown',
-              reasonCode:
-                action.status === 403
-                  ? DeletionReasonCode.MISSING_PERMISSION
-                  : rejected
-                  ? DeletionReasonCode.DELETE_FAILED
-                  : DeletionReasonCode.OUTCOME_UNKNOWN,
-            })),
-          },
         },
       };
     }

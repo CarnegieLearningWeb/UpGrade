@@ -65,7 +65,7 @@ interface SegmentPaginationInfo extends PaginationResponse {
  *         format: uuid
  *       outcome:
  *         type: string
- *         enum: [deleted, not_found, ineligible, forbidden, failed, unknown, not_attempted]
+ *         enum: [deleted, not_found, ineligible, failed, unknown, not_attempted]
  *       reasonCode:
  *         type: string
  *         enum: [not_found, missing_permission, experiment_state_unsupported, feature_flag_enabled, feature_flag_status_unsupported, segment_in_use, protected_segment_type, eligibility_unavailable, delete_failed, lock_timeout, external_sync_failed, outcome_unknown, post_delete_failed, batch_budget_exceeded]

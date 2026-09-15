@@ -61,7 +61,7 @@ export const confirmedRemovedIds = (result?: BatchDeleteResult) =>
   [];
 
 export function validateBatchResponse(result: BatchDeleteResult, ids: string[]): BatchDeleteResult {
-  const outcomes = ['deleted', 'not_found', 'ineligible', 'forbidden', 'failed', 'unknown', 'not_attempted'];
+  const outcomes = ['deleted', 'not_found', 'ineligible', 'failed', 'unknown', 'not_attempted'];
   if (
     !result ||
     !['rejected', 'executed'].includes(result.phase) ||
@@ -82,7 +82,7 @@ export function batchResultCounts(state: RootBatchState) {
     deleted: results.filter((item) => item.outcome === 'deleted').length,
     absent: results.filter((item) => item.outcome === 'not_found').length,
     uncertain: results.some((item) => item.outcome === 'unknown'),
-    failed: results.filter((item) => ['failed', 'ineligible', 'forbidden'].includes(item.outcome)).length,
+    failed: results.filter((item) => ['failed', 'ineligible'].includes(item.outcome)).length,
     notAttempted: results.filter((item) => item.outcome === 'not_attempted').length,
     hasErrors: results.some((item) => item.outcome !== 'deleted' || item.reasonCode),
     postDeleteFailed: results.some((item) => item.reasonCode === DeletionReasonCode.POST_DELETE_FAILED),

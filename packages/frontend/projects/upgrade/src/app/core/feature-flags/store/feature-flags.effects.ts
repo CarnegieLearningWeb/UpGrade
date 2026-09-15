@@ -1,7 +1,6 @@
 import { batchDeleteEffect, batchFinishedEffect, trackedListRequest } from '../../batch-actions/batch-actions.effects';
 import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
 import { selectRootBatch, selectFeatureFlagsState } from './feature-flags.selectors';
-import { actionFetchListSegmentOptions } from '../../segments/store/segments.actions';
 import { FeatureFlagsDataService } from '../feature-flags.data.service';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Injectable } from '@angular/core';
@@ -43,10 +42,7 @@ export class FeatureFlagsEffects {
         const message = batchResultMessage('flags', counts, (key, params) => this.translate.instant(key, params));
         if (hasWarnings) this.notificationService.showWarning(message);
         else this.notificationService.showSuccess(message);
-        return [
-          FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting: true, batchRefresh: true }),
-          ...(counts.deleted || counts.absent ? [actionFetchListSegmentOptions()] : []),
-        ];
+        return [FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting: true, batchRefresh: true })];
       }
     )
   );
