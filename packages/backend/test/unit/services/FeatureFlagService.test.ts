@@ -1130,6 +1130,32 @@ describe('Feature Flag Service Testing', () => {
       // only be fetched once for the whole batch, not once per entry.
       expect(precomputed.getPrecomputedSets).toHaveBeenCalledTimes(1);
     });
+
+    it('resolves a subGroupsets entry whose groupsetId is the reserved-looking key "__proto__"', async () => {
+      const subDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([includeAllFlag]);
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[includeAllFlag.id, { inclusionIds: [], exclusionIds: [] }]])
+      );
+
+      // Computed key, not literal `{ __proto__: subDoc }` — the literal form is special-cased by
+      // JS to set the prototype rather than create an own property, which would mask exactly the
+      // bug under test. The (now null-prototype) dictionary UserCheckMiddleware actually builds
+      // behaves like this computed form.
+      const result = await service.getKeysForMultipleGroupSets(
+        undefined,
+        { ['__proto__']: subDoc },
+        'context1',
+        logger
+      );
+
+      // A plain `{}` accumulator would silently drop this key (it sets the object's prototype
+      // instead of an own property) rather than surfacing it via Object.keys/entries.
+      expect(Object.keys(result.subGroupsets)).toEqual(['__proto__']);
+      expect(result.subGroupsets['__proto__']).toEqual([includeAllFlag.key]);
+    });
   });
 
   describe('precomputed recompute + seed triggers', () => {
