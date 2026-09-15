@@ -67,8 +67,8 @@ export interface APIEndpoints {
   addSegmentList: string;
   getGroupAssignmentStatus: string;
   stratification: string;
-  getMoocletRewardsData: string;
   featureFlagGraphInfo: string;
+  experimentsRewardsSummary: string;
 }
 
 export interface Environment {
@@ -84,7 +84,6 @@ export interface Environment {
   errorLogsToggle: boolean;
   withinSubjectExperimentSupportToggle: boolean;
   metricAnalyticsExperimentDisplayToggle: boolean;
-  moocletToggle: boolean;
   // these have been removed but optional to prevent annoyance switching between branches
   pollingEnabled?: boolean;
   pollingInterval?: number;

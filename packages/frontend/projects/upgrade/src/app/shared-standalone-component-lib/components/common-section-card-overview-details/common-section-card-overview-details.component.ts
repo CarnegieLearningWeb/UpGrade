@@ -11,7 +11,7 @@ export interface KeyValueFormat {
 
 export interface BullettedListKeyValueFormat {
   labelKey: string;
-  value: number;
+  value: number | string;
 }
 
 /**
