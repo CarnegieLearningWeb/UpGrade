@@ -40,8 +40,12 @@ export class SegmentsEffects {
         const message = batchResultMessage('segments', counts, (key, params) => this.translate.instant(key, params));
         if (hasWarnings) this.notificationService.showWarning(message);
         else this.notificationService.showSuccess(message);
+        const pathname = (this.router.url || '').split('?')[0].split('#')[0];
         return [
-          SegmentsActions.actionFetchSegments({ fromStarting: true, batchRefresh: true }),
+          // Detail selectors share the rows array; replace it only while the root table is displayed.
+          ...(pathname === '/segments'
+            ? [SegmentsActions.actionFetchSegments({ fromStarting: true, batchRefresh: true })]
+            : []),
           ...(counts.deleted || counts.absent ? [SegmentsActions.actionFetchListSegmentOptions()] : []),
         ];
       }

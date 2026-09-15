@@ -78,8 +78,9 @@ export function reduceRootBatch(
   if (matches(action, actions.listFailed))
     return action.requestId === state.listRequestId ? { ...state, listLoading: false } : state;
   if (matches(action, actions.confirmedRemoved)) return removeConfirmed(state, action.ids);
-  // Navigation clears the UI selection, but keeps any submitted operation and its result tracking alive.
-  if (matches(action, actions.rootPageLeft)) return { ...invalidateSelection(state), selectedById: {} };
+  // Cancel root reads before they can replace detail data; submitted deletion remains observable.
+  if (matches(action, actions.rootPageLeft))
+    return { ...invalidateSelection(state), selectedById: {}, listRequestId: null, listLoading: false };
   if (matches(action, actions.toggleHeader) || matches(action, actions.toggleRow)) {
     if (isBatchBusy(state)) return state;
     let selectedById = { ...state.selectedById };

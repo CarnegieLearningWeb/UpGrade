@@ -70,8 +70,11 @@ export function withRootBatch<S extends { rootBatch: RootBatchState }>(
     prune(config.rowsKey);
     prune('allExperimentNames');
     prune('listSegmentOptions');
-    if (action.type === config.actions.listFailed.type && rootBatch !== state.rootBatch) {
-      // Failed replacement reads keep the displayed rows; their checkboxes must remain usable.
+    if (
+      (action.type === config.actions.listFailed.type || action.type === config.actions.batchDeleteRequested.type) &&
+      rootBatch !== state.rootBatch
+    ) {
+      // Failed reads and reads cancelled by submission leave the displayed rows available for selection.
       rootBatch = { ...rootBatch, loadedIds: result[config.rowsKey].map((row) => row.id) };
     }
     if (removed.has(result['selectedFlag']?.id)) result = { ...result, selectedFlag: null };

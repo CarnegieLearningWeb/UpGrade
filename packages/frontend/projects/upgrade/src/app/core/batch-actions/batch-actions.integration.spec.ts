@@ -19,6 +19,8 @@ import * as segmentActions from '../segments/store/segments.actions';
 import { experimentsReducer } from '../experiments/store/experiments.reducer';
 import { featureFlagsReducer } from '../feature-flags/store/feature-flags.reducer';
 import { segmentsReducer } from '../segments/store/segments.reducer';
+import { selectSelectedExperiment } from '../experiments/store/experiments.selectors';
+import { selectSelectedSegment } from '../segments/store/segments.selectors';
 import { ExperimentEffects } from '../experiments/store/experiments.effects';
 import { FeatureFlagsEffects } from '../feature-flags/store/feature-flags.effects';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
@@ -31,6 +33,7 @@ import { RootBatchState, newBatchRequestId } from './batch-actions.models';
 const fixtures = [
   {
     entity: 'experiments',
+    rootPath: '/home',
     key: 'experiments',
     loadingKey: 'isLoadingExperiment',
     actions: experimentActions,
@@ -40,6 +43,7 @@ const fixtures = [
   },
   {
     entity: 'flags',
+    rootPath: '/featureflags',
     key: 'featureFlags',
     loadingKey: 'isLoadingFeatureFlags',
     actions: flagActions,
@@ -49,6 +53,7 @@ const fixtures = [
   },
   {
     entity: 'segments',
+    rootPath: '/segments',
     key: 'segments',
     loadingKey: 'isLoadingSegments',
     actions: segmentActions,
@@ -122,7 +127,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       batchDelete: jest.fn(() => response),
       [config.fetchMethod]: jest.fn(() => of(page(rows.filter((row) => !batch().removedIds.includes(row.id))))),
     };
-    router = { navigate: jest.fn() };
+    router = { url: config.rootPath, navigate: jest.fn() };
     notifications = { showSuccess: jest.fn(), showWarning: jest.fn(), showError: jest.fn(), showInfo: jest.fn() };
     const translate = TestBed.inject(TranslateService);
     translate.setTranslation('en', jest.requireActual('../../../assets/i18n/en.json'));
@@ -493,18 +498,20 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
   });
 
   it.each([0, 400, 403, 500, 504])(
-    'clears cancelled list loading and releases selection after HTTP %i without another request or snackbar',
+    'restores cancelled replacement rows after HTTP %i without another request or snackbar',
     (status) => {
       selectRows();
-      const snapshot = prepare();
       const pendingList = new Subject<any>();
       data[config.fetchMethod].mockReturnValueOnce(pendingList);
+      store.dispatch(config.actions.actionSetSearchString({ searchString: 'b' }));
       store.dispatch(config.fetch({ fromStarting: true }));
       expect(state[config.key][config.loadingKey]).toBe(true);
+      expect(batch().loadedIds).toEqual([]);
       const fetchCount = data[config.fetchMethod].mock.calls.length;
       const beforeRows = currentRows();
-      const loadedIds = [...batch().loadedIds];
+      const snapshot = prepare();
       store.dispatch(actions.batchDeleteRequested({ snapshot }));
+      expect(pendingList.observed).toBe(false);
       response.error({ status });
       pendingList.next(page([]));
       pendingList.complete();
@@ -512,7 +519,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       expect(batch().listLoading).toBe(false);
       expect(state[config.key][config.loadingKey]).toBe(false);
       expect(currentRows()).toEqual(beforeRows);
-      expect(batch().loadedIds).toEqual(loadedIds);
+      expect(batch().loadedIds).toEqual(beforeRows.map(({ id }) => id));
 
       expect(data[config.fetchMethod]).toHaveBeenCalledTimes(fetchCount);
       expect(notifications.showWarning).not.toHaveBeenCalled();
@@ -529,6 +536,68 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       expect(Object.keys(batch().selectedById)).toHaveLength(3);
     }
   );
+
+  if (config.entity !== 'flags') {
+    it.each(['deletion', 'refresh'])('preserves open details when leaving during %s', (pending) => {
+      selectRows(1);
+      const snapshot = prepare();
+      store.dispatch(actions.batchDeleteRequested({ snapshot }));
+      const pendingRefresh = new Subject<any>();
+      data[config.fetchMethod].mockReturnValue(pendingRefresh);
+      const result = { phase: 'executed', results: [{ id: rows[0].id, outcome: 'deleted' }] };
+      if (pending === 'refresh') {
+        response.next(result);
+        expect(pendingRefresh.observed).toBe(true);
+      }
+
+      const viewed = { ...rows[2], description: 'Loaded detail' };
+      router.url = `${config.rootPath}/detail/${viewed.id}`;
+      store.dispatch(actions.rootPageLeft());
+      if (config.entity === 'experiments') {
+        store.dispatch(experimentActions.actionGetExperimentByIdSuccess({ experiment: viewed as any }));
+      } else {
+        store.dispatch(
+          segmentActions.actionGetSegmentByIdSuccess({
+            segment: viewed as any,
+            experimentSegmentInclusion: [],
+            experimentSegmentExclusion: [],
+            featureFlagSegmentInclusion: [],
+            featureFlagSegmentExclusion: [],
+            allParentSegments: [],
+          })
+        );
+      }
+      const selectedDetail = () =>
+        config.entity === 'experiments'
+          ? selectSelectedExperiment.projector(
+              { state: { params: { experimentId: viewed.id } } } as any,
+              state.experiments
+            )
+          : selectSelectedSegment.projector(
+              { state: { params: { segmentId: viewed.id } } } as any,
+              state.segments.segments
+            );
+      expect(selectedDetail()?.id).toBe(viewed.id);
+      if (pending === 'deletion') response.next(result);
+      pendingRefresh.next(page([rows[1]]));
+      pendingRefresh.complete();
+      expect(selectedDetail()?.id).toBe(viewed.id);
+      expect(batch().operation.status).toBe('complete');
+      expect(batch().removedIds).toContain(rows[0].id);
+      expect(batch().listLoading).toBe(false);
+      expect(state[config.key][config.loadingKey]).toBe(false);
+      expect(Object.keys(batch().selectedById)).toEqual([]);
+      expect(data[config.fetchMethod]).toHaveBeenCalledTimes(pending === 'refresh' ? 2 : 1);
+      expect(notifications.showSuccess).toHaveBeenCalledTimes(1);
+      expect(router.navigate).not.toHaveBeenCalled();
+
+      router.url = `${config.rootPath}?view=all#table`;
+      data[config.fetchMethod].mockReturnValue(of(page([rows[1], viewed])));
+      store.dispatch(config.fetch({ fromStarting: true }));
+      expect(currentRows().map(({ id }) => id)).toEqual([rows[1].id, viewed.id]);
+      expect(batch().loadedIds).toEqual([rows[1].id, viewed.id]);
+    });
+  }
 
   it('retains every selection when the server reports all items as ineligible', () => {
     selectRows();

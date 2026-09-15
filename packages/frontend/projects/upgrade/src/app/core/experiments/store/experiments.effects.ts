@@ -56,8 +56,12 @@ export class ExperimentEffects {
         const message = batchResultMessage('experiments', counts, (key, params) => this.translate.instant(key, params));
         if (hasWarnings) this.notificationService.showWarning(message);
         else this.notificationService.showSuccess(message);
+        const pathname = (this.router.url || '').split('?')[0].split('#')[0];
         return [
-          experimentAction.actionGetExperiments({ fromStarting: true, batchRefresh: true }),
+          // Detail selectors share the rows array; replace it only while the root table is displayed.
+          ...(pathname === '/home'
+            ? [experimentAction.actionGetExperiments({ fromStarting: true, batchRefresh: true })]
+            : []),
           ...(counts.deleted || counts.absent
             ? [
                 experimentAction.actionFetchAllDecisionPoints(),
