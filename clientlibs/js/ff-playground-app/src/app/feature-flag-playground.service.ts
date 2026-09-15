@@ -80,7 +80,7 @@ export class FeatureFlagPlaygroundService {
     // deprecated but still valid, no plans to remove:
 
     // const featureFlagGroupOptions: UpGradeClientInterfaces.IFeatureFlagOptions = {
-    //   groupsForSession: fullGroupset,
+    //   groupsForSession: allGroups,
     //   includeStoredUserGroups: true,
     // };
 
