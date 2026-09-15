@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { IMetricMetaData, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { IMetricMetaData, MARKED_DECISION_POINT_STATUS } from 'upgrade_types/Experiment/enums';
 
 export namespace UpGradeClientInterfaces {
   // this namespace should be for consumer facing interface

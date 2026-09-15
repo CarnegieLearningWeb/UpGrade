@@ -1,5 +1,5 @@
 import { UpGradeClientInterfaces } from '../types';
-import { IExperimentAssignment } from 'upgrade_types';
+import { IExperimentAssignment } from 'upgrade_types/Experiment/interfaces';
 
 /**
  * Synchronous data store
