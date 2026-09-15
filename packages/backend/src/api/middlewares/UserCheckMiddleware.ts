@@ -24,7 +24,11 @@ export class UserCheckMiddleware {
         req.logger.debug({ message: 'User Id is:', user_id });
       }
 
-      if (req.url.endsWith('/v6/featureflag') && req.body?.useMultipleGroupSets) {
+      if (
+        req.url.endsWith('/v6/featureflag') &&
+        req.body?.useMultipleGroupSets &&
+        Array.isArray(req.body.useMultipleGroupSets.subGroupsets)
+      ) {
         const resolved = await this.handleMultipleGroupSets(req, user_id);
         if (resolved === null) {
           const error = new Error(`User not found: ${user_id}`);

@@ -184,23 +184,40 @@ export default class UpgradeClient {
     this.setFeatureFlagGroupOptions(featureFlagGroupOptions);
   }
 
-  /** Registers a single groupset's definition and returns its (auto-generated or supplied) id. */
+  /**
+   * Registers the shared main/single groupset's definition under the fixed `DEFAULT_GROUPSET_ID`
+   * slot and returns that id. There's only ever one main/single groupset active at a time, so
+   * unlike subGroupsets entries it never needs (or accepts) a caller-supplied id. Since the id no
+   * longer varies with content, flags already cached under this slot are cleared whenever the
+   * definition actually changes, so a stale value is never served under the new definition.
+   */
   private registerSingle(entry: UpGradeClientInterfaces.ISingleGroupSetOptions, label: string): string {
     if (!entry?.groups) {
       throw new Error(`${label}.groups is required.`);
     }
-    const id = UpgradeClient.generateGroupsetId(entry.groups, entry.includeStoredUserGroups);
-    this.dataService.registerGroupsetDefinition(id, {
+    const definition: IGroupsetDefinition = {
       groups: entry.groups,
       includeStoredUserGroups: entry.includeStoredUserGroups,
-    });
-    return id;
+    };
+    const previous = this.dataService.getGroupsetDefinition(DEFAULT_GROUPSET_ID);
+    if (previous && JSON.stringify(previous) !== JSON.stringify(definition)) {
+      this.dataService.clearFeatureFlagsForGroupset(DEFAULT_GROUPSET_ID);
+    }
+    this.dataService.registerGroupsetDefinition(DEFAULT_GROUPSET_ID, definition);
+    return DEFAULT_GROUPSET_ID;
   }
 
-  /** Registers one subGroupsets entry (groupsetId is required — never auto-generated) and returns it. */
+  /**
+   * Registers one subGroupsets entry (groupsetId is required — never auto-generated) and returns
+   * it. The reserved main/single slot id may not be reused here, since the two would otherwise
+   * collide and silently share one cached evaluation.
+   */
   private registerSub(entry: UpGradeClientInterfaces.ISubGroupSetOptions): string {
     if (!entry?.groupsetId) {
       throw new Error('Each subGroupsets entry requires a groupsetId.');
+    }
+    if (entry.groupsetId === DEFAULT_GROUPSET_ID) {
+      throw new Error(`subGroupsets entry may not use the reserved groupset id "${DEFAULT_GROUPSET_ID}".`);
     }
     if (!entry.groups) {
       throw new Error(`subGroupsets entry "${entry.groupsetId}" requires groups.`);
@@ -213,43 +230,16 @@ export default class UpgradeClient {
   }
 
   /**
-   * Serializes a groups object into a deterministic, human-readable string: keys sorted
-   * alphabetically, each key's values sorted, formatted as `key:[v1,v2],key2:[v3]`.
-   */
-  private static serializeGroups(groups: Record<string, string[]>): string {
-    return Object.keys(groups)
-      .sort()
-      .map((key) => `${key}:[${[...groups[key]].sort().join(',')}]`)
-      .join(',');
-  }
-
-  /**
-   * Auto-generates a composite groupset id for `useSingleGroupSet`/`mainGroupset` from its groups.
-   * Stored-user mode (no groups) gets `*`; merged mode gets `*,` + the serialized groups (e.g.
-   * `*,schoolId:[1,2]`) since stored groups are unpredictable ahead of time; ephemeral mode gets
-   * just the serialized groups, since no stored groups are involved at all.
-   */
-  private static generateGroupsetId(
-    groups: Record<string, string[]> | undefined,
-    includeStoredUserGroups: boolean | undefined
-  ): string {
-    if (!groups) {
-      return DEFAULT_GROUPSET_ID;
-    }
-    const serialized = UpgradeClient.serializeGroups(groups);
-    return includeStoredUserGroups ? `${DEFAULT_GROUPSET_ID},${serialized}` : serialized;
-  }
-
-  /**
    * Sets the active feature flag groupset configuration used when `getAllFeatureFlags()`/
    * `hasFeatureFlag()` are called with no arguments. See the constructor's `featureFlagGroupOptions`
    * documentation for the full `useSingleGroupSet`/`useMultipleGroupSets` breakdown.
    *
-   * Note: groupset ids are content-addressed (derived from the groups themselves, unless you
-   * supply your own `groupsetId` for a subGroupsets entry), so reconfiguring with different groups
-   * naturally lands on a fresh, never-yet-fetched id — the next `getAllFeatureFlags()`/
-   * `hasFeatureFlag()` call will refetch it. No explicit cache-clear is needed for that case; other
-   * previously-fetched groupsets are left untouched (this is additive/upsert, not a wholesale reset).
+   * Note: the main/single groupset always lives under one fixed internal id (subGroupsets entries
+   * always use their own caller-supplied `groupsetId` instead). Reconfiguring it with different
+   * groups clears its previously-cached flags automatically, so the next `getAllFeatureFlags()`/
+   * `hasFeatureFlag()` call refetches; reconfiguring with the same groups leaves the cache as-is.
+   * Other previously-fetched subGroupsets are left untouched (this is additive/upsert, not a
+   * wholesale reset).
    *
    * @example
    * ```typescript
@@ -690,9 +680,19 @@ export default class UpgradeClient {
     }
 
     const definition = this.dataService.getGroupsetDefinition(groupsetId) ?? {};
-    const response = await this.apiService.getAllFeatureFlags({
-      useSingleGroupSet: { groups: definition.groups, includeStoredUserGroups: definition.includeStoredUserGroups },
-    });
+    // definition.groups is undefined for the default (no options) groupset — omit useSingleGroupSet
+    // entirely in that case so the backend's plain stored-user lookup runs, rather than sending
+    // `useSingleGroupSet: {}`, which fails validation (groups is required on that shape).
+    const response = await this.apiService.getAllFeatureFlags(
+      definition.groups
+        ? {
+            useSingleGroupSet: {
+              groups: definition.groups,
+              includeStoredUserGroups: definition.includeStoredUserGroups,
+            },
+          }
+        : {}
+    );
     const flags = Array.isArray(response) ? response : [];
     this.dataService.setFeatureFlagsForGroupset(groupsetId, flags);
     return flags;
@@ -806,9 +806,18 @@ export default class UpgradeClient {
 
     // Rehydrating a single id (whether it plays a "main" or "sub" role) is always just a plain
     // single-groupset evaluation — the multi-groupset framing doesn't matter for one id alone.
-    const response = await this.apiService.getAllFeatureFlags({
-      useSingleGroupSet: { groups: definition.groups, includeStoredUserGroups: definition.includeStoredUserGroups },
-    });
+    // definition.groups is undefined only for the default groupset — omit useSingleGroupSet
+    // entirely in that case (see fetchSingle for why sending `{}` would fail validation).
+    const response = await this.apiService.getAllFeatureFlags(
+      definition.groups
+        ? {
+            useSingleGroupSet: {
+              groups: definition.groups,
+              includeStoredUserGroups: definition.includeStoredUserGroups,
+            },
+          }
+        : {}
+    );
     this.dataService.setFeatureFlagsForGroupset(groupsetId, Array.isArray(response) ? response : []);
   }
 

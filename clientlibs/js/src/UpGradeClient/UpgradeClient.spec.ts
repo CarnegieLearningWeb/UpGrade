@@ -342,12 +342,10 @@ describe('UpgradeClient', () => {
         upgradeClient.setFeatureFlagGroupOptions(null);
         await upgradeClient.getAllFeatureFlags();
 
-        expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledWith({
-          useSingleGroupSet: { groups: undefined, includeStoredUserGroups: undefined },
-        });
+        expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledWith({});
       });
 
-      it('reconfiguring with different groups naturally forces a refetch (content-addressed ids)', async () => {
+      it('reconfiguring with different groups forces a refetch (cache invalidated on change)', async () => {
         const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags().mockResolvedValueOnce(['classAFlag']);
 
         upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: { groups: { classId: ['classA'] } } });
@@ -392,6 +390,14 @@ describe('UpgradeClient', () => {
           upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: {} as any });
         }).toThrow(/groups is required/);
       });
+
+      it('throws when a subGroupsets entry reuses the reserved main/single groupset id', () => {
+        expect(() => {
+          upgradeClient.setFeatureFlagGroupOptions({
+            useMultipleGroupSets: { subGroupsets: [{ groupsetId: '*', groups: { classId: ['a'] } }] },
+          });
+        }).toThrow(/reserved groupset id/);
+      });
     });
 
     describe('#setFeatureFlagUserGroupsForSession (deprecated alias)', () => {
@@ -435,9 +441,7 @@ describe('UpgradeClient', () => {
 
       const result = await upgradeClient.getAllFeatureFlags();
 
-      expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledWith({
-        useSingleGroupSet: { groups: undefined, includeStoredUserGroups: undefined },
-      });
+      expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledWith({});
       expect(result).toEqual(['foo']);
     });
 

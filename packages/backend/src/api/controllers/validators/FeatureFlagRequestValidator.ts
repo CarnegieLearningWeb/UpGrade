@@ -149,9 +149,39 @@ const MaxSubGroupsetsAllowed = (max: number, validationOptions?: ValidationOptio
   return registerMaxSubGroupsetsAllowed;
 };
 
+// Custom validation decorator to ensure `groups` matches Record<string, string[]> — @IsObject()
+// alone only validates the outer shape, so a payload like { groups: { schoolId: 'abc' } } would
+// otherwise pass validation and later crash when evaluation code calls .map() on a non-array value.
+const IsGroupsRecord = (validationOptions?: ValidationOptions) => {
+  const registerIsGroupsRecord = (object: object, propertyName: string) => {
+    registerDecorator({
+      name: 'isGroupsRecord',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any) {
+          if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+            return false;
+          }
+          return Object.values(value).every(
+            (groupIds) => Array.isArray(groupIds) && groupIds.every((id) => typeof id === 'string')
+          );
+        },
+        defaultMessage() {
+          return 'groups must be an object whose values are each an array of strings';
+        },
+      },
+    });
+  };
+
+  return registerIsGroupsRecord;
+};
+
 export class SingleGroupSetValidator {
   @IsNotEmpty()
   @IsObject()
+  @IsGroupsRecord()
   public groups: Record<string, string[]>;
 
   /** Optional. Defaults to `false` (ephemeral) when omitted. */

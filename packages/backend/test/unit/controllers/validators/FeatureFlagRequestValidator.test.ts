@@ -85,6 +85,26 @@ describe('FeatureFlagRequestValidator', () => {
       expect(errors.some((e) => e.property === 'useSingleGroupSet')).toBe(true);
     });
 
+    it('fails when a groups value is a string instead of a string array', async () => {
+      const instance = plainToInstance(FeatureFlagRequestValidator, {
+        context: 'test-context',
+        useSingleGroupSet: { groups: { schoolId: 'demo-school' } },
+      });
+      const errors = await validate(instance, WHITELIST_OPTIONS);
+
+      expect(errors.some((e) => e.property === 'useSingleGroupSet')).toBe(true);
+    });
+
+    it('fails when a groups array contains a non-string entry', async () => {
+      const instance = plainToInstance(FeatureFlagRequestValidator, {
+        context: 'test-context',
+        useSingleGroupSet: { groups: { schoolId: ['demo-school', 42] } },
+      });
+      const errors = await validate(instance, WHITELIST_OPTIONS);
+
+      expect(errors.some((e) => e.property === 'useSingleGroupSet')).toBe(true);
+    });
+
     it('fails when combined with the deprecated top-level fields', async () => {
       const instance = plainToInstance(FeatureFlagRequestValidator, {
         context: 'test-context',

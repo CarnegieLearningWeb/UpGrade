@@ -391,6 +391,25 @@ describe('UserCheckMiddleware Tests', () => {
       expect(mockRequest.userDocsBySubGroupset.standard).toEqual(storedUser);
     });
 
+    test('defers to body validation instead of throwing when subGroupsets is missing', async () => {
+      const userId = 'malformed-body-user';
+      const storedUser = new RequestedExperimentUser();
+      storedUser.id = userId;
+      storedUser.requestedUserId = userId;
+      storedUser.group = { classId: ['stored-class'] };
+      mockExperimentUserService.setMockUser(userId, storedUser);
+
+      // Missing subGroupsets — the class-validator body validation that runs after this
+      // middleware is what should reject this shape (with a 400), not a TypeError thrown here.
+      mockRequest.body = { useMultipleGroupSets: {} };
+      (mockRequest.get as jest.Mock).mockReturnValue(userId);
+
+      await middleware.use(mockRequest as AppRequest, mockResponse, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith();
+      expect(nextFunction).not.toHaveBeenCalledWith(expect.any(TypeError));
+    });
+
     test('returns 404 when a non-ephemeral entry requires a stored user that does not exist', async () => {
       const userId = 'missing-user';
 

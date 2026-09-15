@@ -1108,6 +1108,28 @@ describe('Feature Flag Service Testing', () => {
       expect(exposureRepo.recordExposureIfNotExists).toHaveBeenCalledTimes(1);
       expect(exposureRepo.recordExposureIfNotExists).toHaveBeenCalledWith([includeAllFlag.id], 'user123');
     });
+
+    it('fetches the precomputed set map once and reuses it across every groupset entry', async () => {
+      const mainDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const subDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([includeAllFlag]);
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[includeAllFlag.id, { inclusionIds: [], exclusionIds: [] }]])
+      );
+
+      await service.getKeysForMultipleGroupSets(
+        mainDoc,
+        { sectionA: subDoc, sectionB: subDoc, sectionC: subDoc },
+        'context1',
+        logger
+      );
+
+      // 1 mainGroupset + 3 subGroupsets = 4 entries evaluated, but the precomputed map should
+      // only be fetched once for the whole batch, not once per entry.
+      expect(precomputed.getPrecomputedSets).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('precomputed recompute + seed triggers', () => {

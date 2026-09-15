@@ -140,11 +140,11 @@ export class FeatureFlagService {
    * an optional mainGroupset plus one or more named subGroupsets (all belonging to the same
    * authenticated user — see `UserCheckMiddleware.handleMultipleGroupSets`), in one pass.
    *
-   * The cached flag list ({@link getCachedFlagsForKeys}) and precomputed-set fetch are naturally
-   * shared across every entry since `featureFlagLevelInclusionExclusion` itself caches per flag id,
-   * not per user — so this does not multiply DB/cache work by the number of groupsets. Exposure
-   * recording is deduped once per unique included flag across the whole batch (mainGroupset and
-   * subGroupsets alike), same as {@link getKeys} does for one user.
+   * The cached flag list ({@link getCachedFlagsForKeys}) and the precomputed-set map are fetched
+   * once up front and shared across every entry (passed into {@link featureFlagLevelInclusionExclusion}),
+   * so this does not multiply DB/cache work by the number of groupsets. Exposure recording is
+   * deduped once per unique included flag across the whole batch (mainGroupset and subGroupsets
+   * alike), same as {@link getKeys} does for one user.
    */
   public async getKeysForMultipleGroupSets(
     mainDoc: RequestedExperimentUser | undefined,
@@ -164,6 +164,10 @@ export class FeatureFlagService {
     });
 
     const filteredFeatureFlags = await this.getCachedFlagsForKeys(context);
+    const precomputedMap = await this.getPrecomputedMapWithFallback(
+      filteredFeatureFlags.map((f) => f.id),
+      logger
+    );
 
     const resolvedEntries = await Promise.all(
       entries.map(async ({ groupsetId, doc }) => {
@@ -182,7 +186,13 @@ export class FeatureFlagService {
           throw error;
         }
 
-        const included = await this.featureFlagLevelInclusionExclusion(filteredFeatureFlags, doc, context, logger);
+        const included = await this.featureFlagLevelInclusionExclusion(
+          filteredFeatureFlags,
+          doc,
+          context,
+          logger,
+          precomputedMap
+        );
         return { groupsetId, userId: doc.id, ids: included.map((f) => f.id), keys: included.map((f) => f.key) };
       })
     );
@@ -1176,26 +1186,40 @@ export class FeatureFlagService {
     return featureFlag;
   }
 
+  /**
+   * Fetches the precomputed inclusion/exclusion sets for a batch of flag ids, falling back to an
+   * empty map (triggering on-the-fly resolution for every flag) if the read itself fails — e.g.
+   * the feature_flag_precomputed_segment table isn't available yet. Callers evaluating the same
+   * flag ids against multiple users/groupsets in one request should call this once and reuse the
+   * result rather than re-fetching per entry.
+   */
+  private async getPrecomputedMapWithFallback(
+    flagIds: string[],
+    logger: UpgradeLogger
+  ): Promise<Map<string, FeatureFlagPrecomputedSegment>> {
+    try {
+      return await this.featureFlagPrecomputedSegmentService.getPrecomputedSets(flagIds);
+    } catch (err) {
+      logger.error({
+        message: `getPrecomputedMapWithFallback: failed to read feature_flag_precomputed_segment; falling back to on-the-fly resolution for all flags: ${err}`,
+      });
+      return new Map();
+    }
+  }
+
   private async featureFlagLevelInclusionExclusion(
     featureFlags: Pick<FeatureFlag, 'id' | 'key' | 'filterMode'>[],
     experimentUser: ExperimentUser,
     context: string,
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    precomputedMap?: Map<string, FeatureFlagPrecomputedSegment>
   ): Promise<Pick<FeatureFlag, 'id' | 'key' | 'filterMode'>[]> {
     const flagIds = featureFlags.map((f) => f.id);
     // getPrecomputedSets can throw if the feature_flag_precomputed_segment table is unavailable
     // (e.g. the migration hasn't been run yet). Treat that identically to every row being missing:
     // swallow the error and fall through to on-the-fly segment resolution below rather than failing
     // the whole assignment request. Rows self-heal on the next restart (backfill) or list mutation.
-    let precomputedMap: Map<string, FeatureFlagPrecomputedSegment>;
-    try {
-      precomputedMap = await this.featureFlagPrecomputedSegmentService.getPrecomputedSets(flagIds);
-    } catch (err) {
-      logger.error({
-        message: `featureFlagLevelInclusionExclusion: failed to read feature_flag_precomputed_segment; falling back to on-the-fly resolution for all flags: ${err}`,
-      });
-      precomputedMap = new Map();
-    }
+    precomputedMap ??= await this.getPrecomputedMapWithFallback(flagIds, logger);
 
     // Build type-qualified group keys from the user's group map so they match the namespaced group
     // IDs stored in the precomputed arrays (individuals are matched bare against experimentUser.id).
