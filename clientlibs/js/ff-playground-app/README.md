@@ -1,7 +1,7 @@
 # Feature Flag Playground
 
 A minimal Angular app for trying out the recipes in
-[`../feature-flags-guide.md`](../feature-flags-guide.md) against a real, running UpGrade backend.
+[`../docs/feature-flags-guide.md`](../docs/feature-flags-guide.md) against a real, running UpGrade backend.
 
 There are only two source files:
 

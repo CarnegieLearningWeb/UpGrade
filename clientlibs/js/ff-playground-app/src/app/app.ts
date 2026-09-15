@@ -114,7 +114,9 @@ function generateUUID(): string {
             <div class="circles">
               @for (schoolId of ff.schoolIds(); track schoolId) {
                 <div class="circle-wrap">
-                  <div class="circle" [class.on]="ff.schoolCircleStates()[schoolId]" [class.off]="!ff.schoolCircleStates()[schoolId]"></div>
+                  <div class="circle" [class.on]="ff.schoolCircleStates()[schoolId]" [class.off]="!ff.schoolCircleStates()[schoolId]">
+                    {{ ff.schoolCircleStates()[schoolId] ? 'ON' : 'OFF' }}
+                  </div>
                   <span>{{ schoolId }}</span>
                 </div>
               }
@@ -209,6 +211,12 @@ function generateUUID(): string {
         width: 48px;
         height: 48px;
         border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.65rem;
       }
       .circle.on {
         background: #2ecc71;

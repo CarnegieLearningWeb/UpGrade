@@ -63,13 +63,19 @@ export class FeatureFlagPlaygroundService {
       groups: { schoolId: [schoolId] },
     }));
 
-    const featureFlagGroupOptions: UpGradeClientInterfaces.IFeatureFlagGroupOptions = {
-      useMultipleGroupSets: {
-        mainGroupset: fullGroupset,
-        subGroupsets: schoolSubGroupsets,
-      },
-      // useSingleGroupSet: { groups: fullGroupset, includeStoredUserGroups: false }, // alias for current behavior
-    };
+    // useMultipleGroupSets.subGroupsets can't be empty, so with no schoolIds this falls back to a
+    // plain useSingleGroupSet — still ephemeral, still one call, just nothing to fan out over.
+    const featureFlagGroupOptions: UpGradeClientInterfaces.IFeatureFlagGroupOptions =
+      schoolSubGroupsets.length > 0
+        ? {
+            useMultipleGroupSets: {
+              mainGroupset: fullGroupset,
+              subGroupsets: schoolSubGroupsets,
+            },
+          }
+        : {
+            useSingleGroupSet: fullGroupset,
+          };
 
     // deprecated but still valid, no plans to remove:
 
@@ -79,14 +85,11 @@ export class FeatureFlagPlaygroundService {
     // };
 
     try {
-      3;
       // ----------------------------------------------------------------------
       // RECOMMENDED PATH — one groupset configuration, one network call. The
       // SQUARE feature reads the mainGroupset (the "whole user" view built
       // from everything just typed in); each school's CIRCLE reads its own
-      // named subGroupset. useMultipleGroupSets.subGroupsets can't be empty,
-      // so with no schoolIds this falls back to a plain useSingleGroupSet —
-      // still ephemeral, still one call, just nothing to fan out over.
+      // named subGroupset.
       // ----------------------------------------------------------------------
 
       this.client = new UpgradeClient(userId, HOST_URL, CONTEXT, {
@@ -103,7 +106,7 @@ export class FeatureFlagPlaygroundService {
       // backend to already have an initialized user (they'll otherwise 404).
       // ----------------------------------------------------------------------
       //
-      // STORED MODE — ignores `useGroups` above entirely; uses whatever
+      // STORED MODE — ignores `fullGroupset` above entirely; uses whatever
       // groups are already stored for this user id:
       //
       // this.client = new UpgradeClient(userId, HOST_URL, CONTEXT);
@@ -116,7 +119,7 @@ export class FeatureFlagPlaygroundService {
       // this.client = new UpgradeClient(userId, HOST_URL, CONTEXT);
       // await this.client.init();
       // this.client.setFeatureFlagGroupOptions({
-      //   useSingleGroupSet: { groups: useGroups, includeStoredUserGroups: true },
+      //   useSingleGroupSet: { ...fullGroupset, includeStoredUserGroups: true },
       // });
 
       // One call fetches everything configured above — mainGroupset (or the
