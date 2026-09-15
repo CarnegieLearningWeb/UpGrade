@@ -299,17 +299,21 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       }
     );
 
-    test('reports an owned-list cleanup rollback after a committed success and stops the remaining items', async () => {
+    test.each(['cleanup', 'commit'])('rolls back flag deletion when %s fails', async (failureStage) => {
       const rows = await create('flags', 3);
       const list = await ownedList('flags', rows[1].id);
+      const atCommit = failureStage === 'commit';
       try {
         await db.query(`CREATE OR REPLACE FUNCTION batch_test_reject_delete() RETURNS trigger AS $$
-          BEGIN IF OLD.id = TG_ARGV[0]::uuid THEN RAISE EXCEPTION 'batch cleanup failure'; END IF;
+          BEGIN IF OLD.id = TG_ARGV[0]::uuid THEN RAISE EXCEPTION 'batch deletion failure'; END IF;
           RETURN OLD; END; $$ LANGUAGE plpgsql`);
         await db.query('DROP TRIGGER IF EXISTS batch_test_reject_delete ON segment');
+        // Deferring this test-only trigger forces a commit failure after the audit has been written.
+        const trigger = atCommit
+          ? 'CREATE CONSTRAINT TRIGGER batch_test_reject_delete AFTER DELETE ON segment DEFERRABLE INITIALLY DEFERRED'
+          : 'CREATE TRIGGER batch_test_reject_delete BEFORE DELETE ON segment';
         // The interpolated UUID is generated only by this fixture.
-        await db.query(`CREATE TRIGGER batch_test_reject_delete BEFORE DELETE ON segment
-          FOR EACH ROW EXECUTE FUNCTION batch_test_reject_delete('${list.id}')`);
+        await db.query(`${trigger} FOR EACH ROW EXECUTE FUNCTION batch_test_reject_delete('${list.id}')`);
         const { body } = await request(app)
           .post(route('flags'))
           .send({ ids: rows.map((row) => row.id) })
@@ -318,7 +322,11 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
           phase: 'executed',
           results: [
             { id: rows[0].id, outcome: 'deleted' },
-            { id: rows[1].id, outcome: 'failed', reasonCode: DeletionReasonCode.DELETE_FAILED },
+            {
+              id: rows[1].id,
+              outcome: atCommit ? 'unknown' : 'failed',
+              reasonCode: atCommit ? DeletionReasonCode.OUTCOME_UNKNOWN : DeletionReasonCode.DELETE_FAILED,
+            },
             { id: rows[2].id, outcome: 'not_attempted' },
           ],
         });
@@ -327,6 +335,7 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(1);
         expect(await db.getRepository(IndividualForSegment).countBy({ segmentId: list.id })).toBe(1);
         expect(await db.getRepository(FeatureFlagSegmentInclusion).countBy({ segmentId: list.id })).toBe(1);
+        expect(await db.getRepository(ExperimentAuditLog).countBy({ type: LOG_TYPE.FEATURE_FLAG_DELETED })).toBe(1);
       } finally {
         await db.query('DROP TRIGGER IF EXISTS batch_test_reject_delete ON segment');
         await db.query('DROP FUNCTION IF EXISTS batch_test_reject_delete()');

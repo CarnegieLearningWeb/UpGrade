@@ -384,7 +384,8 @@ export class FeatureFlagService {
         await this.experimentAuditLogRepository.saveRawJson(
           LOG_TYPE.FEATURE_FLAG_DELETED,
           createAuditLogData,
-          currentUser
+          currentUser,
+          transactionalEntityManager
         );
         return deletedFlag;
       }
