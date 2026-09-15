@@ -218,6 +218,41 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(Object.keys(batch().selectedById)).toEqual([]);
   });
 
+  it.each(['search', 'sort'])('restores selection controls after a failed replacement %s', (change) => {
+    selectRows(1);
+    const beforeRows = currentRows();
+    const pendingList = new Subject<any>();
+    data[config.fetchMethod].mockReturnValueOnce(pendingList);
+    store.dispatch(
+      change === 'search'
+        ? config.actions.actionSetSearchString({ searchString: 'b' })
+        : config.actions.actionSetSortingType({ sortingType: SORT_AS_DIRECTION.DESCENDING })
+    );
+    store.dispatch(config.fetch({ fromStarting: true }));
+    expect(batch().loadedIds).toEqual([]);
+    store.dispatch(actions.listFailed({ requestId: 'obsolete-request' }));
+    expect(batch().loadedIds).toEqual([]);
+    expect(batch().listLoading).toBe(true);
+
+    pendingList.error({ status: 0 });
+    expect(currentRows()).toEqual(beforeRows);
+    expect(batch().listLoading).toBe(false);
+    expect(state[config.key][config.loadingKey]).toBe(false);
+    expect(batch().loadedIds).toEqual(rows.map(({ id }) => id));
+    expect(Object.keys(batch().selectedById)).toEqual([rows[0].id]);
+
+    store.dispatch(actions.toggleRow({ item: selectionItem(rows[1]) }));
+    expect(Object.keys(batch().selectedById)).toEqual([rows[0].id, rows[1].id]);
+    store.dispatch(actions.toggleRow({ item: selectionItem(rows[0]) }));
+    expect(Object.keys(batch().selectedById)).toEqual([rows[1].id]);
+    store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }));
+    expect(selectionView(batch(), config.entity).canToggleHeader).toBe(true);
+    store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }));
+    expect(Object.keys(batch().selectedById)).toEqual(rows.map(({ id }) => id));
+    expect(data[config.fetchMethod]).toHaveBeenCalledTimes(2);
+    expect(notifications.showWarning).not.toHaveBeenCalled();
+  });
+
   it('selects loaded rows during incremental loading and leaves newly appended rows unselected', () => {
     data[config.fetchMethod].mockReturnValueOnce(of({ ...page(rows.slice(0, 2)), total: 3 }));
     store.dispatch(config.fetch({ fromStarting: true }));

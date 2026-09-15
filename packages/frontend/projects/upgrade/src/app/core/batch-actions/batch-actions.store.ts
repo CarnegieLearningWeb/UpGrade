@@ -70,6 +70,10 @@ export function withRootBatch<S extends { rootBatch: RootBatchState }>(
     prune(config.rowsKey);
     prune('allExperimentNames');
     prune('listSegmentOptions');
+    if (action.type === config.actions.listFailed.type && rootBatch !== state.rootBatch) {
+      // Failed replacement reads keep the displayed rows; their checkboxes must remain usable.
+      rootBatch = { ...rootBatch, loadedIds: result[config.rowsKey].map((row) => row.id) };
+    }
     if (removed.has(result['selectedFlag']?.id)) result = { ...result, selectedFlag: null };
     for (const key of ['stats', 'rewardsSummaries']) {
       if (result[key] && Object.keys(result[key]).some((id) => removed.has(id))) {
