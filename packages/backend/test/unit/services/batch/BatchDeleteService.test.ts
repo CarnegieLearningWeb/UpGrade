@@ -3,10 +3,6 @@ import { performance } from 'perf_hooks';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 import { BatchDeleteEntity, DeletionReasonCode, UserRole } from 'upgrade_types';
 import { BatchDeleteService } from '../../../../src/api/services/batch/BatchDeleteService';
-import {
-  DeletionEligibilityService,
-  DeletionEligibilityResult,
-} from '../../../../src/api/services/batch/DeletionEligibilityService';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { FeatureFlagService } from '../../../../src/api/services/FeatureFlagService';
 import { SegmentService } from '../../../../src/api/services/SegmentService';
@@ -14,7 +10,6 @@ import { MoocletExperimentService } from '../../../../src/api/services/MoocletEx
 import { MoocletError } from '../../../../src/api/errors/MoocletError';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { env } from '../../../../src/env';
-import * as segmentGuard from '../../../../src/api/services/batch/SegmentDeletionGuard';
 import { DeletionRepository } from '../../../../src/api/repositories/DeletionRepository';
 
 jest.mock('perf_hooks', () => ({ performance: { now: jest.fn(() => 0) } }));
@@ -27,7 +22,6 @@ describe('BatchDeleteService transaction outcomes', () => {
   let service: BatchDeleteService;
   let runners: QueryRunner[];
   let mutations: string[];
-  let eligibility: Record<BatchDeleteEntity, jest.Mock>;
   let experiments: { delete: jest.Mock };
   let flags: { delete: jest.Mock };
   let segments: { deleteSegment: jest.Mock };
@@ -44,11 +38,6 @@ describe('BatchDeleteService transaction outcomes', () => {
     (performance.now as jest.Mock).mockReturnValue(0);
     originalMooclet = env.mooclets.enabled;
     env.mooclets.enabled = false;
-    jest.spyOn(segmentGuard, 'assertSegmentDeletionAllowed').mockResolvedValue(undefined);
-    const eligible = async (requested: string[]): Promise<DeletionEligibilityResult> => ({
-      items: requested.map((id) => ({ id, availability: 'present', canDelete: true })),
-    });
-    eligibility = { experiments: jest.fn(eligible), flags: jest.fn(eligible), segments: jest.fn(eligible) };
     configureRunner = () => undefined;
     createQueryRunner = jest.fn(() => {
       let active = false;
@@ -59,7 +48,7 @@ describe('BatchDeleteService transaction outcomes', () => {
         manager: {
           query: jest.fn().mockResolvedValue([]),
           getRepository: jest.fn(() => ({
-            findOne: jest.fn(async ({ where }) => ({ id: where.id, state: 'inactive', status: 'disabled' })),
+            findOne: jest.fn(async ({ where }) => ({ id: where.id })),
           })),
         },
         connect: jest.fn().mockResolvedValue(undefined),
@@ -85,9 +74,8 @@ describe('BatchDeleteService transaction outcomes', () => {
     experiments = { delete: jest.fn((id, _user, options) => options.executeTransaction(() => work(id))) };
     flags = { delete: jest.fn((id, _user, _logger, transaction) => transaction(() => work(id))) };
     segments = {
-      deleteSegment: jest.fn((id, _logger, guard, transaction) =>
-        transaction(async (manager) => {
-          await guard(manager);
+      deleteSegment: jest.fn((id, _logger, transaction) =>
+        transaction(async () => {
           const [row] = await work(id);
           return row;
         })
@@ -99,7 +87,6 @@ describe('BatchDeleteService transaction outcomes', () => {
     };
     service = new BatchDeleteService(
       { createQueryRunner } as unknown as DataSource,
-      eligibility as unknown as DeletionEligibilityService,
       experiments as unknown as ExperimentService,
       flags as unknown as FeatureFlagService,
       segments as unknown as SegmentService,
@@ -112,19 +99,17 @@ describe('BatchDeleteService transaction outcomes', () => {
     jest.restoreAllMocks();
   });
 
-  test.each(entities)('%s rejects unauthorized users before any preflight or mutation', async (entity) => {
+  test.each(entities)('%s rejects unauthorized users before any transaction or mutation', async (entity) => {
     await expect(service.delete(entity, ids, undefined, logger)).rejects.toMatchObject({ httpCode: 401 });
     for (const role of [UserRole.READER, undefined, 'unknown' as UserRole]) {
       await expect(service.delete(entity, ids, { ...user, role }, logger)).rejects.toMatchObject({ httpCode: 403 });
     }
-    expect(eligibility[entity]).not.toHaveBeenCalled();
     expect(createQueryRunner).not.toHaveBeenCalled();
   });
 
   test.each(entities)('%s commits sequentially and normalizes existing service responses', async (entity) => {
     const result = await service.delete(entity, ids, user, logger);
     expect(result).toEqual({ phase: 'executed', results: ids.map((id) => ({ id, outcome: 'deleted' })) });
-    expect(eligibility[entity]).toHaveBeenCalledTimes(1);
     expect(mutations).toEqual(ids);
     for (const runner of runners) {
       expect(runner.commitTransaction).toHaveBeenCalledTimes(1);
@@ -133,53 +118,35 @@ describe('BatchDeleteService transaction outcomes', () => {
     }
   });
 
-  test('skips ineligible and missing selections while deleting eligible items', async () => {
-    eligibility.segments.mockResolvedValue({
-      items: [
-        { id: ids[0], canDelete: true, availability: 'present' },
-        { id: ids[1], canDelete: false, availability: 'present', reasonCode: DeletionReasonCode.SEGMENT_IN_USE },
-        { id: ids[2], canDelete: false, availability: 'not_found', reasonCode: DeletionReasonCode.NOT_FOUND },
-      ],
-    });
-    const result = await service.delete('segments', ids, user, logger);
-    expect(result.phase).toBe('executed');
-    expect(result.results.map((item) => item.outcome)).toEqual(['deleted', 'ineligible', 'not_found']);
-    expect(createQueryRunner).toHaveBeenCalledTimes(1);
-    expect(mutations).toEqual([ids[0]]);
-  });
-
-  test('returns a no-mutation result when preflight cannot be completed', async () => {
-    eligibility.flags.mockRejectedValue(new Error('read failed'));
-    expect(await service.delete('flags', ids, user, logger)).toEqual({
-      phase: 'rejected',
-      results: ids.map((id) => ({
-        id,
-        outcome: 'not_attempted',
-        reasonCode: DeletionReasonCode.ELIGIBILITY_UNAVAILABLE,
-      })),
-    });
-    expect(createQueryRunner).not.toHaveBeenCalled();
-  });
-
-  test('does not start transactions when every selection is ineligible', async () => {
-    eligibility.flags.mockResolvedValue({
-      items: ids.map((id) => ({
-        id,
-        canDelete: false,
-        availability: 'present',
-        reasonCode: DeletionReasonCode.FEATURE_FLAG_ENABLED,
-      })),
-    });
-    const result = await service.delete('flags', ids, user, logger);
-    expect(result.phase).toBe('rejected');
-    expect(result.results.map((item) => item.outcome)).toEqual(['ineligible', 'ineligible', 'ineligible']);
-    expect(createQueryRunner).not.toHaveBeenCalled();
-  });
-
-  test('stops when rollback fails even if the target was rejected before mutation', async () => {
+  test('stops without mutation when the target lookup fails', async () => {
     configureRunner = (runner) => {
       (runner.manager.getRepository as jest.Mock).mockReturnValue({
-        findOne: jest.fn().mockResolvedValue({ status: 'enabled' }),
+        findOne: jest.fn().mockRejectedValue(new Error('read failed')),
+      });
+    };
+    const result = await service.delete('flags', ids, user, logger);
+    expect(result.results.map((item) => item.outcome)).toEqual(['failed', 'not_attempted', 'not_attempted']);
+    expect(result.results[0].reasonCode).toBe(DeletionReasonCode.DELETE_FAILED);
+    expect(mutations).toEqual([]);
+    expect(runners[0].rollbackTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  test('reports no attempted mutation when every target is missing', async () => {
+    configureRunner = (runner) => {
+      (runner.manager.getRepository as jest.Mock).mockReturnValue({ findOne: jest.fn().mockResolvedValue(null) });
+    };
+    expect(await service.delete('flags', ids, user, logger)).toEqual({
+      phase: 'rejected',
+      results: ids.map((id) => ({ id, outcome: 'not_found', reasonCode: DeletionReasonCode.NOT_FOUND })),
+    });
+    expect(mutations).toEqual([]);
+    expect(runners.every((runner) => (runner.rollbackTransaction as jest.Mock).mock.calls.length === 1)).toBe(true);
+  });
+
+  test('stops when rollback fails even if the target was missing before mutation', async () => {
+    configureRunner = (runner) => {
+      (runner.manager.getRepository as jest.Mock).mockReturnValue({
+        findOne: jest.fn().mockResolvedValue(null),
       });
       (runner.rollbackTransaction as jest.Mock).mockRejectedValue(new Error('connection lost'));
     };
@@ -204,15 +171,15 @@ describe('BatchDeleteService transaction outcomes', () => {
     expect(mutations).toEqual(ids.slice(0, index));
   });
 
-  test.each(['missing', 'enabled'])('rejects a %s flag found by the locked mutation check', async (changed) => {
+  test.each(entities)('%s skips a missing locked target and continues deletion', async (entity) => {
     configureRunner = (runner, index) => {
       if (index !== 0) return;
       (runner.manager.getRepository as jest.Mock).mockReturnValue({
-        findOne: jest.fn().mockResolvedValue(changed === 'missing' ? null : { id: ids[0], status: 'enabled' }),
+        findOne: jest.fn().mockResolvedValue(null),
       });
     };
-    const result = await service.delete('flags', ids, user, logger);
-    expect(result.results[0].outcome).toBe(changed === 'missing' ? 'not_found' : 'ineligible');
+    const result = await service.delete(entity, ids, user, logger);
+    expect(result.results[0].outcome).toBe('not_found');
     expect(result.results.slice(1).map((item) => item.outcome)).toEqual(['deleted', 'deleted']);
     expect(mutations).toEqual(ids.slice(1));
   });
@@ -223,29 +190,6 @@ describe('BatchDeleteService transaction outcomes', () => {
     expect(result.results[0]).toEqual({ id: ids[0], outcome: 'failed', reasonCode: DeletionReasonCode.LOCK_TIMEOUT });
     expect(runners[0].rollbackTransaction).toHaveBeenCalled();
   });
-
-  test.each(['missing', 'protected', 'used'] as const)(
-    'reports a segment becoming %s after preflight',
-    async (reason) => {
-      jest
-        .spyOn(segmentGuard, 'assertSegmentDeletionAllowed')
-        .mockRejectedValueOnce(new segmentGuard.SegmentDeletionBlockedError(ids[0], reason));
-      const result = await service.delete('segments', ids, user, logger);
-      expect(result.results[0]).toEqual({
-        id: ids[0],
-        outcome: reason === 'missing' ? 'not_found' : 'ineligible',
-        reasonCode:
-          reason === 'missing'
-            ? DeletionReasonCode.NOT_FOUND
-            : reason === 'protected'
-            ? DeletionReasonCode.PROTECTED_SEGMENT_TYPE
-            : DeletionReasonCode.SEGMENT_IN_USE,
-      });
-      expect(result.results.slice(1).every((item) => item.outcome === 'deleted')).toBe(true);
-      expect(mutations).toEqual(ids.slice(1));
-      expect(runners[0].rollbackTransaction).toHaveBeenCalled();
-    }
-  );
 
   test('does not claim rollback when COMMIT acknowledgment is lost, even if ROLLBACK succeeds', async () => {
     configureRunner = (runner) => {
@@ -345,13 +289,8 @@ describe('BatchDeleteService transaction outcomes', () => {
     expect(createQueryRunner).toHaveBeenCalledTimes(1);
   });
 
-  test('does not start execution if the preflight consumes the budget', async () => {
-    const original = eligibility.flags.getMockImplementation();
-    eligibility.flags.mockImplementation(async (...args) => {
-      const result = await original(...args);
-      (performance.now as jest.Mock).mockReturnValue(60_001);
-      return result;
-    });
+  test('does not start execution if the admission budget has expired', async () => {
+    (performance.now as jest.Mock).mockReturnValueOnce(0).mockReturnValue(60_001);
     expect(await service.delete('flags', ids, user, logger)).toEqual({
       phase: 'rejected',
       results: ids.map((id) => ({
@@ -363,12 +302,12 @@ describe('BatchDeleteService transaction outcomes', () => {
     expect(createQueryRunner).not.toHaveBeenCalled();
   });
 
-  test('does not mutate when the budget expires while acquiring eligibility locks', async () => {
+  test('does not mutate when the budget expires while acquiring the target lock', async () => {
     configureRunner = (runner) => {
       (runner.manager.getRepository as jest.Mock).mockReturnValue({
         findOne: jest.fn(async () => {
           (performance.now as jest.Mock).mockReturnValue(60_001);
-          return { id: ids[0], status: 'disabled' };
+          return { id: ids[0] };
         }),
       });
     };

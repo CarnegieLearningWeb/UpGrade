@@ -3,7 +3,6 @@ import { BatchDeleteResult } from 'upgrade_types';
 import { Inject } from 'typedi';
 import { BatchDeleteService } from '../services/batch/BatchDeleteService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
-import { DeletionStateService } from '../services/DeletionStateService';
 import {
   JsonController,
   CurrentUser,
@@ -65,10 +64,10 @@ interface SegmentPaginationInfo extends PaginationResponse {
  *         format: uuid
  *       outcome:
  *         type: string
- *         enum: [deleted, not_found, ineligible, failed, unknown, not_attempted]
+ *         enum: [deleted, not_found, failed, unknown, not_attempted]
  *       reasonCode:
  *         type: string
- *         enum: [not_found, missing_permission, experiment_state_unsupported, feature_flag_enabled, feature_flag_status_unsupported, segment_in_use, protected_segment_type, eligibility_unavailable, delete_failed, lock_timeout, external_sync_failed, outcome_unknown, post_delete_failed, batch_budget_exceeded]
+ *         enum: [not_found, delete_failed, lock_timeout, external_sync_failed, outcome_unknown, post_delete_failed, batch_budget_exceeded]
  *   BatchDeleteResult:
  *     type: object
  *     required: [phase, results]
@@ -277,8 +276,7 @@ interface SegmentPaginationInfo extends PaginationResponse {
 export class SegmentController {
   constructor(
     public segmentService: SegmentService,
-    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
-    private deletionStateService: DeletionStateService
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
   ) {}
 
   /**
@@ -286,7 +284,7 @@ export class SegmentController {
    * /segments/batch-delete:
    *   post:
    *     summary: Delete the selected segments
-   *     description: Checks the selection, skips missing or ineligible items, and deletes eligible items sequentially. Other execution failures stop the remaining items. Returns one result per ID.
+   *     description: Deletes selected segments sequentially using the existing deletion workflow, skipping missing items. Execution failures stop the remaining items. Returns one result per ID.
    *     tags:
    *       - Segment
    *     parameters:
@@ -674,21 +672,14 @@ export class SegmentController {
    *        '500':
    *          description: Internal Server Error
    *        '400':
-   *          description: Invalid UUID, segment is in use, or segment is not an ordinary public segment
-   *        '404':
-   *          description: Segment not found
+   *          description: Invalid UUID
    */
   @Delete('/:segmentId')
   public deleteSegment(
     @Params({ validate: true }) { segmentId }: SegmentIdValidator,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.segmentService.deleteSegment(
-      segmentId,
-      request.logger,
-      undefined,
-      this.deletionStateService.transactionFor('segments', segmentId)
-    );
+    return this.segmentService.deleteSegment(segmentId, request.logger);
   }
 
   /**

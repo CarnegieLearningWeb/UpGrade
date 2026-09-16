@@ -19,23 +19,22 @@ import { ExperimentService } from '../ExperimentService';
 import { FeatureFlagService } from '../FeatureFlagService';
 import { MoocletExperimentService } from '../MoocletExperimentService';
 import { SegmentService } from '../SegmentService';
-import {
-  DeletionEligibilityService,
-  DeletionEligibilityItem,
-  DeletionEligibilityResult,
-} from './DeletionEligibilityService';
-import { assertDeletionStateAllowed, DeletionBlockedError } from '../DeletionStateService';
 import { DeletionRepository } from '../../repositories/DeletionRepository';
 
 // Admission budget: never abandon an in-flight deletion or claim it has been cancelled.
-// Check before starting another item and again after acquiring its eligibility locks.
+// Check before starting another item and again after acquiring its target lock.
 export const BATCH_DELETE_START_BUDGET_MS = 60_000;
+
+class BatchDeleteSkippedError extends Error {
+  constructor(public readonly result: BatchDeleteItemResult) {
+    super(result.reasonCode);
+  }
+}
 
 @Service()
 export class BatchDeleteService {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
-    @Inject(() => DeletionEligibilityService) private eligibility: DeletionEligibilityService,
     @Inject(() => ExperimentService) private experiments: ExperimentService,
     @Inject(() => FeatureFlagService) private flags: FeatureFlagService,
     @Inject(() => SegmentService) private segments: SegmentService,
@@ -52,29 +51,9 @@ export class BatchDeleteService {
     if (!user) throw new UnauthorizedError('A current user is required');
     if (!hasBatchDeletePermission(user.role, entity)) throw new ForbiddenError('Deletion permission is required');
     const deadline = performance.now() + BATCH_DELETE_START_BUDGET_MS;
-    let preflight: DeletionEligibilityResult;
-    try {
-      preflight = await this.eligibility[entity](ids);
-    } catch (error) {
-      logger.error({ message: 'Batch deletion preflight failed', entity, error });
-      return {
-        phase: 'rejected',
-        results: ids.map((id) => ({
-          id,
-          outcome: 'not_attempted',
-          reasonCode: DeletionReasonCode.ELIGIBILITY_UNAVAILABLE,
-        })),
-      };
-    }
-    const eligibilityById = new Map(preflight.items.map((item) => [item.id, item]));
     const results: BatchDeleteItemResult[] = [];
     let phase: BatchDeleteResult['phase'] = 'rejected';
     for (const id of ids) {
-      const eligibility = eligibilityById.get(id);
-      if (!eligibility.canDelete) {
-        results.push(this.preflightResult(eligibility));
-        continue;
-      }
       if (performance.now() >= deadline) {
         results.push(
           ...ids.slice(results.length).map(
@@ -87,11 +66,11 @@ export class BatchDeleteService {
         );
         break;
       }
-      phase = 'executed';
       const result = await this.deleteOne(entity, id, user, logger, deadline);
       results.push(result);
-      // A changed state or an already absent target does not prevent independent items from being deleted.
-      if (result.outcome === 'ineligible' || result.outcome === 'not_found') continue;
+      if (result.outcome !== 'not_found' && result.outcome !== 'not_attempted') phase = 'executed';
+      // An already absent target does not prevent independent items from being deleted.
+      if (result.outcome === 'not_found') continue;
       // A committed item with a post-delete failure must not be retried, but still stops this batch.
       if (result.outcome !== 'deleted' || result.reasonCode) {
         results.push(
@@ -106,11 +85,6 @@ export class BatchDeleteService {
       }
     }
     return { phase, results };
-  }
-
-  private preflightResult(item: DeletionEligibilityItem): BatchDeleteItemResult {
-    const outcome = item.availability === 'not_found' ? 'not_found' : 'ineligible';
-    return { id: item.id, outcome, reasonCode: item.reasonCode || DeletionReasonCode.ELIGIBILITY_UNAVAILABLE };
   }
 
   private async deleteOne(
@@ -131,11 +105,13 @@ export class BatchDeleteService {
       try {
         await runner.connect();
         await runner.startTransaction('READ COMMITTED');
-        // Segments use the existing beforeDelete hook inside this transaction.
-        if (entity !== 'segments')
-          await assertDeletionStateAllowed(entity, id, runner.manager, this.deletionRepository);
+        await this.deletionRepository.setLockTimeout(runner.manager);
+        const target = await this.deletionRepository.findForDeletion(entity, id, runner.manager);
+        if (!target) {
+          throw new BatchDeleteSkippedError({ id, outcome: 'not_found', reasonCode: DeletionReasonCode.NOT_FOUND });
+        }
         if (performance.now() >= deadline) {
-          throw new DeletionBlockedError({
+          throw new BatchDeleteSkippedError({
             id,
             outcome: 'not_attempted',
             reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED,
@@ -146,7 +122,7 @@ export class BatchDeleteService {
         // Legacy experiment/flag repositories return arrays despite their declared return types.
         const deleted = Array.isArray(response) ? response[0] : response;
         if (!deleted || (deleted as { id?: string }).id?.toLowerCase() !== id.toLowerCase()) {
-          throw new Error('Deletion did not return the guarded target');
+          throw new Error('Deletion did not return the requested target');
         }
         commitAttempted = true;
         await runner.commitTransaction();
@@ -187,21 +163,7 @@ export class BatchDeleteService {
       } else if (entity === 'flags') {
         await this.flags.delete(id, user, logger, executeTransaction);
       } else {
-        await this.segments.deleteSegment(
-          id,
-          logger,
-          async (manager) => {
-            await assertDeletionStateAllowed(entity, id, manager, this.deletionRepository);
-            if (performance.now() >= deadline) {
-              throw new DeletionBlockedError({
-                id,
-                outcome: 'not_attempted',
-                reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED,
-              });
-            }
-          },
-          executeTransaction
-        );
+        await this.segments.deleteSegment(id, logger, executeTransaction);
       }
       return committed
         ? { id, outcome: 'deleted' }
@@ -213,7 +175,7 @@ export class BatchDeleteService {
       if (commitAttempted || (mutationStarted && !rolledBack)) {
         return { id, outcome: 'unknown', reasonCode: DeletionReasonCode.OUTCOME_UNKNOWN };
       }
-      if (error instanceof DeletionBlockedError && rolledBack) return error.result;
+      if (error instanceof BatchDeleteSkippedError && rolledBack) return error.result;
       return {
         id,
         outcome: 'failed',

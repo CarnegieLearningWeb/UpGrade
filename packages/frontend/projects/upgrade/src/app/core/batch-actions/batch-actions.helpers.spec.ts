@@ -1,6 +1,5 @@
 import {
   BatchDeleteEntity,
-  DeletionReasonCode,
   EXPERIMENT_STATE,
   FEATURE_FLAG_STATUS,
   SEGMENT_STATUS,
@@ -9,7 +8,12 @@ import {
 } from 'upgrade_types';
 import { createBatchActions } from './batch-actions.actions';
 import { localDeletionReason, selectionView, validateBatchResponse } from './batch-actions.helpers';
-import { RootBatchState, RootSelectionItem, initialRootBatchState } from './batch-actions.models';
+import {
+  BatchSelectionReasonCode,
+  RootBatchState,
+  RootSelectionItem,
+  initialRootBatchState,
+} from './batch-actions.models';
 import { reduceRootBatch } from './batch-actions.reducer';
 
 describe('Root selection rules', () => {
@@ -71,47 +75,37 @@ describe('Root selection rules', () => {
     ).toEqual({});
   });
 
-  it.each([
-    EXPERIMENT_STATE.INACTIVE,
-    EXPERIMENT_STATE.ENROLLING,
-    EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
-    EXPERIMENT_STATE.CANCELLED,
-    EXPERIMENT_STATE.ARCHIVED,
-  ])('allows the existing experiment menu state %s', (status) => {
-    expect(localDeletionReason('experiments', { id: 'a', stateOrStatus: status }, UserRole.CREATOR)).toBeUndefined();
+  it('does not restrict experiment deletion by state', () => {
+    for (const status of [...Object.values(EXPERIMENT_STATE), undefined]) {
+      expect(localDeletionReason('experiments', { id: 'a', stateOrStatus: status }, UserRole.CREATOR)).toBeUndefined();
+    }
   });
 
   it.each([
     [
-      'experiments',
-      { id: 'a', stateOrStatus: EXPERIMENT_STATE.DRAFT },
-      UserRole.ADMIN,
-      DeletionReasonCode.EXPERIMENT_STATE_UNSUPPORTED,
-    ],
-    [
       'flags',
       { id: 'a', stateOrStatus: FEATURE_FLAG_STATUS.ENABLED },
       UserRole.ADMIN,
-      DeletionReasonCode.FEATURE_FLAG_ENABLED,
+      BatchSelectionReasonCode.FEATURE_FLAG_ENABLED,
     ],
-    ['flags', { id: 'a' }, UserRole.ADMIN, DeletionReasonCode.FEATURE_FLAG_STATUS_UNSUPPORTED],
+    ['flags', { id: 'a' }, UserRole.ADMIN, BatchSelectionReasonCode.FEATURE_FLAG_STATUS_UNSUPPORTED],
     [
       'segments',
       { ...item('a'), stateOrStatus: SEGMENT_STATUS.USED },
       UserRole.ADMIN,
-      DeletionReasonCode.SEGMENT_IN_USE,
+      BatchSelectionReasonCode.SEGMENT_IN_USE,
     ],
-    ['segments', item('a'), UserRole.READER, DeletionReasonCode.MISSING_PERMISSION],
+    ['segments', item('a'), UserRole.READER, BatchSelectionReasonCode.MISSING_PERMISSION],
     ['segments', item('a'), UserRole.USER_MANAGER, undefined],
     [
       'flags',
       { id: 'a', stateOrStatus: FEATURE_FLAG_STATUS.DISABLED },
       UserRole.USER_MANAGER,
-      DeletionReasonCode.MISSING_PERMISSION,
+      BatchSelectionReasonCode.MISSING_PERMISSION,
     ],
   ])(
     'applies entity-specific permissions and status rules for %s',
-    (entity: BatchDeleteEntity, selected: RootSelectionItem, role: UserRole, reason: DeletionReasonCode) => {
+    (entity: BatchDeleteEntity, selected: RootSelectionItem, role: UserRole, reason: BatchSelectionReasonCode) => {
       expect(localDeletionReason(entity, selected, role)).toBe(reason);
     }
   );

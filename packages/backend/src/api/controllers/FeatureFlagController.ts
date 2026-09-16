@@ -2,7 +2,6 @@ import { BatchDeleteResult } from 'upgrade_types';
 import { Inject } from 'typedi';
 import { BatchDeleteService } from '../services/batch/BatchDeleteService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
-import { DeletionStateService } from '../services/DeletionStateService';
 import {
   JsonController,
   Authorized,
@@ -162,8 +161,7 @@ export class FeatureFlagsController {
   constructor(
     public featureFlagService: FeatureFlagService,
     public experimentUserService: ExperimentUserService,
-    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
-    private deletionStateService: DeletionStateService
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
   ) {}
 
   /**
@@ -171,7 +169,7 @@ export class FeatureFlagsController {
    * /flags/batch-delete:
    *   post:
    *     summary: Delete the selected flags
-   *     description: Checks the selection, skips missing or ineligible items, and deletes eligible items sequentially. Other execution failures stop the remaining items. Returns one result per ID.
+   *     description: Deletes selected feature flags sequentially regardless of status, skipping missing items. Execution failures stop the remaining items. Returns one result per ID.
    *     tags:
    *       - Feature Flags
    *     parameters:
@@ -469,7 +467,7 @@ export class FeatureFlagsController {
    *          '200':
    *            description: Delete Feature flag By Id
    *          '400':
-   *            description: Invalid UUID or feature flag is neither Disabled nor Archived
+   *            description: Invalid UUID
    *          '404':
    *            description: Feature flag not found
    */
@@ -480,12 +478,7 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    const featureFlag = await this.featureFlagService.delete(
-      id,
-      currentUser,
-      request.logger,
-      this.deletionStateService.transactionFor('flags', id)
-    );
+    const featureFlag = await this.featureFlagService.delete(id, currentUser, request.logger);
 
     if (!featureFlag) {
       throw new NotFoundException('Feature flag not found.');

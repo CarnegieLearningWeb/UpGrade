@@ -1,5 +1,5 @@
 import { Action } from '@ngrx/store';
-import { BatchDeleteEntity, DeletionReasonCode, SEGMENT_TYPE, hasBatchDeletePermission } from 'upgrade_types';
+import { BatchDeleteEntity, SEGMENT_TYPE, hasBatchDeletePermission } from 'upgrade_types';
 import * as auth from '../auth/store/auth.actions';
 import { RootBatchActions } from './batch-actions.actions';
 import { RootBatchState, RootSelectionItem, initialRootBatchState, isBatchBusy } from './batch-actions.models';
@@ -107,7 +107,7 @@ export function reduceRootBatch(
   if (matches(action, actions.prepareConfirmation)) {
     const selection = selectionView(state, entity);
     if (state.confirmation || !selection.canRequestConfirmation) return state;
-    // Use retained row metadata, including hidden selections. The delete endpoint validates current eligibility.
+    // Use retained row metadata, including hidden selections. UI availability is based on this cached data.
     return {
       ...state,
       confirmation: {
@@ -144,19 +144,8 @@ export function reduceRootBatch(
       return state;
     if (matches(action, actions.batchDeleteCompleted)) {
       const next = removeConfirmed(state, confirmedRemovedIds(action.result));
-      const selectedById = { ...next.selectedById };
-      // Retain a known restriction even when the current-query refresh omits the item or fails.
-      for (const { id, outcome, reasonCode } of action.result.results) {
-        if (outcome === 'ineligible' && selectedById[id]) {
-          selectedById[id] = {
-            ...selectedById[id],
-            reasonCode: reasonCode || DeletionReasonCode.ELIGIBILITY_UNAVAILABLE,
-          };
-        }
-      }
       return {
         ...invalidateSelection(next),
-        selectedById,
         operation: {
           ...state.operation,
           result: action.result,

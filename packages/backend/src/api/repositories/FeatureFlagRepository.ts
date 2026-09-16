@@ -1,4 +1,4 @@
-import { Repository, EntityManager, SelectQueryBuilder, In } from 'typeorm';
+import { Repository, EntityManager, SelectQueryBuilder } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { FeatureFlag } from '../models/FeatureFlag';
 import repositoryError from './utils/repositoryError';
@@ -148,16 +148,6 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
       });
 
     return result;
-  }
-
-  public async findForDeletionEligibility(ids: string[]): Promise<Array<Pick<FeatureFlag, 'id' | 'status'>>> {
-    return this.find({
-      where: { id: In(ids) },
-      select: { id: true, status: true },
-    }).catch((errorMsg: any) => {
-      const errorMsgString = repositoryError('FeatureFlagRepository', 'findForDeletionEligibility', { ids }, errorMsg);
-      throw errorMsgString;
-    });
   }
 
   public async validateUniqueKey(flagDTO: FeatureFlagValidation) {

@@ -18,7 +18,6 @@
   "batch-delete.dialog.segments.one": "Are you sure you want to delete 1 segment?",
   "batch-delete.dialog.segments.other": "Are you sure you want to delete {{count}} segments?",
   "batch-delete.reason.missing_permission": "You do not have permission to delete the selected items.",
-  "batch-delete.reason.experiment_state_unsupported": "A selected experiment cannot be deleted in its current state. Deselect it to enable deletion.",
   "batch-delete.reason.feature_flag_enabled": "A selected feature flag is enabled. Deselect it or disable it before deleting.",
   "batch-delete.reason.feature_flag_status_unsupported": "A selected feature flag cannot be deleted in its current state. Deselect it to enable deletion.",
   "batch-delete.reason.segment_in_use": "Some selected segments are in use. Deselect them to enable deletion.",

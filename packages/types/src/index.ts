@@ -98,8 +98,6 @@ export {
   BatchEntityIdsRequest,
   BatchDeleteEntity,
   hasBatchDeletePermission,
-  getExperimentDeletionReason,
-  getFlagDeletionReason,
   DeletionReasonCode,
   BatchDeleteItemOutcome,
   BatchDeleteItemResult,

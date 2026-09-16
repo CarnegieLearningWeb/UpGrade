@@ -468,26 +468,27 @@ describe.each(cases)('$entity root batch UI', (config) => {
     expect(Object.keys(batch().selectedById)).toHaveLength(2);
   });
 
-  it('explains a hidden restriction only in the menu tooltip without inserting a status row', () => {
-    load([
-      {
-        ...rows[0],
-        state: config.entity === 'experiments' ? EXPERIMENT_STATE.DRAFT : undefined,
-        status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
-      },
-    ]);
-    fixture.detectChanges();
-    selectFirst();
-    load([]);
-    fixture.detectChanges();
-    fixture.componentInstance.batchUi.requestDelete();
-    fixture.detectChanges();
-    const trigger = fixture.nativeElement.querySelector('.section-card-menu-trigger') as HTMLButtonElement;
-    expect(trigger.disabled).toBe(true);
-    expect(trigger.parentElement.getAttribute('aria-label')).toContain('Deselect');
-    expect(fixture.nativeElement.querySelector('.selection-status')).toBeNull();
-    expect(fixture.nativeElement.textContent).not.toContain('Refresh selection status');
-    expect(Object.keys(batch().selectedById)).toEqual([rows[0].id]);
-    expect(dialogs.openBatchDeleteModal).not.toHaveBeenCalled();
-  });
+  if (config.entity !== 'experiments') {
+    it('explains a hidden restriction only in the menu tooltip without inserting a status row', () => {
+      load([
+        {
+          ...rows[0],
+          status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
+        },
+      ]);
+      fixture.detectChanges();
+      selectFirst();
+      load([]);
+      fixture.detectChanges();
+      fixture.componentInstance.batchUi.requestDelete();
+      fixture.detectChanges();
+      const trigger = fixture.nativeElement.querySelector('.section-card-menu-trigger') as HTMLButtonElement;
+      expect(trigger.disabled).toBe(true);
+      expect(trigger.parentElement.getAttribute('aria-label')).toContain('Deselect');
+      expect(fixture.nativeElement.querySelector('.selection-status')).toBeNull();
+      expect(fixture.nativeElement.textContent).not.toContain('Refresh selection status');
+      expect(Object.keys(batch().selectedById)).toEqual([rows[0].id]);
+      expect(dialogs.openBatchDeleteModal).not.toHaveBeenCalled();
+    });
+  }
 });

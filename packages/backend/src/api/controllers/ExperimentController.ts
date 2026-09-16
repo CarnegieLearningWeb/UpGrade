@@ -2,7 +2,6 @@ import { BatchDeleteResult } from 'upgrade_types';
 import { Inject } from 'typedi';
 import { BatchDeleteService } from '../services/batch/BatchDeleteService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
-import { DeletionStateService } from '../services/DeletionStateService';
 import {
   Body,
   Get,
@@ -670,8 +669,7 @@ export class ExperimentController {
     public moocletRewardService: MoocletRewardsService,
     public importExportService: ImportExportService,
     public cacheService: CacheService,
-    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
-    private deletionStateService: DeletionStateService
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
   ) {}
 
   /**
@@ -679,7 +677,7 @@ export class ExperimentController {
    * /experiments/batch-delete:
    *   post:
    *     summary: Delete the selected experiments
-   *     description: Checks the selection, skips missing or ineligible items, and deletes eligible items sequentially. Other execution failures stop the remaining items. Returns one result per ID.
+   *     description: Deletes selected experiments sequentially regardless of state, skipping missing items. Execution failures stop the remaining items. Returns one result per ID.
    *     tags:
    *       - Experiments
    *     parameters:
@@ -1180,7 +1178,7 @@ export class ExperimentController {
    *            schema:
    *              $ref: '#/definitions/ExperimentResponse'
    *          '400':
-   *            description: Invalid UUID or experiment state does not allow deletion.
+   *            description: Invalid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
@@ -1197,23 +1195,21 @@ export class ExperimentController {
   ): Promise<Experiment | undefined> {
     request.logger.child({ user: currentUser });
 
-    const executeTransaction = this.deletionStateService.transactionFor('experiments', id);
     // Manually check if the experiment has a mooclet ref
     if (env.mooclets.enabled) {
       const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(id);
 
       if (moocletExperimentRef) {
-        return await this.moocletExperimentService.syncDelete(
-          { moocletExperimentRef, experimentId: id, currentUser, logger: request.logger },
-          executeTransaction
-        );
+        return await this.moocletExperimentService.syncDelete({
+          moocletExperimentRef,
+          experimentId: id,
+          currentUser,
+          logger: request.logger,
+        });
       }
     }
 
-    const experiment = await this.experimentService.delete(id, currentUser, {
-      logger: request.logger,
-      executeTransaction,
-    });
+    const experiment = await this.experimentService.delete(id, currentUser, { logger: request.logger });
 
     if (!experiment) {
       throw new NotFoundException('Experiment not found.');

@@ -4,7 +4,6 @@ import { Actions, getEffectsMetadata } from '@ngrx/effects';
 import { Action, ScannedActionsSubject, Store, StoreModule } from '@ngrx/store';
 import { Subject, Subscription, of, throwError } from 'rxjs';
 import {
-  DeletionReasonCode,
   EXPERIMENT_STATE,
   FEATURE_FLAG_STATUS,
   FLAG_SEARCH_KEY,
@@ -28,7 +27,7 @@ import { FeatureFlagRootSectionCardComponent } from '../../features/dashboard/fe
 import { SegmentsEffects } from '../segments/store/segments.effects';
 import { actionLogoutStart, actionSetUserInfo } from '../auth/store/auth.actions';
 import { batchResultCounts, selectionItem, selectionView } from './batch-actions.helpers';
-import { RootBatchState, newBatchRequestId } from './batch-actions.models';
+import { BatchSelectionReasonCode, RootBatchState, newBatchRequestId } from './batch-actions.models';
 
 const fixtures = [
   {
@@ -297,24 +296,25 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(data.batchDelete).not.toHaveBeenCalled();
   });
 
-  it('uses updated page data to block a hidden restriction without an eligibility request', () => {
-    selectRows();
-    const blocked = {
-      ...rows[2],
-      state: config.entity === 'experiments' ? EXPERIMENT_STATE.DRAFT : undefined,
-      status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
-    };
-    data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0], rows[1], blocked])));
-    store.dispatch(config.fetch({ fromStarting: true }));
-    data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0]])));
-    store.dispatch(config.fetch({ fromStarting: true }));
-    store.dispatch(actions.prepareConfirmation({ operationId: newBatchRequestId() }));
-    expect(batch().confirmation).toBeNull();
-    expect(Object.keys(batch().selectedById)).toHaveLength(3);
-    expect(selectionView(batch(), config.entity).canRequestConfirmation).toBe(false);
+  if (config.entity !== 'experiments') {
+    it('uses updated page data to block a hidden restriction without an eligibility request', () => {
+      selectRows();
+      const blocked = {
+        ...rows[2],
+        status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
+      };
+      data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0], rows[1], blocked])));
+      store.dispatch(config.fetch({ fromStarting: true }));
+      data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0]])));
+      store.dispatch(config.fetch({ fromStarting: true }));
+      store.dispatch(actions.prepareConfirmation({ operationId: newBatchRequestId() }));
+      expect(batch().confirmation).toBeNull();
+      expect(Object.keys(batch().selectedById)).toHaveLength(3);
+      expect(selectionView(batch(), config.entity).canRequestConfirmation).toBe(false);
 
-    expect(data.batchDelete).not.toHaveBeenCalled();
-  });
+      expect(data.batchDelete).not.toHaveBeenCalled();
+    });
+  }
 
   it('retains cached selections until the delete response establishes an absence', () => {
     selectRows();
@@ -401,60 +401,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
 
       expect(notifications.showWarning).not.toHaveBeenCalled();
       expect(notifications.showSuccess).not.toHaveBeenCalled();
-    }
-  );
-
-  it.each(['visible', 'hidden', 'refresh failure'])(
-    'retains the server restriction until fresh row data arrives (%s)',
-    (mode) => {
-      selectRows();
-      if (mode === 'hidden') {
-        data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0], rows[2]])));
-        store.dispatch(config.fetch({ fromStarting: true }));
-      }
-      const snapshot = prepare();
-      expect(snapshot.items.map(({ id }) => id)).toEqual(rows.map(({ id }) => id));
-      const blocked = {
-        ...rows[1],
-        state: config.entity === 'experiments' ? EXPERIMENT_STATE.DRAFT : undefined,
-        status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
-      };
-      const reasonCode = {
-        experiments: DeletionReasonCode.EXPERIMENT_STATE_UNSUPPORTED,
-        flags: DeletionReasonCode.FEATURE_FLAG_ENABLED,
-        segments: DeletionReasonCode.SEGMENT_IN_USE,
-      }[config.entity];
-      data[config.fetchMethod].mockReturnValueOnce(
-        mode === 'refresh failure'
-          ? throwError(() => new Error('refresh unavailable'))
-          : of(page(mode === 'hidden' ? [] : [blocked]))
-      );
-      store.dispatch(actions.batchDeleteRequested({ snapshot }));
-      response.next({
-        phase: 'executed',
-        results: rows.map(({ id }, index) => ({
-          id,
-          outcome: index === 1 ? 'ineligible' : 'deleted',
-          reasonCode: index === 1 ? reasonCode : undefined,
-        })),
-      });
-      response.complete();
-      expect(Object.keys(batch().selectedById)).toEqual([rows[1].id]);
-      expect(currentRows().map((row) => row.id)).toEqual(mode === 'hidden' ? [] : [rows[1].id]);
-      expect(selectionView(batch(), config.entity)).toMatchObject({ canRequestConfirmation: false, reasonCode });
-      store.dispatch(actions.prepareConfirmation({ operationId: 'retry-before-refresh' }));
-      expect(batch().confirmation).toBeNull();
-      const noun = { experiments: 'experiments', flags: 'feature flags', segments: 'segments' }[config.entity];
-      expect(notifications.showWarning).toHaveBeenCalledTimes(1);
-      expect(notifications.showWarning).toHaveBeenCalledWith(`2 ${noun} deleted. 1 item could not be deleted.`);
-      expect(data.batchDelete).toHaveBeenCalledTimes(1);
-
-      data[config.fetchMethod].mockReturnValueOnce(of(page([rows[1]])));
-      store.dispatch(config.fetch({ fromStarting: true }));
-      expect(selectionView(batch(), config.entity)).toMatchObject({
-        canRequestConfirmation: true,
-        reasonCode: undefined,
-      });
     }
   );
 
@@ -609,20 +555,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     });
   }
 
-  it('retains every selection when the server reports all items as ineligible', () => {
-    selectRows();
-    const snapshot = prepare();
-    store.dispatch(actions.batchDeleteRequested({ snapshot }));
-    response.next({
-      phase: 'rejected',
-      results: rows.map(({ id }) => ({ id, outcome: 'ineligible' })),
-    });
-    expect(currentRows()).toHaveLength(3);
-    expect(Object.keys(batch().selectedById)).toHaveLength(3);
-    expect(batch().operation.result.phase).toBe('rejected');
-    expect(notifications.showWarning).toHaveBeenCalledTimes(1);
-  });
-
   it('keeps confirmed deletion when the post-commit cleanup or list refresh fails', () => {
     selectRows(1);
     const snapshot = prepare();
@@ -722,6 +654,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     store.dispatch(actionSetUserInfo({ user: { email: 'review@example.com', role: UserRole.READER } }));
     expect(Object.keys(batch().selectedById)).toHaveLength(3);
     expect(batch().confirmation).toBeNull();
-    expect(selectionView(batch(), config.entity).reasonCode).toBe(DeletionReasonCode.MISSING_PERMISSION);
+    expect(selectionView(batch(), config.entity).reasonCode).toBe(BatchSelectionReasonCode.MISSING_PERMISSION);
   });
 });

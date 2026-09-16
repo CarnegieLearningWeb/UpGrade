@@ -6,11 +6,9 @@ import {
   FEATURE_FLAG_STATUS,
   SEGMENT_STATUS,
   SEGMENT_TYPE,
-  getExperimentDeletionReason,
-  getFlagDeletionReason,
   hasBatchDeletePermission,
 } from 'upgrade_types';
-import { RootBatchState, RootSelectionItem, isBatchBusy } from './batch-actions.models';
+import { BatchSelectionReasonCode, RootBatchState, RootSelectionItem, isBatchBusy } from './batch-actions.models';
 
 export function selectionItem(row: {
   id?: string;
@@ -22,21 +20,28 @@ export function selectionItem(row: {
   return { id: row.id, name: row.name, stateOrStatus: row.state || row.status, segmentType: row.type };
 }
 
+function getFlagDeletionReason(status: FEATURE_FLAG_STATUS): BatchSelectionReasonCode | undefined {
+  return status === FEATURE_FLAG_STATUS.ENABLED
+    ? BatchSelectionReasonCode.FEATURE_FLAG_ENABLED
+    : [FEATURE_FLAG_STATUS.DISABLED, FEATURE_FLAG_STATUS.ARCHIVED].includes(status)
+    ? undefined
+    : BatchSelectionReasonCode.FEATURE_FLAG_STATUS_UNSUPPORTED;
+}
+
 export function localDeletionReason(
   entity: BatchDeleteEntity,
   item: RootSelectionItem,
   role: RootBatchState['role']
-): DeletionReasonCode | undefined {
-  if (!hasBatchDeletePermission(role, entity)) return DeletionReasonCode.MISSING_PERMISSION;
-  if (item.reasonCode) return item.reasonCode;
-  if (entity === 'experiments') return getExperimentDeletionReason(item.stateOrStatus as EXPERIMENT_STATE);
+): BatchSelectionReasonCode | undefined {
+  if (!hasBatchDeletePermission(role, entity)) return BatchSelectionReasonCode.MISSING_PERMISSION;
+  if (entity === 'experiments') return undefined;
   if (entity === 'flags') return getFlagDeletionReason(item.stateOrStatus as FEATURE_FLAG_STATUS);
-  if (item.segmentType !== SEGMENT_TYPE.PUBLIC) return DeletionReasonCode.PROTECTED_SEGMENT_TYPE;
+  if (item.segmentType !== SEGMENT_TYPE.PUBLIC) return BatchSelectionReasonCode.PROTECTED_SEGMENT_TYPE;
   return item.stateOrStatus === SEGMENT_STATUS.UNUSED
     ? undefined
     : item.stateOrStatus === SEGMENT_STATUS.USED
-    ? DeletionReasonCode.SEGMENT_IN_USE
-    : DeletionReasonCode.ELIGIBILITY_UNAVAILABLE;
+    ? BatchSelectionReasonCode.SEGMENT_IN_USE
+    : BatchSelectionReasonCode.ELIGIBILITY_UNAVAILABLE;
 }
 
 export function selectionView(state: RootBatchState, entity: BatchDeleteEntity) {
@@ -61,7 +66,7 @@ export const confirmedRemovedIds = (result?: BatchDeleteResult) =>
   [];
 
 export function validateBatchResponse(result: BatchDeleteResult, ids: string[]): BatchDeleteResult {
-  const outcomes = ['deleted', 'not_found', 'ineligible', 'failed', 'unknown', 'not_attempted'];
+  const outcomes = ['deleted', 'not_found', 'failed', 'unknown', 'not_attempted'];
   if (
     !result ||
     !['rejected', 'executed'].includes(result.phase) ||
@@ -82,7 +87,7 @@ export function batchResultCounts(state: RootBatchState) {
     deleted: results.filter((item) => item.outcome === 'deleted').length,
     absent: results.filter((item) => item.outcome === 'not_found').length,
     uncertain: results.some((item) => item.outcome === 'unknown'),
-    failed: results.filter((item) => ['failed', 'ineligible'].includes(item.outcome)).length,
+    failed: results.filter((item) => item.outcome === 'failed').length,
     notAttempted: results.filter((item) => item.outcome === 'not_attempted').length,
     hasErrors: results.some((item) => item.outcome !== 'deleted' || item.reasonCode),
     postDeleteFailed: results.some((item) => item.reasonCode === DeletionReasonCode.POST_DELETE_FAILED),

@@ -1,5 +1,5 @@
 import { EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
-import { Repository, EntityManager, Brackets, SelectQueryBuilder, In } from 'typeorm';
+import { Repository, EntityManager, Brackets, SelectQueryBuilder } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
@@ -119,16 +119,6 @@ export class ExperimentRepository extends Repository<Experiment> {
         const errorMsgString = repositoryError('ExperimentRepository', 'findAllName', {}, errorMsg);
         throw errorMsgString;
       });
-  }
-
-  public async findForDeletionEligibility(ids: string[]): Promise<Array<Pick<Experiment, 'id' | 'state'>>> {
-    return this.find({
-      where: { id: In(ids) },
-      select: { id: true, state: true },
-    }).catch((errorMsg: any) => {
-      const errorMsgString = repositoryError('ExperimentRepository', 'findForDeletionEligibility', { ids }, errorMsg);
-      throw errorMsgString;
-    });
   }
 
   public async findContextByExperimentId(id: string): Promise<string | null> {

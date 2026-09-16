@@ -539,7 +539,6 @@ export class SegmentService {
   public async deleteSegment(
     id: string,
     logger: UpgradeLogger,
-    beforeDelete?: (manager: EntityManager) => Promise<void>,
     executeTransaction?: DeletionTransaction
   ): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
@@ -556,10 +555,9 @@ export class SegmentService {
       logger,
       () => this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
       () =>
-        transaction(async (transactionalEntityManager) => {
-          await beforeDelete?.(transactionalEntityManager);
-          return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
-        })
+        transaction((transactionalEntityManager) =>
+          this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
+        )
     );
 
     this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments(affectedExperimentIds, logger);

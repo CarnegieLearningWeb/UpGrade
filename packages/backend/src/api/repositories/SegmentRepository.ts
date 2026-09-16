@@ -30,18 +30,6 @@ export class SegmentRepository extends Repository<Segment> {
       });
   }
 
-  public async findForDeletionEligibility(ids: string[]): Promise<Segment[]> {
-    return this.createQueryBuilder('segment')
-      .leftJoin('segment.subSegments', 'child')
-      .select(['segment.id', 'segment.type', 'child.id'])
-      .where('segment.id IN (:...ids)', { ids })
-      .getMany()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('segmentRepository', 'findForDeletionEligibility', { ids }, errorMsg);
-        throw errorMsgString;
-      });
-  }
-
   /**
    * Retrieves all segments of a specified type from the database.
    *
