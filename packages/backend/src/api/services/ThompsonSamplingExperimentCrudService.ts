@@ -103,7 +103,7 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
    * experiment as Thompson Sampling.
    */
   public async syncConfigIfApplicable(experiment: ExperimentDTO, updatedExperiment: ExperimentDTO): Promise<void> {
-    if (experiment.assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+    if (updatedExperiment.assignmentAlgorithm !== ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
       await this.deleteConfigIfExists(updatedExperiment.id);
       return;
     }
