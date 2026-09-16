@@ -53,7 +53,7 @@ export class FeatureFlagPlaygroundService {
     const allGroups: Record<string, string[]> = {};
     for (const { type, values } of groups) {
       if (values.length) {
-        allGroups[type] = values;
+        allGroups[type] = [...new Set([...(allGroups[type] ?? []), ...values])];
       }
     }
     const schoolIds = allGroups['schoolId'] ?? [];
