@@ -175,9 +175,7 @@ export class ThompsonSamplingRewardService {
 
       if (effectiveBatchSize <= 1) {
         await Promise.all(
-          experimentStates
-            .filter((s) => s.pendingTotalCount > 0)
-            .map((s) => this.flushPendingRewards(manager, s))
+          experimentStates.filter((s) => s.pendingTotalCount > 0).map((s) => this.flushPendingRewards(manager, s))
         );
         return;
       }

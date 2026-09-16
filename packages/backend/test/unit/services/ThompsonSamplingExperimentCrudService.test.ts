@@ -229,6 +229,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
 
       await service.syncConfigIfApplicable(experiment, {
         id: 'experiment-1',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
         conditions: [{ id: 'condition-1' }],
       } as any);
 
@@ -258,6 +259,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
 
       await service.syncConfigIfApplicable(experiment, {
         id: 'experiment-1',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
         conditions: [{ id: 'condition-1' }],
       } as any);
 
