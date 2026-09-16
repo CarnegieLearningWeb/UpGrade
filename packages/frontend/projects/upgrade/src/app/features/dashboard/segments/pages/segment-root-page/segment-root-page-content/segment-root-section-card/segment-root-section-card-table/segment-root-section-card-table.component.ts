@@ -93,6 +93,7 @@ export class SegmentRootSectionCardTableComponent implements AfterViewInit, OnDe
   filterSegmentByChips(tagValue: string, type: SEGMENT_SEARCH_KEY) {
     this.setSearchKey(type);
     this.setSearchString(tagValue);
+    this.segmentsService.fetchSegmentsPaginated(true);
   }
 
   setSearchKey(searchKey: SEGMENT_SEARCH_KEY) {

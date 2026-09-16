@@ -7,6 +7,7 @@ import {
   EXPERIMENT_STATE,
   FEATURE_FLAG_STATUS,
   FLAG_SEARCH_KEY,
+  SEGMENT_SEARCH_KEY,
   SEGMENT_STATUS,
   SORT_AS_DIRECTION,
   UserRole,
@@ -24,6 +25,8 @@ import { FeatureFlagsEffects } from '../feature-flags/store/feature-flags.effect
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 import { FeatureFlagRootSectionCardComponent } from '../../features/dashboard/feature-flags/pages/feature-flag-root-page/feature-flag-root-page-content/feature-flag-root-section-card/feature-flag-root-section-card.component';
 import { SegmentsEffects } from '../segments/store/segments.effects';
+import { SegmentsService } from '../segments/segments.service';
+import { SegmentRootSectionCardTableComponent } from '../../features/dashboard/segments/pages/segment-root-page/segment-root-page-content/segment-root-section-card/segment-root-section-card-table/segment-root-section-card-table.component';
 import { actionLogoutStart, actionSetUserInfo } from '../auth/store/auth.actions';
 import { batchResultCounts, selectionItem, selectionView } from './batch-actions.helpers';
 import { RootBatchState, newBatchRequestId } from './batch-actions.models';
@@ -199,6 +202,27 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       expect(batch().loadedIds).toHaveLength(3);
       expect(batch().listLoading).toBe(false);
       expect(state.featureFlags.isLoadingFeatureFlags).toBe(false);
+    });
+  }
+
+  if (config.entity === 'segments') {
+    it('fetches filtered rows when a tag is clicked and keeps the returned rows selectable', () => {
+      const segmentsService = new SegmentsService(store as any, data, { setItem: jest.fn() } as any);
+      const table = new SegmentRootSectionCardTableComponent(segmentsService);
+      data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0]])));
+
+      table.filterSegmentByChips('tag', SEGMENT_SEARCH_KEY.TAG);
+
+      expect(data[config.fetchMethod]).toHaveBeenCalledTimes(2);
+      expect(data[config.fetchMethod]).toHaveBeenLastCalledWith(
+        expect.objectContaining({ skip: 0, searchParams: { key: SEGMENT_SEARCH_KEY.TAG, string: 'tag' } }),
+        false
+      );
+      expect(currentRows().map(({ id }) => id)).toEqual([rows[0].id]);
+      expect(batch().loadedIds).toEqual([rows[0].id]);
+      expect(state.segments.isLoadingSegments).toBe(false);
+      store.dispatch(actions.toggleRow({ item: selectionItem(rows[0]) }));
+      expect(Object.keys(batch().selectedById)).toEqual([rows[0].id]);
     });
   }
 
