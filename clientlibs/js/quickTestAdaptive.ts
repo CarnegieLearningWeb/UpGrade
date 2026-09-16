@@ -19,7 +19,7 @@ const URL = {
   // 3030 is the standard docker-compose port (see root CLAUDE.md); a git worktree set up via
   // /new-worktree auto-assigns its own port instead (check packages/backend/.env's APP_PORT) --
   // update this if you're running in a worktree.
-  LOCAL: 'http://localhost:3032',
+  LOCAL: 'http://localhost:3030',
   ECS_QA: 'https://apps.qa-cli.net/upgrade-service',
   ECS_STAGING: 'https://apps.qa-cli.com/upgrade-service',
 };
