@@ -47,7 +47,7 @@ export class RootBatchActionsDirective implements OnInit, OnDestroy {
       this.batchFacade.state$.subscribe((state) => {
         state.removedIds.forEach((id) => this.batchExpandedTags?.delete(id));
         if (!state.confirmation || this.dialogRef) return;
-        const ref = this.dialogs.openBatchDeleteModal(this.batchEntity, state.confirmation, this.batchFacade);
+        const ref = this.dialogs.openBatchDeleteModal(this.batchEntity, state.confirmation);
         const operationId = state.confirmation.operationId;
         this.dialogRef = ref;
         this.subscriptions.add(

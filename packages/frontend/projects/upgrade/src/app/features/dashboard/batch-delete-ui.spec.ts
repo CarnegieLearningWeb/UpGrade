@@ -364,8 +364,8 @@ describe.each(cases)('$entity root batch UI', (config) => {
     'uses the common dialog and does not refocus the menu trigger after %s',
     fakeAsync((action) => {
       const realDialogs = new DialogService(TestBed.inject(MatDialog), TestBed.inject(TranslateService));
-      dialogs.openBatchDeleteModal.mockImplementation((entity, snapshot, facade) =>
-        realDialogs.openBatchDeleteModal(entity, snapshot, facade)
+      dialogs.openBatchDeleteModal.mockImplementation((entity, snapshot) =>
+        realDialogs.openBatchDeleteModal(entity, snapshot)
       );
       selectFirst();
       openMenu();

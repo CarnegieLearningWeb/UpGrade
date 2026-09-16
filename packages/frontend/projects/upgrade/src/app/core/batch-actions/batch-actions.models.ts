@@ -1,4 +1,4 @@
-import { BatchDeleteResult, EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SEGMENT_STATUS, UserRole } from 'upgrade_types';
+import { BatchDeleteResult, EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SEGMENT_STATUS } from 'upgrade_types';
 
 export enum BatchSelectionReasonCode {
   EXPERIMENT_ACTIVE = 'experiment_active',
@@ -20,7 +20,6 @@ export interface BatchDeleteSnapshot {
 export interface RootBatchState {
   selectedById: Record<string, RootSelectionItem>;
   userEmail: string | null;
-  role: UserRole | null;
   loadedIds: string[];
   listRequestId: string | null;
   listLoading: boolean;
@@ -37,7 +36,6 @@ export interface RootBatchState {
 export const initialRootBatchState: RootBatchState = {
   selectedById: {},
   userEmail: null,
-  role: null,
   loadedIds: [],
   listRequestId: null,
   listLoading: false,

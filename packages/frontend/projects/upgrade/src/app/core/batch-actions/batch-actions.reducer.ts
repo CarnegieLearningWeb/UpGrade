@@ -34,16 +34,9 @@ export function receiveListRows(
 ): RootBatchState {
   const removed = new Set(state.removedIds);
   const rows = items.filter((item) => !removed.has(item.id));
-  const selectedById = { ...state.selectedById };
-  rows.forEach((item) => {
-    if (selectedById[item.id]) {
-      selectedById[item.id] = item;
-    }
-  });
   return {
-    // A background page refresh must not replace the snapshot already shown in the dialog.
+    // Keep selection-time metadata when searches or later pages update the displayed rows.
     ...state,
-    selectedById,
     loadedIds: [...new Set([...(fromStarting ? [] : state.loadedIds), ...rows.map((item) => item.id)])],
     listLoading: false,
   };
@@ -63,9 +56,7 @@ export function reduceRootBatch(
     matches(action, auth.actionLoginSuccess)
   ) {
     const email = action.user?.email || null;
-    const role = action.user?.role || null;
-    if (state.userEmail !== email) return { ...initialRootBatchState, userEmail: email, role };
-    return state.role === role ? state : { ...invalidateSelection(state), selectedById: {}, role };
+    return state.userEmail === email ? state : { ...initialRootBatchState, userEmail: email };
   }
   if (matches(action, actions.listRequested))
     return {

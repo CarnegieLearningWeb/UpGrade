@@ -41,15 +41,6 @@ export function withRootBatch<S extends { rootBatch: RootBatchState }>(
     const next = reducer(state, action);
     if (action.type === config.listSuccessType) {
       rootBatch = receiveListRows(rootBatch, action[config.responseRowsKey].map(selectionItem), !!action.fromStarting);
-    } else if (next[config.rowsKey] !== state[config.rowsKey]) {
-      const previousRows = new Map(state[config.rowsKey].map((row) => [row.id, row]));
-      const changed = next[config.rowsKey].filter(
-        (row) => previousRows.get(row.id) !== row && rootBatch.selectedById[row.id]
-      );
-      if (changed.length) {
-        const updated = receiveListRows(rootBatch, changed.map(selectionItem), false);
-        rootBatch = { ...updated, loadedIds: rootBatch.loadedIds, listLoading: rootBatch.listLoading };
-      }
     }
     // Tombstones also protect against late detail/stat responses, whose IDs are not tied to a root query.
     const removed = new Set(rootBatch.removedIds);

@@ -70,10 +70,9 @@ import {
   EditPayloadModalComponent,
   EditPayloadModalParams,
 } from '../../features/dashboard/experiments/modals/edit-payload-modal/edit-payload-modal.component';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { BatchDeleteEntity } from 'upgrade_types';
-import { BatchFacade } from '../../core/batch-actions/batch-actions.facade';
 import { BatchDeleteSnapshot } from '../../core/batch-actions/batch-actions.models';
 
 export interface ImportModalParams {
@@ -113,7 +112,7 @@ export interface UpsertMetricModalParams {
 export class DialogService {
   constructor(private dialog: MatDialog, private translate: TranslateService) {}
 
-  openBatchDeleteModal(entity: BatchDeleteEntity, snapshot: BatchDeleteSnapshot, facade: BatchFacade) {
+  openBatchDeleteModal(entity: BatchDeleteEntity, snapshot: BatchDeleteSnapshot) {
     const config: CommonModalConfig<TextValidatedConfirmationModalParams> = {
       title: `batch-delete.dialog.${entity}.title`,
       primaryActionBtnLabel: 'Delete',
@@ -126,7 +125,6 @@ export class DialogService {
         ),
         validationKeyword: 'delete',
         validationPlaceholder: 'Type delete',
-        isLoading$: facade.state$.pipe(map((state) => state.confirmation?.operationId !== snapshot.operationId)),
       },
     };
     // Restoring focus here leaves the root menu trigger's focus circle visible after Cancel or Close.

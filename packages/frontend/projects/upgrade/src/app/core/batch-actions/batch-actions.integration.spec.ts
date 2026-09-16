@@ -294,7 +294,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(data.batchDelete).not.toHaveBeenCalled();
   });
 
-  it('uses updated page data to block a hidden restriction without an eligibility request', () => {
+  it('keeps selection-time availability when refreshed rows change state, including hidden selections', () => {
     selectRows();
     const blocked = {
       ...rows[2],
@@ -305,12 +305,13 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     store.dispatch(config.fetch({ fromStarting: true }));
     data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0]])));
     store.dispatch(config.fetch({ fromStarting: true }));
-    store.dispatch(actions.prepareConfirmation({ operationId: newBatchRequestId() }));
-    expect(batch().confirmation).toBeNull();
+    const snapshot = prepare();
     expect(Object.keys(batch().selectedById)).toHaveLength(3);
-    expect(selectionView(batch(), config.entity).canRequestConfirmation).toBe(false);
+    expect(batch().selectedById[blocked.id]).toEqual(selectionItem(rows[2]));
+    expect(selectionView(batch(), config.entity).canRequestConfirmation).toBe(true);
 
-    expect(data.batchDelete).not.toHaveBeenCalled();
+    store.dispatch(actions.batchDeleteRequested({ snapshot }));
+    expect(data.batchDelete).toHaveBeenCalledWith(rows.map(({ id }) => id));
   });
 
   it('retains cached selections until the delete response establishes an absence', () => {
@@ -404,13 +405,24 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
   it('keeps the displayed confirmation snapshot when updated rows arrive or focus returns', fakeAsync(() => {
     selectRows(2);
     const snapshot = prepare();
-    data[config.fetchMethod].mockReturnValueOnce(of(page([{ ...rows[0], name: 'renamed' }])));
+    data[config.fetchMethod].mockReturnValueOnce(
+      of(
+        page([
+          {
+            ...rows[0],
+            name: 'renamed',
+            state: config.entity === 'experiments' ? EXPERIMENT_STATE.RUNNING : undefined,
+            status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
+          },
+        ])
+      )
+    );
     store.dispatch(config.fetch({ fromStarting: true }));
     window.dispatchEvent(new Event('focus'));
     tick(100);
     expect(batch().confirmation).toBe(snapshot);
     expect(snapshot.items.map(({ name }) => name)).toEqual(['a', 'b']);
-    expect(batch().selectedById[rows[0].id].name).toBe('renamed');
+    expect(batch().selectedById[rows[0].id]).toEqual(selectionItem(rows[0]));
 
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     expect(data.batchDelete).toHaveBeenCalledWith([rows[0].id, rows[1].id]);
@@ -643,16 +655,5 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(Object.keys(batch().selectedById)).toHaveLength(0);
     expect(batch().removedIds).toHaveLength(0);
     expect(notifications.showSuccess).not.toHaveBeenCalled();
-  });
-
-  it('clears selection and prevents submission of the old confirmation when the role changes', () => {
-    selectRows();
-    const snapshot = prepare();
-    store.dispatch(actionSetUserInfo({ user: { email: 'review@example.com', role: UserRole.READER } }));
-    expect(Object.keys(batch().selectedById)).toHaveLength(0);
-    expect(batch().confirmation).toBeNull();
-    store.dispatch(actions.batchDeleteRequested({ snapshot }));
-    expect(data.batchDelete).not.toHaveBeenCalled();
-    expect(batch().operation).toBeNull();
   });
 });

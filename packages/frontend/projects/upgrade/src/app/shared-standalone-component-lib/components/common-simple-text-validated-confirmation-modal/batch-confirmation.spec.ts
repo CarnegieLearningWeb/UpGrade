@@ -3,9 +3,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { BehaviorSubject } from 'rxjs';
 import { BatchDeleteEntity } from 'upgrade_types';
-import { initialRootBatchState, RootBatchState } from '../../../core/batch-actions/batch-actions.models';
 import { DialogService } from '../../../shared/services/common-dialog.service';
 import { CommonSimpleTextValidatedConfirmationModalComponent } from './common-simple-text-validated-confirmation-modal.component';
 
@@ -13,7 +11,6 @@ const translations = jest.requireActual('../../../../assets/i18n/en.json');
 
 describe('Batch deletion using the existing text confirmation dialog', () => {
   let ref: MatDialogRef<CommonSimpleTextValidatedConfirmationModalComponent, boolean>;
-  let state$: BehaviorSubject<RootBatchState>;
   let container: HTMLElement;
   const primary = () => container.querySelector('.footer-container button:not(.cancel-btn)') as HTMLButtonElement;
   function detect() {
@@ -25,8 +22,7 @@ describe('Batch deletion using the existing text confirmation dialog', () => {
       operationId: 'operation',
       items: Array.from({ length: count }, (_, index) => ({ id: String(index), name: `Item ${index}` })),
     };
-    state$ = new BehaviorSubject({ ...initialRootBatchState, confirmation: snapshot });
-    ref = TestBed.inject(DialogService).openBatchDeleteModal(entity, snapshot, { state$ } as any);
+    ref = TestBed.inject(DialogService).openBatchDeleteModal(entity, snapshot);
     detect();
   }
   function input(value: string) {
@@ -51,7 +47,6 @@ describe('Batch deletion using the existing text confirmation dialog', () => {
   });
   afterEach(() => {
     TestBed.inject(MatDialog).closeAll();
-    state$?.complete();
     TestBed.resetTestingModule();
   });
 
@@ -102,13 +97,5 @@ describe('Batch deletion using the existing text confirmation dialog', () => {
     (container.querySelector('.cdk-overlay-backdrop') as HTMLElement).click();
     tick();
     expect(TestBed.inject(MatDialog).openDialogs).toHaveLength(1);
-  }));
-
-  it('disables confirmation when selection or permissions invalidate its snapshot', fakeAsync(() => {
-    open();
-    input('delete');
-    state$.next({ ...state$.value, confirmation: null });
-    detect();
-    expect(primary().disabled).toBe(true);
   }));
 });
