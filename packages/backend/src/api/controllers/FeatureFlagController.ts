@@ -466,8 +466,6 @@ export class FeatureFlagsController {
    *       responses:
    *          '200':
    *            description: Delete Feature flag By Id
-   *          '400':
-   *            description: Invalid UUID
    *          '404':
    *            description: Feature flag not found
    */

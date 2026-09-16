@@ -1178,7 +1178,7 @@ export class ExperimentController {
    *            schema:
    *              $ref: '#/definitions/ExperimentResponse'
    *          '400':
-   *            description: Invalid UUID.
+   *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':

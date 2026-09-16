@@ -670,9 +670,7 @@ export class SegmentController {
    *        '401':
    *          description: Authorization Required Error
    *        '500':
-   *          description: Internal Server Error
-   *        '400':
-   *          description: Invalid UUID
+   *          description: Internal Server Error, SegmentId is not valid
    */
   @Delete('/:segmentId')
   public deleteSegment(
