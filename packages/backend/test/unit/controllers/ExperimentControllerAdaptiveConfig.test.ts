@@ -1,5 +1,5 @@
 import { ExperimentController } from '../../../src/api/controllers/ExperimentController';
-import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, EXPERIMENT_STATE } from 'upgrade_types';
 
 describe('ExperimentController adaptive config wiring', () => {
   let experimentService: any;
@@ -12,6 +12,7 @@ describe('ExperimentController adaptive config wiring', () => {
       validateExperimentContext: jest.fn().mockReturnValue(undefined),
       create: jest.fn(),
       update: jest.fn(),
+      updateState: jest.fn(),
       delete: jest.fn().mockResolvedValue(undefined),
       getSingleExperiment: jest.fn(),
     };
@@ -191,6 +192,132 @@ describe('ExperimentController adaptive config wiring', () => {
       );
 
       expect(experimentService.update).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects a condition field change once the experiment has started', async () => {
+      const previousExperiment = {
+        id: 'experiment-1',
+        state: EXPERIMENT_STATE.RUNNING,
+        conditions: [{ id: 'condition-1', conditionCode: 'A', name: 'A', description: '', assignmentWeight: 50 }],
+      };
+      const experiment = {
+        id: 'experiment-1',
+        conditions: [
+          { id: 'condition-1', conditionCode: 'A-renamed', name: 'A', description: '', assignmentWeight: 50 },
+        ],
+      } as any;
+      experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
+
+      await expect(controller.update({ id: 'experiment-1' } as any, experiment, {} as any, request)).rejects.toThrow(
+        /cannot be modified/
+      );
+      expect(experimentService.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects an added/removed condition once the experiment has started', async () => {
+      const previousExperiment = {
+        id: 'experiment-1',
+        state: EXPERIMENT_STATE.PAUSED,
+        conditions: [{ id: 'condition-1', conditionCode: 'A', assignmentWeight: 100 }],
+      };
+      const experiment = {
+        id: 'experiment-1',
+        conditions: [
+          { id: 'condition-1', conditionCode: 'A', assignmentWeight: 50 },
+          { id: 'condition-2', conditionCode: 'B', assignmentWeight: 50 },
+        ],
+      } as any;
+      experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
+
+      await expect(controller.update({ id: 'experiment-1' } as any, experiment, {} as any, request)).rejects.toThrow(
+        /cannot be modified/
+      );
+      expect(experimentService.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects a Thompson Sampling prior change once the experiment has started', async () => {
+      const previousExperiment = {
+        id: 'experiment-1',
+        state: EXPERIMENT_STATE.RUNNING,
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+        conditions: [{ id: 'condition-1', conditionCode: 'A' }],
+        thompsonSamplingConfig: { priors: { 'condition-1': { success: 1, failure: 1 } } },
+      };
+      const experiment = {
+        id: 'experiment-1',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+        conditions: [{ id: 'condition-1', conditionCode: 'A' }],
+        thompsonSamplingConfig: { priors: { 'condition-1': { success: 5, failure: 1 } } },
+      } as any;
+      experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
+
+      await expect(controller.update({ id: 'experiment-1' } as any, experiment, {} as any, request)).rejects.toThrow(
+        /cannot be modified/
+      );
+      expect(experimentService.update).not.toHaveBeenCalled();
+    });
+
+    it('allows an unrelated field change once the experiment has started, when conditions/priors are unchanged', async () => {
+      const previousExperiment = {
+        id: 'experiment-1',
+        state: EXPERIMENT_STATE.RUNNING,
+        name: 'old name',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+        conditions: [{ id: 'condition-1', conditionCode: 'A', assignmentWeight: 100 }],
+        thompsonSamplingConfig: { priors: { 'condition-1': { success: 1, failure: 1 } } },
+      };
+      const experiment = {
+        id: 'experiment-1',
+        name: 'new name',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+        conditions: [{ id: 'condition-1', conditionCode: 'A', assignmentWeight: 100 }],
+        thompsonSamplingConfig: { priors: { 'condition-1': { success: 1, failure: 1 } } },
+      } as any;
+      experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
+      experimentService.update.mockResolvedValue({ id: 'experiment-1', conditions: experiment.conditions });
+
+      await controller.update({ id: 'experiment-1' } as any, experiment, {} as any, request);
+
+      expect(experimentService.update).toHaveBeenCalledTimes(1);
+    });
+
+    it('allows a condition/prior change while the experiment has not started yet', async () => {
+      const previousExperiment = {
+        id: 'experiment-1',
+        state: EXPERIMENT_STATE.INACTIVE,
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+        conditions: [{ id: 'condition-1', conditionCode: 'A' }],
+        thompsonSamplingConfig: { priors: { 'condition-1': { success: 1, failure: 1 } } },
+      };
+      const experiment = {
+        id: 'experiment-1',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+        conditions: [{ id: 'condition-1', conditionCode: 'A-renamed' }],
+        thompsonSamplingConfig: { priors: { 'condition-1': { success: 5, failure: 1 } } },
+      } as any;
+      experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
+      experimentService.update.mockResolvedValue({ id: 'experiment-1', conditions: experiment.conditions });
+
+      await controller.update({ id: 'experiment-1' } as any, experiment, {} as any, request);
+
+      expect(experimentService.update).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('updateState()', () => {
+    it('attaches the Thompson Sampling config onto the state-change response, like the other endpoints', async () => {
+      const updatedExperiment = {
+        id: 'experiment-1',
+        state: EXPERIMENT_STATE.PAUSED,
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+      };
+      experimentService.updateState.mockResolvedValue(updatedExperiment);
+
+      const stateUpdate = { experimentId: 'experiment-1', state: EXPERIMENT_STATE.PAUSED } as any;
+      const result = await controller.updateState(stateUpdate, {} as any, request);
+
+      expect(adaptiveExperimentConfigDispatcher.attachConfigToExperiment).toHaveBeenCalledWith(updatedExperiment);
+      expect(result).toBe(updatedExperiment);
     });
   });
 });

@@ -32,7 +32,14 @@ import { AdaptiveExperimentConfigDispatcherService } from '../services/AdaptiveE
 import { Response } from 'express';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
-import { CACHE_PREFIX, IImportError, LIST_FILTER_MODE, SERVER_ERROR, ExperimentRewardsSummary } from 'upgrade_types';
+import {
+  CACHE_PREFIX,
+  EXPERIMENT_STATE,
+  IImportError,
+  LIST_FILTER_MODE,
+  SERVER_ERROR,
+  ExperimentRewardsSummary,
+} from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
 import { getInstanceId } from '../../lib/instanceIdentity';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
@@ -1197,13 +1204,14 @@ export class ExperimentController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
-    return this.experimentService.updateState(
+    const updatedExperiment = await this.experimentService.updateState(
       experiment.experimentId,
       experiment.state,
       currentUser,
       request.logger,
       experiment.scheduleDate
     );
+    return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(updatedExperiment);
   }
 
   /**
@@ -1258,6 +1266,7 @@ export class ExperimentController {
     const previousExperiment = await this.experimentService.getSingleExperiment(id, request.logger);
     if (previousExperiment) {
       await this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(previousExperiment);
+      this.assertConditionsNotModifiedAfterStart(previousExperiment, experiment);
     }
 
     const updatedExperiment = await this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
@@ -1291,6 +1300,81 @@ export class ExperimentController {
     }
 
     return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(updatedExperiment);
+  }
+
+  /**
+   * Mirrors the frontend's own restriction (selectSectionCardRestriction /
+   * selectDisabledExperimentFields in experiments.selectors.ts): conditions -- including Thompson
+   * Sampling priors -- are only editable while an experiment is still in one of these states. The
+   * frontend disables the relevant fields/section card once an experiment has left this set, but
+   * nothing previously stopped the same change from being sent directly to this endpoint.
+   */
+  private static readonly CONDITIONS_EDITABLE_STATES = new Set<EXPERIMENT_STATE>([
+    EXPERIMENT_STATE.INACTIVE,
+    EXPERIMENT_STATE.SCHEDULED,
+    EXPERIMENT_STATE.PREVIEW,
+    EXPERIMENT_STATE.DRAFT,
+  ]);
+
+  private assertConditionsNotModifiedAfterStart(
+    previousExperiment: ExperimentDTO,
+    incomingExperiment: ExperimentDTO
+  ): void {
+    // Mirrors selectDisabledExperimentFields/selectSectionCardRestriction's own `!state || ...`
+    // guard: a missing state means there's nothing to compare against yet, not that editing should
+    // be blocked.
+    if (!previousExperiment.state || ExperimentController.CONDITIONS_EDITABLE_STATES.has(previousExperiment.state)) {
+      return;
+    }
+
+    const previousConditions = previousExperiment.conditions ?? [];
+    const incomingConditions = incomingExperiment.conditions ?? [];
+
+    const previousIds = new Set(previousConditions.map((condition) => condition.id));
+    const incomingIds = new Set(incomingConditions.map((condition) => condition.id));
+    const conditionSetChanged =
+      previousIds.size !== incomingIds.size || [...previousIds].some((id) => !incomingIds.has(id));
+
+    const conditionFieldsChanged = previousConditions.some((previousCondition) => {
+      const incomingCondition = incomingConditions.find((condition) => condition.id === previousCondition.id);
+      return (
+        incomingCondition &&
+        (previousCondition.conditionCode !== incomingCondition.conditionCode ||
+          previousCondition.name !== incomingCondition.name ||
+          previousCondition.description !== incomingCondition.description ||
+          previousCondition.assignmentWeight !== incomingCondition.assignmentWeight)
+      );
+    });
+
+    const priorsChanged = this.havePriorsChanged(
+      previousExperiment.thompsonSamplingConfig?.priors,
+      incomingExperiment.thompsonSamplingConfig?.priors
+    );
+
+    if (conditionSetChanged || conditionFieldsChanged || priorsChanged) {
+      throw new BadRequestError(
+        `Conditions (including Thompson Sampling priors) cannot be modified once an experiment has started. Current state: ${previousExperiment.state}.`
+      );
+    }
+  }
+
+  private havePriorsChanged(
+    previousPriors: Record<string, { success: number; failure: number }> | undefined,
+    incomingPriors: Record<string, { success: number; failure: number }> | undefined
+  ): boolean {
+    // No priors submitted at all (e.g. a non-Thompson-Sampling experiment, or a caller that only
+    // sends the fields it means to change) -- nothing to compare or block.
+    if (!incomingPriors) {
+      return false;
+    }
+
+    const previous = previousPriors ?? {};
+    const keys = new Set([...Object.keys(previous), ...Object.keys(incomingPriors)]);
+    return [...keys].some((conditionId) => {
+      const previousPrior = previous[conditionId];
+      const incomingPrior = incomingPriors[conditionId];
+      return previousPrior?.success !== incomingPrior?.success || previousPrior?.failure !== incomingPrior?.failure;
+    });
   }
 
   /**
