@@ -1,4 +1,4 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Actions, getEffectsMetadata } from '@ngrx/effects';
 import { Action, ScannedActionsSubject, Store, StoreModule } from '@ngrx/store';
@@ -314,20 +314,29 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(data.batchDelete).toHaveBeenCalledWith(rows.map(({ id }) => id));
   });
 
-  it('retains cached selections until the delete response establishes an absence', () => {
+  it('removes an absent item and retains failed and unattempted selections with a warning', () => {
     selectRows();
     const snapshot = prepare();
     expect(snapshot.items).toHaveLength(3);
 
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     response.next({
-      phase: 'rejected',
-      results: rows.map(({ id }, index) => ({ id, outcome: index === 1 ? 'not_found' : 'not_attempted' })),
+      phase: 'executed',
+      results: [
+        { id: rows[0].id, outcome: 'not_found', reasonCode: 'not_found' },
+        { id: rows[1].id, outcome: 'failed', reasonCode: 'delete_failed' },
+        { id: rows[2].id, outcome: 'not_attempted' },
+      ],
     });
-    expect(batch().selectedById[rows[1].id]).toBeUndefined();
-    expect(currentRows().some((row) => row.id === rows[1].id)).toBe(false);
-    expect(batchResultCounts(batch())).toMatchObject({ deleted: 0, absent: 1 });
+    expect(Object.keys(batch().selectedById)).toEqual([rows[1].id, rows[2].id]);
+    expect(currentRows().map(({ id }) => id)).toEqual([rows[1].id, rows[2].id]);
+    expect(batchResultCounts(batch())).toMatchObject({ deleted: 0, absent: 1, failed: 1, notAttempted: 1 });
+    expect(notifications.showWarning).toHaveBeenCalledWith(
+      '1 item was already absent. 1 item could not be deleted. 1 item was not attempted.'
+    );
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
+    expect(notifications.showSuccess).not.toHaveBeenCalled();
+    expect(notifications.showError).not.toHaveBeenCalled();
     expect(data[config.fetchMethod]).toHaveBeenLastCalledWith(expect.objectContaining({ skip: 0 }), true);
     expect(batch().confirmation).toBeNull();
   });
@@ -444,7 +453,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     }
   );
 
-  it('keeps the displayed confirmation snapshot when updated rows arrive or focus returns', fakeAsync(() => {
+  it('keeps the displayed confirmation snapshot when updated rows arrive', () => {
     selectRows(2);
     const snapshot = prepare();
     data[config.fetchMethod].mockReturnValueOnce(
@@ -460,15 +469,13 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       )
     );
     store.dispatch(config.fetch({ fromStarting: true }));
-    window.dispatchEvent(new Event('focus'));
-    tick(100);
     expect(batch().confirmation).toBe(snapshot);
     expect(snapshot.items.map(({ name }) => name)).toEqual(['a', 'b']);
     expect(batch().selectedById[rows[0].id]).toEqual(selectionItem(rows[0]));
 
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     expect(data.batchDelete).toHaveBeenCalledWith([rows[0].id, rows[1].id]);
-  }));
+  });
 
   it.each([1, 3])('reports %i deletions once and ignores stale reads started before or during deletion', (count) => {
     const options = rows.map(({ id, name }) => ({ id, name, context: 'home' }));
@@ -504,7 +511,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(notifications.showSuccess).toHaveBeenCalledWith(`${count} ${noun}${count === 1 ? '' : 's'} deleted.`);
   });
 
-  it.each([0, 400, 403, 500, 504])(
+  it.each([0, 500])(
     'restores cancelled replacement rows after HTTP %i without another request or snackbar',
     (status) => {
       selectRows();

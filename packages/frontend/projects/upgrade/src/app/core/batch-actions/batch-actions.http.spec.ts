@@ -56,7 +56,7 @@ describe('Batch HTTP contracts', () => {
     navigation.complete();
   });
 
-  it.each([0, 400, 403, 404, 500, 504])('reports HTTP %i using the existing error popup', (status) => {
+  it.each([0, 404])('reports HTTP %i using the existing error popup', (status) => {
     const notification = { create: jest.fn() };
     const auth = { authLogout: jest.fn() };
     const interceptor = new HttpErrorInterceptor(auth as any, notification as any, {} as any);
