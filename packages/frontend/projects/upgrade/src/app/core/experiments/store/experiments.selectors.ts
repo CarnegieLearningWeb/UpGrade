@@ -29,6 +29,7 @@ import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.
 import { formatTSConfigurablePolicyParamDetails } from '../mooclet-helper.service';
 import { KeyValueFormat } from '@shared-component-lib/common-section-card-overview-details/common-section-card-overview-details.component';
 import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { getExperimentDeletionReason } from '../../batch-actions/batch-actions.helpers';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
 
@@ -530,6 +531,10 @@ export const selectSectionCardRestriction = (cardType: EXPERIMENT_SECTION_CARD_T
 const isMenuItemDisabled = (action: EXPERIMENT_DETAILS_PAGE_ACTIONS, state?: EXPERIMENT_STATE): boolean => {
   if (!state) {
     return true; // No state = disabled
+  }
+
+  if (action === EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE) {
+    return !!getExperimentDeletionReason(state);
   }
 
   // Archive only enabled when COMPLETED

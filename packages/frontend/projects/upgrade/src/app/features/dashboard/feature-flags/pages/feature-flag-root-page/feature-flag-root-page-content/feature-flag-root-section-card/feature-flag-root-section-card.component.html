@@ -40,6 +40,7 @@
     } @else {
     <div class="table-container">
       <app-feature-flag-root-section-card-table
+        [canSelect]="(permissions$ | async)?.featureFlags.delete"
         [featureFlags$]="featureFlags$"
         [isLoading$]="isLoadingFeatureFlags$"
         [isSearchActive$]="isSearchActive$"

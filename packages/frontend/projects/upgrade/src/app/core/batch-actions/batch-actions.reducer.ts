@@ -1,5 +1,5 @@
 import { Action } from '@ngrx/store';
-import { BatchDeleteEntity, SEGMENT_TYPE, hasBatchDeletePermission } from 'upgrade_types';
+import { BatchDeleteEntity } from 'upgrade_types';
 import * as auth from '../auth/store/auth.actions';
 import { RootBatchActions } from './batch-actions.actions';
 import { RootBatchState, RootSelectionItem, initialRootBatchState, isBatchBusy } from './batch-actions.models';
@@ -65,7 +65,7 @@ export function reduceRootBatch(
     const email = action.user?.email || null;
     const role = action.user?.role || null;
     if (state.userEmail !== email) return { ...initialRootBatchState, userEmail: email, role };
-    return state.role === role ? state : { ...invalidateSelection(state), role };
+    return state.role === role ? state : { ...invalidateSelection(state), selectedById: {}, role };
   }
   if (matches(action, actions.listRequested))
     return {
@@ -94,10 +94,7 @@ export function reduceRootBatch(
         : [];
       for (const item of items) {
         if (selectedById[item.id] && matches(action, actions.toggleRow)) delete selectedById[item.id];
-        else if (
-          state.loadedIds.includes(item.id) &&
-          (entity !== 'segments' || item.segmentType === SEGMENT_TYPE.PUBLIC)
-        ) {
+        else if (state.loadedIds.includes(item.id)) {
           selectedById[item.id] = { ...item };
         }
       }
@@ -120,13 +117,7 @@ export function reduceRootBatch(
     return isBatchBusy(state) ? state : { ...state, confirmation: null };
   if (matches(action, actions.batchDeleteRequested)) {
     const snapshot = state.confirmation;
-    if (
-      isBatchBusy(state) ||
-      !snapshot ||
-      snapshot.operationId !== action.snapshot.operationId ||
-      !hasBatchDeletePermission(state.role, entity)
-    )
-      return state;
+    if (isBatchBusy(state) || !snapshot || snapshot.operationId !== action.snapshot.operationId) return state;
     return {
       ...state,
       listRequestId: null,

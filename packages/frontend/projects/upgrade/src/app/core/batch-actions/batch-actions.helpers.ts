@@ -3,10 +3,9 @@ import {
   BatchDeleteResult,
   DeletionReasonCode,
   EXPERIMENT_STATE,
+  EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
   FEATURE_FLAG_STATUS,
   SEGMENT_STATUS,
-  SEGMENT_TYPE,
-  hasBatchDeletePermission,
 } from 'upgrade_types';
 import { BatchSelectionReasonCode, RootBatchState, RootSelectionItem, isBatchBusy } from './batch-actions.models';
 
@@ -15,40 +14,39 @@ export function selectionItem(row: {
   name?: string;
   state?: EXPERIMENT_STATE;
   status?: FEATURE_FLAG_STATUS | SEGMENT_STATUS;
-  type?: SEGMENT_TYPE;
 }): RootSelectionItem {
-  return { id: row.id, name: row.name, stateOrStatus: row.state || row.status, segmentType: row.type };
+  return { id: row.id, name: row.name, stateOrStatus: row.state || row.status };
 }
 
-function getFlagDeletionReason(status: FEATURE_FLAG_STATUS): BatchSelectionReasonCode | undefined {
-  return status === FEATURE_FLAG_STATUS.ENABLED
-    ? BatchSelectionReasonCode.FEATURE_FLAG_ENABLED
-    : [FEATURE_FLAG_STATUS.DISABLED, FEATURE_FLAG_STATUS.ARCHIVED].includes(status)
+export function getExperimentDeletionReason(state?: EXPERIMENT_STATE): BatchSelectionReasonCode | undefined {
+  const displayState = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[state] || state;
+  return [
+    EXPERIMENT_STATE.DRAFT,
+    EXPERIMENT_STATE.INACTIVE,
+    EXPERIMENT_STATE.COMPLETED,
+    EXPERIMENT_STATE.ARCHIVED,
+  ].includes(displayState)
     ? undefined
-    : BatchSelectionReasonCode.FEATURE_FLAG_STATUS_UNSUPPORTED;
+    : BatchSelectionReasonCode.EXPERIMENT_ACTIVE;
 }
 
 export function localDeletionReason(
   entity: BatchDeleteEntity,
-  item: RootSelectionItem,
-  role: RootBatchState['role']
+  item: RootSelectionItem
 ): BatchSelectionReasonCode | undefined {
-  if (!hasBatchDeletePermission(role, entity)) return BatchSelectionReasonCode.MISSING_PERMISSION;
-  if (entity === 'experiments') return undefined;
-  if (entity === 'flags') return getFlagDeletionReason(item.stateOrStatus as FEATURE_FLAG_STATUS);
-  if (item.segmentType !== SEGMENT_TYPE.PUBLIC) return BatchSelectionReasonCode.PROTECTED_SEGMENT_TYPE;
-  return item.stateOrStatus === SEGMENT_STATUS.UNUSED
-    ? undefined
-    : item.stateOrStatus === SEGMENT_STATUS.USED
-    ? BatchSelectionReasonCode.SEGMENT_IN_USE
-    : BatchSelectionReasonCode.ELIGIBILITY_UNAVAILABLE;
+  if (entity === 'experiments') return getExperimentDeletionReason(item.stateOrStatus as EXPERIMENT_STATE);
+  if (entity === 'flags')
+    return item.stateOrStatus === FEATURE_FLAG_STATUS.ENABLED
+      ? BatchSelectionReasonCode.FEATURE_FLAG_ENABLED
+      : undefined;
+  return item.stateOrStatus === SEGMENT_STATUS.USED ? BatchSelectionReasonCode.SEGMENT_USED : undefined;
 }
 
 export function selectionView(state: RootBatchState, entity: BatchDeleteEntity) {
   const items = Object.values(state.selectedById);
   const loaded = new Set(state.loadedIds);
   const checked = loaded.size > 0 && [...loaded].every((id) => !!state.selectedById[id]);
-  const reasons = items.map((item) => localDeletionReason(entity, item, state.role)).filter(Boolean);
+  const reasons = items.map((item) => localDeletionReason(entity, item)).filter(Boolean);
   return {
     items,
     selectedCount: items.length,

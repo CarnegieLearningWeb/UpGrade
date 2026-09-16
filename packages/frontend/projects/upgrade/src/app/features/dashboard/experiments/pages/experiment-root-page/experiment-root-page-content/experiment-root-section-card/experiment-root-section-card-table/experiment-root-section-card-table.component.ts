@@ -50,6 +50,7 @@ export class ExperimentRootSectionCardTableComponent implements AfterViewInit, O
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
   @Input() expandedTagsMap: Map<string, boolean>;
+  @Input() canSelect = false;
   @Output() tagsExpanded = new EventEmitter<{ experimentId: string; expanded: boolean }>();
   experimentSortKey$ = this.experimentService.selectExperimentSortKey$;
   experimentSortAs$ = this.experimentService.selectExperimentSortAs$;

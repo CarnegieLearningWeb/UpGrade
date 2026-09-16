@@ -8,7 +8,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { Store, StoreModule } from '@ngrx/store';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, Subject, Subscription, of } from 'rxjs';
-import { EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SEGMENT_STATUS, SEGMENT_TYPE, UserRole } from 'upgrade_types';
+import { EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SEGMENT_STATUS, UserRole } from 'upgrade_types';
 import { ExperimentRootSectionCardComponent } from './experiments/pages/experiment-root-page/experiment-root-page-content/experiment-root-section-card/experiment-root-section-card.component';
 import { FeatureFlagRootSectionCardComponent } from './feature-flags/pages/feature-flag-root-page/feature-flag-root-page-content/feature-flag-root-section-card/feature-flag-root-section-card.component';
 import { SegmentRootSectionCardComponent } from './segments/pages/segment-root-page/segment-root-page-content/segment-root-section-card/segment-root-section-card.component';
@@ -73,7 +73,6 @@ describe.each(cases)('$entity root batch UI', (config) => {
     tags: [],
     state: config.entity === 'experiments' ? EXPERIMENT_STATE.INACTIVE : undefined,
     status: config.entity === 'segments' ? SEGMENT_STATUS.UNUSED : FEATURE_FLAG_STATUS.DISABLED,
-    type: SEGMENT_TYPE.PUBLIC,
   }));
   const batch = () => state[config.key].rootBatch;
   const checkboxes = (): HTMLInputElement[] => [...fixture.nativeElement.querySelectorAll('input[type=checkbox]')];
@@ -110,9 +109,9 @@ describe.each(cases)('$entity root batch UI', (config) => {
   }
   beforeEach(async () => {
     permissions$ = new BehaviorSubject({
-      experiments: { create: true },
-      featureFlags: { create: true },
-      segments: { create: true },
+      experiments: { create: true, delete: true },
+      featureFlags: { create: true, delete: true },
+      segments: { create: true, delete: true },
     });
     global.IntersectionObserver = jest.fn(() => ({ observe: jest.fn(), disconnect: jest.fn() })) as any;
     await TestBed.configureTestingModule({
@@ -285,16 +284,21 @@ describe.each(cases)('$entity root batch UI', (config) => {
     expect(batch().confirmation).toBeNull();
   }));
 
-  it('keeps a disabled menu discoverable to a Reader and allows clearing the selection', () => {
+  it('hides batch controls for a Reader while retaining the name and sort content', () => {
+    permissions$.next({
+      experiments: { create: false, delete: false },
+      featureFlags: { create: false, delete: false },
+      segments: { create: false, delete: false },
+    });
     store.dispatch(actionSetUserInfo({ user: { email: 'test@example.com', role: UserRole.READER } }));
-    selectFirst();
-    const trigger = fixture.nativeElement.querySelector('.section-card-menu-trigger') as HTMLButtonElement;
-    expect(trigger.disabled).toBe(true);
-    expect(trigger.parentElement.getAttribute('tabindex')).toBe('0');
-    expect(trigger.parentElement.getAttribute('aria-label')).toContain('permission');
-    checkboxes()[0].click();
     fixture.detectChanges();
-    expect(Object.keys(batch().selectedById)).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('.batch-checkbox')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelector('.section-card-menu-trigger')).toBeNull();
+    const nameCells: HTMLElement[] = [...fixture.nativeElement.querySelectorAll('.batch-name-cell')];
+    expect(nameCells).toHaveLength(rows.length + 1);
+    expect(nameCells.every((cell) => cell.children.length === 1)).toBe(true);
+    expect(nameCells[0].firstElementChild.classList.contains('batch-name-sort')).toBe(true);
+    rows.forEach((row, index) => expect(nameCells[index + 1].querySelector('a').textContent).toContain(row.name));
   });
 
   it('preserves selection across collapse and removes tag expansion only for confirmed removals', () => {
@@ -398,14 +402,23 @@ describe.each(cases)('$entity root batch UI', (config) => {
   );
 
   it('separates User Manager delete permission from create permission', () => {
-    permissions$.next({ experiments: { create: false }, featureFlags: { create: false }, segments: { create: false } });
+    permissions$.next({
+      experiments: { create: false, delete: false },
+      featureFlags: { create: false, delete: false },
+      segments: { create: false, delete: true },
+    });
     store.dispatch(actionSetUserInfo({ user: { email: 'test@example.com', role: UserRole.USER_MANAGER } }));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.section-card-menu-trigger')).toBeNull();
-    selectFirst();
-    const trigger = fixture.nativeElement.querySelector('.section-card-menu-trigger') as HTMLButtonElement;
-    expect(trigger).not.toBeNull();
-    expect(trigger.disabled).toBe(config.entity !== 'segments');
+    expect(fixture.nativeElement.querySelectorAll('.batch-checkbox')).toHaveLength(
+      config.entity === 'segments' ? rows.length + 1 : 0
+    );
+    if (config.entity === 'segments') {
+      selectFirst();
+      const trigger = fixture.nativeElement.querySelector('.section-card-menu-trigger') as HTMLButtonElement;
+      expect(trigger).not.toBeNull();
+      expect(trigger.disabled).toBe(false);
+    }
   });
 
   it.each(['list', 'deletion'])('keeps the existing progress bar until both requests finish (%s first)', (first) => {
@@ -468,27 +481,40 @@ describe.each(cases)('$entity root batch UI', (config) => {
     expect(Object.keys(batch().selectedById)).toHaveLength(2);
   });
 
-  if (config.entity !== 'experiments') {
-    it('explains a hidden restriction only in the menu tooltip without inserting a status row', () => {
-      load([
-        {
-          ...rows[0],
-          status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
-        },
-      ]);
-      fixture.detectChanges();
-      selectFirst();
-      load([]);
-      fixture.detectChanges();
-      fixture.componentInstance.batchUi.requestDelete();
-      fixture.detectChanges();
-      const trigger = fixture.nativeElement.querySelector('.section-card-menu-trigger') as HTMLButtonElement;
-      expect(trigger.disabled).toBe(true);
-      expect(trigger.parentElement.getAttribute('aria-label')).toContain('Deselect');
-      expect(fixture.nativeElement.querySelector('.selection-status')).toBeNull();
-      expect(fixture.nativeElement.textContent).not.toContain('Refresh selection status');
-      expect(Object.keys(batch().selectedById)).toEqual([rows[0].id]);
-      expect(dialogs.openBatchDeleteModal).not.toHaveBeenCalled();
-    });
-  }
+  it.each<EXPERIMENT_STATE | FEATURE_FLAG_STATUS | SEGMENT_STATUS>(
+    config.entity === 'experiments'
+      ? [EXPERIMENT_STATE.PREVIEW, EXPERIMENT_STATE.SCHEDULED, EXPERIMENT_STATE.RUNNING, EXPERIMENT_STATE.PAUSED]
+      : [config.entity === 'flags' ? FEATURE_FLAG_STATUS.ENABLED : SEGMENT_STATUS.USED]
+  )('blocks mixed selections with a hidden %s item using only the existing menu tooltip', (status) => {
+    load([
+      {
+        ...rows[0],
+        state: config.entity === 'experiments' ? (status as EXPERIMENT_STATE) : undefined,
+        status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
+      },
+      rows[1],
+    ]);
+    fixture.detectChanges();
+    checkboxes()[0].click();
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('.section-card-menu-trigger') as HTMLButtonElement;
+    expect(trigger.disabled).toBe(true);
+    load([rows[1]]);
+    fixture.detectChanges();
+    fixture.componentInstance.batchUi.requestDelete();
+    fixture.detectChanges();
+    expect(trigger.disabled).toBe(true);
+    expect(trigger.parentElement.getAttribute('aria-label')).toContain('Deselect');
+    expect(fixture.nativeElement.querySelector('.selection-status')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Refresh selection status');
+    expect(Object.keys(batch().selectedById)).toEqual(rows.map(({ id }) => id));
+    expect(batch().confirmation).toBeNull();
+    expect(dialogs.openBatchDeleteModal).not.toHaveBeenCalled();
+
+    checkboxes()[0].click();
+    fixture.detectChanges();
+    selectFirst();
+    fixture.componentInstance.batchUi.requestDelete();
+    expect(dialogs.openBatchDeleteModal).toHaveBeenCalledTimes(1);
+  });
 });

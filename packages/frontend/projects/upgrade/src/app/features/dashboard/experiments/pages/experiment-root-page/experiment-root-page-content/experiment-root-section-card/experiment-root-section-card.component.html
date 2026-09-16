@@ -40,6 +40,7 @@
     } @else {
     <div class="table-container">
       <app-experiment-root-section-card-table
+        [canSelect]="(permissions$ | async)?.experiments.delete"
         [experiments]="experiments$ | async"
         [isLoading$]="isLoadingExperiments$"
         [isSearchActive$]="isSearchActive$"

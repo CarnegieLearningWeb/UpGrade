@@ -48,6 +48,7 @@ export class FeatureFlagRootSectionCardTableComponent implements AfterViewInit, 
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
   @Input() expandedTagsMap: Map<string, boolean>;
+  @Input() canSelect = false;
   @Output() tagsExpanded = new EventEmitter<{ flagId: string; expanded: boolean }>();
   flagSortKey$ = this.featureFlagsService.sortKey$;
   flagSortAs$ = this.featureFlagsService.sortAs$;

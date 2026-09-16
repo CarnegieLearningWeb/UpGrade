@@ -1,26 +1,15 @@
-import {
-  BatchDeleteResult,
-  EXPERIMENT_STATE,
-  FEATURE_FLAG_STATUS,
-  SEGMENT_STATUS,
-  SEGMENT_TYPE,
-  UserRole,
-} from 'upgrade_types';
+import { BatchDeleteResult, EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SEGMENT_STATUS, UserRole } from 'upgrade_types';
 
 export enum BatchSelectionReasonCode {
-  MISSING_PERMISSION = 'missing_permission',
+  EXPERIMENT_ACTIVE = 'experiment_active',
   FEATURE_FLAG_ENABLED = 'feature_flag_enabled',
-  FEATURE_FLAG_STATUS_UNSUPPORTED = 'feature_flag_status_unsupported',
-  SEGMENT_IN_USE = 'segment_in_use',
-  PROTECTED_SEGMENT_TYPE = 'protected_segment_type',
-  ELIGIBILITY_UNAVAILABLE = 'eligibility_unavailable',
+  SEGMENT_USED = 'segment_used',
 }
 
 export interface RootSelectionItem {
   id: string;
   name?: string;
   stateOrStatus?: EXPERIMENT_STATE | FEATURE_FLAG_STATUS | SEGMENT_STATUS;
-  segmentType?: SEGMENT_TYPE;
 }
 
 export interface BatchDeleteSnapshot {

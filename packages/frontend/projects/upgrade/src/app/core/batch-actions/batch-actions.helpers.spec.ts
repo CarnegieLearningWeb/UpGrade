@@ -1,11 +1,4 @@
-import {
-  BatchDeleteEntity,
-  EXPERIMENT_STATE,
-  FEATURE_FLAG_STATUS,
-  SEGMENT_STATUS,
-  SEGMENT_TYPE,
-  UserRole,
-} from 'upgrade_types';
+import { BatchDeleteEntity, EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SEGMENT_STATUS } from 'upgrade_types';
 import { createBatchActions } from './batch-actions.actions';
 import { localDeletionReason, selectionView, validateBatchResponse } from './batch-actions.helpers';
 import {
@@ -22,11 +15,9 @@ describe('Root selection rules', () => {
     id,
     name: id,
     stateOrStatus: SEGMENT_STATUS.UNUSED,
-    segmentType: SEGMENT_TYPE.PUBLIC,
   });
   const state = (selected: string[], loaded: string[]): RootBatchState => ({
     ...initialRootBatchState,
-    role: UserRole.ADMIN,
     selectedById: Object.fromEntries(selected.map((id) => [id, item(id)])),
     loadedIds: loaded,
   });
@@ -47,22 +38,17 @@ describe('Root selection rules', () => {
     }
   );
 
-  it('excludes global/private segments and detail-only IDs from header selection', () => {
-    const current = state([], ['public', 'private', 'global']);
+  it('excludes IDs outside the loaded root rows from header selection', () => {
+    const current = state([], ['loaded']);
     const next = reduceRootBatch(
       current,
       actions.toggleHeader({
-        items: [
-          item('public'),
-          { ...item('private'), segmentType: SEGMENT_TYPE.PRIVATE },
-          { ...item('global'), segmentType: SEGMENT_TYPE.GLOBAL_EXCLUDE },
-          item('detail-only'),
-        ],
+        items: [item('loaded'), item('detail-only')],
       }),
       actions,
       'segments'
     );
-    expect(Object.keys(next.selectedById)).toEqual(['public']);
+    expect(Object.keys(next.selectedById)).toEqual(['loaded']);
     expect(current.selectedById).toEqual({});
   });
 
@@ -75,40 +61,30 @@ describe('Root selection rules', () => {
     ).toEqual({});
   });
 
-  it('does not restrict experiment deletion by state', () => {
-    for (const status of [...Object.values(EXPERIMENT_STATE), undefined]) {
-      expect(localDeletionReason('experiments', { id: 'a', stateOrStatus: status }, UserRole.CREATOR)).toBeUndefined();
-    }
+  it.each([
+    [EXPERIMENT_STATE.DRAFT, true],
+    [EXPERIMENT_STATE.INACTIVE, true],
+    [EXPERIMENT_STATE.COMPLETED, true],
+    [EXPERIMENT_STATE.CANCELLED, true],
+    [EXPERIMENT_STATE.ARCHIVED, true],
+    [EXPERIMENT_STATE.PREVIEW, false],
+    [EXPERIMENT_STATE.SCHEDULED, false],
+    [EXPERIMENT_STATE.RUNNING, false],
+    [EXPERIMENT_STATE.ENROLLING, false],
+    [EXPERIMENT_STATE.PAUSED, false],
+    [EXPERIMENT_STATE.ENROLLMENT_COMPLETE, false],
+  ])('applies the experiment deletion policy to %s', (status: EXPERIMENT_STATE, allowed: boolean) => {
+    expect(localDeletionReason('experiments', { id: 'a', stateOrStatus: status })).toBe(
+      allowed ? undefined : BatchSelectionReasonCode.EXPERIMENT_ACTIVE
+    );
   });
 
-  it.each([
-    [
-      'flags',
-      { id: 'a', stateOrStatus: FEATURE_FLAG_STATUS.ENABLED },
-      UserRole.ADMIN,
-      BatchSelectionReasonCode.FEATURE_FLAG_ENABLED,
-    ],
-    ['flags', { id: 'a' }, UserRole.ADMIN, BatchSelectionReasonCode.FEATURE_FLAG_STATUS_UNSUPPORTED],
-    [
-      'segments',
-      { ...item('a'), stateOrStatus: SEGMENT_STATUS.USED },
-      UserRole.ADMIN,
-      BatchSelectionReasonCode.SEGMENT_IN_USE,
-    ],
-    ['segments', item('a'), UserRole.READER, BatchSelectionReasonCode.MISSING_PERMISSION],
-    ['segments', item('a'), UserRole.USER_MANAGER, undefined],
-    [
-      'flags',
-      { id: 'a', stateOrStatus: FEATURE_FLAG_STATUS.DISABLED },
-      UserRole.USER_MANAGER,
-      BatchSelectionReasonCode.MISSING_PERMISSION,
-    ],
-  ])(
-    'applies entity-specific permissions and status rules for %s',
-    (entity: BatchDeleteEntity, selected: RootSelectionItem, role: UserRole, reason: BatchSelectionReasonCode) => {
-      expect(localDeletionReason(entity, selected, role)).toBe(reason);
-    }
-  );
+  it.each<[BatchDeleteEntity, RootSelectionItem, BatchSelectionReasonCode]>([
+    ['flags', { id: 'a', stateOrStatus: FEATURE_FLAG_STATUS.ENABLED }, BatchSelectionReasonCode.FEATURE_FLAG_ENABLED],
+    ['segments', { ...item('a'), stateOrStatus: SEGMENT_STATUS.USED }, BatchSelectionReasonCode.SEGMENT_USED],
+  ])('applies entity-specific status rules for %s', (entity, selected, reason) => {
+    expect(localDeletionReason(entity, selected)).toBe(reason);
+  });
 
   it('treats an incomplete or duplicate deletion response as uncertain rather than silently removing rows', () => {
     expect(() =>

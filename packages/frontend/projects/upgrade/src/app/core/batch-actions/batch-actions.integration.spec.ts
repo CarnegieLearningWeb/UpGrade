@@ -8,7 +8,6 @@ import {
   FEATURE_FLAG_STATUS,
   FLAG_SEARCH_KEY,
   SEGMENT_STATUS,
-  SEGMENT_TYPE,
   SORT_AS_DIRECTION,
   UserRole,
 } from 'upgrade_types';
@@ -27,7 +26,7 @@ import { FeatureFlagRootSectionCardComponent } from '../../features/dashboard/fe
 import { SegmentsEffects } from '../segments/store/segments.effects';
 import { actionLogoutStart, actionSetUserInfo } from '../auth/store/auth.actions';
 import { batchResultCounts, selectionItem, selectionView } from './batch-actions.helpers';
-import { BatchSelectionReasonCode, RootBatchState, newBatchRequestId } from './batch-actions.models';
+import { RootBatchState, newBatchRequestId } from './batch-actions.models';
 
 const fixtures = [
   {
@@ -76,9 +75,8 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
   const rows = ['a', 'b', 'c'].map((name, index) => ({
     id: `11111111-2222-4333-8444-${String(index + 1).padStart(12, '0')}`,
     name,
-    state: config.entity === 'experiments' ? EXPERIMENT_STATE.ENROLLING : undefined,
+    state: config.entity === 'experiments' ? EXPERIMENT_STATE.INACTIVE : undefined,
     status: config.entity === 'segments' ? SEGMENT_STATUS.UNUSED : FEATURE_FLAG_STATUS.DISABLED,
-    type: SEGMENT_TYPE.PUBLIC,
   }));
   const batch = (): RootBatchState => state[config.key].rootBatch;
   const currentRows = () => state[config.key][config.entity === 'flags' ? 'featureFlags' : config.entity];
@@ -296,25 +294,24 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(data.batchDelete).not.toHaveBeenCalled();
   });
 
-  if (config.entity !== 'experiments') {
-    it('uses updated page data to block a hidden restriction without an eligibility request', () => {
-      selectRows();
-      const blocked = {
-        ...rows[2],
-        status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
-      };
-      data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0], rows[1], blocked])));
-      store.dispatch(config.fetch({ fromStarting: true }));
-      data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0]])));
-      store.dispatch(config.fetch({ fromStarting: true }));
-      store.dispatch(actions.prepareConfirmation({ operationId: newBatchRequestId() }));
-      expect(batch().confirmation).toBeNull();
-      expect(Object.keys(batch().selectedById)).toHaveLength(3);
-      expect(selectionView(batch(), config.entity).canRequestConfirmation).toBe(false);
+  it('uses updated page data to block a hidden restriction without an eligibility request', () => {
+    selectRows();
+    const blocked = {
+      ...rows[2],
+      state: config.entity === 'experiments' ? EXPERIMENT_STATE.RUNNING : undefined,
+      status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
+    };
+    data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0], rows[1], blocked])));
+    store.dispatch(config.fetch({ fromStarting: true }));
+    data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0]])));
+    store.dispatch(config.fetch({ fromStarting: true }));
+    store.dispatch(actions.prepareConfirmation({ operationId: newBatchRequestId() }));
+    expect(batch().confirmation).toBeNull();
+    expect(Object.keys(batch().selectedById)).toHaveLength(3);
+    expect(selectionView(batch(), config.entity).canRequestConfirmation).toBe(false);
 
-      expect(data.batchDelete).not.toHaveBeenCalled();
-    });
-  }
+    expect(data.batchDelete).not.toHaveBeenCalled();
+  });
 
   it('retains cached selections until the delete response establishes an absence', () => {
     selectRows();
@@ -648,12 +645,14 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(notifications.showSuccess).not.toHaveBeenCalled();
   });
 
-  it('retains selection but invalidates confirmation when the role changes', () => {
+  it('clears selection and prevents submission of the old confirmation when the role changes', () => {
     selectRows();
-    prepare();
+    const snapshot = prepare();
     store.dispatch(actionSetUserInfo({ user: { email: 'review@example.com', role: UserRole.READER } }));
-    expect(Object.keys(batch().selectedById)).toHaveLength(3);
+    expect(Object.keys(batch().selectedById)).toHaveLength(0);
     expect(batch().confirmation).toBeNull();
-    expect(selectionView(batch(), config.entity).reasonCode).toBe(BatchSelectionReasonCode.MISSING_PERMISSION);
+    store.dispatch(actions.batchDeleteRequested({ snapshot }));
+    expect(data.batchDelete).not.toHaveBeenCalled();
+    expect(batch().operation).toBeNull();
   });
 });

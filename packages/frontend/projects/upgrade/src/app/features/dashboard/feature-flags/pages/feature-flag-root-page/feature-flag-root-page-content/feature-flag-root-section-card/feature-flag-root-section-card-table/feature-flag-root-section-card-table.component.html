@@ -26,6 +26,7 @@
         "
       >
         <div class="batch-name-cell">
+          @if (canSelect) {
           <!-- Any selection makes the next click clear; indeterminate supplies the mixed appearance. -->
           <mat-checkbox
             class="batch-checkbox"
@@ -47,6 +48,7 @@
             (keydown)="$event.stopPropagation()"
             (change)="batch.toggleHeader()"
           />
+          }
           <div
             class="batch-name-sort"
             mat-sort-header="name"
@@ -62,6 +64,7 @@
       </th>
       <td mat-cell *matCellDef="let flag" class="name-column ft-14-400">
         <div class="batch-name-cell">
+          @if (canSelect) {
           <mat-checkbox
             class="batch-checkbox"
             [disableRipple]="true"
@@ -73,6 +76,7 @@
             (keydown)="$event.stopPropagation()"
             (change)="batch.toggleRow(flag)"
           />
+          }
           <div class="batch-name-text">
             <a
               [routerLink]="['/featureflags', 'detail', flag.id]"

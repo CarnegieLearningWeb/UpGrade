@@ -48,6 +48,7 @@ export class SegmentRootSectionCardTableComponent implements AfterViewInit, OnDe
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
   @Input() expandedTagsMap: Map<string, boolean>;
+  @Input() canSelect = false;
   @Output() tagsExpanded = new EventEmitter<{ segmentId: string; expanded: boolean }>();
   segmentSortKey$ = this.segmentsService.selectSegmentSortKey$;
   segmentSortAs$ = this.segmentsService.selectSegmentSortAs$;
