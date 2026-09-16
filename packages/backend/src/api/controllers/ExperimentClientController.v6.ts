@@ -707,6 +707,8 @@ export class ExperimentClientController {
    *                 description: The context for feature flag evaluation
    *               useSingleGroupSet:
    *                 type: object
+   *                 required:
+   *                   - groups
    *                 properties:
    *                   groups:
    *                     type: object
