@@ -30,8 +30,11 @@ export namespace UpGradeClientRequests {
       }
     | {
         context: string;
-        groupsForSession: Record<string, string[]>;
-        includeStoredUserGroups: boolean;
+        useSingleGroupSet: UpGradeClientInterfaces.ISingleGroupSetOptions;
+      }
+    | {
+        context: string;
+        useMultipleGroupSets: UpGradeClientInterfaces.IMultipleGroupSetsOptions;
       };
 
   export interface IMarkDecisionPointRequestBody {

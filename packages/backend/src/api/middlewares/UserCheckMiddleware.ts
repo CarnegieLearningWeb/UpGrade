@@ -24,6 +24,24 @@ export class UserCheckMiddleware {
         req.logger.debug({ message: 'User Id is:', user_id });
       }
 
+      if (
+        req.url.endsWith('/v6/featureflag') &&
+        req.body?.useMultipleGroupSets &&
+        Array.isArray(req.body.useMultipleGroupSets.subGroupsets)
+      ) {
+        const resolved = await this.handleMultipleGroupSets(req, user_id);
+        if (resolved === null) {
+          const error = new Error(`User not found: ${user_id}`);
+          (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+          (error as any).httpCode = 404;
+          req.logger.error(error);
+          return next(error);
+        }
+        req.userDoc = resolved.main;
+        req.userDocsBySubGroupset = resolved.subGroupsets;
+        return next();
+      }
+
       let experimentUserDoc: RequestedExperimentUser;
 
       if (req.url.endsWith('/v6/featureflag')) {
@@ -104,11 +122,22 @@ export class UserCheckMiddleware {
    */
   private async handleProvidedGroupsForSession(req: AppRequest, user_id: string): Promise<RequestedExperimentUser> {
     // Note: validation of request will have occurred before this middleware
+    // Normalize the deprecated top-level groupsForSession/includeStoredUserGroups and the new
+    // useSingleGroupSet shape into the same two local values, so the logic (and log messages)
+    // below stay identical regardless of which shape the caller used.
+    const useSingleGroupSet = req.body.useSingleGroupSet as
+      | { groups: Record<string, string[]>; includeStoredUserGroups?: boolean }
+      | undefined;
+    const groupsForSession: Record<string, string[]> | undefined =
+      useSingleGroupSet?.groups ?? req.body.groupsForSession;
+    const includeStoredUserGroups: boolean | undefined = useSingleGroupSet
+      ? useSingleGroupSet.includeStoredUserGroups
+      : req.body.includeStoredUserGroups;
 
-    // Scenario 1: Session-only groups (ephemeral user mode)
-    // explicitly check if includeStoredUserGroups is exactly false and not just undefined
-    if (req.body.groupsForSession && req.body.includeStoredUserGroups === false) {
-      const experimentUserDoc = this.createSessionUser(user_id, req.body.groupsForSession);
+    // Scenario 1: Session-only groups (ephemeral user mode). includeStoredUserGroups is optional
+    // for useSingleGroupSet — omitted or explicitly false both mean "don't merge."
+    if (groupsForSession && includeStoredUserGroups !== true) {
+      const experimentUserDoc = this.createSessionUser(user_id, groupsForSession);
 
       req.logger.debug({
         message: 'Created ephemeral user with session groups',
@@ -125,9 +154,9 @@ export class UserCheckMiddleware {
       return null; // User not found, will be handled in the main middleware
     }
 
-    if (req.body.groupsForSession && req.body.includeStoredUserGroups) {
+    if (groupsForSession && includeStoredUserGroups === true) {
       // Scenario 2: Merged groups (Merged stored/ephemeral groups mode)
-      experimentUserDoc.group = this.mergeGroupsWithUniqueValues(experimentUserDoc.group, req.body.groupsForSession);
+      experimentUserDoc.group = this.mergeGroupsWithUniqueValues(experimentUserDoc.group, groupsForSession);
 
       req.logger.debug({
         message: 'Merged session groups with stored user groups',
@@ -142,6 +171,71 @@ export class UserCheckMiddleware {
     }
 
     return experimentUserDoc;
+  }
+
+  /**
+   * Resolves a mainGroupset (optional) plus one or more subGroupsets for a `useMultipleGroupSets`
+   * `/v6/featureflag` request. All entries share the same authenticated user (`User-Id` header) —
+   * only the group overrides differ — so the stored user doc is fetched at most once for the
+   * whole request, only if at least one entry actually needs it (i.e. isn't ephemeral).
+   *
+   * Returns `null` if a stored user doc was needed and none exists, mirroring the single-groupset
+   * 404 behavior for the whole request.
+   */
+  private async handleMultipleGroupSets(
+    req: AppRequest,
+    user_id: string
+  ): Promise<{ main?: RequestedExperimentUser; subGroupsets: Record<string, RequestedExperimentUser> } | null> {
+    const { mainGroupset, subGroupsets } = req.body.useMultipleGroupSets as {
+      mainGroupset?: { groups: Record<string, string[]>; includeStoredUserGroups?: boolean };
+      subGroupsets: { groupsetId: string; groups: Record<string, string[]>; includeStoredUserGroups?: boolean }[];
+    };
+
+    const isEphemeral = (entry: { groups?: Record<string, string[]>; includeStoredUserGroups?: boolean }) =>
+      Boolean(entry.groups) && entry.includeStoredUserGroups !== true;
+
+    const needsStoredUser =
+      (mainGroupset ? !isEphemeral(mainGroupset) : false) || subGroupsets.some((entry) => !isEphemeral(entry));
+
+    let storedUserDoc: RequestedExperimentUser | null = null;
+    if (needsStoredUser) {
+      storedUserDoc = await this.experimentUserService.getUserDoc(user_id, req.logger);
+      if (!storedUserDoc) {
+        return null;
+      }
+    }
+
+    const resolveOne = (entry: {
+      groups?: Record<string, string[]>;
+      includeStoredUserGroups?: boolean;
+    }): RequestedExperimentUser => {
+      if (isEphemeral(entry)) {
+        return this.createSessionUser(user_id, entry.groups);
+      }
+      if (entry.groups && entry.includeStoredUserGroups === true) {
+        return {
+          ...storedUserDoc,
+          group: this.mergeGroupsWithUniqueValues(storedUserDoc.group, entry.groups),
+        };
+      }
+      return storedUserDoc;
+    };
+
+    const main = mainGroupset ? resolveOne(mainGroupset) : undefined;
+    // A null-prototype dictionary — a caller-supplied groupsetId of "__proto__" would otherwise
+    // set this object's prototype instead of an own property, silently dropping that entry.
+    const subGroupsetsResolved: Record<string, RequestedExperimentUser> = Object.create(null);
+    subGroupsets.forEach((entry) => {
+      subGroupsetsResolved[entry.groupsetId] = resolveOne(entry);
+    });
+
+    req.logger.debug({
+      message: 'Resolved experiment users for feature flag useMultipleGroupSets',
+      hasMain: Boolean(main),
+      subGroupsetIds: Object.keys(subGroupsetsResolved),
+    });
+
+    return { main, subGroupsets: subGroupsetsResolved };
   }
 
   /**

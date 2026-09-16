@@ -17,8 +17,6 @@ export default class ApiService {
   private clientSessionId: string;
   private httpClient: UpGradeClientInterfaces.IHttpClientWrapper;
   private api: IEndpoints;
-  private groupsForSession: Record<string, Array<string>> | null;
-  private includeStoredUserGroups: boolean;
 
   constructor(config: UpGradeClientInterfaces.IConfig, private dataService: DataService) {
     this.context = config.context;
@@ -40,16 +38,6 @@ export default class ApiService {
       reward: `${this.hostUrl}/api/${this.apiVersion}/reward`,
     };
     this.httpClient = this.setHttpClient(config.httpClient);
-    this.groupsForSession = config.featureFlagUserGroupsForSession?.groupsForSession ?? null;
-    this.includeStoredUserGroups = config.featureFlagUserGroupsForSession?.includeStoredUserGroups ?? null;
-  }
-
-  public setFeatureFlagUserGroupsForSession(
-    groupsForSession: Record<string, Array<string>>,
-    includeStoredUserGroups: boolean
-  ): void {
-    this.groupsForSession = groupsForSession;
-    this.includeStoredUserGroups = includeStoredUserGroups;
   }
 
   private setHttpClient(httpClient: UpGradeClientInterfaces.IHttpClientWrapper) {
@@ -299,30 +287,30 @@ export default class ApiService {
     });
   }
 
-  public async getAllFeatureFlags(): Promise<string[]> {
-    let requestBody: UpGradeClientRequests.IGetAllFeatureFlagsRequestBody;
+  /**
+   * Evaluates feature flags for exactly one of `useSingleGroupSet` (response: flat `string[]`) or
+   * `useMultipleGroupSets` (response: `{ mainGroupset?: string[]; subGroupsets: Record<string, string[]> }`).
+   * Omit both for the standard stored-user lookup (also a flat `string[]`).
+   */
+  public async getAllFeatureFlags(
+    request: {
+      useSingleGroupSet?: UpGradeClientInterfaces.ISingleGroupSetOptions;
+      useMultipleGroupSets?: UpGradeClientInterfaces.IMultipleGroupSetsOptions;
+    } = {}
+  ): Promise<string[] | UpGradeClientInterfaces.IMultiGroupSetFeatureFlagsResult> {
+    const requestBody: UpGradeClientRequests.IGetAllFeatureFlagsRequestBody = {
+      context: this.context,
+      ...request,
+    } as UpGradeClientRequests.IGetAllFeatureFlagsRequestBody;
 
-    if (this.groupsForSession && this.includeStoredUserGroups !== undefined) {
-      // if groupsForSession is provided, we need to include it in the request body
-      requestBody = {
-        context: this.context,
-        groupsForSession: this.groupsForSession,
-        includeStoredUserGroups: this.includeStoredUserGroups,
-      };
-    } else {
-      // if no groupsForSession is provided, just use the context
-      requestBody = {
-        context: this.context,
-      };
-    }
-
-    const response = await this.sendRequest<string[], never>({
+    return this.sendRequest<
+      string[] | UpGradeClientInterfaces.IMultiGroupSetFeatureFlagsResult,
+      UpGradeClientRequests.IGetAllFeatureFlagsRequestBody
+    >({
       path: this.api.getAllFeatureFlag,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });
-
-    return response;
   }
 
   public sendReward(params: {

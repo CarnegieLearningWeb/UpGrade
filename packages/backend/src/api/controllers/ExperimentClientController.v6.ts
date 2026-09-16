@@ -654,25 +654,34 @@ export class ExperimentClientController {
    *       description: |
    *         Get feature flags that have been assigned to the user.
    *
-   *         This endpoint supports three different modes of operation based on the optional parameters:
+   *         **Single-groupset modes** (via `useSingleGroupSet`, or the deprecated top-level
+   *         `groupsForSession`/`includeStoredUserGroups`) — response is a flat array of flag keys:
    *
    *         **Stored-user Mode** (Standard stored user lookup):
-   *         - Omit both `groupsForSession` and `includeStoredUserGroups` parameters
+   *         - Omit `useSingleGroupSet` (and the deprecated top-level fields) entirely
    *         - Uses only stored user groups from the database
    *         - User must already have been initialized, will 404 if user does not exist
    *
-   *         **Ephemeral Mode** (Session-only groups):
-   *         - Set `includeStoredUserGroups` to `false` and provide `groupsForSession`
-   *         - Uses only the groups provided in the session, ignoring any stored user groups.
+   *         **Ephemeral Mode** (caller-provided groups only):
+   *         - Provide `useSingleGroupSet.groups`; `includeStoredUserGroups` is optional and
+   *           defaults to `false` when omitted
+   *         - Uses only the provided groups, ignoring any stored user groups
    *         - Does not require the user to be initialized (it will bypass stored user lookup)
-   *         - Useful when complete group information is always provided at runtime.
    *
-   *         **Merged Mode** (Stored + Session groups):
-   *         - Set `includeStoredUserGroups` to `true` and provide `groupsForSession`
-   *         - User must already have been initialized, will 404 if user does not exist.
-   *         - Session groups are merged with stored groups if they don't already exist for stored user.
-   *         - Session groups are never persisted.
-   *         - Useful for adding context-specific ephemeral groups to an existing user.
+   *         **Merged Mode** (stored + caller-provided groups):
+   *         - Provide `useSingleGroupSet.groups` and `useSingleGroupSet.includeStoredUserGroups: true`
+   *         - User must already have been initialized, will 404 if user does not exist
+   *         - Provided groups are merged with stored groups; never persisted
+   *
+   *         **Batch mode** (via `useMultipleGroupSets`) — response is
+   *         `{ mainGroupset?: string[], subGroupsets: Record<string, string[]> }`:
+   *
+   *         - `mainGroupset` is optional and follows the same three modes as `useSingleGroupSet`
+   *           above; when provided, its flags are returned under the `mainGroupset` key
+   *         - `subGroupsets` is a required array of `{ groupsetId, groups, includeStoredUserGroups? }`
+   *           entries, each independently following the same three modes, evaluated against the
+   *           same authenticated user (`User-Id` header) — response keys them by `groupsetId`
+   *         - Up to 50 `subGroupsets` entries per request
    *
    *       consumes:
    *         - application/json
@@ -696,55 +705,144 @@ export class ExperimentClientController {
    *                 type: string
    *                 example: "test-context"
    *                 description: The context for feature flag evaluation
+   *               useSingleGroupSet:
+   *                 type: object
+   *                 required:
+   *                   - groups
+   *                 properties:
+   *                   groups:
+   *                     type: object
+   *                     additionalProperties:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *                   includeStoredUserGroups:
+   *                     type: boolean
+   *                 description: Single-groupset configuration (mutually exclusive with useMultipleGroupSets)
+   *               useMultipleGroupSets:
+   *                 type: object
+   *                 required:
+   *                   - subGroupsets
+   *                 properties:
+   *                   mainGroupset:
+   *                     type: object
+   *                     properties:
+   *                       groups:
+   *                         type: object
+   *                         additionalProperties:
+   *                           type: array
+   *                           items:
+   *                             type: string
+   *                       includeStoredUserGroups:
+   *                         type: boolean
+   *                   subGroupsets:
+   *                     type: array
+   *                     maxItems: 50
+   *                     items:
+   *                       type: object
+   *                       required:
+   *                         - groupsetId
+   *                         - groups
+   *                       properties:
+   *                         groupsetId:
+   *                           type: string
+   *                         groups:
+   *                           type: object
+   *                           additionalProperties:
+   *                             type: array
+   *                             items:
+   *                               type: string
+   *                         includeStoredUserGroups:
+   *                           type: boolean
+   *                 description: Batch configuration (mutually exclusive with useSingleGroupSet)
    *               groupsForSession:
    *                 type: object
    *                 additionalProperties:
    *                   type: array
    *                   items:
    *                     type: string
-   *                 example:
-   *                   schoolId: ["temporary-school-id"]
-   *                 description: Optional groups to provide for the session (not persisted)
+   *                 description: "Deprecated — use useSingleGroupSet.groups instead"
    *               includeStoredUserGroups:
    *                 type: boolean
-   *                 description: Whether to include stored user groups in evaluation
-   *                 example: false
+   *                 description: "Deprecated — use useSingleGroupSet.includeStoredUserGroups instead"
    *             description: Feature flag request parameters
    *             examples:
    *               normal_mode:
    *                 summary: Normal Mode - Standard stored user lookup
-   *                 description: Uses only stored user groups from the database
    *                 value:
    *                   context: "test-context"
-   *               ephemeral_mode:
-   *                 summary: Ephemeral Mode - Session-only groups
-   *                 description: Uses only session groups, ignoring stored user groups
+   *               single_groupset_ephemeral:
+   *                 summary: Single groupset - ephemeral
+   *                 value:
+   *                   context: "test-context"
+   *                   useSingleGroupSet:
+   *                     groups:
+   *                       schoolId: ["demo-school"]
+   *                       classId: ["demo-class-advanced"]
+   *               single_groupset_merged:
+   *                 summary: Single groupset - merged
+   *                 value:
+   *                   context: "test-context"
+   *                   useSingleGroupSet:
+   *                     groups:
+   *                       classId: ["temp-class-123", "special-session"]
+   *                     includeStoredUserGroups: true
+   *               multiple_group_sets:
+   *                 summary: Batch - mainGroupset plus subGroupsets
+   *                 value:
+   *                   context: "test-context"
+   *                   useMultipleGroupSets:
+   *                     mainGroupset:
+   *                       groups:
+   *                         classId: ["demo-class-advanced"]
+   *                         schoolId: ["school-a", "school-b"]
+   *                     subGroupsets:
+   *                       - groupsetId: "school-a"
+   *                         groups:
+   *                           schoolId: ["school-a"]
+   *                       - groupsetId: "school-b"
+   *                         groups:
+   *                           schoolId: ["school-b"]
+   *               deprecated_top_level:
+   *                 summary: Deprecated - top-level groupsForSession still works
    *                 value:
    *                   context: "test-context"
    *                   groupsForSession:
    *                     schoolId: ["demo-school"]
-   *                     classId: ["demo-class-advanced"]
    *                   includeStoredUserGroups: false
-   *               merged_mode:
-   *                 summary: Merged Mode - Stored + Session groups
-   *                 description: Combines stored user groups (if exists) with session groups
-   *                 value:
-   *                   context: "test-context"
-   *                   groupsForSession:
-   *                     classId: ["temp-class-123", "special-session"]
-   *                   includeStoredUserGroups: true
    *       produces:
    *         - application/json
    *       tags:
    *         - Client Side SDK
    *       responses:
    *          '200':
-   *            description: Feature flags list
+   *            description: >
+   *              A flat array of flag keys for single-groupset modes, or
+   *              `{ mainGroupset?: string[], subGroupsets: Record<string, string[]> }` when
+   *              `useMultipleGroupSets` was used.
    *            schema:
-   *              type: array
-   *              items:
-   *                type: string
-   *              example: ["NEW_FEATURE", "TEST_FLAG"]
+   *              oneOf:
+   *                - type: array
+   *                  items:
+   *                    type: string
+   *                  example: ["NEW_FEATURE", "TEST_FLAG"]
+   *                - type: object
+   *                  properties:
+   *                    mainGroupset:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                    subGroupsets:
+   *                      type: object
+   *                      additionalProperties:
+   *                        type: array
+   *                        items:
+   *                          type: string
+   *                  example:
+   *                    mainGroupset: ["NEW_FEATURE"]
+   *                    subGroupsets:
+   *                      school-a: ["NEW_FEATURE"]
+   *                      school-b: ["NEW_FEATURE", "TEST_FLAG"]
    *          '400':
    *            description: BadRequestError - InvalidParameterValue
    *          '401':
@@ -759,7 +857,16 @@ export class ExperimentClientController {
     @Req() request: AppRequest,
     @Body({ validate: true })
     featureFlagRequest: FeatureFlagRequestValidator
-  ): Promise<string[]> {
+  ): Promise<string[] | { mainGroupset?: string[]; subGroupsets: Record<string, string[]> }> {
+    if (featureFlagRequest.useMultipleGroupSets) {
+      return this.featureFlagService.getKeysForMultipleGroupSets(
+        request.userDoc,
+        request.userDocsBySubGroupset ?? {},
+        featureFlagRequest.context,
+        request.logger
+      );
+    }
+
     const experimentUserDoc = request.userDoc;
     return this.featureFlagService.getKeys(experimentUserDoc, featureFlagRequest.context, request.logger);
   }

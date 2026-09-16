@@ -9,7 +9,12 @@ import {
 } from 'upgrade_types';
 import Assignment from '../Assignment/Assignment';
 import ApiService from '../ApiService/ApiService';
-import { DataService } from '../DataService/DataService';
+import { DataService, DEFAULT_GROUPSET_ID, IGroupsetDefinition } from '../DataService/DataService';
+
+/** Which groupset `hasFeatureFlag(key)` (no id) resolves to, and what else is configured alongside it. */
+type ActiveGroupConfig =
+  | { kind: 'single'; groupsetId: string }
+  | { kind: 'multiple'; mainGroupsetId: string | null; subGroupsetIds: string[] };
 
 declare const API_VERSION: string;
 
@@ -93,53 +98,63 @@ export default class UpgradeClient {
    * const options: {
    *   token: "someToken";
    *   clientSessionId: "someSessionId";
-   *   featureFlagUserGroupsForSession: null
+   *   featureFlagGroupOptions: null
    * }
    *
    * const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context);
    * const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context, options);
    * ```
    *
-   * UPDATE: #featureFlagUserGroupsForSession
+   * `featureFlagGroupOptions` configures how `/v6/featureflag` requests are evaluated. Provide
+   * exactly one of:
+   *
+   * - `useSingleGroupSet` — the classic one-groupset approach. `getAllFeatureFlags()` returns a
+   *   flat `string[]`, `hasFeatureFlag(key)` needs no id.
+   * - `useMultipleGroupSets` — an optional `mainGroupset` plus one or more named `subGroupsets`,
+   *   all fetched together in one request. `getAllFeatureFlags()` returns
+   *   `{ mainGroupset?: string[]; subGroupsets: Record<string, string[]> }`. `hasFeatureFlag(key)`
+   *   (no id) resolves to `mainGroupset` if one was configured, and throws otherwise — pass a
+   *   `groupsetId` to check a specific named subGroupset instead.
+   *
+   * Omit `featureFlagGroupOptions` entirely for the default: standard stored-user lookup, single
+   * groupset.
    *
    * ```typescript
-   * // required
-   * const hostUrl: "htts://my-hosted-upgrade-api.com";
-   * const userId: "abc123";
-   * const context: "my-app-context-name";
+   * const options: UpGradeClientInterfaces.IConfigOptions = {
+   *   featureFlagGroupOptions: {
+   *     useSingleGroupSet: {
+   *       groups: { classId: ['testClass'] },
+   *       includeStoredUserGroups: false, // optional — omitting it is the same as false
+   *     },
+   *   },
+   * };
    *
-   * // to configure feature flag endpoint to rely on session-only groups or merge supplemental groups with stored user groups
-   * // see below for usage scenarios
-   * // note: this is optional, and if not provided, the client will use standard user lookup with stored groups only
-   * const options: {
-   *   featureFlagUserGroupsForSession: {
-   *     groupsForSession: { "classId": ["testClass"] };
-   *     includeStoredUserGroups: false; // true to merge with stored user groups, false to skip any stored user entirely
-   *   }
-   * }
-   *
-   * const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context);
-   * const upgradeClient: UpgradeClient[] = new UpgradeClient(hostURL, userId, context, options);
+   * const upgradeClient = new UpgradeClient(hostURL, userId, context, options);
    * ```
    *
    * **Stored-user Mode** (Standard stored user lookup):
-   * - Omit both `groupsForSession` and `includeStoredUserGroups` parameters
+   * - Omit `useSingleGroupSet`/`useMultipleGroupSets` (and the deprecated `groupsForSession`)
    * - Uses only stored user groups from the database
    * - User must already have been initialized, will 404 if user does not exist
    *
-   * **Ephemeral Mode** (Session-only groups):
-   * - Set `includeStoredUserGroups` to `false` and provide `groupsForSession`
-   * - Uses only the groups provided in the session, ignoring any stored user groups.
+   * **Ephemeral Mode** (caller-provided groups only):
+   * - Provide `groups`; `includeStoredUserGroups` is optional and defaults to `false`
+   * - Uses only the provided groups, ignoring any stored user groups
    * - Does not require the user to be initialized (it will bypass stored user lookup)
-   * - Useful when complete group information is always provided at runtime.
    *
-   * **Merged Mode** (Stored + Session groups):
-   * - Set `includeStoredUserGroups` to `true` and provide `groupsForSession`
-   * - User must already have been initialized, will 404 if user does not exist.
-   * - Session groups are merged with stored groups if they don't already exist for stored user.
-   * - Session groups are never persisted.
-   * - Useful for adding context-specific ephemeral groups to an existing user.
+   * **Merged Mode** (stored + caller-provided groups):
+   * - Provide `groups` and `includeStoredUserGroups: true` (always explicit — never inferred)
+   * - User must already have been initialized, will 404 if user does not exist
+   * - Provided groups are merged with stored groups; never persisted
+   *
+   * Note: `featureFlagUserGroupsForSession` (with `groupsForSession`/`includeStoredUserGroups`) is
+   * a deprecated, singular-only synonym for `featureFlagGroupOptions.useSingleGroupSet` — still
+   * supported, but the new shape is preferred going forward.
    */
+
+  // Which groupset(s) getAllFeatureFlags()/hasFeatureFlag() use when called with no arguments.
+  // Defaults to the standard stored-user lookup, single groupset.
+  private activeConfig: ActiveGroupConfig = { kind: 'single', groupsetId: DEFAULT_GROUPSET_ID };
 
   constructor(userId: string, hostUrl: string, context: string, options?: UpGradeClientInterfaces.IConfigOptions) {
     const config: UpGradeClientInterfaces.IConfig = {
@@ -150,74 +165,206 @@ export default class UpgradeClient {
       clientSessionId: options?.clientSessionId || generateUUID(),
       token: options?.token,
       httpClient: options?.httpClient,
-      featureFlagUserGroupsForSession: options?.featureFlagUserGroupsForSession ?? null,
     };
 
     this.dataService = new DataService();
     this.apiService = new ApiService(config, this.dataService);
-    this.validateFeatureFlagGroupOptions(config.featureFlagUserGroupsForSession);
+
+    const featureFlagGroupOptions: UpGradeClientInterfaces.IFeatureFlagGroupOptions | null =
+      options?.featureFlagGroupOptions ??
+      (options?.featureFlagUserGroupsForSession
+        ? {
+            useSingleGroupSet: {
+              groups: options.featureFlagUserGroupsForSession.groupsForSession,
+              includeStoredUserGroups: options.featureFlagUserGroupsForSession.includeStoredUserGroups,
+            },
+          }
+        : null);
+
+    this.setFeatureFlagGroupOptions(featureFlagGroupOptions);
   }
 
-  private validateFeatureFlagGroupOptions(
-    options: UpGradeClientInterfaces.IFeatureFlagOptions | null | undefined
-  ): void {
-    if (options && (!options.groupsForSession || options.includeStoredUserGroups === undefined)) {
-      throw new Error(
-        `${JSON.stringify(
-          options
-        )} featureFlagUserGroupsForSession must contain both groupsForSession and includeStoredUserGroups properties.`
-      );
+  /**
+   * Validates a single/main groupset entry without mutating anything. Used both by
+   * `registerSingle` and to pre-validate a whole `useMultipleGroupSets` batch up front, so a bad
+   * `subGroupsets` entry can't leave an already-registered `mainGroupset` behind (see
+   * `assertValidSubEntry`'s doc for the matching subGroupsets concern).
+   */
+  private static assertValidSingleEntry(entry: UpGradeClientInterfaces.ISingleGroupSetOptions, label: string): void {
+    if (!entry?.groups) {
+      throw new Error(`${label}.groups is required.`);
     }
   }
 
   /**
-   * Sets the feature flag session user group options.
+   * Validates one subGroupsets entry without mutating anything. Used both by `registerSub` and to
+   * pre-validate a whole `useMultipleGroupSets.subGroupsets` array up front — so that, say, the
+   * 5th entry failing validation can't leave the first four already registered.
+   */
+  private static assertValidSubEntry(entry: UpGradeClientInterfaces.ISubGroupSetOptions): void {
+    if (!entry?.groupsetId) {
+      throw new Error('Each subGroupsets entry requires a groupsetId.');
+    }
+    if (entry.groupsetId === DEFAULT_GROUPSET_ID) {
+      throw new Error(`subGroupsets entry may not use the reserved groupset id "${DEFAULT_GROUPSET_ID}".`);
+    }
+    if (!entry.groups) {
+      throw new Error(`subGroupsets entry "${entry.groupsetId}" requires groups.`);
+    }
+  }
+
+  /**
+   * Registers the shared main/single groupset's definition under the fixed `DEFAULT_GROUPSET_ID`
+   * slot and returns that id. There's only ever one main/single groupset active at a time, so
+   * unlike subGroupsets entries it never needs (or accepts) a caller-supplied id. Since the id no
+   * longer varies with content, flags already cached under this slot are cleared whenever the
+   * definition actually changes, so a stale value is never served under the new definition.
+   */
+  private registerSingle(entry: UpGradeClientInterfaces.ISingleGroupSetOptions, label: string): string {
+    UpgradeClient.assertValidSingleEntry(entry, label);
+    const definition: IGroupsetDefinition = {
+      groups: entry.groups,
+      includeStoredUserGroups: entry.includeStoredUserGroups,
+    };
+    const previous = this.dataService.getGroupsetDefinition(DEFAULT_GROUPSET_ID);
+    if (previous && JSON.stringify(previous) !== JSON.stringify(definition)) {
+      this.dataService.clearFeatureFlagsForGroupset(DEFAULT_GROUPSET_ID);
+    }
+    this.dataService.registerGroupsetDefinition(DEFAULT_GROUPSET_ID, definition);
+    return DEFAULT_GROUPSET_ID;
+  }
+
+  /**
+   * Registers one subGroupsets entry (groupsetId is required — never auto-generated) and returns
+   * it. The reserved main/single slot id may not be reused here, since the two would otherwise
+   * collide and silently share one cached evaluation.
+   */
+  private registerSub(entry: UpGradeClientInterfaces.ISubGroupSetOptions): string {
+    UpgradeClient.assertValidSubEntry(entry);
+    const definition: IGroupsetDefinition = {
+      groups: entry.groups,
+      includeStoredUserGroups: entry.includeStoredUserGroups,
+    };
+    const previous = this.dataService.getGroupsetDefinition(entry.groupsetId);
+    if (previous && JSON.stringify(previous) !== JSON.stringify(definition)) {
+      this.dataService.clearFeatureFlagsForGroupset(entry.groupsetId);
+    }
+    this.dataService.registerGroupsetDefinition(entry.groupsetId, definition);
+    return entry.groupsetId;
+  }
+
+  /**
+   * Sets the active feature flag groupset configuration used when `getAllFeatureFlags()`/
+   * `hasFeatureFlag()` are called with no arguments. See the constructor's `featureFlagGroupOptions`
+   * documentation for the full `useSingleGroupSet`/`useMultipleGroupSets` breakdown.
    *
-   * Note: This is a convenience method, this can also be set directly in the constructor of UpgradeClient.
-   * See example usage in the constructor documentation.
+   * Note: the main/single groupset always lives under one fixed internal id (subGroupsets entries
+   * always use their own caller-supplied `groupsetId` instead). Reconfiguring it with different
+   * groups clears its previously-cached flags automatically, so the next `getAllFeatureFlags()`/
+   * `hasFeatureFlag()` call refetches; reconfiguring with the same groups leaves the cache as-is.
+   * Other previously-fetched subGroupsets are left untouched (this is additive/upsert, not a
+   * wholesale reset) — in particular, reconfiguring with `useMultipleGroupSets.subGroupsets` only
+   * (no `mainGroupset`) leaves whatever main/single groupset was previously configured completely
+   * as-is, definition and cache included.
    *
-   * Note: Calling this clears any cached feature flags, since those were resolved against the previous
-   * groups. The next `getAllFeatureFlags()`/`hasFeatureFlag()` call will refetch against the new groups.
-   * If you need to retain flags for the previous groups, capture the array returned by
-   * `getAllFeatureFlags()` before switching.
+   * A `useMultipleGroupSets` call validates every entry (`mainGroupset` and all of `subGroupsets`)
+   * before registering any of them, so a call that ends up throwing never partially applies —
+   * whatever was configured before the call remains in effect.
    *
    * @example
    * ```typescript
+   * // Ephemeral, single groupset:
+   * upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: { groups: { classId: ['testClass'] } } });
    *
-   * **Scenario 1: Session-only groups (Ephemeral user request)**
-   * const options: UpGradeClientInterfaces.IFeatureFlagOptions = {
-   *   groupsForSession: { classId: ['testClass'] },
-   *   includeStoredUserGroups: false
-   * };
-   * ```
+   * // Merged, single groupset:
+   * upgradeClient.setFeatureFlagGroupOptions({
+   *   useSingleGroupSet: { groups: { classId: ['testClass'] }, includeStoredUserGroups: true },
+   * });
    *
-   * **Scenario 2: Merged groups (Merged stored/ephemeral groups request mode)**
-   * ```typescript
-   * const options: UpGradeClientInterfaces.IFeatureFlagOptions = {
-   *   groupsForSession: { classId: ['testClass'] },
-   *   includeStoredUserGroups: true
-   * };
-   * ```
+   * // Multiple groupsets, with a mainGroupset:
+   * upgradeClient.setFeatureFlagGroupOptions({
+   *   useMultipleGroupSets: {
+   *     mainGroupset: { groups: { schoolId: ['school-a', 'school-b'] } },
+   *     subGroupsets: [
+   *       { groupsetId: 'school-a', groups: { schoolId: ['school-a'] } },
+   *       { groupsetId: 'school-b', groups: { schoolId: ['school-b'] } },
+   *     ],
+   *   },
+   * });
    *
-   * **Scenario 3: Default behavior (Standard mode)**
-   * Note this is the default behavior and does not need to be set, unless clearing previously set groupsForSession options
-
-   * ```typescript
-   * const options: UpGradeClientInterfaces.IFeatureFlagOptions = null;
+   * // Default behavior (standard stored-user lookup) — also clears any previous configuration:
+   * upgradeClient.setFeatureFlagGroupOptions(null);
    * ```
    */
+  public setFeatureFlagGroupOptions(
+    options: UpGradeClientInterfaces.IFeatureFlagGroupOptions | null | undefined
+  ): void {
+    if (options == null) {
+      this.dataService.clearFeatureFlagsForGroupset(DEFAULT_GROUPSET_ID);
+      this.dataService.registerGroupsetDefinition(DEFAULT_GROUPSET_ID, {});
+      this.activeConfig = { kind: 'single', groupsetId: DEFAULT_GROUPSET_ID };
+      return;
+    }
 
+    if (options.useSingleGroupSet && options.useMultipleGroupSets) {
+      throw new Error(
+        'featureFlagGroupOptions must provide either useSingleGroupSet or useMultipleGroupSets, not both.'
+      );
+    }
+
+    if (options.useMultipleGroupSets) {
+      const { mainGroupset, subGroupsets } = options.useMultipleGroupSets;
+      if (!subGroupsets || subGroupsets.length === 0) {
+        throw new Error('useMultipleGroupSets.subGroupsets must contain at least one entry.');
+      }
+      // Validate the whole batch before registering anything, so a later invalid entry can't
+      // leave an earlier one already committed (e.g. mainGroupset registered, then a bad
+      // subGroupsets entry throws) while this call as a whole still fails.
+      if (mainGroupset) {
+        UpgradeClient.assertValidSingleEntry(mainGroupset, 'mainGroupset');
+      }
+      subGroupsets.forEach((entry) => UpgradeClient.assertValidSubEntry(entry));
+
+      const mainGroupsetId = mainGroupset ? this.registerSingle(mainGroupset, 'mainGroupset') : null;
+      const subGroupsetIds = subGroupsets.map((entry) => this.registerSub(entry));
+      this.activeConfig = { kind: 'multiple', mainGroupsetId, subGroupsetIds };
+      return;
+    }
+
+    if (options.useSingleGroupSet) {
+      const groupsetId = this.registerSingle(options.useSingleGroupSet, 'useSingleGroupSet');
+      this.activeConfig = { kind: 'single', groupsetId };
+      return;
+    }
+
+    // A truthy but empty options object — treat the same as null (reset to default).
+    this.setFeatureFlagGroupOptions(null);
+  }
+
+  /**
+   * @deprecated Use `setFeatureFlagGroupOptions` with `useSingleGroupSet` instead. Kept as a thin
+   * forwarding wrapper — existing callers of this method continue to work unchanged.
+   */
   public setFeatureFlagUserGroupsForSession(
     featureFlagOptions: UpGradeClientInterfaces.IFeatureFlagOptions | null | undefined
   ): void {
-    this.validateFeatureFlagGroupOptions(featureFlagOptions);
-
-    this.apiService.setFeatureFlagUserGroupsForSession(
-      featureFlagOptions?.groupsForSession,
-      featureFlagOptions?.includeStoredUserGroups
-    );
-
-    this.dataService.clearFeatureFlags();
+    if (featureFlagOptions == null) {
+      this.setFeatureFlagGroupOptions(null);
+      return;
+    }
+    if (!featureFlagOptions.groupsForSession || featureFlagOptions.includeStoredUserGroups === undefined) {
+      throw new Error(
+        `${JSON.stringify(
+          featureFlagOptions
+        )} featureFlagUserGroupsForSession must contain both groupsForSession and includeStoredUserGroups properties.`
+      );
+    }
+    this.setFeatureFlagGroupOptions({
+      useSingleGroupSet: {
+        groups: featureFlagOptions.groupsForSession,
+        includeStoredUserGroups: featureFlagOptions.includeStoredUserGroups,
+      },
+    });
   }
 
   /**
@@ -508,46 +655,293 @@ export default class UpgradeClient {
   markExperimentPoint = this.markDecisionPoint;
 
   /**
-   * Fetches flags for the user given a context and stores them in the data service.
-   * @param options.ignoreCache If true, it will ignore the cached feature flags and fetch fresh data from the API.
+   * Fetches feature flags per the active configuration (see `setFeatureFlagGroupOptions`), or an
+   * ad-hoc override for this call only.
+   *
+   * With no arguments (or `ignoreCache`/nothing else set): uses the active configuration.
+   * `useSingleGroupSet` config → flat `string[]`. `useMultipleGroupSets` config →
+   * `{ mainGroupset?: string[]; subGroupsets: Record<string, string[]> }`. Cache hits are served
+   * from cache; cache misses are aggregated into a single batched request.
+   *
+   * Passing `useSingleGroupSet`/`useMultipleGroupSets` directly evaluates that ad-hoc configuration
+   * for this call only, without touching the active configuration: the main/single groupset portion
+   * (`useSingleGroupSet`, or `useMultipleGroupSets.mainGroupset`) is always evaluated fresh and never
+   * cached, so it can never change what's active. subGroupsets keep their normal shared, cacheable
+   * identity either way (an ad-hoc subGroupsets entry updates the same cache a matching active
+   * subGroupsets entry would read) — `ignoreCache: true` forces a refetch of any that are already
+   * cached, upserted into the cache; everything else already fetched is left untouched.
+   *
+   * To force-refresh the active configuration itself, pass `ignoreCache: true` with no override,
+   * rather than passing an ad-hoc override with matching groups.
    *
    * @example
    * ```typescript
    * const featureFlags = await upgradeClient.getAllFeatureFlags();
    * console.log(featureFlags); // ['feature1', 'feature2', 'feature3']
-   * ```
    *
-   * NOTE: See `#featureFlagUserGroupsForSession` option explanation in the constructor of UpgradeClient
-   * to see configurations that may affect the responses to this method
+   * const bySchool = await upgradeClient.getAllFeatureFlags({
+   *   useSingleGroupSet: { groups: { schoolId: ['school-a'] } },
+   * });
+   * console.log(bySchool); // ['feature1'] — still a flat array, since the input was singular
+   * ```
    */
+  async getAllFeatureFlags(
+    options: UpGradeClientInterfaces.IGetAllFeatureFlagsOptions = {}
+  ): Promise<string[] | UpGradeClientInterfaces.IMultiGroupSetFeatureFlagsResult> {
+    const { ignoreCache = false, useSingleGroupSet, useMultipleGroupSets } = options;
 
-  async getAllFeatureFlags(options = { ignoreCache: false }): Promise<string[]> {
-    let response = options.ignoreCache ? null : this.dataService.getFeatureFlags();
-    if (response == null) {
-      response = await this.apiService.getAllFeatureFlags();
-      if (Array.isArray(response)) {
-        this.dataService.setFeatureFlags(response);
+    if (useSingleGroupSet && useMultipleGroupSets) {
+      throw new Error('getAllFeatureFlags must be given either useSingleGroupSet or useMultipleGroupSets, not both.');
+    }
+
+    if (useMultipleGroupSets) {
+      const { mainGroupset, subGroupsets } = useMultipleGroupSets;
+      if (!subGroupsets || subGroupsets.length === 0) {
+        throw new Error('useMultipleGroupSets.subGroupsets must contain at least one entry.');
+      }
+      // Validate the whole batch before registering anything — see the matching comment in
+      // setFeatureFlagGroupOptions for why.
+      if (mainGroupset) {
+        UpgradeClient.assertValidSingleEntry(mainGroupset, 'mainGroupset');
+      }
+      subGroupsets.forEach((entry) => UpgradeClient.assertValidSubEntry(entry));
+
+      const subGroupsetIds = subGroupsets.map((entry) => this.registerSub(entry));
+      if (!mainGroupset) {
+        return this.fetchMultiple(null, subGroupsetIds, ignoreCache);
+      }
+      // An ad-hoc mainGroupset is evaluated fresh, for this call only — see fetchAdHocWithMain.
+      return this.fetchAdHocWithMain(mainGroupset, subGroupsetIds, ignoreCache);
+    }
+
+    if (useSingleGroupSet) {
+      UpgradeClient.assertValidSingleEntry(useSingleGroupSet, 'useSingleGroupSet');
+      // Ad-hoc: evaluated directly against the API for this call only. Unlike setFeatureFlagGroupOptions's
+      // useSingleGroupSet, this never persists a definition or caches anything — it can't affect,
+      // or be affected by, the active configuration's main/single slot.
+      const response = await this.apiService.getAllFeatureFlags({
+        useSingleGroupSet: {
+          groups: useSingleGroupSet.groups,
+          includeStoredUserGroups: useSingleGroupSet.includeStoredUserGroups,
+        },
+      });
+      return Array.isArray(response) ? response : [];
+    }
+
+    if (this.activeConfig.kind === 'single') {
+      return this.fetchSingle(this.activeConfig.groupsetId, ignoreCache);
+    }
+    return this.fetchMultiple(this.activeConfig.mainGroupsetId, this.activeConfig.subGroupsetIds, ignoreCache);
+  }
+
+  private async fetchSingle(groupsetId: string, ignoreCache: boolean): Promise<string[]> {
+    if (!ignoreCache) {
+      const cached = this.dataService.getFeatureFlagsForGroupset(groupsetId);
+      if (cached != null) {
+        return cached;
       }
     }
-    return response;
+
+    const definition = this.dataService.getGroupsetDefinition(groupsetId) ?? {};
+    // definition.groups is undefined for the default (no options) groupset — omit useSingleGroupSet
+    // entirely in that case so the backend's plain stored-user lookup runs, rather than sending
+    // `useSingleGroupSet: {}`, which fails validation (groups is required on that shape).
+    const response = await this.apiService.getAllFeatureFlags(
+      definition.groups
+        ? {
+            useSingleGroupSet: {
+              groups: definition.groups,
+              includeStoredUserGroups: definition.includeStoredUserGroups,
+            },
+          }
+        : {}
+    );
+    const flags = Array.isArray(response) ? response : [];
+    this.dataService.setFeatureFlagsForGroupset(groupsetId, flags);
+    return flags;
+  }
+
+  private async fetchMultiple(
+    mainGroupsetId: string | null,
+    subGroupsetIds: string[],
+    ignoreCache: boolean
+  ): Promise<UpGradeClientInterfaces.IMultiGroupSetFeatureFlagsResult> {
+    const allIds = [...(mainGroupsetId ? [mainGroupsetId] : []), ...subGroupsetIds];
+    const idsToFetch = ignoreCache
+      ? allIds
+      : allIds.filter((id) => this.dataService.getFeatureFlagsForGroupset(id) == null);
+
+    if (idsToFetch.length) {
+      const mainNeedsFetch = mainGroupsetId != null && idsToFetch.includes(mainGroupsetId);
+      const subIdsToFetch = idsToFetch.filter((id) => id !== mainGroupsetId);
+
+      if (mainNeedsFetch && subIdsToFetch.length === 0) {
+        // Only the mainGroupset needs (re)fetching — the plain single-groupset shape covers it,
+        // since the backend requires useMultipleGroupSets.subGroupsets to be non-empty.
+        const mainDef = this.dataService.getGroupsetDefinition(mainGroupsetId) ?? {};
+        const response = await this.apiService.getAllFeatureFlags({
+          useSingleGroupSet: { groups: mainDef.groups, includeStoredUserGroups: mainDef.includeStoredUserGroups },
+        });
+        this.dataService.setFeatureFlagsForGroupset(mainGroupsetId, Array.isArray(response) ? response : []);
+      } else {
+        const response = await this.apiService.getAllFeatureFlags({
+          useMultipleGroupSets: {
+            ...(mainNeedsFetch
+              ? {
+                  mainGroupset: (this.dataService.getGroupsetDefinition(mainGroupsetId) ??
+                    {}) as UpGradeClientInterfaces.ISingleGroupSetOptions,
+                }
+              : {}),
+            subGroupsets: subIdsToFetch.map(
+              (id) =>
+                ({
+                  groupsetId: id,
+                  ...(this.dataService.getGroupsetDefinition(id) ?? {}),
+                } as UpGradeClientInterfaces.ISubGroupSetOptions)
+            ),
+          },
+        });
+        if (response && !Array.isArray(response)) {
+          if (response.mainGroupset && mainGroupsetId) {
+            this.dataService.setFeatureFlagsForGroupset(mainGroupsetId, response.mainGroupset);
+          }
+          this.dataService.setFeatureFlagsForGroupsets(response.subGroupsets ?? {});
+        }
+      }
+    }
+
+    const result: UpGradeClientInterfaces.IMultiGroupSetFeatureFlagsResult = {
+      subGroupsets: this.buildSubGroupsetsResult(subGroupsetIds),
+    };
+    if (mainGroupsetId) {
+      result.mainGroupset = this.dataService.getFeatureFlagsForGroupset(mainGroupsetId) ?? [];
+    }
+    return result;
   }
 
   /**
-   * Checks if a specific feature flag is enabled for the user.
-   * Note: will await a promise if feature flags have not been fetched yet!
+   * Evaluates an ad-hoc `useMultipleGroupSets` call that includes a `mainGroupset`. The main
+   * portion is always fetched fresh and never cached — ad-hoc main/single groupsets are one-off,
+   * evaluated for this call only (see `getAllFeatureFlags`'s docs) — while subGroupsets keep their
+   * normal shared, cacheable identity, so this still batches the mainGroupset together with
+   * whichever subGroupsets actually need (re)fetching, in one request when there are any.
+   *
+   * Precondition: `mainGroupset` has already been validated by the caller (`getAllFeatureFlags`).
+   */
+  private async fetchAdHocWithMain(
+    mainGroupset: UpGradeClientInterfaces.ISingleGroupSetOptions,
+    subGroupsetIds: string[],
+    ignoreCache: boolean
+  ): Promise<UpGradeClientInterfaces.IMultiGroupSetFeatureFlagsResult> {
+    const mainOptions: UpGradeClientInterfaces.ISingleGroupSetOptions = {
+      groups: mainGroupset.groups,
+      includeStoredUserGroups: mainGroupset.includeStoredUserGroups,
+    };
+    const subIdsToFetch = ignoreCache
+      ? subGroupsetIds
+      : subGroupsetIds.filter((id) => this.dataService.getFeatureFlagsForGroupset(id) == null);
+
+    let mainFlags: string[];
+    if (subIdsToFetch.length === 0) {
+      // No subGroupsets need fetching — the backend requires useMultipleGroupSets.subGroupsets to
+      // be non-empty, so fetch the mainGroupset alone via the plain single-groupset shape.
+      const response = await this.apiService.getAllFeatureFlags({ useSingleGroupSet: mainOptions });
+      mainFlags = Array.isArray(response) ? response : [];
+    } else {
+      const response = await this.apiService.getAllFeatureFlags({
+        useMultipleGroupSets: {
+          mainGroupset: mainOptions,
+          subGroupsets: subIdsToFetch.map(
+            (id) =>
+              ({
+                groupsetId: id,
+                ...(this.dataService.getGroupsetDefinition(id) ?? {}),
+              } as UpGradeClientInterfaces.ISubGroupSetOptions)
+          ),
+        },
+      });
+      mainFlags = response && !Array.isArray(response) ? response.mainGroupset ?? [] : [];
+      if (response && !Array.isArray(response)) {
+        this.dataService.setFeatureFlagsForGroupsets(response.subGroupsets ?? {});
+      }
+    }
+
+    return { mainGroupset: mainFlags, subGroupsets: this.buildSubGroupsetsResult(subGroupsetIds) };
+  }
+
+  /** A null-prototype dictionary of each id's cached flags — a caller-supplied groupsetId of
+   * "__proto__" would otherwise set the object's prototype instead of an own property, silently
+   * dropping that entry. */
+  private buildSubGroupsetsResult(subGroupsetIds: string[]): Record<string, string[]> {
+    const subGroupsets: Record<string, string[]> = Object.create(null);
+    subGroupsetIds.forEach((id) => {
+      subGroupsets[id] = this.dataService.getFeatureFlagsForGroupset(id) ?? [];
+    });
+    return subGroupsets;
+  }
+
+  /**
+   * Checks if a specific feature flag is enabled.
+   *
+   * With no `groupsetId`: uses the active configuration. `useSingleGroupSet` (or default) mode —
+   * no id needed. `useMultipleGroupSets` mode — resolves to `mainGroupset` if one is configured;
+   * throws otherwise, since there's nothing to default to.
+   *
+   * With a `groupsetId`: reads that groupset's cache; on a miss, rehydrates it by refetching just
+   * that one groupset, using whatever definition was registered for it (from construction,
+   * `setFeatureFlagGroupOptions`, or a prior `getAllFeatureFlags` call) — throws if the id was
+   * never registered at all.
    *
    * @example
    * ```typescript
    * const isFeatureEnabled = await upgradeClient.hasFeatureFlag('feature1');
-   * console.log(isFeatureEnabled); // true or false
+   * const isEnabledForSchool = await upgradeClient.hasFeatureFlag('feature1', 'school-a');
    * ```
-   *
-   * NOTE: See `#featureFlagUserGroupsForSession` option explanation in the constructor of UpgradeClient
-   * to see configurations that may affect the responses to this method
    */
-  public async hasFeatureFlag(key: string): Promise<boolean> {
-    await this.getAllFeatureFlags();
-    return this.dataService.hasFeatureFlag(key);
+  public async hasFeatureFlag(key: string, groupsetId?: string): Promise<boolean> {
+    const resolvedGroupsetId = groupsetId ?? this.resolveDefaultGroupsetId();
+    await this.ensureGroupsetFetched(resolvedGroupsetId);
+    return this.dataService.hasFeatureFlagForGroupset(key, resolvedGroupsetId);
+  }
+
+  private resolveDefaultGroupsetId(): string {
+    if (this.activeConfig.kind === 'single') {
+      return this.activeConfig.groupsetId;
+    }
+    if (this.activeConfig.mainGroupsetId) {
+      return this.activeConfig.mainGroupsetId;
+    }
+    throw new Error(
+      'hasFeatureFlag(key) requires a groupsetId when useMultipleGroupSets has no mainGroupset configured — use hasFeatureFlag(key, groupsetId).'
+    );
+  }
+
+  /** Fetches a single groupset by id if it isn't already cached, using its registered definition. */
+  private async ensureGroupsetFetched(groupsetId: string): Promise<void> {
+    if (this.dataService.getFeatureFlagsForGroupset(groupsetId) != null) {
+      return;
+    }
+
+    const definition: IGroupsetDefinition = this.dataService.getGroupsetDefinition(groupsetId);
+    if (!definition) {
+      throw new Error(`No feature flags have been fetched or configured for groupset id "${groupsetId}".`);
+    }
+
+    // Rehydrating a single id (whether it plays a "main" or "sub" role) is always just a plain
+    // single-groupset evaluation — the multi-groupset framing doesn't matter for one id alone.
+    // definition.groups is undefined only for the default groupset — omit useSingleGroupSet
+    // entirely in that case (see fetchSingle for why sending `{}` would fail validation).
+    const response = await this.apiService.getAllFeatureFlags(
+      definition.groups
+        ? {
+            useSingleGroupSet: {
+              groups: definition.groups,
+              includeStoredUserGroups: definition.includeStoredUserGroups,
+            },
+          }
+        : {}
+    );
+    this.dataService.setFeatureFlagsForGroupset(groupsetId, Array.isArray(response) ? response : []);
   }
 
   /**
