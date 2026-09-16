@@ -87,7 +87,7 @@ export function batchResultCounts(state: RootBatchState) {
     uncertain: results.some((item) => item.outcome === 'unknown'),
     failed: results.filter((item) => item.outcome === 'failed').length,
     notAttempted: results.filter((item) => item.outcome === 'not_attempted').length,
-    hasErrors: results.some((item) => item.outcome !== 'deleted' || item.reasonCode),
+    hasErrors: results.some((item) => item.outcome !== 'not_found' && (item.outcome !== 'deleted' || item.reasonCode)),
     postDeleteFailed: results.some((item) => item.reasonCode === DeletionReasonCode.POST_DELETE_FAILED),
   };
 }
@@ -99,16 +99,21 @@ export function batchResultMessage(
   translate: (key: string, params?: Record<string, number>) => string
 ): string {
   const parts: string[] = [];
-  if (counts.deleted || !counts.hasErrors)
+  if (counts.deleted)
     parts.push(
       translate(`batch-delete.success.${entity}.${counts.deleted === 1 ? 'one' : 'other'}`, { deleted: counts.deleted })
     );
-  for (const key of ['absent', 'failed', 'notAttempted'] as const) {
-    if (counts[key])
-      parts.push(
-        translate(`batch-delete.result.${key}.${counts[key] === 1 ? 'one' : 'other'}`, { count: counts[key] })
-      );
-  }
+  if (counts.absent)
+    parts.push(
+      translate(`batch-delete.result.absent.${counts.absent === 1 ? 'one' : 'other'}`, { count: counts.absent })
+    );
+  if (counts.failed) parts.push(translate('batch-delete.result.failed'));
+  if (counts.notAttempted)
+    parts.push(
+      translate(`batch-delete.result.notAttempted.${counts.notAttempted === 1 ? 'one' : 'other'}`, {
+        count: counts.notAttempted,
+      })
+    );
   if (counts.postDeleteFailed) parts.push(translate('batch-delete.result.post-delete-failed'));
   if (counts.uncertain) parts.push(translate('batch-delete.result.uncertain'));
   return parts.join(' ');

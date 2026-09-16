@@ -36,10 +36,10 @@ export class SegmentsEffects {
       SegmentsActions.batchActions,
       (state) => {
         const counts = batchResultCounts(state);
-        const hasWarnings = counts.hasErrors || counts.uncertain;
         const message = batchResultMessage('segments', counts, (key, params) => this.translate.instant(key, params));
-        if (hasWarnings) this.notificationService.showWarning(message);
-        else this.notificationService.showSuccess(message);
+        if (!counts.hasErrors) this.notificationService.showSuccess(message);
+        else if (counts.deleted || counts.absent) this.notificationService.showWarning(message);
+        else this.notificationService.showError(message);
         const pathname = (this.router.url || '').split('?')[0].split('#')[0];
         return [
           // Detail selectors share the rows array; replace it only while the root table is displayed.
