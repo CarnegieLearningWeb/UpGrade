@@ -1,4 +1,4 @@
-import { BatchDeleteService } from '../../../src/api/services/batch/BatchDeleteService';
+import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService';
 import app from '../../utils/expressApp';
 import request from 'supertest';
 import { configureLogger } from '../../utils/logger';

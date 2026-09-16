@@ -38,7 +38,7 @@ import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/E
 import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/FeatureFlagPrecomputedSegmentService';
 import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
-import { BatchDeleteService } from '../../../src/api/services/batch/BatchDeleteService';
+import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService';
 import { currentUserChecker } from '../../../src/auth/currentUserChecker';
 import { env } from '../../../src/env';
 import { iocLoader } from '../../../src/loaders/iocLoader';

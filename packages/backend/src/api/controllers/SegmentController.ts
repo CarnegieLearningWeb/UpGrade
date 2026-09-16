@@ -1,7 +1,7 @@
 import { UserDTO } from '../DTO/UserDTO';
 import { BatchDeleteResult } from 'upgrade_types';
 import { Inject } from 'typedi';
-import { BatchDeleteService } from '../services/batch/BatchDeleteService';
+import { BatchDeleteService } from '../services/BatchDeleteService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import {
   JsonController,

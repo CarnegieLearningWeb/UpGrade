@@ -2,15 +2,15 @@ import { randomUUID } from 'crypto';
 import { performance } from 'perf_hooks';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 import { BatchDeleteEntity, DeletionReasonCode, UserRole } from 'upgrade_types';
-import { BatchDeleteService } from '../../../../src/api/services/batch/BatchDeleteService';
-import { ExperimentService } from '../../../../src/api/services/ExperimentService';
-import { FeatureFlagService } from '../../../../src/api/services/FeatureFlagService';
-import { SegmentService } from '../../../../src/api/services/SegmentService';
-import { MoocletExperimentService } from '../../../../src/api/services/MoocletExperimentService';
-import { MoocletError } from '../../../../src/api/errors/MoocletError';
-import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
-import { env } from '../../../../src/env';
-import { DeletionRepository } from '../../../../src/api/repositories/DeletionRepository';
+import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService';
+import { ExperimentService } from '../../../src/api/services/ExperimentService';
+import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
+import { SegmentService } from '../../../src/api/services/SegmentService';
+import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
+import { MoocletError } from '../../../src/api/errors/MoocletError';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { env } from '../../../src/env';
+import { DeletionRepository } from '../../../src/api/repositories/DeletionRepository';
 
 jest.mock('perf_hooks', () => ({ performance: { now: jest.fn(() => 0) } }));
 

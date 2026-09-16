@@ -9,17 +9,17 @@ import {
   DeletionReasonCode,
   hasBatchDeletePermission,
 } from 'upgrade_types';
-import { env } from '../../../env';
-import { UpgradeLogger } from '../../../lib/logger/UpgradeLogger';
-import { InjectDataSource, InjectRepository } from '../../../typeorm-typedi-extensions';
-import { DeletionTransaction } from '../../../types/DeletionTransaction';
-import { UserDTO } from '../../DTO/UserDTO';
-import { MoocletError } from '../../errors/MoocletError';
-import { ExperimentService } from '../ExperimentService';
-import { FeatureFlagService } from '../FeatureFlagService';
-import { MoocletExperimentService } from '../MoocletExperimentService';
-import { SegmentService } from '../SegmentService';
-import { DeletionRepository } from '../../repositories/DeletionRepository';
+import { env } from '../../env';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
+import { DeletionTransaction } from '../../types/DeletionTransaction';
+import { UserDTO } from '../DTO/UserDTO';
+import { MoocletError } from '../errors/MoocletError';
+import { ExperimentService } from './ExperimentService';
+import { FeatureFlagService } from './FeatureFlagService';
+import { MoocletExperimentService } from './MoocletExperimentService';
+import { SegmentService } from './SegmentService';
+import { DeletionRepository } from '../repositories/DeletionRepository';
 
 // Admission budget: never abandon an in-flight deletion or claim it has been cancelled.
 // Check before starting another item and again after acquiring its target lock.
