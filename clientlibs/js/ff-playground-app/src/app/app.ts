@@ -76,7 +76,7 @@ function generateUUID(): string {
                 (input)="setRowValues($index, input($event))"
                 placeholder="comma-separated values, e.g. school-1, school-2"
               />
-              <button type="button" (click)="removeRow($index)">✕</button>
+              <button type="button" [attr.aria-label]="'Remove ' + row.type + ' group'" (click)="removeRow($index)">✕</button>
             </div>
           }
           <button type="button" (click)="addRow()">+ Add group</button>
