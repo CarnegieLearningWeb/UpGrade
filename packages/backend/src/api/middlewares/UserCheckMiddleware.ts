@@ -222,7 +222,9 @@ export class UserCheckMiddleware {
     };
 
     const main = mainGroupset ? resolveOne(mainGroupset) : undefined;
-    const subGroupsetsResolved: Record<string, RequestedExperimentUser> = {};
+    // A null-prototype dictionary — a caller-supplied groupsetId of "__proto__" would otherwise
+    // set this object's prototype instead of an own property, silently dropping that entry.
+    const subGroupsetsResolved: Record<string, RequestedExperimentUser> = Object.create(null);
     subGroupsets.forEach((entry) => {
       subGroupsetsResolved[entry.groupsetId] = resolveOne(entry);
     });

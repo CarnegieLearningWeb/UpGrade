@@ -410,6 +410,25 @@ describe('UserCheckMiddleware Tests', () => {
       expect(nextFunction).not.toHaveBeenCalledWith(expect.any(TypeError));
     });
 
+    test('resolves a subGroupsets entry whose groupsetId is the reserved-looking key "__proto__"', async () => {
+      const userId = 'ephemeral-user-proto';
+
+      mockRequest.body = {
+        useMultipleGroupSets: {
+          subGroupsets: [{ groupsetId: '__proto__', groups: { classId: ['classA'] } }],
+        },
+      };
+      (mockRequest.get as jest.Mock).mockReturnValue(userId);
+
+      await middleware.use(mockRequest as AppRequest, mockResponse, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith();
+      // A plain `{}` accumulator would silently drop this key (it sets the object's prototype
+      // instead of an own property) rather than surfacing it via Object.keys/entries.
+      expect(Object.keys(mockRequest.userDocsBySubGroupset)).toEqual(['__proto__']);
+      expect(mockRequest.userDocsBySubGroupset['__proto__'].group).toEqual({ classId: ['classA'] });
+    });
+
     test('returns 404 when a non-ephemeral entry requires a stored user that does not exist', async () => {
       const userId = 'missing-user';
 

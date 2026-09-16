@@ -197,7 +197,11 @@ export class FeatureFlagService {
       })
     );
 
-    const result: { mainGroupset?: string[]; subGroupsets: Record<string, string[]> } = { subGroupsets: {} };
+    // A null-prototype dictionary — a caller-supplied groupsetId of "__proto__" would otherwise
+    // set this object's prototype instead of an own property, silently dropping that entry.
+    const result: { mainGroupset?: string[]; subGroupsets: Record<string, string[]> } = {
+      subGroupsets: Object.create(null),
+    };
     resolvedEntries.forEach(({ groupsetId, keys }) => {
       if (groupsetId === undefined) {
         result.mainGroupset = keys;

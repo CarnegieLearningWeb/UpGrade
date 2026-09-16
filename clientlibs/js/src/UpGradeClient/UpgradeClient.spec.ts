@@ -335,6 +335,51 @@ describe('UpgradeClient', () => {
         expect(result).toEqual({ subGroupsets: { sectionA: ['flag1'] } });
       });
 
+      it('reconfiguring with subGroupsets only leaves a previously-configured mainGroupset untouched', async () => {
+        const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags()
+          .mockResolvedValueOnce({ mainGroupset: ['mainFlag'], subGroupsets: { sectionA: ['flag1'] } })
+          .mockResolvedValueOnce(['flag2']);
+
+        upgradeClient.setFeatureFlagGroupOptions({
+          useMultipleGroupSets: {
+            mainGroupset: { groups: { schoolId: ['a'] } },
+            subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+          },
+        });
+        await upgradeClient.getAllFeatureFlags();
+
+        // Reconfigure with subGroupsets only — no mainGroupset key at all.
+        upgradeClient.setFeatureFlagGroupOptions({
+          useMultipleGroupSets: { subGroupsets: [{ groupsetId: 'sectionB', groups: { schoolId: ['b'] } }] },
+        });
+
+        // The previously-configured mainGroupset's cached flags are still there, reachable by its
+        // reserved id directly — untouched by the subs-only reconfiguration.
+        expect(await upgradeClient.hasFeatureFlag('mainFlag', '*')).toBe(true);
+        expect(getAllFeatureFlags).toHaveBeenCalledTimes(1);
+      });
+
+      it('does not register mainGroupset when a subGroupsets entry fails validation (atomic)', async () => {
+        mockApiServiceGetAllFeatureFlags().mockResolvedValue(['mainFlag']);
+
+        expect(() => {
+          upgradeClient.setFeatureFlagGroupOptions({
+            useMultipleGroupSets: {
+              mainGroupset: { groups: { schoolId: ['a'] } },
+              subGroupsets: [
+                { groupsetId: 'sectionA', groups: { schoolId: ['a'] } },
+                { groups: { schoolId: ['b'] } } as any,
+              ],
+            },
+          });
+        }).toThrow(/requires a groupsetId/);
+
+        // Neither the invalid call's mainGroupset nor its subGroupsets should have been committed —
+        // the client should still be in its original default (unconfigured) state.
+        expect(await upgradeClient.getAllFeatureFlags()).toEqual(['mainFlag']);
+        expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledWith({});
+      });
+
       it('resetting to null restores standard stored-user lookup', async () => {
         mockApiServiceGetAllFeatureFlags().mockResolvedValue(['flag1']);
 
@@ -533,10 +578,10 @@ describe('UpgradeClient', () => {
       });
     });
 
-    it('uses the plain useSingleGroupSet shape when only the mainGroupset needs (re)fetching', async () => {
+    it('an ad-hoc useSingleGroupSet override is a one-off even when its groups match the active mainGroupset', async () => {
       const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags()
         .mockResolvedValueOnce({ mainGroupset: ['flag1'], subGroupsets: { sectionA: ['flag1'] } })
-        .mockResolvedValueOnce(['flag1', 'flag2']);
+        .mockResolvedValueOnce(['adHocFlag']);
 
       upgradeClient.setFeatureFlagGroupOptions({
         useMultipleGroupSets: {
@@ -546,15 +591,130 @@ describe('UpgradeClient', () => {
       });
       await upgradeClient.getAllFeatureFlags();
 
-      // Force a refetch of only the mainGroupset via an ad-hoc single override — sectionA stays cached.
-      await upgradeClient.getAllFeatureFlags({
+      // Same groups as the active mainGroupset, but this is still just a one-off: it sends the
+      // plain useSingleGroupSet shape and does not refresh (or read from) the active mainGroupset's cache.
+      const adHocResult = await upgradeClient.getAllFeatureFlags({
         useSingleGroupSet: { groups: { schoolId: ['a'] } },
-        ignoreCache: true,
       });
-
+      expect(adHocResult).toEqual(['adHocFlag']);
       expect(getAllFeatureFlags).toHaveBeenNthCalledWith(2, {
         useSingleGroupSet: { groups: { schoolId: ['a'] }, includeStoredUserGroups: undefined },
       });
+
+      // The active configuration's mainGroupset is untouched by the ad-hoc call above.
+      const activeResult = await upgradeClient.getAllFeatureFlags();
+      expect(activeResult).toEqual({ mainGroupset: ['flag1'], subGroupsets: { sectionA: ['flag1'] } });
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+    });
+
+    it('getAllFeatureFlags({ ignoreCache: true }) with no override force-refreshes the active mainGroupset', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags()
+        .mockResolvedValueOnce({ mainGroupset: ['flag1'], subGroupsets: { sectionA: ['flag1'] } })
+        .mockResolvedValueOnce({ mainGroupset: ['flag1', 'flag2'], subGroupsets: { sectionA: ['flag1'] } });
+
+      upgradeClient.setFeatureFlagGroupOptions({
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['a'] } },
+          subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+        },
+      });
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual({
+        mainGroupset: ['flag1'],
+        subGroupsets: { sectionA: ['flag1'] },
+      });
+
+      // This is the correct way to force-refresh the active configuration itself — no ad-hoc
+      // override needed.
+      expect(await upgradeClient.getAllFeatureFlags({ ignoreCache: true })).toEqual({
+        mainGroupset: ['flag1', 'flag2'],
+        subGroupsets: { sectionA: ['flag1'] },
+      });
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+    });
+
+    it('an ad-hoc useSingleGroupSet call with different groups does not overwrite the active configuration', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags()
+        .mockResolvedValueOnce(['activeFlag'])
+        .mockResolvedValueOnce(['adHocFlag']);
+
+      upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: { groups: { classId: ['classA'] } } });
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['activeFlag']);
+
+      // A one-off ad-hoc call for a *different* groupset — must not clobber what's active.
+      expect(
+        await upgradeClient.getAllFeatureFlags({ useSingleGroupSet: { groups: { classId: ['classB'] } } })
+      ).toEqual(['adHocFlag']);
+
+      // The active configuration's cached flags are untouched — no third network call.
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['activeFlag']);
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+    });
+
+    it('an ad-hoc mainGroupset with different groups does not overwrite the active main, but subs still resolve', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags()
+        .mockResolvedValueOnce({ mainGroupset: ['activeMainFlag'], subGroupsets: { sectionA: ['flag1'] } })
+        .mockResolvedValueOnce({ mainGroupset: ['adHocMainFlag'], subGroupsets: { sectionA: ['flag1'] } });
+
+      upgradeClient.setFeatureFlagGroupOptions({
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['a'] } },
+          subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+        },
+      });
+      await upgradeClient.getAllFeatureFlags();
+
+      const adHocResult = await upgradeClient.getAllFeatureFlags({
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['different'] } },
+          subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+        },
+        ignoreCache: true,
+      });
+      expect(adHocResult.mainGroupset).toEqual(['adHocMainFlag']);
+
+      // The active mainGroupset's cache is exactly what it was before the ad-hoc call.
+      const activeResult = await upgradeClient.getAllFeatureFlags();
+      expect(activeResult).toEqual({ mainGroupset: ['activeMainFlag'], subGroupsets: { sectionA: ['flag1'] } });
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not register mainGroupset when an ad-hoc subGroupsets entry fails validation (atomic)', async () => {
+      mockApiServiceGetAllFeatureFlags().mockResolvedValue(['activeFlag']);
+      upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: { groups: { classId: ['classA'] } } });
+
+      await expect(
+        upgradeClient.getAllFeatureFlags({
+          useMultipleGroupSets: {
+            mainGroupset: { groups: { schoolId: ['a'] } },
+            subGroupsets: [
+              { groupsetId: 'valid', groups: { schoolId: ['a'] } },
+              { groupsetId: '*', groups: {} } as any,
+            ],
+          },
+        })
+      ).rejects.toThrow(/reserved groupset id/);
+
+      // The active useSingleGroupSet configuration must be unaffected by the failed ad-hoc call.
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['activeFlag']);
+      expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledTimes(1);
+    });
+
+    it('preserves a subGroupsets entry with the reserved-looking key "__proto__"', async () => {
+      // Computed key, not literal `{ __proto__: [...] }` — the literal form is special-cased by JS
+      // to set the prototype rather than create an own property, which would mask exactly the bug
+      // under test. A real wire response parsed via JSON.parse behaves like the computed form.
+      mockApiServiceGetAllFeatureFlags().mockResolvedValue({
+        mainGroupset: undefined,
+        subGroupsets: { ['__proto__']: ['flag1'] },
+      });
+
+      const result = (await upgradeClient.getAllFeatureFlags({
+        useMultipleGroupSets: { subGroupsets: [{ groupsetId: '__proto__', groups: { schoolId: ['a'] } }] },
+      })) as any;
+
+      expect(Object.keys(result.subGroupsets)).toEqual(['__proto__']);
+      expect(result.subGroupsets['__proto__']).toEqual(['flag1']);
+      expect(Object.getPrototypeOf(result.subGroupsets)).toBeNull();
     });
   });
 

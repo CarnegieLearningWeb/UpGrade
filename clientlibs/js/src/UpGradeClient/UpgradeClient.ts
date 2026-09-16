@@ -185,6 +185,35 @@ export default class UpgradeClient {
   }
 
   /**
+   * Validates a single/main groupset entry without mutating anything. Used both by
+   * `registerSingle` and to pre-validate a whole `useMultipleGroupSets` batch up front, so a bad
+   * `subGroupsets` entry can't leave an already-registered `mainGroupset` behind (see
+   * `assertValidSubEntry`'s doc for the matching subGroupsets concern).
+   */
+  private static assertValidSingleEntry(entry: UpGradeClientInterfaces.ISingleGroupSetOptions, label: string): void {
+    if (!entry?.groups) {
+      throw new Error(`${label}.groups is required.`);
+    }
+  }
+
+  /**
+   * Validates one subGroupsets entry without mutating anything. Used both by `registerSub` and to
+   * pre-validate a whole `useMultipleGroupSets.subGroupsets` array up front — so that, say, the
+   * 5th entry failing validation can't leave the first four already registered.
+   */
+  private static assertValidSubEntry(entry: UpGradeClientInterfaces.ISubGroupSetOptions): void {
+    if (!entry?.groupsetId) {
+      throw new Error('Each subGroupsets entry requires a groupsetId.');
+    }
+    if (entry.groupsetId === DEFAULT_GROUPSET_ID) {
+      throw new Error(`subGroupsets entry may not use the reserved groupset id "${DEFAULT_GROUPSET_ID}".`);
+    }
+    if (!entry.groups) {
+      throw new Error(`subGroupsets entry "${entry.groupsetId}" requires groups.`);
+    }
+  }
+
+  /**
    * Registers the shared main/single groupset's definition under the fixed `DEFAULT_GROUPSET_ID`
    * slot and returns that id. There's only ever one main/single groupset active at a time, so
    * unlike subGroupsets entries it never needs (or accepts) a caller-supplied id. Since the id no
@@ -192,9 +221,7 @@ export default class UpgradeClient {
    * definition actually changes, so a stale value is never served under the new definition.
    */
   private registerSingle(entry: UpGradeClientInterfaces.ISingleGroupSetOptions, label: string): string {
-    if (!entry?.groups) {
-      throw new Error(`${label}.groups is required.`);
-    }
+    UpgradeClient.assertValidSingleEntry(entry, label);
     const definition: IGroupsetDefinition = {
       groups: entry.groups,
       includeStoredUserGroups: entry.includeStoredUserGroups,
@@ -213,15 +240,7 @@ export default class UpgradeClient {
    * collide and silently share one cached evaluation.
    */
   private registerSub(entry: UpGradeClientInterfaces.ISubGroupSetOptions): string {
-    if (!entry?.groupsetId) {
-      throw new Error('Each subGroupsets entry requires a groupsetId.');
-    }
-    if (entry.groupsetId === DEFAULT_GROUPSET_ID) {
-      throw new Error(`subGroupsets entry may not use the reserved groupset id "${DEFAULT_GROUPSET_ID}".`);
-    }
-    if (!entry.groups) {
-      throw new Error(`subGroupsets entry "${entry.groupsetId}" requires groups.`);
-    }
+    UpgradeClient.assertValidSubEntry(entry);
     const definition: IGroupsetDefinition = {
       groups: entry.groups,
       includeStoredUserGroups: entry.includeStoredUserGroups,
@@ -244,7 +263,13 @@ export default class UpgradeClient {
    * groups clears its previously-cached flags automatically, so the next `getAllFeatureFlags()`/
    * `hasFeatureFlag()` call refetches; reconfiguring with the same groups leaves the cache as-is.
    * Other previously-fetched subGroupsets are left untouched (this is additive/upsert, not a
-   * wholesale reset).
+   * wholesale reset) — in particular, reconfiguring with `useMultipleGroupSets.subGroupsets` only
+   * (no `mainGroupset`) leaves whatever main/single groupset was previously configured completely
+   * as-is, definition and cache included.
+   *
+   * A `useMultipleGroupSets` call validates every entry (`mainGroupset` and all of `subGroupsets`)
+   * before registering any of them, so a call that ends up throwing never partially applies —
+   * whatever was configured before the call remains in effect.
    *
    * @example
    * ```typescript
@@ -292,6 +317,14 @@ export default class UpgradeClient {
       if (!subGroupsets || subGroupsets.length === 0) {
         throw new Error('useMultipleGroupSets.subGroupsets must contain at least one entry.');
       }
+      // Validate the whole batch before registering anything, so a later invalid entry can't
+      // leave an earlier one already committed (e.g. mainGroupset registered, then a bad
+      // subGroupsets entry throws) while this call as a whole still fails.
+      if (mainGroupset) {
+        UpgradeClient.assertValidSingleEntry(mainGroupset, 'mainGroupset');
+      }
+      subGroupsets.forEach((entry) => UpgradeClient.assertValidSubEntry(entry));
+
       const mainGroupsetId = mainGroupset ? this.registerSingle(mainGroupset, 'mainGroupset') : null;
       const subGroupsetIds = subGroupsets.map((entry) => this.registerSub(entry));
       this.activeConfig = { kind: 'multiple', mainGroupsetId, subGroupsetIds };
@@ -631,9 +664,15 @@ export default class UpgradeClient {
    * from cache; cache misses are aggregated into a single batched request.
    *
    * Passing `useSingleGroupSet`/`useMultipleGroupSets` directly evaluates that ad-hoc configuration
-   * for this call only, without touching the active configuration — the same shape-in/shape-out
-   * rule applies. `ignoreCache: true` forces a refetch of whatever's relevant to this call, upserted
-   * into the cache; everything else already fetched is left untouched.
+   * for this call only, without touching the active configuration: the main/single groupset portion
+   * (`useSingleGroupSet`, or `useMultipleGroupSets.mainGroupset`) is always evaluated fresh and never
+   * cached, so it can never change what's active. subGroupsets keep their normal shared, cacheable
+   * identity either way (an ad-hoc subGroupsets entry updates the same cache a matching active
+   * subGroupsets entry would read) — `ignoreCache: true` forces a refetch of any that are already
+   * cached, upserted into the cache; everything else already fetched is left untouched.
+   *
+   * To force-refresh the active configuration itself, pass `ignoreCache: true` with no override,
+   * rather than passing an ad-hoc override with matching groups.
    *
    * @example
    * ```typescript
@@ -660,14 +699,33 @@ export default class UpgradeClient {
       if (!subGroupsets || subGroupsets.length === 0) {
         throw new Error('useMultipleGroupSets.subGroupsets must contain at least one entry.');
       }
-      const mainGroupsetId = mainGroupset ? this.registerSingle(mainGroupset, 'mainGroupset') : null;
+      // Validate the whole batch before registering anything — see the matching comment in
+      // setFeatureFlagGroupOptions for why.
+      if (mainGroupset) {
+        UpgradeClient.assertValidSingleEntry(mainGroupset, 'mainGroupset');
+      }
+      subGroupsets.forEach((entry) => UpgradeClient.assertValidSubEntry(entry));
+
       const subGroupsetIds = subGroupsets.map((entry) => this.registerSub(entry));
-      return this.fetchMultiple(mainGroupsetId, subGroupsetIds, ignoreCache);
+      if (!mainGroupset) {
+        return this.fetchMultiple(null, subGroupsetIds, ignoreCache);
+      }
+      // An ad-hoc mainGroupset is evaluated fresh, for this call only — see fetchAdHocWithMain.
+      return this.fetchAdHocWithMain(mainGroupset, subGroupsetIds, ignoreCache);
     }
 
     if (useSingleGroupSet) {
-      const groupsetId = this.registerSingle(useSingleGroupSet, 'useSingleGroupSet');
-      return this.fetchSingle(groupsetId, ignoreCache);
+      UpgradeClient.assertValidSingleEntry(useSingleGroupSet, 'useSingleGroupSet');
+      // Ad-hoc: evaluated directly against the API for this call only. Unlike setFeatureFlagGroupOptions's
+      // useSingleGroupSet, this never persists a definition or caches anything — it can't affect,
+      // or be affected by, the active configuration's main/single slot.
+      const response = await this.apiService.getAllFeatureFlags({
+        useSingleGroupSet: {
+          groups: useSingleGroupSet.groups,
+          includeStoredUserGroups: useSingleGroupSet.includeStoredUserGroups,
+        },
+      });
+      return Array.isArray(response) ? response : [];
     }
 
     if (this.activeConfig.kind === 'single') {
@@ -752,14 +810,74 @@ export default class UpgradeClient {
       }
     }
 
-    const result: UpGradeClientInterfaces.IMultiGroupSetFeatureFlagsResult = { subGroupsets: {} };
+    const result: UpGradeClientInterfaces.IMultiGroupSetFeatureFlagsResult = {
+      subGroupsets: this.buildSubGroupsetsResult(subGroupsetIds),
+    };
     if (mainGroupsetId) {
       result.mainGroupset = this.dataService.getFeatureFlagsForGroupset(mainGroupsetId) ?? [];
     }
-    subGroupsetIds.forEach((id) => {
-      result.subGroupsets[id] = this.dataService.getFeatureFlagsForGroupset(id) ?? [];
-    });
     return result;
+  }
+
+  /**
+   * Evaluates an ad-hoc `useMultipleGroupSets` call that includes a `mainGroupset`. The main
+   * portion is always fetched fresh and never cached — ad-hoc main/single groupsets are one-off,
+   * evaluated for this call only (see `getAllFeatureFlags`'s docs) — while subGroupsets keep their
+   * normal shared, cacheable identity, so this still batches the mainGroupset together with
+   * whichever subGroupsets actually need (re)fetching, in one request when there are any.
+   *
+   * Precondition: `mainGroupset` has already been validated by the caller (`getAllFeatureFlags`).
+   */
+  private async fetchAdHocWithMain(
+    mainGroupset: UpGradeClientInterfaces.ISingleGroupSetOptions,
+    subGroupsetIds: string[],
+    ignoreCache: boolean
+  ): Promise<UpGradeClientInterfaces.IMultiGroupSetFeatureFlagsResult> {
+    const mainOptions: UpGradeClientInterfaces.ISingleGroupSetOptions = {
+      groups: mainGroupset.groups,
+      includeStoredUserGroups: mainGroupset.includeStoredUserGroups,
+    };
+    const subIdsToFetch = ignoreCache
+      ? subGroupsetIds
+      : subGroupsetIds.filter((id) => this.dataService.getFeatureFlagsForGroupset(id) == null);
+
+    let mainFlags: string[];
+    if (subIdsToFetch.length === 0) {
+      // No subGroupsets need fetching — the backend requires useMultipleGroupSets.subGroupsets to
+      // be non-empty, so fetch the mainGroupset alone via the plain single-groupset shape.
+      const response = await this.apiService.getAllFeatureFlags({ useSingleGroupSet: mainOptions });
+      mainFlags = Array.isArray(response) ? response : [];
+    } else {
+      const response = await this.apiService.getAllFeatureFlags({
+        useMultipleGroupSets: {
+          mainGroupset: mainOptions,
+          subGroupsets: subIdsToFetch.map(
+            (id) =>
+              ({
+                groupsetId: id,
+                ...(this.dataService.getGroupsetDefinition(id) ?? {}),
+              } as UpGradeClientInterfaces.ISubGroupSetOptions)
+          ),
+        },
+      });
+      mainFlags = response && !Array.isArray(response) ? response.mainGroupset ?? [] : [];
+      if (response && !Array.isArray(response)) {
+        this.dataService.setFeatureFlagsForGroupsets(response.subGroupsets ?? {});
+      }
+    }
+
+    return { mainGroupset: mainFlags, subGroupsets: this.buildSubGroupsetsResult(subGroupsetIds) };
+  }
+
+  /** A null-prototype dictionary of each id's cached flags — a caller-supplied groupsetId of
+   * "__proto__" would otherwise set the object's prototype instead of an own property, silently
+   * dropping that entry. */
+  private buildSubGroupsetsResult(subGroupsetIds: string[]): Record<string, string[]> {
+    const subGroupsets: Record<string, string[]> = Object.create(null);
+    subGroupsetIds.forEach((id) => {
+      subGroupsets[id] = this.dataService.getFeatureFlagsForGroupset(id) ?? [];
+    });
+    return subGroupsets;
   }
 
   /**
