@@ -26,7 +26,7 @@ import { Prior } from 'upgrade_types';
 import { ConditionHelperService } from '../../../../../../../core/experiments/condition-helper.service';
 import { selectConditionWeightsValid } from '../../../../../../../core/experiments/store/experiments.selectors';
 import { Store } from '@ngrx/store';
-import { MoocletExperimentHelperService } from '../../../../../../../core/experiments/mooclet-helper.service';
+import { ThompsonSamplingHelperService } from '../../../../../../../core/experiments/thompson-sampling-helper.service';
 
 @Component({
   selector: 'app-experiment-conditions-section-card',
@@ -62,7 +62,7 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
     private readonly dialogService: DialogService,
     private readonly conditionHelperService: ConditionHelperService,
     private readonly store: Store,
-    private readonly moocletHelperService: MoocletExperimentHelperService
+    private readonly thompsonSamplingHelperService: ThompsonSamplingHelperService
   ) {}
 
   ngOnInit() {
@@ -79,8 +79,8 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
     );
   }
 
-  isMoocletExperiment(experiment: Experiment) {
-    return this.moocletHelperService.isMoocletAlgorithm(experiment?.assignmentAlgorithm);
+  isThompsonSamplingExperiment(experiment: Experiment) {
+    return this.thompsonSamplingHelperService.isThompsonSamplingExperiment(experiment);
   }
 
   onAddConditionClick(appContext: string, experimentId: string): void {
@@ -135,7 +135,7 @@ export class ExperimentConditionsSectionCardComponent implements OnInit {
   }
 
   onEditPrior(conditions: ExperimentCondition[], experiment: ExperimentVM): void {
-    const existingPrior = experiment.moocletPolicyParameters?.prior;
+    const existingPrior = experiment.thompsonSamplingConfig?.priors;
     this.dialogService
       .openEditConditionPriorModal(conditions, existingPrior)
       .subscribe((result: Record<string, Prior> | undefined) => {

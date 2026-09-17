@@ -26,7 +26,7 @@ import {
   ExperimentRewardsSummary,
 } from 'upgrade_types';
 import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
-import { formatTSConfigurablePolicyParamDetails } from '../mooclet-helper.service';
+import { formatThompsonSamplingConfigDetails } from '../thompson-sampling-helper.service';
 import { KeyValueFormat } from '@shared-component-lib/common-section-card-overview-details/common-section-card-overview-details.component';
 import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 
@@ -210,9 +210,8 @@ export const selectExperimentOverviewDetails = createSelector(selectSelectedExpe
   };
 
   // Add policy parameters if they exist
-  if (experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
-    details[EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS] =
-      formatTSConfigurablePolicyParamDetails(experiment);
+  if (experiment?.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+    details[EXPERIMENT_OVERVIEW_LABELS.ADAPTIVE_ALGORITHM_PARAMETERS] = formatThompsonSamplingConfigDetails(experiment);
   }
 
   // Always add tags at the end
@@ -361,23 +360,33 @@ export const selectRewardsDataForSelectedExperiment = createSelector(
   selectSelectedExperiment,
   selectExperimentState,
   (experiment: ExperimentVM, state: ExperimentState): ExperimentRewardsSummary => {
+    const emptySummary: ExperimentRewardsSummary = {
+      conditions: [],
+      pendingRewardsCount: 0,
+      totalRewardCount: 0,
+      warmupThreshold: 0,
+      batchSize: 1,
+    };
+
     if (!experiment || !experiment.id) {
-      return [];
+      return emptySummary;
     }
     const rewardsSummary = state.rewardsSummaries[experiment.id];
 
     if (!rewardsSummary) {
-      const defaultRewardsSummary: ExperimentRewardsSummary = experiment.conditions.map((condition) => {
-        return {
+      return {
+        ...emptySummary,
+        conditions: experiment.conditions.map((condition) => ({
           conditionCode: condition.conditionCode,
           successes: 0,
           failures: 0,
           total: 0,
           successRate: 'n/a',
           order: condition.order,
-        };
-      });
-      return defaultRewardsSummary;
+        })),
+        warmupThreshold: experiment.thompsonSamplingConfig?.warmupThreshold ?? 0,
+        batchSize: experiment.thompsonSamplingConfig?.batchSize ?? 1,
+      };
     }
 
     return rewardsSummary;
@@ -466,7 +475,7 @@ export const selectDisabledExperimentFields = createSelector(selectSelectedExper
   }
 
   if ([EXPERIMENT_STATE.COMPLETED, EXPERIMENT_STATE.ARCHIVED].includes(state)) {
-    return [...baseRestrictedFields, 'moocletPolicyParameters'];
+    return [...baseRestrictedFields, 'thompsonSamplingConfig'];
   }
 
   return baseRestrictedFields;

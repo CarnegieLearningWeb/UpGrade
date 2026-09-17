@@ -103,7 +103,7 @@ class BinaryRewardValue(str, Enum):
 - `MarkDecisionPointResponse` — userId, site, target, experimentId
 - `LogEventResponse` — id, uniquifier, timeStamp, data
 - `UserAliasResponse` — userId, aliases
-- `SendRewardResponse` — message, request (rewardValue, experimentId, context, decisionPoint), reward (variable, value, mooclet, version, learner)
+- `SendRewardResponse` — message, request (rewardValue, experimentId, context, decisionPoint)
 - `ErrorResponse` — message, httpStatusCode, type
 
 ### Deliverable

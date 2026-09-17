@@ -18,8 +18,6 @@ import {
   PAYLOAD_TYPE,
   CONDITION_ORDER,
   ASSIGNMENT_ALGORITHM,
-  MoocletTSConfigurablePolicyParametersDTO,
-  MoocletPolicyParametersDTO,
   REPEATED_MEASURE,
   SEGMENT_TYPE,
   IEnrollmentCompleteCondition,
@@ -29,6 +27,13 @@ import {
   ExperimentRewardsSummary,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
+
+export interface ThompsonSamplingConfigDTO {
+  warmupThreshold?: number;
+  minimumDrawDifference?: number;
+  batchSize?: number;
+  priors?: Record<string, { success: number; failure: number }>;
+}
 export {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
@@ -285,7 +290,7 @@ export interface Experiment {
   experimentSegmentExclusion: SegmentNew[];
   groupSatisfied?: number;
   backendVersion: string;
-  moocletPolicyParameters?: MoocletTSConfigurablePolicyParametersDTO;
+  thompsonSamplingConfig?: ThompsonSamplingConfigDTO;
 }
 
 export interface ParticipantsMember {
@@ -511,7 +516,7 @@ export interface DraftExperimentRequest {
   endOn?: string;
   revertTo?: string;
   backendVersion?: string;
-  moocletPolicyParameters?: MoocletPolicyParametersDTO;
+  thompsonSamplingConfig?: ThompsonSamplingConfigDTO;
   rewardMetricKey?: string;
 
   // Arrays that can be empty for drafts
@@ -594,11 +599,15 @@ export const EXPERIMENT_OVERVIEW_LABELS = {
   TAGS: 'Tags',
 } as const;
 
-export const TS_CONFIGURABLE_OVERVIEW_PARAM_LABELS = {
+export const THOMPSON_SAMPLING_OVERVIEW_PARAM_LABELS = {
   BATCH_SIZE: 'home.new-experiment.design.ts-configurable-policy.batch-size.label.text',
-  UNIFORM_THRESHOLD: 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.label.text',
-  TSPOSTDIFF_THRESH: 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.label.text',
+  WARMUP_THRESHOLD: 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.label.text',
+  MINIMUM_DRAW_DIFFERENCE: 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.label.text',
 };
+
+// Shared by the conditions table and the enrollment expandable row — both hide/tooltip the weight
+// column the same way for adaptive experiments, and must reference the same translation key.
+export const THOMPSON_SAMPLING_WEIGHT_TOOLTIP_KEY = 'experiments.details.conditions.weight-adaptive-tooltip.text';
 
 export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
 

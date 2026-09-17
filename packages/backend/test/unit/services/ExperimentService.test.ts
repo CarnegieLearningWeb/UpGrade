@@ -23,7 +23,6 @@ import { LevelRepository } from '../../../src/api/repositories/LevelRepository';
 import { LevelCombinationElementRepository } from '../../../src/api/repositories/LevelCombinationElements';
 import { ArchivedStatsRepository } from '../../../src/api/repositories/ArchivedStatsRepository';
 import { StratificationFactorRepository } from '../../../src/api/repositories/StratificationFactorRepository';
-import { MoocletExperimentRefRepository } from '../../../src/api/repositories/MoocletExperimentRefRepository';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
@@ -32,7 +31,6 @@ import { ErrorService } from '../../../src/api/services/ErrorService';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { QueryService } from '../../../src/api/services/QueryService';
 import { MetricService } from '../../../src/api/services/MetricService';
-import { MoocletRewardsService } from '../../../src/api/services/MoocletRewardsService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { ExperimentCondition } from '../../../src/api/models/ExperimentCondition';
@@ -400,10 +398,6 @@ describe('ExperimentService Testing', () => {
           useValue: {},
         },
         {
-          provide: getRepositoryToken(MoocletExperimentRefRepository),
-          useValue: {},
-        },
-        {
           provide: CacheService,
           useValue: {
             delCache: jest.fn().mockResolvedValue(undefined),
@@ -448,10 +442,6 @@ describe('ExperimentService Testing', () => {
             getPrecomputedSets: jest.fn().mockResolvedValue(new Map()),
             withRecompute: jest.fn(async (_logger: any, _resolve: any, work: any) => work()),
           },
-        },
-        {
-          provide: MoocletRewardsService,
-          useValue: {},
         },
       ],
     }).compile();
@@ -498,6 +488,43 @@ describe('ExperimentService Testing', () => {
       } as Segment;
 
       expect(service['inferListType'](groupList)).toBe('schoolId');
+    });
+  });
+
+  describe('deduceConditions()', () => {
+    it('remaps thompsonSamplingConfig.priors onto the newly generated condition ids', () => {
+      const result: any = {
+        conditions: [
+          { id: 'old-condition-1', levelCombinationElements: [] },
+          { id: 'old-condition-2', levelCombinationElements: [] },
+        ],
+        thompsonSamplingConfig: {
+          priors: {
+            'old-condition-1': { success: 3, failure: 1 },
+            'old-condition-2': { success: 1, failure: 5 },
+          },
+        },
+      };
+
+      service.deduceConditions(result);
+
+      const [newCondition1, newCondition2] = result.conditions;
+      expect(newCondition1.id).not.toBe('old-condition-1');
+      expect(newCondition2.id).not.toBe('old-condition-2');
+      expect(result.thompsonSamplingConfig.priors).toEqual({
+        [newCondition1.id]: { success: 3, failure: 1 },
+        [newCondition2.id]: { success: 1, failure: 5 },
+      });
+      expect(result.thompsonSamplingConfig.priors['old-condition-1']).toBeUndefined();
+    });
+
+    it('leaves experiments without a thompsonSamplingConfig unaffected', () => {
+      const result: any = {
+        conditions: [{ id: 'old-condition-1', levelCombinationElements: [] }],
+      };
+
+      expect(() => service.deduceConditions(result)).not.toThrow();
+      expect(result.thompsonSamplingConfig).toBeUndefined();
     });
   });
 
@@ -965,7 +992,7 @@ describe('ExperimentService Testing', () => {
     it('awaits exclusion-list attachment before returning, even with no inclusion lists, under a caller-owned transaction', async () => {
       // Regression: the only `await Promise.all(addListPromises)` used to sit inside the inclusion-list
       // branch, so an exclusion-only experiment created within a caller-owned transaction
-      // (existingEntityManager, e.g. MoocletExperimentService) returned with its addList insert still in
+      // (existingEntityManager) returned with its addList insert still in
       // flight — racing the caller's commit. create() must now await it unconditionally.
       let resolveAddList: () => void;
       const addListPending = new Promise<any>((res) => {
