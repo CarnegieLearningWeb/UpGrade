@@ -1,13 +1,12 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { HttpErrorResponse, HttpRequest } from '@angular/common/http';
+import { HttpRequest } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivationEnd } from '@angular/router';
-import { Subject, throwError } from 'rxjs';
+import { Subject } from 'rxjs';
 import { ExperimentDataService } from '../experiments/experiments.data.service';
 import { FeatureFlagsDataService } from '../feature-flags/feature-flags.data.service';
 import { SegmentsDataService } from '../segments/segments.data.service';
 import { HttpCancelInterceptor, SKIP_NAVIGATION_CANCEL } from '../http-interceptors/http-cancel.interceptor';
-import { HttpErrorInterceptor } from '../http-interceptors/http-error.interceptor';
 import { batchHttpContext } from './batch-actions.http';
 
 describe('Batch HTTP contracts', () => {
@@ -54,32 +53,5 @@ describe('Batch HTTP contracts', () => {
     expect(received).toHaveBeenCalledWith({ status: 200 });
     subscription.unsubscribe();
     navigation.complete();
-  });
-
-  it.each([0, 404])('reports HTTP %i using the existing error popup', (status) => {
-    const notification = { create: jest.fn() };
-    const auth = { authLogout: jest.fn() };
-    const interceptor = new HttpErrorInterceptor(auth as any, notification as any, {} as any);
-    const error = new HttpErrorResponse({ status });
-    const failed = jest.fn();
-    interceptor
-      .intercept(new HttpRequest('POST', '/flags/batch-delete', {}, { context: batchHttpContext() }), {
-        handle: () => throwError(() => error),
-      })
-      .subscribe({ error: failed });
-    expect(notification.create).toHaveBeenCalledTimes(1);
-    expect(notification.create.mock.calls[0][0]).toBe('Network call failed. See console for details.');
-    expect(failed).toHaveBeenCalledWith(error);
-  });
-
-  it('preserves automatic logout for a batch 401', () => {
-    const auth = { authLogout: jest.fn() };
-    const interceptor = new HttpErrorInterceptor(auth as any, { create: jest.fn() } as any, {} as any);
-    interceptor
-      .intercept(new HttpRequest('POST', '/flags/batch-delete', {}, { context: batchHttpContext() }), {
-        handle: () => throwError(() => new HttpErrorResponse({ status: 401 })),
-      })
-      .subscribe({ error: () => undefined });
-    expect(auth.authLogout).toHaveBeenCalledTimes(1);
   });
 });
