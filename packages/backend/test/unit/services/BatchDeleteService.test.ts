@@ -189,18 +189,21 @@ describe('BatchDeleteService transaction outcomes', () => {
     expect(runners.every((runner) => (runner.rollbackTransaction as jest.Mock).mock.calls.length === 1)).toBe(true);
   });
 
-  test('stops when rollback fails even if the target was missing before mutation', async () => {
-    configureRunner = (runner) => {
-      (runner.manager.getRepository as jest.Mock).mockReturnValue({
-        findOne: jest.fn().mockResolvedValue(null),
-      });
-      (runner.rollbackTransaction as jest.Mock).mockRejectedValue(new Error('connection lost'));
-    };
-    const result = await service.delete('flags', ids, user, logger);
-    expect(result.results.map((item) => item.outcome)).toEqual(['failed', 'not_attempted', 'not_attempted']);
-    expect(mutations).toEqual([]);
-    expect(createQueryRunner).toHaveBeenCalledTimes(1);
-  });
+  test.each(['rollbackTransaction', 'release'] as const)(
+    'stops when %s fails even if the target was missing before mutation',
+    async (method) => {
+      configureRunner = (runner) => {
+        (runner.manager.getRepository as jest.Mock).mockReturnValue({
+          findOne: jest.fn().mockResolvedValue(null),
+        });
+        (runner[method] as jest.Mock).mockRejectedValue(new Error('connection lost'));
+      };
+      const result = await service.delete('flags', ids, user, logger);
+      expect(result.results.map((item) => item.outcome)).toEqual(['failed', 'not_attempted', 'not_attempted']);
+      expect(mutations).toEqual([]);
+      expect(createQueryRunner).toHaveBeenCalledTimes(1);
+    }
+  );
 
   test.each([0, 1])('stops after item %i fails and preserves earlier commits', async (index) => {
     work.mockImplementation(async (id) => {

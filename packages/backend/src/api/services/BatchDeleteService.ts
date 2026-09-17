@@ -142,8 +142,8 @@ export class BatchDeleteService {
           await runner.release();
         } catch (releaseError) {
           logger.error({ message: 'Batch deletion connection release failed', id, releaseError });
-          // Preserve the transaction failure if connection cleanup also fails.
-          if (!transactionError) transactionError = releaseError;
+          // Preserve an execution failure, but do not let a normal skip hide a release failure.
+          if (!transactionError || transactionError instanceof BatchDeleteSkippedError) transactionError = releaseError;
         }
       }
       if (transactionError) throw transactionError;
