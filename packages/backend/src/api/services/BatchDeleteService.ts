@@ -163,7 +163,7 @@ export class BatchDeleteService {
       } else if (entity === 'flags') {
         await this.flags.delete(id, user, logger, executeTransaction);
       } else {
-        await this.segments.deleteSegment(id, logger, executeTransaction);
+        await this.segments.deleteSegment(id, logger, executeTransaction, true);
       }
       return committed
         ? { id, outcome: 'deleted' }

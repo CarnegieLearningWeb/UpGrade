@@ -6,6 +6,8 @@ import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
+import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/FeatureFlagPrecomputedSegmentService';
+import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import { MoocletError } from '../../../src/api/errors/MoocletError';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -17,7 +19,7 @@ jest.mock('perf_hooks', () => ({ performance: { now: jest.fn(() => 0) } }));
 describe('BatchDeleteService transaction outcomes', () => {
   const entities: BatchDeleteEntity[] = ['experiments', 'flags', 'segments'];
   const user = { email: 'batch@example.com', firstName: 'Batch', lastName: 'User', role: UserRole.ADMIN };
-  const logger = { error: jest.fn() } as unknown as UpgradeLogger;
+  const logger = { error: jest.fn(), info: jest.fn() } as unknown as UpgradeLogger;
   let ids: string[];
   let service: BatchDeleteService;
   let runners: QueryRunner[];
@@ -116,6 +118,50 @@ describe('BatchDeleteService transaction outcomes', () => {
       expect(runner.rollbackTransaction).not.toHaveBeenCalled();
       expect(runner.release).toHaveBeenCalledTimes(1);
     }
+  });
+
+  test('finishes both owner recomputations before deleting the next segment', async () => {
+    const selectedIds = ids.slice(0, 2);
+    const saved = { flags: [] as string[], experiments: [] as string[] };
+    let releaseFirstWrites: () => void;
+    const firstWrites = new Promise<void>((resolve) => (releaseFirstWrites = resolve));
+    const recompute = (entity: keyof typeof saved) => async () => {
+      const members = selectedIds.filter((id) => !mutations.includes(id));
+      if (members.length) await firstWrites;
+      saved[entity] = members;
+    };
+    // Use the real deletion/scheduling methods, holding the first post-delete writes to expose overlap.
+    const segmentService = Object.assign(Object.create(SegmentService.prototype), {
+      featureFlagPrecomputedSegmentService: Object.assign(
+        Object.create(FeatureFlagPrecomputedSegmentService.prototype),
+        {
+          getAffectedFlagIds: async () => ['flag'],
+          recomputeOwner: recompute('flags'),
+        }
+      ),
+      experimentPrecomputedSegmentService: Object.assign(Object.create(ExperimentPrecomputedSegmentService.prototype), {
+        getAffectedExperimentIds: async () => ['experiment'],
+        recomputeOwner: recompute('experiments'),
+      }),
+      cacheService: { resetPrefixCache: jest.fn().mockResolvedValue(undefined) },
+      deleteSegmentAndPrivateSubsegments: async (id) => (await work(id))[0],
+    });
+    segments.deleteSegment.mockImplementation(segmentService.deleteSegment.bind(segmentService));
+    let completed = false;
+    const deletion = service.delete('segments', selectedIds, user, logger).then((result) => {
+      completed = true;
+      return result;
+    });
+    try {
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      expect(mutations).toEqual([selectedIds[0]]);
+      expect(completed).toBe(false);
+    } finally {
+      releaseFirstWrites();
+      await deletion;
+    }
+    expect(saved).toEqual({ flags: [], experiments: [] });
+    expect((await deletion).results.map((item) => item.outcome)).toEqual(['deleted', 'deleted']);
   });
 
   test('stops without mutation when the target lookup fails', async () => {

@@ -26,8 +26,10 @@ import { ErrorHandlerMiddleware } from '../../../src/api/middlewares/ErrorHandle
 import { LogMiddleware } from '../../../src/api/middlewares/LogMiddleware';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { ExperimentAuditLog } from '../../../src/api/models/ExperimentAuditLog';
+import { ExperimentPrecomputedSegment } from '../../../src/api/models/ExperimentPrecomputedSegment';
 import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
+import { FeatureFlagPrecomputedSegment } from '../../../src/api/models/FeatureFlagPrecomputedSegment';
 import { FeatureFlagSegmentInclusion } from '../../../src/api/models/FeatureFlagSegmentInclusion';
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 import { MoocletExperimentRef } from '../../../src/api/models/MoocletExperimentRef';
@@ -41,6 +43,7 @@ import { SegmentService } from '../../../src/api/services/SegmentService';
 import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService';
 import { currentUserChecker } from '../../../src/auth/currentUserChecker';
 import { env } from '../../../src/env';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { iocLoader } from '../../../src/loaders/iocLoader';
 
 const entities: BatchDeleteEntity[] = ['experiments', 'flags', 'segments'];
@@ -307,6 +310,60 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       }
     });
 
+    test.each([false, true])('updates shared owners after segment deletion (recompute fails: %s)', async (fails) => {
+      const rows = await create('segments', 2);
+      const [flag] = await create('flags');
+      const [experiment] = await create('experiments');
+      const members = rows.map((row) => `member-${row.id}`);
+      await db
+        .getRepository(IndividualForSegment)
+        .insert(rows.map((row, index) => ({ segmentId: row.id, userId: members[index] })));
+      await db.getRepository(FeatureFlagSegmentInclusion).insert(
+        rows.map((row) => ({
+          featureFlagId: flag.id,
+          segmentId: row.id,
+          enabled: true,
+          listType: STANDARD_LIST_TYPE.SEGMENT,
+        }))
+      );
+      await db
+        .getRepository(ExperimentSegmentInclusion)
+        .insert(rows.map((row) => ({ experimentId: experiment.id, segmentId: row.id })));
+      const flags = Container.get(FeatureFlagPrecomputedSegmentService);
+      const experiments = Container.get(ExperimentPrecomputedSegmentService);
+      const logger = new UpgradeLogger();
+      await flags.recomputeForFlag(flag.id, logger);
+      await experiments.recomputeForExperiment(experiment.id, logger);
+      if (fails) jest.spyOn(flags, 'recomputeForFlag').mockRejectedValueOnce(new Error('Recompute failed'));
+
+      const { body } = await request(app)
+        .post(route('segments'))
+        .send({ ids: rows.map((row) => row.id) })
+        .expect(200);
+      if (fails) {
+        expect(body.results).toEqual([
+          { id: rows[0].id, outcome: 'deleted', reasonCode: DeletionReasonCode.POST_DELETE_FAILED },
+          { id: rows[1].id, outcome: 'not_attempted' },
+        ]);
+        expect(await db.getRepository(Segment).countBy({ id: rows[0].id })).toBe(0);
+        expect(await db.getRepository(Segment).countBy({ id: rows[1].id })).toBe(1);
+      } else {
+        expect(body.results).toEqual(rows.map((row) => ({ id: row.id, outcome: 'deleted' })));
+        expect(
+          await db.getRepository(FeatureFlagPrecomputedSegment).findOneBy({ featureFlagId: flag.id })
+        ).toMatchObject({
+          inclusionIds: [],
+          exclusionIds: [],
+        });
+        expect(
+          await db.getRepository(ExperimentPrecomputedSegment).findOneBy({ experimentId: experiment.id })
+        ).toMatchObject({
+          inclusionIds: [],
+          exclusionIds: [],
+        });
+      }
+    });
+
     test('keeps a committed segment deletion when post-commit cache invalidation fails', async () => {
       const rows = await create('segments', 2);
       const cache = Container.get(CacheService);
@@ -319,11 +376,6 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         }
         return reset(prefix);
       });
-      const flags = jest.spyOn(Container.get(FeatureFlagPrecomputedSegmentService), 'withRecompute');
-      const experiments = jest.spyOn(
-        Container.get(ExperimentPrecomputedSegmentService),
-        'scheduleRecomputeForExperiments'
-      );
       const { body } = await request(app)
         .post(route('segments'))
         .send({ ids: rows.map((row) => row.id) })
@@ -333,8 +385,6 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         { id: rows[1].id, outcome: 'not_attempted' },
       ]);
       expect(observedCount).toBe(0);
-      expect(flags).toHaveBeenCalledTimes(1);
-      expect(experiments).toHaveBeenCalledTimes(1);
       expect(await db.getRepository(Segment).countBy({ id: rows[1].id })).toBe(1);
     });
 

@@ -539,25 +539,41 @@ export class SegmentService {
   public async deleteSegment(
     id: string,
     logger: UpgradeLogger,
-    executeTransaction?: DeletionTransaction
+    executeTransaction?: DeletionTransaction,
+    waitForRecompute = false
   ): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
 
-    // Both flags and experiments can reference this segment, so both precomputed tables must be
-    // refreshed. The affected experiment IDs must be collected BEFORE the delete (the join rows are
-    // gone after), so resolve them here; the fire-and-forget recompute is fired after the delete
-    // transaction below commits. Flags use withRecompute, which enforces the same
-    // resolve-before -> delete -> recompute-after ordering internally.
+    // Resolve affected owners before deleting their join rows. Single deletions keep background
+    // recomputation; batches wait below so consecutive items cannot leave overlapping owner writes.
     const affectedExperimentIds = await this.experimentPrecomputedSegmentService.getAffectedExperimentIds(id);
     const transaction: DeletionTransaction = executeTransaction || ((work) => this.dataSource.transaction(work));
+    const work = () =>
+      transaction((transactionalEntityManager) =>
+        this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
+      );
+
+    if (waitForRecompute) {
+      // A batch must finish this item's post-commit writes before deleting another segment for the same owner.
+      const affectedFlagIds = await this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id);
+      const deletedSegment = await work();
+      const updates = await Promise.allSettled([
+        ...affectedFlagIds.map((flagId) => this.featureFlagPrecomputedSegmentService.recomputeForFlag(flagId, logger)),
+        ...affectedExperimentIds.map((experimentId) =>
+          this.experimentPrecomputedSegmentService.recomputeForExperiment(experimentId, logger)
+        ),
+        this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX),
+        this.cacheService.resetPrefixCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX),
+      ]);
+      const failure = updates.find((update): update is PromiseRejectedResult => update.status === 'rejected');
+      if (failure) throw failure.reason;
+      return deletedSegment;
+    }
 
     const deletedSegment = await this.featureFlagPrecomputedSegmentService.withRecompute(
       logger,
       () => this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
-      () =>
-        transaction((transactionalEntityManager) =>
-          this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
-        )
+      work
     );
 
     this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments(affectedExperimentIds, logger);
