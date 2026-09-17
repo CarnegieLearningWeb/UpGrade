@@ -101,9 +101,9 @@ export class BatchDeleteService {
     let rolledBack = false;
     let commitAttempted = false;
     let mutationStarted = false;
+    let transactionError: unknown;
     const executeTransaction: DeletionTransaction = async <T>(work: (manager: EntityManager) => Promise<T>) => {
       const runner = this.dataSource.createQueryRunner();
-      let transactionError: unknown;
       let response: T;
       try {
         await runner.connect();
@@ -149,7 +149,8 @@ export class BatchDeleteService {
           if (!transactionError || transactionError instanceof BatchDeleteSkippedError) transactionError = releaseError;
         }
       }
-      if (transactionError) throw transactionError;
+      // A committed deletion must finish its post-commit work before surfacing a release failure.
+      if (transactionError && !committed) throw transactionError;
       return response;
     };
     try {
@@ -168,6 +169,7 @@ export class BatchDeleteService {
       } else {
         await this.segments.deleteSegment(id, logger, executeTransaction);
       }
+      if (transactionError) throw transactionError;
       return committed
         ? { id, outcome: 'deleted' }
         : { id, outcome: 'unknown', reasonCode: DeletionReasonCode.OUTCOME_UNKNOWN };

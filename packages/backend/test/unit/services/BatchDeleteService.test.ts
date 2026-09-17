@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { performance } from 'perf_hooks';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
-import { BatchDeleteEntity, DeletionReasonCode, UserRole } from 'upgrade_types';
+import { BatchDeleteEntity, CACHE_PREFIX, DeletionReasonCode, UserRole } from 'upgrade_types';
 import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
@@ -121,8 +121,13 @@ describe('BatchDeleteService transaction outcomes', () => {
     }
   });
 
-  test('finishes both owner recomputations before deleting the next segment', async () => {
+  test.each([false, true])('awaits segment post-commit work (release fails: %s)', async (releaseFails) => {
     const selectedIds = ids.slice(0, 2);
+    if (releaseFails) {
+      configureRunner = (runner) => {
+        (runner.release as jest.Mock).mockRejectedValue(new Error('release failed'));
+      };
+    }
     const saved = { flags: [] as string[], experiments: [] as string[] };
     let releaseFirstWrites: () => void;
     const firstWrites = new Promise<void>((resolve) => (releaseFirstWrites = resolve));
@@ -161,8 +166,21 @@ describe('BatchDeleteService transaction outcomes', () => {
       releaseFirstWrites();
       await deletion;
     }
-    expect(saved).toEqual({ flags: [], experiments: [] });
-    expect((await deletion).results.map((item) => item.outcome)).toEqual(['deleted', 'deleted']);
+    const remainingIds = releaseFails ? selectedIds.slice(1) : [];
+    expect(saved).toEqual({ flags: remainingIds, experiments: remainingIds });
+    expect(segmentService.cacheService.resetPrefixCache).toHaveBeenCalledWith(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
+    expect(segmentService.cacheService.resetPrefixCache).toHaveBeenCalledWith(
+      CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX
+    );
+    expect((await deletion).results).toEqual(
+      releaseFails
+        ? [
+            { id: selectedIds[0], outcome: 'deleted', reasonCode: DeletionReasonCode.POST_DELETE_FAILED },
+            { id: selectedIds[1], outcome: 'not_attempted' },
+          ]
+        : selectedIds.map((id) => ({ id, outcome: 'deleted' }))
+    );
+    expect(createQueryRunner).toHaveBeenCalledTimes(releaseFails ? 1 : 2);
   });
 
   test('stops without mutation when the target lookup fails', async () => {
