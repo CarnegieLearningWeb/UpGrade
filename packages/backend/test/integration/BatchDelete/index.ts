@@ -35,6 +35,7 @@ import { IndividualForSegment } from '../../../src/api/models/IndividualForSegme
 import { MoocletExperimentRef } from '../../../src/api/models/MoocletExperimentRef';
 import { Segment } from '../../../src/api/models/Segment';
 import { User } from '../../../src/api/models/User';
+import { DeletionRepository } from '../../../src/api/repositories/DeletionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/FeatureFlagPrecomputedSegmentService';
@@ -362,6 +363,41 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
           exclusionIds: [],
         });
       }
+    });
+
+    test('recomputes owners attached before the segment deletion lock is acquired', async () => {
+      const [segment] = await create('segments');
+      const [flag] = await create('flags');
+      const [experiment] = await create('experiments');
+      await db.getRepository(IndividualForSegment).insert({ segmentId: segment.id, userId: 'deleted-member' });
+      const flags = Container.get(FeatureFlagPrecomputedSegmentService);
+      const experiments = Container.get(ExperimentPrecomputedSegmentService);
+      const logger = new UpgradeLogger();
+      const findForDeletion = DeletionRepository.prototype.findForDeletion;
+      jest
+        .spyOn(DeletionRepository.prototype, 'findForDeletion')
+        .mockImplementationOnce(async function (this: DeletionRepository, ...args) {
+          // Commit a list edit on another connection just before the deletion acquires its target lock.
+          const flagList = await ownedList('flags', flag.id, segment.id, writer);
+          await writer.getRepository(FeatureFlagSegmentInclusion).update({ segmentId: flagList.id }, { enabled: true });
+          await ownedList('experiments', experiment.id, segment.id, writer);
+          await flags.recomputeForFlag(flag.id, logger);
+          await experiments.recomputeForExperiment(experiment.id, logger);
+          return findForDeletion.apply(this, args);
+        });
+
+      const { body } = await request(app)
+        .post(route('segments'))
+        .send({ ids: [segment.id] })
+        .expect(200);
+      expect(body.results).toEqual([{ id: segment.id, outcome: 'deleted' }]);
+      expect(await db.getRepository(Segment).countBy({ id: segment.id })).toBe(0);
+      expect(await db.getRepository(FeatureFlagPrecomputedSegment).findOneBy({ featureFlagId: flag.id })).toMatchObject(
+        { inclusionIds: ['batch-member'], exclusionIds: [] }
+      );
+      expect(
+        await db.getRepository(ExperimentPrecomputedSegment).findOneBy({ experimentId: experiment.id })
+      ).toMatchObject({ inclusionIds: ['batch-member'], exclusionIds: [] });
     });
 
     test('keeps a committed segment deletion when post-commit cache invalidation fails', async () => {

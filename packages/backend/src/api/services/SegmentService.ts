@@ -544,19 +544,19 @@ export class SegmentService {
   ): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
 
-    // Resolve affected owners before deleting their join rows. Single deletions keep background
-    // recomputation; batches wait below so consecutive items cannot leave overlapping owner writes.
-    const affectedExperimentIds = await this.experimentPrecomputedSegmentService.getAffectedExperimentIds(id);
     const transaction: DeletionTransaction = executeTransaction || ((work) => this.dataSource.transaction(work));
-    const work = () =>
-      transaction((transactionalEntityManager) =>
-        this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
-      );
 
     if (waitForRecompute) {
+      let affectedFlagIds: string[];
+      let affectedExperimentIds: string[];
+      const deletedSegment = await transaction(async (transactionalEntityManager) => {
+        // The batch executor holds the target lock before invoking this callback.
+        // Collect owners before deletion removes the joins, including edits committed while waiting for the lock.
+        affectedFlagIds = await this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id);
+        affectedExperimentIds = await this.experimentPrecomputedSegmentService.getAffectedExperimentIds(id);
+        return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
+      });
       // A batch must finish this item's post-commit writes before deleting another segment for the same owner.
-      const affectedFlagIds = await this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id);
-      const deletedSegment = await work();
       const updates = await Promise.allSettled([
         ...affectedFlagIds.map((flagId) => this.featureFlagPrecomputedSegmentService.recomputeForFlag(flagId, logger)),
         ...affectedExperimentIds.map((experimentId) =>
@@ -570,10 +570,14 @@ export class SegmentService {
       return deletedSegment;
     }
 
+    const affectedExperimentIds = await this.experimentPrecomputedSegmentService.getAffectedExperimentIds(id);
     const deletedSegment = await this.featureFlagPrecomputedSegmentService.withRecompute(
       logger,
       () => this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
-      work
+      () =>
+        transaction((transactionalEntityManager) =>
+          this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
+        )
     );
 
     this.experimentPrecomputedSegmentService.scheduleRecomputeForExperiments(affectedExperimentIds, logger);
