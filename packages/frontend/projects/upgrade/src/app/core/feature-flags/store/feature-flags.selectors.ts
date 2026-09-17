@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { DetailsPageError, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import { FeatureFlag, FeatureFlagState, ParticipantListTableRow } from './feature-flags.model';
 import { selectRouterState } from '../../core.state';
 import { selectContextMetaData } from '../../experiments/store/experiments.selectors';
@@ -77,6 +77,9 @@ export const selectFeatureFlagDetailsPageError = createSelector(
   (routerState, featureFlagState): DetailsPageError | null => {
     const flagId = routerState?.state?.params?.flagId;
     const detailsPageError = featureFlagState?.detailsPageError;
+
+    if (featureFlagState?.rootBatch?.removedIds.includes(flagId))
+      return { entityId: flagId, errorType: PAGE_ERROR_TYPE.NOT_FOUND };
 
     // Only surface the error if it belongs to the feature flag currently in the route
     return detailsPageError && detailsPageError.entityId === flagId ? detailsPageError : null;

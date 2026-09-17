@@ -18,8 +18,10 @@ import * as segmentActions from '../segments/store/segments.actions';
 import { experimentsReducer } from '../experiments/store/experiments.reducer';
 import { featureFlagsReducer } from '../feature-flags/store/feature-flags.reducer';
 import { segmentsReducer } from '../segments/store/segments.reducer';
-import { selectSelectedExperiment } from '../experiments/store/experiments.selectors';
-import { selectSelectedSegment } from '../segments/store/segments.selectors';
+import { selectExperimentDetailsPageError, selectSelectedExperiment } from '../experiments/store/experiments.selectors';
+import { selectSegmentDetailsPageError, selectSelectedSegment } from '../segments/store/segments.selectors';
+import { selectFeatureFlagDetailsPageError } from '../feature-flags/store/feature-flags.selectors';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import { ExperimentEffects } from '../experiments/store/experiments.effects';
 import { FeatureFlagsEffects } from '../feature-flags/store/feature-flags.effects';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
@@ -585,6 +587,48 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       expect(Object.keys(batch().selectedById)).toHaveLength(3);
     }
   );
+
+  it('shows the existing not-found state for a deleted detail, including a late detail response', () => {
+    selectRows(1);
+    const snapshot = prepare();
+    store.dispatch(actions.batchDeleteRequested({ snapshot }));
+    const viewed = rows[0];
+    router.url = `${config.rootPath}/detail/${viewed.id}`;
+    store.dispatch(actions.rootPageLeft());
+    const detailLoaded =
+      config.entity === 'experiments'
+        ? experimentActions.actionGetExperimentByIdSuccess({ experiment: viewed as any })
+        : config.entity === 'flags'
+        ? flagActions.actionFetchFeatureFlagByIdSuccess({ flag: viewed as any })
+        : segmentActions.actionGetSegmentByIdSuccess({
+            segment: viewed as any,
+            experimentSegmentInclusion: [],
+            experimentSegmentExclusion: [],
+            featureFlagSegmentInclusion: [],
+            featureFlagSegmentExclusion: [],
+            allParentSegments: [],
+          });
+    const errorSelector =
+      config.entity === 'experiments'
+        ? selectExperimentDetailsPageError
+        : config.entity === 'flags'
+        ? selectFeatureFlagDetailsPageError
+        : selectSegmentDetailsPageError;
+    const detailsError = (id = viewed.id) =>
+      errorSelector.projector(
+        { state: { params: { experimentId: id, flagId: id, segmentId: id } } } as any,
+        state[config.key]
+      );
+    store.dispatch(detailLoaded);
+    expect(detailsError()).toBeNull();
+    response.next({ phase: 'executed', results: [{ id: viewed.id, outcome: 'deleted' }] });
+    const notFound = { entityId: viewed.id, errorType: PAGE_ERROR_TYPE.NOT_FOUND };
+    expect(detailsError()).toEqual(notFound);
+    store.dispatch(detailLoaded);
+    expect(detailsError()).toEqual(notFound);
+    expect(detailsError(rows[1].id)).toBeNull();
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
 
   if (config.entity !== 'flags') {
     it.each(['deletion', 'refresh'])('preserves open details when leaving during %s', (pending) => {

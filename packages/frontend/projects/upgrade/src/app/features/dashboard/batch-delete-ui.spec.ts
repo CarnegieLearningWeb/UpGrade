@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -456,8 +456,11 @@ describe.each(cases)('$entity root batch UI', (config) => {
 
   it.each(['list', 'deletion'])('keeps the existing progress bar until both requests finish (%s first)', (first) => {
     const progressBar = () => fixture.nativeElement.querySelector('mat-progress-bar');
+    const nameLinks = (): HTMLAnchorElement[] => [...fixture.nativeElement.querySelectorAll('td.name-column a')];
+    const navigate = jest.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     selectFirst();
     expect(progressBar()).toBeNull();
+    expect(nameLinks().every((link) => link.hasAttribute('href'))).toBe(true);
     store.dispatch(actions.prepareConfirmation({ operationId: 'pending-delete' }));
     store.dispatch(actions.batchDeleteRequested({ snapshot: batch().confirmation }));
     fixture.detectChanges();
@@ -465,6 +468,12 @@ describe.each(cases)('$entity root batch UI', (config) => {
     const trigger = fixture.debugElement.query(By.css('.section-card-menu-trigger'));
     expect(trigger.nativeElement.disabled).toBe(true);
     expect(trigger.parent.injector.get(MatTooltip).message).toBe('');
+    for (const link of nameLinks()) {
+      expect(link.hasAttribute('href')).toBe(false);
+      expect(link.getAttribute('aria-disabled')).toBe('true');
+      link.click();
+    }
+    expect(navigate).not.toHaveBeenCalled();
 
     listLoading$.next(true);
     const finishDeletion = () =>
@@ -478,11 +487,16 @@ describe.each(cases)('$entity root batch UI', (config) => {
     else finishDeletion();
     fixture.detectChanges();
     expect(progressBar()).not.toBeNull();
+    expect(nameLinks().every((link) => link.hasAttribute('href'))).toBe(first === 'deletion');
 
     if (first === 'list') finishDeletion();
     else listLoading$.next(false);
     fixture.detectChanges();
     expect(progressBar()).toBeNull();
+    expect(nameLinks().every((link) => link.hasAttribute('href') && !link.hasAttribute('aria-disabled'))).toBe(true);
+    nameLinks()[0].click();
+    expect(navigate).toHaveBeenCalledTimes(1);
+    navigate.mockRestore();
   });
 
   it('keeps checkboxes usable without a banner or reload button after request and refresh failures', () => {
@@ -495,6 +509,7 @@ describe.each(cases)('$entity root batch UI', (config) => {
     store.dispatch(actions.batchDeleteRequestFailed({ operationId: 'offline-delete', status: 0 }));
     fixture.detectChanges();
     expect(checkboxes().every((input) => !input.disabled)).toBe(true);
+    expect(fixture.nativeElement.querySelector('td.name-column a').hasAttribute('href')).toBe(true);
     expect(fixture.nativeElement.querySelector('mat-progress-bar')).toBeNull();
     checkboxes()[1].click();
     fixture.detectChanges();

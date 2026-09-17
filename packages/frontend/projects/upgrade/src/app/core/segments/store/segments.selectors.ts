@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { DetailsPageError, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
   SegmentState,
   ParticipantListTableRow,
@@ -107,6 +107,9 @@ export const selectSegmentDetailsPageError = createSelector(
   (routerState, segmentState): DetailsPageError | null => {
     const segmentId = routerState?.state?.params?.segmentId;
     const detailsPageError = segmentState?.detailsPageError;
+
+    if (segmentState?.rootBatch?.removedIds.includes(segmentId))
+      return { entityId: segmentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND };
 
     // Only surface the error if it belongs to the segment currently in the route
     return detailsPageError && detailsPageError.entityId === segmentId ? detailsPageError : null;
