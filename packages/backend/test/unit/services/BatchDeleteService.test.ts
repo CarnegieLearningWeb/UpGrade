@@ -218,6 +218,9 @@ describe('BatchDeleteService transaction outcomes', () => {
     expect(result.results.map((item) => item.outcome)).toEqual(
       index === 0 ? ['failed', 'not_attempted', 'not_attempted'] : ['deleted', 'failed', 'not_attempted']
     );
+    expect(result.results.slice(index + 1)).toEqual(
+      ids.slice(index + 1).map((id) => ({ id, outcome: 'not_attempted' }))
+    );
     expect(runners[index].rollbackTransaction).toHaveBeenCalledTimes(1);
     expect(runners[index].commitTransaction).not.toHaveBeenCalled();
     expect(mutations).toEqual(ids.slice(0, index));
@@ -364,10 +367,9 @@ describe('BatchDeleteService transaction outcomes', () => {
       });
     };
     const result = await service.delete('flags', ids, user, logger);
-    expect(result.results[0]).toMatchObject({
-      outcome: 'not_attempted',
-      reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED,
-    });
+    expect(result.results).toEqual(
+      ids.map((id) => ({ id, outcome: 'not_attempted', reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED }))
+    );
     expect(mutations).toEqual([]);
     expect(runners[0].rollbackTransaction).toHaveBeenCalled();
     expect(logger.error).not.toHaveBeenCalled();

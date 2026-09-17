@@ -78,6 +78,9 @@ export class BatchDeleteService {
             (remaining): BatchDeleteItemResult => ({
               id: remaining,
               outcome: 'not_attempted',
+              ...(result.reasonCode === DeletionReasonCode.BATCH_BUDGET_EXCEEDED
+                ? { reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED }
+                : {}),
             })
           )
         );
