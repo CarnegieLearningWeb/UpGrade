@@ -65,7 +65,11 @@
 
     .name-column {
       width: 22%;
-      padding-left: 8px;
+      padding-left: 32px;
+
+      &:has(.batch-checkbox) {
+        padding-left: 8px;
+      }
 
       .experiment-name {
         color: var(--black-2);
