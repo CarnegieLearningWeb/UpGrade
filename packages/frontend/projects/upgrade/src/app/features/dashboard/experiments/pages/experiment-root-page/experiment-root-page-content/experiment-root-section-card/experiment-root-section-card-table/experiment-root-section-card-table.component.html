@@ -9,98 +9,86 @@
     [dataSource]="experiments || []"
     [trackBy]="trackByExperimentId"
     [class.has-batch-selection]="selection?.selectedCount"
+    [class.has-batch-controls]="canSelect"
     [ngClass]="{ 'no-data': !experiments?.length }"
     matSort
     (matSortChange)="changeSorting($event)"
     [matSortActive]="experimentSortKey$ | async"
     [matSortDirection]="experimentSortAs$ | async | lowercase"
   >
+    <!-- Selection Column -->
+    <ng-container matColumnDef="select">
+      <th mat-header-cell *matHeaderCellDef class="batch-select-column">
+        <!-- Any selection makes the next click clear; indeterminate supplies the mixed appearance. -->
+        <mat-checkbox
+          class="batch-checkbox"
+          [disableRipple]="true"
+          color="primary"
+          [checked]="!!selection?.selectedCount"
+          [indeterminate]="selection?.indeterminate"
+          [disabled]="!selection?.canToggleHeader"
+          [aria-label]="
+            (selection?.selectedCount ? 'batch-delete.selection.clear' : 'batch-delete.selection.select-loaded')
+              | translate
+          "
+          matTooltipPosition="above"
+          [matTooltip]="
+            (selection?.selectedCount ? 'batch-delete.selection.clear' : 'batch-delete.selection.select-loaded')
+              | translate
+          "
+          (click)="$event.stopPropagation()"
+          (keydown)="$event.stopPropagation()"
+          (change)="batch.toggleHeader()"
+        />
+      </th>
+      <td mat-cell *matCellDef="let experiment" class="batch-select-column">
+        <mat-checkbox
+          class="batch-checkbox"
+          [disableRipple]="true"
+          color="primary"
+          [checked]="!!batchState?.selectedById[experiment.id]"
+          [disabled]="selection?.busy || !batchState?.loadedIds.includes(experiment.id)"
+          [aria-label]="'batch-delete.selection.experiments.row' | translate : { name: experiment.name }"
+          (click)="$event.stopPropagation()"
+          (keydown)="$event.stopPropagation()"
+          (change)="batch.toggleRow(experiment)"
+        />
+      </td>
+    </ng-container>
+
     <!-- Name Column -->
     <ng-container [matColumnDef]="EXPERIMENT_ROOT_COLUMN_NAMES.NAME">
       <th
         mat-header-cell
         *matHeaderCellDef
+        mat-sort-header
         class="name-column ft-14-600"
-        [attr.aria-sort]="
-          (experimentSortKey$ | async) === 'name'
-            ? (experimentSortAs$ | async) === 'ASC'
-              ? 'ascending'
-              : 'descending'
-            : 'none'
-        "
+        [sortActionDescription]="'batch-delete.selection.sort-name' | translate"
       >
-        <div class="batch-name-cell">
-          @if (canSelect) {
-          <!-- Any selection makes the next click clear; indeterminate supplies the mixed appearance. -->
-          <mat-checkbox
-            class="batch-checkbox"
-            [disableRipple]="true"
-            color="primary"
-            [checked]="!!selection?.selectedCount"
-            [indeterminate]="selection?.indeterminate"
-            [disabled]="!selection?.canToggleHeader"
-            [aria-label]="
-              (selection?.selectedCount ? 'batch-delete.selection.clear' : 'batch-delete.selection.select-loaded')
-                | translate
-            "
-            matTooltipPosition="above"
-            [matTooltip]="
-              (selection?.selectedCount ? 'batch-delete.selection.clear' : 'batch-delete.selection.select-loaded')
-                | translate
-            "
-            (click)="$event.stopPropagation()"
-            (keydown)="$event.stopPropagation()"
-            (change)="batch.toggleHeader()"
-          />
-          }
-          <div
-            class="batch-name-sort"
-            mat-sort-header="name"
-            [sortActionDescription]="'batch-delete.selection.sort-name' | translate"
-          >
-            {{
-              selection?.selectedCount
-                ? ('batch-delete.selection.count' | translate : { count: selection.selectedCount })
-                : (EXPERIMENT_TRANSLATION_KEYS.NAME | translate)
-            }}
-          </div>
-        </div>
+        {{
+          selection?.selectedCount
+            ? ('batch-delete.selection.count' | translate : { count: selection.selectedCount })
+            : (EXPERIMENT_TRANSLATION_KEYS.NAME | translate)
+        }}
       </th>
       <td mat-cell *matCellDef="let experiment" class="name-column ft-14-400">
-        <div class="batch-name-cell">
-          @if (canSelect) {
-          <mat-checkbox
-            class="batch-checkbox"
-            [disableRipple]="true"
-            color="primary"
-            [checked]="!!batchState?.selectedById[experiment.id]"
-            [disabled]="selection?.busy || !batchState?.loadedIds.includes(experiment.id)"
-            [aria-label]="'batch-delete.selection.experiments.row' | translate : { name: experiment.name }"
-            (click)="$event.stopPropagation()"
-            (keydown)="$event.stopPropagation()"
-            (change)="batch.toggleRow(experiment)"
-          />
-          }
-          <div class="batch-name-text">
-            <a
-              [routerLink]="['/home', 'detail', experiment.id]"
-              [appTextOverflowTooltip]="experiment.name"
-              matTooltipPosition="right"
-              class="experiment-name line-clamp-1"
-            >
-              {{ experiment.name }}
-            </a>
-            @if (experiment.description) {
-            <span
-              [appTextOverflowTooltip]="experiment.description"
-              matTooltipPosition="right"
-              class="experiment-description ft-10-400 line-clamp-1"
-            >
-              {{ experiment.description }}
-            </span>
-            }
-          </div>
-        </div>
+        <a
+          [routerLink]="['/home', 'detail', experiment.id]"
+          [appTextOverflowTooltip]="experiment.name"
+          matTooltipPosition="right"
+          class="experiment-name line-clamp-1"
+        >
+          {{ experiment.name }}
+        </a>
+        @if (experiment.description) {
+        <span
+          [appTextOverflowTooltip]="experiment.description"
+          matTooltipPosition="right"
+          class="experiment-description ft-10-400 line-clamp-1"
+        >
+          {{ experiment.description }}
+        </span>
+        }
       </td>
     </ng-container>
 

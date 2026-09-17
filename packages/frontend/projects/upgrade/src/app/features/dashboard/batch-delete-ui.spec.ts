@@ -203,7 +203,14 @@ describe.each(cases)('$entity root batch UI', (config) => {
     TestBed.resetTestingModule();
   });
 
-  it('keeps checkbox clicks and Space separate from Name sorting and detail links', () => {
+  it('keeps Name sort semantics on the header and checkbox interactions separate from sorting', () => {
+    const nameHeader: HTMLElement = fixture.nativeElement.querySelector('th.name-column');
+    const sortButton = nameHeader.querySelector<HTMLElement>('[role="button"]');
+    expect(nameHeader.getAttribute('aria-sort')).toBe('ascending');
+    expect(nameHeader.querySelector('[aria-sort]')).toBeNull();
+    expect(nameHeader.querySelector('input[type=checkbox]')).toBeNull();
+    expect(document.getElementById(sortButton.getAttribute('aria-describedby')).textContent).toBe('Sort by Name');
+
     const input = checkboxes()[1];
     expect(input.getAttribute('aria-label')).toContain('Alpha');
     input.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
@@ -212,8 +219,30 @@ describe.each(cases)('$entity root batch UI', (config) => {
     expect(service.setSortKey).not.toHaveBeenCalled();
     expect(fixture.nativeElement.textContent).toContain('1 Selected');
     expect(fixture.nativeElement.querySelector('a').getAttribute('href')).toContain(rows[0].id);
-    fixture.nativeElement.querySelector('.batch-name-sort .mat-sort-header-container').click();
+    const headerCheckbox = checkboxes()[0];
+    expect(headerCheckbox.closest('[role="button"]')).toBeNull();
+    headerCheckbox.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', keyCode: 32, bubbles: true }));
+    headerCheckbox.click();
+    fixture.detectChanges();
+    expect(service.setSortKey).not.toHaveBeenCalled();
+
+    nameHeader.click();
+    fixture.detectChanges();
     expect(service.setSortKey).toHaveBeenCalledWith('name');
+    expect(service.setSortKey).toHaveBeenCalledTimes(1);
+    expect(nameHeader.getAttribute('aria-sort')).toBe('descending');
+    expect(nameHeader.querySelector('[aria-sort]')).toBeNull();
+
+    nameHeader.closest('table').parentElement.scroll = jest.fn();
+    sortButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }));
+    fixture.detectChanges();
+    expect(service.setSortKey).toHaveBeenLastCalledWith(null);
+    expect(nameHeader.getAttribute('aria-sort')).toBe('none');
+
+    sortButton.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', keyCode: 32, bubbles: true }));
+    fixture.detectChanges();
+    expect(service.setSortKey).toHaveBeenLastCalledWith('name');
+    expect(nameHeader.getAttribute('aria-sort')).toBe('ascending');
   });
 
   it('clears a mixed header visually and keeps subsequent select-all toggles synchronized', fakeAsync(() => {
@@ -251,6 +280,9 @@ describe.each(cases)('$entity root batch UI', (config) => {
     expect(checkboxes()[0].indeterminate).toBe(true);
     expect(checkboxes()[0].getAttribute('aria-label')).toBe('Clear all selections');
     expect(fixture.nativeElement.textContent).toContain('1 Selected');
+    expect(fixture.nativeElement.querySelector('td[colspan]').colSpan).toBe(
+      fixture.nativeElement.querySelectorAll('th').length
+    );
     checkboxes()[0].click();
     fixture.detectChanges();
     expect(Object.keys(batch().selectedById)).toHaveLength(0);
@@ -294,10 +326,11 @@ describe.each(cases)('$entity root batch UI', (config) => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('.batch-checkbox')).toHaveLength(0);
     expect(fixture.nativeElement.querySelector('.section-card-menu-trigger')).toBeNull();
-    const nameCells: HTMLElement[] = [...fixture.nativeElement.querySelectorAll('.batch-name-cell')];
+    expect(fixture.nativeElement.querySelector('.batch-select-column')).toBeNull();
+    const nameCells: HTMLElement[] = [...fixture.nativeElement.querySelectorAll('.name-column')];
     expect(nameCells).toHaveLength(rows.length + 1);
-    expect(nameCells.every((cell) => cell.children.length === 1)).toBe(true);
-    expect(nameCells[0].firstElementChild.classList.contains('batch-name-sort')).toBe(true);
+    expect(nameCells[0].querySelector('[role="button"]').textContent.trim()).toBe('Name');
+    expect(nameCells[0].getAttribute('aria-sort')).toBe('ascending');
     rows.forEach((row, index) => expect(nameCells[index + 1].querySelector('a').textContent).toContain(row.name));
   });
 

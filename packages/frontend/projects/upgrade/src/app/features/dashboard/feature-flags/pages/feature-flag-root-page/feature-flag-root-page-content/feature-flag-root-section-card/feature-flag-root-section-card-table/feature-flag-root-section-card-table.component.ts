@@ -113,7 +113,7 @@ export class FeatureFlagRootSectionCardTableComponent implements AfterViewInit, 
   }
 
   get displayedColumns(): string[] {
-    return FLAG_ROOT_DISPLAYED_COLUMNS;
+    return this.canSelect ? ['select', ...FLAG_ROOT_DISPLAYED_COLUMNS] : FLAG_ROOT_DISPLAYED_COLUMNS;
   }
 
   get FLAG_TRANSLATION_KEYS() {

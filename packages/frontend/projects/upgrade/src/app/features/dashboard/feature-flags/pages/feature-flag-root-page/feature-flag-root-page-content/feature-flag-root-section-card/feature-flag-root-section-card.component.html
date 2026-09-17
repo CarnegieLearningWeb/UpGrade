@@ -33,7 +33,7 @@
   <!-- content -->
   @if (isSectionCardExpanded) {
   <ng-container content>
-    @if (!(isInitialLoading$ | async) && !batchView?.selectedCount) {
+    @if (!(isInitialLoading$ | async)) {
     <div class="mat-spinner-container">
       <mat-spinner diameter="60"></mat-spinner>
     </div>

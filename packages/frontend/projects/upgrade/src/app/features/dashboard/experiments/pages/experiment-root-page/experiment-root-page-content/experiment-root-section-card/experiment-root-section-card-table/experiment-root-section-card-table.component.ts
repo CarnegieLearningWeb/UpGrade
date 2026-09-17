@@ -110,7 +110,7 @@ export class ExperimentRootSectionCardTableComponent implements AfterViewInit, O
   }
 
   get displayedColumns(): string[] {
-    return EXPERIMENT_ROOT_DISPLAYED_COLUMNS;
+    return this.canSelect ? ['select', ...EXPERIMENT_ROOT_DISPLAYED_COLUMNS] : EXPERIMENT_ROOT_DISPLAYED_COLUMNS;
   }
 
   get EXPERIMENT_TRANSLATION_KEYS() {

@@ -1,27 +1,14 @@
 @use '@angular/material' as mat;
 
-.batch-name-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.batch-name-text {
-  flex: 1;
-  min-width: 0;
-}
-
 // Match the theme's checkbox specificity; this partial is loaded after the theme.
-.batch-name-cell .mat-mdc-checkbox.batch-checkbox {
-  flex: 0 0 40px;
+.batch-select-column .mat-mdc-checkbox.batch-checkbox {
   width: 40px;
 
   @include mat.checkbox-overrides(
     (
-      unselected-icon-color: #adadad,
-      unselected-hover-icon-color: #adadad,
-      unselected-focus-icon-color: #adadad,
+      unselected-icon-color: var(--grey-7),
+      unselected-hover-icon-color: var(--grey-7),
+      unselected-focus-icon-color: var(--grey-7),
       selected-hover-state-layer-opacity: 0,
       unselected-hover-state-layer-opacity: 0,
       selected-focus-state-layer-opacity: 0,
@@ -37,10 +24,6 @@
     outline-offset: -4px;
     border-radius: 4px;
   }
-}
-
-.batch-name-sort {
-  white-space: nowrap;
 }
 
 // Keep the header aligned; hidden selections must still be available to clear.

@@ -105,7 +105,7 @@ export class SegmentRootSectionCardTableComponent implements AfterViewInit, OnDe
   }
 
   get displayedColumns(): string[] {
-    return SEGMENT_ROOT_DISPLAYED_COLUMNS;
+    return this.canSelect ? ['select', ...SEGMENT_ROOT_DISPLAYED_COLUMNS] : SEGMENT_ROOT_DISPLAYED_COLUMNS;
   }
 
   get SEGMENT_TRANSLATION_KEYS() {
