@@ -551,8 +551,14 @@ export class SegmentService {
       const deletedSegment = await transaction(async (transactionalEntityManager) => {
         // The batch executor holds the target lock before invoking this callback.
         // Collect owners before deletion removes the joins, including edits committed while waiting for the lock.
-        affectedFlagIds = await this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id);
-        affectedExperimentIds = await this.experimentPrecomputedSegmentService.getAffectedExperimentIds(id);
+        affectedFlagIds = await this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(
+          id,
+          transactionalEntityManager
+        );
+        affectedExperimentIds = await this.experimentPrecomputedSegmentService.getAffectedExperimentIds(
+          id,
+          transactionalEntityManager
+        );
         return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
       });
       // A batch must finish this item's post-commit writes before deleting another segment for the same owner.

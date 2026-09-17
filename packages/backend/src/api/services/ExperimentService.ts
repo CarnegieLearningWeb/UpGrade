@@ -441,7 +441,7 @@ export class ExperimentService {
     const entityManager = existingEntityManager || this.dataSource.manager;
     const transaction: DeletionTransaction = executeTransaction || ((work) => entityManager.transaction(work));
     return await transaction(async (transactionalEntityManager) => {
-      const experiment = await this.experimentRepository.findOneExperiment(experimentId);
+      const experiment = await this.experimentRepository.findOneExperiment(experimentId, transactionalEntityManager);
 
       if (experiment) {
         await this.clearExperimentCacheDetail(experiment.context[0]);

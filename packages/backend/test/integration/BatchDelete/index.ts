@@ -191,6 +191,71 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       expect(await db.getRepository(Segment).countBy({ id: child.id })).toBe(1);
     });
 
+    test.each(entities)('%s deletes with one pooled connection', async (entity) => {
+      const [row] = await create(entity);
+      const list = await ownedList(entity, row.id);
+      let flagId: string;
+      let experimentId: string;
+      if (entity === 'segments') {
+        const [flag] = await create('flags');
+        const [experiment] = await create('experiments');
+        flagId = flag.id;
+        experimentId = experiment.id;
+        const flagList = await ownedList('flags', flagId, row.id);
+        await db.getRepository(FeatureFlagSegmentInclusion).update({ segmentId: flagList.id }, { enabled: true });
+        await ownedList('experiments', experimentId, row.id);
+        await db.getRepository(IndividualForSegment).insert({ segmentId: row.id, userId: 'deleted-member' });
+        const logger = new UpgradeLogger();
+        await Container.get(FeatureFlagPrecomputedSegmentService).recomputeForFlag(flagId, logger);
+        await Container.get(ExperimentPrecomputedSegmentService).recomputeForExperiment(experimentId, logger);
+        expect(
+          await db.getRepository(FeatureFlagPrecomputedSegment).findOneBy({ featureFlagId: flagId })
+        ).toMatchObject({
+          inclusionIds: expect.arrayContaining(['deleted-member']),
+        });
+        expect(await db.getRepository(ExperimentPrecomputedSegment).findOneBy({ experimentId })).toMatchObject({
+          inclusionIds: expect.arrayContaining(['deleted-member']),
+        });
+      }
+      const originalExtra = db.options.extra;
+      await db.destroy();
+      db.setOptions({ extra: { ...originalExtra, max: 1, connectionTimeoutMillis: 500 } });
+      try {
+        await db.initialize();
+        if (entity === 'flags') {
+          const { body: details } = await request(app).get(`/api/flags/${row.id}`).expect(200);
+          expect(details.featureFlagSegmentInclusion[0].segment).toMatchObject({
+            id: list.id,
+            individualForSegmentCount: 1,
+            groupForSegmentCount: 0,
+          });
+        }
+        const { body } = await request(app)
+          .post(route(entity))
+          .send({ ids: [row.id] })
+          .expect(200);
+        expect(body.results).toEqual([{ id: row.id, outcome: 'deleted' }]);
+        expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(0);
+        expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(0);
+        if (entity === 'segments') {
+          expect(
+            await db.getRepository(FeatureFlagPrecomputedSegment).findOneBy({ featureFlagId: flagId })
+          ).toMatchObject({
+            inclusionIds: ['batch-member'],
+            exclusionIds: [],
+          });
+          expect(await db.getRepository(ExperimentPrecomputedSegment).findOneBy({ experimentId })).toMatchObject({
+            inclusionIds: ['batch-member'],
+            exclusionIds: [],
+          });
+        }
+      } finally {
+        if (db.isInitialized) await db.destroy();
+        db.setOptions({ extra: originalExtra });
+        await db.initialize();
+      }
+    });
+
     test.each(entities)('%s skips a missing ID and deletes the remaining selection', async (entity) => {
       const [row] = await create(entity);
       const missing = randomUUID();
