@@ -34,6 +34,7 @@ describe('BatchDeleteService transaction outcomes', () => {
   let configureRunner: (runner: QueryRunner, index: number) => void;
 
   beforeEach(() => {
+    (logger.error as jest.Mock).mockClear();
     ids = [randomUUID(), randomUUID(), randomUUID()];
     mutations = [];
     runners = [];
@@ -187,6 +188,7 @@ describe('BatchDeleteService transaction outcomes', () => {
     });
     expect(mutations).toEqual([]);
     expect(runners.every((runner) => (runner.rollbackTransaction as jest.Mock).mock.calls.length === 1)).toBe(true);
+    expect(logger.error).not.toHaveBeenCalled();
   });
 
   test.each(['rollbackTransaction', 'release'] as const)(
@@ -202,6 +204,7 @@ describe('BatchDeleteService transaction outcomes', () => {
       expect(result.results.map((item) => item.outcome)).toEqual(['failed', 'not_attempted', 'not_attempted']);
       expect(mutations).toEqual([]);
       expect(createQueryRunner).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(expect.objectContaining({ message: 'Batch deletion item failed' }));
     }
   );
 
@@ -367,5 +370,6 @@ describe('BatchDeleteService transaction outcomes', () => {
     });
     expect(mutations).toEqual([]);
     expect(runners[0].rollbackTransaction).toHaveBeenCalled();
+    expect(logger.error).not.toHaveBeenCalled();
   });
 });

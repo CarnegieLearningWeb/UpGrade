@@ -169,13 +169,13 @@ export class BatchDeleteService {
         ? { id, outcome: 'deleted' }
         : { id, outcome: 'unknown', reasonCode: DeletionReasonCode.OUTCOME_UNKNOWN };
     } catch (error) {
+      if (error instanceof BatchDeleteSkippedError && rolledBack) return error.result;
       logger.error({ message: 'Batch deletion item failed', entity, id, committed, error });
       if (committed) return { id, outcome: 'deleted', reasonCode: DeletionReasonCode.POST_DELETE_FAILED };
       // A failed COMMIT can mean the server committed but its acknowledgment was lost.
       if (commitAttempted || (mutationStarted && !rolledBack)) {
         return { id, outcome: 'unknown', reasonCode: DeletionReasonCode.OUTCOME_UNKNOWN };
       }
-      if (error instanceof BatchDeleteSkippedError && rolledBack) return error.result;
       return {
         id,
         outcome: 'failed',
