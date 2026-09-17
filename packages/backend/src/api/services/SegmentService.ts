@@ -539,14 +539,13 @@ export class SegmentService {
   public async deleteSegment(
     id: string,
     logger: UpgradeLogger,
-    executeTransaction?: DeletionTransaction,
-    waitForRecompute = false
+    executeTransaction?: DeletionTransaction
   ): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
 
     const transaction: DeletionTransaction = executeTransaction || ((work) => this.dataSource.transaction(work));
 
-    if (waitForRecompute) {
+    if (executeTransaction) {
       let affectedFlagIds: string[];
       let affectedExperimentIds: string[];
       const deletedSegment = await transaction(async (transactionalEntityManager) => {
