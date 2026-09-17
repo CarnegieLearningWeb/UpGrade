@@ -138,7 +138,17 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
     test.each(entities)('%s validates IDs and authentication before dispatch', async (entity) => {
       const spy = jest.spyOn(Container.get(BatchDeleteService), 'delete');
       const id = randomUUID();
-      for (const body of [{}, { ids: [] }, { ids: ['bad-id'] }, { ids: [id, id.toUpperCase()] }]) {
+      for (const body of [
+        {},
+        { ids: null },
+        { ids: id },
+        { ids: [] },
+        { ids: [null] },
+        { ids: [123] },
+        { ids: ['bad-id'] },
+        { ids: [id, id] },
+        { ids: [id, id.toUpperCase()] },
+      ]) {
         await request(app).post(route(entity)).send(body).expect(400);
       }
       env.google.authTokenRequired = true;

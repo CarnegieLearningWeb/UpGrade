@@ -190,25 +190,6 @@ export const selectFeatureFlagExclusions = createSelector(
   }
 );
 
-export const selectFeatureFlagPaginationParams = createSelector(
-  selectSkipFlags,
-  selectTotalFlags,
-  selectSearchKey,
-  selectSortKey,
-  selectSortAs,
-  selectIsAllFlagsFetched,
-  selectSearchString,
-  (skip, total, searchKey, sortKey, sortAs, isAllFlagsFetched, searchString) => ({
-    skip,
-    total,
-    searchKey,
-    sortKey,
-    sortAs,
-    isAllFlagsFetched,
-    searchString,
-  })
-);
-
 // Helper function returns array of translation keys (extensible for future warning types)
 const getWarningKeysForFlag = (flag: FeatureFlag): string[] => {
   const warnings: string[] = [];

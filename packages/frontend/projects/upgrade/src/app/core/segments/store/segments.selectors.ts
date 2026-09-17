@@ -122,16 +122,6 @@ export const selectSegmentOverviewDetails = createSelector(selectSelectedSegment
   ['Tags']: segment?.tags,
 }));
 
-export const selectSkipSegments = createSelector(selectSegmentsState, (state) => state.skipSegments);
-
-export const selectTotalSegments = createSelector(selectSegmentsState, (state) => state.totalSegments);
-
-export const selectAreAllSegmentsFetched = createSelector(
-  selectSkipSegments,
-  selectTotalSegments,
-  (skipSegments, totalSegments) => skipSegments === totalSegments
-);
-
 export const selectSearchKey = createSelector(selectSegmentsState, (state) => state.searchKey);
 
 export const selectSearchString = createSelector(selectSegmentsState, (state) => state.searchString);
@@ -220,25 +210,6 @@ export const selectSegmentUsageData = createSelector(
       (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
   }
-);
-
-export const selectSegmentPaginationParams = createSelector(
-  selectSkipSegments,
-  selectTotalSegments,
-  selectSearchKey,
-  selectSortKey,
-  selectSortAs,
-  selectAreAllSegmentsFetched,
-  selectSearchString,
-  (skip, total, searchKey, sortKey, sortAs, areAllFetched, searchString) => ({
-    skip,
-    total,
-    searchKey,
-    sortKey,
-    sortAs,
-    areAllFetched,
-    searchString,
-  })
 );
 
 export const selectListSegmentOptionsByContext = (context: string) => {
