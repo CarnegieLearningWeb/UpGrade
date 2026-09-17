@@ -33,6 +33,7 @@ import { Response } from 'express';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
 import {
+  ASSIGNMENT_ALGORITHM,
   CACHE_PREFIX,
   EXPERIMENT_STATE,
   IImportError,
@@ -1266,6 +1267,7 @@ export class ExperimentController {
     const previousExperiment = await this.experimentService.getSingleExperiment(id, request.logger);
     if (previousExperiment) {
       await this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(previousExperiment);
+      this.assertAssignmentAlgorithmNotChangedToOrFromThompsonSampling(previousExperiment, experiment);
       this.assertConditionsNotModifiedAfterStart(previousExperiment, experiment);
     }
 
@@ -1300,6 +1302,27 @@ export class ExperimentController {
     }
 
     return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(updatedExperiment);
+  }
+
+  /**
+   * Switching an experiment to or from Thompson Sampling on an update is not supported at all --
+   * regardless of experiment state, even INACTIVE/DRAFT -- because there is no sane way to backfill
+   * or discard the config/posterior rows a switch implies. The intended workflow is to delete the
+   * experiment and create a new one with the desired algorithm instead. Unlike
+   * assertConditionsNotModifiedAfterStart below, this has no "not started yet" exception.
+   */
+  private assertAssignmentAlgorithmNotChangedToOrFromThompsonSampling(
+    previousExperiment: ExperimentDTO,
+    incomingExperiment: ExperimentDTO
+  ): void {
+    const wasThompsonSampling = previousExperiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING;
+    const isThompsonSampling = incomingExperiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING;
+
+    if (wasThompsonSampling !== isThompsonSampling) {
+      throw new BadRequestError(
+        'The assignment algorithm cannot be changed to or from Thompson Sampling. Create a new experiment instead.'
+      );
+    }
   }
 
   /**

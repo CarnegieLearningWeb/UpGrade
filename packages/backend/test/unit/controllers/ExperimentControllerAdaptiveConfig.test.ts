@@ -72,7 +72,7 @@ describe('ExperimentController adaptive config wiring', () => {
   describe('update()', () => {
     it('does not touch previous state on the happy path', async () => {
       const experiment = { assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING, conditions: [] } as any;
-      const previousExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM };
+      const previousExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING };
       experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
       experimentService.update.mockResolvedValue({ id: 'experiment-1', conditions: [] });
 
@@ -84,9 +84,9 @@ describe('ExperimentController adaptive config wiring', () => {
 
     it('reverts the experiment and re-syncs the config when syncConfigIfApplicable fails', async () => {
       const experiment = { assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING, conditions: [] } as any;
-      const previousExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM };
+      const previousExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING };
       const updatedExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING };
-      const revertedExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM };
+      const revertedExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING };
       const syncError = new Error('config sync failed');
 
       experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
@@ -162,7 +162,7 @@ describe('ExperimentController adaptive config wiring', () => {
 
     it('still throws the original error, logged rather than masked, when the revert attempt itself fails', async () => {
       const experiment = { assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING, conditions: [] } as any;
-      const previousExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM };
+      const previousExperiment = { id: 'experiment-1', assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING };
       const syncError = new Error('config sync failed');
       const revertError = new Error('revert update failed');
 
@@ -275,6 +275,66 @@ describe('ExperimentController adaptive config wiring', () => {
       } as any;
       experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
       experimentService.update.mockResolvedValue({ id: 'experiment-1', conditions: experiment.conditions });
+
+      await controller.update({ id: 'experiment-1' } as any, experiment, {} as any, request);
+
+      expect(experimentService.update).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects switching the assignment algorithm from Thompson Sampling to something else, even on an inactive experiment', async () => {
+      const previousExperiment = {
+        id: 'experiment-1',
+        state: EXPERIMENT_STATE.INACTIVE,
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+        conditions: [],
+      };
+      const experiment = {
+        id: 'experiment-1',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+        conditions: [],
+      } as any;
+      experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
+
+      await expect(controller.update({ id: 'experiment-1' } as any, experiment, {} as any, request)).rejects.toThrow(
+        /cannot be changed to or from Thompson Sampling/
+      );
+      expect(experimentService.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects switching the assignment algorithm to Thompson Sampling from something else, even on an inactive experiment', async () => {
+      const previousExperiment = {
+        id: 'experiment-1',
+        state: EXPERIMENT_STATE.INACTIVE,
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+        conditions: [],
+      };
+      const experiment = {
+        id: 'experiment-1',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+        conditions: [],
+      } as any;
+      experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
+
+      await expect(controller.update({ id: 'experiment-1' } as any, experiment, {} as any, request)).rejects.toThrow(
+        /cannot be changed to or from Thompson Sampling/
+      );
+      expect(experimentService.update).not.toHaveBeenCalled();
+    });
+
+    it('allows switching between two non-Thompson-Sampling algorithms', async () => {
+      const previousExperiment = {
+        id: 'experiment-1',
+        state: EXPERIMENT_STATE.INACTIVE,
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.RANDOM,
+        conditions: [],
+      };
+      const experiment = {
+        id: 'experiment-1',
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING,
+        conditions: [],
+      } as any;
+      experimentService.getSingleExperiment.mockResolvedValue(previousExperiment);
+      experimentService.update.mockResolvedValue({ id: 'experiment-1', conditions: [] });
 
       await controller.update({ id: 'experiment-1' } as any, experiment, {} as any, request);
 

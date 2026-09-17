@@ -487,10 +487,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
         // Thompson Sampling algorithm back to Random rather than leave an invalid combination
         // sitting in the form.
         this.updateAssignmentAlgorithms();
-        if (
-          assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS &&
-          this.assignmentAlgorithmValue === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING
-        ) {
+        if (assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS && this.isCurrentAlgorithmThompsonSampling) {
           this.experimentForm.get('assignmentAlgorithm')?.setValue(ASSIGNMENT_ALGORITHM.RANDOM);
         }
       })
@@ -498,9 +495,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
   }
 
   checkForAlgorithmChange(): void {
-    const algorithm = this.assignmentAlgorithmValue;
-
-    if (algorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
+    if (this.isCurrentAlgorithmThompsonSampling) {
       if (!this.thompsonSamplingConfigFormValue) {
         this.thompsonSamplingConfigFormValue = this.thompsonSamplingHelperService.buildConfig(
           this.thompsonSamplingHelperService.getDefaults()
@@ -508,35 +503,47 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       }
     } else {
       this.thompsonSamplingConfigFormValue = undefined;
-      // The TS sub-form is about to be removed from the DOM (its @if goes false) without emitting
-      // a final validity event. Without resetting these, a form that was invalid at the moment of
-      // switching away would leave isTSFormValid$ stuck at false, permanently disabling Save for
-      // an otherwise-valid non-TS experiment until the modal is reopened.
       this.isTSFormValid$.next(true);
       this.isTSFormChanged$.next(false);
     }
   }
 
+  setAlgorithmDisabled(algorithm: ASSIGNMENT_ALGORITHM, disabled: boolean): void {
+    const option = this.assignmentAlgorithms.find((alg) => alg.value === algorithm);
+    if (option) {
+      (option as any).disabled = disabled;
+    }
+  }
+
   updateAssignmentAlgorithms(): void {
-    // Disable stratified random sampling if no stratification factors are available
-    const stratifiedAlgorithm = this.assignmentAlgorithms.find(
-      (alg) => alg.value === ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING
+    // Switching an experiment to or from Thompson Sampling on edit isn't supported
+    const isEditingExistingExperiment = this.config.params.action === UPSERT_EXPERIMENT_ACTION.EDIT;
+    const wasThompsonSampling =
+      isEditingExistingExperiment &&
+      this.thompsonSamplingHelperService.isThompsonSamplingAlgorithm(
+        this.config.params.sourceExperiment?.assignmentAlgorithm
+      );
+
+    // Disable stratified random sampling if no stratification factors are available, or if editing
+    // an experiment that's already Thompson Sampling (switching away isn't allowed).
+    this.setAlgorithmDisabled(
+      ASSIGNMENT_ALGORITHM.STRATIFIED_RANDOM_SAMPLING,
+      this.allStratificationFactors.length === 0 || wasThompsonSampling
     );
 
-    if (stratifiedAlgorithm) {
-      (stratifiedAlgorithm as any).disabled = this.allStratificationFactors.length === 0;
-    }
+    // Disable Random for the same "already Thompson Sampling" reason as above.
+    this.setAlgorithmDisabled(ASSIGNMENT_ALGORITHM.RANDOM, wasThompsonSampling);
 
     // Thompson Sampling can't be used with Within-Subjects assignment: that assignment unit never
     // stores a condition on the individual enrollment (it's tracked per-repeat instead), which is
-    // what Thompson Sampling's reward path reads to attribute a reward to a condition.
-    const thompsonSamplingAlgorithm = this.assignmentAlgorithms.find(
-      (alg) => alg.value === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING
+    // what Thompson Sampling's reward path reads to attribute a reward to a condition. It's also
+    // disabled when editing an experiment that *wasn't* created as Thompson Sampling, for the
+    // switch-lock reason above.
+    this.setAlgorithmDisabled(
+      ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+      this.unitOfAssignmentValue === ASSIGNMENT_UNIT.WITHIN_SUBJECTS ||
+        (isEditingExistingExperiment && !wasThompsonSampling)
     );
-
-    if (thompsonSamplingAlgorithm) {
-      (thompsonSamplingAlgorithm as any).disabled = this.unitOfAssignmentValue === ASSIGNMENT_UNIT.WITHIN_SUBJECTS;
-    }
   }
 
   validateStratificationFactorSelection(algorithm: ASSIGNMENT_ALGORITHM): void {
@@ -560,6 +567,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
 
   get unitOfAssignmentValue() {
     return this.experimentForm.get('unitOfAssignment')?.value;
+  }
+
+  get isCurrentAlgorithmThompsonSampling(): boolean {
+    return this.thompsonSamplingHelperService.isThompsonSamplingAlgorithm(this.assignmentAlgorithmValue);
   }
 
   /**
@@ -783,7 +794,7 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       revertTo: sourceExperiment.revertTo,
     };
 
-    if (this.thompsonSamplingHelperService.isThompsonSamplingAlgorithm(assignmentAlgorithm)) {
+    if (this.isCurrentAlgorithmThompsonSampling) {
       experimentRequest.thompsonSamplingConfig = this.thompsonSamplingConfigFormValue;
     } else {
       experimentRequest.thompsonSamplingConfig = undefined;
