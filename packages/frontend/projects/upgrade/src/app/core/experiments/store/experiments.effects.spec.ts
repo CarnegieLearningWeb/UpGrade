@@ -130,13 +130,14 @@ describe('ExperimentEffects', () => {
 
     it.each([1, null])('reports a tracked list failure when total is %s', (totalExperiments) => {
       store$.next({ experiments: { ...initialExperimentState, totalExperiments } });
-      experimentDataService.getAllExperiment = jest.fn().mockReturnValue(throwError(() => 'testError'));
+      const error = new Error('testError');
+      experimentDataService.getAllExperiment = jest.fn().mockReturnValue(throwError(() => error));
       const results = [];
       const subscription = service.getPaginatedExperiment$.subscribe((result) => results.push(result));
       actions$.next(actionGetExperiments({}));
       expect(results).toEqual([
         batchActions.listFailed({ requestId: expect.any(String) }),
-        actionGetExperimentsFailure({ error: null }),
+        actionGetExperimentsFailure({ error }),
       ]);
       subscription.unsubscribe();
     });

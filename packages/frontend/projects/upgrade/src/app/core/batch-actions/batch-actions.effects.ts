@@ -103,14 +103,14 @@ export function trackedListRequest<T>(
   dispatch: (action: Action) => void,
   request: () => Observable<T>,
   success: (data: T, requestId: string) => Action[],
-  failure: () => Action[]
+  failure: (error: unknown) => Action[]
 ) {
   return defer(() => {
     const requestId = newBatchRequestId();
     dispatch(actions.listRequested({ requestId }));
     return request().pipe(
       switchMap((data) => success(data, requestId)),
-      catchError(() => concat(of(actions.listFailed({ requestId })), of(...failure()))),
+      catchError((error) => concat(of(actions.listFailed({ requestId })), of(...failure(error)))),
       // NgRx queues a nested dispatch until the current action finishes. Observe our start before
       // treating a different token (including null on deletion/logout) as cancellation.
       takeUntil(

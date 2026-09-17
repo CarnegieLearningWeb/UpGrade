@@ -115,7 +115,7 @@ export class ExperimentEffects {
             }),
             experimentAction.actionFetchExperimentStats({ experimentIds: data.nodes.map((row) => row.id) }),
           ],
-          () => [experimentAction.actionGetExperimentsFailure({ error: null })]
+          (error) => [experimentAction.actionGetExperimentsFailure({ error })]
         );
       })
     )
