@@ -132,8 +132,6 @@ export const actionSetIsLoadingFeatureFlags = createAction(
   props<{ isLoadingFeatureFlags: boolean }>()
 );
 
-export const actionSetSkipFlags = createAction('[Feature Flags] Set Skip Flags', props<{ skipFlags: number }>());
-
 export const actionSetSearchKey = createAction(
   '[Feature Flags] Set Search key value',
   props<{ searchKey: FLAG_SEARCH_KEY }>()

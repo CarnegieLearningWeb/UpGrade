@@ -42,8 +42,6 @@ export function withRootBatch<S extends { rootBatch: RootBatchState }>(
     if (action.type === config.listSuccessType) {
       rootBatch = receiveListRows(rootBatch, action[config.responseRowsKey].map(selectionItem), !!action.fromStarting);
     }
-    // Tombstones also protect against late detail/stat responses, whose IDs are not tied to a root query.
-    const removed = new Set(rootBatch.removedIds);
     let result = next;
     // A cancelled tracked read cannot dispatch its usual success/failure action to clear loading.
     if (state.rootBatch.listLoading && state.rootBatch.listRequestId && !rootBatch.listRequestId)
@@ -53,29 +51,33 @@ export function withRootBatch<S extends { rootBatch: RootBatchState }>(
       const distinct = new Map(rows.map((row) => [row.id, row]));
       if (distinct.size !== rows.length) result = { ...result, [config.rowsKey]: [...distinct.values()] };
     }
-    const prune = (key: string) => {
-      const rows = result[key];
-      if (Array.isArray(rows) && rows.some((row) => removed.has(row.id)))
-        result = { ...result, [key]: rows.filter((row) => !removed.has(row.id)) };
-    };
-    prune(config.rowsKey);
-    prune('allExperimentNames');
-    prune('listSegmentOptions');
+    // Tombstones also protect against late detail/stat responses, whose IDs are not tied to a root query.
+    if (rootBatch.removedIds.length) {
+      const removed = new Set(rootBatch.removedIds);
+      const prune = (key: string) => {
+        const rows = result[key];
+        if (Array.isArray(rows) && rows.some((row) => removed.has(row.id)))
+          result = { ...result, [key]: rows.filter((row) => !removed.has(row.id)) };
+      };
+      prune(config.rowsKey);
+      prune('allExperimentNames');
+      prune('listSegmentOptions');
+      if (removed.has(result['selectedFlag']?.id)) result = { ...result, selectedFlag: null };
+      for (const key of ['stats', 'rewardsSummaries']) {
+        if (result[key] && Object.keys(result[key]).some((id) => removed.has(id))) {
+          result = {
+            ...result,
+            [key]: Object.fromEntries(Object.entries(result[key]).filter(([id]) => !removed.has(id))),
+          };
+        }
+      }
+    }
     if (
       (action.type === config.actions.listFailed.type || action.type === config.actions.batchDeleteRequested.type) &&
       rootBatch !== state.rootBatch
     ) {
       // Failed reads and reads cancelled by submission leave the displayed rows available for selection.
       rootBatch = { ...rootBatch, loadedIds: result[config.rowsKey].map((row) => row.id) };
-    }
-    if (removed.has(result['selectedFlag']?.id)) result = { ...result, selectedFlag: null };
-    for (const key of ['stats', 'rewardsSummaries']) {
-      if (result[key] && Object.keys(result[key]).some((id) => removed.has(id))) {
-        result = {
-          ...result,
-          [key]: Object.fromEntries(Object.entries(result[key]).filter(([id]) => !removed.has(id))),
-        };
-      }
     }
     if (
       rootBatch.removedIds.length > state.rootBatch.removedIds.length ||

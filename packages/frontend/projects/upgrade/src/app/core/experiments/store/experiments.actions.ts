@@ -158,11 +158,6 @@ export const actionUpdateExperimentConditionsFailure = createAction(
   '[Experiment] Update Experiment Conditions Failure'
 );
 
-export const actionSetSkipExperiment = createAction(
-  '[Experiment] Set Skip Experiment Value',
-  props<{ skipExperiment: number }>()
-);
-
 export const actionSetSearchKey = createAction(
   '[Experiment] Set Search key value',
   props<{ searchKey: EXPERIMENT_SEARCH_KEY }>()

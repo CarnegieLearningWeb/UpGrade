@@ -235,7 +235,6 @@ const reducer = createReducer(
   })),
   on(experimentsAction.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
   on(experimentsAction.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
-  on(experimentsAction.actionSetSkipExperiment, (state, { skipExperiment }) => ({ ...state, skipExperiment })),
   on(experimentsAction.actionFetchAllExperimentNamesSuccess, (state, { allExperimentNames }) => ({
     ...state,
     allExperimentNames,

@@ -144,6 +144,16 @@ describe('ExperimentEffects', () => {
     it.each([false, true])(
       'correlates root rows with the request and fetches stats (replacement=%s)',
       (fromStarting) => {
+        if (fromStarting) {
+          store$.next({
+            experiments: {
+              ...initialExperimentState,
+              skipExperiment: 2,
+              totalExperiments: 1,
+              searchString: 'test',
+            },
+          });
+        }
         const experiments = [{ id: 'test1' } as any];
         experimentDataService.getAllExperiment = jest.fn().mockReturnValue(of({ nodes: experiments, total: 1 }));
         const results = [];

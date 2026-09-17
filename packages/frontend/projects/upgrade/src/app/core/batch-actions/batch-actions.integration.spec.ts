@@ -287,6 +287,10 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     store.dispatch(config.fetch({ fromStarting: false }));
     expect(data[config.fetchMethod]).toHaveBeenLastCalledWith(expect.objectContaining({ skip: 2 }), false);
     expect(batch().listLoading).toBe(true);
+    const fetchCount = data[config.fetchMethod].mock.calls.length;
+    store.dispatch(config.fetch({ fromStarting: false }));
+    expect(data[config.fetchMethod]).toHaveBeenCalledTimes(fetchCount);
+    expect(nextPage.observed).toBe(true);
     expect(selectionView(batch(), config.entity).canToggleHeader).toBe(true);
     store.dispatch(actions.toggleHeader({ items: currentRows().map(selectionItem) }));
     expect(Object.keys(batch().selectedById)).toEqual(rows.slice(0, 2).map(({ id }) => id));
@@ -299,9 +303,15 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       checked: false,
       indeterminate: true,
     });
+    const pendingReplacement = new Subject<any>();
+    data[config.fetchMethod].mockReturnValueOnce(pendingReplacement);
+    store.dispatch(config.fetch({ fromStarting: true }));
+    expect(batch().listLoading).toBe(true);
     data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0], rows[0]])));
     store.dispatch(config.fetch({ fromStarting: true }));
+    expect(pendingReplacement.observed).toBe(false);
     expect(currentRows()).toHaveLength(1);
+    expect(batch().listLoading).toBe(false);
   });
 
   it('prepares immediately from retained metadata and invalidates the snapshot after deselection', () => {
