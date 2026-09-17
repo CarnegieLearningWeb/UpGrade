@@ -30,15 +30,3 @@
 .no-data:not(.has-batch-selection) .mat-mdc-header-row .batch-checkbox {
   visibility: hidden;
 }
-
-@media (hover: hover) and (pointer: fine) {
-  .batch-checkbox {
-    opacity: 0;
-  }
-  .mat-mdc-row:hover .batch-checkbox,
-  .mat-mdc-header-row:hover .batch-checkbox,
-  .batch-checkbox:has(input:focus-visible),
-  .has-batch-selection .batch-checkbox {
-    opacity: 1;
-  }
-}
