@@ -149,8 +149,9 @@ export class BatchDeleteService {
           if (!transactionError || transactionError instanceof BatchDeleteSkippedError) transactionError = releaseError;
         }
       }
-      // A committed deletion must finish its post-commit work before surfacing a release failure.
-      if (transactionError && !committed) throw transactionError;
+      // Finish post-commit work after a confirmed commit or an ambiguous segment commit.
+      // Keep transactionError so the batch still stops and reports the original outcome.
+      if (transactionError && !committed && !(entity === 'segments' && commitAttempted)) throw transactionError;
       return response;
     };
     try {

@@ -121,18 +121,29 @@ describe('BatchDeleteService transaction outcomes', () => {
     }
   });
 
-  test.each([false, true])('awaits segment post-commit work (release fails: %s)', async (releaseFails) => {
+  const postCommitScenarios = ['success', 'release failure', 'commit response lost', 'commit rejected'];
+  test.each(postCommitScenarios)('awaits segment post-commit work after %s', async (scenario) => {
     const selectedIds = ids.slice(0, 2);
-    if (releaseFails) {
-      configureRunner = (runner) => {
+    const storedIds = new Set(selectedIds);
+    const commitFails = scenario === 'commit response lost' || scenario === 'commit rejected';
+    const stopsBatch = scenario !== 'success';
+    configureRunner = (runner, index) => {
+      const commit = (runner.commitTransaction as jest.Mock).getMockImplementation();
+      (runner.commitTransaction as jest.Mock).mockImplementation(async () => {
+        if (scenario === 'commit rejected') throw new Error('commit rejected');
+        storedIds.delete(selectedIds[index]);
+        if (scenario === 'commit response lost') throw new Error('commit response lost');
+        await commit();
+      });
+      if (scenario === 'release failure') {
         (runner.release as jest.Mock).mockRejectedValue(new Error('release failed'));
-      };
-    }
-    const saved = { flags: [] as string[], experiments: [] as string[] };
+      }
+    };
+    const saved = { flags: [...selectedIds], experiments: [...selectedIds] };
     let releaseFirstWrites: () => void;
     const firstWrites = new Promise<void>((resolve) => (releaseFirstWrites = resolve));
     const recompute = (entity: keyof typeof saved) => async () => {
-      const members = selectedIds.filter((id) => !mutations.includes(id));
+      const members = [...storedIds];
       if (members.length) await firstWrites;
       saved[entity] = members;
     };
@@ -166,21 +177,26 @@ describe('BatchDeleteService transaction outcomes', () => {
       releaseFirstWrites();
       await deletion;
     }
-    const remainingIds = releaseFails ? selectedIds.slice(1) : [];
+    const remainingIds = scenario === 'commit rejected' ? selectedIds : stopsBatch ? selectedIds.slice(1) : [];
     expect(saved).toEqual({ flags: remainingIds, experiments: remainingIds });
     expect(segmentService.cacheService.resetPrefixCache).toHaveBeenCalledWith(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
     expect(segmentService.cacheService.resetPrefixCache).toHaveBeenCalledWith(
       CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX
     );
     expect((await deletion).results).toEqual(
-      releaseFails
+      stopsBatch
         ? [
-            { id: selectedIds[0], outcome: 'deleted', reasonCode: DeletionReasonCode.POST_DELETE_FAILED },
+            {
+              id: selectedIds[0],
+              outcome: commitFails ? 'unknown' : 'deleted',
+              reasonCode: commitFails ? DeletionReasonCode.OUTCOME_UNKNOWN : DeletionReasonCode.POST_DELETE_FAILED,
+            },
             { id: selectedIds[1], outcome: 'not_attempted' },
           ]
         : selectedIds.map((id) => ({ id, outcome: 'deleted' }))
     );
-    expect(createQueryRunner).toHaveBeenCalledTimes(releaseFails ? 1 : 2);
+    expect(createQueryRunner).toHaveBeenCalledTimes(stopsBatch ? 1 : 2);
+    if (commitFails) expect(runners[0].rollbackTransaction).toHaveBeenCalledTimes(1);
   });
 
   test('stops without mutation when the target lookup fails', async () => {
