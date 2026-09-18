@@ -67,7 +67,7 @@ interface SegmentPaginationInfo extends PaginationResponse {
  *         enum: [deleted, not_found, failed, unknown, not_attempted]
  *       reasonCode:
  *         type: string
- *         enum: [not_found, delete_failed, lock_timeout, external_sync_failed, outcome_unknown, post_delete_failed, batch_budget_exceeded]
+ *         enum: [not_found, delete_failed, lock_timeout, external_sync_failed, outcome_unknown, post_delete_failed]
  *   BatchDeleteResult:
  *     type: object
  *     required: [phase, results]
@@ -301,14 +301,12 @@ export class SegmentController {
    *       '400':
    *         description: Expected a nonempty array of unique UUIDs.
    *       '401':
-   *         description: A current authenticated user is required.
-   *       '403':
-   *         description: The current user cannot delete this entity type.
+   *         description: AuthorizationRequiredError
    */
   @Post('/batch-delete')
   public batchDelete(
     @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
-    @CurrentUser({ required: true }) currentUser: UserDTO,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<BatchDeleteResult> {
     return this.batchDeleteService.delete('segments', ids, currentUser, request.logger);

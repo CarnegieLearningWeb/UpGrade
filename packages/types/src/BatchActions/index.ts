@@ -1,5 +1,3 @@
-import { UserRole } from '../Experiment/enums';
-
 export interface BatchEntityIdsRequest {
   ids: string[];
 }
@@ -11,7 +9,6 @@ export enum DeletionReasonCode {
   EXTERNAL_SYNC_FAILED = 'external_sync_failed',
   OUTCOME_UNKNOWN = 'outcome_unknown',
   POST_DELETE_FAILED = 'post_delete_failed',
-  BATCH_BUDGET_EXCEEDED = 'batch_budget_exceeded',
 }
 
 export type BatchDeleteEntity = 'experiments' | 'flags' | 'segments';
@@ -27,10 +24,4 @@ export interface BatchDeleteItemResult {
 export interface BatchDeleteResult {
   phase: 'rejected' | 'executed';
   results: BatchDeleteItemResult[];
-}
-
-export function hasBatchDeletePermission(role: UserRole, entity: BatchDeleteEntity): boolean {
-  return (
-    role === UserRole.ADMIN || role === UserRole.CREATOR || (entity === 'segments' && role === UserRole.USER_MANAGER)
-  );
 }

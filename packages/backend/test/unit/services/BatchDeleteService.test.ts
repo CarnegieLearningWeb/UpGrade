@@ -1,5 +1,4 @@
 import { randomUUID } from 'crypto';
-import { performance } from 'perf_hooks';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 import { BatchDeleteEntity, CACHE_PREFIX, DeletionReasonCode, UserRole } from 'upgrade_types';
 import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService';
@@ -13,8 +12,6 @@ import { MoocletError } from '../../../src/api/errors/MoocletError';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { env } from '../../../src/env';
 import { DeletionRepository } from '../../../src/api/repositories/DeletionRepository';
-
-jest.mock('perf_hooks', () => ({ performance: { now: jest.fn(() => 0) } }));
 
 describe('BatchDeleteService transaction outcomes', () => {
   const entities: BatchDeleteEntity[] = ['experiments', 'flags', 'segments'];
@@ -38,7 +35,6 @@ describe('BatchDeleteService transaction outcomes', () => {
     ids = [randomUUID(), randomUUID(), randomUUID()];
     mutations = [];
     runners = [];
-    (performance.now as jest.Mock).mockReturnValue(0);
     originalMooclet = env.mooclets.enabled;
     env.mooclets.enabled = false;
     configureRunner = () => undefined;
@@ -49,7 +45,6 @@ describe('BatchDeleteService transaction outcomes', () => {
           return active;
         },
         manager: {
-          query: jest.fn().mockResolvedValue([]),
           getRepository: jest.fn(() => ({
             findOne: jest.fn(async ({ where }) => ({ id: where.id })),
           })),
@@ -100,14 +95,6 @@ describe('BatchDeleteService transaction outcomes', () => {
   afterEach(() => {
     env.mooclets.enabled = originalMooclet;
     jest.restoreAllMocks();
-  });
-
-  test.each(entities)('%s rejects unauthorized users before any transaction or mutation', async (entity) => {
-    await expect(service.delete(entity, ids, undefined, logger)).rejects.toMatchObject({ httpCode: 401 });
-    for (const role of [UserRole.READER, undefined, 'unknown' as UserRole]) {
-      await expect(service.delete(entity, ids, { ...user, role }, logger)).rejects.toMatchObject({ httpCode: 403 });
-    }
-    expect(createQueryRunner).not.toHaveBeenCalled();
   });
 
   test.each(entities)('%s commits sequentially and normalizes existing service responses', async (entity) => {
@@ -363,59 +350,11 @@ describe('BatchDeleteService transaction outcomes', () => {
     expect(mooclets.syncDelete).not.toHaveBeenCalled();
   });
 
-  test('stops starting items after the budget, without abandoning a committed item', async () => {
-    work.mockImplementation(async (id) => {
-      (performance.now as jest.Mock).mockReturnValue(60_001);
-      return [{ id }];
-    });
-    const result = await service.delete('flags', ids, user, logger);
-    expect(result.results).toEqual([
-      { id: ids[0], outcome: 'deleted' },
-      ...ids
-        .slice(1)
-        .map((id) => ({ id, outcome: 'not_attempted', reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED })),
-    ]);
-    expect(createQueryRunner).toHaveBeenCalledTimes(1);
-  });
-
-  test('does not start execution if the admission budget has expired', async () => {
-    (performance.now as jest.Mock).mockReturnValueOnce(0).mockReturnValue(60_001);
-    expect(await service.delete('flags', ids, user, logger)).toEqual({
-      phase: 'rejected',
-      results: ids.map((id) => ({
-        id,
-        outcome: 'not_attempted',
-        reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED,
-      })),
-    });
-    expect(createQueryRunner).not.toHaveBeenCalled();
-  });
-
-  test('does not mutate when the budget expires while acquiring the target lock', async () => {
-    configureRunner = (runner) => {
-      (runner.manager.getRepository as jest.Mock).mockReturnValue({
-        findOne: jest.fn(async () => {
-          (performance.now as jest.Mock).mockReturnValue(60_001);
-          return { id: ids[0] };
-        }),
-      });
-    };
-    const result = await service.delete('flags', ids, user, logger);
-    expect(result.results).toEqual(
-      ids.map((id) => ({ id, outcome: 'not_attempted', reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED }))
-    );
-    expect(mutations).toEqual([]);
-    expect(runners[0].rollbackTransaction).toHaveBeenCalled();
-    expect(logger.error).not.toHaveBeenCalled();
-  });
-
-  test.each(['failure', 'budget expiry'])('returns every result in a large batch after %s', async (stop) => {
+  test('returns every result in a large batch after failure', async () => {
     // Fits within the 5MB JSON limit, but exceeds the argument limit of a spread-based push.
     ids = Array.from({ length: 130_000 }, () => randomUUID());
-    const budgetExpired = stop === 'budget expiry';
     work.mockImplementation(async (id) => {
-      if (!budgetExpired && id === ids[1]) throw new Error('cleanup failed');
-      if (budgetExpired) (performance.now as jest.Mock).mockReturnValue(60_001);
+      if (id === ids[1]) throw new Error('cleanup failed');
       return [{ id }];
     });
 
@@ -423,24 +362,20 @@ describe('BatchDeleteService transaction outcomes', () => {
     expect(result.phase).toBe('executed');
     expect(result.results).toHaveLength(ids.length);
     expect(result.results[0]).toEqual({ id: ids[0], outcome: 'deleted' });
-    if (!budgetExpired)
-      expect(result.results[1]).toEqual({
-        id: ids[1],
-        outcome: 'failed',
-        reasonCode: DeletionReasonCode.DELETE_FAILED,
-      });
-    const remainingStart = budgetExpired ? 1 : 2;
+    expect(result.results[1]).toEqual({
+      id: ids[1],
+      outcome: 'failed',
+      reasonCode: DeletionReasonCode.DELETE_FAILED,
+    });
     expect(
       result.results
-        .slice(remainingStart)
+        .slice(2)
         .every(
           (item, index) =>
-            item.id === ids[remainingStart + index] &&
-            item.outcome === 'not_attempted' &&
-            item.reasonCode === (budgetExpired ? DeletionReasonCode.BATCH_BUDGET_EXCEEDED : undefined)
+            item.id === ids[2 + index] && item.outcome === 'not_attempted' && item.reasonCode === undefined
         )
     ).toBe(true);
-    expect(createQueryRunner).toHaveBeenCalledTimes(remainingStart);
+    expect(createQueryRunner).toHaveBeenCalledTimes(2);
     expect(runners[0].commitTransaction).toHaveBeenCalledTimes(1);
   });
 });

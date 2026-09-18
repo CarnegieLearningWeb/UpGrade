@@ -135,7 +135,7 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       return list;
     };
 
-    test.each(entities)('%s validates IDs and authentication before dispatch', async (entity) => {
+    test.each(entities)('%s validates IDs and follows single-delete authentication', async (entity) => {
       const spy = jest.spyOn(Container.get(BatchDeleteService), 'delete');
       const id = randomUUID();
       for (const body of [
@@ -156,33 +156,31 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         .post(route(entity))
         .send({ ids: [id] })
         .expect(401);
+      expect(spy).not.toHaveBeenCalled();
+
       env.google.authTokenRequired = false;
       await db.getRepository(User).delete({ email: SYSTEM_USER_EMAIL });
-      await request(app)
+      const [single, batch] = await create(entity, 2);
+      await request(app).delete(`/api/${entity}/${single.id}`).expect(200);
+      const { body } = await request(app)
         .post(route(entity))
-        .send({ ids: [id] })
-        .expect(401);
-      expect(spy).not.toHaveBeenCalled();
+        .send({ ids: [batch.id] })
+        .expect(200);
+      expect(body.results).toEqual([{ id: batch.id, outcome: 'deleted' }]);
+      expect(await db.getRepository(model[entity]).countBy({ id: In([single.id, batch.id]) })).toBe(0);
     });
 
-    test.each(Object.values(UserRole))('enforces server-side %s permissions despite body overrides', async (role) => {
+    test.each(Object.values(UserRole))('matches single-delete behavior for the %s role', async (role) => {
       await db.getRepository(User).update(SYSTEM_USER_EMAIL, { role });
       for (const entity of entities) {
-        const [row] = await create(entity);
-        const allowed =
-          role === UserRole.ADMIN ||
-          role === UserRole.CREATOR ||
-          (role === UserRole.USER_MANAGER && entity === 'segments');
+        const [single, batch] = await create(entity, 2);
+        await request(app).delete(`/api/${entity}/${single.id}`).expect(200);
         const { body } = await request(app)
           .post(route(entity))
-          .send({
-            ids: [row.id],
-            role: UserRole.ADMIN,
-            canDelete: true,
-          })
-          .expect(allowed ? 200 : 403);
-        if (allowed) expect(body.results).toEqual([{ id: row.id, outcome: 'deleted' }]);
-        expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(allowed ? 0 : 1);
+          .send({ ids: [batch.id] })
+          .expect(200);
+        expect(body.results).toEqual([{ id: batch.id, outcome: 'deleted' }]);
+        expect(await db.getRepository(model[entity]).countBy({ id: In([single.id, batch.id]) })).toBe(0);
       }
     });
 
@@ -356,7 +354,7 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       }
     });
 
-    test('bounds a target lock wait and reports a confirmed failure without deleting', async () => {
+    test('reports a database-configured lock timeout without deleting', async () => {
       const [row] = await create('flags');
       const blocker = writer.createQueryRunner();
       await blocker.connect();
@@ -369,7 +367,7 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
           const start = runner.startTransaction.bind(runner);
           jest.spyOn(runner, 'startTransaction').mockImplementation(async (...startArgs) => {
             await start(...startArgs);
-            // A tighter deployment default must survive the batch's five-second cap.
+            // Model a database-configured limit; the deletion service does not set its own timeout.
             await runner.query("SET LOCAL lock_timeout = '100ms'");
           });
           return runner;

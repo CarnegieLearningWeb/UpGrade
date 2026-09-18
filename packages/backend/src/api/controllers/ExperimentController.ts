@@ -694,14 +694,12 @@ export class ExperimentController {
    *       '400':
    *         description: Expected a nonempty array of unique UUIDs.
    *       '401':
-   *         description: A current authenticated user is required.
-   *       '403':
-   *         description: The current user cannot delete this entity type.
+   *         description: AuthorizationRequiredError
    */
   @Post('/batch-delete')
   public batchDelete(
     @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
-    @CurrentUser({ required: true }) currentUser: UserDTO,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<BatchDeleteResult> {
     return this.batchDeleteService.delete('experiments', ids, currentUser, request.logger);

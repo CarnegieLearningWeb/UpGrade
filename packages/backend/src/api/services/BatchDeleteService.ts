@@ -1,14 +1,6 @@
-import { performance } from 'perf_hooks';
 import { Inject, Service } from 'typedi';
 import { DataSource, EntityManager } from 'typeorm';
-import { ForbiddenError, UnauthorizedError } from 'routing-controllers';
-import {
-  BatchDeleteEntity,
-  BatchDeleteItemResult,
-  BatchDeleteResult,
-  DeletionReasonCode,
-  hasBatchDeletePermission,
-} from 'upgrade_types';
+import { BatchDeleteEntity, BatchDeleteItemResult, BatchDeleteResult, DeletionReasonCode } from 'upgrade_types';
 import { env } from '../../env';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
@@ -20,10 +12,6 @@ import { FeatureFlagService } from './FeatureFlagService';
 import { MoocletExperimentService } from './MoocletExperimentService';
 import { SegmentService } from './SegmentService';
 import { DeletionRepository } from '../repositories/DeletionRepository';
-
-// Admission budget: never abandon an in-flight deletion or claim it has been cancelled.
-// Check before starting another item and again after acquiring its target lock.
-export const BATCH_DELETE_START_BUDGET_MS = 60_000;
 
 class BatchDeleteSkippedError extends Error {
   constructor(public readonly result: BatchDeleteItemResult) {
@@ -48,25 +36,12 @@ export class BatchDeleteService {
     user: UserDTO,
     logger: UpgradeLogger
   ): Promise<BatchDeleteResult> {
-    if (!user) throw new UnauthorizedError('A current user is required');
-    if (!hasBatchDeletePermission(user.role, entity)) throw new ForbiddenError('Deletion permission is required');
-    const deadline = performance.now() + BATCH_DELETE_START_BUDGET_MS;
     const results: BatchDeleteItemResult[] = [];
     let phase: BatchDeleteResult['phase'] = 'rejected';
     for (const id of ids) {
-      if (performance.now() >= deadline) {
-        for (let index = results.length; index < ids.length; index++) {
-          results.push({
-            id: ids[index],
-            outcome: 'not_attempted',
-            reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED,
-          });
-        }
-        break;
-      }
-      const result = await this.deleteOne(entity, id, user, logger, deadline);
+      const result = await this.deleteOne(entity, id, user, logger);
       results.push(result);
-      if (result.outcome !== 'not_found' && result.outcome !== 'not_attempted') phase = 'executed';
+      if (result.outcome !== 'not_found') phase = 'executed';
       // An already absent target does not prevent independent items from being deleted.
       if (result.outcome === 'not_found') continue;
       // A committed item with a post-delete failure must not be retried, but still stops this batch.
@@ -75,9 +50,6 @@ export class BatchDeleteService {
           results.push({
             id: ids[index],
             outcome: 'not_attempted',
-            ...(result.reasonCode === DeletionReasonCode.BATCH_BUDGET_EXCEEDED
-              ? { reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED }
-              : {}),
           });
         }
         break;
@@ -90,8 +62,7 @@ export class BatchDeleteService {
     entity: BatchDeleteEntity,
     id: string,
     user: UserDTO,
-    logger: UpgradeLogger,
-    deadline: number
+    logger: UpgradeLogger
   ): Promise<BatchDeleteItemResult> {
     let committed = false;
     let rolledBack = false;
@@ -104,17 +75,9 @@ export class BatchDeleteService {
       try {
         await runner.connect();
         await runner.startTransaction('READ COMMITTED');
-        await this.deletionRepository.setLockTimeout(runner.manager);
         const target = await this.deletionRepository.findForDeletion(entity, id, runner.manager);
         if (!target) {
           throw new BatchDeleteSkippedError({ id, outcome: 'not_found', reasonCode: DeletionReasonCode.NOT_FOUND });
-        }
-        if (performance.now() >= deadline) {
-          throw new BatchDeleteSkippedError({
-            id,
-            outcome: 'not_attempted',
-            reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED,
-          });
         }
         mutationStarted = true;
         response = await work(runner.manager);
