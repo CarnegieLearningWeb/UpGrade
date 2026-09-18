@@ -1,4 +1,10 @@
-import { BatchDeleteEntity, EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SEGMENT_STATUS } from 'upgrade_types';
+import {
+  BatchDeleteEntity,
+  BatchDeleteResult,
+  EXPERIMENT_STATE,
+  FEATURE_FLAG_STATUS,
+  SEGMENT_STATUS,
+} from 'upgrade_types';
 import { createBatchActions } from './batch-actions.actions';
 import { localDeletionReason, selectionView, validateBatchResponse } from './batch-actions.helpers';
 import {
@@ -86,21 +92,28 @@ describe('Root selection rules', () => {
     expect(localDeletionReason(entity, selected)).toBe(reason);
   });
 
-  it('treats an incomplete or duplicate deletion response as uncertain rather than silently removing rows', () => {
+  it('accepts reordered results but rejects incomplete, duplicate, or unexpected result IDs', () => {
+    const complete: BatchDeleteResult = {
+      phase: 'executed',
+      results: [
+        { id: 'b', outcome: 'not_found' },
+        { id: 'a', outcome: 'deleted' },
+      ],
+    };
+    expect(validateBatchResponse(complete, ['a', 'b'])).toBe(complete);
     expect(() =>
       validateBatchResponse({ phase: 'executed', results: [{ id: 'a', outcome: 'deleted' }] }, ['a', 'b'])
     ).toThrow();
-    expect(() =>
-      validateBatchResponse(
-        {
-          phase: 'executed',
-          results: [
-            { id: 'a', outcome: 'deleted' },
-            { id: 'a', outcome: 'deleted' },
-          ],
-        },
-        ['a', 'b']
-      )
-    ).toThrow();
+    for (const returnedIds of [
+      ['a', 'a'],
+      ['a', 'unexpected'],
+    ]) {
+      expect(() =>
+        validateBatchResponse({ phase: 'executed', results: returnedIds.map((id) => ({ id, outcome: 'deleted' })) }, [
+          'a',
+          'b',
+        ])
+      ).toThrow();
+    }
   });
 });

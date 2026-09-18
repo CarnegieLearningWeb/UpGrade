@@ -44,15 +44,15 @@ export function localDeletionReason(
 
 export function selectionView(state: RootBatchState, entity: BatchDeleteEntity) {
   const items = Object.values(state.selectedById);
-  const loaded = new Set(state.loadedIds);
-  const checked = loaded.size > 0 && [...loaded].every((id) => !!state.selectedById[id]);
+  const loaded = state.loadedIds;
+  const checked = loaded.length > 0 && loaded.every((id) => !!state.selectedById[id]);
   const reasons = items.map((item) => localDeletionReason(entity, item)).filter(Boolean);
   return {
     items,
     selectedCount: items.length,
     checked,
     indeterminate: items.length > 0 && !checked,
-    canToggleHeader: !isBatchBusy(state) && (items.length > 0 || loaded.size > 0),
+    canToggleHeader: !isBatchBusy(state) && (items.length > 0 || loaded.length > 0),
     canRequestConfirmation: items.length > 0 && !reasons.length && !isBatchBusy(state),
     reasonCode: reasons[0],
     busy: isBatchBusy(state),
@@ -69,9 +69,14 @@ export function validateBatchResponse(result: BatchDeleteResult, ids: string[]):
     !result ||
     !['rejected', 'executed'].includes(result.phase) ||
     !Array.isArray(result.results) ||
-    result.results.length !== ids.length ||
-    new Set(result.results.map((item) => item.id)).size !== ids.length ||
-    ids.some((id) => !result.results.some((item) => item.id === id)) ||
+    result.results.length !== ids.length
+  ) {
+    throw new Error('Incomplete batch deletion response');
+  }
+  const resultIds = new Set(result.results.map((item) => item.id));
+  if (
+    resultIds.size !== ids.length ||
+    ids.some((id) => !resultIds.has(id)) ||
     result.results.some((item) => !outcomes.includes(item.outcome))
   ) {
     throw new Error('Incomplete batch deletion response');

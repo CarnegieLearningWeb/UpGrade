@@ -83,9 +83,10 @@ export function reduceRootBatch(
         : matches(action, actions.toggleHeader)
         ? action.items
         : [];
+      const loadedIds = new Set(state.loadedIds);
       for (const item of items) {
         if (selectedById[item.id] && matches(action, actions.toggleRow)) delete selectedById[item.id];
-        else if (state.loadedIds.includes(item.id)) {
+        else if (loadedIds.has(item.id)) {
           selectedById[item.id] = { ...item };
         }
       }
