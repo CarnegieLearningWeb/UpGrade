@@ -55,15 +55,13 @@ export class BatchDeleteService {
     let phase: BatchDeleteResult['phase'] = 'rejected';
     for (const id of ids) {
       if (performance.now() >= deadline) {
-        results.push(
-          ...ids.slice(results.length).map(
-            (remaining): BatchDeleteItemResult => ({
-              id: remaining,
-              outcome: 'not_attempted',
-              reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED,
-            })
-          )
-        );
+        for (let index = results.length; index < ids.length; index++) {
+          results.push({
+            id: ids[index],
+            outcome: 'not_attempted',
+            reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED,
+          });
+        }
         break;
       }
       const result = await this.deleteOne(entity, id, user, logger, deadline);
@@ -73,17 +71,15 @@ export class BatchDeleteService {
       if (result.outcome === 'not_found') continue;
       // A committed item with a post-delete failure must not be retried, but still stops this batch.
       if (result.outcome !== 'deleted' || result.reasonCode) {
-        results.push(
-          ...ids.slice(results.length).map(
-            (remaining): BatchDeleteItemResult => ({
-              id: remaining,
-              outcome: 'not_attempted',
-              ...(result.reasonCode === DeletionReasonCode.BATCH_BUDGET_EXCEEDED
-                ? { reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED }
-                : {}),
-            })
-          )
-        );
+        for (let index = results.length; index < ids.length; index++) {
+          results.push({
+            id: ids[index],
+            outcome: 'not_attempted',
+            ...(result.reasonCode === DeletionReasonCode.BATCH_BUDGET_EXCEEDED
+              ? { reasonCode: DeletionReasonCode.BATCH_BUDGET_EXCEEDED }
+              : {}),
+          });
+        }
         break;
       }
     }

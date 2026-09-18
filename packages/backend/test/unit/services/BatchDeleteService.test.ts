@@ -408,4 +408,39 @@ describe('BatchDeleteService transaction outcomes', () => {
     expect(runners[0].rollbackTransaction).toHaveBeenCalled();
     expect(logger.error).not.toHaveBeenCalled();
   });
+
+  test.each(['failure', 'budget expiry'])('returns every result in a large batch after %s', async (stop) => {
+    // Fits within the 5MB JSON limit, but exceeds the argument limit of a spread-based push.
+    ids = Array.from({ length: 130_000 }, () => randomUUID());
+    const budgetExpired = stop === 'budget expiry';
+    work.mockImplementation(async (id) => {
+      if (!budgetExpired && id === ids[1]) throw new Error('cleanup failed');
+      if (budgetExpired) (performance.now as jest.Mock).mockReturnValue(60_001);
+      return [{ id }];
+    });
+
+    const result = await service.delete('flags', ids, user, logger);
+    expect(result.phase).toBe('executed');
+    expect(result.results).toHaveLength(ids.length);
+    expect(result.results[0]).toEqual({ id: ids[0], outcome: 'deleted' });
+    if (!budgetExpired)
+      expect(result.results[1]).toEqual({
+        id: ids[1],
+        outcome: 'failed',
+        reasonCode: DeletionReasonCode.DELETE_FAILED,
+      });
+    const remainingStart = budgetExpired ? 1 : 2;
+    expect(
+      result.results
+        .slice(remainingStart)
+        .every(
+          (item, index) =>
+            item.id === ids[remainingStart + index] &&
+            item.outcome === 'not_attempted' &&
+            item.reasonCode === (budgetExpired ? DeletionReasonCode.BATCH_BUDGET_EXCEEDED : undefined)
+        )
+    ).toBe(true);
+    expect(createQueryRunner).toHaveBeenCalledTimes(remainingStart);
+    expect(runners[0].commitTransaction).toHaveBeenCalledTimes(1);
+  });
 });
