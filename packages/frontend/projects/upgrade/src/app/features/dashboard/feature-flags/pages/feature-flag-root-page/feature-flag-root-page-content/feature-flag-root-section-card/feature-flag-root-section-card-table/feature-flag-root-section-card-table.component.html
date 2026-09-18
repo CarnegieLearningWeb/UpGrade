@@ -47,7 +47,7 @@
           [disableRipple]="true"
           color="primary"
           [checked]="!!batchState?.selectedById[flag.id]"
-          [disabled]="selection?.busy || !batchState?.loadedIds.includes(flag.id)"
+          [disabled]="selection?.busy || !selection?.loadedIds.has(flag.id)"
           [aria-label]="'batch-delete.selection.flags.row' | translate : { name: flag.name }"
           (click)="$event.stopPropagation()"
           (keydown)="$event.stopPropagation()"

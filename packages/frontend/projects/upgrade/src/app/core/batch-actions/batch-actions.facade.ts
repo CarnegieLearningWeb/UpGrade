@@ -16,7 +16,12 @@ export function createBatchFacade(
   const state$ = store.pipe(select(selectState));
   return {
     state$,
-    selection$: state$.pipe(map((state) => selectionView(state, entity))),
+    selection$: state$.pipe(
+      map((state) => ({
+        ...selectionView(state, entity),
+        loadedIds: new Set(state.loadedIds),
+      }))
+    ),
     toggleRow: (row: Parameters<typeof selectionItem>[0]) =>
       store.dispatch(actions.toggleRow({ item: selectionItem(row) })),
     toggleHeader: () =>
