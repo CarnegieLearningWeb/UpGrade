@@ -145,16 +145,15 @@ describe('ExperimentEffects', () => {
     it.each([false, true])(
       'correlates root rows with the request and fetches stats (replacement=%s)',
       (fromStarting) => {
-        if (fromStarting) {
-          store$.next({
-            experiments: {
-              ...initialExperimentState,
-              skipExperiment: 2,
-              totalExperiments: 1,
-              searchString: 'test',
-            },
-          });
-        }
+        // A nonzero offset is required for pagination, since a zero offset is itself a replacement.
+        store$.next({
+          experiments: {
+            ...initialExperimentState,
+            skipExperiment: 2,
+            totalExperiments: fromStarting ? 1 : 3,
+            searchString: 'test',
+          },
+        });
         const experiments = [{ id: 'test1' } as any];
         experimentDataService.getAllExperiment = jest.fn().mockReturnValue(of({ nodes: experiments, total: 1 }));
         const results = [];
@@ -170,7 +169,10 @@ describe('ExperimentEffects', () => {
           actionFetchExperimentStats({ experimentIds: ['test1'] }),
         ]);
         expect(experimentDataService.getAllExperiment).toHaveBeenCalledWith(
-          expect.objectContaining({ skip: 0, searchParams: { key: initialExperimentState.searchKey, string: 'test' } }),
+          expect.objectContaining({
+            skip: fromStarting ? 0 : 2,
+            searchParams: { key: initialExperimentState.searchKey, string: 'test' },
+          }),
           false
         );
         subscription.unsubscribe();

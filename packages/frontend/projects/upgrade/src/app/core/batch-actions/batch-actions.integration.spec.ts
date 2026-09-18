@@ -717,6 +717,8 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     data[config.fetchMethod].mockReturnValue(of(page([rows[1]])));
     store.dispatch(config.fetch({ fromStarting: false }));
     expect(data[config.fetchMethod]).toHaveBeenLastCalledWith(expect.objectContaining({ skip: 0 }), false);
+    // A zero offset replaces the retained rows instead of appending the first page to them.
+    expect(currentRows().map(({ id }) => id)).toEqual([rows[1].id]);
     expect(batch().loadedIds).toEqual(currentRows().map(({ id }) => id));
     store.dispatch(actions.toggleRow({ item: selectionItem(rows[1]) }));
     store.dispatch(actions.toggleHeader({ items: currentRows().map(selectionItem) }));

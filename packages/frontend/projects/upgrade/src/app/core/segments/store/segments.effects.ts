@@ -72,7 +72,7 @@ export class SegmentsEffects {
           (action.fromStarting || state.totalSegments === null || state.skipSegments < state.totalSegments)
       ),
       switchMap(([action, state]) => {
-        const fromStarting = !!action.fromStarting;
+        const fromStarting = !!action.fromStarting || state.skipSegments === 0;
         const params = {
           skip: fromStarting ? 0 : state.skipSegments,
           take: NUMBER_OF_SEGMENTS,

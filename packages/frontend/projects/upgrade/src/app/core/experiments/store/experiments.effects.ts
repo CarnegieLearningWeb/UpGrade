@@ -91,7 +91,7 @@ export class ExperimentEffects {
           (action.fromStarting || state.totalExperiments === null || state.skipExperiment < state.totalExperiments)
       ),
       switchMap(([action, state]) => {
-        const fromStarting = !!action.fromStarting;
+        const fromStarting = !!action.fromStarting || state.skipExperiment === 0;
         const params = {
           skip: fromStarting ? 0 : state.skipExperiment,
           take: NUMBER_OF_EXPERIMENTS,
