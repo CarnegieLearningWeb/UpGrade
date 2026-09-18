@@ -68,7 +68,7 @@ export class FeatureFlagsEffects {
           (action.fromStarting || state.totalFlags === null || state.skipFlags < state.totalFlags)
       ),
       switchMap(([action, state]) => {
-        const fromStarting = !!action.fromStarting;
+        const fromStarting = !!action.fromStarting || state.skipFlags === 0;
         const params = {
           skip: fromStarting ? 0 : state.skipFlags,
           take: NUMBER_OF_FLAGS,

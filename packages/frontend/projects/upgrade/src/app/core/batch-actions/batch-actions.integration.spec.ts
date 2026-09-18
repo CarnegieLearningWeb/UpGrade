@@ -712,6 +712,15 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(notifications.showWarning).toHaveBeenCalledTimes(1);
     expect(notifications.showSuccess).not.toHaveBeenCalled();
     expect(notifications.showError).not.toHaveBeenCalled();
+
+    // Scrolling retries from offset zero after the replacement request failed.
+    data[config.fetchMethod].mockReturnValue(of(page([rows[1]])));
+    store.dispatch(config.fetch({ fromStarting: false }));
+    expect(data[config.fetchMethod]).toHaveBeenLastCalledWith(expect.objectContaining({ skip: 0 }), false);
+    expect(batch().loadedIds).toEqual(currentRows().map(({ id }) => id));
+    store.dispatch(actions.toggleRow({ item: selectionItem(rows[1]) }));
+    store.dispatch(actions.toggleHeader({ items: currentRows().map(selectionItem) }));
+    expect(selectionView(batch(), config.entity)).toMatchObject({ checked: true, indeterminate: false });
   });
 
   it('retains an unknown item after refreshing the list and reports the confirmed results once', () => {
