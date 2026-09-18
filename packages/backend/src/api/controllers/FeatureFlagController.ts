@@ -1,3 +1,7 @@
+import { BatchDeleteResult } from 'upgrade_types';
+import { Inject } from 'typedi';
+import { BatchDeleteService } from '../services/BatchDeleteService';
+import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import {
   JsonController,
   Authorized,
@@ -154,7 +158,44 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/flags')
 export class FeatureFlagsController {
-  constructor(public featureFlagService: FeatureFlagService, public experimentUserService: ExperimentUserService) {}
+  constructor(
+    public featureFlagService: FeatureFlagService,
+    public experimentUserService: ExperimentUserService,
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
+  ) {}
+
+  /**
+   * @swagger
+   * /flags/batch-delete:
+   *   post:
+   *     summary: Delete the selected flags
+   *     description: Deletes selected feature flags sequentially regardless of status, skipping missing items. Execution failures stop the remaining items. Returns one result per ID.
+   *     tags:
+   *       - Feature Flags
+   *     parameters:
+   *       - in: body
+   *         name: selection
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/BatchEntityIdsRequest'
+   *     responses:
+   *       '200':
+   *         description: Inspect phase and per-ID outcomes; rejected means no deletions were performed.
+   *         schema:
+   *           $ref: '#/definitions/BatchDeleteResult'
+   *       '400':
+   *         description: Expected a nonempty array of unique UUIDs.
+   *       '401':
+   *         description: AuthorizationRequiredError
+   */
+  @Post('/batch-delete')
+  public batchDelete(
+    @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<BatchDeleteResult> {
+    return this.batchDeleteService.delete('flags', ids, currentUser, request.logger);
+  }
 
   /**
    * @swagger

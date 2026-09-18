@@ -1,5 +1,6 @@
+@let selection = (batch.selection$ | async); @let batchState = (batch.state$ | async);
 <div class="flag-list-table-container" #tableContainer>
-  @if (isLoading$ | async) {
+  @if ((isLoading$ | async) || selection?.busy) {
   <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
   } @let featureFlags = (featureFlags$ | async);
   <table
@@ -7,20 +8,73 @@
     mat-table
     [dataSource]="featureFlags"
     [trackBy]="trackByFlagId"
+    [class.has-batch-selection]="selection?.selectedCount"
+    [class.has-batch-controls]="canSelect"
     [ngClass]="{ 'no-data': !featureFlags?.length }"
     matSort
     (matSortChange)="changeSorting($event)"
     [matSortActive]="flagSortKey$ | async"
     [matSortDirection]="flagSortAs$ | async | lowercase"
   >
+    <!-- Selection Column -->
+    <ng-container matColumnDef="select">
+      <th mat-header-cell *matHeaderCellDef class="batch-select-column">
+        <!-- Any selection makes the next click clear; indeterminate supplies the mixed appearance. -->
+        <mat-checkbox
+          class="batch-checkbox"
+          [disableRipple]="true"
+          color="primary"
+          [checked]="!!selection?.selectedCount"
+          [indeterminate]="selection?.indeterminate"
+          [disabled]="!selection?.canToggleHeader"
+          [aria-label]="
+            (selection?.selectedCount ? 'batch-delete.selection.clear' : 'batch-delete.selection.select-loaded')
+              | translate
+          "
+          matTooltipPosition="above"
+          [matTooltip]="
+            (selection?.selectedCount ? 'batch-delete.selection.clear' : 'batch-delete.selection.select-loaded')
+              | translate
+          "
+          (click)="$event.stopPropagation()"
+          (keydown)="$event.stopPropagation()"
+          (change)="batch.toggleHeader()"
+        />
+      </th>
+      <td mat-cell *matCellDef="let flag" class="batch-select-column">
+        <mat-checkbox
+          class="batch-checkbox"
+          [disableRipple]="true"
+          color="primary"
+          [checked]="!!batchState?.selectedById[flag.id]"
+          [disabled]="selection?.busy || !selection?.loadedIds.has(flag.id)"
+          [aria-label]="'batch-delete.selection.flags.row' | translate : { name: flag.name }"
+          (click)="$event.stopPropagation()"
+          (keydown)="$event.stopPropagation()"
+          (change)="batch.toggleRow(flag)"
+        />
+      </td>
+    </ng-container>
+
     <!-- Name Column -->
     <ng-container [matColumnDef]="FLAG_ROOT_COLUMN_NAMES.NAME">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header class="name-column ft-14-600">
-        {{ FLAG_TRANSLATION_KEYS.NAME | translate }}
+      <th
+        mat-header-cell
+        *matHeaderCellDef
+        mat-sort-header
+        class="name-column ft-14-600"
+        [sortActionDescription]="'batch-delete.selection.sort-name' | translate"
+      >
+        {{
+          selection?.selectedCount
+            ? ('batch-delete.selection.count' | translate : { count: selection.selectedCount })
+            : (FLAG_TRANSLATION_KEYS.NAME | translate)
+        }}
       </th>
       <td mat-cell *matCellDef="let flag" class="name-column ft-14-400">
         <a
-          [routerLink]="['/featureflags', 'detail', flag.id]"
+          [routerLink]="selection?.busy ? null : ['/featureflags', 'detail', flag.id]"
+          [attr.aria-disabled]="selection?.busy || null"
           [appTextOverflowTooltip]="flag.name"
           matTooltipPosition="right"
           class="flag-name line-clamp-1"

@@ -9,6 +9,7 @@ import {
   ASSIGNMENT_UNIT,
   CONSISTENCY_RULE,
   CONDITION_ORDER,
+  EXPERIMENT_DETAILS_PAGE_ACTIONS,
 } from './experiments.model';
 import { initialState } from './experiments.reducer';
 import {
@@ -35,6 +36,7 @@ import {
   selectRewardsDataForSelectedExperiment,
   selectIsLoadingRewardsSummary,
   selectExperimentDetailsPageError,
+  selectExperimentMenuItems,
 } from './experiments.selectors';
 import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 
@@ -926,6 +928,43 @@ describe('Experiments Selectors', () => {
 
       expect(result).toEqual(false);
     });
+  });
+
+  describe('#selectExperimentMenuItems', () => {
+    it.each([
+      [EXPERIMENT_STATE.DRAFT, false, true, true],
+      [EXPERIMENT_STATE.INACTIVE, false, true, false],
+      [EXPERIMENT_STATE.COMPLETED, false, false, false],
+      [EXPERIMENT_STATE.CANCELLED, false, true, true],
+      [EXPERIMENT_STATE.ARCHIVED, false, true, false],
+      [EXPERIMENT_STATE.PREVIEW, true, true, true],
+      [EXPERIMENT_STATE.SCHEDULED, true, true, true],
+      [EXPERIMENT_STATE.RUNNING, true, true, false],
+      [EXPERIMENT_STATE.ENROLLING, true, true, true],
+      [EXPERIMENT_STATE.PAUSED, true, true, false],
+      [EXPERIMENT_STATE.ENROLLMENT_COMPLETE, true, true, true],
+      [undefined, true, true, true],
+    ])(
+      'applies Delete rules in %s while preserving other menu actions',
+      (state: EXPERIMENT_STATE, deleteDisabled: boolean, archiveDisabled: boolean, otherDisabled: boolean) => {
+        const items = selectExperimentMenuItems.projector({ ...mockState.experiments[0], state });
+        expect(items.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE).disabled).toBe(
+          deleteDisabled
+        );
+        expect(items.find((item) => item.action === EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE).disabled).toBe(
+          archiveDisabled
+        );
+        for (const action of [
+          EXPERIMENT_DETAILS_PAGE_ACTIONS.EDIT,
+          EXPERIMENT_DETAILS_PAGE_ACTIONS.DUPLICATE,
+          EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_DESIGN,
+          EXPERIMENT_DETAILS_PAGE_ACTIONS.EMAIL_DATA,
+          EXPERIMENT_DETAILS_PAGE_ACTIONS.EXPORT_STATE_CHANGE_LOGS,
+        ]) {
+          expect(items.find((item) => item.action === action).disabled).toBe(otherDisabled);
+        }
+      }
+    );
   });
 
   describe('#selectExperimentDetailsPageError', () => {

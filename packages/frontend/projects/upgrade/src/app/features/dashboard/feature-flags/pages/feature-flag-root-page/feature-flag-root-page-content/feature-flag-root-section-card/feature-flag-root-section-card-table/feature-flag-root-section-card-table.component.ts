@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import {
   ChangeDetectionStrategy,
@@ -30,6 +31,7 @@ import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
   imports: [
+    MatCheckboxModule,
     MatTableModule,
     AsyncPipe,
     SharedModule,
@@ -46,6 +48,7 @@ export class FeatureFlagRootSectionCardTableComponent implements AfterViewInit, 
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
   @Input() expandedTagsMap: Map<string, boolean>;
+  @Input() canSelect = false;
   @Output() tagsExpanded = new EventEmitter<{ flagId: string; expanded: boolean }>();
   flagSortKey$ = this.featureFlagsService.sortKey$;
   flagSortAs$ = this.featureFlagsService.sortAs$;
@@ -56,6 +59,7 @@ export class FeatureFlagRootSectionCardTableComponent implements AfterViewInit, 
   @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
 
   private observer: IntersectionObserver;
+  readonly batch = this.featureFlagsService.batch;
 
   constructor(private featureFlagsService: FeatureFlagsService) {}
 
@@ -109,7 +113,7 @@ export class FeatureFlagRootSectionCardTableComponent implements AfterViewInit, 
   }
 
   get displayedColumns(): string[] {
-    return FLAG_ROOT_DISPLAYED_COLUMNS;
+    return this.canSelect ? ['select', ...FLAG_ROOT_DISPLAYED_COLUMNS] : FLAG_ROOT_DISPLAYED_COLUMNS;
   }
 
   get FLAG_TRANSLATION_KEYS() {

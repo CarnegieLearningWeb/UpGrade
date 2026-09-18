@@ -143,7 +143,7 @@ describe('ExperimentPrecomputedSegmentService', () => {
       const affected = await service.getAffectedExperimentIds('segChild');
 
       expect(affected).toEqual(['expP']);
-      expect(segmentRepository.findParentSegmentIds).toHaveBeenCalledWith('segChild');
+      expect(segmentRepository.findParentSegmentIds).toHaveBeenCalledWith('segChild', undefined);
     });
 
     it('does not infinitely recurse on a segment cycle', async () => {

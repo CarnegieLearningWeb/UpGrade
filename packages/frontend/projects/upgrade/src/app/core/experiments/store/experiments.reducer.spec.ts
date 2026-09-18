@@ -26,7 +26,6 @@ import {
   actionSetSearchKey,
   actionSetSearchParams,
   actionSetSearchString,
-  actionSetSkipExperiment,
   actionSetSortingType,
   actionSetSortKey,
   actionUpdateExperimentState,
@@ -96,6 +95,7 @@ describe('ExperimentsReducer', () => {
     expect(newState).not.toBe(previousState);
     expect(newState).toEqual({
       ...previousState,
+      rootBatch: { ...previousState.rootBatch, loadedIds: ['1'] },
       experiments: [
         {
           id: '1',
@@ -501,6 +501,8 @@ describe('ExperimentsReducer', () => {
     expect(newState).not.toBe(previousState);
     expect(newState).toEqual({
       ...previousState,
+      rootBatch: { ...previousState.rootBatch, removedIds: ['1'] },
+      stats: {},
       experiments: [],
       isLoadingExperimentDelete: false,
     });
@@ -652,20 +654,6 @@ describe('ExperimentsReducer', () => {
 
     expect(newState).not.toBe(previousState);
     expect(newState.sortAs).toEqual(SORT_AS_DIRECTION.ASCENDING);
-  });
-
-  it('action "actionSetSkipExperiment" should set experiment skip value', () => {
-    const previousState = { ...initialState };
-    previousState.skipExperiment = 2;
-
-    const testAction: Action = actionSetSkipExperiment({
-      skipExperiment: 3,
-    });
-
-    const newState = experimentsReducer(previousState, testAction);
-
-    expect(newState).not.toBe(previousState);
-    expect(newState.skipExperiment).toEqual(3);
   });
 
   it('action "actionFetchAllExperimentNamesSuccess" should set all experimet names', () => {

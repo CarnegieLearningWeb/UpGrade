@@ -139,7 +139,7 @@ describe('FeatureFlagPrecomputedSegmentService', () => {
       const affected = await service.getAffectedFlagIds('segChild');
 
       expect(affected).toEqual(['flagP']);
-      expect(segmentRepository.findParentSegmentIds).toHaveBeenCalledWith('segChild');
+      expect(segmentRepository.findParentSegmentIds).toHaveBeenCalledWith('segChild', undefined);
     });
 
     it('does not infinitely recurse on a segment cycle', async () => {

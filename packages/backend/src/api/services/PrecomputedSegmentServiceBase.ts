@@ -3,6 +3,7 @@ import { SegmentRepository } from '../repositories/SegmentRepository';
 import { CACHE_PREFIX } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { flattenSegmentMembers } from './precomputedSegmentHelpers';
+import { EntityManager } from 'typeorm';
 
 export interface PrecomputedSegmentRow {
   inclusionIds: string[];
@@ -43,7 +44,7 @@ export abstract class PrecomputedSegmentServiceBase<TEntity extends PrecomputedS
   ): Promise<{ inclusionSegmentIds: string[]; exclusionSegmentIds: string[] }>;
 
   /** owner IDs that DIRECTLY reference a given segment via inclusion or exclusion */
-  protected abstract findOwnerIdsBySegmentId(segmentId: string): Promise<string[]>;
+  protected abstract findOwnerIdsBySegmentId(segmentId: string, entityManager?: EntityManager): Promise<string[]>;
 
   /** persist the flat arrays for one owner (subclass repo upsert) */
   protected abstract upsertOwner(ownerId: string, inclusionIds: string[], exclusionIds: string[]): Promise<void>;
@@ -170,20 +171,24 @@ export abstract class PrecomputedSegmentServiceBase<TEntity extends PrecomputedS
   }
 
   /** Owner IDs affected by a change to a segment (the segment itself plus any ancestor references). */
-  public async getAffectedOwnerIds(segmentId: string): Promise<string[]> {
-    return [...(await this.collectAffectedOwnerIds(segmentId, new Set()))];
+  public async getAffectedOwnerIds(segmentId: string, entityManager?: EntityManager): Promise<string[]> {
+    return [...(await this.collectAffectedOwnerIds(segmentId, new Set(), entityManager))];
   }
 
-  protected async collectAffectedOwnerIds(segmentId: string, visited: Set<string>): Promise<Set<string>> {
+  protected async collectAffectedOwnerIds(
+    segmentId: string,
+    visited: Set<string>,
+    entityManager?: EntityManager
+  ): Promise<Set<string>> {
     if (visited.has(segmentId)) return new Set();
     visited.add(segmentId);
 
-    const ownerIds = new Set(await this.findOwnerIdsBySegmentId(segmentId));
+    const ownerIds = new Set(await this.findOwnerIdsBySegmentId(segmentId, entityManager));
 
-    const parentIds = await this.segmentRepository.findParentSegmentIds(segmentId);
+    const parentIds = await this.segmentRepository.findParentSegmentIds(segmentId, entityManager);
     await Promise.all(
       parentIds.map(async (parentId) => {
-        const parentOwnerIds = await this.collectAffectedOwnerIds(parentId, visited);
+        const parentOwnerIds = await this.collectAffectedOwnerIds(parentId, visited, entityManager);
         parentOwnerIds.forEach((id) => ownerIds.add(id));
       })
     );

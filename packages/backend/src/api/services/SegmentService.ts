@@ -18,6 +18,7 @@ import {
   normalizeStandardListType,
 } from 'upgrade_types';
 import { EntityManager, DataSource, Not, In } from 'typeorm';
+import { DeletionTransaction } from '../../types/DeletionTransaction';
 import Papa from 'papaparse';
 import { env } from '../../env';
 
@@ -535,21 +536,51 @@ export class SegmentService {
     return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager, skipScheduleRecompute);
   }
 
-  public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
+  public async deleteSegment(
+    id: string,
+    logger: UpgradeLogger,
+    executeTransaction?: DeletionTransaction
+  ): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
 
-    // Both flags and experiments can reference this segment, so both precomputed tables must be
-    // refreshed. The affected experiment IDs must be collected BEFORE the delete (the join rows are
-    // gone after), so resolve them here; the fire-and-forget recompute is fired after the delete
-    // transaction below commits. Flags use withRecompute, which enforces the same
-    // resolve-before -> delete -> recompute-after ordering internally.
-    const affectedExperimentIds = await this.experimentPrecomputedSegmentService.getAffectedExperimentIds(id);
+    const transaction: DeletionTransaction = executeTransaction || ((work) => this.dataSource.transaction(work));
 
+    if (executeTransaction) {
+      let affectedFlagIds: string[];
+      let affectedExperimentIds: string[];
+      const deletedSegment = await transaction(async (transactionalEntityManager) => {
+        // The batch executor holds the target lock before invoking this callback.
+        // Collect owners before deletion removes the joins, including edits committed while waiting for the lock.
+        affectedFlagIds = await this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(
+          id,
+          transactionalEntityManager
+        );
+        affectedExperimentIds = await this.experimentPrecomputedSegmentService.getAffectedExperimentIds(
+          id,
+          transactionalEntityManager
+        );
+        return this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager);
+      });
+      // A batch must finish this item's post-commit writes before deleting another segment for the same owner.
+      const updates = await Promise.allSettled([
+        ...affectedFlagIds.map((flagId) => this.featureFlagPrecomputedSegmentService.recomputeForFlag(flagId, logger)),
+        ...affectedExperimentIds.map((experimentId) =>
+          this.experimentPrecomputedSegmentService.recomputeForExperiment(experimentId, logger)
+        ),
+        this.cacheService.resetPrefixCache(CACHE_PREFIX.SEGMENT_KEY_PREFIX),
+        this.cacheService.resetPrefixCache(CACHE_PREFIX.GLOBAL_EXCLUDE_SEGMENT_KEY_PREFIX),
+      ]);
+      const failure = updates.find((update): update is PromiseRejectedResult => update.status === 'rejected');
+      if (failure) throw failure.reason;
+      return deletedSegment;
+    }
+
+    const affectedExperimentIds = await this.experimentPrecomputedSegmentService.getAffectedExperimentIds(id);
     const deletedSegment = await this.featureFlagPrecomputedSegmentService.withRecompute(
       logger,
       () => this.featureFlagPrecomputedSegmentService.getAffectedFlagIds(id),
       () =>
-        this.dataSource.transaction((transactionalEntityManager) =>
+        transaction((transactionalEntityManager) =>
           this.deleteSegmentAndPrivateSubsegments(id, logger, transactionalEntityManager)
         )
     );
