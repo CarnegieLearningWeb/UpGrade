@@ -57,6 +57,7 @@ export class FeatureFlagRootSectionCardComponent {
     { value: FLAG_SEARCH_KEY.STATUS },
     { value: FLAG_SEARCH_KEY.CONTEXT },
     { value: FLAG_SEARCH_KEY.TAG },
+    { value: FLAG_SEARCH_KEY.LIST_VALUE, label: 'List Value' },
   ];
   isSectionCardExpanded = true;
 

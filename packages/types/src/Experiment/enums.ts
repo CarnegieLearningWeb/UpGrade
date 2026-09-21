@@ -211,6 +211,7 @@ export enum EXPERIMENT_SEARCH_KEY {
   CONTEXT = 'context',
   ID = 'id',
   DECISION_POINT = 'decisionPoint',
+  LIST_VALUE = 'listValue',
 }
 
 export enum EXPERIMENT_SORT_KEY {
@@ -298,6 +299,7 @@ export enum SEGMENT_SEARCH_KEY {
   STATUS = 'status',
   CONTEXT = 'context',
   ID = 'id',
+  LIST_VALUE = 'listValue',
 }
 
 export enum SEGMENT_SORT_KEY {
@@ -313,6 +315,7 @@ export enum FLAG_SEARCH_KEY {
   TAG = 'tag',
   CONTEXT = 'context',
   ID = 'id',
+  LIST_VALUE = 'listValue',
 }
 
 export enum METRIC_SEARCH_KEY {

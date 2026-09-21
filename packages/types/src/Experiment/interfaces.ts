@@ -167,6 +167,7 @@ export interface IMetricUnit {
   children?: IMetricUnit[];
   metadata?: { type: IMetricMetaData };
   allowedData?: string[];
+  hasQuery?: boolean;
 }
 
 export type ExperimentQueryComparator = '=' | '<>' | '!=';
@@ -308,6 +309,7 @@ export interface IMenuButtonItem {
   action: string;
   label: string; // transalation key
   disabled: boolean;
+  preserveCase?: boolean;
 }
 
 export interface IImportFile {

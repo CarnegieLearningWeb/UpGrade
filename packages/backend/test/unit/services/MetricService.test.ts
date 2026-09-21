@@ -1,18 +1,19 @@
-import { MetricService } from '../../../src/api/services/MetricService';
-import { Repository } from 'typeorm';
+import { MetricService, METRICS_JOIN_TEXT } from '../../../src/api/services/MetricService';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { IGroupMetric, IMetricMetaData, ISingleMetric } from 'upgrade_types';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { SettingService } from '../../../src/api/services/SettingService';
 import { MetricRepository } from '../../../src/api/repositories/MetricRepository';
+import { QueryRepository } from '../../../src/api/repositories/QueryRepository';
 import { SettingRepository } from '../../../src/api/repositories/SettingRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { configureLogger } from '../../utils/logger';
 
 describe('Audit Service Testing', () => {
   let service: MetricService;
-  let repo: Repository<MetricRepository>;
+  let repo: MetricRepository;
+  let queryRepositoryMock: { getMetricKeysWithQueries: jest.Mock; getExperimentsUsingMetricKey: jest.Mock };
   let module: TestingModule;
   const settingRes = [{ id: 'id', toCheckAuth: false, toFilterMetric: true }];
 
@@ -64,6 +65,13 @@ describe('Audit Service Testing', () => {
     },
   ];
 
+  const metricResultWithHasQuery = [
+    {
+      ...metricResult[0],
+      hasQuery: true,
+    },
+  ];
+
   beforeAll(() => {
     configureLogger();
   });
@@ -86,6 +94,13 @@ describe('Audit Service Testing', () => {
           },
         },
         {
+          provide: getRepositoryToken(QueryRepository),
+          useValue: {
+            getMetricKeysWithQueries: jest.fn().mockResolvedValue(['totalProblemsCompleted']),
+            getExperimentsUsingMetricKey: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
           provide: getRepositoryToken(SettingRepository),
           useValue: {
             find: jest.fn().mockResolvedValue(settingRes),
@@ -105,7 +120,8 @@ describe('Audit Service Testing', () => {
     }).compile();
 
     service = module.get<MetricService>(MetricService);
-    repo = module.get<Repository<MetricRepository>>(getRepositoryToken(MetricRepository));
+    repo = module.get<MetricRepository>(getRepositoryToken(MetricRepository));
+    queryRepositoryMock = module.get(getRepositoryToken(QueryRepository));
   });
 
   it('should be defined', async () => {
@@ -118,7 +134,52 @@ describe('Audit Service Testing', () => {
 
   it('should return all metrics', async () => {
     const res = await service.getAllMetrics(new UpgradeLogger());
-    expect(res).toEqual(metricResult);
+    expect(res).toEqual(metricResultWithHasQuery);
+  });
+
+  it('should set hasQuery on every level of the path for grouped metrics', async () => {
+    const groupKey = `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`;
+    const groupedMetricRows = [
+      {
+        key: groupKey,
+        type: IMetricMetaData.CONTINUOUS,
+        allowedData: [],
+        context: ['home'],
+      },
+    ];
+    (repo.find as jest.Mock).mockResolvedValueOnce(groupedMetricRows);
+    queryRepositoryMock.getMetricKeysWithQueries.mockResolvedValueOnce([groupKey]);
+
+    const res = await service.getAllMetrics(new UpgradeLogger());
+
+    expect(res).toEqual([
+      {
+        key: 'masteryWorkspace',
+        hasQuery: true,
+        allowedData: [],
+        context: ['home'],
+        metadata: { type: IMetricMetaData.CONTINUOUS },
+        children: [
+          {
+            key: 'calculating_area_figures',
+            hasQuery: true,
+            allowedData: [],
+            context: ['home'],
+            metadata: { type: IMetricMetaData.CONTINUOUS },
+            children: [
+              {
+                key: 'timeSeconds',
+                hasQuery: true,
+                allowedData: [],
+                context: ['home'],
+                metadata: { type: IMetricMetaData.CONTINUOUS },
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ]);
   });
 
   it('should save all simple metrics', async () => {
@@ -138,7 +199,16 @@ describe('Audit Service Testing', () => {
 
   it('should delete a specific metric', async () => {
     const res = await service.deleteMetric('totalProblemsCompleted', new UpgradeLogger());
-    expect(res).toEqual(metricResult);
+    expect(res).toEqual(metricResultWithHasQuery);
+  });
+
+  it('should throw an error when deleting a metric used by an experiment', async () => {
+    queryRepositoryMock.getExperimentsUsingMetricKey.mockResolvedValueOnce([{ id: 'exp1', name: 'Experiment 1' }]);
+
+    await expect(service.deleteMetric('totalProblemsCompleted', new UpgradeLogger())).rejects.toThrow(
+      'Metric key totalProblemsCompleted cannot be deleted because it is used by the following experiment(s): Experiment 1'
+    );
+    expect(repo.deleteMetricsByKeys).not.toHaveBeenCalled();
   });
 
   it('should throw an error when metrics filter not enabled', async () => {

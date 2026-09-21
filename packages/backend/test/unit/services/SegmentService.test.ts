@@ -738,6 +738,87 @@ describe('Segment Service Testing', () => {
     expect(segments).toEqual(seg1.id);
   });
 
+  describe('owned segment cleanup on deletion', () => {
+    beforeEach(() => {
+      jest.spyOn(module.get<CacheService>(CacheService), 'resetPrefixCache').mockResolvedValue(undefined);
+      const publicChild = Object.assign(new Segment(), {
+        id: 'public-child',
+        type: SEGMENT_TYPE.PUBLIC,
+        subSegments: [],
+      });
+      const leaf = Object.assign(new Segment(), { id: 'leaf', type: SEGMENT_TYPE.PRIVATE, subSegments: [] });
+      const owned = Object.assign(new Segment(), { id: 'owned', type: SEGMENT_TYPE.PRIVATE, subSegments: [leaf] });
+      const sibling = Object.assign(new Segment(), { id: 'sibling', type: SEGMENT_TYPE.PRIVATE, subSegments: [] });
+      const root = Object.assign(new Segment(), {
+        id: 'root',
+        type: SEGMENT_TYPE.PUBLIC,
+        subSegments: [owned, sibling, publicChild],
+      });
+      const segments = new Map([root, owned, leaf, sibling, publicChild].map((segment) => [segment.id, segment]));
+      repo.findOne = jest.fn().mockImplementation(({ where }) => Promise.resolve(segments.get(where.id)));
+    });
+
+    it('awaits nested private cleanup before deleting ancestors and preserves public children', async () => {
+      let finishCleanup: () => void;
+      const cleanup = new Promise<void>((resolve) => {
+        finishCleanup = resolve;
+      });
+      repo.deleteSegments = jest.fn().mockImplementation(async ([id]) => {
+        if (id === 'leaf') {
+          await cleanup;
+        }
+        return [id];
+      });
+      let completed = false;
+      const deletion = service.deleteSegment('root', logger).then((result) => {
+        completed = true;
+        return result;
+      });
+      const precomputed = module.get<ExperimentPrecomputedSegmentService>(ExperimentPrecomputedSegmentService);
+      const cache = module.get<CacheService>(CacheService);
+
+      try {
+        await new Promise<void>((resolve) => setImmediate(resolve));
+        expect(repo.deleteSegments).toHaveBeenCalledTimes(1);
+        expect(repo.deleteSegments).toHaveBeenCalledWith(['leaf'], logger, entityManagerMock);
+        expect(completed).toBe(false);
+        expect(precomputed.scheduleRecomputeForExperiments).not.toHaveBeenCalled();
+        expect(cache.resetPrefixCache).not.toHaveBeenCalled();
+      } finally {
+        finishCleanup();
+        await deletion;
+      }
+
+      await expect(deletion).resolves.toBe('root');
+      expect((repo.deleteSegments as jest.Mock).mock.calls.map(([ids]) => ids)).toEqual([
+        ['leaf'],
+        ['owned'],
+        ['sibling'],
+        ['root'],
+      ]);
+      expect((repo.findOne as jest.Mock).mock.calls.map(([options]) => options.where.id)).toEqual([
+        'root',
+        'owned',
+        'leaf',
+        'sibling',
+      ]);
+      expect(precomputed.scheduleRecomputeForExperiments).toHaveBeenCalledTimes(1);
+      expect(cache.resetPrefixCache).toHaveBeenCalledWith(CACHE_PREFIX.SEGMENT_KEY_PREFIX);
+    });
+
+    it('propagates nested private cleanup failures without deleting ancestors or running post-delete work', async () => {
+      const failure = new Error('nested cleanup failed');
+      repo.deleteSegments = jest.fn().mockRejectedValue(failure);
+
+      await expect(service.deleteSegment('root', logger)).rejects.toBe(failure);
+      expect(repo.deleteSegments).toHaveBeenCalledTimes(1);
+      expect(repo.deleteSegments).toHaveBeenCalledWith(['leaf'], logger, entityManagerMock);
+      const precomputed = module.get<ExperimentPrecomputedSegmentService>(ExperimentPrecomputedSegmentService);
+      expect(precomputed.scheduleRecomputeForExperiments).not.toHaveBeenCalled();
+      expect(module.get<CacheService>(CacheService).resetPrefixCache).not.toHaveBeenCalled();
+    });
+  });
+
   it('should import a segment', async () => {
     const returnSegment = [
       {
@@ -1014,6 +1095,44 @@ describe('Segment Service Testing', () => {
     ];
     const results = await service.findPaginated(1, 2, logger);
     expect(results).toEqual(res);
+  });
+
+  describe('paginated list-value search', () => {
+    const getSearchClause = (key: SEGMENT_SEARCH_KEY, searchString: string): string =>
+      service['paginatedSearchString']({ key, string: searchString });
+
+    it('should search segments by direct and nested list values', () => {
+      const result = getSearchClause(SEGMENT_SEARCH_KEY.LIST_VALUE, 'school-id');
+
+      expect(result).toContain('segment.id IN');
+      expect(result).toContain('"userId" ILIKE :listValueSearchPattern');
+      expect(result).toContain('"groupId" ILIKE :listValueSearchPattern');
+      expect(result).toContain('SELECT "segmentRelation"."parentSegmentId" AS "id"');
+    });
+
+    it('should include list values in all-search results', () => {
+      const result = getSearchClause(SEGMENT_SEARCH_KEY.ALL, 'school-id');
+
+      expect(result).toContain('segment.id IN');
+      expect(result).toContain('individual_for_segment');
+      expect(result).toContain('group_for_segment');
+    });
+
+    it('should not include list values in unrelated dedicated searches', () => {
+      const result = getSearchClause(SEGMENT_SEARCH_KEY.CONTEXT, 'school-id');
+
+      expect(result).not.toContain('individual_for_segment');
+      expect(result).not.toContain('group_for_segment');
+    });
+
+    it('should skip search query generation for an empty search string', async () => {
+      const searchSpy = jest.spyOn(service as any, 'paginatedSearchString');
+
+      await service.findPaginated(0, 10, logger, { key: SEGMENT_SEARCH_KEY.LIST_VALUE, string: '' });
+
+      expect(searchSpy).not.toHaveBeenCalled();
+      searchSpy.mockRestore();
+    });
   });
 
   describe('Private segment cloning behavior', () => {

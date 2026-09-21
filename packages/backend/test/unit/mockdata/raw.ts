@@ -135,6 +135,7 @@ export const simpleIndividualExperiment = {
       createdAt: '2023-06-01T18:44:41.153Z',
       updatedAt: '2023-06-01T18:44:41.153Z',
       versionNumber: 1,
+      segmentId: '89246cff-c81f-4515-91f3-c033341e45b9',
       segment: {
         createdAt: '2023-06-01T18:44:41.245Z',
         updatedAt: '2023-06-01T18:44:41.245Z',
@@ -163,6 +164,7 @@ export const simpleIndividualExperiment = {
       createdAt: '2023-06-01T18:44:41.153Z',
       updatedAt: '2023-06-01T18:44:41.153Z',
       versionNumber: 1,
+      segmentId: 'd958bf52-7066-4594-ad8a-baf2e75324cf',
       segment: {
         createdAt: '2023-06-01T18:44:41.267Z',
         updatedAt: '2023-06-01T18:44:41.267Z',
@@ -261,6 +263,7 @@ export const simpleGroupExperiment = {
       createdAt: '2023-06-02T15:03:46.960Z',
       updatedAt: '2023-06-02T15:03:46.960Z',
       versionNumber: 1,
+      segmentId: '89246cff-c81f-4515-91f3-c033341e45b9',
       segment: {
         createdAt: '2023-06-02T15:03:47.066Z',
         updatedAt: '2023-06-02T15:03:47.066Z',
@@ -289,6 +292,7 @@ export const simpleGroupExperiment = {
       createdAt: '2023-06-02T15:03:46.960Z',
       updatedAt: '2023-06-02T15:03:46.960Z',
       versionNumber: 1,
+      segmentId: 'd958bf52-7066-4594-ad8a-baf2e75324cf',
       segment: {
         createdAt: '2023-06-02T15:03:47.095Z',
         updatedAt: '2023-06-02T15:03:47.095Z',

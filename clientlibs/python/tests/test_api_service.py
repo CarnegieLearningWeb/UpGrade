@@ -4,7 +4,7 @@ import pytest
 import respx
 from httpx import Request, Response
 
-from upgrade_client_lib.api_service import ApiService
+from upgrade_client_lib.api_service import _CLIENT_VERSION, ApiService
 from upgrade_client_lib.exceptions import UpgradeApiError
 from upgrade_client_lib.types.enums import BinaryRewardValue, ExperimentType, MarkedDecisionPointStatus
 from upgrade_client_lib.types.requests import LogInput, LogMetrics
@@ -33,6 +33,8 @@ def assert_common_headers(request: Request) -> None:
     assert request.headers["content-type"] == "application/json"
     assert request.headers["user-id"] == USER_ID
     assert request.headers["session-id"] == SESSION_ID
+    assert request.headers["client-context"] == CONTEXT
+    assert request.headers["client-version"] == _CLIENT_VERSION
     assert request.headers["authorization"] == f"Bearer {TOKEN}"
 
 

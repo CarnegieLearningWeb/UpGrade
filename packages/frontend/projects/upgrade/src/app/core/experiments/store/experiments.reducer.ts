@@ -31,6 +31,7 @@ export const initialState: ExperimentState = {
   isLoadingRewardsSummary: false,
   rewardsSummaries: {},
   isLoadingUpsertPrivateSegmentList: false,
+  detailsPageError: null,
 };
 
 const reducer = createReducer(
@@ -55,11 +56,20 @@ const reducer = createReducer(
   }),
   on(
     experimentsAction.actionGetExperimentsFailure,
-    experimentsAction.actionGetExperimentByIdFailure,
     experimentsAction.actionUpsertExperimentFailure,
     experimentsAction.actionUpdateExperimentFilterModeFailure,
     experimentsAction.actionUpdateExperimentStateFailure,
     (state) => ({ ...state, isLoadingExperiment: false })
+  ),
+  on(
+    experimentsAction.actionGetExperimentByIdFailure,
+    (state, { experimentId, errorType, handles404Contextually }) => ({
+      ...state,
+      isLoadingExperiment: false,
+      // Only details-page fetches own the details error state - a background failure (e.g. preview-user)
+      // must not overwrite the error of the experiment the details page is currently showing
+      detailsPageError: handles404Contextually ? { entityId: experimentId, errorType } : state.detailsPageError,
+    })
   ),
   on(experimentsAction.actionUpsertExperimentSuccess, (state, { experiment }) => {
     // Update experiment if it exists, otherwise don't add to list (let refetch handle it)
@@ -92,7 +102,14 @@ const reducer = createReducer(
     delete stats[experimentStatId];
     return { ...state, stats };
   }),
-  on(experimentsAction.actionUpsertExperiment, experimentsAction.actionGetExperimentById, (state) => ({
+  on(experimentsAction.actionUpsertExperiment, (state) => ({
+    ...state,
+    isLoadingExperiment: true,
+    // If the total count is unknown, assume at least one experiment is loading so the root page skips the empty state.
+    // Preserve 0 because it means the backend already confirmed an empty list.
+    totalExperiments: state.totalExperiments ?? 1,
+  })),
+  on(experimentsAction.actionGetExperimentById, (state) => ({
     ...state,
     isLoadingExperiment: true,
     // If the total count is unknown, assume at least one experiment is loading so the root page skips the empty state.
@@ -116,6 +133,9 @@ const reducer = createReducer(
       ...state,
       experiments: updatedExperiments,
       isLoadingExperiment: false,
+      // The error is retained while a retry is in flight (so the error page doesn't fall back to a
+      // stale cached entity) and only cleared once a fetch for that same experiment succeeds
+      detailsPageError: state.detailsPageError?.entityId === experiment.id ? null : state.detailsPageError,
     };
   }),
   // Experiment Delete Actions

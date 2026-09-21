@@ -1,4 +1,5 @@
 import { AppState } from '../../core.state';
+import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
 export { SEGMENT_STATUS };
 
@@ -249,6 +250,8 @@ export interface SegmentState {
   sortKey: SEGMENT_SORT_KEY;
   sortAs: SORT_AS_DIRECTION;
   listSegmentOptions: ListSegmentOption[];
+  // Details page fetch error state - drives the not-found / load-failed page
+  detailsPageError: DetailsPageError | null;
 }
 
 export interface ListSegmentOption {
@@ -308,6 +311,31 @@ export interface UpsertPrivateSegmentListParams {
 export enum LIST_OPTION_TYPE {
   INDIVIDUAL = 'Individual',
   SEGMENT = 'Segment',
+}
+
+export enum LIST_OWNER_TYPE {
+  EXPERIMENT = 'experiment',
+  FEATURE_FLAG = 'featureFlag',
+  SEGMENT = 'segment',
+}
+
+export interface ListDetailsOwnerRestriction {
+  isDisabled: boolean;
+  tooltipKey?: string;
+  shouldHideActions?: boolean;
+}
+
+export interface ListDetailsOwner {
+  id: string;
+  name: string;
+  type: LIST_OWNER_TYPE;
+  segmentType?: SEGMENT_TYPE;
+  listEnabled?: boolean;
+  // Owner-side list type, used as a fallback when the list's own segment row predates
+  // the listType column (flag join rows store it; experiment responses infer it).
+  listType?: string;
+  // Mirrors the owner details page's disabled/hidden action behavior.
+  restriction?: ListDetailsOwnerRestriction;
 }
 
 export const PRIVATE_SEGMENT_LIST_FORM_FIELDS = {

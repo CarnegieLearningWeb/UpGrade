@@ -57,6 +57,23 @@
         >
           {{ rowData.segment?.subSegments?.[0]?.description }}
         </span>
+        } } @else if (isDirectValueList(rowData)) {
+        <a
+          [routerLink]="['list', detailsFilterMode, rowData.segment?.id]"
+          [appTextOverflowTooltip]="rowData.segment?.name"
+          matTooltipPosition="above"
+          class="segment-name line-clamp-1"
+        >
+          {{ rowData.segment?.name }}
+        </a>
+        @if (rowData.segment?.description) {
+        <span
+          [appTextOverflowTooltip]="rowData.segment?.description"
+          matTooltipPosition="below"
+          class="segment-description ft-10-400 line-clamp-1"
+        >
+          {{ rowData.segment?.description }}
+        </span>
         } } @else {
         <span
           [appTextOverflowTooltip]="rowData.segment?.name"

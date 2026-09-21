@@ -135,7 +135,7 @@ export class AnalyticsService {
       throw new HttpError(404, `Experiment not found for id: ${experimentId}`);
     }
 
-    this.sendExportData(experimentDetails, email, logger);
+    await this.sendExportData(experimentDetails, email, logger);
   }
 
   private async sendExportData(

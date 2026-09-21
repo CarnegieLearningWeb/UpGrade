@@ -1,7 +1,7 @@
 import { fakeAsync, tick } from '@angular/core/testing';
 import { ActionsSubject } from '@ngrx/store';
-import { BehaviorSubject, of, throwError } from 'rxjs';
-import { last, pairwise, scan, take } from 'rxjs/operators';
+import { BehaviorSubject, of, throwError, timer } from 'rxjs';
+import { delay, last, mergeMap, pairwise, scan, take } from 'rxjs/operators';
 import {
   actionDeleteExperimentSuccess,
   actionFetchAllExperimentNames,
@@ -22,6 +22,7 @@ import {
   actionDeleteExperimentFailure,
   actionGetExperimentById,
   actionGetExperimentByIdSuccess,
+  actionGetExperimentByIdFailure,
   actionFetchExperimentDetailStatSuccess,
   actionFetchExperimentDetailStat,
   actionGetExperimentsSuccess,
@@ -51,6 +52,13 @@ import {
   actionFetchRewardsDataForExperiment,
   actionFetchRewardsDataForExperimentSuccess,
   actionFetchRewardsDataForExperimentFailure,
+  actionUpdateExperimentMetrics,
+  actionUpdateExperimentMetricsSuccess,
+  actionUpdateExperimentMetricsFailure,
+  actionAddExperimentInclusionList,
+  actionAddExperimentInclusionListSuccess,
+  actionAddExperimentExclusionList,
+  actionAddExperimentExclusionListSuccess,
 } from './experiments.actions';
 import { ExperimentEffects } from './experiments.effects';
 import {
@@ -67,6 +75,9 @@ import { actionExecuteQuery, actionFetchMetrics } from '../../analysis/store/ana
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { UserRole } from '../../users/store/users.model';
 import { Environment } from '../../../../environments/environment-types';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { LIST_FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { ExperimentSegmentListRequest, LIST_OPTION_TYPE } from '../../segments/store/segments.model';
 
 describe('ExperimentEffects', () => {
   let service: ExperimentEffects;
@@ -595,8 +606,41 @@ describe('ExperimentEffects', () => {
     }));
   });
 
+  describe('#updateExperimentMetrics$', () => {
+    const experiment = { id: 'test1' } as any;
+    const updateExperimentMetricsRequest = { experiment, metrics: [] } as any;
+
+    it('should return an array with actionUpdateExperimentMetricsSuccess and actionFetchMetrics', fakeAsync(() => {
+      experimentDataService.updateExperimentMetrics = jest.fn().mockReturnValue(of(experiment));
+
+      service.updateExperimentMetrics$.pipe(take(2), pairwise()).subscribe((result: any) => {
+        const successAction = actionUpdateExperimentMetricsSuccess({ experiment });
+        const fetchAction = actionFetchMetrics();
+
+        tick(0);
+        expect(result).toEqual([successAction, fetchAction]);
+      });
+
+      actions$.next(actionUpdateExperimentMetrics({ updateExperimentMetricsRequest }));
+    }));
+
+    it('should throw an error with actionUpdateExperimentMetricsFailure on error', fakeAsync(() => {
+      experimentDataService.updateExperimentMetrics = jest.fn().mockReturnValue(throwError('testError'));
+
+      service.updateExperimentMetrics$.subscribe((result: any) => {
+        const failureAction = actionUpdateExperimentMetricsFailure();
+
+        tick(0);
+        expect(result).toEqual(failureAction);
+      });
+
+      actions$.next(actionUpdateExperimentMetrics({ updateExperimentMetricsRequest }));
+    }));
+  });
+
   describe('#getExperimentById$', () => {
-    const experimentId = 'testId';
+    // Must be a canonical (lowercase) UUID - the effect short-circuits non-canonical ids to a not-found failure
+    const experimentId = '11111111-2222-4333-8444-555555555555';
     const experiment = {
       id: 'test1',
       stat: [
@@ -641,6 +685,130 @@ describe('ExperimentEffects', () => {
       });
 
       actions$.next(actionGetExperimentById({ experimentId }));
+    }));
+
+    it('should dispatch a not-found failure without calling the API when the id is not a canonical UUID', fakeAsync(() => {
+      experimentDataService.getExperimentById = jest.fn();
+      Selectors.selectExperimentStats.setResult({});
+      let result: any;
+      service.getExperimentById$.subscribe((action: any) => (result = action));
+
+      actions$.next(actionGetExperimentById({ experimentId: 'not-a-uuid' }));
+      tick(0);
+
+      expect(result).toEqual(
+        actionGetExperimentByIdFailure({ experimentId: 'not-a-uuid', errorType: PAGE_ERROR_TYPE.NOT_FOUND })
+      );
+      expect(experimentDataService.getExperimentById).not.toHaveBeenCalled();
+    }));
+
+    it('should dispatch a not-found failure when the fetch fails with 404', fakeAsync(() => {
+      experimentDataService.getExperimentById = jest.fn().mockReturnValue(throwError(() => ({ status: 404 })));
+      Selectors.selectExperimentStats.setResult({});
+      let result: any;
+      service.getExperimentById$.subscribe((action: any) => (result = action));
+
+      actions$.next(actionGetExperimentById({ experimentId }));
+      tick(0);
+
+      expect(result).toEqual(actionGetExperimentByIdFailure({ experimentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND }));
+    }));
+
+    it('should dispatch a load-failed failure when the fetch fails with an unexpected error', fakeAsync(() => {
+      experimentDataService.getExperimentById = jest.fn().mockReturnValue(throwError(() => ({ status: 500 })));
+      Selectors.selectExperimentStats.setResult({});
+      let result: any;
+      service.getExperimentById$.subscribe((action: any) => (result = action));
+
+      actions$.next(actionGetExperimentById({ experimentId }));
+      tick(0);
+
+      expect(result).toEqual(actionGetExperimentByIdFailure({ experimentId, errorType: PAGE_ERROR_TYPE.LOAD_FAILED }));
+    }));
+
+    it('should still dispatch success without stats when only the stats call fails', fakeAsync(() => {
+      experimentDataService.getExperimentById = jest.fn().mockReturnValue(of(experiment));
+      experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(throwError(() => ({ status: 500 })));
+      Selectors.selectExperimentStats.setResult({});
+      let result: any;
+      service.getExperimentById$.subscribe((action: any) => (result = action));
+
+      actions$.next(actionGetExperimentById({ experimentId }));
+      tick(0);
+
+      expect(result).toEqual(actionGetExperimentByIdSuccess({ experiment }));
+    }));
+
+    it('should cancel a stale request when a newer fetch for the same id is dispatched', fakeAsync(() => {
+      // The first (stale) request fails slowly; the second succeeds immediately.
+      // The stale failure must not surface after the newer request has succeeded.
+      experimentDataService.getExperimentById = jest
+        .fn()
+        .mockReturnValueOnce(timer(100).pipe(mergeMap(() => throwError(() => ({ status: 500 })))))
+        .mockReturnValueOnce(of(experiment));
+      experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(stats));
+      Selectors.selectExperimentStats.setResult({});
+      const results: any[] = [];
+      service.getExperimentById$.subscribe((action: any) => results.push(action));
+
+      actions$.next(actionGetExperimentById({ experimentId }));
+      actions$.next(actionGetExperimentById({ experimentId }));
+      tick(200);
+
+      expect(results).toContainEqual(actionGetExperimentByIdSuccess({ experiment }));
+      expect(results).not.toContainEqual(
+        actionGetExperimentByIdFailure({ experimentId, errorType: PAGE_ERROR_TYPE.LOAD_FAILED })
+      );
+    }));
+
+    it('should cancel a previous details-page fetch when a newer details-page fetch for another id starts', fakeAsync(() => {
+      // Simulates navigating from details page A to details page B: A's slow failure must not
+      // surface, or it would overwrite B's detailsPageError and bring the spinner back on B.
+      const otherExperimentId = '22222222-3333-4333-8444-555555555555';
+      const otherExperiment = { ...experiment, id: 'test2' } as any;
+      experimentDataService.getExperimentById = jest
+        .fn()
+        .mockReturnValueOnce(timer(100).pipe(mergeMap(() => throwError(() => ({ status: 500 })))))
+        .mockReturnValueOnce(of(otherExperiment));
+      experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(stats));
+      Selectors.selectExperimentStats.setResult({});
+      const results: any[] = [];
+      service.getExperimentById$.subscribe((action: any) => results.push(action));
+
+      actions$.next(actionGetExperimentById({ experimentId, handles404Contextually: true }));
+      actions$.next(actionGetExperimentById({ experimentId: otherExperimentId, handles404Contextually: true }));
+      tick(200);
+
+      expect(results).toContainEqual(actionGetExperimentByIdSuccess({ experiment: otherExperiment }));
+      expect(results).not.toContainEqual(
+        actionGetExperimentByIdFailure({
+          experimentId,
+          errorType: PAGE_ERROR_TYPE.LOAD_FAILED,
+          handles404Contextually: true,
+        })
+      );
+    }));
+
+    it('should keep concurrent background fetches for different experiment ids', fakeAsync(() => {
+      // preview-user loads several different experiments at once (without contextual 404 handling) -
+      // one fetch must not cancel another
+      const otherExperimentId = '22222222-3333-4333-8444-555555555555';
+      const otherExperiment = { ...experiment, id: 'test2' } as any;
+      experimentDataService.getExperimentById = jest
+        .fn()
+        .mockReturnValueOnce(of(experiment).pipe(delay(50)))
+        .mockReturnValueOnce(of(otherExperiment));
+      experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(stats));
+      Selectors.selectExperimentStats.setResult({});
+      const results: any[] = [];
+      service.getExperimentById$.subscribe((action: any) => results.push(action));
+
+      actions$.next(actionGetExperimentById({ experimentId }));
+      actions$.next(actionGetExperimentById({ experimentId: otherExperimentId }));
+      tick(100);
+
+      expect(results).toContainEqual(actionGetExperimentByIdSuccess({ experiment }));
+      expect(results).toContainEqual(actionGetExperimentByIdSuccess({ experiment: otherExperiment }));
     }));
   });
 
@@ -1374,6 +1542,108 @@ describe('ExperimentEffects', () => {
 
       tick(0);
     }));
+  });
+
+  describe('add experiment lists', () => {
+    const experimentId = 'experiment-id';
+    const listId = 'list-id';
+    const listResponse = { segment: { id: listId } } as any;
+
+    const createListRequest = (listType: string): ExperimentSegmentListRequest => ({
+      experimentId,
+      list: {
+        name: 'Test list',
+        description: '',
+        context: 'test',
+        type: SEGMENT_TYPE.PRIVATE,
+        userIds: [],
+        groups: [],
+        subSegmentIds: [],
+        listType,
+      },
+    });
+
+    describe('addExperimentInclusionList$', () => {
+      it('should navigate a direct-value list to its List Details page', fakeAsync(() => {
+        const list = createListRequest(LIST_OPTION_TYPE.INDIVIDUAL);
+        experimentDataService.addInclusionList = jest.fn().mockReturnValue(of(listResponse));
+
+        const expectedAction = actionAddExperimentInclusionListSuccess({ listResponse });
+
+        service.addExperimentInclusionList$.subscribe((result) => {
+          expect(result).toEqual(expectedAction);
+          expect(router.navigate).toHaveBeenCalledWith([
+            '/home',
+            'detail',
+            experimentId,
+            'list',
+            LIST_FILTER_MODE.INCLUSION,
+            listId,
+          ]);
+        });
+
+        actions$.next(actionAddExperimentInclusionList({ list }));
+
+        tick(0);
+      }));
+
+      it('should keep a Segment-backed list on the owner page', fakeAsync(() => {
+        const list = createListRequest(LIST_OPTION_TYPE.SEGMENT);
+        experimentDataService.addInclusionList = jest.fn().mockReturnValue(of(listResponse));
+
+        const expectedAction = actionAddExperimentInclusionListSuccess({ listResponse });
+
+        service.addExperimentInclusionList$.subscribe((result) => {
+          expect(result).toEqual(expectedAction);
+          expect(router.navigate).not.toHaveBeenCalled();
+        });
+
+        actions$.next(actionAddExperimentInclusionList({ list }));
+
+        tick(0);
+      }));
+    });
+
+    describe('addExperimentExclusionList$', () => {
+      it('should navigate a direct-value list to its List Details page', fakeAsync(() => {
+        const list = createListRequest(LIST_OPTION_TYPE.INDIVIDUAL);
+        experimentDataService.addExclusionList = jest.fn().mockReturnValue(of(listResponse));
+
+        const expectedAction = actionAddExperimentExclusionListSuccess({ listResponse });
+
+        service.addExperimentExclusionList$.subscribe((result) => {
+          expect(result).toEqual(expectedAction);
+          expect(router.navigate).toHaveBeenCalledWith([
+            '/home',
+            'detail',
+            experimentId,
+            'list',
+            LIST_FILTER_MODE.EXCLUSION,
+            listId,
+          ]);
+        });
+
+        actions$.next(actionAddExperimentExclusionList({ list }));
+
+        tick(0);
+      }));
+
+      it('should keep a Segment-backed list on the owner page', fakeAsync(() => {
+        const list = createListRequest(LIST_OPTION_TYPE.SEGMENT);
+        experimentDataService.addExclusionList = jest.fn().mockReturnValue(of(listResponse));
+
+        const expectedAction = actionAddExperimentExclusionListSuccess({ listResponse });
+
+        service.addExperimentExclusionList$.subscribe((result) => {
+          expect(result).toEqual(expectedAction);
+          expect(router.navigate).not.toHaveBeenCalled();
+        });
+
+        actions$.next(actionAddExperimentExclusionList({ list }));
+
+        tick(0);
+      }));
+    });
   });
 
   describe('fetchRewardsDataForExperiment$', () => {

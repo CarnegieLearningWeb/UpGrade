@@ -5,6 +5,8 @@ import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
 
 // this variable is used by webpack to replace the value of USE_CUSTOM_HTTP_CLIENT with true or false to create two different builds
 declare const USE_CUSTOM_HTTP_CLIENT: boolean;
+// this variable is injected by webpack at build time from package.json's version
+declare const CLIENT_VERSION: string;
 
 export default class ApiService {
   private context: string;
@@ -96,6 +98,8 @@ export default class ApiService {
         'Session-Id': this.clientSessionId,
         URL: url,
         'User-Id': this.userId,
+        'Client-Context': this.context,
+        'Client-Version': CLIENT_VERSION,
       },
     };
 

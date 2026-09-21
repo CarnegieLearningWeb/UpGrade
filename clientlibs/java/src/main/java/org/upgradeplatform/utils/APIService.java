@@ -3,7 +3,10 @@ package org.upgradeplatform.utils;
 
 import static org.upgradeplatform.utils.Utils.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
+import java.util.Properties;
 
 import jakarta.ws.rs.client.AsyncInvoker;
 import jakarta.ws.rs.client.Client;
@@ -18,13 +21,29 @@ import org.glassfish.jersey.client.ClientConfig;
 
 public class APIService implements AutoCloseable{
 
+	private static final String CLIENT_VERSION = loadClientVersion();
+
 	private final String baseUrl;
 	private final String authToken;
 	private final String sessionId;
 	private final String userId;
+	private final String context;
 	private final Client client;
-	
-	public APIService(String baseUrl, String authToken, String sessionId, String userId, Map<String, Object> properties) {
+
+	private static String loadClientVersion() {
+		try (InputStream stream = APIService.class.getResourceAsStream("/client-version.properties")) {
+			if (stream == null) {
+				return "unknown";
+			}
+			Properties properties = new Properties();
+			properties.load(stream);
+			return properties.getProperty("version", "unknown");
+		} catch (IOException e) {
+			return "unknown";
+		}
+	}
+
+	public APIService(String baseUrl, String authToken, String sessionId, String userId, String context, Map<String, Object> properties) {
         if (isStringNull(baseUrl)) {
             throw new IllegalArgumentException(INVALID_BASE_URL);
         }
@@ -37,6 +56,7 @@ public class APIService implements AutoCloseable{
 
 		this.userId=userId;
 		this.sessionId=sessionId;
+		this.context=context;
 		client = createClient(properties);
 	}
 
@@ -64,6 +84,8 @@ public class APIService implements AutoCloseable{
 				.header("Authorization", "Bearer "+this.authToken)
 				.header("Session-Id", this.sessionId)
 				.header("User-Id", this.userId)
+				.header("Client-Context", this.context)
+				.header("Client-Version", CLIENT_VERSION)
 				.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true)
 				.async();
 	}

@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import * as analysisActions from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
-import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap } from 'rxjs/operators';
+import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap, takeUntil } from 'rxjs/operators';
 import {
   UpsertExperimentType,
   IExperimentEnrollmentStats,
@@ -34,6 +34,9 @@ import JSZip from 'jszip';
 import { TranslateService } from '@ngx-translate/core';
 import { CommonModalEventsService } from '../../../shared/services/common-modal-event.service';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
+import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { LIST_FILTER_MODE } from 'upgrade_types';
+import { LIST_OPTION_TYPE } from '../../segments/store/segments.model';
 @Injectable()
 export class ExperimentEffects {
   constructor(
@@ -266,9 +269,14 @@ export class ExperimentEffects {
       ofType(experimentAction.actionUpdateExperimentMetrics),
       switchMap((action) => {
         return this.experimentDataService.updateExperimentMetrics(action.updateExperimentMetricsRequest).pipe(
-          map((experiment) => {
+          switchMap((experiment) => {
             this.notificationService.showSuccess(this.translate.instant('experiments.metrics.update-success.text'));
-            return experimentAction.actionUpdateExperimentMetricsSuccess({ experiment });
+            // A metric may have been added, edited, or removed from the experiment, which can
+            // change whether a catalog metric still has a query associated with it.
+            return [
+              experimentAction.actionUpdateExperimentMetricsSuccess({ experiment }),
+              analysisActions.actionFetchMetrics(),
+            ];
           }),
           catchError(() => {
             this.notificationService.showError(this.translate.instant('experiments.metrics.update-error.text'));
@@ -288,9 +296,12 @@ export class ExperimentEffects {
         this.experimentDataService.deleteExperiment(experimentId).pipe(
           switchMap(() => {
             this.notificationService.showSuccess(this.translate.instant('global.delete-experiments.message.text'));
+            // Deleting an experiment also deletes its queries, which can change whether a
+            // catalog metric still has a query associated with it.
             return [
               experimentAction.actionDeleteExperimentSuccess({ experimentId }),
               experimentAction.actionFetchAllDecisionPoints(),
+              analysisActions.actionFetchMetrics(),
             ];
           }),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])
@@ -302,11 +313,20 @@ export class ExperimentEffects {
   getExperimentById$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionGetExperimentById),
-      map((action) => action.experimentId),
-      filter((experimentId) => !!experimentId),
+      filter((action) => !!action.experimentId),
       withLatestFrom(this.store$.pipe(select(selectExperimentStats))),
-      mergeMap(([experimentId, experimentStats]) =>
-        this.experimentDataService.getExperimentById(experimentId).pipe(
+      mergeMap(([action, experimentStats]) => {
+        const { experimentId, handles404Contextually } = action;
+        if (!isCanonicalEntityId(experimentId)) {
+          return of(
+            experimentAction.actionGetExperimentByIdFailure({
+              experimentId,
+              errorType: PAGE_ERROR_TYPE.NOT_FOUND,
+              handles404Contextually,
+            })
+          );
+        }
+        return this.experimentDataService.getExperimentById(experimentId, handles404Contextually ?? false).pipe(
           switchMap((data: Experiment) =>
             this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
               switchMap((stat: IExperimentEnrollmentStats) => {
@@ -315,11 +335,37 @@ export class ExperimentEffects {
                   experimentAction.actionGetExperimentByIdSuccess({ experiment: data }),
                   experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                 ];
-              })
+              }),
+              // Stats are auxiliary - still show the experiment if only the stats call fails
+              catchError(() => [experimentAction.actionGetExperimentByIdSuccess({ experiment: data })])
+            )
+          ),
+          catchError((error) => [
+            experimentAction.actionGetExperimentByIdFailure({
+              experimentId,
+              errorType: error?.status === 404 ? PAGE_ERROR_TYPE.NOT_FOUND : PAGE_ERROR_TYPE.LOAD_FAILED,
+              handles404Contextually,
+            }),
+          ]),
+          // A newer fetch supersedes this one when it targets the same experiment, or when both are
+          // details-page fetches (the details page shows one experiment at a time, and a stale failure
+          // must not overwrite the current route's detailsPageError). Cancelling instead of switchMap
+          // keeps preview-user's concurrent fetches for different experiments alive. The reference
+          // check excludes the triggering action itself, which BehaviorSubject-backed action streams
+          // (e.g. ActionsSubject in tests) replay on subscription.
+          takeUntil(
+            this.actions$.pipe(
+              ofType(experimentAction.actionGetExperimentById),
+              filter(
+                (newerAction) =>
+                  newerAction !== action &&
+                  (newerAction.experimentId === experimentId ||
+                    !!(handles404Contextually && newerAction.handles404Contextually))
+              )
             )
           )
-        )
-      )
+        );
+      })
     )
   );
 
@@ -560,6 +606,16 @@ export class ExperimentEffects {
           map((listResponse) => {
             this.notificationService.showSuccess(this.translate.instant('experiments.inclusions.add-success.text'));
             this.commonModalEvents.forceCloseModal();
+            if (action.list.list.listType?.toLowerCase() !== LIST_OPTION_TYPE.SEGMENT.toLowerCase()) {
+              this.router.navigate([
+                '/home',
+                'detail',
+                action.list.experimentId,
+                'list',
+                LIST_FILTER_MODE.INCLUSION,
+                listResponse.segment.id,
+              ]);
+            }
             return experimentAction.actionAddExperimentInclusionListSuccess({ listResponse });
           }),
           catchError((error) => {
@@ -617,6 +673,16 @@ export class ExperimentEffects {
           map((listResponse) => {
             this.notificationService.showSuccess(this.translate.instant('experiments.exclusions.add-success.text'));
             this.commonModalEvents.forceCloseModal();
+            if (action.list.list.listType?.toLowerCase() !== LIST_OPTION_TYPE.SEGMENT.toLowerCase()) {
+              this.router.navigate([
+                '/home',
+                'detail',
+                action.list.experimentId,
+                'list',
+                LIST_FILTER_MODE.EXCLUSION,
+                listResponse.segment.id,
+              ]);
+            }
             return experimentAction.actionAddExperimentExclusionListSuccess({ listResponse });
           }),
           catchError((error) => {

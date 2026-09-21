@@ -1,4 +1,5 @@
 import { AppState } from '../../core.state';
+import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 import { MemberTypes, Segment } from '../../segments/store/segments.model';
 
@@ -209,6 +210,8 @@ export interface FeatureFlagState {
   isLoadingFeatureFlagDelete: boolean;
   isLoadingUpsertPrivateSegmentList: boolean;
   duplicateKeyFound: boolean;
+  // Details page fetch error state - drives the not-found / load-failed page
+  detailsPageError: DetailsPageError | null;
 
   // Graph data
   graphInfo: IExposureStatByDate[] | null;

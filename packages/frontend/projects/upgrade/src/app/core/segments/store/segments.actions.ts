@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
   AddPrivateSegmentListRequest,
   AddSegmentRequest,
@@ -112,7 +113,10 @@ export const actionGetSegmentByIdSuccess = createAction(
   }>()
 );
 
-export const actionGetSegmentByIdFailure = createAction('[Segments] Get Segment By Id Failure');
+export const actionGetSegmentByIdFailure = createAction(
+  '[Segments] Get Segment By Id Failure',
+  props<{ segmentId: string; errorType: PAGE_ERROR_TYPE }>()
+);
 
 export const actionDeleteSegment = createAction('[Segments] Delete Segment', props<{ segmentId: string }>());
 

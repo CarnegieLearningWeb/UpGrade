@@ -1,4 +1,5 @@
 <div class="search-header">
+  @if (showFilterOptions) {
   <mat-form-field class="dense-3 filter-options" subscriptSizing="dynamic">
     <mat-select class="ft-14-400" [(ngModel)]="searchKey" (selectionChange)="onSearch()">
       <!-- Standalone options (no group) -->
@@ -20,7 +21,8 @@
       }
     </mat-select>
   </mat-form-field>
-  <mat-form-field class="dense-3 search-input" subscriptSizing="dynamic">
+  }
+  <mat-form-field class="dense-3 search-input" subscriptSizing="dynamic" [style.width]="searchInputWidth">
     @if (!isDropdown) {
     <div>
       <input

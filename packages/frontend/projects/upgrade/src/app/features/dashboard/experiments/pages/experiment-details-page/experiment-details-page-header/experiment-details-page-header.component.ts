@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonDetailsPageHeaderComponent } from '@shared-component-lib';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { CommonModule } from '@angular/common';
+import { combineLatest, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-experiment-details-page-header',
@@ -11,7 +13,12 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperimentDetailsPageHeaderComponent {
-  selectedExperiment$ = this.experimentService.selectedExperiment$;
+  // Suppress the cached experiment name while the details page shows its error state,
+  // so the breadcrumb doesn't display a stale name next to "not found"
+  detailsName$: Observable<string> = combineLatest([
+    this.experimentService.selectedExperiment$,
+    this.experimentService.experimentDetailsPageError$,
+  ]).pipe(map(([experiment, detailsPageError]) => (detailsPageError ? '' : experiment?.name ?? '')));
 
   constructor(private experimentService: ExperimentService) {}
 }

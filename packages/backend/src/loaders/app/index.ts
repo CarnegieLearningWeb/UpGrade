@@ -30,8 +30,7 @@ const ourCors: CorsOptions = {
 const expressApp: Application = createExpressServer({
   cors: ourCors,
   classTransformer: true,
-  validation: { validationError: { target: false, value: false } },
-  // validation: { whitelist: true, forbidNonWhitelisted: true, validationError: { target: false, value: false } },
+  validation: { whitelist: true, validationError: { target: false, value: false } },
   defaultErrorHandler: false,
   routePrefix: env.app.routePrefix,
   controllers: env.app.dirs.controllers,

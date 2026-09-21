@@ -58,6 +58,7 @@ export class ExperimentRootSectionCardComponent {
     { value: EXPERIMENT_SEARCH_KEY.CONTEXT, type: 'text' },
     { value: EXPERIMENT_SEARCH_KEY.TAG, type: 'text' },
     { value: EXPERIMENT_SEARCH_KEY.DECISION_POINT, label: 'Decision Point', type: 'text' },
+    { value: EXPERIMENT_SEARCH_KEY.LIST_VALUE, label: 'List Value', type: 'text' },
   ];
   isSectionCardExpanded = true;
 

@@ -2,6 +2,7 @@ import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
 import { Segment } from './segments.model';
 import { initialState, initalGlobalState } from './segments.reducer';
 import * as SegmentSelectors from './segments.selectors';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 
 describe('SegmentSelectors', () => {
   const mockState = { ...initialState };
@@ -114,6 +115,38 @@ describe('SegmentSelectors', () => {
       );
 
       expect(result).toEqual(mockSegment);
+    });
+  });
+
+  describe('#selectSegmentDetailsPageError', () => {
+    const detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.NOT_FOUND };
+    const routerStateFor = (segmentId: string) => ({ state: { params: { segmentId } } } as any);
+
+    it('should return the error when it belongs to the segment in the route', () => {
+      const previousState = { ...mockState, detailsPageError };
+
+      const result = SegmentSelectors.selectSegmentDetailsPageError.projector(routerStateFor('abc123'), previousState);
+
+      expect(result).toEqual(detailsPageError);
+    });
+
+    it('should return null when the error belongs to a different segment', () => {
+      const previousState = { ...mockState, detailsPageError };
+
+      const result = SegmentSelectors.selectSegmentDetailsPageError.projector(
+        routerStateFor('other-id'),
+        previousState
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when there is no error', () => {
+      const previousState = { ...mockState, detailsPageError: null };
+
+      const result = SegmentSelectors.selectSegmentDetailsPageError.projector(routerStateFor('abc123'), previousState);
+
+      expect(result).toBeNull();
     });
   });
 });

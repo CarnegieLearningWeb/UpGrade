@@ -1,7 +1,9 @@
 <div class="header">
   <span class="ft-14-400 breadcrumb">
     <a [routerLink]="['/', rootLink]" class="root-link">{{ rootName | translate }}</a>
-    >
+    > @if (parentName && parentLink) {
+    <a [routerLink]="parentLink" class="root-link">{{ parentName | translate }}</a>
+    > }
     <b>{{ detailsName | translate }}</b>
   </span>
 </div>

@@ -64,6 +64,12 @@ import { SegmentFile, SegmentInputValidator } from '../controllers/validators/Se
 import dayjs from 'dayjs';
 import { getDateRangeNames } from '../repositories/utils/dateQuery';
 import { FeatureFlagExposure } from '../models/FeatureFlagExposure';
+import {
+  LIST_VALUE_SEARCH_PATTERN_PARAMETER,
+  buildListValueSearchPattern,
+  getListValueSearchPredicate,
+  isListValueSearchKey,
+} from './listValueSearchHelpers';
 
 @Service()
 export class FeatureFlagService {
@@ -269,9 +275,15 @@ export class FeatureFlagService {
     logger.info({ message: 'Find paginated Feature flags' });
 
     let queryBuilder = this.featureFlagRepository.createQueryBuilder('feature_flag');
-    if (searchParams) {
+    if (searchParams && searchParams.string !== '') {
       const whereClause = this.paginatedSearchString(searchParams);
       queryBuilder = queryBuilder.where(whereClause);
+      if (isListValueSearchKey(searchParams.key)) {
+        queryBuilder = queryBuilder.setParameter(
+          LIST_VALUE_SEARCH_PATTERN_PARAMETER,
+          buildListValueSearchPattern(searchParams.string)
+        );
+      }
     }
     if (sortParams) {
       queryBuilder = queryBuilder.addOrderBy(`feature_flag.${sortParams.key}`, sortParams.sortAs);
@@ -340,7 +352,7 @@ export class FeatureFlagService {
         await this.clearCachedFlagsForContext(featureFlag.context[0]);
         const deletedFlag = await this.featureFlagRepository.deleteById(featureFlagId, transactionalEntityManager);
 
-        featureFlag.featureFlagSegmentInclusion.forEach(async (segmentInclusion) => {
+        for (const segmentInclusion of featureFlag.featureFlagSegmentInclusion) {
           try {
             await transactionalEntityManager.getRepository(Segment).delete(segmentInclusion.segment.id);
           } catch (err) {
@@ -350,8 +362,8 @@ export class FeatureFlagService {
             logger.error(error);
             throw error;
           }
-        });
-        featureFlag.featureFlagSegmentExclusion.forEach(async (segmentExclusion) => {
+        }
+        for (const segmentExclusion of featureFlag.featureFlagSegmentExclusion) {
           try {
             await transactionalEntityManager.getRepository(Segment).delete(segmentExclusion.segment.id);
           } catch (err) {
@@ -361,7 +373,7 @@ export class FeatureFlagService {
             logger.error(error);
             throw error;
           }
-        });
+        }
         // TODO: Add entry in audit log for delete feature flag
         const createAuditLogData: FeatureFlagDeletedData = {
           flagName: featureFlag.name,
@@ -1041,6 +1053,7 @@ export class FeatureFlagService {
     }
     const likeString = `ILIKE '%${searchString}%'`;
     const searchArray: string[] = [];
+    const listValueSearch = getListValueSearchPredicate('featureFlag');
     switch (type) {
       case FLAG_SEARCH_KEY.NAME:
         searchArray.push(`${type} ${likeString}`);
@@ -1057,11 +1070,17 @@ export class FeatureFlagService {
       case FLAG_SEARCH_KEY.ID:
         searchArray.push(`feature_flag.id = '${searchString}'`);
         break;
+      case FLAG_SEARCH_KEY.LIST_VALUE:
+        searchArray.push(listValueSearch);
+        break;
       default:
         searchArray.push(`name ${likeString}`);
         searchArray.push(`status::TEXT ${likeString}`);
         searchArray.push(`ARRAY_TO_STRING(context, ',') ${likeString}`);
         searchArray.push(`ARRAY_TO_STRING(tags, ',') ${likeString}`);
+        if (type === FLAG_SEARCH_KEY.ALL) {
+          searchArray.push(listValueSearch);
+        }
         if (isUUID(searchString)) {
           searchArray.push(`feature_flag.id = '${searchString}'`);
         }

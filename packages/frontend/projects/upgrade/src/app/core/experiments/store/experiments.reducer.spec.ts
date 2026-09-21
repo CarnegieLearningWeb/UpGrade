@@ -1,5 +1,6 @@
 import { initialState, experimentsReducer } from './experiments.reducer';
 import { Action } from '@ngrx/store';
+import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
   actionDeleteExperimentSuccess,
   actionFetchAllExperimentNamesSuccess,
@@ -118,15 +119,64 @@ describe('ExperimentsReducer', () => {
     expect(newState.isLoadingExperiment).toEqual(false);
   });
 
-  it('action "actionGetExperimentByIdFailure" should set loading to false', () => {
+  it('action "actionGetExperimentByIdFailure" should set loading to false and set the details page error for a details-page fetch', () => {
     const previousState = { ...initialState };
     previousState.isLoadingExperiment = true;
-    const testAction: Action = actionGetExperimentByIdFailure();
+    const testAction: Action = actionGetExperimentByIdFailure({
+      experimentId: 'abc123',
+      errorType: PAGE_ERROR_TYPE.NOT_FOUND,
+      handles404Contextually: true,
+    });
 
     const newState = experimentsReducer(previousState, testAction);
 
     expect(newState).not.toBe(previousState);
     expect(newState.isLoadingExperiment).toEqual(false);
+    expect(newState.detailsPageError).toEqual({ entityId: 'abc123', errorType: PAGE_ERROR_TYPE.NOT_FOUND });
+  });
+
+  it('action "actionGetExperimentByIdFailure" of a background fetch should not overwrite the details page error', () => {
+    const detailsPageError = { entityId: 'current-details-id', errorType: PAGE_ERROR_TYPE.NOT_FOUND };
+    const previousState = { ...initialState, detailsPageError };
+    const testAction: Action = actionGetExperimentByIdFailure({
+      experimentId: 'background-id',
+      errorType: PAGE_ERROR_TYPE.LOAD_FAILED,
+    });
+
+    const newState = experimentsReducer(previousState, testAction);
+
+    expect(newState.isLoadingExperiment).toEqual(false);
+    expect(newState.detailsPageError).toEqual(detailsPageError);
+  });
+
+  it('action "actionGetExperimentById" should retain the details page error while a retry is in flight', () => {
+    const detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.LOAD_FAILED };
+    const previousState = { ...initialState, detailsPageError };
+    const testAction: Action = actionGetExperimentById({ experimentId: 'abc123', handles404Contextually: true });
+
+    const newState = experimentsReducer(previousState, testAction);
+
+    expect(newState.detailsPageError).toEqual(detailsPageError);
+  });
+
+  it('action "actionGetExperimentByIdSuccess" should clear the details page error of that experiment', () => {
+    const previousState = { ...initialState };
+    previousState.detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.LOAD_FAILED };
+    const testAction: Action = actionGetExperimentByIdSuccess({ experiment: { id: 'abc123' } as any });
+
+    const newState = experimentsReducer(previousState, testAction);
+
+    expect(newState.detailsPageError).toBeNull();
+  });
+
+  it('action "actionGetExperimentByIdSuccess" of another experiment should not clear the details page error', () => {
+    const detailsPageError = { entityId: 'abc123', errorType: PAGE_ERROR_TYPE.LOAD_FAILED };
+    const previousState = { ...initialState, detailsPageError };
+    const testAction: Action = actionGetExperimentByIdSuccess({ experiment: { id: 'other-id' } as any });
+
+    const newState = experimentsReducer(previousState, testAction);
+
+    expect(newState.detailsPageError).toEqual(detailsPageError);
   });
 
   it('action "actionUpsertExperimentFailure" should set loading to false', () => {

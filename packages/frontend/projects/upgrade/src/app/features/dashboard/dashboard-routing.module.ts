@@ -1,9 +1,11 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { DashboardRootComponent } from './dashboard-root/dashboard-root.component';
+import { requireRouteParam } from './require-route-param.guard';
+import { LIST_OWNER_TYPE } from '../../core/segments/store/segments.model';
 
 // Conditionally define segments routes based on the toggle
-const segmentsRoutes = [
+const segmentsRoutes: Routes = [
   {
     path: 'segments',
     loadComponent: () =>
@@ -13,7 +15,23 @@ const segmentsRoutes = [
     },
   },
   {
+    // An id-less detail URL should land on the list page, not fall through the global wildcard to /home
+    path: 'segments/detail',
+    redirectTo: '/segments',
+    pathMatch: 'full',
+  },
+  {
+    path: 'segments/detail/:segmentId/list/:filterMode/:listId',
+    loadComponent: () =>
+      import('./segments/pages/list-details-page/list-details-page.component').then((c) => c.ListDetailsPageComponent),
+    data: {
+      title: 'app-header.title.segments',
+      listOwnerType: LIST_OWNER_TYPE.SEGMENT,
+    },
+  },
+  {
     path: 'segments/detail/:segmentId',
+    canActivate: [requireRouteParam('segmentId', '/segments')],
     loadComponent: () =>
       import('./segments/pages/segment-details-page/segment-details-page.component').then(
         (c) => c.SegmentDetailsPageComponent
@@ -24,7 +42,8 @@ const segmentsRoutes = [
   },
 ];
 
-const routes: Routes = [
+// Exported for dashboard-routing.spec.ts
+export const routes: Routes = [
   {
     path: '',
     component: DashboardRootComponent,
@@ -45,7 +64,24 @@ const routes: Routes = [
         },
       },
       {
+        path: 'home/detail',
+        redirectTo: '/home',
+        pathMatch: 'full',
+      },
+      {
+        path: 'home/detail/:experimentId/list/:filterMode/:listId',
+        loadComponent: () =>
+          import('./segments/pages/list-details-page/list-details-page.component').then(
+            (c) => c.ListDetailsPageComponent
+          ),
+        data: {
+          title: 'app-header.title.experiments',
+          listOwnerType: LIST_OWNER_TYPE.EXPERIMENT,
+        },
+      },
+      {
         path: 'home/detail/:experimentId',
+        canActivate: [requireRouteParam('experimentId', '/home')],
         loadComponent: () =>
           import('./experiments/pages/experiment-details-page/experiment-details-page.component').then(
             (c) => c.ExperimentDetailsPageComponent
@@ -84,7 +120,24 @@ const routes: Routes = [
         },
       },
       {
+        path: 'featureflags/detail',
+        redirectTo: '/featureflags',
+        pathMatch: 'full',
+      },
+      {
+        path: 'featureflags/detail/:flagId/list/:filterMode/:listId',
+        loadComponent: () =>
+          import('./segments/pages/list-details-page/list-details-page.component').then(
+            (c) => c.ListDetailsPageComponent
+          ),
+        data: {
+          title: 'app-header.title.feature-flag',
+          listOwnerType: LIST_OWNER_TYPE.FEATURE_FLAG,
+        },
+      },
+      {
         path: 'featureflags/detail/:flagId',
+        canActivate: [requireRouteParam('flagId', '/featureflags')],
         loadComponent: () =>
           import('./feature-flags/pages/feature-flag-details-page/feature-flag-details-page.component').then(
             (c) => c.FeatureFlagDetailsPageComponent

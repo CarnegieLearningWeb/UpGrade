@@ -45,15 +45,6 @@
       </mat-autocomplete>
     </mat-form-field>
     } @if (selectedListType && selectedListType !== LIST_TYPES.SEGMENT) {
-    <app-common-tags-input
-      formControlName="values"
-      [inputType]="CommonTagInputType.VALUES"
-      [label]="config.valuesLabel"
-      [placeholder]="config.valuesPlaceholder"
-      [forceValidation]="forceValidation"
-      [truncationLength]="72"
-      (downloadRequested)="onDownloadRequested($event)"
-    ></app-common-tags-input>
     <mat-form-field appearance="outline">
       <mat-label class="ft-14-400">Name</mat-label>
       <input matInput formControlName="name" placeholder="e.g., My schools" class="ft-14-400" appTrimInput />
