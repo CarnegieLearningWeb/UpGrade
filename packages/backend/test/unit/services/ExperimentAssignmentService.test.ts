@@ -460,6 +460,132 @@ describe('Experiment Assignment Service Test', () => {
     });
   });
 
+  describe('selectExperimentsForUser parallelizes the enrollment/exclusion lookups', () => {
+    // getAssignmentsAndExclusionsForUser (individual/group enrollments+exclusions) and
+    // experimentLevelExclusionInclusion (segment inclusion/exclusion) are independent reads —
+    // neither depends on the other's output — so they now run via Promise.all instead of one
+    // after the other. These tests pin the two properties that change relies on: the calls are
+    // genuinely concurrent, and their results are composed identically no matter which settles first.
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+
+    const delay = <T,>(value: T, ms: number): Promise<T> =>
+      new Promise((resolve) => setTimeout(() => resolve(value), ms));
+
+    it('composes the enrollment and exclusion results identically no matter which parallel query settles first', async () => {
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
+      const enrollment = { experimentId: exp.id, userId: userDoc.id } as unknown as IndividualEnrollment;
+      const exclusionReason = [{ experiment: exp, reason: 'group', matchedGroup: true }];
+
+      testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([exp]);
+      testedModule.processExperimentPools = sandbox.stub().callsFake((experiments) => experiments);
+
+      const runWith = (enrollmentDelayMs: number, exclusionDelayMs: number) => {
+        testedModule.getAssignmentsAndExclusionsForUser = sandbox
+          .stub()
+          .callsFake(() => delay([[enrollment], [], [], []], enrollmentDelayMs));
+        testedModule.experimentLevelExclusionInclusion = sandbox
+          .stub()
+          .callsFake(() => delay([[exp], exclusionReason], exclusionDelayMs));
+
+        return testedModule.selectExperimentsForUser([exp], userDoc, null, loggerMock);
+      };
+
+      const enrollmentSettlesFirst = await runWith(0, 10);
+      const exclusionSettlesFirst = await runWith(10, 0);
+
+      expect(enrollmentSettlesFirst.mergedIndividualEnrollments).toEqual([enrollment]);
+      expect(enrollmentSettlesFirst.exclusionReason).toEqual(exclusionReason);
+      expect(enrollmentSettlesFirst.selectedExperiments).toEqual([exp]);
+      expect(exclusionSettlesFirst).toEqual(enrollmentSettlesFirst);
+    });
+
+    it('starts the experiment-level exclusion lookup without waiting for the enrollment lookup to resolve', async () => {
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
+      testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([exp]);
+      testedModule.processExperimentPools = sandbox.stub().returns([]);
+
+      let exclusionLookupStartedBeforeEnrollmentResolved = false;
+      let resolveEnrollment: (value: unknown) => void;
+      const enrollmentPromise = new Promise((resolve) => {
+        resolveEnrollment = resolve;
+      });
+
+      testedModule.getAssignmentsAndExclusionsForUser = sandbox.stub().returns(enrollmentPromise);
+      testedModule.experimentLevelExclusionInclusion = sandbox.stub().callsFake(async () => {
+        // If the two lookups were still sequential (await enrollment lookup, then start this one),
+        // this stub could only run after the enrollment promise below had already resolved.
+        exclusionLookupStartedBeforeEnrollmentResolved = true;
+        return [[exp], []];
+      });
+
+      const resultPromise = testedModule.selectExperimentsForUser([exp], userDoc, null, loggerMock);
+
+      // Flush pending microtasks without resolving the enrollment lookup.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(exclusionLookupStartedBeforeEnrollmentResolved).toBe(true);
+
+      resolveEnrollment([[], [], [], []]);
+      await resultPromise;
+    });
+
+    it('does not query enrollments/exclusions when group filtering leaves no valid experiments', async () => {
+      testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([]);
+      testedModule.getAssignmentsAndExclusionsForUser = sandbox.stub().resolves([[], [], [], []]);
+      testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([[], []]);
+
+      const result = await testedModule.selectExperimentsForUser([], userDoc, null, loggerMock);
+
+      expect(result.selectedExperiments).toEqual([]);
+      sinon.assert.notCalled(testedModule.getAssignmentsAndExclusionsForUser);
+      sinon.assert.notCalled(testedModule.experimentLevelExclusionInclusion);
+    });
+
+    it('rejects with the enrollment/exclusion lookup error even though the exclusion lookup resolves', async () => {
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
+      testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([exp]);
+      testedModule.getAssignmentsAndExclusionsForUser = sandbox.stub().rejects(new Error('enrollment lookup failed'));
+      testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([[exp], []]);
+
+      await expect(testedModule.selectExperimentsForUser([exp], userDoc, null, loggerMock)).rejects.toThrow(
+        'enrollment lookup failed'
+      );
+    });
+
+    it('rejects with the experiment-level exclusion lookup error even though the enrollment lookup resolves', async () => {
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
+      testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([exp]);
+      testedModule.getAssignmentsAndExclusionsForUser = sandbox.stub().resolves([[], [], [], []]);
+      testedModule.experimentLevelExclusionInclusion = sandbox.stub().rejects(new Error('exclusion lookup failed'));
+
+      await expect(testedModule.selectExperimentsForUser([exp], userDoc, null, loggerMock)).rejects.toThrow(
+        'exclusion lookup failed'
+      );
+    });
+
+    it('still merges preview-user assignments on top of the parallel enrollment result', async () => {
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
+      const dbEnrollment = { experimentId: exp.id, userId: userDoc.id } as unknown as IndividualEnrollment;
+      const previewAssignment = { experimentId: exp.id, experimentCondition: exp.conditions[0] };
+      const previewUserWithAssignment = { id: userDoc.id, assignments: [previewAssignment] };
+
+      testedModule.filterAndProcessGroupExperiments = sandbox.stub().resolves([exp]);
+      testedModule.getAssignmentsAndExclusionsForUser = sandbox.stub().resolves([[dbEnrollment], [], [], []]);
+      testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([[exp], []]);
+      testedModule.processExperimentPools = sandbox.stub().callsFake((experiments) => experiments);
+
+      const result = await testedModule.selectExperimentsForUser(
+        [exp],
+        userDoc,
+        previewUserWithAssignment,
+        loggerMock
+      );
+
+      expect(result.mergedIndividualEnrollments.length).toEqual(2);
+      expect(result.mergedIndividualEnrollments[0].condition).toEqual(previewAssignment.experimentCondition);
+      expect(result.mergedIndividualEnrollments[1]).toEqual(dbEnrollment);
+    });
+  });
+
   it('should not pool experiments together due to a shared pending decision point site/target', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
