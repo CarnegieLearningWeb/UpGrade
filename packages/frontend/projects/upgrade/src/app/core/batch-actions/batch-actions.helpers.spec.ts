@@ -94,25 +94,19 @@ describe('Root selection rules', () => {
 
   it('accepts reordered results but rejects incomplete, duplicate, or unexpected result IDs', () => {
     const complete: BatchDeleteResult = {
-      phase: 'executed',
       results: [
         { id: 'b', outcome: 'not_found' },
         { id: 'a', outcome: 'deleted' },
       ],
     };
     expect(validateBatchResponse(complete, ['a', 'b'])).toBe(complete);
-    expect(() =>
-      validateBatchResponse({ phase: 'executed', results: [{ id: 'a', outcome: 'deleted' }] }, ['a', 'b'])
-    ).toThrow();
+    expect(() => validateBatchResponse({ results: [{ id: 'a', outcome: 'deleted' }] }, ['a', 'b'])).toThrow();
     for (const returnedIds of [
       ['a', 'a'],
       ['a', 'unexpected'],
     ]) {
       expect(() =>
-        validateBatchResponse({ phase: 'executed', results: returnedIds.map((id) => ({ id, outcome: 'deleted' })) }, [
-          'a',
-          'b',
-        ])
+        validateBatchResponse({ results: returnedIds.map((id) => ({ id, outcome: 'deleted' })) }, ['a', 'b'])
       ).toThrow();
     }
   });

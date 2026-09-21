@@ -190,7 +190,7 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       const lists = await Promise.all(rows.map((row) => ownedList(entity, row.id, child.id)));
       const ids = rows.map((row) => row.id.toUpperCase()).reverse();
       const { body } = await request(app).post(route(entity)).send({ ids }).expect(200);
-      expect(body).toEqual({ phase: 'executed', results: ids.map((id) => ({ id, outcome: 'deleted' })) });
+      expect(body).toEqual({ results: ids.map((id) => ({ id, outcome: 'deleted' })) });
       expect(await db.getRepository(model[entity]).countBy({ id: In(ids) })).toBe(0);
       expect(await db.getRepository(Segment).countBy({ id: In(lists.map((list) => list.id)) })).toBe(0);
       expect(
@@ -272,7 +272,6 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         .send({ ids: [row.id, missing] })
         .expect(200);
       expect(body).toEqual({
-        phase: 'executed',
         results: [
           { id: row.id, outcome: 'deleted' },
           { id: missing, outcome: 'not_found', reasonCode: DeletionReasonCode.NOT_FOUND },
@@ -301,7 +300,6 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
           .send({ ids: rows.map((row) => row.id) })
           .expect(200);
         expect(body).toEqual({
-          phase: 'executed',
           results: [
             { id: rows[0].id, outcome: 'deleted' },
             {
@@ -676,7 +674,7 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         const ids = rows.map((row) => row.id).reverse();
         const status = jest.spyOn(Container.get(SegmentService), 'getSegmentStatus');
         const { body } = await request(app).post(route(entity)).send({ ids }).expect(200);
-        expect(body).toEqual({ phase: 'executed', results: ids.map((id) => ({ id, outcome: 'deleted' })) });
+        expect(body).toEqual({ results: ids.map((id) => ({ id, outcome: 'deleted' })) });
         expect(status).not.toHaveBeenCalled();
         expect(await db.getRepository(model[entity]).countBy({ id: In(ids) })).toBe(0);
       }

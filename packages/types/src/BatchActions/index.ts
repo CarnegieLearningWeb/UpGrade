@@ -22,6 +22,5 @@ export interface BatchDeleteItemResult {
 }
 
 export interface BatchDeleteResult {
-  phase: 'rejected' | 'executed';
   results: BatchDeleteItemResult[];
 }

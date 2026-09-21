@@ -55,7 +55,6 @@ export function batchDeleteEffect(
                   operationId: snapshot.operationId,
                   // An invalid/empty successful response has no HTTP error for the interceptor to report.
                   result: {
-                    phase: 'executed',
                     results: ids.map((id) => ({
                       id,
                       outcome: 'unknown',

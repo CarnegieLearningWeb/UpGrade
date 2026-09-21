@@ -65,12 +65,7 @@ export const confirmedRemovedIds = (result?: BatchDeleteResult) =>
 
 export function validateBatchResponse(result: BatchDeleteResult, ids: string[]): BatchDeleteResult {
   const outcomes = ['deleted', 'not_found', 'failed', 'unknown', 'not_attempted'];
-  if (
-    !result ||
-    !['rejected', 'executed'].includes(result.phase) ||
-    !Array.isArray(result.results) ||
-    result.results.length !== ids.length
-  ) {
+  if (!result || !Array.isArray(result.results) || result.results.length !== ids.length) {
     throw new Error('Incomplete batch deletion response');
   }
   const resultIds = new Set(result.results.map((item) => item.id));

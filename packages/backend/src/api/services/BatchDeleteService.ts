@@ -37,11 +37,9 @@ export class BatchDeleteService {
     logger: UpgradeLogger
   ): Promise<BatchDeleteResult> {
     const results: BatchDeleteItemResult[] = [];
-    let phase: BatchDeleteResult['phase'] = 'rejected';
     for (const id of ids) {
       const result = await this.deleteOne(entity, id, user, logger);
       results.push(result);
-      if (result.outcome !== 'not_found') phase = 'executed';
       // An already absent target does not prevent independent items from being deleted.
       if (result.outcome === 'not_found') continue;
       // A committed item with a post-delete failure must not be retried, but still stops this batch.
@@ -55,7 +53,7 @@ export class BatchDeleteService {
         break;
       }
     }
-    return { phase, results };
+    return { results };
   }
 
   private async deleteOne(

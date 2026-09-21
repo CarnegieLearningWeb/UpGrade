@@ -372,7 +372,7 @@ describe.each(cases)('$entity root batch UI', (config) => {
     store.dispatch(
       actions.batchDeleteCompleted({
         operationId: snapshot.operationId,
-        result: { phase: 'executed', results: [{ id: rows[0].id, outcome: 'deleted' }] },
+        result: { results: [{ id: rows[0].id, outcome: 'deleted' }] },
       })
     );
     expect(batch().operation.status).toBe('complete');
@@ -480,7 +480,7 @@ describe.each(cases)('$entity root batch UI', (config) => {
       store.dispatch(
         actions.batchDeleteCompleted({
           operationId: 'pending-delete',
-          result: { phase: 'executed', results: [{ id: rows[0].id, outcome: 'deleted' }] },
+          result: { results: [{ id: rows[0].id, outcome: 'deleted' }] },
         })
       );
     if (first === 'list') listLoading$.next(false);

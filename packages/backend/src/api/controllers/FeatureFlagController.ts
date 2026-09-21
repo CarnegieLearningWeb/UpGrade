@@ -180,7 +180,7 @@ export class FeatureFlagsController {
    *           $ref: '#/definitions/BatchEntityIdsRequest'
    *     responses:
    *       '200':
-   *         description: Inspect phase and per-ID outcomes; rejected means no deletions were performed.
+   *         description: Per-ID deletion outcomes, including failures and items not attempted.
    *         schema:
    *           $ref: '#/definitions/BatchDeleteResult'
    *       '400':

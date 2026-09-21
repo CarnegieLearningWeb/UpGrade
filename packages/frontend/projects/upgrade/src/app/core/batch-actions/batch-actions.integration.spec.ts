@@ -357,7 +357,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
 
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     response.next({
-      phase: 'executed',
       results: [
         { id: rows[0].id, outcome: 'not_found', reasonCode: 'not_found' },
         { id: rows[1].id, outcome: 'failed', reasonCode: 'delete_failed' },
@@ -382,7 +381,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     const snapshot = prepare();
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     response.next({
-      phase: deleted ? 'executed' : 'rejected',
       results: rows
         .slice(0, 2)
         .map(({ id }, index) =>
@@ -405,7 +403,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     const snapshot = prepare();
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     response.next({
-      phase: 'executed',
       results: rows.map(({ id }, index) => ({ id, outcome: index === 0 ? 'failed' : 'not_attempted' })),
     });
     expect(notifications.showError).toHaveBeenCalledWith('1 item could not be deleted. 2 items were not attempted.');
@@ -427,7 +424,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(data.batchDelete).toHaveBeenCalledTimes(1);
     expect(data.batchDelete).toHaveBeenCalledWith(rows.map((row) => row.id));
     response.next({
-      phase: 'executed',
       results: rows.map((row, index) => ({
         id: row.id,
         outcome: index === 0 ? 'deleted' : index === 1 ? 'failed' : 'not_attempted',
@@ -527,7 +523,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     const duringDeletion = new Subject<any>();
     data[config.fetchMethod].mockReturnValueOnce(duringDeletion);
     store.dispatch(config.fetch({ fromStarting: true }));
-    response.next({ phase: 'executed', results: rows.slice(0, count).map(({ id }) => ({ id, outcome: 'deleted' })) });
+    response.next({ results: rows.slice(0, count).map(({ id }) => ({ id, outcome: 'deleted' })) });
     pending.next(page());
     duringDeletion.next(page());
     const oldSuccess = events.find(
@@ -621,7 +617,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       );
     store.dispatch(detailLoaded);
     expect(detailsError()).toBeNull();
-    response.next({ phase: 'executed', results: [{ id: viewed.id, outcome: 'deleted' }] });
+    response.next({ results: [{ id: viewed.id, outcome: 'deleted' }] });
     const notFound = { entityId: viewed.id, errorType: PAGE_ERROR_TYPE.NOT_FOUND };
     expect(detailsError()).toEqual(notFound);
     store.dispatch(detailLoaded);
@@ -637,7 +633,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
       store.dispatch(actions.batchDeleteRequested({ snapshot }));
       const pendingRefresh = new Subject<any>();
       data[config.fetchMethod].mockReturnValue(pendingRefresh);
-      const result = { phase: 'executed', results: [{ id: rows[0].id, outcome: 'deleted' }] };
+      const result = { results: [{ id: rows[0].id, outcome: 'deleted' }] };
       if (pending === 'refresh') {
         response.next(result);
         expect(pendingRefresh.observed).toBe(true);
@@ -698,7 +694,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     data[config.fetchMethod].mockReturnValue(throwError(() => new Error('refresh unavailable')));
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     response.next({
-      phase: 'executed',
       results: [{ id: rows[0].id, outcome: 'deleted', reasonCode: 'post_delete_failed' }],
     });
     const noun = { experiments: 'experiment', flags: 'feature flag', segments: 'segment' }[config.entity];
@@ -732,7 +727,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     data[config.fetchMethod].mockReturnValueOnce(of(page([rows[2]])));
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     response.next({
-      phase: 'executed',
       results: [
         { id: rows[0].id, outcome: 'deleted' },
         { id: rows[1].id, outcome: 'unknown' },
@@ -758,7 +752,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     selectRows();
     const snapshot = prepare();
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
-    response.next({ phase: 'executed', results: [] });
+    response.next({ results: [] });
     expect(batch().operation.result.results.every((result) => result.outcome === 'unknown')).toBe(true);
     expect(Object.keys(batch().selectedById)).toHaveLength(3);
     expect(batch().operation.status).toBe('complete');
@@ -775,7 +769,6 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     const first = prepare();
     store.dispatch(actions.batchDeleteRequested({ snapshot: first }));
     response.next({
-      phase: 'executed',
       results: rows.map(({ id }, index) => ({ id, outcome: index === 0 ? 'deleted' : 'not_attempted' })),
     });
     response.complete();
@@ -794,7 +787,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     store.dispatch(actionLogoutStart());
     store.dispatch(actionSetUserInfo({ user: { email: 'next@example.com', role: UserRole.ADMIN } }));
-    response.next({ phase: 'executed', results: rows.map(({ id }) => ({ id, outcome: 'deleted' })) });
+    response.next({ results: rows.map(({ id }) => ({ id, outcome: 'deleted' })) });
     expect(batch().operation).toBeNull();
     expect(Object.keys(batch().selectedById)).toHaveLength(0);
     expect(batch().removedIds).toHaveLength(0);

@@ -99,7 +99,7 @@ describe('BatchDeleteService transaction outcomes', () => {
 
   test.each(entities)('%s commits sequentially and normalizes existing service responses', async (entity) => {
     const result = await service.delete(entity, ids, user, logger);
-    expect(result).toEqual({ phase: 'executed', results: ids.map((id) => ({ id, outcome: 'deleted' })) });
+    expect(result).toEqual({ results: ids.map((id) => ({ id, outcome: 'deleted' })) });
     expect(mutations).toEqual(ids);
     for (const runner of runners) {
       expect(runner.commitTransaction).toHaveBeenCalledTimes(1);
@@ -204,7 +204,6 @@ describe('BatchDeleteService transaction outcomes', () => {
       (runner.manager.getRepository as jest.Mock).mockReturnValue({ findOne: jest.fn().mockResolvedValue(null) });
     };
     expect(await service.delete('flags', ids, user, logger)).toEqual({
-      phase: 'rejected',
       results: ids.map((id) => ({ id, outcome: 'not_found', reasonCode: DeletionReasonCode.NOT_FOUND })),
     });
     expect(mutations).toEqual([]);
@@ -359,7 +358,6 @@ describe('BatchDeleteService transaction outcomes', () => {
     });
 
     const result = await service.delete('flags', ids, user, logger);
-    expect(result.phase).toBe('executed');
     expect(result.results).toHaveLength(ids.length);
     expect(result.results[0]).toEqual({ id: ids[0], outcome: 'deleted' });
     expect(result.results[1]).toEqual({

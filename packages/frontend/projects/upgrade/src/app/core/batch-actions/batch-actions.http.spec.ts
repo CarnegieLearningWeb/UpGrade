@@ -35,7 +35,7 @@ describe('Batch HTTP contracts', () => {
     expect(deletion.request.method).toBe('POST');
     expect(deletion.request.body).toEqual({ ids });
     expect(deletion.request.context.get(SKIP_NAVIGATION_CANCEL)).toBe(true);
-    deletion.flush({ phase: 'executed', results: ids.map((id) => ({ id, outcome: 'deleted' })) });
+    deletion.flush({ results: ids.map((id) => ({ id, outcome: 'deleted' })) });
   });
 
   it('continues observing a batch response through navigation', () => {

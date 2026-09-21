@@ -70,11 +70,8 @@ interface SegmentPaginationInfo extends PaginationResponse {
  *         enum: [not_found, delete_failed, lock_timeout, external_sync_failed, outcome_unknown, post_delete_failed]
  *   BatchDeleteResult:
  *     type: object
- *     required: [phase, results]
+ *     required: [results]
  *     properties:
- *       phase:
- *         type: string
- *         enum: [rejected, executed]
  *       results:
  *         type: array
  *         items:
@@ -295,7 +292,7 @@ export class SegmentController {
    *           $ref: '#/definitions/BatchEntityIdsRequest'
    *     responses:
    *       '200':
-   *         description: Inspect phase and per-ID outcomes; rejected means no deletions were performed.
+   *         description: Per-ID deletion outcomes, including failures and items not attempted.
    *         schema:
    *           $ref: '#/definitions/BatchDeleteResult'
    *       '400':
