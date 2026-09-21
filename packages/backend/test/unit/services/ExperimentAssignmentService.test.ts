@@ -505,7 +505,7 @@ describe('Experiment Assignment Service Test', () => {
       testedModule.processExperimentPools = sandbox.stub().returns([]);
 
       let exclusionLookupStartedBeforeEnrollmentResolved = false;
-      let resolveEnrollment: (value: unknown) => void;
+      let resolveEnrollment: (value: unknown) => void = () => undefined;
       const enrollmentPromise = new Promise((resolve) => {
         resolveEnrollment = resolve;
       });
