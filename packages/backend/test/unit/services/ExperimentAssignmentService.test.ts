@@ -468,7 +468,7 @@ describe('Experiment Assignment Service Test', () => {
     // genuinely concurrent, and their results are composed identically no matter which settles first.
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
 
-    const delay = <T,>(value: T, ms: number): Promise<T> =>
+    const delay = <T>(value: T, ms: number): Promise<T> =>
       new Promise((resolve) => setTimeout(() => resolve(value), ms));
 
     it('composes the enrollment and exclusion results identically no matter which parallel query settles first', async () => {
@@ -573,12 +573,7 @@ describe('Experiment Assignment Service Test', () => {
       testedModule.experimentLevelExclusionInclusion = sandbox.stub().resolves([[exp], []]);
       testedModule.processExperimentPools = sandbox.stub().callsFake((experiments) => experiments);
 
-      const result = await testedModule.selectExperimentsForUser(
-        [exp],
-        userDoc,
-        previewUserWithAssignment,
-        loggerMock
-      );
+      const result = await testedModule.selectExperimentsForUser([exp], userDoc, previewUserWithAssignment, loggerMock);
 
       expect(result.mergedIndividualEnrollments.length).toEqual(2);
       expect(result.mergedIndividualEnrollments[0].condition).toEqual(previewAssignment.experimentCondition);
