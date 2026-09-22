@@ -1,15 +1,18 @@
+import { batchDeleteEffect, batchFinishedEffect, trackedListRequest } from '../../batch-actions/batch-actions.effects';
+import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
+import { selectRootBatch, selectFeatureFlagsState } from './feature-flags.selectors';
 import { FeatureFlagsDataService } from '../feature-flags.data.service';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Injectable } from '@angular/core';
 import * as FeatureFlagsActions from './feature-flags.actions';
-import { catchError, switchMap, mergeMap, map, filter, withLatestFrom, tap, first } from 'rxjs/operators';
-import { FeatureFlag, FeatureFlagsPaginationParams, NUMBER_OF_FLAGS } from './feature-flags.model';
+import { catchError, switchMap, mergeMap, map, filter, withLatestFrom, tap } from 'rxjs/operators';
+import { FeatureFlag, NUMBER_OF_FLAGS } from './feature-flags.model';
 import { DATE_RANGE } from '../../experiments/store/experiments.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState, NotificationService } from '../../core.module';
 import { TranslateService } from '@ngx-translate/core';
-import { selectSearchString, selectFeatureFlagPaginationParams } from './feature-flags.selectors';
+import { selectSearchString } from './feature-flags.selectors';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { CommonExportHelpersService } from '../../../shared/services/common-export-helpers.service';
 import { of } from 'rxjs';
@@ -20,6 +23,30 @@ import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/comm
 
 @Injectable()
 export class FeatureFlagsEffects {
+  batchDelete$ = createEffect(() =>
+    batchDeleteEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      FeatureFlagsActions.batchActions,
+      this.featureFlagsDataService
+    )
+  );
+  finishBatch$ = createEffect(() =>
+    batchFinishedEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      FeatureFlagsActions.batchActions,
+      (state) => {
+        const counts = batchResultCounts(state);
+        const message = batchResultMessage('flags', counts, (key, params) => this.translate.instant(key, params));
+        if (!counts.hasErrors) this.notificationService.showSuccess(message);
+        else if (counts.deleted || counts.absent) this.notificationService.showWarning(message);
+        else this.notificationService.showError(message);
+        return [FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting: true, batchRefresh: true })];
+      }
+    )
+  );
+
   constructor(
     private store$: Store<AppState>,
     private actions$: Actions,
@@ -34,51 +61,37 @@ export class FeatureFlagsEffects {
   fetchFeatureFlags$ = createEffect(() =>
     this.actions$.pipe(
       ofType(FeatureFlagsActions.actionFetchFeatureFlags),
-      map((action) => action.fromStarting),
-      withLatestFrom(this.store$.pipe(select(selectFeatureFlagPaginationParams))),
-      filter(([fromStarting, pagination]) => {
-        return (
-          !pagination.isAllFlagsFetched ||
-          pagination.skip < pagination.total ||
-          pagination.total === null ||
-          fromStarting
-        );
-      }),
-      tap(() => {
-        this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
-      }),
-      switchMap(([fromStarting, pagination]) => {
-        let params: FeatureFlagsPaginationParams = {
-          skip: fromStarting ? 0 : pagination.skip,
+      withLatestFrom(this.store$.pipe(select(selectFeatureFlagsState))),
+      filter(
+        ([action, state]) =>
+          (!state.rootBatch.listLoading || action.fromStarting) &&
+          (action.fromStarting || state.totalFlags === null || state.skipFlags < state.totalFlags)
+      ),
+      switchMap(([action, state]) => {
+        const fromStarting = !!action.fromStarting || state.skipFlags === 0;
+        const params = {
+          skip: fromStarting ? 0 : state.skipFlags,
           take: NUMBER_OF_FLAGS,
+          ...(state.sortKey ? { sortParams: { key: state.sortKey, sortAs: state.sortAs } } : {}),
+          ...(state.searchValue ? { searchParams: { key: state.searchKey, string: state.searchValue } } : {}),
         };
-        if (pagination.sortKey) {
-          params = {
-            ...params,
-            sortParams: {
-              key: pagination.sortKey,
-              sortAs: pagination.sortAs,
-            },
-          };
-        }
-        if (pagination.searchString) {
-          params = {
-            ...params,
-            searchParams: {
-              key: pagination.searchKey,
-              string: pagination.searchString,
-            },
-          };
-        }
-        return this.featureFlagsDataService.fetchFeatureFlagsPaginated(params).pipe(
-          switchMap((data: any) => {
-            const actions = fromStarting ? [FeatureFlagsActions.actionSetSkipFlags({ skipFlags: 0 })] : [];
-            return [
-              ...actions,
-              FeatureFlagsActions.actionFetchFeatureFlagsSuccess({ flags: data.nodes, totalFlags: data.total }),
-            ];
-          }),
-          catchError(() => [FeatureFlagsActions.actionFetchFeatureFlagsFailure()])
+        return trackedListRequest(
+          this.store$.pipe(select(selectRootBatch)),
+          FeatureFlagsActions.batchActions,
+          (event) => this.store$.dispatch(event),
+          () => {
+            this.store$.dispatch(FeatureFlagsActions.actionSetIsLoadingFeatureFlags({ isLoadingFeatureFlags: true }));
+            return this.featureFlagsDataService.fetchFeatureFlagsPaginated(params, !!action.batchRefresh);
+          },
+          (data: any, requestId) => [
+            FeatureFlagsActions.actionFetchFeatureFlagsSuccess({
+              flags: data.nodes,
+              totalFlags: data.total,
+              fromStarting,
+              batchListRequestId: requestId,
+            }),
+          ],
+          () => [FeatureFlagsActions.actionFetchFeatureFlagsFailure()]
         );
       })
     )
@@ -547,6 +560,4 @@ export class FeatureFlagsEffects {
       )
     )
   );
-
-  private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
 }

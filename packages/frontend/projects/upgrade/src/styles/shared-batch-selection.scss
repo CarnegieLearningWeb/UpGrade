@@ -1,0 +1,32 @@
+@use '@angular/material' as mat;
+
+// Match the theme's checkbox specificity; this partial is loaded after the theme.
+.batch-select-column .mat-mdc-checkbox.batch-checkbox {
+  width: 40px;
+
+  @include mat.checkbox-overrides(
+    (
+      unselected-icon-color: var(--grey-7),
+      unselected-hover-icon-color: var(--grey-7),
+      unselected-focus-icon-color: var(--grey-7),
+      selected-hover-state-layer-opacity: 0,
+      unselected-hover-state-layer-opacity: 0,
+      selected-focus-state-layer-opacity: 0,
+      unselected-focus-state-layer-opacity: 0,
+      selected-pressed-state-layer-opacity: 0,
+      unselected-pressed-state-layer-opacity: 0,
+    )
+  );
+
+  // Keep keyboard focus visible without leaving a circle after a pointer click.
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--blue);
+    outline-offset: -4px;
+    border-radius: 4px;
+  }
+}
+
+// Keep the header aligned; hidden selections must still be available to clear.
+.no-data:not(.has-batch-selection) .mat-mdc-header-row .batch-checkbox {
+  visibility: hidden;
+}

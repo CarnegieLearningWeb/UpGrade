@@ -1,4 +1,11 @@
-<app-common-section-card>
+<app-common-section-card
+  appRootBatchActions
+  [batchFacade]="batch"
+  batchEntity="experiments"
+  [batchExpandedTags]="expandedTagsMap"
+  #batchUi="rootBatchActions"
+>
+  @let batchView = (batchUi.view$ | async);
   <!-- header-left -->
   <app-common-section-card-search-header
     header-left
@@ -13,8 +20,10 @@
     header-right
     [showPrimaryButton]="(permissions$ | async)?.experiments.create"
     [primaryButtonText]="'experiments.add-experiment.text' | translate"
-    [menuButtonItems]="menuButtonItems"
-    [showMenuButton]="(permissions$ | async)?.experiments.create"
+    [menuButtonItems]="batchView?.selectedCount ? batchView.menuItems : menuButtonItems"
+    [showMenuButton]="!!batchView?.selectedCount || (permissions$ | async)?.experiments.create"
+    [menuButtonDisabled]="!!batchView?.selectedCount && batchView.menuDisabled"
+    [menuButtonTooltip]="batchView?.messageKey | translate"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddExperimentButtonClick()"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"
@@ -31,11 +40,12 @@
     } @else {
     <div class="table-container">
       <app-experiment-root-section-card-table
+        [canSelect]="(permissions$ | async)?.experiments.delete"
         [experiments]="experiments$ | async"
         [isLoading$]="isLoadingExperiments$"
         [isSearchActive$]="isSearchActive$"
         [expandedTagsMap]="expandedTagsMap"
-        (tagsExpanded)="onTagsExpanded($event.flagId, $event.expanded)"
+        (tagsExpanded)="onTagsExpanded($event.experimentId, $event.expanded)"
       >
       </app-experiment-root-section-card-table>
     </div>

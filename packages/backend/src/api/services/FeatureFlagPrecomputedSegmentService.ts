@@ -6,6 +6,8 @@ import { FeatureFlagSegmentExclusionRepository } from '../repositories/FeatureFl
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { FeatureFlagPrecomputedSegment } from '../models/FeatureFlagPrecomputedSegment';
+import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
+import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { CacheService } from './CacheService';
 import { CACHE_PREFIX } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
@@ -56,13 +58,19 @@ export class FeatureFlagPrecomputedSegmentService extends PrecomputedSegmentServ
     };
   }
 
-  protected async findOwnerIdsBySegmentId(segmentId: string): Promise<string[]> {
+  protected async findOwnerIdsBySegmentId(segmentId: string, entityManager?: EntityManager): Promise<string[]> {
+    const inclusionRepository = entityManager
+      ? entityManager.getRepository(FeatureFlagSegmentInclusion)
+      : this.featureFlagSegmentInclusionRepository;
+    const exclusionRepository = entityManager
+      ? entityManager.getRepository(FeatureFlagSegmentExclusion)
+      : this.featureFlagSegmentExclusionRepository;
     const [inclusionRecords, exclusionRecords] = await Promise.all([
-      this.featureFlagSegmentInclusionRepository.find({
+      inclusionRepository.find({
         where: { segment: { id: segmentId } },
         relations: { featureFlag: true },
       }),
-      this.featureFlagSegmentExclusionRepository.find({
+      exclusionRepository.find({
         where: { segment: { id: segmentId } },
         relations: { featureFlag: true },
       }),
@@ -101,8 +109,8 @@ export class FeatureFlagPrecomputedSegmentService extends PrecomputedSegmentServ
     this.scheduleRecomputeForOwners(flagIds, logger);
   }
 
-  public getAffectedFlagIds(segmentId: string): Promise<string[]> {
-    return this.getAffectedOwnerIds(segmentId);
+  public getAffectedFlagIds(segmentId: string, entityManager?: EntityManager): Promise<string[]> {
+    return this.getAffectedOwnerIds(segmentId, entityManager);
   }
 
   public recomputeAllFlags(logger: UpgradeLogger): Promise<void> {

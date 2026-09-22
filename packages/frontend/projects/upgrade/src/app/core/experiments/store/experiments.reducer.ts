@@ -1,8 +1,11 @@
+import { initialRootBatchState } from '../../batch-actions/batch-actions.models';
+import { withRootBatch } from '../../batch-actions/batch-actions.store';
 import { ExperimentState, EXPERIMENT_SEARCH_KEY, SORT_AS_DIRECTION, EXPERIMENT_SORT_KEY } from './experiments.model';
 import { createReducer, on, Action } from '@ngrx/store';
 import * as experimentsAction from './experiments.actions';
 
 export const initialState: ExperimentState = {
+  rootBatch: initialRootBatchState,
   // List page state
   experiments: [],
   isLoadingExperiment: false,
@@ -232,7 +235,6 @@ const reducer = createReducer(
   })),
   on(experimentsAction.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
   on(experimentsAction.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
-  on(experimentsAction.actionSetSkipExperiment, (state, { skipExperiment }) => ({ ...state, skipExperiment })),
   on(experimentsAction.actionFetchAllExperimentNamesSuccess, (state, { allExperimentNames }) => ({
     ...state,
     allExperimentNames,
@@ -528,6 +530,28 @@ const reducer = createReducer(
   }))
 );
 
+const batchReducer = withRootBatch(reducer, initialState, {
+  entity: 'experiments',
+  actions: experimentsAction.batchActions,
+  rowsKey: 'experiments',
+  loadingKey: 'isLoadingExperiment',
+  skipKey: 'skipExperiment',
+  totalKey: 'totalExperiments',
+  queryTypes: [
+    experimentsAction.actionSetSearchKey.type,
+    experimentsAction.actionSetSearchString.type,
+    experimentsAction.actionSetSearchParams.type,
+    experimentsAction.actionSetSortKey.type,
+    experimentsAction.actionSetSortingType.type,
+  ],
+  deletedId: (action) =>
+    action.type === experimentsAction.actionDeleteExperimentSuccess.type
+      ? (action as ReturnType<typeof experimentsAction.actionDeleteExperimentSuccess>).experimentId
+      : undefined,
+  listSuccessType: experimentsAction.actionGetExperimentsSuccess.type,
+  responseRowsKey: 'experiments',
+});
+
 export function experimentsReducer(state: ExperimentState | undefined, action: Action) {
-  return reducer(state, action);
+  return batchReducer(state, action);
 }

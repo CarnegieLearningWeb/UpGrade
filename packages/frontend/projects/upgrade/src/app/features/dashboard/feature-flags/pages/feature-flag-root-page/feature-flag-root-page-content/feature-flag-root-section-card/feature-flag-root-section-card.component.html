@@ -1,4 +1,11 @@
-<app-common-section-card>
+<app-common-section-card
+  appRootBatchActions
+  [batchFacade]="batch"
+  batchEntity="flags"
+  [batchExpandedTags]="expandedTagsMap"
+  #batchUi="rootBatchActions"
+>
+  @let batchView = (batchUi.view$ | async);
   <!-- header-left -->
   <app-common-section-card-search-header
     header-left
@@ -13,8 +20,10 @@
     header-right
     [showPrimaryButton]="(permissions$ | async)?.featureFlags.create"
     [primaryButtonText]="'feature-flags.add-feature-flag.text' | translate"
-    [menuButtonItems]="menuButtonItems"
-    [showMenuButton]="(permissions$ | async)?.featureFlags.create"
+    [menuButtonItems]="batchView?.selectedCount ? batchView.menuItems : menuButtonItems"
+    [showMenuButton]="!!batchView?.selectedCount || (permissions$ | async)?.featureFlags.create"
+    [menuButtonDisabled]="!!batchView?.selectedCount && batchView.menuDisabled"
+    [menuButtonTooltip]="batchView?.messageKey | translate"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddFeatureFlagButtonClick()"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"
@@ -31,6 +40,7 @@
     } @else {
     <div class="table-container">
       <app-feature-flag-root-section-card-table
+        [canSelect]="(permissions$ | async)?.featureFlags.delete"
         [featureFlags$]="featureFlags$"
         [isLoading$]="isLoadingFeatureFlags$"
         [isSearchActive$]="isSearchActive$"

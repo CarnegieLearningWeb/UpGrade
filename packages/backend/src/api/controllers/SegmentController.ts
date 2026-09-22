@@ -1,5 +1,11 @@
+import { UserDTO } from '../DTO/UserDTO';
+import { BatchDeleteResult } from 'upgrade_types';
+import { Inject } from 'typedi';
+import { BatchDeleteService } from '../services/BatchDeleteService';
+import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import {
   JsonController,
+  CurrentUser,
   Get,
   Delete,
   Authorized,
@@ -49,6 +55,38 @@ interface SegmentPaginationInfo extends PaginationResponse {
 /**
  * @swagger
  * definitions:
+ *   BatchDeleteItemResult:
+ *     type: object
+ *     required: [id, outcome]
+ *     properties:
+ *       id:
+ *         type: string
+ *         format: uuid
+ *       outcome:
+ *         type: string
+ *         enum: [deleted, not_found, failed, unknown, not_attempted]
+ *       reasonCode:
+ *         type: string
+ *         enum: [not_found, delete_failed, lock_timeout, external_sync_failed, outcome_unknown, post_delete_failed]
+ *   BatchDeleteResult:
+ *     type: object
+ *     required: [results]
+ *     properties:
+ *       results:
+ *         type: array
+ *         items:
+ *           $ref: '#/definitions/BatchDeleteItemResult'
+ *   BatchEntityIdsRequest:
+ *     type: object
+ *     required: [ids]
+ *     properties:
+ *       ids:
+ *         type: array
+ *         minItems: 1
+ *         uniqueItems: true
+ *         items:
+ *           type: string
+ *           format: uuid
  *   Segment:
  *     required:
  *       - name
@@ -233,7 +271,43 @@ interface SegmentPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/segments')
 export class SegmentController {
-  constructor(public segmentService: SegmentService) {}
+  constructor(
+    public segmentService: SegmentService,
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
+  ) {}
+
+  /**
+   * @swagger
+   * /segments/batch-delete:
+   *   post:
+   *     summary: Delete the selected segments
+   *     description: Deletes selected segments sequentially using the existing deletion workflow, skipping missing items. Execution failures stop the remaining items. Returns one result per ID.
+   *     tags:
+   *       - Segment
+   *     parameters:
+   *       - in: body
+   *         name: selection
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/BatchEntityIdsRequest'
+   *     responses:
+   *       '200':
+   *         description: Per-ID deletion outcomes, including failures and items not attempted.
+   *         schema:
+   *           $ref: '#/definitions/BatchDeleteResult'
+   *       '400':
+   *         description: Expected a nonempty array of unique UUIDs.
+   *       '401':
+   *         description: AuthorizationRequiredError
+   */
+  @Post('/batch-delete')
+  public batchDelete(
+    @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<BatchDeleteResult> {
+    return this.batchDeleteService.delete('segments', ids, currentUser, request.logger);
+  }
 
   /**
    * @swagger

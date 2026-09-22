@@ -1,3 +1,4 @@
+import { createBatchActions } from '../../batch-actions/batch-actions.actions';
 import { createAction, props } from '@ngrx/store';
 import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
@@ -19,11 +20,15 @@ import {
 } from '../../../../../../../../types/src/Experiment/enums';
 import { FeatureFlagSegmentListDetails } from '../../feature-flags/store/feature-flags.model';
 
-export const actionFetchSegments = createAction('[Segments] Segments', props<{ fromStarting?: boolean }>());
+export const actionFetchSegments = createAction(
+  '[Segments] Segments',
+  props<{ fromStarting?: boolean; batchRefresh?: boolean }>()
+);
 
 export const actionFetchSegmentsSuccess = createAction(
   '[Segments] Fetch Segments Success',
   props<{
+    batchListRequestId?: string;
     segments: Segment[];
     totalSegments: number;
     experimentSegmentInclusion: experimentSegmentInclusionExclusionData[];
@@ -205,3 +210,5 @@ export const actionDeleteSegmentListFailure = createAction(
   '[Segments] Delete Segment List Failure',
   props<{ error: any }>()
 );
+
+export const batchActions = createBatchActions('segments');

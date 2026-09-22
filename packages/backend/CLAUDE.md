@@ -83,10 +83,10 @@ Segment inclusion/exclusion for **feature flags** is precomputed and stored flat
 
 - **`FeatureFlagPrecomputedSegment` entity** (`src/api/models/FeatureFlagPrecomputedSegment.ts`) — one row per feature flag, columns: `featureFlagId` (PK), `inclusionIds: text[]`, `exclusionIds: text[]`. FK to `feature_flag` with `onDelete: CASCADE`.
 - **`FeatureFlagPrecomputedSegmentService`** (`src/api/services/FeatureFlagPrecomputedSegmentService.ts`) — owns all computation and cache logic:
-  - `recomputeForFlag(flagId)` — flattens all enabled inclusion/exclusion segments (recursive sub-segments) into flat ID arrays and upserts the row. This is the only method that `await`s — callers on write paths never call it directly.
+  - `recomputeForFlag(flagId)` — flattens all enabled inclusion/exclusion segments (recursive sub-segments) into flat ID arrays and upserts the row. Imports and batch segment deletion await this method directly.
   - `scheduleRecomputeForFlags(flagIds[])` — fire-and-forget recompute for a known set of flags (swallows/logs errors). The flag-side counterpart to `scheduleRecomputeForSegment`.
   - `scheduleRecomputeForSegment(segmentId)` — fire-and-forget; finds all flags referencing a segment (and its parents) and recomputes each.
-  - `withRecompute(logger, resolveAffectedFlagIds, work)` — **the wrapper all top-level write methods use.** Resolves affected flag IDs *before* `work`, runs `work` (which must own/commit its own transaction), then fires a fire-and-forget recompute *after* commit. Keeps mutation + recompute in one call so a refactor can't drop the recompute. `work` is never blocked on the recompute.
+  - `withRecompute(logger, resolveAffectedFlagIds, work)` — **the wrapper for background recomputation on write paths.** Resolves affected flag IDs *before* `work`, runs `work` (which must own/commit its own transaction), then fires a fire-and-forget recompute *after* commit. Keeps mutation + recompute in one call so a refactor can't drop the recompute. `work` is never blocked on the recompute.
   - `getAffectedFlagIds(segmentId)` — public helper that returns flag IDs affected by a given segment (used as the `resolveAffectedFlagIds` for segment deletes).
   - `getPrecomputedSets(flagIds[])` — cache-wrapped batch fetch, returns a `Map<flagId, FeatureFlagPrecomputedSegment>`.
   - `backfillMissingFlags(logger)` — called at startup; computes rows only for flags that have none yet (no-op once all flags are populated).
@@ -105,14 +105,14 @@ Segment inclusion/exclusion for **feature flags** is precomputed and stored flat
 | Private list added to a shared segment | `SegmentService.addList` → `scheduleRecomputeForSegment` |
 | Private list removed from a shared segment | `SegmentService.deleteList` → `scheduleRecomputeForSegment` |
 | Segment members/structure updated | `SegmentService.addSegmentDataWithPipeline` → `scheduleRecomputeForSegment` |
-| Segment deleted entirely | `SegmentService.deleteSegment` → `withRecompute` (collects affected flag IDs **before** the delete, recomputes **after** commit) |
+| Segment deleted entirely | `SegmentService.deleteSegment` → `withRecompute` for single deletion; batch deletion collects affected flag IDs after the target lock and **before** deletion, then awaits recomputation **after** commit |
 | Server startup | `app.ts` → `backfillMissingFlags` — backfills any flag with no row |
 
-All recomputes triggered from write paths are **fire-and-forget** — no request handler (flag-side or segment-side) ever blocks on a recompute. The `import*` paths are the one exception: they `await recomputeForFlag` so "import complete" means the rows are ready.
+Ordinary write paths use **fire-and-forget** recomputation. The `import*` paths await `recomputeForFlag` so "import complete" means the rows are ready. Batch segment deletion also awaits post-commit recomputation for both flags and experiments before processing the next segment. `SegmentService.deleteSegment` selects this awaited branch when supplied with the batch transaction executor; ordinary callers retain background recomputation.
 
 ### Key invariant
 
-The `feature_flag_precomputed_segment` row must always be recomputed **after** the structural change commits, so the flat arrays reflect the new state. For deletions specifically, affected flag IDs must be collected **before** the delete because the join table records are gone afterward. Both halves of this invariant are enforced by `withRecompute` (resolve-before → work → recompute-after), so top-level write methods get the ordering for free rather than hand-rolling it.
+The `feature_flag_precomputed_segment` row must always be recomputed **after** the structural change commits, so the flat arrays reflect the new state. For deletions specifically, affected flag IDs must be collected **before** the delete because the join table records are gone afterward. `withRecompute` enforces this ordering for background recomputation. The batch branch collects owners inside the supplied transaction, after the target lock is held, and waits for all post-commit updates to settle before propagating any failure.
 
 ## Precomputed Segment Lists (Experiments)
 
@@ -144,10 +144,10 @@ Experiment join tables (`ExperimentSegmentInclusion` / `ExperimentSegmentExclusi
 | Experiment lists imported | `ExperimentService.importExperimentLists` → `await recomputeForExperiment` after the import transaction commits |
 | Experiment context changed (deletes all its lists) | `ExperimentService.updateExperimentInDB` → `scheduleRecomputeForExperiments` after commit (recomputes to empty; `deleteAllListsFromExperiment` deletes the private segments directly, so the precomputed row would otherwise keep stale IDs). When a caller owns the transaction (`MoocletExperimentService.syncUpdate` / `syncUpdateWithMoocletAlgorithmTransition`), those methods recompute after their own commit — mirrors the flag side's `updateFeatureFlagInDB` → `withRecompute` |
 | Shared segment members/structure changed | `SegmentService.addList` / `deleteList` / `addSegmentDataWithPipeline` → `scheduleRecomputeForSegment` for **both** the flag and experiment services |
-| Segment deleted entirely | `SegmentService.deleteSegment` → collects affected experiment IDs **before** the delete, recomputes **after** commit (flags use `withRecompute` in the same method) |
+| Segment deleted entirely | `SegmentService.deleteSegment` → collects affected experiment IDs **before** deletion and recomputes **after** commit; single deletion schedules background work, while batch deletion collects owners after the target lock and awaits recomputation |
 | Server startup | `app.ts` → `backfillExperimentPrecomputedSegments` (guarded by `.catch` — a missing table never crashes startup) |
 
-Same invariant as feature flags: recompute **after** the change commits; for deletes, collect affected experiment IDs **before**. All write-path recomputes are fire-and-forget except the `create` / import / Mooclet paths, which `await` so "done" means the row is ready.
+Same invariant as feature flags: recompute **after** the change commits; for deletes, collect affected experiment IDs **before**. Write-path recomputes are fire-and-forget except the `create` / import / Mooclet paths and batch segment deletion, which await recomputation. A batch finishes each segment's post-commit updates before deleting the next segment.
 
 ### INCLUDE_ALL semantics (resolved)
 

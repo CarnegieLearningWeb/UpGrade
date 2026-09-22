@@ -5,6 +5,9 @@ import { APIEndpoints } from '../../environments/environment-types';
  * These are relative paths that will be prepended with the environment's apiBaseUrl by the HTTP interceptor.
  */
 export const API_ENDPOINTS: APIEndpoints = {
+  experimentsBatchDelete: '/experiments/batch-delete',
+  flagsBatchDelete: '/flags/batch-delete',
+  segmentsBatchDelete: '/segments/batch-delete',
   getAllExperiments: '/experiments/paginated',
   createNewExperiments: '/experiments',
   validateExperiment: '/experiments/validation',

@@ -1,3 +1,6 @@
+import { createBatchFacade } from '../batch-actions/batch-actions.facade';
+import { batchActions } from './store/feature-flags.actions';
+import { selectRootBatch } from './store/feature-flags.selectors';
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
@@ -51,6 +54,8 @@ import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable()
 export class FeatureFlagsService {
+  readonly batch = createBatchFacade(this.store$, 'flags', batchActions, selectRootBatch, selectAllFeatureFlags);
+
   constructor(private store$: Store<AppState>, private localStorageService: LocalStorageService) {}
 
   currentUserEmailAddress$ = this.store$.pipe(select(selectCurrentUserEmail));

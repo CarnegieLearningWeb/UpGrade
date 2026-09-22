@@ -1,3 +1,7 @@
+import { BatchDeleteResult } from 'upgrade_types';
+import { Inject } from 'typedi';
+import { BatchDeleteService } from '../services/BatchDeleteService';
+import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import {
   Body,
   Get,
@@ -664,8 +668,42 @@ export class ExperimentController {
     public moocletExperimentService: MoocletExperimentService,
     public moocletRewardService: MoocletRewardsService,
     public importExportService: ImportExportService,
-    public cacheService: CacheService
+    public cacheService: CacheService,
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
   ) {}
+
+  /**
+   * @swagger
+   * /experiments/batch-delete:
+   *   post:
+   *     summary: Delete the selected experiments
+   *     description: Deletes selected experiments sequentially regardless of state, skipping missing items. Execution failures stop the remaining items. Returns one result per ID.
+   *     tags:
+   *       - Experiments
+   *     parameters:
+   *       - in: body
+   *         name: selection
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/BatchEntityIdsRequest'
+   *     responses:
+   *       '200':
+   *         description: Per-ID deletion outcomes, including failures and items not attempted.
+   *         schema:
+   *           $ref: '#/definitions/BatchDeleteResult'
+   *       '400':
+   *         description: Expected a nonempty array of unique UUIDs.
+   *       '401':
+   *         description: AuthorizationRequiredError
+   */
+  @Post('/batch-delete')
+  public batchDelete(
+    @Body({ validate: true }) { ids }: BatchEntityIdsValidator,
+    @CurrentUser() currentUser: UserDTO,
+    @Req() request: AppRequest
+  ): Promise<BatchDeleteResult> {
+    return this.batchDeleteService.delete('experiments', ids, currentUser, request.logger);
+  }
 
   /**
    * @swagger

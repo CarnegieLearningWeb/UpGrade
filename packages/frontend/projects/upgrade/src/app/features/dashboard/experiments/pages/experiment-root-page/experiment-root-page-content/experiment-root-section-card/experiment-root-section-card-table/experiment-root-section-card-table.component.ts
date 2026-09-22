@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import {
   ChangeDetectionStrategy,
@@ -31,6 +32,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 @Component({
   selector: 'app-experiment-root-section-card-table',
   imports: [
+    MatCheckboxModule,
     MatTableModule,
     AsyncPipe,
     SharedModule,
@@ -48,6 +50,7 @@ export class ExperimentRootSectionCardTableComponent implements AfterViewInit, O
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
   @Input() expandedTagsMap: Map<string, boolean>;
+  @Input() canSelect = false;
   @Output() tagsExpanded = new EventEmitter<{ experimentId: string; expanded: boolean }>();
   experimentSortKey$ = this.experimentService.selectExperimentSortKey$;
   experimentSortAs$ = this.experimentService.selectExperimentSortAs$;
@@ -58,6 +61,7 @@ export class ExperimentRootSectionCardTableComponent implements AfterViewInit, O
   @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
 
   private observer: IntersectionObserver;
+  readonly batch = this.experimentService.batch;
 
   constructor(private readonly experimentService: ExperimentService) {}
 
@@ -106,7 +110,7 @@ export class ExperimentRootSectionCardTableComponent implements AfterViewInit, O
   }
 
   get displayedColumns(): string[] {
-    return EXPERIMENT_ROOT_DISPLAYED_COLUMNS;
+    return this.canSelect ? ['select', ...EXPERIMENT_ROOT_DISPLAYED_COLUMNS] : EXPERIMENT_ROOT_DISPLAYED_COLUMNS;
   }
 
   get EXPERIMENT_TRANSLATION_KEYS() {

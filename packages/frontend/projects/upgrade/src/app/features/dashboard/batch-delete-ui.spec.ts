@@ -1,0 +1,568 @@
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideRouter, Router } from '@angular/router';
+import { OverlayContainer } from '@angular/cdk/overlay';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTooltip } from '@angular/material/tooltip';
+import { Store, StoreModule } from '@ngrx/store';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { BehaviorSubject, Subject, Subscription, of } from 'rxjs';
+import { EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SEGMENT_STATUS, UserRole } from 'upgrade_types';
+import { ExperimentRootSectionCardComponent } from './experiments/pages/experiment-root-page/experiment-root-page-content/experiment-root-section-card/experiment-root-section-card.component';
+import { FeatureFlagRootSectionCardComponent } from './feature-flags/pages/feature-flag-root-page/feature-flag-root-page-content/feature-flag-root-section-card/feature-flag-root-section-card.component';
+import { SegmentRootSectionCardComponent } from './segments/pages/segment-root-page/segment-root-page-content/segment-root-section-card/segment-root-section-card.component';
+import { ExperimentService } from '../../core/experiments/experiments.service';
+import { FeatureFlagsService } from '../../core/feature-flags/feature-flags.service';
+import { SegmentsService } from '../../core/segments/segments.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { StratificationFactorsService } from '../../core/stratification-factors/stratification-factors.service';
+import { DialogService } from '../../shared/services/common-dialog.service';
+import { createBatchFacade } from '../../core/batch-actions/batch-actions.facade';
+import { RootBatchActionsDirective } from '../../shared/directives/root-batch-actions.directive';
+import { actionSetUserInfo } from '../../core/auth/store/auth.actions';
+import { experimentsReducer } from '../../core/experiments/store/experiments.reducer';
+import { featureFlagsReducer } from '../../core/feature-flags/store/feature-flags.reducer';
+import { segmentsReducer } from '../../core/segments/store/segments.reducer';
+import * as experiments from '../../core/experiments/store/experiments.actions';
+import * as flags from '../../core/feature-flags/store/feature-flags.actions';
+import * as segments from '../../core/segments/store/segments.actions';
+
+const translations = jest.requireActual('../../../assets/i18n/en.json');
+const cases = [
+  {
+    entity: 'experiments',
+    key: 'experiments',
+    component: ExperimentRootSectionCardComponent,
+    token: ExperimentService,
+    actions: experiments,
+  },
+  {
+    entity: 'flags',
+    key: 'featureFlags',
+    component: FeatureFlagRootSectionCardComponent,
+    token: FeatureFlagsService,
+    actions: flags,
+  },
+  {
+    entity: 'segments',
+    key: 'segments',
+    component: SegmentRootSectionCardComponent,
+    token: SegmentsService,
+    actions: segments,
+  },
+] as const;
+
+describe.each(cases)('$entity root batch UI', (config) => {
+  let fixture: ComponentFixture<any>;
+  let store: Store<any>;
+  let state: any;
+  let subscription: Subscription;
+  let service: any;
+  let dialogs: any;
+  let closed: Subject<boolean | undefined>;
+  let overlay: OverlayContainer;
+  let permissions$: BehaviorSubject<any>;
+  let listLoading$: BehaviorSubject<boolean>;
+  const actions = config.actions.batchActions;
+  const rows = ['Alpha', 'Beta'].map((name, index) => ({
+    id: `11111111-2222-4333-8444-${String(index + 1).padStart(12, '0')}`,
+    name,
+    description: 'Description',
+    context: ['test'],
+    tags: [],
+    state: config.entity === 'experiments' ? EXPERIMENT_STATE.INACTIVE : undefined,
+    status: config.entity === 'segments' ? SEGMENT_STATUS.UNUSED : FEATURE_FLAG_STATUS.DISABLED,
+  }));
+  const batch = () => state[config.key].rootBatch;
+  const checkboxes = (): HTMLInputElement[] => [...fixture.nativeElement.querySelectorAll('input[type=checkbox]')];
+  function load(items = rows) {
+    const action =
+      config.entity === 'experiments'
+        ? experiments.actionGetExperimentsSuccess({
+            experiments: items as any,
+            totalExperiments: items.length,
+            fromStarting: true,
+          })
+        : config.entity === 'flags'
+        ? flags.actionFetchFeatureFlagsSuccess({ flags: items as any, totalFlags: items.length, fromStarting: true })
+        : segments.actionFetchSegmentsSuccess({
+            segments: items as any,
+            totalSegments: items.length,
+            fromStarting: true,
+            experimentSegmentInclusion: [],
+            experimentSegmentExclusion: [],
+            featureFlagSegmentInclusion: [],
+            featureFlagSegmentExclusion: [],
+            allParentSegments: [],
+          });
+    store.dispatch(action);
+  }
+  function selectFirst() {
+    checkboxes()[1].click();
+    fixture.detectChanges();
+  }
+  function openMenu() {
+    fixture.nativeElement.querySelector('.section-card-menu-trigger').click();
+    fixture.detectChanges();
+    tick();
+  }
+  beforeEach(async () => {
+    permissions$ = new BehaviorSubject({
+      experiments: { create: true, delete: true },
+      featureFlags: { create: true, delete: true },
+      segments: { create: true, delete: true },
+    });
+    global.IntersectionObserver = jest.fn(() => ({ observe: jest.fn(), disconnect: jest.fn() })) as any;
+    await TestBed.configureTestingModule({
+      imports: [
+        config.component,
+        NoopAnimationsModule,
+        TranslateModule.forRoot(),
+        StoreModule.forRoot({
+          experiments: experimentsReducer,
+          featureFlags: featureFlagsReducer,
+          segments: segmentsReducer,
+        }),
+      ],
+      providers: [
+        provideRouter([]),
+        { provide: config.token, useFactory: () => service },
+        {
+          provide: AuthService,
+          useValue: {
+            userPermissions$: permissions$,
+          },
+        },
+        { provide: StratificationFactorsService, useValue: { fetchStratificationFactors: jest.fn() } },
+        { provide: DialogService, useFactory: () => dialogs },
+      ],
+    }).compileComponents();
+    store = TestBed.inject(Store);
+    subscription = store.subscribe((value) => (state = value));
+    store.dispatch(actionSetUserInfo({ user: { email: 'test@example.com', role: UserRole.ADMIN } }));
+    load();
+    const batchFacade = createBatchFacade(
+      store,
+      config.entity,
+      actions,
+      (s) => s[config.key].rootBatch,
+      (s) => s[config.key][config.key]
+    );
+    const rows$ = store.select((s) => s[config.key][config.key]);
+    listLoading$ = new BehaviorSubject(false);
+    service = {
+      batch: batchFacade,
+      experiments$: rows$,
+      featureFlags$: rows$,
+      selectAllSegments$: rows$,
+      isLoadingExperiment$: listLoading$,
+      isLoadingFeatureFlags$: listLoading$,
+      isLoadingSegments$: listLoading$,
+      haveInitialExperimentsLoaded: () => of(true),
+      isInitialFeatureFlagsLoading$: of(true),
+      isInitialSegmentsLoading: () => of(true),
+      selectSearchString$: of(''),
+      searchString$: of(''),
+      selectSearchKey$: of('name'),
+      searchKey$: of('name'),
+      searchParams$: of({}),
+      selectRootTableState$: of({}),
+      selectExperimentSortKey$: of('name'),
+      selectExperimentSortAs$: of('ASC'),
+      sortKey$: of('name'),
+      sortAs$: of('ASC'),
+      selectSegmentSortKey$: of('name'),
+      selectSegmentSortAs$: of('ASC'),
+      warningKeysForAllExperiments$: of({}),
+      warningKeysForAllFlags$: of({}),
+      loadExperiments: jest.fn(),
+      fetchFeatureFlags: jest.fn(),
+      fetchSegmentsPaginated: jest.fn(),
+      fetchAllExperimentNames: jest.fn(),
+      setSearchParams: jest.fn(),
+      setSearchString: jest.fn(),
+      setSearchKey: jest.fn(),
+      setSortingType: jest.fn(),
+      setSortKey: jest.fn(),
+    };
+    closed = new Subject();
+    dialogs = { openBatchDeleteModal: jest.fn(() => ({ afterClosed: () => closed, close: jest.fn() })) };
+    overlay = TestBed.inject(OverlayContainer);
+    const translate = TestBed.inject(TranslateService);
+    translate.setTranslation('en', translations);
+    translate.use('en');
+    fixture = TestBed.createComponent(config.component as any);
+    fixture.detectChanges();
+    fixture.detectChanges();
+  });
+  afterEach(() => {
+    fixture.destroy();
+    subscription.unsubscribe();
+    closed.complete();
+    TestBed.resetTestingModule();
+  });
+
+  it('keeps Name sort semantics on the header and checkbox interactions separate from sorting', () => {
+    const nameHeader: HTMLElement = fixture.nativeElement.querySelector('th.name-column');
+    const sortButton = nameHeader.querySelector<HTMLElement>('[role="button"]');
+    expect(nameHeader.getAttribute('aria-sort')).toBe('ascending');
+    expect(nameHeader.querySelector('[aria-sort]')).toBeNull();
+    expect(nameHeader.querySelector('input[type=checkbox]')).toBeNull();
+    expect(document.getElementById(sortButton.getAttribute('aria-describedby')).textContent).toBe('Sort by Name');
+
+    const input = checkboxes()[1];
+    expect(input.getAttribute('aria-label')).toContain('Alpha');
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    selectFirst();
+    expect(Object.keys(batch().selectedById)).toEqual([rows[0].id]);
+    expect(service.setSortKey).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('1 Selected');
+    expect(fixture.nativeElement.querySelector('a').getAttribute('href')).toContain(rows[0].id);
+    const headerCheckbox = checkboxes()[0];
+    expect(headerCheckbox.closest('[role="button"]')).toBeNull();
+    headerCheckbox.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', keyCode: 32, bubbles: true }));
+    headerCheckbox.click();
+    fixture.detectChanges();
+    expect(service.setSortKey).not.toHaveBeenCalled();
+
+    nameHeader.click();
+    fixture.detectChanges();
+    expect(service.setSortKey).toHaveBeenCalledWith('name');
+    expect(service.setSortKey).toHaveBeenCalledTimes(1);
+    expect(nameHeader.getAttribute('aria-sort')).toBe('descending');
+    expect(nameHeader.querySelector('[aria-sort]')).toBeNull();
+
+    nameHeader.closest('table').parentElement.scroll = jest.fn();
+    sortButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }));
+    fixture.detectChanges();
+    expect(service.setSortKey).toHaveBeenLastCalledWith(null);
+    expect(nameHeader.getAttribute('aria-sort')).toBe('none');
+
+    sortButton.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', keyCode: 32, bubbles: true }));
+    fixture.detectChanges();
+    expect(service.setSortKey).toHaveBeenLastCalledWith('name');
+    expect(nameHeader.getAttribute('aria-sort')).toBe('ascending');
+  });
+
+  it('clears a mixed header visually and keeps subsequent select-all toggles synchronized', fakeAsync(() => {
+    selectFirst();
+    const header = checkboxes()[0];
+    expect(header.indeterminate).toBe(true);
+    expect(header.getAttribute('aria-label')).toBe('Clear all selections');
+
+    header.click();
+    fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
+    expect(Object.keys(batch().selectedById)).toHaveLength(0);
+    expect(header.checked).toBe(false);
+    expect(header.indeterminate).toBe(false);
+    expect(header.getAttribute('aria-label')).toBe('Select all loaded items');
+
+    header.click();
+    fixture.detectChanges();
+    expect(Object.keys(batch().selectedById)).toHaveLength(rows.length);
+    expect(header.checked).toBe(true);
+    expect(header.indeterminate).toBe(false);
+
+    header.click();
+    fixture.detectChanges();
+    expect(Object.keys(batch().selectedById)).toHaveLength(0);
+    expect(checkboxes().every((input) => !input.checked && !input.indeterminate)).toBe(true);
+  }));
+
+  it('retains a mixed header with no matching rows and clears hidden selections to restore Import', fakeAsync(() => {
+    selectFirst();
+    load([]);
+    fixture.detectChanges();
+    expect(checkboxes()).toHaveLength(1);
+    expect(checkboxes()[0].indeterminate).toBe(true);
+    expect(checkboxes()[0].getAttribute('aria-label')).toBe('Clear all selections');
+    expect(fixture.nativeElement.textContent).toContain('1 Selected');
+    expect(fixture.nativeElement.querySelector('td[colspan]').colSpan).toBe(
+      fixture.nativeElement.querySelectorAll('th').length
+    );
+    checkboxes()[0].click();
+    fixture.detectChanges();
+    expect(Object.keys(batch().selectedById)).toHaveLength(0);
+    expect(checkboxes()[0].checked).toBe(false);
+    expect(checkboxes()[0].indeterminate).toBe(false);
+    expect(fixture.nativeElement.textContent).not.toContain('Selected');
+    openMenu();
+    expect(overlay.getContainerElement().textContent).toContain('Import');
+    expect(overlay.getContainerElement().textContent).not.toContain('Delete');
+  }));
+
+  it('opens one immutable confirmation immediately from the selection including hidden items', fakeAsync(() => {
+    checkboxes()[0].click();
+    fixture.detectChanges();
+    load([rows[0]]);
+    fixture.detectChanges();
+    openMenu();
+    const menuItem = overlay.getContainerElement().querySelector('button[mat-menu-item]') as HTMLButtonElement;
+    expect(menuItem.textContent).toContain('Delete');
+    menuItem.click();
+    fixture.detectChanges();
+    tick();
+    expect(dialogs.openBatchDeleteModal).toHaveBeenCalledTimes(1);
+    expect(fixture.nativeElement.querySelector('.selection-status')).toBeNull();
+    const [entity, snapshot] = dialogs.openBatchDeleteModal.mock.calls[0];
+    expect(entity).toBe(config.entity);
+    expect(snapshot.items.map((item) => item.id)).toEqual(rows.map((row) => row.id));
+    closed.next(undefined);
+    fixture.detectChanges();
+    expect(Object.keys(batch().selectedById)).toHaveLength(2);
+    expect(batch().confirmation).toBeNull();
+  }));
+
+  it('hides batch controls for a Reader while retaining the name and sort content', () => {
+    permissions$.next({
+      experiments: { create: false, delete: false },
+      featureFlags: { create: false, delete: false },
+      segments: { create: false, delete: false },
+    });
+    store.dispatch(actionSetUserInfo({ user: { email: 'test@example.com', role: UserRole.READER } }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.batch-checkbox')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelector('.section-card-menu-trigger')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.batch-select-column')).toBeNull();
+    const nameCells: HTMLElement[] = [...fixture.nativeElement.querySelectorAll('.name-column')];
+    expect(nameCells).toHaveLength(rows.length + 1);
+    expect(nameCells[0].querySelector('[role="button"]').textContent.trim()).toBe('Name');
+    expect(nameCells[0].getAttribute('aria-sort')).toBe('ascending');
+    rows.forEach((row, index) => expect(nameCells[index + 1].querySelector('a').textContent).toContain(row.name));
+  });
+
+  it('preserves selection across collapse and removes tag expansion only for confirmed removals', () => {
+    selectFirst();
+    fixture.componentInstance.onTagsExpanded(rows[0].id, true);
+    fixture.componentInstance.onTagsExpanded(rows[1].id, true);
+    fixture.componentInstance.onSectionCardExpandChange(false);
+    fixture.detectChanges();
+    fixture.componentInstance.onSectionCardExpandChange(true);
+    fixture.detectChanges();
+    expect(checkboxes()[1].checked).toBe(true);
+    store.dispatch(actions.confirmedRemoved({ ids: [rows[0].id] }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.expandedTagsMap.has(rows[0].id)).toBe(false);
+    expect(fixture.componentInstance.expandedTagsMap.has(rows[1].id)).toBe(true);
+    expect(fixture.debugElement.query(By.directive(RootBatchActionsDirective))).toBeTruthy();
+  });
+
+  it('clears selection on leaving the root page and starts empty when returning', () => {
+    selectFirst();
+    fixture.destroy();
+    expect(Object.keys(batch().selectedById)).toHaveLength(0);
+    expect(batch().confirmation).toBeNull();
+    fixture = TestBed.createComponent(config.component as any);
+    fixture.detectChanges();
+    expect(checkboxes().every((input) => !input.checked && !input.indeterminate)).toBe(true);
+  });
+
+  it('clears navigation selection without discarding an in-flight deletion or its result', () => {
+    selectFirst();
+    service.batch.prepareConfirmation();
+    const snapshot = batch().confirmation;
+    service.batch.submit(snapshot.operationId);
+    fixture.destroy();
+    expect(Object.keys(batch().selectedById)).toHaveLength(0);
+    expect(batch().operation.snapshot).toEqual(snapshot);
+    expect(batch().operation.status).toBe('submitting');
+    store.dispatch(
+      actions.batchDeleteCompleted({
+        operationId: snapshot.operationId,
+        result: { results: [{ id: rows[0].id, outcome: 'deleted' }] },
+      })
+    );
+    expect(batch().operation.status).toBe('complete');
+    expect(batch().removedIds).toContain(rows[0].id);
+  });
+
+  it('starts deletion only after the common dialog closes with confirmation', fakeAsync(() => {
+    selectFirst();
+    service.batch.prepareConfirmation();
+    const snapshot = batch().confirmation;
+    expect(batch().operation?.status).not.toBe('submitting');
+    closed.next(true);
+    fixture.detectChanges();
+    expect(batch().operation.snapshot).toEqual(snapshot);
+    expect(batch().operation.status).toBe('submitting');
+    expect(batch().confirmation).toBeNull();
+    service.batch.prepareConfirmation();
+    expect(dialogs.openBatchDeleteModal).toHaveBeenCalledTimes(1);
+  }));
+
+  it.each(['cancel', 'close', 'confirm'] as const)(
+    'uses the common dialog and does not refocus the menu trigger after %s',
+    fakeAsync((action) => {
+      const realDialogs = new DialogService(TestBed.inject(MatDialog), TestBed.inject(TranslateService));
+      dialogs.openBatchDeleteModal.mockImplementation((entity, snapshot) =>
+        realDialogs.openBatchDeleteModal(entity, snapshot)
+      );
+      selectFirst();
+      openMenu();
+      const item = overlay.getContainerElement().querySelector('button[mat-menu-item]') as HTMLButtonElement;
+      expect(item.textContent.trim()).toBe(translations[`batch-delete.dialog.${config.entity}.title`]);
+      item.focus();
+      item.click();
+      fixture.detectChanges();
+      tick();
+      const ref = dialogs.openBatchDeleteModal.mock.results[0].value;
+      const container = overlay.getContainerElement();
+      const input = container.querySelector('input') as HTMLInputElement;
+      input.focus();
+      const trigger = fixture.nativeElement.querySelector('.section-card-menu-trigger') as HTMLButtonElement;
+      const focus = jest.spyOn(trigger, 'focus');
+      if (action === 'confirm') {
+        input.value = 'delete';
+        input.dispatchEvent(new Event('input'));
+        ref.componentRef.changeDetectorRef.detectChanges();
+        tick();
+        (container.querySelector('.footer-container button:not(.cancel-btn)') as HTMLButtonElement).click();
+      } else {
+        (container.querySelector(`.${action}-btn`) as HTMLButtonElement).click();
+      }
+      tick();
+      fixture.detectChanges();
+      expect(TestBed.inject(MatDialog).openDialogs).toHaveLength(0);
+      expect(focus).not.toHaveBeenCalled();
+      expect(document.activeElement).not.toBe(trigger);
+      expect(batch().confirmation).toBeNull();
+      expect(batch().operation?.status === 'submitting').toBe(action === 'confirm');
+      focus.mockRestore();
+    })
+  );
+
+  it('separates User Manager delete permission from create permission', () => {
+    permissions$.next({
+      experiments: { create: false, delete: false },
+      featureFlags: { create: false, delete: false },
+      segments: { create: false, delete: true },
+    });
+    store.dispatch(actionSetUserInfo({ user: { email: 'test@example.com', role: UserRole.USER_MANAGER } }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.section-card-menu-trigger')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('.batch-checkbox')).toHaveLength(
+      config.entity === 'segments' ? rows.length + 1 : 0
+    );
+    if (config.entity === 'segments') {
+      selectFirst();
+      const trigger = fixture.nativeElement.querySelector('.section-card-menu-trigger') as HTMLButtonElement;
+      expect(trigger).not.toBeNull();
+      expect(trigger.disabled).toBe(false);
+    }
+  });
+
+  it.each(['list', 'deletion'])('keeps the existing progress bar until both requests finish (%s first)', (first) => {
+    const progressBar = () => fixture.nativeElement.querySelector('mat-progress-bar');
+    const nameLinks = (): HTMLAnchorElement[] => [...fixture.nativeElement.querySelectorAll('td.name-column a')];
+    const navigate = jest.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    selectFirst();
+    expect(progressBar()).toBeNull();
+    expect(nameLinks().every((link) => link.hasAttribute('href'))).toBe(true);
+    store.dispatch(actions.prepareConfirmation({ operationId: 'pending-delete' }));
+    store.dispatch(actions.batchDeleteRequested({ snapshot: batch().confirmation }));
+    fixture.detectChanges();
+    expect(progressBar()).not.toBeNull();
+    const trigger = fixture.debugElement.query(By.css('.section-card-menu-trigger'));
+    expect(trigger.nativeElement.disabled).toBe(true);
+    expect(trigger.parent.injector.get(MatTooltip).message).toBe('');
+    for (const link of nameLinks()) {
+      expect(link.hasAttribute('href')).toBe(false);
+      expect(link.getAttribute('aria-disabled')).toBe('true');
+      link.click();
+    }
+    expect(navigate).not.toHaveBeenCalled();
+
+    listLoading$.next(true);
+    const finishDeletion = () =>
+      store.dispatch(
+        actions.batchDeleteCompleted({
+          operationId: 'pending-delete',
+          result: { results: [{ id: rows[0].id, outcome: 'deleted' }] },
+        })
+      );
+    if (first === 'list') listLoading$.next(false);
+    else finishDeletion();
+    fixture.detectChanges();
+    expect(progressBar()).not.toBeNull();
+    expect(nameLinks().every((link) => link.hasAttribute('href'))).toBe(first === 'deletion');
+
+    if (first === 'list') finishDeletion();
+    else listLoading$.next(false);
+    fixture.detectChanges();
+    expect(progressBar()).toBeNull();
+    expect(nameLinks().every((link) => link.hasAttribute('href') && !link.hasAttribute('aria-disabled'))).toBe(true);
+    nameLinks()[0].click();
+    expect(navigate).toHaveBeenCalledTimes(1);
+    navigate.mockRestore();
+  });
+
+  it('keeps checkboxes usable without a banner or reload button after request and refresh failures', () => {
+    selectFirst();
+    store.dispatch(actions.prepareConfirmation({ operationId: 'offline-delete' }));
+    store.dispatch(actions.batchDeleteRequested({ snapshot: batch().confirmation }));
+    fixture.detectChanges();
+    expect(checkboxes()[1].disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('mat-progress-bar')).not.toBeNull();
+    store.dispatch(actions.batchDeleteRequestFailed({ operationId: 'offline-delete', status: 0 }));
+    fixture.detectChanges();
+    expect(checkboxes().every((input) => !input.disabled)).toBe(true);
+    expect(fixture.nativeElement.querySelector('td.name-column a').hasAttribute('href')).toBe(true);
+    expect(fixture.nativeElement.querySelector('mat-progress-bar')).toBeNull();
+    checkboxes()[1].click();
+    fixture.detectChanges();
+    expect(Object.keys(batch().selectedById)).toHaveLength(0);
+    checkboxes()[1].click();
+    fixture.detectChanges();
+    expect(Object.keys(batch().selectedById)).toHaveLength(1);
+
+    store.dispatch(actions.listRequested({ requestId: 'failed-refresh' }));
+    store.dispatch(actions.listFailed({ requestId: 'failed-refresh' }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-common-batch-selection-status')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.selection-status')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Reload list');
+    checkboxes()[2].click();
+    fixture.detectChanges();
+    expect(Object.keys(batch().selectedById)).toHaveLength(2);
+  });
+
+  it.each<EXPERIMENT_STATE | FEATURE_FLAG_STATUS | SEGMENT_STATUS>(
+    config.entity === 'experiments'
+      ? [EXPERIMENT_STATE.PREVIEW, EXPERIMENT_STATE.SCHEDULED, EXPERIMENT_STATE.RUNNING, EXPERIMENT_STATE.PAUSED]
+      : [config.entity === 'flags' ? FEATURE_FLAG_STATUS.ENABLED : SEGMENT_STATUS.USED]
+  )('blocks mixed selections with a hidden %s item using only the existing menu tooltip', (status) => {
+    load([
+      {
+        ...rows[0],
+        state: config.entity === 'experiments' ? (status as EXPERIMENT_STATE) : undefined,
+        status: config.entity === 'segments' ? SEGMENT_STATUS.USED : FEATURE_FLAG_STATUS.ENABLED,
+      },
+      rows[1],
+    ]);
+    fixture.detectChanges();
+    checkboxes()[0].click();
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('.section-card-menu-trigger') as HTMLButtonElement;
+    expect(trigger.disabled).toBe(true);
+    load([rows[1]]);
+    fixture.detectChanges();
+    fixture.componentInstance.batchUi.requestDelete();
+    fixture.detectChanges();
+    expect(trigger.disabled).toBe(true);
+    expect(trigger.parentElement.getAttribute('aria-label')).toContain('Deselect');
+    expect(fixture.nativeElement.querySelector('.selection-status')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Refresh selection status');
+    expect(Object.keys(batch().selectedById)).toEqual(rows.map(({ id }) => id));
+    expect(batch().confirmation).toBeNull();
+    expect(dialogs.openBatchDeleteModal).not.toHaveBeenCalled();
+
+    checkboxes()[0].click();
+    fixture.detectChanges();
+    selectFirst();
+    fixture.componentInstance.batchUi.requestDelete();
+    expect(dialogs.openBatchDeleteModal).toHaveBeenCalledTimes(1);
+  });
+});

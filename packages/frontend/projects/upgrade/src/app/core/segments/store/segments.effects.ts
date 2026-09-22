@@ -1,25 +1,17 @@
+import { batchDeleteEffect, batchFinishedEffect, trackedListRequest } from '../../batch-actions/batch-actions.effects';
+import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
+import { selectRootBatch, selectSegmentsState } from './segments.selectors';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
-import { catchError, concatMap, filter, first, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { catchError, concatMap, filter, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import { AppState, NotificationService } from '../../core.module';
 import { TranslateService } from '@ngx-translate/core';
 import { SegmentsDataService } from '../segments.data.service';
 import * as SegmentsActions from './segments.actions';
-import {
-  LIST_OPTION_TYPE,
-  NUMBER_OF_SEGMENTS,
-  Segment,
-  SegmentsPaginationParams,
-  UpsertSegmentType,
-} from './segments.model';
-import {
-  selectAllSegments,
-  selectGlobalSegments,
-  selectSearchString,
-  selectSegmentPaginationParams,
-} from './segments.selectors';
+import { LIST_OPTION_TYPE, NUMBER_OF_SEGMENTS, Segment, UpsertSegmentType } from './segments.model';
+import { selectGlobalSegments } from './segments.selectors';
 import JSZip from 'jszip';
 import { of } from 'rxjs';
 import { isCanonicalEntityId, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
@@ -29,6 +21,36 @@ import { CommonModalEventsService } from '../../../shared/services/common-modal-
 
 @Injectable()
 export class SegmentsEffects {
+  batchDelete$ = createEffect(() =>
+    batchDeleteEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      SegmentsActions.batchActions,
+      this.segmentsDataService
+    )
+  );
+  finishBatch$ = createEffect(() =>
+    batchFinishedEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      SegmentsActions.batchActions,
+      (state) => {
+        const counts = batchResultCounts(state);
+        const message = batchResultMessage('segments', counts, (key, params) => this.translate.instant(key, params));
+        if (!counts.hasErrors) this.notificationService.showSuccess(message);
+        else if (counts.deleted || counts.absent) this.notificationService.showWarning(message);
+        else this.notificationService.showError(message);
+        const pathname = (this.router.url || '').split('?')[0].split('#')[0];
+        return [
+          // Detail selectors share the rows array; replace it only while the root table is displayed.
+          ...(pathname === '/segments'
+            ? [SegmentsActions.actionFetchSegments({ fromStarting: true, batchRefresh: true })]
+            : []),
+        ];
+      }
+    )
+  );
+
   constructor(
     private store$: Store<AppState>,
     private actions$: Actions,
@@ -43,55 +65,42 @@ export class SegmentsEffects {
   fetchSegmentsPaginated$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionFetchSegments),
-      map((action) => action.fromStarting),
-      withLatestFrom(this.store$.pipe(select(selectSegmentPaginationParams))),
-      filter(([fromStarting, pagination]) => {
-        return (
-          !pagination.areAllFetched || pagination.skip < pagination.total || pagination.total === null || fromStarting
-        );
-      }),
-      tap(() => {
-        this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments: true }));
-      }),
-      switchMap(([fromStarting, pagination]) => {
-        let params: SegmentsPaginationParams = {
-          skip: fromStarting ? 0 : pagination.skip,
+      withLatestFrom(this.store$.pipe(select(selectSegmentsState))),
+      filter(
+        ([action, state]) =>
+          (!state.rootBatch.listLoading || action.fromStarting) &&
+          (action.fromStarting || state.totalSegments === null || state.skipSegments < state.totalSegments)
+      ),
+      switchMap(([action, state]) => {
+        const fromStarting = !!action.fromStarting || state.skipSegments === 0;
+        const params = {
+          skip: fromStarting ? 0 : state.skipSegments,
           take: NUMBER_OF_SEGMENTS,
+          ...(state.sortKey ? { sortParams: { key: state.sortKey, sortAs: state.sortAs } } : {}),
+          ...(state.searchString ? { searchParams: { key: state.searchKey, string: state.searchString } } : {}),
         };
-        if (pagination.sortKey) {
-          params = {
-            ...params,
-            sortParams: {
-              key: pagination.sortKey,
-              sortAs: pagination.sortAs,
-            },
-          };
-        }
-        if (pagination.searchString) {
-          params = {
-            ...params,
-            searchParams: {
-              key: pagination.searchKey,
-              string: pagination.searchString,
-            },
-          };
-        }
-        return this.segmentsDataService.fetchSegmentsPaginated(params).pipe(
-          switchMap((data: any) => {
-            return [
-              SegmentsActions.actionFetchSegmentsSuccess({
-                segments: data.nodes.segmentsData,
-                totalSegments: data.total,
-                experimentSegmentInclusion: data.nodes.experimentSegmentInclusionData,
-                experimentSegmentExclusion: data.nodes.experimentSegmentExclusionData,
-                featureFlagSegmentInclusion: data.nodes.featureFlagSegmentInclusionData,
-                featureFlagSegmentExclusion: data.nodes.featureFlagSegmentExclusionData,
-                allParentSegments: data.nodes.allParentSegments,
-                fromStarting,
-              }),
-            ];
-          }),
-          catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
+        return trackedListRequest(
+          this.store$.pipe(select(selectRootBatch)),
+          SegmentsActions.batchActions,
+          (event) => this.store$.dispatch(event),
+          () => {
+            this.store$.dispatch(SegmentsActions.actionSetIsLoadingSegments({ isLoadingSegments: true }));
+            return this.segmentsDataService.fetchSegmentsPaginated(params, !!action.batchRefresh);
+          },
+          (data: any, requestId) => [
+            SegmentsActions.actionFetchSegmentsSuccess({
+              segments: data.nodes.segmentsData,
+              totalSegments: data.total,
+              experimentSegmentInclusion: data.nodes.experimentSegmentInclusionData,
+              experimentSegmentExclusion: data.nodes.experimentSegmentExclusionData,
+              featureFlagSegmentInclusion: data.nodes.featureFlagSegmentInclusionData,
+              featureFlagSegmentExclusion: data.nodes.featureFlagSegmentExclusionData,
+              allParentSegments: data.nodes.allParentSegments,
+              fromStarting,
+              batchListRequestId: requestId,
+            }),
+          ],
+          () => [SegmentsActions.actionFetchSegmentsFailure()]
         );
       })
     )
@@ -292,8 +301,6 @@ export class SegmentsEffects {
       )
     )
   );
-
-  private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
 
   // TODO: this should be replaced with the common download() method in common-export-helpers service in new experience
   private download(filename, text, isZip: boolean) {

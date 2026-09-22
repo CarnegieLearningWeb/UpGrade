@@ -28,7 +28,8 @@ import {
 import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
 import { formatTSConfigurablePolicyParamDetails } from '../mooclet-helper.service';
 import { KeyValueFormat } from '@shared-component-lib/common-section-card-overview-details/common-section-card-overview-details.component';
-import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { DetailsPageError, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { getExperimentDeletionReason } from '../../batch-actions/batch-actions.helpers';
 
 export const selectExperimentState = createFeatureSelector<ExperimentState>('experiments');
 
@@ -89,6 +90,9 @@ export const selectExperimentDetailsPageError = createSelector(
   (routerState, experimentState): DetailsPageError | null => {
     const experimentId = routerState?.state?.params?.experimentId;
     const detailsPageError = experimentState?.detailsPageError;
+
+    if (experimentState?.rootBatch?.removedIds.includes(experimentId))
+      return { entityId: experimentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND };
 
     // Only surface the error if it belongs to the experiment currently in the route
     return detailsPageError && detailsPageError.entityId === experimentId ? detailsPageError : null;
@@ -532,6 +536,10 @@ const isMenuItemDisabled = (action: EXPERIMENT_DETAILS_PAGE_ACTIONS, state?: EXP
     return true; // No state = disabled
   }
 
+  if (action === EXPERIMENT_DETAILS_PAGE_ACTIONS.DELETE) {
+    return !!getExperimentDeletionReason(state);
+  }
+
   // Archive only enabled when COMPLETED
   if (action === EXPERIMENT_DETAILS_PAGE_ACTIONS.ARCHIVE) {
     return state !== EXPERIMENT_STATE.COMPLETED;
@@ -587,3 +595,5 @@ export const selectExperimentMenuItems = createSelector(
     ];
   }
 );
+
+export const selectRootBatch = createSelector(selectExperimentState, (state) => state.rootBatch);

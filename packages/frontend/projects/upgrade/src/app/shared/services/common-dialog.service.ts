@@ -71,6 +71,9 @@ import {
   EditPayloadModalParams,
 } from '../../features/dashboard/experiments/modals/edit-payload-modal/edit-payload-modal.component';
 import { Observable } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
+import { BatchDeleteEntity } from 'upgrade_types';
+import { BatchDeleteSnapshot } from '../../core/batch-actions/batch-actions.models';
 
 export interface ImportModalParams {
   importTypeAdapterToken: InjectionToken<ImportServiceAdapter>;
@@ -107,7 +110,26 @@ export interface UpsertMetricModalParams {
   providedIn: 'root',
 })
 export class DialogService {
-  constructor(private dialog: MatDialog) {}
+  constructor(private dialog: MatDialog, private translate: TranslateService) {}
+
+  openBatchDeleteModal(entity: BatchDeleteEntity, snapshot: BatchDeleteSnapshot) {
+    const config: CommonModalConfig<TextValidatedConfirmationModalParams> = {
+      title: `batch-delete.dialog.${entity}.title`,
+      primaryActionBtnLabel: 'Delete',
+      primaryActionBtnColor: 'warn',
+      cancelBtnLabel: 'Cancel',
+      params: {
+        message: this.translate.instant(
+          `batch-delete.dialog.${entity}.${snapshot.items.length === 1 ? 'one' : 'other'}`,
+          { count: snapshot.items.length }
+        ),
+        validationKeyword: 'delete',
+        validationPlaceholder: 'Type delete',
+      },
+    };
+    // Restoring focus here leaves the root menu trigger's focus circle visible after Cancel or Close.
+    return this.openTextValidatedConfirmationModal(config, ModalSize.SMALL, false);
+  }
 
   openAddExperimentModal() {
     const commonModalConfig: CommonModalConfig = {
@@ -1319,13 +1341,15 @@ export class DialogService {
 
   openTextValidatedConfirmationModal(
     commonModalConfig: CommonModalConfig<TextValidatedConfirmationModalParams>,
-    modalSize: ModalSize = ModalSize.MEDIUM
+    modalSize: ModalSize = ModalSize.MEDIUM,
+    restoreFocus = true
   ): MatDialogRef<CommonSimpleTextValidatedConfirmationModalComponent, boolean> {
     const config: MatDialogConfig = {
       data: commonModalConfig,
       width: modalSize,
       autoFocus: 'input',
       disableClose: true,
+      restoreFocus,
     };
 
     return this.dialog.open(CommonSimpleTextValidatedConfirmationModalComponent, config);

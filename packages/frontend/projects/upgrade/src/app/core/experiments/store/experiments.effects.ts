@@ -1,15 +1,17 @@
+import { batchDeleteEffect, batchFinishedEffect, trackedListRequest } from '../../batch-actions/batch-actions.effects';
+import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
+import { selectRootBatch, selectExperimentState } from './experiments.selectors';
 import { Inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import * as analysisActions from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
-import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap, takeUntil } from 'rxjs/operators';
+import { map, filter, switchMap, catchError, tap, withLatestFrom, mergeMap, takeUntil } from 'rxjs/operators';
 import {
   UpsertExperimentType,
   IExperimentEnrollmentStats,
   Experiment,
   NUMBER_OF_EXPERIMENTS,
-  ExperimentPaginationParams,
   IExperimentEnrollmentDetailStats,
   IContextMetaData,
 } from './experiments.model';
@@ -18,11 +20,6 @@ import { Store, select } from '@ngrx/store';
 import { AppState, NotificationService } from '../../core.module';
 import {
   selectExperimentStats,
-  selectSkipExperiment,
-  selectSearchKey,
-  selectSortAs,
-  selectSortKey,
-  selectTotalExperiment,
   selectSearchString,
   selectExperimentGraphInfo,
   selectContextMetaData,
@@ -39,6 +36,39 @@ import { LIST_FILTER_MODE } from 'upgrade_types';
 import { LIST_OPTION_TYPE } from '../../segments/store/segments.model';
 @Injectable()
 export class ExperimentEffects {
+  batchDelete$ = createEffect(() =>
+    batchDeleteEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      experimentAction.batchActions,
+      this.experimentDataService
+    )
+  );
+  finishBatch$ = createEffect(() =>
+    batchFinishedEffect(
+      this.actions$,
+      this.store$.pipe(select(selectRootBatch)),
+      experimentAction.batchActions,
+      (state) => {
+        const counts = batchResultCounts(state);
+        const message = batchResultMessage('experiments', counts, (key, params) => this.translate.instant(key, params));
+        if (!counts.hasErrors) this.notificationService.showSuccess(message);
+        else if (counts.deleted || counts.absent) this.notificationService.showWarning(message);
+        else this.notificationService.showError(message);
+        const pathname = (this.router.url || '').split('?')[0].split('#')[0];
+        return [
+          // Detail selectors share the rows array; replace it only while the root table is displayed.
+          ...(pathname === '/home'
+            ? [experimentAction.actionGetExperiments({ fromStarting: true, batchRefresh: true })]
+            : []),
+          ...(counts.deleted || counts.absent
+            ? [experimentAction.actionFetchAllDecisionPoints(), analysisActions.actionFetchMetrics()]
+            : []),
+        ];
+      }
+    )
+  );
+
   constructor(
     private actions$: Actions,
     private store$: Store<AppState>,
@@ -54,59 +84,38 @@ export class ExperimentEffects {
   getPaginatedExperiment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionGetExperiments),
-      map((action) => action.fromStarting),
-      withLatestFrom(
-        this.store$.pipe(select(selectSkipExperiment)),
-        this.store$.pipe(select(selectTotalExperiment)),
-        this.store$.pipe(select(selectSearchKey)),
-        this.store$.pipe(select(selectSortKey)),
-        this.store$.pipe(select(selectSortAs))
+      withLatestFrom(this.store$.pipe(select(selectExperimentState))),
+      filter(
+        ([action, state]) =>
+          (!state.rootBatch.listLoading || action.fromStarting) &&
+          (action.fromStarting || state.totalExperiments === null || state.skipExperiment < state.totalExperiments)
       ),
-      filter(([fromStarting, skip, total]) => skip < total || total === null || fromStarting),
-      tap(() => {
-        this.store$.dispatch(experimentAction.actionSetIsLoadingExperiment({ isLoadingExperiment: true }));
-      }),
-      switchMap(([fromStarting, skip, _, searchKey, sortKey, sortAs]) => {
-        let searchString = null;
-        // As withLatestFrom does not support more than 5 arguments
-        // TODO: Find alternative
-        this.getSearchString$().subscribe((searchInput) => {
-          searchString = searchInput;
-        });
-        let params: ExperimentPaginationParams = {
-          skip: fromStarting ? 0 : skip,
+      switchMap(([action, state]) => {
+        const fromStarting = !!action.fromStarting || state.skipExperiment === 0;
+        const params = {
+          skip: fromStarting ? 0 : state.skipExperiment,
           take: NUMBER_OF_EXPERIMENTS,
+          ...(state.sortKey ? { sortParams: { key: state.sortKey, sortAs: state.sortAs } } : {}),
+          searchParams: { key: state.searchKey, string: state.searchString || '' },
         };
-        if (sortKey) {
-          params = {
-            ...params,
-            sortParams: {
-              key: sortKey,
-              sortAs,
-            },
-          };
-        }
-        // Always send searchParams for experiments, even when searchString is blank
-        params = {
-          ...params,
-          searchParams: {
-            key: searchKey,
-            string: searchString || '',
+        return trackedListRequest(
+          this.store$.pipe(select(selectRootBatch)),
+          experimentAction.batchActions,
+          (event) => this.store$.dispatch(event),
+          () => {
+            this.store$.dispatch(experimentAction.actionSetIsLoadingExperiment({ isLoadingExperiment: true }));
+            return this.experimentDataService.getAllExperiment(params, !!action.batchRefresh);
           },
-        };
-        return this.experimentDataService.getAllExperiment(params).pipe(
-          switchMap((data: any) => {
-            const experiments = data.nodes;
-            const experimentIds = experiments.map((experiment) => experiment.id);
-            const actions = fromStarting ? [experimentAction.actionSetSkipExperiment({ skipExperiment: 0 })] : [];
-
-            return [
-              ...actions,
-              experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total, fromStarting }),
-              experimentAction.actionFetchExperimentStats({ experimentIds }),
-            ];
-          }),
-          catchError((error) => [experimentAction.actionGetExperimentsFailure(error)])
+          (data: any, requestId) => [
+            experimentAction.actionGetExperimentsSuccess({
+              experiments: data.nodes,
+              totalExperiments: data.total,
+              fromStarting,
+              batchListRequestId: requestId,
+            }),
+            experimentAction.actionFetchExperimentStats({ experimentIds: data.nodes.map((row) => row.id) }),
+          ],
+          (error) => [experimentAction.actionGetExperimentsFailure({ error })]
         );
       })
     )
@@ -805,5 +814,4 @@ export class ExperimentEffects {
     element.click();
     document.body.removeChild(element);
   }
-  private getSearchString$ = () => this.store$.pipe(select(selectSearchString)).pipe(first());
 }
