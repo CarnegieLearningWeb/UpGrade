@@ -163,8 +163,13 @@ export class ExperimentAssignmentService {
     }
 
     const experimentIds = validExperiments.map((experiment) => experiment.id);
-    const [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions] =
-      await this.getAssignmentsAndExclusionsForUser(userDoc, experimentIds);
+    const [
+      [individualEnrollments, groupEnrollments, individualExclusions, groupExclusions],
+      [filteredExperiments, exclusionReason],
+    ] = await Promise.all([
+      this.getAssignmentsAndExclusionsForUser(userDoc, experimentIds),
+      this.experimentLevelExclusionInclusion(validExperiments, userDoc, logger),
+    ]);
 
     let mergedIndividualEnrollments = individualEnrollments;
     if (previewUser && previewUser.assignments) {
@@ -177,12 +182,6 @@ export class ExperimentAssignmentService {
       });
       mergedIndividualEnrollments = [...previewAssignment, ...mergedIndividualEnrollments];
     }
-
-    const [filteredExperiments, exclusionReason] = await this.experimentLevelExclusionInclusion(
-      validExperiments,
-      userDoc,
-      logger
-    );
 
     const selectedExperiments = this.processExperimentPools(
       filteredExperiments,
