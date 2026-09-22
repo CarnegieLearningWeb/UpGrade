@@ -116,6 +116,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
         expect.objectContaining({ experimentId: 'experiment-1', warmupThreshold: 10, batchSize: 5 })
       );
       expect(posteriorStateRepository.save).toHaveBeenCalledWith({
+        experimentId: 'experiment-1',
         configId: 'config-1',
         conditionId: 'condition-1',
         priorSuccess: 7,
@@ -150,6 +151,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       );
 
       expect(posteriorStateRepository.save).toHaveBeenCalledWith({
+        experimentId: 'experiment-1',
         configId: 'config-1',
         conditionId: 'server-id-1',
         priorSuccess: 7,
@@ -158,6 +160,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
         totalCount: 0,
       });
       expect(posteriorStateRepository.save).toHaveBeenCalledWith({
+        experimentId: 'experiment-1',
         configId: 'config-1',
         conditionId: 'server-id-2',
         priorSuccess: 3,
@@ -179,6 +182,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       } as any);
 
       expect(posteriorStateRepository.save).toHaveBeenCalledWith({
+        experimentId: 'experiment-1',
         configId: 'config-1',
         conditionId: 'server-id-1',
         priorSuccess: 1,
@@ -237,6 +241,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
         expect.objectContaining({ experimentId: 'experiment-1', batchSize: 5 })
       );
       expect(posteriorStateRepository.save).toHaveBeenCalledWith({
+        experimentId: 'experiment-1',
         configId: 'config-1',
         conditionId: 'condition-1',
         priorSuccess: 2,

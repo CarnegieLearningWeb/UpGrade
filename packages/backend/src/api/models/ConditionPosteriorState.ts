@@ -1,6 +1,7 @@
 import { Entity, Column, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { ThompsonSamplingExperimentConfig } from './ThompsonSamplingExperimentConfig';
 import { ExperimentCondition } from './ExperimentCondition';
+import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
 
 @Entity()
@@ -8,6 +9,13 @@ import { BaseModel } from './base/BaseModel';
 export class ConditionPosteriorState extends BaseModel {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
+
+  @ManyToOne(() => Experiment, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'experimentId' })
+  experiment: Experiment;
+
+  @Column()
+  experimentId: string;
 
   @ManyToOne(() => ThompsonSamplingExperimentConfig, (config) => config.conditionPosteriorStates, {
     onDelete: 'CASCADE',
