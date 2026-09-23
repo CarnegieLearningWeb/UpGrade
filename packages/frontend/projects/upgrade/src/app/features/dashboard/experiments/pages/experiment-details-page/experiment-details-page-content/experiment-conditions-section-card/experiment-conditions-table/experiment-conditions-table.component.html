@@ -73,7 +73,13 @@
 
     <!-- Prior Successes Column -->
     <ng-container matColumnDef="priorSuccesses">
-      <th mat-header-cell *matHeaderCellDef class="prior-column ft-14-600">
+      <th
+        mat-header-cell
+        *matHeaderCellDef
+        class="prior-column ft-14-600"
+        [matTooltip]="'experiments.details.conditions.prior-adaptive-tooltip.text' | translate"
+        matTooltipPosition="above"
+      >
         {{ CONDITION_TRANSLATION_KEYS.PRIOR_SUCCESSES | translate }}
       </th>
       <td mat-cell *matCellDef="let condition" class="prior-column ft-14-400">
@@ -83,7 +89,13 @@
 
     <!-- Prior Failures Column -->
     <ng-container matColumnDef="priorFailures">
-      <th mat-header-cell *matHeaderCellDef class="prior-column ft-14-600">
+      <th
+        mat-header-cell
+        *matHeaderCellDef
+        class="prior-column ft-14-600"
+        [matTooltip]="'experiments.details.conditions.prior-adaptive-tooltip.text' | translate"
+        matTooltipPosition="above"
+      >
         {{ CONDITION_TRANSLATION_KEYS.PRIOR_FAILURES | translate }}
       </th>
       <td mat-cell *matCellDef="let condition" class="prior-column ft-14-400">

@@ -513,6 +513,7 @@
   "experiments.details.conditions.actions.text": "Actions",
   "experiments.details.conditions.prior-successes.text": "Prior Successes",
   "experiments.details.conditions.prior-failures.text": "Prior Failures",
+  "experiments.details.conditions.prior-adaptive-tooltip.text": "Adaptive experiments do not have static weights. These prior success/failure counts seed the Thompson Sampling algorithm and can be edited below. See GitBook documentation.",
   "experiments.details.conditions.card.no-data-row.text": "No conditions defined. Simple experiments require conditions.",
   "experiments.upsert-condition-modal.condition-hint.text": "The name of the condition that will be used to identify the variant in your code.",
   "experiments.upsert-condition-modal.condition-warning.text": "Condition name must be unique within the experiment.",
