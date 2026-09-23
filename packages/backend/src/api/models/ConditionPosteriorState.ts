@@ -1,22 +1,12 @@
 import { Entity, Column, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { ThompsonSamplingExperimentConfig } from './ThompsonSamplingExperimentConfig';
 import { ExperimentCondition } from './ExperimentCondition';
 import { BaseModel } from './base/BaseModel';
 
 @Entity()
-@Unique(['configId', 'conditionId'])
+@Unique(['conditionId'])
 export class ConditionPosteriorState extends BaseModel {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
-
-  @ManyToOne(() => ThompsonSamplingExperimentConfig, (config) => config.conditionPosteriorStates, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'configId' })
-  config: ThompsonSamplingExperimentConfig;
-
-  @Column()
-  configId: string;
 
   @ManyToOne(() => ExperimentCondition, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'conditionId' })

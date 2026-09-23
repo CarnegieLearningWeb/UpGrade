@@ -1,5 +1,4 @@
-import { Entity, Column, OneToMany, PrimaryGeneratedColumn, JoinColumn, OneToOne } from 'typeorm';
-import { ConditionPosteriorState } from './ConditionPosteriorState';
+import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, OneToOne } from 'typeorm';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
 
@@ -27,8 +26,6 @@ export class ThompsonSamplingExperimentConfig extends BaseModel {
   @Column({ default: 1 })
   batchSize: number;
 
-  @OneToMany(() => ConditionPosteriorState, (state) => state.config, {
-    cascade: true,
-  })
-  conditionPosteriorStates: ConditionPosteriorState[];
+  /** Populated by config repository joins through the experiment's conditions. */
+  conditionPosteriorStates: import('./ConditionPosteriorState').ConditionPosteriorState[];
 }

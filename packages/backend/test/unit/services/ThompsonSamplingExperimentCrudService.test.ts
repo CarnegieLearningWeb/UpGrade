@@ -58,7 +58,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
 
       expect(cacheService.resetPrefixCache).toHaveBeenCalledWith(CACHE_PREFIX.THOMPSON_SAMPLING_CONFIG_KEY_PREFIX);
       expect(posteriorStateRepository.update).toHaveBeenCalledWith(
-        { configId: 'config-1', conditionId: 'condition-1' },
+        { conditionId: 'condition-1' },
         { priorSuccess: 3, priorFailure: 2 }
       );
     });
@@ -116,7 +116,6 @@ describe('ThompsonSamplingExperimentCrudService', () => {
         expect.objectContaining({ experimentId: 'experiment-1', warmupThreshold: 10, batchSize: 5 })
       );
       expect(posteriorStateRepository.save).toHaveBeenCalledWith({
-        configId: 'config-1',
         conditionId: 'condition-1',
         priorSuccess: 7,
         priorFailure: 4,
@@ -150,7 +149,6 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       );
 
       expect(posteriorStateRepository.save).toHaveBeenCalledWith({
-        configId: 'config-1',
         conditionId: 'server-id-1',
         priorSuccess: 7,
         priorFailure: 4,
@@ -158,7 +156,6 @@ describe('ThompsonSamplingExperimentCrudService', () => {
         totalCount: 0,
       });
       expect(posteriorStateRepository.save).toHaveBeenCalledWith({
-        configId: 'config-1',
         conditionId: 'server-id-2',
         priorSuccess: 3,
         priorFailure: 9,
@@ -179,7 +176,6 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       } as any);
 
       expect(posteriorStateRepository.save).toHaveBeenCalledWith({
-        configId: 'config-1',
         conditionId: 'server-id-1',
         priorSuccess: 1,
         priorFailure: 1,
@@ -237,7 +233,6 @@ describe('ThompsonSamplingExperimentCrudService', () => {
         expect.objectContaining({ experimentId: 'experiment-1', batchSize: 5 })
       );
       expect(posteriorStateRepository.save).toHaveBeenCalledWith({
-        configId: 'config-1',
         conditionId: 'condition-1',
         priorSuccess: 2,
         priorFailure: 1,
@@ -264,7 +259,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       } as any);
 
       expect(posteriorStateRepository.update).toHaveBeenCalledWith(
-        { configId: 'config-1', conditionId: 'condition-1' },
+        { conditionId: 'condition-1' },
         { priorSuccess: 2, priorFailure: 1 }
       );
     });

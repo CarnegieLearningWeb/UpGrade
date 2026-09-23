@@ -8,7 +8,6 @@ import { configureLogger } from '../../utils/logger';
 const logger = new UpgradeLogger();
 
 const EXPERIMENT_ID = 'experiment-1';
-const CONFIG_ID = 'config-1';
 const CONDITION_ID = 'condition-1';
 const CONDITION_A_ID = 'condition-a';
 const CONDITION_B_ID = 'condition-b';
@@ -16,7 +15,7 @@ const USER_ID = 'user-1';
 
 interface PosteriorStateRow {
   id: string;
-  configId: string;
+  experimentId: string;
   conditionId: string;
   successCount: number;
   failureCount: number;
@@ -37,7 +36,7 @@ function makeRequest(rewardValue: BinaryRewardAllowedValue = BinaryRewardAllowed
 function makeStateRow(id: string, conditionId: string): PosteriorStateRow {
   return {
     id,
-    configId: CONFIG_ID,
+    experimentId: EXPERIMENT_ID,
     conditionId,
     successCount: 0,
     failureCount: 0,
@@ -123,7 +122,7 @@ describe('ThompsonSamplingRewardService', () => {
   // Fakes just enough of TypeORM's EntityManager for recordRewardAtomically()'s transaction: a
   // transaction() that runs the callback inline (no real DB transaction/lock semantics -- those
   // aren't meaningfully unit-testable without a real Postgres instance), a createQueryBuilder()
-  // that filters the in-memory rows by configId (the only clause the service issues), and a
+  // that filters the in-memory rows by experimentId, and a
   // save() that handles both call shapes the service uses: the single-arg entity-instance form
   // for ConditionPosteriorState updates (persisted in-memory, since getMany() already hands back
   // references into statesByCondition, not copies), and the two-arg (EntityClass, plainObject)
@@ -132,15 +131,15 @@ describe('ThompsonSamplingRewardService', () => {
     const manager: any = {
       transaction: (work: (m: any) => Promise<void>) => work(manager),
       createQueryBuilder: () => {
-        let configIdFilter: string | undefined;
+        let experimentIdFilter: string | undefined;
         const builder: any = {
-          where: (_cond: string, params: { configId: string }) => {
-            configIdFilter = params.configId;
+          where: (_cond: string, params: { experimentId: string }) => {
+            experimentIdFilter = params.experimentId;
             return builder;
           },
           orderBy: () => builder,
           setLock: () => builder,
-          getMany: () => Promise.resolve(allStates().filter((row) => row.configId === configIdFilter)),
+          getMany: () => Promise.resolve(allStates().filter((row) => row.experimentId === experimentIdFilter)),
         };
         return builder;
       },
@@ -165,6 +164,14 @@ describe('ThompsonSamplingRewardService', () => {
 
     posteriorStateRepository = {
       findByConditionId: jest.fn((conditionId: string) => Promise.resolve(statesByCondition[conditionId])),
+      findByExperimentIdForUpdate: jest.fn((manager: any, experimentId: string) =>
+        manager
+          .createQueryBuilder()
+          .where('condition.experimentId = :experimentId', { experimentId })
+          .orderBy()
+          .setLock()
+          .getMany()
+      ),
       manager: makeFakeManager(),
     };
 

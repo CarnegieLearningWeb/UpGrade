@@ -1,13 +1,21 @@
 import { Repository } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { ThompsonSamplingExperimentConfig } from '../models/ThompsonSamplingExperimentConfig';
+import { ConditionPosteriorState } from '../models/ConditionPosteriorState';
+import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ASSIGNMENT_ALGORITHM, EXPERIMENT_STATE } from 'upgrade_types';
 
 @EntityRepository(ThompsonSamplingExperimentConfig)
 export class ThompsonSamplingExperimentConfigRepository extends Repository<ThompsonSamplingExperimentConfig> {
   public async findByExperimentId(experimentId: string): Promise<ThompsonSamplingExperimentConfig> {
     return this.createQueryBuilder('config')
-      .leftJoinAndSelect('config.conditionPosteriorStates', 'conditionPosteriorStates')
+      .leftJoin(ExperimentCondition, 'condition', 'condition.experimentId = config.experimentId')
+      .leftJoinAndMapMany(
+        'config.conditionPosteriorStates',
+        ConditionPosteriorState,
+        'conditionPosteriorStates',
+        'conditionPosteriorStates.conditionId = condition.id'
+      )
       .where('config.experimentId = :experimentId', { experimentId })
       .getOne();
   }
@@ -18,7 +26,13 @@ export class ThompsonSamplingExperimentConfigRepository extends Repository<Thomp
    */
   public async findByExperimentIdWithConditions(experimentId: string): Promise<ThompsonSamplingExperimentConfig> {
     return this.createQueryBuilder('config')
-      .leftJoinAndSelect('config.conditionPosteriorStates', 'conditionPosteriorStates')
+      .leftJoin(ExperimentCondition, 'experimentCondition', 'experimentCondition.experimentId = config.experimentId')
+      .leftJoinAndMapMany(
+        'config.conditionPosteriorStates',
+        ConditionPosteriorState,
+        'conditionPosteriorStates',
+        'conditionPosteriorStates.conditionId = experimentCondition.id'
+      )
       .leftJoinAndSelect('conditionPosteriorStates.condition', 'condition')
       .where('config.experimentId = :experimentId', { experimentId })
       .getOne();
@@ -31,7 +45,13 @@ export class ThompsonSamplingExperimentConfigRepository extends Repository<Thomp
   ): Promise<ThompsonSamplingExperimentConfig[]> {
     return (
       this.createQueryBuilder('config')
-        .leftJoinAndSelect('config.conditionPosteriorStates', 'conditionPosteriorStates')
+        .leftJoin(ExperimentCondition, 'experimentCondition', 'experimentCondition.experimentId = config.experimentId')
+        .leftJoinAndMapMany(
+          'config.conditionPosteriorStates',
+          ConditionPosteriorState,
+          'conditionPosteriorStates',
+          'conditionPosteriorStates.conditionId = experimentCondition.id'
+        )
         .leftJoinAndSelect('config.experiment', 'experiment')
         .leftJoinAndSelect('experiment.partitions', 'decisionPoint')
         .where('experiment.state = :state', { state: EXPERIMENT_STATE.ENROLLING })
@@ -48,7 +68,13 @@ export class ThompsonSamplingExperimentConfigRepository extends Repository<Thomp
 
   public async findConfigsForActivelyEnrollingExperiments(): Promise<ThompsonSamplingExperimentConfig[]> {
     return this.createQueryBuilder('config')
-      .leftJoinAndSelect('config.conditionPosteriorStates', 'conditionPosteriorStates')
+      .leftJoin(ExperimentCondition, 'experimentCondition', 'experimentCondition.experimentId = config.experimentId')
+      .leftJoinAndMapMany(
+        'config.conditionPosteriorStates',
+        ConditionPosteriorState,
+        'conditionPosteriorStates',
+        'conditionPosteriorStates.conditionId = experimentCondition.id'
+      )
       .leftJoinAndSelect('config.experiment', 'experiment')
       .where('experiment.state = :state', { state: EXPERIMENT_STATE.ENROLLING })
       .andWhere('experiment.assignmentAlgorithm = :algorithm', { algorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING })

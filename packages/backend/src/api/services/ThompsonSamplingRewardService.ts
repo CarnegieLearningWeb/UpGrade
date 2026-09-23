@@ -141,7 +141,7 @@ export class ThompsonSamplingRewardService {
     conditionId: string,
     userId: string,
     success: boolean,
-    state: Pick<ConditionPosteriorState, 'id' | 'configId'>,
+    state: Pick<ConditionPosteriorState, 'id'>,
     batchSize?: number
   ): Promise<void> {
     const effectiveBatchSize = batchSize && batchSize > 1 ? batchSize : 1;
@@ -154,12 +154,7 @@ export class ThompsonSamplingRewardService {
         success,
       });
 
-      const experimentStates = await manager
-        .createQueryBuilder(ConditionPosteriorState, 'state')
-        .where('state.configId = :configId', { configId: state.configId })
-        .orderBy('state.id', 'ASC')
-        .setLock('pessimistic_write')
-        .getMany();
+      const experimentStates = await this.posteriorStateRepository.findByExperimentIdForUpdate(manager, experimentId);
 
       const current = experimentStates.find((s) => s.id === state.id);
       if (!current) {

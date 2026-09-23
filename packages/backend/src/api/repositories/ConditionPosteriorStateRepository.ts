@@ -1,13 +1,20 @@
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { EntityRepository } from '../../typeorm-typedi-extensions';
 import { ConditionPosteriorState } from '../models/ConditionPosteriorState';
+import { ExperimentCondition } from '../models/ExperimentCondition';
 
 @EntityRepository(ConditionPosteriorState)
 export class ConditionPosteriorStateRepository extends Repository<ConditionPosteriorState> {
-  public async findByConfigId(configId: string): Promise<ConditionPosteriorState[]> {
-    return this.createQueryBuilder('state')
-      .leftJoinAndSelect('state.condition', 'condition')
-      .where('state.configId = :configId', { configId })
+  public async findByExperimentIdForUpdate(
+    manager: EntityManager,
+    experimentId: string
+  ): Promise<ConditionPosteriorState[]> {
+    return manager
+      .createQueryBuilder(ConditionPosteriorState, 'state')
+      .innerJoin(ExperimentCondition, 'condition', 'condition.id = state.conditionId')
+      .where('condition.experimentId = :experimentId', { experimentId })
+      .orderBy('state.id', 'ASC')
+      .setLock('pessimistic_write')
       .getMany();
   }
 

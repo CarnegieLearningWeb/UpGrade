@@ -55,13 +55,13 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
       )`
     );
 
-    // condition_posterior_state: per-condition Beta distribution state. pendingSuccessCount/
+    // condition_posterior_state: per-condition Beta distribution state. Its experiment is derived
+    // through conditionId -> experiment_condition -> experiment. pendingSuccessCount/
     // pendingTotalCount buffer rewards between batch flushes (see ThompsonSamplingRewardService) —
     // included from the start since nothing has been applied anywhere yet.
     await queryRunner.query(
       `CREATE TABLE "condition_posterior_state" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-        "configId" uuid NOT NULL,
         "conditionId" uuid NOT NULL,
         "priorSuccess" double precision NOT NULL DEFAULT 1,
         "priorFailure" double precision NOT NULL DEFAULT 1,
@@ -74,7 +74,7 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
         "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
         "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
         "versionNumber" integer NOT NULL,
-        CONSTRAINT "UQ_posterior_config_condition" UNIQUE ("configId", "conditionId"),
+        CONSTRAINT "UQ_posterior_condition" UNIQUE ("conditionId"),
         CONSTRAINT "PK_condition_posterior_state" PRIMARY KEY ("id")
       )`
     );
@@ -101,7 +101,7 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
       `ALTER TABLE "thompson_sampling_experiment_config" ADD CONSTRAINT "FK_ts_config_experiment" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
     );
     await queryRunner.query(
-      `ALTER TABLE "condition_posterior_state" ADD CONSTRAINT "FK_posterior_state_config" FOREIGN KEY ("configId") REFERENCES "thompson_sampling_experiment_config"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
+      `CREATE INDEX "IDX_experiment_condition_experiment_id" ON "experiment_condition" ("experimentId")`
     );
     await queryRunner.query(
       `ALTER TABLE "condition_posterior_state" ADD CONSTRAINT "FK_posterior_state_condition" FOREIGN KEY ("conditionId") REFERENCES "experiment_condition"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
@@ -125,10 +125,11 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
 
     await queryRunner.query(`
       INSERT INTO "condition_posterior_state"
-        ("configId", "conditionId", "priorSuccess", "priorFailure", "successCount", "failureCount", "totalCount", "pendingSuccessCount", "pendingFailureCount", "pendingTotalCount", "versionNumber")
-      SELECT c.id, ec.id, 1, 1, 0, 0, 0, 0, 0, 0, 1
-      FROM "thompson_sampling_experiment_config" c
-      JOIN "experiment_condition" ec ON ec."experimentId" = c."experimentId"
+        ("conditionId", "priorSuccess", "priorFailure", "successCount", "failureCount", "totalCount", "pendingSuccessCount", "pendingFailureCount", "pendingTotalCount", "versionNumber")
+      SELECT ec.id, 1, 1, 0, 0, 0, 0, 0, 0, 1
+      FROM "experiment_condition" ec
+      JOIN "experiment" e ON e.id = ec."experimentId"
+      WHERE e."assignmentAlgorithm" = 'thompson_sampling'
     `);
   }
 
@@ -136,11 +137,11 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "thompson_sampling_reward" DROP CONSTRAINT "FK_ts_reward_condition"`);
     await queryRunner.query(`ALTER TABLE "thompson_sampling_reward" DROP CONSTRAINT "FK_ts_reward_experiment"`);
     await queryRunner.query(`ALTER TABLE "condition_posterior_state" DROP CONSTRAINT "FK_posterior_state_condition"`);
-    await queryRunner.query(`ALTER TABLE "condition_posterior_state" DROP CONSTRAINT "FK_posterior_state_config"`);
     await queryRunner.query(
       `ALTER TABLE "thompson_sampling_experiment_config" DROP CONSTRAINT "FK_ts_config_experiment"`
     );
 
+    await queryRunner.query(`DROP INDEX "IDX_experiment_condition_experiment_id"`);
     await queryRunner.query(`DROP INDEX "IDX_ts_reward_experiment_condition"`);
     await queryRunner.query(`DROP TABLE "thompson_sampling_reward"`);
     await queryRunner.query(`DROP TABLE "condition_posterior_state"`);

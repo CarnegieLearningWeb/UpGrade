@@ -162,7 +162,6 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
     await Promise.all(
       conditions.map((condition) =>
         this.posteriorStateRepository.save({
-          configId: config.id,
           conditionId: condition.id,
           priorSuccess: params.priors?.[condition.id]?.success ?? 1,
           priorFailure: params.priors?.[condition.id]?.failure ?? 1,
@@ -211,7 +210,7 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
     await Promise.all(
       Object.entries(params.priors).map(([conditionId, prior]) =>
         this.posteriorStateRepository.update(
-          { configId: config.id, conditionId },
+          { conditionId },
           {
             priorSuccess: prior?.success ?? 1,
             priorFailure: prior?.failure ?? 1,
@@ -306,7 +305,6 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
     await Promise.all(
       toAdd.map((condition) =>
         this.posteriorStateRepository.save({
-          configId: config.id,
           conditionId: condition.id,
           priorSuccess: 1,
           priorFailure: 1,
@@ -333,6 +331,9 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
     const config = await this.configRepository.findByExperimentId(experimentId);
     if (!config) {
       return;
+    }
+    if (config.conditionPosteriorStates?.length) {
+      await this.posteriorStateRepository.remove(config.conditionPosteriorStates);
     }
     await this.configRepository.remove(config);
     await this.invalidateConfigCache();
