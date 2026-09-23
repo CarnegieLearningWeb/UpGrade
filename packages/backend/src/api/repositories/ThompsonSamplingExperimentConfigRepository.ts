@@ -65,19 +65,4 @@ export class ThompsonSamplingExperimentConfigRepository extends Repository<Thomp
         .getMany()
     );
   }
-
-  public async findConfigsForActivelyEnrollingExperiments(): Promise<ThompsonSamplingExperimentConfig[]> {
-    return this.createQueryBuilder('config')
-      .leftJoin(ExperimentCondition, 'experimentCondition', 'experimentCondition.experimentId = config.experimentId')
-      .leftJoinAndMapMany(
-        'config.conditionPosteriorStates',
-        ConditionPosteriorState,
-        'conditionPosteriorStates',
-        'conditionPosteriorStates.conditionId = experimentCondition.id'
-      )
-      .leftJoinAndSelect('config.experiment', 'experiment')
-      .where('experiment.state = :state', { state: EXPERIMENT_STATE.ENROLLING })
-      .andWhere('experiment.assignmentAlgorithm = :algorithm', { algorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING })
-      .getMany();
-  }
 }
