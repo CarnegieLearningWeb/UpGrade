@@ -39,16 +39,6 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS "mooclet_version_condition_map"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "mooclet_experiment_ref"`);
 
-    // experiment_condition pre-exists this migration (base schema), so its composite unique
-    // constraint is added here via ALTER rather than in a CREATE TABLE. It's the target of the
-    // composite FKs below: pairing the already-unique "id" with "experimentId" lets a child row
-    // pin down *which experiment's* condition it's referencing, not just that the id exists
-    // somewhere, without changing the real uniqueness semantics (a condition's id is still
-    // globally unique on its own).
-    await queryRunner.query(
-      `ALTER TABLE "experiment_condition" ADD CONSTRAINT "UQ_experiment_condition_experimentId_id" UNIQUE ("experimentId", "id")`
-    );
-
     // thompson_sampling_experiment_config: one-to-one with experiment
     await queryRunner.query(
       `CREATE TABLE "thompson_sampling_experiment_config" (
@@ -61,21 +51,16 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
         "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
         "versionNumber" integer NOT NULL,
         CONSTRAINT "UQ_ts_config_experimentId" UNIQUE ("experimentId"),
-        CONSTRAINT "UQ_ts_config_experimentId_id" UNIQUE ("experimentId", "id"),
         CONSTRAINT "PK_ts_config" PRIMARY KEY ("id")
       )`
     );
 
     // condition_posterior_state: per-condition Beta distribution state. pendingSuccessCount/
     // pendingTotalCount buffer rewards between batch flushes (see ThompsonSamplingRewardService) —
-    // included from the start since nothing has been applied anywhere yet. "experimentId" is
-    // denormalized down from the config so configId/conditionId can be tied together with composite
-    // FKs below, rather than two independent simple FKs that could each point at a *different*
-    // experiment's config/condition with nothing to catch it.
+    // included from the start since nothing has been applied anywhere yet.
     await queryRunner.query(
       `CREATE TABLE "condition_posterior_state" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-        "experimentId" uuid NOT NULL,
         "configId" uuid NOT NULL,
         "conditionId" uuid NOT NULL,
         "priorSuccess" double precision NOT NULL DEFAULT 1,
@@ -115,27 +100,17 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "thompson_sampling_experiment_config" ADD CONSTRAINT "FK_ts_config_experiment" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
     );
-    // condition_posterior_state gets a direct FK on experimentId (for a clean cascade if the
-    // experiment itself is deleted) plus two *composite* FKs -- each requiring experimentId to
-    // agree with the config's/condition's own experimentId, so a row can no longer pair a config
-    // and a condition that belong to different experiments.
     await queryRunner.query(
-      `ALTER TABLE "condition_posterior_state" ADD CONSTRAINT "FK_posterior_state_experiment" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
+      `ALTER TABLE "condition_posterior_state" ADD CONSTRAINT "FK_posterior_state_config" FOREIGN KEY ("configId") REFERENCES "thompson_sampling_experiment_config"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
     );
     await queryRunner.query(
-      `ALTER TABLE "condition_posterior_state" ADD CONSTRAINT "FK_posterior_state_config" FOREIGN KEY ("experimentId", "configId") REFERENCES "thompson_sampling_experiment_config"("experimentId", "id") ON DELETE CASCADE ON UPDATE NO ACTION`
-    );
-    await queryRunner.query(
-      `ALTER TABLE "condition_posterior_state" ADD CONSTRAINT "FK_posterior_state_condition" FOREIGN KEY ("experimentId", "conditionId") REFERENCES "experiment_condition"("experimentId", "id") ON DELETE CASCADE ON UPDATE NO ACTION`
+      `ALTER TABLE "condition_posterior_state" ADD CONSTRAINT "FK_posterior_state_condition" FOREIGN KEY ("conditionId") REFERENCES "experiment_condition"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
     );
     await queryRunner.query(
       `ALTER TABLE "thompson_sampling_reward" ADD CONSTRAINT "FK_ts_reward_experiment" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
     );
-    // Same fix as condition_posterior_state above: thompson_sampling_reward already denormalizes
-    // experimentId (originally just for the composite index below), so pairing it with conditionId
-    // in this FK is a small extension that closes the identical gap here.
     await queryRunner.query(
-      `ALTER TABLE "thompson_sampling_reward" ADD CONSTRAINT "FK_ts_reward_condition" FOREIGN KEY ("experimentId", "conditionId") REFERENCES "experiment_condition"("experimentId", "id") ON DELETE CASCADE ON UPDATE NO ACTION`
+      `ALTER TABLE "thompson_sampling_reward" ADD CONSTRAINT "FK_ts_reward_condition" FOREIGN KEY ("conditionId") REFERENCES "experiment_condition"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
     );
 
     // Bootstrap config + posterior state rows for any experiment already flagged thompson_sampling
@@ -150,8 +125,8 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
 
     await queryRunner.query(`
       INSERT INTO "condition_posterior_state"
-        ("experimentId", "configId", "conditionId", "priorSuccess", "priorFailure", "successCount", "failureCount", "totalCount", "pendingSuccessCount", "pendingFailureCount", "pendingTotalCount", "versionNumber")
-      SELECT c."experimentId", c.id, ec.id, 1, 1, 0, 0, 0, 0, 0, 0, 1
+        ("configId", "conditionId", "priorSuccess", "priorFailure", "successCount", "failureCount", "totalCount", "pendingSuccessCount", "pendingFailureCount", "pendingTotalCount", "versionNumber")
+      SELECT c.id, ec.id, 1, 1, 0, 0, 0, 0, 0, 0, 1
       FROM "thompson_sampling_experiment_config" c
       JOIN "experiment_condition" ec ON ec."experimentId" = c."experimentId"
     `);
@@ -162,7 +137,6 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "thompson_sampling_reward" DROP CONSTRAINT "FK_ts_reward_experiment"`);
     await queryRunner.query(`ALTER TABLE "condition_posterior_state" DROP CONSTRAINT "FK_posterior_state_condition"`);
     await queryRunner.query(`ALTER TABLE "condition_posterior_state" DROP CONSTRAINT "FK_posterior_state_config"`);
-    await queryRunner.query(`ALTER TABLE "condition_posterior_state" DROP CONSTRAINT "FK_posterior_state_experiment"`);
     await queryRunner.query(
       `ALTER TABLE "thompson_sampling_experiment_config" DROP CONSTRAINT "FK_ts_config_experiment"`
     );
@@ -171,13 +145,6 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "thompson_sampling_reward"`);
     await queryRunner.query(`DROP TABLE "condition_posterior_state"`);
     await queryRunner.query(`DROP TABLE "thompson_sampling_experiment_config"`);
-
-    // experiment_condition pre-exists this migration and isn't dropped above, so its composite
-    // unique constraint (added in up(), once the referencing composite FKs above are gone) needs
-    // an explicit drop rather than going away with the table.
-    await queryRunner.query(
-      `ALTER TABLE "experiment_condition" DROP CONSTRAINT "UQ_experiment_condition_experimentId_id"`
-    );
 
     // Best-effort: the pre-migration enum has no 'thompson_sampling' value, so any experiment left in
     // that state would fail the column cast below. Fall back to 'random' — this is a rollback of a

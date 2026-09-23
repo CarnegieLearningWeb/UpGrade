@@ -162,7 +162,6 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
     await Promise.all(
       conditions.map((condition) =>
         this.posteriorStateRepository.save({
-          experimentId,
           configId: config.id,
           conditionId: condition.id,
           priorSuccess: params.priors?.[condition.id]?.success ?? 1,
@@ -307,7 +306,6 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
     await Promise.all(
       toAdd.map((condition) =>
         this.posteriorStateRepository.save({
-          experimentId,
           configId: config.id,
           conditionId: condition.id,
           priorSuccess: 1,
