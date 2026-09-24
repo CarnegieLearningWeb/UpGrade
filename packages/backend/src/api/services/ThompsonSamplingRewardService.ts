@@ -148,7 +148,6 @@ export class ThompsonSamplingRewardService {
 
     await this.posteriorStateRepository.manager.transaction(async (manager) => {
       await manager.save(ThompsonSamplingReward, {
-        experimentId,
         conditionId,
         userId,
         success,

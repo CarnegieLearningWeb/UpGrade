@@ -101,7 +101,7 @@ describe('ThompsonSamplingRewardService', () => {
   // ThompsonSamplingReward audit rows saved via manager.save(ThompsonSamplingReward, plainObject) --
   // the two-arg form, distinct from the single-arg save(entityInstance) used for
   // ConditionPosteriorState updates. Tests assert against this instead of a repository mock.
-  let savedRewards: Array<{ experimentId: string; conditionId: string; userId: string; success: boolean }>;
+  let savedRewards: Array<{ conditionId: string; userId: string; success: boolean }>;
 
   function makeConfig(batchSize?: number) {
     return {
@@ -229,7 +229,6 @@ describe('ThompsonSamplingRewardService', () => {
       await (service as any).processReward(makeUser(), makeRequest(BinaryRewardAllowedValue.SUCCESS), logger);
 
       expect(savedRewards).toContainEqual({
-        experimentId: EXPERIMENT_ID,
         conditionId: CONDITION_ID,
         userId: USER_ID,
         success: true,
@@ -485,7 +484,6 @@ describe('ThompsonSamplingRewardService', () => {
       await flushPromises();
 
       expect(savedRewards).toContainEqual({
-        experimentId: EXPERIMENT_ID,
         conditionId: CONDITION_ID,
         userId: USER_ID,
         success: true,

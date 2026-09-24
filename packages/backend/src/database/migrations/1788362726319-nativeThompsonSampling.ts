@@ -83,7 +83,6 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
     await queryRunner.query(
       `CREATE TABLE "thompson_sampling_reward" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-        "experimentId" uuid NOT NULL,
         "conditionId" uuid NOT NULL,
         "userId" character varying NOT NULL,
         "success" boolean NOT NULL,
@@ -93,9 +92,7 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
         CONSTRAINT "PK_ts_reward" PRIMARY KEY ("id")
       )`
     );
-    await queryRunner.query(
-      `CREATE INDEX "IDX_ts_reward_experiment_condition" ON "thompson_sampling_reward" ("experimentId", "conditionId")`
-    );
+    await queryRunner.query(`CREATE INDEX "IDX_ts_reward_condition" ON "thompson_sampling_reward" ("conditionId")`);
 
     await queryRunner.query(
       `ALTER TABLE "thompson_sampling_experiment_config" ADD CONSTRAINT "FK_ts_config_experiment" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
@@ -105,9 +102,6 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
     );
     await queryRunner.query(
       `ALTER TABLE "condition_posterior_state" ADD CONSTRAINT "FK_posterior_state_condition" FOREIGN KEY ("conditionId") REFERENCES "experiment_condition"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
-    );
-    await queryRunner.query(
-      `ALTER TABLE "thompson_sampling_reward" ADD CONSTRAINT "FK_ts_reward_experiment" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
     );
     await queryRunner.query(
       `ALTER TABLE "thompson_sampling_reward" ADD CONSTRAINT "FK_ts_reward_condition" FOREIGN KEY ("conditionId") REFERENCES "experiment_condition"("id") ON DELETE CASCADE ON UPDATE NO ACTION`
@@ -135,14 +129,13 @@ export class NativeThompsonSampling1788362726319 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "thompson_sampling_reward" DROP CONSTRAINT "FK_ts_reward_condition"`);
-    await queryRunner.query(`ALTER TABLE "thompson_sampling_reward" DROP CONSTRAINT "FK_ts_reward_experiment"`);
     await queryRunner.query(`ALTER TABLE "condition_posterior_state" DROP CONSTRAINT "FK_posterior_state_condition"`);
     await queryRunner.query(
       `ALTER TABLE "thompson_sampling_experiment_config" DROP CONSTRAINT "FK_ts_config_experiment"`
     );
 
     await queryRunner.query(`DROP INDEX "IDX_experiment_condition_experiment_id"`);
-    await queryRunner.query(`DROP INDEX "IDX_ts_reward_experiment_condition"`);
+    await queryRunner.query(`DROP INDEX "IDX_ts_reward_condition"`);
     await queryRunner.query(`DROP TABLE "thompson_sampling_reward"`);
     await queryRunner.query(`DROP TABLE "condition_posterior_state"`);
     await queryRunner.query(`DROP TABLE "thompson_sampling_experiment_config"`);
