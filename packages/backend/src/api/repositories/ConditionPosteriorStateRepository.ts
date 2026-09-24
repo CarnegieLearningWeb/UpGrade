@@ -14,7 +14,7 @@ export class ConditionPosteriorStateRepository extends Repository<ConditionPoste
       .innerJoin(ExperimentCondition, 'condition', 'condition.id = state.conditionId')
       .where('condition.experimentId = :experimentId', { experimentId })
       .orderBy('state.id', 'ASC')
-      .setLock('pessimistic_write')
+      .setLock('pessimistic_write', undefined, ['state'])
       .getMany();
   }
 
