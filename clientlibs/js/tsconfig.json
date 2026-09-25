@@ -2,6 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./src",
+    "rootDir": "../..",
     "outDir": "./dist",
     "sourceMap": false,
     "declaration": true,
@@ -18,15 +19,14 @@
     "target": "es6",
     "ignoreDeprecations": "6.0",
     "typeRoots": ["./node_modules/@types"],
-    "types": ["node"],
-    "ignoreDeprecations": "6.0",
     "lib": ["es2018", "dom"],
     "types": ["jest", "node"],
     "paths": {
-      "upgrade_types": ["../../../packages/types"]
+      "upgrade_types": ["../../../packages/types"],
+      "upgrade_types/*": ["../../../packages/types/src/*"]
     },
     "esModuleInterop": true
   },
-  "include": ["src", ".eslintrc.js", "webpack.config.ts"],
+  "include": ["src", ".eslintrc.js", "webpack.config.ts", "quickTest.ts", "quickTestLiteHttpClient.ts"],
   "exclude": ["src/**/*.spec.ts"]
 }
