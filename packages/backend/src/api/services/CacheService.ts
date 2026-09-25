@@ -14,6 +14,7 @@ const PREFIX_CATEGORY: Record<CACHE_PREFIX, CacheBucket> = {
   [CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX]: 'featureFlags',
   [CACHE_PREFIX.EXPERIMENT_PRECOMPUTED_SEGMENT_KEY_PREFIX]: 'experiments',
   [CACHE_PREFIX.SETTING_KEY_PREFIX]: 'settings',
+  [CACHE_PREFIX.THOMPSON_SAMPLING_CONFIG_KEY_PREFIX]: 'experiments',
 };
 
 // this module will get swapped in if caching is enabled but the cache manager fails to initialize as a dummy default deliverer

@@ -1649,26 +1649,32 @@ describe('ExperimentEffects', () => {
   describe('fetchRewardsDataForExperiment$', () => {
     it('should dispatch actionFetchRewardsDataForExperimentSuccess on successful fetch', fakeAsync(() => {
       const experimentId = 'test-experiment-123';
-      const mockRewardsSummary = [
-        {
-          conditionCode: 'Control',
-          successes: 10,
-          failures: 5,
-          total: 15,
-          successRate: '66.7%',
-          order: 0,
-        },
-        {
-          conditionCode: 'Treatment',
-          successes: 8,
-          failures: 7,
-          total: 15,
-          successRate: '53.3%',
-          order: 1,
-        },
-      ];
+      const mockRewardsSummary = {
+        conditions: [
+          {
+            conditionCode: 'Control',
+            successes: 10,
+            failures: 5,
+            total: 15,
+            successRate: '66.7%',
+            order: 0,
+          },
+          {
+            conditionCode: 'Treatment',
+            successes: 8,
+            failures: 7,
+            total: 15,
+            successRate: '53.3%',
+            order: 1,
+          },
+        ],
+        pendingRewardsCount: 0,
+        totalRewardCount: 30,
+        warmupThreshold: 0,
+        batchSize: 1,
+      };
 
-      experimentDataService.fetchMoocletRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));
+      experimentDataService.fetchRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));
 
       const expectedAction = actionFetchRewardsDataForExperimentSuccess({
         experimentId,
@@ -1688,7 +1694,7 @@ describe('ExperimentEffects', () => {
       const experimentId = 'test-experiment-123';
       const error = new Error('API error');
 
-      experimentDataService.fetchMoocletRewardsDataForExperiment = jest.fn().mockReturnValue(throwError(error));
+      experimentDataService.fetchRewardsDataForExperiment = jest.fn().mockReturnValue(throwError(error));
 
       const expectedAction = actionFetchRewardsDataForExperimentFailure({ error });
 
@@ -1705,10 +1711,10 @@ describe('ExperimentEffects', () => {
       const experimentId = 'test-experiment-456';
       const mockRewardsSummary = [];
 
-      experimentDataService.fetchMoocletRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));
+      experimentDataService.fetchRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));
 
       service.fetchRewardsDataForExperiment$.subscribe(() => {
-        expect(experimentDataService.fetchMoocletRewardsDataForExperiment).toHaveBeenCalledWith(experimentId);
+        expect(experimentDataService.fetchRewardsDataForExperiment).toHaveBeenCalledWith(experimentId);
       });
 
       actions$.next(actionFetchRewardsDataForExperiment({ experimentId }));

@@ -31,11 +31,16 @@ import {
   withinSubjectDPExperiment,
 } from '../mockdata';
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
-import { ENROLLMENT_CODE, EXPERIMENT_STATE, FILTER_MODE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import {
+  ASSIGNMENT_ALGORITHM,
+  ENROLLMENT_CODE,
+  EXPERIMENT_STATE,
+  FILTER_MODE,
+  MARKED_DECISION_POINT_STATUS,
+} from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
 import { configureLogger } from '../../utils/logger';
-import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import { factorialGroupExperiment, factorialIndividualExperiment } from '../mockdata/raw';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
@@ -72,7 +77,6 @@ describe('Experiment Assignment Service Test', () => {
   const segmentServiceMock = sinon.createStubInstance(SegmentService);
   const experimentServiceMock = sinon.createStubInstance(ExperimentService);
   const cacheServiceMock = sinon.createStubInstance(CacheService);
-  const moocletExperimentServiceMock = sinon.createStubInstance(MoocletExperimentService);
   const experimentPrecomputedSegmentServiceMock = sinon.createStubInstance(ExperimentPrecomputedSegmentService);
   // Default to "no precomputed rows" so the assignment read path exercises the on-the-fly fallback
   // (recursive segment resolution) these tests were written against.
@@ -156,6 +160,7 @@ describe('Experiment Assignment Service Test', () => {
       stateTimeLogsRepositoryMock,
       analyticsRepositoryMock,
       userStratificationFactorRepositoryMock,
+      {} as any, // thompsonSamplingConfigRepository — not used in existing tests
       previewUserServiceMock,
       experimentUserServiceMock,
       errorServiceMock,
@@ -163,8 +168,8 @@ describe('Experiment Assignment Service Test', () => {
       segmentServiceMock,
       experimentServiceMock,
       cacheServiceMock,
-      moocletExperimentServiceMock,
-      experimentPrecomputedSegmentServiceMock
+      experimentPrecomputedSegmentServiceMock,
+      {} as any // thompsonSamplingService — not used in existing tests
     );
 
     testedModule.cacheService.wrap.resolves([]);
@@ -2180,6 +2185,21 @@ describe('Experiment Assignment Service Test', () => {
       expect(result).toEqual({});
     });
 
+    it('should exclude Thompson Sampling (adaptive) experiments from batch assignment', async () => {
+      const context = 'home';
+      const site = 'CurriculumSequence';
+      const target = 'W1';
+      const userDocs = [{ id: 'user1', group: { schoolId: ['school1'] }, workingGroup: {} }];
+      const exp = structuredClone(simpleIndividualAssignmentExperiment) as any;
+      exp.assignmentAlgorithm = ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING;
+
+      testedModule.experimentRepository.getValidExperimentsForContextAndDecisionPoint = sandbox.stub().resolves([exp]);
+
+      const result = await testedModule.getBatchExperimentConditions(userDocs, context, site, target, loggerMock);
+
+      expect(result).toEqual({});
+    });
+
     it('should return batch experiment conditions for multiple users with simple individual experiment', async () => {
       const context = 'home';
       const site = 'CurriculumSequence';
@@ -2394,16 +2414,99 @@ describe('Experiment Assignment Service Test', () => {
     });
   });
 
-  it('[getConditionFromMoocletProxy] should return undefined and log error when mooclet proxy throws', async () => {
-    const userDoc = { id: 'user123', group: {}, workingGroup: {} };
-    const exp = structuredClone(simpleIndividualAssignmentExperiment);
-    const mockError = new Error('Mooclet proxy error');
+  describe('[assignThompsonSampling] warmup evidence', () => {
+    const thompsonExperiment: any = {
+      id: 'ts-experiment-1',
+      assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+      conditions: [{ id: 'condition-a' }, { id: 'condition-b' }],
+    };
+    const thompsonUser: any = { id: 'user-1' };
 
-    moocletExperimentServiceMock.getConditionFromMoocletProxy.rejects(mockError);
+    function makePosteriorState(conditionId: string, totalCount: number, pendingTotalCount: number) {
+      return {
+        conditionId,
+        successCount: 0,
+        failureCount: 0,
+        totalCount,
+        pendingTotalCount,
+        priorSuccess: 1,
+        priorFailure: 1,
+      };
+    }
 
-    const result = await (testedModule as any).getConditionFromMoocletProxy(exp, userDoc, loggerMock);
+    it('counts rewards still sitting in a pending batch toward totalRewardCount, not just flushed ones', async () => {
+      testedModule.thompsonSamplingConfigRepository = {
+        findByExperimentId: sandbox.stub().resolves({
+          warmupThreshold: 9,
+          minimumDrawDifference: undefined,
+          conditionPosteriorStates: [
+            makePosteriorState('condition-a', 2, 3), // 2 flushed + 3 pending
+            makePosteriorState('condition-b', 1, 4), // 1 flushed + 4 pending
+          ],
+        }),
+      };
+      testedModule.thompsonSamplingService = {
+        selectCondition: sandbox.stub().returns('condition-a'),
+        buildPriorsRecord: sandbox.stub().returns({}),
+      };
 
-    expect(result).toBeUndefined();
-    sinon.assert.calledOnce(loggerMock.error);
+      await (testedModule as any).assignThompsonSampling(thompsonExperiment, thompsonUser, loggerMock);
+
+      // Flushed-only totals (2 + 1 = 3) would wrongly stay inside a warmupThreshold of 9.
+      // The real reward evidence collected so far also includes the pending buffers
+      // (3 + 4 = 7), for a true total of 10 — past warmup.
+      const totalRewardCountArg = testedModule.thompsonSamplingService.selectCondition.getCall(0).args[2];
+      expect(totalRewardCountArg).toBe(10);
+    });
+  });
+
+  describe('[updateEnrollmentExclusion] Thompson Sampling trusts the client-reported condition', () => {
+    const experiment: any = {
+      id: 'ts-experiment-2',
+      assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+      assignmentUnit: 'individual',
+      consistencyRule: 'individual',
+      state: 'enrolling',
+      conditions: [
+        { id: 'condition-a', conditionCode: 'ConditionA' },
+        { id: 'condition-b', conditionCode: 'ConditionB' },
+      ],
+    };
+    const user: any = { id: 'user-1', workingGroup: {} };
+    const decisionPoint: any = { id: 'dp-1', site: 'site1', target: 'target1' };
+
+    it('persists the client-reported condition on first mark without re-running assignThompsonSampling', async () => {
+      testedModule.individualEnrollmentRepository.save = sandbox.stub().resolves(undefined);
+      // If mark ever falls back to assignExperiment() -> assignThompsonSampling() for this algorithm,
+      // this stub throws -- proving the fix (trusting the client-reported condition, like stratified
+      // random and within-subjects) rather than silently passing on an incidental TypeError.
+      testedModule.thompsonSamplingConfigRepository = {
+        findByExperimentId: sandbox
+          .stub()
+          .rejects(new Error('assignThompsonSampling should not run when mark trusts the client condition')),
+      };
+
+      await (testedModule as any).updateEnrollmentExclusion(
+        user,
+        experiment,
+        decisionPoint,
+        {
+          individualEnrollment: undefined,
+          individualExclusion: undefined,
+          groupEnrollment: undefined,
+          groupExclusion: undefined,
+        },
+        { isUserExcluded: false, isGroupExcluded: false },
+        [],
+        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        'ConditionB',
+        undefined,
+        loggerMock
+      );
+
+      sinon.assert.calledOnce(testedModule.individualEnrollmentRepository.save);
+      const savedDoc = testedModule.individualEnrollmentRepository.save.getCall(0).args[0];
+      expect(savedDoc.condition).toEqual(experiment.conditions[1]);
+    });
   });
 });
