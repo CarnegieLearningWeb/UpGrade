@@ -20,6 +20,7 @@ import {
   FILTER_MODE,
   IMPORT_COMPATIBILITY_TYPE,
   SEGMENT_TYPE,
+  SERVER_ERROR,
   SORT_AS_DIRECTION,
   STANDARD_LIST_TYPE,
 } from 'upgrade_types';
@@ -582,6 +583,69 @@ describe('Feature Flag Service Testing', () => {
     service.findOneForDetails = jest.fn().mockResolvedValue(undefined);
     const results = await service.delete(mockFlag1.id, mockUser1, logger);
     expect(results).toEqual(undefined);
+  });
+
+  describe('owned segment cleanup on deletion', () => {
+    const listTypes = [
+      ['featureFlagSegmentInclusion', 'Included'],
+      ['featureFlagSegmentExclusion', 'Excluded'],
+    ] as const;
+
+    beforeEach(() => {
+      mockExperimentAuditLogRepository.saveRawJson.mockClear();
+    });
+
+    afterEach(() => {
+      entityManagerMock.getRepository.mockReturnThis();
+    });
+
+    it.each(listTypes)('awaits every %s cleanup before completing the transaction', async (relation) => {
+      const flag = Object.assign(new FeatureFlag(), mockFlag1, {
+        [relation]: [{ segment: { id: 'first-list' } }, { segment: { id: 'last-list' } }],
+      });
+      jest.spyOn(service, 'findOneForDetails').mockResolvedValue(flag);
+      let finishCleanup: () => void;
+      const cleanup = new Promise<void>((resolve) => {
+        finishCleanup = resolve;
+      });
+      const deleteSegment = jest.fn().mockResolvedValueOnce({}).mockReturnValueOnce(cleanup);
+      entityManagerMock.getRepository.mockReturnValue({ delete: deleteSegment });
+      let completed = false;
+      const deletion = service.delete(flag.id, mockUser1, logger).then((result) => {
+        completed = true;
+        return result;
+      });
+
+      try {
+        // Drain runnable work while the final cleanup remains explicitly blocked.
+        await new Promise<void>((resolve) => setImmediate(resolve));
+        expect(deleteSegment.mock.calls).toEqual([['first-list'], ['last-list']]);
+        expect(completed).toBe(false);
+        expect(mockExperimentAuditLogRepository.saveRawJson).not.toHaveBeenCalled();
+      } finally {
+        finishCleanup();
+        await deletion;
+      }
+
+      await expect(deletion).resolves.toEqual(mockFlag1.id);
+      expect(mockExperimentAuditLogRepository.saveRawJson).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(listTypes)('propagates %s cleanup failures to the transaction', async (relation, description) => {
+      const flag = Object.assign(new FeatureFlag(), mockFlag1, {
+        [relation]: [{ segment: { id: 'failed-list' } }],
+      });
+      jest.spyOn(service, 'findOneForDetails').mockResolvedValue(flag);
+      const failure = new Error('cleanup failed');
+      entityManagerMock.getRepository.mockReturnValue({ delete: jest.fn().mockRejectedValue(failure) });
+
+      await expect(service.delete(flag.id, mockUser1, logger)).rejects.toBe(failure);
+      expect(failure).toMatchObject({
+        details: `Error in deleting Feature Flag ${description} Segment from DB`,
+        type: SERVER_ERROR.QUERY_FAILED,
+      });
+      expect(mockExperimentAuditLogRepository.saveRawJson).not.toHaveBeenCalled();
+    });
   });
 
   it('should return an empty array if there are no flags', async () => {

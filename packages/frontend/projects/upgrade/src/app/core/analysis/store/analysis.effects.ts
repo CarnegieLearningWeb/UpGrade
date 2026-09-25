@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as AnalysisActions from './analysis.actions';
-import { switchMap, catchError, map, filter, withLatestFrom } from 'rxjs/operators';
+import { switchMap, catchError, map, filter, withLatestFrom, defaultIfEmpty } from 'rxjs/operators';
 import { AnalysisDataService } from '../analysis.data.service';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.state';
@@ -35,7 +35,9 @@ export class AnalysisEffects {
       switchMap((metrics) =>
         this.analysisDataService.upsertMetrics(metrics).pipe(
           map(() => AnalysisActions.actionFetchMetrics()),
-          catchError(() => [AnalysisActions.actionUpsertMetricsFailure()])
+          catchError(() => [AnalysisActions.actionUpsertMetricsFailure()]),
+          // Guard against HttpCancelInterceptor cancelling this request on navigation.
+          defaultIfEmpty(AnalysisActions.actionUpsertMetricsFailure())
         )
       )
     )
@@ -57,7 +59,9 @@ export class AnalysisEffects {
               return AnalysisActions.actionDeleteMetricSuccess({ metrics: data, key });
             }
           }),
-          catchError(() => [AnalysisActions.actionDeleteMetricFailure()])
+          catchError(() => [AnalysisActions.actionDeleteMetricFailure()]),
+          // Guard against HttpCancelInterceptor cancelling this request on navigation.
+          defaultIfEmpty(AnalysisActions.actionDeleteMetricFailure())
         )
       )
     )

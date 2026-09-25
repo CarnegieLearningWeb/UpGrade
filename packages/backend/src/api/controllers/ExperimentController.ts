@@ -27,17 +27,19 @@ import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpda
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentDTO, ExperimentFile, ValidatedExperimentError } from '../DTO/ExperimentDTO';
 import { ExperimentIds } from './validators/ExperimentIdsValidator';
-import { MoocletExperimentService } from '../services/MoocletExperimentService';
-import { env } from '../../env';
+import { ThompsonSamplingExperimentCrudService } from '../services/ThompsonSamplingExperimentCrudService';
+import { AdaptiveExperimentConfigDispatcherService } from '../services/AdaptiveExperimentConfigDispatcherService';
 import { Response } from 'express';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { ExperimentIdValidator } from '../DTO/ExperimentDTO';
 import {
+  ASSIGNMENT_ALGORITHM,
   CACHE_PREFIX,
+  EXPERIMENT_STATE,
   IImportError,
   LIST_FILTER_MODE,
   SERVER_ERROR,
-  SUPPORTED_MOOCLET_ALGORITHMS,
+  ExperimentRewardsSummary,
 } from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
 import { getInstanceId } from '../../lib/instanceIdentity';
@@ -46,8 +48,6 @@ import { SegmentInputValidator } from './validators/SegmentInputValidator';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { IdValidator } from './validators/ExperimentUserValidator';
 import { Segment } from '../models/Segment';
-import { MoocletRewardsService } from '../services/MoocletRewardsService';
-import { ExperimentRewardsSummary } from 'upgrade_types';
 import { CacheService } from '../services/CacheService';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
@@ -661,10 +661,10 @@ export class ExperimentController {
   constructor(
     public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService,
-    public moocletExperimentService: MoocletExperimentService,
-    public moocletRewardService: MoocletRewardsService,
     public importExportService: ImportExportService,
-    public cacheService: CacheService
+    public cacheService: CacheService,
+    public thompsonSamplingCrudService: ThompsonSamplingExperimentCrudService,
+    public adaptiveExperimentConfigDispatcher: AdaptiveExperimentConfigDispatcherService
   ) {}
 
   /**
@@ -919,19 +919,16 @@ export class ExperimentController {
     @Params({ validate: true }) { id }: ExperimentIdValidator,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
-    let experiment = await this.experimentService.getSingleExperiment(id, request.logger);
+    const experiment = await this.experimentService.getSingleExperiment(id, request.logger);
+    return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(experiment);
+  }
 
-    if (SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment?.assignmentAlgorithm)) {
-      if (!env.mooclets?.enabled) {
-        throw new BadRequestError(
-          'MoocletPolicyParameters are present in the experiment but Mooclet is not enabled in the environment'
-        );
-      } else {
-        experiment = await this.moocletExperimentService.attachPolicyParamsToExperimentDTO(experiment, request.logger);
-      }
-    }
-
-    return experiment;
+  @Get('/rewards/:id')
+  public async getRewardsSummary(
+    @Params({ validate: true }) { id }: ExperimentIdValidator,
+    @Req() request: AppRequest
+  ): Promise<ExperimentRewardsSummary> {
+    return this.thompsonSamplingCrudService.getRewardsSummary(id);
   }
 
   /**
@@ -1046,7 +1043,7 @@ export class ExperimentController {
    */
 
   @Post()
-  public create(
+  public async create(
     @Body({ validate: true }) experiment: ExperimentDTO,
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
@@ -1058,21 +1055,27 @@ export class ExperimentController {
       throw new BadRequestError(contextValidationError);
     }
 
-    if ('moocletPolicyParameters' in experiment) {
-      if (!env.mooclets?.enabled) {
-        throw new BadRequestError(
-          'Failed to create Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
-        );
-      } else {
-        return this.moocletExperimentService.syncCreate({
-          experimentDTO: experiment,
-          currentUser,
-          logger: request.logger,
-        });
-      }
+    // Captured before create() runs: ExperimentService.create() replaces every condition's id with
+    // a freshly generated one in place, so `experiment.conditions[].id` no longer matches whatever
+    // ids the client used to key thompsonSamplingConfig.priors by the time create() returns.
+    const originalConditionIds = experiment.conditions?.map((condition) => condition.id);
+    const createdExperiment = await this.experimentService.create(experiment, currentUser, request.logger);
+
+    try {
+      await this.adaptiveExperimentConfigDispatcher.createConfigIfApplicable(
+        experiment,
+        createdExperiment,
+        originalConditionIds
+      );
+    } catch (error) {
+      // The experiment row already committed above. Without this, a failed adaptive-config write
+      // would leave a Thompson Sampling experiment with no config/posterior rows behind -- invisible
+      // and permanently unable to assign a condition. Remove it rather than leave it orphaned.
+      await this.experimentService.delete(createdExperiment.id, currentUser, { logger: request.logger });
+      throw error;
     }
 
-    return this.experimentService.create(experiment, currentUser, request.logger);
+    return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(createdExperiment);
   }
 
   /**
@@ -1155,20 +1158,6 @@ export class ExperimentController {
   ): Promise<Experiment | undefined> {
     request.logger.child({ user: currentUser });
 
-    // Manually check if the experiment has a mooclet ref
-    if (env.mooclets.enabled) {
-      const moocletExperimentRef = await this.moocletExperimentService.getMoocletExperimentRefByUpgradeExperimentId(id);
-
-      if (moocletExperimentRef) {
-        return await this.moocletExperimentService.syncDelete({
-          moocletExperimentRef,
-          experimentId: id,
-          currentUser,
-          logger: request.logger,
-        });
-      }
-    }
-
     const experiment = await this.experimentService.delete(id, currentUser, { logger: request.logger });
 
     if (!experiment) {
@@ -1216,13 +1205,14 @@ export class ExperimentController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<ExperimentDTO> {
-    return this.experimentService.updateState(
+    const updatedExperiment = await this.experimentService.updateState(
       experiment.experimentId,
       experiment.state,
       currentUser,
       request.logger,
       experiment.scheduleDate
     );
+    return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(updatedExperiment);
   }
 
   /**
@@ -1274,29 +1264,140 @@ export class ExperimentController {
       throw new BadRequestError(contextValidationError);
     }
 
-    if (env.mooclets.enabled) {
-      // if mooclet is enabled, we must check for potential assignment algorithm changes in all experiments
-      const updatedMoocletExperiment =
-        await this.moocletExperimentService.handlePotentialMoocletAssignmentAlgorithmChange(
-          { ...experiment, id },
-          currentUser,
-          request.logger
-        );
-
-      if (updatedMoocletExperiment) {
-        return updatedMoocletExperiment;
-      }
-    } else {
-      // if mooclet is not enabled, but experiment has mooclet params, throw error
-      if ('moocletPolicyParameters' in experiment) {
-        throw new BadRequestError(
-          'Failed to update Experiment: moocletPolicyParameters was provided but mooclets are not enabled on backend.'
-        );
-      }
+    const previousExperiment = await this.experimentService.getSingleExperiment(id, request.logger);
+    if (previousExperiment) {
+      await this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(previousExperiment);
+      this.assertAssignmentAlgorithmNotChangedToOrFromThompsonSampling(previousExperiment, experiment);
+      this.assertConditionsNotModifiedAfterStart(previousExperiment, experiment);
     }
 
-    // else, if mooclet is not involved, we can do a normal update
-    return this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
+    const updatedExperiment = await this.experimentService.update({ ...experiment, id }, currentUser, request.logger);
+
+    try {
+      await this.adaptiveExperimentConfigDispatcher.syncConfigIfApplicable(experiment, updatedExperiment);
+    } catch (error) {
+      // The base experiment update above already committed (e.g. assignmentAlgorithm switched to
+      // THOMPSON_SAMPLING). Without reverting, a failed config sync would leave that change in place
+      // with no config/posterior rows -- invisible and permanently unable to assign a condition, the
+      // same failure mode create() already guards against by deleting the just-created experiment.
+      // Restore the pre-update experiment, then re-run the config sync against the reverted state so
+      // any config/posterior rows the failed attempt did manage to write get cleaned up too. Best
+      // effort: a failure here is logged rather than allowed to replace/mask the original error.
+      if (previousExperiment) {
+        try {
+          const revertedExperiment = await this.experimentService.update(
+            previousExperiment,
+            currentUser,
+            request.logger
+          );
+          await this.adaptiveExperimentConfigDispatcher.syncConfigIfApplicable(previousExperiment, revertedExperiment);
+        } catch (revertError) {
+          request.logger.error({
+            message: `Failed to fully revert experiment ${id} after adaptive config sync failure`,
+            error: revertError,
+          });
+        }
+      }
+      throw error;
+    }
+
+    return this.adaptiveExperimentConfigDispatcher.attachConfigToExperiment(updatedExperiment);
+  }
+
+  /**
+   * Switching an experiment to or from Thompson Sampling on an update is not supported at all --
+   * regardless of experiment state, even INACTIVE/DRAFT -- because there is no sane way to backfill
+   * or discard the config/posterior rows a switch implies. The intended workflow is to delete the
+   * experiment and create a new one with the desired algorithm instead. Unlike
+   * assertConditionsNotModifiedAfterStart below, this has no "not started yet" exception.
+   */
+  private assertAssignmentAlgorithmNotChangedToOrFromThompsonSampling(
+    previousExperiment: ExperimentDTO,
+    incomingExperiment: ExperimentDTO
+  ): void {
+    const wasThompsonSampling = previousExperiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING;
+    const isThompsonSampling = incomingExperiment.assignmentAlgorithm === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING;
+
+    if (wasThompsonSampling !== isThompsonSampling) {
+      throw new BadRequestError(
+        'The assignment algorithm cannot be changed to or from Thompson Sampling. Create a new experiment instead.'
+      );
+    }
+  }
+
+  /**
+   * Mirrors the frontend's own restriction (selectSectionCardRestriction /
+   * selectDisabledExperimentFields in experiments.selectors.ts): conditions -- including Thompson
+   * Sampling priors -- are only editable while an experiment is still in one of these states. The
+   * frontend disables the relevant fields/section card once an experiment has left this set, but
+   * nothing previously stopped the same change from being sent directly to this endpoint.
+   */
+  private static readonly CONDITIONS_EDITABLE_STATES = new Set<EXPERIMENT_STATE>([
+    EXPERIMENT_STATE.INACTIVE,
+    EXPERIMENT_STATE.SCHEDULED,
+    EXPERIMENT_STATE.PREVIEW,
+    EXPERIMENT_STATE.DRAFT,
+  ]);
+
+  private assertConditionsNotModifiedAfterStart(
+    previousExperiment: ExperimentDTO,
+    incomingExperiment: ExperimentDTO
+  ): void {
+    // Mirrors selectDisabledExperimentFields/selectSectionCardRestriction's own `!state || ...`
+    // guard: a missing state means there's nothing to compare against yet, not that editing should
+    // be blocked.
+    if (!previousExperiment.state || ExperimentController.CONDITIONS_EDITABLE_STATES.has(previousExperiment.state)) {
+      return;
+    }
+
+    const previousConditions = previousExperiment.conditions ?? [];
+    const incomingConditions = incomingExperiment.conditions ?? [];
+
+    const previousIds = new Set(previousConditions.map((condition) => condition.id));
+    const incomingIds = new Set(incomingConditions.map((condition) => condition.id));
+    const conditionSetChanged =
+      previousIds.size !== incomingIds.size || [...previousIds].some((id) => !incomingIds.has(id));
+
+    const conditionFieldsChanged = previousConditions.some((previousCondition) => {
+      const incomingCondition = incomingConditions.find((condition) => condition.id === previousCondition.id);
+      return (
+        incomingCondition &&
+        (previousCondition.conditionCode !== incomingCondition.conditionCode ||
+          previousCondition.name !== incomingCondition.name ||
+          previousCondition.description !== incomingCondition.description ||
+          previousCondition.assignmentWeight !== incomingCondition.assignmentWeight)
+      );
+    });
+
+    const priorsChanged = this.havePriorsChanged(
+      previousExperiment.thompsonSamplingConfig?.priors,
+      incomingExperiment.thompsonSamplingConfig?.priors
+    );
+
+    if (conditionSetChanged || conditionFieldsChanged || priorsChanged) {
+      throw new BadRequestError(
+        `Conditions (including Thompson Sampling priors) cannot be modified once an experiment has started. Current state: ${previousExperiment.state}.`
+      );
+    }
+  }
+
+  private havePriorsChanged(
+    previousPriors: Record<string, { success: number; failure: number }> | undefined,
+    incomingPriors: Record<string, { success: number; failure: number }> | undefined
+  ): boolean {
+    // No priors submitted at all (e.g. a non-Thompson-Sampling experiment, or a caller that only
+    // sends the fields it means to change) -- nothing to compare or block.
+    if (!incomingPriors) {
+      return false;
+    }
+
+    const previous = previousPriors ?? {};
+    const keys = new Set([...Object.keys(previous), ...Object.keys(incomingPriors)]);
+    return [...keys].some((conditionId) => {
+      const previousPrior = previous[conditionId];
+      const incomingPrior = incomingPriors[conditionId];
+      return previousPrior?.success !== incomingPrior?.success || previousPrior?.failure !== incomingPrior?.failure;
+    });
   }
 
   /**
@@ -1935,20 +2036,6 @@ export class ExperimentController {
     }
 
     return lists;
-  }
-
-  /**
-   * Get Mooclet Rewards Feedback data
-   */
-  @Get('/mooclet-rewards/:id')
-  public getMoocletRewards(
-    @Params({ validate: true }) { id }: IdValidator,
-    @Req() request: AppRequest
-  ): Promise<ExperimentRewardsSummary> {
-    if (!env.mooclets?.enabled) {
-      throw new BadRequestError('Mooclet is not enabled in the environment');
-    }
-    return this.moocletRewardService.getRewardsSummaryForExperiment(id, request.logger);
   }
 
   /**

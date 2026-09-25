@@ -51,7 +51,8 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "quicktest": "([ -f dist/node/index.js ] || yarn build) && ts-node quickTest.ts",
-    "quicktest:lite": "([ -f dist/lite/index.js ] || yarn build) && ts-node quickTest.ts lite"
+    "quicktest:lite": "([ -f dist/lite/index.js ] || yarn build) && ts-node quickTest.ts lite",
+    "quicktest:adaptive": "([ -f dist/node/index.js ] || yarn build) && ts-node quickTestAdaptive.ts"
   },
   "keywords": [],
   "author": "",

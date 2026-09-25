@@ -52,6 +52,9 @@ import {
   actionFetchRewardsDataForExperiment,
   actionFetchRewardsDataForExperimentSuccess,
   actionFetchRewardsDataForExperimentFailure,
+  actionUpdateExperimentMetrics,
+  actionUpdateExperimentMetricsSuccess,
+  actionUpdateExperimentMetricsFailure,
   actionAddExperimentInclusionList,
   actionAddExperimentInclusionListSuccess,
   actionAddExperimentExclusionList,
@@ -600,6 +603,38 @@ describe('ExperimentEffects', () => {
       });
 
       actions$.next(actionDeleteExperiment({ experimentId }));
+    }));
+  });
+
+  describe('#updateExperimentMetrics$', () => {
+    const experiment = { id: 'test1' } as any;
+    const updateExperimentMetricsRequest = { experiment, metrics: [] } as any;
+
+    it('should return an array with actionUpdateExperimentMetricsSuccess and actionFetchMetrics', fakeAsync(() => {
+      experimentDataService.updateExperimentMetrics = jest.fn().mockReturnValue(of(experiment));
+
+      service.updateExperimentMetrics$.pipe(take(2), pairwise()).subscribe((result: any) => {
+        const successAction = actionUpdateExperimentMetricsSuccess({ experiment });
+        const fetchAction = actionFetchMetrics();
+
+        tick(0);
+        expect(result).toEqual([successAction, fetchAction]);
+      });
+
+      actions$.next(actionUpdateExperimentMetrics({ updateExperimentMetricsRequest }));
+    }));
+
+    it('should throw an error with actionUpdateExperimentMetricsFailure on error', fakeAsync(() => {
+      experimentDataService.updateExperimentMetrics = jest.fn().mockReturnValue(throwError('testError'));
+
+      service.updateExperimentMetrics$.subscribe((result: any) => {
+        const failureAction = actionUpdateExperimentMetricsFailure();
+
+        tick(0);
+        expect(result).toEqual(failureAction);
+      });
+
+      actions$.next(actionUpdateExperimentMetrics({ updateExperimentMetricsRequest }));
     }));
   });
 
@@ -1614,26 +1649,32 @@ describe('ExperimentEffects', () => {
   describe('fetchRewardsDataForExperiment$', () => {
     it('should dispatch actionFetchRewardsDataForExperimentSuccess on successful fetch', fakeAsync(() => {
       const experimentId = 'test-experiment-123';
-      const mockRewardsSummary = [
-        {
-          conditionCode: 'Control',
-          successes: 10,
-          failures: 5,
-          total: 15,
-          successRate: '66.7%',
-          order: 0,
-        },
-        {
-          conditionCode: 'Treatment',
-          successes: 8,
-          failures: 7,
-          total: 15,
-          successRate: '53.3%',
-          order: 1,
-        },
-      ];
+      const mockRewardsSummary = {
+        conditions: [
+          {
+            conditionCode: 'Control',
+            successes: 10,
+            failures: 5,
+            total: 15,
+            successRate: '66.7%',
+            order: 0,
+          },
+          {
+            conditionCode: 'Treatment',
+            successes: 8,
+            failures: 7,
+            total: 15,
+            successRate: '53.3%',
+            order: 1,
+          },
+        ],
+        pendingRewardsCount: 0,
+        totalRewardCount: 30,
+        warmupThreshold: 0,
+        batchSize: 1,
+      };
 
-      experimentDataService.fetchMoocletRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));
+      experimentDataService.fetchRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));
 
       const expectedAction = actionFetchRewardsDataForExperimentSuccess({
         experimentId,
@@ -1653,7 +1694,7 @@ describe('ExperimentEffects', () => {
       const experimentId = 'test-experiment-123';
       const error = new Error('API error');
 
-      experimentDataService.fetchMoocletRewardsDataForExperiment = jest.fn().mockReturnValue(throwError(error));
+      experimentDataService.fetchRewardsDataForExperiment = jest.fn().mockReturnValue(throwError(error));
 
       const expectedAction = actionFetchRewardsDataForExperimentFailure({ error });
 
@@ -1670,10 +1711,10 @@ describe('ExperimentEffects', () => {
       const experimentId = 'test-experiment-456';
       const mockRewardsSummary = [];
 
-      experimentDataService.fetchMoocletRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));
+      experimentDataService.fetchRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));
 
       service.fetchRewardsDataForExperiment$.subscribe(() => {
-        expect(experimentDataService.fetchMoocletRewardsDataForExperiment).toHaveBeenCalledWith(experimentId);
+        expect(experimentDataService.fetchRewardsDataForExperiment).toHaveBeenCalledWith(experimentId);
       });
 
       actions$.next(actionFetchRewardsDataForExperiment({ experimentId }));

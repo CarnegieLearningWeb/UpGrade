@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
 import httpx
@@ -19,6 +20,11 @@ from upgrade_client_lib.types.responses import (
 )
 
 _API_VERSION = "v6"
+
+try:
+    _CLIENT_VERSION = version("upgrade-client-lib")
+except PackageNotFoundError:
+    _CLIENT_VERSION = "unknown"
 
 
 class ApiService:
@@ -56,6 +62,8 @@ class ApiService:
             "Content-Type": "application/json",
             "Session-Id": self._client_session_id,
             "User-Id": self._user_id,
+            "Client-Context": self._context,
+            "Client-Version": _CLIENT_VERSION,
         }
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"

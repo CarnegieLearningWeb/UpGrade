@@ -1,4 +1,5 @@
 import type { Config } from '@jest/types';
+import packageJson = require('./package.json');
 // Sync object
 const config: Config.InitialOptions = {
   verbose: true,
@@ -14,6 +15,7 @@ const config: Config.InitialOptions = {
     USE_CUSTOM_HTTP_CLIENT: true,
     IS_BROWSER: true,
     API_VERSION: 6,
+    CLIENT_VERSION: packageJson.version,
   },
   moduleNameMapper: {
     upgrade_types: '<rootDir>/../../packages/types/src',

@@ -1,0 +1,27 @@
+// Mirrors CommonSectionCardOverviewDetailsComponent's key-value look (bold label, normal-weight
+// dark-grey value, stacked rows) -- not reused directly since these two rows need tooltips and
+// conditional/parameterized content that component doesn't support.
+.reward-status-section {
+  padding: 22px 32px 0;
+
+  .item-key-value {
+    min-height: 32px;
+    display: flex;
+    align-items: flex-start;
+    column-gap: 8px;
+    cursor: default;
+
+    .item-value {
+      color: var(--dark-grey);
+    }
+
+    // Default/not-in-play configuration (batchSize <= 1, warmupThreshold 0) -- shown, not hidden,
+    // but muted to signal there's nothing meaningful to track here.
+    &.inactive {
+      .ft-14-600,
+      .item-value {
+        color: var(--light-grey);
+      }
+    }
+  }
+}

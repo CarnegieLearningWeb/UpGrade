@@ -352,7 +352,7 @@ export class FeatureFlagService {
         await this.clearCachedFlagsForContext(featureFlag.context[0]);
         const deletedFlag = await this.featureFlagRepository.deleteById(featureFlagId, transactionalEntityManager);
 
-        featureFlag.featureFlagSegmentInclusion.forEach(async (segmentInclusion) => {
+        for (const segmentInclusion of featureFlag.featureFlagSegmentInclusion) {
           try {
             await transactionalEntityManager.getRepository(Segment).delete(segmentInclusion.segment.id);
           } catch (err) {
@@ -362,8 +362,8 @@ export class FeatureFlagService {
             logger.error(error);
             throw error;
           }
-        });
-        featureFlag.featureFlagSegmentExclusion.forEach(async (segmentExclusion) => {
+        }
+        for (const segmentExclusion of featureFlag.featureFlagSegmentExclusion) {
           try {
             await transactionalEntityManager.getRepository(Segment).delete(segmentExclusion.segment.id);
           } catch (err) {
@@ -373,7 +373,7 @@ export class FeatureFlagService {
             logger.error(error);
             throw error;
           }
-        });
+        }
         // TODO: Add entry in audit log for delete feature flag
         const createAuditLogData: FeatureFlagDeletedData = {
           flagName: featureFlag.name,
