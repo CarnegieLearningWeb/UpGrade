@@ -1115,6 +1115,113 @@ describe('Feature Flag Service Testing', () => {
     });
   });
 
+  describe('getKeysForMultipleGroupSets', () => {
+    const includeAllFlag = { id: 'multi-flag-id', key: 'multi-key', filterMode: FILTER_MODE.INCLUDE_ALL };
+
+    it('evaluates a mainGroupset and subGroupsets independently, keyed by groupsetId', async () => {
+      const mainDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const includedSubDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const excludedSubDoc = { id: 'user123', group: { schoolId: ['excluded-school'] }, workingGroup: {} } as any;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([includeAllFlag]);
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[includeAllFlag.id, { inclusionIds: [], exclusionIds: ['schoolId:excluded-school'] }]])
+      );
+
+      const result = await service.getKeysForMultipleGroupSets(
+        mainDoc,
+        { included: includedSubDoc, excluded: excludedSubDoc },
+        'context1',
+        logger
+      );
+
+      expect(result.mainGroupset).toEqual([includeAllFlag.key]);
+      expect(result.subGroupsets.included).toEqual([includeAllFlag.key]);
+      expect(result.subGroupsets.excluded).toEqual([]);
+    });
+
+    it('omits mainGroupset from the result when no mainDoc is provided', async () => {
+      const subDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([includeAllFlag]);
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[includeAllFlag.id, { inclusionIds: [], exclusionIds: [] }]])
+      );
+
+      const result = await service.getKeysForMultipleGroupSets(undefined, { sectionA: subDoc }, 'context1', logger);
+
+      expect(result.mainGroupset).toBeUndefined();
+      expect(result.subGroupsets.sectionA).toEqual([includeAllFlag.key]);
+    });
+
+    it('records exposure once per unique included flag across the whole batch', async () => {
+      const mainDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const subDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const exposureRepo = module.get(getRepositoryToken(FeatureFlagExposureRepository)) as any;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([includeAllFlag]);
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[includeAllFlag.id, { inclusionIds: [], exclusionIds: [] }]])
+      );
+
+      await service.getKeysForMultipleGroupSets(mainDoc, { sectionA: subDoc, sectionB: subDoc }, 'context1', logger);
+
+      expect(exposureRepo.recordExposureIfNotExists).toHaveBeenCalledTimes(1);
+      expect(exposureRepo.recordExposureIfNotExists).toHaveBeenCalledWith([includeAllFlag.id], 'user123');
+    });
+
+    it('fetches the precomputed set map once and reuses it across every groupset entry', async () => {
+      const mainDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const subDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([includeAllFlag]);
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[includeAllFlag.id, { inclusionIds: [], exclusionIds: [] }]])
+      );
+
+      await service.getKeysForMultipleGroupSets(
+        mainDoc,
+        { sectionA: subDoc, sectionB: subDoc, sectionC: subDoc },
+        'context1',
+        logger
+      );
+
+      // 1 mainGroupset + 3 subGroupsets = 4 entries evaluated, but the precomputed map should
+      // only be fetched once for the whole batch, not once per entry.
+      expect(precomputed.getPrecomputedSets).toHaveBeenCalledTimes(1);
+    });
+
+    it('resolves a subGroupsets entry whose groupsetId is the reserved-looking key "__proto__"', async () => {
+      const subDoc = { id: 'user123', group: {}, workingGroup: {} } as any;
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+
+      service.cacheService.wrap = jest.fn().mockResolvedValue([includeAllFlag]);
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(
+        new Map([[includeAllFlag.id, { inclusionIds: [], exclusionIds: [] }]])
+      );
+
+      // Computed key, not literal `{ __proto__: subDoc }` — the literal form is special-cased by
+      // JS to set the prototype rather than create an own property, which would mask exactly the
+      // bug under test. The (now null-prototype) dictionary UserCheckMiddleware actually builds
+      // behaves like this computed form.
+      const result = await service.getKeysForMultipleGroupSets(
+        undefined,
+        { ['__proto__']: subDoc },
+        'context1',
+        logger
+      );
+
+      // A plain `{}` accumulator would silently drop this key (it sets the object's prototype
+      // instead of an own property) rather than surfacing it via Object.keys/entries.
+      expect(Object.keys(result.subGroupsets)).toEqual(['__proto__']);
+      expect(result.subGroupsets['__proto__']).toEqual([includeAllFlag.key]);
+    });
+  });
+
   describe('precomputed recompute + seed triggers', () => {
     it('seeds an empty precomputed row in-transaction when a flag is created', async () => {
       const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);

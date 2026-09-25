@@ -1,6 +1,15 @@
 import { UpGradeClientInterfaces } from '../types';
 import { IExperimentAssignment } from 'upgrade_types';
 
+/** The groupset id used for the default (no groups configured / useSingleGroupSet default) case. */
+export const DEFAULT_GROUPSET_ID = '*';
+
+/** The group definition remembered per groupset id, so a cache-miss can rehydrate on demand. */
+export interface IGroupsetDefinition {
+  groups?: Record<string, string[]>;
+  includeStoredUserGroups?: boolean;
+}
+
 /**
  * Synchronous data store
  */
@@ -8,7 +17,14 @@ export class DataService {
   private group: UpGradeClientInterfaces.IExperimentUserGroup = null;
   private workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup = null;
   private experimentAssignmentData: IExperimentAssignment[] = null;
-  private featureFlags: string[] = null;
+
+  // All feature flags are stored here, uniformly, keyed by groupset id — the useSingleGroupSet
+  // default lives under DEFAULT_GROUPSET_ID, mainGroupset/subGroupsets under their own ids.
+  private featureFlagsByGroupsetId: Map<string, string[]> = new Map();
+
+  // Remembers the groups/includeStoredUserGroups that produced each groupset id, for every id ever
+  // configured or requested — lets hasFeatureFlag(key, id) rehydrate a cache-miss on demand.
+  private groupsetDefinitionsById: Map<string, IGroupsetDefinition> = new Map();
 
   getGroup(): UpGradeClientInterfaces.IExperimentUserGroup {
     return this.group;
@@ -34,16 +50,54 @@ export class DataService {
     this.experimentAssignmentData = experimentAssignmentData;
   }
 
+  /** @deprecated Use `getFeatureFlagsForGroupset(DEFAULT_GROUPSET_ID)` instead. */
   getFeatureFlags(): string[] {
-    return this.featureFlags;
+    return this.getFeatureFlagsForGroupset(DEFAULT_GROUPSET_ID);
   }
 
+  /** @deprecated Use `setFeatureFlagsForGroupset(DEFAULT_GROUPSET_ID, ...)` instead. */
   setFeatureFlags(featureFlags: string[]) {
-    this.featureFlags = featureFlags;
+    this.setFeatureFlagsForGroupset(DEFAULT_GROUPSET_ID, featureFlags);
   }
 
+  /** @deprecated Use `clearFeatureFlagsForGroupset(DEFAULT_GROUPSET_ID)` instead. */
   clearFeatureFlags() {
-    this.featureFlags = null;
+    this.clearFeatureFlagsForGroupset(DEFAULT_GROUPSET_ID);
+  }
+
+  /** Returns the flags cached for a groupset id, or null if that id hasn't been fetched yet. */
+  getFeatureFlagsForGroupset(groupsetId: string): string[] | null {
+    return this.featureFlagsByGroupsetId.get(groupsetId) ?? null;
+  }
+
+  /** Upserts (replaces or adds) the flags cached for exactly this groupset id. */
+  setFeatureFlagsForGroupset(groupsetId: string, featureFlags: string[]) {
+    this.featureFlagsByGroupsetId.set(groupsetId, featureFlags);
+  }
+
+  /** Bulk-upserts multiple groupsets' flags at once, e.g. from a getAllFeatureFlags response. */
+  setFeatureFlagsForGroupsets(featureFlagsByGroupsetId: Record<string, string[]>) {
+    Object.entries(featureFlagsByGroupsetId).forEach(([groupsetId, featureFlags]) => {
+      this.setFeatureFlagsForGroupset(groupsetId, featureFlags);
+    });
+  }
+
+  clearFeatureFlagsForGroupset(groupsetId: string) {
+    this.featureFlagsByGroupsetId.delete(groupsetId);
+  }
+
+  hasFeatureFlagForGroupset(key: string, groupsetId: string): boolean {
+    return this.featureFlagsByGroupsetId.get(groupsetId)?.includes(key) ?? false;
+  }
+
+  /** Registers/updates the group definition that produced a groupset id, for later rehydration. */
+  registerGroupsetDefinition(groupsetId: string, definition: IGroupsetDefinition) {
+    this.groupsetDefinitionsById.set(groupsetId, definition);
+  }
+
+  /** Returns the group definition registered for a groupset id, or null if it was never seen. */
+  getGroupsetDefinition(groupsetId: string): IGroupsetDefinition | null {
+    return this.groupsetDefinitionsById.get(groupsetId) ?? null;
   }
 
   public rotateAssignmentList(assignment: IExperimentAssignment) {
@@ -92,12 +146,8 @@ export class DataService {
     return assignment || emptyAssignment;
   }
 
+  /** @deprecated Use `hasFeatureFlagForGroupset(key, DEFAULT_GROUPSET_ID)` instead. */
   public hasFeatureFlag(key: string): boolean {
-    if (this.featureFlags) {
-      const result = this.featureFlags.find((data) => data === key);
-      return !!result;
-    } else {
-      return false;
-    }
+    return this.hasFeatureFlagForGroupset(key, DEFAULT_GROUPSET_ID);
   }
 }

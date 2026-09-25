@@ -277,6 +277,180 @@ describe('UserCheckMiddleware Tests', () => {
     });
   });
 
+  describe('useSingleGroupSet', () => {
+    beforeEach(() => {
+      mockRequest.url = '/api/v6/featureflag';
+    });
+
+    test('ephemeral: includeStoredUserGroups omitted defaults to false', async () => {
+      const userId = 'ephemeral-user';
+      const groups = { classId: ['session-class'] };
+
+      (mockRequest.get as jest.Mock).mockReturnValue(userId);
+      mockRequest.body = { useSingleGroupSet: { groups } };
+
+      await middleware.use(mockRequest as AppRequest, mockResponse, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith();
+      expect(mockRequest.userDoc.id).toBe(userId);
+      expect(mockRequest.userDoc.group).toEqual(groups);
+      expect(mockLogger.debug).toHaveBeenCalledWith({
+        message: 'Created ephemeral user with session groups',
+        experimentUserDoc: expect.any(Object),
+      });
+    });
+
+    test('merged: includeStoredUserGroups true merges with stored groups', async () => {
+      const userId = 'existing-user';
+      const storedUser = new RequestedExperimentUser();
+      storedUser.id = userId;
+      storedUser.requestedUserId = userId;
+      storedUser.group = { classId: ['stored-class'] };
+      mockExperimentUserService.setMockUser(userId, storedUser);
+
+      (mockRequest.get as jest.Mock).mockReturnValue(userId);
+      mockRequest.body = {
+        useSingleGroupSet: { groups: { classId: ['session-class'] }, includeStoredUserGroups: true },
+      };
+
+      await middleware.use(mockRequest as AppRequest, mockResponse, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith();
+      expect(mockRequest.userDoc.group).toEqual({ classId: ['stored-class', 'session-class'] });
+    });
+  });
+
+  describe('useMultipleGroupSets', () => {
+    beforeEach(() => {
+      mockRequest.url = '/api/v6/featureflag';
+    });
+
+    test('resolves an ephemeral mainGroupset plus ephemeral subGroupsets without a stored lookup', async () => {
+      const userId = 'ephemeral-user';
+      const getUserDocSpy = jest.spyOn(mockExperimentUserService, 'getUserDoc');
+
+      mockRequest.body = {
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { classId: ['classA', 'classB'] } },
+          subGroupsets: [
+            { groupsetId: 'sectionA', groups: { classId: ['classA'] } },
+            { groupsetId: 'sectionB', groups: { classId: ['classB'] } },
+          ],
+        },
+      };
+      (mockRequest.get as jest.Mock).mockReturnValue(userId);
+
+      await middleware.use(mockRequest as AppRequest, mockResponse, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith();
+      expect(getUserDocSpy).not.toHaveBeenCalled();
+      expect(mockRequest.userDoc.group).toEqual({ classId: ['classA', 'classB'] });
+      expect(mockRequest.userDocsBySubGroupset.sectionA.group).toEqual({ classId: ['classA'] });
+      expect(mockRequest.userDocsBySubGroupset.sectionB.group).toEqual({ classId: ['classB'] });
+    });
+
+    test('leaves userDoc undefined when no mainGroupset is configured', async () => {
+      const userId = 'ephemeral-user-no-main';
+
+      mockRequest.body = {
+        useMultipleGroupSets: {
+          subGroupsets: [{ groupsetId: 'sectionA', groups: { classId: ['classA'] } }],
+        },
+      };
+      (mockRequest.get as jest.Mock).mockReturnValue(userId);
+
+      await middleware.use(mockRequest as AppRequest, mockResponse, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith();
+      expect(mockRequest.userDoc).toBeUndefined();
+      expect(mockRequest.userDocsBySubGroupset.sectionA.group).toEqual({ classId: ['classA'] });
+    });
+
+    test('fetches the stored user once and shares it across a merged mainGroupset and standard subGroupset', async () => {
+      const userId = 'stored-user';
+      const storedUser = new RequestedExperimentUser();
+      storedUser.id = userId;
+      storedUser.requestedUserId = userId;
+      storedUser.group = { classId: ['stored-class'] };
+      mockExperimentUserService.setMockUser(userId, storedUser);
+      const getUserDocSpy = jest.spyOn(mockExperimentUserService, 'getUserDoc');
+
+      mockRequest.body = {
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['provided-school'] }, includeStoredUserGroups: true },
+          subGroupsets: [{ groupsetId: 'standard' }],
+        },
+      };
+      (mockRequest.get as jest.Mock).mockReturnValue(userId);
+
+      await middleware.use(mockRequest as AppRequest, mockResponse, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith();
+      expect(getUserDocSpy).toHaveBeenCalledTimes(1);
+      expect(mockRequest.userDoc.group).toEqual({ classId: ['stored-class'], schoolId: ['provided-school'] });
+      expect(mockRequest.userDocsBySubGroupset.standard).toEqual(storedUser);
+    });
+
+    test('defers to body validation instead of throwing when subGroupsets is missing', async () => {
+      const userId = 'malformed-body-user';
+      const storedUser = new RequestedExperimentUser();
+      storedUser.id = userId;
+      storedUser.requestedUserId = userId;
+      storedUser.group = { classId: ['stored-class'] };
+      mockExperimentUserService.setMockUser(userId, storedUser);
+
+      // Missing subGroupsets — the class-validator body validation that runs after this
+      // middleware is what should reject this shape (with a 400), not a TypeError thrown here.
+      mockRequest.body = { useMultipleGroupSets: {} };
+      (mockRequest.get as jest.Mock).mockReturnValue(userId);
+
+      await middleware.use(mockRequest as AppRequest, mockResponse, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith();
+      expect(nextFunction).not.toHaveBeenCalledWith(expect.any(TypeError));
+    });
+
+    test('resolves a subGroupsets entry whose groupsetId is the reserved-looking key "__proto__"', async () => {
+      const userId = 'ephemeral-user-proto';
+
+      mockRequest.body = {
+        useMultipleGroupSets: {
+          subGroupsets: [{ groupsetId: '__proto__', groups: { classId: ['classA'] } }],
+        },
+      };
+      (mockRequest.get as jest.Mock).mockReturnValue(userId);
+
+      await middleware.use(mockRequest as AppRequest, mockResponse, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith();
+      // A plain `{}` accumulator would silently drop this key (it sets the object's prototype
+      // instead of an own property) rather than surfacing it via Object.keys/entries.
+      expect(Object.keys(mockRequest.userDocsBySubGroupset)).toEqual(['__proto__']);
+      expect(mockRequest.userDocsBySubGroupset['__proto__'].group).toEqual({ classId: ['classA'] });
+    });
+
+    test('returns 404 when a non-ephemeral entry requires a stored user that does not exist', async () => {
+      const userId = 'missing-user';
+
+      mockRequest.body = {
+        useMultipleGroupSets: {
+          subGroupsets: [{ groupsetId: 'standard' }],
+        },
+      };
+      (mockRequest.get as jest.Mock).mockReturnValue(userId);
+
+      await middleware.use(mockRequest as AppRequest, mockResponse, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: `User not found: ${userId}`,
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          httpCode: 404,
+        })
+      );
+    });
+  });
+
   describe('Group merging functionality', () => {
     test('should merge groups with unique values', () => {
       const existing = {

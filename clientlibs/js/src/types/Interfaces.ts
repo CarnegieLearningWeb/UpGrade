@@ -12,19 +12,78 @@ export namespace UpGradeClientInterfaces {
     clientSessionId?: string;
     token?: string;
     httpClient?: UpGradeClientInterfaces.IHttpClientWrapper;
-    featureFlagUserGroupsForSession: IFeatureFlagOptions | null;
   }
 
   export interface IConfigOptions {
     token?: string;
     clientSessionId?: string;
     httpClient?: UpGradeClientInterfaces.IHttpClientWrapper;
+    featureFlagGroupOptions?: IFeatureFlagGroupOptions | null;
+    /** @deprecated Use `featureFlagGroupOptions` with `useSingleGroupSet` instead. */
     featureFlagUserGroupsForSession?: IFeatureFlagOptions | null;
   }
 
+  /** @deprecated Use `useSingleGroupSet` (via `featureFlagGroupOptions`) instead. */
   export interface IFeatureFlagOptions {
     groupsForSession: Record<string, string[]>;
     includeStoredUserGroups: boolean;
+  }
+
+  /**
+   * One groupset: which groups to evaluate feature flags under, and whether to merge them with
+   * the user's stored groups.
+   *
+   * - Omit `groups` entirely (i.e. omit the whole `useSingleGroupSet`/entry) → stored-user mode.
+   * - `groups` alone, or with `includeStoredUserGroups: false` → ephemeral mode (caller-provided
+   *   groups only). `includeStoredUserGroups` is optional — omitting it is the same as `false`.
+   * - `groups` + `includeStoredUserGroups: true` → merged mode (stored + caller-provided groups).
+   *   `true` must always be explicit; it is never inferred.
+   */
+  export interface ISingleGroupSetOptions {
+    groups: Record<string, string[]>;
+    includeStoredUserGroups?: boolean;
+  }
+
+  /** One named entry in `useMultipleGroupSets.subGroupsets` — `groupsetId` is required and is the
+   * key both the response and `hasFeatureFlag(key, groupsetId)` use to address this entry. */
+  export interface ISubGroupSetOptions extends ISingleGroupSetOptions {
+    groupsetId: string;
+  }
+
+  export interface IMultipleGroupSetsOptions {
+    /**
+     * Optional. When provided, this groupset's flags are what `hasFeatureFlag(key)` (no id)
+     * resolves to, and `getAllFeatureFlags()` returns them under the `mainGroupset` key. When
+     * omitted, `hasFeatureFlag(key)` with no id throws — there is nothing to default to.
+     */
+    mainGroupset?: ISingleGroupSetOptions;
+    /** At least one named groupset, fetched alongside `mainGroupset` in a single request. */
+    subGroupsets: ISubGroupSetOptions[];
+  }
+
+  /**
+   * Configures how `/v6/featureflag` requests are evaluated — exactly one of `useSingleGroupSet`
+   * (the classic one-groupset approach: `getAllFeatureFlags()` returns a flat `string[]` and
+   * `hasFeatureFlag(key)` needs no id) or `useMultipleGroupSets` (`getAllFeatureFlags()` returns
+   * `{ mainGroupset?: string[]; subGroupsets: Record<string, string[]> }`).
+   */
+  export interface IFeatureFlagGroupOptions {
+    useSingleGroupSet?: ISingleGroupSetOptions;
+    useMultipleGroupSets?: IMultipleGroupSetsOptions;
+  }
+
+  export interface IGetAllFeatureFlagsOptions {
+    ignoreCache?: boolean;
+    /** Ad-hoc single-groupset override for this call only — does not touch persistent config. */
+    useSingleGroupSet?: ISingleGroupSetOptions;
+    /** Ad-hoc multiple-groupsets override for this call only — does not touch persistent config. */
+    useMultipleGroupSets?: IMultipleGroupSetsOptions;
+  }
+
+  /** `getAllFeatureFlags()`'s return shape when `useMultipleGroupSets` is active. */
+  export interface IMultiGroupSetFeatureFlagsResult {
+    mainGroupset?: string[];
+    subGroupsets: Record<string, string[]>;
   }
 
   export interface IResponse {
