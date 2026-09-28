@@ -1,6 +1,6 @@
 import { ThompsonSamplingRewardService } from '../../../src/api/services/ThompsonSamplingRewardService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { BinaryRewardAllowedValue, EXPERIMENT_STATE } from 'upgrade_types';
+import { BinaryRewardAllowedValue, EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { RewardValidator } from '../../../src/api/controllers/validators/RewardValidator';
 import { RequestedExperimentUser } from '../../../src/api/controllers/validators/ExperimentUserValidator';
 import { configureLogger } from '../../utils/logger';
@@ -435,21 +435,21 @@ describe('ThompsonSamplingRewardService', () => {
   });
 
   describe('acceptReward (quick receipt, background processing)', () => {
-    it('returns a receipt synchronously, without waiting on the DB', () => {
+    it('returns a receipt without waiting on the DB', async () => {
       // Never resolves — if acceptReward awaited this, the test would hang instead of returning.
       tsConfigRepository.findOne = jest.fn().mockReturnValue(new Promise(() => undefined));
 
       const request = makeRequest(BinaryRewardAllowedValue.SUCCESS);
-      const result = service.acceptReward(makeUser(), request, logger);
+      const result = await service.acceptReward(makeUser(), request, logger);
 
-      expect(result).toEqual({ message: 'Reward received and is being processed.', request });
+      expect(result).toEqual({ mode: 'accepted', message: 'Reward received and is being processed.', request });
     });
 
     it('logs the specific reason (once) when the background reward cannot be recorded', async () => {
       individualEnrollmentRepository.findEnrollments = jest.fn().mockResolvedValue([]); // no enrollment found
       const loggerMock: any = { info: jest.fn(), error: jest.fn(), warn: jest.fn() };
 
-      const result = service.acceptReward(makeUser(), makeRequest(), loggerMock);
+      const result = await service.acceptReward(makeUser(), makeRequest(), loggerMock);
       expect(result.message).toBe('Reward received and is being processed.');
 
       await flushPromises();
@@ -477,7 +477,7 @@ describe('ThompsonSamplingRewardService', () => {
     });
 
     it('still records the reward in the background after returning the receipt', async () => {
-      const result = service.acceptReward(makeUser(), makeRequest(BinaryRewardAllowedValue.SUCCESS), logger);
+      const result = await service.acceptReward(makeUser(), makeRequest(BinaryRewardAllowedValue.SUCCESS), logger);
       expect(result.message).toBe('Reward received and is being processed.');
       expect(savedRewards).toHaveLength(0);
 
@@ -488,6 +488,42 @@ describe('ThompsonSamplingRewardService', () => {
         userId: USER_ID,
         success: true,
       });
+    });
+  });
+
+  describe('acceptReward with awaitResult=true (synchronous outcome)', () => {
+    it('waits for the DB write and reports the real outcome', async () => {
+      const request = makeRequest(BinaryRewardAllowedValue.SUCCESS);
+      const result = await service.acceptReward(makeUser(), request, logger, true);
+
+      expect(result).toEqual({ mode: 'processed', success: true, message: 'Reward recorded.', request });
+      // Unlike the default mode, the write has already happened by the time acceptReward resolves.
+      expect(savedRewards).toContainEqual({
+        conditionId: CONDITION_ID,
+        userId: USER_ID,
+        success: true,
+      });
+    });
+
+    it('rejects with a 409 (ASSIGNMENT_ERROR) instead of swallowing a RewardProcessingAborted failure', async () => {
+      individualEnrollmentRepository.findEnrollments = jest.fn().mockResolvedValue([]); // no enrollment found
+      const loggerMock: any = { info: jest.fn(), error: jest.fn(), warn: jest.fn() };
+
+      await expect(service.acceptReward(makeUser(), makeRequest(), loggerMock, true)).rejects.toMatchObject({
+        httpCode: 409,
+        type: SERVER_ERROR.ASSIGNMENT_ERROR,
+      });
+
+      // Still logged exactly once, by logAndAbort() inside processReward() -- awaitResult doesn't
+      // add a second log line for the same failure.
+      expect(loggerMock.error).toHaveBeenCalledTimes(1);
+    });
+
+    it('propagates an unexpected (non-abort) error as-is', async () => {
+      const dbError = new Error('connection reset');
+      tsConfigRepository.findOne = jest.fn().mockRejectedValue(dbError);
+
+      await expect(service.acceptReward(makeUser(), makeRequest(), logger, true)).rejects.toBe(dbError);
     });
   });
 
