@@ -3,10 +3,10 @@ import {
   ILogInput,
   CaliperEnvelope,
   IExperimentAssignment,
-  MARKED_DECISION_POINT_STATUS,
   IUserAliases,
   BinaryRewardAllowedValue,
-} from 'upgrade_types';
+} from 'upgrade_types/Experiment/interfaces';
+import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types/Experiment/enums';
 import Assignment from '../Assignment/Assignment';
 import ApiService from '../ApiService/ApiService';
 import { DataService } from '../DataService/DataService';
