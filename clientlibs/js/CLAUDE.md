@@ -42,7 +42,7 @@ Jest config (`jest.config.ts`) sets `USE_CUSTOM_HTTP_CLIENT: true` globally, mea
 
 ## Publishing
 
-Automated via `.github/workflows/clientlibs-js-publish.yml` on push to `main` when `clientlibs/js/**` files change. Do not publish manually to npm.
+Manual, push-button trigger only — `.github/workflows/clientlibs-js-publish.yml` is `workflow_dispatch`-only (no push trigger). `main` is not used for anything in this repo; run the workflow with the `ref` input set to the branch/tag to publish (defaults to `dev`). Uses npm trusted publishing (OIDC, no stored token) — the workflow only appears in the Actions UI once it exists on the repo's default branch (`dev`). Do not run `npm publish` locally.
 
 ## Public API (UpgradeClient)
 

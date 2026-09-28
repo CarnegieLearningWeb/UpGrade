@@ -1,16 +1,11 @@
 name: UpGrade Client Libs JS Publish
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - clientlibs/js/**
   workflow_dispatch:
     inputs:
       ref:
         description: 'Branch or tag ref to publish'
         required: true
-        default: 'main'  
+        default: 'dev'
 
 permissions:
   id-token: write
@@ -25,7 +20,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - name: Install Root Dependencies
@@ -36,6 +31,8 @@ jobs:
       - name: Build
         working-directory: clientlibs/js
         run: yarn build
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
       - name: Publish upgrade_client_lib
-        run: npm publish
-        working-directory: clientlibs/js/package.json
+        run: npm publish --provenance
+        working-directory: clientlibs/js
