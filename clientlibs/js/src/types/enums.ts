@@ -5,9 +5,4 @@ export namespace UpGradeClientEnums {
     POST = 'POST',
     PATCH = 'PATCH',
   }
-
-  export enum BINARY_REWARD_VALUE {
-    SUCCESS = 'SUCCESS',
-    FAILURE = 'FAILURE',
-  }
 }
