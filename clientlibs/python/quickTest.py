@@ -17,6 +17,7 @@ import httpx
 
 from upgrade_client_lib import UpgradeClient
 from upgrade_client_lib.types.requests import LogGroupMetrics, LogInput, LogMetrics
+from upgrade_client_lib.exceptions import UpgradeApiError
 
 # ---------------------------------------------------------------------------
 # Target URL — swap to point at a different environment
@@ -269,8 +270,8 @@ async def do_log(client: UpgradeClient) -> None:
 
 
 def log_error(function_context: str, error: Exception) -> None:
-    if isinstance(error, httpx.HTTPStatusError):
-        print(f"\n[{function_context} error]: HTTP {error.response.status_code} — {error.response.text}")
+    if isinstance(error, UpgradeApiError):
+        print(f"\n[{function_context} error]: HTTP {error.status_code} — {error.response_body}")
     else:
         print(f"\n[{function_context} error]: {error}")
 
