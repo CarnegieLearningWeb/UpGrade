@@ -2,6 +2,11 @@
   "name": "upgrade_client_lib",
   "version": "6.7.0",
   "description": "Client library to communicate with the Upgrade server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CarnegieLearningWeb/UpGrade.git",
+    "directory": "clientlibs/js"
+  },
   "files": [
     "dist/*",
     "index.d.ts"
