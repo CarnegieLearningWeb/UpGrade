@@ -1,8 +1,9 @@
 import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
+import { HttpError } from 'routing-controllers';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { BinaryRewardAllowedValue, CACHE_PREFIX, EXPERIMENT_STATE } from 'upgrade_types';
+import { BinaryRewardAllowedValue, CACHE_PREFIX, EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { ConditionPosteriorStateRepository } from '../repositories/ConditionPosteriorStateRepository';
 import { ThompsonSamplingExperimentConfigRepository } from '../repositories/ThompsonSamplingExperimentConfigRepository';
 import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
@@ -13,10 +14,20 @@ import { CacheService } from './CacheService';
 import { RewardValidator } from '../controllers/validators/RewardValidator';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 
-export interface IThompsonSamplingRewardResponse {
+export interface RewardAcceptedResponse {
+  mode: 'accepted';
   message: string;
   request: RewardValidator;
 }
+
+export interface RewardProcessedResponse {
+  mode: 'processed';
+  success: boolean;
+  message: string;
+  request: RewardValidator;
+}
+
+export type IThompsonSamplingRewardResponse = RewardAcceptedResponse | RewardProcessedResponse;
 
 /**
  * Thrown internally to unwind out of processReward() once a failure has already been logged via
@@ -38,18 +49,40 @@ export class ThompsonSamplingRewardService {
   ) {}
 
   /**
-   * Acknowledges the reward immediately and does the actual work (config/enrollment lookups, the
-   * audit write, posterior updates) in the background. Nothing on the client side is waiting on
-   * this to make a UI decision, so there's no reason to hold the connection — and make the caller
-   * pay for however many DB round trips recording and batching take — before responding. A failure
-   * only surfaces in the server logs; see processReward()/logAndAbort().
+   * By default, acknowledges the reward immediately and does the actual work (config/enrollment
+   * lookups, the audit write, posterior updates) in the background — nothing on the client side is
+   * waiting on this to make a UI decision, so there's no reason to hold the connection (and make the
+   * caller pay for however many DB round trips recording and batching take) before responding. A
+   * failure in this mode only surfaces in the server logs; see processReward()/logAndAbort().
+   *
+   * Passing awaitResult=true instead waits for that same work and reports the real outcome: a
+   * RewardProcessingAborted (config not found, no enrollment, experiment not enrolling, etc.) is
+   * translated into a 409 the caller can act on, rather than being swallowed as in the default mode.
    */
-  public acceptReward(
+  public async acceptReward(
     user: RequestedExperimentUser,
     request: RewardValidator,
-    logger: UpgradeLogger
-  ): IThompsonSamplingRewardResponse {
-    this.processReward(user, request, logger).catch((error) => {
+    logger: UpgradeLogger,
+    awaitResult = false
+  ): Promise<IThompsonSamplingRewardResponse> {
+    const work = this.processReward(user, request, logger);
+
+    if (awaitResult) {
+      try {
+        await work;
+      } catch (error) {
+        if (error instanceof RewardProcessingAborted) {
+          const conflictError = new HttpError(409, error.message) as HttpError & { type: SERVER_ERROR };
+          conflictError.type = SERVER_ERROR.ASSIGNMENT_ERROR;
+          throw conflictError;
+        }
+        throw error;
+      }
+
+      return { mode: 'processed', success: true, message: 'Reward recorded.', request };
+    }
+
+    work.catch((error) => {
       if (!(error instanceof RewardProcessingAborted)) {
         logger.error({
           message: `Unexpected error processing Thompson Sampling reward (userId: ${user.id}, experimentId: ${
@@ -61,7 +94,7 @@ export class ThompsonSamplingRewardService {
       }
     });
 
-    return { message: 'Reward received and is being processed.', request };
+    return { mode: 'accepted', message: 'Reward received and is being processed.', request };
   }
 
   private async processReward(
