@@ -63,8 +63,13 @@ export function startPerfDiagnostics(dataSource: DataSource, options: PerfDiagno
   const gcObserver = new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
       const gcKind = (entry as PerformanceEntry & { detail?: { kind?: number } }).detail?.kind;
-      const isMajor = gcKind === constants.NODE_PERFORMANCE_GC_MAJOR;
-      const stats = isMajor ? gcMajor : gcMinor;
+      const stats =
+        gcKind === constants.NODE_PERFORMANCE_GC_MAJOR
+          ? gcMajor
+          : gcKind === constants.NODE_PERFORMANCE_GC_MINOR
+            ? gcMinor
+            : undefined;
+      if (!stats) continue;
       stats.count++;
       stats.totalMs += entry.duration;
       stats.maxMs = Math.max(stats.maxMs, entry.duration);
