@@ -174,8 +174,8 @@ export function startPerfDiagnostics(dataSource: DataSource, options: PerfDiagno
         gcKind === constants.NODE_PERFORMANCE_GC_MAJOR
           ? gcMajor
           : gcKind === constants.NODE_PERFORMANCE_GC_MINOR
-            ? gcMinor
-            : undefined;
+          ? gcMinor
+          : undefined;
       if (!stats) continue;
       stats.count++;
       stats.totalMs += entry.duration;
