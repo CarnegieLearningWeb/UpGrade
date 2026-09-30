@@ -1,21 +1,21 @@
 ARG IMAGE_REPO
 
-FROM ${IMAGE_REPO}node:22.14-alpine3.21 AS build
+FROM ${IMAGE_REPO}node:26.10-alpine3.24 AS build
 WORKDIR /usr/src/app
 COPY ./packages/backend ./packages/backend
 COPY ./packages/frontend/package.json ./packages/frontend/package.json
 COPY ./packages/types ./packages/types
 COPY ./package.json ./package.json
 COPY ./yarn.lock ./yarn.lock
-RUN yarn
+RUN npm exec --yes --package=yarn@1.22.22 -- yarn install --frozen-lockfile
 
 # ARG CODEARTIFACT_AUTH_TOKEN
 # ARG CODEARTIFACT_REGISTRY="//cli-467155500999.d.codeartifact.us-east-1.amazonaws.com/npm/cli-npm-artifacts/"
 # RUN npm config set '${CODEARTIFACT_REGISTRY}:_authToken=${CODEARTIFACT_AUTH_TOKEN}'
 
-RUN ["yarn", "workspace", "upgrade-backend", "build"]
+RUN npm exec --yes --package=yarn@1.22.22 -- yarn workspace upgrade-backend build
 
-FROM ${IMAGE_REPO}node:22.14-alpine3.21
+FROM ${IMAGE_REPO}node:26.10-alpine3.24
 
 ENV NEW_RELIC_NO_CONFIG_FILE=true
 ENV NR_NATIVE_METRICS_NO_BUILD=true
@@ -27,4 +27,4 @@ COPY --from=build /usr/src/app/package.json ./package.json
 COPY --from=build /usr/src/app/packages/backend ./packages/backend
 COPY --from=build /usr/src/app/packages/types ./packages/types
 EXPOSE 3030
-CMD ["yarn", "workspace", "upgrade-backend", "production"]
+CMD ["npm", "--prefix", "packages/backend", "run", "production"]
