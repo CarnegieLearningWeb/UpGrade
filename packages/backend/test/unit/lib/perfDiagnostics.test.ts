@@ -1,4 +1,5 @@
-import { startPerfDiagnostics } from '../../../src/lib/perfDiagnostics';
+import { caching } from 'cache-manager';
+import { instrumentCacheStore, startPerfDiagnostics, timeCacheLoad } from '../../../src/lib/perfDiagnostics';
 
 describe('startPerfDiagnostics', () => {
   const waitFor = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -31,6 +32,12 @@ describe('startPerfDiagnostics', () => {
       maxMs: expect.any(Number),
     });
     expect(parsed.dbPool).toEqual({ maxWaitingForConnection: 2, maxConnectionsInUse: 3, poolSize: 10 });
+    expect(parsed.cacheWrites).toEqual({
+      count: expect.any(Number),
+      totalMs: expect.any(Number),
+      maxMs: expect.any(Number),
+      maxKey: null,
+    });
     expect(typeof parsed.heapUsedMb).toBe('number');
   });
 
@@ -59,6 +66,47 @@ describe('startPerfDiagnostics', () => {
     stop();
     await waitFor(100);
 
+    expect(lines).toHaveLength(0);
+  });
+});
+
+describe('cache write instrumentation', () => {
+  const flush = () => new Promise((resolve) => setImmediate(resolve));
+  const bigValue = () =>
+    Array.from({ length: 20000 }, (_, i) => ({ id: `exp-${i}`, conditions: [{ code: 'a' }, { code: 'b' }] }));
+
+  it('logs slow writes to the real memory store with key, kind, load time, and item count', async () => {
+    const cache = await caching('memory', { max: 10, ttl: 60000 });
+    const lines: string[] = [];
+    instrumentCacheStore(cache.store as any, (line) => lines.push(line), 0);
+
+    const load = timeCacheLoad('experiments:assign-prog', async () => bigValue());
+    await cache.wrap('experiments:assign-prog', load);
+    await cache.set('experiments:assign-prog', bigValue());
+    await flush();
+
+    expect(lines.map((line) => JSON.parse(line))).toEqual([
+      expect.objectContaining({
+        tag: 'perfdiag-cache',
+        key: 'experiments:assign-prog',
+        kind: 'miss',
+        writeMs: expect.any(Number),
+        loadMs: expect.any(Number),
+        items: 20000,
+      }),
+      expect.objectContaining({ key: 'experiments:assign-prog', kind: 'refresh', loadMs: null }),
+    ]);
+  });
+
+  it('still stores the value and skips the per-write line below the threshold', async () => {
+    const cache = await caching('memory', { max: 10, ttl: 60000 });
+    const lines: string[] = [];
+    instrumentCacheStore(cache.store as any, (line) => lines.push(line), 10000);
+
+    await cache.set('small', { a: 1 });
+    await flush();
+
+    expect(await cache.get('small')).toEqual({ a: 1 });
     expect(lines).toHaveLength(0);
   });
 });
