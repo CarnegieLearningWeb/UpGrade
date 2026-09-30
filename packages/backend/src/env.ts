@@ -118,6 +118,10 @@ export const env = {
     ttlSettings: toNumber(getOsEnvOptional('CACHING_TTL_SETTINGS')),
     refreshThreshold: toNumber(getOsEnvOptional('CACHING_REFRESH_THRESHOLD')),
   },
+  // Temporary: see src/lib/perfDiagnostics.ts
+  perfDiagnostics: {
+    enabled: toBool(getOsEnvOptional('PERF_DIAG_ENABLED')) || false,
+  },
   clientApi: {
     secret: getOsEnv('CLIENT_API_SECRET'),
     key: getOsEnv('CLIENT_API_KEY'),

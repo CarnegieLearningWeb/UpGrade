@@ -3,6 +3,7 @@ import { Service } from 'typedi';
 import { Cache, Store, caching } from 'cache-manager';
 import { CACHE_PREFIX } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { instrumentCacheStore, timeCacheLoad } from '../../lib/perfDiagnostics';
 
 type CacheBucket = 'experiments' | 'featureFlags' | 'segments' | 'settings';
 
@@ -87,6 +88,10 @@ export class CacheService {
     }
     if (this.cache !== noopStore) {
       this.warnOnBucketsWithoutRefresh();
+      // Temporary: see src/lib/perfDiagnostics.ts
+      if (env.perfDiagnostics?.enabled) {
+        instrumentCacheStore(this.cache.store);
+      }
     }
   }
 
@@ -248,7 +253,8 @@ export class CacheService {
     const ttlMs = this.ttlMsForKey(key);
     // The threshold stays fixed at the base TTL's value; the jitter rides on the stored TTL, so the
     // refresh point moves per entry without the threshold itself having to vary.
-    return this.cache.wrap(key, fn, () => this.jitteredTtlMs(ttlMs), this.refreshThresholdMsForTtl(ttlMs));
+    const load = env.perfDiagnostics?.enabled ? timeCacheLoad(key, fn) : fn;
+    return this.cache.wrap(key, load, () => this.jitteredTtlMs(ttlMs), this.refreshThresholdMsForTtl(ttlMs));
   }
 
   /**
