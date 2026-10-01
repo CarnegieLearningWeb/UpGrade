@@ -270,6 +270,8 @@ describe('CacheService', () => {
       // owner's TTL rather than the segments TTL
       [CACHE_PREFIX.FEATURE_FLAG_PRECOMPUTED_SEGMENT_KEY_PREFIX, 45000],
       [CACHE_PREFIX.EXPERIMENT_PRECOMPUTED_SEGMENT_KEY_PREFIX, 30000],
+      // Thompson Sampling config lookups share the experiments bucket/TTL
+      [CACHE_PREFIX.THOMPSON_SAMPLING_CONFIG_KEY_PREFIX, 30000],
     ])('wraps %s with its category TTL (ms)', async (prefix, expectedTtl) => {
       const fn = jest.fn().mockResolvedValue('v');
       await service.wrap(prefix + 'context', fn);

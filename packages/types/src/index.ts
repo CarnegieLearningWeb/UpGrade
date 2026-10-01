@@ -104,13 +104,8 @@ export {
 } from './BatchActions';
 export {
   Prior,
-  CurrentPosteriors,
-  MoocletPolicyParametersDTO,
-  MoocletTSConfigurablePolicyParametersDTO,
-  MOOCLET_POLICY_SCHEMA_MAP,
-  SUPPORTED_MOOCLET_ALGORITHMS,
   BinaryRewardAllowedValue,
   BinaryRewardValueMap,
   ExperimentRewardsByCondition,
   ExperimentRewardsSummary,
-} from './Mooclet';
+} from './Experiment/interfaces';

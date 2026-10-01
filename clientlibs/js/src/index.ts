@@ -1,8 +1,8 @@
 import UpgradeClient from './UpGradeClient/UpgradeClient';
 import Assignment from './Assignment/Assignment';
 import { UpGradeClientEnums, UpGradeClientInterfaces, UpGradeClientRequests } from './types';
-import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
-import type { IExperimentAssignment, IExperimentAssignmentv5 } from 'upgrade_types';
+import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types/Experiment/enums';
+import type { IExperimentAssignment, IExperimentAssignmentv5 } from 'upgrade_types/Experiment/interfaces';
 
 export default UpgradeClient;
 

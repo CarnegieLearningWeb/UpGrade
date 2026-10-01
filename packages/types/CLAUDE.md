@@ -19,7 +19,6 @@ src/
   Experiment/
     enums.ts       # all enums + display map constants
     interfaces.ts  # all interfaces
-  Mooclet/         # Mooclet-specific types and policy schemas
   index.ts         # single re-export point for everything
 ```
 

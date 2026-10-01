@@ -1,12 +1,15 @@
 import { Component, ChangeDetectionStrategy, Input, OnDestroy, forwardRef } from '@angular/core';
-import { ExperimentVM } from '../../../../../../../../../core/experiments/store/experiments.model';
+import {
+  ExperimentVM,
+  THOMPSON_SAMPLING_WEIGHT_TOOLTIP_KEY,
+} from '../../../../../../../../../core/experiments/store/experiments.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { EnrollmentPointPartitionTableComponent } from '../enrollment-point-partition-table/enrollment-point-partition-table.component';
-import { MoocletExperimentHelperService } from '../../../../../../../../../core/experiments/mooclet-helper.service';
+import { ThompsonSamplingHelperService } from '../../../../../../../../../core/experiments/thompson-sampling-helper.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 @Component({
   selector: 'app-enrollment-condition-expandable-row',
@@ -28,11 +31,16 @@ export class EnrollmentConditionExpandableRowComponent implements OnDestroy {
   @Input() referenceId: string;
   @Input() experiment: ExperimentVM;
 
+  readonly WEIGHT_ADAPTIVE_TOOLTIP_KEY = THOMPSON_SAMPLING_WEIGHT_TOOLTIP_KEY;
+
   expandedId = '';
   columnHeaders = {};
   translateSub: Subscription;
 
-  constructor(private translate: TranslateService, private moocletHelperService: MoocletExperimentHelperService) {
+  constructor(
+    private translate: TranslateService,
+    private thompsonSamplingHelperService: ThompsonSamplingHelperService
+  ) {
     this.translateSub = this.translate
       .get([
         'global.condition.text',
@@ -52,8 +60,8 @@ export class EnrollmentConditionExpandableRowComponent implements OnDestroy {
       });
   }
 
-  isMoocletExperiment(experiment: ExperimentVM): boolean {
-    return this.moocletHelperService.isMoocletAlgorithm(experiment?.assignmentAlgorithm);
+  isThompsonSamplingExperiment(experiment: ExperimentVM): boolean {
+    return this.thompsonSamplingHelperService.isThompsonSamplingExperiment(experiment);
   }
 
   toggleExpandableSymbol(id: string): void {

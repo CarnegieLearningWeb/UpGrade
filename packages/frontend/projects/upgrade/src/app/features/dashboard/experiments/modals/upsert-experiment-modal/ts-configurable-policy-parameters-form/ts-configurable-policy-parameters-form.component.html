@@ -14,19 +14,19 @@
       <mat-label class="ft-14-400">{{
         'home.new-experiment.design.ts-configurable-policy.batch-size.label.text' | translate
       }}</mat-label>
-      <input matInput type="number" formControlName="batch_size" class="ft-14-400" min="1" step="1" />
+      <input matInput type="number" formControlName="batchSize" class="ft-14-400" min="1" step="1" />
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.batch-size.hint.text' | translate
       }}</mat-hint>
-      @if (policyForm.get('batch_size')?.hasError('min')) {
+      @if (policyForm.get('batchSize')?.hasError('min')) {
       <mat-error>{{
         'home.new-experiment.design.ts-configurable-policy.batch-size.min-error.text' | translate
       }}</mat-error>
-      } @if (policyForm.get('batch_size')?.hasError('max')) {
+      } @if (policyForm.get('batchSize')?.hasError('max')) {
       <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
-      } @if (policyForm.get('batch_size')?.hasError('integer')) {
+      } @if (policyForm.get('batchSize')?.hasError('integer')) {
       <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
       </mat-error>
@@ -37,19 +37,19 @@
       <mat-label class="ft-14-400">{{
         'home.new-experiment.design.ts-configurable-policy.uniform-threshold.label.text' | translate
       }}</mat-label>
-      <input matInput type="number" formControlName="uniform_threshold" class="ft-14-400" min="0" step="1" />
+      <input matInput type="number" formControlName="warmupThreshold" class="ft-14-400" min="0" step="1" />
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.uniform-threshold.hint.text' | translate
       }}</mat-hint>
-      @if (policyForm.get('uniform_threshold')?.hasError('min')) {
+      @if (policyForm.get('warmupThreshold')?.hasError('min')) {
       <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.min-error.text' | translate }}
       </mat-error>
-      } @if (policyForm.get('uniform_threshold')?.hasError('max')) {
+      } @if (policyForm.get('warmupThreshold')?.hasError('max')) {
       <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
       </mat-error>
-      } @if (policyForm.get('uniform_threshold')?.hasError('integer')) {
+      } @if (policyForm.get('warmupThreshold')?.hasError('integer')) {
       <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
       </mat-error>
@@ -63,7 +63,7 @@
       <input
         matInput
         type="number"
-        formControlName="tspostdiff_thresh"
+        formControlName="minimumDrawDifference"
         class="ft-14-400"
         min="0.0"
         max="1.0"
@@ -72,11 +72,11 @@
       <mat-hint class="form-hint ft-12-400">{{
         'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.hint.text' | translate
       }}</mat-hint>
-      @if (policyForm.get('tspostdiff_thresh')?.hasError('min')) {
+      @if (policyForm.get('minimumDrawDifference')?.hasError('min')) {
       <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.min-error.text' | translate }}
       </mat-error>
-      } @if (policyForm.get('tspostdiff_thresh')?.hasError('max')) {
+      } @if (policyForm.get('minimumDrawDifference')?.hasError('max')) {
       <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.max-error.text' | translate }}
       </mat-error>

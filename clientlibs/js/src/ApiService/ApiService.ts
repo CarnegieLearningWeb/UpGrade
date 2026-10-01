@@ -1,5 +1,11 @@
 import { UpGradeClientEnums, UpGradeClientInterfaces, UpGradeClientRequests } from '../types';
-import { CaliperEnvelope, IExperimentAssignment, ILogInput, IUserAliases, ILogRequestBody } from 'upgrade_types';
+import {
+  CaliperEnvelope,
+  IExperimentAssignment,
+  ILogInput,
+  IUserAliases,
+  ILogRequestBody,
+} from 'upgrade_types/Experiment/interfaces';
 import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
 

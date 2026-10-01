@@ -305,7 +305,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["v6", "reward"]
             },
-            "description": "Send reward signal for adaptive experiments (Mooclets) using direct experiment ID lookup. Reward values: 'SUCCESS' or 'FAILURE'."
+            "description": "Send reward signal for adaptive (Thompson Sampling) experiments using direct experiment ID lookup. Reward values: 'SUCCESS' or 'FAILURE'."
           }
         },
         {

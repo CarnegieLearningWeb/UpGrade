@@ -6,8 +6,6 @@
     "sourceMap": true,
     "declaration": true,
     "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "importHelpers": true,
     "module": "commonjs",
     "target": "es2015",

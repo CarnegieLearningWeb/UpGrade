@@ -5,6 +5,7 @@ import Container from 'typedi';
 import { createExpressServer } from 'routing-controllers';
 import { DataSource, In } from 'typeorm';
 import {
+  ASSIGNMENT_ALGORITHM,
   ASSIGNMENT_UNIT,
   BatchDeleteEntity,
   CACHE_PREFIX,
@@ -24,22 +25,24 @@ import { FeatureFlagsController } from '../../../src/api/controllers/FeatureFlag
 import { SegmentController } from '../../../src/api/controllers/SegmentController';
 import { ErrorHandlerMiddleware } from '../../../src/api/middlewares/ErrorHandlerMiddleware';
 import { LogMiddleware } from '../../../src/api/middlewares/LogMiddleware';
+import { ConditionPosteriorState } from '../../../src/api/models/ConditionPosteriorState';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { ExperimentAuditLog } from '../../../src/api/models/ExperimentAuditLog';
+import { ExperimentCondition } from '../../../src/api/models/ExperimentCondition';
 import { ExperimentPrecomputedSegment } from '../../../src/api/models/ExperimentPrecomputedSegment';
 import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
 import { FeatureFlagPrecomputedSegment } from '../../../src/api/models/FeatureFlagPrecomputedSegment';
 import { FeatureFlagSegmentInclusion } from '../../../src/api/models/FeatureFlagSegmentInclusion';
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
-import { MoocletExperimentRef } from '../../../src/api/models/MoocletExperimentRef';
 import { Segment } from '../../../src/api/models/Segment';
+import { ThompsonSamplingExperimentConfig } from '../../../src/api/models/ThompsonSamplingExperimentConfig';
+import { ThompsonSamplingReward } from '../../../src/api/models/ThompsonSamplingReward';
 import { User } from '../../../src/api/models/User';
 import { DeletionRepository } from '../../../src/api/repositories/DeletionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/FeatureFlagPrecomputedSegmentService';
-import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService';
 import { currentUserChecker } from '../../../src/auth/currentUserChecker';
@@ -57,7 +60,6 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
     let writer: DataSource;
     let app: Application;
     let originalAuth: boolean;
-    let originalMooclet: boolean;
     beforeAll(() => {
       iocLoader();
       const { authorizationChecker } = jest.requireActual('../../../src/auth/authorizationChecker');
@@ -75,13 +77,10 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
     beforeEach(() => {
       [db, writer] = connections();
       originalAuth = env.google.authTokenRequired;
-      originalMooclet = env.mooclets.enabled;
       env.google.authTokenRequired = false;
-      env.mooclets.enabled = false;
     });
     afterEach(() => {
       env.google.authTokenRequired = originalAuth;
-      env.mooclets.enabled = originalMooclet;
       jest.restoreAllMocks();
     });
 
@@ -108,6 +107,22 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         );
       } else await db.getRepository(Segment).insert(rows.map((row) => ({ ...row, type: SEGMENT_TYPE.PUBLIC })));
       return rows;
+    };
+    const nativeExperimentData = async (experimentId: string) => {
+      const conditionId = randomUUID();
+      await db.getRepository(Experiment).update(experimentId, {
+        assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
+      });
+      await db.getRepository(ExperimentCondition).insert({
+        id: conditionId,
+        experiment: { id: experimentId },
+        conditionCode: 'native-condition',
+        assignmentWeight: 100,
+      });
+      await db.getRepository(ThompsonSamplingExperimentConfig).insert({ experimentId });
+      await db.getRepository(ConditionPosteriorState).insert({ conditionId, successCount: 1, totalCount: 1 });
+      await db.getRepository(ThompsonSamplingReward).insert({ conditionId, userId: 'batch-member', success: true });
+      return conditionId;
     };
     const ownedList = async (entity: BatchDeleteEntity, ownerId: string, childId?: string, connection = db) => {
       const list = {
@@ -325,6 +340,7 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
     test('rolls back an experiment after an audit insert failure and stops the remaining items', async () => {
       const rows = await create('experiments', 3);
       const list = await ownedList('experiments', rows[1].id);
+      const conditionId = await nativeExperimentData(rows[1].id);
       try {
         await db.query(`CREATE OR REPLACE FUNCTION batch_test_reject_audit() RETURNS trigger AS $$
           BEGIN IF NEW.data->>'experimentId' = TG_ARGV[0] THEN RAISE EXCEPTION 'batch audit failure'; END IF;
@@ -346,6 +362,16 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(1);
         expect(await db.getRepository(ExperimentSegmentInclusion).countBy({ segmentId: list.id })).toBe(1);
         expect(await db.getRepository(ExperimentAuditLog).countBy({ type: LOG_TYPE.EXPERIMENT_DELETED })).toBe(1);
+        expect(await db.getRepository(ExperimentCondition).countBy({ id: conditionId })).toBe(1);
+        expect(await db.getRepository(ThompsonSamplingExperimentConfig).countBy({ experimentId: rows[1].id })).toBe(1);
+        expect(await db.getRepository(ConditionPosteriorState).findOneBy({ conditionId })).toMatchObject({
+          successCount: 1,
+          totalCount: 1,
+        });
+        expect(await db.getRepository(ThompsonSamplingReward).findOneBy({ conditionId })).toMatchObject({
+          userId: 'batch-member',
+          success: true,
+        });
       } finally {
         await db.query('DROP TRIGGER IF EXISTS batch_test_reject_audit ON experiment_audit_log');
         await db.query('DROP FUNCTION IF EXISTS batch_test_reject_audit()');
@@ -495,37 +521,27 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       expect(await db.getRepository(Segment).countBy({ id: rows[1].id })).toBe(1);
     });
 
-    test.each([true, false])(
-      'preserves Mooclet orchestration and local commit/rollback when remote deletion returns %s',
-      async (success) => {
-        env.mooclets.enabled = true;
+    test.each(['single', 'batch'])(
+      '%s deletion cascades through native Thompson Sampling config, posteriors and rewards',
+      async (mode) => {
         const [row] = await create('experiments');
-        await db.getRepository(Experiment).update(row.id, { state: EXPERIMENT_STATE.DRAFT });
-        const list = await ownedList('experiments', row.id);
-        const service = Container.get(MoocletExperimentService);
-        const ref = { id: randomUUID() } as MoocletExperimentRef;
-        jest.spyOn(service, 'getMoocletExperimentRefByUpgradeExperimentId').mockResolvedValue(ref);
-        // Only the network boundary is stubbed; syncDelete and its nested local transaction run normally.
-        const remote = jest.spyOn(service, 'orchestrateDeleteMoocletResources').mockResolvedValue(success);
-        const { body } = await request(app)
-          .post(route('experiments'))
-          .send({ ids: [row.id] })
-          .expect(200);
-        expect(body.results).toEqual([
-          success
-            ? { id: row.id, outcome: 'deleted' }
-            : {
-                id: row.id,
-                outcome: 'failed',
-                reasonCode: DeletionReasonCode.EXTERNAL_SYNC_FAILED,
-              },
-        ]);
-        expect(remote).toHaveBeenCalledWith(ref, expect.anything());
-        expect(await db.getRepository(Experiment).countBy({ id: row.id })).toBe(success ? 0 : 1);
-        expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(success ? 0 : 1);
-        expect(await db.getRepository(ExperimentAuditLog).countBy({ type: LOG_TYPE.EXPERIMENT_DELETED })).toBe(
-          success ? 1 : 0
-        );
+        const conditionId = await nativeExperimentData(row.id);
+        if (mode === 'single') {
+          const { body } = await request(app).delete(`/api/experiments/${row.id}`).expect(200);
+          expect(body).toEqual([expect.objectContaining({ id: row.id })]);
+        } else {
+          const { body } = await request(app)
+            .post(route('experiments'))
+            .send({ ids: [row.id] })
+            .expect(200);
+          expect(body.results).toEqual([{ id: row.id, outcome: 'deleted' }]);
+        }
+        expect(await db.getRepository(Experiment).countBy({ id: row.id })).toBe(0);
+        expect(await db.getRepository(ExperimentCondition).countBy({ id: conditionId })).toBe(0);
+        expect(await db.getRepository(ThompsonSamplingExperimentConfig).countBy({ experimentId: row.id })).toBe(0);
+        expect(await db.getRepository(ConditionPosteriorState).countBy({ conditionId })).toBe(0);
+        expect(await db.getRepository(ThompsonSamplingReward).countBy({ conditionId })).toBe(0);
+        expect(await db.getRepository(ExperimentAuditLog).countBy({ type: LOG_TYPE.EXPERIMENT_DELETED })).toBe(1);
       }
     );
 
@@ -639,31 +655,6 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         expect(await db.getRepository(Segment).countBy({ id: child.id })).toBe(1);
         expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(0);
         expect(await db.getRepository(IndividualForSegment).countBy({ segmentId: list.id })).toBe(0);
-      }
-    );
-
-    test.each([true, false])(
-      'single Mooclet deletion preserves commit/rollback when remote deletion returns %s',
-      async (success) => {
-        env.mooclets.enabled = true;
-        const [row] = await create('experiments');
-        await db.getRepository(Experiment).update(row.id, { state: EXPERIMENT_STATE.DRAFT });
-        const list = await ownedList('experiments', row.id);
-        const service = Container.get(MoocletExperimentService);
-        jest
-          .spyOn(service, 'getMoocletExperimentRefByUpgradeExperimentId')
-          .mockResolvedValue({ id: randomUUID() } as MoocletExperimentRef);
-        const remote = jest.spyOn(service, 'orchestrateDeleteMoocletResources').mockResolvedValue(success);
-        const { body } = await request(app)
-          .delete(`/api/experiments/${row.id}`)
-          .expect(success ? 200 : 500);
-        if (success) expect(body).toEqual([expect.objectContaining({ id: row.id })]);
-        expect(remote).toHaveBeenCalledTimes(1);
-        expect(await db.getRepository(Experiment).countBy({ id: row.id })).toBe(success ? 0 : 1);
-        expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(success ? 0 : 1);
-        expect(await db.getRepository(ExperimentAuditLog).countBy({ type: LOG_TYPE.EXPERIMENT_DELETED })).toBe(
-          success ? 1 : 0
-        );
       }
     );
 

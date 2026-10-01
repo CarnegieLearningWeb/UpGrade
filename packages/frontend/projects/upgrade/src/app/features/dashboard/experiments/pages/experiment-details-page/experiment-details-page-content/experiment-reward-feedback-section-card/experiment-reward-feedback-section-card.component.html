@@ -1,3 +1,4 @@
+@if (rewardsSummary$ | async; as summary) {
 <app-common-section-card>
   <app-common-section-card-title-header
     header-left
@@ -13,10 +14,50 @@
   ></app-common-section-card-action-buttons>
 
   @if (isSectionCardExpanded) {
-  <app-ts-configurable-reward-count-table
-    content
-    [dataSource]="rewardsSummary$ | async"
-    [isLoading]="isLoading$ | async"
-  ></app-ts-configurable-reward-count-table>
+  <ng-container content>
+    <!-- batchSize <= 1 never buffers a reward, and warmupThreshold 0 means no warmup phase --
+         both are "default/not in play" configurations, shown grayed out rather than hidden. -->
+    @let isBatchingActive = summary.batchSize > 1; @let isWarmupConfigured = summary.warmupThreshold > 0; @let
+    isWarmupActive = isWarmupConfigured && summary.totalRewardCount <= summary.warmupThreshold;
+    <div class="reward-status-section">
+      <div
+        class="item-key-value"
+        [class.inactive]="!isBatchingActive"
+        [matTooltip]="
+          'experiments.details.posteriors.pending-rewards-tooltip.text' | translate : { batchSize: summary.batchSize }
+        "
+        matTooltipPosition="left"
+      >
+        <span class="ft-14-600">{{ 'experiments.details.posteriors.pending-rewards.text' | translate }}:</span>
+        <span class="ft-14-400 item-value">{{ summary.pendingRewardsCount }}/{{ summary.batchSize }}</span>
+      </div>
+      <div
+        class="item-key-value"
+        [class.inactive]="!isWarmupConfigured"
+        [matTooltip]="
+          'experiments.details.posteriors.warmup-threshold-tooltip.text'
+            | translate : { warmupThreshold: summary.warmupThreshold }
+        "
+        matTooltipPosition="left"
+      >
+        <span class="ft-14-600">{{ 'experiments.details.posteriors.algorithm-in-effect.text' | translate }}:</span>
+        <span class="ft-14-400 item-value">
+          @if (isWarmupActive) {
+          {{
+            'experiments.details.posteriors.algorithm-warmup.text'
+              | translate : { rewardCount: summary.totalRewardCount, warmupThreshold: summary.warmupThreshold }
+          }}
+          } @else {
+          {{ 'experiments.details.posteriors.algorithm-active.text' | translate }}
+          }
+        </span>
+      </div>
+    </div>
+    <app-ts-configurable-reward-count-table
+      [dataSource]="summary.conditions"
+      [isLoading]="isLoading$ | async"
+    ></app-ts-configurable-reward-count-table>
+  </ng-container>
   }
 </app-common-section-card>
+}

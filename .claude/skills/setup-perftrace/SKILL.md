@@ -387,7 +387,7 @@ file they live in. Verify against the branch rather than trusting this table if 
 | `PATCH /v6/groupmembership` | `experimentUserService.updateGroupMembership` | controller |
 | `PATCH /v6/workinggroup` | `experimentUserService.updateWorkingGroup` | controller |
 | `PATCH /v6/useraliases` | `experimentUserService.setAliasesForUser(aliases=N)` | controller |
-| `POST /v6/reward` | `moocletRewardsService.sendReward` | controller |
+| `POST /v6/reward` | `thompsonSamplingRewardService.acceptReward` | controller |
 | `POST /v6/mark` | `experimentAssignmentService.markExperimentPoint` | controller |
 | " | 8 spans inside `markExperimentPoint` — `previewUserService.findOneFromCache`, `getCachedExperiments`, `checkUserOrGroupIsGloballyExcluded`, `experimentLevelExclusionInclusion`, `monitoredDecisionPointRepository.findOne`, `saveGroupExclusionDoc`, `updateEnrollmentExclusionDocumentsAndCheckEndingCriteria`, `monitoredDecisionPointRepository.saveRawJson` | `services/ExperimentAssignmentService.ts` |
 | `POST /v6/assign` | `formatAssignments` (sync) | controller |

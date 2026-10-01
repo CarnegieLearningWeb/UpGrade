@@ -7,6 +7,7 @@ import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/Po
 import { Container as tteContainer } from '../typeorm-typedi-extensions';
 import { UpgradeLogger } from '../lib/logger/UpgradeLogger';
 import type { DataSourceOptions } from 'typeorm';
+import { startPerfDiagnostics } from '../lib/perfDiagnostics';
 
 const log = new UpgradeLogger();
 
@@ -98,6 +99,11 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     // register the data source instance in the typeorm-typeDI-extensions
     tteContainer.setDataSource(CONNECTION_NAME.REPLICA, exportDataSourceInstance);
     await appDataSourceInstance.initialize();
+
+    if (env.perfDiagnostics?.enabled) {
+      startPerfDiagnostics(appDataSourceInstance);
+      log.info({ message: 'Perf diagnostics enabled — writing `perfdiag` lines to stdout' });
+    }
 
     // Fire-and-forget replica init so a slow/unreachable replica doesn't block app startup.
     void exportDataSourceInstance.initialize().catch((replicaErr) => {

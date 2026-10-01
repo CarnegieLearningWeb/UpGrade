@@ -3,10 +3,10 @@ import {
   ILogInput,
   CaliperEnvelope,
   IExperimentAssignment,
-  MARKED_DECISION_POINT_STATUS,
   IUserAliases,
   BinaryRewardAllowedValue,
-} from 'upgrade_types';
+} from 'upgrade_types/Experiment/interfaces';
+import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types/Experiment/enums';
 import Assignment from '../Assignment/Assignment';
 import ApiService from '../ApiService/ApiService';
 import { DataService } from '../DataService/DataService';
@@ -630,7 +630,7 @@ export default class UpgradeClient {
   }
 
   /**
-   * Sends a binary reward signal for an adaptive experiment (Mooclet).
+   * Sends a binary reward signal for an adaptive experiment.
    *
    * This method allows sending reward feedback (SUCCESS or FAILURE) for adaptive experiments.
    * The reward is used by the adaptive algorithm to update its learning model and improve future assignments.

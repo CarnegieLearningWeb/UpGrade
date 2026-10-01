@@ -74,18 +74,9 @@ class RewardRequest(BaseModel):
     decisionPoint: dict[str, str] | None = None
 
 
-class RewardDetails(BaseModel):
-    variable: str
-    value: float
-    mooclet: int
-    version: int
-    learner: str
-
-
 class SendRewardResponse(BaseModel):
     message: str
     request: RewardRequest
-    reward: RewardDetails
 
 
 class ErrorResponse(BaseModel):

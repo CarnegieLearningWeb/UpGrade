@@ -72,6 +72,6 @@ export const API_ENDPOINTS: APIEndpoints = {
   exportAllExperimentIncludeLists: '/experiments/export/includeLists',
   exportAllExperimentExcludeLists: '/experiments/export/excludeLists',
   importExperimentList: '/experiments/lists/import',
-  getMoocletRewardsData: '/experiments/mooclet-rewards',
   featureFlagGraphInfo: '/flags/date',
+  experimentsRewardsSummary: '/experiments/rewards',
 } as const;

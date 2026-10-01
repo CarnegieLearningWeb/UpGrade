@@ -3,7 +3,6 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
-  IsDefined,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -12,6 +11,8 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
+  Min,
   ValidateIf,
   ValidateNested,
   ValidationArguments,
@@ -37,9 +38,6 @@ import {
   REPEATED_MEASURE,
   EXPERIMENT_TYPE,
   ASSIGNMENT_ALGORITHM,
-  MoocletTSConfigurablePolicyParametersDTO,
-  MoocletPolicyParametersDTO,
-  SUPPORTED_MOOCLET_ALGORITHMS,
 } from 'upgrade_types';
 import { Type, Transform } from 'class-transformer';
 
@@ -383,6 +381,7 @@ abstract class BaseExperimentWithoutPayload {
 
   @IsOptional()
   @IsEnum(ASSIGNMENT_ALGORITHM)
+  @IsAssignmentAlgorithmCompatibleWithUnit()
   public assignmentAlgorithm?: ASSIGNMENT_ALGORITHM;
 
   // TODO add conditional validity here ie endOn is null
@@ -471,9 +470,6 @@ abstract class BaseExperimentWithoutPayload {
   public type: EXPERIMENT_TYPE;
 }
 
-const isMoocletAssignmentAlgorithm = (experiment: ExperimentDTO) =>
-  experiment.assignmentAlgorithm && SUPPORTED_MOOCLET_ALGORITHMS.includes(experiment.assignmentAlgorithm);
-
 function IsAssignmentUnitGroupConsistent(validationOptions?: ValidationOptions) {
   return function (object: any, propertyName: string) {
     registerDecorator({
@@ -502,6 +498,105 @@ function IsAssignmentUnitGroupConsistent(validationOptions?: ValidationOptions) 
   };
 }
 
+/**
+ * Within-Subjects assignment never runs through assignExperiment()/assignThompsonSampling() --
+ * the individual enrollment's condition is always stored as null, with the per-repeat condition
+ * tracked separately via RepeatedEnrollment instead. Thompson Sampling's reward path then reads
+ * that null conditionId when trying to record a reward, which can never succeed. Reject the
+ * combination outright rather than let it silently produce an experiment whose rewards can never
+ * be recorded.
+ */
+function IsAssignmentAlgorithmCompatibleWithUnit(validationOptions?: ValidationOptions) {
+  return function (object: any, propertyName: string) {
+    registerDecorator({
+      name: 'isAssignmentAlgorithmCompatibleWithUnit',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(assignmentAlgorithmValue: any, args: ValidationArguments) {
+          const experiment = args.object as any;
+          return !(
+            assignmentAlgorithmValue === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING &&
+            experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS
+          );
+        },
+        defaultMessage() {
+          return 'Thompson Sampling cannot be used with Within-Subjects assignment: rewards cannot be attributed to a condition under that assignment unit.';
+        },
+      },
+    });
+  };
+}
+
+const MAX_NUMBER_INPUT = 1_000_000;
+const MIN_PRIOR_VALUE = 1;
+
+function IsThompsonSamplingPriorsRecord(validationOptions?: ValidationOptions) {
+  return function (object: any, propertyName: string) {
+    registerDecorator({
+      name: 'isThompsonSamplingPriorsRecord',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any) {
+          if (value === undefined || value === null) {
+            return true;
+          }
+          if (typeof value !== 'object' || Array.isArray(value)) {
+            return false;
+          }
+          return Object.values(value).every((prior: any) => {
+            if (typeof prior !== 'object' || prior === null) {
+              return false;
+            }
+            const { success, failure } = prior;
+            return (
+              Number.isInteger(success) &&
+              success >= MIN_PRIOR_VALUE &&
+              success <= MAX_NUMBER_INPUT &&
+              Number.isInteger(failure) &&
+              failure >= MIN_PRIOR_VALUE &&
+              failure <= MAX_NUMBER_INPUT
+            );
+          });
+        },
+        defaultMessage() {
+          return (
+            'Each entry in priors must have integer success/failure values between ' +
+            `${MIN_PRIOR_VALUE} and ${MAX_NUMBER_INPUT}.`
+          );
+        },
+      },
+    });
+  };
+}
+
+class ThompsonSamplingConfigValidator {
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(MAX_NUMBER_INPUT)
+  public warmupThreshold?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  public minimumDrawDifference?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(MAX_NUMBER_INPUT)
+  public batchSize?: number;
+
+  @IsOptional()
+  @IsThompsonSamplingPriorsRecord()
+  public priors?: Record<string, { success: number; failure: number }>;
+}
+
 export class ExperimentDTO extends BaseExperimentWithoutPayload {
   @IsOptional()
   @IsArray()
@@ -509,21 +604,10 @@ export class ExperimentDTO extends BaseExperimentWithoutPayload {
   @Type(() => ConditionPayloadValidator)
   public conditionPayloads?: ConditionPayloadValidator[];
 
-  // This should be validated when assignmentAlgorithm is not RANDOM or STRATIFIED_RANDOM_SAMPLING
-  @ValidateIf(isMoocletAssignmentAlgorithm)
-  @IsDefined()
+  @IsOptional()
   @ValidateNested()
-  @Type(() => MoocletPolicyParametersDTO, {
-    discriminator: {
-      property: 'assignmentAlgorithm',
-      subTypes: [
-        { value: MoocletTSConfigurablePolicyParametersDTO, name: ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE },
-        // Other policy types can be added here
-      ],
-    },
-    keepDiscriminatorProperty: true,
-  })
-  public moocletPolicyParameters?: MoocletPolicyParametersDTO;
+  @Type(() => ThompsonSamplingConfigValidator)
+  public thompsonSamplingConfig?: ThompsonSamplingConfigValidator;
 }
 
 export class OldExperimentDTO extends BaseExperimentWithoutPayload {

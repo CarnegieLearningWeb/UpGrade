@@ -118,14 +118,12 @@ export const env = {
     ttlSettings: toNumber(getOsEnvOptional('CACHING_TTL_SETTINGS')),
     refreshThreshold: toNumber(getOsEnvOptional('CACHING_REFRESH_THRESHOLD')),
   },
+  // Temporary: see src/lib/perfDiagnostics.ts
+  perfDiagnostics: {
+    enabled: toBool(getOsEnvOptional('PERF_DIAG_ENABLED')) || false,
+  },
   clientApi: {
     secret: getOsEnv('CLIENT_API_SECRET'),
     key: getOsEnv('CLIENT_API_KEY'),
-  },
-  mooclets: {
-    enabled: toBool(getOsEnvOptional('MOOCLETS_ENABLED')) || false,
-    hostUrl: getOsEnvOptional('MOOCLETS_HOST_URL') || '',
-    apiRoute: getOsEnvOptional('MOOCLETS_API_ROUTE') || '',
-    apiToken: getOsEnvOptional('MOOCLETS_API_TOKEN') || '',
   },
 };

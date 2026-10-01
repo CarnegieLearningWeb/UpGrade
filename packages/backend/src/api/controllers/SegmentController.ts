@@ -67,7 +67,7 @@ interface SegmentPaginationInfo extends PaginationResponse {
  *         enum: [deleted, not_found, failed, unknown, not_attempted]
  *       reasonCode:
  *         type: string
- *         enum: [not_found, delete_failed, lock_timeout, external_sync_failed, outcome_unknown, post_delete_failed]
+ *         enum: [not_found, delete_failed, lock_timeout, outcome_unknown, post_delete_failed]
  *   BatchDeleteResult:
  *     type: object
  *     required: [results]

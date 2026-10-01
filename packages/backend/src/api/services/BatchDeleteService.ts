@@ -1,15 +1,12 @@
 import { Inject, Service } from 'typedi';
 import { DataSource, EntityManager } from 'typeorm';
 import { BatchDeleteEntity, BatchDeleteItemResult, BatchDeleteResult, DeletionReasonCode } from 'upgrade_types';
-import { env } from '../../env';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { InjectDataSource, InjectRepository } from '../../typeorm-typedi-extensions';
 import { DeletionTransaction } from '../../types/DeletionTransaction';
 import { UserDTO } from '../DTO/UserDTO';
-import { MoocletError } from '../errors/MoocletError';
 import { ExperimentService } from './ExperimentService';
 import { FeatureFlagService } from './FeatureFlagService';
-import { MoocletExperimentService } from './MoocletExperimentService';
 import { SegmentService } from './SegmentService';
 import { DeletionRepository } from '../repositories/DeletionRepository';
 
@@ -26,7 +23,6 @@ export class BatchDeleteService {
     @Inject(() => ExperimentService) private experiments: ExperimentService,
     @Inject(() => FeatureFlagService) private flags: FeatureFlagService,
     @Inject(() => SegmentService) private segments: SegmentService,
-    @Inject(() => MoocletExperimentService) private mooclets: MoocletExperimentService,
     @InjectRepository() private deletionRepository: DeletionRepository
   ) {}
 
@@ -113,15 +109,7 @@ export class BatchDeleteService {
     };
     try {
       if (entity === 'experiments') {
-        const ref = env.mooclets.enabled
-          ? await this.mooclets.getMoocletExperimentRefByUpgradeExperimentId(id)
-          : undefined;
-        if (ref)
-          await this.mooclets.syncDelete(
-            { moocletExperimentRef: ref, experimentId: id, currentUser: user, logger },
-            executeTransaction
-          );
-        else await this.experiments.delete(id, user, { logger, executeTransaction });
+        await this.experiments.delete(id, user, { logger, executeTransaction });
       } else if (entity === 'flags') {
         await this.flags.delete(id, user, logger, executeTransaction);
       } else {
@@ -143,9 +131,7 @@ export class BatchDeleteService {
         id,
         outcome: 'failed',
         reasonCode:
-          error instanceof MoocletError
-            ? DeletionReasonCode.EXTERNAL_SYNC_FAILED
-            : (error as { code?: string })?.code === '55P03'
+          (error as { code?: string })?.code === '55P03'
             ? DeletionReasonCode.LOCK_TIMEOUT
             : DeletionReasonCode.DELETE_FAILED,
       };

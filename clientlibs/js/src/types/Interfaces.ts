@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { IMetricMetaData, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { IMetricMetaData, MARKED_DECISION_POINT_STATUS } from 'upgrade_types/Experiment/enums';
 
 export namespace UpGradeClientInterfaces {
   // this namespace should be for consumer facing interface
@@ -108,13 +108,6 @@ export namespace UpGradeClientInterfaces {
       experimentId?: string;
       context?: string;
       decisionPoint?: IDecisionPoint;
-    };
-    reward: {
-      variable: string;
-      value: number;
-      mooclet: number;
-      version: number;
-      learner: string;
     };
   }
 

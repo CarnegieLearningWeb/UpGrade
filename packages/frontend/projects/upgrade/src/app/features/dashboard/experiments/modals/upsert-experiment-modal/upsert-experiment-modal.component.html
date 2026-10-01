@@ -159,16 +159,13 @@
         {{ 'experiments.upsert-experiment-modal.stratification-factor-hint.text' | translate }}
       </mat-hint>
     </mat-form-field>
-    }
-
-    <!-- each mooclet algorithm's form component would go here -->
-    @if (assignmentAlgorithmValue === ASSIGNMENT_ALGORITHM.MOOCLET_TS_CONFIGURABLE) {
+    } @if (assignmentAlgorithmValue === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
     <app-ts-configurable-policy-parameters-form
-      [existingPolicyParams]="(selectedExperiment$ | async)?.moocletPolicyParameters"
-      [disabled]="isMoocletFormDisabled"
-      (parametersChange)="onMoocletParametersChange($event)"
-      (validationChange)="onMoocletFormValidityChange($event)"
-      (formChanged)="onMoocletFormChanged($event)"
+      [existingPolicyParams]="(selectedExperiment$ | async)?.thompsonSamplingConfig"
+      [disabled]="isTSFormDisabled"
+      (parametersChange)="onTSConfigChange($event)"
+      (validationChange)="onTSFormValidityChange($event)"
+      (formChanged)="onTSFormChanged($event)"
     ></app-ts-configurable-policy-parameters-form>
     }
 

@@ -2,6 +2,11 @@
   "name": "upgrade_client_lib",
   "version": "6.7.0",
   "description": "Client library to communicate with the Upgrade server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CarnegieLearningWeb/UpGrade.git",
+    "directory": "clientlibs/js"
+  },
   "files": [
     "dist/*",
     "index.d.ts"
@@ -50,7 +55,9 @@
     "docs:markdown": "typedoc --options typedoc.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "quicktest": "([ -d dist ] || yarn build) && ts-node quickTest.ts"
+    "quicktest": "([ -f dist/node/index.js ] || yarn build) && ts-node quickTest.ts",
+    "quicktest:lite": "([ -f dist/lite/index.js ] || yarn build) && ts-node quickTest.ts lite",
+    "quicktest:adaptive": "([ -f dist/node/index.js ] || yarn build) && ts-node quickTestAdaptive.ts"
   },
   "keywords": [],
   "author": "",

@@ -8,7 +8,7 @@ import {
   Delete,
   Patch,
   Authorized,
-  BadRequestError,
+  QueryParam,
 } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
@@ -30,8 +30,10 @@ import { Log } from '../models/Log';
 import { ExperimentUserValidatorv6 } from './validators/ExperimentUserValidator';
 import { UserCheckMiddleware } from '../middlewares/UserCheckMiddleware';
 import { RewardValidator } from './validators/RewardValidator';
-import { IRewardResponse, MoocletRewardsService } from '../services/MoocletRewardsService';
-import { env } from '../../env';
+import {
+  IThompsonSamplingRewardResponse,
+  ThompsonSamplingRewardService,
+} from '../services/ThompsonSamplingRewardService';
 
 interface IMonitoredDecisionPoint {
   id: string;
@@ -100,7 +102,7 @@ export class ExperimentClientController {
     public experimentUserService: ExperimentUserService,
     public featureFlagService: FeatureFlagService,
     public metricService: MetricService,
-    public moocletRewardsService: MoocletRewardsService
+    public thompsonSamplingRewardService: ThompsonSamplingRewardService
   ) {}
 
   /**
@@ -831,7 +833,7 @@ export class ExperimentClientController {
    * /v6/reward:
    *    post:
    *       description: |
-   *         Send a reward signal for an adaptive experiment (Mooclet).
+   *         Send a reward signal for an adaptive (Thompson Sampling) experiment.
    *
    *         This endpoint allows sending binary reward feedback (SUCCESS or FAILURE) for adaptive experiments.
    *         The reward is used by the adaptive algorithm to update its learning model and improve future assignments.
@@ -844,6 +846,13 @@ export class ExperimentClientController {
    *         2. **Decision Point Lookup** - Provide `context` and `decisionPoint` (site and target) to look up the experiment
    *
    *         At least one of these methods must be provided.
+   *
+   *         **Response mode:** By default this endpoint acknowledges receipt immediately and records the reward
+   *         (config/enrollment lookup, posterior update) in the background — the response does not wait on it.
+   *         A problem with the reward itself (unknown experiment, no matching enrollment, experiment no longer
+   *         enrolling, etc.) is therefore not returned to the caller; it is only visible in server-side logs.
+   *         Pass `awaitResult=true` to instead wait for that work and receive the real outcome, including a
+   *         409 if the reward could not be recorded.
    *       consumes:
    *         - application/json
    *       parameters:
@@ -854,6 +863,15 @@ export class ExperimentClientController {
    *             type: string
    *           example: user123
    *           description: The unique identifier for the user
+   *         - in: query
+   *           name: awaitResult
+   *           required: false
+   *           schema:
+   *             type: boolean
+   *             default: false
+   *           description: |
+   *             When true, waits for the reward to be recorded and returns its real outcome (200 on success,
+   *             409 if it could not be recorded) instead of an immediate receipt.
    *         - in: body
    *           name: rewardData
    *           required: true
@@ -910,14 +928,24 @@ export class ExperimentClientController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Reward successfully sent to the adaptive experiment
+   *            description: |
+   *              With awaitResult unset/false: a receipt confirming the reward was queued (`mode: "accepted"`).
+   *              This does not guarantee the reward was recorded - see "Response mode" above.
+   *
+   *              With awaitResult=true: confirmation that the reward was actually recorded (`mode: "processed"`).
    *            schema:
    *              type: object
    *              properties:
+   *                mode:
+   *                  type: string
+   *                  enum: [accepted, processed]
+   *                  description: accepted = queued for background processing; processed = recorded synchronously
+   *                success:
+   *                  type: boolean
+   *                  description: Only present when mode is "processed"
    *                message:
    *                  type: string
-   *                  example: Reward sent successfully
-   *                  description: Success message
+   *                  example: Reward received and is being processed.
    *                request:
    *                  type: object
    *                  description: Echo of the original request data
@@ -936,32 +964,31 @@ export class ExperimentClientController {
    *                          type: string
    *                        target:
    *                          type: string
-   *                reward:
-   *                  type: object
-   *                  description: The reward data that was sent to the Mooclet API
    *          '400':
    *            description: BadRequestError - Invalid parameters (e.g., missing required fields, invalid rewardValue)
    *          '401':
    *            description: AuthorizationRequiredError
    *          '409':
-   *            description: Conflict - Data conflict (e.g., site or target not found, enrollment data not found, etc)
-   *          '500':
-   *            description: Internal Server Error
+   *            description: |
+   *              Only possible with awaitResult=true. The reward could not be recorded (unknown experiment,
+   *              no matching enrollment, experiment no longer enrolling, etc.).
    */
   @Post('reward')
   public async sendReward(
     @Req()
     request: AppRequest,
     @Body({ validate: true })
-    rewardData: RewardValidator
-  ): Promise<IRewardResponse> {
+    rewardData: RewardValidator,
+    @QueryParam('awaitResult')
+    awaitResult?: boolean
+  ): Promise<IThompsonSamplingRewardResponse> {
     request.logger.info({ message: 'Starting the sendReward call for user' });
-    if (!env.mooclets?.enabled) {
-      throw new BadRequestError('Failed to send reward: mooclet is not currently enabled on backend.');
-    }
-
-    const experimentUserDoc = request.userDoc;
-    return this.moocletRewardsService.sendReward(experimentUserDoc, rewardData, request.logger);
+    return this.thompsonSamplingRewardService.acceptReward(
+      request.userDoc,
+      rewardData,
+      request.logger,
+      awaitResult ?? false
+    );
   }
 
   /**

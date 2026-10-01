@@ -7,10 +7,7 @@ import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/FeatureFlagPrecomputedSegmentService';
 import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
-import { MoocletExperimentService } from '../../../src/api/services/MoocletExperimentService';
-import { MoocletError } from '../../../src/api/errors/MoocletError';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
-import { env } from '../../../src/env';
 import { DeletionRepository } from '../../../src/api/repositories/DeletionRepository';
 
 describe('BatchDeleteService transaction outcomes', () => {
@@ -24,10 +21,8 @@ describe('BatchDeleteService transaction outcomes', () => {
   let experiments: { delete: jest.Mock };
   let flags: { delete: jest.Mock };
   let segments: { deleteSegment: jest.Mock };
-  let mooclets: { getMoocletExperimentRefByUpgradeExperimentId: jest.Mock; syncDelete: jest.Mock };
   let createQueryRunner: jest.Mock;
   let work: jest.Mock;
-  let originalMooclet: boolean;
   let configureRunner: (runner: QueryRunner, index: number) => void;
 
   beforeEach(() => {
@@ -35,8 +30,6 @@ describe('BatchDeleteService transaction outcomes', () => {
     ids = [randomUUID(), randomUUID(), randomUUID()];
     mutations = [];
     runners = [];
-    originalMooclet = env.mooclets.enabled;
-    env.mooclets.enabled = false;
     configureRunner = () => undefined;
     createQueryRunner = jest.fn(() => {
       let active = false;
@@ -79,21 +72,15 @@ describe('BatchDeleteService transaction outcomes', () => {
         })
       ),
     };
-    mooclets = {
-      getMoocletExperimentRefByUpgradeExperimentId: jest.fn().mockResolvedValue(undefined),
-      syncDelete: jest.fn((params, transaction) => transaction(() => work(params.experimentId))),
-    };
     service = new BatchDeleteService(
       { createQueryRunner } as unknown as DataSource,
       experiments as unknown as ExperimentService,
       flags as unknown as FeatureFlagService,
       segments as unknown as SegmentService,
-      mooclets as unknown as MoocletExperimentService,
       new DeletionRepository(DeletionRepository, {} as EntityManager)
     );
   });
   afterEach(() => {
-    env.mooclets.enabled = originalMooclet;
     jest.restoreAllMocks();
   });
 
@@ -321,32 +308,6 @@ describe('BatchDeleteService transaction outcomes', () => {
       outcome: 'deleted',
       reasonCode: DeletionReasonCode.POST_DELETE_FAILED,
     });
-  });
-
-  test('uses the existing Mooclet branch and reports external failure after local rollback', async () => {
-    env.mooclets.enabled = true;
-    const ref = { id: randomUUID() };
-    mooclets.getMoocletExperimentRefByUpgradeExperimentId.mockResolvedValue(ref);
-    work.mockRejectedValue(new MoocletError('remote deletion failed'));
-    const result = await service.delete('experiments', ids, user, logger);
-    expect(experiments.delete).not.toHaveBeenCalled();
-    expect(mooclets.syncDelete).toHaveBeenCalledWith(
-      expect.objectContaining({ moocletExperimentRef: ref }),
-      expect.any(Function)
-    );
-    expect(result.results[0]).toEqual({
-      id: ids[0],
-      outcome: 'failed',
-      reasonCode: DeletionReasonCode.EXTERNAL_SYNC_FAILED,
-    });
-    expect(runners[0].rollbackTransaction).toHaveBeenCalled();
-  });
-
-  test('uses ordinary experiment deletion when Mooclet is enabled but there is no reference', async () => {
-    env.mooclets.enabled = true;
-    await service.delete('experiments', ids, user, logger);
-    expect(experiments.delete).toHaveBeenCalledTimes(3);
-    expect(mooclets.syncDelete).not.toHaveBeenCalled();
   });
 
   test('returns every result in a large batch after failure', async () => {
