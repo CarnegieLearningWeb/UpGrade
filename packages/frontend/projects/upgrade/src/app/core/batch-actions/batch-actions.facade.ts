@@ -1,16 +1,16 @@
 import { Store, select } from '@ngrx/store';
 import { map, take } from 'rxjs/operators';
 import { BatchDeleteEntity } from 'upgrade_types';
-import { RootBatchActions } from './batch-actions.actions';
-import { RootBatchState, newBatchRequestId } from './batch-actions.models';
-import { selectionItem, selectionView } from './batch-actions.helpers';
+import { RootBatchDeleteActions } from './batch-actions.actions';
+import { RootBatchDeleteState, newBatchRequestId } from './batch-actions.models';
+import { selectionItem, batchDeleteSelectionView } from './batch-actions.helpers';
 
 /** Entity facades expose this same interface to root tables and the shared confirmation dialog. */
-export function createBatchFacade(
+export function createBatchDeleteFacade(
   store: Store,
   entity: BatchDeleteEntity,
-  actions: RootBatchActions,
-  selectState: (state: any) => RootBatchState,
+  actions: RootBatchDeleteActions,
+  selectState: (state: any) => RootBatchDeleteState,
   selectRows: (state: any) => { id?: string; name?: string }[]
 ) {
   const state$ = store.pipe(select(selectState));
@@ -18,7 +18,7 @@ export function createBatchFacade(
     state$,
     selection$: state$.pipe(
       map((state) => ({
-        ...selectionView(state, entity),
+        ...batchDeleteSelectionView(state, entity),
         loadedIds: new Set(state.loadedIds),
       }))
     ),
@@ -39,4 +39,4 @@ export function createBatchFacade(
   };
 }
 
-export type BatchFacade = ReturnType<typeof createBatchFacade>;
+export type BatchDeleteFacade = ReturnType<typeof createBatchDeleteFacade>;

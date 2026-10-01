@@ -7,7 +7,12 @@ import {
   FEATURE_FLAG_STATUS,
   SEGMENT_STATUS,
 } from 'upgrade_types';
-import { BatchSelectionReasonCode, RootBatchState, RootSelectionItem, isBatchBusy } from './batch-actions.models';
+import {
+  DeletionEligibilityReasonCode,
+  RootBatchDeleteState,
+  RootSelectionItem,
+  isBatchDeleteBusy,
+} from './batch-actions.models';
 
 export function selectionItem(row: {
   id?: string;
@@ -18,7 +23,7 @@ export function selectionItem(row: {
   return { id: row.id, name: row.name, stateOrStatus: row.state || row.status };
 }
 
-export function getExperimentDeletionReason(state?: EXPERIMENT_STATE): BatchSelectionReasonCode | undefined {
+export function getExperimentDeletionReason(state?: EXPERIMENT_STATE): DeletionEligibilityReasonCode | undefined {
   const displayState = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[state] || state;
   return [
     EXPERIMENT_STATE.DRAFT,
@@ -27,22 +32,22 @@ export function getExperimentDeletionReason(state?: EXPERIMENT_STATE): BatchSele
     EXPERIMENT_STATE.ARCHIVED,
   ].includes(displayState)
     ? undefined
-    : BatchSelectionReasonCode.EXPERIMENT_ACTIVE;
+    : DeletionEligibilityReasonCode.EXPERIMENT_ACTIVE;
 }
 
 export function localDeletionReason(
   entity: BatchDeleteEntity,
   item: RootSelectionItem
-): BatchSelectionReasonCode | undefined {
+): DeletionEligibilityReasonCode | undefined {
   if (entity === 'experiments') return getExperimentDeletionReason(item.stateOrStatus as EXPERIMENT_STATE);
   if (entity === 'flags')
     return item.stateOrStatus === FEATURE_FLAG_STATUS.ENABLED
-      ? BatchSelectionReasonCode.FEATURE_FLAG_ENABLED
+      ? DeletionEligibilityReasonCode.FEATURE_FLAG_ENABLED
       : undefined;
-  return item.stateOrStatus === SEGMENT_STATUS.USED ? BatchSelectionReasonCode.SEGMENT_USED : undefined;
+  return item.stateOrStatus === SEGMENT_STATUS.USED ? DeletionEligibilityReasonCode.SEGMENT_USED : undefined;
 }
 
-export function selectionView(state: RootBatchState, entity: BatchDeleteEntity) {
+export function batchDeleteSelectionView(state: RootBatchDeleteState, entity: BatchDeleteEntity) {
   const items = Object.values(state.selectedById);
   const loaded = state.loadedIds;
   const checked = loaded.length > 0 && loaded.every((id) => !!state.selectedById[id]);
@@ -52,10 +57,10 @@ export function selectionView(state: RootBatchState, entity: BatchDeleteEntity) 
     selectedCount: items.length,
     checked,
     indeterminate: items.length > 0 && !checked,
-    canToggleHeader: !isBatchBusy(state) && (items.length > 0 || loaded.length > 0),
-    canRequestConfirmation: items.length > 0 && !reasons.length && !isBatchBusy(state),
+    canToggleHeader: !isBatchDeleteBusy(state) && (items.length > 0 || loaded.length > 0),
+    canRequestConfirmation: items.length > 0 && !reasons.length && !isBatchDeleteBusy(state),
     reasonCode: reasons[0],
-    busy: isBatchBusy(state),
+    busy: isBatchDeleteBusy(state),
   };
 }
 
@@ -79,7 +84,7 @@ export function validateBatchResponse(result: BatchDeleteResult, ids: string[]):
   return result;
 }
 
-export function batchResultCounts(state: RootBatchState) {
+export function batchResultCounts(state: RootBatchDeleteState) {
   const results = state.operation?.result?.results || [];
   return {
     deleted: results.filter((item) => item.outcome === 'deleted').length,

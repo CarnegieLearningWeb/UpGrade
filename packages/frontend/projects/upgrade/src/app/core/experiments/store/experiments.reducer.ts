@@ -1,11 +1,11 @@
-import { initialRootBatchState } from '../../batch-actions/batch-actions.models';
-import { withRootBatch } from '../../batch-actions/batch-actions.store';
+import { initialRootBatchDeleteState } from '../../batch-actions/batch-actions.models';
+import { withRootBatchDelete } from '../../batch-actions/batch-actions.store';
 import { ExperimentState, EXPERIMENT_SEARCH_KEY, SORT_AS_DIRECTION, EXPERIMENT_SORT_KEY } from './experiments.model';
 import { createReducer, on, Action } from '@ngrx/store';
 import * as experimentsAction from './experiments.actions';
 
 export const initialState: ExperimentState = {
-  rootBatch: initialRootBatchState,
+  rootBatch: initialRootBatchDeleteState,
   // List page state
   experiments: [],
   isLoadingExperiment: false,
@@ -530,7 +530,7 @@ const reducer = createReducer(
   }))
 );
 
-const batchReducer = withRootBatch(reducer, initialState, {
+const batchReducer = withRootBatchDelete(reducer, initialState, {
   entity: 'experiments',
   actions: experimentsAction.batchActions,
   rowsKey: 'experiments',

@@ -1,4 +1,4 @@
-import { createBatchFacade } from '../batch-actions/batch-actions.facade';
+import { createBatchDeleteFacade } from '../batch-actions/batch-actions.facade';
 import { batchActions } from './store/experiments.actions';
 import { selectRootBatch } from './store/experiments.selectors';
 import { Injectable } from '@angular/core';
@@ -71,7 +71,13 @@ import { selectCurrentUserEmail } from '../auth/store/auth.selectors';
 
 @Injectable()
 export class ExperimentService {
-  readonly batch = createBatchFacade(this.store$, 'experiments', batchActions, selectRootBatch, selectAllExperiment);
+  readonly batch = createBatchDeleteFacade(
+    this.store$,
+    'experiments',
+    batchActions,
+    selectRootBatch,
+    selectAllExperiment
+  );
 
   constructor(private readonly store$: Store<AppState>, private readonly localStorageService: LocalStorageService) {}
 

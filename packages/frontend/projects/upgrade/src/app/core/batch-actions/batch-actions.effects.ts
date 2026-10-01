@@ -13,8 +13,8 @@ import {
   withLatestFrom,
 } from 'rxjs/operators';
 import { BatchDeleteResult, DeletionReasonCode } from 'upgrade_types';
-import { RootBatchActions } from './batch-actions.actions';
-import { RootBatchState, newBatchRequestId } from './batch-actions.models';
+import { RootBatchDeleteActions } from './batch-actions.actions';
+import { RootBatchDeleteState, newBatchRequestId } from './batch-actions.models';
 import { validateBatchResponse } from './batch-actions.helpers';
 
 interface BatchDataSource {
@@ -23,8 +23,8 @@ interface BatchDataSource {
 
 export function batchDeleteEffect(
   events: Observable<Action>,
-  state$: Observable<RootBatchState>,
-  actions: RootBatchActions,
+  state$: Observable<RootBatchDeleteState>,
+  actions: RootBatchDeleteActions,
   data: BatchDataSource
 ) {
   return events.pipe(
@@ -73,9 +73,9 @@ export function batchDeleteEffect(
 
 export function batchFinishedEffect(
   events: Observable<Action>,
-  state$: Observable<RootBatchState>,
-  actions: RootBatchActions,
-  finish: (state: RootBatchState) => Action[]
+  state$: Observable<RootBatchDeleteState>,
+  actions: RootBatchDeleteActions,
+  finish: (state: RootBatchDeleteState) => Action[]
 ) {
   return events.pipe(
     filter((action) =>
@@ -97,8 +97,8 @@ export function batchFinishedEffect(
 
 /** Read current state at subscription time, after the list-start action reaches the reducer. */
 export function trackedListRequest<T>(
-  state$: Observable<RootBatchState>,
-  actions: RootBatchActions,
+  state$: Observable<RootBatchDeleteState>,
+  actions: RootBatchDeleteActions,
   dispatch: (action: Action) => void,
   request: () => Observable<T>,
   success: (data: T, requestId: string) => Action[],

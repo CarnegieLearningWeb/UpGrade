@@ -2,14 +2,14 @@ import { Directive, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Observable, Subscription, map, shareReplay } from 'rxjs';
 import { BatchDeleteEntity, IMenuButtonItem } from 'upgrade_types';
-import { BatchFacade } from '../../core/batch-actions/batch-actions.facade';
-import { selectionView } from '../../core/batch-actions/batch-actions.helpers';
-import { RootBatchState } from '../../core/batch-actions/batch-actions.models';
+import { BatchDeleteFacade } from '../../core/batch-actions/batch-actions.facade';
+import { batchDeleteSelectionView } from '../../core/batch-actions/batch-actions.helpers';
+import { RootBatchDeleteState } from '../../core/batch-actions/batch-actions.models';
 import { DialogService } from '../services/common-dialog.service';
 import { CommonSimpleTextValidatedConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-text-validated-confirmation-modal/common-simple-text-validated-confirmation-modal.component';
 
-export function rootBatchView(state: RootBatchState, entity: BatchDeleteEntity) {
-  const selection = selectionView(state, entity);
+export function rootBatchView(state: RootBatchDeleteState, entity: BatchDeleteEntity) {
+  const selection = batchDeleteSelectionView(state, entity);
   const messageKey = !selection.busy && selection.reasonCode ? `batch-delete.reason.${selection.reasonCode}` : '';
   return {
     ...selection,
@@ -30,7 +30,7 @@ export type RootBatchView = ReturnType<typeof rootBatchView>;
 /** Connect root-card controls to one confirmation dialog without owning the deletion request. */
 @Directive({ selector: '[appRootBatchActions]', exportAs: 'rootBatchActions' })
 export class RootBatchActionsDirective implements OnInit, OnDestroy {
-  @Input() batchFacade: BatchFacade;
+  @Input() batchFacade: BatchDeleteFacade;
   @Input() batchEntity: BatchDeleteEntity;
   @Input() batchExpandedTags: Map<string, boolean>;
   view$: Observable<RootBatchView>;

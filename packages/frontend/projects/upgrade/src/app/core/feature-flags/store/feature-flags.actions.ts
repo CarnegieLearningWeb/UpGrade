@@ -1,4 +1,4 @@
-import { createBatchActions } from '../../batch-actions/batch-actions.actions';
+import { createBatchDeleteActions } from '../../batch-actions/batch-actions.actions';
 import { createAction, props } from '@ngrx/store';
 import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
@@ -337,4 +337,4 @@ export const actionSetFeatureFlagTotalExposures = createAction(
   props<{ totalExposures: number | null }>()
 );
 
-export const batchActions = createBatchActions('flags');
+export const batchActions = createBatchDeleteActions('flags');

@@ -1,4 +1,4 @@
-import { RootBatchState } from '../../batch-actions/batch-actions.models';
+import { RootBatchDeleteState } from '../../batch-actions/batch-actions.models';
 import { AppState } from '../../core.module';
 import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
@@ -613,7 +613,7 @@ export const THOMPSON_SAMPLING_WEIGHT_TOOLTIP_KEY = 'experiments.details.conditi
 export const EXPERIMENT_ROOT_DISPLAYED_COLUMNS = Object.values(EXPERIMENT_ROOT_COLUMN_NAMES);
 
 export interface ExperimentState {
-  rootBatch: RootBatchState;
+  rootBatch: RootBatchDeleteState;
   // List page data - plain array preserves backend sort order
   experiments: ExperimentVM[];
   isLoadingExperiment: boolean;

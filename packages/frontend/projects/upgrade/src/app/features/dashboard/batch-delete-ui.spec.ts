@@ -18,7 +18,7 @@ import { SegmentsService } from '../../core/segments/segments.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { StratificationFactorsService } from '../../core/stratification-factors/stratification-factors.service';
 import { DialogService } from '../../shared/services/common-dialog.service';
-import { createBatchFacade } from '../../core/batch-actions/batch-actions.facade';
+import { createBatchDeleteFacade } from '../../core/batch-actions/batch-actions.facade';
 import { RootBatchActionsDirective } from '../../shared/directives/root-batch-actions.directive';
 import { actionSetUserInfo } from '../../core/auth/store/auth.actions';
 import { experimentsReducer } from '../../core/experiments/store/experiments.reducer';
@@ -142,7 +142,7 @@ describe.each(cases)('$entity root batch UI', (config) => {
     subscription = store.subscribe((value) => (state = value));
     store.dispatch(actionSetUserInfo({ user: { email: 'test@example.com', role: UserRole.ADMIN } }));
     load();
-    const batchFacade = createBatchFacade(
+    const batchFacade = createBatchDeleteFacade(
       store,
       config.entity,
       actions,

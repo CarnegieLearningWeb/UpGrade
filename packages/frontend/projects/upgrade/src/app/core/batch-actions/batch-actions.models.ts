@@ -1,6 +1,6 @@
 import { BatchDeleteResult, EXPERIMENT_STATE, FEATURE_FLAG_STATUS, SEGMENT_STATUS } from 'upgrade_types';
 
-export enum BatchSelectionReasonCode {
+export enum DeletionEligibilityReasonCode {
   EXPERIMENT_ACTIVE = 'experiment_active',
   FEATURE_FLAG_ENABLED = 'feature_flag_enabled',
   SEGMENT_USED = 'segment_used',
@@ -17,7 +17,7 @@ export interface BatchDeleteSnapshot {
   items: RootSelectionItem[];
 }
 
-export interface RootBatchState {
+export interface RootBatchDeleteState {
   selectedById: Record<string, RootSelectionItem>;
   userEmail: string | null;
   loadedIds: string[];
@@ -33,7 +33,7 @@ export interface RootBatchState {
   } | null;
 }
 
-export const initialRootBatchState: RootBatchState = {
+export const initialRootBatchDeleteState: RootBatchDeleteState = {
   selectedById: {},
   userEmail: null,
   loadedIds: [],
@@ -46,4 +46,4 @@ export const initialRootBatchState: RootBatchState = {
 
 let requestSequence = 0;
 export const newBatchRequestId = () => `batch-${++requestSequence}`;
-export const isBatchBusy = (state: RootBatchState) => state.operation?.status === 'submitting';
+export const isBatchDeleteBusy = (state: RootBatchDeleteState) => state.operation?.status === 'submitting';

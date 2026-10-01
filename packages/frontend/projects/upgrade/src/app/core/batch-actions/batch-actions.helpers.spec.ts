@@ -5,25 +5,25 @@ import {
   FEATURE_FLAG_STATUS,
   SEGMENT_STATUS,
 } from 'upgrade_types';
-import { createBatchActions } from './batch-actions.actions';
-import { localDeletionReason, selectionView, validateBatchResponse } from './batch-actions.helpers';
+import { createBatchDeleteActions } from './batch-actions.actions';
+import { localDeletionReason, batchDeleteSelectionView, validateBatchResponse } from './batch-actions.helpers';
 import {
-  BatchSelectionReasonCode,
-  RootBatchState,
+  DeletionEligibilityReasonCode,
+  RootBatchDeleteState,
   RootSelectionItem,
-  initialRootBatchState,
+  initialRootBatchDeleteState,
 } from './batch-actions.models';
-import { reduceRootBatch } from './batch-actions.reducer';
+import { reduceRootBatchDelete } from './batch-actions.reducer';
 
 describe('Root selection rules', () => {
-  const actions = createBatchActions('Test');
+  const actions = createBatchDeleteActions('Test');
   const item = (id: string): RootSelectionItem => ({
     id,
     name: id,
     stateOrStatus: SEGMENT_STATUS.UNUSED,
   });
-  const state = (selected: string[], loaded: string[]): RootBatchState => ({
-    ...initialRootBatchState,
+  const state = (selected: string[], loaded: string[]): RootBatchDeleteState => ({
+    ...initialRootBatchDeleteState,
     selectedById: Object.fromEntries(selected.map((id) => [id, item(id)])),
     loadedIds: loaded,
   });
@@ -37,7 +37,7 @@ describe('Root selection rules', () => {
   ])(
     'derives the header from selected=%j and loaded=%j',
     (selected: string[], loaded: string[], checked: boolean, indeterminate: boolean) => {
-      expect(selectionView(state(selected, loaded), 'segments')).toMatchObject({
+      expect(batchDeleteSelectionView(state(selected, loaded), 'segments')).toMatchObject({
         checked,
         indeterminate,
       });
@@ -46,7 +46,7 @@ describe('Root selection rules', () => {
 
   it('excludes IDs outside the loaded root rows from header selection', () => {
     const current = state([], ['loaded']);
-    const next = reduceRootBatch(
+    const next = reduceRootBatchDelete(
       current,
       actions.toggleHeader({
         items: [item('loaded'), item('detail-only')],
@@ -60,10 +60,10 @@ describe('Root selection rules', () => {
 
   it('can clear hidden selections during replacement loading but cannot select an obsolete page', () => {
     const current = { ...state(['hidden'], []), listLoading: true };
-    const cleared = reduceRootBatch(current, actions.toggleHeader({ items: [item('old')] }), actions, 'segments');
+    const cleared = reduceRootBatchDelete(current, actions.toggleHeader({ items: [item('old')] }), actions, 'segments');
     expect(cleared.selectedById).toEqual({});
     expect(
-      reduceRootBatch(cleared, actions.toggleHeader({ items: [item('old')] }), actions, 'segments').selectedById
+      reduceRootBatchDelete(cleared, actions.toggleHeader({ items: [item('old')] }), actions, 'segments').selectedById
     ).toEqual({});
   });
 
@@ -81,13 +81,17 @@ describe('Root selection rules', () => {
     [EXPERIMENT_STATE.ENROLLMENT_COMPLETE, false],
   ])('applies the experiment deletion policy to %s', (status: EXPERIMENT_STATE, allowed: boolean) => {
     expect(localDeletionReason('experiments', { id: 'a', stateOrStatus: status })).toBe(
-      allowed ? undefined : BatchSelectionReasonCode.EXPERIMENT_ACTIVE
+      allowed ? undefined : DeletionEligibilityReasonCode.EXPERIMENT_ACTIVE
     );
   });
 
-  it.each<[BatchDeleteEntity, RootSelectionItem, BatchSelectionReasonCode]>([
-    ['flags', { id: 'a', stateOrStatus: FEATURE_FLAG_STATUS.ENABLED }, BatchSelectionReasonCode.FEATURE_FLAG_ENABLED],
-    ['segments', { ...item('a'), stateOrStatus: SEGMENT_STATUS.USED }, BatchSelectionReasonCode.SEGMENT_USED],
+  it.each<[BatchDeleteEntity, RootSelectionItem, DeletionEligibilityReasonCode]>([
+    [
+      'flags',
+      { id: 'a', stateOrStatus: FEATURE_FLAG_STATUS.ENABLED },
+      DeletionEligibilityReasonCode.FEATURE_FLAG_ENABLED,
+    ],
+    ['segments', { ...item('a'), stateOrStatus: SEGMENT_STATUS.USED }, DeletionEligibilityReasonCode.SEGMENT_USED],
   ])('applies entity-specific status rules for %s', (entity, selected, reason) => {
     expect(localDeletionReason(entity, selected)).toBe(reason);
   });

@@ -1,4 +1,4 @@
-import { createBatchActions } from '../../batch-actions/batch-actions.actions';
+import { createBatchDeleteActions } from '../../batch-actions/batch-actions.actions';
 import { createAction, props } from '@ngrx/store';
 import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
@@ -428,4 +428,4 @@ export const actionFetchRewardsDataForExperimentFailure = createAction(
   props<{ error: any }>()
 );
 
-export const batchActions = createBatchActions('experiments');
+export const batchActions = createBatchDeleteActions('experiments');

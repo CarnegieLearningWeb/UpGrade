@@ -1,4 +1,4 @@
-import { initialRootBatchState } from '../batch-actions/batch-actions.models';
+import { initialRootBatchDeleteState } from '../batch-actions/batch-actions.models';
 import {
   ExperimentState,
   EXPERIMENT_SEARCH_KEY,
@@ -22,7 +22,7 @@ describe('LocalStorageService', () => {
 
   describe('#loadInitialState', () => {
     const expectedStateWithFetchedValues: ExperimentState = {
-      rootBatch: initialRootBatchState,
+      rootBatch: initialRootBatchDeleteState,
       experiments: [],
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,
@@ -52,7 +52,7 @@ describe('LocalStorageService', () => {
       detailsPageError: null,
     };
     const expectedStateWithDefaults: ExperimentState = {
-      rootBatch: initialRootBatchState,
+      rootBatch: initialRootBatchDeleteState,
       experiments: [],
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,

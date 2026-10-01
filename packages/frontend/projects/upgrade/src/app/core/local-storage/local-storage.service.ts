@@ -1,4 +1,4 @@
-import { initialRootBatchState } from '../batch-actions/batch-actions.models';
+import { initialRootBatchDeleteState } from '../batch-actions/batch-actions.models';
 import { Injectable } from '@angular/core';
 import {
   ExperimentLocalStorageKeys,
@@ -34,7 +34,7 @@ export class LocalStorageService {
 
     // 1. Populate experiment state
     const experimentState: ExperimentState = {
-      rootBatch: initialRootBatchState,
+      rootBatch: initialRootBatchDeleteState,
       experiments: [],
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,
@@ -65,7 +65,7 @@ export class LocalStorageService {
     };
 
     const featureFlagState: FeatureFlagState = {
-      rootBatch: initialRootBatchState,
+      rootBatch: initialRootBatchDeleteState,
       featureFlags: [],
       selectedFlag: null,
       isLoadingUpsertFeatureFlag: false,
@@ -90,7 +90,7 @@ export class LocalStorageService {
     };
 
     const segmentState: SegmentState = {
-      rootBatch: initialRootBatchState,
+      rootBatch: initialRootBatchDeleteState,
       segments: [],
       isLoadingSegments: false,
       hasInitialSegmentsDataLoaded: false,

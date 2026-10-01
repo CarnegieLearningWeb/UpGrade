@@ -1,4 +1,4 @@
-import { RootBatchState } from '../../batch-actions/batch-actions.models';
+import { RootBatchDeleteState } from '../../batch-actions/batch-actions.models';
 import { AppState } from '../../core.state';
 import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
 import { SEGMENT_TYPE, SEGMENT_STATUS, SEGMENT_SEARCH_KEY, SORT_AS_DIRECTION, SEGMENT_SORT_KEY } from 'upgrade_types';
@@ -233,7 +233,7 @@ export enum SEGMENT_LIST_ACTIONS {
 }
 
 export interface SegmentState {
-  rootBatch: RootBatchState;
+  rootBatch: RootBatchDeleteState;
   // List page data - plain array preserves backend sort order
   segments: Segment[];
   isLoadingSegments: boolean;

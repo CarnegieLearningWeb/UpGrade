@@ -1,12 +1,12 @@
-import { initialRootBatchState } from '../../batch-actions/batch-actions.models';
-import { withRootBatch } from '../../batch-actions/batch-actions.store';
+import { initialRootBatchDeleteState } from '../../batch-actions/batch-actions.models';
+import { withRootBatchDelete } from '../../batch-actions/batch-actions.store';
 import { createReducer, Action, on } from '@ngrx/store';
 import { FeatureFlagState } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
 import { FLAG_SEARCH_KEY, FLAG_SORT_KEY, SORT_AS_DIRECTION } from 'upgrade_types';
 
 export const initialState: FeatureFlagState = {
-  rootBatch: initialRootBatchState,
+  rootBatch: initialRootBatchDeleteState,
   // List page state
   featureFlags: [],
   isLoadingFeatureFlags: false,
@@ -396,7 +396,7 @@ const reducer = createReducer(
   }))
 );
 
-const batchReducer = withRootBatch(reducer, initialState, {
+const batchReducer = withRootBatchDelete(reducer, initialState, {
   entity: 'flags',
   actions: FeatureFlagsActions.batchActions,
   rowsKey: 'featureFlags',

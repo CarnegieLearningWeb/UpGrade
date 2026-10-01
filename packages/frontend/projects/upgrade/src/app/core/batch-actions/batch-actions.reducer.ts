@@ -1,9 +1,14 @@
 import { Action } from '@ngrx/store';
 import { BatchDeleteEntity } from 'upgrade_types';
 import * as auth from '../auth/store/auth.actions';
-import { RootBatchActions } from './batch-actions.actions';
-import { RootBatchState, RootSelectionItem, initialRootBatchState, isBatchBusy } from './batch-actions.models';
-import { confirmedRemovedIds, selectionView } from './batch-actions.helpers';
+import { RootBatchDeleteActions } from './batch-actions.actions';
+import {
+  RootBatchDeleteState,
+  RootSelectionItem,
+  initialRootBatchDeleteState,
+  isBatchDeleteBusy,
+} from './batch-actions.models';
+import { confirmedRemovedIds, batchDeleteSelectionView } from './batch-actions.helpers';
 
 function matches<C extends { type: string; (...args: any[]): Action }>(
   action: Action,
@@ -12,11 +17,11 @@ function matches<C extends { type: string; (...args: any[]): Action }>(
   return action.type === creator.type;
 }
 
-function invalidateSelection(state: RootBatchState): RootBatchState {
+function invalidateSelection(state: RootBatchDeleteState): RootBatchDeleteState {
   return { ...state, confirmation: null };
 }
 
-function removeConfirmed(state: RootBatchState, ids: string[]): RootBatchState {
+function removeConfirmed(state: RootBatchDeleteState, ids: string[]): RootBatchDeleteState {
   if (!ids.length) return state;
   const removed = new Set(ids);
   return {
@@ -28,10 +33,10 @@ function removeConfirmed(state: RootBatchState, ids: string[]): RootBatchState {
 }
 
 export function receiveListRows(
-  state: RootBatchState,
+  state: RootBatchDeleteState,
   items: RootSelectionItem[],
   fromStarting: boolean
-): RootBatchState {
+): RootBatchDeleteState {
   const removed = new Set(state.removedIds);
   const rows = items.filter((item) => !removed.has(item.id));
   return {
@@ -42,21 +47,21 @@ export function receiveListRows(
   };
 }
 
-export function reduceRootBatch(
-  state: RootBatchState,
+export function reduceRootBatchDelete(
+  state: RootBatchDeleteState,
   action: Action,
-  actions: RootBatchActions,
+  actions: RootBatchDeleteActions,
   entity: BatchDeleteEntity
-): RootBatchState {
+): RootBatchDeleteState {
   if (matches(action, auth.actionLogoutStart) || matches(action, auth.actionLogoutSuccess))
-    return initialRootBatchState;
+    return initialRootBatchDeleteState;
   if (
     matches(action, auth.actionSetUserInfo) ||
     matches(action, auth.actionSetUserInfoSuccess) ||
     matches(action, auth.actionLoginSuccess)
   ) {
     const email = action.user?.email || null;
-    return state.userEmail === email ? state : { ...initialRootBatchState, userEmail: email };
+    return state.userEmail === email ? state : { ...initialRootBatchDeleteState, userEmail: email };
   }
   if (matches(action, actions.listRequested))
     return {
@@ -73,7 +78,7 @@ export function reduceRootBatch(
   if (matches(action, actions.rootPageLeft))
     return { ...invalidateSelection(state), selectedById: {}, listRequestId: null, listLoading: false };
   if (matches(action, actions.toggleHeader) || matches(action, actions.toggleRow)) {
-    if (isBatchBusy(state)) return state;
+    if (isBatchDeleteBusy(state)) return state;
     let selectedById = { ...state.selectedById };
     if (matches(action, actions.toggleHeader) && Object.keys(selectedById).length) {
       selectedById = {};
@@ -94,7 +99,7 @@ export function reduceRootBatch(
     return { ...invalidateSelection(state), selectedById };
   }
   if (matches(action, actions.prepareConfirmation)) {
-    const selection = selectionView(state, entity);
+    const selection = batchDeleteSelectionView(state, entity);
     if (state.confirmation || !selection.canRequestConfirmation) return state;
     // Use retained row metadata, including hidden selections. UI availability is based on this cached data.
     return {
@@ -106,10 +111,10 @@ export function reduceRootBatch(
     };
   }
   if (matches(action, actions.dismissConfirmation))
-    return isBatchBusy(state) ? state : { ...state, confirmation: null };
+    return isBatchDeleteBusy(state) ? state : { ...state, confirmation: null };
   if (matches(action, actions.batchDeleteRequested)) {
     const snapshot = state.confirmation;
-    if (isBatchBusy(state) || !snapshot || snapshot.operationId !== action.snapshot.operationId) return state;
+    if (isBatchDeleteBusy(state) || !snapshot || snapshot.operationId !== action.snapshot.operationId) return state;
     return {
       ...state,
       listRequestId: null,

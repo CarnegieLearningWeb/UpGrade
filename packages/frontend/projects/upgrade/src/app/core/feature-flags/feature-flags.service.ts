@@ -1,4 +1,4 @@
-import { createBatchFacade } from '../batch-actions/batch-actions.facade';
+import { createBatchDeleteFacade } from '../batch-actions/batch-actions.facade';
 import { batchActions } from './store/feature-flags.actions';
 import { selectRootBatch } from './store/feature-flags.selectors';
 import { Injectable } from '@angular/core';
@@ -54,7 +54,7 @@ import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable()
 export class FeatureFlagsService {
-  readonly batch = createBatchFacade(this.store$, 'flags', batchActions, selectRootBatch, selectAllFeatureFlags);
+  readonly batch = createBatchDeleteFacade(this.store$, 'flags', batchActions, selectRootBatch, selectAllFeatureFlags);
 
   constructor(private store$: Store<AppState>, private localStorageService: LocalStorageService) {}
 

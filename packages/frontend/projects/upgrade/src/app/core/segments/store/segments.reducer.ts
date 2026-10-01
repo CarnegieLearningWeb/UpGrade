@@ -1,5 +1,5 @@
-import { initialRootBatchState } from '../../batch-actions/batch-actions.models';
-import { withRootBatch } from '../../batch-actions/batch-actions.store';
+import { initialRootBatchDeleteState } from '../../batch-actions/batch-actions.models';
+import { withRootBatchDelete } from '../../batch-actions/batch-actions.store';
 import { createReducer, Action, on } from '@ngrx/store';
 import { SegmentState, GlobalSegmentState } from './segments.model';
 import * as SegmentsActions from './segments.actions';
@@ -10,7 +10,7 @@ import {
 } from '../../../../../../../../types/src/Experiment/enums';
 
 export const initialState: SegmentState = {
-  rootBatch: initialRootBatchState,
+  rootBatch: initialRootBatchDeleteState,
   // List page data - plain array preserves backend sort order
   segments: [],
   isLoadingSegments: false,
@@ -190,7 +190,7 @@ const reducer = createReducer(
   }))
 );
 
-const batchReducer = withRootBatch(reducer, initialState, {
+const batchReducer = withRootBatchDelete(reducer, initialState, {
   entity: 'segments',
   actions: SegmentsActions.batchActions,
   rowsKey: 'segments',

@@ -2,7 +2,7 @@ import { createAction, props } from '@ngrx/store';
 import { BatchDeleteResult } from 'upgrade_types';
 import { BatchDeleteSnapshot, RootSelectionItem } from './batch-actions.models';
 
-export function createBatchActions(source: string) {
+export function createBatchDeleteActions(source: string) {
   const prefix = `[${source} Batch]`;
   return {
     toggleRow: createAction(`${prefix} Toggle Row`, props<{ item: RootSelectionItem }>()),
@@ -25,4 +25,4 @@ export function createBatchActions(source: string) {
   };
 }
 
-export type RootBatchActions = ReturnType<typeof createBatchActions>;
+export type RootBatchDeleteActions = ReturnType<typeof createBatchDeleteActions>;

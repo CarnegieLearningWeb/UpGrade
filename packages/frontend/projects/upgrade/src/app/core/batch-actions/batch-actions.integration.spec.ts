@@ -30,8 +30,8 @@ import { SegmentsEffects } from '../segments/store/segments.effects';
 import { SegmentsService } from '../segments/segments.service';
 import { SegmentRootSectionCardTableComponent } from '../../features/dashboard/segments/pages/segment-root-page/segment-root-page-content/segment-root-section-card/segment-root-section-card-table/segment-root-section-card-table.component';
 import { actionLogoutStart, actionSetUserInfo } from '../auth/store/auth.actions';
-import { batchResultCounts, selectionItem, selectionView } from './batch-actions.helpers';
-import { RootBatchState, newBatchRequestId } from './batch-actions.models';
+import { batchResultCounts, selectionItem, batchDeleteSelectionView } from './batch-actions.helpers';
+import { RootBatchDeleteState, newBatchRequestId } from './batch-actions.models';
 
 const fixtures = [
   {
@@ -83,7 +83,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     state: config.entity === 'experiments' ? EXPERIMENT_STATE.INACTIVE : undefined,
     status: config.entity === 'segments' ? SEGMENT_STATUS.UNUSED : FEATURE_FLAG_STATUS.DISABLED,
   }));
-  const batch = (): RootBatchState => state[config.key].rootBatch;
+  const batch = (): RootBatchDeleteState => state[config.key].rootBatch;
   const currentRows = () => state[config.key][config.entity === 'flags' ? 'featureFlags' : config.entity];
   const page = (items = rows) =>
     config.entity === 'segments'
@@ -233,7 +233,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     selectRows(2);
     data[config.fetchMethod].mockReturnValueOnce(of(page([rows[0]])));
     store.dispatch(config.fetch({ fromStarting: true }));
-    expect(selectionView(batch(), config.entity)).toMatchObject({
+    expect(batchDeleteSelectionView(batch(), config.entity)).toMatchObject({
       selectedCount: 2,
       checked: true,
       indeterminate: false,
@@ -241,7 +241,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     store.dispatch(actions.toggleHeader({ items: [selectionItem(rows[0])] }));
     expect(Object.keys(batch().selectedById)).toEqual([]);
     store.dispatch(config.actions.actionSetSearchString({ searchString: 'replacement query' }));
-    expect(selectionView(batch(), config.entity).canToggleHeader).toBe(false);
+    expect(batchDeleteSelectionView(batch(), config.entity).canToggleHeader).toBe(false);
     store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }));
     expect(Object.keys(batch().selectedById)).toEqual([]);
   });
@@ -274,7 +274,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     store.dispatch(actions.toggleRow({ item: selectionItem(rows[0]) }));
     expect(Object.keys(batch().selectedById)).toEqual([rows[1].id]);
     store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }));
-    expect(selectionView(batch(), config.entity).canToggleHeader).toBe(true);
+    expect(batchDeleteSelectionView(batch(), config.entity).canToggleHeader).toBe(true);
     store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }));
     expect(Object.keys(batch().selectedById)).toEqual(rows.map(({ id }) => id));
     expect(data[config.fetchMethod]).toHaveBeenCalledTimes(2);
@@ -293,14 +293,14 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     store.dispatch(config.fetch({ fromStarting: false }));
     expect(data[config.fetchMethod]).toHaveBeenCalledTimes(fetchCount);
     expect(nextPage.observed).toBe(true);
-    expect(selectionView(batch(), config.entity).canToggleHeader).toBe(true);
+    expect(batchDeleteSelectionView(batch(), config.entity).canToggleHeader).toBe(true);
     store.dispatch(actions.toggleHeader({ items: currentRows().map(selectionItem) }));
     expect(Object.keys(batch().selectedById)).toEqual(rows.slice(0, 2).map(({ id }) => id));
     nextPage.next({ ...page(rows.slice(1)), total: 3 });
     nextPage.complete();
     expect(batch().loadedIds).toHaveLength(3);
     expect(currentRows()).toHaveLength(3);
-    expect(selectionView(batch(), config.entity)).toMatchObject({
+    expect(batchDeleteSelectionView(batch(), config.entity)).toMatchObject({
       selectedCount: 2,
       checked: false,
       indeterminate: true,
@@ -344,7 +344,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     const snapshot = prepare();
     expect(Object.keys(batch().selectedById)).toHaveLength(3);
     expect(batch().selectedById[blocked.id]).toEqual(selectionItem(rows[2]));
-    expect(selectionView(batch(), config.entity).canRequestConfirmation).toBe(true);
+    expect(batchDeleteSelectionView(batch(), config.entity).canRequestConfirmation).toBe(true);
 
     store.dispatch(actions.batchDeleteRequested({ snapshot }));
     expect(data.batchDelete).toHaveBeenCalledWith(rows.map(({ id }) => id));
@@ -411,7 +411,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(notifications.showWarning).not.toHaveBeenCalled();
     expect(Object.keys(batch().selectedById)).toEqual(rows.map(({ id }) => id));
     expect(currentRows()).toEqual(rows);
-    expect(selectionView(batch(), config.entity).busy).toBe(false);
+    expect(batchDeleteSelectionView(batch(), config.entity).busy).toBe(false);
   });
 
   it('freezes the request, rejects duplicate submits, and preserves failures while refreshing the current query', () => {
@@ -529,7 +529,11 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     const oldSuccess = events.find(
       (action: any) => action.batchListRequestId && action.type.includes('Success')
     ) as any;
+    const completedState = state[config.key];
     store.dispatch({ ...oldSuccess, batchListRequestId: oldRequestId });
+    expect(state[config.key]).toBe(completedState);
+    store.dispatch({ type: '[Test] Unrelated action after deletion' });
+    expect(state[config.key]).toBe(completedState);
     expect(currentRows().some((row) => row.id === rows[0].id)).toBe(false);
     expect(state.experiments.allExperimentNames).toEqual(
       config.entity === 'experiments' ? options.slice(count) : options
@@ -717,7 +721,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(batch().loadedIds).toEqual(currentRows().map(({ id }) => id));
     store.dispatch(actions.toggleRow({ item: selectionItem(rows[1]) }));
     store.dispatch(actions.toggleHeader({ items: currentRows().map(selectionItem) }));
-    expect(selectionView(batch(), config.entity)).toMatchObject({ checked: true, indeterminate: false });
+    expect(batchDeleteSelectionView(batch(), config.entity)).toMatchObject({ checked: true, indeterminate: false });
   });
 
   it('retains an unknown item after refreshing the list and reports the confirmed results once', () => {
@@ -736,7 +740,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(batch().operation.status).toBe('complete');
     expect(Object.keys(batch().selectedById)).toEqual([rows[1].id, rows[2].id]);
     expect(batchResultCounts(batch())).toMatchObject({ deleted: 1, absent: 0, uncertain: true, notAttempted: 1 });
-    expect(selectionView(batch(), config.entity).busy).toBe(false);
+    expect(batchDeleteSelectionView(batch(), config.entity).busy).toBe(false);
     const noun = { experiments: 'experiment', flags: 'feature flag', segments: 'segment' }[config.entity];
     expect(notifications.showWarning).toHaveBeenCalledWith(
       `1 ${noun} deleted. 1 item was not attempted. Deletion could not be confirmed for some items.`
@@ -756,7 +760,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(batch().operation.result.results.every((result) => result.outcome === 'unknown')).toBe(true);
     expect(Object.keys(batch().selectedById)).toHaveLength(3);
     expect(batch().operation.status).toBe('complete');
-    expect(selectionView(batch(), config.entity).busy).toBe(false);
+    expect(batchDeleteSelectionView(batch(), config.entity).busy).toBe(false);
     expect(data.batchDelete).toHaveBeenCalledTimes(1);
     expect(notifications.showSuccess).not.toHaveBeenCalled();
     expect(notifications.showWarning).not.toHaveBeenCalled();
