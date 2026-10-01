@@ -1,5 +1,4 @@
 import { Observable } from 'rxjs';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import {
   ChangeDetectionStrategy,
@@ -23,7 +22,11 @@ import { MatTableModule } from '@angular/material/table';
 import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
-import { CommonStatusIndicatorChipComponent, CommonTagListComponent } from '@shared-component-lib';
+import {
+  CommonSelectionCheckboxComponent,
+  CommonStatusIndicatorChipComponent,
+  CommonTagListComponent,
+} from '@shared-component-lib';
 import { ExperimentService } from '../../../../../../../../core/experiments/experiments.service';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { EXPERIMENT_STATE, FILTER_MODE, EXPERIMENT_SEARCH_KEY } from 'upgrade_types';
@@ -32,7 +35,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 @Component({
   selector: 'app-experiment-root-section-card-table',
   imports: [
-    MatCheckboxModule,
+    CommonSelectionCheckboxComponent,
     MatTableModule,
     AsyncPipe,
     SharedModule,

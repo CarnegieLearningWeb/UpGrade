@@ -19,7 +19,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { StratificationFactorsService } from '../../core/stratification-factors/stratification-factors.service';
 import { DialogService } from '../../shared/services/common-dialog.service';
 import { createBatchDeleteFacade } from '../../core/batch-actions/batch-actions.facade';
-import { RootBatchActionsDirective } from '../../shared/directives/root-batch-actions.directive';
+import { RootBatchDeleteDirective } from '../../shared/directives/root-batch-delete.directive';
 import { actionSetUserInfo } from '../../core/auth/store/auth.actions';
 import { experimentsReducer } from '../../core/experiments/store/experiments.reducer';
 import { featureFlagsReducer } from '../../core/feature-flags/store/feature-flags.reducer';
@@ -211,6 +211,11 @@ describe.each(cases)('$entity root batch UI', (config) => {
     expect(nameHeader.querySelector('input[type=checkbox]')).toBeNull();
     expect(document.getElementById(sortButton.getAttribute('aria-describedby')).textContent).toBe('Sort by Name');
 
+    const table = nameHeader.closest('table');
+    const click = jest.fn();
+    const keydown = jest.fn();
+    table.addEventListener('click', click);
+    table.addEventListener('keydown', keydown);
     const input = checkboxes()[1];
     expect(input.getAttribute('aria-label')).toContain('Alpha');
     input.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
@@ -225,6 +230,10 @@ describe.each(cases)('$entity root batch UI', (config) => {
     headerCheckbox.click();
     fixture.detectChanges();
     expect(service.setSortKey).not.toHaveBeenCalled();
+    expect(click).not.toHaveBeenCalled();
+    expect(keydown).not.toHaveBeenCalled();
+    table.removeEventListener('click', click);
+    table.removeEventListener('keydown', keydown);
 
     nameHeader.click();
     fixture.detectChanges();
@@ -248,8 +257,11 @@ describe.each(cases)('$entity root batch UI', (config) => {
   it('clears a mixed header visually and keeps subsequent select-all toggles synchronized', fakeAsync(() => {
     selectFirst();
     const header = checkboxes()[0];
+    const tooltip = fixture.debugElement.query(By.css('th.batch-select-column mat-checkbox')).injector.get(MatTooltip);
     expect(header.indeterminate).toBe(true);
     expect(header.getAttribute('aria-label')).toBe('Clear all selections');
+    expect(tooltip.message).toBe('Clear all selections');
+    expect(tooltip.position).toBe('above');
 
     header.click();
     fixture.detectChanges();
@@ -259,6 +271,7 @@ describe.each(cases)('$entity root batch UI', (config) => {
     expect(header.checked).toBe(false);
     expect(header.indeterminate).toBe(false);
     expect(header.getAttribute('aria-label')).toBe('Select all loaded items');
+    expect(tooltip.message).toBe('Select all loaded items');
 
     header.click();
     fixture.detectChanges();
@@ -347,7 +360,7 @@ describe.each(cases)('$entity root batch UI', (config) => {
     fixture.detectChanges();
     expect(fixture.componentInstance.expandedTagsMap.has(rows[0].id)).toBe(false);
     expect(fixture.componentInstance.expandedTagsMap.has(rows[1].id)).toBe(true);
-    expect(fixture.debugElement.query(By.directive(RootBatchActionsDirective))).toBeTruthy();
+    expect(fixture.debugElement.query(By.directive(RootBatchDeleteDirective))).toBeTruthy();
   });
 
   it('clears selection on leaving the root page and starts empty when returning', () => {

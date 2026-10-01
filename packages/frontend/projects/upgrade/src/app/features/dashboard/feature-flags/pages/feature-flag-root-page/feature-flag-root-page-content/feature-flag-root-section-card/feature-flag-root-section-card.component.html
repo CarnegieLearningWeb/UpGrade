@@ -1,9 +1,9 @@
 <app-common-section-card
-  appRootBatchActions
+  appRootBatchDelete
   [batchFacade]="batch"
   batchEntity="flags"
   [batchExpandedTags]="expandedTagsMap"
-  #batchUi="rootBatchActions"
+  #batchUi="rootBatchDelete"
 >
   @let batchView = (batchUi.view$ | async);
   <!-- header-left -->

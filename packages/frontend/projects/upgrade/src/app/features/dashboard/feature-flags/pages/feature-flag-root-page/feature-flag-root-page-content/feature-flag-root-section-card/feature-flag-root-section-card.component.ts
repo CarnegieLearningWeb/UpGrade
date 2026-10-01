@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { RootBatchActionsDirective } from '../../../../../../../shared/directives/root-batch-actions.directive';
+import { RootBatchDeleteDirective } from '../../../../../../../shared/directives/root-batch-delete.directive';
 import {
   CommonSectionCardComponent,
   CommonSectionCardSearchHeaderComponent,
@@ -25,7 +25,7 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 @Component({
   selector: 'app-feature-flag-root-section-card',
   imports: [
-    RootBatchActionsDirective,
+    RootBatchDeleteDirective,
     CommonSectionCardComponent,
     CommonSectionCardSearchHeaderComponent,
     CommonSectionCardActionButtonsComponent,
@@ -42,7 +42,7 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 export class FeatureFlagRootSectionCardComponent {
   permissions$: Observable<UserPermission>;
   readonly batch = this.featureFlagService.batch;
-  @ViewChild(RootBatchActionsDirective) batchUi: RootBatchActionsDirective;
+  @ViewChild(RootBatchDeleteDirective) batchUi: RootBatchDeleteDirective;
 
   featureFlags$: Observable<FeatureFlag[]> = this.featureFlagService.featureFlags$;
   isLoadingFeatureFlags$ = this.featureFlagService.isLoadingFeatureFlags$;

@@ -20,38 +20,29 @@
     <ng-container matColumnDef="select">
       <th mat-header-cell *matHeaderCellDef class="batch-select-column">
         <!-- Any selection makes the next click clear; indeterminate supplies the mixed appearance. -->
-        <mat-checkbox
+        <app-common-selection-checkbox
           class="batch-checkbox"
-          [disableRipple]="true"
-          color="primary"
           [checked]="!!selection?.selectedCount"
           [indeterminate]="selection?.indeterminate"
           [disabled]="!selection?.canToggleHeader"
-          [aria-label]="
+          [ariaLabel]="
             (selection?.selectedCount ? 'batch-delete.selection.clear' : 'batch-delete.selection.select-loaded')
               | translate
           "
-          matTooltipPosition="above"
-          [matTooltip]="
+          [tooltip]="
             (selection?.selectedCount ? 'batch-delete.selection.clear' : 'batch-delete.selection.select-loaded')
               | translate
           "
-          (click)="$event.stopPropagation()"
-          (keydown)="$event.stopPropagation()"
-          (change)="batch.toggleHeader()"
+          (toggle)="batch.toggleHeader()"
         />
       </th>
       <td mat-cell *matCellDef="let experiment" class="batch-select-column">
-        <mat-checkbox
+        <app-common-selection-checkbox
           class="batch-checkbox"
-          [disableRipple]="true"
-          color="primary"
           [checked]="!!batchState?.selectedById[experiment.id]"
           [disabled]="selection?.busy || !selection?.loadedIds.has(experiment.id)"
-          [aria-label]="'batch-delete.selection.experiments.row' | translate : { name: experiment.name }"
-          (click)="$event.stopPropagation()"
-          (keydown)="$event.stopPropagation()"
-          (change)="batch.toggleRow(experiment)"
+          [ariaLabel]="'batch-delete.selection.experiments.row' | translate : { name: experiment.name }"
+          (toggle)="batch.toggleRow(experiment)"
         />
       </td>
     </ng-container>

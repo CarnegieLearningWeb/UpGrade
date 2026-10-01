@@ -8,7 +8,7 @@ import { RootBatchDeleteState } from '../../core/batch-actions/batch-actions.mod
 import { DialogService } from '../services/common-dialog.service';
 import { CommonSimpleTextValidatedConfirmationModalComponent } from '../../shared-standalone-component-lib/components/common-simple-text-validated-confirmation-modal/common-simple-text-validated-confirmation-modal.component';
 
-export function rootBatchView(state: RootBatchDeleteState, entity: BatchDeleteEntity) {
+export function rootBatchDeleteView(state: RootBatchDeleteState, entity: BatchDeleteEntity) {
   const selection = batchDeleteSelectionView(state, entity);
   const messageKey = !selection.busy && selection.reasonCode ? `batch-delete.reason.${selection.reasonCode}` : '';
   return {
@@ -25,22 +25,22 @@ export function rootBatchView(state: RootBatchDeleteState, entity: BatchDeleteEn
   };
 }
 
-export type RootBatchView = ReturnType<typeof rootBatchView>;
+export type RootBatchDeleteView = ReturnType<typeof rootBatchDeleteView>;
 
 /** Connect root-card controls to one confirmation dialog without owning the deletion request. */
-@Directive({ selector: '[appRootBatchActions]', exportAs: 'rootBatchActions' })
-export class RootBatchActionsDirective implements OnInit, OnDestroy {
+@Directive({ selector: '[appRootBatchDelete]', exportAs: 'rootBatchDelete' })
+export class RootBatchDeleteDirective implements OnInit, OnDestroy {
   @Input() batchFacade: BatchDeleteFacade;
   @Input() batchEntity: BatchDeleteEntity;
   @Input() batchExpandedTags: Map<string, boolean>;
-  view$: Observable<RootBatchView>;
+  view$: Observable<RootBatchDeleteView>;
   private subscriptions = new Subscription();
   private dialogRef?: MatDialogRef<CommonSimpleTextValidatedConfirmationModalComponent, boolean>;
   constructor(private dialogs: DialogService) {}
 
   ngOnInit() {
     this.view$ = this.batchFacade.state$.pipe(
-      map((state) => rootBatchView(state, this.batchEntity)),
+      map((state) => rootBatchDeleteView(state, this.batchEntity)),
       shareReplay({ bufferSize: 1, refCount: true })
     );
     this.subscriptions.add(

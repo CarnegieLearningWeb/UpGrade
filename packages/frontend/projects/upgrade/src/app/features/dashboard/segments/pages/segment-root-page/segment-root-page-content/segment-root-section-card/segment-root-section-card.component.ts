@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { RootBatchActionsDirective } from '../../../../../../../shared/directives/root-batch-actions.directive';
+import { RootBatchDeleteDirective } from '../../../../../../../shared/directives/root-batch-delete.directive';
 import {
   CommonSectionCardComponent,
   CommonSectionCardSearchHeaderComponent,
@@ -22,7 +22,7 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 @Component({
   selector: 'app-segment-root-section-card',
   imports: [
-    RootBatchActionsDirective,
+    RootBatchDeleteDirective,
     CommonSectionCardComponent,
     CommonSectionCardSearchHeaderComponent,
     CommonSectionCardActionButtonsComponent,
@@ -40,7 +40,7 @@ import { AuthService } from '../../../../../../../core/auth/auth.service';
 export class SegmentRootSectionCardComponent {
   permissions$: Observable<UserPermission>;
   readonly batch = this.segmentsService.batch;
-  @ViewChild(RootBatchActionsDirective) batchUi: RootBatchActionsDirective;
+  @ViewChild(RootBatchDeleteDirective) batchUi: RootBatchDeleteDirective;
 
   segments$ = this.segmentsService.selectAllSegments$;
   isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
