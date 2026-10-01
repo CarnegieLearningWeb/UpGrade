@@ -6,7 +6,7 @@ import {
   SEGMENT_STATUS,
 } from 'upgrade_types';
 import { createBatchDeleteActions } from './batch-actions.actions';
-import { localDeletionReason, batchDeleteSelectionView, validateBatchResponse } from './batch-actions.helpers';
+import { localDeletionReason, batchDeleteSelectionView, validateBatchDeleteResponse } from './batch-actions.helpers';
 import {
   DeletionEligibilityReasonCode,
   RootBatchDeleteState,
@@ -103,14 +103,14 @@ describe('Root selection rules', () => {
         { id: 'a', outcome: 'deleted' },
       ],
     };
-    expect(validateBatchResponse(complete, ['a', 'b'])).toBe(complete);
-    expect(() => validateBatchResponse({ results: [{ id: 'a', outcome: 'deleted' }] }, ['a', 'b'])).toThrow();
+    expect(validateBatchDeleteResponse(complete, ['a', 'b'])).toBe(complete);
+    expect(() => validateBatchDeleteResponse({ results: [{ id: 'a', outcome: 'deleted' }] }, ['a', 'b'])).toThrow();
     for (const returnedIds of [
       ['a', 'a'],
       ['a', 'unexpected'],
     ]) {
       expect(() =>
-        validateBatchResponse({ results: returnedIds.map((id) => ({ id, outcome: 'deleted' })) }, ['a', 'b'])
+        validateBatchDeleteResponse({ results: returnedIds.map((id) => ({ id, outcome: 'deleted' })) }, ['a', 'b'])
       ).toThrow();
     }
   });

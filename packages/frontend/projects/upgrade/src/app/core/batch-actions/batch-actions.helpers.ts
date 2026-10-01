@@ -68,7 +68,7 @@ export const confirmedRemovedIds = (result?: BatchDeleteResult) =>
   result?.results.filter((item) => item.outcome === 'deleted' || item.outcome === 'not_found').map((item) => item.id) ||
   [];
 
-export function validateBatchResponse(result: BatchDeleteResult, ids: string[]): BatchDeleteResult {
+export function validateBatchDeleteResponse(result: BatchDeleteResult, ids: string[]): BatchDeleteResult {
   const outcomes = ['deleted', 'not_found', 'failed', 'unknown', 'not_attempted'];
   if (!result || !Array.isArray(result.results) || result.results.length !== ids.length) {
     throw new Error('Incomplete batch deletion response');
@@ -84,7 +84,7 @@ export function validateBatchResponse(result: BatchDeleteResult, ids: string[]):
   return result;
 }
 
-export function batchResultCounts(state: RootBatchDeleteState) {
+export function batchDeleteResultCounts(state: RootBatchDeleteState) {
   const results = state.operation?.result?.results || [];
   return {
     deleted: results.filter((item) => item.outcome === 'deleted').length,
@@ -98,9 +98,9 @@ export function batchResultCounts(state: RootBatchDeleteState) {
 }
 
 /** One existing snackbar, with only the counts that apply to this result. */
-export function batchResultMessage(
+export function batchDeleteResultMessage(
   entity: BatchDeleteEntity,
-  counts: ReturnType<typeof batchResultCounts>,
+  counts: ReturnType<typeof batchDeleteResultCounts>,
   translate: (key: string, params?: Record<string, number>) => string
 ): string {
   const parts: string[] = [];

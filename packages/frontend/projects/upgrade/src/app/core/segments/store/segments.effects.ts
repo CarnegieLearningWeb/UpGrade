@@ -1,5 +1,8 @@
-import { batchDeleteEffect, batchFinishedEffect, trackedListRequest } from '../../batch-actions/batch-actions.effects';
-import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
+import {
+  batchDeleteEffect,
+  batchDeleteFinishedEffect,
+  trackedListRequest,
+} from '../../batch-actions/batch-actions.effects';
 import { selectRootBatch, selectSegmentsState } from './segments.selectors';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
@@ -29,17 +32,13 @@ export class SegmentsEffects {
       this.segmentsDataService
     )
   );
-  finishBatch$ = createEffect(() =>
-    batchFinishedEffect(
+  finishBatchDelete$ = createEffect(() =>
+    batchDeleteFinishedEffect(
       this.actions$,
       this.store$.pipe(select(selectRootBatch)),
       SegmentsActions.batchActions,
-      (state) => {
-        const counts = batchResultCounts(state);
-        const message = batchResultMessage('segments', counts, (key, params) => this.translate.instant(key, params));
-        if (!counts.hasErrors) this.notificationService.showSuccess(message);
-        else if (counts.deleted || counts.absent) this.notificationService.showWarning(message);
-        else this.notificationService.showError(message);
+      { entity: 'segments', translate: this.translate, service: this.notificationService },
+      () => {
         const pathname = (this.router.url || '').split('?')[0].split('#')[0];
         return [
           // Detail selectors share the rows array; replace it only while the root table is displayed.

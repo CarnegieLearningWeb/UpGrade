@@ -15,12 +15,16 @@ import {
 import * as experimentActions from '../experiments/store/experiments.actions';
 import * as flagActions from '../feature-flags/store/feature-flags.actions';
 import * as segmentActions from '../segments/store/segments.actions';
+import * as analysisActions from '../analysis/store/analysis.actions';
 import { experimentsReducer } from '../experiments/store/experiments.reducer';
 import { featureFlagsReducer } from '../feature-flags/store/feature-flags.reducer';
 import { segmentsReducer } from '../segments/store/segments.reducer';
 import { selectExperimentDetailsPageError, selectSelectedExperiment } from '../experiments/store/experiments.selectors';
 import { selectSegmentDetailsPageError, selectSelectedSegment } from '../segments/store/segments.selectors';
-import { selectFeatureFlagDetailsPageError } from '../feature-flags/store/feature-flags.selectors';
+import {
+  selectFeatureFlagDetailsPageError,
+  selectSelectedFeatureFlag,
+} from '../feature-flags/store/feature-flags.selectors';
 import { PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import { ExperimentEffects } from '../experiments/store/experiments.effects';
 import { FeatureFlagsEffects } from '../feature-flags/store/feature-flags.effects';
@@ -30,7 +34,7 @@ import { SegmentsEffects } from '../segments/store/segments.effects';
 import { SegmentsService } from '../segments/segments.service';
 import { SegmentRootSectionCardTableComponent } from '../../features/dashboard/segments/pages/segment-root-page/segment-root-page-content/segment-root-section-card/segment-root-section-card-table/segment-root-section-card-table.component';
 import { actionLogoutStart, actionSetUserInfo } from '../auth/store/auth.actions';
-import { batchResultCounts, selectionItem, batchDeleteSelectionView } from './batch-actions.helpers';
+import { batchDeleteResultCounts, selectionItem, batchDeleteSelectionView } from './batch-actions.helpers';
 import { RootBatchDeleteState, newBatchRequestId } from './batch-actions.models';
 
 const fixtures = [
@@ -365,7 +369,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     });
     expect(Object.keys(batch().selectedById)).toEqual([rows[1].id, rows[2].id]);
     expect(currentRows().map(({ id }) => id)).toEqual([rows[1].id, rows[2].id]);
-    expect(batchResultCounts(batch())).toMatchObject({ deleted: 0, absent: 1, failed: 1, notAttempted: 1 });
+    expect(batchDeleteResultCounts(batch())).toMatchObject({ deleted: 0, absent: 1, failed: 1, notAttempted: 1 });
     expect(notifications.showWarning).toHaveBeenCalledWith(
       '1 item was already absent. 1 item could not be deleted. 1 item was not attempted.'
     );
@@ -421,6 +425,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     store.dispatch(actions.batchDeleteRequested({ snapshot: { ...snapshot, operationId: 'duplicate' } }));
     store.dispatch(actions.toggleHeader({ items: rows.map(selectionItem) }));
     store.dispatch(config.actions.actionSetSearchString({ searchString: 'latest query' }));
+    router.url = `${config.rootPath}?view=all#table`;
     expect(data.batchDelete).toHaveBeenCalledTimes(1);
     expect(data.batchDelete).toHaveBeenCalledWith(rows.map((row) => row.id));
     response.next({
@@ -630,67 +635,74 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
-  if (config.entity !== 'flags') {
-    it.each(['deletion', 'refresh'])('preserves open details when leaving during %s', (pending) => {
-      selectRows(1);
-      const snapshot = prepare();
-      store.dispatch(actions.batchDeleteRequested({ snapshot }));
-      const pendingRefresh = new Subject<any>();
-      data[config.fetchMethod].mockReturnValue(pendingRefresh);
-      const result = { results: [{ id: rows[0].id, outcome: 'deleted' }] };
-      if (pending === 'refresh') {
-        response.next(result);
-        expect(pendingRefresh.observed).toBe(true);
-      }
+  it.each(['deletion', 'refresh'])('preserves open details when leaving during %s', (pending) => {
+    selectRows(1);
+    const snapshot = prepare();
+    store.dispatch(actions.batchDeleteRequested({ snapshot }));
+    const pendingRefresh = new Subject<any>();
+    data[config.fetchMethod].mockReturnValue(pendingRefresh);
+    const result = { results: [{ id: rows[0].id, outcome: 'deleted' }] };
+    if (pending === 'refresh') {
+      response.next(result);
+      expect(pendingRefresh.observed).toBe(true);
+    }
 
-      const viewed = { ...rows[2], description: 'Loaded detail' };
-      router.url = `${config.rootPath}/detail/${viewed.id}`;
-      store.dispatch(actions.rootPageLeft());
-      if (config.entity === 'experiments') {
-        store.dispatch(experimentActions.actionGetExperimentByIdSuccess({ experiment: viewed as any }));
-      } else {
-        store.dispatch(
-          segmentActions.actionGetSegmentByIdSuccess({
-            segment: viewed as any,
-            experimentSegmentInclusion: [],
-            experimentSegmentExclusion: [],
-            featureFlagSegmentInclusion: [],
-            featureFlagSegmentExclusion: [],
-            allParentSegments: [],
-          })
-        );
-      }
-      const selectedDetail = () =>
-        config.entity === 'experiments'
-          ? selectSelectedExperiment.projector(
-              { state: { params: { experimentId: viewed.id } } } as any,
-              state.experiments
-            )
-          : selectSelectedSegment.projector(
-              { state: { params: { segmentId: viewed.id } } } as any,
-              state.segments.segments
-            );
-      expect(selectedDetail()?.id).toBe(viewed.id);
-      if (pending === 'deletion') response.next(result);
-      pendingRefresh.next(page([rows[1]]));
-      pendingRefresh.complete();
-      expect(selectedDetail()?.id).toBe(viewed.id);
-      expect(batch().operation.status).toBe('complete');
-      expect(batch().removedIds).toContain(rows[0].id);
-      expect(batch().listLoading).toBe(false);
-      expect(state[config.key][config.loadingKey]).toBe(false);
-      expect(Object.keys(batch().selectedById)).toEqual([]);
-      expect(data[config.fetchMethod]).toHaveBeenCalledTimes(pending === 'refresh' ? 2 : 1);
-      expect(notifications.showSuccess).toHaveBeenCalledTimes(1);
-      expect(router.navigate).not.toHaveBeenCalled();
+    const viewed = { ...rows[2], description: 'Loaded detail' };
+    router.url = `${config.rootPath}/detail/${viewed.id}`;
+    store.dispatch(actions.rootPageLeft());
+    if (config.entity === 'experiments') {
+      store.dispatch(experimentActions.actionGetExperimentByIdSuccess({ experiment: viewed as any }));
+    } else if (config.entity === 'flags') {
+      store.dispatch(flagActions.actionFetchFeatureFlagByIdSuccess({ flag: viewed as any }));
+    } else {
+      store.dispatch(
+        segmentActions.actionGetSegmentByIdSuccess({
+          segment: viewed as any,
+          experimentSegmentInclusion: [],
+          experimentSegmentExclusion: [],
+          featureFlagSegmentInclusion: [],
+          featureFlagSegmentExclusion: [],
+          allParentSegments: [],
+        })
+      );
+    }
+    const selectedDetail = () =>
+      config.entity === 'experiments'
+        ? selectSelectedExperiment.projector(
+            { state: { params: { experimentId: viewed.id } } } as any,
+            state.experiments
+          )
+        : config.entity === 'flags'
+        ? selectSelectedFeatureFlag.projector({ state: { params: { flagId: viewed.id } } } as any, state.featureFlags)
+        : selectSelectedSegment.projector(
+            { state: { params: { segmentId: viewed.id } } } as any,
+            state.segments.segments
+          );
+    expect(selectedDetail()?.id).toBe(viewed.id);
+    if (pending === 'deletion') response.next(result);
+    pendingRefresh.next(page([rows[1]]));
+    pendingRefresh.complete();
+    expect(selectedDetail()?.id).toBe(viewed.id);
+    expect(batch().operation.status).toBe('complete');
+    expect(batch().removedIds).toContain(rows[0].id);
+    expect(batch().listLoading).toBe(false);
+    expect(state[config.key][config.loadingKey]).toBe(false);
+    expect(Object.keys(batch().selectedById)).toEqual([]);
+    expect(data[config.fetchMethod]).toHaveBeenCalledTimes(pending === 'refresh' ? 2 : 1);
+    expect(notifications.showSuccess).toHaveBeenCalledTimes(1);
+    expect(router.navigate).not.toHaveBeenCalled();
+    if (config.entity === 'experiments') {
+      expect(events).toEqual(
+        expect.arrayContaining([experimentActions.actionFetchAllDecisionPoints(), analysisActions.actionFetchMetrics()])
+      );
+    }
 
-      router.url = `${config.rootPath}?view=all#table`;
-      data[config.fetchMethod].mockReturnValue(of(page([rows[1], viewed])));
-      store.dispatch(config.fetch({ fromStarting: true }));
-      expect(currentRows().map(({ id }) => id)).toEqual([rows[1].id, viewed.id]);
-      expect(batch().loadedIds).toEqual([rows[1].id, viewed.id]);
-    });
-  }
+    router.url = `${config.rootPath}?view=all#table`;
+    data[config.fetchMethod].mockReturnValue(of(page([rows[1], viewed])));
+    store.dispatch(config.fetch({ fromStarting: true }));
+    expect(currentRows().map(({ id }) => id)).toEqual([rows[1].id, viewed.id]);
+    expect(batch().loadedIds).toEqual([rows[1].id, viewed.id]);
+  });
 
   it('keeps confirmed deletion when the post-commit cleanup or list refresh fails', () => {
     selectRows(1);
@@ -739,7 +751,7 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     });
     expect(batch().operation.status).toBe('complete');
     expect(Object.keys(batch().selectedById)).toEqual([rows[1].id, rows[2].id]);
-    expect(batchResultCounts(batch())).toMatchObject({ deleted: 1, absent: 0, uncertain: true, notAttempted: 1 });
+    expect(batchDeleteResultCounts(batch())).toMatchObject({ deleted: 1, absent: 0, uncertain: true, notAttempted: 1 });
     expect(batchDeleteSelectionView(batch(), config.entity).busy).toBe(false);
     const noun = { experiments: 'experiment', flags: 'feature flag', segments: 'segment' }[config.entity];
     expect(notifications.showWarning).toHaveBeenCalledWith(

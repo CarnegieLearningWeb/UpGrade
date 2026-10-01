@@ -1,4 +1,5 @@
 import { Action } from '@ngrx/store';
+import { TranslateService } from '@ngx-translate/core';
 import { Observable, concat, defer, of } from 'rxjs';
 import {
   catchError,
@@ -12,12 +13,17 @@ import {
   throwIfEmpty,
   withLatestFrom,
 } from 'rxjs/operators';
-import { BatchDeleteResult, DeletionReasonCode } from 'upgrade_types';
+import { BatchDeleteEntity, BatchDeleteResult, DeletionReasonCode } from 'upgrade_types';
+import { NotificationService } from '../notifications/notification.service';
 import { RootBatchDeleteActions } from './batch-actions.actions';
 import { RootBatchDeleteState, newBatchRequestId } from './batch-actions.models';
-import { validateBatchResponse } from './batch-actions.helpers';
+import {
+  batchDeleteResultCounts,
+  batchDeleteResultMessage,
+  validateBatchDeleteResponse,
+} from './batch-actions.helpers';
 
-interface BatchDataSource {
+interface BatchDeleteDataSource {
   batchDelete(ids: string[]): Observable<BatchDeleteResult>;
 }
 
@@ -25,7 +31,7 @@ export function batchDeleteEffect(
   events: Observable<Action>,
   state$: Observable<RootBatchDeleteState>,
   actions: RootBatchDeleteActions,
-  data: BatchDataSource
+  data: BatchDeleteDataSource
 ) {
   return events.pipe(
     filter((action) => action.type === actions.batchDeleteRequested.type),
@@ -44,7 +50,7 @@ export function batchDeleteEffect(
         map((result) =>
           actions.batchDeleteCompleted({
             operationId: snapshot.operationId,
-            result: validateBatchResponse(result, ids),
+            result: validateBatchDeleteResponse(result, ids),
           })
         ),
         catchError((error) =>
@@ -71,11 +77,12 @@ export function batchDeleteEffect(
   );
 }
 
-export function batchFinishedEffect(
+export function batchDeleteFinishedEffect(
   events: Observable<Action>,
   state$: Observable<RootBatchDeleteState>,
   actions: RootBatchDeleteActions,
-  finish: (state: RootBatchDeleteState) => Action[]
+  notification: { entity: BatchDeleteEntity; translate: TranslateService; service: NotificationService },
+  finish: (counts: ReturnType<typeof batchDeleteResultCounts>) => Action[]
 ) {
   return events.pipe(
     filter((action) =>
@@ -90,8 +97,18 @@ export function batchFinishedEffect(
     distinctUntilChanged(
       (previous, current) => previous[1].operation.snapshot.operationId === current[1].operation.snapshot.operationId
     ),
-    // HTTP failures already use the same error notification as single deletion. Do not refresh or notify twice.
-    switchMap(([, state]) => (state.operation.transportStatus !== undefined ? [] : finish(state)))
+    switchMap(([, state]) => {
+      // HTTP failures already use the same error notification as single deletion. Do not refresh or notify twice.
+      if (state.operation.transportStatus !== undefined) return [];
+      const counts = batchDeleteResultCounts(state);
+      const message = batchDeleteResultMessage(notification.entity, counts, (key, params) =>
+        notification.translate.instant(key, params)
+      );
+      if (!counts.hasErrors) notification.service.showSuccess(message);
+      else if (counts.deleted || counts.absent) notification.service.showWarning(message);
+      else notification.service.showError(message);
+      return finish(counts);
+    })
   );
 }
 

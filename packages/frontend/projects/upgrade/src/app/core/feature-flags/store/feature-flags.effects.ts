@@ -1,5 +1,8 @@
-import { batchDeleteEffect, batchFinishedEffect, trackedListRequest } from '../../batch-actions/batch-actions.effects';
-import { batchResultCounts, batchResultMessage } from '../../batch-actions/batch-actions.helpers';
+import {
+  batchDeleteEffect,
+  batchDeleteFinishedEffect,
+  trackedListRequest,
+} from '../../batch-actions/batch-actions.effects';
 import { selectRootBatch, selectFeatureFlagsState } from './feature-flags.selectors';
 import { FeatureFlagsDataService } from '../feature-flags.data.service';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
@@ -31,18 +34,17 @@ export class FeatureFlagsEffects {
       this.featureFlagsDataService
     )
   );
-  finishBatch$ = createEffect(() =>
-    batchFinishedEffect(
+  finishBatchDelete$ = createEffect(() =>
+    batchDeleteFinishedEffect(
       this.actions$,
       this.store$.pipe(select(selectRootBatch)),
       FeatureFlagsActions.batchActions,
-      (state) => {
-        const counts = batchResultCounts(state);
-        const message = batchResultMessage('flags', counts, (key, params) => this.translate.instant(key, params));
-        if (!counts.hasErrors) this.notificationService.showSuccess(message);
-        else if (counts.deleted || counts.absent) this.notificationService.showWarning(message);
-        else this.notificationService.showError(message);
-        return [FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting: true, batchRefresh: true })];
+      { entity: 'flags', translate: this.translate, service: this.notificationService },
+      () => {
+        const pathname = (this.router.url || '').split('?')[0].split('#')[0];
+        return pathname === '/featureflags'
+          ? [FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting: true, batchRefresh: true })]
+          : [];
       }
     )
   );
