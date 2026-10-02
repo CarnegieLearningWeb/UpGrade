@@ -37,6 +37,7 @@ import {
   EXPERIMENT_STATE,
   FILTER_MODE,
   MARKED_DECISION_POINT_STATUS,
+  SERVER_ERROR,
 } from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
@@ -2060,6 +2061,27 @@ describe('Experiment Assignment Service Test', () => {
       expect(result.isUserExcluded).toBe(false);
       expect(result.isGroupExcluded).toBe(false);
       expect(result.exclusionReason).toEqual([]);
+    });
+
+    it('should reject with INVALID_APP_CONTEXT/400 when no experiments exist and the context has no global-exclude segment', async () => {
+      const invalidContext = 'invalid-context';
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([]);
+      testedModule.segmentService.getGlobalExcludeSegmentByContext.withArgs(invalidContext).resolves(undefined);
+
+      await expect(
+        (testedModule as any).resolveExperimentForMarkPoint(
+          site,
+          target,
+          invalidContext,
+          undefined,
+          userDoc,
+          undefined,
+          loggerMock
+        )
+      ).rejects.toMatchObject({
+        type: SERVER_ERROR.INVALID_APP_CONTEXT,
+        httpCode: 400,
+      });
     });
 
     it('should return excluded flags and empty experiments when user is globally excluded', async () => {
