@@ -234,6 +234,9 @@ export class ExperimentAssignmentService {
       this.getActiveDecisionPoints(exp).some((p) => p.site === site && p.target === target)
     );
 
+    // Called first because it will throw with 400 if the context is invalid.
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
+
     if (allExperimentsAtDP.length === 0) {
       return {
         experiment: null,
@@ -243,8 +246,6 @@ export class ExperimentAssignmentService {
         exclusionReason: [],
       };
     }
-
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
 
     if (isUserExcluded || isGroupExcluded) {
       return { experiment: null, experimentId, isUserExcluded, isGroupExcluded, exclusionReason: [] };
