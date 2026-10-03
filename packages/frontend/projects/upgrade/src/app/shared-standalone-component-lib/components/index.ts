@@ -17,6 +17,7 @@ import { CommonSimpleTextValidatedConfirmationModalComponent } from './common-si
 import { CommonAuditLogTimelineComponent } from './common-audit-log-timeline/common-audit-log-timeline.component';
 import { CommonAuditLogDiffDisplayComponent } from './common-audit-log-timeline/common-audit-log-diff-display/common-audit-log-diff-display.component';
 import { CommonPageErrorComponent } from './common-page-error/common-page-error.component';
+import { CommonSelectionCheckboxComponent } from './common-selection-checkbox/common-selection-checkbox.component';
 
 export {
   CommonPageComponent,
@@ -38,4 +39,5 @@ export {
   CommonAuditLogTimelineComponent,
   CommonAuditLogDiffDisplayComponent,
   CommonPageErrorComponent,
+  CommonSelectionCheckboxComponent,
 };

@@ -29,7 +29,8 @@ describe('ExperimentController adaptive config wiring', () => {
       {} as any,
       {} as any,
       {} as any,
-      adaptiveExperimentConfigDispatcher
+      adaptiveExperimentConfigDispatcher,
+      {} as any
     );
   });
 

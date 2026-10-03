@@ -234,6 +234,7 @@ describe('Feature Flag Service Testing', () => {
             getFlagsForKeys: jest.fn().mockResolvedValue(mockFlagArr),
             getFlagsFromContext: jest.fn().mockResolvedValue(mockFlagArr),
             findOne: jest.fn().mockResolvedValue(mockFlag1),
+            findOneForDetails: jest.fn().mockResolvedValue(mockFlag1),
             findWithNames: jest.fn().mockResolvedValue(mockFlagArr),
             findOneById: jest.fn().mockResolvedValue(mockFlag1),
             count: jest.fn().mockResolvedValue(mockFlagArr.length),
