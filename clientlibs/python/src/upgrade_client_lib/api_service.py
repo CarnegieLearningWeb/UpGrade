@@ -20,6 +20,7 @@ from upgrade_client_lib.types.responses import (
 )
 
 _API_VERSION = "v6"
+_DEFAULT_TIMEOUT = httpx.Timeout(5.0)
 
 try:
     _CLIENT_VERSION = version("upgrade-client-lib")
@@ -43,12 +44,14 @@ class ApiService:
         context: str,
         token: str = "",
         client_session_id: str = "",
+        timeout: float | httpx.Timeout = _DEFAULT_TIMEOUT,
     ) -> None:
         self._host_url = host_url.rstrip("/")
         self._user_id = user_id
         self._context = context
         self._token = token
         self._client_session_id = client_session_id
+        self._timeout = timeout
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -79,25 +82,25 @@ class ApiService:
             )
 
     async def _post_async(self, path: str, body: dict[str, Any]) -> Any:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self._timeout) as client:
             response = await client.post(self._url(path), json=body, headers=self._headers())
         self._raise_for_status(response)
         return response.json()
 
     async def _patch_async(self, path: str, body: dict[str, Any]) -> Any:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=self._timeout) as client:
             response = await client.patch(self._url(path), json=body, headers=self._headers())
         self._raise_for_status(response)
         return response.json()
 
     def _post_sync(self, path: str, body: dict[str, Any]) -> Any:
-        with httpx.Client() as client:
+        with httpx.Client(timeout=self._timeout) as client:
             response = client.post(self._url(path), json=body, headers=self._headers())
         self._raise_for_status(response)
         return response.json()
 
     def _patch_sync(self, path: str, body: dict[str, Any]) -> Any:
-        with httpx.Client() as client:
+        with httpx.Client(timeout=self._timeout) as client:
             response = client.patch(self._url(path), json=body, headers=self._headers())
         self._raise_for_status(response)
         return response.json()
@@ -176,7 +179,7 @@ class ApiService:
         self,
         site: str,
         target: str | None,
-        condition_code: str,
+        condition_code: str | None,
         status: MarkedDecisionPointStatus,
         experiment_type: ExperimentType | None = None,
         experiment_id: str | None = None,
@@ -204,7 +207,7 @@ class ApiService:
         self,
         site: str,
         target: str | None,
-        condition_code: str,
+        condition_code: str | None,
         status: MarkedDecisionPointStatus,
         experiment_type: ExperimentType | None = None,
         experiment_id: str | None = None,
@@ -232,7 +235,7 @@ class ApiService:
     def _build_mark_body(
         site: str,
         target: str | None,
-        condition_code: str,
+        condition_code: str | None,
         status: MarkedDecisionPointStatus,
         experiment_type: ExperimentType | None,
         experiment_id: str | None,
