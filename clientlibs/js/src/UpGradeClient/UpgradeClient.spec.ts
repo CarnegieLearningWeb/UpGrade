@@ -9,6 +9,14 @@ const mockHttpClient = {
   doPatch: jest.fn(),
 };
 
+// jest.spyOn on a method that's already a mock (from a prior test) just returns that same mock,
+// call-history and all, rather than resetting it — so each test gets a genuinely fresh jest.fn().
+function mockApiServiceGetAllFeatureFlags(): jest.Mock {
+  const mockFn = jest.fn();
+  ApiService.prototype.getAllFeatureFlags = mockFn;
+  return mockFn;
+}
+
 describe('UpgradeClient', () => {
   let upgradeClient: UpgradeClient;
   beforeEach(() => {
@@ -121,94 +129,6 @@ describe('UpgradeClient', () => {
     });
   });
 
-  describe('#setFeatureFlagUserGroupsForSession', () => {
-    it('should call apiService "setFeatureFlagUserGroupsForSession" with valid feature flag options', () => {
-      const mockFeatureFlagOptions = {
-        groupsForSession: {
-          school: ['testSchool1', 'testSchool2'],
-          class: ['testClass1'],
-        },
-        includeStoredUserGroups: true,
-      };
-      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
-
-      upgradeClient.setFeatureFlagUserGroupsForSession(mockFeatureFlagOptions);
-
-      expect(ApiService.prototype.setFeatureFlagUserGroupsForSession).toHaveBeenCalledWith(
-        mockFeatureFlagOptions.groupsForSession,
-        mockFeatureFlagOptions.includeStoredUserGroups
-      );
-    });
-
-    it('should call apiService "setFeatureFlagUserGroupsForSession" with null options', () => {
-      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
-
-      upgradeClient.setFeatureFlagUserGroupsForSession(null);
-
-      expect(ApiService.prototype.setFeatureFlagUserGroupsForSession).toHaveBeenCalledWith(undefined, undefined);
-    });
-
-    it('should call apiService "setFeatureFlagUserGroupsForSession" with undefined options', () => {
-      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
-
-      upgradeClient.setFeatureFlagUserGroupsForSession(undefined);
-
-      expect(ApiService.prototype.setFeatureFlagUserGroupsForSession).toHaveBeenCalledWith(undefined, undefined);
-    });
-
-    it('should clear the cached feature flags', () => {
-      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
-      const clearFeatureFlags = jest.spyOn(DataService.prototype, 'clearFeatureFlags');
-
-      upgradeClient.setFeatureFlagUserGroupsForSession({
-        groupsForSession: { classId: ['classB'] },
-        includeStoredUserGroups: false,
-      });
-
-      expect(clearFeatureFlags).toHaveBeenCalled();
-      clearFeatureFlags.mockRestore();
-    });
-
-    it('should not clear the cached feature flags when the options are invalid', () => {
-      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
-      const clearFeatureFlags = jest.spyOn(DataService.prototype, 'clearFeatureFlags');
-
-      expect(() => {
-        upgradeClient.setFeatureFlagUserGroupsForSession({ groupsForSession: null, includeStoredUserGroups: false });
-      }).toThrow();
-
-      expect(clearFeatureFlags).not.toHaveBeenCalled();
-      clearFeatureFlags.mockRestore();
-    });
-
-    it('should cause the next getAllFeatureFlags call to refetch against the new groups', async () => {
-      // the real DataService cache is left unmocked here, since invalidating it is the behavior under test
-      ApiService.prototype.setFeatureFlagUserGroupsForSession = jest.fn();
-      const getAllFeatureFlags = jest
-        .spyOn(ApiService.prototype, 'getAllFeatureFlags')
-        .mockResolvedValue(['classAFlag']);
-
-      // baseline: the first call fetches and caches, the second is served from the cache
-      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classAFlag']);
-      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classAFlag']);
-      expect(getAllFeatureFlags).toHaveBeenCalledTimes(1);
-
-      getAllFeatureFlags.mockResolvedValue(['classBFlag']);
-      upgradeClient.setFeatureFlagUserGroupsForSession({
-        groupsForSession: { classId: ['classB'] },
-        includeStoredUserGroups: false,
-      });
-
-      // the cleared cache forces exactly one refetch, whose result becomes the new cached value
-      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classBFlag']);
-      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
-      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classBFlag']);
-      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
-
-      getAllFeatureFlags.mockRestore();
-    });
-  });
-
   describe('#getAllExperimentConditions', () => {
     it('should call apiService "getAllExperimentConditions" with no options', async () => {
       ApiService.prototype.getAllExperimentConditions = jest.fn();
@@ -266,35 +186,6 @@ describe('UpgradeClient', () => {
     });
   });
 
-  describe('#getAllFeatureFlags', () => {
-    it('should call apiService "getAllFeatureFlags" with no options', async () => {
-      ApiService.prototype.getAllFeatureFlags = jest.fn();
-      DataService.prototype.getFeatureFlags = jest.fn((): any => {
-        return null;
-      });
-      await upgradeClient.getAllFeatureFlags();
-      expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalled();
-    });
-    it('should not call apiService "getAllFeatureFlags" when there is cached data', async () => {
-      ApiService.prototype.getAllFeatureFlags = jest.fn();
-      DataService.prototype.getFeatureFlags = jest.fn((): any => {
-        return ['foo'];
-      });
-      upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
-      await upgradeClient.getAllFeatureFlags();
-      expect(ApiService.prototype.getAllFeatureFlags).not.toHaveBeenCalled();
-    });
-
-    it('should call apiService "getAllFeatureFlags" when there is cached data if ignoreCache is specified', async () => {
-      ApiService.prototype.getAllFeatureFlags = jest.fn();
-      DataService.prototype.getFeatureFlags = jest.fn((): any => {
-        return ['foo'];
-      });
-      upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
-      await upgradeClient.getAllFeatureFlags({ ignoreCache: true });
-      expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalled();
-    });
-  });
   describe('#markDecisionPoint', () => {
     beforeEach(() => {
       ApiService.prototype.markDecisionPoint = jest.fn().mockResolvedValue({});
@@ -354,67 +245,562 @@ describe('UpgradeClient', () => {
     });
   });
 
+  describe('feature flag group options', () => {
+    describe('constructor', () => {
+      it('accepts useSingleGroupSet via featureFlagGroupOptions', async () => {
+        mockApiServiceGetAllFeatureFlags().mockResolvedValue(['flag1']);
+
+        const client = new UpgradeClient('1234', 'test.com', 'testContext', {
+          httpClient: mockHttpClient,
+          featureFlagGroupOptions: { useSingleGroupSet: { groups: { classId: ['classA'] } } },
+        });
+
+        expect(await client.getAllFeatureFlags()).toEqual(['flag1']);
+      });
+
+      it('accepts useMultipleGroupSets via featureFlagGroupOptions', async () => {
+        mockApiServiceGetAllFeatureFlags().mockResolvedValue({
+          mainGroupset: ['flag1'],
+          subGroupsets: { sectionA: ['flag1'] },
+        });
+
+        const client = new UpgradeClient('1234', 'test.com', 'testContext', {
+          httpClient: mockHttpClient,
+          featureFlagGroupOptions: {
+            useMultipleGroupSets: {
+              mainGroupset: { groups: { schoolId: ['a'] } },
+              subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+            },
+          },
+        });
+
+        expect(await client.getAllFeatureFlags()).toEqual({
+          mainGroupset: ['flag1'],
+          subGroupsets: { sectionA: ['flag1'] },
+        });
+      });
+
+      it('still accepts the deprecated featureFlagUserGroupsForSession constructor option', async () => {
+        mockApiServiceGetAllFeatureFlags().mockResolvedValue(['flag1']);
+
+        const client = new UpgradeClient('1234', 'test.com', 'testContext', {
+          httpClient: mockHttpClient,
+          featureFlagUserGroupsForSession: {
+            groupsForSession: { classId: ['classA'] },
+            includeStoredUserGroups: false,
+          },
+        });
+
+        expect(await client.getAllFeatureFlags()).toEqual(['flag1']);
+      });
+
+      it('throws when the constructor option provides both useSingleGroupSet and useMultipleGroupSets', () => {
+        expect(() => {
+          // eslint-disable-next-line no-new
+          new UpgradeClient('1234', 'test.com', 'testContext', {
+            httpClient: mockHttpClient,
+            featureFlagGroupOptions: {
+              useSingleGroupSet: { groups: { classId: ['classA'] } },
+              useMultipleGroupSets: { subGroupsets: [{ groupsetId: 'a', groups: { classId: ['classA'] } }] },
+            },
+          });
+        }).toThrow(/must provide either useSingleGroupSet or useMultipleGroupSets, not both/);
+      });
+    });
+
+    describe('#setFeatureFlagGroupOptions', () => {
+      it('accepts useSingleGroupSet, includeStoredUserGroups optional', async () => {
+        mockApiServiceGetAllFeatureFlags().mockResolvedValue(['flag1']);
+
+        upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: { groups: { classId: ['classA'] } } });
+        const result = await upgradeClient.getAllFeatureFlags();
+
+        expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledWith({
+          useSingleGroupSet: { groups: { classId: ['classA'] }, includeStoredUserGroups: undefined },
+        });
+        expect(result).toEqual(['flag1']);
+      });
+
+      it('accepts useMultipleGroupSets with no mainGroupset', async () => {
+        mockApiServiceGetAllFeatureFlags().mockResolvedValue({
+          mainGroupset: undefined,
+          subGroupsets: { sectionA: ['flag1'] },
+        });
+
+        upgradeClient.setFeatureFlagGroupOptions({
+          useMultipleGroupSets: { subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }] },
+        });
+        const result = await upgradeClient.getAllFeatureFlags();
+
+        expect(result).toEqual({ subGroupsets: { sectionA: ['flag1'] } });
+      });
+
+      it('reconfiguring with subGroupsets only leaves a previously-configured mainGroupset untouched', async () => {
+        const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags()
+          .mockResolvedValueOnce({ mainGroupset: ['mainFlag'], subGroupsets: { sectionA: ['flag1'] } })
+          .mockResolvedValueOnce(['flag2']);
+
+        upgradeClient.setFeatureFlagGroupOptions({
+          useMultipleGroupSets: {
+            mainGroupset: { groups: { schoolId: ['a'] } },
+            subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+          },
+        });
+        await upgradeClient.getAllFeatureFlags();
+
+        // Reconfigure with subGroupsets only — no mainGroupset key at all.
+        upgradeClient.setFeatureFlagGroupOptions({
+          useMultipleGroupSets: { subGroupsets: [{ groupsetId: 'sectionB', groups: { schoolId: ['b'] } }] },
+        });
+
+        // The previously-configured mainGroupset's cached flags are still there, reachable by its
+        // reserved id directly — untouched by the subs-only reconfiguration.
+        expect(await upgradeClient.hasFeatureFlag('mainFlag', '*')).toBe(true);
+        expect(getAllFeatureFlags).toHaveBeenCalledTimes(1);
+      });
+
+      it('does not register mainGroupset when a subGroupsets entry fails validation (atomic)', async () => {
+        mockApiServiceGetAllFeatureFlags().mockResolvedValue(['mainFlag']);
+
+        expect(() => {
+          upgradeClient.setFeatureFlagGroupOptions({
+            useMultipleGroupSets: {
+              mainGroupset: { groups: { schoolId: ['a'] } },
+              subGroupsets: [
+                { groupsetId: 'sectionA', groups: { schoolId: ['a'] } },
+                { groups: { schoolId: ['b'] } } as any,
+              ],
+            },
+          });
+        }).toThrow(/requires a groupsetId/);
+
+        // Neither the invalid call's mainGroupset nor its subGroupsets should have been committed —
+        // the client should still be in its original default (unconfigured) state.
+        expect(await upgradeClient.getAllFeatureFlags()).toEqual(['mainFlag']);
+        expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledWith({});
+      });
+
+      it('resetting to null restores standard stored-user lookup', async () => {
+        mockApiServiceGetAllFeatureFlags().mockResolvedValue(['flag1']);
+
+        upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: { groups: { classId: ['classA'] } } });
+        upgradeClient.setFeatureFlagGroupOptions(null);
+        await upgradeClient.getAllFeatureFlags();
+
+        expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledWith({});
+      });
+
+      it('reconfiguring with different groups forces a refetch (cache invalidated on change)', async () => {
+        const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags().mockResolvedValueOnce(['classAFlag']);
+
+        upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: { groups: { classId: ['classA'] } } });
+        expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classAFlag']);
+        expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classAFlag']);
+        expect(getAllFeatureFlags).toHaveBeenCalledTimes(1);
+
+        getAllFeatureFlags.mockResolvedValueOnce(['classBFlag']);
+        upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: { groups: { classId: ['classB'] } } });
+
+        expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classBFlag']);
+        expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+        expect(await upgradeClient.getAllFeatureFlags()).toEqual(['classBFlag']);
+        expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+      });
+
+      it('throws when both useSingleGroupSet and useMultipleGroupSets are provided', () => {
+        expect(() => {
+          upgradeClient.setFeatureFlagGroupOptions({
+            useSingleGroupSet: { groups: { classId: ['classA'] } },
+            useMultipleGroupSets: { subGroupsets: [{ groupsetId: 'a', groups: { classId: ['classA'] } }] },
+          });
+        }).toThrow(/must provide either useSingleGroupSet or useMultipleGroupSets, not both/);
+      });
+
+      it('throws when useMultipleGroupSets.subGroupsets is empty', () => {
+        expect(() => {
+          upgradeClient.setFeatureFlagGroupOptions({ useMultipleGroupSets: { subGroupsets: [] } });
+        }).toThrow(/subGroupsets must contain at least one entry/);
+      });
+
+      it('throws when a subGroupsets entry is missing groupsetId', () => {
+        expect(() => {
+          upgradeClient.setFeatureFlagGroupOptions({
+            useMultipleGroupSets: { subGroupsets: [{ groups: { classId: ['a'] } } as any] },
+          });
+        }).toThrow(/requires a groupsetId/);
+      });
+
+      it('throws when useSingleGroupSet is missing groups', () => {
+        expect(() => {
+          upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: {} as any });
+        }).toThrow(/groups is required/);
+      });
+
+      it('throws when a subGroupsets entry reuses the reserved main/single groupset id', () => {
+        expect(() => {
+          upgradeClient.setFeatureFlagGroupOptions({
+            useMultipleGroupSets: { subGroupsets: [{ groupsetId: '*', groups: { classId: ['a'] } }] },
+          });
+        }).toThrow(/reserved groupset id/);
+      });
+    });
+
+    describe('#setFeatureFlagUserGroupsForSession (deprecated alias)', () => {
+      it('delegates to setFeatureFlagGroupOptions', async () => {
+        mockApiServiceGetAllFeatureFlags().mockResolvedValue(['flag1']);
+
+        upgradeClient.setFeatureFlagUserGroupsForSession({
+          groupsForSession: { classId: ['classA'] },
+          includeStoredUserGroups: false,
+        });
+        expect(await upgradeClient.getAllFeatureFlags()).toEqual(['flag1']);
+      });
+
+      it('throws error with proper message format when groupsForSession is missing', () => {
+        expect(() => {
+          upgradeClient.setFeatureFlagUserGroupsForSession({ includeStoredUserGroups: true } as any);
+        }).toThrow(
+          /featureFlagUserGroupsForSession must contain both groupsForSession and includeStoredUserGroups properties/
+        );
+      });
+
+      it('throws when includeStoredUserGroups is missing', () => {
+        expect(() => {
+          upgradeClient.setFeatureFlagUserGroupsForSession({ groupsForSession: { school: ['a'] } } as any);
+        }).toThrow(
+          /featureFlagUserGroupsForSession must contain both groupsForSession and includeStoredUserGroups properties/
+        );
+      });
+
+      it('accepts null to reset to default', () => {
+        expect(() => {
+          upgradeClient.setFeatureFlagUserGroupsForSession(null);
+        }).not.toThrow();
+      });
+    });
+  });
+
+  describe('#getAllFeatureFlags', () => {
+    it('should call apiService with the default groupset when no config is set', async () => {
+      mockApiServiceGetAllFeatureFlags().mockResolvedValue(['foo']);
+
+      const result = await upgradeClient.getAllFeatureFlags();
+
+      expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledWith({});
+      expect(result).toEqual(['foo']);
+    });
+
+    it('should not call apiService again when there is cached data', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags().mockResolvedValue(['foo']);
+
+      await upgradeClient.getAllFeatureFlags();
+      await upgradeClient.getAllFeatureFlags();
+
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call apiService again when ignoreCache is specified', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags().mockResolvedValue(['foo']);
+
+      await upgradeClient.getAllFeatureFlags();
+      await upgradeClient.getAllFeatureFlags({ ignoreCache: true });
+
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+    });
+
+    it('accepts an ad-hoc useSingleGroupSet override for a single call, still returning a flat array', async () => {
+      mockApiServiceGetAllFeatureFlags().mockResolvedValue(['flag1']);
+
+      const result = await upgradeClient.getAllFeatureFlags({
+        useSingleGroupSet: { groups: { schoolId: ['school-a'] } },
+      });
+
+      expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledWith({
+        useSingleGroupSet: { groups: { schoolId: ['school-a'] }, includeStoredUserGroups: undefined },
+      });
+      expect(result).toEqual(['flag1']);
+    });
+
+    it('accepts an ad-hoc useMultipleGroupSets override, one combined request for main + subs', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags().mockResolvedValue({
+        mainGroupset: ['flag1'],
+        subGroupsets: { sectionA: ['flag1'], sectionB: [] },
+      });
+
+      const result = await upgradeClient.getAllFeatureFlags({
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['a', 'b'] } },
+          subGroupsets: [
+            { groupsetId: 'sectionA', groups: { schoolId: ['a'] } },
+            { groupsetId: 'sectionB', groups: { schoolId: ['b'] } },
+          ],
+        },
+      });
+
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({ mainGroupset: ['flag1'], subGroupsets: { sectionA: ['flag1'], sectionB: [] } });
+    });
+
+    it('only fetches the ids missing from cache, aggregated into one request', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags()
+        .mockResolvedValueOnce({ mainGroupset: ['flag1'], subGroupsets: { sectionA: ['flag1'] } })
+        .mockResolvedValueOnce({ subGroupsets: { sectionB: ['flag2'] } });
+
+      upgradeClient.setFeatureFlagGroupOptions({
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['a'] } },
+          subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+        },
+      });
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual({
+        mainGroupset: ['flag1'],
+        subGroupsets: { sectionA: ['flag1'] },
+      });
+
+      // reconfigure to include the already-cached mainGroupset + sectionA, plus a new sectionB
+      upgradeClient.setFeatureFlagGroupOptions({
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['a'] } },
+          subGroupsets: [
+            { groupsetId: 'sectionA', groups: { schoolId: ['a'] } },
+            { groupsetId: 'sectionB', groups: { schoolId: ['b'] } },
+          ],
+        },
+      });
+      const result = await upgradeClient.getAllFeatureFlags();
+
+      expect(result).toEqual({ mainGroupset: ['flag1'], subGroupsets: { sectionA: ['flag1'], sectionB: ['flag2'] } });
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+      expect(getAllFeatureFlags).toHaveBeenNthCalledWith(2, {
+        useMultipleGroupSets: {
+          subGroupsets: [{ groupsetId: 'sectionB', groups: { schoolId: ['b'] }, includeStoredUserGroups: undefined }],
+        },
+      });
+    });
+
+    it('an ad-hoc useSingleGroupSet override is a one-off even when its groups match the active mainGroupset', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags()
+        .mockResolvedValueOnce({ mainGroupset: ['flag1'], subGroupsets: { sectionA: ['flag1'] } })
+        .mockResolvedValueOnce(['adHocFlag']);
+
+      upgradeClient.setFeatureFlagGroupOptions({
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['a'] } },
+          subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+        },
+      });
+      await upgradeClient.getAllFeatureFlags();
+
+      // Same groups as the active mainGroupset, but this is still just a one-off: it sends the
+      // plain useSingleGroupSet shape and does not refresh (or read from) the active mainGroupset's cache.
+      const adHocResult = await upgradeClient.getAllFeatureFlags({
+        useSingleGroupSet: { groups: { schoolId: ['a'] } },
+      });
+      expect(adHocResult).toEqual(['adHocFlag']);
+      expect(getAllFeatureFlags).toHaveBeenNthCalledWith(2, {
+        useSingleGroupSet: { groups: { schoolId: ['a'] }, includeStoredUserGroups: undefined },
+      });
+
+      // The active configuration's mainGroupset is untouched by the ad-hoc call above.
+      const activeResult = await upgradeClient.getAllFeatureFlags();
+      expect(activeResult).toEqual({ mainGroupset: ['flag1'], subGroupsets: { sectionA: ['flag1'] } });
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+    });
+
+    it('getAllFeatureFlags({ ignoreCache: true }) with no override force-refreshes the active mainGroupset', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags()
+        .mockResolvedValueOnce({ mainGroupset: ['flag1'], subGroupsets: { sectionA: ['flag1'] } })
+        .mockResolvedValueOnce({ mainGroupset: ['flag1', 'flag2'], subGroupsets: { sectionA: ['flag1'] } });
+
+      upgradeClient.setFeatureFlagGroupOptions({
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['a'] } },
+          subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+        },
+      });
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual({
+        mainGroupset: ['flag1'],
+        subGroupsets: { sectionA: ['flag1'] },
+      });
+
+      // This is the correct way to force-refresh the active configuration itself — no ad-hoc
+      // override needed.
+      expect(await upgradeClient.getAllFeatureFlags({ ignoreCache: true })).toEqual({
+        mainGroupset: ['flag1', 'flag2'],
+        subGroupsets: { sectionA: ['flag1'] },
+      });
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+    });
+
+    it('an ad-hoc useSingleGroupSet call with different groups does not overwrite the active configuration', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags()
+        .mockResolvedValueOnce(['activeFlag'])
+        .mockResolvedValueOnce(['adHocFlag']);
+
+      upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: { groups: { classId: ['classA'] } } });
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['activeFlag']);
+
+      // A one-off ad-hoc call for a *different* groupset — must not clobber what's active.
+      expect(
+        await upgradeClient.getAllFeatureFlags({ useSingleGroupSet: { groups: { classId: ['classB'] } } })
+      ).toEqual(['adHocFlag']);
+
+      // The active configuration's cached flags are untouched — no third network call.
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['activeFlag']);
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+    });
+
+    it('an ad-hoc mainGroupset with different groups does not overwrite the active main, but subs still resolve', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags()
+        .mockResolvedValueOnce({ mainGroupset: ['activeMainFlag'], subGroupsets: { sectionA: ['flag1'] } })
+        .mockResolvedValueOnce({ mainGroupset: ['adHocMainFlag'], subGroupsets: { sectionA: ['flag1'] } });
+
+      upgradeClient.setFeatureFlagGroupOptions({
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['a'] } },
+          subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+        },
+      });
+      await upgradeClient.getAllFeatureFlags();
+
+      const adHocResult = await upgradeClient.getAllFeatureFlags({
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['different'] } },
+          subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+        },
+        ignoreCache: true,
+      });
+      expect(adHocResult.mainGroupset).toEqual(['adHocMainFlag']);
+
+      // The active mainGroupset's cache is exactly what it was before the ad-hoc call.
+      const activeResult = await upgradeClient.getAllFeatureFlags();
+      expect(activeResult).toEqual({ mainGroupset: ['activeMainFlag'], subGroupsets: { sectionA: ['flag1'] } });
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not register mainGroupset when an ad-hoc subGroupsets entry fails validation (atomic)', async () => {
+      mockApiServiceGetAllFeatureFlags().mockResolvedValue(['activeFlag']);
+      upgradeClient.setFeatureFlagGroupOptions({ useSingleGroupSet: { groups: { classId: ['classA'] } } });
+
+      await expect(
+        upgradeClient.getAllFeatureFlags({
+          useMultipleGroupSets: {
+            mainGroupset: { groups: { schoolId: ['a'] } },
+            subGroupsets: [
+              { groupsetId: 'valid', groups: { schoolId: ['a'] } },
+              { groupsetId: '*', groups: {} } as any,
+            ],
+          },
+        })
+      ).rejects.toThrow(/reserved groupset id/);
+
+      // The active useSingleGroupSet configuration must be unaffected by the failed ad-hoc call.
+      expect(await upgradeClient.getAllFeatureFlags()).toEqual(['activeFlag']);
+      expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalledTimes(1);
+    });
+
+    it('preserves a subGroupsets entry with the reserved-looking key "__proto__"', async () => {
+      // Computed key, not literal `{ __proto__: [...] }` — the literal form is special-cased by JS
+      // to set the prototype rather than create an own property, which would mask exactly the bug
+      // under test. A real wire response parsed via JSON.parse behaves like the computed form.
+      mockApiServiceGetAllFeatureFlags().mockResolvedValue({
+        mainGroupset: undefined,
+        subGroupsets: { ['__proto__']: ['flag1'] },
+      });
+
+      const result = (await upgradeClient.getAllFeatureFlags({
+        useMultipleGroupSets: { subGroupsets: [{ groupsetId: '__proto__', groups: { schoolId: ['a'] } }] },
+      })) as any;
+
+      expect(Object.keys(result.subGroupsets)).toEqual(['__proto__']);
+      expect(result.subGroupsets['__proto__']).toEqual(['flag1']);
+      expect(Object.getPrototypeOf(result.subGroupsets)).toBeNull();
+    });
+  });
+
   describe('#hasFeatureFlag', () => {
     it('should call apiService "getAllFeatureFlags" with no options', async () => {
-      ApiService.prototype.getAllFeatureFlags = jest.fn();
-      DataService.prototype.getFeatureFlags = jest.fn((): any => {
-        return null;
-      });
+      mockApiServiceGetAllFeatureFlags().mockResolvedValue([]);
+
       await upgradeClient.hasFeatureFlag('testFlag');
+
       expect(ApiService.prototype.getAllFeatureFlags).toHaveBeenCalled();
     });
-    it('should not call apiService "getAllFeatureFlags" when there is cached data', async () => {
-      ApiService.prototype.getAllFeatureFlags = jest.fn();
-      DataService.prototype.getFeatureFlags = jest.fn((): any => {
-        return ['foo'];
-      });
-      upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
-      await upgradeClient.hasFeatureFlag('testFlag');
-      expect(ApiService.prototype.getAllFeatureFlags).not.toHaveBeenCalled();
+
+    it('should not call apiService again when there is cached data', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags().mockResolvedValue(['testFlag']);
+
+      expect(await upgradeClient.hasFeatureFlag('testFlag')).toBe(true);
+      expect(await upgradeClient.hasFeatureFlag('testFlag')).toBe(true);
+
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(1);
     });
-  });
 
-  it('should throw error when groupsForSession is missing', () => {
-    const invalidOptions = {
-      includeStoredUserGroups: true,
-    } as any;
+    it('resolves to mainGroupset when useMultipleGroupSets has one configured', async () => {
+      // hasFeatureFlag's rehydration always uses the plain single-groupset shape, regardless of
+      // whether the id being fetched plays a "main" or "sub" role — so the mock response here is
+      // a flat array, not the { mainGroupset, subGroupsets } object getAllFeatureFlags() returns.
+      mockApiServiceGetAllFeatureFlags().mockResolvedValue(['flag1']);
 
-    expect(() => {
-      upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
-    }).toThrow();
-  });
+      upgradeClient.setFeatureFlagGroupOptions({
+        useMultipleGroupSets: {
+          mainGroupset: { groups: { schoolId: ['a', 'b'] } },
+          subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }],
+        },
+      });
 
-  it('should throw error when includeStoredUserGroups is missing', () => {
-    const invalidOptions = {
-      groupsForSession: {
-        school: ['testSchool1'],
-      },
-    } as any;
+      expect(await upgradeClient.hasFeatureFlag('flag1')).toBe(true);
+    });
 
-    expect(() => {
-      upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
-    }).toThrow();
-  });
+    it('throws when useMultipleGroupSets has no mainGroupset and no id is given', async () => {
+      upgradeClient.setFeatureFlagGroupOptions({
+        useMultipleGroupSets: { subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }] },
+      });
 
-  it('should throw error when both properties are missing', () => {
-    const invalidOptions = {} as any;
+      await expect(upgradeClient.hasFeatureFlag('testFlag')).rejects.toThrow(
+        /requires a groupsetId when useMultipleGroupSets has no mainGroupset configured/
+      );
+    });
 
-    expect(() => {
-      upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
-    }).toThrow();
-  });
+    it('reads a cached subGroupset by id without refetching', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags().mockResolvedValueOnce({
+        subGroupsets: { sectionA: ['flag1'] },
+      });
 
-  it('should throw error with proper message format', () => {
-    const invalidOptions = {
-      groupsForSession: {
-        school: ['testSchool1'],
-      },
-    } as any;
+      upgradeClient.setFeatureFlagGroupOptions({
+        useMultipleGroupSets: { subGroupsets: [{ groupsetId: 'sectionA', groups: { schoolId: ['a'] } }] },
+      });
+      await upgradeClient.getAllFeatureFlags();
 
-    expect(() => {
-      upgradeClient.setFeatureFlagUserGroupsForSession(invalidOptions);
-    }).toThrow(
-      /featureFlagUserGroupsForSession must contain both groupsForSession and includeStoredUserGroups properties/
-    );
+      expect(await upgradeClient.hasFeatureFlag('flag1', 'sectionA')).toBe(true);
+      expect(await upgradeClient.hasFeatureFlag('missing', 'sectionA')).toBe(false);
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(1);
+    });
+
+    it('rehydrates a registered-but-uncached groupset id by fetching just that one', async () => {
+      const getAllFeatureFlags = mockApiServiceGetAllFeatureFlags().mockResolvedValueOnce(['flag1']);
+
+      upgradeClient.setFeatureFlagGroupOptions({
+        useMultipleGroupSets: {
+          subGroupsets: [
+            { groupsetId: 'sectionA', groups: { schoolId: ['a'] } },
+            { groupsetId: 'sectionB', groups: { schoolId: ['b'] } },
+          ],
+        },
+      });
+
+      // only ask about sectionA — sectionB is registered but never fetched
+      expect(await upgradeClient.hasFeatureFlag('flag1', 'sectionA')).toBe(true);
+      expect(getAllFeatureFlags).toHaveBeenCalledTimes(1);
+      expect(getAllFeatureFlags).toHaveBeenCalledWith({
+        useSingleGroupSet: { groups: { schoolId: ['a'] }, includeStoredUserGroups: undefined },
+      });
+    });
+
+    it('throws for a groupset id that was never configured or requested', async () => {
+      await expect(upgradeClient.hasFeatureFlag('testFlag', 'neverSeen')).rejects.toThrow(
+        /No feature flags have been fetched or configured for groupset id "neverSeen"/
+      );
+    });
   });
 });

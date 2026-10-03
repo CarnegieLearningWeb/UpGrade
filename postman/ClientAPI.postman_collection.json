@@ -205,7 +205,7 @@
           }
         },
         {
-          "name": "Get Feature Flags (Ephemeral Mode)",
+          "name": "Get Feature Flags (Deprecated - Ephemeral Mode)",
           "request": {
             "method": "POST",
             "header": [
@@ -227,11 +227,11 @@
               "host": ["{{baseUrl}}"],
               "path": ["v6", "featureflag"]
             },
-            "description": "Get feature flags using ephemeral session-only groups (ignores stored user groups). Useful for temporary group assignments without persisting to the user record."
+            "description": "DEPRECATED shape, kept for Java/Python client compatibility — prefer `useSingleGroupSet` below. Get feature flags using ephemeral session-only groups (ignores stored user groups). Returns a flat array of feature flag names."
           }
         },
         {
-          "name": "Get Feature Flags (Merged Mode)",
+          "name": "Get Feature Flags (Deprecated - Merged Mode)",
           "request": {
             "method": "POST",
             "header": [
@@ -253,7 +253,85 @@
               "host": ["{{baseUrl}}"],
               "path": ["v6", "featureflag"]
             },
-            "description": "Get feature flags using merged mode - combines both stored user groups and session-specific groups. Both groupsForSession and includeStoredUserGroups must be provided together."
+            "description": "DEPRECATED shape, kept for Java/Python client compatibility — prefer `useSingleGroupSet` below. Get feature flags using merged mode - combines both stored user groups and session-specific groups. Both groupsForSession and includeStoredUserGroups must be provided together. Returns a flat array of feature flag names."
+          }
+        },
+        {
+          "name": "Get Feature Flags (useSingleGroupSet - Ephemeral)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"context\": \"assignment\",\n  \"useSingleGroupSet\": {\n    \"groups\": {\n      \"schoolId\": [\"demo-school\"],\n      \"classId\": [\"demo-class-advanced\"]\n    },\n    \"includeStoredUserGroups\": false\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/featureflag",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "featureflag"]
+            },
+            "description": "Get feature flags using ephemeral session-only groups (ignores stored user groups). Returns a flat array of feature flag names."
+          }
+        },
+        {
+          "name": "Get Feature Flags (useSingleGroupSet - Merged)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"context\": \"assignment\",\n  \"useSingleGroupSet\": {\n    \"groups\": {\n      \"classId\": [\"temp-class-123\", \"special-session\"]\n    },\n    \"includeStoredUserGroups\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/featureflag",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "featureflag"]
+            },
+            "description": "Get feature flags using merged mode - combines both stored user groups and session-specific groups into a single groupset. Returns a flat array of feature flag names."
+          }
+        },
+        {
+          "name": "Get Feature Flags (useMultipleGroupSets)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"context\": \"assignment\",\n  \"useMultipleGroupSets\": {\n    \"mainGroupset\": {\n      \"includeStoredUserGroups\": true,\n      \"groups\": {}\n    },\n    \"subGroupsets\": [\n      {\n        \"groupsetId\": \"school-a\",\n        \"groups\": {\n          \"schoolId\": [\"school-a\"]\n        },\n        \"includeStoredUserGroups\": false\n      },\n      {\n        \"groupsetId\": \"school-b\",\n        \"groups\": {\n          \"schoolId\": [\"school-b\"]\n        },\n        \"includeStoredUserGroups\": false\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v6/featureflag",
+              "host": ["{{baseUrl}}"],
+              "path": ["v6", "featureflag"]
+            },
+            "description": "Evaluates a `mainGroupset` (the stored-user/all-groups default) plus multiple named `subGroupsets` in a single request. Response shape is `{ mainGroupset?: string[]; subGroupsets: Record<string, string[]> }` instead of a flat array. `mainGroupset` is optional — omit it if the caller only needs the named subGroupsets."
           }
         },
         {

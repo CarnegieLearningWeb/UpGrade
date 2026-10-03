@@ -54,5 +54,9 @@ export type EntitySegmentResolutionInput = Record<string, SegmentResolutionInput
 
 export interface AppRequest extends Request {
   userDoc: RequestedExperimentUser;
+  // Only set for /v6/featureflag requests using useMultipleGroupSets — one resolved user doc per
+  // subGroupset entry, keyed by groupsetId. `userDoc` itself carries the mainGroupset's resolution
+  // for that same request, if one was configured (undefined otherwise).
+  userDocsBySubGroupset?: Record<string, RequestedExperimentUser>;
   logger: UpgradeLogger;
 }
