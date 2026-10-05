@@ -19,6 +19,7 @@ public class QuickTest {
     private static final String ECS_QA_URL = "https://apps.qa-cli.net/upgrade-service";
     private static final String ECS_STAGING_URL = "https://apps.qa-cli.com/upgrade-service";
     private static final String userId = "quicktest_user_" + System.currentTimeMillis();
+    private static final String sessionId = "quicktest_session_" + System.currentTimeMillis();
     private static final String group = "test_class_group";
     private static final String alias = "alias" + userId;
     private static final String hostUrl = LOCAL_URL;
@@ -47,7 +48,9 @@ public class QuickTest {
     }
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
-        ExperimentClient client = new ExperimentClient(userId, context, "BearerToken", hostUrl, Collections.emptyMap());
+        System.out.println("client_session_id: " + sessionId);
+        ExperimentClient client = new ExperimentClient(userId, context, "BearerToken", sessionId, hostUrl,
+                Collections.emptyMap());
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             try {
                 doInit(client)

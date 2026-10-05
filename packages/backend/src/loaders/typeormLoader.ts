@@ -36,6 +36,57 @@ export const parseReplicaHosts = (hostReplica?: string | null): string[] => {
   }
 };
 
+/**
+ * Options passed straight through to the pg Pool.
+ *
+ * idleTimeoutMillis: pg-pool closes a pooled connection once it has sat idle this long (its own default is
+ * 10s). The pool hands out its most recently released connection first, so steady traffic keeps only a few
+ * connections busy; the rest — needed only during bursts — hit the timeout between bursts and have to be
+ * reopened mid-burst, which the burst's requests wait on. Unset (or invalid) keeps pg-pool's default;
+ * 0 means idle connections are never closed.
+ *
+ * min: pg-pool never closes an idle connection while the pool holds `min` or fewer, whatever
+ * idleTimeoutMillis says, so a quiet stretch longer than the timeout doesn't leave the pool cold. It does
+ * not open connections in advance; it only stops closing them once opened. Unset (NaN) is treated by
+ * pg-pool as 0. Nothing checks it against max: at or above max, idle connections are simply never closed.
+ *
+ * maxLifetimeSeconds: pg-pool closes a connection this long after it was opened — immediately if idle,
+ * otherwise when next released — so long-lived connections eventually reconnect and pick up DNS changes
+ * (e.g. after a failover). Closed connections are not replaced until demand reopens them, and there is no
+ * jitter, so connections opened together in a burst also expire together. Unset (or invalid) keeps pg-pool's
+ * default of 0, meaning never. A negative value would expire every connection right away, so it is ignored.
+ *
+ * keepAlive / keepAliveInitialDelayMillis: TCP keepalive on each connection's socket, so a NAT gateway or
+ * load balancer doesn't silently drop a connection that sits idle in the pool. The delay is how long a socket
+ * sits idle before the first probe; pg's default of 0 means the OS default, which on Linux is 2 hours —
+ * too late for e.g. AWS NAT's 350s idle timeout. The delay is ignored unless keepAlive is on.
+ *
+ * max / min unset arrive here as NaN (toNumber of an empty env var), which pg-pool replaces with its
+ * defaults (10 / 0).
+ */
+export const buildPoolExtra = (db: {
+  maxConnectionPool: number;
+  minConnectionPool: number;
+  idleTimeoutSeconds: number;
+  maxLifetimeSeconds: number;
+  keepAlive: boolean;
+  keepAliveInitialDelaySeconds: number;
+}) => {
+  const nonNegativeOrUndefined = (value: number) => (Number.isFinite(value) && value >= 0 ? value : undefined);
+  const secondsToMillis = (seconds: number) => {
+    const valid = nonNegativeOrUndefined(seconds);
+    return valid === undefined ? undefined : valid * 1000;
+  };
+  return {
+    max: db.maxConnectionPool,
+    min: db.minConnectionPool,
+    idleTimeoutMillis: secondsToMillis(db.idleTimeoutSeconds),
+    maxLifetimeSeconds: nonNegativeOrUndefined(db.maxLifetimeSeconds),
+    keepAlive: db.keepAlive,
+    keepAliveInitialDelayMillis: secondsToMillis(db.keepAliveInitialDelaySeconds),
+  };
+};
+
 const replicaHosts = parseReplicaHosts(env.db.host_replica);
 
 const masterHost: PostgresConnectionCredentialsOptions = {
@@ -68,7 +119,7 @@ const mainDBConnectionOptions: Extract<DataSourceOptions, { type: 'postgres' }> 
   maxQueryExecutionTime: env.db.maxQueryExecutionTime,
   entities: env.app.dirs.entities,
   migrations: env.app.dirs.migrations,
-  extra: { max: env.db.maxConnectionPool },
+  extra: buildPoolExtra(env.db),
 };
 
 const exportReplicaDBConnectionOptions: Extract<DataSourceOptions, { type: 'postgres' }> = {

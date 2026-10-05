@@ -81,6 +81,11 @@ jest.mock('../../../src/env', () => ({
       logging: false,
       maxQueryExecutionTime: 1000,
       maxConnectionPool: 10,
+      minConnectionPool: NaN,
+      idleTimeoutSeconds: NaN,
+      maxLifetimeSeconds: NaN,
+      keepAlive: false,
+      keepAliveInitialDelaySeconds: NaN,
     },
     app: { dirs: { entities: [], migrations: [] } },
     isECS: false,
@@ -92,7 +97,7 @@ import { DataSource } from 'typeorm';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { Container } from '../../../src/typeorm-typedi-extensions';
 import { env } from '../../../src/env';
-import { parseReplicaHosts, typeormLoader } from '../../../src/loaders/typeormLoader';
+import { buildPoolExtra, parseReplicaHosts, typeormLoader } from '../../../src/loaders/typeormLoader';
 
 // ─── Typed handles into the mock internals ───────────────────────────────────
 const mainInstance = (DataSource as any).__main as {
@@ -313,6 +318,104 @@ describe('typeormLoader', () => {
       (env as any).isECS = true;
       await typeormLoader(mockSettings);
       expect(mainInstance.runMigrations).not.toHaveBeenCalled();
+    });
+  });
+});
+
+describe('buildPoolExtra', () => {
+  // toNumber(undefined) and toNumber('') both yield NaN, so NaN is what an unset env var looks like here;
+  // toBool(undefined) yields false.
+  const unset = NaN;
+  const allUnset = {
+    maxConnectionPool: unset,
+    minConnectionPool: unset,
+    idleTimeoutSeconds: unset,
+    maxLifetimeSeconds: unset,
+    keepAlive: false,
+    keepAliveInitialDelaySeconds: unset,
+  };
+
+  test('passes TYPEORM_MAX/MIN_CONNECTION_POOL_SIZE through as max/min', () => {
+    const extra = buildPoolExtra({ ...allUnset, maxConnectionPool: 30, minConnectionPool: 20 });
+    expect(extra.max).toBe(30);
+    expect(extra.min).toBe(20);
+  });
+
+  test('converts TYPEORM_IDLE_TIMEOUT_SECONDS to pg-pool idleTimeoutMillis', () => {
+    const extra = buildPoolExtra({ ...allUnset, idleTimeoutSeconds: 300 });
+    expect(extra.idleTimeoutMillis).toBe(300000);
+  });
+
+  test('leaves idleTimeoutMillis undefined when unset, so pg-pool keeps its own default', () => {
+    const extra = buildPoolExtra(allUnset);
+    expect(extra.idleTimeoutMillis).toBeUndefined();
+  });
+
+  test('passes an idle timeout of 0 through, which pg-pool treats as never closing idle connections', () => {
+    const extra = buildPoolExtra({ ...allUnset, idleTimeoutSeconds: 0 });
+    expect(extra.idleTimeoutMillis).toBe(0);
+  });
+
+  test('ignores a negative idle timeout', () => {
+    const extra = buildPoolExtra({ ...allUnset, idleTimeoutSeconds: -5 });
+    expect(extra.idleTimeoutMillis).toBeUndefined();
+  });
+
+  test('passes TYPEORM_MAX_LIFETIME_SECONDS through as pg-pool maxLifetimeSeconds', () => {
+    const extra = buildPoolExtra({ ...allUnset, maxLifetimeSeconds: 3600 });
+    expect(extra.maxLifetimeSeconds).toBe(3600);
+  });
+
+  test('ignores a negative max lifetime, which pg-pool would treat as expiring every connection at once', () => {
+    const extra = buildPoolExtra({ ...allUnset, maxLifetimeSeconds: -1 });
+    expect(extra.maxLifetimeSeconds).toBeUndefined();
+  });
+
+  test('passes TYPEORM_KEEP_ALIVE through and converts its initial delay to keepAliveInitialDelayMillis', () => {
+    const extra = buildPoolExtra({ ...allUnset, keepAlive: true, keepAliveInitialDelaySeconds: 60 });
+    expect(extra.keepAlive).toBe(true);
+    expect(extra.keepAliveInitialDelayMillis).toBe(60000);
+  });
+
+  test('leaves keepAliveInitialDelayMillis undefined when unset or negative, so pg keeps its own default', () => {
+    expect(buildPoolExtra({ ...allUnset, keepAlive: true }).keepAliveInitialDelayMillis).toBeUndefined();
+    expect(
+      buildPoolExtra({ ...allUnset, keepAlive: true, keepAliveInitialDelaySeconds: -5 }).keepAliveInitialDelayMillis
+    ).toBeUndefined();
+  });
+
+  describe('as pg-pool reads it', () => {
+    // Constructing a pg Pool does not connect, so these check the options pg-pool actually ends up with.
+    // pg-pool hands these same options to each pg Client it creates, which is where keepAlive is applied.
+    const { Pool } = jest.requireActual('pg');
+
+    test('all unset: pg-pool defaults (max 10, min 0, idle timeout 10s, no max lifetime), i.e. today', async () => {
+      const pool = new Pool(buildPoolExtra(allUnset));
+      expect(pool.options).toMatchObject({ max: 10, min: 0, idleTimeoutMillis: 10000, maxLifetimeSeconds: 0 });
+      expect(pool.options.keepAlive).toBe(false);
+      await pool.end();
+    });
+
+    test('all set: the configured values', async () => {
+      const pool = new Pool(
+        buildPoolExtra({
+          maxConnectionPool: 30,
+          minConnectionPool: 20,
+          idleTimeoutSeconds: 300,
+          maxLifetimeSeconds: 3600,
+          keepAlive: true,
+          keepAliveInitialDelaySeconds: 60,
+        })
+      );
+      expect(pool.options).toMatchObject({
+        max: 30,
+        min: 20,
+        idleTimeoutMillis: 300000,
+        maxLifetimeSeconds: 3600,
+        keepAlive: true,
+        keepAliveInitialDelayMillis: 60000,
+      });
+      await pool.end();
     });
   });
 });
