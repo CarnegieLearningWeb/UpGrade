@@ -273,15 +273,19 @@ export class ExperimentAssignmentService {
       };
     }
 
-    // No experiment ID: delegate to the shared selection pipeline so this method always agrees with getAllExperimentConditions.
+    // No experiment ID: pool the full context before matching the marked decision point.
     const { selectedExperiments, exclusionReason } = await this.selectExperimentsForUser(
-      allExperimentsAtDP,
+      allExperimentsForContext,
       userDoc,
       previewUser,
       logger
     );
 
-    const experiment = selectedExperiments.length > 0 ? selectedExperiments[0] : exclusionReason[0]?.experiment || null;
+    const experimentIdsAtDP = new Set(allExperimentsAtDP.map((experiment) => experiment.id));
+    const experiment =
+      selectedExperiments.find((selected) => experimentIdsAtDP.has(selected.id)) ??
+      exclusionReason.find((reason) => experimentIdsAtDP.has(reason.experiment?.id))?.experiment ??
+      null;
     const resolvedExperimentId = experiment?.id ?? null;
     const resolvedExclusionReason = exclusionReason.filter((reason) => reason.experiment?.id === resolvedExperimentId);
 
