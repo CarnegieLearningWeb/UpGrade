@@ -2194,6 +2194,75 @@ describe('Experiment Assignment Service Test', () => {
     });
   });
 
+  describe('/mark resolves the same experiment /assign selected, when experiments are pooled through shared decision points', () => {
+    // Pools are connected components: experiments linked by shared decision points, transitively. Here `both`
+    // shares dp1 with `left` and dp2 with `right`, so for /assign (which pools every experiment in the context)
+    // all three form one pool. /mark only passes the experiments at the marked decision point into the same
+    // pipeline, so at dp1 its pool is just {both, left}. A fresh user's pick is
+    // pool[Math.floor(seedrandom(userId)() * pool.length)], so the two pools can pick different experiments for
+    // the same user — /assign hands out left's condition at dp1, and /mark then resolves dp1 to both.
+    const context = 'context';
+    const decisionPoint = (target: string) => ({ site: 'SelectSection', target, pendingActivation: false });
+    const experiment = (id: string, targets: string[]) =>
+      ({
+        id,
+        name: id,
+        state: EXPERIMENT_STATE.ENROLLING,
+        group: 'schoolId',
+        partitions: targets.map(decisionPoint),
+      } as any);
+    const both = experiment('both', ['dp1', 'dp2']);
+    const left = experiment('left', ['dp1']);
+    const right = experiment('right', ['dp2']);
+    const allExperiments = [both, left, right];
+
+    beforeEach(() => {
+      // Pass everything through the per-experiment filters so only pool selection decides the outcome.
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves(allExperiments);
+      testedModule.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+      testedModule.filterAndProcessGroupExperiments = sandbox.stub().callsFake(async (exps) => exps);
+      testedModule.experimentLevelExclusionInclusion = sandbox.stub().callsFake(async (exps) => [exps, []]);
+      testedModule.getAssignmentsAndExclusionsForUser = sandbox.stub().resolves([[], [], [], []]);
+    });
+
+    it('agrees for every decision point of every experiment /assign selected, for every user', async () => {
+      const mismatches: string[] = [];
+
+      for (let i = 0; i < 100; i++) {
+        const userDoc = { id: `user-${i}`, group: {}, workingGroup: {} };
+
+        // What /assign uses: the selection pipeline over every experiment in the context.
+        const { selectedExperiments } = await (testedModule as any).selectExperimentsForUser(
+          allExperiments,
+          userDoc,
+          null,
+          loggerMock
+        );
+
+        for (const assigned of selectedExperiments) {
+          for (const { site, target } of assigned.partitions) {
+            const marked = await (testedModule as any).resolveExperimentForMarkPoint(
+              site,
+              target,
+              context,
+              undefined,
+              userDoc,
+              null,
+              loggerMock
+            );
+            if (marked.experiment?.id !== assigned.id) {
+              mismatches.push(
+                `${userDoc.id} at ${target}: /assign selected ${assigned.id}, /mark resolved ${marked.experiment?.id}`
+              );
+            }
+          }
+        }
+      }
+
+      expect(mismatches).toEqual([]);
+    });
+  });
+
   describe('getBatchExperimentConditions', () => {
     it('should return empty object if there are no user docs and check [getBatchExperimentConditions] function', async () => {
       const userDocs = [];
