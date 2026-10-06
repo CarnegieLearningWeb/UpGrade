@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
+import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
 import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUserResponse;
@@ -217,25 +218,26 @@ public class QuickTestBurst {
 
                     String site;
                     String target;
-                    String conditionCode;
+                    Condition markedCondition;
                     if (assignments.isEmpty()) {
                         stats.emptyAssignments.incrementAndGet();
                         site = "SelectSection";
                         target = "quicktest_burst_target_" + index;
-                        conditionCode = null;
+                        markedCondition = new Condition(null, null);
                     } else {
                         ExperimentsResponse dp = assignments.get(index % assignments.size());
                         Condition[] conditions = dp.getAssignedCondition();
                         site = dp.getSite();
                         target = dp.getTarget();
-                        conditionCode = conditions != null && conditions.length > 0
-                                ? conditions[0].getConditionCode()
-                                : null;
+                        markedCondition = conditions != null && conditions.length > 0
+                                ? new Condition(conditions[0].getConditionCode(), conditions[0].getExperimentId())
+                                : new Condition(null, null);
                     }
+                    MarkExperimentRequestData markData = new MarkExperimentRequestData(site, target, markedCondition);
 
                     long markStart = System.nanoTime();
-                    return call("mark", (ResponseCallback<MarkDecisionPoint> cb) -> client.markDecisionPoint(site,
-                            target, conditionCode, STATUS, cb))
+                    return call("mark", (ResponseCallback<MarkDecisionPoint> cb) -> client.markDecisionPoint(STATUS,
+                            markData, cb))
                             .thenAccept(r -> {
                                 long markTook = elapsedMs(markStart);
                                 stats.markMs.add(markTook);
