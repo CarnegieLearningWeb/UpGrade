@@ -66,6 +66,11 @@ export const env = {
     logging: getOsEnv('TYPEORM_LOGGING'),
     maxQueryExecutionTime: toNumber(getOsEnvOptional('TYPEORM_MAX_QUERY_EXECUTION_TIME')),
     maxConnectionPool: toNumber(getOsEnvOptional('TYPEORM_MAX_CONNECTION_POOL_SIZE')),
+    minConnectionPool: toNumber(getOsEnvOptional('TYPEORM_MIN_CONNECTION_POOL_SIZE')),
+    idleTimeoutSeconds: toNumber(getOsEnvOptional('TYPEORM_IDLE_TIMEOUT_SECONDS')),
+    maxLifetimeSeconds: toNumber(getOsEnvOptional('TYPEORM_MAX_LIFETIME_SECONDS')),
+    keepAlive: toBool(getOsEnvOptional('TYPEORM_KEEP_ALIVE')),
+    keepAliveInitialDelaySeconds: toNumber(getOsEnvOptional('TYPEORM_KEEP_ALIVE_INITIAL_DELAY_SECONDS')),
   },
   swagger: {
     enabled: toBool(getOsEnv('SWAGGER_ENABLED')),

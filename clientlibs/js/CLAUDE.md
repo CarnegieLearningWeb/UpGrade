@@ -30,6 +30,8 @@ npm run lint            # ESLint + Prettier check
 npm run lint:fix        # ESLint fix + Prettier write
 ```
 
+The quick tests (`quickTest.ts`, `quickTestAdaptive.ts`) target localhost by default. Hosted environments' URLs are not in the code: `URL.QA` / `URL.STAGING` read `UPGRADE_QA_URL` / `UPGRADE_STAGING_URL` from your environment, and `UPGRADE_QUICKTEST_URL` overrides the target for one run (e.g. `UPGRADE_QUICKTEST_URL=$UPGRADE_QA_URL npm run quicktest`).
+
 Run `npm run build` as a unit — do not invoke the sub-steps (webpack, build:types, version:sync, prepare:packages) individually in normal workflows.
 
 ## API Version
