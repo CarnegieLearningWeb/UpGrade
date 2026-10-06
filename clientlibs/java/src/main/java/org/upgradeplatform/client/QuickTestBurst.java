@@ -155,11 +155,13 @@ public class QuickTestBurst {
 
         Semaphore inFlight = new Semaphore(concurrency);
         AtomicInteger completed = new AtomicInteger();
+        List<CompletableFuture<Void>> closes = Collections.synchronizedList(new ArrayList<>());
         long burstStart = System.nanoTime();
         for (int i = 0; i < count; i++) {
             inFlight.acquire();
             try {
-                runPair(i, aliases.get(i), count, stats, completed).whenComplete((v, e) -> inFlight.release());
+                runPair(i, aliases.get(i), count, stats, completed, closes)
+                        .whenComplete((v, e) -> inFlight.release());
             } catch (RuntimeException e) {
                 // runPair failed before its future existed, so nothing else will give this slot back.
                 inFlight.release();
@@ -169,6 +171,11 @@ public class QuickTestBurst {
         // Every pair returns its slot when it finishes, so holding all of them means the burst is done.
         inFlight.acquire(concurrency);
         stats.burstMs.add(elapsedMs(burstStart));
+        // Not timed: wait for every client of this burst to close, so no sockets carry over into the next burst
+        // and none are cut off by System.exit after the last one.
+        synchronized (closes) {
+            CompletableFuture.allOf(closes.toArray(new CompletableFuture[0])).join();
+        }
         return stats;
     }
 
@@ -201,7 +208,7 @@ public class QuickTestBurst {
 
     /** One alias: /assign, then /mark on one of the decision points it was assigned. */
     private static CompletableFuture<Void> runPair(int index, String alias, int count, Stats stats,
-            AtomicInteger completed) {
+            AtomicInteger completed, List<CompletableFuture<Void>> closes) {
         ExperimentClient client = new ExperimentClient(alias, context, authToken, sessionId, hostUrl,
                 Collections.emptyMap());
         long pairStart = System.nanoTime();
@@ -254,8 +261,9 @@ public class QuickTestBurst {
                     }
                     // Close on another thread: this callback runs on the client's own Jersey async executor, and
                     // closing the client from that thread blocks ~5s (it waits for its own executor to shut down),
-                    // which held each concurrency slot for 5s and made every burst take ~5s per wave.
-                    CompletableFuture.runAsync(client::close);
+                    // which held each concurrency slot for 5s. From any other thread, close() returns right away.
+                    // runBurst waits for these before the next burst starts.
+                    closes.add(CompletableFuture.runAsync(client::close));
                     int done = completed.incrementAndGet();
                     // Progress lines only for a single burst; with loops, each burst gets one summary line instead.
                     if (loops == 1 && !verbose && (done % Math.max(1, count / 10) == 0 || done == count)) {
