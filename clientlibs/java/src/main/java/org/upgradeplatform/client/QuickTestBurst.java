@@ -22,8 +22,7 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 
 /**
  * Reproduces the production burst pattern: one initialized user with N aliases, then an /assign followed by a
- * /mark for every alias, with a bounded number of alias pairs in flight at once (the production Java service
- * runs about 11 threads).
+ * /mark for every alias, with a bounded number of alias pairs in flight at once.
  *
  * Each alias gets its own ExperimentClient, so every request carries that alias as its User-Id, the same as
  * production. Each /mark marks the decision point at (alias index mod number of returned decision points), so
@@ -32,14 +31,15 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
  * <pre>
  * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTestBurst" -Dexec.args="185"
  * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTestBurst" \
- *   -Dexec.args="185 --concurrency 11 --env qa --context assign-prog"
+ *   -Dexec.args="185 --concurrency 50 --env qa --context assign-prog"
  * </pre>
  *
  * Options (all but the count are optional):
  * <ul>
  * <li>{@code <count>} number of alias assign/mark pairs (required, first argument)</li>
- * <li>{@code --concurrency N} pairs in flight at once (default 11)</li>
- * <li>{@code --env local|qa|staging} same hosts as QuickTest (default local), or {@code --url <base url>}</li>
+ * <li>{@code --concurrency N} pairs in flight at once (default 50)</li>
+ * <li>{@code --env local|qa|staging} (default local; qa and staging read UPGRADE_QA_URL / UPGRADE_STAGING_URL, see
+ * QuickTestHosts), or {@code --url <base url>}</li>
  * <li>{@code --context <app context>} (default assign-prog)</li>
  * <li>{@code --user <id>} use an already-initialized user instead of creating one</li>
  * <li>{@code --group-type <type> --group-id <id>} group and working group for a new user (default schoolId /
@@ -49,14 +49,11 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
  * </ul>
  */
 public class QuickTestBurst {
-    private static final String LOCAL_URL = "http://localhost:3030";
-    private static final String ECS_QA_URL = "https://apps.qa-cli.net/upgrade-service";
-    private static final String ECS_STAGING_URL = "https://apps.qa-cli.com/upgrade-service";
     private static final MarkedDecisionPointStatus STATUS = MarkedDecisionPointStatus.CONDITION_APPLIED;
 
     private static int count;
-    private static int concurrency = 11;
-    private static String hostUrl = LOCAL_URL;
+    private static int concurrency = 50;
+    private static String hostUrl = QuickTestHosts.LOCAL_URL;
     private static String context = "assign-prog";
     private static String existingUserId = null;
     private static String groupType = "schoolId";
@@ -268,15 +265,13 @@ public class QuickTestBurst {
             String value = args[++i];
             switch (flag) {
                 case "--concurrency" -> concurrency = Integer.parseInt(value);
-                case "--env" -> hostUrl = switch (value) {
-                    case "local" -> LOCAL_URL;
-                    case "qa" -> ECS_QA_URL;
-                    case "staging" -> ECS_STAGING_URL;
-                    default -> {
-                        usage("unknown --env " + value + " (local, qa, staging)");
-                        yield null;
+                case "--env" -> {
+                    try {
+                        hostUrl = QuickTestHosts.forEnv(value);
+                    } catch (IllegalArgumentException | IllegalStateException e) {
+                        usage("--env " + value + ": " + e.getMessage());
                     }
-                };
+                }
                 case "--url" -> hostUrl = value;
                 case "--context" -> context = value;
                 case "--user" -> existingUserId = value;

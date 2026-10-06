@@ -14,15 +14,24 @@ import org.upgradeplatform.requestbeans.LogGroupMetrics;
 import org.upgradeplatform.requestbeans.LogInput;
 import org.upgradeplatform.requestbeans.LogMetrics;
 
+/**
+ * Manual end-to-end smoke test: one user runs init, group and working-group membership, aliases, assign,
+ * decision-point assignment, feature flags, mark and log, in order, against a running server.
+ *
+ * <pre>
+ * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest"
+ * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest" -Dexec.args="qa"
+ * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest" -Dexec.args="staging"
+ * </pre>
+ *
+ * The optional argument is local (default, http://localhost:3030), qa or staging; qa and staging read
+ * UPGRADE_QA_URL / UPGRADE_STAGING_URL from the environment (see QuickTestHosts).
+ */
 public class QuickTest {
-    private static final String LOCAL_URL = "http://localhost:3030";
-    private static final String ECS_QA_URL = "https://apps.qa-cli.net/upgrade-service";
-    private static final String ECS_STAGING_URL = "https://apps.qa-cli.com/upgrade-service";
     private static final String userId = "quicktest_user_" + System.currentTimeMillis();
     private static final String sessionId = "quicktest_session_" + System.currentTimeMillis();
     private static final String group = "test_class_group";
     private static final String alias = "alias" + userId;
-    private static final String hostUrl = LOCAL_URL;
     private static final String context = "upgrade-internal";
     private static final String site = "SelectSection";
     private static final String target = "my_fave_workspace";
@@ -47,7 +56,10 @@ public class QuickTest {
         logRequest.add(logEntry);
     }
 
+    /** Optional first argument: local (default), qa or staging; see QuickTestHosts for the env vars qa/staging need. */
     public static void main(String[] args) throws InterruptedException, ExecutionException {
+        String hostUrl = QuickTestHosts.forEnv(args.length > 0 ? args[0] : "local");
+        System.out.println("host: " + hostUrl);
         System.out.println("client_session_id: " + sessionId);
         ExperimentClient client = new ExperimentClient(userId, context, "BearerToken", sessionId, hostUrl,
                 Collections.emptyMap());

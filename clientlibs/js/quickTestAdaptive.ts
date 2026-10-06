@@ -1,4 +1,6 @@
 // to run: npx ts-node clientlibs/js/quickTestAdaptive.ts
+// against a backend on another local port (e.g. a /new-worktree worktree), set UPGRADE_QUICKTEST_URL:
+//   UPGRADE_QUICKTEST_URL=http://localhost:3031 npx ts-node clientlibs/js/quickTestAdaptive.ts
 //
 // Manual smoke test for Thompson Sampling (adaptive) experiments end-to-end:
 //   1. Creates a real experiment via the admin API (POST /experiments) and starts enrollment.
@@ -15,13 +17,26 @@
 import axios, { AxiosError } from 'axios';
 import UpgradeClient from './dist/node';
 
+// Hosted environments' URLs come from env vars so they stay out of this public repo, e.g.
+// `export UPGRADE_QA_URL=https://...` in your shell profile. Read lazily, so they're only required when used.
+const requireEnv = (name: string): string => {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`${name} is not set; export it with that environment's base URL`);
+  }
+  return value;
+};
 const URL = {
   // 3030 is the standard docker-compose port (see root CLAUDE.md); a git worktree set up via
   // /new-worktree auto-assigns its own port instead (check packages/backend/.env's APP_PORT) --
   // update this if you're running in a worktree.
   LOCAL: 'http://localhost:3030',
-  ECS_QA: 'https://apps.qa-cli.net/upgrade-service',
-  ECS_STAGING: 'https://apps.qa-cli.com/upgrade-service',
+  get QA() {
+    return requireEnv('UPGRADE_QA_URL');
+  },
+  get STAGING() {
+    return requireEnv('UPGRADE_STAGING_URL');
+  },
 };
 
 // -------------------------------------------------------------------------------------------
@@ -40,7 +55,8 @@ const ADMIN_TOKEN = 'fake-dev-user-google-credential';
 // -------------------------------------------------------------------------------------------
 // Config -- edit these to change what gets created/simulated
 // -------------------------------------------------------------------------------------------
-const hostUrl = URL.LOCAL;
+// UPGRADE_QUICKTEST_URL overrides this for one run (though see ADMIN_TOKEN: this only works against local dev)
+const hostUrl = process.env.UPGRADE_QUICKTEST_URL || URL.LOCAL;
 const adminApiUrl = hostUrl + '/api';
 const context = 'upgrade-internal';
 const site = 'quicktest-adaptive-site';
