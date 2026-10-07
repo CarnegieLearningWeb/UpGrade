@@ -146,6 +146,7 @@ export class ExperimentAssignmentService {
     logger: UpgradeLogger
   ): Promise<{
     selectedExperiments: Experiment[];
+    invalidGroupExperiments: Experiment[];
     exclusionReason: { experiment: Experiment; reason: string; matchedGroup: boolean }[];
     mergedIndividualEnrollments: IndividualEnrollment[];
     groupEnrollments: GroupEnrollment[];
@@ -153,10 +154,13 @@ export class ExperimentAssignmentService {
     groupExclusions: GroupExclusion[];
   }> {
     const validExperiments = await this.filterAndProcessGroupExperiments(experiments, userDoc, logger);
+    const validExperimentIds = new Set(validExperiments.map((experiment) => experiment.id));
+    const invalidGroupExperiments = experiments.filter((experiment) => !validExperimentIds.has(experiment.id));
 
     if (validExperiments.length === 0) {
       return {
         selectedExperiments: [],
+        invalidGroupExperiments,
         exclusionReason: [],
         mergedIndividualEnrollments: [],
         groupEnrollments: [],
@@ -198,6 +202,7 @@ export class ExperimentAssignmentService {
 
     return {
       selectedExperiments,
+      invalidGroupExperiments,
       exclusionReason,
       mergedIndividualEnrollments,
       groupEnrollments,
@@ -274,7 +279,7 @@ export class ExperimentAssignmentService {
     }
 
     // No experiment ID: pool the full context before matching the marked decision point.
-    const { selectedExperiments, exclusionReason } = await this.selectExperimentsForUser(
+    const { selectedExperiments, invalidGroupExperiments, exclusionReason } = await this.selectExperimentsForUser(
       allExperimentsForContext,
       userDoc,
       previewUser,
@@ -285,6 +290,7 @@ export class ExperimentAssignmentService {
     const experiment =
       selectedExperiments.find((selected) => experimentIdsAtDP.has(selected.id)) ??
       exclusionReason.find((reason) => experimentIdsAtDP.has(reason.experiment?.id))?.experiment ??
+      invalidGroupExperiments.find((invalid) => experimentIdsAtDP.has(invalid.id)) ??
       null;
     const resolvedExperimentId = experiment?.id ?? null;
     const resolvedExclusionReason = exclusionReason.filter((reason) => reason.experiment?.id === resolvedExperimentId);
