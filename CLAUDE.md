@@ -64,7 +64,7 @@ Environment files: copy `packages/backend/.env.example` to `packages/backend/.en
 
 ## Package Versions
 
-All packages are versioned together (currently v6.5.0). Keep versions in sync when bumping.
+All packages are versioned together (currently v6.8.0). Keep versions in sync when bumping.
 
 ---
 
