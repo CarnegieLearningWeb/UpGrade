@@ -18,7 +18,11 @@ import { getInstanceId } from './instanceIdentity';
  * - eventLoopDelayMs: how late a timer fired beyond its schedule — how long ready work sat waiting for the thread.
  * - garbageCollection.major/minor: GC pauses (count, total, longest). Major pauses block the thread.
  * - dbPool.maxWaitingForConnection: most queries queued for a free pg connection at any sample. Above 0 = pool exhausted.
- * - dbPool.maxConnectionsInUse / poolSize: peak checked-out connections vs. the configured pool limit.
+ * - dbPool.maxConnectionsInUse: peak checked-out connections at any sample (compare to dbPoolConfig.maxPoolSize).
+ * - dbPool.currentPoolSize: connections open (in use + idle) at report time. Drops as idle ones time out or expire.
+ * - dbPoolConfig: the pool settings as pg-pool resolved them (after its defaults), to confirm the TYPEORM_* env
+ *   vars took. Static for the life of the process. keepAliveInitialDelayMillis is null when unset, and has no
+ *   effect unless keepAlive is true.
  * - cacheWrites: in-memory cache writes in the window (count, total/longest time blocked, and the key of
  *   the longest). The memory store deep-clones every value on write, synchronously, so this is time the
  *   event loop was blocked copying cache values — see instrumentCacheStore.
@@ -43,7 +47,14 @@ interface PgPoolLike {
   totalCount: number;
   idleCount: number;
   waitingCount: number;
-  options?: { max?: number };
+  options?: {
+    max?: number;
+    min?: number;
+    idleTimeoutMillis?: number;
+    maxLifetimeSeconds?: number;
+    keepAlive?: boolean;
+    keepAliveInitialDelayMillis?: number;
+  };
 }
 
 export interface PerfDiagnosticsOptions {
@@ -221,7 +232,17 @@ export function startPerfDiagnostics(dataSource: DataSource, options: PerfDiagno
             ? {
                 maxWaitingForConnection: maxWaiting,
                 maxConnectionsInUse: maxInUse,
-                poolSize: pool.options?.max ?? null,
+                currentPoolSize: pool.totalCount,
+              }
+            : null,
+          dbPoolConfig: pool
+            ? {
+                maxPoolSize: pool.options?.max ?? null,
+                minPoolSize: pool.options?.min ?? null,
+                idleTimeoutMillis: pool.options?.idleTimeoutMillis ?? null,
+                maxLifetimeSeconds: pool.options?.maxLifetimeSeconds ?? null,
+                keepAlive: pool.options?.keepAlive ?? null,
+                keepAliveInitialDelayMillis: pool.options?.keepAliveInitialDelayMillis ?? null,
               }
             : null,
           cacheWrites: {
