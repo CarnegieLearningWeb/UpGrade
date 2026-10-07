@@ -32,7 +32,6 @@ const defaultConfig: UpGradeClientInterfaces.IConfig = {
   clientSessionId: 'testClientSessionId',
   token: 'testToken',
   httpClient: mockHttpClient,
-  featureFlagUserGroupsForSession: null,
 };
 
 describe('ApiService', () => {
@@ -312,6 +311,7 @@ describe('ApiService', () => {
         status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
       };
       const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        context: defaultConfig.context,
         status: params.status,
         data: {
           ...mockAssignment,
@@ -333,6 +333,7 @@ describe('ApiService', () => {
         uniquifier: 'unique123',
       };
       const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        context: defaultConfig.context,
         status: params.status,
         data: {
           ...mockAssignment,
@@ -355,6 +356,7 @@ describe('ApiService', () => {
         clientError: 'something went wrong',
       };
       const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        context: defaultConfig.context,
         status: params.status,
         data: {
           ...mockAssignment,
@@ -410,74 +412,67 @@ describe('ApiService', () => {
     });
   });
 
-  describe('#setFeatureFlagUserGroupsForSession', () => {
-    it('should update internal groupsForSession and includeStoredUserGroups properties', () => {
-      const mockGroupsForSession = {
-        school: ['testSchool1', 'testSchool2'],
-        class: ['testClass1'],
+  describe('#getAllFeatureFlags', () => {
+    const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/featureflag`;
+    const expectedOptions = {
+      headers: {
+        'Content-Type': 'application/json',
+        'Session-Id': 'testClientSessionId',
+        URL: expectedUrl,
+        'User-Id': defaultConfig.userId,
+        'Client-Context': defaultConfig.context,
+        'Client-Version': CLIENT_VERSION,
+        Authorization: 'Bearer testToken',
+      },
+      withCredentials: false,
+    };
+
+    it('sends just context with no arguments', async () => {
+      mockHttpClient.doPost.mockResolvedValue(['flag1']);
+
+      const result = await apiService.getAllFeatureFlags();
+
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(
+        expectedUrl,
+        { context: defaultConfig.context },
+        expectedOptions
+      );
+      expect(result).toEqual(['flag1']);
+    });
+
+    it('sends useSingleGroupSet as given', async () => {
+      const useSingleGroupSet = { groups: { schoolId: ['school-a'] }, includeStoredUserGroups: false };
+      mockHttpClient.doPost.mockResolvedValue(['flag1']);
+
+      const result = await apiService.getAllFeatureFlags({ useSingleGroupSet });
+
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(
+        expectedUrl,
+        { context: defaultConfig.context, useSingleGroupSet },
+        expectedOptions
+      );
+      expect(result).toEqual(['flag1']);
+    });
+
+    it('sends useMultipleGroupSets as given and returns the object response', async () => {
+      const useMultipleGroupSets = {
+        mainGroupset: { groups: { schoolId: ['school-a', 'school-b'] } },
+        subGroupsets: [
+          { groupsetId: 'school-a', groups: { schoolId: ['school-a'] } },
+          { groupsetId: 'school-b', groups: { schoolId: ['school-b'] } },
+        ],
       };
-      const mockIncludeStoredUserGroups = true;
+      const mockResponse = { mainGroupset: ['flag1'], subGroupsets: { 'school-a': ['flag1'], 'school-b': [] } };
+      mockHttpClient.doPost.mockResolvedValue(mockResponse);
 
-      apiService.setFeatureFlagUserGroupsForSession(mockGroupsForSession, mockIncludeStoredUserGroups);
+      const result = await apiService.getAllFeatureFlags({ useMultipleGroupSets });
 
-      // Verify internal state was updated by checking if the values are used in subsequent requests
-      // Since the properties are private, we'll verify this through their usage in other methods
-      expect(apiService).toBeDefined();
-      // The actual verification happens by checking if these values are used in feature flag requests
-    });
-
-    it('should handle null groupsForSession', () => {
-      const mockIncludeStoredUserGroups = false;
-
-      expect(() => {
-        apiService.setFeatureFlagUserGroupsForSession(null as any, mockIncludeStoredUserGroups);
-      }).not.toThrow();
-    });
-
-    it('should handle undefined groupsForSession', () => {
-      const mockIncludeStoredUserGroups = false;
-
-      expect(() => {
-        apiService.setFeatureFlagUserGroupsForSession(undefined as any, mockIncludeStoredUserGroups);
-      }).not.toThrow();
-    });
-
-    it('should handle empty groupsForSession object', () => {
-      const mockGroupsForSession = {};
-      const mockIncludeStoredUserGroups = true;
-
-      expect(() => {
-        apiService.setFeatureFlagUserGroupsForSession(mockGroupsForSession, mockIncludeStoredUserGroups);
-      }).not.toThrow();
-    });
-
-    it('should update includeStoredUserGroups to false', () => {
-      const mockGroupsForSession = {
-        school: ['testSchool1'],
-      };
-      const mockIncludeStoredUserGroups = false;
-
-      expect(() => {
-        apiService.setFeatureFlagUserGroupsForSession(mockGroupsForSession, mockIncludeStoredUserGroups);
-      }).not.toThrow();
-    });
-
-    it('should allow multiple calls to update the configuration', () => {
-      const firstGroupsForSession = {
-        school: ['testSchool1'],
-      };
-      const secondGroupsForSession = {
-        school: ['testSchool2'],
-        class: ['testClass1'],
-      };
-
-      // First call
-      apiService.setFeatureFlagUserGroupsForSession(firstGroupsForSession, true);
-
-      // Second call should overwrite the first
-      expect(() => {
-        apiService.setFeatureFlagUserGroupsForSession(secondGroupsForSession, false);
-      }).not.toThrow();
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(
+        expectedUrl,
+        { context: defaultConfig.context, useMultipleGroupSets },
+        expectedOptions
+      );
+      expect(result).toEqual(mockResponse);
     });
   });
 
