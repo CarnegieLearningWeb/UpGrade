@@ -5,7 +5,12 @@ describe('startPerfDiagnostics', () => {
   const waitFor = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   it('writes a perfdiag line with event loop, gc, and pool stats', async () => {
-    const pool = { totalCount: 4, idleCount: 1, waitingCount: 2, options: { max: 10 } };
+    const pool = {
+      totalCount: 4,
+      idleCount: 1,
+      waitingCount: 2,
+      options: { max: 10, min: 0, idleTimeoutMillis: 10000, maxLifetimeSeconds: 0, keepAlive: false },
+    };
     const lines: string[] = [];
     const stop = startPerfDiagnostics({ driver: { master: pool } } as any, {
       sampleMs: 10,
@@ -31,7 +36,15 @@ describe('startPerfDiagnostics', () => {
       totalMs: expect.any(Number),
       maxMs: expect.any(Number),
     });
-    expect(parsed.dbPool).toEqual({ maxWaitingForConnection: 2, maxConnectionsInUse: 3, poolSize: 10 });
+    expect(parsed.dbPool).toEqual({ maxWaitingForConnection: 2, maxConnectionsInUse: 3, currentPoolSize: 4 });
+    expect(parsed.dbPoolConfig).toEqual({
+      maxPoolSize: 10,
+      minPoolSize: 0,
+      idleTimeoutMillis: 10000,
+      maxLifetimeSeconds: 0,
+      keepAlive: false,
+      keepAliveInitialDelayMillis: null,
+    });
     expect(parsed.cacheWrites).toEqual({
       count: expect.any(Number),
       totalMs: expect.any(Number),
@@ -53,6 +66,7 @@ describe('startPerfDiagnostics', () => {
     stop();
 
     expect(JSON.parse(lines[0]).dbPool).toBeNull();
+    expect(JSON.parse(lines[0]).dbPoolConfig).toBeNull();
   });
 
   it('stops writing after the returned stop function is called', async () => {
