@@ -16,7 +16,11 @@ import { MatTableModule } from '@angular/material/table';
 import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
-import { CommonStatusIndicatorChipComponent, CommonTagListComponent } from '@shared-component-lib';
+import {
+  CommonSelectionCheckboxComponent,
+  CommonStatusIndicatorChipComponent,
+  CommonTagListComponent,
+} from '@shared-component-lib';
 import { SegmentsService } from '../../../../../../../../core/segments/segments.service';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { SEGMENT_SEARCH_KEY } from 'upgrade_types';
@@ -30,6 +34,7 @@ import {
 @Component({
   selector: 'app-segment-root-section-card-table',
   imports: [
+    CommonSelectionCheckboxComponent,
     MatTableModule,
     AsyncPipe,
     SharedModule,
@@ -46,6 +51,7 @@ export class SegmentRootSectionCardTableComponent implements AfterViewInit, OnDe
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
   @Input() expandedTagsMap: Map<string, boolean>;
+  @Input() canSelect = false;
   @Output() tagsExpanded = new EventEmitter<{ segmentId: string; expanded: boolean }>();
   segmentSortKey$ = this.segmentsService.selectSegmentSortKey$;
   segmentSortAs$ = this.segmentsService.selectSegmentSortAs$;
@@ -55,6 +61,7 @@ export class SegmentRootSectionCardTableComponent implements AfterViewInit, OnDe
   @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
 
   private observer: IntersectionObserver;
+  readonly batch = this.segmentsService.batch;
 
   constructor(private segmentsService: SegmentsService) {}
 
@@ -89,6 +96,7 @@ export class SegmentRootSectionCardTableComponent implements AfterViewInit, OnDe
   filterSegmentByChips(tagValue: string, type: SEGMENT_SEARCH_KEY) {
     this.setSearchKey(type);
     this.setSearchString(tagValue);
+    this.segmentsService.fetchSegmentsPaginated(true);
   }
 
   setSearchKey(searchKey: SEGMENT_SEARCH_KEY) {
@@ -100,7 +108,7 @@ export class SegmentRootSectionCardTableComponent implements AfterViewInit, OnDe
   }
 
   get displayedColumns(): string[] {
-    return SEGMENT_ROOT_DISPLAYED_COLUMNS;
+    return this.canSelect ? ['select', ...SEGMENT_ROOT_DISPLAYED_COLUMNS] : SEGMENT_ROOT_DISPLAYED_COLUMNS;
   }
 
   get SEGMENT_TRANSLATION_KEYS() {
