@@ -42,6 +42,7 @@ class MarkDecisionPointData(BaseModel):
 
 
 class MarkDecisionPointRequest(BaseModel):
+    context: str
     status: MarkedDecisionPointStatus
     data: MarkDecisionPointData
     uniquifier: str | None = None
