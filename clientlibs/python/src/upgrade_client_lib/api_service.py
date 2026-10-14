@@ -228,8 +228,8 @@ class ApiService:
         data = self._post_sync("mark", body)
         return MarkDecisionPointResponse.model_validate(data)
 
-    @staticmethod
     def _build_mark_body(
+        self,
         site: str,
         target: str | None,
         condition_code: str,
@@ -257,7 +257,7 @@ class ApiService:
         if assigned_factor is not None:
             mark_data["assignedFactor"] = assigned_factor
 
-        body: dict[str, Any] = {"status": status.value, "data": mark_data}
+        body: dict[str, Any] = {"context": self._context, "status": status.value, "data": mark_data}
         if uniquifier is not None:
             body["uniquifier"] = uniquifier
         if client_error is not None:

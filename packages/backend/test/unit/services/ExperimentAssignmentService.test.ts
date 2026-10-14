@@ -33,7 +33,9 @@ import {
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
 import {
   ASSIGNMENT_ALGORITHM,
+  CONSISTENCY_RULE,
   ENROLLMENT_CODE,
+  EXCLUSION_CODE,
   EXPERIMENT_STATE,
   FILTER_MODE,
   MARKED_DECISION_POINT_STATUS,
@@ -2035,6 +2037,60 @@ describe('Experiment Assignment Service Test', () => {
     );
     expect(markResult).toMatchObject(monitoredDocument);
     sinon.assert.calledOnce(testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria);
+  });
+
+  describe('/mark records invalid-group exclusions', () => {
+    it.each([
+      [
+        'invalid working group',
+        { schoolId: ['school1'] },
+        { schoolId: 'school2' },
+        EXCLUSION_CODE.INVALID_GROUP_OR_WORKING_GROUP,
+      ],
+      ['missing working group', { schoolId: ['school1'] }, {}, EXCLUSION_CODE.NO_GROUP_SPECIFIED],
+      ['missing group data', {}, { schoolId: 'school1' }, EXCLUSION_CODE.NO_GROUP_SPECIFIED],
+    ])('records %s with and without an experiment ID', async (_name, group, workingGroup, exclusionCode) => {
+      const exp = structuredClone(simpleGroupAssignmentExperiment);
+      exp.state = EXPERIMENT_STATE.ENROLLING;
+      exp.consistencyRule = CONSISTENCY_RULE.GROUP;
+      exp.group = 'schoolId';
+      exp.enrollmentCompleteCondition = null;
+      const { site, target } = exp.partitions[0];
+      const userDoc = { id: 'invalid-group-user', group, workingGroup };
+
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+      testedModule.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+      testedModule.experimentLevelExclusionInclusion = sandbox.stub().callsFake(async (exps) => [exps, []]);
+      groupEnrollmentRepositoryMock.findOne = sandbox.stub().resolves(undefined);
+      groupExclusionRepositoryMock.findOne = sandbox.stub().resolves(undefined);
+      groupEnrollmentRepositoryMock.save = sandbox.stub();
+      individualEnrollmentRepositoryMock.save = sandbox.stub();
+      testedModule.monitoredDecisionPointRepository = {
+        findOne: sandbox.stub().resolves(undefined),
+        saveRawJson: sandbox.stub().callsFake(async (document) => document),
+      };
+
+      for (const experimentId of [undefined, exp.id]) {
+        individualExclusionRepositoryMock.saveRawJson.resetHistory();
+        await testedModule.markExperimentPoint(
+          userDoc,
+          site,
+          MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED,
+          null,
+          loggerMock,
+          'context',
+          experimentId,
+          target
+        );
+
+        sinon.assert.calledOnce(individualExclusionRepositoryMock.saveRawJson);
+        expect(individualExclusionRepositoryMock.saveRawJson.firstCall.args[0]).toEqual([
+          { user: userDoc, experiment: exp, exclusionCode },
+        ]);
+        sinon.assert.notCalled(groupEnrollmentRepositoryMock.save);
+        sinon.assert.notCalled(individualEnrollmentRepositoryMock.save);
+      }
+    });
   });
 
   describe('[resolveExperimentForMarkPoint]', () => {
