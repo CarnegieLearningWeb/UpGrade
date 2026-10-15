@@ -6,7 +6,9 @@ import asyncio
 import uuid
 from typing import Any
 
-from upgrade_client_lib.api_service import ApiService
+import httpx
+
+from upgrade_client_lib.api_service import _DEFAULT_TIMEOUT, ApiService
 from upgrade_client_lib.assignment import Assignment
 from upgrade_client_lib.data_service import DataService
 from upgrade_client_lib.types.enums import BinaryRewardValue, MarkedDecisionPointStatus
@@ -41,6 +43,10 @@ class UpgradeClient:
     client_session_id:
         Optional session identifier.  A UUID is generated automatically when
         omitted.
+    timeout:
+        HTTP request timeout in seconds, or an ``httpx.Timeout`` object for
+        fine-grained control.  Defaults to ``httpx.Timeout(5.0)``, which
+        matches httpx's own default and preserves the previous implicit behavior.
 
     Examples
     --------
@@ -70,6 +76,7 @@ class UpgradeClient:
         context: str,
         token: str = "",
         client_session_id: str | None = None,
+        timeout: float | httpx.Timeout = _DEFAULT_TIMEOUT,
     ) -> None:
         self._user_id = user_id
         self._context = context
@@ -80,6 +87,7 @@ class UpgradeClient:
             context=context,
             token=token,
             client_session_id=client_session_id or str(uuid.uuid4()),
+            timeout=timeout,
         )
 
     # ------------------------------------------------------------------
@@ -191,7 +199,7 @@ class UpgradeClient:
 
     async def mark_decision_point(
         self,
-        condition: str,
+        condition: str | None,
         status: MarkedDecisionPointStatus,
         site: str,
         target: str = "",
@@ -241,7 +249,7 @@ class UpgradeClient:
 
     def mark_decision_point_sync(
         self,
-        condition: str,
+        condition: str | None,
         status: MarkedDecisionPointStatus,
         site: str,
         target: str = "",
