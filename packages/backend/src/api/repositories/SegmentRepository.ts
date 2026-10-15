@@ -139,8 +139,8 @@ export class SegmentRepository extends Repository<Segment> {
     return result.raw;
   }
 
-  public async findParentSegmentIds(segmentId: string): Promise<string[]> {
-    const rows = await this.manager.query(
+  public async findParentSegmentIds(segmentId: string, entityManager?: EntityManager): Promise<string[]> {
+    const rows = await (entityManager || this.manager).query(
       `SELECT "parentSegmentId" FROM "segment_for_segment" WHERE "childSegmentId" = $1`,
       [segmentId]
     );

@@ -54,8 +54,22 @@
 
   <div class="options-container dense-2">
     @if (showMenuButton) {
-    <div [matTooltip]="menuButtonTooltip" [matTooltipDisabled]="!menuButtonDisabled" matTooltipPosition="above">
-      <button mat-icon-button [matMenuTriggerFor]="menu" [disabled]="menuButtonDisabled">
+    <div
+      [matTooltip]="menuButtonTooltip"
+      [matTooltipDisabled]="!menuButtonDisabled"
+      matTooltipPosition="above"
+      [attr.tabindex]="menuButtonDisabled ? 0 : null"
+      [attr.role]="menuButtonDisabled ? 'button' : null"
+      [attr.aria-disabled]="menuButtonDisabled ? 'true' : null"
+      [attr.aria-label]="menuButtonDisabled ? menuButtonTooltip || ('global.more-actions.text' | translate) : null"
+    >
+      <button
+        mat-icon-button
+        class="section-card-menu-trigger"
+        [matMenuTriggerFor]="menu"
+        [disabled]="menuButtonDisabled"
+        [attr.aria-label]="'global.more-actions.text' | translate"
+      >
         <mat-icon>more_vert</mat-icon>
       </button>
     </div>

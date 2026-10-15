@@ -1,0 +1,13 @@
+<mat-checkbox
+  [disableRipple]="true"
+  color="primary"
+  [checked]="checked"
+  [indeterminate]="indeterminate"
+  [disabled]="disabled"
+  [aria-label]="ariaLabel"
+  matTooltipPosition="above"
+  [matTooltip]="tooltip"
+  (click)="$event.stopPropagation()"
+  (keydown)="$event.stopPropagation()"
+  (change)="toggle.emit()"
+/>

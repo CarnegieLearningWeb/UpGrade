@@ -22,7 +22,11 @@ import { MatTableModule } from '@angular/material/table';
 import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
-import { CommonStatusIndicatorChipComponent, CommonTagListComponent } from '@shared-component-lib';
+import {
+  CommonSelectionCheckboxComponent,
+  CommonStatusIndicatorChipComponent,
+  CommonTagListComponent,
+} from '@shared-component-lib';
 import { ExperimentService } from '../../../../../../../../core/experiments/experiments.service';
 import { SharedModule } from '../../../../../../../../shared/shared.module';
 import { EXPERIMENT_STATE, FILTER_MODE, EXPERIMENT_SEARCH_KEY } from 'upgrade_types';
@@ -31,6 +35,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 @Component({
   selector: 'app-experiment-root-section-card-table',
   imports: [
+    CommonSelectionCheckboxComponent,
     MatTableModule,
     AsyncPipe,
     SharedModule,
@@ -48,6 +53,7 @@ export class ExperimentRootSectionCardTableComponent implements AfterViewInit, O
   @Input() isLoading$: Observable<boolean>;
   @Input() isSearchActive$: Observable<boolean>;
   @Input() expandedTagsMap: Map<string, boolean>;
+  @Input() canSelect = false;
   @Output() tagsExpanded = new EventEmitter<{ experimentId: string; expanded: boolean }>();
   experimentSortKey$ = this.experimentService.selectExperimentSortKey$;
   experimentSortAs$ = this.experimentService.selectExperimentSortAs$;
@@ -58,6 +64,7 @@ export class ExperimentRootSectionCardTableComponent implements AfterViewInit, O
   @ViewChild('bottomTrigger') bottomTrigger: ElementRef;
 
   private observer: IntersectionObserver;
+  readonly batch = this.experimentService.batch;
 
   constructor(private readonly experimentService: ExperimentService) {}
 
@@ -106,7 +113,7 @@ export class ExperimentRootSectionCardTableComponent implements AfterViewInit, O
   }
 
   get displayedColumns(): string[] {
-    return EXPERIMENT_ROOT_DISPLAYED_COLUMNS;
+    return this.canSelect ? ['select', ...EXPERIMENT_ROOT_DISPLAYED_COLUMNS] : EXPERIMENT_ROOT_DISPLAYED_COLUMNS;
   }
 
   get EXPERIMENT_TRANSLATION_KEYS() {
