@@ -11,10 +11,10 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="(permissions$ | async)?.experiments.create"
+    [showPrimaryButton]="$safeNavigationMigration((permissions$ | async)?.experiments.create)"
     [primaryButtonText]="'experiments.add-experiment.text' | translate"
     [menuButtonItems]="menuButtonItems"
-    [showMenuButton]="(permissions$ | async)?.experiments.create"
+    [showMenuButton]="$safeNavigationMigration((permissions$ | async)?.experiments.create)"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddExperimentButtonClick()"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"

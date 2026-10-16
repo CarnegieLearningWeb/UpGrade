@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, AfterViewInit, ChangeDetectionStrategy } from '@angular/core';
 import { JsonEditorOptions, JsonEditorComponent } from 'ang-jsoneditor';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
@@ -10,6 +10,7 @@ import { IContextMetaData } from '../../../../../../core/experiments/store/exper
   selector: 'app-add-metrics',
   templateUrl: './add-metrics.component.html',
   styleUrls: ['./add-metrics.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class AddMetricsComponent implements OnInit, AfterViewInit, OnDestroy {

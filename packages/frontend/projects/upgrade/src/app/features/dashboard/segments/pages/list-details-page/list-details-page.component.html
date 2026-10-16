@@ -3,7 +3,7 @@
     header
     [rootName]="rootName"
     [rootLink]="rootLink"
-    [parentName]="owner?.name"
+    [parentName]="$safeNavigationMigration(owner?.name)"
     [parentLink]="parentLink"
     [detailsName]="list?.name || 'List Details'"
   ></app-common-details-page-header>

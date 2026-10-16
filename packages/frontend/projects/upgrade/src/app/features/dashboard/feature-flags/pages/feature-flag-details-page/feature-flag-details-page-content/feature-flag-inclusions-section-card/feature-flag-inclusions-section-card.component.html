@@ -1,5 +1,6 @@
-@if (selectedFlag$ | async; as flag) { @let canShowSegmentActions = (permissions$ | async)?.segments.update; @let
-appContext = flag.context[0]; @let isIncludeAll = flag.filterMode === FILTER_MODE.INCLUDE_ALL;
+@if (selectedFlag$ | async; as flag) { @let canShowSegmentActions = $safeNavigationMigration((permissions$ |
+async)?.segments.update); @let appContext = flag.context[0]; @let isIncludeAll = flag.filterMode ===
+FILTER_MODE.INCLUDE_ALL;
 
 <app-common-section-card>
   <!-- header-left -->

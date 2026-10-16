@@ -1,5 +1,5 @@
 // segment-details-page.component.ts
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonPageComponent } from '@shared-component-lib';
 import { SegmentDetailsPageHeaderComponent } from './segment-details-page-header/segment-details-page-header.component';
 import { SegmentDetailsPageContentComponent } from './segment-details-page-content/segment-details-page-content.component';
@@ -13,6 +13,7 @@ import { filter, map, startWith } from 'rxjs/operators';
   selector: 'app-segment-details-page',
   templateUrl: './segment-details-page.component.html',
   styleUrl: './segment-details-page.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [CommonPageComponent, SegmentDetailsPageHeaderComponent, SegmentDetailsPageContentComponent],
 })
 export class SegmentDetailsPageComponent implements OnInit, OnDestroy {

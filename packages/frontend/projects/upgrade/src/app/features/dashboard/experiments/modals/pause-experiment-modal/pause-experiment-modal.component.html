@@ -12,7 +12,8 @@
     <!-- Confirmation message -->
     <div class="pause-confirm ft-16-400">
       <span>{{
-        'experiments.pause-experiment-modal.message.text' | translate : { experimentName: data.params?.experimentName }
+        'experiments.pause-experiment-modal.message.text'
+          | translate : { experimentName: $safeNavigationMigration(data.params?.experimentName) }
       }}</span>
     </div>
     <!-- Info text -->

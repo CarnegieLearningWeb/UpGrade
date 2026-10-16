@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonPageComponent } from '@shared-component-lib';
 import { ExperimentDetailsPageHeaderComponent } from './experiment-details-page-header/experiment-details-page-header.component';
 import { ExperimentDetailsPageContentComponent } from './experiment-details-page-content/experiment-details-page-content.component';
@@ -7,6 +7,7 @@ import { ExperimentDetailsPageContentComponent } from './experiment-details-page
   selector: 'app-experiment-details-page',
   templateUrl: './experiment-details-page.component.html',
   styleUrl: './experiment-details-page.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [CommonPageComponent, ExperimentDetailsPageHeaderComponent, ExperimentDetailsPageContentComponent],
 })
 export class ExperimentDetailsPageComponent {}

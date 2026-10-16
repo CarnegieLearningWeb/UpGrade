@@ -77,8 +77,8 @@
                       [placeholder]="'home.new-experiment.design.condition.placeholder.text' | translate"
                     >
                       @for (condition of experimentConditions[formIndex]; track condition) {
-                      <mat-option class="ft-14-400" [value]="condition?.id">
-                        {{ condition?.conditionCode | titlecase }}
+                      <mat-option class="ft-14-400" [value]="$safeNavigationMigration(condition?.id)">
+                        {{ $safeNavigationMigration(condition?.conditionCode) | titlecase }}
                       </mat-option>
                       }
                     </mat-select>
@@ -128,7 +128,7 @@
                 class="save-btn default-button"
                 [ngClass]="{ 'default-button--disabled': !this.previewUserAssignConditionForm.valid }"
                 [disabled]="!this.previewUserAssignConditionForm.valid"
-                (click)="saveAssignedConditions(element?.id)"
+                (click)="saveAssignedConditions($safeNavigationMigration(element?.id))"
               >
                 {{ 'users.preview-users.save.text' | translate }}
               </button>
