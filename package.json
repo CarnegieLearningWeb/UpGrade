@@ -6,11 +6,6 @@
   "workspaces": [
     "packages/*"
   ],
-  "overrides": {
-    "upgrade-frontend": {
-      "typescript": "~5.5.4"
-    }
-  },
   "private": true,
   "devDependencies": {
     "@angular-eslint/eslint-plugin": "^14.1.2",

@@ -8,13 +8,12 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Segment } from '../../../../../core/segments/store/segments.model';
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { filter, map, startWith } from 'rxjs/operators';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-segment-details-page',
   templateUrl: './segment-details-page.component.html',
   styleUrl: './segment-details-page.component.scss',
-  imports: [CommonModule, CommonPageComponent, SegmentDetailsPageHeaderComponent, SegmentDetailsPageContentComponent],
+  imports: [CommonPageComponent, SegmentDetailsPageHeaderComponent, SegmentDetailsPageContentComponent],
 })
 export class SegmentDetailsPageComponent implements OnInit, OnDestroy {
   segment$: Observable<Segment>;

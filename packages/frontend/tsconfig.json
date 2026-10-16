@@ -5,7 +5,7 @@
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": false,
     "esModuleInterop": true,
     "alwaysStrict": false,
@@ -16,7 +16,6 @@
     "skipLibCheck": true,
     "module": "es2020",
     "target": "ES2022",
-    "lib": ["es2018", "dom"],
     "types": ["jest", "google.accounts"],
     "paths": {
       "upgrade_types": ["../../types", "./types"],
