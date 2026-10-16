@@ -42,8 +42,8 @@
       <td mat-cell *matCellDef="let rowData" class="name-column ft-14-400">
         @if (isPublicSegment(rowData)) {
         <a
-          [routerLink]="['/segments', 'detail', rowData.segment?.subSegments?.[0]?.id]"
-          [appTextOverflowTooltip]="rowData.segment?.name"
+          [routerLink]="['/segments', 'detail', $safeNavigationMigration(rowData.segment?.subSegments?.[0]?.id)]"
+          [appTextOverflowTooltip]="$safeNavigationMigration(rowData.segment?.name)"
           matTooltipPosition="above"
           class="segment-name line-clamp-1"
         >
@@ -51,7 +51,7 @@
         </a>
         @if (rowData.segment?.subSegments?.[0]?.description) {
         <span
-          [appTextOverflowTooltip]="rowData.segment?.subSegments?.[0]?.description"
+          [appTextOverflowTooltip]="$safeNavigationMigration(rowData.segment?.subSegments?.[0]?.description)"
           matTooltipPosition="below"
           class="segment-description ft-10-400 line-clamp-1"
         >
@@ -59,8 +59,8 @@
         </span>
         } } @else if (isDirectValueList(rowData)) {
         <a
-          [routerLink]="['list', detailsFilterMode, rowData.segment?.id]"
-          [appTextOverflowTooltip]="rowData.segment?.name"
+          [routerLink]="['list', detailsFilterMode, $safeNavigationMigration(rowData.segment?.id)]"
+          [appTextOverflowTooltip]="$safeNavigationMigration(rowData.segment?.name)"
           matTooltipPosition="above"
           class="segment-name line-clamp-1"
         >
@@ -68,7 +68,7 @@
         </a>
         @if (rowData.segment?.description) {
         <span
-          [appTextOverflowTooltip]="rowData.segment?.description"
+          [appTextOverflowTooltip]="$safeNavigationMigration(rowData.segment?.description)"
           matTooltipPosition="below"
           class="segment-description ft-10-400 line-clamp-1"
         >
@@ -76,7 +76,7 @@
         </span>
         } } @else {
         <span
-          [appTextOverflowTooltip]="rowData.segment?.name"
+          [appTextOverflowTooltip]="$safeNavigationMigration(rowData.segment?.name)"
           matTooltipPosition="above"
           class="segment-name line-clamp-1"
         >
@@ -84,7 +84,7 @@
         </span>
         @if (rowData.segment?.description) {
         <span
-          [appTextOverflowTooltip]="rowData.segment?.description"
+          [appTextOverflowTooltip]="$safeNavigationMigration(rowData.segment?.description)"
           matTooltipPosition="below"
           class="segment-description ft-10-400 line-clamp-1"
         >

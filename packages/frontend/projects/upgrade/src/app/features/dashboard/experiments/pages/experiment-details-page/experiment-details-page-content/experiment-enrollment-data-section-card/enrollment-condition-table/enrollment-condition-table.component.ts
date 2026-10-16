@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import {
   ASSIGNMENT_UNIT,
   ExperimentVM,
@@ -16,6 +16,7 @@ import { formatDecisionPointDisplay } from '../../../../../experiment-decision-p
   selector: 'app-enrollment-condition-table',
   templateUrl: './enrollment-condition-table.component.html',
   styleUrls: ['./enrollment-condition-table.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [TranslateModule, EnrollmentConditionExpandableRowComponent, MatProgressSpinnerModule],
 })
 export class EnrollmentConditionTableComponent implements OnChanges, OnInit, OnDestroy {

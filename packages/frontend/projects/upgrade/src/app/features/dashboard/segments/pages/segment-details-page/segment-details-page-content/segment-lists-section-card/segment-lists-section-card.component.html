@@ -1,5 +1,5 @@
-@if (selectedSegment$ | async; as segment) { @let canShowSegmentActions = (permissions$ | async)?.segments.update; @let
-appContext = segment.context;
+@if (selectedSegment$ | async; as segment) { @let canShowSegmentActions = $safeNavigationMigration((permissions$ |
+async)?.segments.update); @let appContext = segment.context;
 
 <app-common-section-card>
   <!-- header-left -->

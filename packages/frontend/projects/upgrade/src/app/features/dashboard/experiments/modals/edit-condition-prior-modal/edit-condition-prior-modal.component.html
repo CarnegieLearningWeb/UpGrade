@@ -43,9 +43,11 @@
                 (keydown)="blockNonInteger($event)"
                 (input)="enforceMinOne(getSuccessesControl(i))"
               />
-              <mat-error *ngIf="getSuccessesControl(i).hasError('required')">
+              @if (getSuccessesControl(i).hasError('required')) {
+              <mat-error>
                 {{ 'experiments.edit-condition-prior-modal.required-error.text' | translate }}
               </mat-error>
+              }
             </mat-form-field>
           </td>
         </ng-container>
@@ -67,9 +69,11 @@
                 (keydown)="blockNonInteger($event)"
                 (input)="enforceMinOne(getFailuresControl(i))"
               />
-              <mat-error *ngIf="getFailuresControl(i).hasError('required')">
+              @if (getFailuresControl(i).hasError('required')) {
+              <mat-error>
                 {{ 'experiments.edit-condition-prior-modal.required-error.text' | translate }}
               </mat-error>
+              }
             </mat-form-field>
           </td>
         </ng-container>

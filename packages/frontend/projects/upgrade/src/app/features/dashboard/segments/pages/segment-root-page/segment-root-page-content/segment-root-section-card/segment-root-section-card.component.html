@@ -11,10 +11,10 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="(permissions$ | async)?.segments.create"
+    [showPrimaryButton]="$safeNavigationMigration((permissions$ | async)?.segments.create)"
     [primaryButtonText]="'segments.add-segments.text' | translate | titlecase"
     [menuButtonItems]="menuButtonItems"
-    [showMenuButton]="(permissions$ | async)?.segments.create"
+    [showMenuButton]="$safeNavigationMigration((permissions$ | async)?.segments.create)"
     [isSectionCardExpanded]="isSectionCardExpanded"
     (primaryButtonClick)="onAddSegmentButtonClick()"
     (menuButtonItemClick)="onMenuButtonItemClick($event)"

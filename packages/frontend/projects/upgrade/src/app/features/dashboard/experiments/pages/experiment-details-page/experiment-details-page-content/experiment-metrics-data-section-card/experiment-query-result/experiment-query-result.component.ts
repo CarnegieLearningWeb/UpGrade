@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import {
   ExperimentFactor,
   ExperimentVM,
@@ -38,6 +38,7 @@ interface RowData {
   selector: 'app-experiment-query-result',
   templateUrl: './experiment-query-result.component.html',
   styleUrls: ['./experiment-query-result.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [CommonModule, TranslateModule, NgxChartsModule, MatTableModule, MatProgressSpinnerModule],
 })
 export class ExperimentQueryResultComponent implements OnInit, OnDestroy {

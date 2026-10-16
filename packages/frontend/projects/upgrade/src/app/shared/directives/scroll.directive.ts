@@ -16,7 +16,7 @@ export class ScrollDirective {
   // Event output the current scroll percentage
 
   // Event listener for scroll event on the specific ui element
-  @HostListener('scroll', ['$event'])
+  @HostListener('scroll')
   @debounce()
   onListenerTriggered(): void {
     // Calculate the scroll percentage
