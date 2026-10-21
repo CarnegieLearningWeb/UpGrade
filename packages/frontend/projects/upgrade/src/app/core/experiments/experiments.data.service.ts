@@ -1,3 +1,5 @@
+import { BatchDeleteResult } from 'upgrade_types';
+import { batchHttpContext } from '../batch-actions/batch-actions.http';
 import { Injectable } from '@angular/core';
 import {
   Experiment,
@@ -19,11 +21,19 @@ import { IImportFile, LIST_FILTER_MODE, ExperimentRewardsSummary } from 'upgrade
 
 @Injectable()
 export class ExperimentDataService {
+  batchDelete(ids: string[]): Observable<BatchDeleteResult> {
+    return this.http.post<BatchDeleteResult>(
+      API_ENDPOINTS.experimentsBatchDelete,
+      { ids },
+      { context: batchHttpContext() }
+    );
+  }
+
   constructor(private http: HttpClient) {}
 
-  getAllExperiment(params: ExperimentPaginationParams) {
+  getAllExperiment(params: ExperimentPaginationParams, batchRefresh = false) {
     const url = API_ENDPOINTS.getAllExperiments;
-    return this.http.post(url, params);
+    return batchRefresh ? this.http.post(url, params, { context: batchHttpContext() }) : this.http.post(url, params);
   }
 
   getAllExperimentsStats(experimentIds: string[]) {
