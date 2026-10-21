@@ -72,8 +72,11 @@ TestNG is the test framework but there is no `src/test/java` directory — `Quic
 
 To run a manual integration test:
 ```bash
-mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest"
+mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest"                    # localhost:3030
+mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest" -Dexec.args="qa"   # or staging
 ```
+
+Only localhost is in the code. `qa` / `staging` (here and in `QuickTestBurst --env`) read the base URL from `UPGRADE_QA_URL` / `UPGRADE_STAGING_URL`, which you export yourself (e.g. in your shell profile) — hosted environments' URLs stay out of this public repo. See `QuickTestHosts`.
 
 There is no automated CI for this library (unlike the JS client which publishes via GitHub Actions). Publishing is currently a manual process.
 

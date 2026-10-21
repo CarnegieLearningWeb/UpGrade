@@ -113,6 +113,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *         - in: header
+   *           name: User-Id
+   *           required: true
+   *           type: string
+   *           example: user123
+   *           description: The unique identifier for the user
    *         - in: body
    *           name: experimentUser
    *           required: true
@@ -212,6 +218,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *         - in: header
+   *           name: User-Id
+   *           required: true
+   *           type: string
+   *           example: user123
+   *           description: The unique identifier for the user
    *         - in: body
    *           name: experimentUser
    *           required: true
@@ -292,6 +304,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *         - in: header
+   *           name: User-Id
+   *           required: true
+   *           type: string
+   *           example: user123
+   *           description: The unique identifier for the user
    *         - in: body
    *           name: params
    *           required: true
@@ -366,6 +384,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *         - in: header
+   *           name: User-Id
+   *           required: true
+   *           type: string
+   *           example: user123
+   *           description: The unique identifier for the user
    *         - in: body
    *           name: experimentUser
    *           required: true
@@ -395,6 +419,9 @@ export class ExperimentClientController {
    *               status:
    *                 type: string
    *                 example: condition applied
+   *               context:
+   *                 type: string
+   *                 example: upgrade_internal
    *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
@@ -472,6 +499,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *          - in: header
+   *            name: User-Id
+   *            required: true
+   *            type: string
+   *            example: user123
+   *            description: The unique identifier for the user
    *          - in: body
    *            name: user
    *            required: true
@@ -564,6 +597,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *          - in: header
+   *            name: User-Id
+   *            required: true
+   *            type: string
+   *            example: user123
+   *            description: The unique identifier for the user
    *          - in: body
    *            name: data
    *            required: true
@@ -682,8 +721,7 @@ export class ExperimentClientController {
    *         - in: header
    *           name: User-Id
    *           required: true
-   *           schema:
-   *             type: string
+   *           type: string
    *           example: user123
    *           description: The unique identifier for the user
    *         - in: body
@@ -774,6 +812,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *          - in: header
+   *            name: User-Id
+   *            required: true
+   *            type: string
+   *            example: user123
+   *            description: The unique identifier for the user
    *          - in: body
    *            name: user aliases
    *            required: true
@@ -859,8 +903,7 @@ export class ExperimentClientController {
    *         - in: header
    *           name: User-Id
    *           required: true
-   *           schema:
-   *             type: string
+   *           type: string
    *           example: user123
    *           description: The unique identifier for the user
    *         - in: query

@@ -1,5 +1,8 @@
 // to run against the full (axios-bundled) build:  npx ts-node clientlibs/js/quickTest.ts
 // to run against the "lite" build (BYO http client): npx ts-node clientlibs/js/quickTest.ts lite
+// to run against QA (or staging) instead of localhost, set UPGRADE_QUICKTEST_URL for that run:
+//   UPGRADE_QUICKTEST_URL=$UPGRADE_QA_URL npx ts-node clientlibs/js/quickTest.ts
+//   UPGRADE_QUICKTEST_URL=$UPGRADE_STAGING_URL npx ts-node clientlibs/js/quickTest.ts lite
 
 import type { UpGradeClientInterfaces } from './dist/node';
 import { FetchHttpClient } from './quickTestLiteHttpClient';
@@ -17,12 +20,23 @@ const UpgradeClient = require(`./dist/${variant}`) as typeof import('./dist/node
 const { MARKED_DECISION_POINT_STATUS } = UpgradeClient;
 type UpgradeClientInstance = InstanceType<typeof UpgradeClient>;
 
+// Hosted environments' URLs come from env vars so they stay out of this public repo, e.g.
+// `export UPGRADE_QA_URL=https://...` in your shell profile. Read lazily, so they're only required when used.
+const requireEnv = (name: string): string => {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`${name} is not set; export it with that environment's base URL`);
+  }
+  return value;
+};
 const URL = {
   LOCAL: 'http://localhost:3030',
-  BEANSTALK_QA: 'https://upgradeapi.qa-cli.net',
-  BEANSTALK_STAGING: 'https://upgradeapi.qa-cli.com',
-  ECS_QA: 'https://apps.qa-cli.net/upgrade-service',
-  ECS_STAGING: 'https://apps.qa-cli.com/upgrade-service',
+  get QA() {
+    return requireEnv('UPGRADE_QA_URL');
+  },
+  get STAGING() {
+    return requireEnv('UPGRADE_STAGING_URL');
+  },
 };
 
 const userId = 'quicktest_user_' + new Date().getTime();
@@ -32,7 +46,8 @@ const workingGroup = 'STORED_USER_GROUP';
 const groupsForSession = { classId: ['EPHEMERAL_USER_GROUP'] };
 const includeStoredUserGroups = true; // true to merge with stored user groups, false for session-only groups
 const alias = 'alias' + userId;
-const hostUrl = URL.LOCAL;
+// UPGRADE_QUICKTEST_URL overrides this for one run, e.g. `UPGRADE_QUICKTEST_URL=$UPGRADE_QA_URL yarn quicktest`
+const hostUrl = process.env.UPGRADE_QUICKTEST_URL || URL.LOCAL;
 const context = 'assign-prog';
 const site = 'fakesite';
 const target = 'faketarget';
