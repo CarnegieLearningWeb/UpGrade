@@ -1,6 +1,6 @@
 projectBuilderV5 (
     buildAgent:[
-        taskDefinitionOverride: "upgrade-ci:2"
+        taskDefinitionOverride: "upgrade-ci:3"
     ],
     initScripts: [
         [
