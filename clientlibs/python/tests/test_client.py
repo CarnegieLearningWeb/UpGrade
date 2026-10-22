@@ -7,10 +7,12 @@ exercises the full UpgradeClient → ApiService → httpx stack.
 import json
 
 import httpx
+import pytest
 import respx
 from httpx import Response
 
 from upgrade_client_lib.client import UpgradeClient
+from upgrade_client_lib.exceptions import UpgradeApiError
 from upgrade_client_lib.types.enums import BinaryRewardValue, ExperimentType, MarkedDecisionPointStatus
 from upgrade_client_lib.types.requests import LogInput, LogMetrics
 
@@ -591,6 +593,64 @@ class TestSetAltUserIds:
 
 
 class TestSendReward:
+    @respx.mock
+    async def test_async_accepted_by_default(self) -> None:
+        payload = {**REWARD_PAYLOAD, "mode": "accepted"}
+        route = respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=payload))
+        result = await make_client().send_reward(BinaryRewardValue.SUCCESS)
+        assert route.calls[0].request.url.params["awaitResult"] == "false"
+        assert result.mode == "accepted"
+        assert result.success is None
+
+    @respx.mock
+    def test_sync_accepted_by_default(self) -> None:
+        payload = {**REWARD_PAYLOAD, "mode": "accepted"}
+        route = respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=payload))
+        result = make_client().send_reward_sync(BinaryRewardValue.SUCCESS)
+        assert route.calls[0].request.url.params["awaitResult"] == "false"
+        assert result.mode == "accepted"
+        assert result.success is None
+
+    @respx.mock
+    async def test_async_processed(self) -> None:
+        payload = {**REWARD_PAYLOAD, "mode": "processed", "success": True}
+        route = respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=payload))
+        result = await make_client().send_reward(BinaryRewardValue.SUCCESS, await_result=True)
+        assert route.calls[0].request.url.params["awaitResult"] == "true"
+        assert result.mode == "processed"
+        assert result.success is True
+
+    @respx.mock
+    def test_sync_processed(self) -> None:
+        payload = {**REWARD_PAYLOAD, "mode": "processed", "success": True}
+        route = respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=payload))
+        result = make_client().send_reward_sync(BinaryRewardValue.SUCCESS, await_result=True)
+        assert route.calls[0].request.url.params["awaitResult"] == "true"
+        assert result.mode == "processed"
+        assert result.success is True
+
+    @respx.mock
+    async def test_async_await_result_conflict(self) -> None:
+        respx.post(f"{BASE}/reward", params={"awaitResult": "true"}).mock(
+            return_value=Response(409, json={"message": "No matching enrollment"})
+        )
+        client = make_client()
+        with pytest.raises(UpgradeApiError) as exc_info:
+            await client.send_reward(BinaryRewardValue.SUCCESS, await_result=True)
+        assert exc_info.value.status_code == 409
+        assert "No matching enrollment" in exc_info.value.response_body
+
+    @respx.mock
+    def test_sync_await_result_conflict(self) -> None:
+        respx.post(f"{BASE}/reward", params={"awaitResult": "true"}).mock(
+            return_value=Response(409, json={"message": "No matching enrollment"})
+        )
+        client = make_client()
+        with pytest.raises(UpgradeApiError) as exc_info:
+            client.send_reward_sync(BinaryRewardValue.SUCCESS, await_result=True)
+        assert exc_info.value.status_code == 409
+        assert "No matching enrollment" in exc_info.value.response_body
+
     @respx.mock
     async def test_async_success(self) -> None:
         respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=REWARD_PAYLOAD))

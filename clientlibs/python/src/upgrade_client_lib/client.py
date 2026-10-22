@@ -337,13 +337,20 @@ class UpgradeClient:
         experiment_id: str | None = None,
         context: str | None = None,
         decision_point: dict[str, str] | None = None,
+        await_result: bool = False,
     ) -> SendRewardResponse:
-        """Send a binary reward signal for an adaptive experiment."""
+        """Send a binary reward signal for an adaptive experiment.
+
+        By default, returns an ``accepted`` receipt before processing finishes.
+        Pass ``await_result=True`` to wait for a ``processed`` response instead.
+        A reward that cannot be recorded then raises ``UpgradeApiError`` (HTTP 409).
+        """
         return await self._api_service.send_reward(
             reward_value=reward_value,
             experiment_id=experiment_id,
             context=context,
             decision_point=decision_point,
+            await_result=await_result,
         )
 
     def send_reward_sync(
@@ -352,8 +359,9 @@ class UpgradeClient:
         experiment_id: str | None = None,
         context: str | None = None,
         decision_point: dict[str, str] | None = None,
+        await_result: bool = False,
     ) -> SendRewardResponse:
         """Synchronous variant of :meth:`send_reward`."""
         return asyncio.run(
-            self.send_reward(reward_value, experiment_id, context, decision_point)
+            self.send_reward(reward_value, experiment_id, context, decision_point, await_result=await_result)
         )

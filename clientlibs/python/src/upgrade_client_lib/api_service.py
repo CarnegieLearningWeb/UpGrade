@@ -81,9 +81,11 @@ class ApiService:
                 response_body=response.text,
             )
 
-    async def _post_async(self, path: str, body: dict[str, Any]) -> Any:
+    async def _post_async(
+        self, path: str, body: dict[str, Any], params: dict[str, bool] | None = None
+    ) -> Any:
         async with httpx.AsyncClient(timeout=self._timeout) as client:
-            response = await client.post(self._url(path), json=body, headers=self._headers())
+            response = await client.post(self._url(path), json=body, headers=self._headers(), params=params)
         self._raise_for_status(response)
         return response.json()
 
@@ -93,9 +95,9 @@ class ApiService:
         self._raise_for_status(response)
         return response.json()
 
-    def _post_sync(self, path: str, body: dict[str, Any]) -> Any:
+    def _post_sync(self, path: str, body: dict[str, Any], params: dict[str, bool] | None = None) -> Any:
         with httpx.Client(timeout=self._timeout) as client:
-            response = client.post(self._url(path), json=body, headers=self._headers())
+            response = client.post(self._url(path), json=body, headers=self._headers(), params=params)
         self._raise_for_status(response)
         return response.json()
 
@@ -317,9 +319,10 @@ class ApiService:
         experiment_id: str | None = None,
         context: str | None = None,
         decision_point: dict[str, str] | None = None,
+        await_result: bool = False,
     ) -> SendRewardResponse:
         body = self._build_reward_body(reward_value, experiment_id, context, decision_point)
-        data = await self._post_async("reward", body)
+        data = await self._post_async("reward", body, params={"awaitResult": await_result})
         return SendRewardResponse.model_validate(data)
 
     def send_reward_sync(
@@ -328,9 +331,10 @@ class ApiService:
         experiment_id: str | None = None,
         context: str | None = None,
         decision_point: dict[str, str] | None = None,
+        await_result: bool = False,
     ) -> SendRewardResponse:
         body = self._build_reward_body(reward_value, experiment_id, context, decision_point)
-        data = self._post_sync("reward", body)
+        data = self._post_sync("reward", body, params={"awaitResult": await_result})
         return SendRewardResponse.model_validate(data)
 
     @staticmethod

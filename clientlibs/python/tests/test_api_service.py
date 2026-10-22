@@ -418,6 +418,54 @@ REWARD_RESPONSE = {
 
 
 class TestSendReward:
+    @pytest.mark.parametrize("await_result", [False, True])
+    @respx.mock
+    async def test_async_response_modes(self, await_result: bool) -> None:
+        payload = {**REWARD_RESPONSE, "mode": "processed" if await_result else "accepted"}
+        if await_result:
+            payload["success"] = True
+        route = respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=payload))
+        result = await make_service().send_reward(BinaryRewardValue.SUCCESS, await_result=await_result)
+        assert route.calls[0].request.url.params["awaitResult"] == str(await_result).lower()
+        assert b"awaitResult" not in route.calls[0].request.content
+        assert result.mode == payload["mode"]
+        assert result.success is (True if await_result else None)
+
+    @pytest.mark.parametrize("await_result", [False, True])
+    @respx.mock
+    def test_sync_response_modes(self, await_result: bool) -> None:
+        payload = {**REWARD_RESPONSE, "mode": "processed" if await_result else "accepted"}
+        if await_result:
+            payload["success"] = True
+        route = respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=payload))
+        result = make_service().send_reward_sync(BinaryRewardValue.SUCCESS, await_result=await_result)
+        assert route.calls[0].request.url.params["awaitResult"] == str(await_result).lower()
+        assert b"awaitResult" not in route.calls[0].request.content
+        assert result.mode == payload["mode"]
+        assert result.success is (True if await_result else None)
+
+    @respx.mock
+    async def test_async_await_result_conflict(self) -> None:
+        respx.post(f"{BASE}/reward", params={"awaitResult": "true"}).mock(
+            return_value=Response(409, json={"message": "No matching enrollment"})
+        )
+        service = make_service()
+        with pytest.raises(UpgradeApiError) as exc_info:
+            await service.send_reward(BinaryRewardValue.SUCCESS, await_result=True)
+        assert exc_info.value.status_code == 409
+        assert "No matching enrollment" in exc_info.value.response_body
+
+    @respx.mock
+    def test_sync_await_result_conflict(self) -> None:
+        respx.post(f"{BASE}/reward", params={"awaitResult": "true"}).mock(
+            return_value=Response(409, json={"message": "No matching enrollment"})
+        )
+        service = make_service()
+        with pytest.raises(UpgradeApiError) as exc_info:
+            service.send_reward_sync(BinaryRewardValue.SUCCESS, await_result=True)
+        assert exc_info.value.status_code == 409
+        assert "No matching enrollment" in exc_info.value.response_body
+
     @respx.mock
     async def test_async_minimal(self) -> None:
         respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=REWARD_RESPONSE))

@@ -154,7 +154,13 @@ else:
 | Method | Description |
 |---|---|
 | `log(metrics)` | Send outcome metric events |
-| `send_reward(reward_value, experiment_id=None, context=None, decision_point=None)` | Send a binary reward signal for an adaptive experiment |
+| `send_reward(reward_value, experiment_id=None, context=None, decision_point=None, await_result=False)` | Send a binary reward signal for an adaptive experiment |
+
+By default, `send_reward` returns an immediate receipt with `mode="accepted"` and `success=None`;
+this does not guarantee the reward was recorded. Pass `await_result=True` to wait for processing:
+a recorded reward returns `mode="processed"` and `success=True`, while a reward that cannot be
+recorded raises `UpgradeApiError` with `status_code=409`. The same option is available on
+`send_reward_sync`. Older servers that omit `mode` are supported with `mode=None`.
 
 `log()` accepts a list of `LogInput` objects. `LogInput`, `LogMetrics`, and `LogGroupMetrics` must be imported from `upgrade_client_lib.types`:
 
