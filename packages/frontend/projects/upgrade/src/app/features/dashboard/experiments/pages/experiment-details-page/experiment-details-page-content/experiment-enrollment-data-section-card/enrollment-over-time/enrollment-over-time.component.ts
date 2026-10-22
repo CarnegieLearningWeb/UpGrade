@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { ASSIGNMENT_UNIT } from 'upgrade_types';
 import {
   ExperimentVM,
@@ -51,6 +51,7 @@ const INDIVIDUAL = 'individual';
     MatCheckboxModule,
   ],
   styleUrls: ['./enrollment-over-time.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy {

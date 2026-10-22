@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonPageComponent } from '@shared-component-lib';
 import { FeatureFlagDetailsPageHeaderComponent } from './feature-flag-details-page-header/feature-flag-details-page-header.component';
 import { FeatureFlagDetailsPageContentComponent } from './feature-flag-details-page-content/feature-flag-details-page-content.component';
@@ -7,6 +7,7 @@ import { FeatureFlagDetailsPageContentComponent } from './feature-flag-details-p
   selector: 'app-feature-flag-details-page',
   templateUrl: './feature-flag-details-page.component.html',
   styleUrl: './feature-flag-details-page.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [CommonPageComponent, FeatureFlagDetailsPageHeaderComponent, FeatureFlagDetailsPageContentComponent],
 })
 export class FeatureFlagDetailsPageComponent {}

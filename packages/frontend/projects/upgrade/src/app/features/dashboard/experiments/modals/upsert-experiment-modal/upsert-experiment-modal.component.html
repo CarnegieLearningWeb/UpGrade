@@ -161,7 +161,7 @@
     </mat-form-field>
     } @if (assignmentAlgorithmValue === ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING) {
     <app-ts-configurable-policy-parameters-form
-      [existingPolicyParams]="(selectedExperiment$ | async)?.thompsonSamplingConfig"
+      [existingPolicyParams]="$safeNavigationMigration((selectedExperiment$ | async)?.thompsonSamplingConfig)"
       [disabled]="isTSFormDisabled"
       (parametersChange)="onTSConfigChange($event)"
       (validationChange)="onTSFormValidityChange($event)"

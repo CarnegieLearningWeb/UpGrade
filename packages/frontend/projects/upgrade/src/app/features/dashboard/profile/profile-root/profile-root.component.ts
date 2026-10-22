@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatTabChangeEvent } from '@angular/material/tabs';
 import { ActivatedRoute } from '@angular/router';
 import { CommonTabHelpersService } from '../../../../shared/services/common-tab-helpers.service';
@@ -7,6 +7,7 @@ import { CommonTabHelpersService } from '../../../../shared/services/common-tab-
   selector: 'app-profile-root',
   templateUrl: './profile-root.component.html',
   styleUrls: ['./profile-root.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ProfileRootComponent implements OnInit {

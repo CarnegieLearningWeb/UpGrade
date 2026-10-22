@@ -1,14 +1,13 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./src",
     "outDir": "./dist/out-tsc",
+    "rootDir": "..",
     "sourceMap": true,
     "declaration": false,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": false,
     "esModuleInterop": true,
-    "alwaysStrict": false,
     "strictNullChecks": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -16,12 +15,11 @@
     "skipLibCheck": true,
     "module": "es2020",
     "target": "ES2022",
-    "lib": ["es2018", "dom"],
     "types": ["jest", "google.accounts"],
     "paths": {
-      "upgrade_types": ["../../types", "./types"],
-      "@shared-component-lib": ["../projects/upgrade/src/app/shared-standalone-component-lib/components"],
-      "@shared-component-lib/*": ["../projects/upgrade/src/app/shared-standalone-component-lib/components/*"]
+      "upgrade_types": ["../types", "./src/types"],
+      "@shared-component-lib": ["./projects/upgrade/src/app/shared-standalone-component-lib/components"],
+      "@shared-component-lib/*": ["./projects/upgrade/src/app/shared-standalone-component-lib/components/*"]
     },
     "useDefineForClassFields": false
   }

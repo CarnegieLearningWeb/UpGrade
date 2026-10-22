@@ -35,7 +35,7 @@ vm.experiment.context[0];
     [actionsDisabled]="vm.restriction.isDisabled"
     [actionsTooltip]="restrictionTooltip"
     [isThompsonSamplingExperiment]="isThompsonSamplingExperiment(vm.experiment)"
-    [prior]="vm.experiment.thompsonSamplingConfig?.priors"
+    [prior]="$safeNavigationMigration(vm.experiment.thompsonSamplingConfig?.priors)"
     (rowAction)="onRowAction($event, vm.experiment.id, appContext)"
     (editWeights)="onEditWeights($event, vm.experiment)"
     (editPrior)="onEditPrior($event, vm.experiment)"
