@@ -10,6 +10,8 @@ Requires the library to be installed (or on PYTHONPATH).  From this directory:
     pip install -e .
 """
 
+from __future__ import annotations
+
 import asyncio
 import time
 
