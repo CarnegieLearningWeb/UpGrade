@@ -30,6 +30,8 @@ npm run lint            # ESLint + Prettier check
 npm run lint:fix        # ESLint fix + Prettier write
 ```
 
+The quick tests (`quickTest.ts`, `quickTestAdaptive.ts`) target localhost by default. Hosted environments' URLs are not in the code: `URL.QA` / `URL.STAGING` read `UPGRADE_QA_URL` / `UPGRADE_STAGING_URL` from your environment, and `UPGRADE_QUICKTEST_URL` overrides the target for one run (e.g. `UPGRADE_QUICKTEST_URL=$UPGRADE_QA_URL npm run quicktest`).
+
 Run `npm run build` as a unit — do not invoke the sub-steps (webpack, build:types, version:sync, prepare:packages) individually in normal workflows.
 
 ## API Version
@@ -42,7 +44,7 @@ Jest config (`jest.config.ts`) sets `USE_CUSTOM_HTTP_CLIENT: true` globally, mea
 
 ## Publishing
 
-Automated via `.github/workflows/clientlibs-js-publish.yml` on push to `main` when `clientlibs/js/**` files change. Do not publish manually to npm.
+Manual, push-button trigger only — `.github/workflows/clientlibs-js-publish.yml` is `workflow_dispatch`-only (no push trigger). `main` is not used for anything in this repo; run the workflow with the `ref` input set to the branch/tag to publish (defaults to `dev`). Uses npm trusted publishing (OIDC, no stored token) — the workflow only appears in the Actions UI once it exists on the repo's default branch (`dev`). Do not run `npm publish` locally.
 
 ## Public API (UpgradeClient)
 

@@ -251,6 +251,7 @@ class TestMarkDecisionPoint:
         import json
 
         body = json.loads(route.calls[0].request.content)
+        assert body["context"] == CONTEXT
         assert body["status"] == "condition applied"
         assert body["data"]["site"] == "home"
         assert body["data"]["experimentType"] == "Simple"
@@ -293,7 +294,7 @@ class TestMarkDecisionPoint:
 
     @respx.mock
     def test_sync(self) -> None:
-        respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
         result = make_service().mark_decision_point_sync(
             site="home",
             target="banner",
@@ -301,6 +302,10 @@ class TestMarkDecisionPoint:
             status=MarkedDecisionPointStatus.CONDITION_APPLIED,
         )
         assert result.userId == USER_ID
+        import json
+
+        body = json.loads(route.calls[0].request.content)
+        assert body["context"] == CONTEXT
 
 
 # ---------------------------------------------------------------------------

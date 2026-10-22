@@ -33,10 +33,13 @@ import {
 import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
 import {
   ASSIGNMENT_ALGORITHM,
+  CONSISTENCY_RULE,
   ENROLLMENT_CODE,
+  EXCLUSION_CODE,
   EXPERIMENT_STATE,
   FILTER_MODE,
   MARKED_DECISION_POINT_STATUS,
+  SERVER_ERROR,
 } from 'upgrade_types';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { UserStratificationFactorRepository } from '../../../src/api/repositories/UserStratificationRepository';
@@ -2036,6 +2039,60 @@ describe('Experiment Assignment Service Test', () => {
     sinon.assert.calledOnce(testedModule.updateEnrollmentExclusionDocumentsAndCheckEndingCriteria);
   });
 
+  describe('/mark records invalid-group exclusions', () => {
+    it.each([
+      [
+        'invalid working group',
+        { schoolId: ['school1'] },
+        { schoolId: 'school2' },
+        EXCLUSION_CODE.INVALID_GROUP_OR_WORKING_GROUP,
+      ],
+      ['missing working group', { schoolId: ['school1'] }, {}, EXCLUSION_CODE.NO_GROUP_SPECIFIED],
+      ['missing group data', {}, { schoolId: 'school1' }, EXCLUSION_CODE.NO_GROUP_SPECIFIED],
+    ])('records %s with and without an experiment ID', async (_name, group, workingGroup, exclusionCode) => {
+      const exp = structuredClone(simpleGroupAssignmentExperiment);
+      exp.state = EXPERIMENT_STATE.ENROLLING;
+      exp.consistencyRule = CONSISTENCY_RULE.GROUP;
+      exp.group = 'schoolId';
+      exp.enrollmentCompleteCondition = null;
+      const { site, target } = exp.partitions[0];
+      const userDoc = { id: 'invalid-group-user', group, workingGroup };
+
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+      testedModule.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+      testedModule.experimentLevelExclusionInclusion = sandbox.stub().callsFake(async (exps) => [exps, []]);
+      groupEnrollmentRepositoryMock.findOne = sandbox.stub().resolves(undefined);
+      groupExclusionRepositoryMock.findOne = sandbox.stub().resolves(undefined);
+      groupEnrollmentRepositoryMock.save = sandbox.stub();
+      individualEnrollmentRepositoryMock.save = sandbox.stub();
+      testedModule.monitoredDecisionPointRepository = {
+        findOne: sandbox.stub().resolves(undefined),
+        saveRawJson: sandbox.stub().callsFake(async (document) => document),
+      };
+
+      for (const experimentId of [undefined, exp.id]) {
+        individualExclusionRepositoryMock.saveRawJson.resetHistory();
+        await testedModule.markExperimentPoint(
+          userDoc,
+          site,
+          MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED,
+          null,
+          loggerMock,
+          'context',
+          experimentId,
+          target
+        );
+
+        sinon.assert.calledOnce(individualExclusionRepositoryMock.saveRawJson);
+        expect(individualExclusionRepositoryMock.saveRawJson.firstCall.args[0]).toEqual([
+          { user: userDoc, experiment: exp, exclusionCode },
+        ]);
+        sinon.assert.notCalled(groupEnrollmentRepositoryMock.save);
+        sinon.assert.notCalled(individualEnrollmentRepositoryMock.save);
+      }
+    });
+  });
+
   describe('[resolveExperimentForMarkPoint]', () => {
     const site = 'CurriculumSequence';
     const target = 'W1';
@@ -2060,6 +2117,27 @@ describe('Experiment Assignment Service Test', () => {
       expect(result.isUserExcluded).toBe(false);
       expect(result.isGroupExcluded).toBe(false);
       expect(result.exclusionReason).toEqual([]);
+    });
+
+    it('should reject with INVALID_APP_CONTEXT/400 when no experiments exist and the context has no global-exclude segment', async () => {
+      const invalidContext = 'invalid-context';
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([]);
+      testedModule.segmentService.getGlobalExcludeSegmentByContext.withArgs(invalidContext).resolves(undefined);
+
+      await expect(
+        (testedModule as any).resolveExperimentForMarkPoint(
+          site,
+          target,
+          invalidContext,
+          undefined,
+          userDoc,
+          undefined,
+          loggerMock
+        )
+      ).rejects.toMatchObject({
+        type: SERVER_ERROR.INVALID_APP_CONTEXT,
+        httpCode: 400,
+      });
     });
 
     it('should return excluded flags and empty experiments when user is globally excluded', async () => {
@@ -2169,6 +2247,75 @@ describe('Experiment Assignment Service Test', () => {
       expect(result.experimentId).toEqual(exp.id);
       expect(result.exclusionReason).toHaveLength(1);
       expect(result.exclusionReason[0]).toEqual(exclusion);
+    });
+  });
+
+  describe('/mark resolves the same experiment /assign selected, when experiments are pooled through shared decision points', () => {
+    // Pools are connected components: experiments linked by shared decision points, transitively. Here `both`
+    // shares dp1 with `left` and dp2 with `right`, so for /assign (which pools every experiment in the context)
+    // all three form one pool. /mark only passes the experiments at the marked decision point into the same
+    // pipeline, so at dp1 its pool is just {both, left}. A fresh user's pick is
+    // pool[Math.floor(seedrandom(userId)() * pool.length)], so the two pools can pick different experiments for
+    // the same user — /assign hands out left's condition at dp1, and /mark then resolves dp1 to both.
+    const context = 'context';
+    const decisionPoint = (target: string) => ({ site: 'SelectSection', target, pendingActivation: false });
+    const experiment = (id: string, targets: string[]) =>
+      ({
+        id,
+        name: id,
+        state: EXPERIMENT_STATE.ENROLLING,
+        group: 'schoolId',
+        partitions: targets.map(decisionPoint),
+      } as any);
+    const both = experiment('both', ['dp1', 'dp2']);
+    const left = experiment('left', ['dp1']);
+    const right = experiment('right', ['dp2']);
+    const allExperiments = [both, left, right];
+
+    beforeEach(() => {
+      // Pass everything through the per-experiment filters so only pool selection decides the outcome.
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves(allExperiments);
+      testedModule.checkUserOrGroupIsGloballyExcluded = sandbox.stub().resolves([false, false]);
+      testedModule.filterAndProcessGroupExperiments = sandbox.stub().callsFake(async (exps) => exps);
+      testedModule.experimentLevelExclusionInclusion = sandbox.stub().callsFake(async (exps) => [exps, []]);
+      testedModule.getAssignmentsAndExclusionsForUser = sandbox.stub().resolves([[], [], [], []]);
+    });
+
+    it('agrees for every decision point of every experiment /assign selected, for every user', async () => {
+      const mismatches: string[] = [];
+
+      for (let i = 0; i < 100; i++) {
+        const userDoc = { id: `user-${i}`, group: {}, workingGroup: {} };
+
+        // What /assign uses: the selection pipeline over every experiment in the context.
+        const { selectedExperiments } = await (testedModule as any).selectExperimentsForUser(
+          allExperiments,
+          userDoc,
+          null,
+          loggerMock
+        );
+
+        for (const assigned of selectedExperiments) {
+          for (const { site, target } of assigned.partitions) {
+            const marked = await (testedModule as any).resolveExperimentForMarkPoint(
+              site,
+              target,
+              context,
+              undefined,
+              userDoc,
+              null,
+              loggerMock
+            );
+            if (marked.experiment?.id !== assigned.id) {
+              mismatches.push(
+                `${userDoc.id} at ${target}: /assign selected ${assigned.id}, /mark resolved ${marked.experiment?.id}`
+              );
+            }
+          }
+        }
+      }
+
+      expect(mismatches).toEqual([]);
     });
   });
 
