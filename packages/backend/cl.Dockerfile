@@ -1,6 +1,6 @@
 ARG IMAGE_REPO
 
-FROM ${IMAGE_REPO}node:22.14-alpine3.21 AS build
+FROM ${IMAGE_REPO}node:22-alpine AS build
 WORKDIR /usr/src/app
 COPY ./packages/backend ./packages/backend
 COPY ./packages/frontend/package.json ./packages/frontend/package.json
@@ -15,7 +15,7 @@ RUN yarn
 
 RUN ["yarn", "workspace", "upgrade-backend", "build"]
 
-FROM ${IMAGE_REPO}node:22.14-alpine3.21
+FROM ${IMAGE_REPO}node:22-alpine
 
 ENV NEW_RELIC_NO_CONFIG_FILE=true
 ENV NR_NATIVE_METRICS_NO_BUILD=true
