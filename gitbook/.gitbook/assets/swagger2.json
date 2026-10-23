@@ -1,0 +1,4386 @@
+{
+  "basePath": "/api",
+  "info": {
+    "title": "A/B Testing Backend",
+    "description": "Backend for A/B Testing Project",
+    "version": "3.0.10"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3030/api"
+    }
+  ],
+  "swagger": "2.0",
+  "paths": {
+    "/stats/enrollment": {
+      "post": {
+        "description": "Get Enrollment Analytics",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "props",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "experimentIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "exp01"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Analytics"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics For Experiment Enrollment",
+            "schema": {
+              "type": "array",
+              "description": "",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "required": [
+                  "users",
+                  "groups",
+                  "id"
+                ],
+                "properties": {
+                  "users": {
+                    "type": "number",
+                    "example": 1049
+                  },
+                  "groups": {
+                    "type": "number",
+                    "example": 23
+                  },
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "exp01"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stats/enrollment/detail": {
+      "post": {
+        "description": "Get Enrollment Analytics Detail",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "props",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "experimentId": {
+                  "type": "string",
+                  "example": "exp01"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Analytics"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics For Experiment Enrollment Detail",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "example": "exp01"
+                },
+                "users": {
+                  "type": "number",
+                  "example": 1240
+                },
+                "groups": {
+                  "type": "number",
+                  "example": 13
+                },
+                "usersExcluded": {
+                  "type": "number",
+                  "example": 245
+                },
+                "groupsExcluded": {
+                  "type": "number",
+                  "example": 4
+                },
+                "conditions": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "minItems": 1,
+                  "items": {
+                    "required": [
+                      "id",
+                      "users",
+                      "groups"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "example": "control"
+                      },
+                      "users": {
+                        "type": "number",
+                        "example": 486
+                      },
+                      "groups": {
+                        "type": "number",
+                        "example": 7
+                      },
+                      "partitions": {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "minItems": 1,
+                        "items": {
+                          "required": [
+                            "id",
+                            "users",
+                            "groups"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "example": "using_fractions"
+                            },
+                            "users": {
+                              "type": "number",
+                              "example": 158
+                            },
+                            "groups": {
+                              "type": "number",
+                              "example": 3
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stats/enrollment/date": {
+      "post": {
+        "description": "Get Enrollment Analytics By Date",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "props",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "experimentId": {
+                  "type": "string"
+                },
+                "dateEnum": {
+                  "type": "string",
+                  "enum": [
+                    "last_seven_days",
+                    "last_three_months",
+                    "last_six_months",
+                    "last_twelve_months"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Analytics"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics For Experiment Enrollment",
+            "schema": {
+              "type": "array",
+              "description": "",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "required": [
+                  "date",
+                  "stats"
+                ],
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "stats": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "conditions": {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "minItems": 1,
+                        "items": {
+                          "required": [
+                            "id"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "example": "control"
+                            },
+                            "partitions": {
+                              "type": "array",
+                              "uniqueItems": true,
+                              "minItems": 1,
+                              "items": {
+                                "required": [
+                                  "id",
+                                  "users",
+                                  "groups"
+                                ],
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "example": "using_fractions"
+                                  },
+                                  "users": {
+                                    "type": "number",
+                                    "example": 58
+                                  },
+                                  "groups": {
+                                    "type": "number",
+                                    "example": 4
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "conditions"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stats/csv": {
+      "post": {
+        "description": "Get csv files",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "props",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "experimentId": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Get Csv files in given mail id"
+          }
+        ],
+        "tags": [
+          "Analytics"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get CSV files"
+          }
+        }
+      }
+    },
+    "/init": {
+      "post": {
+        "description": "Create/Update Experiment User",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "experimentUser",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "user1"
+                },
+                "group": {
+                  "type": "object",
+                  "properties": {
+                    "schoolId": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "school1"
+                      }
+                    },
+                    "classId": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "class1"
+                      }
+                    },
+                    "instructorId": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "instructor1"
+                      }
+                    }
+                  }
+                },
+                "workingGroup": {
+                  "type": "object",
+                  "properties": {
+                    "schoolId": {
+                      "type": "string",
+                      "example": "school1"
+                    },
+                    "classId": {
+                      "type": "string",
+                      "example": "class1"
+                    },
+                    "instructorId": {
+                      "type": "string",
+                      "example": "instructor1"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "ExperimentUser"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Set Group Membership",
+            "schema": {
+              "$ref": "#/definitions/initResponse"
+            }
+          }
+        }
+      }
+    },
+    "/groupmembership": {
+      "post": {
+        "description": "Set group membership for a user",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "experimentUser",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "user1"
+                },
+                "group": {
+                  "type": "object",
+                  "properties": {
+                    "schoolId": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "school1"
+                      }
+                    },
+                    "classId": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "class1"
+                      }
+                    },
+                    "instructorId": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "instructor1"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description": "ExperimentUser"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Set Group Membership",
+            "schema": {
+              "$ref": "#/definitions/initResponse"
+            }
+          },
+          "500": {
+            "description": "null value in column \"id\" of relation \"experiment_user\" violates not-null constraint"
+          }
+        }
+      },
+      "patch": {
+        "description": "Set group membership for a user",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "experimentUser",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "user1"
+                },
+                "group": {
+                  "type": "object",
+                  "properties": {
+                    "schoolId": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "school1"
+                      }
+                    },
+                    "classId": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "class1"
+                      }
+                    },
+                    "instructorId": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "instructor1"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description": "ExperimentUser"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Set Group Membership",
+            "schema": {
+              "$ref": "#/definitions/initResponse"
+            }
+          },
+          "500": {
+            "description": "null value in column \"id\" of relation \"experiment_user\" violates not-null constraint"
+          }
+        }
+      }
+    },
+    "/workinggroup": {
+      "post": {
+        "description": "Set working group for a user",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "user1"
+                },
+                "workingGroup": {
+                  "type": "object",
+                  "properties": {
+                    "schoolId": {
+                      "type": "string",
+                      "example": "school1"
+                    },
+                    "classId": {
+                      "type": "string",
+                      "example": "class1"
+                    },
+                    "instructorId": {
+                      "type": "string",
+                      "example": "instructor1"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "ExperimentUser"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Set Group Membership",
+            "schema": {
+              "$ref": "#/definitions/initResponse"
+            }
+          },
+          "500": {
+            "description": "null value in column \"id\" of relation \"experiment_user\" violates not-null constraint"
+          }
+        }
+      },
+      "patch": {
+        "description": "Set working group for a user",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "user1"
+                },
+                "workingGroup": {
+                  "type": "object",
+                  "properties": {
+                    "schoolId": {
+                      "type": "string",
+                      "example": "school1"
+                    },
+                    "classId": {
+                      "type": "string",
+                      "example": "class1"
+                    },
+                    "instructorId": {
+                      "type": "string",
+                      "example": "instructor1"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "ExperimentUser"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Set Group Membership",
+            "schema": {
+              "$ref": "#/definitions/initResponse"
+            }
+          },
+          "500": {
+            "description": "null value in column \"id\" of relation \"experiment_user\" violates not-null constraint"
+          }
+        }
+      }
+    },
+    "/mark": {
+      "post": {
+        "description": "Mark a Experiment Point",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "experimentUser",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "userId",
+                "experimentPoint",
+                "condition"
+              ],
+              "properties": {
+                "userId": {
+                  "type": "string"
+                },
+                "site": {
+                  "type": "string"
+                },
+                "target": {
+                  "type": "string",
+                  "example": "partition1"
+                },
+                "condition": {
+                  "type": "string",
+                  "example": "control"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "condition applied"
+                },
+                "experimentId": {
+                  "type": "string",
+                  "example": "exp1"
+                }
+              }
+            },
+            "description": "ExperimentUser"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment Point is Marked",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "experimentId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "site": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "target": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "condition": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id",
+                "experimentId",
+                "enrollmentCode",
+                "userId",
+                "condition"
+              ]
+            }
+          },
+          "500": {
+            "description": "User not defined"
+          }
+        }
+      }
+    },
+    "/assign": {
+      "post": {
+        "description": "Assign a Experiment Point",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "example": "user1"
+                },
+                "context": {
+                  "type": "string",
+                  "example": "add"
+                }
+              }
+            },
+            "description": "User Document"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment Point is Assigned",
+            "schema": {
+              "type": "array",
+              "description": "",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "required": [
+                  "site",
+                  "target",
+                  "condition"
+                ],
+                "properties": {
+                  "site": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "target": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "condition": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Experiment user not defined"
+          },
+          "500": {
+            "description": "null value in column \"id\" of relation \"experiment_user\" violates not-null constraint"
+          }
+        }
+      }
+    },
+    "/log": {
+      "post": {
+        "description": "Post log data",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "data",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string",
+                        "example": "user1"
+                      },
+                      "metrics": {
+                        "type": "object",
+                        "properties": {
+                          "attributes": {
+                            "type": "object",
+                            "properties": {
+                              "continuousMetricName": {
+                                "type": "integer",
+                                "example": 100
+                              },
+                              "categoricalMetricName": {
+                                "type": "string",
+                                "example": "CATEGORY"
+                              }
+                            }
+                          },
+                          "groupedMetrics": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "groupClass": {
+                                  "type": "string",
+                                  "example": "workspaceType"
+                                },
+                                "groupKey": {
+                                  "type": "string",
+                                  "example": "workspaceName"
+                                },
+                                "attributes": {
+                                  "type": "object",
+                                  "properties": {
+                                    "continuousMetricName": {
+                                      "type": "integer",
+                                      "example": 100
+                                    },
+                                    "categoricalMetricName": {
+                                      "type": "string",
+                                      "example": "CATEGORY"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description": "User Document"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Log data"
+          },
+          "500": {
+            "description": "null value in column \"id\\\" of relation \\\"experiment_user\\\" violates not-null constraint"
+          }
+        }
+      }
+    },
+    "/bloblog": {
+      "post": {
+        "description": "Post blob log data",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "data",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            },
+            "description": "User Document"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Log blob data"
+          }
+        }
+      }
+    },
+    "/failed": {
+      "post": {
+        "description": "Add error from client end",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "experimentError",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "type": "string"
+                },
+                "site": {
+                  "type": "string"
+                },
+                "userId": {
+                  "type": "string"
+                },
+                "target": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Experiment Error from client"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Client side reported error"
+          },
+          "500": {
+            "description": "null value in column \"id\\\" of relation \\\"experiment_user\\\" violates not-null constraint"
+          }
+        }
+      }
+    },
+    "/featureflag": {
+      "get": {
+        "description": "Get all feature flags using SDK",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "responses": {
+          "200": {
+            "description": "Feature flags list"
+          }
+        }
+      }
+    },
+    "/metric": {
+      "post": {
+        "description": "Add filter metrics",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "metricUnit": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Filtered Metrics"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Filtered Metrics"
+          },
+          "500": {
+            "description": "Insert error in database"
+          }
+        }
+      },
+      "get": {
+        "description": "Get all metrics tracked",
+        "tags": [
+          "Metrics"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get all Metrics"
+          }
+        }
+      }
+    },
+    "/useraliases": {
+      "post": {
+        "description": "Set aliases for current user",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user aliases",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "userId",
+                "aliases"
+              ],
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "example": "user1"
+                },
+                "aliases": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "alias123"
+                  }
+                }
+              }
+            },
+            "description": "Set user aliases"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment User aliases added",
+            "schema": {
+              "type": "array",
+              "description": "",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "createdAt",
+                  "updatedAt",
+                  "versionNumber",
+                  "originalUser"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "group": {},
+                  "workingGroup": {},
+                  "createdAt": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "updatedAt": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "versionNumber": {
+                    "type": "number"
+                  },
+                  "originalUser": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "null value in column \"id\\\" of relation \\\"experiment_user\\\" violates not-null constraint"
+          }
+        }
+      },
+      "patch": {
+        "description": "Set aliases for current user",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user aliases",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "userId",
+                "aliases"
+              ],
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "example": "user1"
+                },
+                "aliases": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "alias123"
+                  }
+                }
+              }
+            },
+            "description": "Set user aliases"
+          }
+        ],
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment User aliases added",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "aliases": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "userId",
+                "userAliases"
+              ]
+            }
+          },
+          "500": {
+            "description": "null value in column \"id\\\" of relation \\\"experiment_user\\\" violates not-null constraint"
+          }
+        }
+      }
+    },
+    "/clearDB": {
+      "delete": {
+        "description": "Only available in DEMO mode. Removes everything except UpGrade users, metric metadata, UpGrade settings, and migrations",
+        "tags": [
+          "Client Side SDK"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Database cleared"
+          },
+          "500": {
+            "description": "DEMO mode is disabled"
+          }
+        }
+      }
+    },
+    "/experiments/names": {
+      "get": {
+        "description": "Get all the experiment names",
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment Name List",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "name"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          }
+        }
+      }
+    },
+    "/experiments": {
+      "get": {
+        "description": "Get all the experiments",
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment List",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExperimentResponse"
+              }
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          }
+        }
+      },
+      "post": {
+        "description": "Create New Experiment",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "experiment",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/Experiment"
+            },
+            "description": "Experiment Structure"
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "New Experiment is created",
+            "schema": {
+              "$ref": "#/definitions/ExperimentResponse"
+            }
+          },
+          "400": {
+            "description": "default as ConditionCode is not allowed"
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "500": {
+            "description": "Insert Error in database"
+          }
+        }
+      }
+    },
+    "/experiments/contextMetaData": {
+      "get": {
+        "description": "Get contextMetaData",
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "contextMetaData list",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "appContext": {
+                  "type": "array",
+                  "items": {
+                    "properties": {}
+                  }
+                },
+                "expPoints": {
+                  "type": "array",
+                  "items": {
+                    "properties": {}
+                  }
+                },
+                "expIds": {
+                  "type": "array",
+                  "items": {
+                    "properties": {}
+                  }
+                },
+                "groupTypes": {
+                  "type": "array",
+                  "items": {
+                    "properties": {}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          }
+        }
+      }
+    },
+    "/experiments/paginated": {
+      "post": {
+        "description": "Get Paginated Experiment",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "skip",
+                "take"
+              ],
+              "properties": {
+                "skip": {
+                  "type": "integer"
+                },
+                "take": {
+                  "type": "integer"
+                },
+                "searchParams": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "name",
+                        "status",
+                        "tag"
+                      ]
+                    },
+                    "string": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "sortParams": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "name",
+                        "status",
+                        "createdAt"
+                      ]
+                    },
+                    "sortAs": {
+                      "type": "string",
+                      "enum": [
+                        "ASC",
+                        "DESC"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get Paginated Experiments",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number"
+                },
+                "nodes": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ExperimentResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "500": {
+            "description": "Insert Error in database"
+          }
+        }
+      }
+    },
+    "/experiments/partitions": {
+      "get": {
+        "description": "Get all experiment partitions",
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get All Experiment Partitions",
+            "schema": {
+              "type": "array",
+              "description": "",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "required": [
+                  "site",
+                  "target"
+                ],
+                "properties": {
+                  "site": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "SelectSection"
+                  },
+                  "target": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "using_fractions"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "404": {
+            "description": "Experiment Partitions not found"
+          }
+        }
+      }
+    },
+    "/experiments/single/{id}": {
+      "get": {
+        "description": "Get experiment by id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Experiment Id"
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get Experiment By Id",
+            "schema": {
+              "$ref": "#/definitions/ExperimentResponse"
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "404": {
+            "description": "Experiment not found"
+          },
+          "500": {
+            "description": "id should be of type UUID"
+          }
+        }
+      }
+    },
+    "/experiments/conditions/{id}": {
+      "get": {
+        "description": "Get experiment conditions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Experiment Id"
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get Experiment By Id",
+            "schema": {
+              "type": "array",
+              "description": "",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "required": [
+                  "createdAt",
+                  "updatedAt",
+                  "versionNumber",
+                  "id",
+                  "twoCharacterId",
+                  "name",
+                  "description",
+                  "conditionCode",
+                  "assignmentWeight"
+                ],
+                "properties": {
+                  "createdAt": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "updatedAt": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "versionNumber": {
+                    "type": "number"
+                  },
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "twoCharacterId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "conditionCode": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "assignmentWeight": {
+                    "type": "number"
+                  },
+                  "order": {}
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "404": {
+            "description": "Experiment not found"
+          },
+          "500": {
+            "description": "id should be of type UUID"
+          }
+        }
+      }
+    },
+    "/experiments/batch": {
+      "post": {
+        "description": "Generate New Experiments",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "experiments",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Experiment"
+              }
+            },
+            "description": "Experiment Structure"
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "New Experiment is created",
+            "schema": {
+              "$ref": "#/definitions/ExperimentResponse"
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "500": {
+            "description": "Insert Error in database"
+          }
+        }
+      }
+    },
+    "/experiments/{id}": {
+      "delete": {
+        "description": "Delete experiment by id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Experiment Id"
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete Experiment By Id",
+            "schema": {
+              "$ref": "#/definitions/ExperimentResponse"
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "404": {
+            "description": "Not found error"
+          },
+          "500": {
+            "description": "id should be of type UUID"
+          }
+        }
+      },
+      "put": {
+        "description": "Create New Experiment",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Experiment Id"
+          },
+          {
+            "in": "body",
+            "name": "experiment",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/Experiment"
+            },
+            "description": "Experiment Structure"
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment is updated",
+            "schema": {
+              "$ref": "#/definitions/ExperimentResponse"
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "500": {
+            "description": "invalid input syntax for type uuid, Error in experiment scheduler (user is not authorized), Insert Error in database"
+          }
+        }
+      }
+    },
+    "/experiments/state": {
+      "post": {
+        "description": "Update Experiment State",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "data",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "experimentId": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Experiment State"
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment State is updated"
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "500": {
+            "description": "id should be of type UUID, invalid input value for enum 'state' violates not-null constrain"
+          }
+        }
+      }
+    },
+    "/experiments/{import}": {
+      "put": {
+        "description": "Import New Experiment",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path"
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment is imported"
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          }
+        }
+      }
+    },
+    "/experiments/getGroupAssignmentStatus/{id}": {
+      "get": {
+        "description": "Get all the groups assignment status having met the ending criteria",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Experiment Id"
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment List",
+            "schema": {
+              "type": "number",
+              "items": {
+                "$ref": "#/definitions/ExperimentResponse"
+              }
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "404": {
+            "description": "Not found error"
+          },
+          "500": {
+            "description": "id should be of type UUID"
+          }
+        }
+      }
+    },
+    "/experimentusers": {
+      "get": {
+        "description": "Get all the users",
+        "tags": [
+          "Experiment Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          }
+        }
+      },
+      "post": {
+        "description": "Create New ExperimentUser",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/ExperimentUser"
+            },
+            "description": "ExperimentUser Structure"
+          }
+        ],
+        "tags": [
+          "Experiment Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "New ExperimentUser is created"
+          }
+        }
+      }
+    },
+    "/experimentusers/{id}": {
+      "get": {
+        "description": "Get user by id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "user Id"
+          }
+        ],
+        "tags": [
+          "Experiment Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get user By Id"
+          },
+          "404": {
+            "description": "user not found"
+          }
+        }
+      },
+      "put": {
+        "description": "Update ExperimentUser",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ExperimentUser ID"
+          },
+          {
+            "in": "body",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/ExperimentUser"
+            },
+            "description": "ExperimentUser Structure"
+          }
+        ],
+        "tags": [
+          "Experiment Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "ExperimentUser is updated"
+          }
+        }
+      }
+    },
+    "flags": {
+      "0": {
+        "name": "Feature flags",
+        "description": "Get Feature flags related data"
+      }
+    },
+    "/flags/paginated": {
+      "post": {
+        "description": "Get Paginated Feature Flags",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "skip",
+                "take"
+              ],
+              "properties": {
+                "skip": {
+                  "type": "integer"
+                },
+                "take": {
+                  "type": "integer"
+                },
+                "searchParams": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "name",
+                        "key",
+                        "status",
+                        "variation Type"
+                      ]
+                    },
+                    "string": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "sortParams": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "name",
+                        "key",
+                        "status",
+                        "variationType"
+                      ]
+                    },
+                    "sortAs": {
+                      "type": "string",
+                      "enum": [
+                        "ASC",
+                        "DESC"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Feature flags"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get Paginated Experiments"
+          }
+        }
+      }
+    },
+    "/flags": {
+      "post": {
+        "description": "Create New flag",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "flag",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/FeatureFlag"
+            },
+            "description": "Feature flag structure"
+          }
+        ],
+        "tags": [
+          "Feature flags"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "New Feature flag is created"
+          }
+        }
+      }
+    },
+    "/flags/status": {
+      "post": {
+        "description": "Update Feature flag State",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "flagId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Flag ID"
+          },
+          {
+            "in": "body",
+            "name": "status",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Flag State"
+          }
+        ],
+        "tags": [
+          "Feature flags"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Feature flag state is updated"
+          }
+        }
+      }
+    },
+    "/flags/{id}": {
+      "delete": {
+        "description": "Delete feature flag by id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Feature flag Id"
+          }
+        ],
+        "tags": [
+          "Feature flags"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete Feature flag By Id"
+          }
+        }
+      },
+      "put": {
+        "description": "Update feature flags by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Feature flag Id"
+          },
+          {
+            "in": "body",
+            "name": "flag",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/FeatureFlag"
+            },
+            "description": "Feature Flag Structure"
+          }
+        ],
+        "tags": [
+          "Feature flags"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Feature flags is updated"
+          }
+        }
+      }
+    },
+    "/audit": {
+      "post": {
+        "description": "Get audit-logs",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "skip",
+                "take"
+              ],
+              "properties": {
+                "skip": {
+                  "type": "integer"
+                },
+                "take": {
+                  "type": "integer"
+                },
+                "filter": {
+                  "type": "string",
+                  "enum": [
+                    "experimentCreated",
+                    "experimentUpdated",
+                    "experimentStateChanged",
+                    "experimentDeleted"
+                  ]
+                }
+              }
+            },
+            "description": "number of audit logs to requests"
+          }
+        ],
+        "tags": [
+          "Logs"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Audit Logs"
+          }
+        }
+      }
+    },
+    "/error": {
+      "post": {
+        "description": "Get error-logs",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "skip",
+                "take"
+              ],
+              "properties": {
+                "skip": {
+                  "type": "integer"
+                },
+                "take": {
+                  "type": "integer"
+                },
+                "filter": {
+                  "type": "string",
+                  "enum": [
+                    "Database not reachable",
+                    "Database auth fail",
+                    "Error in the assignment algorithm",
+                    "Parameter missing in the client request",
+                    "Parameter not in the correct format",
+                    "User ID not found",
+                    "Query Failed",
+                    "Error reported from client",
+                    "Experiment user not defined",
+                    "Experiment user group not defined",
+                    "Email send error",
+                    "Working group is not a subset of user group"
+                  ]
+                }
+              }
+            },
+            "description": "number of error logs to requests"
+          }
+        ],
+        "tags": [
+          "Logs"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Error Logs"
+          }
+        }
+      }
+    },
+    "/login/user": {
+      "post": {
+        "description": "Create a new user if doesn't exist",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/User"
+            },
+            "description": "User Structure"
+          }
+        ],
+        "tags": [
+          "Login"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "User will be created if doesn't exist in the DB"
+          }
+        }
+      }
+    },
+    "/metric/save": {
+      "post": {
+        "description": "Add filter metrics",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "metricUnit": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "metric": {
+                        "type": "string",
+                        "example": "completionStatus"
+                      },
+                      "datatype": {
+                        "type": "string",
+                        "enum": [
+                          "categorical",
+                          "continuous"
+                        ]
+                      },
+                      "allowedValues": {
+                        "type": "array"
+                      },
+                      "children": {
+                        "type": "array"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Filtered Metrics"
+          }
+        ],
+        "tags": [
+          "Experiment Point"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Filtered Metrics"
+          }
+        }
+      }
+    },
+    "/metric/{key}": {
+      "delete": {
+        "description": "Delete Metric",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Metric key"
+          }
+        ],
+        "tags": [
+          "Metrics"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete metric by key"
+          }
+        }
+      }
+    },
+    "/previewusers/paginated": {
+      "post": {
+        "description": "Get Paginated Preview Users",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "skip",
+                "take"
+              ],
+              "properties": {
+                "skip": {
+                  "type": "integer"
+                },
+                "take": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Preview Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get Paginated Preview Users"
+          }
+        }
+      }
+    },
+    "/previewusers/{id}": {
+      "get": {
+        "description": "Get user by id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "user Id"
+          }
+        ],
+        "tags": [
+          "Preview Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get user By Id"
+          },
+          "404": {
+            "description": "user not found"
+          }
+        }
+      },
+      "put": {
+        "description": "Update PreviewUser",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "PreviewUser ID"
+          },
+          {
+            "in": "body",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/PreviewUser"
+            },
+            "description": "PreviewUser Structure"
+          }
+        ],
+        "tags": [
+          "Preview Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "PreviewUser is updated"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete preview user",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Preview User Id"
+          }
+        ],
+        "tags": [
+          "Preview Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete User By Id"
+          }
+        }
+      }
+    },
+    "/previewusers": {
+      "post": {
+        "description": "Create New PreviewUser",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/PreviewUser"
+            },
+            "description": "PreviewUser Structure"
+          }
+        ],
+        "tags": [
+          "Preview Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "New ExperimentUser is created"
+          }
+        }
+      }
+    },
+    "/previewusers/assign": {
+      "post": {
+        "description": "Create Assignments for Preview users",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/PreviewUser"
+            },
+            "description": "PreviewUser Structure"
+          }
+        ],
+        "tags": [
+          "Preview Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignment is created"
+          }
+        }
+      }
+    },
+    "/query/analyse": {
+      "post": {
+        "description": "Data log analysis",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "queryIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "description": "Data analysis"
+          }
+        ],
+        "tags": [
+          "Query"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get data analysis"
+          }
+        }
+      }
+    },
+    "/scheduledJobs/start": {
+      "post": {
+        "description": "Change experiment state to Enrolling",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "id"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Change experiment state to enrolling"
+          }
+        ],
+        "tags": [
+          "Scheduled Jobs"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Change Experiment Status to enrolling"
+          }
+        }
+      }
+    },
+    "/scheduledJobs/end": {
+      "post": {
+        "description": "Change experiment state to EnrollmentComplete",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "id"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Change experiment state to EnrollmentComplete"
+          }
+        ],
+        "tags": [
+          "Scheduled Jobs"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Change experiment state to EnrollmentComplete"
+          }
+        }
+      }
+    },
+    "/scheduledJobs/clearLogs": {
+      "post": {
+        "description": "Clear audit and error logs",
+        "consumes": [
+          "application/json"
+        ],
+        "tags": [
+          "Scheduled Jobs"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Clear audit and error logs"
+          }
+        }
+      }
+    },
+    "/segments": {
+      "get": {
+        "description": "Get all segments",
+        "tags": [
+          "Segment"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get all segments",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/segmentResponse"
+              }
+            }
+          },
+          "401": {
+            "description": "Authorization Required Error"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new segment",
+        "tags": [
+          "Segment"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "segment",
+            "description": "Segment object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/Segment"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Create a new segment",
+            "schema": {
+              "$ref": "#/definitions/segmentResponse"
+            }
+          },
+          "401": {
+            "description": "Authorization Required Error"
+          },
+          "500": {
+            "description": "Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid"
+          }
+        }
+      }
+    },
+    "/segments/{segmentId}": {
+      "get": {
+        "description": "Get segment by id",
+        "tags": [
+          "Segment"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "segmentId",
+            "description": "Segment id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get segment by id",
+            "schema": {
+              "$ref": "#/definitions/segmentResponse"
+            }
+          },
+          "401": {
+            "description": "Authorization Required Error"
+          },
+          "404": {
+            "description": "Segment not found"
+          },
+          "500": {
+            "description": "Internal Server Error, SegmentId is not valid"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a segment",
+        "tags": [
+          "Segment"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "segmentId",
+            "description": "Segment id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete a segment",
+            "schema": {
+              "$ref": "#/definitions/segmentResponse"
+            }
+          },
+          "401": {
+            "description": "Authorization Required Error"
+          },
+          "500": {
+            "description": "Internal Server Error, SegmentId is not valid"
+          }
+        }
+      }
+    },
+    "/segments/import": {
+      "post": {
+        "description": "Import a new segment",
+        "tags": [
+          "Segment"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "segment",
+            "description": "Segment object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/Segment"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Import a new segment",
+            "schema": {
+              "$ref": "#/definitions/segmentResponse"
+            }
+          },
+          "401": {
+            "description": "Authorization Required Error"
+          },
+          "500": {
+            "description": "Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid"
+          }
+        }
+      }
+    },
+    "/setting": {
+      "get": {
+        "description": "Get project setting",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Setting"
+        ],
+        "responses": {
+          "200": {
+            "description": "Project settings"
+          }
+        }
+      },
+      "post": {
+        "description": "Update project settings",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "toCheckAuth": {
+                  "type": "boolean"
+                },
+                "toFilterMetric": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": "Set settings"
+          }
+        ],
+        "tags": [
+          "Setting"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Create/Update settings"
+          }
+        }
+      }
+    },
+    "/users/paginated": {
+      "post": {
+        "description": "Get Paginated Users",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "skip",
+                "take"
+              ],
+              "properties": {
+                "skip": {
+                  "type": "integer"
+                },
+                "take": {
+                  "type": "integer"
+                },
+                "searchParams": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "firstName",
+                        "lastName",
+                        "email",
+                        "role"
+                      ]
+                    },
+                    "string": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "sortParams": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "firstName",
+                        "lastName",
+                        "email",
+                        "role"
+                      ]
+                    },
+                    "sortAs": {
+                      "type": "string",
+                      "enum": [
+                        "ASC",
+                        "DESC"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get Paginated Users"
+          }
+        }
+      }
+    },
+    "/users/{email}": {
+      "get": {
+        "description": "Get user by email",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "email",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "User email"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get User By Email"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete user",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "email",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Email id of user"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete User By email"
+          }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "description": "Create New System User",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "$ref": "#/definitions/User"
+            },
+            "description": "User Structure"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "New User is created"
+          }
+        }
+      }
+    },
+    "/users/details": {
+      "post": {
+        "description": "Update User Details",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "params",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "firstName",
+                "lastName",
+                "email",
+                "role"
+              ],
+              "properties": {
+                "firstName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "admin",
+                    "creator",
+                    "manager",
+                    "reader"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "User Details is updated"
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "description": "Get Server Version",
+        "tags": [
+          "Version"
+        ],
+        "responses": {
+          "200": {
+            "description": "Get Server Version"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "initResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "group": {
+          "type": "object",
+          "properties": {
+            "class": {
+              "type": "array",
+              "items": {
+                "required": [],
+                "properties": {}
+              }
+            }
+          },
+          "required": [
+            "class"
+          ]
+        },
+        "workingGroup": {
+          "type": "object",
+          "properties": {
+            "school": {
+              "type": "string",
+              "minLength": 1
+            },
+            "class": {
+              "type": "string",
+              "minLength": 1
+            },
+            "instructor": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "school",
+            "class",
+            "instructor"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "group",
+        "workingGroup"
+      ]
+    },
+    "Experiment": {
+      "required": [
+        "id",
+        "name",
+        "state",
+        "consistencyRule",
+        "assignmentUnit",
+        "postExperimentRule",
+        "enrollmentCompleteCondition",
+        "group",
+        "conditions",
+        "partitions"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "exp01"
+        },
+        "name": {
+          "type": "string",
+          "example": "TextExp1"
+        },
+        "description": {
+          "type": "string",
+          "example": "a simple test experiment"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "inactive",
+            "demo",
+            "scheduled",
+            "enrolling",
+            "enrollmentComplete",
+            "cancelled"
+          ]
+        },
+        "startOn": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "consistencyRule": {
+          "type": "string",
+          "enum": [
+            "individual",
+            "experiment",
+            "group"
+          ]
+        },
+        "assignmentUnit": {
+          "type": "string",
+          "enum": [
+            "individual",
+            "group"
+          ]
+        },
+        "postExperimentRule": {
+          "type": "string",
+          "enum": [
+            "continue",
+            "revert",
+            "assign"
+          ]
+        },
+        "enrollmentCompleteCondition": {
+          "type": "object",
+          "properties": {
+            "userCount": {
+              "type": "integer"
+            },
+            "groupCount": {
+              "type": "integer"
+            }
+          }
+        },
+        "endOn": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "revertTo": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "group": {
+          "type": "string"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "control"
+              },
+              "assignmentWeight": {
+                "type": "number",
+                "example": 50
+              },
+              "description": {
+                "type": "string",
+                "example": "Control Condition"
+              }
+            }
+          }
+        },
+        "partitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "site": {
+                "type": "string",
+                "example": "SelectSection"
+              },
+              "target": {
+                "type": "string",
+                "example": "using_fractions"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "excludeIfReached": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "queries": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "experimentSegmentInclusion": {
+          "type": "object",
+          "properties": {
+            "segment": {
+              "type": "object",
+              "properties": {
+                "individualForSegment": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string",
+                        "example": "user1"
+                      }
+                    }
+                  }
+                },
+                "groupForSegment": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "groupId": {
+                        "type": "string",
+                        "example": "school1"
+                      },
+                      "type": {
+                        "type": "string",
+                        "example": "schoolId"
+                      }
+                    }
+                  }
+                },
+                "subSegments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "context": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "experimentSegmentExclusion": {
+          "type": "object",
+          "properties": {
+            "segment": {
+              "type": "object",
+              "properties": {
+                "individualForSegment": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string",
+                        "example": "user1"
+                      }
+                    }
+                  }
+                },
+                "groupForSegment": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "groupId": {
+                        "type": "string",
+                        "example": "school1"
+                      },
+                      "type": {
+                        "type": "string",
+                        "example": "schoolId"
+                      }
+                    }
+                  }
+                },
+                "subSegments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "context": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "conditionAliases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "aliasName": {
+                "type": "string"
+              },
+              "parentCondition": {
+                "type": "object"
+              },
+              "decisionPoint": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "ExperimentResponse": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "versionNumber": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "context": {
+          "type": "array",
+          "items": {
+            "required": [],
+            "properties": {}
+          }
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startOn": {},
+        "consistencyRule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assignmentUnit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "postExperimentRule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "enrollmentCompleteCondition": {},
+        "endOn": {},
+        "revertTo": {},
+        "tags": {
+          "type": "array",
+          "items": {
+            "required": [],
+            "properties": {}
+          }
+        },
+        "group": {
+          "type": "string",
+          "minLength": 1
+        },
+        "logging": {
+          "type": "boolean"
+        },
+        "conditions": {
+          "type": "array",
+          "uniqueItems": true,
+          "minItems": 1,
+          "items": {
+            "required": [
+              "createdAt",
+              "updatedAt",
+              "versionNumber",
+              "id",
+              "twoCharacterId",
+              "name",
+              "description",
+              "conditionCode",
+              "assignmentWeight"
+            ],
+            "properties": {
+              "createdAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "updatedAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "versionNumber": {
+                "type": "number"
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "twoCharacterId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "conditionCode": {
+                "type": "string",
+                "minLength": 1
+              },
+              "assignmentWeight": {
+                "type": "number"
+              },
+              "order": {}
+            }
+          }
+        },
+        "partitions": {
+          "type": "array",
+          "uniqueItems": true,
+          "minItems": 1,
+          "items": {
+            "required": [
+              "createdAt",
+              "updatedAt",
+              "versionNumber",
+              "id",
+              "twoCharacterId",
+              "site",
+              "target",
+              "description"
+            ],
+            "properties": {
+              "createdAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "updatedAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "versionNumber": {
+                "type": "number"
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "twoCharacterId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "site": {
+                "type": "string",
+                "minLength": 1
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "order": {}
+            }
+          }
+        },
+        "queries": {
+          "type": "array",
+          "items": {
+            "required": [],
+            "properties": {}
+          }
+        },
+        "stateTimeLogs": {
+          "type": "array",
+          "uniqueItems": true,
+          "minItems": 1,
+          "items": {
+            "required": [
+              "createdAt",
+              "updatedAt",
+              "versionNumber",
+              "id",
+              "fromState",
+              "toState",
+              "timeLog"
+            ],
+            "properties": {
+              "createdAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "updatedAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "versionNumber": {
+                "type": "number"
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fromState": {
+                "type": "string",
+                "minLength": 1
+              },
+              "toState": {
+                "type": "string",
+                "minLength": 1
+              },
+              "timeLog": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "experimentSegmentInclusion": {
+          "type": "object",
+          "properties": {
+            "segment": {
+              "type": "object",
+              "properties": {
+                "individualForSegment": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string",
+                        "example": "user1"
+                      }
+                    }
+                  }
+                },
+                "groupForSegment": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "groupId": {
+                        "type": "string",
+                        "example": "school1"
+                      },
+                      "type": {
+                        "type": "string",
+                        "example": "schoolId"
+                      }
+                    }
+                  }
+                },
+                "subSegments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "context": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "experimentSegmentExclusion": {
+          "type": "object",
+          "properties": {
+            "segment": {
+              "type": "object",
+              "properties": {
+                "individualForSegment": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string",
+                        "example": "user1"
+                      }
+                    }
+                  }
+                },
+                "groupForSegment": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "groupId": {
+                        "type": "string",
+                        "example": "school1"
+                      },
+                      "type": {
+                        "type": "string",
+                        "example": "schoolId"
+                      }
+                    }
+                  }
+                },
+                "subSegments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "context": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "conditionAliases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "aliasName": {
+                "type": "string"
+              },
+              "parentCondition": {
+                "type": "object"
+              },
+              "decisionPoint": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "createdAt",
+        "updatedAt",
+        "versionNumber",
+        "id",
+        "name",
+        "description",
+        "context",
+        "state",
+        "consistencyRule",
+        "assignmentUnit",
+        "postExperimentRule",
+        "tags",
+        "group",
+        "logging",
+        "conditions",
+        "partitions",
+        "queries",
+        "stateTimeLogs"
+      ]
+    },
+    "ExperimentUser": {
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "group": {
+          "type": "object"
+        },
+        "workingGroup": {
+          "type": "object"
+        }
+      }
+    },
+    "FeatureFlag": {
+      "required": [
+        "id",
+        "name",
+        "key",
+        "description",
+        "variationType",
+        "status",
+        "variations"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "variationType": {
+          "type": "string"
+        },
+        "status": {
+          "type": "boolean"
+        },
+        "variations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "defaultVariation": {
+                "type": "boolean[]"
+              }
+            }
+          }
+        }
+      }
+    },
+    "User": {
+      "required": [
+        "id",
+        "email"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "PreviewUser": {
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "assignments": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "experiment": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                }
+              },
+              "experimentCondition": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Segment": {
+      "required": [
+        "name",
+        "description",
+        "context",
+        "type",
+        "userIds",
+        "groups",
+        "subSegmentIds"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "context": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "public",
+            "private"
+          ]
+        },
+        "userIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "groupId": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "subSegmentIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "segmentResponse": {
+      "description": "",
+      "type": "object",
+      "required": [
+        "createdAt",
+        "updatedAt - versionNumber",
+        "id",
+        "name",
+        "description",
+        "context",
+        "type",
+        "individualForSegment",
+        "groupForSegment",
+        "subSegments"
+      ],
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "versionNumber": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "context": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "individualForSegment": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": [
+              "createdAt",
+              "updatedAt",
+              "versionNumber",
+              "userId"
+            ],
+            "properties": {
+              "createdAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "updatedAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "versionNumber": {
+                "type": "number"
+              },
+              "userId": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "groupForSegment": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": [
+              "createdAt",
+              "updatedAt",
+              "versionNumber",
+              "groupId",
+              "type"
+            ],
+            "properties": {
+              "createdAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "updatedAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "versionNumber": {
+                "type": "number"
+              },
+              "groupId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "type": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "subSegments": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": [
+              "createdAt",
+              "updatedAt",
+              "versionNumber",
+              "id",
+              "name",
+              "description",
+              "context",
+              "type"
+            ],
+            "properties": {
+              "createdAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "updatedAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "versionNumber": {
+                "type": "number"
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "context": {
+                "type": "string",
+                "minLength": 1
+              },
+              "type": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "responses": {},
+  "parameters": {},
+  "securityDefinitions": {},
+  "tags": [
+    {
+      "name": "Analytics",
+      "description": "Get Experiment Analytics Information"
+    },
+    {
+      "name": "Client Side SDK",
+      "description": "CRUD operations related to experiments points"
+    },
+    {
+      "name": "Experiments",
+      "description": "CRUD operations related to experiments"
+    },
+    {
+      "name": "Experiment Users",
+      "description": "CRUD operations related to users"
+    },
+    {
+      "name": "Logs",
+      "description": "Get logs for experiment"
+    },
+    {
+      "name": "Login",
+      "description": "Login APIs"
+    },
+    {
+      "name": "Metrics",
+      "description": "Get metrics details for the system"
+    },
+    {
+      "name": "Preview Users",
+      "description": "CRUD operations related to users"
+    },
+    {
+      "name": "Query",
+      "description": "Get Query details"
+    },
+    {
+      "name": "Segment",
+      "description": "CRUD operations related to Segment"
+    },
+    {
+      "name": "Setting",
+      "description": "Setting Endpoint"
+    },
+    {
+      "name": "Users",
+      "description": "System Users"
+    },
+    {
+      "name": "Version",
+      "description": "Get version details"
+    }
+  ]
+}
