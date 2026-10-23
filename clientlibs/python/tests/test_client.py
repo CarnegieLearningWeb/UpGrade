@@ -6,10 +6,13 @@ exercises the full UpgradeClient → ApiService → httpx stack.
 
 import json
 
+import httpx
+import pytest
 import respx
 from httpx import Response
 
 from upgrade_client_lib.client import UpgradeClient
+from upgrade_client_lib.exceptions import UpgradeApiError
 from upgrade_client_lib.types.enums import BinaryRewardValue, ExperimentType, MarkedDecisionPointStatus
 from upgrade_client_lib.types.requests import LogInput, LogMetrics
 
@@ -350,7 +353,7 @@ class TestMarkDecisionPoint:
         await client.get_all_experiment_conditions()
 
         await client.mark_decision_point(
-            "combo-A", MarkedDecisionPointStatus.CONDITION_APPLIED,"quiz", "hint", 
+            "combo-A", MarkedDecisionPointStatus.CONDITION_APPLIED,"quiz", "hint",
         )
         first_body = json.loads(mark_route.calls[0].request.content)
 
@@ -591,6 +594,64 @@ class TestSetAltUserIds:
 
 class TestSendReward:
     @respx.mock
+    async def test_async_accepted_by_default(self) -> None:
+        payload = {**REWARD_PAYLOAD, "mode": "accepted"}
+        route = respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=payload))
+        result = await make_client().send_reward(BinaryRewardValue.SUCCESS)
+        assert route.calls[0].request.url.params["awaitResult"] == "false"
+        assert result.mode == "accepted"
+        assert result.success is None
+
+    @respx.mock
+    def test_sync_accepted_by_default(self) -> None:
+        payload = {**REWARD_PAYLOAD, "mode": "accepted"}
+        route = respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=payload))
+        result = make_client().send_reward_sync(BinaryRewardValue.SUCCESS)
+        assert route.calls[0].request.url.params["awaitResult"] == "false"
+        assert result.mode == "accepted"
+        assert result.success is None
+
+    @respx.mock
+    async def test_async_processed(self) -> None:
+        payload = {**REWARD_PAYLOAD, "mode": "processed", "success": True}
+        route = respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=payload))
+        result = await make_client().send_reward(BinaryRewardValue.SUCCESS, await_result=True)
+        assert route.calls[0].request.url.params["awaitResult"] == "true"
+        assert result.mode == "processed"
+        assert result.success is True
+
+    @respx.mock
+    def test_sync_processed(self) -> None:
+        payload = {**REWARD_PAYLOAD, "mode": "processed", "success": True}
+        route = respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=payload))
+        result = make_client().send_reward_sync(BinaryRewardValue.SUCCESS, await_result=True)
+        assert route.calls[0].request.url.params["awaitResult"] == "true"
+        assert result.mode == "processed"
+        assert result.success is True
+
+    @respx.mock
+    async def test_async_await_result_conflict(self) -> None:
+        respx.post(f"{BASE}/reward", params={"awaitResult": "true"}).mock(
+            return_value=Response(409, json={"message": "No matching enrollment"})
+        )
+        client = make_client()
+        with pytest.raises(UpgradeApiError) as exc_info:
+            await client.send_reward(BinaryRewardValue.SUCCESS, await_result=True)
+        assert exc_info.value.status_code == 409
+        assert "No matching enrollment" in exc_info.value.response_body
+
+    @respx.mock
+    def test_sync_await_result_conflict(self) -> None:
+        respx.post(f"{BASE}/reward", params={"awaitResult": "true"}).mock(
+            return_value=Response(409, json={"message": "No matching enrollment"})
+        )
+        client = make_client()
+        with pytest.raises(UpgradeApiError) as exc_info:
+            client.send_reward_sync(BinaryRewardValue.SUCCESS, await_result=True)
+        assert exc_info.value.status_code == 409
+        assert "No matching enrollment" in exc_info.value.response_body
+
+    @respx.mock
     async def test_async_success(self) -> None:
         respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=REWARD_PAYLOAD))
         result = await make_client().send_reward(BinaryRewardValue.SUCCESS)
@@ -617,3 +678,71 @@ class TestSendReward:
         respx.post(f"{BASE}/reward").mock(return_value=Response(200, json=REWARD_PAYLOAD))
         result = make_client().send_reward_sync(BinaryRewardValue.SUCCESS)
         assert result.message == "ok"
+
+
+# ---------------------------------------------------------------------------
+# Timeout
+# ---------------------------------------------------------------------------
+
+
+class TestTimeout:
+    def test_default_timeout_forwarded_to_api_service(self) -> None:
+        client = make_client()
+        assert client._api_service._timeout == httpx.Timeout(5.0)
+
+    def test_custom_numeric_timeout_forwarded(self) -> None:
+        client = make_client(timeout=0.5)
+        assert client._api_service._timeout == 0.5
+
+    def test_httpx_timeout_object_accepted(self) -> None:
+        t = httpx.Timeout(connect=1.0, read=2.0, write=2.0, pool=1.0)
+        client = make_client(timeout=t)
+        assert client._api_service._timeout is t
+
+
+# ---------------------------------------------------------------------------
+# Nullable condition (mark_decision_point)
+# ---------------------------------------------------------------------------
+
+
+class TestMarkDecisionPointNullableCondition:
+    @respx.mock
+    async def test_async_accepts_none_condition(self) -> None:
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        client = make_client()
+        await client.get_all_experiment_conditions()
+        await client.mark_decision_point(
+            None,
+            MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED,
+            "problem-info",
+            "mathbook_tx",
+        )
+        body = json.loads(mark_route.calls[0].request.content)
+        assert body["data"]["assignedCondition"]["conditionCode"] is None
+        assert body["status"] == MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED.value
+
+    @respx.mock
+    def test_sync_accepts_none_condition(self) -> None:
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        make_client().mark_decision_point_sync(
+            None,
+            MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED,
+            "problem-info",
+            "mathbook_tx",
+        )
+        body = json.loads(mark_route.calls[0].request.content)
+        assert body["data"]["assignedCondition"]["conditionCode"] is None
+
+    @respx.mock
+    async def test_assignment_based_mark_unchanged(self) -> None:
+        """Assignment.mark_decision_point with a non-null condition is unaffected."""
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        client = make_client()
+        assignments = await client.get_all_experiment_conditions()
+        assignment = assignments[0]
+        await assignment.mark_decision_point(MarkedDecisionPointStatus.CONDITION_APPLIED)
+        body = json.loads(mark_route.calls[0].request.content)
+        assert body["data"]["assignedCondition"]["conditionCode"] == "control"

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -77,6 +77,8 @@ class RewardRequest(BaseModel):
 class SendRewardResponse(BaseModel):
     message: str
     request: RewardRequest
+    mode: Literal["accepted", "processed"] | None = None
+    success: bool | None = None
 
 
 class ErrorResponse(BaseModel):
