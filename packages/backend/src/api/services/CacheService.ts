@@ -88,7 +88,7 @@ export class CacheService {
     }
     if (this.cache !== noopStore) {
       this.warnOnBucketsWithoutRefresh();
-      // Temporary: see src/lib/perfDiagnostics.ts
+      // Times every store write — see src/lib/perfDiagnostics.ts
       if (env.perfDiagnostics?.enabled) {
         instrumentCacheStore(this.cache.store);
       }
