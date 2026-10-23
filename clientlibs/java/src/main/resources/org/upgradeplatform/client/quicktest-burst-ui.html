@@ -497,8 +497,13 @@
   }
 
   runButton.addEventListener('click', async () => {
+    const values = formValues();
+    if (values.host === 'url' && !values.url.trim()) {
+      setState('Enter a base URL before starting a run.', 'bad');
+      return;
+    }
     runButton.disabled = true;
-    const res = await post('run', buildArgs(formValues()).join('\n'));
+    const res = await post('run', buildArgs(values).join('\n'));
     if (!res.ok) setState(await res.text(), 'bad');
     pollSoon();
   });
