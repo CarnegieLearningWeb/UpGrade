@@ -66,7 +66,19 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
  *   -Dexec.args="--loops 360 --minBurst 1 --maxBurst 50 --ratePerSecond 6 --seed 42 --env qa"
  * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTestBurst" \
  *   -Dexec.args="--loops 360 --burstTiers 90:1,8:2-10,1:11-30,1:31-200 --ratePerSecond 6 --seed 42 --env qa"
+ * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTestBurst" \
+ *   -Dexec.args="185 --url https://some-host.example.com"
  * </pre>
+ *
+ * <b>{@code --env qa} and {@code --env staging} are not built in.</b> Their URLs come from environment variables you
+ * set on your own machine, which you need to add to your shell profile (e.g. {@code ~/.zshrc}) once:
+ *
+ * <pre>
+ * export UPGRADE_QA_URL=https://&lt;qa backend host&gt;
+ * export UPGRADE_STAGING_URL=https://&lt;staging backend host&gt;
+ * </pre>
+ *
+ * See QuickTestHosts for details. {@code --url} takes a base URL directly and needs no variables.
  *
  * Options (give {@code <count>}, both {@code --minBurst} and {@code --maxBurst}, or {@code --burstTiers}):
  * <ul>
@@ -97,8 +109,9 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
  * an error, and the run exits non-zero. Without this flag, each alias marks one of whatever decision points /assign
  * returned.</li>
  * <li>{@code --concurrency N} pairs in flight at once, per burst (default 50)</li>
- * <li>{@code --env local|qa|staging} (default local; qa and staging read UPGRADE_QA_URL / UPGRADE_STAGING_URL, see
- * QuickTestHosts), or {@code --url <base url>}</li>
+ * <li>{@code --env local|local:<port>|qa|staging} (default local, which is localhost:3030; {@code local:3031} uses
+ * another port; qa and staging read UPGRADE_QA_URL / UPGRADE_STAGING_URL from your environment, see above), or
+ * {@code --url <base url>} to give the URL directly</li>
  * <li>{@code --context <app context>} (default assign-prog)</li>
  * <li>{@code --user <id>} use an already-initialized user for every burst instead of creating one per burst</li>
  * <li>{@code --group-type <type> --group-id <id>} group and working group for a new user (default schoolId /
@@ -870,7 +883,8 @@ public class QuickTestBurst {
         System.err.println("usage: QuickTestBurst [<count>] [--loops 1] [--minBurst N --maxBurst N]"
                 + " [--minBurstWait 0 --maxBurstWait 0 | --ratePerSecond N [--evenArrivals]] [--seed N]"
                 + " [--burstMean N | --burstTiers 90:1,8:2-10,...] [--percentEnroll N] [--concurrency 50]"
-                + " [--env local|qa|staging | --url <url>] [--context assign-prog] [--user <existing user id>]"
+                + " [--env local|local:<port>|qa|staging | --url <url>] [--context assign-prog]"
+                + " [--user <existing user id>]"
                 + " [--group-type schoolId] [--group-id test_class_group] [--token BearerToken] [--verbose]");
         System.exit(2);
     }

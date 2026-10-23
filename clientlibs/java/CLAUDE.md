@@ -73,8 +73,12 @@ TestNG is the test framework but there is no `src/test/java` directory — `Quic
 To run a manual integration test:
 ```bash
 mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest"                    # localhost:3030
+mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest" -Dexec.args="local:3031"   # another local port
 mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest" -Dexec.args="qa"   # or staging
+mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest" -Dexec.args="https://..."  # any base URL
 ```
+
+`QuickTestBurst` takes the same values via `--env` (`--env local:3031`), or a base URL via `--url`.
 
 Only localhost is in the code. `qa` / `staging` (here and in `QuickTestBurst --env`) read the base URL from `UPGRADE_QA_URL` / `UPGRADE_STAGING_URL`, which you export yourself (e.g. in your shell profile) — hosted environments' URLs stay out of this public repo. See `QuickTestHosts`.
 
