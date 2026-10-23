@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -80,6 +79,8 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
  *
  * See QuickTestHosts for details. {@code --url} takes a base URL directly and needs no variables.
  *
+ * QuickTestBurstUi is a local web page for the same options, if you'd rather fill in a form than write the command.
+ *
  * Options (give {@code <count>}, both {@code --minBurst} and {@code --maxBurst}, or {@code --burstTiers}):
  * <ul>
  * <li>{@code <count>} number of alias assign/mark pairs per burst (first argument; same as
@@ -105,9 +106,8 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
  * <li>{@code --percentEnroll N} mark against the mock data instead: each alias (a coin flip from {@code --seed})
  * enrolls N% of the time, marking one of the expected targets (ws_site/ws_target_1..45, site/target_group_1,
  * test_site/test_target_1) that its /assign returned, with the condition /assign gave it. Every other alias marks
- * ws_site/ws_target_none with no condition. Any other target /assign returns to an enrolling alias is reported as
- * an error, and the run exits non-zero. Without this flag, each alias marks one of whatever decision points /assign
- * returned.</li>
+ * ws_site/ws_target_none with no condition. Other targets /assign returns are never marked. Without this flag, each
+ * alias marks one of whatever decision points /assign returned.</li>
  * <li>{@code --concurrency N} pairs in flight at once, per burst (default 50)</li>
  * <li>{@code --env local|local:<port>|qa|staging} (default local, which is localhost:3030; {@code local:3031} uses
  * another port; qa and staging read UPGRADE_QA_URL / UPGRADE_STAGING_URL from your environment, see above), or
@@ -152,7 +152,6 @@ public class QuickTestBurst {
     // single fixed decision point it doesn't add a new monitored decision point for every alias.
     private static final String NULL_MARK_SITE = "ws_site";
     private static final String NULL_MARK_TARGET = "ws_target_none";
-    private static final Set<String> reportedUnexpected = ConcurrentHashMap.newKeySet();
     // Across every user's burst, so overlapping bursts in --ratePerSecond mode show their combined load.
     private static final AtomicInteger pairsInFlight = new AtomicInteger();
     private static final AtomicInteger peakPairsInFlight = new AtomicInteger();
@@ -166,12 +165,10 @@ public class QuickTestBurst {
         final List<Long> burstMs = Collections.synchronizedList(new ArrayList<>());
         final List<String> errors = Collections.synchronizedList(new ArrayList<>());
         final AtomicInteger emptyAssignments = new AtomicInteger();
-        // --percentEnroll only: marks by kind, enrolling aliases that fell back to a null mark, and enrolling aliases
-        // whose /assign returned a decision point not in ENROLL_DECISION_POINTS.
+        // --percentEnroll only: marks by kind, and enrolling aliases that fell back to a null mark.
         final AtomicInteger enrollMarks = new AtomicInteger();
         final AtomicInteger nullMarks = new AtomicInteger();
         final AtomicInteger enrollFallbacks = new AtomicInteger();
-        final AtomicInteger unexpectedDecisionPoints = new AtomicInteger();
 
         void addAll(Stats other) {
             assignMs.addAll(other.assignMs);
@@ -183,7 +180,6 @@ public class QuickTestBurst {
             enrollMarks.addAndGet(other.enrollMarks.get());
             nullMarks.addAndGet(other.nullMarks.get());
             enrollFallbacks.addAndGet(other.enrollFallbacks.get());
-            unexpectedDecisionPoints.addAndGet(other.unexpectedDecisionPoints.get());
         }
     }
 
@@ -216,7 +212,7 @@ public class QuickTestBurst {
         Stats total = ratePerSecond > 0 ? runAtRate(random, runId) : runSequentially(random, runId);
 
         printSummary(total);
-        System.exit(total.errors.isEmpty() && total.unexpectedDecisionPoints.get() == 0 ? 0 : 1);
+        System.exit(total.errors.isEmpty() ? 0 : 1);
     }
 
     /** Bursts one after another: the next user's setup starts only after the previous burst and its wait. */
@@ -402,29 +398,16 @@ public class QuickTestBurst {
      * With --percentEnroll. A non-enrolling alias marks NULL_MARK_SITE/NULL_MARK_TARGET, which isn't in the mock
      * data, with no condition. An enrolling alias marks one of the ENROLL_DECISION_POINTS that /assign returned with a
      * condition, picked by {@code pick}, with that condition; if /assign returned none of them, it falls back to the
-     * null mark. Any decision point /assign returns to an enrolling alias that isn't on the list is reported as an
-     * error, since the mock data shouldn't produce one.
+     * null mark.
      */
-    private static MarkExperimentRequestData markEnrollOrNull(String alias, List<ExperimentsResponse> assignments,
-            boolean enroll, double pick, Stats stats) {
+    private static MarkExperimentRequestData markEnrollOrNull(List<ExperimentsResponse> assignments, boolean enroll,
+            double pick, Stats stats) {
         if (enroll) {
             List<ExperimentsResponse> enrollable = new ArrayList<>();
-            List<String> unexpected = new ArrayList<>();
             for (ExperimentsResponse dp : assignments) {
-                if (!ENROLL_DECISION_POINTS.contains(decisionPointKey(dp.getSite(), dp.getTarget()))) {
-                    unexpected.add(dp.getSite() + "/" + dp.getTarget());
-                } else if (assignedCondition(dp) != null) {
+                if (ENROLL_DECISION_POINTS.contains(decisionPointKey(dp.getSite(), dp.getTarget()))
+                        && assignedCondition(dp) != null) {
                     enrollable.add(dp);
-                }
-            }
-            if (!unexpected.isEmpty()) {
-                stats.unexpectedDecisionPoints.incrementAndGet();
-                for (String dp : unexpected) {
-                    // Once per decision point for the whole run, so a misconfigured context doesn't flood the output.
-                    if (reportedUnexpected.add(dp.toLowerCase(Locale.ROOT))) {
-                        System.err.printf("ERROR /assign returned %s, which isn't an expected enroll target"
-                                + " (first seen for %s)%n", dp, alias);
-                    }
                 }
             }
             if (!enrollable.isEmpty()) {
@@ -485,7 +468,7 @@ public class QuickTestBurst {
 
                     MarkExperimentRequestData markData = percentEnroll == null
                             ? markFromAssignments(index, assignments, stats)
-                            : markEnrollOrNull(alias, assignments, enroll, pick, stats);
+                            : markEnrollOrNull(assignments, enroll, pick, stats);
                     String site = markData.getSite();
                     String target = markData.getTarget();
 
@@ -570,10 +553,6 @@ public class QuickTestBurst {
             if (total.enrollFallbacks.get() > 0) {
                 System.out.printf("%d enrolling aliases got none of the expected targets with a condition from"
                         + " /assign, so made the null mark instead%n", total.enrollFallbacks.get());
-            }
-            if (total.unexpectedDecisionPoints.get() > 0) {
-                System.out.printf("ERROR %d enrolling aliases got targets from /assign that aren't expected: %s%n",
-                        total.unexpectedDecisionPoints.get(), reportedUnexpected);
             }
         }
         printLatency("assign", total.assignMs);

@@ -80,6 +80,13 @@ mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest" -Dexec.arg
 
 `QuickTestBurst` takes the same values via `--env` (`--env local:3031`), or a base URL via `--url`.
 
+`QuickTestBurstUi` serves a local form for `QuickTestBurst` at http://localhost:8090: it starts each run as a separate `QuickTestBurst` process, streams the output to the page, and shows the equivalent command line. Its page is `src/main/resources/org/upgradeplatform/client/quicktest-burst-ui.html`. From the repo root, `yarn quickburst:ui` (`scripts/quickburst-ui.sh`) compiles and starts it:
+
+```bash
+yarn quickburst:ui                 # http://localhost:8090
+yarn quickburst:ui --port 8091     # another port
+```
+
 Only localhost is in the code. `qa` / `staging` (here and in `QuickTestBurst --env`) read the base URL from `UPGRADE_QA_URL` / `UPGRADE_STAGING_URL`, which you export yourself (e.g. in your shell profile) — hosted environments' URLs stay out of this public repo. See `QuickTestHosts`.
 
 There is no automated CI for this library (unlike the JS client which publishes via GitHub Actions). Publishing is currently a manual process.
