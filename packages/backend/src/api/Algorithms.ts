@@ -1,7 +1,7 @@
 import seedrandom from 'seedrandom';
 import { ConditionPayloadDTO } from './DTO/ConditionPayloadDTO';
 import { Experiment } from './models/Experiment';
-import { CONDITION_ORDER, EXPERIMENT_TYPE, IExperimentAssignment, IPayload } from 'upgrade_types';
+import { CONDITION_ORDER, EXPERIMENT_TYPE, IExperimentAssignment, IPayload, PAYLOAD_TYPE } from 'upgrade_types';
 import { FactorDTO } from './DTO/FactorDTO';
 import { ExperimentCondition } from './models/ExperimentCondition';
 import { DecisionPoint } from './models/DecisionPoint';
@@ -169,14 +169,42 @@ export function buildWithinSubjectOrderedConditions(
 }
 
 /**
+ * A condition or level payload as /assign returns it: `{ type, value }` when it has a value, otherwise null.
+ */
+export function toAssignmentPayload(payload: IPayload | undefined | null): IPayload | null {
+  return payload && payload.value ? { type: payload.type, value: payload.value } : null;
+}
+
+/**
+ * One assigned-factor entry as /assign returns it. Level payloads are always reported as string payloads.
+ */
+export function toAssignmentFactor(
+  factor: Record<string, { level: string; payload: IPayload }>
+): Record<string, { level: string; payload: IPayload }> {
+  const assignmentFactor: Record<string, { level: string; payload: IPayload }> = {};
+  Object.keys(factor).forEach((key) => {
+    assignmentFactor[key] = {
+      level: factor[key].level,
+      payload:
+        factor[key].payload && factor[key].payload.value
+          ? { type: PAYLOAD_TYPE.STRING, value: factor[key].payload.value }
+          : null,
+    };
+  });
+  return assignmentFactor;
+}
+
+/**
  * Applies decision-point-specific payloads to a pre-computed within-subjects condition order
- * and returns the final assignment for one decision point. Pair with
- * buildWithinSubjectOrderedConditions + a conditionPayloadMap built once per experiment.
+ * and returns the final assignment for one decision point, already in the /assign response shape.
+ * Pair with buildWithinSubjectOrderedConditions + a conditionPayloadMap built once per experiment;
+ * `assignmentFactors` is the ordered factor list already passed through toAssignmentFactor (once per
+ * experiment, since it doesn't vary by decision point).
  */
 export function withInSubjectTypeFromPrecomputed(
   experiment: Experiment,
   orderedConditions: IExperimentAssignment['assignedCondition'],
-  orderedFactors: Record<string, { level: string; payload: IPayload }>[] | null,
+  assignmentFactors: Record<string, { level: string; payload: IPayload }>[] | undefined,
   conditionPayloadMap: Map<string, ConditionPayloadDTO>,
   decisionPoint: DecisionPoint
 ): IExperimentAssignment {
@@ -185,17 +213,19 @@ export function withInSubjectTypeFromPrecomputed(
   const assignedCondition = orderedConditions.map((condition) => {
     const key = isFactorial ? condition.id : `${condition.id}:${decisionPoint.id}`;
     return {
-      ...condition,
-      payload: conditionPayloadMap.get(key)?.payload,
+      id: condition.id,
+      conditionCode: condition.conditionCode,
+      payload: toAssignmentPayload(conditionPayloadMap.get(key)?.payload),
+      experimentId: condition.experimentId,
     };
   });
 
   return {
     site: decisionPoint.site,
     target: decisionPoint.target,
-    assignedCondition,
-    assignedFactor: orderedFactors,
     experimentType: experiment.type,
+    assignedCondition,
+    assignedFactor: assignmentFactors,
   };
 }
 

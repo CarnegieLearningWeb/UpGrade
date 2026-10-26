@@ -571,8 +571,9 @@ export class ExperimentClientController {
    *          '500':
    *            description: Internal Server Error
    */
-  // formatAssignments already returns fresh plain objects, so the global class-transformer pass would only
-  // deep-copy them again before JSON.stringify — pure CPU on the hottest client route, same JSON out.
+  // getAllExperimentConditions already returns fresh plain objects in the response shape, so the global
+  // class-transformer pass would only deep-copy them again before JSON.stringify — pure CPU on the hottest client
+  // route, same JSON out.
   @Post('assign', { transformResponse: false })
   public async getAllExperimentConditions(
     @Req()
@@ -582,13 +583,11 @@ export class ExperimentClientController {
   ): Promise<IExperimentAssignment[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
     const experimentUserDoc = request.userDoc;
-    const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
+    return this.experimentAssignmentService.getAllExperimentConditions(
       experimentUserDoc,
       experiment.context,
       request.logger
     );
-
-    return this.experimentAssignmentService.formatAssignments(assignedData);
   }
 
   /**
