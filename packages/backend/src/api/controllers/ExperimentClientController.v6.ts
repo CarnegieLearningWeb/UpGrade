@@ -571,7 +571,9 @@ export class ExperimentClientController {
    *          '500':
    *            description: Internal Server Error
    */
-  @Post('assign')
+  // formatAssignments already returns fresh plain objects, so the global class-transformer pass would only
+  // deep-copy them again before JSON.stringify — pure CPU on the hottest client route, same JSON out.
+  @Post('assign', { transformResponse: false })
   public async getAllExperimentConditions(
     @Req()
     request: AppRequest,
