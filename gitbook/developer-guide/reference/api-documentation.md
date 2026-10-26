@@ -4,7 +4,7 @@ description: Swagger API details
 
 # API
 
-The operations below cover the v6 client API. You can [download the full specification](../../.gitbook/assets/upgrade-api-6.7-spec.json) as a snapshot of the swagger.json file at the time of this release.\
+The operations below cover the v6 client API. You can [download the full specification](../../.gitbook/assets/upgrade-api-6.7-spec.json) as a snapshot of the swagger.json file at the time of this release (backend `6.7.0`).\
 \
 You can also view the 'live' swagger API documentation details for your hosted backend environment by adding `/swagger` to your backend hostUrl link.
 
