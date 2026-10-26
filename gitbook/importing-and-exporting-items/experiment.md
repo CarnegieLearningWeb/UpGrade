@@ -451,38 +451,38 @@ Some fields can cause a failure to import if modified directly.
 
 
 
-**Mooclet Experiment Example:**
+**Adaptive (Thompson Sampling) Experiment Example:**
 
-For experiments using mooclet adaptive algorithms, the `moocletPolicyParameters` configuration will be copied over exactly, and associated Mooclet entities will be recreated in same manner as when creating a new adaptive experiment.
+For experiments using the Thompson Sampling adaptive algorithm, the `thompsonSamplingConfig` configuration is copied over exactly, and the per-condition posterior state is recreated in the same manner as when creating a new adaptive experiment.
 
 {% hint style="info" %}
-When exporting mooclet experiments, the `current_posteriors` field is automatically removed from `moocletPolicyParameters` to avoid importing stale data.\
-\
-The `outcome_variable_name` will be regenerated.
+Accumulated reward data is never carried across. On import, each condition's posterior state starts fresh from its prior — `Beta(priorSuccess, priorFailure)` with zero success and failure counts — so an experiment exported mid-run will not bring its collected feedback with it.
 {% endhint %}
 
-{% hint style="warning" %}
-Mooclet API must be enabled and up and running if importing into new environment, or the import will fail.&#x20;
-{% endhint %}
+The `priors` object is keyed by condition id, matching the ids in the experiment's `conditions` array.
 
 ```json
 {
   "id": "f66b0483-cf7e-4842-85f7-0a52108230b9",
   "name": "Adaptive Learning Test",
-  "assignmentAlgorithm": "ts_configurable",
-  "moocletPolicyParameters": {
-        "prior": {
-            "failure": 1,
-            "success": 1
-        },
-        "batch_size": 1,
-        "max_rating": 1,
-        "min_rating": 0,
-        "tspostdiff_thresh": 0,
-        "uniform_threshold": 0,
-        "assignmentAlgorithm": "ts_configurable",
-        "outcome_variable_name": "asdfasdf_2026-02-03T19:30:46.005Z_REWARD_VARIABLE"
-    },
+  "assignmentAlgorithm": "thompson_sampling",
+  "thompsonSamplingConfig": {
+    "warmupThreshold": 0,
+    "minimumDrawDifference": 0,
+    "batchSize": 1,
+    "priors": {
+      "f55c8e10-0d7d-4970-a8dd-63c46c42b5e4": {
+        "success": 1,
+        "failure": 1
+      },
+      "11b02266-34f5-4982-882d-31adde41f482": {
+        "success": 1,
+        "failure": 1
+      }
+    }
+  },
   ...
 }
 ```
+
+See [Thompson Sampling (Configurable)](../creating-an-adaptive-experiment/thompson-sampling-configurable.md) for what each parameter does.

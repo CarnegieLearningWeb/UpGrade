@@ -35,7 +35,7 @@ description: >-
 
 **How to start using UpGrade?**
 
-**Developer:** Read our [Quick Start](/broken/pages/-Mg61xfUO7xJKtKCy5y0) and other [Developer Guides](developer-guide/walkthroughs/) that will walk you through installing and running UpGrade on your local computer or in the cloud.
+**Developer:** Read our [Quick Start](developer-guide/quick-start-running-upgrade-with-docker-on-macos-or-linux.md) and other [Developer Guides](developer-guide/walkthroughs/) that will walk you through installing and running UpGrade on your local computer or in the cloud.
 
 **Researcher:** Read the Experimentation Guide, then the Example sections to see how UpGrade can help you improve learning experiences at scale.
 

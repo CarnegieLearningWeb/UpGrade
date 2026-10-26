@@ -20,7 +20,6 @@
 * [Developer Guide](developer-guide/README.md)
   * [⚡ Quick Start: Running locally w/o Docker (on MacOS or Linux)](developer-guide/quick-start-running-locally-w-o-docker-on-macos-or-linux.md)
   * [⚡ Quick Start: Running UpGrade with Docker (on macOS or Linux)](developer-guide/quick-start-running-upgrade-with-docker-on-macos-or-linux.md)
-  * [UpGrade + AdapComp (Mooclet) in Docker](developer-guide/upgrade-+-adapcomp-mooclet-in-docker.md)
   * [🚶‍♀️ Walkthroughs](developer-guide/walkthroughs/README.md)
     * [Your Application and UpGrade](developer-guide/walkthroughs/your-application-and-upgrade.md)
     * [Example 1: A Quiz Web App](developer-guide/walkthroughs/example-1-a-quiz-web-app.md)
