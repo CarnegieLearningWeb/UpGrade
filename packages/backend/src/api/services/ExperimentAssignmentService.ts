@@ -22,8 +22,6 @@ import {
   SUPPORTED_CALIPER_EVENTS,
   IExperimentAssignment,
   ASSIGNMENT_ALGORITHM,
-  IPayload,
-  PAYLOAD_TYPE,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -63,7 +61,12 @@ import { CaliperLogData } from '../controllers/validators/CaliperLogData';
 import { parse, toSeconds } from 'iso8601-duration';
 import { FactorDTO } from '../DTO/FactorDTO';
 import { ConditionPayloadDTO } from '../DTO/ConditionPayloadDTO';
-import { buildWithinSubjectOrderedConditions, withInSubjectTypeFromPrecomputed } from '../Algorithms';
+import {
+  buildWithinSubjectOrderedConditions,
+  toAssignmentFactor,
+  toAssignmentPayload,
+  withInSubjectTypeFromPrecomputed,
+} from '../Algorithms';
 import { CacheService } from './CacheService';
 import { UserStratificationFactorRepository } from '../repositories/UserStratificationRepository';
 import { UserStratificationFactor } from '../models/UserStratificationFactor';
@@ -683,8 +686,7 @@ export class ExperimentAssignmentService {
               logger
             );
           }
-          const formatted = this.formatAssignments(fullAssignment || []);
-          return { experimentUserDoc, assignment: formatted[0] };
+          return { experimentUserDoc, assignment: fullAssignment?.[0] };
         })
       );
 
@@ -698,41 +700,6 @@ export class ExperimentAssignmentService {
       logger.error(error);
       throw error;
     }
-  }
-
-  public formatAssignments(assignedData: IExperimentAssignment[]): IExperimentAssignment[] {
-    return assignedData.map(({ assignedFactor, assignedCondition, ...rest }) => {
-      const finalFactorData = assignedFactor?.map((factor) => {
-        const updatedAssignedFactor: Record<string, { level: string; payload: IPayload }> = {};
-        Object.keys(factor).forEach((key) => {
-          updatedAssignedFactor[key] = {
-            level: factor[key].level,
-            payload:
-              factor[key].payload && factor[key].payload.value
-                ? { type: PAYLOAD_TYPE.STRING, value: factor[key].payload.value }
-                : null,
-          };
-        });
-        return updatedAssignedFactor;
-      });
-
-      const finalConditionData = assignedCondition.map((condition) => {
-        return {
-          id: condition.id,
-          conditionCode: condition.conditionCode,
-          payload:
-            condition.payload && condition.payload.value
-              ? { type: condition.payload.type, value: condition.payload.value }
-              : null,
-          experimentId: condition.experimentId,
-        };
-      });
-      return {
-        ...rest,
-        assignedCondition: finalConditionData,
-        assignedFactor: assignedFactor ? finalFactorData : undefined,
-      };
-    });
   }
 
   public async updateEnrollmentExclusionDocumentsAndCheckEndingCriteria(
@@ -1052,12 +1019,17 @@ export class ExperimentAssignmentService {
   ): IExperimentAssignment[] {
     // For within-subjects experiments, pre-compute the condition ordering (~100 seedrandom calls)
     // and build a payload lookup Map once, then reuse across all decision points.
+    // Everything returned here is already in the /assign response shape (only the fields clients read, payloads
+    // as `{ type, value }` or null), so neither a separate formatting pass nor the class-transformer pass is needed.
     let withinSubjectPrecomputed: ReturnType<typeof buildWithinSubjectOrderedConditions> | null = null;
+    let withinSubjectFactors: IExperimentAssignment['assignedFactor'] | undefined;
     let conditionPayloadMap: Map<string, ConditionPayloadDTO> | null = null;
 
     if (experiment.assignmentUnit === ASSIGNMENT_UNIT.WITHIN_SUBJECTS) {
       const count = repeatedEnrollmentCounts?.find((r) => r.experimentId === experiment.id)?.count || 0;
       withinSubjectPrecomputed = buildWithinSubjectOrderedConditions(experiment, factors, userId, count);
+      // Shaped once here and shared by every decision point, since the factor order doesn't vary by decision point.
+      withinSubjectFactors = withinSubjectPrecomputed.orderedFactors?.map(toAssignmentFactor);
 
       const isFactorial = experiment.type === EXPERIMENT_TYPE.FACTORIAL;
       conditionPayloadMap = new Map<string, ConditionPayloadDTO>();
@@ -1103,24 +1075,24 @@ export class ExperimentAssignmentService {
           return withInSubjectTypeFromPrecomputed(
             experiment,
             withinSubjectPrecomputed.orderedConditions,
-            withinSubjectPrecomputed.orderedFactors,
+            withinSubjectFactors,
             conditionPayloadMap,
             decisionPoint
           );
         } else {
-          const experimentId = experiment.id;
           return {
             target,
             site,
+            experimentType: experiment.type,
             assignedCondition: [
               {
-                ...assignedConditionToReturn,
-                payload: payloadFound?.payload,
-                experimentId,
+                id: assignedConditionToReturn.id,
+                conditionCode: assignedConditionToReturn.conditionCode,
+                payload: toAssignmentPayload(payloadFound?.payload),
+                experimentId: experiment.id,
               },
             ],
-            assignedFactor: assignedFactors ? [assignedFactors] : null,
-            experimentType: experiment.type,
+            assignedFactor: assignedFactors ? [toAssignmentFactor(assignedFactors)] : undefined,
           };
         }
       });

@@ -580,13 +580,11 @@ export class ExperimentClientController {
   ): Promise<IExperimentAssignment[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
     const experimentUserDoc = request.userDoc;
-    const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
+    return this.experimentAssignmentService.getAllExperimentConditions(
       experimentUserDoc,
       experiment.context,
       request.logger
     );
-
-    return this.experimentAssignmentService.formatAssignments(assignedData);
   }
 
   /**
