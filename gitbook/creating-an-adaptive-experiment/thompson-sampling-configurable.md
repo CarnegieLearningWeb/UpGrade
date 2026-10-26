@@ -12,7 +12,7 @@ Thompson Sampling is an "adaptive" experiment type where the condition distribut
 
 There are 3 editable parameters when creating a Thompson Sampling experiment, plus a prior for each condition:<br>
 
-<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/ts_params.png" alt="Thompson Sampling policy parameters in the experiment form"><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 FYI: These values CAN be changed while the experiment is running or paused. They become read-only once the experiment is completed or archived.
@@ -48,7 +48,7 @@ The theory is that because of variance in small sample sizes, Thompson Sampling 
 
 #### Priors
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/conditions-priors.png" alt="Per-condition prior successes and failures"><figcaption></figcaption></figure>
 
 Each condition carries a Beta prior, expressed as a prior success count and a prior failure count: integers with a minimum of 1, defaulting to 1 and 1.\
 \
@@ -60,6 +60,6 @@ Priors are edited per condition, separately from the three parameters above.
 
 #### Reward Feedback
 
-<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/reward-feedback.png" alt="Reward feedback, posteriors and estimated weights"><figcaption></figcaption></figure>
 
 Rewards are binary — either `SUCCESS` or `FAILURE` — and are reported to the `/v6/reward` endpoint. Each reward is attributed to the condition the user was actually assigned, and updates that condition's success or failure count, which in turn shifts its posterior distribution for subsequent assignments.
