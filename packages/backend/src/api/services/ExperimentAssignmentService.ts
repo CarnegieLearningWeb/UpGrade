@@ -83,8 +83,23 @@ export interface FactorialConditionResult {
   conditionPayload: any | null;
 }
 
+/** The parts of ExperimentService.formattingPayload's output that assignment reads. */
+interface AssignmentPayloadFormat {
+  conditionPayloads: ConditionPayloadDTO[];
+  type: EXPERIMENT_TYPE;
+  factors: FactorDTO[];
+}
+
 @Service()
 export class ExperimentAssignmentService {
+  // Formatted forms of experiments, keyed by the experiment object they were formatted from. The experiment cache
+  // hands every request the same objects until it refreshes (a refresh stores new ones), so each experiment is
+  // formatted once per cache fill instead of on every /assign. Uncached reads (preview users, caching off) return new
+  // objects each time, so they just miss and format as before. Like the cached graph itself, these results are
+  // shared across requests and must be treated as read-only.
+  private readonly conditionPayloadFormats = new WeakMap<Experiment, Experiment>();
+  private readonly assignmentPayloadFormats = new WeakMap<Experiment, AssignmentPayloadFormat>();
+
   constructor(
     @InjectRepository()
     private experimentRepository: ExperimentRepository,
@@ -545,7 +560,7 @@ export class ExperimentAssignmentService {
       }
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
-        const { conditionPayloads, type, factors } = this.experimentService.formattingPayload(experiment);
+        const { conditionPayloads, type, factors } = this.getAssignmentPayloadFormat(experiment);
 
         if (assignment) {
           const decisionPoints = this.mapDecisionPoints(
@@ -656,7 +671,7 @@ export class ExperimentAssignmentService {
           );
           let fullAssignment: IExperimentAssignment[] | null = null;
           if (assignedCondition) {
-            const { conditionPayloads, type, factors } = this.experimentService.formattingPayload(experiment);
+            const { conditionPayloads, type, factors } = this.getAssignmentPayloadFormat(experiment);
             fullAssignment = this.mapDecisionPoints(
               experiment,
               assignedCondition,
@@ -803,8 +818,33 @@ export class ExperimentAssignmentService {
     const experiments = previewUser
       ? await this.experimentRepository.getValidExperimentsWithPreview(context)
       : await this.experimentService.getCachedValidExperiments(context);
-    // adding conditionPayloads at the root level instead of inside conditions.
-    return experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
+    // adding conditionPayloads at the root level instead of inside conditions (once per cache fill; see
+    // getConditionPayloadFormat).
+    return experiments.map((exp) => this.getConditionPayloadFormat(exp));
+  }
+
+  /** ExperimentService.formattingConditionPayload, computed once per experiment object. */
+  private getConditionPayloadFormat(experiment: Experiment): Experiment {
+    let formatted = this.conditionPayloadFormats.get(experiment);
+    if (!formatted) {
+      formatted = this.experimentService.formattingConditionPayload(experiment);
+      this.conditionPayloadFormats.set(experiment, formatted);
+    }
+    return formatted;
+  }
+
+  /**
+   * ExperimentService.formattingPayload, computed once per experiment object. Called with getConditionPayloadFormat's
+   * output, which is itself stable for as long as the cache entry is.
+   */
+  private getAssignmentPayloadFormat(experiment: Experiment): AssignmentPayloadFormat {
+    let formatted = this.assignmentPayloadFormats.get(experiment);
+    if (!formatted) {
+      const { conditionPayloads, type, factors } = this.experimentService.formattingPayload(experiment);
+      formatted = { conditionPayloads, type, factors };
+      this.assignmentPayloadFormats.set(experiment, formatted);
+    }
+    return formatted;
   }
 
   private async getExperimentsForContextAndDecisionPoint(
