@@ -288,8 +288,16 @@ describe('Experiment Assignment Service Test', () => {
     //
     // Note that top-level writes are safe by construction — formattingConditionPayload returns a
     // `{...experiment}` shallow copy — so what these guard is mutation one or more levels down.
+    //
+    // The formatted forms of the cached experiment are shared across requests too (they are built once
+    // per cache fill and reused), so they get the same check. They are built here, before the first run,
+    // so the run reuses these exact objects and any write it makes to them shows up in the comparison.
     const expectNoMutation = async (exp: any, run: () => Promise<unknown>) => {
       const snapshot = JSON.parse(JSON.stringify(exp));
+      const formatted = testedModule.getConditionPayloadFormat(exp);
+      const formattedForms = () =>
+        JSON.parse(JSON.stringify({ formatted, payloadFormat: testedModule.getAssignmentPayloadFormat(formatted) }));
+      const formattedSnapshot = formattedForms();
 
       // Twice: a mutation that is idempotent (an in-place sort, say) can still be caught on the first
       // pass, and running twice also covers request N+1 seeing what request N left behind.
@@ -297,6 +305,7 @@ describe('Experiment Assignment Service Test', () => {
       await run();
 
       expect(JSON.parse(JSON.stringify(exp))).toEqual(snapshot);
+      expect(formattedForms()).toEqual(formattedSnapshot);
     };
 
     it('should not mutate the cached experiment for a simple individual experiment', async () => {
@@ -363,6 +372,55 @@ describe('Experiment Assignment Service Test', () => {
       testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
 
       await expectNoMutation(exp, () => testedModule.getAllExperimentConditions(userDoc, context, loggerMock));
+    });
+  });
+
+  describe('cached experiments are formatted once per cache fill', () => {
+    // getCachedValidExperiments hands every request the same experiment objects until the cache refreshes, so the
+    // formatted forms (formattingConditionPayload, formattingPayload) are kept per experiment object instead of being
+    // rebuilt on every /assign. A refresh stores new objects, which must be formatted again rather than served from
+    // what was built for the old ones.
+    const context = 'context';
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
+
+    it('formats a cached experiment once across repeated requests', async () => {
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+      testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+      const conditionPayloadSpy = sandbox.spy(testedModule.experimentService, 'formattingConditionPayload');
+      const payloadSpy = sandbox.spy(testedModule.experimentService, 'formattingPayload');
+
+      const first = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+      const second = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+      expect(first.length).toEqual(1);
+      expect(second).toEqual(first);
+      sinon.assert.calledOnce(conditionPayloadSpy);
+      sinon.assert.calledOnce(payloadSpy);
+    });
+
+    it('formats again when the cache refreshes with new experiment objects', async () => {
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
+      // Same experiment, edited and reloaded: same ids, new objects.
+      const refreshed = structuredClone(exp);
+      refreshed.partitions[0].target = 'refreshed-target';
+      testedModule.experimentService.getCachedValidExperiments = sandbox
+        .stub()
+        .onFirstCall()
+        .resolves([exp])
+        .onSecondCall()
+        .resolves([refreshed]);
+      testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+      const conditionPayloadSpy = sandbox.spy(testedModule.experimentService, 'formattingConditionPayload');
+      const payloadSpy = sandbox.spy(testedModule.experimentService, 'formattingPayload');
+
+      const first = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+      const second = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+      expect(first[0].target).toEqual(exp.partitions[0].target);
+      expect(second[0].target).toEqual('refreshed-target');
+      sinon.assert.calledTwice(conditionPayloadSpy);
+      sinon.assert.calledTwice(payloadSpy);
     });
   });
 
