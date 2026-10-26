@@ -25,6 +25,11 @@ projectBuilderV5 (
             automatedBranchBuilds: [
                 "dev",
                 "release/.*"
+            ],
+            fileFilter: [
+                exclude: [
+                    "gitbook/.*"
+                ]
             ]
         ],
         "upgrade":[
@@ -59,6 +64,11 @@ projectBuilderV5 (
             automatedBranchBuilds: [
                 "dev",
                 "release/.*"
+            ],
+            fileFilter: [
+                exclude: [
+                    "gitbook/.*"
+                ]
             ]
         ],
         "upgrade-backend-tests": [
