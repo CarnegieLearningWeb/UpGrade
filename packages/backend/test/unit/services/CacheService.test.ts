@@ -517,6 +517,90 @@ describe('CacheService', () => {
     });
   });
 
+  // The memory store is created with `shouldCloneBeforeSet: false`. By default it deep-clones every value it
+  // stores, synchronously: on a miss the loading request waits on that clone, and when a background refresh
+  // lands it blocks whatever is running on the event loop. These tests pin down what turning that off means:
+  // the store keeps the exact object the loader produced, so every caller — the loading one included — gets
+  // that same object, with no hidden copy anywhere.
+  describe('stores loaded values without copying them (real memory store)', () => {
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const key = CACHE_PREFIX.EXPERIMENT_KEY_PREFIX + 'nocopy';
+
+    beforeEach(() => {
+      mockedEnv.caching.enabled = true;
+    });
+
+    afterEach(() => {
+      mockedEnv.caching.enabled = false;
+      mockedEnv.caching.ttl = 60;
+      mockedEnv.caching.ttlExperiments = 30;
+      mockedEnv.caching.refreshThreshold = 0;
+    });
+
+    // Not new behavior: reads never copied. Every hit has always handed out the one stored object, which is
+    // why cached values must be treated as read-only by every caller (see
+    // ExperimentService.getCachedValidExperiments). Skipping the copy on store extends that same contract to
+    // the loading request; it doesn't create a new one.
+    it('has always given every cache hit the same stored object', async () => {
+      const realService = new CacheService();
+      await realService.wrap(key, async () => ({ experiments: [{ id: 'exp-1' }] }));
+
+      const firstHit = await realService.wrap(key, jest.fn());
+      const secondHit = await realService.wrap(key, jest.fn());
+
+      expect(secondHit).toBe(firstHit);
+    });
+
+    it('stores the loaded object itself on a miss, so the loading request and later hits share it', async () => {
+      const loaded = { experiments: [{ id: 'exp-1', conditions: [{ id: 'cond-1' }] }] };
+      const realService = new CacheService();
+
+      const missResult = await realService.wrap(key, async () => loaded);
+      const hitResult = await realService.wrap(key, jest.fn());
+
+      expect(missResult).toBe(loaded);
+      expect(hitResult).toBe(loaded);
+    });
+
+    it('stores the refreshed object itself when a background refresh lands', async () => {
+      // Same timing as 'background refresh against the real memory store': due for refresh at ~250ms,
+      // hard expiry no earlier than ~1937ms.
+      mockedEnv.caching.ttl = 2;
+      mockedEnv.caching.ttlExperiments = 2;
+      mockedEnv.caching.refreshThreshold = 0.25;
+      const first = { version: 1 };
+      const refreshed = { version: 2 };
+      const fetch = jest.fn().mockResolvedValueOnce(first).mockResolvedValueOnce(refreshed);
+      const realService = new CacheService();
+
+      expect(await realService.wrap(key, fetch)).toBe(first);
+      await sleep(500);
+      expect(await realService.wrap(key, fetch)).toBe(first); // kicks off the background refresh
+      await sleep(50);
+
+      expect(await realService.wrap(key, fetch)).toBe(refreshed);
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('stores each loaded row itself in wrapMany, so later hits return the same objects', async () => {
+      const rows = new Map([
+        ['seg-1', { id: 'seg-1', members: ['a'] }],
+        ['seg-2', { id: 'seg-2', members: ['b'] }],
+      ]);
+      const loadByKeys = jest.fn().mockImplementation(async (ids: string[]) => ids.map((id) => rows.get(id)));
+      const realService = new CacheService();
+
+      const cold = await realService.wrapMany(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ['seg-1', 'seg-2'], loadByKeys);
+      const warm = await realService.wrapMany(CACHE_PREFIX.SEGMENT_KEY_PREFIX, ['seg-1', 'seg-2'], loadByKeys);
+
+      expect(cold[0]).toBe(rows.get('seg-1'));
+      expect(cold[1]).toBe(rows.get('seg-2'));
+      expect(warm[0]).toBe(rows.get('seg-1'));
+      expect(warm[1]).toBe(rows.get('seg-2'));
+      expect(loadByKeys).toHaveBeenCalledTimes(1);
+    });
+  });
+
   // The wrapMany tests above use a hand-written stand-in for `wrap`. These run against the real
   // cache-manager memory store, so they cover what a stubbed `wrap` cannot: that a stored null is
   // really treated as a hit, and that a key `wrap` asks for outside the prefetch is handled.

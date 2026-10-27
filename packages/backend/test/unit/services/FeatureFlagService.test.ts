@@ -1115,6 +1115,41 @@ describe('Feature Flag Service Testing', () => {
     });
   });
 
+  describe('cached flags and precomputed segment rows are never mutated', () => {
+    // getCachedFlagsForKeys and getPrecomputedSets come out of the in-memory cache as the same objects on every
+    // request, so an in-place write during getKeys would leak into every later /featureflag request. The stubs
+    // hand out the same fixture objects on every call, the way the cache does. (Flags missing a precomputed row
+    // are resolved from getCachedFlagsFromContext, which already returns a JSON copy, and from cached segments via
+    // ExperimentAssignmentService.resolveSegmentsForEntities, which ExperimentAssignmentService's own tests cover.)
+    it('leaves the cached flag list and precomputed rows unchanged across getKeys requests', async () => {
+      const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
+      const cachedFlags = [
+        { id: 'include-all-flag', key: 'include-all-key', filterMode: FILTER_MODE.INCLUDE_ALL },
+        { id: 'exclude-all-flag', key: 'exclude-all-key', filterMode: FILTER_MODE.EXCLUDE_ALL },
+      ];
+      const cachedRows = new Map([
+        ['include-all-flag', { inclusionIds: [], exclusionIds: ['classId:excluded-class', 'excluded-user'] }],
+        ['exclude-all-flag', { inclusionIds: ['user123', 'schoolId:school1'], exclusionIds: ['classId:other-class'] }],
+      ]);
+      service.cacheService.wrap = jest.fn().mockResolvedValue(cachedFlags);
+      (precomputed.getPrecomputedSets as jest.Mock).mockResolvedValue(cachedRows);
+
+      const snapshot = () => JSON.parse(JSON.stringify({ cachedFlags, cachedRows: Object.fromEntries(cachedRows) }));
+      const before = snapshot();
+
+      const includedUser = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} } as any;
+      const groupExcludedUser = {
+        id: 'user456',
+        group: { classId: ['excluded-class'], schoolId: ['school1'] },
+        workingGroup: {},
+      } as any;
+      expect(await service.getKeys(includedUser, 'context1', logger)).toEqual(['include-all-key', 'exclude-all-key']);
+      expect(await service.getKeys(groupExcludedUser, 'context1', logger)).toEqual(['exclude-all-key']);
+
+      expect(snapshot()).toEqual(before);
+    });
+  });
+
   describe('precomputed recompute + seed triggers', () => {
     it('seeds an empty precomputed row in-transaction when a flag is created', async () => {
       const precomputed = module.get<FeatureFlagPrecomputedSegmentService>(FeatureFlagPrecomputedSegmentService);
