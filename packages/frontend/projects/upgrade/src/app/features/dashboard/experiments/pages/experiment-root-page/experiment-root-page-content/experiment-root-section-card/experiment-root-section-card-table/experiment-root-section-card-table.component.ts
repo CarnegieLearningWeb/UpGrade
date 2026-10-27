@@ -23,7 +23,7 @@ import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
 import {
-  CommonSelectionCheckboxComponent,
+  CommonBatchSelectColumnComponent,
   CommonStatusIndicatorChipComponent,
   CommonTagListComponent,
 } from '@shared-component-lib';
@@ -35,7 +35,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 @Component({
   selector: 'app-experiment-root-section-card-table',
   imports: [
-    CommonSelectionCheckboxComponent,
+    CommonBatchSelectColumnComponent,
     MatTableModule,
     AsyncPipe,
     SharedModule,

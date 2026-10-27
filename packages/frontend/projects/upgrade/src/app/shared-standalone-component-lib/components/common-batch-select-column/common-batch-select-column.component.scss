@@ -1,11 +1,16 @@
 @use '@angular/material' as mat;
 
-:host {
-  display: inline-block;
+// The cells render inside the host table rather than this component's host element, so scope by the
+// cell class instead of :host. This also matches the theme's checkbox specificity.
+.batch-select-column {
+  // Host tables style every cell through ::ng-deep with selectors this component's scoped styles can't
+  // outrank (e.g. root tables' min-width: 96px and padding-left: 0), so the column's size has to win here.
+  width: 56px !important;
+  min-width: 56px !important;
+  padding: 0 8px !important;
 }
 
-// Match the theme's checkbox specificity with the component's scoped selector.
-:host .mat-mdc-checkbox {
+.batch-select-column .mat-mdc-checkbox {
   width: 40px;
 
   @include mat.checkbox-overrides(

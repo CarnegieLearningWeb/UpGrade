@@ -23,7 +23,7 @@ import { AsyncPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
 import {
-  CommonSelectionCheckboxComponent,
+  CommonBatchSelectColumnComponent,
   CommonStatusIndicatorChipComponent,
   CommonTagListComponent,
 } from '@shared-component-lib';
@@ -34,7 +34,7 @@ import { FEATURE_FLAG_STATUS, FILTER_MODE, FLAG_SEARCH_KEY } from 'upgrade_types
 @Component({
   selector: 'app-feature-flag-root-section-card-table',
   imports: [
-    CommonSelectionCheckboxComponent,
+    CommonBatchSelectColumnComponent,
     MatTableModule,
     AsyncPipe,
     SharedModule,
