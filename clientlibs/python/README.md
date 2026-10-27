@@ -63,7 +63,7 @@ if assignment:
 
 ## API Reference
 
-### `UpgradeClient(user_id, host_url, context, token="", client_session_id=None)`
+### `UpgradeClient(user_id, host_url, context, token="", client_session_id=None, timeout=5.0)`
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -72,6 +72,34 @@ if assignment:
 | `context` | `str` | Application context string scoping experiment/flag lookups |
 | `token` | `str` | Optional bearer token for the `Authorization` header |
 | `client_session_id` | `str \| None` | Optional session ID; auto-generated UUID when omitted |
+| `timeout` | `float \| httpx.Timeout` | HTTP request timeout in seconds, or an `httpx.Timeout` object for fine-grained control. Defaults to `5.0` seconds, which matches httpx's own default and preserves the previous implicit behavior. |
+
+To set a short timeout (e.g. for user-facing synchronous routes where you want fast failure):
+
+```python
+import httpx
+from upgrade_client_lib import UpgradeClient
+
+client = UpgradeClient(
+    user_id="user-123",
+    host_url="https://upgrade.example.com",
+    context="my-app",
+    timeout=0.5,  # 500 ms
+)
+```
+
+For fine-grained control, pass an `httpx.Timeout` object:
+
+```python
+client = UpgradeClient(
+    user_id="user-123",
+    host_url="https://upgrade.example.com",
+    context="my-app",
+    timeout=httpx.Timeout(connect=1.0, read=5.0, write=5.0, pool=1.0),
+)
+```
+
+The configured timeout applies to both the async (`httpx.AsyncClient`) and sync (`httpx.Client`) HTTP clients. Timeout errors raise `httpx.TimeoutException` and are not caught by the library.
 
 Every method has an async variant (no suffix) and a synchronous variant (`_sync` suffix).
 
@@ -92,6 +120,28 @@ Every method has an async variant (no suffix) and a synchronous variant (`_sync`
 | `get_decision_point_assignment(site, target="")` | Return the `Assignment` for a specific decision point, or `None` |
 | `mark_decision_point( condition, status, site, target = "", uniquifier="", client_error="")` | Record that the user encountered a decision point |
 
+When no experiment is running at a decision point, mark it with `condition=None` and the `NO_CONDITION_ASSIGNED` status:
+
+```python
+assignment = client.get_decision_point_assignment_sync(
+    site="problem-info",
+    target="mathbook_tx",
+)
+
+if assignment is None:
+    client.mark_decision_point_sync(
+        condition=None,
+        status=UpgradeClient.MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED,
+        site="problem-info",
+        target="mathbook_tx",
+    )
+else:
+    condition = assignment.get_condition()
+    assignment.mark_decision_point_sync(
+        UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
+    )
+```
+
 ### Feature Flags
 
 | Method | Description |
@@ -104,7 +154,13 @@ Every method has an async variant (no suffix) and a synchronous variant (`_sync`
 | Method | Description |
 |---|---|
 | `log(metrics)` | Send outcome metric events |
-| `send_reward(reward_value, experiment_id=None, context=None, decision_point=None)` | Send a binary reward signal for an adaptive experiment |
+| `send_reward(reward_value, experiment_id=None, context=None, decision_point=None, await_result=False)` | Send a binary reward signal for an adaptive experiment |
+
+By default, `send_reward` returns an immediate receipt with `mode="accepted"` and `success=None`;
+this does not guarantee the reward was recorded. Pass `await_result=True` to wait for processing:
+a recorded reward returns `mode="processed"` and `success=True`, while a reward that cannot be
+recorded raises `UpgradeApiError` with `status_code=409`. The same option is available on
+`send_reward_sync`. Older servers that omit `mode` are supported with `mode=None`.
 
 `log()` accepts a list of `LogInput` objects. `LogInput`, `LogMetrics`, and `LogGroupMetrics` must be imported from `upgrade_client_lib.types`:
 
