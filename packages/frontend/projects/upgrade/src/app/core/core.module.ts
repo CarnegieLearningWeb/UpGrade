@@ -1,6 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { NgModule, Optional, SkipSelf, ErrorHandler } from '@angular/core';
-import { HttpClient, HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  HttpClient,
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptorsFromDi,
+  withXhr,
+} from '@angular/common/http';
 import { StoreRouterConnectingModule, RouterStateSerializer } from '@ngrx/router-store';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
@@ -78,7 +84,7 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
     { provide: HTTP_INTERCEPTORS, useClass: HttpCancelInterceptor, multi: true },
     { provide: ErrorHandler, useClass: AppErrorHandler },
     { provide: RouterStateSerializer, useClass: CustomSerializer },
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
   ],
 })
 export class CoreModule {

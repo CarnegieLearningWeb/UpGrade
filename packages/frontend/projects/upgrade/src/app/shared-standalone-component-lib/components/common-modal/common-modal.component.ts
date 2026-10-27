@@ -1,5 +1,5 @@
 import { MatCardModule } from '@angular/material/card';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
@@ -22,6 +22,7 @@ import { TranslateModule } from '@ngx-translate/core';
     TranslateModule,
   ],
   templateUrl: './common-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './common-modal.component.scss',
 })
 export class CommonModalComponent {

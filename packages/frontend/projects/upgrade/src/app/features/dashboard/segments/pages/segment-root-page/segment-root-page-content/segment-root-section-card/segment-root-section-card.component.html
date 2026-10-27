@@ -18,10 +18,10 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="(permissions$ | async)?.segments.create"
+    [showPrimaryButton]="$safeNavigationMigration((permissions$ | async)?.segments.create)"
     [primaryButtonText]="'segments.add-segments.text' | translate | titlecase"
     [menuButtonItems]="batchView?.selectedCount ? batchView.menuItems : menuButtonItems"
-    [showMenuButton]="!!batchView?.selectedCount || (permissions$ | async)?.segments.create"
+    [showMenuButton]="!!batchView?.selectedCount || $safeNavigationMigration((permissions$ | async)?.segments.create)"
     [menuButtonDisabled]="!!batchView?.selectedCount && batchView.menuDisabled"
     [menuButtonTooltip]="batchView?.messageKey | translate"
     [isSectionCardExpanded]="isSectionCardExpanded"

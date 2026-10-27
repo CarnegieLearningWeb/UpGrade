@@ -1,7 +1,7 @@
 import { env } from '../env';
 
 /**
- * Thin wrapper over the New Relic agent's custom-attribute API.
+ * Thin wrapper over the New Relic agent's custom-attribute and custom-event APIs.
  *
  * The agent itself is started in `src/app.ts` when USE_NEW_RELIC is set. We resolve it here
  * once at module load — not per request — so the hot path costs a null check and a property
@@ -10,8 +10,11 @@ import { env } from '../env';
  *
  * When USE_NEW_RELIC is false the agent is never loaded and every call below is a no-op.
  */
+export type CustomEventAttributes = Record<string, string | number | boolean>;
+
 interface NewRelicAgent {
   addCustomAttribute(key: string, value: string | number | boolean): void;
+  recordCustomEvent(eventType: string, attributes: CustomEventAttributes): void;
 }
 
 let agent: NewRelicAgent | null = null;
@@ -38,6 +41,23 @@ export function addCustomAttribute(key: string, value: string | number | boolean
     agent.addCustomAttribute(key, value);
   } catch {
     // no-op — e.g. called outside an active transaction
+  }
+}
+
+/**
+ * Record a custom event, queryable in NRQL as `FROM <eventType>`. Unlike addCustomAttribute it
+ * needs no active transaction, so it can be called from a timer. Synchronous and in-process — the
+ * agent buffers the event and sends it on its own harvest cycle. Attribute values must be flat
+ * primitives; the agent drops any that aren't. Never throws.
+ */
+export function recordCustomEvent(eventType: string, attributes: CustomEventAttributes): void {
+  if (!agent) {
+    return;
+  }
+  try {
+    agent.recordCustomEvent(eventType, attributes);
+  } catch {
+    // no-op — telemetry must never fail the caller
   }
 }
 

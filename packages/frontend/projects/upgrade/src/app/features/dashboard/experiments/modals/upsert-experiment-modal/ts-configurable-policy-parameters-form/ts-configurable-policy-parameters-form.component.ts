@@ -1,4 +1,13 @@
-import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -16,6 +25,7 @@ import isEqual from 'lodash.isequal';
   standalone: true,
   imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, TranslateModule],
   templateUrl: './ts-configurable-policy-parameters-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './ts-configurable-policy-parameters-form.component.scss',
 })
 export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDestroy {

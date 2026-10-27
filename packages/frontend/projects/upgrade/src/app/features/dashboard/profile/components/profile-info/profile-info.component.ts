@@ -1,4 +1,12 @@
-import { Component, OnInit, ViewChild, ElementRef, OnDestroy, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  OnDestroy,
+  AfterViewInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Observable, Subscription, fromEvent } from 'rxjs';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
@@ -18,6 +26,7 @@ import { DeleteComponent } from '../../../../../shared/components/delete/delete.
   selector: 'profile-info',
   templateUrl: './profile-info.component.html',
   styleUrls: ['./profile-info.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {

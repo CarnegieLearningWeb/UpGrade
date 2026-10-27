@@ -31,7 +31,7 @@ class AssignRequest(BaseModel):
 
 
 class MarkDecisionPointCondition(BaseModel):
-    conditionCode: str
+    conditionCode: str | None
     experimentId: str | None = None
 
 
@@ -42,6 +42,7 @@ class MarkDecisionPointData(BaseModel):
 
 
 class MarkDecisionPointRequest(BaseModel):
+    context: str
     status: MarkedDecisionPointStatus
     data: MarkDecisionPointData
     uniquifier: str | None = None

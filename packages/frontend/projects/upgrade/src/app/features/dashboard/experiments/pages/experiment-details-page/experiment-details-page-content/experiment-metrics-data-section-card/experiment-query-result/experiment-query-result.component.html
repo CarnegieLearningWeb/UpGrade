@@ -3,18 +3,15 @@
   <div class="loading-container">
     <mat-spinner diameter="60"></mat-spinner>
   </div>
-  } @else {
-  @if (experiment.queries?.length > 0) {
-  @if (experimentType === 'Factorial') {
+  } @else { @if (experiment.queries?.length > 0) { @if (experimentType === 'Factorial') {
   <div>
     <span class="ft-18-700 main-effect-data-text">{{
       'home.experiment-query-result.main-effect.title.text' | translate
     }}</span>
     <br />
   </div>
-  }
-  @let isQueryExecuting = (isQueryExecuting$ | async);
-  @for (query of experiment.queries; track query.id; let isLast = $last) {
+  } @let isQueryExecuting = (isQueryExecuting$ | async); @for (query of experiment.queries; track query.id; let isLast =
+  $last) {
   <div>
     <span class="ft-16-700 main-effect-data-text">
       {{ query.name }}
@@ -32,7 +29,7 @@
               <td class="ft-14-600 factor-name-main">{{ factor | uppercase }}</td>
             </tr>
           </table>
-          @if (hasFactorData(i, query?.id)) {
+          @if (hasFactorData(i, $safeNavigationMigration(query?.id))) {
           <div>
             <ngx-charts-bar-vertical
               [view]="[300, 250]"
@@ -80,7 +77,7 @@
     </div>
     } @if (experimentType === 'Simple') {
     <div>
-      @if (!isQueryExecuting) { @if (!isResultExist(query.id)) { @if (hasData(query?.id)) {
+      @if (!isQueryExecuting) { @if (!isResultExist(query.id)) { @if (hasData($safeNavigationMigration(query?.id))) {
       <div style="height: 250px; width: 30%">
         <ngx-charts-bar-vertical
           [view]="[400, 250]"
@@ -163,7 +160,7 @@
           <div style="display: flex">
             @for (factor of factors; track $index; let i = $index) {
             <div style="margin-left: 30px; margin-right: 180px; height: 320px; width: 30%">
-              @if (hasInteractionData(i, query?.id)) {
+              @if (hasInteractionData(i, $safeNavigationMigration(query?.id))) {
               <div>
                 <ngx-charts-line-chart
                   [view]="[270, 250]"

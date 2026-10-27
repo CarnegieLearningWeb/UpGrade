@@ -8,7 +8,7 @@ import { CoreModule } from './core/core.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { SimpleNotificationsModule } from 'angular2-notifications';
 import { environment } from '../environments/environment';
 import { ENV } from '../environments/environment-types';
@@ -40,7 +40,7 @@ import { provideImportServiceTypeAdapters } from '@shared-component-lib/common-i
   ],
   providers: [
     { provide: ENV, useValue: environment },
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
     ...provideImportServiceTypeAdapters(),
   ],
 })

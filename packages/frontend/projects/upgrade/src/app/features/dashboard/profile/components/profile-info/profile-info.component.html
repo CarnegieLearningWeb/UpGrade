@@ -1,11 +1,11 @@
 <div class="profile-wrapper" #profileInfoContainer>
   @if (currentUser) {
   <div class="personal-information" [ngClass]="{ 'normal-user': currentUser?.role !== UserRole.ADMIN }">
-    <img [src]="currentUser?.imageUrl" class="profile-pic" referrerpolicy="no-referrer" />
+    <img [src]="$safeNavigationMigration(currentUser?.imageUrl)" class="profile-pic" referrerpolicy="no-referrer" />
     <div class="user-info">
       <span class="ft-22-700">{{ (currentUser?.firstName || '') + ' ' + (currentUser?.lastName || '') }}</span>
       <span class="ft-12-600 email">{{ '( ' + currentUser?.email + ' )' }}</span>
-      <span class="ft-12-600 role">{{ currentUser?.role | titlecase }}</span>
+      <span class="ft-12-600 role">{{ $safeNavigationMigration(currentUser?.role) | titlecase }}</span>
     </div>
     <div class="toggle-container">
       @if ((permissions$ | async)?.manageRoles.update) {

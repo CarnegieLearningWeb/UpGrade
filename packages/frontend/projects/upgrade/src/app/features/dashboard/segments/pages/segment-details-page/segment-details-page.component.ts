@@ -1,5 +1,5 @@
 // segment-details-page.component.ts
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonPageComponent } from '@shared-component-lib';
 import { SegmentDetailsPageHeaderComponent } from './segment-details-page-header/segment-details-page-header.component';
 import { SegmentDetailsPageContentComponent } from './segment-details-page-content/segment-details-page-content.component';
@@ -8,13 +8,13 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Segment } from '../../../../../core/segments/store/segments.model';
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { filter, map, startWith } from 'rxjs/operators';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-segment-details-page',
   templateUrl: './segment-details-page.component.html',
   styleUrl: './segment-details-page.component.scss',
-  imports: [CommonModule, CommonPageComponent, SegmentDetailsPageHeaderComponent, SegmentDetailsPageContentComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [CommonPageComponent, SegmentDetailsPageHeaderComponent, SegmentDetailsPageContentComponent],
 })
 export class SegmentDetailsPageComponent implements OnInit, OnDestroy {
   segment$: Observable<Segment>;

@@ -91,7 +91,12 @@ interface IMonitoredDecisionPoint {
  *     description: CRUD operations related to experiments points
  */
 
-@JsonController('/v6/')
+// Every route here returns plain data (literals, raw rows, string arrays, or objects already built in the response
+// shape), so routing-controllers' class-transformer pass (instanceToPlain) would only deep-copy each response before
+// JSON.stringify — CPU on every client SDK request, same JSON out. A route that ever needs class-transformer on its
+// response (e.g. @Exclude/@Expose on a returned class) can opt back in with `{ transformResponse: true }`. Request
+// bodies are unaffected: @Body is still transformed into its validator class and validated.
+@JsonController('/v6/', { transformResponse: false })
 @UseBefore(ClientLibMiddleware)
 @UseBefore(UserCheckMiddleware)
 @UseBefore(ClientContextMiddleware)
@@ -113,6 +118,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *         - in: header
+   *           name: User-Id
+   *           required: true
+   *           type: string
+   *           example: user123
+   *           description: The unique identifier for the user
    *         - in: body
    *           name: experimentUser
    *           required: true
@@ -212,6 +223,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *         - in: header
+   *           name: User-Id
+   *           required: true
+   *           type: string
+   *           example: user123
+   *           description: The unique identifier for the user
    *         - in: body
    *           name: experimentUser
    *           required: true
@@ -292,6 +309,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *         - in: header
+   *           name: User-Id
+   *           required: true
+   *           type: string
+   *           example: user123
+   *           description: The unique identifier for the user
    *         - in: body
    *           name: params
    *           required: true
@@ -366,6 +389,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *         - in: header
+   *           name: User-Id
+   *           required: true
+   *           type: string
+   *           example: user123
+   *           description: The unique identifier for the user
    *         - in: body
    *           name: experimentUser
    *           required: true
@@ -395,6 +424,9 @@ export class ExperimentClientController {
    *               status:
    *                 type: string
    *                 example: condition applied
+   *               context:
+   *                 type: string
+   *                 example: upgrade_internal
    *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
@@ -472,6 +504,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *          - in: header
+   *            name: User-Id
+   *            required: true
+   *            type: string
+   *            example: user123
+   *            description: The unique identifier for the user
    *          - in: body
    *            name: user
    *            required: true
@@ -564,6 +602,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *          - in: header
+   *            name: User-Id
+   *            required: true
+   *            type: string
+   *            example: user123
+   *            description: The unique identifier for the user
    *          - in: body
    *            name: data
    *            required: true
@@ -682,8 +726,7 @@ export class ExperimentClientController {
    *         - in: header
    *           name: User-Id
    *           required: true
-   *           schema:
-   *             type: string
+   *           type: string
    *           example: user123
    *           description: The unique identifier for the user
    *         - in: body
@@ -774,6 +817,12 @@ export class ExperimentClientController {
    *       consumes:
    *         - application/json
    *       parameters:
+   *          - in: header
+   *            name: User-Id
+   *            required: true
+   *            type: string
+   *            example: user123
+   *            description: The unique identifier for the user
    *          - in: body
    *            name: user aliases
    *            required: true
@@ -859,8 +908,7 @@ export class ExperimentClientController {
    *         - in: header
    *           name: User-Id
    *           required: true
-   *           schema:
-   *             type: string
+   *           type: string
    *           example: user123
    *           description: The unique identifier for the user
    *         - in: query

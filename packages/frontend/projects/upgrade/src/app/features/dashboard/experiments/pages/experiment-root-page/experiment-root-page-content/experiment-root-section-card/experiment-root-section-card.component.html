@@ -18,10 +18,12 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showPrimaryButton]="(permissions$ | async)?.experiments.create"
+    [showPrimaryButton]="$safeNavigationMigration((permissions$ | async)?.experiments.create)"
     [primaryButtonText]="'experiments.add-experiment.text' | translate"
     [menuButtonItems]="batchView?.selectedCount ? batchView.menuItems : menuButtonItems"
-    [showMenuButton]="!!batchView?.selectedCount || (permissions$ | async)?.experiments.create"
+    [showMenuButton]="
+      !!batchView?.selectedCount || $safeNavigationMigration((permissions$ | async)?.experiments.create)
+    "
     [menuButtonDisabled]="!!batchView?.selectedCount && batchView.menuDisabled"
     [menuButtonTooltip]="batchView?.messageKey | translate"
     [isSectionCardExpanded]="isSectionCardExpanded"

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,7 +13,7 @@ export interface EditListValueModalData {
 
 @Component({
   selector: 'app-edit-list-value-modal',
-  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, CommonModalComponent],
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, CommonModalComponent],
   templateUrl: './edit-list-value-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

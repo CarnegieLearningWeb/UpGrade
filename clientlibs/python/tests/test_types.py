@@ -1,5 +1,7 @@
 """Tests for enums, request models, and response models (Phase 2)."""
 
+import json
+
 import pytest
 from pydantic import ValidationError
 
@@ -115,8 +117,25 @@ class TestAssignRequest:
 
 
 class TestMarkDecisionPointRequest:
+    def test_null_condition_code_json_round_trip(self) -> None:
+        payload = {
+            "context": "my-app",
+            "status": "no condition assigned",
+            "data": {
+                "site": "home",
+                "target": "banner",
+                "assignedCondition": {"conditionCode": None},
+            },
+        }
+        req = MarkDecisionPointRequest.model_validate_json(json.dumps(payload))
+        assert req.data.assignedCondition.conditionCode is None
+        serialized = json.loads(req.model_dump_json(exclude_unset=True))
+        assert serialized == payload
+        assert "conditionCode" in serialized["data"]["assignedCondition"]
+
     def test_valid_minimal(self) -> None:
         req = MarkDecisionPointRequest(
+            context="my-app",
             status=MarkedDecisionPointStatus.CONDITION_APPLIED,
             data=MarkDecisionPointData(
                 site="home",
@@ -124,12 +143,15 @@ class TestMarkDecisionPointRequest:
                 assignedCondition=MarkDecisionPointCondition(conditionCode="control"),
             ),
         )
+        assert req.context == "my-app"
+        assert req.model_dump(mode="json")["context"] == "my-app"
         assert req.status == MarkedDecisionPointStatus.CONDITION_APPLIED
         assert req.uniquifier is None
         assert req.clientError is None
 
     def test_valid_full(self) -> None:
         req = MarkDecisionPointRequest(
+            context="my-app",
             status=MarkedDecisionPointStatus.CONDITION_APPLIED,
             data=MarkDecisionPointData(
                 site="home",
@@ -142,9 +164,25 @@ class TestMarkDecisionPointRequest:
         assert req.data.assignedCondition.experimentId == "exp-123"
         assert req.uniquifier == "abc"
 
+    def test_missing_context(self) -> None:
+        with pytest.raises(ValidationError) as exc_info:
+            MarkDecisionPointRequest.model_validate(
+                {
+                    "status": "condition applied",
+                    "data": {
+                        "site": "home",
+                        "target": "banner",
+                        "assignedCondition": {"conditionCode": "control"},
+                    },
+                }
+            )
+        assert exc_info.value.errors()[0]["loc"] == ("context",)
+        assert exc_info.value.errors()[0]["type"] == "missing"
+
     def test_invalid_status(self) -> None:
         with pytest.raises(ValidationError):
             MarkDecisionPointRequest(
+                context="my-app",
                 status="not-a-status",  # type: ignore[arg-type]
                 data=MarkDecisionPointData(
                     site="home",

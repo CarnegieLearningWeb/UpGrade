@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { AuthService } from '../../../core/auth/auth.service';
 import { VersionService } from '../../../core/version/version.service';
 import { ENV, Environment } from '../../../../environments/environment-types';
@@ -7,6 +7,7 @@ import { ENV, Environment } from '../../../../environments/environment-types';
   selector: 'app-dashboard-root',
   templateUrl: './dashboard-root.component.html',
   styleUrls: ['./dashboard-root.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class DashboardRootComponent implements OnInit {

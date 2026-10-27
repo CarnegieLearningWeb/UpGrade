@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { ExcludeEntity, EntityTypes } from '../../../../../core/experiment-users/store/experiment-users.model';
 import { Subscription, Observable } from 'rxjs';
 import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
@@ -16,6 +16,7 @@ import { MatTableDataSource } from '@angular/material/table';
   selector: 'users-experiment-users',
   templateUrl: './experiment-users.component.html',
   styleUrls: ['./experiment-users.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ExperimentUsersComponent implements OnInit, OnDestroy {

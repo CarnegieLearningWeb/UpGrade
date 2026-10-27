@@ -12,7 +12,7 @@
   <!-- header-right -->
   <app-common-section-card-action-buttons
     header-right
-    [showSlideToggle]="(permissions$ | async)?.featureFlags.update"
+    [showSlideToggle]="$safeNavigationMigration((permissions$ | async)?.featureFlags.update)"
     [slideToggleChecked]="flag.status === FEATURE_FLAG_STATUS.ENABLED"
     [slideToggleText]="'feature-flags.enable.text' | translate"
     [showMenuButton]="!(isUserReader$ | async)"

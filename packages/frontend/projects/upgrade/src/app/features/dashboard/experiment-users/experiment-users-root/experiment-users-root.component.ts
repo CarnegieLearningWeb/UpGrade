@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ExperimentService } from '../../../../core/experiments/experiments.service';
 import { PreviewUsersService } from '../../../../core/preview-users/preview-users.service';
 import { StratificationFactorsService } from '../../../../core/stratification-factors/stratification-factors.service';
@@ -8,6 +8,7 @@ import { filter, take } from 'rxjs/operators';
   selector: 'app-user-root',
   templateUrl: './experiment-users-root.component.html',
   styleUrls: ['./experiment-users-root.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ExperimentUsersRootComponent {

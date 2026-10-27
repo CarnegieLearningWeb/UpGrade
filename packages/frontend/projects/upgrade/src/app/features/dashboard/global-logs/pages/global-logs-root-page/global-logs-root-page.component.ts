@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   CommonPageComponent,
   CommonRootPageHeaderComponent,
@@ -20,6 +20,7 @@ import { GlobalLogsAuditLogSectionCardComponent } from './global-logs-audit-log-
     </app-common-page>
   `,
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     CommonPageComponent,
     CommonRootPageHeaderComponent,

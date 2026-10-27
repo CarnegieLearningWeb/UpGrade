@@ -146,6 +146,7 @@ export class ExperimentAssignmentService {
     logger: UpgradeLogger
   ): Promise<{
     selectedExperiments: Experiment[];
+    invalidGroupExperiments: Experiment[];
     exclusionReason: { experiment: Experiment; reason: string; matchedGroup: boolean }[];
     mergedIndividualEnrollments: IndividualEnrollment[];
     groupEnrollments: GroupEnrollment[];
@@ -153,10 +154,13 @@ export class ExperimentAssignmentService {
     groupExclusions: GroupExclusion[];
   }> {
     const validExperiments = await this.filterAndProcessGroupExperiments(experiments, userDoc, logger);
+    const validExperimentIds = new Set(validExperiments.map((experiment) => experiment.id));
+    const invalidGroupExperiments = experiments.filter((experiment) => !validExperimentIds.has(experiment.id));
 
     if (validExperiments.length === 0) {
       return {
         selectedExperiments: [],
+        invalidGroupExperiments,
         exclusionReason: [],
         mergedIndividualEnrollments: [],
         groupEnrollments: [],
@@ -198,6 +202,7 @@ export class ExperimentAssignmentService {
 
     return {
       selectedExperiments,
+      invalidGroupExperiments,
       exclusionReason,
       mergedIndividualEnrollments,
       groupEnrollments,
@@ -234,6 +239,9 @@ export class ExperimentAssignmentService {
       this.getActiveDecisionPoints(exp).some((p) => p.site === site && p.target === target)
     );
 
+    // Called first because it will throw with 400 if the context is invalid.
+    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
+
     if (allExperimentsAtDP.length === 0) {
       return {
         experiment: null,
@@ -243,8 +251,6 @@ export class ExperimentAssignmentService {
         exclusionReason: [],
       };
     }
-
-    const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
 
     if (isUserExcluded || isGroupExcluded) {
       return { experiment: null, experimentId, isUserExcluded, isGroupExcluded, exclusionReason: [] };
@@ -272,15 +278,20 @@ export class ExperimentAssignmentService {
       };
     }
 
-    // No experiment ID: delegate to the shared selection pipeline so this method always agrees with getAllExperimentConditions.
-    const { selectedExperiments, exclusionReason } = await this.selectExperimentsForUser(
-      allExperimentsAtDP,
+    // No experiment ID: pool the full context before matching the marked decision point.
+    const { selectedExperiments, invalidGroupExperiments, exclusionReason } = await this.selectExperimentsForUser(
+      allExperimentsForContext,
       userDoc,
       previewUser,
       logger
     );
 
-    const experiment = selectedExperiments.length > 0 ? selectedExperiments[0] : exclusionReason[0]?.experiment || null;
+    const experimentIdsAtDP = new Set(allExperimentsAtDP.map((experiment) => experiment.id));
+    const experiment =
+      selectedExperiments.find((selected) => experimentIdsAtDP.has(selected.id)) ??
+      exclusionReason.find((reason) => experimentIdsAtDP.has(reason.experiment?.id))?.experiment ??
+      invalidGroupExperiments.find((invalid) => experimentIdsAtDP.has(invalid.id)) ??
+      null;
     const resolvedExperimentId = experiment?.id ?? null;
     const resolvedExclusionReason = exclusionReason.filter((reason) => reason.experiment?.id === resolvedExperimentId);
 
