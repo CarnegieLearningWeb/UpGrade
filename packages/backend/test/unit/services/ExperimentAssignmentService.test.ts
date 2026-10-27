@@ -366,6 +366,114 @@ describe('Experiment Assignment Service Test', () => {
     });
   });
 
+  describe('cached segments and precomputed segment rows are never mutated', () => {
+    // Like the experiment graph above, segments (SegmentService.getSegmentByIds / getGlobalExcludeSegmentByContext)
+    // and precomputed segment rows (getPrecomputedSets) come out of the in-memory cache as the same objects on every
+    // request, so an in-place write during assignment would leak into every later request. The stubs below hand
+    // out the same fixture objects on every call, the way the cache does, and the test checks they come through
+    // two /assign requests unchanged. It covers the global exclude segment, on-the-fly resolution of include and
+    // exclude segments (including a sub-segment) for an experiment with no precomputed row, and the precomputed
+    // row path for another experiment.
+    it('leaves cached segments and precomputed rows unchanged across /assign requests', async () => {
+      const context = 'context';
+      const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: { schoolId: 'school1' } };
+
+      const segmentsById: Record<string, any> = {
+        'global-exclude': {
+          id: 'global-exclude',
+          individualForSegment: [{ userId: 'someone-else' }],
+          groupForSegment: [{ type: 'schoolId', groupId: 'excluded-school' }],
+          subSegments: [{ id: 'global-exclude-sub' }],
+        },
+        'global-exclude-sub': {
+          id: 'global-exclude-sub',
+          individualForSegment: [{ userId: 'another-user' }],
+          groupForSegment: [],
+          subSegments: [],
+        },
+        'include-segment': {
+          id: 'include-segment',
+          individualForSegment: [{ userId: 'user123' }],
+          groupForSegment: [{ type: 'schoolId', groupId: 'school1' }],
+          subSegments: [{ id: 'include-sub-segment' }],
+        },
+        'include-sub-segment': {
+          id: 'include-sub-segment',
+          individualForSegment: [{ userId: 'sub-user' }],
+          groupForSegment: [{ type: 'classId', groupId: 'class1' }],
+          subSegments: [],
+        },
+        'exclude-segment': {
+          id: 'exclude-segment',
+          individualForSegment: [{ userId: 'excluded-user' }],
+          groupForSegment: [{ type: 'schoolId', groupId: 'other-school' }],
+          subSegments: [],
+        },
+      };
+
+      // Resolved on the fly (no precomputed row) from the cached segments above.
+      const onTheFlyExperiment: any = structuredClone(simpleIndividualAssignmentExperiment);
+      onTheFlyExperiment.id = 'on-the-fly-experiment';
+      onTheFlyExperiment.filterMode = FILTER_MODE.EXCLUDE_ALL;
+      // Resolved from its precomputed row.
+      const precomputedExperiment: any = structuredClone(simpleIndividualAssignmentExperiment);
+      precomputedExperiment.id = 'precomputed-experiment';
+      precomputedExperiment.filterMode = FILTER_MODE.EXCLUDE_ALL;
+      const precomputedRows = new Map([
+        [
+          precomputedExperiment.id,
+          {
+            experimentId: precomputedExperiment.id,
+            inclusionIds: ['user123', 'schoolId:school1'],
+            exclusionIds: ['classId:excluded-class'],
+          },
+        ],
+      ]);
+
+      const getSegmentByIds = sandbox
+        .stub()
+        .callsFake(async (ids: string[]) => ids.map((id) => segmentsById[id]).filter(Boolean));
+      testedModule.segmentService = {
+        getGlobalExcludeSegmentByContext: sandbox.stub().resolves(segmentsById['global-exclude']),
+        getSegmentByIds,
+      };
+      const getPrecomputedSets = sandbox.stub().resolves(precomputedRows);
+      testedModule.experimentPrecomputedSegmentService = { getPrecomputedSets };
+      const experimentRepository = Object.create(experimentRepositoryMock);
+      experimentRepository.getSegmentIdsForExperiments = sandbox.stub().callsFake(async (ids: string[]) =>
+        ids
+          .filter((id) => id === onTheFlyExperiment.id)
+          .map((id) => ({
+            id,
+            experimentSegmentInclusion: [{ segmentId: 'include-segment' }],
+            experimentSegmentExclusion: [{ segmentId: 'exclude-segment' }],
+          }))
+      );
+      testedModule.experimentRepository = experimentRepository;
+      testedModule.experimentService.getCachedValidExperiments = sandbox
+        .stub()
+        .resolves([onTheFlyExperiment, precomputedExperiment]);
+      testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+
+      const snapshot = () =>
+        JSON.parse(JSON.stringify({ segmentsById, precomputedRows: Object.fromEntries(precomputedRows) }));
+      const before = snapshot();
+
+      await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+      await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
+
+      // Every cached path ran: global exclude (and its sub-segment), on-the-fly include/exclude (and the
+      // include segment's sub-segment), and the precomputed row.
+      sinon.assert.calledWith(getSegmentByIds, ['global-exclude']);
+      sinon.assert.calledWith(getSegmentByIds, ['global-exclude-sub']);
+      sinon.assert.calledWith(getSegmentByIds, ['include-segment']);
+      sinon.assert.calledWith(getSegmentByIds, ['include-sub-segment']);
+      sinon.assert.calledWith(getSegmentByIds, ['exclude-segment']);
+      sinon.assert.called(getPrecomputedSets);
+      expect(snapshot()).toEqual(before);
+    });
+  });
+
   describe('assignment does not depend on the order rows come back from the database', () => {
     // `getValidExperiments` — the assignment read path — has no `ORDER BY conditions.order`; only the
     // admin-side `findOneExperiment` does. So the sequence conditions arrive in is whatever Postgres
