@@ -81,8 +81,6 @@ export interface Environment {
   useHashRouting: boolean;
   googleClientId: string;
   domainName: string;
-  errorLogsToggle: boolean;
-  withinSubjectExperimentSupportToggle: boolean;
   metricAnalyticsExperimentDisplayToggle: boolean;
   // these have been removed but optional to prevent annoyance switching between branches
   pollingEnabled?: boolean;
@@ -95,7 +93,5 @@ export interface RuntimeEnvironmentConfig {
   googleClientId?: string;
   endpointApi?: string;
   apiBaseUrl?: string;
-  withinSubjectExperimentSupportToggle?: boolean;
-  errorLogsToggle?: boolean;
   metricAnalyticsExperimentDisplayToggle?: boolean;
 }
