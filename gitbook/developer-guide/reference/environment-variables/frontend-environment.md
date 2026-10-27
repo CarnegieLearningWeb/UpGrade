@@ -42,7 +42,7 @@ export const environment: Environment = {
 | Field                                        | Description                                                                             | Type    |
 | -------------------------------------------- | ----------------------------------------------------------------------------------------- | ------- |
 | **appName**                                  | Display name for the application                                                        | string  |
-| **envName**                                  | Environment label. Not currently used                                                   | string  |
+| **envName**                                  | Environment label                                                                       | string  |
 | **apiBaseUrl**                               | Base URL of the backend API, including the route prefix                                 | string  |
 | **production**                               | Angular production mode. Quiets dev console messages                                    | boolean |
 | **test**                                     | Quiets debug messages. Leave as is                                                      | boolean |
@@ -58,13 +58,9 @@ export const environment: Environment = {
 `pollingEnabled`, `pollingInterval` and `pollingLimit` have been removed. They remain optional on the `Environment` interface so that switching between branches doesn't break the build, but nothing reads them.
 {% endhint %}
 
-### API endpoints
-
-API routes are **no longer part of the environment file**. They live in `packages/frontend/projects/upgrade/src/app/core/api-endpoints.constants.ts` and are shared across every environment, so there is no longer anything to configure per-environment. The `APIEndpoints` interface in `environment-types.ts` describes their shape.
-
 ### Deployed environments
 
-Deployed builds don't hardcode their values. The environment file for the target environment contains placeholder tokens, which are substituted before the build:
+The included angular frontend environment files are set up for generic qa/staging/production builds so that a cicd process can substitute certain values at build time. This is a convenience/suggestion but not a requirement, it may not suit your deployments and could just as well be hardcoded if you have forked private repository. Here is how it works if you'd like to do it the way we do for our builds:
 
 ```typescript
 apiBaseUrl: '%API_BASE_URL%',
